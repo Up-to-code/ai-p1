@@ -1,0 +1,45 @@
+<svg width="720" height="520" viewBox="0 0 720 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g opacity="0.3" stroke="#CBD5E1">
+    <path d="M132 96H588"/>
+    <path d="M132 260H588"/>
+    <path d="M132 424H588"/>
+    <path d="M196 52V468"/>
+    <path d="M360 52V468"/>
+    <path d="M524 52V468"/>
+  </g>
+  <g transform="translate(360 260)">
+    <circle cx="0" cy="0" r="150" stroke="#CBD5E1" stroke-width="1.5"/>
+    <circle cx="0" cy="0" r="92" stroke="#DBEAFE" stroke-width="1.5" stroke-dasharray="8 12"/>
+    <g stroke-linecap="round">
+      <path d="M0 -42V-156" stroke="#2563EB" stroke-width="3"/>
+      <path d="M0 42V156" stroke="#A5B4FC" stroke-width="3"/>
+      <path d="M-42 0H-156" stroke="#2563EB" stroke-width="3"/>
+      <path d="M42 0H156" stroke="#2563EB" stroke-width="3"/>
+      <path d="M30 -30L112 -112" stroke="#2563EB" stroke-width="2.5"/>
+      <path d="M-30 -30L-112 -112" stroke="#94A3B8" stroke-width="2.5"/>
+      <path d="M30 30L112 112" stroke="#2563EB" stroke-width="2.5"/>
+      <path d="M-30 30L-112 112" stroke="#94A3B8" stroke-width="2.5"/>
+      <path d="M14 -38L40 -146" stroke="#2563EB" stroke-width="2"/>
+      <path d="M-14 -38L-40 -146" stroke="#A5B4FC" stroke-width="2"/>
+      <path d="M38 14L146 40" stroke="#2563EB" stroke-width="2"/>
+      <path d="M38 -14L146 -40" stroke="#94A3B8" stroke-width="2"/>
+      <path d="M14 38L40 146" stroke="#A5B4FC" stroke-width="2"/>
+      <path d="M-14 38L-40 146" stroke="#2563EB" stroke-width="2"/>
+      <path d="M-38 14L-146 40" stroke="#A5B4FC" stroke-width="2"/>
+      <path d="M-38 -14L-146 -40" stroke="#2563EB" stroke-width="2"/>
+    </g>
+    <rect x="-54" y="-54" width="108" height="108" fill="white" stroke="#CBD5E1" stroke-width="2"/>
+    <rect x="-40" y="-40" width="80" height="80" fill="#0F172A"/>
+    <rect x="-22" y="-22" width="44" height="44" fill="#2563EB" opacity="0.16"/>
+    <g>
+      <rect x="-5" y="-161" width="10" height="10" fill="#64748B"/>
+      <rect x="-5" y="151" width="10" height="10" fill="#A5B4FC"/>
+      <rect x="-161" y="-5" width="10" height="10" fill="#64748B"/>
+      <rect x="151" y="-5" width="10" height="10" fill="#A5B4FC"/>
+      <rect x="107" y="-117" width="10" height="10" fill="#64748B"/>
+      <rect x="-117" y="-117" width="10" height="10" fill="#A5B4FC"/>
+      <rect x="107" y="107" width="10" height="10" fill="#64748B"/>
+      <rect x="-117" y="107" width="10" height="10" fill="#A5B4FC"/>
+    </g>
+  </g>
+</svg>

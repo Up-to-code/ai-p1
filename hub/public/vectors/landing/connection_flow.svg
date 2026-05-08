@@ -1,0 +1,18 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" id="landing_connection_flow">
+  <!-- The Institutional Rail -->
+  <g id="connection_rail" transform="translate(50, 150)">
+    <rect width="300" height="2" fill="#0F172A" y="0"/>
+    <rect width="300" height="2" fill="#0F172A" y="100"/>
+    
+    <!-- Moving Deals/Users -->
+    <rect x="40" y="-10" width="20" height="20" fill="#2563EB" id="deal_1"/>
+    <rect x="120" y="90" width="20" height="20" fill="#64748B" id="user_1"/>
+    <rect x="220" y="-10" width="20" height="20" fill="#2563EB" id="deal_2"/>
+    
+    <!-- The Institutional Gate -->
+    <rect x="150" y="-40" width="4" height="180" fill="#2563EB" id="entry_gate"/>
+    
+    <!-- Background Grid Logic -->
+    <path d="M0 50H300" stroke="#F1F5F9" stroke-width="1" stroke-dasharray="10 10"/>
+  </g>
+</svg>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 420" width="100%" height="100%">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#DBEAFE" stroke-width="1" />
+    </pattern>
+  </defs>
+  <rect x="0" y="0" width="520" height="420" fill="url(#grid)" />
+  <g fill="none" stroke="#2563EB" stroke-width="2" stroke-dasharray="6 6">
+    <animate attributeName="stroke-dashoffset" values="0;24" dur="3s" repeatCount="indefinite" />
+    <path d="M 180 210 L 240 210" />
+    <path d="M 280 210 L 340 210" />
+  </g>
+  <g fill="#FFFFFF" stroke="#0F172A" stroke-width="2">
+    <circle cx="180" cy="210" r="4" />
+    <circle cx="240" cy="210" r="4" />
+    <circle cx="280" cy="210" r="4" />
+    <circle cx="340" cy="210" r="4" />
+  </g>
+  <rect x="60" y="140" width="120" height="140" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2" />
+  <rect x="80" y="170" width="80" height="6" fill="#94A3B8" />
+  <rect x="80" y="190" width="60" height="6" fill="#CBD5E1" />
+  <rect x="80" y="210" width="70" height="6" fill="#CBD5E1" />
+  <circle cx="86" cy="240" r="6" fill="#0F172A" />
+  <rect x="100" y="238" width="40" height="4" fill="#60A5FA" />
+  <rect x="240" y="190" width="40" height="40" rx="4" fill="#1E293B" stroke="#0F172A" stroke-width="2" />
+  <rect x="252" y="202" width="16" height="16" rx="2" fill="#2563EB">
+    <animate attributeName="opacity" values="0.65;1;0.65" dur="2.8s" repeatCount="indefinite" />
+  </rect>
+  <rect x="340" y="140" width="120" height="140" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2" />
+  <rect x="360" y="160" width="80" height="60" fill="#DBEAFE" stroke="#60A5FA" stroke-width="2" />
+  <rect x="360" y="235" width="80" height="6" fill="#94A3B8" />
+  <rect x="360" y="255" width="50" height="6" fill="#CBD5E1" />
+  <g stroke="#94A3B8" stroke-width="1.5">
+    <path d="M 32 40 L 48 40 M 40 32 L 40 48" />
+    <path d="M 472 40 L 488 40 M 480 32 L 480 48" />
+    <path d="M 32 380 L 48 380 M 40 372 L 40 388" />
+    <path d="M 472 380 L 488 380 M 480 372 L 480 388" />
+  </g>
+</svg>

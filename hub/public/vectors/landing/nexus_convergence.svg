@@ -1,0 +1,40 @@
+<svg width="600" height="600" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg" id="landing_nexus_convergence">
+  <!-- The Nexus (Single Point of Truth) -->
+  <g id="nexus" transform="translate(300, 300)">
+    <!-- Central Pylon -->
+    <rect x="-20" y="-30" width="40" height="60" fill="#2563EB" id="anan_core"/>
+    <rect x="-15" y="-25" width="30" height="50" stroke="#FFFFFF" stroke-width="1" fill="none"/>
+    
+    <!-- Outer Dots & Lines -->
+    <g id="convergence_lines" stroke="#F1F5F9" stroke-width="1">
+      <!-- Generated 12 radiating lines -->
+      <path d="M0 -250 V -30"/>
+      <path d="M0 250 V 30"/>
+      <path d="M-250 0 H -20"/>
+      <path d="M250 0 H 20"/>
+      
+      <path d="M176 -176 L 15 -21"/>
+      <path d="M-176 -176 L -15 -21"/>
+      <path d="M176 176 L 15 21"/>
+      <path d="M-176 176 L -15 21"/>
+      
+      <path d="M231 -96 L 19 -11"/>
+      <path d="M-231 -96 L -19 -11"/>
+      <path d="M231 96 L 19 11"/>
+      <path d="M-231 96 L -19 11"/>
+    </g>
+    
+    <!-- Outer Entity Dots -->
+    <g id="entities">
+      <rect x="-5" y="-255" width="10" height="10" fill="#64748B"/> <!-- Banks -->
+      <rect x="-5" y="245" width="10" height="10" fill="#64748B"/> <!-- Developers -->
+      <rect x="-255" y="-5" width="10" height="10" fill="#0F172A"/> <!-- Brokers -->
+      <rect x="245" y="-5" width="10" height="10" fill="#0F172A"/> <!-- Users -->
+      
+      <rect x="171" y="-181" width="10" height="10" fill="#F1F5F9" stroke="#64748B" stroke-width="1"/>
+      <rect x="-181" y="-181" width="10" height="10" fill="#F1F5F9" stroke="#64748B" stroke-width="1"/>
+      <rect x="171" y="171" width="10" height="10" fill="#F1F5F9" stroke="#64748B" stroke-width="1"/>
+      <rect x="-181" y="171" width="10" height="10" fill="#F1F5F9" stroke="#64748B" stroke-width="1"/>
+    </g>
+  </g>
+</svg>

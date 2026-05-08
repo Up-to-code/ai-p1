@@ -1,0 +1,1211 @@
+{
+  "Navigation": {
+    "dashboard": "لوحة التحكم",
+    "projects": "المشاريع",
+    "properties": "العقارات",
+    "team": "الفريق",
+    "integrations": "التكاملات",
+    "activity": "النشاط",
+    "announcements": "الإعلانات",
+    "settings": "الإعدادات",
+    "units": "الوحدات",
+    "clients": "العملاء",
+    "organization": "المؤسسة",
+    "preferences": "التفضيلات",
+    "components": "عناصر الواجهة",
+    "activityLog": "سجل النشاط",
+    "collapse": "طوي",
+    "expand": "توسيع"
+  },
+  "AutoUi": {
+    "The Saudi Arabia Central Real Estate Data Synchronization Engine___": "محرك مزامنة البيانات العقارية المركزي في المملكة العربية السعودية",
+    "© 2026 Anand Platform___ All rights reserved___": "© 2026 منصة عنان. جميع الحقوق محفوظة.",
+    "Sign in to access your real estate data hub___": "سجل الدخول للوصول إلى مركز البيانات العقارية الخاص بك.",
+    "Min___ 8 characters": "الحد الأدنى 8 أحرف",
+    "Enter an invite code or use a shared link to join an existing workspace___": "أدخل كود الدعوة أو استخدم رابط المشاركة للانضمام إلى مساحة عمل موجودة.",
+    "Register your company and complete the setup wizard to start synchronizing data___": "سجل شركتك وأكمل معالج الإعداد لبدء مزامنة البيانات.",
+    "Complete these required steps to submit your organization for approval___": "أكمل هذه الخطوات المطلوبة لتقديم مؤسستك للموافقة.",
+    "Provide your company's registered legal information___": "قدم المعلومات القانونية المسجلة لشركتك.",
+    "Upload the required legal files and identify the authorized signer___": "ارفع الملفات القانونية المطلوبة وحدد المفوض بالتوقيع.",
+    "Set your display identity for shared workspaces and approvals___": "حدد هوية العرض الخاصة بك لمساحات العمل المشتركة والموافقات.",
+    "Invite teammates who should help manage listings, approvals, and integrations___": "ادعُ زملائك في الفريق الذين يجب أن يساعدوا في إدارة القوائم والموافقات والتكاملات."
+  },
+  "Dashboard": {
+    "title": "مركز البيانات",
+    "subtitle": "التحكم المركزي في المزامنة",
+    "eyebrow": "التحكم المركزي في المزامنة",
+    "welcome": "مرحباً بعودتك",
+    "stats": {
+      "clients": "العملاء",
+      "projects": "المشاريع",
+      "units": "الوحدات",
+      "events": "الفعاليات"
+    },
+    "activity": {
+      "title": "النشاط الأخير",
+      "empty": "لا يوجد نشاط أخير لعرضه"
+    },
+    "upcoming": {
+      "title": "العمل القادم"
+    },
+    "simple": {
+      "syncStatus": "حالة المزامنة",
+      "recentProjects": "المشاريع الأخيرة",
+      "viewAllProjects": "عرض جميع المشاريع",
+      "inventoryUnits": "وحدات المخزون",
+      "fullInventory": "المخزون الكامل",
+      "quickActions": "إجراءات سريعة",
+      "newProject": "مشروع جديد",
+      "addUnit": "إضافة وحدة",
+      "registerClient": "تسجيل عميل",
+      "globalSearch": "البحث الشامل",
+      "searchPlaceholder": "البحث عن أي شيء...",
+      "searchDesc": "ابحث بسرعة عن المشاريع أو الوحدات أو الملفات القانونية عبر الفهرس بالكامل."
+    }
+  },
+  "Common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "loading": "جاري التحميل...",
+    "search": "بحث",
+    "noResults": "لا توجد نتائج",
+    "actions": "إجراءات",
+    "status": "الحالة",
+    "date": "التاريخ",
+    "back": "رجوع",
+    "next": "التالي",
+    "finish": "إنهاء",
+    "pendingApproval": "في انتظار الموافقة",
+    "searchPlaceholder": "البحث عن السجلات...",
+    "searchAriaLabel": "البحث عن السجلات",
+    "loadingTitle": "جاري تحميل مساحة العمل",
+    "loadingDesc": "جاري تحضير أحدث البيانات الوهمية.",
+    "errorTitle": "حدث خطأ ما",
+    "reviewFields": "يرجى مراجعة الحقول المطلوبة",
+    "backToList": "العودة للقائمة",
+    "deleting": "جاري الحذف..."
+  },
+  "Sidebar": {
+    "groups": {
+      "workspace": "مساحة العمل",
+      "operations": "العمليات",
+      "administration": "الإدارة"
+    },
+    "dashboard": "عنان برو",
+    "projects": "المشاريع",
+    "properties": "العقارات",
+    "units": "الوحدات",
+    "clients": "العملاء",
+    "calendar": "التقويم",
+    "organization": "المؤسسة",
+    "integrations": "التكاملات",
+    "components": "عناصر الواجهة",
+    "activity": "سجل النشاط",
+    "announcements": "الإعلانات",
+    "settings": "الإعدادات",
+    "collapse": "طوي",
+    "expand": "توسيع"
+  },
+  "Topbar": {
+    "draftMode": "وضع المسودة",
+    "live": "مباشر",
+    "search": "بحث..."
+  },
+  "Landing": {
+    "nav": {
+      "home": "الرئيسية",
+      "documentation": "التوثيق",
+      "developers": "المطورون",
+      "brokers": "الوسطاء",
+      "about": "عن الشركة",
+      "contact": "اتصل بنا",
+      "signIn": "تسجيل الدخول",
+      "dashboard": "مساحة العمل",
+      "getStarted": "ابدأ الآن"
+    },
+    "hero": {
+      "badge": "مساحة العمل المشتركة",
+      "title": "عنان: مساحة عمل للمطورين والوسطاء",
+      "description": "منصة عامة تعرف بالشركة وتفتح الطريق إلى مساحة العمل. من هنا يفهم المطورون والوسطاء كيف يتعاونون، يتابعون العمليات، ويصلون إلى الأدوات التي يحتاجونها يومياً.",
+      "openWorkspace": "دخول مساحة العمل",
+      "learnMore": "تعرف علينا",
+      "howToStart": "كيف تبدأ",
+      "journeyTitle": "رحلة واضحة.. من التعريف إلى العمل",
+      "journeyDesc": "الصفحة العامة تشرح المنتج، ومساحة العمل تجمع الأدوات الفعلية. يستطيع الزائر فهم ما الذي تقدمه عنان قبل تسجيل الدخول، ثم الانتقال مباشرة إلى بيئة العمل المناسبة له.",
+      "quickIntro": "تعريف سريع",
+      "quickIntroDesc": "شرح مختصر لدور عنان ومساحة العمل من أول زيارة.",
+      "directTransition": "انتقال مباشر",
+      "directTransitionDesc": "روابط واضحة للمطورين والوسطاء للوصول إلى المساحة المناسبة.",
+      "forDevelopers": "للمطورين",
+      "devTitle": "مساحة تبقي المشروع واضحاً",
+      "devDesc": "يحصل فريق التطوير على مكان واحد لمتابعة المشاريع، تنظيم البيانات، التنسيق مع الوسطاء، وفهم ما يحدث داخل سير العمل دون تشتيت بين أدوات كثيرة.",
+      "devCardTitle": "رؤية تشغيلية واضحة",
+      "devCardDesc": "عرض منظم للمشاريع، الحالات، والتواصل الداخلي داخل مساحة واحدة.",
+      "forBrokers": "للوسطاء",
+      "brokerTitle": "مساحة تساعد الوسيط على المتابعة",
+      "brokerDesc": "واجهة عمل تدعم الوسيط في تنظيم المتابعة اليومية، مراجعة التفاصيل المهمة، والتواصل مع المطورين من خلال سياق واضح ومركزي.",
+      "brokerCard1": "متابعة منظمة",
+      "brokerCard1Desc": "العمل اليومي يظهر في مكان واحد بدلاً من المراسلات المتفرقة.",
+      "brokerCard2": "تعاون أوضح",
+      "brokerCard2Desc": "سياق مشترك مع المطورين يساعد على سرعة الفهم واتخاذ الخطوة التالية.",
+      "howWeWork": "كيف نعمل",
+      "convergenceTitle": "فكرة واحدة.. تجمع الفريق",
+      "convergenceDesc": "عنان مساحة عمل عامة وواضحة تساعد المطورين والوسطاء على مشاركة السياق نفسه، فهم ما يجري، والانتقال من التعريف بالشركة إلى الاستخدام الفعلي للمنصة.",
+      "whyAnand": "لماذا عنان",
+      "aiTitle": "واجهة واضحة تفهم العمل اليومي",
+      "aiDesc": "الهدف ليس فقط عرض البيانات، بل ترتيبها بطريقة تجعل المحادثة، المتابعة، والقرارات اليومية أسهل على الفرق التي تستخدم المنصة.",
+      "ctaTitle": "جاهز للدخول إلى مساحة العمل؟",
+      "ctaDesc": "ابدأ من الصفحة العامة، تعرف على عنان، ثم انتقل إلى المساحة المناسبة لفريقك من المطورين أو الوسطاء."
+    },
+    "footer": {
+      "description": "المنصة المركزية لإدارة العقارات. بنية تحتية موثوقة لمنظومة العقار السعودية.",
+      "copyright": "© 2026 منصة عنان. جميع الحقوق محفوظة.",
+      "platform": "المنصة",
+      "developers": "المطورون",
+      "brokers": "الوسطاء",
+      "about": "عن الشركة",
+      "pricing": "الأسعار",
+      "documentation": "التوثيق",
+      "community": "المجتمع",
+      "team": "الفريق",
+      "careers": "الوظائف",
+      "twitter": "تويتر",
+      "linkedin": "لينكد إن",
+      "legal": "قانوني",
+      "privacy": "سياسة الخصوصية",
+      "terms": "شروط الخدمة",
+      "faq": "الأسئلة الشائعة",
+      "timesOfContact": "أوقات التواصل",
+      "timesAndPrivacy": "خدمات الأوقات والخصوصية",
+      "contacts": "جهات الاتصال",
+      "tagline": "بنية موثقة لمنظومة العقار السعودية"
+    }
+  },
+  "signin": {
+    "title": "مرحباً بعودتك",
+    "description": "سجل الدخول للوصول إلى مركز البيانات العقارية الخاص بك.",
+    "google": "الدخول عبر Google",
+    "encrypted": "تشفير تام",
+    "clearTerms": "شروط قانونية واضحة",
+    "agreementPrefix": "بمتابعتك، فإنك توافق على",
+    "agreementTerms": "شروط الخدمة",
+    "agreementAnd": "و",
+    "agreementPrivacy": "سياسة الخصوصية",
+    "agreementSuffix": "الخاصة بنا.",
+    "backToHome": "العودة للرئيسية"
+  },
+  "ProfileMenu": {
+    "open": "فتح قائمة الملف الشخصي",
+    "viewProfile": "عرض الملف الشخصي",
+    "logout": "تسجيل الخروج",
+    "logoutTitle": "هل أنت متأكد من تسجيل الخروج؟",
+    "logoutDescription": "ستحتاج إلى تسجيل الدخول مرة أخرى للوصول إلى مركز البيانات العقارية الخاص بك.",
+    "cancel": "إلغاء"
+  },
+  "Assistant": {
+    "placeholderDefault": "كيف يمكنني مساعدتك اليوم؟",
+    "placeholderDeveloper": "اسأل عن المشاريع، المزامنة، أو الملفات القانونية...",
+    "placeholderBroker": "ابحث عن الوحدات، تحقق من حالة المطالبة، أو أصدر تقارير...",
+    "attach": "إرفاق",
+    "voiceTitle": "صوت",
+    "recordingNow": "جاري التسجيل...",
+    "processing": "جاري المعالجة...",
+    "statusUploading": "جاري الرفع",
+    "statusUploadFailed": "فشل الرفع",
+    "statusReady": "جاهز",
+    "removeAttachment": "إزالة {name}",
+    "sendFailed": "فشل إرسال الرسالة",
+    "viewAll": "عرض الكل",
+    "theories": "نظريات",
+    "newTheory": "نظرية جديدة",
+    "history": "السجل",
+    "historySubtitle": "إدارة جميع نظريات المحادثة السابقة الخاصة بك.",
+    "searchThreads": "البحث في المواضيع...",
+    "noThreads": "لم يتم العثور على نظريات تطابق بحثك.",
+    "welcome": "كيف يمكن لـ عنان مساعدتك اليوم؟",
+    "inputPlaceholder": "ابدأ محادثة جديدة..."
+  },
+  "Workspace": {
+    "modeWs": "WS",
+    "modeAi": "AI",
+    "systemOverview": "نظرة عامة على النظام",
+    "syncEfficiency": "محرك المزامنة يعمل بكفاءة 99.2%.",
+    "actionRequired": "إجراء مطلوب",
+    "quickTools": "أدوات سريعة",
+    "findData": "البحث عن بيانات",
+    "newProject": "مشروع جديد",
+    "searchAnything": "البحث عن أي شيء..."
+  },
+  "Statuses": {
+    "draft": "مسودة",
+    "pending": "قيد المراجعة",
+    "approved": "معتمد",
+    "rejected": "مرفوض",
+    "synced": "متزامن",
+    "blocked": "محجوب",
+    "under-construction": "تحت الإنشاء",
+    "completed": "مكتمل",
+    "off-plan": "على الخارطة",
+    "available": "متاح",
+    "sold": "مباع",
+    "reserved": "محجوز"
+  },
+  "Projects": {
+    "eyebrow": "مركز قيادة المحفظة",
+    "title": "المشاريع",
+    "add": "إضافة مشروع",
+    "stats": {
+      "size": "حجم المحفظة",
+      "approved": "معتمد",
+      "review": "قيد المراجعة",
+      "drafts": "مسودات"
+    },
+    "toolbar": {
+      "search": "البحث في المشاريع…",
+      "newest": "الأحدث",
+      "filters": {
+        "all": "الكل",
+        "approved": "معتمد",
+        "pending": "قيد المراجعة",
+        "draft": "مسودة",
+        "rejected": "مرفوض"
+      }
+    },
+    "card": {
+      "units": "الوحدات",
+      "value": "القيمة",
+      "edit": "تعديل"
+    },
+    "empty": {
+      "title": "لم يتم العثور على مشاريع",
+      "desc": "قم بتعديل المرشحات أو أنشئ أول سجل مشروع."
+    },
+    "delete": {
+      "title": "حذف المشروع؟",
+      "desc": "سيؤدي هذا إلى إزالة {name} من المتجر الوهمي."
+    },
+    "detail": {
+      "notFound": "المشروع غير موجود",
+      "notFoundDesc": "المشروع المطلوب غير موجود في المتجر الوهمي.",
+      "back": "العودة للمشاريع",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "recordTitle": "سجل المشروع",
+      "recordDesc": "السمات التشغيلية للوسطاء وفرق الاعتماد.",
+      "labels": {
+        "ref": "المرجع",
+        "developer": "المطور",
+        "area": "المنطقة",
+        "sync": "حالة المزامنة",
+        "updated": "آخر تحديث",
+        "city": "المدينة",
+        "type": "النوع",
+        "units": "الوحدات",
+        "value": "القيمة"
+      },
+      "docs": {
+        "title": "المستندات",
+        "upload": "رفع",
+        "ready": "جاهز",
+        "items": {
+          "commercial": "السجل التجاري",
+          "titleDeed": "صك الملكية",
+          "mediaPack": "حزمة الوسائط"
+        }
+      }
+    },
+    "form": {
+      "createTitle": "إنشاء مشروع",
+      "editTitle": "تعديل المشروع",
+      "eyebrow": "CRUD المشروع",
+      "subtitle": "سجل مشروع منظم مدعوم بمتجر Zustand الوهمي.",
+      "nameLabel": "اسم المشروع",
+      "devLabel": "المطور",
+      "cityLabel": "المدينة",
+      "areaLabel": "المنطقة",
+      "unitsLabel": "الوحدات",
+      "priceLabel": "نطاق السعر",
+      "imageLabel": "رابط الصورة",
+      "typeLabel": "نوع المشروع",
+      "statusLabel": "الحالة",
+      "descLabel": "الوصف",
+      "saveBtn": "حفظ المشروع",
+      "createBtn": "إنشاء مشروع"
+    },
+    "types": {
+      "Residential": "سكني",
+      "Commercial": "تجاري",
+      "Mixed Use": "استخدام مختلط"
+    },
+    "upload": {
+      "title": "رفع مستند",
+      "desc": "حوار رفع وهمي لأدلة المشروع والاعتمادات.",
+      "drop": "اسحب وأفلت الملفات هنا",
+      "attach": "إرفاق ملف"
+    }
+  },
+  "Properties": {
+    "eyebrow": "مركز قيادة المخزون",
+    "title": "العقارات",
+    "add": "إضافة وحدة",
+    "stats": {
+      "size": "حجم المخزون",
+      "available": "متاح",
+      "pending": "قيد الانتظار",
+      "drafts": "مسودات"
+    },
+    "toolbar": {
+      "search": "البحث في الوحدات…",
+      "priceHigh": "السعر الأعلى",
+      "filters": {
+        "all": "الكل",
+        "available": "متاح",
+        "pending": "قيد المراجعة",
+        "reserved": "محجوز",
+        "sold": "مباع",
+        "draft": "مسودة"
+      }
+    },
+    "card": {
+      "area": "المساحة",
+      "layout": "التخطيط",
+      "beds": "غرفة",
+      "baths": "حمام"
+    },
+    "empty": {
+      "title": "لم يتم العثور على وحدات",
+      "desc": "قم بتعديل المرشحات أو أنشئ أول وحدة عقارية."
+    },
+    "delete": {
+      "title": "حذف الوحدة؟",
+      "desc": "سيؤدي هذا إلى إزالة {name} من المخزون الوهمي."
+    },
+    "detail": {
+      "notFound": "الوحدة غير موجودة",
+      "notFoundDesc": "وحدة العقار المطلوبة غير موجودة في المتجر الوهمي.",
+      "back": "العودة للعقارات",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "recordTitle": "السجل التجاري",
+      "labels": {
+        "project": "المشروع",
+        "area": "المساحة",
+        "beds": "غرف النوم",
+        "baths": "دورات المياه",
+        "city": "المدينة",
+        "type": "النوع",
+        "purpose": "الغرض",
+        "price": "السعر"
+      }
+    },
+    "form": {
+      "createTitle": "إنشاء وحدة",
+      "editTitle": "تعديل الوحدة",
+      "eyebrow": "CRUD المخزون",
+      "subtitle": "سجل عقاري منظم مدعوم بمتجر Zustand الوهمي.",
+      "nameLabel": "اسم الوحدة",
+      "projectLabel": "المشروع",
+      "cityLabel": "المدينة",
+      "areaLabel": "المساحة",
+      "priceLabel": "السعر",
+      "bedsLabel": "غرف النوم",
+      "bathsLabel": "دورات المياه",
+      "imageLabel": "رابط الصورة",
+      "typeLabel": "نوع الوحدة",
+      "purposeLabel": "الغرض",
+      "statusLabel": "الحالة",
+      "descLabel": "الوصف",
+      "saveBtn": "حفظ الوحدة",
+      "createBtn": "إنشاء وحدة"
+    },
+    "types": {
+      "Apartment": "شقة",
+      "Villa": "فيلا",
+      "Penthouse": "بنتهاوس",
+      "Office": "مكتب"
+    },
+    "purposes": {
+      "sale": "بيع",
+      "rent": "إيجار"
+    }
+  },
+  "ProjectDetails": {
+    "back": "العودة للمحفظة",
+    "edit": "تعديل الأصل",
+    "share": "مشاركة",
+    "tabs": {
+      "details": "التفاصيل",
+      "inventory": "الوحدات",
+      "documents": "المستندات",
+      "activity": "النشاط",
+      "sales": "المبيعات"
+    },
+    "gallery": {
+      "label": "العرض الرئيسي للأصل",
+      "perspective": "منظور خارجي",
+      "vault": "مخزن الوسائط"
+    },
+    "narrative": {
+      "title": "سرد الأصل"
+    },
+    "config": {
+      "title": "التكوين"
+    },
+    "specs": {
+      "infrastructure": "البنية التحتية",
+      "utilities": "المرافق",
+      "orientation": "الاتجاه",
+      "gridConnection": "توصيل الشبكة",
+      "waterSupply": "إمدادات المياه",
+      "live": "مباشر",
+      "ready": "جاهز",
+      "verified": "موثق"
+    },
+    "market": {
+      "value": "القيمة السوقية المقدرة",
+      "avgRate": "متوسط السعر",
+      "paymentPlan": "خطة الدفع"
+    },
+    "registry": {
+      "title": "بيانات السجل",
+      "planNo": "رقم المخطط",
+      "plotNo": "رقم القطعة",
+      "postalIdentity": "الهوية البريدية"
+    },
+    "rega": {
+      "title": "رخصة فال",
+      "authNo": "رقم الترخيص",
+      "expires": "تنتهي في: {date}"
+    },
+    "inventory": {
+      "title": "مخزون الوحدات.",
+      "subtitle": "الوحدات النشطة داخل محفظة المشروع",
+      "addUnit": "إضافة وحدة",
+      "cols": {
+        "ref": "المرجع",
+        "type": "النوع",
+        "status": "الحالة",
+        "price": "السعر (ر.س)",
+        "area": "المساحة",
+        "layout": "التخطيط",
+        "updated": "تم التحديث"
+      }
+    },
+    "activity": {
+      "subtitle": "سجل زمني لأحداث دورة حياة الأصل"
+    },
+    "documents": {
+      "title": "مستندات الأصل",
+      "subtitle": "إدارة والتحقق من الوثائق الرسمية للمشروع",
+      "upload": "رفع ملفات",
+      "uploadModalTitle": "رفع وسائط الأصل",
+      "uploadModalDesc": "اسحب وأفلت ملفات المشروع لبدء عملية التحقق",
+      "dropzoneTitle": "أفلت الملفات المؤسسية هنا",
+      "dropzoneSubtitle": "أو انقر للتصفح في الخزنة المحلية",
+      "readyForDeployment": "جاهز للنشر",
+      "signatureActive": "التوقيع التشفيري نشط"
+    },
+    "actions": {
+      "projectTitle": "إجراءات المشروع",
+      "unitTitle": "إجراءات الوحدة",
+      "docTitle": "إجراءات المستند",
+      "edit": "تعديل الأصل",
+      "share": "مشاركة الاستخبارات",
+      "archive": "أرشفة الأصل",
+      "view": "عرض",
+      "duplicate": "تكرار",
+      "delete": "حذف",
+      "download": "تحميل",
+      "cancel": "إلغاء",
+      "apply": "تطبيق الملفات"
+    },
+    "aiInsights": {
+      "title": "التحليل الهيكلي للذكاء الاصطناعي",
+      "subtitle": "عائد الاستثمار المتوقع وسرعة السوق",
+      "roi": "عائد الاستثمار المتوقع",
+      "velocity": "معدل الامتصاص",
+      "confidence": "ثقة التحليل",
+      "summary": "تتوقع نماذج الذكاء الاصطناعي معدل امتصاص مرتفع لمشروع مساكن المدينة نظراً لقربه من مركز مترو KAFD. من المتوقع أن تصل سرعة السوق إلى ذروتها في الربع الرابع من عام 2026."
+    },
+    "sales": {
+       "title": "أداء المبيعات",
+       "subtitle": "مقاييس امتصاص المخزون والإيرادات",
+       "metrics": {
+          "totalRevenue": "إجمالي الإيرادات",
+          "avgUnitPrice": "متوسط سعر الوحدة",
+          "absorptionRate": "معدل الامتصاص",
+          "leadsConverted": "العملاء المحولون"
+       },
+       "reports": {
+          "title": "تقارير المبيعات",
+          "downloadAll": "تحميل جميع التقارير"
+       }
+    }
+  },
+  "Clients": {
+    "eyebrow": "إدارة علاقات العملاء",
+    "title": "العملاء",
+    "add": "تسجيل عميل",
+    "stats": {
+      "total": "إجمالي العملاء",
+      "active": "نشط",
+      "investors": "مستثمرون",
+      "appointments": "المواعيد"
+    },
+    "toolbar": {
+      "search": "البحث عن عملاء…",
+      "newest": "الأحدث",
+      "filters": {
+        "all": "الكل",
+        "Buyer": "مشترون",
+        "Tenant": "مستأجرون",
+        "Investor": "مستثمرون",
+        "Broker": "وسطاء"
+      }
+    },
+    "views": {
+      "pipeline": "المسار",
+      "list": "القائمة",
+      "calendar": "التقويم"
+    },
+    "card": {
+      "budget": "الميزانية",
+      "next": "التالي"
+    },
+    "empty": {
+      "title": "لم يتم العثور على عملاء",
+      "desc": "قم بتعديل المرشح النشط أو مصطلح البحث للكشف عن العملاء المطابقين."
+    },
+    "delete": {
+      "title": "حذف العميل؟",
+      "desc": "سيؤدي هذا إلى إزالة {name} من متجر CRM الوهمي."
+    },
+    "detail": {
+      "notFound": "العميل غير موجود",
+      "notFoundDesc": "العميل المطلوب غير موجود في المتجر الوهمي.",
+      "back": "العودة للعملاء",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "recordTitle": "تفاصيل الملف الشخصي",
+      "nextTitle": "الإجراء التالي",
+      "at": "في",
+      "labels": {
+        "email": "البريد الإلكتروني",
+        "phone": "الهاتف",
+        "budget": "الميزانية",
+        "interest": "الاهتمام",
+        "id": "معرف العميل",
+        "type": "النوع",
+        "status": "الحالة",
+        "priority": "الأولوية"
+      },
+      "tabs": {
+        "activity": "النشاط",
+        "documents": "المستندات",
+        "units": "الوحدات"
+      },
+      "activity": {
+        "subtitle": "سجل التفاعلات"
+      },
+      "documents": {
+        "subtitle": "الملفات المشتركة"
+      }
+    },
+    "form": {
+      "createTitle": "تسجيل عميل",
+      "editTitle": "تعديل العميل",
+      "eyebrow": "إدارة العميل",
+      "subtitle": "إنشاء أو تحديث سجل CRM في متجر Zustand الوهمي.",
+      "nameLabel": "الاسم الكامل",
+      "emailLabel": "البريد الإلكتروني",
+      "phoneLabel": "الهاتف",
+      "ageLabel": "العمر",
+      "budgetLabel": "الميزانية",
+      "interestLabel": "الاهتمام بالعقارات",
+      "typeLabel": "نوع العميل",
+      "statusLabel": "الحالة",
+      "priorityLabel": "الأولوية",
+      "stageLabel": "المرحلة",
+      "actionLabel": "الإجراء التالي",
+      "issueLabel": "مشكلة مفتوحة",
+      "saveBtn": "حفظ العميل",
+      "createBtn": "إنشاء عميل"
+    },
+    "types": {
+      "Buyer": "مشتري",
+      "Tenant": "مستأجر",
+      "Investor": "مستثمر",
+      "Broker": "وسيط"
+    },
+    "priorities": {
+      "normal": "عادي",
+      "high": "عالي",
+      "urgent": "عاجل"
+    },
+    "statuses": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "stages": {
+      "new": "جديد",
+      "qualified": "مؤهل",
+      "viewing": "معاينة",
+      "negotiation": "تفاوض",
+      "closed": "مغلق"
+    }
+  },
+  "Organization": {
+    "eyebrow": "إدارة مساحة العمل",
+    "title": "المؤسسة",
+    "subtitle": "الحوكمة المؤسسية",
+    "stats": {
+      "members": "أعضاء الفريق",
+      "keys": "مفاتيح API",
+      "apps": "التطبيقات المصرح لها",
+      "status": "الحالة",
+      "verified": "تم التحقق"
+    },
+    "tabs": {
+      "info": "المعلومات",
+      "team": "الفريق",
+      "apps": "التطبيقات",
+      "api": "API"
+    },
+    "sections": {
+      "legal": "الهوية القانونية",
+      "contact": "التواصل التشغيلي"
+    },
+    "labels": {
+      "legalName": "الاسم القانوني",
+      "displayName": "اسم العرض",
+      "type": "النوع",
+      "address": "العنوان",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "website": "الموقع الإلكتروني"
+    },
+    "team": {
+      "title": "إدارة الفريق",
+      "invite": "دعوة عضو",
+      "memberCol": "العضو",
+      "roleCol": "الدور",
+      "statusCol": "الحالة",
+      "inviteTitle": "دعوة عضو",
+      "inviteDesc": "إضافة عضو فريق وهمي مع تعيين دور.",
+      "nameLabel": "الاسم",
+      "emailLabel": "البريد الإلكتروني",
+      "roleLabel": "الدور",
+      "inviteBtn": "دعوة",
+      "removeTitle": "إزالة عضو الفريق؟",
+      "removeDesc": "سيؤدي هذا إلى إزالة {name} من الفريق الوهمي."
+    },
+    "apps": {
+      "title": "التطبيقات المصرح لها",
+      "description": "خدمات الطرف الثالث التي لها حق الوصول إلى البيانات المؤسسية.",
+      "revoke": "إلغاء الوصول"
+    },
+    "api": {
+      "title": "بيانات الاعتماد",
+      "description": "رموز آمنة للوصول البرمجي إلى فهرس عنان.",
+      "generate": "إنشاء مفتاح",
+      "keyCol": "المفتاح",
+      "tokenCol": "الرمز",
+      "scopesCol": "النطاقات",
+      "createdCol": "تاريخ الإنشاء",
+      "generateTitle": "إنشاء مفتاح API",
+      "generateDesc": "إنشاء رمز وصول محدد النطاق.",
+      "keyNameLabel": "اسم المفتاح",
+      "scopes": {
+        "read": "قراءة",
+        "write": "كتابة",
+        "sync": "مزامنة"
+      },
+      "generateBtn": "إنشاء",
+      "deleteTitle": "حذف مفتاح API؟",
+      "deleteDesc": "سيؤدي هذا إلى حذف {name} من حلقة المفاتيح الوهمية."
+    },
+    "roles": {
+      "Owner": "المالك",
+      "Admin": "مدير",
+      "Manager": "مشرف",
+      "Editor": "محرر",
+      "Viewer": "مشاهد"
+    }
+  },
+  "Integrations": {
+    "title": "التكاملات",
+    "subtitle": "مركز المزامنة عبر المنصات",
+    "catalog_eyebrow": "كتالوج التكامل",
+    "add": "إضافة تكامل",
+    "tabs": {
+      "catalog": "الكتالوج",
+      "connected": "متصل",
+      "webhooks": "ويبهوك"
+    },
+    "stats": {
+      "connected": "متصل",
+      "pending": "قيد الانتظار",
+      "events": "الأحداث",
+      "velocity": "السرعة"
+    },
+    "card": {
+      "connect": "اتصال",
+      "disconnect": "فصل"
+    },
+    "webhooks": {
+      "title": "قياسات الويبهوك",
+      "desc": "مراقبة التسليم الوهمية نشطة."
+    },
+    "detail": {
+      "notFound": "التكامل غير موجود",
+      "notFoundDesc": "هذا التكامل الوهمي غير متوفر في المتجر المحلي.",
+      "back": "العودة إلى التكاملات",
+      "backBtn": "رجوع",
+      "stats": {
+        "status": "الحالة",
+        "volume": "الحجم",
+        "category": "الفئة",
+        "health": "الصحة",
+        "online": "متصل",
+        "paused": "متوقف مؤقتاً"
+      },
+      "profile": "ملف تعريف الاتصال",
+      "pending": "تحديد كقيد الانتظار",
+      "block": "حظر",
+      "payload": "حمولة وهمية",
+      "payloadDesc": "يتم الاحتفاظ بتحديثات الحالة المحلية في Zustand لعملية التدقيق هذه.",
+      "fields": {
+        "id": "المعرف",
+        "name": "الاسم",
+        "status": "الحالة",
+        "events": "الأحداث"
+      }
+    },
+    "items": {
+      "aqar": {
+        "name": "عقار ماركت بليس",
+        "category": "سوق عقاري",
+        "desc": "تغذية المخزون المعتمدة مع نشر الأحداث الصادرة."
+      },
+      "crm": {
+        "name": "CRM مؤسسي",
+        "category": "CRM",
+        "desc": "مستقبل ويبهوك وارد لمطالبات مسودات العقارات والمشاريع."
+      },
+      "partner": {
+        "name": "واجهة برمجة تطبيقات الشريك",
+        "category": "API شريك",
+        "desc": "وصول الشريك ثنائي الاتجاه لواجهات برمجة التطبيقات المعتمدة على مستوى المؤسسة."
+      },
+      "web": {
+        "name": "تضمين الموقع الإلكتروني",
+        "category": "موقع إلكتروني",
+        "desc": "تغذية مخزون معتمدة للقراءة فقط للمواقع والبوابات المملوكة."
+      },
+      "mobile": {
+        "name": "تغذية تطبيق الجوال",
+        "category": "تطبيق جوال",
+        "desc": "وصول مقيد لتطبيق الجوال مع حمولات عامة منقحة."
+      },
+      "oauth": {
+        "name": "Developer OAuth",
+        "category": "تطبيق مطور",
+        "desc": "تسجيل عميل OAuth لعناوين URL لإعادة التوجيه والنطاقات والويبهوك."
+      }
+    },
+    "boundary": {
+      "title": "حدود المزامنة",
+      "description": "يظل المركز هو المصدر المطلق للتحقق والموافقة والرؤية لجميع البيانات المتزامنة.",
+      "item1": "الوصول إلى البيئة التجريبية لا يعني الموافقة على الإنتاج.",
+      "item2": "تلقى موصلات السوق فقط البيانات المعتمدة والمرئية.",
+      "item3": "تظل طلبات CRM مجرد مطالبات حتى يتم مراجعتها من قبل المركز.",
+      "item4": "تتحكم موافقة المؤسسة في جميع عمليات التوزيع الخارجية."
+    }
+  },
+  "CreateProject": {
+    "title": "إنشاء مشروع جديد",
+    "subtitle": "ابدأ بإضافة بيانات مشروعك العقاري إلى المحفظة",
+    "back": "رجوع",
+    "workflow": "سير العمل",
+    "progress": "التقدم",
+    "activeStage": "المرحلة النشطة",
+    "systemTip": "نصيحة النظام",
+    "draftAutoSave": "يتم حفظ مسوداتك تلقائياً في السحابة.",
+    "identity": {
+      "title": "هوية المشروع",
+      "header": "الهوية الأساسية",
+      "subheader": "أدخل التفاصيل التعريفية للمشروع",
+      "nameLabel": "اسم المشروع",
+      "namePlaceholder": "مثال: مجمع المنار السكني",
+      "developerLabel": "المطور العقاري",
+      "developerPlaceholder": "اسم الشركة المطورة",
+      "statusLabel": "حالة المشروع",
+      "statusPlaceholder": "اختر الحالة",
+      "useLabel": "استخدام العقار",
+      "usePlaceholder": "اختر نوع الاستخدام",
+      "residential": "سكني",
+      "commercial": "تجاري",
+      "mixed": "متعدد الاستخدامات"
+    },
+    "context": {
+      "title": "الموقع والسياق",
+      "header": "الموقع الجغرافي",
+      "subheader": "حدد موقع المشروع بدقة على الخارطة",
+      "cityLabel": "المدينة",
+      "cityPlaceholder": "اختر المدينة",
+      "areaLabel": "الحي / المنطقة",
+      "areaPlaceholder": "أدخل اسم الحي",
+      "streetLabel": "الشارع",
+      "streetPlaceholder": "اسم الشارع الرئيسي",
+      "planLabel": "رقم المخطط",
+      "planPlaceholder": "أدخل رقم المخطط",
+      "plotLabel": "رقم القطعة",
+      "plotPlaceholder": "أدخل رقم القطعة",
+      "mapHeader": "تحديد الموقع الدقيق",
+      "mapTitle": "خريطة الموقع",
+      "mapDescription": "انقر لتحديد موقع المشروع بدقة على الخريطة التفاعلية"
+    },
+    "products": {
+      "title": "أنواع الوحدات",
+      "header": "تكوين الوحدات",
+      "subheader": "اختر أنواع الوحدات المتاحة في هذا المشروع",
+      "types": {
+        "studio": "استوديو",
+        "1bed": "غرفة وصالة",
+        "2bed": "غرفتين وصالة",
+        "villa": "فيلا",
+        "townhouse": "تاون هاوس",
+        "penthouse": "بنتهاوس",
+        "duplex": "دوبلكس",
+        "commercial": "معرض تجاري"
+      },
+      "dimensionHeader": "أبعاد الوحدات",
+      "areaRangeLabel": "نطاق المساحة ({type})",
+      "areaRangePlaceholder": "مثال: 120 - 250 م٢"
+    },
+    "economics": {
+      "title": "التسعير والمالية",
+      "header": "النموذج الاقتصادي",
+      "subheader": "حدد استراتيجية التسعير للمشروع",
+      "avgPriceLabel": "متوسط السعر",
+      "avgPricePlaceholder": "أدخل متوسط السعر",
+      "startingPriceLabel": "يبدأ من",
+      "startingPricePlaceholder": "أدخل أقل سعر",
+      "flexibilityHeader": "مرونة الدفع",
+      "enableInstallments": "تفعيل أقساط",
+      "downPaymentLabel": "الدفعة الأولى (%)",
+      "downPaymentPlaceholder": "مثال: 10",
+      "tenureLabel": "مدة التقسيط (سنوات)",
+      "tenurePlaceholder": "مثال: 5",
+      "interestLabel": "نسبة الأرباح (%)",
+      "interestPlaceholder": "مثال: 0"
+    },
+    "assets": {
+      "title": "الوسائط والملفات",
+      "header": "الأصول والوثائق",
+      "subheader": "ارفع الصور والوثائق الرسمية للمشروع",
+      "visualHeader": "الهوية البصرية",
+      "visualTitle": "رفع صور المشروع",
+      "visualMeta": "JPG, PNG (بحد أقصى 10 ميجابايت)",
+      "legalHeader": "المستندات القانونية",
+      "legalTitle": "رفع صكوك الملكية والتراخيص",
+      "legalMeta": "PDF فقط",
+      "complianceHeader": "الامتثال والتراخيص",
+      "complianceSub": "بيانات ترخيص الإعلان العقاري",
+      "validCredentials": "بيانات معتمدة",
+      "licenseLabel": "رقم ترخيص الإعلان",
+      "licensePlaceholder": "أدخل رقم الترخيص",
+      "expiryLabel": "تاريخ انتهاء الترخيص",
+      "qrSignature": "التوقيع الرقمي (QR)"
+    },
+    "review": {
+      "title": "المراجعة النهائية",
+      "header": "مراجعة البيانات",
+      "subheader": "تحقق من صحة البيانات قبل الإرسال للموافقة",
+      "summaryHeader": "ملخص الهوية",
+      "geoHeader": "الموقع والمالية",
+      "readyTitle": "جاهز للإرسال؟",
+      "readyDescription": "بمجرد الإرسال، سيتم مراجعة مشروعك من قبل فريق التدقيق قبل اعتماده رسمياً.",
+      "edit": "تعديل",
+      "identityLabel": "اسم المشروع",
+      "statusLabel": "الحالة",
+      "districtLabel": "الحي",
+      "pricingLabel": "التسعير",
+      "startingFrom": "يبدأ من {price} ر.س"
+    },
+    "navigation": {
+      "previous": "السابق",
+      "next": "التالي",
+      "complete": "إكمال الطلب"
+    }
+  },
+  "CreateProperty": {
+    "title": "إضافة وحدة مستقلة",
+    "subtitle": "قم بإضافة سجل وحدة معتمدة مع المواصفات والسعر والأدلة",
+    "back": "العودة للوحدات",
+    "workflow": "سير العمل",
+    "identity": {
+      "title": "هوية الوحدة",
+      "header": "تعريف السجل",
+      "subheader": "أدخل الاسم والموقع والوصف لتأسيس سجل الوحدة",
+      "nameLabel": "اسم الوحدة",
+      "namePlaceholder": "مثال: وحدة A-101",
+      "typeLabel": "نوع الوحدة",
+      "purposeLabel": "الغرض",
+      "descriptionLabel": "الوصف",
+      "descriptionPlaceholder": "اكتب وصفاً موجزاً للوحدة كما سيظهر في السجل"
+    },
+    "specs": {
+      "title": "المواصفات",
+      "header": "مواصفات المخزون",
+      "subheader": "هذه الحقول تجعل الوحدة قابلة للبحث والتحقق والمقارنة",
+      "areaLabel": "المساحة (م٢)",
+      "areaPlaceholder": "مثال: 145",
+      "roomsLabel": "الغرف",
+      "bathroomsLabel": "دورات المياه",
+      "floorLabel": "الطابق",
+      "parkingLabel": "المواقف",
+      "viewLabel": "الإطلالة",
+      "deliveryLabel": "تاريخ التسليم"
+    },
+    "pricing": {
+      "title": "التسعير والمقارنة",
+      "header": "السعر وخطة الدفع",
+      "subheader": "اجمع بين السعر وخطة الدفع مع مقارنة السوق قبل المراجعة",
+      "priceLabel": "السعر",
+      "paymentPlanLabel": "خطة الدفع",
+      "downPaymentLabel": "الدفعة الأولى",
+      "positionLabel": "وضعية السوق",
+      "notesLabel": "ملاحظات المقارنة",
+      "below": "أقل من السوق",
+      "fair": "سعر عادل",
+      "above": "أعلى من السوق"
+    },
+    "evidence": {
+      "title": "الأدلة والجاهزية",
+      "header": "إرفاق الأدلة",
+      "subheader": "أضف حالة الوحدة ورقم الترخيص والوسائط الداعمة للموافقة",
+      "statusLabel": "الحالة",
+      "featuresLabel": "الميزات والمرافق",
+      "notesLabel": "ملاحظات الخبير",
+      "licenseLabel": "رقم ترخيص الإعلان",
+      "mediaHeader": "الوسائط والمستندات",
+      "photosTitle": "رفع صور الوحدة",
+      "docsTitle": "رفع مستندات الترخيص"
+    }
+  },
+  "IntegrationDetails": {
+    "back": "العودة للتكاملات",
+    "tabs": {
+      "overview": "نظرة عامة",
+      "config": "التكوين",
+      "logs": "سجلات النشاط",
+      "webhooks": "الويبهوك"
+    },
+    "stats": {
+      "apiCalls": "طلبات API",
+      "syncVelocity": "سرعة المزامنة",
+      "errorRate": "معدل الخطأ",
+      "latency": "وقت الاستجابة"
+    },
+    "config": {
+      "keys": "مفاتيح API",
+      "endpoints": "نقاط النهاية",
+      "scopes": "النطاقات",
+      "regenerate": "إعادة إنشاء المفتاح",
+      "apiKeyLabel": "مفتاح API للإنتاج",
+      "webhookSecret": "سر توقيع الويبهوك"
+    },
+    "webhooks": {
+      "url": "رابط الويبهوك",
+      "secret": "مفتاح السر",
+      "events": "الأحداث النشطة",
+      "add": "إضافة نقطة نهاية"
+    },
+    "actions": {
+      "sync": "بدء المزامنة",
+      "disconnect": "قطع اتصال المحرك",
+      "save": "حفظ التكوين"
+    }
+  },
+  "Activity": {
+    "eyebrow": "سجل التدقيق",
+    "title": "النشاط",
+    "stats": {
+      "events": "الأحداث",
+      "approved": "تمت الموافقة",
+      "blocked": "محظور",
+      "latest": "الأحدث"
+    },
+    "table": {
+      "actor": "الفاعل",
+      "action": "الإجراء",
+      "target": "الهدف",
+      "status": "الحالة",
+      "date": "التاريخ"
+    }
+  },
+  "Calendar": {
+    "eyebrow": "الأعمال المجدولة",
+    "title": "التقويم",
+    "add": "إضافة حدث",
+    "today": "اليوم",
+    "month": "شهر",
+    "week": "أسبوع",
+    "day": "يوم",
+    "stats": {
+      "events": "الأحداث",
+      "confirmed": "مؤكد",
+      "pending": "قيد الانتظار",
+      "owners": "المنظمون"
+    },
+    "table": {
+      "event": "الحدث",
+      "owner": "المنظم",
+      "date": "التاريخ",
+      "time": "الوقت",
+      "status": "الحالة"
+    },
+    "drawer": {
+      "title": "جدول اليوم",
+      "noEvents": "لا توجد أحداث مجدولة"
+    },
+    "detail": {
+      "eyebrow": "تفاصيل الحدث",
+      "owner": "المنظم",
+      "date": "التاريخ",
+      "time": "الوقت"
+    },
+    "delete": {
+      "title": "حذف الحدث؟",
+      "desc": "سيؤدي هذا إلى إزالة {name} من التقويم الوهمي."
+    },
+    "form": {
+      "title": "إضافة حدث",
+      "titleLabel": "العنوان",
+      "ownerLabel": "المنظم",
+      "dateLabel": "التاريخ",
+      "timeLabel": "الوقت",
+      "typeLabel": "النوع",
+      "createBtn": "إنشاء"
+    },
+    "types": {
+      "client-visit": "زيارة عميل",
+      "site-viewing": "معاينة موقع",
+      "appointment": "موعد",
+      "signing": "توقيع عقد",
+      "follow-up": "متابعة",
+      "handover": "تسليم",
+      "audit": "تدقيق",
+      "custom": "مخصص"
+    },
+    "statuses": {
+      "confirmed": "مؤكد",
+      "pending": "قيد الانتظار",
+      "draft": "مسودة"
+    },
+    "weekDays": {
+      "sun": "الأحد",
+      "mon": "الاثنين",
+      "tue": "الثلاثاء",
+      "wed": "الأربعاء",
+      "thu": "الخميس",
+      "fri": "الجمعة",
+      "sat": "السبت"
+    }
+  },
+  "Profile": {
+    "eyebrow": "مساحة العمل الشخصية",
+    "title": "إعدادات الملف الشخصي",
+    "saveBtn": "حفظ التغييرات",
+    "stats": {
+      "role": "الدور",
+      "language": "اللغة",
+      "timezone": "المنطقة الزمنية",
+      "notifications": "الإشعارات"
+    },
+    "sections": {
+      "identity": "الهوية",
+      "preferences": "التفضيلات",
+      "security": "جهة اتصال الأمان"
+    },
+    "form": {
+      "nameLabel": "الاسم",
+      "emailLabel": "البريد الإلكتروني",
+      "phoneLabel": "الهاتف",
+      "roleLabel": "الدور",
+      "languageLabel": "اللغة",
+      "timezoneLabel": "المنطقة الزمنية"
+    },
+    "notifications": {
+      "email": "البريد",
+      "push": "التنبيهات",
+      "sms": "SMS",
+      "on": "مفعل",
+      "off": "معطل"
+    },
+    "contact": {
+      "owner": "المالك",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف"
+    }
+  },
+  "Onboarding": {
+    "title": "إعداد مؤسستك",
+    "subtitle": "أكمل هذه الخطوات المطلوبة لتقديم مؤسستك للمراجعة والاعتماد.",
+    "stepper": {
+      "company": "معلومات الشركة",
+      "legal": "الوثائق القانونية",
+      "brand": "الشعار والعلامة التجارية",
+      "team": "دعوة أعضاء الفريق"
+    },
+    "company": {
+      "title": "معلومات الشركة",
+      "desc": "أدخل التفاصيل الرسمية لمؤسستك.",
+      "legalName": "الاسم القانوني للشركة",
+      "displayName": "اسم العرض",
+      "crNumber": "رقم السجل التجاري",
+      "city": "مدينة المقر الرئيسي",
+      "saveDraft": "حفظ كمسودة",
+      "continue": "المتابعة للخطوة ٢"
+    },
+    "legal": {
+      "title": "الوثائق القانونية",
+      "desc": "قم برفع الأدلة القانونية المطلوبة للتحقق من هوية مؤسستك.",
+      "signerName": "اسم الموقع المفوض",
+      "signerTitle": "مسمى الموقع المفوض",
+      "crDoc": "مستند السجل التجاري",
+      "crDesc": "PDF أو PNG أو JPG (بحد أقصى ١٠ ميجابايت)",
+      "authLetter": "خطاب التفويض",
+      "authDesc": "PDF أو PNG أو JPG (بحد أقصى ١٠ ميجابايت). يجب أن يكون واضحاً.",
+      "continue": "المتابعة للخطوة ٣"
+    },
+    "brand": {
+      "title": "الشعار والعلامة التجارية",
+      "desc": "قم بتكوين كيفية ظهور مؤسستك داخل نظام عنان البيئي.",
+      "displayName": "اسم عرض العلامة التجارية",
+      "color": "لون العلامة التجارية (Hex)",
+      "logo": "شعار المؤسسة",
+      "logoDesc": "PNG أو JPG أو SVG. يفضل أن يكون ٤٠٠×٤٠٠ بكسل كحد أدنى.",
+      "continue": "المتابعة للخطوة ٤"
+    },
+    "team": {
+      "title": "دعوة أعضاء الفريق",
+      "desc": "ادعُ المتعاونين للمساعدة في إدارة مشاريعك وتكاملاتك.",
+      "emailLabel": "البريد الإلكتروني",
+      "roleLabel": "الدور",
+      "addBtn": "إضافة",
+      "tableEmail": "البريد الإلكتروني",
+      "tableRole": "الدور",
+      "tableActions": "الإجراءات",
+      "skip": "تخطي الدعوات",
+      "submit": "تقديم للمراجعة"
+    },
+    "common": {
+      "uploadOrDrag": "انقر للرفع أو اسحب وأفلت"
+    }
+  }
+}

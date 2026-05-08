@@ -1,0 +1,38 @@
+<svg width="1440" height="720" viewBox="0 0 1440 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1440" height="720" fill="#2563EB"/>
+  <g opacity="0.11" stroke="white">
+    <path d="M120 96H1320"/>
+    <path d="M120 216H1320"/>
+    <path d="M120 336H1320"/>
+    <path d="M120 456H1320"/>
+    <path d="M120 576H1320"/>
+    <path d="M240 48V672"/>
+    <path d="M480 48V672"/>
+    <path d="M720 48V672"/>
+    <path d="M960 48V672"/>
+    <path d="M1200 48V672"/>
+  </g>
+  <g opacity="0.18">
+    <path d="M300 156L540 360" stroke="white" stroke-width="2"/>
+    <path d="M1140 156L900 360" stroke="white" stroke-width="2"/>
+    <path d="M420 588L612 408" stroke="white" stroke-width="2"/>
+    <path d="M1020 588L828 408" stroke="white" stroke-width="2"/>
+    <rect x="534" y="354" width="12" height="12" fill="white"/>
+    <rect x="894" y="354" width="12" height="12" fill="white"/>
+    <rect x="606" y="402" width="12" height="12" fill="white"/>
+    <rect x="822" y="402" width="12" height="12" fill="white"/>
+  </g>
+  <g transform="translate(720 360)">
+    <circle cx="0" cy="0" r="180" stroke="white" stroke-opacity="0.18" stroke-width="2"/>
+    <circle cx="0" cy="0" r="104" stroke="white" stroke-opacity="0.16" stroke-width="1.5" stroke-dasharray="10 12"/>
+    <path d="M0 -56V-184" stroke="white" stroke-opacity="0.34" stroke-width="2.5"/>
+    <path d="M56 0H184" stroke="white" stroke-opacity="0.34" stroke-width="2.5"/>
+    <path d="M0 56V184" stroke="white" stroke-opacity="0.34" stroke-width="2.5"/>
+    <path d="M-56 0H-184" stroke="white" stroke-opacity="0.34" stroke-width="2.5"/>
+    <path d="M40 -40L126 -126" stroke="white" stroke-opacity="0.28" stroke-width="2"/>
+    <path d="M40 40L126 126" stroke="white" stroke-opacity="0.28" stroke-width="2"/>
+    <path d="M-40 40L-126 126" stroke="white" stroke-opacity="0.28" stroke-width="2"/>
+    <path d="M-40 -40L-126 -126" stroke="white" stroke-opacity="0.28" stroke-width="2"/>
+    <rect x="-64" y="-64" width="128" height="128" fill="white" fill-opacity="0.08" stroke="white" stroke-opacity="0.22" stroke-width="2"/>
+  </g>
+</svg>

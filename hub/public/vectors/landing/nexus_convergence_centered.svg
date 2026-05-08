@@ -1,0 +1,61 @@
+<svg width="720" height="720" viewBox="0 0 720 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="720" height="720" fill="#F8FAFC"/>
+
+  <g transform="translate(360 360)">
+    <circle cx="0" cy="0" r="184" stroke="#E2E8F0" stroke-width="1.5"/>
+
+    <g opacity="0.95" stroke-linecap="round">
+      <path d="M0 -34V-206" stroke="#3B82F6" stroke-width="2.5"/>
+      <path d="M0 34V206" stroke="#A5B4FC" stroke-width="2"/>
+      <path d="M-34 0H-206" stroke="#3B82F6" stroke-width="2.5"/>
+      <path d="M34 0H206" stroke="#3B82F6" stroke-width="2.5"/>
+
+      <path d="M24 -24L148 -148" stroke="#3B82F6" stroke-width="2.5"/>
+      <path d="M-24 -24L-148 -148" stroke="#A5B4FC" stroke-width="2"/>
+      <path d="M24 24L148 148" stroke="#A5B4FC" stroke-width="2"/>
+      <path d="M-24 24L-148 148" stroke="#3B82F6" stroke-width="2.5"/>
+
+      <path d="M12 -28L72 -188" stroke="#3B82F6" stroke-width="2"/>
+      <path d="M-12 -28L-72 -188" stroke="#A5B4FC" stroke-width="2"/>
+      <path d="M28 -12L188 -72" stroke="#3B82F6" stroke-width="2"/>
+      <path d="M28 12L188 72" stroke="#3B82F6" stroke-width="2"/>
+      <path d="M12 28L72 188" stroke="#A5B4FC" stroke-width="2"/>
+      <path d="M-12 28L-72 188" stroke="#3B82F6" stroke-width="2"/>
+      <path d="M-28 12L-188 72" stroke="#A5B4FC" stroke-width="2"/>
+      <path d="M-28 -12L-188 -72" stroke="#3B82F6" stroke-width="2"/>
+    </g>
+
+    <g>
+      <rect x="-46" y="-58" width="92" height="116" stroke="#A5B4FC" stroke-width="1.5"/>
+      <rect x="-34" y="-46" width="68" height="92" fill="#0F172A"/>
+      <rect x="-22" y="-34" width="44" height="68" fill="#2563EB"/>
+      <path d="M-9 12L0 -14L9 12" stroke="white" stroke-width="4.5" stroke-linecap="square" stroke-linejoin="round"/>
+    </g>
+
+    <g>
+      <rect x="-5" y="-210" width="10" height="10" fill="#64748B"/>
+      <rect x="-5" y="200" width="10" height="10" fill="#A5B4FC"/>
+      <rect x="-210" y="-5" width="10" height="10" fill="#A5B4FC"/>
+      <rect x="200" y="-5" width="10" height="10" fill="#A5B4FC"/>
+
+      <rect x="143" y="-153" width="10" height="10" fill="#64748B"/>
+      <rect x="-153" y="-153" width="10" height="10" fill="#64748B"/>
+      <rect x="143" y="143" width="10" height="10" fill="#64748B"/>
+      <rect x="-153" y="143" width="10" height="10" fill="#64748B"/>
+
+      <rect x="66" y="-194" width="9" height="9" fill="#A5B4FC"/>
+      <rect x="-75" y="-194" width="9" height="9" fill="#64748B"/>
+      <rect x="185" y="-75" width="9" height="9" fill="#64748B"/>
+      <rect x="185" y="66" width="9" height="9" fill="#A5B4FC"/>
+      <rect x="66" y="185" width="9" height="9" fill="#64748B"/>
+      <rect x="-75" y="185" width="9" height="9" fill="#A5B4FC"/>
+      <rect x="-194" y="66" width="9" height="9" fill="#64748B"/>
+      <rect x="-194" y="-75" width="9" height="9" fill="#64748B"/>
+    </g>
+  </g>
+
+  <g transform="translate(555 160)">
+    <text x="0" y="0" fill="#0F172A" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" letter-spacing="0.18em">MARKET CONVERGE</text>
+    <path d="M154 14V-18" stroke="#2563EB" stroke-width="2"/>
+  </g>
+</svg>

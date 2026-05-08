@@ -1,0 +1,6 @@
+import { ClientDetailScreen } from "@/domains/clients";
+
+export default async function ClientProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <ClientDetailScreen id={id} />;
+}

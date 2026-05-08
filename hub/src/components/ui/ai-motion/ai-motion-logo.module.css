@@ -1,0 +1,545 @@
+:root {
+  --ai-brand-dark: #1f2937;
+  --ai-brand-blue: #3b82f6;
+  --ai-brand-light: #dbeafe;
+  --ai-brand-success: #10b981;
+  --ai-brand-warning: #f59e0b;
+  --ai-brand-info: #38bdf8;
+  --ai-brand-purple: #6366f1;
+  --ai-brand-indigo: #4f46e5;
+  --ai-brand-rose: #f43f5e;
+  --ai-brand-cyan: #06b6d4;
+  --ai-brand-pink: #ec4899;
+  --ai-brand-teal: #14b8a6;
+  --ai-brand-emerald: #22c55e;
+  --ai-brand-red: #ef4444;
+}
+
+.root {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  transform-origin: center;
+}
+
+.sizeCompact {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.sizeStandard {
+  width: 4.5rem;
+  height: 4.5rem;
+}
+
+.sizeHero {
+  width: 7rem;
+  height: 7rem;
+}
+
+.floating {
+  animation: aiContainerFloat 6s ease-in-out infinite alternate;
+}
+
+.mirrored {
+  transform: scaleX(-1);
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.svg * {
+  transition:
+    fill 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    stroke 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    stroke-width 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    filter 0.6s ease;
+}
+
+.basePath {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.node {
+  fill: var(--ai-brand-dark);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.shieldRing {
+  fill: none;
+  opacity: 0;
+}
+
+.stateIdle .basePath {
+  stroke: var(--ai-brand-blue);
+  stroke-width: 5;
+  opacity: 0.82;
+}
+
+.stateIdle .node {
+  fill: var(--ai-brand-dark);
+}
+
+.stateIdle .floatingNode {
+  animation: aiFloatBob 3s ease-in-out infinite alternate;
+  fill: var(--ai-brand-blue);
+}
+
+.stateLoading .bgPath {
+  stroke: var(--ai-brand-light);
+  stroke-width: 4;
+  opacity: 0.35;
+}
+
+.stateLoading .activePath {
+  stroke: var(--ai-brand-blue);
+  stroke-width: 5;
+  stroke-dasharray: 180;
+  stroke-dashoffset: 180;
+  animation: aiDrawOutward 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.stateLoading .pathTrunk {
+  animation-delay: 0s;
+}
+
+.stateLoading .pathL1,
+.stateLoading .pathR1 {
+  animation-delay: 0.3s;
+}
+
+.stateLoading .pathL2,
+.stateLoading .pathR2 {
+  animation-delay: 0.6s;
+}
+
+.stateLoading .pathTop {
+  animation-delay: 0.9s;
+}
+
+.stateLoading .node {
+  transform: scale(0);
+  animation: aiNodePop 2s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite;
+}
+
+.stateLoading .n1 {
+  animation-delay: 0s;
+}
+
+.stateLoading .n2,
+.stateLoading .n5 {
+  animation-delay: 0.6s;
+}
+
+.stateLoading .n3,
+.stateLoading .n6 {
+  animation-delay: 0.9s;
+}
+
+.stateLoading .n4 {
+  animation-delay: 1.2s;
+}
+
+.stateLoading .floatingNode {
+  animation: aiBlinkNode 2s infinite;
+}
+
+.stateThinking .bgPath {
+  stroke: var(--ai-brand-light);
+  stroke-width: 3;
+  opacity: 0.5;
+}
+
+.stateThinking .activePath {
+  stroke: var(--ai-brand-blue);
+  stroke-width: 5;
+  stroke-dasharray: 10 20;
+  animation: aiFlowDash 0.6s linear infinite;
+}
+
+.stateThinking .node {
+  animation: aiThinkPulse 1s infinite alternate;
+}
+
+.stateThinking .floatingNode {
+  animation: aiDataJitter 0.4s infinite alternate;
+}
+
+.stateSearching .basePath {
+  stroke: var(--ai-brand-blue);
+  stroke-width: 4;
+  opacity: 0.55;
+  animation: aiPulsePath 2s infinite alternate;
+}
+
+.stateSearching .radarRing {
+  fill: none;
+  stroke: var(--ai-brand-blue);
+  stroke-width: 3;
+  animation: aiRadarPing 2.5s cubic-bezier(0.1, 0.6, 0.3, 1) infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+  opacity: 0;
+}
+
+.stateSearching .rTop {
+  animation-delay: 0s;
+}
+
+.stateSearching .rLeft {
+  animation-delay: 0.8s;
+}
+
+.stateSearching .rRight {
+  animation-delay: 1.6s;
+}
+
+.stateSuccess .basePath {
+  stroke: var(--ai-brand-success);
+  stroke-width: 6;
+  filter: none;
+}
+
+.stateSuccess .node {
+  fill: var(--ai-brand-success);
+  transform: scale(1.15);
+  animation: aiSuccessPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.stateTool .basePath {
+  stroke: var(--ai-brand-warning);
+  stroke-width: 4;
+  stroke-dasharray: 6 12;
+  animation: aiFlowDashReverse 1s linear infinite;
+}
+
+.stateTool .node {
+  fill: var(--ai-brand-warning);
+  animation: aiToolPulse 0.8s infinite alternate;
+}
+
+.stateAgent .basePath {
+  stroke: var(--ai-brand-info);
+  stroke-width: 5;
+  animation: aiPulsePath 1.5s infinite alternate;
+}
+
+.stateAgent .node {
+  fill: var(--ai-brand-info);
+  animation: aiHeartbeat 1.5s infinite;
+}
+
+.stateAnalyzing .bgPath {
+  stroke: var(--ai-brand-purple);
+  stroke-width: 3;
+  animation: aiAnalyzeBgPulse 1s infinite alternate;
+}
+
+.stateAnalyzing .activePath {
+  stroke: var(--ai-brand-purple);
+  stroke-width: 5;
+  stroke-dasharray: 2 8 6 4;
+  animation: aiDataProcessFast 0.4s linear infinite;
+}
+
+.stateAnalyzing .nodes {
+  animation: aiDataVibrate 0.15s infinite alternate;
+}
+
+.stateAnalyzing .node {
+  fill: var(--ai-brand-purple);
+  animation: aiSequentialLightFast 0.8s infinite;
+}
+
+.stateAnalyzing .floatingNode {
+  animation: aiFranticProcessing 0.4s infinite alternate;
+  fill: var(--ai-brand-purple);
+}
+
+.stateSyncing .basePath {
+  stroke: var(--ai-brand-indigo);
+  stroke-width: 4;
+  opacity: 0.72;
+}
+
+.stateSyncing .nodes {
+  transform-origin: 100px 160px;
+  animation: aiTreeSway 3s ease-in-out infinite alternate;
+}
+
+.stateSyncing .node {
+  fill: var(--ai-brand-indigo);
+  animation: aiNodePulseSpin 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.stateFocus .basePath {
+  stroke: var(--ai-brand-rose);
+  animation: aiPathFocus 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+}
+
+.stateFocus .node {
+  fill: var(--ai-brand-rose);
+  animation: aiNodeFocus 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+}
+
+.stateFocus .floatingNode {
+  fill: var(--ai-brand-rose);
+  animation: aiFloatSuckIn 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+}
+
+.stateQuantum .basePath {
+  stroke: var(--ai-brand-cyan);
+  stroke-width: 2;
+  stroke-dasharray: 4 8;
+  animation: aiQuantumDash 0.3s linear infinite;
+}
+
+.stateQuantum .node {
+  fill: var(--ai-brand-cyan);
+  animation: aiQuantumBlink 0.15s steps(2, end) infinite alternate;
+}
+
+.stateQuantum .floatingNode {
+  fill: var(--ai-brand-cyan);
+  animation: aiQuantumBlink 0.1s steps(2, end) infinite;
+}
+
+.stateMatching .basePath {
+  stroke: var(--ai-brand-pink);
+  stroke-width: 4;
+  stroke-dasharray: 15 15;
+  animation: aiMatchDash 1s linear infinite;
+}
+
+.stateMatching .node {
+  fill: var(--ai-brand-pink);
+  animation: aiPingPongNode 1s infinite alternate ease-in-out;
+}
+
+.stateMatching .floatingNode {
+  fill: var(--ai-brand-pink);
+}
+
+.stateShield .basePath {
+  stroke: var(--ai-brand-teal);
+  opacity: 0.3;
+  stroke-width: 3;
+}
+
+.stateShield .node {
+  fill: var(--ai-brand-teal);
+  animation: aiPulseSafe 2s infinite alternate;
+}
+
+.stateShield .shieldRing {
+  opacity: 1;
+  stroke: var(--ai-brand-teal);
+  stroke-width: 4;
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  animation: aiDrawShield 4s ease-in-out infinite;
+}
+
+.stateGrowth .svg {
+  transform-origin: 100px 160px;
+  animation: aiTreeGrow 3s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite;
+}
+
+.stateGrowth .basePath {
+  stroke: var(--ai-brand-emerald);
+  stroke-width: 5;
+}
+
+.stateGrowth .node,
+.stateGrowth .floatingNode {
+  fill: var(--ai-brand-emerald);
+}
+
+.stateGlitch .svg {
+  animation: aiGlitchSvg 0.2s infinite;
+}
+
+.stateGlitch .basePath {
+  stroke: var(--ai-brand-red);
+  stroke-width: 4;
+  animation: aiGlitchPath 0.3s infinite;
+}
+
+.stateGlitch .node,
+.stateGlitch .floatingNode {
+  fill: var(--ai-brand-red);
+  animation: aiGlitchNode 0.15s infinite;
+}
+
+@keyframes aiContainerFloat {
+  0% { transform: translateY(3px) scale(0.98); }
+  100% { transform: translateY(-3px) scale(1.02); }
+}
+
+@keyframes aiFloatBob {
+  0% { transform: translateY(3px) rotate(-5deg); }
+  100% { transform: translateY(-5px) rotate(5deg); }
+}
+
+@keyframes aiDrawOutward {
+  0%, 5% { stroke-dashoffset: 180; opacity: 1; }
+  40%, 70% { stroke-dashoffset: 0; opacity: 1; }
+  90%, 100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
+@keyframes aiNodePop {
+  0%, 15% { transform: scale(0); fill: var(--ai-brand-dark); }
+  35%, 75% { transform: scale(1.1); fill: var(--ai-brand-blue); }
+  90%, 100% { transform: scale(0); fill: var(--ai-brand-dark); }
+}
+
+@keyframes aiBlinkNode {
+  0%, 50%, 100% { fill: var(--ai-brand-dark); opacity: 0.2; transform: scale(0.8); }
+  75% { fill: var(--ai-brand-blue); opacity: 1; transform: scale(1.3); }
+}
+
+@keyframes aiFlowDash { to { stroke-dashoffset: -30; } }
+
+@keyframes aiThinkPulse {
+  0% { transform: scale(0.85); fill: var(--ai-brand-dark); }
+  100% { transform: scale(1.3); fill: var(--ai-brand-blue); }
+}
+
+@keyframes aiDataJitter {
+  0% { transform: translateY(0) scale(0.9) rotate(-10deg); fill: var(--ai-brand-dark); }
+  100% { transform: translateY(-4px) scale(1.2) rotate(10deg); fill: var(--ai-brand-blue); }
+}
+
+@keyframes aiPulsePath {
+  0% { opacity: 0.3; stroke-width: 4; }
+  100% { opacity: 0.8; stroke-width: 6; }
+}
+
+@keyframes aiRadarPing {
+  0% { transform: scale(0.2); opacity: 1; stroke-width: 6px; }
+  80% { transform: scale(5); opacity: 0; stroke-width: 0.5px; }
+  100% { opacity: 0; }
+}
+
+@keyframes aiSuccessPop {
+  0% { transform: scale(0.8); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1.15); }
+}
+
+@keyframes aiFlowDashReverse { to { stroke-dashoffset: 18; } }
+
+@keyframes aiToolPulse {
+  0% { transform: scale(0.9); }
+  100% { transform: scale(1.2); }
+}
+
+@keyframes aiHeartbeat {
+  0%, 100% { transform: scale(1); }
+  15%, 30% { transform: scale(1.3); }
+  22% { transform: scale(1.1); }
+}
+
+@keyframes aiAnalyzeBgPulse {
+  0% { opacity: 0.1; }
+  100% { opacity: 0.4; }
+}
+
+@keyframes aiDataProcessFast { to { stroke-dashoffset: -40; } }
+
+@keyframes aiSequentialLightFast {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  20% { opacity: 1; transform: scale(1.4) translateY(-2px); }
+}
+
+@keyframes aiDataVibrate {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(1px, -1px); }
+}
+
+@keyframes aiFranticProcessing {
+  0% { opacity: 0.6; transform: translate(0, 0) scale(0.9); }
+  33% { transform: translate(-2px, -3px) scale(1.1); }
+  66% { transform: translate(3px, -1px) scale(1.2); }
+  100% { opacity: 1; transform: translate(-1px, 2px) scale(1.4); }
+}
+
+@keyframes aiTreeSway {
+  0% { transform: rotate(-5deg); }
+  100% { transform: rotate(5deg); }
+}
+
+@keyframes aiNodePulseSpin {
+  0%, 100% { transform: scale(0.9); }
+  50% { transform: scale(1.3); }
+}
+
+@keyframes aiPathFocus {
+  0%, 100% { stroke-dasharray: 100; stroke-dashoffset: 0; opacity: 1; stroke-width: 6; }
+  50% { stroke-dasharray: 10; stroke-dashoffset: 50; opacity: 0.2; stroke-width: 1; }
+}
+
+@keyframes aiNodeFocus {
+  0%, 100% { transform: scale(1.2); opacity: 1; }
+  50% { transform: scale(0.4); opacity: 0.4; }
+}
+
+@keyframes aiFloatSuckIn {
+  0%, 100% { transform: translate(0, 0) scale(1.2); }
+  50% { transform: translate(-35px, 35px) scale(0.5); opacity: 0.2; }
+}
+
+@keyframes aiQuantumDash { to { stroke-dashoffset: -12; } }
+
+@keyframes aiQuantumBlink {
+  0% { opacity: 1; transform: scale(1.2) translate(1px, -1px); }
+  100% { opacity: 0.4; transform: scale(0.8) translate(-1px, 1px); }
+}
+
+@keyframes aiMatchDash { to { stroke-dashoffset: -30; } }
+
+@keyframes aiPingPongNode {
+  0% { transform: scale(0.7); opacity: 0.4; }
+  100% { transform: scale(1.4); opacity: 1; }
+}
+
+@keyframes aiPulseSafe {
+  0% { transform: scale(0.9); }
+  100% { transform: scale(1.1); }
+}
+
+@keyframes aiDrawShield {
+  0% { stroke-dashoffset: 600; opacity: 0; }
+  40%, 60% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: -600; opacity: 0; }
+}
+
+@keyframes aiTreeGrow {
+  0% { transform: scaleY(0) scaleX(0.2); opacity: 0; }
+  40%, 80% { transform: scaleY(1) scaleX(1); opacity: 1; }
+  100% { transform: scaleY(0.9) scaleX(0.9); opacity: 0; }
+}
+
+@keyframes aiGlitchPath {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; stroke-width: 8; }
+}
+
+@keyframes aiGlitchNode {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(-3px, 2px) scale(1.3); }
+  75% { transform: translate(3px, -2px) scale(0.7); opacity: 0.5; }
+}
+
+@keyframes aiGlitchSvg {
+  0%, 100% { filter: none; transform: skewX(0deg); }
+  50% { transform: skewX(-5deg); filter: none; }
+}

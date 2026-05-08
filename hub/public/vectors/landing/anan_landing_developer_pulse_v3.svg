@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 420" width="100%" height="100%">
+  <defs>
+    <pattern id="faintGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1E293B" stroke-width="1" />
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#faintGrid)" />
+  <g stroke="#94A3B8" stroke-width="1.5">
+    <path d="M 32 40 L 48 40 M 40 32 L 40 48" />
+    <path d="M 472 40 L 488 40 M 480 32 L 480 48" />
+    <path d="M 32 380 L 48 380 M 40 372 L 40 388" />
+    <path d="M 472 380 L 488 380 M 480 372 L 480 388" />
+  </g>
+  <g fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="4 4">
+    <path d="M 260 90 L 260 50" />
+    <path d="M 410 215 L 450 215" />
+    <path d="M 170 340 L 170 380 L 200 380" />
+  </g>
+  <circle cx="260" cy="50" r="4" fill="#60A5FA" stroke="none" />
+  <rect x="450" y="211" width="8" height="8" fill="#2563EB" stroke="none" />
+  <circle cx="200" cy="380" r="4" fill="#94A3B8" stroke="none" />
+  <rect x="110" y="90" width="300" height="250" rx="6" fill="#0F172A" stroke="#1E293B" stroke-width="2" />
+  <g stroke="#1E293B" stroke-width="1.5">
+    <line x1="160" y1="90" x2="160" y2="250" />
+    <line x1="220" y1="90" x2="220" y2="250" />
+    <line x1="280" y1="90" x2="280" y2="250" />
+    <line x1="340" y1="90" x2="340" y2="250" />
+  </g>
+  <line x1="110" y1="250" x2="410" y2="250" stroke="#1E293B" stroke-width="2" />
+  <path d="M 160 210 L 220 180 L 280 140 L 340 115" fill="none" stroke="#60A5FA" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="300" stroke-dashoffset="0">
+    <animate attributeName="stroke-dashoffset" values="300;0" dur="4.5s" repeatCount="indefinite" />
+  </path>
+  <g fill="#2563EB" stroke="#0F172A" stroke-width="2">
+    <circle cx="160" cy="210" r="5">
+      <animate attributeName="r" values="4;5.5;4" dur="3.2s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="220" cy="180" r="5">
+      <animate attributeName="r" values="4;5.5;4" dur="3.2s" begin="0.4s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="280" cy="140" r="5">
+      <animate attributeName="r" values="4;5.5;4" dur="3.2s" begin="0.8s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="340" cy="115" r="5">
+      <animate attributeName="r" values="4;5.5;4" dur="3.2s" begin="1.2s" repeatCount="indefinite" />
+    </circle>
+  </g>
+  <rect x="160" y="275" width="200" height="6" rx="3" fill="#1E293B" />
+  <rect x="160" y="275" width="130" height="6" rx="3" fill="#2563EB">
+    <animate attributeName="width" values="118;142;118" dur="4s" repeatCount="indefinite" />
+  </rect>
+  <rect x="160" y="295" width="200" height="6" rx="3" fill="#1E293B" />
+  <rect x="160" y="295" width="80" height="6" rx="3" fill="#60A5FA">
+    <animate attributeName="width" values="72;96;72" dur="4s" begin="0.5s" repeatCount="indefinite" />
+  </rect>
+  <rect x="160" y="315" width="200" height="6" rx="3" fill="#1E293B" />
+  <rect x="160" y="315" width="170" height="6" rx="3" fill="#94A3B8">
+    <animate attributeName="width" values="156;182;156" dur="4s" begin="1s" repeatCount="indefinite" />
+  </rect>
+</svg>

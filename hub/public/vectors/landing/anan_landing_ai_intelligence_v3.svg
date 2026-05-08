@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 420" width="100%" height="100%">
+  <defs>
+    <pattern id="lightGrid" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="translate(20, 10)">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#DBEAFE" stroke-width="1" />
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#lightGrid)" />
+  <g stroke="#94A3B8" stroke-width="1.5" stroke-linecap="square">
+    <path d="M 32 40 L 48 40 M 40 32 L 40 48" />
+    <path d="M 472 40 L 488 40 M 480 32 L 480 48" />
+    <path d="M 32 380 L 48 380 M 40 372 L 40 388" />
+    <path d="M 472 380 L 488 380 M 480 372 L 480 388" />
+  </g>
+  <circle cx="260" cy="210" r="140" fill="none" stroke="#CBD5E1" stroke-width="1.5" />
+  <g fill="none" stroke="#CBD5E1" stroke-width="1.5">
+    <line x1="260" y1="150" x2="260" y2="70" />
+    <line x1="260" y1="270" x2="260" y2="350" />
+    <line x1="200" y1="210" x2="120" y2="210" />
+    <line x1="320" y1="210" x2="400" y2="210" />
+  </g>
+  <g fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5">
+    <circle cx="260" cy="70" r="4" />
+    <circle cx="260" cy="350" r="4" />
+    <circle cx="120" cy="210" r="4" />
+    <circle cx="400" cy="210" r="4" />
+  </g>
+  <g fill="none" stroke="#2563EB" stroke-width="2" stroke-dasharray="6 6">
+    <animate attributeName="stroke-dashoffset" values="0;24" dur="3.2s" repeatCount="indefinite" />
+    <line x1="200" y1="150" x2="120" y2="70" />
+    <line x1="320" y1="150" x2="400" y2="70" />
+    <line x1="200" y1="270" x2="120" y2="350" />
+    <line x1="320" y1="270" x2="400" y2="350" />
+  </g>
+  <g fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="square">
+    <path d="M 190 170 L 190 140 L 220 140" />
+    <path d="M 300 140 L 330 140 L 330 170" />
+    <path d="M 330 250 L 330 280 L 300 280" />
+    <path d="M 220 280 L 190 280 L 190 250" />
+  </g>
+  <rect x="200" y="150" width="120" height="120" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2" />
+  <rect x="220" y="170" width="80" height="80" fill="#0F172A" />
+  <g fill="none" stroke="#1E293B" stroke-width="2">
+    <line x1="250" y1="170" x2="250" y2="190" />
+    <line x1="270" y1="170" x2="270" y2="190" />
+    <line x1="250" y1="230" x2="250" y2="250" />
+    <line x1="270" y1="230" x2="270" y2="250" />
+    <line x1="220" y1="200" x2="240" y2="200" />
+    <line x1="220" y1="220" x2="240" y2="220" />
+    <line x1="280" y1="200" x2="300" y2="200" />
+    <line x1="280" y1="220" x2="300" y2="220" />
+  </g>
+  <rect x="240" y="190" width="40" height="40" fill="#2563EB">
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="2.6s" repeatCount="indefinite" />
+  </rect>
+  <rect x="248" y="198" width="24" height="24" fill="none" stroke="#60A5FA" stroke-width="2" />
+  <rect x="256" y="206" width="8" height="8" fill="#FFFFFF" />
+  <g fill="#FFFFFF" stroke="#2563EB" stroke-width="2">
+    <circle cx="120" cy="70" r="8" />
+    <circle cx="400" cy="70" r="8" />
+    <circle cx="120" cy="350" r="8" />
+    <circle cx="400" cy="350" r="8" />
+  </g>
+  <g fill="#0F172A">
+    <circle cx="120" cy="70" r="3">
+      <animate attributeName="r" values="2.5;3.5;2.5" dur="3s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="400" cy="70" r="3">
+      <animate attributeName="r" values="2.5;3.5;2.5" dur="3s" begin="0.5s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="120" cy="350" r="3">
+      <animate attributeName="r" values="2.5;3.5;2.5" dur="3s" begin="1s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="400" cy="350" r="3">
+      <animate attributeName="r" values="2.5;3.5;2.5" dur="3s" begin="1.5s" repeatCount="indefinite" />
+    </circle>
+  </g>
+</svg>

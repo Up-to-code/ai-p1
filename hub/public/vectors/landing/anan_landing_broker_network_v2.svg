@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 420" width="100%" height="100%">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#DBEAFE" stroke-width="1" />
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#grid)" />
+  <g stroke="#94A3B8" stroke-width="1.5">
+    <path d="M 24 32 L 40 32 M 32 24 L 32 40" />
+    <path d="M 480 32 L 496 32 M 488 24 L 488 40" />
+    <path d="M 24 388 L 40 388 M 32 380 L 32 396" />
+    <path d="M 480 388 L 496 388 M 488 380 L 488 396" />
+  </g>
+  <circle cx="260" cy="190" r="100" fill="#DBEAFE" />
+  <g fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="4 4" stroke-linecap="square">
+    <animate attributeName="stroke-dashoffset" values="0;20" dur="4s" repeatCount="indefinite" />
+    <path d="M 120 110 L 200 110 L 200 160" />
+    <path d="M 400 290 L 340 290 L 340 320" />
+  </g>
+  <g fill="none" stroke="#2563EB" stroke-width="2" stroke-dasharray="4 4" stroke-linecap="square">
+    <animate attributeName="stroke-dashoffset" values="0;20" dur="3.4s" repeatCount="indefinite" />
+    <path d="M 400 110 L 320 110 L 320 140" />
+    <path d="M 120 290 L 160 290" />
+  </g>
+  <rect x="250" y="110" width="70" height="210" fill="#0F172A" />
+  <line x1="265" y1="110" x2="265" y2="320" stroke="#1E293B" stroke-width="2" />
+  <line x1="305" y1="110" x2="305" y2="320" stroke="#1E293B" stroke-width="2" />
+  <rect x="190" y="150" width="80" height="100" fill="#94A3B8" />
+  <rect x="190" y="165" width="80" height="4" fill="#CBD5E1" />
+  <rect x="190" y="185" width="80" height="4" fill="#CBD5E1" />
+  <rect x="140" y="210" width="150" height="8" fill="#2563EB" />
+  <rect x="160" y="230" width="110" height="90" fill="#FFFFFF" stroke="#0F172A" stroke-width="2" />
+  <rect x="180" y="250" width="70" height="50" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.5" />
+  <line x1="215" y1="250" x2="215" y2="300" stroke="#2563EB" stroke-width="1.5" />
+  <line x1="180" y1="275" x2="250" y2="275" stroke="#2563EB" stroke-width="1.5" />
+  <rect x="120" y="320" width="280" height="6" fill="#1E293B" />
+  <rect x="120" y="326" width="280" height="2" fill="#94A3B8" />
+  <rect x="130" y="328" width="80" height="8" fill="#60A5FA" />
+  <circle cx="360" cy="296" r="24" fill="#FFFFFF" stroke="#94A3B8" stroke-width="2" />
+  <circle cx="360" cy="296" r="8" fill="#CBD5E1" />
+  <circle cx="140" cy="312" r="8" fill="#2563EB">
+    <animate attributeName="r" values="7;9;7" dur="2.8s" repeatCount="indefinite" />
+  </circle>
+  <g fill="#FFFFFF" stroke="#2563EB" stroke-width="2">
+    <circle cx="120" cy="110" r="4" />
+    <circle cx="400" cy="110" r="4" />
+    <circle cx="400" cy="290" r="4" />
+    <circle cx="120" cy="290" r="4" />
+    <circle cx="200" cy="160" r="4" />
+    <circle cx="320" cy="140" r="4" />
+    <circle cx="340" cy="320" r="4" />
+    <circle cx="160" cy="290" r="4" />
+  </g>
+  <rect x="60" y="80" width="60" height="60" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2" />
+  <rect x="75" y="95" width="20" height="4" fill="#94A3B8" />
+  <rect x="75" y="105" width="30" height="4" fill="#CBD5E1" />
+  <rect x="75" y="115" width="25" height="4" fill="#CBD5E1" />
+  <rect x="105" y="95" width="4" height="4" fill="#2563EB" />
+  <rect x="400" y="80" width="60" height="60" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2" />
+  <rect x="415" y="95" width="12" height="12" fill="#2563EB" />
+  <rect x="433" y="95" width="12" height="12" fill="#60A5FA" />
+  <rect x="415" y="113" width="12" height="12" fill="#94A3B8" />
+  <rect x="433" y="113" width="12" height="12" fill="#CBD5E1" />
+  <rect x="400" y="260" width="60" height="60" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2" />
+  <line x1="412" y1="305" x2="448" y2="305" stroke="#1E293B" stroke-width="2" />
+  <rect x="415" y="290" width="6" height="15" fill="#94A3B8" />
+  <rect x="427" y="280" width="6" height="25" fill="#60A5FA" />
+  <rect x="439" y="270" width="6" height="35" fill="#2563EB" />
+  <rect x="60" y="260" width="60" height="60" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2" />
+  <rect x="75" y="275" width="30" height="30" fill="none" stroke="#2563EB" stroke-width="2" />
+  <rect x="75" y="275" width="12" height="12" fill="#DBEAFE" />
+  <rect x="92" y="292" width="13" height="13" fill="#60A5FA" />
+</svg>

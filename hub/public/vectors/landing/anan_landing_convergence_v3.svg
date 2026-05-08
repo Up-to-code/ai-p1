@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 520" width="100%" height="100%">
+  <defs>
+    <pattern id="archGrid" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="translate(30, 20)">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#DBEAFE" stroke-width="1" />
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#archGrid)" />
+  <g stroke="#94A3B8" stroke-width="1.5" stroke-linecap="square">
+    <path d="M 40 52 L 40 40 L 52 40" fill="none" />
+    <path d="M 580 52 L 580 40 L 568 40" fill="none" />
+    <path d="M 40 468 L 40 480 L 52 480" fill="none" />
+    <path d="M 580 468 L 580 480 L 568 480" fill="none" />
+  </g>
+  <g fill="none" stroke-width="1.5">
+    <circle cx="310" cy="260" r="120" stroke="#CBD5E1" />
+    <circle cx="310" cy="260" r="180" stroke="#DBEAFE" stroke-dasharray="6 6">
+      <animate attributeName="stroke-dashoffset" values="0;48" dur="12s" repeatCount="indefinite" />
+    </circle>
+  </g>
+  <g fill="none" stroke-width="2">
+    <line x1="310" y1="260" x2="520" y2="260" stroke="#94A3B8" />
+    <line x1="310" y1="260" x2="310" y2="460" stroke="#94A3B8" />
+    <line x1="310" y1="260" x2="200" y2="450" stroke="#94A3B8" />
+    <line x1="310" y1="260" x2="200" y2="70" stroke="#94A3B8" />
+    <line x1="310" y1="260" x2="500" y2="370" stroke="#2563EB" />
+    <line x1="310" y1="260" x2="120" y2="150" stroke="#2563EB" />
+    <line x1="310" y1="260" x2="310" y2="60" stroke="#2563EB" />
+    <g stroke-dasharray="8 8">
+      <animate attributeName="stroke-dashoffset" values="0;32" dur="7s" repeatCount="indefinite" />
+      <line x1="310" y1="260" x2="120" y2="370" stroke="#60A5FA" />
+      <line x1="310" y1="260" x2="500" y2="150" stroke="#60A5FA" />
+      <line x1="310" y1="260" x2="420" y2="450" stroke="#CBD5E1" />
+      <line x1="310" y1="260" x2="100" y2="260" stroke="#CBD5E1" />
+      <line x1="310" y1="260" x2="420" y2="70" stroke="#CBD5E1" />
+    </g>
+  </g>
+  <g fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="square">
+    <path d="M 220 170 L 220 160 L 230 160" />
+    <path d="M 390 160 L 400 160 L 400 170" />
+    <path d="M 400 350 L 400 360 L 390 360" />
+    <path d="M 230 360 L 220 360 L 220 350" />
+  </g>
+  <rect x="230" y="180" width="160" height="160" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2" />
+  <rect x="240" y="190" width="140" height="140" fill="none" stroke="#DBEAFE" stroke-width="1" />
+  <rect x="246" y="196" width="128" height="128" fill="#0F172A" />
+  <g fill="none" stroke="#1E293B" stroke-width="2" stroke-linecap="square">
+    <path d="M 260 216 L 260 210 L 266 210" />
+    <path d="M 354 210 L 360 210 L 360 216" />
+    <path d="M 360 304 L 360 310 L 354 310" />
+    <path d="M 266 310 L 260 310 L 260 304" />
+  </g>
+  <g stroke-width="2" fill="#FFFFFF">
+    <rect x="512" y="252" width="16" height="16" stroke="#94A3B8" />
+    <rect x="302" y="452" width="16" height="16" stroke="#94A3B8" />
+    <rect x="192" y="442" width="16" height="16" stroke="#94A3B8" />
+    <rect x="192" y="62" width="16" height="16" stroke="#94A3B8" />
+    <rect x="492" y="362" width="16" height="16" stroke="#2563EB" />
+    <rect x="112" y="142" width="16" height="16" stroke="#2563EB" />
+    <rect x="302" y="52" width="16" height="16" stroke="#2563EB" />
+    <rect x="112" y="362" width="16" height="16" stroke="#60A5FA" />
+    <rect x="492" y="142" width="16" height="16" stroke="#60A5FA" />
+    <rect x="412" y="442" width="16" height="16" stroke="#CBD5E1" />
+    <rect x="92" y="252" width="16" height="16" stroke="#CBD5E1" />
+    <rect x="412" y="62" width="16" height="16" stroke="#CBD5E1" />
+  </g>
+  <g>
+    <animate attributeName="opacity" values="0.8;1;0.8" dur="4.5s" repeatCount="indefinite" />
+    <rect x="517" y="257" width="6" height="6" fill="#0F172A" />
+    <rect x="307" y="457" width="6" height="6" fill="#0F172A" />
+    <rect x="197" y="447" width="6" height="6" fill="#0F172A" />
+    <rect x="197" y="67" width="6" height="6" fill="#0F172A" />
+    <rect x="497" y="367" width="6" height="6" fill="#2563EB" />
+    <rect x="117" y="147" width="6" height="6" fill="#2563EB" />
+    <rect x="307" y="57" width="6" height="6" fill="#2563EB" />
+    <rect x="117" y="367" width="6" height="6" fill="#60A5FA" />
+    <rect x="497" y="147" width="6" height="6" fill="#60A5FA" />
+  </g>
+  <g fill="#FFFFFF" stroke-width="1.5">
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="3.8s" repeatCount="indefinite" />
+    <circle cx="430" cy="260" r="4" stroke="#94A3B8" />
+    <circle cx="310" cy="380" r="4" stroke="#94A3B8" />
+    <circle cx="190" cy="260" r="4" stroke="#CBD5E1" />
+    <circle cx="310" cy="140" r="4" stroke="#2563EB" />
+  </g>
+</svg>
