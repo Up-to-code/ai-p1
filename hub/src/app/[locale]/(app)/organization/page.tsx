@@ -1,5 +1,10 @@
-import { OrganizationScreen } from "@/domains/organization";
+import { redirect } from "next/navigation";
 
-export default function OrganizationPage() {
-  return <OrganizationScreen />;
+export default async function OrganizationPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  redirect(`/${locale}/settings/organization`);
 }

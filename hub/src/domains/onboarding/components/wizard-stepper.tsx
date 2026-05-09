@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
 interface WizardStepperProps {
-  currentStep: number; // 1-indexed (1, 2, 3, 4)
+  currentStep: number; // 1-indexed (1, 2, 3)
 }
 
 export function WizardStepper({ currentStep }: WizardStepperProps) {
@@ -11,9 +11,8 @@ export function WizardStepper({ currentStep }: WizardStepperProps) {
   
   const STEP_DATA = [
     { id: "01", name: t("company") },
-    { id: "02", name: t("legal") },
-    { id: "03", name: t("brand") },
-    { id: "04", name: t("team") },
+    { id: "02", name: t("brand") },
+    { id: "03", name: t("team") },
   ];
   return (
     <nav aria-label="Progress">

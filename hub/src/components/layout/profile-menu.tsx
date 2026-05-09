@@ -15,6 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { useAccountContext } from "@/domains/auth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +26,7 @@ import {
 export function ProfileMenu() {
   const t = useTranslations("ProfileMenu");
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const account = useAccountContext();
 
   return (
     <>
@@ -32,7 +34,14 @@ export function ProfileMenu() {
         <DropdownMenuTrigger
           render={
             <Button variant="ghost" size="icon" className="rounded-full">
-              <CircleUser className="h-5 w-5 text-text-muted" />
+              {account.user.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={account.user.image} alt={account.user.name} className="h-8 w-8 rounded-full object-cover" />
+              ) : (
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-[10px] font-black text-text-secondary">
+                  {account.user.initials}
+                </span>
+              )}
               <span className="sr-only">{t("open")}</span>
             </Button>
           }

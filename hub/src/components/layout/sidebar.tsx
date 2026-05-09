@@ -1,6 +1,5 @@
 "use client";
 import { Link, usePathname } from "@/i18n/routing";
-import Image from "next/image";
 import {
   Building2,
   House,
@@ -22,6 +21,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useTranslations, useLocale } from 'next-intl';
 import { useSidebar } from "./sidebar-context";
 import { useState } from "react";
+import { useAccountContext } from "@/domains/auth";
 
 const navigationGroups = [
   {
@@ -43,20 +43,11 @@ const navigationGroups = [
   {
     label: "administration",
     items: [
-      { name: "organization", href: "/organization", icon: Landmark },
+      { name: "organization", href: "/settings/organization", icon: Landmark },
       { name: "integrations", href: "/integrations", icon: Plug },
     ],
   },
 ];
-
-const accountContext = {
-  organization: "Acme Corporation",
-  status: "Approved workspace",
-  name: "Ahmed Mansour",
-  role: "Organization Owner",
-  email: "ahmed@acme.com",
-  image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=200&h=200&auto=format&fit=crop",
-};
 
 export function Sidebar() {
   const t = useTranslations('Sidebar');
@@ -64,6 +55,7 @@ export function Sidebar() {
   const isRtl = locale === 'ar';
   const pathname = usePathname();
   const { isCollapsed, toggleCollapsed } = useSidebar();
+  const account = useAccountContext();
   
   const [isDarkMode, setIsDarkMode] = useState(false); // Default to Light Mode as per request
 
@@ -185,19 +177,20 @@ export function Sidebar() {
           <Tooltip>
             <TooltipTrigger
               render={
-                <Link
-                  href="/profile/settings"
+                <div
                   className={cn(
-                    "group block rounded-2xl transition-all",
-                    isDarkMode ? "hover:bg-white/5" : "hover:bg-zinc-50",
+                    "block rounded-2xl transition-all",
                     isCollapsed && "mx-auto flex h-10 w-10 items-center justify-center rounded-full"
                   )}
                 >
                   {!isCollapsed && (
-                    <div className={cn(
-                      "mb-2 rounded-2xl border p-3",
-                      isDarkMode ? "border-white/10 bg-zinc-900/40" : "border-zinc-200 bg-white"
-                    )}>
+                    <Link
+                      href="/settings/organization"
+                      className={cn(
+                        "mb-2 block rounded-2xl border p-3 transition-all",
+                        isDarkMode ? "border-white/10 bg-zinc-900/40 hover:bg-white/5" : "border-zinc-200 bg-white hover:bg-zinc-50"
+                      )}
+                    >
                       <div className="flex items-start gap-2.5">
                         <div className={cn(
                           "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl",
@@ -206,51 +199,61 @@ export function Sidebar() {
                           <Building2 className="h-4 w-4" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className={cn(
-                            "truncate text-[13px] font-black tracking-tight",
-                            isDarkMode ? "text-white" : "text-zinc-900"
-                          )}>
-                            {accountContext.organization}
+                          <p
+                            className={cn(
+                              "truncate text-[13px] font-black tracking-tight",
+                              isDarkMode ? "text-white" : "text-zinc-900"
+                            )}
+                            title={account.organization.name}
+                          >
+                            {account.organization.name}
                           </p>
                           <div className="mt-1 flex items-center gap-1.5">
                             <ShieldCheck className="h-3 w-3 shrink-0 text-emerald-500" />
-                            <span className={cn(
-                              "truncate text-[10px] font-bold uppercase tracking-wider",
-                              isDarkMode ? "text-zinc-500" : "text-zinc-400"
-                            )}>
-                              {accountContext.status}
+                            <span
+                              className={cn(
+                                "truncate text-[10px] font-bold uppercase tracking-wider",
+                                isDarkMode ? "text-zinc-500" : "text-zinc-400"
+                              )}
+                              title={account.organization.status}
+                            >
+                              {account.organization.status}
                             </span>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   )}
 
-                  <div className={cn(
-                    "flex items-center gap-3 transition-all",
-                    isCollapsed ? "justify-center" : "px-1.5 py-1.5"
-                  )}>
-                    <div className={cn(
-                      "relative h-9 w-9 shrink-0 overflow-hidden rounded-full border",
-                      isDarkMode ? "border-white/10" : "border-zinc-200"
-                    )}>
-                      <Image src={accountContext.image} alt={accountContext.name} fill className="object-cover" />
-                    </div>
+                  <Link
+                    href="/profile/settings"
+                    className={cn(
+                      "group flex items-center gap-3 rounded-2xl transition-all",
+                      isDarkMode ? "hover:bg-white/5" : "hover:bg-zinc-50",
+                      isCollapsed ? "justify-center" : "px-1.5 py-1.5"
+                    )}
+                  >
+                    <IdentityAvatar
+                      image={account.user.image}
+                      initials={account.user.initials}
+                      name={account.user.name}
+                      isDarkMode={isDarkMode}
+                    />
                     {!isCollapsed && (
                       <>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
                             <p className={cn(
-                              "truncate text-sm font-black leading-tight",
+                              "max-w-[9.5rem] truncate text-sm font-black leading-tight",
                               isDarkMode ? "text-white" : "text-zinc-900"
-                            )}>
-                              {accountContext.name}
+                            )} title={account.user.name}>
+                              {account.user.name}
                             </p>
                             <span className={cn(
-                              "hidden shrink-0 rounded-full px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider sm:inline-flex",
+                              "hidden max-w-[6.5rem] shrink-0 truncate rounded-full px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider sm:inline-flex",
                               isDarkMode ? "bg-white/10 text-zinc-400" : "bg-zinc-100 text-zinc-500"
-                            )}>
-                              {accountContext.role}
+                            )} title={account.organization.type || account.organization.status}>
+                              {account.organization.type || account.organization.status}
                             </span>
                           </div>
                           <div className="mt-1 flex min-w-0 items-center gap-1.5">
@@ -259,18 +262,18 @@ export function Sidebar() {
                               isDarkMode ? "text-zinc-600" : "text-zinc-400"
                             )} />
                             <p className={cn(
-                              "truncate text-[11px] font-semibold",
+                              "max-w-[14rem] truncate text-[11px] font-semibold",
                               isDarkMode ? "text-zinc-500" : "text-zinc-500"
-                            )}>
-                              {accountContext.email}
+                            )} title={account.user.email}>
+                              {account.user.email}
                             </p>
                           </div>
                         </div>
                         <MoreHorizontal className="me-1 h-4 w-4 shrink-0 text-zinc-400 transition-colors group-hover:text-zinc-900 dark:group-hover:text-white" />
                       </>
                     )}
-                  </div>
-                </Link>
+                  </Link>
+                </div>
               }
             />
             {isCollapsed && (
@@ -279,9 +282,9 @@ export function Sidebar() {
                 isDarkMode ? "bg-zinc-900" : "bg-zinc-950 shadow-none"
               )}>
                 <div className="space-y-1">
-                  <p className="text-xs font-bold">{accountContext.name}</p>
-                  <p className="text-[11px] text-zinc-400">{accountContext.email}</p>
-                  <p className="text-[10px] uppercase tracking-wider text-zinc-500">{accountContext.organization}</p>
+                  <p className="truncate text-xs font-bold">{account.user.name}</p>
+                  <p className="truncate text-[11px] text-zinc-400">{account.user.email}</p>
+                  <p className="truncate text-[10px] uppercase tracking-wider text-zinc-500">{account.organization.name}</p>
                 </div>
               </TooltipContent>
             )}
@@ -289,5 +292,33 @@ export function Sidebar() {
         </div>
       </div>
     </aside>
+  );
+}
+
+function IdentityAvatar({
+  image,
+  initials,
+  name,
+  isDarkMode,
+}: {
+  image: string | null;
+  initials: string;
+  name: string;
+  isDarkMode: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border text-[11px] font-black uppercase",
+        isDarkMode ? "border-white/10 bg-white/10 text-white" : "border-zinc-200 bg-zinc-100 text-zinc-700"
+      )}
+    >
+      {image ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={image} alt={name} className="h-full w-full object-cover" />
+      ) : (
+        initials
+      )}
+    </div>
   );
 }

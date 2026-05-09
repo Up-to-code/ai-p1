@@ -61,8 +61,12 @@ export default async function RootLayout({
       lang={locale}
       dir={locale === 'ar' ? 'rtl' : 'ltr'}
       className={`${geistSans.variable} ${geistMono.variable} ${cairo.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className={`h-full flex flex-col bg-background text-text-primary ${locale === 'ar' ? 'font-cairo' : ''}`}>
+      <body
+        className={`h-full flex flex-col bg-background text-text-primary ${locale === 'ar' ? 'font-cairo' : ''}`}
+        suppressHydrationWarning
+      >
         <NextIntlClientProvider messages={messages}>
           <BackendProviders initialToken={initialToken}>
             <TooltipProvider>

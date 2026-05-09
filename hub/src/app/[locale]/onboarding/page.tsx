@@ -4,16 +4,18 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { WizardStepper } from "@/domains/onboarding";
 import { CompanyInfoForm } from "@/domains/onboarding";
-import { LegalDocsForm } from "@/domains/onboarding";
 import { BrandSetupForm } from "@/domains/onboarding";
 import { TeamInviteForm } from "@/domains/onboarding";
+import { useRouter } from "@/i18n/routing";
 
 export default function OnboardingPage() {
   const t = useTranslations("Onboarding");
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
 
-  const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, 4));
+  const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, 3));
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
+  const finishSetup = () => router.push("/dashboard");
 
   return (
     <div className="w-full max-w-2xl flex flex-col items-center gap-16">
@@ -34,9 +36,8 @@ export default function OnboardingPage() {
       {/* Dynamic Form Content */}
       <div className="w-full">
         {currentStep === 1 && <CompanyInfoForm onNext={nextStep} />}
-        {currentStep === 2 && <LegalDocsForm onNext={nextStep} onBack={prevStep} />}
-        {currentStep === 3 && <BrandSetupForm onNext={nextStep} onBack={prevStep} />}
-        {currentStep === 4 && <TeamInviteForm onBack={prevStep} />}
+        {currentStep === 2 && <BrandSetupForm onNext={nextStep} onBack={prevStep} />}
+        {currentStep === 3 && <TeamInviteForm onBack={prevStep} onFinish={finishSetup} />}
       </div>
       
     </div>

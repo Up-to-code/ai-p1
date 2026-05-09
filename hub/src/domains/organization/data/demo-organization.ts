@@ -2,20 +2,19 @@ import type { ApiKey, OrganizationApp, OrganizationProfile, TeamMember } from ".
 
 export const demoOrganization: OrganizationProfile = {
   organizationId: "org_demo_acme",
-  name: "Acme Corporation",
-  legalName: "Acme Real Estate Development LLC",
+  name: "Personal workspace",
+  legalName: "",
   type: "Developer",
-  email: "admin@acme.com",
-  phone: "+966 11 000 0000",
-  website: "www.acme.sa",
-  address: "King Fahd Road, Riyadh, KSA",
+  email: "",
+  phone: "",
+  website: "",
+  address: "",
   updatedAt: 0,
 };
 
 export const demoTeam: TeamMember[] = [
-  { id: "tm-1", name: "Ahmed Mansour", email: "ahmed@acme.com", role: "Owner", status: "Active" },
-  { id: "tm-2", name: "Sara Al-Rashid", email: "sara@acme.com", role: "Admin", status: "Active" },
-  { id: "tm-3", name: "Khalid Nasser", email: "khalid@acme.com", role: "Manager", status: "Active" },
+  { id: "tm-2", name: "Team Admin", email: "admin@example.com", role: "Admin", status: "Active" },
+  { id: "tm-3", name: "Project Manager", email: "manager@example.com", role: "Manager", status: "Active" },
 ];
 
 export const demoApiKeys: ApiKey[] = [

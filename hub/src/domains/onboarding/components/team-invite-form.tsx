@@ -7,16 +7,28 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserPlus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { UserPlus, Trash2, HelpCircle, Loader2 } from "lucide-react";
 import { teamInviteSchema, type TeamInviteInput } from "../validation/onboarding.schema";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface FormProps {
   onBack: () => void;
+  onFinish: () => void;
 }
 
-export function TeamInviteForm({ onBack }: FormProps) {
+export function TeamInviteForm({ onBack, onFinish }: FormProps) {
   const t = useTranslations("Onboarding.team");
   const tc = useTranslations("Common");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleFinish = async () => {
+    setIsSubmitting(true);
+    // Simulate API submission
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    onFinish();
+  };
+
   const { register, handleSubmit, formState: { errors } } = useForm<TeamInviteInput>({
     resolver: zodResolver(teamInviteSchema),
     defaultValues: { inviteEmail: "", inviteRole: "Project Editor" },
@@ -26,8 +38,8 @@ export function TeamInviteForm({ onBack }: FormProps) {
     <form onSubmit={handleSubmit(() => undefined)}>
       <Card className="w-full border-0 shadow-none bg-zinc-50 dark:bg-white/[0.02] rounded-[24px]">
         <CardHeader className="pb-8 pt-8">
-          <CardTitle className="text-xl font-black uppercase tracking-tight text-zinc-900 dark:text-white text-center">{t("title")}</CardTitle>
-          <CardDescription className="text-xs font-bold text-zinc-500 text-center mt-2">
+          <CardTitle className="text-xl font-black uppercase tracking-tight text-zinc-900 dark:text-white text-start">{t("title")}</CardTitle>
+          <CardDescription className="text-xs font-bold text-zinc-500 text-start mt-2">
             {t("desc")}
           </CardDescription>
         </CardHeader>
@@ -36,15 +48,35 @@ export function TeamInviteForm({ onBack }: FormProps) {
           {/* Inline Add Form */}
           <div className="flex flex-col md:flex-row items-end gap-4 bg-white dark:bg-[#0A0A0A] p-6 rounded-2xl border border-zinc-200 dark:border-white/10 shadow-sm">
             <div className="w-full md:flex-1 space-y-3">
-              <Label htmlFor="inviteEmail" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("emailLabel")}</Label>
-              <Input id="inviteEmail" placeholder="colleague@company.com" className="h-12 rounded-xl border-zinc-200 bg-white font-medium focus-visible:ring-blue-600/20 dark:border-white/10 dark:bg-[#0A0A0A]" aria-invalid={Boolean(errors.inviteEmail)} {...register("inviteEmail")} />
+              <div className="flex items-center gap-1">
+                <Label htmlFor="inviteEmail" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("emailLabel")}</Label>
+                <Tooltip>
+                  <TooltipTrigger className="inline-flex cursor-help">
+                    <HelpCircle className="w-3 h-3 text-zinc-400 hover:text-zinc-900 transition-colors" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p>{t("emailTooltip")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <Input id="inviteEmail" placeholder={t("emailPlaceholder")} className="h-12 rounded-xl border-zinc-200 bg-white font-medium focus-visible:ring-blue-600/20 dark:border-white/10 dark:bg-[#0A0A0A]" aria-invalid={Boolean(errors.inviteEmail)} {...register("inviteEmail")} />
               {errors.inviteEmail && <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider">{errors.inviteEmail.message}</p>}
             </div>
             <div className="w-full md:w-48 space-y-3">
-              <Label htmlFor="inviteRole" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("roleLabel")}</Label>
+              <div className="flex items-center gap-1">
+                <Label htmlFor="inviteRole" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("roleLabel")}</Label>
+                <Tooltip>
+                  <TooltipTrigger className="inline-flex cursor-help">
+                    <HelpCircle className="w-3 h-3 text-zinc-400 hover:text-zinc-900 transition-colors" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p>{t("roleTooltip")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
               <Input id="inviteRole" placeholder="Admin" className="h-12 rounded-xl border-zinc-200 bg-white font-medium focus-visible:ring-blue-600/20 dark:border-white/10 dark:bg-[#0A0A0A] text-zinc-500 cursor-not-allowed" readOnly {...register("inviteRole")} />
             </div>
-            <Button className="w-full md:w-auto h-12 px-6 rounded-xl bg-zinc-900 text-white hover:bg-black font-black uppercase tracking-widest text-[10px] dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 transition-all" type="submit">
+            <Button className="w-full md:w-auto h-12 px-6 rounded-xl bg-zinc-900 text-white hover:bg-black font-black uppercase tracking-widest text-[10px] dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 transition-all" type="button">
               <UserPlus className="w-4 h-4 me-2 rtl:ms-2 rtl:me-0" />
               {t("addBtn")}
             </Button>
@@ -76,15 +108,27 @@ export function TeamInviteForm({ onBack }: FormProps) {
         </CardContent>
 
         <CardFooter className="pt-8 pb-8 px-8 flex items-center justify-between rtl:flex-row-reverse border-t border-zinc-200 dark:border-white/10 mt-8">
-          <Button variant="ghost" type="button" className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white" onClick={onBack}>
+          <Button variant="ghost" type="button" className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white" onClick={onBack} disabled={isSubmitting}>
             {tc("back")}
           </Button>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" type="button" className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white">
-              {t("skip")}
+            <Button variant="ghost" type="button" className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white" onClick={handleFinish} disabled={isSubmitting}>
+              {tc("saveAndExit")}
             </Button>
-            <Button className="h-14 px-8 rounded-[28px] bg-blue-600 text-white hover:bg-blue-700 font-black uppercase tracking-widest text-[11px] shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98]" type="button">
-              {t("submit")}
+            <Button 
+              className="h-14 px-8 rounded-[28px] bg-zinc-900 text-white hover:bg-black font-black uppercase tracking-widest text-[11px] shadow-2xl shadow-zinc-900/20 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none" 
+              type="button"
+              onClick={handleFinish}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="me-2 h-4 w-4 animate-spin rtl:ms-2 rtl:me-0" />
+                  {t("submit")}
+                </>
+              ) : (
+                t("submit")
+              )}
             </Button>
           </div>
         </CardFooter>

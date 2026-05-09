@@ -4,17 +4,16 @@ import { requiredText } from "@/validation/common.schema";
 export const companyInfoSchema = z.object({
   legalName: requiredText("Legal name"),
   displayName: requiredText("Display name"),
-  crNumber: requiredText("CR number"),
-  hqCity: requiredText("City"),
+  crNumber: z.string().optional(),
+  hqCity: z.string().optional(),
 });
 
 export const legalDocsSchema = z.object({
-  authName: requiredText("Signer name"),
-  authTitle: requiredText("Signer title"),
+  authName: z.string().optional(),
+  authTitle: z.string().optional(),
 });
 
 export const brandSetupSchema = z.object({
-  brandName: requiredText("Brand name"),
   brandColor: z.string().trim().regex(/^#[0-9A-Fa-f]{6}$/, "Use a valid hex color."),
 });
 

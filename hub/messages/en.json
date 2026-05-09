@@ -24,9 +24,9 @@
     "Min___ 8 characters": "Min. 8 characters",
     "Enter an invite code or use a shared link to join an existing workspace___": "Enter an invite code or use a shared link to join an existing workspace.",
     "Register your company and complete the setup wizard to start synchronizing data___": "Register your company and complete the setup wizard to start synchronizing data.",
-    "Complete these required steps to submit your organization for approval___": "Complete these required steps to submit your organization for approval.",
+    "Complete these required steps to submit your organization for approval___": "Complete the basic setup to start using your workspace.",
     "Provide your company's registered legal information___": "Provide your company's registered legal information.",
-    "Upload the required legal files and identify the authorized signer___": "Upload the required legal files and identify the authorized signer.",
+    "Upload the required legal files and identify the authorized signer___": "Add legal files later when a workflow requires verification.",
     "Set your display identity for shared workspaces and approvals___": "Set your display identity for shared workspaces and approvals.",
     "Invite teammates who should help manage listings, approvals, and integrations___": "Invite teammates who should help manage listings, approvals, and integrations."
   },
@@ -86,7 +86,10 @@
     "errorTitle": "Something went wrong",
     "reviewFields": "Review required fields",
     "backToList": "Back to list",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "optional": "(Optional)",
+    "skipStep": "Skip this step",
+    "saveAndExit": "Save and Exit"
   },
   "Sidebar": {
     "groups": {
@@ -1134,15 +1137,56 @@
     "sections": {
       "identity": "Identity",
       "preferences": "Preferences",
-      "security": "Security Contact"
+      "security": "Security Contact",
+      "personal": "Personal Information",
+      "personalDesc": "Your public identity within the platform.",
+      "work": "Work Information",
+      "workDesc": "Your position and responsibilities within the organization.",
+      "accountData": "Account Data",
+      "accountDataDesc": "Live identity data from your signed-in account and active workspace.",
+      "rolePerms": "Role & Permissions",
+      "rolePermsDesc": "What you can access and manage in this workspace.",
+      "language": "Language",
+      "languageDesc": "Choose your preferred display language.",
+      "timezone": "Timezone",
+      "timezoneDesc": "All dates and times will be displayed in this timezone.",
+      "notifPrefs": "Notification Preferences",
+      "notifPrefsDesc": "Choose what you get notified about. Changes apply immediately.",
+      "accountIdentity": "Account Identity",
+      "accountIdentityDesc": "Core credentials tied to your account.",
+      "accessSecurity": "Access & Security",
+      "accessSecurityDesc": "Manage authentication methods and access control.",
+      "activeSessions": "Active Sessions",
+      "activeSessionsDesc": "Devices currently signed in to your account."
     },
     "form": {
       "nameLabel": "Name",
       "emailLabel": "Email",
-      "phoneLabel": "Phone",
+      "phoneLabel": "Phone (Optional)",
       "roleLabel": "Role",
       "languageLabel": "Language",
-      "timezoneLabel": "Timezone"
+      "timezoneLabel": "Timezone",
+      "phoneTooltip": "Used for account recovery and two-factor authentication.",
+      "roleTooltip": "Your job title or position. This is visible to other team members.",
+      "avatarUpload": "Change Photo",
+      "avatarCropTitle": "Crop profile picture",
+      "avatarApply": "Apply",
+      "avatarCancel": "Cancel",
+      "avatarZoom": "Zoom",
+      "avatarChooseImage": "Choose an image file.",
+      "avatarCropPrepareError": "Could not prepare image crop.",
+      "avatarCropExportError": "Could not export cropped image.",
+      "avatarSaveError": "Could not save profile picture.",
+      "avatarUploadMissingUrl": "Upload completed without a file URL.",
+      "avatarUploadFailed": "Profile picture upload failed.",
+      "avatarRemove": "Remove profile picture",
+      "avatarUploadSavedTitle": "Profile picture saved",
+      "avatarUploadSavedDescription": "Your new picture replaced the old one and is already saved.",
+      "avatarRemoveSavedTitle": "Profile picture removed",
+      "avatarRemoveSavedDescription": "Your profile picture was removed and the change is already saved.",
+      "avatarDesc": "JPG or PNG, max 2MB",
+      "orgType": "Organization Type",
+      "timezoneTooltip": "e.g. Asia/Riyadh — affects how timestamps appear across the platform."
     },
     "notifications": {
       "product": "Product",
@@ -1150,17 +1194,92 @@
       "billing": "Billing",
       "security": "Security",
       "on": "On",
-      "off": "Off"
+      "off": "Off",
+      "enabledNote": "Enabled · You will receive these alerts",
+      "disabledNote": "Disabled · No alerts for this category"
     },
     "contact": {
       "owner": "Owner",
       "email": "Email",
       "phone": "Phone"
-    }
+    },
+    "account": {
+      "name": "User Name",
+      "email": "User Email",
+      "organization": "Organization",
+      "workspaceStatus": "Workspace Status",
+      "userId": "User ID",
+      "brand": "Brand",
+      "defaultBrand": "Default brand"
+    },
+    "tabs": {
+      "profile": "Profile",
+      "preferences": "Preferences",
+      "notifications": "Notifications",
+      "security": "Security"
+    },
+    "roles": {
+      "organizationAdmin": "Organization Admin",
+      "projectManager": "Project Manager",
+      "projectEditor": "Project Editor",
+      "viewer": "Viewer",
+      "adminNote": "To request a role change, contact your Organization Admin.",
+      "setByAdmin": "Set by your organization admin",
+      "currentRole": "Current Role",
+      "active": "Active"
+    },
+    "permissions": {
+      "manageMembers": "Manage members",
+      "editOrganization": "Edit organization",
+      "viewBilling": "View billing",
+      "apiAccess": "API access",
+      "allProjects": "All projects",
+      "createProjects": "Create projects",
+      "assignTasks": "Assign tasks",
+      "viewReports": "View reports",
+      "inviteMembers": "Invite members",
+      "editProjects": "Edit projects",
+      "uploadDocuments": "Upload documents",
+      "addComments": "Add comments",
+      "viewProjects": "View projects",
+      "downloadReports": "Download reports",
+      "title": "Permissions"
+    },
+    "security": {
+      "fullName": "Full Name",
+      "fullNameNote": "Displayed to teammates and clients",
+      "emailAddress": "Email Address",
+      "emailNote": "Used for login and system notifications",
+      "phoneNumber": "Phone Number",
+      "phoneNote": "Recovery and two-factor authentication",
+      "password": "Password",
+      "passwordNote": "Last changed: never",
+      "twoFactor": "Two-Factor Authentication",
+      "twoFactorValue": "Not configured",
+      "twoFactorNote": "Add an extra layer of security to your account",
+      "changeBtn": "Change",
+      "enableBtn": "Enable",
+      "thisDevice": "This device",
+      "deviceDetail": "macOS · Chrome · Active now",
+      "current": "Current",
+      "authMethod": "Authentication Method",
+      "googleAuth": "Google Account",
+      "googleNote": "Your security and password are managed by Google",
+      "manageBtn": "Manage",
+      "oauthSafetyNote": "Since you use a social login, your account is protected by your provider's advanced security features, including their two-factor authentication and login alerts."
+    },
+    "languages": {
+      "en": "English",
+      "ar": "Arabic"
+    },
+    "saveOperationError": "Profile save failed.",
+    "saveOperationSuccess": "Profile saved.",
+    "notifOperationError": "Notification update failed.",
+    "notifOperationSuccess": "Notification updated."
   },
   "Onboarding": {
     "title": "Setup your Organization",
-    "subtitle": "Complete these required steps to submit your organization for approval.",
+    "subtitle": "Complete the basic setup to start using your workspace. Legal documents can be added later when needed.",
     "stepper": {
       "company": "Company Information",
       "legal": "Legal Documentation",
@@ -1175,7 +1294,15 @@
       "crNumber": "Commercial Registration Number",
       "city": "Headquarters City",
       "saveDraft": "Save Draft",
-      "continue": "Continue to Step 2"
+      "continue": "Continue to Step 2",
+      "crTooltip": "Required for official government verification.",
+      "legalNamePlaceholder": "e.g. Acme Real Estate LLC",
+      "displayNamePlaceholder": "e.g. Acme",
+      "crNumberPlaceholder": "1010XXXXXX",
+      "cityPlaceholder": "e.g. Riyadh",
+      "legalNameTooltip": "Full legal name as registered in official documents.",
+      "displayNameTooltip": "The name that will be visible to your team and clients.",
+      "cityTooltip": "The city where your company main office is located."
     },
     "legal": {
       "title": "Legal Documentation",
@@ -1186,7 +1313,13 @@
       "crDesc": "PDF, PNG, or JPG (max. 10MB)",
       "authLetter": "Authorization Letter",
       "authDesc": "PDF, PNG, or JPG (max. 10MB). Must be clearly readable.",
-      "continue": "Continue to Step 3"
+      "continue": "Continue to Step 3",
+      "nameTooltip": "The person legally authorized to sign on behalf of the company.",
+      "titleTooltip": "The official title of the authorized signer.",
+      "crDocTooltip": "A copy of your Commercial Registration document.",
+      "authLetterTooltip": "An official letter authorizing the signer.",
+      "signerNamePlaceholder": "e.g. Ahmed Mansour",
+      "signerTitlePlaceholder": "e.g. Chief Executive Officer"
     },
     "brand": {
       "title": "Logo & Brand",
@@ -1195,7 +1328,11 @@
       "color": "Brand Color (Hex)",
       "logo": "Organization Logo",
       "logoDesc": "PNG, JPG, or SVG. Minimum 400x400px recommended.",
-      "continue": "Continue to Step 4"
+      "continue": "Continue to Invite Team",
+      "brandNamePlaceholder": "e.g. Acme",
+      "brandNameTooltip": "The primary name of your brand.",
+      "brandColorTooltip": "The primary color associated with your brand identity.",
+      "logoTooltip": "Your brand official logo."
     },
     "team": {
       "title": "Invite Team Members",
@@ -1207,7 +1344,10 @@
       "tableRole": "Role",
       "tableActions": "Actions",
       "skip": "Skip Invites",
-      "submit": "Submit for Review"
+      "submit": "Finish",
+      "emailPlaceholder": "colleague@company.com",
+      "emailTooltip": "The email address of the team member you wish to invite.",
+      "roleTooltip": "The access level granted to this team member."
     },
     "common": {
       "uploadOrDrag": "Click to upload or drag and drop"

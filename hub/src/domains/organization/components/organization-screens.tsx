@@ -3,15 +3,13 @@
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useConvexAuth, useQuery } from "convex/react";
 import type { LucideIcon } from "lucide-react";
 import { Building2, Code, Globe, KeyRound, Mail, Pencil, Phone, ShieldCheck, Users } from "lucide-react";
-import { api } from "@convex/_generated/api";
 import { AppDataTable, AppPageHeader, AppPageShell, AppPrimaryButton, AppSection, AppStatsGrid, AppTabsList, type AppDataTableColumn } from "@/components/shared";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
-import { useOrganizationStore } from "@/domains/organization";
+import { useAccountContext } from "@/domains/auth";
 import { demoApiKeys, demoApps, demoOrganization, demoTeam } from "../data/demo-organization";
 import type { ApiKey, TeamMember } from "../store/organization.types";
 import { updateOrganizationProfileSchema, type UpdateOrganizationProfileValues } from "../validation/organization.schema";
@@ -21,14 +19,29 @@ import { useTranslations } from "next-intl";
 
 export function OrganizationScreen() {
   const t = useTranslations('Organization');
-  const { isAuthenticated } = useConvexAuth();
-  const selectedOrganizationId = useOrganizationStore((state) => state.selectedOrganizationId);
-  const liveOrganization = useQuery(
-    api.organizations.profile.read.getProfile,
-    isAuthenticated ? { organizationId: selectedOrganizationId } : "skip",
-  );
-  const organization = liveOrganization ?? demoOrganization;
-  const team = demoTeam;
+  const account = useAccountContext();
+  const organization = {
+    ...demoOrganization,
+    organizationId: account.organization.id ?? demoOrganization.organizationId,
+    name: account.organization.name,
+    legalName: account.organization.legalName ?? "",
+    type: account.organization.type ?? "",
+    email: account.organization.email ?? "",
+    phone: account.organization.phone ?? "",
+    website: account.organization.website ?? "",
+    address: account.organization.address ?? "",
+  };
+  const canEditOrganization = Boolean(account.organization.id);
+  const team: TeamMember[] = [
+    {
+      id: account.user.id || "current-user",
+      name: account.user.name,
+      email: account.user.email,
+      role: "Owner",
+      status: "Active",
+    },
+    ...demoTeam,
+  ];
   const apiKeys = demoApiKeys;
   const apps = demoApps;
 
@@ -63,7 +76,7 @@ export function OrganizationScreen() {
         ]} />
         <TabsContent value="info">
           <div className="mb-6 flex justify-end">
-            <UpdateOrganizationProfileDialog organization={organization} />
+            {canEditOrganization && <UpdateOrganizationProfileDialog organization={organization} />}
           </div>
           <div className="grid gap-6 lg:grid-cols-2">
             <AppSection title={t('sections.legal')}>

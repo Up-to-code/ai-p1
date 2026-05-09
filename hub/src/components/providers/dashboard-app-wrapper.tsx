@@ -10,22 +10,17 @@ import { Topbar } from "@/components/layout/topbar";
 import { ToastProvider } from "@/components/ui/toast";
 import { authClient } from "@/lib/auth-client";
 
-// This wrapper is the dashboard boundary: auth, active organization, and app-wide providers live here.
+// This wrapper is the dashboard boundary: auth and app-wide providers live here.
 export function DashboardAppWrapper({ children }: { children: ReactNode }) {
   const locale = useLocale();
   const session = authClient.useSession();
-  const activeOrganization = authClient.useActiveOrganization();
 
-  if (session.isPending || activeOrganization.isPending) {
+  if (session.isPending) {
     return <DashboardLoadingState />;
   }
 
   if (!session.data?.session) {
     redirect(`/${locale}/sign-in`);
-  }
-
-  if (!activeOrganization.data?.id) {
-    redirect(`/${locale}/choose-org`);
   }
 
   const isPendingApproval = false;

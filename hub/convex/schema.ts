@@ -22,4 +22,10 @@ export default defineSchema({
     summary: v.string(),
     createdAt: v.number(),
   }).index("by_organization_id", ["organizationId"]),
+  userProfiles: defineTable({
+    userId: v.string(),
+    avatarUrl: v.optional(v.string()),
+    avatarKey: v.optional(v.string()),
+    updatedAt: v.number(),
+  }).index("by_user_id", ["userId"]),
 });

@@ -9,9 +9,9 @@ interface ProfileState {
 
 export const useProfileStore = create<ProfileState>((set) => ({
   profile: {
-    name: "Ahmed Mansour",
-    email: "ahmed@acme.com",
-    phone: "+966 500 000 000",
+    name: "Account",
+    email: "No email set",
+    phone: "",
     role: "Workspace Owner",
     language: "en",
     timezone: "Africa/Cairo",

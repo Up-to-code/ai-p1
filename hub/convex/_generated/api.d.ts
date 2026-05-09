@@ -15,6 +15,10 @@ import type * as organizations_profile_data from "../organizations/profile/data.
 import type * as organizations_profile_read from "../organizations/profile/read.js";
 import type * as organizations_profile_validators from "../organizations/profile/validators.js";
 import type * as organizations_profile_write from "../organizations/profile/write.js";
+import type * as userProfiles_data from "../userProfiles/data.js";
+import type * as userProfiles_read from "../userProfiles/read.js";
+import type * as userProfiles_validators from "../userProfiles/validators.js";
+import type * as userProfiles_write from "../userProfiles/write.js";
 
 import type {
   ApiFromModules,
@@ -30,6 +34,10 @@ declare const fullApi: ApiFromModules<{
   "organizations/profile/read": typeof organizations_profile_read;
   "organizations/profile/validators": typeof organizations_profile_validators;
   "organizations/profile/write": typeof organizations_profile_write;
+  "userProfiles/data": typeof userProfiles_data;
+  "userProfiles/read": typeof userProfiles_read;
+  "userProfiles/validators": typeof userProfiles_validators;
+  "userProfiles/write": typeof userProfiles_write;
 }>;
 
 /**

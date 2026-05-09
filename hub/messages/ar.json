@@ -24,9 +24,9 @@
     "Min___ 8 characters": "الحد الأدنى 8 أحرف",
     "Enter an invite code or use a shared link to join an existing workspace___": "أدخل كود الدعوة أو استخدم رابط المشاركة للانضمام إلى مساحة عمل موجودة.",
     "Register your company and complete the setup wizard to start synchronizing data___": "سجل شركتك وأكمل معالج الإعداد لبدء مزامنة البيانات.",
-    "Complete these required steps to submit your organization for approval___": "أكمل هذه الخطوات المطلوبة لتقديم مؤسستك للموافقة.",
+    "Complete these required steps to submit your organization for approval___": "أكمل الإعداد الأساسي لبدء استخدام مساحة العمل.",
     "Provide your company's registered legal information___": "قدم المعلومات القانونية المسجلة لشركتك.",
-    "Upload the required legal files and identify the authorized signer___": "ارفع الملفات القانونية المطلوبة وحدد المفوض بالتوقيع.",
+    "Upload the required legal files and identify the authorized signer___": "أضف الملفات القانونية لاحقاً عندما تتطلبها إحدى العمليات.",
     "Set your display identity for shared workspaces and approvals___": "حدد هوية العرض الخاصة بك لمساحات العمل المشتركة والموافقات.",
     "Invite teammates who should help manage listings, approvals, and integrations___": "ادعُ زملائك في الفريق الذين يجب أن يساعدوا في إدارة القوائم والموافقات والتكاملات."
   },
@@ -86,7 +86,10 @@
     "errorTitle": "حدث خطأ ما",
     "reviewFields": "يرجى مراجعة الحقول المطلوبة",
     "backToList": "العودة للقائمة",
-    "deleting": "جاري الحذف..."
+    "deleting": "جاري الحذف...",
+    "optional": "(اختياري)",
+    "skipStep": "تخطي هذه الخطوة",
+    "saveAndExit": "حفظ وخروج"
   },
   "Sidebar": {
     "groups": {
@@ -1134,15 +1137,56 @@
     "sections": {
       "identity": "الهوية",
       "preferences": "التفضيلات",
-      "security": "جهة اتصال الأمان"
+      "security": "جهة اتصال الأمان",
+      "personal": "المعلومات الشخصية",
+      "personalDesc": "هويتك العامة داخل المنصة.",
+      "work": "معلومات العمل",
+      "workDesc": "منصبك ومهامك داخل المؤسسة.",
+      "accountData": "بيانات الحساب",
+      "accountDataDesc": "بيانات الهوية المباشرة من حسابك المسجل ومساحة العمل النشطة.",
+      "rolePerms": "الدور والصلاحيات",
+      "rolePermsDesc": "ما يمكنك الوصول إليه وإدارته في مساحة العمل.",
+      "language": "اللغة",
+      "languageDesc": "اختر لغة العرض المفضلة لديك.",
+      "timezone": "المنطقة الزمنية",
+      "timezoneDesc": "ستظهر جميع التواريخ والأوقات وفق هذه المنطقة الزمنية.",
+      "notifPrefs": "تفضيلات الإشعارات",
+      "notifPrefsDesc": "اختر ما تريد أن تُخطر به. التغييرات تُطبق فوراً.",
+      "accountIdentity": "هوية الحساب",
+      "accountIdentityDesc": "بيانات الاعتماد الأساسية المرتبطة بحسابك.",
+      "accessSecurity": "الوصول والأمان",
+      "accessSecurityDesc": "إدارة طرق المصادقة والتحكم في الوصول.",
+      "activeSessions": "الجلسات النشطة",
+      "activeSessionsDesc": "الأجهزة المسجلة دخولها حالياً في حسابك."
     },
     "form": {
       "nameLabel": "الاسم",
       "emailLabel": "البريد الإلكتروني",
-      "phoneLabel": "الهاتف",
+      "phoneLabel": "رقم الهاتف (اختياري)",
       "roleLabel": "الدور",
       "languageLabel": "اللغة",
-      "timezoneLabel": "المنطقة الزمنية"
+      "timezoneLabel": "المنطقة الزمنية",
+      "phoneTooltip": "يُستخدم لاسترداد الحساب والتحقق بخطوتين.",
+      "roleTooltip": "مسمى وظيفتك أو منصبك. يظهر لأعضاء الفريق الآخرين.",
+      "avatarUpload": "تغيير الصورة",
+      "avatarCropTitle": "قص صورة الملف الشخصي",
+      "avatarApply": "تطبيق",
+      "avatarCancel": "إلغاء",
+      "avatarZoom": "تكبير",
+      "avatarChooseImage": "اختر ملف صورة.",
+      "avatarCropPrepareError": "تعذر تجهيز قص الصورة.",
+      "avatarCropExportError": "تعذر تصدير الصورة المقصوصة.",
+      "avatarSaveError": "تعذر حفظ صورة الملف الشخصي.",
+      "avatarUploadMissingUrl": "اكتمل الرفع بدون رابط للملف.",
+      "avatarUploadFailed": "فشل رفع صورة الملف الشخصي.",
+      "avatarRemove": "إزالة صورة الملف الشخصي",
+      "avatarUploadSavedTitle": "تم حفظ صورة الملف الشخصي",
+      "avatarUploadSavedDescription": "تم استبدال الصورة القديمة وحفظ الصورة الجديدة تلقائياً.",
+      "avatarRemoveSavedTitle": "تمت إزالة صورة الملف الشخصي",
+      "avatarRemoveSavedDescription": "تمت إزالة صورة الملف الشخصي وحفظ التغيير تلقائياً.",
+      "avatarDesc": "JPG أو PNG، الحد الأقصى 2 ميجابايت",
+      "orgType": "نوع المؤسسة",
+      "timezoneTooltip": "مثال: Asia/Riyadh — يؤثر على طريقة عرض الطوابع الزمنية."
     },
     "notifications": {
       "product": "المنتج",
@@ -1150,17 +1194,92 @@
       "billing": "الفوترة",
       "security": "الأمان",
       "on": "مفعل",
-      "off": "معطل"
+      "off": "معطل",
+      "enabledNote": "مفعّل · ستتلقى هذه التنبيهات",
+      "disabledNote": "معطّل · لا تنبيهات لهذه الفئة"
     },
     "contact": {
       "owner": "المالك",
       "email": "البريد الإلكتروني",
       "phone": "الهاتف"
-    }
+    },
+    "account": {
+      "name": "اسم المستخدم",
+      "email": "بريد المستخدم",
+      "organization": "المؤسسة",
+      "workspaceStatus": "حالة مساحة العمل",
+      "userId": "معرف المستخدم",
+      "brand": "العلامة التجارية",
+      "defaultBrand": "العلامة الافتراضية"
+    },
+    "tabs": {
+      "profile": "الملف الشخصي",
+      "preferences": "التفضيلات",
+      "notifications": "الإشعارات",
+      "security": "الأمان"
+    },
+    "roles": {
+      "organizationAdmin": "مدير المؤسسة",
+      "projectManager": "مدير المشروع",
+      "projectEditor": "محرر المشروع",
+      "viewer": "مشاهد",
+      "adminNote": "لطلب تغيير الدور، تواصل مع مدير المؤسسة.",
+      "setByAdmin": "يحدده مدير المؤسسة",
+      "currentRole": "الدور الحالي",
+      "active": "نشط"
+    },
+    "permissions": {
+      "manageMembers": "إدارة الأعضاء",
+      "editOrganization": "تعديل المؤسسة",
+      "viewBilling": "عرض الفواتير",
+      "apiAccess": "وصول API",
+      "allProjects": "جميع المشاريع",
+      "createProjects": "إنشاء المشاريع",
+      "assignTasks": "تعيين المهام",
+      "viewReports": "عرض التقارير",
+      "inviteMembers": "دعوة الأعضاء",
+      "editProjects": "تعديل المشاريع",
+      "uploadDocuments": "رفع المستندات",
+      "addComments": "إضافة تعليقات",
+      "viewProjects": "عرض المشاريع",
+      "downloadReports": "تنزيل التقارير",
+      "title": "الصلاحيات"
+    },
+    "security": {
+      "fullName": "الاسم الكامل",
+      "fullNameNote": "يظهر لزملاء الفريق والعملاء",
+      "emailAddress": "البريد الإلكتروني",
+      "emailNote": "يُستخدم لتسجيل الدخول وإشعارات النظام",
+      "phoneNumber": "رقم الهاتف",
+      "phoneNote": "الاسترداد والتحقق بخطوتين",
+      "password": "كلمة المرور",
+      "passwordNote": "آخر تغيير: لم يتم",
+      "twoFactor": "التحقق بخطوتين",
+      "twoFactorValue": "غير مفعّل",
+      "twoFactorNote": "أضف طبقة أمان إضافية لحسابك",
+      "changeBtn": "تغيير",
+      "enableBtn": "تفعيل",
+      "thisDevice": "هذا الجهاز",
+      "deviceDetail": "macOS · Chrome · نشط الآن",
+      "current": "الحالي",
+      "authMethod": "طريقة المصادقة",
+      "googleAuth": "حساب جوجل",
+      "googleNote": "تتم إدارة أمانك وكلمة مرورك بواسطة جوجل",
+      "manageBtn": "إدارة",
+      "oauthSafetyNote": "نظراً لأنك تستخدم تسجيل الدخول الاجتماعي، فإن حسابك محمي بميزات الأمان المتقدمة لمزود الخدمة الخاص بك، بما في ذلك التحقق بخطوتين وتنبيهات تسجيل الدخول."
+    },
+    "languages": {
+      "en": "الإنجليزية",
+      "ar": "العربية"
+    },
+    "saveOperationError": "فشل حفظ الملف الشخصي.",
+    "saveOperationSuccess": "تم حفظ الملف الشخصي بنجاح.",
+    "notifOperationError": "فشل تحديث الإشعارات.",
+    "notifOperationSuccess": "تم تحديث الإشعارات بنجاح."
   },
   "Onboarding": {
     "title": "إعداد مؤسستك",
-    "subtitle": "أكمل هذه الخطوات المطلوبة لتقديم مؤسستك للمراجعة والاعتماد.",
+    "subtitle": "أكمل الإعداد الأساسي لبدء استخدام مساحة العمل. يمكن إضافة المستندات القانونية لاحقاً عند الحاجة.",
     "stepper": {
       "company": "معلومات الشركة",
       "legal": "الوثائق القانونية",
@@ -1174,8 +1293,18 @@
       "displayName": "اسم العرض",
       "crNumber": "رقم السجل التجاري",
       "city": "مدينة المقر الرئيسي",
-      "saveDraft": "حفظ كمسودة",
-      "continue": "المتابعة للخطوة ٢"
+      "saveAndExit": "حفظ وخروج",
+      "optional": "(اختياري)",
+      "continue": "المتابعة للخطوة ٢",
+      "crTooltip": "مطلوب للتحقق الرسمي من الحكومة.",
+      "legalNamePlaceholder": "مثال: شركة أكمي العقارية ذ.م.م",
+      "displayNamePlaceholder": "مثال: أكمي",
+      "crNumberPlaceholder": "1010XXXXXX",
+      "cityPlaceholder": "مثال: الرياض",
+      "legalNameTooltip": "الاسم القانوني الكامل كما هو مسجل في الوثائق الرسمية.",
+      "displayNameTooltip": "الاسم الذي سيظهر لفريقك وعملائك.",
+      "cityTooltip": "المدينة التي يقع فيها المكتب الرئيسي لشركتك.",
+      "saveDraft": "حفظ مسودة"
     },
     "legal": {
       "title": "الوثائق القانونية",
@@ -1186,7 +1315,13 @@
       "crDesc": "PDF أو PNG أو JPG (بحد أقصى ١٠ ميجابايت)",
       "authLetter": "خطاب التفويض",
       "authDesc": "PDF أو PNG أو JPG (بحد أقصى ١٠ ميجابايت). يجب أن يكون واضحاً.",
-      "continue": "المتابعة للخطوة ٣"
+      "continue": "المتابعة للخطوة ٣",
+      "nameTooltip": "الشخص المخول قانونياً بالتوقيع نيابة عن الشركة.",
+      "titleTooltip": "المسمى الوظيفي الرسمي للموقع المفوض.",
+      "crDocTooltip": "نسخة من مستند السجل التجاري الخاص بك.",
+      "authLetterTooltip": "خطاب رسمي يفوض الموقع.",
+      "signerNamePlaceholder": "مثال: أحمد منصور",
+      "signerTitlePlaceholder": "مثال: الرئيس التنفيزي"
     },
     "brand": {
       "title": "الشعار والعلامة التجارية",
@@ -1195,7 +1330,11 @@
       "color": "لون العلامة التجارية (Hex)",
       "logo": "شعار المؤسسة",
       "logoDesc": "PNG أو JPG أو SVG. يفضل أن يكون ٤٠٠×٤٠٠ بكسل كحد أدنى.",
-      "continue": "المتابعة للخطوة ٤"
+      "continue": "المتابعة لدعوة الفريق",
+      "brandNamePlaceholder": "مثال: أكمي",
+      "brandNameTooltip": "الاسم الأساسي لعلامتك التجارية.",
+      "brandColorTooltip": "اللون الأساسي المرتبط بهوية علامتك التجارية.",
+      "logoTooltip": "شعار علامتك التجارية الرسمي."
     },
     "team": {
       "title": "دعوة أعضاء الفريق",
@@ -1207,7 +1346,10 @@
       "tableRole": "الدور",
       "tableActions": "الإجراءات",
       "skip": "تخطي الدعوات",
-      "submit": "تقديم للمراجعة"
+      "submit": "إنهاء",
+      "emailPlaceholder": "colleague@company.com",
+      "emailTooltip": "البريد الإلكتروني لعضو الفريق الذي ترغب في دعوته.",
+      "roleTooltip": "مستوى الصلاحيات الممنوحة لعضو الفريق هذا."
     },
     "common": {
       "uploadOrDrag": "انقر للرفع أو اسحب وأفلت"

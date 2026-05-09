@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Link, useRouter } from "@/i18n/routing";
+import { useAccountContext } from "@/domains/auth";
 import { useProjectsStore } from "@/domains/projects";
 import { usePropertiesStore } from "@/domains/properties";
 import type { Project, ProjectStatus } from "../store/projects.types";
@@ -203,6 +204,7 @@ export function ProjectsWorkspace() {
 export function ProjectDetailScreen({ id }: { id: string }) {
   const t = useTranslations('Projects');
   const td = useTranslations('ProjectDetails');
+  const account = useAccountContext();
   const project = useProjectsStore((state) => state.getById(id));
   const deleteProject = useProjectsStore((state) => state.deleteProject);
   const allUnits = usePropertiesStore((state) => state.units);
@@ -419,7 +421,7 @@ export function ProjectDetailScreen({ id }: { id: string }) {
                 { event: "Inventory Synced", actor: "System", date: "2h ago", icon: History },
                 { event: "Price Updated", actor: "Sarah Ahmed", date: "1d ago", icon: Edit },
                 { event: "Media Vault Approved", actor: "Institutional Node", date: "3d ago", icon: Share2 },
-                { event: "Project Created", actor: "Ahmed Mansour", date: "1w ago", icon: Plus },
+                { event: "Project Created", actor: account.user.name, date: "1w ago", icon: Plus },
               ].map((log) => (
                 <div key={log.event} className="flex gap-4">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-50 dark:bg-white/[0.02]">
