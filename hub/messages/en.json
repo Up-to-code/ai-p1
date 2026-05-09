@@ -63,7 +63,6 @@
       "searchDesc": "Quickly find projects, units, or legal files across the entire index."
     }
   },
-
   "Common": {
     "save": "Save",
     "cancel": "Cancel",
@@ -189,6 +188,9 @@
     "title": "Welcome Back",
     "description": "Sign in to access your real estate data hub.",
     "google": "Sign in with Google",
+    "connecting": "Connecting...",
+    "createAccount": "Create an Account",
+    "createAccountDesc": "Join the central synchronization engine for Saudi real estate.",
     "encrypted": "End-to-end encrypted",
     "clearTerms": "Clear legal terms",
     "agreementPrefix": "By continuing, you agree to our",
@@ -445,105 +447,105 @@
       "sales": "Sales"
     },
     "gallery": {
-       "label": "Primary Asset Visual",
-       "perspective": "Exterior Perspective.",
-       "vault": "Media Vault"
+      "label": "Primary Asset Visual",
+      "perspective": "Exterior Perspective.",
+      "vault": "Media Vault"
     },
     "narrative": {
-       "title": "Asset Narrative"
+      "title": "Asset Narrative"
     },
     "config": {
-       "title": "Configuration"
+      "title": "Configuration"
     },
     "specs": {
-       "infrastructure": "Infrastructure",
-       "utilities": "Utilities",
-       "orientation": "Orientation",
-       "gridConnection": "Grid Connection",
-       "waterSupply": "Water Supply",
-       "live": "Live",
-       "ready": "Ready",
-       "verified": "Verified"
+      "infrastructure": "Infrastructure",
+      "utilities": "Utilities",
+      "orientation": "Orientation",
+      "gridConnection": "Grid Connection",
+      "waterSupply": "Water Supply",
+      "live": "Live",
+      "ready": "Ready",
+      "verified": "Verified"
     },
     "market": {
-       "value": "Estimated Market Value",
-       "avgRate": "Avg. Rate",
-       "paymentPlan": "Payment Plan"
+      "value": "Estimated Market Value",
+      "avgRate": "Avg. Rate",
+      "paymentPlan": "Payment Plan"
     },
     "registry": {
-       "title": "Registry Data",
-       "planNo": "Plan No.",
-       "plotNo": "Plot No.",
-       "postalIdentity": "Postal Identity"
+      "title": "Registry Data",
+      "planNo": "Plan No.",
+      "plotNo": "Plot No.",
+      "postalIdentity": "Postal Identity"
     },
     "rega": {
-       "title": "REGA License",
-       "authNo": "Authorization No.",
-       "expires": "Exp: {date}"
+      "title": "REGA License",
+      "authNo": "Authorization No.",
+      "expires": "Exp: {date}"
     },
     "inventory": {
-       "title": "Units Inventory.",
-       "subtitle": "Active units within the project portfolio",
-       "addUnit": "Add Unit",
-       "cols": {
-          "ref": "Reference",
-          "type": "Type",
-          "status": "Status",
-          "price": "Price (SAR)",
-          "area": "Area",
-          "layout": "Layout",
-          "updated": "Updated"
-       }
+      "title": "Units Inventory.",
+      "subtitle": "Active units within the project portfolio",
+      "addUnit": "Add Unit",
+      "cols": {
+        "ref": "Reference",
+        "type": "Type",
+        "status": "Status",
+        "price": "Price (SAR)",
+        "area": "Area",
+        "layout": "Layout",
+        "updated": "Updated"
+      }
     },
     "activity": {
-       "subtitle": "Chronological ledger of asset lifecycle events"
+      "subtitle": "Chronological ledger of asset lifecycle events"
     },
     "documents": {
-       "title": "Asset Documents",
-       "subtitle": "Manage and verify official project documentation",
-       "upload": "Upload Files",
-       "uploadModalTitle": "Upload Asset Media",
-       "uploadModalDesc": "Drag and drop project files to start the verification process",
-       "dropzoneTitle": "Drop institutional files here",
-       "dropzoneSubtitle": "or click to browse local vault",
-       "readyForDeployment": "Ready for Deployment",
-       "signatureActive": "Cryptographic signature active"
+      "title": "Asset Documents",
+      "subtitle": "Manage and verify official project documentation",
+      "upload": "Upload Files",
+      "uploadModalTitle": "Upload Asset Media",
+      "uploadModalDesc": "Drag and drop project files to start the verification process",
+      "dropzoneTitle": "Drop institutional files here",
+      "dropzoneSubtitle": "or click to browse local vault",
+      "readyForDeployment": "Ready for Deployment",
+      "signatureActive": "Cryptographic signature active"
     },
     "actions": {
-       "projectTitle": "Project Actions",
-       "unitTitle": "Unit Actions",
-       "docTitle": "Document Actions",
-       "edit": "Edit Asset",
-       "share": "Share Intelligence",
-       "archive": "Archive Asset",
-       "view": "View",
-       "duplicate": "Duplicate",
-       "delete": "Delete",
-       "download": "Download",
-       "cancel": "Cancel",
-       "apply": "Apply Files"
+      "projectTitle": "Project Actions",
+      "unitTitle": "Unit Actions",
+      "docTitle": "Document Actions",
+      "edit": "Edit Asset",
+      "share": "Share Intelligence",
+      "archive": "Archive Asset",
+      "view": "View",
+      "duplicate": "Duplicate",
+      "delete": "Delete",
+      "download": "Download",
+      "cancel": "Cancel",
+      "apply": "Apply Files"
     },
     "aiInsights": {
-       "title": "AI Structural Analysis",
-       "subtitle": "Predictive ROI & Market Velocity",
-       "roi": "Projected ROI",
-       "velocity": "Absorption Rate",
-       "confidence": "Analysis Confidence",
-       "summary": "AI models predict a high absorption rate for Al Madinah Residences due to its proximity to the KAFD metro hub. Market velocity is expected to peak in Q4 2026."
+      "title": "AI Structural Analysis",
+      "subtitle": "Predictive ROI & Market Velocity",
+      "roi": "Projected ROI",
+      "velocity": "Absorption Rate",
+      "confidence": "Analysis Confidence",
+      "summary": "AI models predict a high absorption rate for Al Madinah Residences due to its proximity to the KAFD metro hub. Market velocity is expected to peak in Q4 2026."
     },
     "sales": {
-       "title": "Sales Performance",
-       "subtitle": "Inventory absorption and revenue metrics",
-       "metrics": {
-          "totalRevenue": "Total Revenue",
-          "avgUnitPrice": "Avg. Unit Price",
-          "absorptionRate": "Absorption Rate",
-          "leadsConverted": "Leads Converted"
-       },
-       "reports": {
-          "title": "Sales Reports",
-          "downloadAll": "Download All Reports"
-       }
+      "title": "Sales Performance",
+      "subtitle": "Inventory absorption and revenue metrics",
+      "metrics": {
+        "totalRevenue": "Total Revenue",
+        "avgUnitPrice": "Avg. Unit Price",
+        "absorptionRate": "Absorption Rate",
+        "leadsConverted": "Leads Converted"
+      },
+      "reports": {
+        "title": "Sales Reports",
+        "downloadAll": "Download All Reports"
+      }
     }
   },
   "Clients": {
@@ -1121,6 +1123,7 @@
   "Profile": {
     "eyebrow": "Personal workspace",
     "title": "Profile Settings",
+    "subtitle": "Manage your identity, regional preferences, and notification strategies across the Anand ecosystem.",
     "saveBtn": "Save Changes",
     "stats": {
       "role": "Role",
@@ -1142,9 +1145,10 @@
       "timezoneLabel": "Timezone"
     },
     "notifications": {
-      "email": "Email",
-      "push": "Push",
-      "sms": "SMS",
+      "product": "Product",
+      "approvals": "Approvals",
+      "billing": "Billing",
+      "security": "Security",
       "on": "On",
       "off": "Off"
     },
@@ -1208,5 +1212,24 @@
     "common": {
       "uploadOrDrag": "Click to upload or drag and drop"
     }
+  },
+  "ChooseOrg": {
+    "title": "Welcome to anan Hub",
+    "subtitle": "How would you like to get started?",
+    "joinTitle": "I was invited to an organization",
+    "joinDesc": "Enter an invite code or use a shared link to join an existing workspace.",
+    "joinCodeLabel": "Invite Code or Link",
+    "joinCodePlaceholder": "e.g. INV-8X3K9",
+    "joinBtn": "Join Workspace",
+    "joinHelp": "Ask your organization admin for an invite code, or check your email for an invitation link.",
+    "createTitle": "Create a new organization",
+    "createDesc": "Register your company and complete the setup wizard to start synchronizing data.",
+    "createNameLabel": "Organization Name",
+    "createNamePlaceholder": "e.g. Acme Real Estate",
+    "createTypeLabel": "Organization Type",
+    "createTypePlaceholder": "Select your organization type",
+    "typeBroker": "Broker",
+    "typeDeveloper": "Developer",
+    "createBtn": "Start Setup"
   }
 }

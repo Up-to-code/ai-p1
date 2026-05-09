@@ -138,29 +138,31 @@ export function AppPageHeader({
   className,
 }: AppPageHeaderProps) {
   return (
-    <header className={cn("flex flex-col gap-6 border-b border-zinc-100 pb-5 text-start dark:border-white/5 md:flex-row md:items-end md:justify-between", className)}>
-      <div className="min-w-0 space-y-2">
+    <header className={cn("relative overflow-hidden flex flex-col gap-8 border-b border-zinc-100 pb-10 text-start dark:border-white/5 md:flex-row md:items-end md:justify-between animate-in fade-in slide-in-from-top-4 duration-1000", className)}>
+      <div className="relative z-10 min-w-0 space-y-3">
         {eyebrow && (
-          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.35em] text-zinc-400">
-            <div className="h-0.5 w-6 bg-zinc-200 dark:bg-white/10" />
+          <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
+            <div className="h-px w-8 bg-zinc-200 dark:bg-white/10" />
             <span className="truncate">{eyebrow}</span>
           </div>
         )}
-        <h1 className="truncate text-3xl font-black uppercase leading-none tracking-tighter text-zinc-900 dark:text-white md:text-4xl">
+        <h1 className="truncate text-4xl font-black uppercase leading-none tracking-tighter text-zinc-900 dark:text-white md:text-5xl">
           {title}
         </h1>
         {subtitle && (
-          <p className="max-w-2xl text-sm font-medium leading-6 text-zinc-500 dark:text-zinc-400">
+          <p className="max-w-2xl text-sm font-medium leading-relaxed tracking-tight text-zinc-500 dark:text-zinc-400">
             {subtitle}
           </p>
         )}
       </div>
       {(context || actions) && (
-        <div className="flex shrink-0 flex-wrap items-center gap-3">
+        <div className="relative z-10 flex shrink-0 flex-wrap items-center gap-4">
           {context}
           {actions}
         </div>
       )}
+      {/* Institutional canvas flair */}
+      <div className="absolute right-0 top-0 h-32 w-32 translate-x-16 -translate-y-16 rounded-full bg-zinc-50/50 blur-3xl dark:bg-white/[0.02]" />
     </header>
   );
 }

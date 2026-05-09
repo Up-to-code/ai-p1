@@ -7,6 +7,9 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { UiLocalizer } from '@/components/i18n/ui-localizer';
+import { BackendProviders } from "@/components/providers/backend-providers";
+import { getToken } from "@/server/auth/better-auth/server";
+import { ToastProvider } from "@/components/ui/toast";
 
 type Locale = (typeof routing.locales)[number];
 
@@ -51,6 +54,7 @@ export default async function RootLayout({
   // Providing all messages to the client
   // side is the easiest way to get started
   const messages = await getMessages();
+  const initialToken = await getToken().catch(() => undefined);
 
   return (
     <html
@@ -60,10 +64,14 @@ export default async function RootLayout({
     >
       <body className={`h-full flex flex-col bg-background text-text-primary ${locale === 'ar' ? 'font-cairo' : ''}`}>
         <NextIntlClientProvider messages={messages}>
-          <TooltipProvider>
-            <UiLocalizer />
-            {children}
-          </TooltipProvider>
+          <BackendProviders initialToken={initialToken}>
+            <TooltipProvider>
+              <ToastProvider>
+                <UiLocalizer />
+                {children}
+              </ToastProvider>
+            </TooltipProvider>
+          </BackendProviders>
         </NextIntlClientProvider>
       </body>
     </html>

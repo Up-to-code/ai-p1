@@ -3,34 +3,39 @@
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useConvexAuth, useQuery } from "convex/react";
 import type { LucideIcon } from "lucide-react";
-import { Building2, Check, Code, Globe, KeyRound, Mail, Phone, ShieldCheck, Trash2, UserPlus, Users } from "lucide-react";
+import { Building2, Code, Globe, KeyRound, Mail, Pencil, Phone, ShieldCheck, Users } from "lucide-react";
+import { api } from "@convex/_generated/api";
 import { AppDataTable, AppPageHeader, AppPageShell, AppPrimaryButton, AppSection, AppStatsGrid, AppTabsList, type AppDataTableColumn } from "@/components/shared";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/toast";
 import { useOrganizationStore } from "@/domains/organization";
+import { demoApiKeys, demoApps, demoOrganization, demoTeam } from "../data/demo-organization";
 import type { ApiKey, TeamMember } from "../store/organization.types";
-import { apiKeySchema, teamMemberSchema, type ApiKeyFormValues, type TeamMemberFormValues } from "../validation/organization.schema";
-import { useOperationState } from "@/lib/utils/operation-state";
-import { ChoiceGrid, DeleteRecordDialog, FormErrorSummary, StatusPill, TextInput } from "@/components/shared/crud-ui";
+import { updateOrganizationProfileSchema, type UpdateOrganizationProfileValues } from "../validation/organization.schema";
+import { useUpdateOrganizationProfileMutation } from "../api/use-update-profile";
+import { FormErrorSummary, StatusPill, TextInput } from "@/components/shared/crud-ui";
 import { useTranslations } from "next-intl";
-
-const roles: TeamMember["role"][] = ["Owner", "Admin", "Manager", "Editor", "Viewer"];
-const apiScopes = ["Read", "Write", "Sync"] as const;
 
 export function OrganizationScreen() {
   const t = useTranslations('Organization');
-  const { organization, team, apiKeys, apps, updateMember, deleteMember, deleteApiKey } = useOrganizationStore();
-  const [deletingMember, setDeletingMember] = useState<TeamMember | null>(null);
-  const [deletingKey, setDeletingKey] = useState<ApiKey | null>(null);
-  const memberDeleteOperation = useOperationState({ errorMessage: "Team member removal failed." });
-  const keyDeleteOperation = useOperationState({ errorMessage: "API key delete failed." });
+  const { isAuthenticated } = useConvexAuth();
+  const selectedOrganizationId = useOrganizationStore((state) => state.selectedOrganizationId);
+  const liveOrganization = useQuery(
+    api.organizations.profile.read.getProfile,
+    isAuthenticated ? { organizationId: selectedOrganizationId } : "skip",
+  );
+  const organization = liveOrganization ?? demoOrganization;
+  const team = demoTeam;
+  const apiKeys = demoApiKeys;
+  const apps = demoApps;
 
   const teamColumns: AppDataTableColumn<TeamMember>[] = [
     { key: "name", header: t('team.memberCol'), render: (member) => <div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-50 font-black dark:bg-white/5">{member.name.charAt(0)}</div><div><p className="text-xs font-black uppercase text-zinc-900 dark:text-white">{member.name}</p><p className="mt-1 text-[9px] font-black uppercase tracking-widest text-zinc-400">{member.email}</p></div></div> },
-    { key: "role", header: t('team.roleCol'), render: (member) => <select aria-label={`Role for ${member.name}`} value={member.role} onChange={(event) => updateMember(member.id, { role: event.target.value as TeamMember["role"] })} className="rounded-xl border border-zinc-100 bg-zinc-50 px-3 py-2 text-[10px] font-black uppercase tracking-widest focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:border-white/5 dark:bg-white/[0.02]">{roles.map((role) => <option key={role} value={role}>{t(`roles.${role}`)}</option>)}</select> },
+    { key: "role", header: t('team.roleCol'), render: (member) => <StatusPill label={t(`roles.${member.role}`)} tone="neutral" /> },
     { key: "status", header: t('team.statusCol'), render: (member) => <StatusPill label={member.status} tone={member.status === "Active" ? "success" : "warning"} /> },
-    { key: "actions", header: "", align: "end", render: (member) => <button type="button" aria-label={`Remove ${member.name}`} onClick={() => setDeletingMember(member)} className="p-2 text-zinc-300 hover:text-red-500 focus-visible:ring-2 focus-visible:ring-red-500/20"><Trash2 className="h-3.5 w-3.5" aria-hidden="true" /></button> },
   ];
 
   const keyColumns: AppDataTableColumn<ApiKey>[] = [
@@ -38,7 +43,6 @@ export function OrganizationScreen() {
     { key: "token", header: t('api.tokenCol') },
     { key: "scopes", header: t('api.scopesCol'), render: (key) => <div className="flex flex-wrap gap-2">{key.scopes.map((scope) => <StatusPill key={scope} label={t(`api.scopes.${scope.toLowerCase()}`)} tone="info" />)}</div> },
     { key: "created", header: t('api.createdCol') },
-    { key: "actions", header: "", align: "end", render: (key) => <button type="button" aria-label={`Delete ${key.name}`} onClick={() => setDeletingKey(key)} className="p-2 text-zinc-300 hover:text-red-500 focus-visible:ring-2 focus-visible:ring-red-500/20"><Trash2 className="h-3.5 w-3.5" aria-hidden="true" /></button> },
   ];
 
   return (
@@ -58,28 +62,30 @@ export function OrganizationScreen() {
           { value: "api", label: t('tabs.api') }
         ]} />
         <TabsContent value="info">
+          <div className="mb-6 flex justify-end">
+            <UpdateOrganizationProfileDialog organization={organization} />
+          </div>
           <div className="grid gap-6 lg:grid-cols-2">
             <AppSection title={t('sections.legal')}>
               <div className="space-y-5">
                 {[
-                  { label: t('labels.legalName'), value: organization.legalName, icon: Building2 },
+                  { label: t('labels.legalName'), value: organization.legalName ?? "Not set", icon: Building2 },
                   { label: t('labels.displayName'), value: organization.name, icon: Building2 },
-                  { label: t('labels.type'), value: organization.type, icon: ShieldCheck },
-                  { label: t('labels.address'), value: organization.address, icon: Globe },
+                  { label: t('labels.type'), value: organization.type ?? "Not set", icon: ShieldCheck },
+                  { label: t('labels.address'), value: organization.address ?? "Not set", icon: Globe },
                 ].map((item) => <InfoRow key={item.label} label={item.label} value={item.value} icon={item.icon} />)}
               </div>
             </AppSection>
             <AppSection title={t('sections.contact')}>
               <div className="space-y-5">
-                <InfoRow label={t('labels.email')} value={organization.email} icon={Mail} />
-                <InfoRow label={t('labels.phone')} value={organization.phone} icon={Phone} />
-                <InfoRow label={t('labels.website')} value={organization.website} icon={Globe} />
+                <InfoRow label={t('labels.email')} value={organization.email ?? "Not set"} icon={Mail} />
+                <InfoRow label={t('labels.phone')} value={organization.phone ?? "Not set"} icon={Phone} />
+                <InfoRow label={t('labels.website')} value={organization.website ?? "Not set"} icon={Globe} />
               </div>
             </AppSection>
           </div>
         </TabsContent>
         <TabsContent value="team" className="space-y-6">
-          <div className="flex justify-end"><InviteMemberDialog /></div>
           <AppDataTable columns={teamColumns} data={team} getRowKey={(member) => member.id} />
         </TabsContent>
         <TabsContent value="apps">
@@ -92,44 +98,9 @@ export function OrganizationScreen() {
           </div>
         </TabsContent>
         <TabsContent value="api" className="space-y-6">
-          <div className="flex justify-end"><CreateApiKeyDialog /></div>
           <AppDataTable columns={keyColumns} data={apiKeys} getRowKey={(key) => key.id} />
         </TabsContent>
       </Tabs>
-      <DeleteRecordDialog
-        open={Boolean(deletingMember)}
-        onOpenChange={(open) => {
-          if (!open) {
-            memberDeleteOperation.clearError();
-            setDeletingMember(null);
-          }
-        }}
-        title={t('team.removeTitle')}
-        description={t('team.removeDesc', { name: deletingMember?.name ?? "..." })}
-        isDeleting={memberDeleteOperation.isRunning}
-        error={memberDeleteOperation.error}
-        onConfirm={() => memberDeleteOperation.run(() => {
-          if (!deletingMember || !team.some((member) => member.id === deletingMember.id)) throw new Error("This member is no longer available.");
-          deleteMember(deletingMember.id);
-        }, { successMessage: "Team member removed.", onSuccess: () => setDeletingMember(null) })}
-      />
-      <DeleteRecordDialog
-        open={Boolean(deletingKey)}
-        onOpenChange={(open) => {
-          if (!open) {
-            keyDeleteOperation.clearError();
-            setDeletingKey(null);
-          }
-        }}
-        title={t('api.deleteTitle')}
-        description={t('api.deleteDesc', { name: deletingKey?.name ?? "..." })}
-        isDeleting={keyDeleteOperation.isRunning}
-        error={keyDeleteOperation.error}
-        onConfirm={() => keyDeleteOperation.run(() => {
-          if (!deletingKey || !apiKeys.some((key) => key.id === deletingKey.id)) throw new Error("This API key is no longer available.");
-          deleteApiKey(deletingKey.id);
-        }, { successMessage: "API key deleted.", onSuccess: () => setDeletingKey(null) })}
-      />
     </AppPageShell>
   );
 }
@@ -150,132 +121,89 @@ function InfoRow({ label, value, icon: Icon }: { label: string; value: string; i
   );
 }
 
-function InviteMemberDialog() {
-  const t = useTranslations('Organization');
-  const createMember = useOrganizationStore((state) => state.createMember);
+function UpdateOrganizationProfileDialog({ organization }: { organization: UpdateOrganizationProfileValues & { organizationId: string } }) {
   const [open, setOpen] = useState(false);
-  const { control, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm<TeamMemberFormValues>({
-    resolver: zodResolver(teamMemberSchema),
-    defaultValues: { name: "", email: "", role: "Editor" },
+  const { toast } = useToast();
+  const updateProfile = useUpdateOrganizationProfileMutation(organization.organizationId);
+  const { control, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm<UpdateOrganizationProfileValues>({
+    resolver: zodResolver(updateOrganizationProfileSchema),
+    defaultValues: {
+      name: organization.name,
+      legalName: organization.legalName,
+      type: organization.type,
+      email: organization.email,
+      phone: organization.phone,
+      website: organization.website,
+      address: organization.address,
+    },
   });
-  const form = useWatch({ control }) as TeamMemberFormValues;
-  const fieldErrors = Object.fromEntries(Object.entries(errors).map(([key, error]) => [key, error?.message])) as Record<keyof TeamMemberFormValues, string | undefined>;
-  const inviteOperation = useOperationState({ errorMessage: "Member invite failed." });
-
-  function updateField<TKey extends keyof TeamMemberFormValues>(key: TKey, value: TeamMemberFormValues[TKey]) {
-    setValue(key, value as never, { shouldDirty: true, shouldValidate: Boolean(fieldErrors[key]) });
-    inviteOperation.clearError();
-  }
+  const form = useWatch({ control }) as UpdateOrganizationProfileValues;
+  const fieldErrors = Object.fromEntries(Object.entries(errors).map(([key, error]) => [key, error?.message ?? ""])) as Record<keyof UpdateOrganizationProfileValues, string>;
 
   function handleOpenChange(nextOpen: boolean) {
     setOpen(nextOpen);
-    if (!nextOpen) {
-      reset();
-      inviteOperation.clearError();
+    if (nextOpen) {
+      reset({
+        name: organization.name,
+        legalName: organization.legalName,
+        type: organization.type,
+        email: organization.email,
+        phone: organization.phone,
+        website: organization.website,
+        address: organization.address,
+      });
     }
   }
+
+  function updateField(key: keyof UpdateOrganizationProfileValues, value: string) {
+    const options = { shouldDirty: true, shouldValidate: Boolean(fieldErrors[key]) };
+
+    if (key === "name") setValue("name", value, options);
+    if (key === "legalName") setValue("legalName", value, options);
+    if (key === "type") setValue("type", value, options);
+    if (key === "email") setValue("email", value, options);
+    if (key === "phone") setValue("phone", value, options);
+    if (key === "website") setValue("website", value, options);
+    if (key === "address") setValue("address", value, options);
+  }
+
   const onSubmit = handleSubmit((data) => {
-    inviteOperation.run(() => createMember(data), {
-      successMessage: "Team member invited.",
+    updateProfile.mutate(data, {
       onSuccess: () => {
-        reset();
+        toast({ title: "Organization profile updated.", type: "success" });
         setOpen(false);
+      },
+      onError: (error) => {
+        toast({ title: "Organization update failed.", description: error.message, type: "error" });
       },
     });
   });
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger render={<AppPrimaryButton><UserPlus className="me-2 h-3.5 w-3.5" />{t('team.invite')}</AppPrimaryButton>} />
-      <DialogContent className="max-w-md rounded-[32px] border-zinc-100 bg-white p-8 shadow-none dark:border-white/5 dark:bg-[#0A0A0A]">
+      <DialogTrigger render={<AppPrimaryButton><Pencil className="me-2 h-3.5 w-3.5" />Edit profile</AppPrimaryButton>} />
+      <DialogContent className="max-w-xl rounded-[32px] border-zinc-100 bg-white p-8 shadow-none dark:border-white/5 dark:bg-[#0A0A0A]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-black uppercase tracking-tight">{t('team.inviteTitle')}</DialogTitle>
-          <DialogDescription>{t('team.inviteDesc')}</DialogDescription>
+          <DialogTitle className="text-2xl font-black uppercase tracking-tight">Edit organization</DialogTitle>
+          <DialogDescription>Keep the business profile current for every workspace member.</DialogDescription>
         </DialogHeader>
-        <div className="space-y-5">
-          <FormErrorSummary errors={fieldErrors} />
-          <TextInput name="name" label={t('team.nameLabel')} value={form.name} onChange={(value) => updateField("name", value)} placeholder="Sara Al-Rashid…" autoComplete="name" error={fieldErrors.name} />
-          <TextInput name="email" label={t('team.emailLabel')} type="email" value={form.email} onChange={(value) => updateField("email", value)} placeholder="member@acme.com…" autoComplete="email" error={fieldErrors.email} />
-          <ChoiceGrid id="role" label={t('team.roleLabel')} value={form.role} onChange={(value) => updateField("role", value as TeamMember["role"])} columns="grid-cols-2" options={roles.map((item) => ({ value: item, label: t(`roles.${item}`) }))} error={fieldErrors.role} />
-        </div>
-        <DialogFooter>
-          <AppPrimaryButton 
-            onClick={onSubmit} 
-            disabled={inviteOperation.isRunning || isSubmitting}
-          >
-            {t('team.inviteBtn')}
-          </AppPrimaryButton>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function CreateApiKeyDialog() {
-  const t = useTranslations('Organization');
-  const createApiKey = useOrganizationStore((state) => state.createApiKey);
-  const [open, setOpen] = useState(false);
-  const { control, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm<ApiKeyFormValues>({
-    resolver: zodResolver(apiKeySchema),
-    defaultValues: { name: "", scopes: ["Read"] },
-  });
-  const form = useWatch({ control }) as ApiKeyFormValues;
-  const fieldErrors = Object.fromEntries(Object.entries(errors).map(([key, error]) => [key, error?.message])) as Record<keyof ApiKeyFormValues, string | undefined>;
-  const keyOperation = useOperationState({ errorMessage: "API key generation failed." });
-
-  function handleOpenChange(nextOpen: boolean) {
-    setOpen(nextOpen);
-    if (!nextOpen) {
-      reset();
-      keyOperation.clearError();
-    }
-  }
-  const onSubmit = handleSubmit((data) => {
-    keyOperation.run(() => createApiKey(data.name, data.scopes), {
-      successMessage: "API key generated.",
-      onSuccess: () => setOpen(false),
-    });
-  });
-
-  return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger render={<AppPrimaryButton><KeyRound className="me-2 h-3.5 w-3.5" />{t('api.generate')}</AppPrimaryButton>} />
-      <DialogContent className="max-w-md rounded-[32px] border-zinc-100 bg-white p-8 shadow-none dark:border-white/5 dark:bg-[#0A0A0A]">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-black uppercase tracking-tight">{t('api.generateTitle')}</DialogTitle>
-          <DialogDescription>{t('api.generateDesc')}</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-5">
-          <FormErrorSummary errors={fieldErrors} />
-          <TextInput name="name" label={t('api.keyNameLabel')} value={form.name} onChange={(value) => { setValue("name", value, { shouldDirty: true, shouldValidate: Boolean(fieldErrors.name) }); keyOperation.clearError(); }} placeholder="Production Access Key…" error={fieldErrors.name} />
-          <div className="grid grid-cols-3 gap-2">
-            {apiScopes.map((scope) => {
-              const active = form.scopes.includes(scope);
-              return (
-                <button 
-                  key={scope} 
-                  type="button" 
-                  aria-pressed={active} 
-                  onClick={() => { 
-                    setValue("scopes", active ? form.scopes.filter((item) => item !== scope) : [...form.scopes, scope], { shouldDirty: true, shouldValidate: Boolean(fieldErrors.scopes) });
-                    keyOperation.clearError(); 
-                  }} 
-                  className="flex h-12 items-center justify-center gap-2 rounded-xl border border-zinc-100 text-[10px] font-black uppercase tracking-widest focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:border-white/10 dark:bg-white/5"
-                >
-                  {active && <Check className="h-3 w-3" aria-hidden="true" />}
-                  {t(`api.scopes.${scope.toLowerCase()}`)}
-                </button>
-              );
-            })}
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="md:col-span-2">
+            <FormErrorSummary errors={fieldErrors} />
           </div>
-          {fieldErrors.scopes && <p className="text-xs font-bold text-red-600">{fieldErrors.scopes}</p>}
+          <TextInput name="name" label="Display name" value={form.name} onChange={(value) => updateField("name", value)} error={fieldErrors.name} />
+          <TextInput name="legalName" label="Legal name" value={form.legalName} onChange={(value) => updateField("legalName", value)} error={fieldErrors.legalName} />
+          <TextInput name="type" label="Type" value={form.type} onChange={(value) => updateField("type", value)} error={fieldErrors.type} />
+          <TextInput name="email" label="Email" type="email" value={form.email} onChange={(value) => updateField("email", value)} error={fieldErrors.email} />
+          <TextInput name="phone" label="Phone" value={form.phone} onChange={(value) => updateField("phone", value)} error={fieldErrors.phone} />
+          <TextInput name="website" label="Website" value={form.website} onChange={(value) => updateField("website", value)} error={fieldErrors.website} />
+          <div className="md:col-span-2">
+            <TextInput name="address" label="Address" value={form.address} onChange={(value) => updateField("address", value)} error={fieldErrors.address} />
+          </div>
         </div>
         <DialogFooter>
-          <AppPrimaryButton 
-            onClick={onSubmit} 
-            disabled={keyOperation.isRunning || isSubmitting}
-          >
-            {t('api.generateBtn')}
+          <AppPrimaryButton onClick={onSubmit} disabled={updateProfile.isPending || isSubmitting}>
+            Save profile
           </AppPrimaryButton>
         </DialogFooter>
       </DialogContent>

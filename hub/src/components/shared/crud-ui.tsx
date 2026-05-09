@@ -295,9 +295,52 @@ export function TextInput({
         aria-describedby={error ? `${inputId}-error` : undefined}
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
-        className="h-11 rounded-xl border-zinc-100 bg-zinc-50/50 px-4 text-sm font-bold shadow-none transition-all focus:border-zinc-300 focus:bg-white focus:ring-4 focus:ring-zinc-900/5 dark:border-white/5 dark:bg-white/[0.02] dark:focus:border-white/10 dark:focus:bg-white/[0.04] dark:focus:ring-white/5 rtl:text-right"
+        className="h-12 rounded-2xl border-zinc-100 bg-zinc-50/50 px-4 text-sm font-black uppercase tracking-tight shadow-none transition-all focus:border-zinc-900/10 focus:bg-white focus:ring-4 focus:ring-zinc-900/5 dark:border-white/5 dark:bg-white/[0.02] dark:focus:border-white/10 dark:focus:bg-white/[0.04] dark:focus:ring-white/5 rtl:text-right"
       />
     </FormField>
+  );
+}
+
+export function WizardActions({
+  onNext,
+  onBack,
+  nextLabel,
+  backLabel,
+  isSubmitting = false,
+  isFirstStep = false,
+  isLastStep = false,
+  className,
+}: {
+  onNext: () => void;
+  onBack?: () => void;
+  nextLabel?: string;
+  backLabel?: string;
+  isSubmitting?: boolean;
+  isFirstStep?: boolean;
+  isLastStep?: boolean;
+  className?: string;
+}) {
+  const t = useTranslations('Common');
+  return (
+    <div className={cn("flex flex-col gap-3", className)}>
+      <AppPrimaryButton 
+        onClick={onNext} 
+        disabled={isSubmitting} 
+        className="h-12 w-full rounded-[20px] shadow-[0_8px_16px_rgba(0,0,0,0.08)] transition-all hover:scale-[1.01] active:scale-[0.99]"
+      >
+        {isLastStep ? t('finish') : (nextLabel || t('next'))}
+      </AppPrimaryButton>
+      {!isFirstStep && (
+        <Button 
+          type="button"
+          variant="ghost" 
+          onClick={onBack} 
+          className="h-12 w-full rounded-[20px] text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 hover:bg-zinc-50 hover:text-zinc-900 transition-all dark:hover:bg-white/5 dark:hover:text-white"
+        >
+          {backLabel || t('back')}
+        </Button>
+      )}
+    </div>
   );
 }
 

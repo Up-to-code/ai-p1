@@ -26,7 +26,7 @@ import { usePropertiesStore } from "@/domains/properties";
 import type { Project, ProjectStatus } from "../store/projects.types";
 import { projectSchema, type ProjectFormValues } from "../validation/project.schema";
 import { useOperationState } from "@/lib/utils/operation-state";
-import { SearchBox, StatusPill, TextInput, ChoiceGrid, DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, FormActions, FormErrorSummary } from "@/components/shared/crud-ui";
+import { SearchBox, StatusPill, TextInput, ChoiceGrid, DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, FormErrorSummary, WizardActions } from "@/components/shared/crud-ui";
 import { useUrlListState } from "@/components/shared/use-url-list-state";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -504,6 +504,10 @@ export function ProjectFormScreen({ id }: { id?: string }) {
   const createProject = useProjectsStore((state) => state.createProject);
   const updateProject = useProjectsStore((state) => state.updateProject);
   const router = useRouter();
+  
+  const [step, setStep] = useState(1);
+  const totalSteps = 3;
+
   const { control, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
@@ -519,13 +523,16 @@ export function ProjectFormScreen({ id }: { id?: string }) {
       description: existing?.description ?? "",
     },
   });
+
   const form = useWatch({ control }) as ProjectFormValues;
   const fieldErrors = Object.fromEntries(Object.entries(errors).map(([key, error]) => [key, error?.message])) as Record<keyof ProjectFormValues, string | undefined>;
   const saveOperation = useOperationState({ errorMessage: "Project save failed." });
+
   const setField = (key: keyof ProjectFormValues, value: string) => {
     setValue(key, value as never, { shouldDirty: true, shouldValidate: Boolean(fieldErrors[key]) });
     saveOperation.clearError();
   };
+
   const onSubmit = handleSubmit((data) => {
     saveOperation.run(() => {
       const payload = { ...data, units: Number(data.units), syncState: existing?.syncState ?? "draft" as const };
@@ -540,36 +547,93 @@ export function ProjectFormScreen({ id }: { id?: string }) {
     });
   });
 
-  if (id && !existing) {
-    return <AppPageShell><DetailNotFoundState title={t('detail.notFound')} description={t('detail.notFoundDesc')} backHref="/projects" backLabel={t('detail.back')} /></AppPageShell>;
-  }
+  const nextStep = () => {
+    if (step < totalSteps) setStep(step + 1);
+    else onSubmit();
+  };
+
+  const prevStep = () => {
+    if (step > 1) setStep(step - 1);
+    else router.back();
+  };
 
   return (
     <AppPageShell maxWidth="default">
-      <AppPageHeader eyebrow={t('form.eyebrow')} title={existing ? t('form.editTitle') + "." : t('form.createTitle') + "."} subtitle={t('form.subtitle')} />
-      <form
-        className="space-y-8 rounded-[32px] border border-zinc-100 bg-white p-8 dark:border-white/5 dark:bg-[#0A0A0A]"
-        onSubmit={onSubmit}
-      >
-        <FormErrorSummary errors={fieldErrors} />
-        <div className="grid gap-6 md:grid-cols-2">
-          <TextInput name="name" label={t('form.nameLabel')} value={form.name} onChange={(value) => setField("name", value)} placeholder="Al Madinah Residences…" error={fieldErrors.name} />
-          <TextInput name="developer" label={t('form.devLabel')} value={form.developer} onChange={(value) => setField("developer", value)} placeholder="Acme Development…" error={fieldErrors.developer} />
-          <TextInput name="city" label={t('form.cityLabel')} value={form.city} onChange={(value) => setField("city", value)} placeholder="Riyadh…" error={fieldErrors.city} />
-          <TextInput name="area" label={t('form.areaLabel')} value={form.area} onChange={(value) => setField("area", value)} placeholder="Al Malqa…" error={fieldErrors.area} />
-          <TextInput name="units" label={t('form.unitsLabel')} type="number" inputMode="numeric" value={form.units} onChange={(value) => setField("units", value)} error={fieldErrors.units} />
-          <TextInput name="priceRange" label={t('form.priceLabel')} value={form.priceRange} onChange={(value) => setField("priceRange", value)} placeholder="850K SAR…" error={fieldErrors.priceRange} />
+      <div className="mx-auto max-w-2xl pt-10">
+        <AppPageHeader 
+          eyebrow={t('form.eyebrow')} 
+          title={existing ? t('form.editTitle') : t('form.createTitle')} 
+          subtitle={t('form.subtitle')}
+          className="border-none pb-0 mb-12"
+        />
+        
+        {/* Institutional Progress Tracking */}
+        <div className="mb-12 flex items-center gap-4">
+          <div className="h-1 flex-1 overflow-hidden rounded-full bg-zinc-100 dark:bg-white/5">
+            <div 
+              className="h-full bg-zinc-900 transition-all duration-700 ease-out dark:bg-white shadow-[0_0_8px_rgba(0,0,0,0.1)]" 
+              style={{ width: `${(step / totalSteps) * 100}%` }} 
+            />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
+            {step} <span className="opacity-30">/</span> {totalSteps}
+          </span>
         </div>
-        <TextInput name="image" label={t('form.imageLabel')} type="url" value={form.image} onChange={(value) => setField("image", value)} placeholder="https://images.unsplash.com/…" error={fieldErrors.image} />
-        <ChoiceGrid id="type" label={t('form.typeLabel')} value={form.type} onChange={(value) => setField("type", value)} columns="grid-cols-3" options={[{ value: "Residential", label: t('types.Residential') }, { value: "Commercial", label: t('types.Commercial') }, { value: "Mixed Use", label: t('types.Mixed Use') }]} error={fieldErrors.type} />
-        <ChoiceGrid id="status" label={t('form.statusLabel')} value={form.status} onChange={(value) => setField("status", value)} columns="grid-cols-2 md:grid-cols-4" options={[{ value: "draft", label: t('toolbar.filters.draft') }, { value: "pending", label: t('toolbar.filters.pending') }, { value: "approved", label: t('toolbar.filters.approved') }, { value: "rejected", label: t('toolbar.filters.rejected') }]} error={fieldErrors.status} />
-        <div className="grid gap-2">
-          <label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('form.descLabel')}</label>
-          <Textarea id="description" name="description" value={form.description} onChange={(event) => setField("description", event.target.value)} aria-invalid={Boolean(fieldErrors.description)} aria-describedby={fieldErrors.description ? "description-error" : undefined} />
-          {fieldErrors.description && <p id="description-error" className="text-xs font-bold text-red-600">{fieldErrors.description}</p>}
+
+        <div className="space-y-12 pb-20">
+          <FormErrorSummary errors={fieldErrors} />
+          
+          <div className="min-h-[400px]">
+            {step === 1 && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <AppSection title="Identity & Ownership" description="Define the fundamental metadata for this real estate asset.">
+                  <div className="space-y-6">
+                    <TextInput name="name" label={t('form.nameLabel')} value={form.name} onChange={(value) => setField("name", value)} placeholder="Al Madinah Residences…" error={fieldErrors.name} />
+                    <TextInput name="developer" label={t('form.devLabel')} value={form.developer} onChange={(value) => setField("developer", value)} placeholder="Acme Development…" error={fieldErrors.developer} />
+                  </div>
+                </AppSection>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <AppSection title="Location & Logistics" description="Specify the geographic coordinates and operational scale.">
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <TextInput name="city" label={t('form.cityLabel')} value={form.city} onChange={(value) => setField("city", value)} placeholder="Riyadh…" error={fieldErrors.city} />
+                    <TextInput name="area" label={t('form.areaLabel')} value={form.area} onChange={(value) => setField("area", value)} placeholder="Al Malqa…" error={fieldErrors.area} />
+                    <TextInput name="units" label={t('form.unitsLabel')} type="number" inputMode="numeric" value={form.units} onChange={(value) => setField("units", value)} error={fieldErrors.units} />
+                    <TextInput name="priceRange" label={t('form.priceLabel')} value={form.priceRange} onChange={(value) => setField("priceRange", value)} placeholder="850K SAR…" error={fieldErrors.priceRange} />
+                  </div>
+                </AppSection>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <AppSection title="Context & Aesthetics" description="Finalize the asset classification and visual representation.">
+                  <div className="space-y-8">
+                    <ChoiceGrid id="type" label={t('form.typeLabel')} value={form.type} onChange={(value) => setField("type", value)} columns="grid-cols-3" options={[{ value: "Residential", label: t('types.Residential') }, { value: "Commercial", label: t('types.Commercial') }, { value: "Mixed Use", label: t('types.Mixed Use') }]} error={fieldErrors.type} />
+                    <ChoiceGrid id="status" label={t('form.statusLabel')} value={form.status} onChange={(value) => setField("status", value)} columns="grid-cols-2 md:grid-cols-4" options={[{ value: "draft", label: t('toolbar.filters.draft') }, { value: "pending", label: t('toolbar.filters.pending') }, { value: "approved", label: t('toolbar.filters.approved') }, { value: "rejected", label: t('toolbar.filters.rejected') }]} error={fieldErrors.status} />
+                    <TextInput name="image" label={t('form.imageLabel')} type="url" value={form.image} onChange={(value) => setField("image", value)} placeholder="https://images.unsplash.com/…" error={fieldErrors.image} />
+                    <div className="grid gap-2">
+                      <label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('form.descLabel')}</label>
+                      <Textarea id="description" name="description" value={form.description} onChange={(event) => setField("description", event.target.value)} className="min-h-[140px] rounded-3xl border-zinc-100 bg-zinc-50/50 p-6 text-sm font-medium transition-all focus:bg-white focus:ring-4 focus:ring-zinc-900/5 dark:border-white/5 dark:bg-white/[0.02]" />
+                    </div>
+                  </div>
+                </AppSection>
+              </div>
+            )}
+          </div>
+
+          <WizardActions 
+            onNext={nextStep} 
+            onBack={prevStep} 
+            isLastStep={step === totalSteps}
+            isSubmitting={saveOperation.isRunning || isSubmitting}
+            className="mt-12"
+          />
         </div>
-        <FormActions onCancel={() => router.back()} submitLabel={existing ? t('form.saveBtn') : t('form.createBtn')} isSubmitting={saveOperation.isRunning || isSubmitting} />
-      </form>
+      </div>
     </AppPageShell>
   );
 }

@@ -16,13 +16,17 @@ export default function OnboardingPage() {
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
   return (
-    <div className="w-full max-w-3xl flex flex-col items-center gap-12">
+    <div className="w-full max-w-2xl flex flex-col items-center gap-16">
       
       {/* Stepper Header */}
-      <div className="w-full flex flex-col items-center text-center gap-8">
-        <div>
-          <h1 className="text-h2 font-semibold text-text-primary tracking-tight mb-2">{t("title")}</h1>
-          <p className="text-text-secondary">{t("subtitle")}</p>
+      <div className="w-full flex flex-col items-center text-center gap-10">
+        <div className="space-y-4">
+          <h1 className="text-3xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white md:text-4xl">
+            {t("title")}
+          </h1>
+          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-400">
+            {t("subtitle")}
+          </p>
         </div>
         <WizardStepper currentStep={currentStep} />
       </div>

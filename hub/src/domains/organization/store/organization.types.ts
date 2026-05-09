@@ -15,6 +15,7 @@ export interface ApiKey {
 }
 
 export interface OrganizationProfile {
+  organizationId: string;
   name: string;
   legalName: string;
   type: string;
@@ -22,4 +23,13 @@ export interface OrganizationProfile {
   phone: string;
   website: string;
   address: string;
+  updatedAt: number;
+}
+
+export interface OrganizationApp {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  date: string;
 }
