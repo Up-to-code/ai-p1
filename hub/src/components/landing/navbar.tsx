@@ -28,10 +28,10 @@ export function Navbar() {
       isScrolled ? "top-2" : "top-4"
     )}>
       <nav className={cn(
-        "flex w-full max-w-7xl items-center justify-between rounded-full border px-4 py-2 transition-all duration-700",
-        "border-zinc-200/50 bg-white/40 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] backdrop-blur-3xl",
-        "dark:border-white/10 dark:bg-zinc-900/40 dark:shadow-none",
-        isScrolled && "max-w-5xl bg-white/70 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] dark:bg-zinc-950/70"
+        "flex w-full max-w-7xl items-center justify-between rounded-full px-4 py-2 transition-all duration-700",
+        "bg-white/55 backdrop-blur-3xl",
+        "dark:bg-zinc-900/45",
+        isScrolled && "max-w-5xl bg-white/75 dark:bg-zinc-950/75"
       )}>
         <Logo />
 
@@ -42,7 +42,6 @@ export function Navbar() {
           <div className="hidden items-center gap-3 sm:flex">
             <div className="flex items-center rounded-full bg-zinc-950/5 p-0.5 dark:bg-white/10">
               <ThemeToggle className="h-8 w-8 border-none bg-transparent shadow-none hover:bg-zinc-950/5 dark:hover:bg-white/5" />
-              <div className="mx-0.5 h-3 w-px bg-zinc-200 dark:bg-white/10" />
               <LanguageSwitcher className="h-8 border-none bg-transparent px-3 text-[10px] font-black opacity-60 hover:opacity-100" />
             </div>
             

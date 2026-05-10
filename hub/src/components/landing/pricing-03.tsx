@@ -163,9 +163,8 @@ export function Pricing03({ locale }: { locale: string }) {
   return (
     <PublicSection
       id="pricing"
-      className="relative overflow-hidden border-y border-zinc-200/70 bg-white py-16 dark:border-white/[0.08] dark:bg-zinc-950 md:py-24"
+      className="relative bg-white py-16 dark:bg-zinc-950 md:py-24"
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_50%_0%,rgba(11,92,255,0.12),transparent_60%)]" />
       <Reveal>
         <div className="relative mx-auto max-w-3xl text-center">
           <div>
@@ -189,7 +188,7 @@ export function Pricing03({ locale }: { locale: string }) {
             onValueChange={setSelectedBillingPeriod}
             value={selectedBillingPeriod}
           >
-            <TabsList className="h-11 rounded-full border border-zinc-200 bg-zinc-50 p-1 shadow-sm dark:border-white/10 dark:bg-white/5">
+            <TabsList className="h-11 rounded-full border border-zinc-200 bg-zinc-50 p-1 dark:border-white/10 dark:bg-white/5">
               <TabsTrigger className="rounded-full px-5 text-xs font-bold data-active:bg-zinc-950 data-active:text-white dark:data-active:bg-white dark:data-active:text-zinc-950" value="monthly">
                 {copy.monthly}
               </TabsTrigger>
@@ -212,8 +211,8 @@ export function Pricing03({ locale }: { locale: string }) {
             <Reveal key={plan.name} delay={index * 0.08}>
               <article
                 className={cn(
-                  "relative flex min-h-[455px] flex-col overflow-hidden rounded-[1.75rem] border border-zinc-200 bg-zinc-50/70 p-6 text-start shadow-sm transition duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-xl hover:shadow-zinc-200/60 dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.06] dark:hover:shadow-none",
-                  plan.isPopular && "border-zinc-950 bg-zinc-950 text-white shadow-2xl shadow-zinc-900/15 hover:bg-zinc-950 dark:border-white dark:bg-white dark:text-zinc-950 dark:hover:bg-white",
+                  "relative flex min-h-[430px] flex-col overflow-hidden rounded-[1.5rem] border border-zinc-200 bg-zinc-50/60 p-6 text-start transition duration-300 hover:bg-white dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.06]",
+                  plan.isPopular && "border-blue-500 bg-blue-50/40 text-zinc-950 hover:bg-blue-50/50 dark:border-blue-400/70 dark:bg-blue-500/10 dark:text-white dark:hover:bg-blue-500/10",
                 )}
               >
                 <div className={cn("absolute inset-x-6 top-0 h-1 rounded-b-full", plan.isPopular ? "bg-blue-500" : "bg-zinc-200 dark:bg-white/10")} />
@@ -225,17 +224,17 @@ export function Pricing03({ locale }: { locale: string }) {
 
                 <div>
                   <h3 className={cn("text-xl font-bold tracking-tight", plan.isPopular && "pe-24")}>{plan.name}</h3>
-                  <p className={cn("mt-4 min-h-[64px] text-sm leading-relaxed", plan.isPopular ? "text-white/65 dark:text-zinc-600" : "text-zinc-500 dark:text-zinc-400")}>
+                  <p className="mt-4 min-h-[64px] text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
                     {plan.description}
                   </p>
-                  <div className={cn("mt-6 rounded-2xl border p-4", plan.isPopular ? "border-white/10 bg-white/[0.06] dark:border-zinc-200 dark:bg-zinc-50" : "border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.04]")}>
+                  <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.04]">
                     <p className="flex items-end gap-2">
                       <NumberFlow
                         className="text-4xl font-bold tracking-tight md:text-5xl"
                         prefix="$"
                         value={price}
                       />
-                      <span className={cn("pb-1 text-sm font-semibold", plan.isPopular ? "text-white/55 dark:text-zinc-500" : "text-zinc-500 dark:text-zinc-400")}>
+                      <span className="pb-1 text-sm font-semibold text-zinc-500 dark:text-zinc-400">
                         {copy.perMonth}
                       </span>
                     </p>
@@ -247,7 +246,7 @@ export function Pricing03({ locale }: { locale: string }) {
                   className={cn(
                     "mt-5 h-11 w-full rounded-full",
                     plan.isPopular
-                      ? "bg-white text-zinc-950 hover:bg-zinc-200 dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-800"
+                      ? "bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
                       : "border border-zinc-200 bg-white text-zinc-950 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10",
                   )}
                   variant="secondary"
@@ -256,12 +255,12 @@ export function Pricing03({ locale }: { locale: string }) {
                   <ArrowRight className="h-4 w-4 rtl:rotate-180" />
                 </LandingButton>
 
-                <div className={cn("my-6 h-px", plan.isPopular ? "bg-white/10 dark:bg-zinc-950/10" : "bg-zinc-200 dark:bg-white/10")} />
+                <div className="my-6 h-px bg-zinc-200 dark:bg-white/10" />
 
                 <ul className="mt-auto space-y-3">
                   {plan.features.map((feature) => (
                     <li className="flex items-start gap-3" key={feature.title}>
-                      <CircleCheck className={cn("mt-0.5 h-4 w-4 shrink-0", plan.isPopular ? "text-emerald-300 dark:text-emerald-600" : "text-emerald-600")} />
+                      <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
                       <span className="text-sm font-semibold leading-relaxed">{feature.title}</span>
                     </li>
                   ))}
