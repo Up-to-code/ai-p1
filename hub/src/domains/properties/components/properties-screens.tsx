@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Bath, Bed, Building, Edit, FolderOpen, Home, MapPin, Plus, Ruler, Trash2 } from "lucide-react";
+import { Bath, Bed, Building, CheckCircle2, Edit, FolderOpen, Home, ImageIcon, MapPin, Plus, Ruler, Trash2 } from "lucide-react";
 import {
   AppDataTable,
   AppPageHeader,
@@ -27,9 +27,10 @@ import { uploadAndAttachMedia } from "@/domains/media/api/media";
 import type { PropertyStatus, PropertyUnit } from "../store/properties.types";
 import { propertySchema, type PropertyFormValues } from "../validation/property.schema";
 import { useOperationState } from "@/lib/utils/operation-state";
-import { ChoiceGrid, DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, FormActions, FormErrorSummary, SearchBox, StatusPill, TextInput } from "@/components/shared/crud-ui";
+import { ChoiceGrid, DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, FormErrorSummary, SearchBox, StatusPill, TextInput } from "@/components/shared/crud-ui";
 import { useUrlListState } from "@/components/shared/use-url-list-state";
 import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 
 /** Format a price string with SAR currency */
 function formatSAR(price: string | number): string {
@@ -281,12 +282,15 @@ export function PropertyDetailScreen({ id }: { id: string }) {
 
 export function PropertyFormScreen({ id }: { id?: string }) {
   const t = useTranslations('Properties');
+  const common = useTranslations('Common');
   const account = useAccountContext();
   const existing = usePropertyQuery(account.organization.id ?? undefined, id ?? "") as PropertyUnit | null | undefined;
   const projects = useProjectsQuery(account.organization.id ?? undefined) ?? [];
   const router = useRouter();
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
-  const { control, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<PropertyFormValues>({
+  const [step, setStep] = useState(1);
+  const totalSteps = 3;
+  const { control, handleSubmit, setValue, reset, formState: { errors, isSubmitting } } = useForm<PropertyFormValues>({
     resolver: zodResolver(propertySchema),
     defaultValues: {
       title: existing?.title ?? "",
@@ -306,6 +310,25 @@ export function PropertyFormScreen({ id }: { id?: string }) {
   const form = useWatch({ control }) as PropertyFormValues;
   const fieldErrors = Object.fromEntries(Object.entries(errors).map(([key, error]) => [key, error?.message])) as Record<keyof PropertyFormValues, string | undefined>;
   const saveOperation = useOperationState({ errorMessage: "Unit save failed." });
+
+  useEffect(() => {
+    if (!existing) return;
+    reset({
+      title: existing.title ?? "",
+      projectId: existing.projectId ?? "",
+      project: existing.project ?? "",
+      city: existing.city ?? "",
+      type: existing.type ?? "Apartment",
+      status: existing.status ?? "draft",
+      purpose: existing.purpose ?? "sale",
+      price: existing.price ?? "",
+      area: existing.area ?? "",
+      bedrooms: String(existing.bedrooms ?? 1),
+      bathrooms: String(existing.bathrooms ?? 1),
+      description: existing.description ?? "",
+    });
+  }, [existing, reset]);
+
   const setField = (key: keyof PropertyFormValues, value: string) => {
     setValue(key, value as never, { shouldDirty: true, shouldValidate: Boolean(fieldErrors[key]) });
     saveOperation.clearError();
@@ -338,6 +361,19 @@ export function PropertyFormScreen({ id }: { id?: string }) {
     });
   });
 
+  const selectedProject = projects.find((project) => project._id === form.projectId || project.id === form.projectId);
+  const previewProjectName = selectedProject?.name ?? form.project;
+
+  const nextStep = () => {
+    if (step < totalSteps) setStep(step + 1);
+    else onSubmit();
+  };
+
+  const prevStep = () => {
+    if (step > 1) setStep(step - 1);
+    else router.back();
+  };
+
   if (id && existing === undefined) {
     return <AppPageShell><EmptyWorkspace icon={Home} title="Loading unit" description="Unit data is syncing from Convex." /></AppPageShell>;
   }
@@ -347,59 +383,311 @@ export function PropertyFormScreen({ id }: { id?: string }) {
   }
 
   return (
-    <AppPageShell maxWidth="default">
-      <AppPageHeader eyebrow={t('form.eyebrow')} title={existing ? t('form.editTitle') + "." : t('form.createTitle') + "."} subtitle={t('form.subtitle')} />
+    <AppPageShell maxWidth="wide" contentClassName="space-y-6">
+      <AppPageHeader
+        eyebrow={t('form.eyebrow')}
+        title={existing ? t('form.editTitle') : t('form.createTitle')}
+        subtitle={t('form.subtitle')}
+        className="pb-8"
+      />
       <form
-        className="space-y-8 rounded-[32px] border border-zinc-100 bg-white p-8 dark:border-white/5 dark:bg-[#0A0A0A]"
-        onSubmit={onSubmit}
+        className="grid gap-6 xl:grid-cols-[minmax(0,760px)_380px] xl:items-start xl:justify-center"
+        onSubmit={(event) => {
+          event.preventDefault();
+          nextStep();
+        }}
       >
-        <FormErrorSummary errors={fieldErrors} />
-        <div className="grid gap-6 md:grid-cols-2">
-          <TextInput name="title" label={t('form.nameLabel')} value={form.title} onChange={(value) => setField("title", value)} placeholder="Unit A-101…" error={fieldErrors.title} />
-          <div className="grid gap-2">
-            <label htmlFor="project" className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('form.projectLabel')}</label>
-            <select
-              id="project"
-              name="project"
-              value={form.projectId || ""}
-              onChange={(e) => {
-                const selected = projects.find((project) => project._id === e.target.value || project.id === e.target.value);
-                setField("projectId", e.target.value);
-                setField("project", selected?.name ?? "");
-              }}
-              className="h-12 rounded-2xl border border-zinc-100 bg-white px-4 text-sm font-bold text-zinc-900 outline-none transition-all focus:border-zinc-900 dark:border-white/10 dark:bg-transparent dark:text-white dark:focus:border-white"
-              aria-invalid={Boolean(fieldErrors.project)}
-              aria-describedby={fieldErrors.project ? 'project-error' : undefined}
-            >
-              <option value="">— Select project —</option>
-              {projects.map((p) => (<option key={p.id} value={p.id}>{p.name}</option>))}
-            </select>
-            {fieldErrors.project && <p id="project-error" className="text-xs font-bold text-red-600">{fieldErrors.project}</p>}
+        <PropertyFormPreview form={form} projectName={previewProjectName} pendingFileCount={pendingFiles.length} existing={existing} />
+
+        <section className="order-1 rounded-[32px] border border-zinc-100 bg-white p-4 shadow-sm shadow-zinc-950/[0.03] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none md:p-6">
+          <PropertyFormProgress step={step} labels={[t("form.stepInformation"), t("form.stepGallery"), t("form.stepDetails")]} />
+          <FormErrorSummary errors={fieldErrors} />
+
+          <div className="mt-6 min-h-[360px]">
+            {step === 1 && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <PropertyWizardPanel title={t("form.informationTitle")} description={t("form.informationDesc")}>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <TextInput name="title" label={t('form.nameLabel')} value={form.title} onChange={(value) => setField("title", value)} placeholder="Unit A-101…" error={fieldErrors.title} />
+                    <div className="grid gap-2">
+                      <label htmlFor="project" className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('form.projectLabel')}</label>
+                      <select
+                        id="project"
+                        name="project"
+                        value={form.projectId || ""}
+                        onChange={(e) => {
+                          const selected = projects.find((project) => project._id === e.target.value || project.id === e.target.value);
+                          setField("projectId", e.target.value);
+                          setField("project", selected?.name ?? "");
+                        }}
+                        className="h-12 rounded-2xl border border-zinc-100 bg-zinc-50/50 px-4 text-sm font-black uppercase tracking-tight text-zinc-900 outline-none transition-all focus:border-zinc-900/10 focus:bg-white focus:ring-4 focus:ring-zinc-900/5 dark:border-white/5 dark:bg-white/[0.02] dark:text-white dark:focus:border-white/10 dark:focus:bg-white/[0.04] dark:focus:ring-white/5 rtl:text-right"
+                        aria-invalid={Boolean(fieldErrors.project)}
+                        aria-describedby={fieldErrors.project ? 'project-error' : undefined}
+                      >
+                        <option value="">— Select project —</option>
+                        {projects.map((p) => {
+                          const projectId = p._id ?? p.id;
+                          return <option key={projectId} value={projectId}>{p.name}</option>;
+                        })}
+                      </select>
+                      {fieldErrors.project && <p id="project-error" className="text-[10px] font-bold text-red-600 rtl:text-right">{fieldErrors.project}</p>}
+                    </div>
+                    <TextInput name="city" label={t('form.cityLabel')} value={form.city} onChange={(value) => setField("city", value)} placeholder="Riyadh…" error={fieldErrors.city} />
+                    <TextInput name="area" label={t('form.areaLabel')} value={form.area} onChange={(value) => setField("area", value)} placeholder="120 m2…" error={fieldErrors.area} />
+                    <TextInput name="price" label={t('form.priceLabel')} value={form.price} onChange={(value) => setField("price", value)} placeholder="850,000…" error={fieldErrors.price} className="md:col-span-2" />
+                  </div>
+                </PropertyWizardPanel>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <PropertyWizardPanel title={t("form.galleryTitle")} description={t("form.galleryDesc")}>
+                  <ResourceMediaUploader
+                    organizationId={account.organization.id ?? undefined}
+                    resourceType="property"
+                    resourceId={existing?.id}
+                    pendingFiles={pendingFiles}
+                    onPendingFilesChange={setPendingFiles}
+                    immediate={Boolean(existing)}
+                    allowedKinds={["image", "video"]}
+                    maxVideos={1}
+                    variant="review"
+                    labels={{
+                      title: t("form.galleryUploaderTitle"),
+                      description: t("form.galleryUploaderDesc"),
+                      pick: t("form.galleryPick"),
+                      queued: t("form.galleryQueued"),
+                      videoLimit: t("form.galleryVideoLimit"),
+                      unsupported: t("form.galleryUnsupported"),
+                    }}
+                    className="border-zinc-100 bg-zinc-50/40 shadow-none dark:border-white/[0.06] dark:bg-white/[0.01]"
+                  />
+                </PropertyWizardPanel>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <PropertyWizardPanel title={t("form.detailsTitle")} description={t("form.detailsDesc")}>
+                  <div className="space-y-6">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <TextInput name="bedrooms" label={t('form.bedsLabel')} type="number" inputMode="numeric" value={form.bedrooms} onChange={(value) => setField("bedrooms", value)} error={fieldErrors.bedrooms} />
+                      <TextInput name="bathrooms" label={t('form.bathsLabel')} type="number" inputMode="numeric" value={form.bathrooms} onChange={(value) => setField("bathrooms", value)} error={fieldErrors.bathrooms} />
+                    </div>
+                    <ChoiceGrid id="type" label={t('form.typeLabel')} value={form.type} onChange={(value) => setField("type", value)} columns="grid-cols-2 md:grid-cols-4" options={[{ value: "Apartment", label: t('types.Apartment') }, { value: "Villa", label: t('types.Villa') }, { value: "Penthouse", label: t('types.Penthouse') }, { value: "Office", label: t('types.Office') }]} error={fieldErrors.type} />
+                    <ChoiceGrid id="purpose" label={t('form.purposeLabel')} value={form.purpose} onChange={(value) => setField("purpose", value)} columns="grid-cols-2" options={[{ value: "sale", label: t('purposes.sale') }, { value: "rent", label: t('purposes.rent') }]} error={fieldErrors.purpose} />
+                    <ChoiceGrid id="status" label={t('form.statusLabel')} value={form.status} onChange={(value) => setField("status", value)} columns="grid-cols-2 md:grid-cols-5" options={[{ value: "draft", label: t('toolbar.filters.draft') }, { value: "available", label: t('toolbar.filters.available') }, { value: "pending", label: t('toolbar.filters.pending') }, { value: "reserved", label: t('toolbar.filters.reserved') }, { value: "sold", label: t('toolbar.filters.sold') }]} error={fieldErrors.status} />
+                    <div className="grid gap-2">
+                      <label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('form.descLabel')}</label>
+                      <Textarea
+                        id="description"
+                        name="description"
+                        value={form.description}
+                        onChange={(event) => setField("description", event.target.value)}
+                        aria-invalid={Boolean(fieldErrors.description)}
+                        aria-describedby={fieldErrors.description ? "description-error" : undefined}
+                        className="min-h-[150px] rounded-3xl border-zinc-100 bg-zinc-50/50 p-5 text-sm font-medium transition-all focus:bg-white focus:ring-4 focus:ring-zinc-900/5 dark:border-white/5 dark:bg-white/[0.02]"
+                      />
+                      {fieldErrors.description && <p id="description-error" className="text-[10px] font-bold text-red-600 rtl:text-right">{fieldErrors.description}</p>}
+                    </div>
+                  </div>
+                </PropertyWizardPanel>
+              </div>
+            )}
           </div>
-          <TextInput name="city" label={t('form.cityLabel')} value={form.city} onChange={(value) => setField("city", value)} placeholder="Riyadh…" error={fieldErrors.city} />
-          <TextInput name="area" label={t('form.areaLabel')} value={form.area} onChange={(value) => setField("area", value)} placeholder="120 m2…" error={fieldErrors.area} />
-          <TextInput name="price" label={t('form.priceLabel')} value={form.price} onChange={(value) => setField("price", value)} placeholder="850,000…" error={fieldErrors.price} />
-          <TextInput name="bedrooms" label={t('form.bedsLabel')} type="number" inputMode="numeric" value={form.bedrooms} onChange={(value) => setField("bedrooms", value)} error={fieldErrors.bedrooms} />
-          <TextInput name="bathrooms" label={t('form.bathsLabel')} type="number" inputMode="numeric" value={form.bathrooms} onChange={(value) => setField("bathrooms", value)} error={fieldErrors.bathrooms} />
-        </div>
-        <ChoiceGrid id="type" label={t('form.typeLabel')} value={form.type} onChange={(value) => setField("type", value)} columns="grid-cols-2 md:grid-cols-4" options={[{ value: "Apartment", label: t('types.Apartment') }, { value: "Villa", label: t('types.Villa') }, { value: "Penthouse", label: t('types.Penthouse') }, { value: "Office", label: t('types.Office') }]} error={fieldErrors.type} />
-        <ChoiceGrid id="purpose" label={t('form.purposeLabel')} value={form.purpose} onChange={(value) => setField("purpose", value)} columns="grid-cols-2" options={[{ value: "sale", label: t('purposes.sale') }, { value: "rent", label: t('purposes.rent') }]} error={fieldErrors.purpose} />
-        <ChoiceGrid id="status" label={t('form.statusLabel')} value={form.status} onChange={(value) => setField("status", value)} columns="grid-cols-2 md:grid-cols-5" options={[{ value: "draft", label: t('toolbar.filters.draft') }, { value: "available", label: t('toolbar.filters.available') }, { value: "pending", label: t('toolbar.filters.pending') }, { value: "reserved", label: t('toolbar.filters.reserved') }, { value: "sold", label: t('toolbar.filters.sold') }]} error={fieldErrors.status} />
-        <div className="grid gap-2">
-          <label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('form.descLabel')}</label>
-          <Textarea id="description" name="description" value={form.description} onChange={(event) => setField("description", event.target.value)} aria-invalid={Boolean(fieldErrors.description)} aria-describedby={fieldErrors.description ? "description-error" : undefined} />
-          {fieldErrors.description && <p id="description-error" className="text-xs font-bold text-red-600">{fieldErrors.description}</p>}
-        </div>
-        <ResourceMediaUploader
-          organizationId={account.organization.id ?? undefined}
-          resourceType="property"
-          resourceId={existing?.id}
-          pendingFiles={pendingFiles}
-          onPendingFilesChange={setPendingFiles}
-          immediate={Boolean(existing)}
-        />
-        <FormActions onCancel={() => router.back()} submitLabel={existing ? t('form.saveBtn') : t('form.createBtn')} isSubmitting={saveOperation.isRunning || isSubmitting} />
+
+          <PropertyWizardActions
+            onNext={nextStep}
+            onBack={prevStep}
+            nextLabel={step === totalSteps ? common("finish") : common("next")}
+            backLabel={common("back")}
+            isFirstStep={step === 1}
+            isSubmitting={saveOperation.isRunning || isSubmitting}
+          />
+        </section>
       </form>
     </AppPageShell>
+  );
+}
+
+function PropertyFormProgress({ step, labels }: { step: number; labels: string[] }) {
+  return (
+    <div className="rounded-[24px] border border-zinc-100 bg-zinc-50/70 p-3 dark:border-white/10 dark:bg-white/[0.025]">
+      <div className="grid grid-cols-3 gap-2">
+        {labels.map((label, index) => {
+          const isDone = index + 1 < step;
+          const isActive = index + 1 === step;
+          return (
+            <div key={label} className={cn("rounded-2xl px-3 py-2 transition-all", isActive ? "bg-white shadow-sm shadow-zinc-950/[0.03] dark:bg-[#0A0A0A]" : "bg-transparent")}>
+              <div className="flex items-center gap-2 rtl:flex-row-reverse">
+                <span className={cn(
+                  "inline-flex h-2.5 w-2.5 shrink-0 rounded-full transition-all",
+                  isActive ? "scale-125 bg-zinc-900 dark:bg-white" : isDone ? "bg-emerald-500" : "bg-zinc-300 dark:bg-white/15",
+                )} />
+                <span className={cn("truncate text-[10px] font-black uppercase tracking-widest", isActive ? "text-zinc-900 dark:text-white" : "text-zinc-400")}>{label}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function PropertyWizardPanel({ title, description, children }: { title: string; description: string; children: ReactNode }) {
+  return (
+    <div>
+      <div className="mb-6 max-w-2xl">
+        <h2 className="text-xl font-black tracking-tight text-zinc-900 dark:text-white">{title}</h2>
+        <p className="mt-2 text-sm font-semibold leading-relaxed text-zinc-500 dark:text-zinc-400">{description}</p>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function PropertyWizardActions({
+  onNext,
+  onBack,
+  nextLabel,
+  backLabel,
+  isFirstStep,
+  isSubmitting,
+}: {
+  onNext: () => void;
+  onBack: () => void;
+  nextLabel: string;
+  backLabel: string;
+  isFirstStep: boolean;
+  isSubmitting: boolean;
+}) {
+  return (
+    <div className="mt-6 flex flex-col gap-3 border-t border-zinc-100 pt-4 dark:border-white/10 sm:flex-row sm:items-center">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onBack}
+        className={cn(
+          "h-12 flex-1 rounded-[20px] border-zinc-200 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500 shadow-none hover:bg-zinc-50 hover:text-zinc-900 dark:border-white/10 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white",
+          isFirstStep && "sm:max-w-40",
+        )}
+      >
+        {backLabel}
+      </Button>
+      <AppPrimaryButton
+        type="button"
+        onClick={onNext}
+        disabled={isSubmitting}
+        className="h-12 flex-[1.4] rounded-[20px] shadow-none transition-all hover:scale-[1.005] active:scale-[0.995]"
+      >
+        {nextLabel}
+      </AppPrimaryButton>
+    </div>
+  );
+}
+
+function PropertyFormPreview({
+  form,
+  projectName,
+  pendingFileCount,
+  existing,
+}: {
+  form: PropertyFormValues;
+  projectName?: string;
+  pendingFileCount: number;
+  existing?: PropertyUnit | null;
+}) {
+  const t = useTranslations("Properties");
+  const previewTitle = form.title || t("form.previewName");
+  const previewProject = projectName || t("form.previewProject");
+  const previewCity = form.city || t("form.previewCity");
+  const mediaReady = pendingFileCount > 0 || Boolean(existing?.coverImageUrl || existing?.image);
+
+  const checklist = [
+    { label: t("form.nameLabel"), ready: Boolean(form.title) },
+    { label: t("form.projectLabel"), ready: Boolean(projectName || form.project) },
+    { label: t("form.priceLabel"), ready: Boolean(form.price) },
+    { label: t("form.previewMedia"), ready: mediaReady },
+    { label: t("form.descLabel"), ready: Boolean(form.description) },
+  ];
+
+  return (
+    <aside className="order-2 space-y-4 xl:sticky xl:top-24">
+      <article className="overflow-hidden rounded-[32px] border border-zinc-100 bg-white shadow-sm shadow-zinc-950/[0.03] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none">
+        <div className="relative h-72 bg-zinc-950">
+          {existing?.coverImageUrl || existing?.image ? (
+            <Image
+              src={existing.coverImageUrl || existing.image || ""}
+              alt={existing.title}
+              fill
+              sizes="(max-width: 768px) 100vw, 380px"
+              className="object-cover opacity-80 grayscale"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,255,255,0.18),transparent_30%),linear-gradient(135deg,rgba(255,255,255,0.10),transparent_45%)]" />
+          )}
+          <div className="absolute inset-x-6 top-6 flex items-center justify-between gap-3">
+            <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-white/70 backdrop-blur">{form.type || t("types.Apartment")}</span>
+            <StatusPill label={t(`toolbar.filters.${form.status || "draft"}`)} tone={statusTone(form.status || "draft")} />
+          </div>
+          <div className="flex h-full w-full items-center justify-center text-white/15">
+            <Home className="h-12 w-12" />
+          </div>
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent p-6">
+            <p className="text-[10px] font-black uppercase tracking-widest text-white/45">{previewCity}</p>
+            <h2 className="mt-2 line-clamp-2 text-3xl font-black uppercase tracking-tight text-white">{previewTitle}</h2>
+            <p className="mt-2 truncate text-xs font-bold text-white/60">{previewProject}</p>
+          </div>
+        </div>
+
+        <div className="space-y-4 p-5">
+          <div className="grid grid-cols-2 gap-3">
+            <PropertyPreviewMetric label={t("detail.labels.price")} value={form.price ? formatSAR(form.price) : "850K SAR"} />
+            <PropertyPreviewMetric label={t("detail.labels.area")} value={form.area || "120 m2"} />
+            <PropertyPreviewMetric label={t("detail.labels.beds")} value={form.bedrooms || "1"} />
+            <PropertyPreviewMetric label={t("detail.labels.baths")} value={form.bathrooms || "1"} />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="rounded-full bg-zinc-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:bg-white/10 dark:text-zinc-300">
+              {form.purpose ? t(`purposes.${form.purpose}`) : t("purposes.sale")}
+            </span>
+            <span className="rounded-full bg-zinc-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:bg-white/10 dark:text-zinc-300">
+              {form.type ? t(`types.${form.type}`) : t("types.Apartment")}
+            </span>
+            {pendingFileCount > 0 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                <ImageIcon className="h-3 w-3" />
+                {pendingFileCount}
+              </span>
+            )}
+          </div>
+          <p className="min-h-16 text-sm font-semibold leading-relaxed text-zinc-500 dark:text-zinc-400">{form.description || t("form.previewDescription")}</p>
+        </div>
+      </article>
+
+      <div className="rounded-[28px] border border-zinc-100 bg-white p-5 shadow-sm shadow-zinc-950/[0.02] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none">
+        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t("form.previewChecklist")}</p>
+        <div className="mt-4 grid gap-2">
+          {checklist.map((item) => (
+            <div key={item.label} className="flex items-center justify-between gap-3 rounded-2xl bg-zinc-50 px-4 py-3 dark:bg-white/[0.03]">
+              <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{item.label}</span>
+              <span className={cn("inline-flex h-6 w-6 items-center justify-center rounded-full", item.ready ? "bg-emerald-500/10 text-emerald-500" : "bg-zinc-200 text-zinc-400 dark:bg-white/10")}>
+                {item.ready ? <CheckCircle2 className="h-3.5 w-3.5" /> : <span className="h-2 w-2 rounded-full bg-current" />}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function PropertyPreviewMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl bg-zinc-50 p-4 dark:bg-white/[0.025]">
+      <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{label}</p>
+      <p className="mt-2 truncate text-lg font-black text-zinc-900 dark:text-white">{value}</p>
+    </div>
   );
 }

@@ -1,225 +1,117 @@
 "use client";
 
-import Image from "next/image";
-import { ArrowRight, Bot, Building2, CalendarClock, CheckCircle2, FileCheck2, MessageCircle, MessageSquareText, Search, ShieldCheck, UsersRound, Video } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { ArrowRight } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
+import CTA from "@/components/cta";
+import { Faq02 } from "@/components/landing/faq-02";
+import { Reveal } from "@/components/landing/cinematic-motion";
 import { Footer } from "@/components/landing/footer";
 import { Navbar } from "@/components/landing/navbar";
-import {
-  AudiencePanel,
-  CtaPanel,
-  FeatureSplitPanel,
-  IntegrationCards,
-  LandingButton,
-  PublicSection,
-  SectionIntro,
-  SignalCard,
-  TeamGallery,
-  TestimonialGrid,
-  WorkspacePreview,
-  type WorkspacePreviewLabels,
-} from "@/components/landing/public-landing-kit";
+import { Pricing03 } from "@/components/landing/pricing-03";
+import { LandingButton, PublicSection } from "@/components/landing/public-landing-kit";
+import Integrations from "@/components/integrations";
+import LogoCloud from "@/components/logo-cloud";
+import { AuroraShaders } from "@/components/ui/aurora";
+import { cn } from "@/lib/utils";
 
 export default function InstitutionalLanding() {
   const t = useTranslations("Landing.home");
-  const preview = t.raw("preview") as WorkspacePreviewLabels;
-
-  const audiences = [
-    {
-      eyebrow: "Disconnected Teams",
-      title: "Your data isn't the problem, your tools are.",
-      description: "Brokers and developers operate in silos. Anan creates a single source of truth.",
-      href: "/dashboard",
-      image: "/images/projects/business-park.png",
-      stats: [{ label: "Context", value: "Lost" }, { label: "Updates", value: "Delayed" }, { label: "Truth", value: "Scattered" }]
-    },
-    {
-      eyebrow: "Manual Updates",
-      title: "Stop updating spreadsheets.",
-      description: "Inventory changes instantly. Keep your team aligned without the manual work.",
-      href: "/dashboard",
-      image: "/images/projects/residential.png",
-      stats: [{ label: "Sync", value: "Manual" }, { label: "Errors", value: "High" }, { label: "Speed", value: "Slow" }]
-    }
-  ];
-
-  const testimonials = [
-    { quote: "This platform is the single most valuable tool for our leadership team. We have absolute visibility.", author: "Sarah Jenkins", role: "Operations Director" },
-    { quote: "Our data is finally reconciled and trustworthy. The AI insights alone save us hours every week.", author: "Michael Chen", role: "VP of Engineering" },
-  ];
-
-  const team = [
-    { name: "Alex Rivera", role: "Product Design", imageTone: "bg-gradient-to-br from-blue-500/40 to-[#050505]" },
-    { name: "Jamie Lee", role: "Engineering Lead", imageTone: "bg-gradient-to-br from-emerald-500/40 to-[#050505]" },
-    { name: "Taylor Smith", role: "Customer Success", imageTone: "bg-gradient-to-br from-amber-500/40 to-[#050505]" },
-    { name: "Jordan Davis", role: "Data Science", imageTone: "bg-gradient-to-br from-red-500/40 to-[#050505]" },
-  ];
-
-  const integrations = [
-    { name: "Slack", description: "Receive real-time alerts and daily digests directly in your channels.", icon: MessageCircle, color: "bg-[#4A154B]" },
-    { name: "YouTube", description: "Embed video walkthroughs and market updates effortlessly.", icon: Video, color: "bg-[#FF0000]" },
-    { name: "Discord", description: "Community sync and instant operational notifications.", icon: MessageSquareText, color: "bg-[#5865F2]" },
-  ];
+  const locale = useLocale();
+  const isAr = locale === "ar";
 
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white selection:bg-blue-500/30">
+    <div className="flex min-h-screen flex-col bg-background text-foreground selection:bg-emerald-500/30">
       <Navbar />
 
-      <main className="flex-1 pt-16">
+      <main className="flex-1">
         {/* HERO SECTION */}
-        <PublicSection className="relative overflow-hidden pt-20 pb-32 md:pt-32 md:pb-40">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-[600px] bg-[radial-gradient(ellipse_at_top,rgba(75,85,255,0.15),transparent_50%)]" />
-          <div className="relative mx-auto max-w-5xl text-center">
-            <div className="mx-auto max-w-4xl space-y-8">
-              <div className="flex items-center justify-center gap-3">
-                <span className="h-px w-8 bg-blue-500/50" />
-                <span className="text-[10px] font-black uppercase tracking-[0.35em] text-blue-400">B2B REAL ESTATE CLARITY</span>
-                <span className="h-px w-8 bg-blue-500/50" />
+        <section className="relative overflow-hidden border-b border-zinc-200/70 pb-20 pt-28 dark:border-white/[0.08] md:pb-24 md:pt-32">
+          <div className="pointer-events-none absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden" aria-hidden="true">
+            <AuroraShaders
+              speed={0.42}
+              intensity={1.45}
+              vibrancy={1.18}
+              frequency={0.78}
+              stretch={1.6}
+              className="absolute left-1/2 top-[-14%] h-[74vh] min-h-[560px] w-[136vw] -translate-x-1/2 opacity-55 [mask-image:linear-gradient(to_bottom,black_0%,black_62%,transparent_100%)] dark:opacity-80"
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(247,249,252,0.2),var(--color-background)_78%)] dark:bg-[linear-gradient(to_bottom,rgba(10,10,10,0.16),var(--color-background)_82%)]" />
+            <div className="absolute inset-x-0 top-0 h-[620px] bg-[radial-gradient(ellipse_at_top,rgba(11,92,255,0.24),transparent_66%)] dark:bg-[radial-gradient(ellipse_at_top,rgba(11,92,255,0.34),transparent_68%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(11,92,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(11,92,255,0.05)_1px,transparent_1px)] bg-[size:80px_80px] opacity-40 [mask-image:radial-gradient(ellipse_at_top,black,transparent_80%)] dark:opacity-20" />
+            <div className="absolute left-1/2 top-[65%] h-px w-[min(90vw,1200px)] -translate-x-1/2 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+          </div>
+          <div className="relative mx-auto flex max-w-7xl flex-col justify-start px-6 py-12 md:py-20">
+            <div className="max-w-4xl">
+              <div className="flex flex-col items-start text-start">
+                <Reveal>
+                  <h1 className={cn(
+                    "text-[clamp(2.5rem,8vw,5.5rem)] font-bold text-zinc-950 dark:text-white",
+                    isAr ? "leading-[1.3] tracking-normal" : "leading-[0.92] tracking-tighter"
+                  )}>
+                    {t("hero.title")}
+                  </h1>
+                  <p className="mt-8 max-w-2xl text-lg leading-relaxed text-zinc-600 dark:text-zinc-400 md:text-xl">
+                    {t("hero.description")}
+                  </p>
+                  <div className="mt-10 flex w-full flex-col gap-5 sm:w-auto sm:flex-row">
+                    <LandingButton href="/dashboard" className="h-14 rounded-full bg-zinc-900 px-10 text-[15px] font-bold text-white shadow-2xl shadow-zinc-900/20 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200">
+                      {t("hero.primary")}
+                      <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                    </LandingButton>
+                    <LandingButton href="/contact" variant="secondary" className="h-14 rounded-full border-zinc-200 bg-white px-10 text-[15px] font-bold backdrop-blur-sm transition-all hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10">
+                      {t("hero.secondary")}
+                    </LandingButton>
+                  </div>
+                </Reveal>
               </div>
-              <div className="space-y-6">
-                <h1 className="text-5xl font-semibold leading-tight tracking-tight text-white md:text-7xl">
-                  Leadership Deserves<br />One System of Truth.
-                </h1>
-                <p className="mx-auto max-w-2xl text-lg font-medium leading-relaxed text-zinc-400 md:text-xl">
-                  Anan gives developers and brokers one trusted layer for projects, inventory, approvals, client work, and AI-assisted decisions.
+            </div>
+          </div>
+        </section>
+
+        <LogoCloud />
+
+        {/* 2. THE PROBLEM SECTION */}
+        <PublicSection id="solutions" tone="muted">
+          <div className="grid gap-20 lg:grid-cols-2 lg:items-center">
+            <Reveal>
+              <div className="space-y-8">
+                <h2 className="text-4xl font-bold tracking-tight text-zinc-950 dark:text-white md:text-6xl rtl:leading-[1.2]">
+                  {isAr ? "العمل العقاري لا يجب أن يكون صعباً." : "Real estate shouldn't be this hard."}
+                </h2>
+                <p className="text-lg leading-relaxed text-zinc-500 dark:text-zinc-400 md:text-xl">
+                  {isAr 
+                    ? "العمليات اليدوية، البيانات المشتتة، وبطء التنفيذ يكلف الشركات الكثير. حان الوقت للتغيير."
+                    : "Manual processes, scattered data, and slow execution are costing you growth. Fragmented workflows are the invisible tax on your business."}
                 </p>
+                <div className="flex flex-wrap gap-4">
+                  {[isAr ? "بيانات مشتتة" : "Scattered Data", isAr ? "بطء في التنفيذ" : "Slow Execution", isAr ? "فقدان الفرص" : "Lost Opportunities"].map(tag => (
+                    <span key={tag} className="rounded-full bg-red-500/10 px-4 py-1.5 text-xs font-bold text-red-600 dark:text-red-400">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
-              <div className="flex flex-col justify-center gap-4 sm:flex-row pt-4">
-                <LandingButton href="/dashboard" className="h-12 px-8 text-[11px] shadow-[0_0_40px_rgba(75,85,255,0.4)]">
-                  Get Anan
-                </LandingButton>
-                <LandingButton href="/contact" variant="secondary" className="h-12 px-8 text-[11px]">
-                  Contact Us
-                </LandingButton>
+            </Reveal>
+            <Reveal delay={0.2}>
+              <div className="grid grid-cols-2 gap-4">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="h-32 rounded-[2rem] bg-zinc-200/50 dark:bg-white/5" />
+                ))}
               </div>
-            </div>
-            <div className="mx-auto mt-20 max-w-5xl relative">
-              <div className="absolute -inset-1 rounded-[24px] bg-gradient-to-b from-white/10 to-transparent blur-md" />
-              <div className="relative z-10 scale-[1.02] md:scale-105 transition-transform duration-700 hover:scale-[1.03] md:hover:scale-[1.06]">
-                <WorkspacePreview labels={preview} />
-              </div>
-            </div>
-            
-            <div className="mx-auto mt-32 max-w-4xl border-t border-white/5 pt-12">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600 mb-8">Trusted by industry leaders</p>
-              <div className="grid gap-4 sm:grid-cols-3">
-                <SignalCard label="Projects" value="Active" helper="Manage properties across multiple developments" tone="blue" icon={Building2} />
-                <SignalCard label="Units" value="Available" helper="Track inventory status and availability in real-time" tone="amber" icon={FileCheck2} />
-                <SignalCard label="Leads" value="In progress" helper="Monitor client intent and follow-ups centrally" tone="green" icon={UsersRound} />
-              </div>
-            </div>
+            </Reveal>
           </div>
         </PublicSection>
 
-        {/* PAIN POINTS SECTION */}
-        <PublicSection tone="muted" className="border-t border-white/5 relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-0 bg-[url('/images/noise.png')] opacity-[0.03] mix-blend-overlay" />
-          <div className="space-y-16 relative z-10">
-            <SectionIntro eyebrow="The Problem" title="Where teams lose clarity." align="center" />
-            <div className="grid gap-6 md:grid-cols-2">
-              {audiences.map((audience) => (
-                <AudiencePanel key={audience.eyebrow} {...audience} />
-              ))}
-            </div>
-          </div>
-        </PublicSection>
+        {/* 3. INTEGRATIONS SECTION */}
+        <Integrations />
 
-        {/* WORKFLOW / FEATURE SPLIT PANELS (ZIGZAG) */}
-        
-        {/* Panel 1: Image Left, Text Right */}
-        <PublicSection className="border-t border-white/5 relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_100%_50%,rgba(16,185,129,0.05),transparent_60%)]" />
-          <FeatureSplitPanel
-            eyebrow="One layer"
-            title="One layer. Every metric. Always reconciled."
-            description="Projects, units, clients, and approvals stop living in separate stories. Ready, pending, blocked, and synced are visible before handoff."
-            primaryLabel="Learn More"
-            href="/dashboard"
-          >
-            <div className="relative bg-[#080808] rounded-[20px] overflow-hidden border border-white/5 shadow-xl aspect-square md:aspect-auto md:h-[400px]">
-               <Image 
-                  src="/images/Dashboard%20AI.png" 
-                  alt="Anan AI Dashboard" 
-                  fill 
-                  className="object-cover object-left-top opacity-90 transition-opacity hover:opacity-100" 
-                  sizes="(max-width: 768px) 100vw, 50vw"
-               />
-            </div>
-          </FeatureSplitPanel>
-        </PublicSection>
-
-        {/* Panel 2: Text Left, Image Right */}
-        <PublicSection tone="muted" className="border-t border-white/5 relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-1/2 bg-[radial-gradient(circle_at_0%_50%,rgba(245,158,11,0.05),transparent_60%)]" />
-          <FeatureSplitPanel
-            eyebrow="Revenue Health"
-            title="Real-time revenue health. It's not a luxury, it's a necessity."
-            description="A B2B surface for teams that need clean status, not more screenshots. See the risk before it becomes a revenue event."
-            primaryLabel="Explore Analytics"
-            href="/dashboard"
-            reverse={true}
-          >
-            <div className="bg-[#0A0A0A] rounded-[20px] p-6 h-[400px] border border-white/5 shadow-xl">
-               <WorkspacePreview labels={preview} />
-            </div>
-          </FeatureSplitPanel>
-        </PublicSection>
-
-        {/* Panel 3: Image Left, Text Right */}
-        <PublicSection className="border-t border-white/5 relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_100%_50%,rgba(56,189,248,0.05),transparent_60%)]" />
-          <FeatureSplitPanel
-            eyebrow="Compliance & Trust"
-            title="See the block before there was a block."
-            description="Approvals and blocks are visible before work moves forward. Brokers and developers use the same operational language."
-            primaryLabel="Discover Compliance"
-            href="/dashboard"
-          >
-            <div className="bg-[#080808] rounded-[20px] p-6 h-[400px] border border-white/5 shadow-xl">
-               <WorkspacePreview labels={preview} />
-            </div>
-          </FeatureSplitPanel>
-        </PublicSection>
-
-        {/* TESTIMONIALS SECTION */}
-        <PublicSection tone="muted" className="border-t border-white/5 relative">
-          <div className="space-y-16">
-            <SectionIntro eyebrow="Testimonials" title="Real feedback. From real leaders." align="center" />
-            <TestimonialGrid testimonials={testimonials} />
-          </div>
-        </PublicSection>
-
-        {/* TEAM SECTION */}
-        <PublicSection className="border-t border-white/5">
-          <div className="space-y-16">
-            <SectionIntro eyebrow="Our Team" title="Built by people who care deeply." align="center" />
-            <TeamGallery members={team} />
-          </div>
-        </PublicSection>
-
-        {/* INTEGRATIONS SECTION */}
-        <PublicSection tone="muted" className="border-t border-white/5">
-          <div className="space-y-16">
-            <SectionIntro eyebrow="Ecosystem" title="Stay connected. Always." align="center" />
-            <IntegrationCards integrations={integrations} />
-          </div>
-        </PublicSection>
-
-        {/* CTA SECTION */}
-        <PublicSection className="border-t border-white/5">
-          <CtaPanel
-            eyebrow="Ready for the workspace"
-            title="Need business clarity? Get Anan."
-            description="Enter the workspace, or contact the team to map Anan to your developer or brokerage workflow."
-            primaryLabel="Get Anan"
-            secondaryLabel="Contact team"
-          />
-        </PublicSection>
+        <Pricing03 locale={locale} />
+        <Faq02 />
+        <CTA />
       </main>
 
       <Footer />
     </div>
   );
 }
-

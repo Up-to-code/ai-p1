@@ -31,6 +31,7 @@ export const createAuthOptions = (
   return {
     appName: "Anan Hub",
     baseURL: authRuntimeConfig.siteUrl,
+    trustedOrigins: authRuntimeConfig.trustedOrigins,
     secret: authRuntimeConfig.secret,
     database: authComponent.adapter(ctx),
     emailAndPassword: {

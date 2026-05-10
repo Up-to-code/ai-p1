@@ -16,6 +16,79 @@ const toneClassName: Record<Tone, string> = {
   zinc: "bg-zinc-400",
 };
 
+export function NarrativeSection({
+  problem,
+  solution,
+  outcome,
+  visual,
+  reverse = false,
+  eyebrow,
+}: {
+  problem: { title: string; description: string };
+  solution: { title: string; description: string };
+  outcome: string;
+  visual: ReactNode;
+  reverse?: boolean;
+  eyebrow?: string;
+}) {
+  return (
+    <div className={cn(
+      "grid items-center gap-16 lg:grid-cols-2 lg:gap-32", 
+      reverse && "lg:grid-cols-[1.1fr_0.9fr]"
+    )}>
+      <div className={cn("space-y-12", reverse && "lg:order-last")}>
+        <div className="space-y-6">
+          {eyebrow && (
+            <div className="flex items-center gap-3">
+              <span className="h-px w-8 bg-zinc-200 dark:bg-white/10" />
+              <span className="text-[10px] font-black uppercase tracking-[0.35em] text-emerald-600 dark:text-emerald-400">{eyebrow}</span>
+            </div>
+          )}
+          <div className="space-y-4">
+            <h3 className="text-3xl font-bold tracking-tight text-zinc-950 dark:text-white md:text-5xl rtl:leading-[1.3]">{problem.title}</h3>
+            <p className="max-w-xl text-base leading-relaxed text-zinc-500 dark:text-zinc-400 md:text-lg rtl:leading-[1.8]">{problem.description}</p>
+          </div>
+        </div>
+
+        <div className={cn(
+          "relative overflow-hidden rounded-[2.5rem] border p-8 md:p-10 transition-all duration-500",
+          "border-zinc-200 bg-white/50 shadow-xl shadow-zinc-200/20 backdrop-blur-xl",
+          "dark:border-white/10 dark:bg-white/5 dark:shadow-none"
+        )}>
+          <div className="absolute -left-px top-10 h-10 w-[3px] rounded-full bg-emerald-500" />
+          <div className="space-y-6">
+            <div className="flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400">
+              <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-500/10">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              </div>
+              The Solution
+            </div>
+            <div className="space-y-3">
+              <h4 className="text-xl font-bold text-zinc-950 dark:text-white md:text-2xl rtl:leading-[1.3]">{solution.title}</h4>
+              <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400 md:text-base rtl:leading-[1.7]">{solution.description}</p>
+            </div>
+          </div>
+          <div className="mt-10 flex items-center gap-6 border-t border-zinc-100 pt-8 dark:border-white/5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-950 text-white dark:bg-white dark:text-zinc-950">
+              <FileCheck2 className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">Business Outcome</p>
+              <p className="mt-1 text-sm font-bold text-zinc-900 dark:text-emerald-200 md:text-base">{outcome}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="relative">
+        <div className="absolute -inset-10 rounded-[5rem] bg-emerald-500/5 blur-[120px] dark:bg-emerald-500/10" />
+        <div className="relative transition-transform duration-700 hover:scale-[1.02]">
+          {visual}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function PublicSection({
   children,
   className,
@@ -33,14 +106,14 @@ export function PublicSection({
     <section
       id={id}
       className={cn(
-        "px-4 py-16 sm:px-6 md:py-24",
-        tone === "default" && "bg-black text-white",
-        tone === "muted" && "bg-[#050505] text-white",
-        tone === "inverse" && "bg-white text-zinc-950",
+        "px-6 py-20 md:py-32 transition-colors duration-500",
+        tone === "default" && "bg-white dark:bg-background text-foreground",
+        tone === "muted" && "bg-zinc-50/80 dark:bg-zinc-950/50 text-foreground",
+        tone === "inverse" && "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950",
         className
       )}
     >
-      <div className={cn("mx-auto max-w-[1400px]", contentClassName)}>{children}</div>
+      <div className={cn("mx-auto max-w-7xl", contentClassName)}>{children}</div>
     </section>
   );
 }
@@ -61,14 +134,14 @@ export function SectionIntro({
   return (
     <div className={cn("space-y-4", align === "center" && "mx-auto max-w-3xl text-center", className)}>
       <div className={cn("flex items-center gap-3", align === "center" && "justify-center")}>
-        <span className="h-px w-8 bg-white/15" />
-        <span className="text-[10px] font-black uppercase tracking-[0.35em] text-emerald-300/80">{eyebrow}</span>
+        <span className="h-px w-8 bg-zinc-200 dark:bg-white/10" />
+        <span className="text-[10px] font-black uppercase tracking-[0.35em] text-emerald-600 dark:text-emerald-300/80">{eyebrow}</span>
       </div>
-      <h2 className="text-3xl font-semibold leading-none tracking-tight text-white md:text-5xl">
+      <h2 className="text-3xl font-bold leading-none tracking-tight text-zinc-900 dark:text-white md:text-5xl">
         {title}
       </h2>
       {description && (
-        <p className="max-w-2xl text-sm font-medium leading-relaxed text-zinc-400 md:text-base">
+        <p className="max-w-2xl text-sm font-medium leading-relaxed text-zinc-500 dark:text-zinc-400 md:text-base">
           {description}
         </p>
       )}
@@ -91,10 +164,10 @@ export function LandingButton({
     <Link
       href={href}
       className={cn(
-        "inline-flex h-11 items-center justify-center gap-2 rounded-xl px-5 text-[10px] font-black uppercase tracking-widest transition active:scale-[0.98]",
-        variant === "primary" && "bg-white text-zinc-950 hover:bg-zinc-200",
-        variant === "secondary" && "border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]",
-        variant === "inverse" && "bg-zinc-950 text-white hover:bg-zinc-800",
+        "inline-flex h-11 items-center justify-center gap-2 rounded-xl px-6 text-[11px] font-bold uppercase tracking-widest transition active:scale-[0.98]",
+        variant === "primary" && "bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200",
+        variant === "secondary" && "border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:hover:bg-white/[0.08]",
+        variant === "inverse" && "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950",
         className
       )}
     >

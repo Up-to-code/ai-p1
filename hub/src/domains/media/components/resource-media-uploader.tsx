@@ -158,7 +158,7 @@ export function ResourceMediaUploader({
       </div>
 
       <label className={cn(
-        "mt-4 flex cursor-pointer flex-col items-center justify-center gap-3 rounded-[24px] border border-dashed border-zinc-200 bg-zinc-50/70 p-5 text-center transition-all hover:border-zinc-300 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/[0.025] dark:hover:border-white/20 dark:hover:bg-white/[0.04]",
+        "mt-4 flex cursor-pointer flex-col items-center justify-center gap-3 rounded-[24px] border border-dashed border-zinc-200 bg-zinc-50/70 p-5 text-center transition-all hover:border-zinc-300 hover:bg-zinc-50 dark:border-white/[0.06] dark:bg-white/[0.015] dark:hover:border-white/[0.12] dark:hover:bg-white/[0.03]",
         variant === "review" ? "min-h-28" : "min-h-32",
         operation.isRunning && "pointer-events-none opacity-60",
       )}>

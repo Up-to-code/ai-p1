@@ -205,6 +205,10 @@
       "documentation": "Docs",
       "developers": "Developers",
       "brokers": "Brokers",
+      "solutions": "Solutions",
+      "pricing": "Pricing",
+      "resources": "Resources",
+      "company": "Company",
       "about": "About",
       "contact": "Contact",
       "signIn": "Sign In",
@@ -219,12 +223,18 @@
     "home": {
       "hero": {
         "eyebrow": "B2B real estate clarity",
-        "title": "Leadership deserves one version of truth.",
-        "description": "Anan gives developers and brokers one trusted layer for projects, inventory, approvals, client work, and AI-assisted decisions.",
+        "title": "Real AI for real work.",
+        "description": "Introducing anan: the next generation of technology and work for institutional real estate teams.",
         "primary": "Enter workspace",
-        "secondary": "Talk to the team"
+        "secondary": "Partner with us",
+        "structure": [
+          { "label": "Market truth", "value": "01", "helper": "Projects, units, media, and pricing reconciled before teams move." },
+          { "label": "Partner motion", "value": "02", "helper": "Developers, brokers, and operators share the same live context." },
+          { "label": "Workspace action", "value": "03", "helper": "AI, follow-ups, and approvals turn clarity into the next step." }
+        ]
       },
       "signals": {
+        "eyebrow": "Micro-proof near the decision point",
         "projects": { "label": "Market data", "value": "42", "helper": "Projects, media, units, and pricing reconciled." },
         "approvals": { "label": "Risk", "value": "18", "helper": "Blocks visible before they become revenue events." },
         "leads": { "label": "Demand", "value": "1.2k", "helper": "Client intent connected to verified inventory." }
@@ -248,6 +258,20 @@
           { "title": "Publish verified waterfront units", "meta": "12 units · ready for marketplace sync", "status": "Ready" }
         ],
         "chips": ["Find client", "Check inventory", "Prepare viewing", "Verify launch"]
+      },
+      "partners": {
+        "eyebrow": "Partner with us",
+        "title": "One infinity loop for the teams around every project.",
+        "description": "The platform is built for the movement between developer supply, broker demand, market signals, and workspace execution.",
+        "items": [
+          { "name": "Developers", "label": "Launch" },
+          { "name": "Brokers", "label": "Demand" },
+          { "name": "Sales ops", "label": "Readiness" },
+          { "name": "Marketing", "label": "Media" },
+          { "name": "Finance", "label": "Revenue" },
+          { "name": "Legal", "label": "Approval" },
+          { "name": "Integrations", "label": "Sync" }
+        ]
       },
       "audiences": {
         "eyebrow": "The problem is not data",
@@ -280,6 +304,11 @@
           }
         ]
       },
+      "city": {
+        "eyebrow": "City area",
+        "title": "Keep the market photo close to the workflow.",
+        "description": "The visual layer stays grounded in the real project environment while every card explains what the team can do next."
+      },
       "workflow": {
         "eyebrow": "One layer",
         "title": "Every metric. Always reconciled.",
@@ -288,6 +317,43 @@
           { "title": "One source", "description": "Projects, units, clients, and approvals stop living in separate stories." },
           { "title": "One status", "description": "Ready, pending, blocked, and synced are visible before handoff." },
           { "title": "One next step", "description": "AI prompts, follow-ups, and workspace actions point to the same outcome." }
+        ]
+      },
+      "problemSolution": {
+        "eyebrow": "Problem and solution",
+        "problemTitle": "What breaks before Anan",
+        "solutionTitle": "What becomes clear inside Anan",
+        "problems": [
+          { "title": "Launch context is scattered", "description": "Inventory, approvals, media, pricing, and broker access drift across separate tools." },
+          { "title": "Teams cannot trust the same status", "description": "One team sees ready, another sees blocked, and leadership sees the delay too late." },
+          { "title": "Demand loses its next step", "description": "Clients, viewings, follow-ups, and available units are not connected tightly enough to move." }
+        ],
+        "solutions": [
+          { "title": "One project operating layer", "description": "Every project has visible readiness, risk, and partner access before it reaches the market." },
+          { "title": "One shared language", "description": "Developer and broker work uses the same status model: ready, blocked, synced, and action required." },
+          { "title": "One AI-assisted next action", "description": "The workspace converts signals into follow-ups, viewing context, launch checks, and decision prompts." }
+        ]
+      },
+      "docsWorld": {
+        "eyebrow": "Docs world",
+        "title": "Read the system before you plug into it.",
+        "description": "The docs explain the operating model behind Anan: project readiness, inventory truth, partner access, AI workflows, and marketplace sync.",
+        "primary": "Read the docs",
+        "items": [
+          { "title": "Operating model", "description": "How Anan structures projects, units, statuses, and workspace decisions.", "href": "/docs" },
+          { "title": "Developer workflow", "description": "How launch readiness, approvals, media, and broker access become one view.", "href": "/developer" },
+          { "title": "Broker workflow", "description": "How clients, viewings, follow-ups, and verified inventory become one motion.", "href": "/broker" }
+        ]
+      },
+      "realSolutions": {
+        "eyebrow": "Real solutions",
+        "title": "Convert the platform story into operating sections.",
+        "description": "No empty feature wall. Each section answers a real business moment.",
+        "items": [
+          { "eyebrow": "Launch command", "title": "Know what can go live.", "description": "Project teams see unit readiness, missing approvals, media gaps, and partner access before release.", "metric": "Ready / blocked" },
+          { "eyebrow": "Broker room", "title": "Move clients with context.", "description": "Brokers keep demand, availability, viewing plans, and developer notes in one workflow.", "metric": "Client next step" },
+          { "eyebrow": "Inventory truth", "title": "Stop selling stale data.", "description": "Pricing, status, and availability stay tied to the same verified project record.", "metric": "Synced source" },
+          { "eyebrow": "AI follow-up", "title": "Turn signals into action.", "description": "AI helps prepare summaries, questions, handoffs, and follow-up plans from workspace context.", "metric": "Action prepared" }
         ]
       },
       "operations": {
@@ -378,6 +444,33 @@
         "description": "Enter the workspace, or contact the team to map Anan to your developer or brokerage workflow.",
         "primary": "Enter workspace",
         "secondary": "Contact team"
+      },
+      "faq": {
+        "eyebrow": "FAQ",
+        "title": "Questions before your team moves in.",
+        "description": "Short answers for developers, brokers, and operators evaluating Anan as the shared workspace layer.",
+        "items": [
+          {
+            "question": "Who is Anan built for?",
+            "answer": "Anan is built for real estate developers, brokerage teams, and operators who need one trusted workspace for projects, units, clients, approvals, and handoffs."
+          },
+          {
+            "question": "How does onboarding work?",
+            "answer": "Teams can start with the workspace, then map their project, inventory, client, and organization flows with the Anan team when deeper setup is needed."
+          },
+          {
+            "question": "Can developers and brokers work from the same data?",
+            "answer": "Yes. Anan is designed around shared project and inventory context so developers, brokers, and operations teams can act from the same verified records."
+          },
+          {
+            "question": "How is pricing handled?",
+            "answer": "Pricing starts with the published plans on this page. Larger teams can contact Anan for an implementation conversation around organization structure, workflows, and support."
+          },
+          {
+            "question": "What makes the workspace trustworthy?",
+            "answer": "The product keeps roles, statuses, approvals, media, and operational records close to the work, so teams can see what is ready, blocked, pending, or synced before moving forward."
+          }
+        ]
       }
     },
     "about": {
@@ -830,7 +923,29 @@
       "statusLabel": "Status",
       "descLabel": "Description",
       "saveBtn": "Save Unit",
-      "createBtn": "Create Unit"
+      "createBtn": "Create Unit",
+      "stepInformation": "Information",
+      "stepGallery": "Media",
+      "stepDetails": "Details",
+      "informationTitle": "Unit basics",
+      "informationDesc": "Connect this unit to a project, city, area, and commercial value before adding media.",
+      "galleryTitle": "Unit media",
+      "galleryDesc": "Add images and one overview video. New files are queued until the unit is saved.",
+      "detailsTitle": "Availability and layout",
+      "detailsDesc": "Set the unit layout, purpose, status, and the client-facing description.",
+      "galleryUploaderTitle": "Unit media",
+      "galleryUploaderDesc": "Add unit images and one overview video. The first image can become the cover.",
+      "galleryPick": "Choose media",
+      "galleryQueued": "Queued media",
+      "galleryVideoLimit": "Only one overview video can be added to a unit.",
+      "galleryUnsupported": "Only images and videos are supported for unit media.",
+      "previewTitle": "Unit preview",
+      "previewName": "Unit name",
+      "previewProject": "Project",
+      "previewCity": "City",
+      "previewDescription": "The unit description will appear here as you write it.",
+      "previewChecklist": "Unit readiness",
+      "previewMedia": "Media"
     },
     "types": {
       "Apartment": "Apartment",

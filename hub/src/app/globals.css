@@ -197,6 +197,33 @@
   50% { opacity: 0; }
 }
 
+@keyframes aurora-drift {
+  0% {
+    transform: translate3d(-8%, -4%, 0) rotate(-7deg) scaleX(calc(1 / var(--aurora-frequency))) scaleY(var(--aurora-stretch));
+  }
+  100% {
+    transform: translate3d(8%, 5%, 0) rotate(8deg) scaleX(calc(1.08 * var(--aurora-frequency))) scaleY(var(--aurora-stretch));
+  }
+}
+
+@keyframes aurora-wave {
+  0% {
+    transform: translate3d(9%, 3%, 0) rotate(6deg) scaleX(calc(1.1 * var(--aurora-frequency))) scaleY(calc(var(--aurora-stretch) * 0.82));
+  }
+  100% {
+    transform: translate3d(-7%, -5%, 0) rotate(-9deg) scaleX(calc(0.92 / var(--aurora-frequency))) scaleY(calc(var(--aurora-stretch) * 0.82));
+  }
+}
+
+@keyframes aurora-pulse {
+  0%, 100% {
+    transform: translateY(-8%) scale(0.96);
+  }
+  50% {
+    transform: translateY(4%) scale(1.08);
+  }
+}
+
 .animate-blink {
   animation: blink 0.8s step-end infinite;
 }

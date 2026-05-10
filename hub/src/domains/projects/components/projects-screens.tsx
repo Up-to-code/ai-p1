@@ -579,10 +579,10 @@ export function ProjectFormScreen({ id }: { id?: string }) {
         className="pb-8"
       />
 
-      <div className="grid gap-6 xl:grid-cols-[430px_minmax(0,760px)] xl:items-start xl:justify-center">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,760px)_380px] xl:items-start xl:justify-center">
         <ProjectFormPreview form={form} />
 
-        <section className="rounded-[32px] border border-zinc-100 bg-white p-4 shadow-sm shadow-zinc-950/[0.03] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none md:p-6">
+        <section className="order-1 rounded-[32px] border border-zinc-100 bg-white p-4 shadow-sm shadow-zinc-950/[0.03] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none md:p-6">
           <ProjectFormProgress step={step} labels={[t("form.stepInformation"), t("form.stepGallery"), t("form.stepDetails")]} />
           <FormErrorSummary errors={fieldErrors} />
 
@@ -623,7 +623,7 @@ export function ProjectFormScreen({ id }: { id?: string }) {
                       videoLimit: t("form.galleryVideoLimit"),
                       unsupported: t("form.galleryUnsupported"),
                     }}
-                    className="border-zinc-100 bg-zinc-50/40 shadow-none dark:border-white/10 dark:bg-white/[0.02]"
+                    className="border-zinc-100 bg-zinc-50/40 shadow-none dark:border-white/[0.06] dark:bg-white/[0.01]"
                   />
                 </ProjectWizardPanel>
               </div>
@@ -779,7 +779,7 @@ function ProjectFormPreview({ form }: { form: ProjectFormValues }) {
   const t = useTranslations("Projects");
 
   return (
-    <aside className="space-y-4 xl:sticky xl:top-24">
+    <aside className="order-2 space-y-4 xl:sticky xl:top-24">
       <article className="overflow-hidden rounded-[32px] border border-zinc-100 bg-white shadow-sm shadow-zinc-950/[0.03] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none">
         <div className="relative h-72 bg-zinc-950">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,255,255,0.18),transparent_30%),linear-gradient(135deg,rgba(255,255,255,0.10),transparent_45%)]" />

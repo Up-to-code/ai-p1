@@ -1,98 +1,67 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
-import { Bot, LayoutDashboard, Menu, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-
+import { cn } from "@/lib/utils";
+import { Logo } from "@/components/logo";
+import { NavMenu } from "@/components/nav-menu";
+import { NavigationSheet } from "@/components/navigation-sheet";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { Link } from "@/i18n/routing";
-import { cn } from "@/lib/utils";
-
-const navItems = [
-  { href: "/", key: "home" },
-  { href: "/developer", key: "developers" },
-  { href: "/broker", key: "brokers" },
-  { href: "/about", key: "about" },
-  { href: "/contact", key: "contact" },
-] as const;
 
 export function Navbar() {
   const t = useTranslations("Landing.nav");
-  const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-xl">
-      <nav className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex min-w-0 items-center gap-3 rounded-xl focus-visible:ring-2 focus-visible:ring-zinc-900/15">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white">
-            <Image src="/brand-logo.svg" alt="Anan" width={28} height={28} className="h-7 w-7" priority />
-          </span>
-          <span className="min-w-0">
-            <span className="block text-sm font-black lowercase tracking-tight text-white">anan</span>
-            <span className="block truncate text-[9px] font-black uppercase tracking-[0.24em] text-zinc-400">{t("workspaceSystem")}</span>
-          </span>
-        </Link>
+    <header className={cn(
+      "fixed inset-x-0 top-4 z-50 flex justify-center px-6 transition-all duration-700 ease-in-out",
+      isScrolled ? "top-2" : "top-4"
+    )}>
+      <nav className={cn(
+        "flex w-full max-w-7xl items-center justify-between rounded-full border px-4 py-2 transition-all duration-700",
+        "border-zinc-200/50 bg-white/40 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] backdrop-blur-3xl",
+        "dark:border-white/10 dark:bg-zinc-900/40 dark:shadow-none",
+        isScrolled && "max-w-5xl bg-white/70 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] dark:bg-zinc-950/70"
+      )}>
+        <Logo />
 
-        <div className="hidden items-center gap-7 lg:flex">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500 transition hover:text-white"
-            >
-              {t(item.key)}
-            </Link>
-          ))}
-        </div>
+        {/* Desktop Menu */}
+        <NavMenu className="hidden md:block" />
 
-        <div className="hidden items-center gap-6 md:flex">
-          <LanguageSwitcher className="opacity-70 hover:opacity-100" />
-          <Link
-            href="/dashboard"
-            className="inline-flex h-10 items-center justify-center rounded-xl bg-white px-5 text-[10px] font-black uppercase tracking-widest text-zinc-950 transition hover:bg-zinc-200 active:scale-[0.98]"
-          >
-            {t("dashboard")}
-          </Link>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setIsOpen((value) => !value)}
-          aria-expanded={isOpen}
-          aria-label={isOpen ? t("closeMenu") : t("openMenu")}
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-300 transition hover:text-white md:hidden"
-        >
-          {isOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-        </button>
-      </nav>
-
-      <div className={cn("border-t border-white/10 bg-black px-4 py-4 shadow-none md:hidden", !isOpen && "hidden")}>
-        <div className="mx-auto max-w-[1400px] space-y-4">
-          <div className="grid gap-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setIsOpen(false)}
-                className="rounded-xl px-3 py-3 text-[11px] font-black uppercase tracking-[0.22em] text-zinc-400 transition hover:bg-white/5 hover:text-white"
-              >
-                {t(item.key)}
-              </Link>
-            ))}
-          </div>
-          <div className="flex items-center gap-2 border-t border-white/10 pt-4">
-            <LanguageSwitcher className="h-10 flex-1 justify-center opacity-80" />
+        <div className="flex items-center gap-3">
+          <div className="hidden items-center gap-3 sm:flex">
+            <div className="flex items-center rounded-full bg-zinc-950/5 p-0.5 dark:bg-white/10">
+              <ThemeToggle className="h-8 w-8 border-none bg-transparent shadow-none hover:bg-zinc-950/5 dark:hover:bg-white/5" />
+              <div className="mx-0.5 h-3 w-px bg-zinc-200 dark:bg-white/10" />
+              <LanguageSwitcher className="h-8 border-none bg-transparent px-3 text-[10px] font-black opacity-60 hover:opacity-100" />
+            </div>
+            
             <Link
               href="/dashboard"
-              onClick={() => setIsOpen(false)}
-              className="inline-flex h-10 flex-1 items-center justify-center rounded-xl bg-white px-5 text-[10px] font-black uppercase tracking-widest text-zinc-950"
+              className={cn(
+                "inline-flex h-10 items-center justify-center rounded-full bg-zinc-950 px-6 text-[11px] font-black uppercase tracking-widest text-white transition-all hover:bg-zinc-800 active:scale-95 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+              )}
             >
               {t("dashboard")}
             </Link>
           </div>
+
+          {/* Mobile Menu */}
+          <div className="md:hidden">
+            <NavigationSheet />
+          </div>
         </div>
-      </div>
+      </nav>
     </header>
   );
 }
