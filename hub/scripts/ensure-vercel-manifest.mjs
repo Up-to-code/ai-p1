@@ -4,6 +4,36 @@ import path from "node:path";
 const nextDir = path.join(process.cwd(), ".next");
 const source = path.join(nextDir, "routes-manifest.json");
 const target = path.join(nextDir, "routes-manifest-deterministic.json");
+const manifestRelativePaths = [
+  "routes-manifest.json",
+  "routes-manifest-deterministic.json",
+  "build-manifest.json",
+  "fallback-build-manifest.json",
+  "images-manifest.json",
+  "prerender-manifest.json",
+  "app-path-routes-manifest.json",
+  "server/app-paths-manifest.json",
+  "server/functions-config-manifest.json",
+  "server/middleware-manifest.json",
+  "server/next-font-manifest.json",
+  "server/pages-manifest.json",
+  "server/server-reference-manifest.json",
+];
+
+async function copyIfExists(fromDir, toDir, relativePath) {
+  const from = path.join(fromDir, relativePath);
+  const to = path.join(toDir, relativePath);
+
+  try {
+    await stat(from);
+  } catch {
+    return false;
+  }
+
+  await mkdir(path.dirname(to), { recursive: true });
+  await copyFile(from, to);
+  return true;
+}
 
 try {
   await stat(source);
@@ -27,11 +57,9 @@ if (process.env.VERCEL) {
     const ancestorNextDir = path.join(current, ".next");
     if (copied.has(ancestorNextDir)) continue;
 
-    await mkdir(ancestorNextDir, { recursive: true });
-    await copyFile(source, path.join(ancestorNextDir, "routes-manifest.json"));
-    await copyFile(target, path.join(ancestorNextDir, "routes-manifest-deterministic.json"));
+    await Promise.all(manifestRelativePaths.map((relativePath) => copyIfExists(nextDir, ancestorNextDir, relativePath)));
     copied.add(ancestorNextDir);
   }
 
-  console.log("Ensured ancestor .next routes manifests for Vercel deployment.");
+  console.log("Ensured ancestor .next manifests for Vercel deployment.");
 }

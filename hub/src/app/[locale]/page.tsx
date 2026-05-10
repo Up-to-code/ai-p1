@@ -1,281 +1,227 @@
 "use client";
 
-import { AlertCircle, ArrowRight, Bot, CalendarClock, Database, Share2, Sparkles, Network } from "lucide-react";
+import { ArrowRight, Bot, Building2, CalendarClock, CheckCircle2, FileCheck2, MessageCircle, MessageSquareText, Search, ShieldCheck, UsersRound, Video } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Footer } from "@/components/landing/footer";
 import { Navbar } from "@/components/landing/navbar";
-import { 
-  LandingButton, 
-  WorkspacePreview, 
-  AnimatedSection, 
-  StaggerContainer, 
-  StaggerItem,
-  type WorkspacePreviewLabels 
+import {
+  AudiencePanel,
+  CtaPanel,
+  FeatureSplitPanel,
+  IntegrationCards,
+  LandingButton,
+  PublicSection,
+  SectionIntro,
+  SignalCard,
+  TeamGallery,
+  TestimonialGrid,
+  WorkspacePreview,
+  type WorkspacePreviewLabels,
 } from "@/components/landing/public-landing-kit";
 
 export default function InstitutionalLanding() {
   const t = useTranslations("Landing.home");
   const preview = t.raw("preview") as WorkspacePreviewLabels;
 
-  const anim = {
-    hero: {
-      title: t("animated.hero.title"),
-      description: t("animated.hero.description"),
-      primary: t("animated.hero.primary"),
+  const audiences = [
+    {
+      eyebrow: "Disconnected Teams",
+      title: "Your data isn't the problem, your tools are.",
+      description: "Brokers and developers operate in silos. Anan creates a single source of truth.",
+      href: "/dashboard",
+      image: "/images/projects/business-park.png",
+      stats: [{ label: "Context", value: "Lost" }, { label: "Updates", value: "Delayed" }, { label: "Truth", value: "Scattered" }]
     },
-    problems: {
-      eyebrow: t("animated.problems.eyebrow"),
-      title: t("animated.problems.title"),
-      items: [
-        t("animated.problems.item1"),
-        t("animated.problems.item2"),
-        t("animated.problems.item3"),
-      ]
-    },
-    solutions: {
-      eyebrow: t("animated.solutions.eyebrow"),
-      title: t("animated.solutions.title"),
-      description: t("animated.solutions.description"),
-    },
-    calendar: {
-      eyebrow: t("animated.calendar.eyebrow"),
-      title: t("animated.calendar.title"),
-      description: t("animated.calendar.description"),
-    },
-    distribution: {
-      eyebrow: t("animated.distribution.eyebrow"),
-      title: t("animated.distribution.title"),
-      description: t("animated.distribution.description"),
-      apps: [
-        t("animated.distribution.website"),
-        t("animated.distribution.agent"),
-        t("animated.distribution.market"),
-        t("animated.distribution.ai")
-      ]
+    {
+      eyebrow: "Manual Updates",
+      title: "Stop updating spreadsheets.",
+      description: "Inventory changes instantly. Keep your team aligned without the manual work.",
+      href: "/dashboard",
+      image: "/images/projects/residential.png",
+      stats: [{ label: "Sync", value: "Manual" }, { label: "Errors", value: "High" }, { label: "Speed", value: "Slow" }]
     }
-  };
+  ];
+
+  const testimonials = [
+    { quote: "This platform is the single most valuable tool for our leadership team. We have absolute visibility.", author: "Sarah Jenkins", role: "Operations Director" },
+    { quote: "Our data is finally reconciled and trustworthy. The AI insights alone save us hours every week.", author: "Michael Chen", role: "VP of Engineering" },
+  ];
+
+  const team = [
+    { name: "Alex Rivera", role: "Product Design", imageTone: "bg-blue-500" },
+    { name: "Jamie Lee", role: "Engineering Lead", imageTone: "bg-emerald-500" },
+    { name: "Taylor Smith", role: "Customer Success", imageTone: "bg-amber-500" },
+    { name: "Jordan Davis", role: "Data Science", imageTone: "bg-red-500" },
+  ];
+
+  const integrations = [
+    { name: "Slack", description: "Receive real-time alerts and daily digests directly in your channels.", icon: MessageCircle, color: "bg-[#4A154B]" },
+    { name: "YouTube", description: "Embed video walkthroughs and market updates effortlessly.", icon: Video, color: "bg-[#FF0000]" },
+    { name: "Discord", description: "Community sync and instant operational notifications.", icon: MessageSquareText, color: "bg-[#5865F2]" },
+  ];
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#050505] text-white selection:bg-blue-500/30 overflow-x-hidden">
+    <div className="flex min-h-screen flex-col bg-black text-white selection:bg-blue-500/30">
       <Navbar />
 
       <main className="flex-1 pt-16">
-        {/* 1. HERO SECTION */}
-        <section className="relative pt-32 pb-24 md:pt-48 md:pb-32">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[600px] opacity-30 pointer-events-none">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(75,85,255,0.4),transparent_60%)] blur-[80px]" />
-          </div>
-
-          <AnimatedSection className="relative mx-auto max-w-5xl px-6 text-center">
-            <h1 className="mx-auto max-w-4xl text-5xl font-medium tracking-tight text-white md:text-7xl lg:text-[80px] leading-[1.1]">
-              {anim.hero.title}
-            </h1>
-            <p className="mx-auto mt-8 max-w-2xl text-lg text-zinc-400">
-              {anim.hero.description}
-            </p>
-            
-            <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
-              <LandingButton href="/dashboard" className="h-12 px-8 bg-white text-black hover:bg-zinc-200">
-                {anim.hero.primary}
-              </LandingButton>
-            </div>
-          </AnimatedSection>
-        </section>
-
-        {/* WORKSPACE PREVIEW */}
-        <AnimatedSection delay={0.2} className="relative mx-auto max-w-[1200px] px-6 pb-32">
-          <div className="relative w-full overflow-hidden rounded-xl border border-white/10 bg-black/50 shadow-2xl backdrop-blur-sm">
-            <WorkspacePreview labels={preview} />
-          </div>
-        </AnimatedSection>
-
-        {/* 2. PROBLEMS SECTION */}
-        <section className="py-32 relative border-t border-white/5">
-          <div className="mx-auto max-w-5xl px-6">
-            <AnimatedSection>
-              <div className="flex items-center gap-3 mb-6">
-                <span className="h-px w-8 bg-red-500/50" />
-                <span className="text-[10px] font-black uppercase tracking-[0.35em] text-red-400">{anim.problems.eyebrow}</span>
+        {/* HERO SECTION */}
+        <PublicSection className="relative overflow-hidden pt-20 pb-32 md:pt-32 md:pb-40">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[800px] bg-[radial-gradient(ellipse_at_top,rgba(75,85,255,0.15),transparent_50%)]" />
+          <div className="relative mx-auto max-w-5xl text-center">
+            <div className="mx-auto max-w-4xl space-y-8">
+              <div className="flex items-center justify-center gap-3">
+                <span className="h-px w-8 bg-blue-500/50" />
+                <span className="text-[10px] font-black uppercase tracking-[0.35em] text-blue-400">B2B REAL ESTATE CLARITY</span>
+                <span className="h-px w-8 bg-blue-500/50" />
               </div>
-              <h2 className="text-4xl font-medium tracking-tight text-white md:text-6xl mb-16">
-                {anim.problems.title}
-              </h2>
-            </AnimatedSection>
+              <div className="space-y-6">
+                <h1 className="text-5xl font-semibold leading-tight tracking-tight text-white md:text-7xl">
+                  Leadership Deserves<br />One System of Truth.
+                </h1>
+                <p className="mx-auto max-w-2xl text-lg font-medium leading-relaxed text-zinc-400 md:text-xl">
+                  Anan gives developers and brokers one trusted layer for projects, inventory, approvals, client work, and AI-assisted decisions.
+                </p>
+              </div>
+              <div className="flex flex-col justify-center gap-4 sm:flex-row pt-4">
+                <LandingButton href="/dashboard" className="h-12 px-8 text-[11px] shadow-[0_0_40px_rgba(75,85,255,0.4)]">
+                  Get Anan
+                </LandingButton>
+                <LandingButton href="/contact" variant="secondary" className="h-12 px-8 text-[11px]">
+                  Contact Us
+                </LandingButton>
+              </div>
+            </div>
+            <div className="mx-auto mt-20 max-w-5xl relative">
+              <div className="absolute -inset-1 rounded-[24px] bg-gradient-to-b from-white/10 to-transparent blur-md" />
+              <div className="relative z-10 scale-[1.02] md:scale-105 transition-transform duration-700 hover:scale-[1.03] md:hover:scale-[1.06]">
+                <WorkspacePreview labels={preview} />
+              </div>
+            </div>
             
-            <StaggerContainer className="grid gap-6 md:grid-cols-3">
-              {anim.problems.items.map((item, idx) => (
-                <StaggerItem key={idx} className="rounded-2xl border border-white/5 bg-white/[0.02] p-8 relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <AlertCircle className="h-6 w-6 text-red-400 mb-6" />
-                  <p className="text-lg font-medium text-zinc-300 leading-relaxed">{item}</p>
-                </StaggerItem>
+            <div className="mx-auto mt-32 max-w-4xl border-t border-white/5 pt-12">
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600 mb-8">Trusted by industry leaders</p>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <SignalCard label="Projects" value="Active" helper="Manage properties across multiple developments" tone="blue" icon={Building2} />
+                <SignalCard label="Units" value="Available" helper="Track inventory status and availability in real-time" tone="amber" icon={FileCheck2} />
+                <SignalCard label="Leads" value="In progress" helper="Monitor client intent and follow-ups centrally" tone="green" icon={UsersRound} />
+              </div>
+            </div>
+          </div>
+        </PublicSection>
+
+        {/* PAIN POINTS SECTION */}
+        <PublicSection tone="muted" className="border-t border-white/5 relative overflow-hidden">
+          <div className="pointer-events-none absolute inset-0 bg-[url('/images/noise.png')] opacity-[0.03] mix-blend-overlay" />
+          <div className="space-y-16 relative z-10">
+            <SectionIntro eyebrow="The Problem" title="Your data isn't the problem, your tools are." align="center" />
+            <div className="grid gap-6 md:grid-cols-2">
+              {audiences.map((audience) => (
+                <AudiencePanel key={audience.eyebrow} {...audience} />
               ))}
-            </StaggerContainer>
-          </div>
-        </section>
-
-        {/* 3. SOLUTIONS AI SECTION */}
-        <section className="py-32 relative border-t border-white/5 overflow-hidden">
-          <div className="absolute top-1/2 left-0 w-[500px] h-[500px] -translate-y-1/2 opacity-20 pointer-events-none">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.4),transparent_70%)] blur-[80px]" />
-          </div>
-          
-          <div className="mx-auto max-w-5xl px-6">
-            <div className="grid md:grid-cols-2 gap-16 items-center">
-              <AnimatedSection>
-                <div className="flex items-center gap-3 mb-6">
-                  <span className="h-px w-8 bg-sky-500/50" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.35em] text-sky-400">{anim.solutions.eyebrow}</span>
-                </div>
-                <h2 className="text-4xl font-medium tracking-tight text-white md:text-5xl mb-6">
-                  {anim.solutions.title}
-                </h2>
-                <p className="text-lg text-zinc-400 leading-relaxed">
-                  {anim.solutions.description}
-                </p>
-              </AnimatedSection>
-              
-              <AnimatedSection delay={0.2} className="relative h-[400px] rounded-[32px] border border-white/10 bg-white/[0.02] flex items-center justify-center backdrop-blur-md">
-                <div className="absolute inset-0 bg-gradient-to-tr from-sky-500/10 to-transparent rounded-[32px]" />
-                <div className="relative z-10 flex flex-col items-center gap-6">
-                  <div className="h-20 w-20 rounded-full bg-sky-500/20 flex items-center justify-center animate-pulse shadow-[0_0_40px_rgba(56,189,248,0.3)]">
-                    <Sparkles className="h-8 w-8 text-sky-400" />
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="h-2 w-16 bg-white/10 rounded-full overflow-hidden">
-                      <div className="h-full bg-sky-400 w-full animate-[shimmer_2s_infinite]" />
-                    </div>
-                    <Database className="h-5 w-5 text-zinc-500" />
-                  </div>
-                </div>
-              </AnimatedSection>
             </div>
           </div>
-        </section>
+        </PublicSection>
 
-        {/* 4. CALENDAR AI SECTION */}
-        <section className="py-32 relative border-t border-white/5 overflow-hidden">
-          <div className="absolute top-1/2 right-0 w-[500px] h-[500px] -translate-y-1/2 opacity-20 pointer-events-none">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.3),transparent_70%)] blur-[80px]" />
-          </div>
-
-          <div className="mx-auto max-w-5xl px-6">
-            <div className="grid md:grid-cols-2 gap-16 items-center">
-              <AnimatedSection delay={0.2} className="relative h-[400px] rounded-[32px] border border-white/10 bg-white/[0.02] flex flex-col p-8 backdrop-blur-md md:order-1 order-2">
-                <div className="absolute inset-0 bg-gradient-to-bl from-amber-500/10 to-transparent rounded-[32px]" />
-                <div className="relative z-10 flex-1 flex flex-col gap-4">
-                  <div className="h-10 w-32 rounded-lg bg-white/5 mb-4" />
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center gap-4 p-4 rounded-xl border border-white/5 bg-white/5">
-                      <div className="h-10 w-10 rounded-full bg-amber-500/20 flex items-center justify-center">
-                        <CalendarClock className="h-4 w-4 text-amber-400" />
-                      </div>
-                      <div className="flex-1 space-y-2">
-                        <div className="h-2 w-1/2 bg-white/20 rounded-full" />
-                        <div className="h-2 w-1/3 bg-white/10 rounded-full" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </AnimatedSection>
-
-              <AnimatedSection className="md:order-2 order-1">
-                <div className="flex items-center gap-3 mb-6">
-                  <span className="h-px w-8 bg-amber-500/50" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.35em] text-amber-400">{anim.calendar.eyebrow}</span>
-                </div>
-                <h2 className="text-4xl font-medium tracking-tight text-white md:text-5xl mb-6">
-                  {anim.calendar.title}
-                </h2>
-                <p className="text-lg text-zinc-400 leading-relaxed">
-                  {anim.calendar.description}
-                </p>
-              </AnimatedSection>
+        {/* WORKFLOW / FEATURE SPLIT PANELS (ZIGZAG) */}
+        
+        {/* Panel 1: Image Left, Text Right */}
+        <PublicSection className="border-t border-white/5 relative overflow-hidden">
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_100%_50%,rgba(16,185,129,0.05),transparent_60%)]" />
+          <FeatureSplitPanel
+            eyebrow="One layer"
+            title="One layer. Every metric. Always reconciled."
+            description="Projects, units, clients, and approvals stop living in separate stories. Ready, pending, blocked, and synced are visible before handoff."
+            primaryLabel="Learn More"
+            href="/dashboard"
+          >
+            <div className="bg-[#080808] rounded-[20px] p-6 h-[400px] border border-white/5 shadow-xl">
+               <WorkspacePreview labels={preview} />
             </div>
-          </div>
-        </section>
+          </FeatureSplitPanel>
+        </PublicSection>
 
-        {/* 5. CONNECTED APPS / DISTRIBUTION SECTION */}
-        <section className="py-40 relative border-t border-white/5 bg-[#030303] overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none bg-[url('/images/noise.png')] opacity-[0.03] mix-blend-overlay" />
-          
-          <div className="mx-auto max-w-5xl px-6 text-center">
-            <AnimatedSection>
-              <div className="flex items-center justify-center gap-3 mb-6">
-                <span className="h-px w-8 bg-emerald-500/50" />
-                <span className="text-[10px] font-black uppercase tracking-[0.35em] text-emerald-400">{anim.distribution.eyebrow}</span>
-                <span className="h-px w-8 bg-emerald-500/50" />
+        {/* Panel 2: Text Left, Image Right (by using the inverted prop if available, or flex-row-reverse) */}
+        <PublicSection tone="muted" className="border-t border-white/5 relative overflow-hidden">
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-1/2 bg-[radial-gradient(circle_at_0%_50%,rgba(245,158,11,0.05),transparent_60%)]" />
+          <div className="mx-auto max-w-5xl">
+            <div className="grid items-center gap-16 md:grid-cols-2">
+              <div className="space-y-8 md:order-1 order-2">
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <span className="h-px w-8 bg-amber-500/50" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.35em] text-amber-400">Revenue Health</span>
+                  </div>
+                  <h2 className="text-3xl font-medium tracking-tight text-white md:text-5xl">Real-time revenue health. It's not a luxury, it's a necessity.</h2>
+                  <p className="text-lg leading-relaxed text-zinc-400">
+                    A B2B surface for teams that need clean status, not more screenshots. See the risk before it becomes a revenue event.
+                  </p>
+                </div>
+                <LandingButton href="/dashboard" className="h-12 px-8 shadow-[0_0_40px_rgba(245,158,11,0.2)]">Explore Analytics</LandingButton>
               </div>
-              <h2 className="text-4xl font-medium tracking-tight text-white md:text-6xl mb-6 max-w-3xl mx-auto">
-                {anim.distribution.title}
-              </h2>
-              <p className="text-lg text-zinc-400 leading-relaxed max-w-2xl mx-auto mb-20">
-                {anim.distribution.description}
-              </p>
-            </AnimatedSection>
-
-            <div className="relative flex justify-center items-center max-w-4xl mx-auto h-[300px]">
-              {/* Central Hub */}
-              <AnimatedSection delay={0.4} className="absolute z-20">
-                <div className="h-32 w-32 rounded-full border border-white/10 bg-black flex items-center justify-center shadow-[0_0_80px_rgba(16,185,129,0.3)]">
-                  <Database className="h-10 w-10 text-emerald-400" />
-                </div>
-              </AnimatedSection>
-
-              {/* Connecting Lines & Endpoints */}
-              <StaggerContainer className="absolute inset-0 w-full h-full">
-                {anim.distribution.apps.map((app, idx) => {
-                  // Position nodes in a circle
-                  const angle = (idx * (360 / anim.distribution.apps.length)) * (Math.PI / 180);
-                  const radius = 200;
-                  const x = Math.cos(angle) * radius;
-                  const y = Math.sin(angle) * radius;
-
-                  return (
-                    <StaggerItem key={idx} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                      <div 
-                        className="absolute h-px bg-gradient-to-r from-emerald-500/50 to-transparent origin-left"
-                        style={{ 
-                          width: `${radius}px`,
-                          transform: `rotate(${angle}rad)`,
-                        }}
-                      />
-                      <div 
-                        className="absolute flex items-center gap-3 bg-[#0a0a0a] border border-white/10 px-6 py-4 rounded-2xl shadow-xl whitespace-nowrap"
-                        style={{ 
-                          transform: `translate(${x}px, ${y}px) translate(-50%, -50%)`,
-                        }}
-                      >
-                        <Network className="h-5 w-5 text-emerald-400" />
-                        <span className="font-semibold text-sm">{app}</span>
-                      </div>
-                    </StaggerItem>
-                  );
-                })}
-              </StaggerContainer>
+              <div className="relative md:order-2 order-1">
+                 <div className="absolute -inset-1 rounded-[32px] bg-gradient-to-tr from-amber-500/20 to-transparent blur-md" />
+                 <div className="relative overflow-hidden rounded-[24px] border border-white/10 bg-[#0A0A0A] h-[400px]">
+                    <WorkspacePreview labels={preview} />
+                 </div>
+              </div>
             </div>
           </div>
-        </section>
+        </PublicSection>
+
+        {/* Panel 3: Image Left, Text Right */}
+        <PublicSection className="border-t border-white/5 relative overflow-hidden">
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_100%_50%,rgba(56,189,248,0.05),transparent_60%)]" />
+          <FeatureSplitPanel
+            eyebrow="Compliance & Trust"
+            title="See the block before there was a block."
+            description="Approvals and blocks are visible before work moves forward. Brokers and developers use the same operational language."
+            primaryLabel="Discover Compliance"
+            href="/dashboard"
+          >
+            <div className="bg-[#080808] rounded-[20px] p-6 h-[400px] border border-white/5 shadow-xl">
+               <WorkspacePreview labels={preview} />
+            </div>
+          </FeatureSplitPanel>
+        </PublicSection>
+
+        {/* TESTIMONIALS SECTION */}
+        <PublicSection tone="muted" className="border-t border-white/5 relative">
+          <div className="space-y-16">
+            <SectionIntro eyebrow="Testimonials" title="Real feedback. From real leaders." align="center" />
+            <TestimonialGrid testimonials={testimonials} />
+          </div>
+        </PublicSection>
+
+        {/* TEAM SECTION */}
+        <PublicSection className="border-t border-white/5">
+          <div className="space-y-16">
+            <SectionIntro eyebrow="Our Team" title="Built by people who care deeply." align="center" />
+            <TeamGallery members={team} />
+          </div>
+        </PublicSection>
+
+        {/* INTEGRATIONS SECTION */}
+        <PublicSection tone="muted" className="border-t border-white/5">
+          <div className="space-y-16">
+            <SectionIntro eyebrow="Ecosystem" title="Stay connected. Always." align="center" />
+            <IntegrationCards integrations={integrations} />
+          </div>
+        </PublicSection>
 
         {/* CTA SECTION */}
-        <section className="py-32 border-t border-white/5">
-          <AnimatedSection className="mx-auto max-w-3xl px-6 text-center">
-            <h2 className="text-4xl font-medium tracking-tight text-white md:text-6xl">
-              {t("cta.title")}
-            </h2>
-            <p className="mx-auto mt-6 max-w-xl text-lg text-zinc-400">
-              {t("cta.description")}
-            </p>
-            <div className="mt-10">
-              <LandingButton href="/dashboard" className="h-12 px-8 bg-white text-black hover:bg-zinc-200">
-                {t("cta.primary")}
-              </LandingButton>
-            </div>
-          </AnimatedSection>
-        </section>
-
+        <PublicSection className="border-t border-white/5">
+          <CtaPanel
+            eyebrow="Ready for the workspace"
+            title="Need business clarity? Get Anan."
+            description="Enter the workspace, or contact the team to map Anan to your developer or brokerage workflow."
+            primaryLabel="Get Anan"
+            secondaryLabel="Contact team"
+          />
+        </PublicSection>
       </main>
+
       <Footer />
     </div>
   );
