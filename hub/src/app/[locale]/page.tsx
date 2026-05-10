@@ -39,7 +39,6 @@ export default function InstitutionalLanding() {
             <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(247,249,252,0.2),var(--color-background)_78%)] dark:bg-[linear-gradient(to_bottom,rgba(10,10,10,0.16),var(--color-background)_82%)]" />
             <div className="absolute inset-x-0 top-0 h-[620px] bg-[radial-gradient(ellipse_at_top,rgba(11,92,255,0.24),transparent_66%)] dark:bg-[radial-gradient(ellipse_at_top,rgba(11,92,255,0.34),transparent_68%)]" />
             <div className="absolute inset-0 bg-[linear-gradient(rgba(11,92,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(11,92,255,0.05)_1px,transparent_1px)] bg-[size:80px_80px] opacity-40 [mask-image:radial-gradient(ellipse_at_top,black,transparent_80%)] dark:opacity-20" />
-            <div className="absolute left-1/2 top-[65%] h-px w-[min(90vw,1200px)] -translate-x-1/2 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
           </div>
           <div className="relative mx-auto flex max-w-7xl flex-col justify-start px-6 py-12 md:py-20">
             <div className="max-w-4xl">
