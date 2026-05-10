@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { ArrowRight, Bot, Building2, CalendarClock, CheckCircle2, FileCheck2, MessageCircle, MessageSquareText, Search, ShieldCheck, UsersRound, Video } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -49,10 +50,10 @@ export default function InstitutionalLanding() {
   ];
 
   const team = [
-    { name: "Alex Rivera", role: "Product Design", imageTone: "bg-blue-500" },
-    { name: "Jamie Lee", role: "Engineering Lead", imageTone: "bg-emerald-500" },
-    { name: "Taylor Smith", role: "Customer Success", imageTone: "bg-amber-500" },
-    { name: "Jordan Davis", role: "Data Science", imageTone: "bg-red-500" },
+    { name: "Alex Rivera", role: "Product Design", imageTone: "bg-gradient-to-br from-blue-500/40 to-[#050505]" },
+    { name: "Jamie Lee", role: "Engineering Lead", imageTone: "bg-gradient-to-br from-emerald-500/40 to-[#050505]" },
+    { name: "Taylor Smith", role: "Customer Success", imageTone: "bg-gradient-to-br from-amber-500/40 to-[#050505]" },
+    { name: "Jordan Davis", role: "Data Science", imageTone: "bg-gradient-to-br from-red-500/40 to-[#050505]" },
   ];
 
   const integrations = [
@@ -68,7 +69,7 @@ export default function InstitutionalLanding() {
       <main className="flex-1 pt-16">
         {/* HERO SECTION */}
         <PublicSection className="relative overflow-hidden pt-20 pb-32 md:pt-32 md:pb-40">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-[800px] bg-[radial-gradient(ellipse_at_top,rgba(75,85,255,0.15),transparent_50%)]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[600px] bg-[radial-gradient(ellipse_at_top,rgba(75,85,255,0.15),transparent_50%)]" />
           <div className="relative mx-auto max-w-5xl text-center">
             <div className="mx-auto max-w-4xl space-y-8">
               <div className="flex items-center justify-center gap-3">
@@ -115,7 +116,7 @@ export default function InstitutionalLanding() {
         <PublicSection tone="muted" className="border-t border-white/5 relative overflow-hidden">
           <div className="pointer-events-none absolute inset-0 bg-[url('/images/noise.png')] opacity-[0.03] mix-blend-overlay" />
           <div className="space-y-16 relative z-10">
-            <SectionIntro eyebrow="The Problem" title="Your data isn't the problem, your tools are." align="center" />
+            <SectionIntro eyebrow="The Problem" title="Where teams lose clarity." align="center" />
             <div className="grid gap-6 md:grid-cols-2">
               {audiences.map((audience) => (
                 <AudiencePanel key={audience.eyebrow} {...audience} />
@@ -136,38 +137,33 @@ export default function InstitutionalLanding() {
             primaryLabel="Learn More"
             href="/dashboard"
           >
-            <div className="bg-[#080808] rounded-[20px] p-6 h-[400px] border border-white/5 shadow-xl">
-               <WorkspacePreview labels={preview} />
+            <div className="relative bg-[#080808] rounded-[20px] overflow-hidden border border-white/5 shadow-xl aspect-square md:aspect-auto md:h-[400px]">
+               <Image 
+                  src="/images/Dashboard%20AI.png" 
+                  alt="Anan AI Dashboard" 
+                  fill 
+                  className="object-cover object-left-top opacity-90 transition-opacity hover:opacity-100" 
+                  sizes="(max-width: 768px) 100vw, 50vw"
+               />
             </div>
           </FeatureSplitPanel>
         </PublicSection>
 
-        {/* Panel 2: Text Left, Image Right (by using the inverted prop if available, or flex-row-reverse) */}
+        {/* Panel 2: Text Left, Image Right */}
         <PublicSection tone="muted" className="border-t border-white/5 relative overflow-hidden">
           <div className="pointer-events-none absolute inset-y-0 left-0 w-1/2 bg-[radial-gradient(circle_at_0%_50%,rgba(245,158,11,0.05),transparent_60%)]" />
-          <div className="mx-auto max-w-5xl">
-            <div className="grid items-center gap-16 md:grid-cols-2">
-              <div className="space-y-8 md:order-1 order-2">
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3">
-                    <span className="h-px w-8 bg-amber-500/50" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.35em] text-amber-400">Revenue Health</span>
-                  </div>
-                  <h2 className="text-3xl font-medium tracking-tight text-white md:text-5xl">Real-time revenue health. It's not a luxury, it's a necessity.</h2>
-                  <p className="text-lg leading-relaxed text-zinc-400">
-                    A B2B surface for teams that need clean status, not more screenshots. See the risk before it becomes a revenue event.
-                  </p>
-                </div>
-                <LandingButton href="/dashboard" className="h-12 px-8 shadow-[0_0_40px_rgba(245,158,11,0.2)]">Explore Analytics</LandingButton>
-              </div>
-              <div className="relative md:order-2 order-1">
-                 <div className="absolute -inset-1 rounded-[32px] bg-gradient-to-tr from-amber-500/20 to-transparent blur-md" />
-                 <div className="relative overflow-hidden rounded-[24px] border border-white/10 bg-[#0A0A0A] h-[400px]">
-                    <WorkspacePreview labels={preview} />
-                 </div>
-              </div>
+          <FeatureSplitPanel
+            eyebrow="Revenue Health"
+            title="Real-time revenue health. It's not a luxury, it's a necessity."
+            description="A B2B surface for teams that need clean status, not more screenshots. See the risk before it becomes a revenue event."
+            primaryLabel="Explore Analytics"
+            href="/dashboard"
+            reverse={true}
+          >
+            <div className="bg-[#0A0A0A] rounded-[20px] p-6 h-[400px] border border-white/5 shadow-xl">
+               <WorkspacePreview labels={preview} />
             </div>
-          </div>
+          </FeatureSplitPanel>
         </PublicSection>
 
         {/* Panel 3: Image Left, Text Right */}

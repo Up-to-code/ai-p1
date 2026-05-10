@@ -1,38 +1,29 @@
-import { copyFile, mkdir, stat } from "node:fs/promises";
+import { copyFile, mkdir, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 
 const nextDir = path.join(process.cwd(), ".next");
 const source = path.join(nextDir, "routes-manifest.json");
 const target = path.join(nextDir, "routes-manifest-deterministic.json");
-const manifestRelativePaths = [
-  "routes-manifest.json",
-  "routes-manifest-deterministic.json",
-  "build-manifest.json",
-  "fallback-build-manifest.json",
-  "images-manifest.json",
-  "prerender-manifest.json",
-  "app-path-routes-manifest.json",
-  "server/app-paths-manifest.json",
-  "server/functions-config-manifest.json",
-  "server/middleware-manifest.json",
-  "server/next-font-manifest.json",
-  "server/pages-manifest.json",
-  "server/server-reference-manifest.json",
-];
 
-async function copyIfExists(fromDir, toDir, relativePath) {
-  const from = path.join(fromDir, relativePath);
-  const to = path.join(toDir, relativePath);
+async function mirrorNextOutput(fromDir, toDir) {
+  await mkdir(toDir, { recursive: true });
 
-  try {
-    await stat(from);
-  } catch {
-    return false;
-  }
+  const entries = await readdir(fromDir, { withFileTypes: true });
+  await Promise.all(entries.map(async (entry) => {
+    if (entry.name === "cache") return;
 
-  await mkdir(path.dirname(to), { recursive: true });
-  await copyFile(from, to);
-  return true;
+    const from = path.join(fromDir, entry.name);
+    const to = path.join(toDir, entry.name);
+
+    if (entry.isDirectory()) {
+      await mirrorNextOutput(from, to);
+      return;
+    }
+
+    if (entry.isFile()) {
+      await copyFile(from, to);
+    }
+  }));
 }
 
 try {
@@ -57,9 +48,9 @@ if (process.env.VERCEL) {
     const ancestorNextDir = path.join(current, ".next");
     if (copied.has(ancestorNextDir)) continue;
 
-    await Promise.all(manifestRelativePaths.map((relativePath) => copyIfExists(nextDir, ancestorNextDir, relativePath)));
+    await mirrorNextOutput(nextDir, ancestorNextDir);
     copied.add(ancestorNextDir);
   }
 
-  console.log("Ensured ancestor .next manifests for Vercel deployment.");
+  console.log("Mirrored ancestor .next output for Vercel deployment.");
 }
