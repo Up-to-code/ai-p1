@@ -1,11 +1,15 @@
 import { z } from "zod";
 
+const projectCategories = ["Residential", "Commercial", "Mixed Use"] as const;
+const projectOfferingTypes = ["Apartment", "Studio", "Villa", "Townhouse", "Penthouse", "Compound", "Office", "Retail"] as const;
+
 export const projectPayloadSchema = z.object({
   name: z.string().trim().min(1),
   developer: z.string().trim().min(1),
   city: z.string().trim().min(1),
   area: z.string().trim().min(1),
-  type: z.string().trim().min(1),
+  type: z.enum(projectCategories),
+  unitTypes: z.array(z.enum(projectOfferingTypes)).optional().default([]),
   status: z.enum(["draft", "pending", "approved", "rejected"]),
   units: z.coerce.number().int().min(0),
   priceRange: z.string().trim().min(1),

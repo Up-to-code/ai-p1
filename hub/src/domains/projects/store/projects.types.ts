@@ -8,6 +8,7 @@ export interface Project {
   city: string;
   area: string;
   type: string;
+  unitTypes?: string[];
   image?: string;
   coverImageUrl?: string;
   status: ProjectStatus;

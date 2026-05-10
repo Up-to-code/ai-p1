@@ -1,83 +1,93 @@
-"use client";
-
-import { Link } from "@/i18n/routing";
 import Image from "next/image";
+import { ArrowUpRight, Bot, Building2, ShieldCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { Link } from "@/i18n/routing";
+
 export function Footer() {
-    const t = useTranslations("Landing.footer");
+  const t = useTranslations("Landing.footer");
 
-    return (
-        <footer className="bg-slate-900 border-t border-slate-800 pt-24 pb-12 px-6">
-            <div className="max-w-5xl mx-auto space-y-24">
+  const groups = [
+    {
+      title: t("platform"),
+      links: [
+        { href: "/developer", label: t("developers") },
+        { href: "/broker", label: t("brokers") },
+        { href: "/about", label: t("about") },
+        { href: "/docs", label: t("documentation") },
+      ],
+    },
+    {
+      title: t("workspace"),
+      links: [
+        { href: "/dashboard", label: t("dashboard") },
+        { href: "/contact", label: t("contact") },
+        { href: "/team-public", label: t("team") },
+      ],
+    },
+    {
+      title: t("legal"),
+      links: [
+        { href: "/privacy", label: t("privacy") },
+        { href: "/terms", label: t("terms") },
+        { href: "/legal", label: t("legal") },
+      ],
+    },
+  ];
 
-                {/* Top Section: Brand (Left) | Links (Right) */}
-                <div className="flex flex-col lg:flex-row justify-between gap-16">
-                    {/* Brand & Tagline */}
-                    <div className="space-y-6 max-w-sm ltr:text-left rtl:text-right">
-                        <div className="flex items-center gap-4 rtl:flex-row-reverse">
-                            <Link href="/" className="inline-block">
-                                <Image
-                                    src="/brand-logo.svg"
-                                    alt="Anan"
-                                    width={48}
-                                    height={48}
-                                    className="h-12 w-12 brightness-0 invert"
-                                />
-                            </Link>
-                            <div className="space-y-1">
-                                <div className="text-[10px] font-black uppercase tracking-widest text-blue-400">ANAN</div>
-                                <div className="text-sm font-black text-white leading-[1.1]">{t("tagline")}</div>
-                            </div>
-                        </div>
-                        <p className="text-slate-400 font-bold text-sm leading-relaxed max-w-xs">
-                            {t("description")}
-                        </p>
-                    </div>
-
-                    {/* Link Columns */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-12 ltr:text-left rtl:text-right">
-                        <div className="space-y-6">
-                            <h4 className="text-white font-black text-[10px] uppercase tracking-widest">{t("platform")}</h4>
-                            <ul className="space-y-3">
-                                <li><Link href="/developer" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">{t("developers")}</Link></li>
-                                <li><Link href="/broker" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">{t("brokers")}</Link></li>
-                                <li><Link href="/about" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">{t("about")}</Link></li>
-                                <li><Link href="/pricing" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">{t("pricing")}</Link></li>
-                                <li><Link href="/docs" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">{t("documentation")}</Link></li>
-                            </ul>
-                        </div>
-                        <div className="space-y-6">
-                            <h4 className="text-white font-black text-[10px] uppercase tracking-widest">{t("community")}</h4>
-                            <ul className="space-y-3">
-                                <li><Link href="/team" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">{t("team")}</Link></li>
-                                <li><Link href="/careers" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">{t("careers")}</Link></li>
-                                <li><Link href="#" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">{t("twitter")}</Link></li>
-                                <li><Link href="#" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">{t("linkedin")}</Link></li>
-                            </ul>
-                        </div>
-                        <div className="space-y-6">
-                            <h4 className="text-white font-black text-[10px] uppercase tracking-widest">{t("legal")}</h4>
-                            <ul className="space-y-3">
-                                <li><Link href="/policy" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">{t("timesOfContact")}</Link></li>
-                                <li><Link href="/terms" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">{t("timesAndPrivacy")}</Link></li>
-                                <li><Link href="/contact" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">{t("contacts")}</Link></li>
-                                <li><Link href="/faq" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">{t("faq")}</Link></li>
-                            </ul>
-                        </div>
-                    </div>
+  return (
+    <footer className="border-t border-white/10 bg-black px-4 py-10 text-white sm:px-6">
+      <div className="mx-auto grid max-w-[1400px] gap-10 lg:grid-cols-[1fr_1.2fr]">
+        <div className="space-y-6">
+          <Link href="/" className="inline-flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white">
+              <Image src="/brand-logo.svg" alt="Anan" width={30} height={30} className="h-8 w-8" />
+            </span>
+            <span>
+              <span className="block text-base font-black lowercase tracking-tight text-white">anan</span>
+              <span className="block text-[9px] font-black uppercase tracking-[0.28em] text-zinc-400">{t("tagline")}</span>
+            </span>
+          </Link>
+          <p className="max-w-md text-sm font-medium leading-relaxed text-zinc-400">{t("description")}</p>
+          <div className="grid max-w-lg grid-cols-3 gap-2">
+            {[
+              { label: t("developerReady"), icon: Building2 },
+              { label: t("aiNative"), icon: Bot },
+              { label: t("verifiedOps"), icon: ShieldCheck },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.label} className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+                  <Icon className="mb-5 h-4 w-4 text-zinc-400" />
+                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{item.label}</p>
                 </div>
+              );
+            })}
+          </div>
+        </div>
 
-                {/* Bottom Section: Tagline (Left) | Copyright (Right) */}
-                <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                        {t("tagline")}
-                    </p>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 opacity-60 transition-opacity hover:opacity-100 dark:text-slate-400">
-                        {t("copyright")}
-                    </p>
-                </div>
+        <div className="grid gap-8 sm:grid-cols-3">
+          {groups.map((group) => (
+            <div key={group.title} className="space-y-4">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">{group.title}</h3>
+              <ul className="space-y-3">
+                {group.links.map((link) => (
+                  <li key={link.href}>
+                    <Link href={link.href} className="inline-flex items-center gap-2 text-sm font-bold text-zinc-400 transition hover:text-white">
+                      {link.label}
+                      <ArrowUpRight className="h-3 w-3 rtl:-rotate-90" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
-        </footer>
-    );
+          ))}
+        </div>
+
+        <div className="border-t border-white/10 pt-6 text-[10px] font-black uppercase tracking-[0.28em] text-zinc-500 lg:col-span-2">
+          {t("copyright")}
+        </div>
+      </div>
+    </footer>
+  );
 }

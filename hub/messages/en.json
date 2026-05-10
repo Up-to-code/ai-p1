@@ -202,71 +202,315 @@
   "Landing": {
     "nav": {
       "home": "Home",
-      "documentation": "Documentation",
+      "documentation": "Docs",
       "developers": "Developers",
       "brokers": "Brokers",
       "about": "About",
       "contact": "Contact",
       "signIn": "Sign In",
       "dashboard": "Workspace",
-      "getStarted": "Get Started"
+      "getStarted": "Get Started",
+      "workspaceSystem": "Workspace system",
+      "work": "Work",
+      "ai": "AI",
+      "openMenu": "Open public navigation",
+      "closeMenu": "Close public navigation"
     },
-    "hero": {
-      "badge": "Shared Workspace Ecosystem",
-      "title": "anan: A Workspace for Developers and Brokers",
-      "description": "A public platform that introduces the company and opens the path to the workspace. Here, developers and brokers understand how to collaborate, track operations, and access the tools they need daily.",
-      "openWorkspace": "Enter Workspace",
-      "learnMore": "Learn More",
-      "howToStart": "How to Start",
-      "journeyTitle": "A clear journey.. from definition to action",
-      "journeyDesc": "The public page explains the product, and the workspace gathers the actual tools. Visitors can understand what anan offers before signing in, then move directly to the workspace environment that suits them.",
-      "quickIntro": "Quick Intro",
-      "quickIntroDesc": "A brief explanation of anan's role and the workspace from the first visit.",
-      "directTransition": "Direct Transition",
-      "directTransitionDesc": "Clear links for developers and brokers to reach the appropriate space.",
-      "forDevelopers": "For Developers",
-      "devTitle": "A space that keeps the project clear",
-      "devDesc": "The development team gets one place to track projects, organize data, coordinate with brokers, and understand what's happening within the workflow without distraction among many tools.",
-      "devCardTitle": "Clear operational vision",
-      "devCardDesc": "Organized display of projects, statuses, and internal communication within one space.",
-      "forBrokers": "For Brokers",
-      "brokerTitle": "A space that helps the broker follow up",
-      "brokerDesc": "A workspace that supports the broker in organizing daily follow-ups, reviewing important details, and communicating with developers through a clear and central context.",
-      "brokerCard1": "Organized follow-up",
-      "brokerCard1Desc": "Daily work appears in one place instead of scattered correspondence.",
-      "brokerCard2": "Clearer collaboration",
-      "brokerCard2Desc": "A shared context with developers helps in quick understanding and taking the next step.",
-      "howWeWork": "How we Work",
-      "convergenceTitle": "One idea.. brings the team together",
-      "convergenceDesc": "anan is a public and clear workspace that helps developers and brokers share the same context, understand what's happening, and move from company introduction to actual use of the platform.",
-      "whyAnan": "Why anan",
-      "aiTitle": "A clear interface that understands daily work",
-      "aiDesc": "The goal is not just to display data, but to arrange it in a way that makes conversation, follow-up, and daily decisions easier for the teams using the platform.",
-      "ctaTitle": "Ready to enter the workspace?",
-      "ctaDesc": "Start from the public page, get to know anan, then move to the appropriate space for your team of developers or brokers."
+    "home": {
+      "hero": {
+        "eyebrow": "B2B real estate clarity",
+        "title": "Leadership deserves one version of truth.",
+        "description": "Anan gives developers and brokers one trusted layer for projects, inventory, approvals, client work, and AI-assisted decisions.",
+        "primary": "Enter workspace",
+        "secondary": "Talk to the team"
+      },
+      "signals": {
+        "projects": { "label": "Market data", "value": "42", "helper": "Projects, media, units, and pricing reconciled." },
+        "approvals": { "label": "Risk", "value": "18", "helper": "Blocks visible before they become revenue events." },
+        "leads": { "label": "Demand", "value": "1.2k", "helper": "Client intent connected to verified inventory." }
+      },
+      "preview": {
+        "workspace": "Workspace overview",
+        "work": "Work",
+        "ai": "AI",
+        "activeListings": "Active listings",
+        "pendingApprovals": "Pending approvals",
+        "qualifiedLeads": "Qualified leads",
+        "syncHealth": "Sync health",
+        "actionRequired": "Action required",
+        "today": "Today",
+        "assistant": "Anan assistant",
+        "prompt": "Find ready waterfront units, prepare the broker context, and flag anything that blocks a viewing today.",
+        "ready": "Ready",
+        "tasks": [
+          { "title": "Approve Riyadh Heights units", "meta": "24 units · developer submitted new pricing", "status": "Review" },
+          { "title": "Resolve duplicate listing claims", "meta": "Palm Residence · 3 broker submissions", "status": "Blocked" },
+          { "title": "Publish verified waterfront units", "meta": "12 units · ready for marketplace sync", "status": "Ready" }
+        ],
+        "chips": ["Find client", "Check inventory", "Prepare viewing", "Verify launch"]
+      },
+      "audiences": {
+        "eyebrow": "The problem is not data",
+        "title": "Your data is not the problem. Your clarity is.",
+        "description": "Anan turns scattered project, inventory, broker, and client signals into a shared operating view.",
+        "items": [
+          {
+            "eyebrow": "For developers",
+            "title": "Control launch before it reaches the market.",
+            "description": "Track readiness, approvals, inventory, media, and broker access from one command surface.",
+            "href": "/developer",
+            "image": "/images/projects/business-park.png",
+            "stats": [
+              { "label": "Projects", "value": "Live" },
+              { "label": "Units", "value": "Synced" },
+              { "label": "Status", "value": "Clear" }
+            ]
+          },
+          {
+            "eyebrow": "For brokers",
+            "title": "Move from demand to action.",
+            "description": "Keep clients, available units, viewings, and developer context close enough to act immediately.",
+            "href": "/broker",
+            "image": "/images/projects/residential.png",
+            "stats": [
+              { "label": "Clients", "value": "Active" },
+              { "label": "Viewings", "value": "Ready" },
+              { "label": "Context", "value": "Shared" }
+            ]
+          }
+        ]
+      },
+      "workflow": {
+        "eyebrow": "One layer",
+        "title": "Every metric. Always reconciled.",
+        "description": "Anan makes operational truth visible before the team makes a market move.",
+        "items": [
+          { "title": "One source", "description": "Projects, units, clients, and approvals stop living in separate stories." },
+          { "title": "One status", "description": "Ready, pending, blocked, and synced are visible before handoff." },
+          { "title": "One next step", "description": "AI prompts, follow-ups, and workspace actions point to the same outcome." }
+        ]
+      },
+      "operations": {
+        "eyebrow": "Revenue health",
+        "title": "See the risk before it becomes a revenue event.",
+        "description": "A B2B surface for teams that need clean status, not more screenshots.",
+        "cards": {
+          "inventory": { "label": "Inventory", "value": "Verified", "helper": "Available units stay tied to project records and launch readiness." },
+          "calendar": { "label": "Calendar", "value": "Today", "helper": "Viewing plans and follow-ups stay visible beside the work." },
+          "comms": { "label": "Context", "value": "Shared", "helper": "Brokers and developers use the same operational language." },
+          "compliance": { "label": "Trust", "value": "Clear", "helper": "Approvals and blocks are visible before work moves forward." }
+        }
+      },
+      "ai": {
+        "eyebrow": "Real-time AI",
+        "title": "Real-time AI analysis & forecasting",
+        "description": "Let the AI automatically analyze, detect patterns, and predict trends in your data before it happens.",
+        "primary": "Learn More"
+      },
+      "testimonials": {
+        "eyebrow": "Testimonials",
+        "title": "Real feedback. Real improvements.",
+        "quote1": "\"This platform is the single most valuable tool for our leadership team. We have absolute visibility.\"",
+        "author1": "Sarah Jenkins",
+        "role1": "Operations Director",
+        "quote2": "\"Our data is finally reconciled and trustworthy. The AI insights alone save us hours every week.\"",
+        "author2": "Michael Chen",
+        "role2": "VP of Engineering"
+      },
+      "team": {
+        "eyebrow": "Our Team",
+        "title": "Built by people who care deeply.",
+        "member1": "Alex Rivera",
+        "role1": "Product Design",
+        "member2": "Jamie Lee",
+        "role2": "Engineering Lead",
+        "member3": "Taylor Smith",
+        "role3": "Customer Success",
+        "member4": "Jordan Davis",
+        "role4": "Data Science"
+      },
+      "integrations": {
+        "eyebrow": "Ecosystem",
+        "title": "Stay connected. Always.",
+        "slack": "Slack",
+        "slackDesc": "Receive real-time alerts and daily digests directly in your channels.",
+        "youtube": "YouTube",
+        "youtubeDesc": "Embed video walkthroughs and market updates effortlessly.",
+        "discord": "Discord",
+        "discordDesc": "Community sync and instant operational notifications."
+      },
+      "cta": {
+        "eyebrow": "Ready for the workspace",
+        "title": "Start where the real work continues.",
+        "description": "Enter the workspace, or contact the team to map Anan to your developer or brokerage workflow.",
+        "primary": "Enter workspace",
+        "secondary": "Contact team"
+      }
+    },
+    "about": {
+      "hero": {
+        "eyebrow": "About Anan",
+        "title": "A real estate operating system for shared work.",
+        "description": "Anan is built for the daily coordination between developers, brokers, clients, projects, inventory, approvals, and AI-assisted decisions."
+      },
+      "signals": {
+        "source": { "label": "Source", "value": "One", "helper": "Workspace data is organized around a shared operational record." },
+        "roles": { "label": "Roles", "value": "Many", "helper": "Developers, brokers, and operators see the context they need." },
+        "trust": { "label": "Trust", "value": "Visible", "helper": "Statuses and approvals make uncertainty easier to resolve." }
+      },
+      "principles": {
+        "eyebrow": "Product principles",
+        "title": "Designed from the workspace outward.",
+        "description": "The public experience should explain the product by showing the product's own habits.",
+        "items": [
+          { "title": "Operational clarity", "description": "Every surface makes it obvious what is ready, blocked, pending, or synced." },
+          { "title": "Shared context", "description": "Developers and brokers work from the same project and inventory truth." },
+          { "title": "Trust before motion", "description": "Approvals, records, and compliance states appear before teams take action." }
+        ]
+      },
+      "operating": {
+        "eyebrow": "Business thinking",
+        "title": "A workspace, not a brochure.",
+        "description": "The Anan brand is strongest when it feels useful immediately. That is why the redesigned public suite uses product controls, signals, previews, and audience routes instead of decorative marketing sections."
+      },
+      "cta": {
+        "eyebrow": "Meet the workspace",
+        "title": "See how Anan fits your operating model.",
+        "description": "Bring your project, brokerage, or integration workflow and we will map it into the workspace.",
+        "primary": "Enter workspace",
+        "secondary": "Contact team"
+      }
+    },
+    "contact": {
+      "hero": {
+        "eyebrow": "Contact",
+        "title": "Talk to the team with the right context.",
+        "description": "Whether you are launching projects, coordinating brokers, or connecting data, the conversation starts from how your workspace should operate."
+      },
+      "methods": {
+        "email": { "label": "Email", "value": "hello@anan.sa", "helper": "Best for partnerships, onboarding, and workspace questions." },
+        "phone": { "label": "Phone", "value": "+966 11 XXX XXXX", "helper": "For teams that need a direct operational discussion." },
+        "workspace": { "label": "Workspace", "value": "Anan team", "helper": "Send your workflow and the team will route it." }
+      },
+      "routes": {
+        "developer": { "label": "Developer", "value": "Projects", "helper": "Launch readiness, inventory, approvals, and sync." },
+        "broker": { "label": "Broker", "value": "Clients", "helper": "Follow-ups, viewings, matches, and shared context." },
+        "integration": { "label": "Integration", "value": "Systems", "helper": "CRM, inventory, media, and data handoff workflows." }
+      },
+      "form": {
+        "eyebrow": "Workspace inquiry",
+        "title": "Describe the operating flow",
+        "name": "Name",
+        "email": "Email",
+        "team": "Company or team",
+        "topic": "Topic",
+        "message": "What should Anan help organize?",
+        "submit": "Send inquiry"
+      }
+    },
+    "developer": {
+      "hero": {
+        "eyebrow": "Developer workspace",
+        "title": "Control launch readiness from one operational surface.",
+        "description": "Anan helps development teams prepare projects, verify inventory, coordinate with brokers, and keep market-facing data clear before it moves.",
+        "primary": "Enter workspace",
+        "secondary": "Contact team"
+      },
+      "signals": {
+        "inventory": { "label": "Inventory", "value": "Synced", "helper": "Unit records, media, prices, and availability stay aligned." },
+        "approvals": { "label": "Approvals", "value": "Visible", "helper": "Pending and blocked states are easy to identify." },
+        "sync": { "label": "Sync", "value": "99%", "helper": "Operational health is visible before data moves." },
+        "market": { "label": "Market", "value": "Ready", "helper": "Brokers receive context they can act on." }
+      },
+      "panel": {
+        "eyebrow": "Project command",
+        "title": "See the project the way operations sees it.",
+        "description": "The developer route focuses on project state, available units, launch blockers, and the broker context needed to move inventory.",
+        "stats": {
+          "projects": { "label": "Projects", "value": "42" },
+          "units": { "label": "Units", "value": "1.8k" },
+          "health": { "label": "Health", "value": "99%" }
+        }
+      },
+      "workflow": {
+        "eyebrow": "Developer flow",
+        "title": "Prepare, approve, publish.",
+        "description": "The route explains Anan through the developer team's daily operating sequence.",
+        "items": [
+          { "title": "Prepare the project record", "description": "Centralize project identity, media, unit counts, prices, and launch details." },
+          { "title": "Resolve approval states", "description": "Review what is pending, blocked, approved, or ready before teams act." },
+          { "title": "Share market-ready context", "description": "Give brokers the verified information they need without fragmented handoffs." }
+        ]
+      },
+      "cta": {
+        "eyebrow": "Developer onboarding",
+        "title": "Bring your launch workflow into Anan.",
+        "description": "Start in the workspace or contact the team to map projects, units, and approvals.",
+        "primary": "Enter workspace",
+        "secondary": "Contact team"
+      }
+    },
+    "broker": {
+      "hero": {
+        "eyebrow": "Broker workspace",
+        "title": "Turn client intent into the next clear action.",
+        "description": "Anan helps brokers organize follow-ups, inspect inventory, prepare viewings, and keep developer context close to the client conversation.",
+        "primary": "Enter workspace",
+        "secondary": "Contact team"
+      },
+      "signals": {
+        "clients": { "label": "Clients", "value": "Active", "helper": "Buyer and investor context stays tied to next actions." },
+        "followups": { "label": "Follow-ups", "value": "Today", "helper": "Daily client work is visible without scattered messages." },
+        "inventory": { "label": "Inventory", "value": "Clear", "helper": "Available units and launch state are easier to trust." },
+        "ready": { "label": "Viewings", "value": "Ready", "helper": "Plans connect to verified project and unit context." }
+      },
+      "panel": {
+        "eyebrow": "Broker desk",
+        "title": "Keep the client, inventory, and developer context together.",
+        "description": "The broker route focuses on practical movement: match the client, check availability, plan the viewing, and keep the team aligned.",
+        "stats": {
+          "matches": { "label": "Matches", "value": "Live" },
+          "viewings": { "label": "Viewings", "value": "Today" },
+          "context": { "label": "Context", "value": "Shared" }
+        }
+      },
+      "workflow": {
+        "eyebrow": "Broker flow",
+        "title": "Search, coordinate, follow through.",
+        "description": "The route explains the workspace through the broker's daily operating rhythm.",
+        "items": [
+          { "title": "Find the right inventory", "description": "Start from current project and unit context instead of stale lists." },
+          { "title": "Coordinate with confidence", "description": "Developer information, client notes, and availability sit in one place." },
+          { "title": "Plan the next follow-up", "description": "Viewing plans and client actions stay visible beside the records they depend on." }
+        ]
+      },
+      "cta": {
+        "eyebrow": "Broker onboarding",
+        "title": "Bring your follow-up flow into Anan.",
+        "description": "Start in the workspace or contact the team to map clients, inventory, and viewing work.",
+        "primary": "Enter workspace",
+        "secondary": "Contact team"
+      }
     },
     "footer": {
-      "description": "The central platform for property management. A trusted infrastructure for the Saudi real estate ecosystem.",
-      "copyright": "© 2026 anan Platform. All rights reserved.",
+      "description": "A workspace-native platform for property teams, project operations, broker coordination, and trusted real estate data.",
+      "copyright": "2026 Anan Platform. All rights reserved.",
       "platform": "Platform",
+      "workspace": "Workspace",
+      "dashboard": "Workspace",
       "developers": "Developers",
       "brokers": "Brokers",
       "about": "About",
-      "pricing": "Pricing",
-      "documentation": "Documentation",
-      "community": "Community",
+      "contact": "Contact",
+      "documentation": "Docs",
       "team": "Team",
-      "careers": "Careers",
-      "twitter": "Twitter",
-      "linkedin": "LinkedIn",
       "legal": "Legal",
-      "privacy": "Privacy Policy",
-      "terms": "Terms of Service",
-      "faq": "FAQ",
-      "timesOfContact": "Times of Contact",
-      "timesAndPrivacy": "Times and Privacy Services",
-      "contacts": "Contacts",
-      "tagline": "Certified infrastructure for the Saudi real estate ecosystem"
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "tagline": "Workspace infrastructure for real estate teams",
+      "developerReady": "Developer ready",
+      "aiNative": "AI native",
+      "verifiedOps": "Verified ops"
     }
   },
   "signin": {
@@ -432,12 +676,28 @@
       "stepIdentity": "Identity",
       "stepLocation": "Location",
       "stepContext": "Context",
+      "stepInformation": "Information",
+      "stepGallery": "Gallery",
+      "stepDetails": "Details",
       "identityTitle": "Identity & Ownership",
       "identityDesc": "Name the project and connect it to the developer people will recognize.",
       "locationTitle": "Location & Scale",
       "locationDesc": "Set where the project sits, how large it is, and its market range.",
       "contextTitle": "Context & Preview",
       "contextDesc": "Finish the classification, image, status, and public description.",
+      "informationTitle": "Core project information",
+      "informationDesc": "Capture the commercial basics first so the record feels complete before media and classification.",
+      "galleryTitle": "Review gallery",
+      "galleryDesc": "Add the project images and one overview video people will use to review the project quickly.",
+      "galleryUploaderTitle": "Images and overview video",
+      "galleryUploaderDesc": "Add review images and one short video. Documents belong in the project Assets tab later.",
+      "galleryPick": "Choose images or video",
+      "galleryQueued": "Review media",
+      "galleryVideoLimit": "Only one overview video can be added here.",
+      "galleryUnsupported": "Documents are reserved for the Assets section.",
+      "detailsTitle": "Classification and summary",
+      "detailsDesc": "Set the project category, offering mix, status, and short working description.",
+      "offeringMixLabel": "Offering mix",
       "previewTitle": "Project preview",
       "previewCity": "City",
       "previewName": "Project name",
@@ -448,7 +708,15 @@
     "types": {
       "Residential": "Residential",
       "Commercial": "Commercial",
-      "Mixed Use": "Mixed Use"
+      "Mixed Use": "Mixed Use",
+      "Apartment": "Apartment",
+      "Studio": "Studio",
+      "Villa": "Villa",
+      "Townhouse": "Townhouse",
+      "Penthouse": "Penthouse",
+      "Compound": "Compound",
+      "Office": "Office",
+      "Retail": "Retail"
     },
     "upload": {
       "title": "Upload Document",

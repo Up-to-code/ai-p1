@@ -50,6 +50,7 @@ export default defineSchema({
     city: v.string(),
     area: v.string(),
     type: v.string(),
+    unitTypes: v.optional(v.array(v.string())),
     status: v.union(v.literal("draft"), v.literal("pending"), v.literal("approved"), v.literal("rejected")),
     syncState: v.union(v.literal("draft"), v.literal("blocked"), v.literal("synced")),
     units: v.number(),

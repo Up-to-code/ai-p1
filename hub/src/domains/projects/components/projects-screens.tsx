@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BarChart3, Building2, Copy, Edit, FileText, FolderOpen, History, MapPin, Plus, Share2, Trash2, TrendingUp } from "lucide-react";
+import { BarChart3, Building2, CheckCircle2, Copy, Edit, FileText, FolderOpen, History, MapPin, Plus, Share2, Trash2, TrendingUp } from "lucide-react";
 import {
   AppDataTable,
   AppPageHeader,
@@ -22,13 +22,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Link, useRouter } from "@/i18n/routing";
 import { useAccountContext } from "@/domains/auth";
 import type { Project, ProjectStatus } from "../store/projects.types";
-import { projectSchema, type ProjectFormValues } from "../validation/project.schema";
+import { projectCategories, projectOfferingTypes, projectSchema, type ProjectFormValues } from "../validation/project.schema";
 import { createProjectRequest, deleteProjectRequest, updateProjectRequest, useProjectQuery, useProjectsQuery } from "../api/projects";
 import { usePropertiesQuery } from "@/domains/properties/api/properties";
 import { ResourceMediaUploader } from "@/domains/media/components/resource-media-uploader";
 import { uploadAndAttachMedia } from "@/domains/media/api/media";
 import { useOperationState } from "@/lib/utils/operation-state";
-import { SearchBox, StatusPill, TextInput, ChoiceGrid, DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, FormErrorSummary, WizardActions } from "@/components/shared/crud-ui";
+import { SearchBox, StatusPill, TextInput, ChoiceGrid, DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, FormErrorSummary } from "@/components/shared/crud-ui";
 import { useUrlListState } from "@/components/shared/use-url-list-state";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -475,6 +475,7 @@ export function ProjectDetailScreen({ id }: { id: string }) {
 
 export function ProjectFormScreen({ id }: { id?: string }) {
   const t = useTranslations('Projects');
+  const common = useTranslations('Common');
   const account = useAccountContext();
   const existing = useProjectQuery(account.organization.id ?? undefined, id ?? "") as Project | null | undefined;
   const router = useRouter();
@@ -482,15 +483,20 @@ export function ProjectFormScreen({ id }: { id?: string }) {
   
   const [step, setStep] = useState(1);
   const totalSteps = 3;
+  const existingType = projectCategories.includes(existing?.type as ProjectFormValues["type"]) ? existing?.type as ProjectFormValues["type"] : "Residential";
+  const existingUnitTypes = (existing?.unitTypes ?? []).filter((type): type is ProjectFormValues["unitTypes"][number] =>
+    projectOfferingTypes.includes(type as ProjectFormValues["unitTypes"][number]),
+  );
 
-  const { control, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<ProjectFormValues>({
+  const { control, handleSubmit, setValue, reset, formState: { errors, isSubmitting } } = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
       name: existing?.name ?? "",
       developer: existing?.developer ?? "",
       city: existing?.city ?? "",
       area: existing?.area ?? "",
-      type: existing?.type ?? "Residential",
+      type: existingType,
+      unitTypes: existingUnitTypes,
       status: existing?.status ?? "draft" as ProjectStatus,
       units: String(existing?.units ?? 0),
       priceRange: existing?.priceRange ?? "",
@@ -502,8 +508,33 @@ export function ProjectFormScreen({ id }: { id?: string }) {
   const fieldErrors = Object.fromEntries(Object.entries(errors).map(([key, error]) => [key, error?.message])) as Record<keyof ProjectFormValues, string | undefined>;
   const saveOperation = useOperationState({ errorMessage: "Project save failed." });
 
+  useEffect(() => {
+    if (!existing) return;
+    reset({
+      name: existing.name ?? "",
+      developer: existing.developer ?? "",
+      city: existing.city ?? "",
+      area: existing.area ?? "",
+      type: projectCategories.includes(existing.type as ProjectFormValues["type"]) ? existing.type as ProjectFormValues["type"] : "Residential",
+      unitTypes: (existing.unitTypes ?? []).filter((type): type is ProjectFormValues["unitTypes"][number] =>
+        projectOfferingTypes.includes(type as ProjectFormValues["unitTypes"][number]),
+      ),
+      status: existing.status ?? "draft",
+      units: String(existing.units ?? 0),
+      priceRange: existing.priceRange ?? "",
+      description: existing.description ?? "",
+    });
+  }, [existing, reset]);
+
   const setField = (key: keyof ProjectFormValues, value: string) => {
     setValue(key, value as never, { shouldDirty: true, shouldValidate: Boolean(fieldErrors[key]) });
+    saveOperation.clearError();
+  };
+
+  const toggleUnitType = (value: ProjectFormValues["unitTypes"][number]) => {
+    const current = form.unitTypes ?? [];
+    const next = current.includes(value) ? current.filter((item) => item !== value) : [...current, value];
+    setValue("unitTypes", next, { shouldDirty: true, shouldValidate: Boolean(fieldErrors.unitTypes) });
     saveOperation.clearError();
   };
 
@@ -540,7 +571,7 @@ export function ProjectFormScreen({ id }: { id?: string }) {
   };
 
   return (
-    <AppPageShell maxWidth="wide" contentClassName="space-y-8">
+    <AppPageShell maxWidth="wide" contentClassName="space-y-6">
       <AppPageHeader
         eyebrow={t("form.eyebrow")}
         title={existing ? t("form.editTitle") : t("form.createTitle")}
@@ -548,90 +579,195 @@ export function ProjectFormScreen({ id }: { id?: string }) {
         className="pb-8"
       />
 
-      <div className="grid gap-8 xl:grid-cols-[minmax(0,680px)_minmax(360px,1fr)] xl:items-start">
-        <div className="space-y-6">
-          <ProjectFormProgress step={step} totalSteps={totalSteps} labels={[t("form.stepIdentity"), t("form.stepLocation"), t("form.stepContext")]} />
+      <div className="grid gap-6 xl:grid-cols-[430px_minmax(0,760px)] xl:items-start xl:justify-center">
+        <ProjectFormPreview form={form} />
+
+        <section className="rounded-[32px] border border-zinc-100 bg-white p-4 shadow-sm shadow-zinc-950/[0.03] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none md:p-6">
+          <ProjectFormProgress step={step} labels={[t("form.stepInformation"), t("form.stepGallery"), t("form.stepDetails")]} />
           <FormErrorSummary errors={fieldErrors} />
 
-          <div className="min-h-[440px]">
+          <div className="mt-6 min-h-[360px]">
             {step === 1 && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <AppSection title={t("form.identityTitle")} description={t("form.identityDesc")}>
-                  <div className="grid gap-5 md:grid-cols-2">
+                <ProjectWizardPanel title={t("form.informationTitle")} description={t("form.informationDesc")}>
+                  <div className="grid gap-4 md:grid-cols-2">
                     <TextInput name="name" label={t("form.nameLabel")} value={form.name} onChange={(value) => setField("name", value)} placeholder="Al Madinah Residences…" error={fieldErrors.name} />
                     <TextInput name="developer" label={t("form.devLabel")} value={form.developer} onChange={(value) => setField("developer", value)} placeholder="Acme Development…" error={fieldErrors.developer} />
-                  </div>
-                </AppSection>
-              </div>
-            )}
-
-            {step === 2 && (
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <AppSection title={t("form.locationTitle")} description={t("form.locationDesc")}>
-                  <div className="grid gap-5 md:grid-cols-2">
                     <TextInput name="city" label={t("form.cityLabel")} value={form.city} onChange={(value) => setField("city", value)} placeholder="Riyadh…" error={fieldErrors.city} />
                     <TextInput name="area" label={t("form.areaLabel")} value={form.area} onChange={(value) => setField("area", value)} placeholder="Al Malqa…" error={fieldErrors.area} />
                     <TextInput name="units" label={t("form.unitsLabel")} type="number" inputMode="numeric" value={form.units} onChange={(value) => setField("units", value)} error={fieldErrors.units} />
                     <TextInput name="priceRange" label={t("form.priceLabel")} value={form.priceRange} onChange={(value) => setField("priceRange", value)} placeholder="850K SAR…" error={fieldErrors.priceRange} />
                   </div>
-                </AppSection>
+                </ProjectWizardPanel>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <ProjectWizardPanel title={t("form.galleryTitle")} description={t("form.galleryDesc")}>
+                  <ResourceMediaUploader
+                    organizationId={account.organization.id ?? undefined}
+                    resourceType="project"
+                    resourceId={existing?.id}
+                    pendingFiles={pendingFiles}
+                    onPendingFilesChange={setPendingFiles}
+                    immediate={Boolean(existing)}
+                    allowedKinds={["image", "video"]}
+                    maxVideos={1}
+                    variant="review"
+                    labels={{
+                      title: t("form.galleryUploaderTitle"),
+                      description: t("form.galleryUploaderDesc"),
+                      pick: t("form.galleryPick"),
+                      queued: t("form.galleryQueued"),
+                      videoLimit: t("form.galleryVideoLimit"),
+                      unsupported: t("form.galleryUnsupported"),
+                    }}
+                    className="border-zinc-100 bg-zinc-50/40 shadow-none dark:border-white/10 dark:bg-white/[0.02]"
+                  />
+                </ProjectWizardPanel>
               </div>
             )}
 
             {step === 3 && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <AppSection title={t("form.contextTitle")} description={t("form.contextDesc")}>
-                  <div className="space-y-7">
+                <ProjectWizardPanel title={t("form.detailsTitle")} description={t("form.detailsDesc")}>
+                  <div className="space-y-6">
                     <ChoiceGrid id="type" label={t("form.typeLabel")} value={form.type} onChange={(value) => setField("type", value)} columns="grid-cols-3" options={[{ value: "Residential", label: t("types.Residential") }, { value: "Commercial", label: t("types.Commercial") }, { value: "Mixed Use", label: t("types.Mixed Use") }]} error={fieldErrors.type} />
+                    <OfferingMixGrid value={form.unitTypes ?? []} onToggle={toggleUnitType} label={t("form.offeringMixLabel")} />
                     <ChoiceGrid id="status" label={t("form.statusLabel")} value={form.status} onChange={(value) => setField("status", value)} columns="grid-cols-2 md:grid-cols-4" options={[{ value: "draft", label: t("toolbar.filters.draft") }, { value: "pending", label: t("toolbar.filters.pending") }, { value: "approved", label: t("toolbar.filters.approved") }, { value: "rejected", label: t("toolbar.filters.rejected") }]} error={fieldErrors.status} />
                     <div className="grid gap-2">
                       <label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t("form.descLabel")}</label>
                       <Textarea id="description" name="description" value={form.description} onChange={(event) => setField("description", event.target.value)} className="min-h-[150px] rounded-3xl border-zinc-100 bg-zinc-50/50 p-5 text-sm font-medium transition-all focus:bg-white focus:ring-4 focus:ring-zinc-900/5 dark:border-white/5 dark:bg-white/[0.02]" />
                     </div>
                   </div>
-                </AppSection>
+                </ProjectWizardPanel>
               </div>
             )}
           </div>
 
-          <ResourceMediaUploader
-            organizationId={account.organization.id ?? undefined}
-            resourceType="project"
-            resourceId={existing?.id}
-            pendingFiles={pendingFiles}
-            onPendingFilesChange={setPendingFiles}
-            immediate={Boolean(existing)}
-          />
-
-          <WizardActions
+          <ProjectWizardActions
             onNext={nextStep}
             onBack={prevStep}
-            isLastStep={step === totalSteps}
+            nextLabel={step === totalSteps ? common("finish") : common("next")}
+            backLabel={common("back")}
+            isFirstStep={step === 1}
             isSubmitting={saveOperation.isRunning || isSubmitting}
           />
-        </div>
-
-        <ProjectFormPreview form={form} />
+        </section>
       </div>
     </AppPageShell>
   );
 }
 
-function ProjectFormProgress({ step, totalSteps, labels }: { step: number; totalSteps: number; labels: string[] }) {
+function ProjectFormProgress({ step, labels }: { step: number; labels: string[] }) {
   return (
-    <div className="rounded-[24px] border border-zinc-100 bg-white p-4 dark:border-white/5 dark:bg-[#0A0A0A]">
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{step} / {totalSteps}</span>
-        <span className="truncate text-[10px] font-black uppercase tracking-widest text-zinc-900 dark:text-white">{labels[step - 1]}</span>
-      </div>
+    <div className="rounded-[24px] border border-zinc-100 bg-zinc-50/70 p-3 dark:border-white/10 dark:bg-white/[0.025]">
       <div className="grid grid-cols-3 gap-2">
         {labels.map((label, index) => {
-          const active = index + 1 <= step;
+          const isDone = index + 1 < step;
+          const isActive = index + 1 === step;
           return (
-            <div key={label} className="space-y-2">
-              <div className={cn("h-1.5 rounded-full transition-all", active ? "bg-zinc-900 dark:bg-white" : "bg-zinc-100 dark:bg-white/5")} />
-              <p className={cn("truncate text-[9px] font-black uppercase tracking-widest", active ? "text-zinc-900 dark:text-white" : "text-zinc-400")}>{label}</p>
+            <div key={label} className={cn("rounded-2xl px-3 py-2 transition-all", isActive ? "bg-white shadow-sm shadow-zinc-950/[0.03] dark:bg-[#0A0A0A]" : "bg-transparent")}>
+              <div className="flex items-center gap-2 rtl:flex-row-reverse">
+                <span className={cn(
+                  "inline-flex h-2.5 w-2.5 shrink-0 rounded-full transition-all",
+                  isActive ? "scale-125 bg-zinc-900 dark:bg-white" : isDone ? "bg-emerald-500" : "bg-zinc-300 dark:bg-white/15",
+                )} />
+                <span className={cn("truncate text-[10px] font-black uppercase tracking-widest", isActive ? "text-zinc-900 dark:text-white" : "text-zinc-400")}>{label}</span>
+              </div>
             </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ProjectWizardPanel({ title, description, children }: { title: string; description: string; children: ReactNode }) {
+  return (
+    <div>
+      <div className="mb-6 max-w-2xl">
+        <h2 className="text-xl font-black tracking-tight text-zinc-900 dark:text-white">{title}</h2>
+        <p className="mt-2 text-sm font-semibold leading-relaxed text-zinc-500 dark:text-zinc-400">{description}</p>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function ProjectWizardActions({
+  onNext,
+  onBack,
+  nextLabel,
+  backLabel,
+  isFirstStep,
+  isSubmitting,
+}: {
+  onNext: () => void;
+  onBack: () => void;
+  nextLabel: string;
+  backLabel: string;
+  isFirstStep: boolean;
+  isSubmitting: boolean;
+}) {
+  return (
+    <div className="mt-6 flex flex-col gap-3 border-t border-zinc-100 pt-4 dark:border-white/10 sm:flex-row sm:items-center">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onBack}
+        className={cn(
+          "h-12 flex-1 rounded-[20px] border-zinc-200 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500 shadow-none hover:bg-zinc-50 hover:text-zinc-900 dark:border-white/10 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white",
+          isFirstStep && "sm:max-w-40",
+        )}
+      >
+        {backLabel}
+      </Button>
+      <AppPrimaryButton
+        type="button"
+        onClick={onNext}
+        disabled={isSubmitting}
+        className="h-12 flex-[1.4] rounded-[20px] shadow-none transition-all hover:scale-[1.005] active:scale-[0.995]"
+      >
+        {nextLabel}
+      </AppPrimaryButton>
+    </div>
+  );
+}
+
+function OfferingMixGrid({
+  value,
+  onToggle,
+  label,
+}: {
+  value: ProjectFormValues["unitTypes"];
+  onToggle: (value: ProjectFormValues["unitTypes"][number]) => void;
+  label: string;
+}) {
+  const t = useTranslations("Projects");
+
+  return (
+    <div className="grid gap-3">
+      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{label}</p>
+      <div className="flex flex-wrap gap-2">
+        {projectOfferingTypes.map((type) => {
+          const active = value.includes(type);
+          return (
+            <button
+              key={type}
+              type="button"
+              onClick={() => onToggle(type)}
+              className={cn(
+                "inline-flex min-h-11 items-center gap-2 rounded-2xl border px-4 text-xs font-black transition-all",
+                active
+                  ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-950"
+                  : "border-zinc-100 bg-zinc-50/70 text-zinc-500 hover:border-zinc-300 hover:text-zinc-900 dark:border-white/10 dark:bg-white/[0.025] dark:text-zinc-400 dark:hover:text-white",
+              )}
+            >
+              {active && <CheckCircle2 className="h-3.5 w-3.5" />}
+              {t(`types.${type}`)}
+            </button>
           );
         })}
       </div>
@@ -643,44 +779,57 @@ function ProjectFormPreview({ form }: { form: ProjectFormValues }) {
   const t = useTranslations("Projects");
 
   return (
-    <aside className="sticky top-24 space-y-5">
-      <article className="overflow-hidden rounded-[28px] border border-zinc-100 bg-white dark:border-white/5 dark:bg-[#0A0A0A]">
-        <div className="relative h-64 bg-zinc-100 dark:bg-white/5">
-          <div className="flex h-full w-full items-center justify-center text-zinc-300 dark:text-white/20">
-            <Building2 className="h-10 w-10" />
+    <aside className="space-y-4 xl:sticky xl:top-24">
+      <article className="overflow-hidden rounded-[32px] border border-zinc-100 bg-white shadow-sm shadow-zinc-950/[0.03] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none">
+        <div className="relative h-72 bg-zinc-950">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,255,255,0.18),transparent_30%),linear-gradient(135deg,rgba(255,255,255,0.10),transparent_45%)]" />
+          <div className="absolute inset-x-6 top-6 flex items-center justify-between gap-3">
+            <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-white/70 backdrop-blur">{form.type || t("types.Residential")}</span>
+            <StatusPill label={form.status || "draft"} tone={form.status === "approved" ? "success" : form.status === "pending" ? "warning" : form.status === "rejected" ? "danger" : "neutral"} />
           </div>
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent p-6">
-            <p className="text-[10px] font-black uppercase tracking-widest text-white/50">{form.city || t("form.previewCity")}</p>
-            <h2 className="mt-2 truncate text-2xl font-black uppercase tracking-tight text-white">{form.name || t("form.previewName")}</h2>
-            <p className="mt-1 truncate text-xs font-bold text-white/60">{form.developer || t("form.previewDeveloper")}</p>
+          <div className="flex h-full w-full items-center justify-center text-white/15">
+            <Building2 className="h-12 w-12" />
+          </div>
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent p-6">
+            <p className="text-[10px] font-black uppercase tracking-widest text-white/45">{form.city || t("form.previewCity")}</p>
+            <h2 className="mt-2 line-clamp-2 text-3xl font-black uppercase tracking-tight text-white">{form.name || t("form.previewName")}</h2>
+            <p className="mt-2 truncate text-xs font-bold text-white/60">{form.developer || t("form.previewDeveloper")}</p>
           </div>
         </div>
 
         <div className="space-y-4 p-5">
-          <div className="flex items-center justify-between gap-3">
-            <StatusPill label={form.status || "draft"} tone={form.status === "approved" ? "success" : form.status === "pending" ? "warning" : form.status === "rejected" ? "danger" : "neutral"} />
-            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{form.type || t("types.Residential")}</span>
-          </div>
           <div className="grid grid-cols-2 gap-3">
             <PreviewMetric label={t("card.units")} value={form.units || "0"} />
             <PreviewMetric label={t("card.value")} value={form.priceRange || "850K SAR"} />
           </div>
-          <p className="min-h-16 text-sm font-medium leading-relaxed text-zinc-500 dark:text-zinc-400">{form.description || t("form.previewDescription")}</p>
+          {form.unitTypes?.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {form.unitTypes.slice(0, 4).map((type) => (
+                <span key={type} className="rounded-full bg-zinc-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:bg-white/10 dark:text-zinc-300">
+                  {t(`types.${type}`)}
+                </span>
+              ))}
+            </div>
+          )}
+          <p className="min-h-16 text-sm font-semibold leading-relaxed text-zinc-500 dark:text-zinc-400">{form.description || t("form.previewDescription")}</p>
         </div>
       </article>
 
-      <div className="rounded-[24px] border border-zinc-100 bg-zinc-50/70 p-5 dark:border-white/5 dark:bg-white/[0.02]">
+      <div className="rounded-[28px] border border-zinc-100 bg-white p-5 shadow-sm shadow-zinc-950/[0.02] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none">
         <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t("form.previewChecklist")}</p>
         <div className="mt-4 grid gap-2">
           {[
             [t("form.nameLabel"), form.name],
             [t("form.cityLabel"), form.city],
             [t("form.unitsLabel"), form.units],
+            [t("form.offeringMixLabel"), form.unitTypes?.length ? String(form.unitTypes.length) : ""],
             [t("form.descLabel"), form.description],
           ].map(([label, value]) => (
-            <div key={label} className="flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 dark:bg-[#0A0A0A]">
+            <div key={label} className="flex items-center justify-between gap-3 rounded-2xl bg-zinc-50 px-4 py-3 dark:bg-white/[0.03]">
               <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{label}</span>
-              <span className={cn("h-2.5 w-2.5 rounded-full", value ? "bg-emerald-500" : "bg-zinc-200 dark:bg-white/10")} />
+              <span className={cn("inline-flex h-6 w-6 items-center justify-center rounded-full", value ? "bg-emerald-500/10 text-emerald-500" : "bg-zinc-200 text-zinc-400 dark:bg-white/10")}>
+                {value ? <CheckCircle2 className="h-3.5 w-3.5" /> : <span className="h-2 w-2 rounded-full bg-current" />}
+              </span>
             </div>
           ))}
         </div>

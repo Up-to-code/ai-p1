@@ -23,6 +23,7 @@ export function projectPayloadFromForm(values: ProjectFormValues) {
     city: values.city,
     area: values.area,
     type: values.type,
+    unitTypes: values.unitTypes,
     status: values.status,
     units: Number(values.units || 0),
     priceRange: values.priceRange,
