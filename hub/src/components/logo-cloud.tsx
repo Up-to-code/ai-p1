@@ -24,10 +24,10 @@ const LogoCloud = () => {
 
         <div className="mt-8 flex items-center justify-center overflow-hidden">
           <Marquee
-            className="w-full [--duration:18s] [--gap:3rem] [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] [&_svg]:h-10 [&_svg]:w-auto [&_svg]:opacity-75"
+            className="w-full [--duration:28s] [--gap:4rem] [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)] [&_svg]:h-10 [&_svg]:w-auto [&_svg]:opacity-75"
+            dir="ltr"
             pauseOnHover
-            repeat={3}
-            reverse={isAr}
+            repeat={6}
           >
             <Logo01 />
             <Logo02 />

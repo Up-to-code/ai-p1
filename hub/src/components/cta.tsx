@@ -14,14 +14,14 @@ const CTA = () => {
 
   return (
     <section className="px-0 py-20 sm:px-6 md:py-28">
-      <div className="relative mx-auto max-w-6xl overflow-hidden border-y border-zinc-200 bg-zinc-950 shadow-2xl shadow-zinc-950/10 dark:border-white/10 sm:rounded-3xl sm:border">
+      <div className="relative mx-auto w-full overflow-hidden border-y border-zinc-200 bg-zinc-950 shadow-2xl shadow-zinc-950/10 dark:border-white/10 sm:w-[90vw] sm:max-w-[1440px] sm:rounded-3xl sm:border">
         <Image
           alt=""
           aria-hidden="true"
           className="absolute inset-0 object-cover opacity-70"
           fill
           priority={false}
-          sizes="(max-width: 768px) 100vw, 1152px"
+          sizes="(max-width: 640px) 100vw, 90vw"
           src="/vectors/landing/cta_signal_texture.svg"
         />
 

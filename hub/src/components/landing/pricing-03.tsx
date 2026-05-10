@@ -4,10 +4,8 @@ import NumberFlow from "@number-flow/react";
 import { ArrowRight, CircleCheck } from "lucide-react";
 import { useState } from "react";
 
-import { Reveal } from "@/components/landing/cinematic-motion";
 import { LandingButton, PublicSection } from "@/components/landing/public-landing-kit";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
 const YEARLY_DISCOUNT = 20;
@@ -163,110 +161,113 @@ export function Pricing03({ locale }: { locale: string }) {
   return (
     <PublicSection
       id="pricing"
-      className="relative bg-white py-16 dark:bg-zinc-950 md:py-24"
+      className="relative bg-white py-14 dark:bg-zinc-950 md:py-20"
     >
-      <Reveal>
-        <div className="relative mx-auto max-w-3xl text-center">
-          <div>
-            <div className="mb-5 flex items-center justify-center gap-3">
-              <span className="h-px w-8 bg-blue-500/25 dark:bg-blue-500/40" />
-              <span className="text-[10px] font-black uppercase tracking-[0.35em] text-blue-600 dark:text-blue-300">
+      <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[1.75rem] border border-zinc-200/70 bg-white dark:border-white/10 dark:bg-white/[0.04]">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-blue-500/70 to-transparent" />
+          <div className="grid items-center gap-8 p-6 md:p-8 lg:grid-cols-[1fr_360px]">
+            <div className="max-w-2xl text-start">
+              <span className="inline-flex rounded-full border border-blue-500/15 bg-white px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-blue-700 dark:border-blue-400/20 dark:bg-white/5 dark:text-blue-200">
                 {copy.eyebrow}
               </span>
-              <span className="h-px w-8 bg-blue-500/25 dark:bg-blue-500/40" />
+              <h2 className="mt-5 text-3xl font-bold tracking-tight text-black dark:text-white md:text-4xl rtl:leading-[1.18]">
+                {copy.title}
+              </h2>
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+                {copy.description}
+              </p>
             </div>
-            <h2 className="text-4xl font-bold tracking-tight text-zinc-950 dark:text-white md:text-5xl rtl:leading-[1.22]">
-              {copy.title}
-            </h2>
-            <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-zinc-500 dark:text-zinc-400">
-              {copy.description}
-            </p>
+
+            <div>
+              <div className="grid h-12 min-w-[320px] grid-cols-2 gap-1 rounded-full border border-zinc-200 bg-zinc-50 p-1 dark:border-white/10 dark:bg-zinc-950/50">
+                {(["monthly", "yearly"] as const).map((period) => {
+                  const isActive = selectedBillingPeriod === period;
+
+                  return (
+                    <button
+                      className={cn(
+                        "inline-flex h-10 items-center justify-center rounded-full px-5 text-xs font-bold text-zinc-500 transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 dark:text-zinc-400",
+                        isActive && "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950",
+                      )}
+                      key={period}
+                      onClick={() => setSelectedBillingPeriod(period)}
+                      type="button"
+                    >
+                      {period === "monthly" ? copy.monthly : copy.yearly}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-
-          <Tabs
-            className="mx-auto mt-8 w-max"
-            onValueChange={setSelectedBillingPeriod}
-            value={selectedBillingPeriod}
-          >
-            <TabsList className="h-11 rounded-full border border-zinc-200 bg-zinc-50 p-1 dark:border-white/10 dark:bg-white/5">
-              <TabsTrigger className="rounded-full px-5 text-xs font-bold data-active:bg-zinc-950 data-active:text-white dark:data-active:bg-white dark:data-active:text-zinc-950" value="monthly">
-                {copy.monthly}
-              </TabsTrigger>
-              <TabsTrigger className="rounded-full px-5 text-xs font-bold data-active:bg-zinc-950 data-active:text-white dark:data-active:bg-white dark:data-active:text-zinc-950" value="yearly">
-                {copy.yearly}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
         </div>
-      </Reveal>
 
-      <div className="relative mt-10 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        {copy.plans.map((plan, index) => {
+      <div className="relative mt-9 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        {copy.plans.map((plan) => {
           const price =
             selectedBillingPeriod === "monthly"
               ? plan.price
               : plan.price * ((100 - YEARLY_DISCOUNT) / 100);
 
           return (
-            <Reveal key={plan.name} delay={index * 0.08}>
-              <article
-                className={cn(
-                  "relative flex min-h-[430px] flex-col overflow-hidden rounded-[1.5rem] border border-zinc-200 bg-zinc-50/60 p-6 text-start transition duration-300 hover:bg-white dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.06]",
-                  plan.isPopular && "border-blue-500 bg-blue-50/40 text-zinc-950 hover:bg-blue-50/50 dark:border-blue-400/70 dark:bg-blue-500/10 dark:text-white dark:hover:bg-blue-500/10",
-                )}
-              >
-                <div className={cn("absolute inset-x-6 top-0 h-1 rounded-b-full", plan.isPopular ? "bg-blue-500" : "bg-zinc-200 dark:bg-white/10")} />
-                {plan.isPopular && (
-                  <Badge className="absolute end-6 top-5 bg-blue-600 text-white dark:bg-blue-600 dark:text-white">
-                    {copy.popular}
-                  </Badge>
-                )}
+            <article
+              className={cn(
+                "relative flex min-h-[430px] flex-col overflow-hidden rounded-[1.5rem] border border-zinc-200 bg-zinc-50/60 p-6 text-start transition duration-300 hover:bg-white dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.06]",
+                plan.isPopular && "border-blue-500 bg-blue-50/40 text-zinc-950 hover:bg-blue-50/50 dark:border-blue-400/70 dark:bg-blue-500/10 dark:text-white dark:hover:bg-blue-500/10",
+              )}
+              key={plan.name}
+            >
+              <div className={cn("absolute inset-x-6 top-0 h-1 rounded-b-full", plan.isPopular ? "bg-blue-500" : "bg-zinc-200 dark:bg-white/10")} />
+              {plan.isPopular && (
+                <Badge className="absolute end-6 top-5 bg-blue-600 text-white dark:bg-blue-600 dark:text-white">
+                  {copy.popular}
+                </Badge>
+              )}
 
-                <div>
-                  <h3 className={cn("text-xl font-bold tracking-tight", plan.isPopular && "pe-24")}>{plan.name}</h3>
-                  <p className="mt-4 min-h-[64px] text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-                    {plan.description}
+              <div>
+                <h3 className={cn("text-xl font-bold tracking-tight", plan.isPopular && "pe-24")}>{plan.name}</h3>
+                <p className="mt-4 min-h-[64px] text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                  {plan.description}
+                </p>
+                <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.04]">
+                  <p className="flex items-end gap-2">
+                    <NumberFlow
+                      className="text-4xl font-bold tracking-tight md:text-5xl"
+                      prefix="$"
+                      value={price}
+                    />
+                    <span className="pb-1 text-sm font-semibold text-zinc-500 dark:text-zinc-400">
+                      {copy.perMonth}
+                    </span>
                   </p>
-                  <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.04]">
-                    <p className="flex items-end gap-2">
-                      <NumberFlow
-                        className="text-4xl font-bold tracking-tight md:text-5xl"
-                        prefix="$"
-                        value={price}
-                      />
-                      <span className="pb-1 text-sm font-semibold text-zinc-500 dark:text-zinc-400">
-                        {copy.perMonth}
-                      </span>
-                    </p>
-                  </div>
                 </div>
+              </div>
 
-                <LandingButton
-                  href={plan.id === "institutional" ? "/contact" : "/dashboard"}
-                  className={cn(
-                    "mt-5 h-11 w-full rounded-full",
-                    plan.isPopular
-                      ? "bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
-                      : "border border-zinc-200 bg-white text-zinc-950 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10",
-                  )}
-                  variant="secondary"
-                >
-                  {plan.buttonText}
-                  <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-                </LandingButton>
+              <LandingButton
+                href={plan.id === "institutional" ? "/contact" : "/dashboard"}
+                className={cn(
+                  "mt-5 h-11 w-full rounded-full",
+                  plan.isPopular
+                    ? "bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+                    : "border border-zinc-200 bg-white text-zinc-950 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10",
+                )}
+                variant="secondary"
+              >
+                {plan.buttonText}
+                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+              </LandingButton>
 
-                <div className="my-6 h-px bg-zinc-200 dark:bg-white/10" />
+              <div className="my-6 h-px bg-zinc-200 dark:bg-white/10" />
 
-                <ul className="mt-auto space-y-3">
-                  {plan.features.map((feature) => (
-                    <li className="flex items-start gap-3" key={feature.title}>
-                      <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                      <span className="text-sm font-semibold leading-relaxed">{feature.title}</span>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            </Reveal>
+              <ul className="mt-auto space-y-3">
+                {plan.features.map((feature) => (
+                  <li className="flex items-start gap-3" key={feature.title}>
+                    <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                    <span className="text-sm font-semibold leading-relaxed">{feature.title}</span>
+                  </li>
+                ))}
+              </ul>
+            </article>
           );
         })}
       </div>

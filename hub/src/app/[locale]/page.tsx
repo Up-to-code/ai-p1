@@ -4,9 +4,9 @@ import { ArrowRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import CTA from "@/components/cta";
+import Footer from "@/components/footer";
 import { Faq02 } from "@/components/landing/faq-02";
 import { Reveal } from "@/components/landing/cinematic-motion";
-import { Footer } from "@/components/landing/footer";
 import { Navbar } from "@/components/landing/navbar";
 import { Pricing03 } from "@/components/landing/pricing-03";
 import { LandingButton, PublicSection } from "@/components/landing/public-landing-kit";
