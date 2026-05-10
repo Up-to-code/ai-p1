@@ -18,10 +18,20 @@ await copyFile(source, target);
 console.log("Ensured .next/routes-manifest-deterministic.json for Vercel deployment.");
 
 if (process.env.VERCEL) {
-  const parentNextDir = path.resolve(process.cwd(), "..", ".next");
+  const vercelCloneRoot = "/vercel/path0";
+  let current = process.cwd();
+  const copied = new Set([nextDir]);
 
-  await mkdir(parentNextDir, { recursive: true });
-  await copyFile(source, path.join(parentNextDir, "routes-manifest.json"));
-  await copyFile(target, path.join(parentNextDir, "routes-manifest-deterministic.json"));
-  console.log("Ensured parent .next routes manifests for Vercel deployment.");
+  while (current.startsWith(`${vercelCloneRoot}/`) && current !== vercelCloneRoot) {
+    current = path.dirname(current);
+    const ancestorNextDir = path.join(current, ".next");
+    if (copied.has(ancestorNextDir)) continue;
+
+    await mkdir(ancestorNextDir, { recursive: true });
+    await copyFile(source, path.join(ancestorNextDir, "routes-manifest.json"));
+    await copyFile(target, path.join(ancestorNextDir, "routes-manifest-deterministic.json"));
+    copied.add(ancestorNextDir);
+  }
+
+  console.log("Ensured ancestor .next routes manifests for Vercel deployment.");
 }

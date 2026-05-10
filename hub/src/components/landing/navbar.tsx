@@ -46,17 +46,7 @@ export function Navbar() {
           ))}
         </div>
 
-        <div className="hidden items-center gap-2 md:flex">
-          <div className="flex items-center rounded-full border border-white/10 bg-white/5 p-1">
-            <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-white px-3 text-[10px] font-black uppercase tracking-widest text-zinc-950">
-              <LayoutDashboard className="h-3.5 w-3.5" />
-              {t("work")}
-            </span>
-            <span className="inline-flex h-8 items-center gap-1.5 px-3 text-[10px] font-black uppercase tracking-widest text-zinc-500">
-              <Bot className="h-3.5 w-3.5" />
-              {t("ai")}
-            </span>
-          </div>
+        <div className="hidden items-center gap-6 md:flex">
           <LanguageSwitcher className="opacity-70 hover:opacity-100" />
           <Link
             href="/dashboard"

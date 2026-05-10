@@ -339,6 +339,39 @@
         "discord": "Discord",
         "discordDesc": "Community sync and instant operational notifications."
       },
+      "animated": {
+        "hero": {
+          "title": "The Single Source for Real Estate.",
+          "description": "Put your data in one place, and it automatically pushes everywhere.",
+          "primary": "Start Syncing"
+        },
+        "problems": {
+          "eyebrow": "The Problem",
+          "title": "Fragmented data kills deals.",
+          "item1": "Scattered inventory across spreadsheets.",
+          "item2": "Agents working with outdated pricing.",
+          "item3": "Manual updates to multiple websites."
+        },
+        "solutions": {
+          "eyebrow": "Anan AI Solutions",
+          "title": "AI that connects the dots.",
+          "description": "Our intelligence layer automatically translates, formats, and syncs your inventory to match any marketplace standard in real-time."
+        },
+        "calendar": {
+          "eyebrow": "Calendar AI",
+          "title": "Schedule with live context.",
+          "description": "Manage viewings and project milestones directly linked to your live inventory. When availability changes, your calendar knows."
+        },
+        "distribution": {
+          "eyebrow": "Connected Apps",
+          "title": "Enter once. Publish everywhere.",
+          "description": "When you put your data in Anan, it is automatically pushed to multiple destinations.",
+          "website": "Your Website",
+          "agent": "Your Agents",
+          "market": "Anan Marketplace",
+          "ai": "AI Marketplaces"
+        }
+      },
       "cta": {
         "eyebrow": "Ready for the workspace",
         "title": "Start where the real work continues.",

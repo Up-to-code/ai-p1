@@ -49,21 +49,6 @@ export function Footer() {
             </span>
           </Link>
           <p className="max-w-md text-sm font-medium leading-relaxed text-zinc-400">{t("description")}</p>
-          <div className="grid max-w-lg grid-cols-3 gap-2">
-            {[
-              { label: t("developerReady"), icon: Building2 },
-              { label: t("aiNative"), icon: Bot },
-              { label: t("verifiedOps"), icon: ShieldCheck },
-            ].map((item) => {
-              const Icon = item.icon;
-              return (
-                <div key={item.label} className="rounded-2xl border border-white/10 bg-white/[0.035] p-3">
-                  <Icon className="mb-5 h-4 w-4 text-zinc-400" />
-                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{item.label}</p>
-                </div>
-              );
-            })}
-          </div>
         </div>
 
         <div className="grid gap-8 sm:grid-cols-3">

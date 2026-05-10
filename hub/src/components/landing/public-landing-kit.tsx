@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import { ArrowRight, Bot, Building2, CalendarClock, CheckCircle2, CircleAlert, FileCheck2, Home, MessageSquareText, Search, ShieldCheck, UsersRound, Wifi } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { motion } from "framer-motion";
 
 import { Link } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
@@ -365,4 +366,162 @@ export interface WorkspacePreviewLabels {
   ready: string;
   tasks: Array<{ title: string; meta: string; status: string }>;
   chips: string[];
+}
+
+export function AnimatedSection({ children, className, delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40, filter: "blur(8px)" }}
+      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.8, delay, ease: [0.16, 1, 0.3, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function StaggerContainer({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <motion.div
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-100px" }}
+      variants={{
+        visible: { transition: { staggerChildren: 0.15 } },
+        hidden: {},
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function StaggerItem({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <motion.div
+      variants={{
+        hidden: { opacity: 0, y: 20, filter: "blur(4px)" },
+        visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+export function FeatureSplitPanel({
+  eyebrow,
+  title,
+  description,
+  primaryLabel,
+  href = "/dashboard",
+  children,
+  reverse = false,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  primaryLabel: string;
+  href?: string;
+  children: ReactNode;
+  reverse?: boolean;
+}) {
+  return (
+    <div className={cn("grid items-center gap-12 lg:grid-cols-2", reverse && "lg:grid-cols-[1.1fr_0.9fr]")}>
+      <div className={cn("space-y-6", reverse && "lg:order-last lg:ps-8")}>
+        <div className="flex items-center gap-3">
+          <span className="h-px w-8 bg-blue-500/50" />
+          <span className="text-[10px] font-black uppercase tracking-[0.35em] text-blue-400">{eyebrow}</span>
+        </div>
+        <h2 className="text-3xl font-semibold leading-none tracking-tight text-white md:text-5xl">{title}</h2>
+        <p className="max-w-xl text-base font-medium leading-relaxed text-zinc-400">{description}</p>
+        <div className="pt-4">
+          <LandingButton href={href} variant="secondary">
+            {primaryLabel}
+            <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
+          </LandingButton>
+        </div>
+      </div>
+      <div className="relative">
+        <div className="absolute -inset-4 rounded-[32px] bg-gradient-to-tr from-blue-500/20 to-purple-500/20 blur-2xl opacity-50" />
+        <div className="relative overflow-hidden rounded-[24px] border border-white/10 bg-[#080808] p-2 shadow-2xl">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function TestimonialGrid({
+  testimonials
+}: {
+  testimonials: Array<{ quote: string; author: string; role: string }>
+}) {
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      {testimonials.map((t, i) => (
+        <div key={i} className="rounded-[24px] border border-white/10 bg-white/[0.02] p-8 text-start">
+          <p className="text-lg font-medium leading-relaxed text-zinc-300">"{t.quote}"</p>
+          <div className="mt-8 flex items-center gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 font-bold text-white">
+              {t.author.charAt(0)}
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-white">{t.author}</p>
+              <p className="text-xs text-zinc-500">{t.role}</p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function TeamGallery({
+  members
+}: {
+  members: Array<{ name: string; role: string; imageTone: string }>
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      {members.map((m, i) => (
+        <div key={i} className="group relative overflow-hidden rounded-[24px] bg-white/5 aspect-[3/4]">
+          <div className={cn("absolute inset-0 opacity-40 transition group-hover:opacity-60", m.imageTone)} />
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-5">
+            <p className="text-sm font-semibold text-white">{m.name}</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{m.role}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function IntegrationCards({
+  integrations
+}: {
+  integrations: Array<{ name: string; description: string; icon: LucideIcon; color: string }>
+}) {
+  return (
+    <div className="grid gap-4 md:grid-cols-3">
+      {integrations.map((int, i) => {
+        const Icon = int.icon;
+        return (
+          <div key={i} className="rounded-[24px] border border-white/10 bg-white/[0.02] p-6 text-start transition hover:bg-white/[0.04]">
+            <div className={cn("mb-6 flex h-12 w-12 items-center justify-center rounded-2xl", int.color)}>
+              <Icon className="h-6 w-6 text-white" />
+            </div>
+            <h3 className="text-base font-semibold text-white">{int.name}</h3>
+            <p className="mt-2 text-sm text-zinc-400">{int.description}</p>
+            <div className="mt-6 flex items-center gap-2 text-xs font-bold text-white">
+              Learn More <ArrowRight className="h-3 w-3 rtl:rotate-180" />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
