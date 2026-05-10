@@ -475,9 +475,9 @@
     },
     "about": {
       "hero": {
-        "eyebrow": "About Anan",
-        "title": "A real estate operating system for shared work.",
-        "description": "Anan is built for the daily coordination between developers, brokers, clients, projects, inventory, approvals, and AI-assisted decisions."
+        "eyebrow": "Our Vision",
+        "title": "A new era for real estate operations.",
+        "description": "We believe that clarity, trust, and shared operational truth are the foundation of a modern real estate market. Our mission is to build the infrastructure that empowers teams to move with confidence."
       },
       "signals": {
         "source": { "label": "Source", "value": "One", "helper": "Workspace data is organized around a shared operational record." },
@@ -505,6 +505,47 @@
         "description": "Bring your project, brokerage, or integration workflow and we will map it into the workspace.",
         "primary": "Enter workspace",
         "secondary": "Contact team"
+      },
+      "story": {
+        "eyebrow": "The Storyline",
+        "title": "How it started.",
+        "items": [
+          {
+            "title": "The Fragmented Reality",
+            "description": "Real estate was a world of silos. Developers, brokers, and clients were speaking different languages, relying on stale data and manual handoffs."
+          },
+          {
+            "title": "The Spark",
+            "description": "We saw a future where every project had a single, verified operational record. A future where trust was built into the system itself."
+          },
+          {
+            "title": "The Build",
+            "description": "Anan wasn't built in a lab. It was built in the field, through thousands of conversations with the people who actually do the work."
+          },
+          {
+            "title": "The Result",
+            "description": "Today, Anan is the operating system for the next generation of institutional real estate teams."
+          }
+        ]
+      },
+      "founders": {
+        "title": "Meet the founders",
+        "items": [
+          {
+            "name": "Ahmed",
+            "role": "Technical Vision & Engineering",
+            "bio": "Ahmed leads the technical architecture and engineering direction of Anan, transforming complex real estate workflows into seamless digital systems.",
+            "quote": "The best way to predict the future is to create it.",
+            "author": "Peter Drucker"
+          },
+          {
+            "name": "Abdulmonem",
+            "role": "Real Estate Expert",
+            "bio": "With deep roots in the real estate sector, Abdulmonem ensures that every feature in Anan is grounded in real-world expertise and institutional standards.",
+            "quote": "Real estate is the basis of all wealth.",
+            "author": "Theodore Roosevelt"
+          }
+        ]
       }
     },
     "contact": {
