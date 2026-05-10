@@ -340,7 +340,7 @@ export function ProfilePictureUploader({
             type="button"
             onClick={removeProfilePicture}
             disabled={isUploading}
-            className="absolute -top-2 -end-2 flex h-8 w-8 items-center justify-center rounded-xl bg-white text-zinc-500 shadow-sm ring-1 ring-zinc-200 transition-colors hover:text-red-600 disabled:opacity-50 dark:bg-zinc-900 dark:ring-white/10"
+            className="absolute -top-2 -end-2 flex h-8 w-8 items-center justify-center rounded-xl bg-white text-zinc-500 ring-1 ring-zinc-200 transition-colors hover:text-red-600 disabled:opacity-50 dark:bg-zinc-900 dark:ring-white/10"
             aria-label={labels.remove}
           >
             {isUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}

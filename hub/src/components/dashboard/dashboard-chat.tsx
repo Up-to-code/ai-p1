@@ -4,6 +4,7 @@ import { useState } from "react";
 import AiComposer from "./ai-composer";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
+import { Building2, CalendarClock, CheckCircle2, Search } from "lucide-react";
 
 interface Message {
   role: "user" | "assistant";
@@ -27,7 +28,7 @@ export function DashboardChat() {
     setTimeout(() => {
       const assistantMessage: Message = {
         role: "assistant",
-        content: `I've analyzed your request about "${text}". Based on current synchronization data, I can help you process this in the workspace.`,
+        content: t("mockResponse", { request: text }),
       };
       setMessages((prev) => [...prev, assistantMessage]);
       setIsSending(false);
@@ -56,15 +57,15 @@ export function DashboardChat() {
               />
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4">
+            <div className="grid grid-cols-2 gap-3 pt-4 sm:grid-cols-4">
               {[
-                { label: "Find data", icon: "🔍" },
-                { label: "New Project", icon: "🏗️" },
-                { label: "Verify claims", icon: "✅" },
-                { label: "Reports", icon: "📊" }
+                { label: t("suggestions.findClient"), icon: Search },
+                { label: t("suggestions.prepareViewing"), icon: CalendarClock },
+                { label: t("suggestions.checkInventory"), icon: Building2 },
+                { label: t("suggestions.verifyLaunch"), icon: CheckCircle2 }
               ].map((pill) => (
-                <button key={pill.label} className="flex items-center justify-center gap-2 rounded-xl border border-zinc-100 bg-white p-3 text-[10px] font-black uppercase tracking-widest text-zinc-400 transition-all hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900/50">
-                  <span>{pill.icon}</span>
+                <button key={pill.label} className="flex items-center justify-center gap-2 rounded-xl border border-zinc-100 bg-white p-3 text-[10px] font-black uppercase tracking-widest text-zinc-400 transition-all hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-700 dark:hover:text-white">
+                  <pill.icon className="h-3.5 w-3.5" />
                   {pill.label}
                 </button>
               ))}

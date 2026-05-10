@@ -8,16 +8,16 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-black text-white hover:bg-zinc-800 shadow-none border-0",
+        default: "bg-black text-white hover:bg-zinc-800 shadow-none border-0 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100",
         outline:
-          "border-zinc-100 bg-white hover:bg-zinc-50 text-zinc-900 aria-expanded:bg-zinc-50 shadow-none",
+          "border-zinc-100 bg-white hover:bg-zinc-50 text-zinc-900 aria-expanded:bg-zinc-50 shadow-none dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 dark:aria-expanded:bg-white/10",
         secondary:
-          "bg-zinc-100 text-zinc-900 hover:bg-zinc-200 aria-expanded:bg-zinc-200 shadow-none border-0",
+          "bg-zinc-100 text-zinc-900 hover:bg-zinc-200 aria-expanded:bg-zinc-200 shadow-none border-0 dark:bg-white/10 dark:text-white dark:hover:bg-white/15 dark:aria-expanded:bg-white/15",
         ghost:
-          "hover:bg-zinc-50 text-zinc-400 hover:text-zinc-900 aria-expanded:bg-zinc-50 border-0 shadow-none",
+          "hover:bg-zinc-50 text-zinc-400 hover:text-zinc-900 aria-expanded:bg-zinc-50 border-0 shadow-none dark:hover:bg-white/5 dark:hover:text-white dark:aria-expanded:bg-white/5",
         destructive:
-          "bg-red-50 text-red-600 hover:bg-red-100 focus-visible:ring-red-100 shadow-none border-0",
-        link: "text-zinc-900 underline-offset-4 hover:underline border-0 shadow-none",
+          "bg-red-50 text-red-600 hover:bg-red-100 focus-visible:ring-red-100 shadow-none border-0 dark:bg-red-500/10 dark:text-red-300 dark:hover:bg-red-500/15 dark:focus-visible:ring-red-500/20",
+        link: "text-zinc-900 underline-offset-4 hover:underline border-0 shadow-none dark:text-white",
       },
       size: {
         default:

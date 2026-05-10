@@ -19,8 +19,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Link, useRouter } from "@/i18n/routing";
-import { usePropertiesStore } from "@/domains/properties";
-import { useProjectsStore } from "@/domains/projects";
+import { useAccountContext } from "@/domains/auth";
+import { createPropertyRequest, deletePropertyRequest, updatePropertyRequest, usePropertiesQuery, usePropertyQuery } from "../api/properties";
+import { useProjectsQuery } from "@/domains/projects/api/projects";
+import { ResourceMediaUploader } from "@/domains/media/components/resource-media-uploader";
+import { uploadAndAttachMedia } from "@/domains/media/api/media";
 import type { PropertyStatus, PropertyUnit } from "../store/properties.types";
 import { propertySchema, type PropertyFormValues } from "../validation/property.schema";
 import { useOperationState } from "@/lib/utils/operation-state";
@@ -50,7 +53,13 @@ function UnitTile({ unit, onDelete }: { unit: PropertyUnit; onDelete: (unit: Pro
   return (
     <article className="group overflow-hidden rounded-[24px] border border-zinc-100 bg-white transition-colors hover:border-zinc-300 dark:border-white/5 dark:bg-[#0A0A0A]">
       <Link href={`/properties/${unit.id}`} className="relative block h-40 w-full overflow-hidden bg-zinc-100 text-start focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:bg-white/5">
-        <Image src={unit.image} alt={unit.title} fill sizes="(max-width: 768px) 100vw, 360px" className="object-cover opacity-80 grayscale transition-transform duration-700 group-hover:scale-105 group-hover:grayscale-0" />
+        {unit.coverImageUrl ? (
+          <Image src={unit.coverImageUrl} alt={unit.title} fill sizes="(max-width: 768px) 100vw, 360px" className="object-cover opacity-80 grayscale transition-transform duration-700 group-hover:scale-105 group-hover:grayscale-0" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-300 dark:bg-white/5 dark:text-white/20">
+            <Home className="h-8 w-8" />
+          </div>
+        )}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4">
           <h3 className="truncate text-sm font-black uppercase tracking-tight text-white">{unit.title}</h3>
           <p className="mt-1 text-[9px] font-black uppercase tracking-widest text-white/60">{unit.project}</p>
@@ -85,7 +94,12 @@ function UnitTile({ unit, onDelete }: { unit: PropertyUnit; onDelete: (unit: Pro
 
 export function PropertiesWorkspace() {
   const t = useTranslations('Properties');
-  const { units, filter, search, view, setFilter, setSearch, setView, deleteUnit } = usePropertiesStore();
+  const account = useAccountContext();
+  const unitsQuery = usePropertiesQuery(account.organization.id ?? undefined);
+  const units = useMemo(() => (unitsQuery ?? []) as PropertyUnit[], [unitsQuery]);
+  const [filter, setFilter] = useState<(typeof propertyFilters)[number]>("all");
+  const [search, setSearch] = useState("");
+  const [view, setView] = useState<(typeof propertyViews)[number]>("grid");
   const [deleting, setDeleting] = useState<PropertyUnit | null>(null);
   const deleteOperation = useOperationState({ errorMessage: "Unit delete failed." });
   useUrlListState({
@@ -94,7 +108,7 @@ export function PropertiesWorkspace() {
     view,
     setFilter,
     setSearch,
-    setView,
+    setView: (next) => setView(next as (typeof propertyViews)[number]),
     defaultFilter: "all",
     defaultView: "grid",
     validFilters: propertyFilters,
@@ -108,7 +122,7 @@ export function PropertiesWorkspace() {
   }), [units, filter, search]);
 
   const columns: AppDataTableColumn<PropertyUnit>[] = [
-    { key: "title", header: t('form.nameLabel'), render: (unit) => <AppThumbnailCell src={unit.image} alt={unit.title} title={unit.title} meta={<span className="inline-flex items-center gap-1"><MapPin className="h-2.5 w-2.5" />{unit.city}</span>} /> },
+    { key: "title", header: t('form.nameLabel'), render: (unit) => <AppThumbnailCell src={unit.coverImageUrl} alt={unit.title} title={unit.title} meta={<span className="inline-flex items-center gap-1"><MapPin className="h-2.5 w-2.5" />{unit.city}</span>} /> },
     { key: "reference", header: t('detail.labels.type') !== '' ? 'Ref.' : '' },
     { key: "status", header: t('form.statusLabel'), render: (unit) => <StatusPill label={t(`toolbar.filters.${unit.status}`)} tone={statusTone(unit.status)} /> },
     { key: "project", header: t('detail.labels.project'), render: (unit) => <span className="block max-w-[180px] truncate">{unit.project}</span> },
@@ -138,7 +152,7 @@ export function PropertiesWorkspace() {
         activeFilter={filter}
         onFilterChange={(next) => setFilter(next as "all" | PropertyStatus)}
         view={view}
-        onViewChange={setView}
+        onViewChange={(next) => setView(next as (typeof propertyViews)[number])}
         sortLabel={t('toolbar.priceHigh')}
         trailing={<SearchBox value={search} onChange={setSearch} placeholder={t('toolbar.search')} name="unit-search" ariaLabel="Search units" />}
       />
@@ -166,7 +180,8 @@ export function PropertiesWorkspace() {
           if (!deleting || !units.some((unit) => unit.id === deleting.id)) {
             throw new Error("This unit is no longer available.");
           }
-          deleteUnit(deleting.id);
+          if (!account.organization.id) throw new Error("Select an organization first.");
+          return deletePropertyRequest(account.organization.id, deleting.id);
         }, {
           successMessage: "Unit deleted.",
           onSuccess: () => setDeleting(null),
@@ -178,11 +193,15 @@ export function PropertiesWorkspace() {
 
 export function PropertyDetailScreen({ id }: { id: string }) {
   const t = useTranslations('Properties');
-  const unit = usePropertiesStore((state) => state.getById(id));
-  const deleteUnit = usePropertiesStore((state) => state.deleteUnit);
+  const account = useAccountContext();
+  const unit = usePropertyQuery(account.organization.id ?? undefined, id) as PropertyUnit | null | undefined;
   const [deleting, setDeleting] = useState(false);
   const router = useRouter();
   const deleteOperation = useOperationState({ errorMessage: "Unit delete failed." });
+
+  if (unit === undefined) {
+    return <AppPageShell><EmptyWorkspace icon={Home} title="Loading unit" description="Unit data is syncing from Convex." /></AppPageShell>;
+  }
 
   if (!unit) {
     return <AppPageShell><DetailNotFoundState title={t('detail.notFound')} description={t('detail.notFoundDesc')} backHref="/properties" backLabel={t('detail.back')} /></AppPageShell>;
@@ -192,7 +211,13 @@ export function PropertyDetailScreen({ id }: { id: string }) {
     <AppPageShell>
       <AppPageHeader eyebrow={unit.reference} title={`${unit.title}.`} actions={<><Link href={`/properties/${unit.id}/edit`} className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-100 px-5 text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:border-white/10 dark:hover:bg-white/5"><Edit className="me-2 h-3.5 w-3.5" />{t('detail.edit')}</Link><Button variant="destructive" onClick={() => setDeleting(true)} className="h-10 rounded-xl text-[10px] font-black uppercase tracking-widest"><Trash2 className="me-2 h-3.5 w-3.5" />{t('detail.delete')}</Button></>} />
       <div className="relative min-h-[340px] overflow-hidden rounded-[32px] border border-zinc-100 bg-zinc-100 dark:border-white/5">
-        <Image src={unit.image} alt={unit.title} fill priority sizes="100vw" className="object-cover grayscale" />
+        {unit.coverImageUrl ? (
+          <Image src={unit.coverImageUrl} alt={unit.title} fill priority sizes="100vw" className="object-cover grayscale" />
+        ) : (
+          <div className="flex h-full min-h-[340px] w-full items-center justify-center bg-zinc-100 text-zinc-300 dark:bg-white/5 dark:text-white/20">
+            <Home className="h-12 w-12" />
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/10" />
         <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
           <StatusPill label={t(`toolbar.filters.${unit.status}`)} tone={statusTone(unit.status)} />
@@ -220,6 +245,15 @@ export function PropertyDetailScreen({ id }: { id: string }) {
           ))}
         </div>
       </AppSection>
+      <ResourceMediaUploader
+        organizationId={account.organization.id ?? undefined}
+        resourceType="property"
+        resourceId={unit.id}
+        pendingFiles={[]}
+        onPendingFilesChange={() => undefined}
+        immediate
+        labels={{ title: "Media", description: "Images, videos, and PDFs for this unit." }}
+      />
       <DeleteRecordDialog
         open={deleting}
         onOpenChange={(open) => {
@@ -231,7 +265,8 @@ export function PropertyDetailScreen({ id }: { id: string }) {
         isDeleting={deleteOperation.isRunning}
         error={deleteOperation.error}
         onConfirm={() => deleteOperation.run(() => {
-          deleteUnit(unit.id);
+          if (!account.organization.id) throw new Error("Select an organization first.");
+          return deletePropertyRequest(account.organization.id, unit.id);
         }, {
           successMessage: "Unit deleted.",
           onSuccess: () => {
@@ -246,18 +281,19 @@ export function PropertyDetailScreen({ id }: { id: string }) {
 
 export function PropertyFormScreen({ id }: { id?: string }) {
   const t = useTranslations('Properties');
-  const existing = usePropertiesStore((state) => (id ? state.getById(id) : undefined));
-  const createUnit = usePropertiesStore((state) => state.createUnit);
-  const updateUnit = usePropertiesStore((state) => state.updateUnit);
+  const account = useAccountContext();
+  const existing = usePropertyQuery(account.organization.id ?? undefined, id ?? "") as PropertyUnit | null | undefined;
+  const projects = useProjectsQuery(account.organization.id ?? undefined) ?? [];
   const router = useRouter();
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const { control, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<PropertyFormValues>({
     resolver: zodResolver(propertySchema),
     defaultValues: {
       title: existing?.title ?? "",
+      projectId: existing?.projectId ?? "",
       project: existing?.project ?? "",
       city: existing?.city ?? "",
       type: existing?.type ?? "Apartment",
-      image: existing?.image ?? "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=600&auto=format&fit=crop",
       status: existing?.status ?? "draft" as PropertyStatus,
       purpose: existing?.purpose ?? "sale" as PropertyUnit["purpose"],
       price: existing?.price ?? "",
@@ -275,18 +311,36 @@ export function PropertyFormScreen({ id }: { id?: string }) {
     saveOperation.clearError();
   };
   const onSubmit = handleSubmit((data) => {
-    saveOperation.run(() => {
-      const payload = { ...data, bedrooms: Number(data.bedrooms), bathrooms: Number(data.bathrooms) };
-      if (existing) {
-        updateUnit(existing.id, payload);
-        return existing.id;
+    saveOperation.run(async () => {
+      if (!account.organization.id) throw new Error("Select an organization first.");
+      const selectedProject = projects.find((project) => project._id === data.projectId || project.id === data.projectId);
+      const payload = {
+        ...data,
+        projectId: selectedProject?._id ?? data.projectId,
+        project: selectedProject?.name ?? data.project,
+      };
+      const result = existing
+        ? await updatePropertyRequest(account.organization.id, existing.id, payload)
+        : await createPropertyRequest(account.organization.id, payload);
+      const nextId = result.property.id;
+      if (pendingFiles.length > 0) {
+        await uploadAndAttachMedia({
+          organizationId: account.organization.id,
+          resourceType: "property",
+          resourceId: nextId,
+          files: pendingFiles,
+        });
       }
-      return createUnit(payload).id;
+      return nextId;
     }, {
       successMessage: existing ? "Unit saved." : "Unit created.",
       onSuccess: (nextId) => router.push(`/properties/${nextId}`),
     });
   });
+
+  if (id && existing === undefined) {
+    return <AppPageShell><EmptyWorkspace icon={Home} title="Loading unit" description="Unit data is syncing from Convex." /></AppPageShell>;
+  }
 
   if (id && !existing) {
     return <AppPageShell><DetailNotFoundState title={t('detail.notFound')} description={t('detail.notFoundDesc')} backHref="/properties" backLabel={t('detail.back')} /></AppPageShell>;
@@ -304,9 +358,21 @@ export function PropertyFormScreen({ id }: { id?: string }) {
           <TextInput name="title" label={t('form.nameLabel')} value={form.title} onChange={(value) => setField("title", value)} placeholder="Unit A-101…" error={fieldErrors.title} />
           <div className="grid gap-2">
             <label htmlFor="project" className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('form.projectLabel')}</label>
-            <select id="project" name="project" value={form.project} onChange={(e) => setField("project", e.target.value)} className="h-12 rounded-2xl border border-zinc-100 bg-white px-4 text-sm font-bold text-zinc-900 outline-none transition-all focus:border-zinc-900 dark:border-white/10 dark:bg-transparent dark:text-white dark:focus:border-white" aria-invalid={Boolean(fieldErrors.project)} aria-describedby={fieldErrors.project ? 'project-error' : undefined}>
+            <select
+              id="project"
+              name="project"
+              value={form.projectId || ""}
+              onChange={(e) => {
+                const selected = projects.find((project) => project._id === e.target.value || project.id === e.target.value);
+                setField("projectId", e.target.value);
+                setField("project", selected?.name ?? "");
+              }}
+              className="h-12 rounded-2xl border border-zinc-100 bg-white px-4 text-sm font-bold text-zinc-900 outline-none transition-all focus:border-zinc-900 dark:border-white/10 dark:bg-transparent dark:text-white dark:focus:border-white"
+              aria-invalid={Boolean(fieldErrors.project)}
+              aria-describedby={fieldErrors.project ? 'project-error' : undefined}
+            >
               <option value="">— Select project —</option>
-              {useProjectsStore.getState().projects.map(p => (<option key={p.id} value={p.name}>{p.name}</option>))}
+              {projects.map((p) => (<option key={p.id} value={p.id}>{p.name}</option>))}
             </select>
             {fieldErrors.project && <p id="project-error" className="text-xs font-bold text-red-600">{fieldErrors.project}</p>}
           </div>
@@ -316,7 +382,6 @@ export function PropertyFormScreen({ id }: { id?: string }) {
           <TextInput name="bedrooms" label={t('form.bedsLabel')} type="number" inputMode="numeric" value={form.bedrooms} onChange={(value) => setField("bedrooms", value)} error={fieldErrors.bedrooms} />
           <TextInput name="bathrooms" label={t('form.bathsLabel')} type="number" inputMode="numeric" value={form.bathrooms} onChange={(value) => setField("bathrooms", value)} error={fieldErrors.bathrooms} />
         </div>
-        <TextInput name="image" label={t('form.imageLabel')} type="url" value={form.image} onChange={(value) => setField("image", value)} placeholder="https://images.unsplash.com/…" error={fieldErrors.image} />
         <ChoiceGrid id="type" label={t('form.typeLabel')} value={form.type} onChange={(value) => setField("type", value)} columns="grid-cols-2 md:grid-cols-4" options={[{ value: "Apartment", label: t('types.Apartment') }, { value: "Villa", label: t('types.Villa') }, { value: "Penthouse", label: t('types.Penthouse') }, { value: "Office", label: t('types.Office') }]} error={fieldErrors.type} />
         <ChoiceGrid id="purpose" label={t('form.purposeLabel')} value={form.purpose} onChange={(value) => setField("purpose", value)} columns="grid-cols-2" options={[{ value: "sale", label: t('purposes.sale') }, { value: "rent", label: t('purposes.rent') }]} error={fieldErrors.purpose} />
         <ChoiceGrid id="status" label={t('form.statusLabel')} value={form.status} onChange={(value) => setField("status", value)} columns="grid-cols-2 md:grid-cols-5" options={[{ value: "draft", label: t('toolbar.filters.draft') }, { value: "available", label: t('toolbar.filters.available') }, { value: "pending", label: t('toolbar.filters.pending') }, { value: "reserved", label: t('toolbar.filters.reserved') }, { value: "sold", label: t('toolbar.filters.sold') }]} error={fieldErrors.status} />
@@ -325,6 +390,14 @@ export function PropertyFormScreen({ id }: { id?: string }) {
           <Textarea id="description" name="description" value={form.description} onChange={(event) => setField("description", event.target.value)} aria-invalid={Boolean(fieldErrors.description)} aria-describedby={fieldErrors.description ? "description-error" : undefined} />
           {fieldErrors.description && <p id="description-error" className="text-xs font-bold text-red-600">{fieldErrors.description}</p>}
         </div>
+        <ResourceMediaUploader
+          organizationId={account.organization.id ?? undefined}
+          resourceType="property"
+          resourceId={existing?.id}
+          pendingFiles={pendingFiles}
+          onPendingFilesChange={setPendingFiles}
+          immediate={Boolean(existing)}
+        />
         <FormActions onCancel={() => router.back()} submitLabel={existing ? t('form.saveBtn') : t('form.createBtn')} isSubmitting={saveOperation.isRunning || isSubmitting} />
       </form>
     </AppPageShell>

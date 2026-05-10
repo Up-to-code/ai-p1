@@ -10,7 +10,7 @@ type BetterAuthOrganization = {
   name?: string | null;
   slug?: string | null;
   logo?: string | null;
-  metadata?: string | null;
+  metadata?: unknown;
 };
 
 type OrganizationMetadata = {
@@ -19,8 +19,10 @@ type OrganizationMetadata = {
   sound?: string;
 };
 
-function parseMetadata(metadata?: string | null): OrganizationMetadata {
+function parseMetadata(metadata?: unknown): OrganizationMetadata {
   if (!metadata) return {};
+  if (typeof metadata === "object") return metadata as OrganizationMetadata;
+  if (typeof metadata !== "string") return {};
 
   try {
     const parsed = JSON.parse(metadata) as OrganizationMetadata;
@@ -42,17 +44,21 @@ function getInitials(value: string) {
 export function useAccountContext() {
   const session = authClient.useSession();
   const activeOrganization = authClient.useActiveOrganization();
+  const organizations = authClient.useListOrganizations();
   const { isAuthenticated } = useConvexAuth();
 
-  const authOrganization = activeOrganization.data as BetterAuthOrganization | null | undefined;
+  const listedOrganizations = (organizations.data ?? []) as BetterAuthOrganization[];
+  const authOrganization = (activeOrganization.data ?? listedOrganizations[0]) as BetterAuthOrganization | null | undefined;
   const organizationId = authOrganization?.id ?? null;
+  const shouldReadOrganizationProfile = isAuthenticated && Boolean(organizationId);
+  const shouldReadUserProfile = isAuthenticated;
   const organizationProfile = useQuery(
     api.organizations.profile.read.getProfile,
-    isAuthenticated && organizationId ? { organizationId } : "skip",
+    shouldReadOrganizationProfile && organizationId ? { organizationId } : "skip",
   );
   const userProfile = useQuery(
     api.userProfiles.read.getCurrent,
-    isAuthenticated ? {} : "skip",
+    shouldReadUserProfile ? {} : "skip",
   );
 
   return useMemo(() => {
@@ -63,15 +69,16 @@ export function useAccountContext() {
     const organizationName =
       organizationProfile?.name?.trim() ||
       authOrganization?.name?.trim() ||
-      "Personal workspace";
+      "Workspace";
     const organizationStatus = metadata.status || (organizationId ? "Active workspace" : "Workspace ready");
 
     return {
       isPending:
         session.isPending ||
         activeOrganization.isPending ||
-        Boolean(organizationId && organizationProfile === undefined) ||
-        Boolean(isAuthenticated && userProfile === undefined),
+        organizations.isPending ||
+        Boolean(shouldReadOrganizationProfile && organizationProfile === undefined) ||
+        Boolean(shouldReadUserProfile && userProfile === undefined),
       user: {
         id: user?.id ?? "",
         name: userName,
@@ -105,9 +112,11 @@ export function useAccountContext() {
     authOrganization?.slug,
     organizationId,
     organizationProfile,
+    organizations.isPending,
     session.data?.user,
     session.isPending,
-    isAuthenticated,
+    shouldReadOrganizationProfile,
+    shouldReadUserProfile,
     userProfile,
   ]);
 }

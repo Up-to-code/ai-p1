@@ -84,7 +84,7 @@ interface AppDataTableProps<T> {
 }
 
 interface AppThumbnailCellProps {
-  src: string;
+  src?: string;
   alt: string;
   title: React.ReactNode;
   meta?: React.ReactNode;
@@ -362,7 +362,11 @@ export function AppThumbnailCell({ src, alt, title, meta }: AppThumbnailCellProp
   return (
     <div className="flex min-w-0 items-center gap-3">
       <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-zinc-100 grayscale transition-colors group-hover:grayscale-0 dark:border-white/5">
-        <Image src={src} alt={alt} fill sizes="32px" className="object-cover" />
+        {src ? (
+          <Image src={src} alt={alt} fill sizes="32px" className="object-cover" />
+        ) : (
+          <div className="h-full w-full bg-zinc-100 dark:bg-white/10" />
+        )}
       </div>
       <div className="min-w-0 text-start">
         <p className="max-w-[220px] truncate text-xs font-black uppercase tracking-tight text-zinc-900 dark:text-white">{title}</p>

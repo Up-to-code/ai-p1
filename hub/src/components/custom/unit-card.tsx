@@ -59,7 +59,7 @@ export function UnitCard({
 
   return (
     <>
-      <Card className="border-zinc-200 bg-white shadow-none overflow-hidden group hover:border-zinc-300 transition-all duration-300 rounded-[20px]">
+      <Card className="group overflow-hidden rounded-[20px] border-zinc-200 bg-white shadow-none transition-all duration-300 hover:border-zinc-300 dark:border-white/5 dark:bg-[#0A0A0A] dark:hover:border-white/20">
         <div 
           onClick={() => router.push(`/properties/${reference}`)}
           className="relative h-48 overflow-hidden cursor-pointer"
@@ -72,7 +72,7 @@ export function UnitCard({
             className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-zinc-50">
+          <div className="absolute inset-0 flex items-center justify-center bg-zinc-50 dark:bg-white/5">
             <Building2 className="h-10 w-10 text-zinc-200" />
           </div>
         )}
@@ -89,7 +89,7 @@ export function UnitCard({
         </div>
       </div>
 
-      <CardContent className="space-y-5 p-5 bg-zinc-50/50">
+      <CardContent className="space-y-5 bg-zinc-50/50 p-5 dark:bg-white/[0.01]">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-bold tracking-widest text-zinc-400 uppercase">{reference}</span>
@@ -98,17 +98,17 @@ export function UnitCard({
           
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <div className="h-8 w-8 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-900 hover:bg-white transition-colors cursor-pointer border border-transparent hover:border-zinc-100">
+              <div className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-transparent text-zinc-400 transition-colors hover:border-zinc-100 hover:bg-white hover:text-zinc-900 dark:hover:border-white/10 dark:hover:bg-white/5 dark:hover:text-white">
                 <MoreHorizontal className="h-4 w-4" />
               </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="rounded-xl border-zinc-100">
+            <DropdownMenuContent align="end" className="rounded-xl border-zinc-100 dark:border-white/10">
               <DropdownMenuItem onClick={() => router.push(`/properties/${reference}/edit`)} className="rounded-lg">
                 <Edit className="w-4 h-4 me-2 text-zinc-500" />
                 Edit Unit
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-500 rounded-lg focus:bg-red-50 focus:text-red-600" onClick={() => setShowDeleteDialog(true)}>
+              <DropdownMenuItem className="rounded-lg text-red-500 focus:bg-red-50 focus:text-red-600 dark:focus:bg-red-500/10" onClick={() => setShowDeleteDialog(true)}>
                 <Trash2 className="w-4 h-4 me-2" />
                 Delete Unit
               </DropdownMenuItem>
@@ -117,35 +117,35 @@ export function UnitCard({
         </div>
 
         <div>
-          <p className="truncate text-sm font-semibold text-zinc-800">{project}</p>
-          <p className="mt-1 text-[13px] font-bold text-zinc-900">{price}</p>
+          <p className="truncate text-sm font-semibold text-zinc-800 dark:text-zinc-200">{project}</p>
+          <p className="mt-1 text-[13px] font-bold text-zinc-900 dark:text-white">{price}</p>
         </div>
 
         <div className="grid grid-cols-3 gap-4 pt-1">
           <div className="space-y-1">
             <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Type</p>
-            <p className="mt-0.5 flex items-center gap-1.5 text-[13px] font-semibold text-zinc-800">
+            <p className="mt-0.5 flex items-center gap-1.5 text-[13px] font-semibold text-zinc-800 dark:text-zinc-200">
               <Building2 className="h-3.5 w-3.5 text-zinc-400" />
               <span className="truncate">{type}</span>
             </p>
           </div>
           <div className="space-y-1">
             <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Area</p>
-            <p className="mt-0.5 flex items-center gap-1.5 text-[13px] font-semibold text-zinc-800">
+            <p className="mt-0.5 flex items-center gap-1.5 text-[13px] font-semibold text-zinc-800 dark:text-zinc-200">
               <Ruler className="h-3.5 w-3.5 text-zinc-400" />
               <span className="truncate">{area}</span>
             </p>
           </div>
           <div className="space-y-1">
             <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Rooms</p>
-            <p className="mt-0.5 flex items-center gap-1.5 text-[13px] font-semibold text-zinc-800">
+            <p className="mt-0.5 flex items-center gap-1.5 text-[13px] font-semibold text-zinc-800 dark:text-zinc-200">
               <BedDouble className="h-3.5 w-3.5 text-zinc-400" />
               {bedrooms}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t border-zinc-100 pt-4">
+        <div className="flex items-center justify-between border-t border-zinc-100 pt-4 dark:border-white/5">
           <p className="text-[11px] font-medium text-zinc-400">Updated {updated}</p>
           <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
         </div>

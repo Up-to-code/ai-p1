@@ -31,7 +31,7 @@ export function FileUploadZone({ label, description, className }: FileUploadZone
           }
         }}
       >
-        <div className="w-12 h-12 rounded-xl bg-white dark:bg-[#0A0A0A] border border-zinc-200 dark:border-white/10 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform shadow-sm">
+        <div className="w-12 h-12 rounded-xl bg-white dark:bg-[#0A0A0A] border border-zinc-200 dark:border-white/10 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
           <UploadCloud className="w-5 h-5 text-zinc-400 group-hover:text-blue-600 transition-colors" />
         </div>
         <p className="text-[11px] font-black uppercase tracking-widest text-zinc-900 dark:text-white mb-2">{t("uploadOrDrag")}</p>

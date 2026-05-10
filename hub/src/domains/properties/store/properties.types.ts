@@ -4,16 +4,20 @@ export interface PropertyUnit {
   id: string;
   title: string;
   reference: string;
+  projectId?: string;
   project: string;
   city: string;
   type: string;
-  image: string;
+  image?: string;
+  coverImageUrl?: string;
   status: PropertyStatus;
   purpose: "sale" | "rent";
   price: string;
   area: string;
   bedrooms: number | string;
   bathrooms: number;
-  updated: string;
+  updated?: string;
+  updatedAt?: number;
+  createdAt?: number;
   description: string;
 }

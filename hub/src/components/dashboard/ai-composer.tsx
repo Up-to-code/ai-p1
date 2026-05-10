@@ -204,7 +204,7 @@ export default function AiComposer({
                 className={cn(
                   "flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 active:scale-90",
                   isTyping
-                    ? "bg-blue-600 text-white shadow-none shadow-blue-500/20 hover:bg-blue-700"
+                    ? "bg-blue-600 text-white hover:bg-blue-700"
                     : "bg-zinc-200 text-zinc-400 dark:bg-zinc-700 dark:text-zinc-500"
                 )}
               >

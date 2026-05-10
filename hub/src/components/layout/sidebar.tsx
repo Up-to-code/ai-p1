@@ -9,8 +9,6 @@ import {
   History as HistoryIcon,
   Building,
   CalendarDays,
-  Sun,
-  Moon,
   MoreHorizontal,
   Menu,
   Mail,
@@ -20,15 +18,14 @@ import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslations, useLocale } from 'next-intl';
 import { useSidebar } from "./sidebar-context";
-import { useState } from "react";
 import { useAccountContext } from "@/domains/auth";
+import { useTheme } from "@/components/providers/theme-provider";
 
 const navigationGroups = [
   {
     label: "workspace",
     items: [
       { name: "dashboard", href: "/dashboard", icon: House },
-      { name: "activity", href: "/activity", icon: HistoryIcon },
     ],
   },
   {
@@ -44,10 +41,21 @@ const navigationGroups = [
     label: "administration",
     items: [
       { name: "organization", href: "/settings/organization", icon: Landmark },
+      { name: "activity", href: "/activity", icon: HistoryIcon },
       { name: "integrations", href: "/integrations", icon: Plug },
     ],
   },
 ];
+
+function isGeneratedOrganizationName(value: string) {
+  const normalized = value.trim();
+
+  return (
+    normalized.length > 18 &&
+    /^[a-z0-9_-]+$/i.test(normalized) &&
+    /[0-9]/.test(normalized)
+  );
+}
 
 export function Sidebar() {
   const t = useTranslations('Sidebar');
@@ -55,9 +63,11 @@ export function Sidebar() {
   const isRtl = locale === 'ar';
   const pathname = usePathname();
   const { isCollapsed, toggleCollapsed } = useSidebar();
+  const { isDark: isDarkMode } = useTheme();
   const account = useAccountContext();
-  
-  const [isDarkMode, setIsDarkMode] = useState(false); // Default to Light Mode as per request
+  const organizationDisplayName =
+    account.organization.legalName?.trim() ||
+    (!isGeneratedOrganizationName(account.organization.name) ? account.organization.name : locale === "ar" ? "المؤسسة" : "Organization");
 
   return (
     <aside
@@ -160,20 +170,7 @@ export function Sidebar() {
         isDarkMode ? "border-white/5" : "border-zinc-100"
       )}>
 
-        <div className="p-3 pt-0 space-y-3">
-          <div className={cn(
-            "flex items-center border rounded-full p-1",
-            isDarkMode ? "bg-zinc-900/50 border-white/10" : "bg-zinc-100 border-zinc-200",
-            isCollapsed ? "flex-col gap-1 w-10 mx-auto" : "justify-between px-1"
-          )}>
-            <button onClick={() => setIsDarkMode(false)} className={cn("h-8 flex items-center justify-center rounded-full transition-all", !isDarkMode ? "bg-white text-zinc-900 shadow-none" : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white", isCollapsed ? "w-8" : "flex-1")}>
-              <Sun className="h-4 w-4" />
-            </button>
-            <button onClick={() => setIsDarkMode(true)} className={cn("h-8 flex items-center justify-center rounded-full transition-all", isDarkMode ? "bg-white text-zinc-900 shadow-none" : "text-zinc-500 hover:text-white", isCollapsed ? "w-8" : "flex-1")}>
-              <Moon className="h-4 w-4" />
-            </button>
-          </div>
-
+        <div className="space-y-3 p-3 pt-3">
           <Tooltip>
             <TooltipTrigger
               render={
@@ -193,10 +190,19 @@ export function Sidebar() {
                     >
                       <div className="flex items-start gap-2.5">
                         <div className={cn(
-                          "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl",
+                          "flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl text-[10px] font-black uppercase",
                           isDarkMode ? "bg-white/10 text-white" : "bg-zinc-100 text-zinc-900"
                         )}>
-                          <Building2 className="h-4 w-4" />
+                          {account.organization.logo ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={account.organization.logo}
+                              alt={organizationDisplayName}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            account.organization.initials || <Building2 className="h-4 w-4" />
+                          )}
                         </div>
                         <div className="min-w-0 flex-1">
                           <p
@@ -204,9 +210,9 @@ export function Sidebar() {
                               "truncate text-[13px] font-black tracking-tight",
                               isDarkMode ? "text-white" : "text-zinc-900"
                             )}
-                            title={account.organization.name}
+                            title={organizationDisplayName}
                           >
-                            {account.organization.name}
+                            {organizationDisplayName}
                           </p>
                           <div className="mt-1 flex items-center gap-1.5">
                             <ShieldCheck className="h-3 w-3 shrink-0 text-emerald-500" />
@@ -215,9 +221,9 @@ export function Sidebar() {
                                 "truncate text-[10px] font-bold uppercase tracking-wider",
                                 isDarkMode ? "text-zinc-500" : "text-zinc-400"
                               )}
-                              title={account.organization.status}
+                              title={locale === "ar" ? "إعدادات المؤسسة" : "Organization settings"}
                             >
-                              {account.organization.status}
+                              {locale === "ar" ? "إعدادات المؤسسة" : "Organization settings"}
                             </span>
                           </div>
                         </div>
@@ -252,8 +258,8 @@ export function Sidebar() {
                             <span className={cn(
                               "hidden max-w-[6.5rem] shrink-0 truncate rounded-full px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider sm:inline-flex",
                               isDarkMode ? "bg-white/10 text-zinc-400" : "bg-zinc-100 text-zinc-500"
-                            )} title={account.organization.type || account.organization.status}>
-                              {account.organization.type || account.organization.status}
+                            )} title={organizationDisplayName}>
+                              {locale === "ar" ? "فريق" : "Team"}
                             </span>
                           </div>
                           <div className="mt-1 flex min-w-0 items-center gap-1.5">
@@ -284,7 +290,7 @@ export function Sidebar() {
                 <div className="space-y-1">
                   <p className="truncate text-xs font-bold">{account.user.name}</p>
                   <p className="truncate text-[11px] text-zinc-400">{account.user.email}</p>
-                  <p className="truncate text-[10px] uppercase tracking-wider text-zinc-500">{account.organization.name}</p>
+                  <p className="truncate text-[10px] uppercase tracking-wider text-zinc-500">{organizationDisplayName}</p>
                 </div>
               </TooltipContent>
             )}

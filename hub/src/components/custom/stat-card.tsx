@@ -16,7 +16,7 @@ export function StatCard({ label, value, trend, icon, className }: StatCardProps
         {icon && <div className="text-zinc-300">{icon}</div>}
       </div>
       <div className="flex items-baseline gap-3">
-        <div className="text-3xl font-bold text-zinc-900 tracking-tight">{value}</div>
+        <div className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">{value}</div>
         {trend && (
           <span className="text-[11px] font-bold text-emerald-500 uppercase tracking-wider">
             {trend}

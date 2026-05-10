@@ -326,7 +326,7 @@ export function WizardActions({
       <AppPrimaryButton 
         onClick={onNext} 
         disabled={isSubmitting} 
-        className="h-12 w-full rounded-[20px] shadow-[0_8px_16px_rgba(0,0,0,0.08)] transition-all hover:scale-[1.01] active:scale-[0.99]"
+        className="h-12 w-full rounded-[20px] shadow-none transition-all hover:scale-[1.01] active:scale-[0.99]"
       >
         {isLastStep ? t('finish') : (nextLabel || t('next'))}
       </AppPrimaryButton>
@@ -406,7 +406,7 @@ export function FormActions({
   const t = useTranslations('Common');
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <AppPrimaryButton type="submit" disabled={isSubmitting} className="h-11 px-10 shadow-[0_8px_16px_rgba(0,0,0,0.08)]">
+      <AppPrimaryButton type="submit" disabled={isSubmitting} className="h-11 px-10 shadow-none">
         {submitLabel || t('save')}
       </AppPrimaryButton>
       <Button 
@@ -518,7 +518,7 @@ export function SegmentedControl<TValue extends string>({
               className={cn(
                 "flex flex-1 items-center justify-center gap-2 rounded-lg text-xs font-bold transition-all duration-200",
                 isActive
-                  ? "bg-white text-zinc-900 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:bg-white/10 dark:text-white"
+                  ? "bg-white text-zinc-900 dark:bg-white/10 dark:text-white"
                   : "text-zinc-400 hover:bg-white/50 hover:text-zinc-600 dark:hover:bg-white/5 dark:hover:text-zinc-300"
               )}
             >

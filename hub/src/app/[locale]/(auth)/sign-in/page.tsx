@@ -3,13 +3,19 @@
 import { Link } from "@/i18n/routing";
 import { LogIn, ChevronLeft, ShieldCheck, Gavel } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { createLocaleAuthCallbackUrl, useGoogleSignIn } from "@/domains/auth";
 
 export default function SignInPage() {
   const t = useTranslations("signin");
   const locale = useLocale();
+  const searchParams = useSearchParams();
+  const requestedCallback = searchParams.get("callbackURL");
+  const callbackURL = requestedCallback?.startsWith(`/${locale}/`)
+    ? requestedCallback
+    : createLocaleAuthCallbackUrl(locale, "/choose-org");
   const googleSignIn = useGoogleSignIn({
-    callbackURL: createLocaleAuthCallbackUrl(locale, "/choose-org"),
+    callbackURL,
   });
 
   return (
@@ -29,7 +35,7 @@ export default function SignInPage() {
 
       <div className="relative z-10 w-full max-w-sm space-y-12 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
         <div className="space-y-10">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[24px] bg-blue-600 shadow-2xl shadow-blue-500/20 transition-transform hover:scale-105">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[24px] bg-blue-600 transition-transform hover:scale-105">
             <LogIn className="h-10 w-10 text-white" />
           </div>
           <div className="space-y-4">
@@ -46,7 +52,7 @@ export default function SignInPage() {
           <button
             onClick={googleSignIn.signIn}
             disabled={googleSignIn.isPending}
-            className="group relative flex h-16 w-full items-center justify-center gap-4 overflow-hidden rounded-[32px] bg-zinc-900 text-white transition-all hover:bg-black active:scale-[0.98] disabled:opacity-50 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 shadow-2xl shadow-zinc-900/20 dark:shadow-white/10"
+            className="group relative flex h-16 w-full items-center justify-center gap-4 overflow-hidden rounded-[32px] bg-zinc-900 text-white transition-all hover:bg-black active:scale-[0.98] disabled:opacity-50 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
           >
             <div className="flex items-center gap-4 font-black uppercase tracking-[0.2em] text-[11px]">
               <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">

@@ -1,10 +1,21 @@
 import { apiClient } from "@/lib/api/client";
-import type { OrganizationProfile } from "../store/organization.types";
 import type { UpdateOrganizationProfileValues } from "../validation/organization.schema";
 
-interface UpdateOrganizationProfileResponse {
+export type OrganizationProfile = {
+  organizationId: string;
+  name: string;
+  legalName: string;
+  type: string;
+  email: string;
+  phone: string;
+  website: string;
+  address: string;
+  updatedAt: number;
+};
+
+type UpdateOrganizationProfileResponse = {
   profile: OrganizationProfile;
-}
+};
 
 // Frontend writes go through Hono so business authorization never lives in UI code.
 export async function updateOrganizationProfileRequest(

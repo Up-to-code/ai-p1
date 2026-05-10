@@ -8,11 +8,14 @@ export interface Project {
   city: string;
   area: string;
   type: string;
-  image: string;
+  image?: string;
+  coverImageUrl?: string;
   status: ProjectStatus;
   syncState: "draft" | "blocked" | "synced";
   units: number;
   priceRange: string;
-  updated: string;
+  updated?: string;
+  updatedAt?: number;
+  createdAt?: number;
   description: string;
 }

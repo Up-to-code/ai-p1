@@ -9,7 +9,6 @@ export const projectSchema = z.object({
   city: requiredText("City"),
   area: requiredText("Area"),
   type: requiredText("Project type"),
-  image: z.string().trim().url("Use a valid image URL."),
   status: z.enum(["draft", "pending", "approved", "rejected"]),
   units: nonNegativeIntegerText("Units"),
   priceRange: requiredText("Price range"),
@@ -22,7 +21,6 @@ export interface ProjectFormValues {
   city: string;
   area: string;
   type: string;
-  image: string;
   status: "draft" | "pending" | "approved" | "rejected";
   units: string;
   priceRange: string;

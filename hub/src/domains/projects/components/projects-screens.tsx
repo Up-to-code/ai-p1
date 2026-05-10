@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BarChart3, Building2, Copy, Edit, FileText, FolderOpen, History, MapPin, Plus, Share2, Trash2, TrendingUp, UploadCloud } from "lucide-react";
+import { BarChart3, Building2, Copy, Edit, FileText, FolderOpen, History, MapPin, Plus, Share2, Trash2, TrendingUp } from "lucide-react";
 import {
   AppDataTable,
   AppPageHeader,
@@ -17,15 +17,16 @@ import {
   type AppDataTableColumn,
 } from "@/components/shared";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Link, useRouter } from "@/i18n/routing";
 import { useAccountContext } from "@/domains/auth";
-import { useProjectsStore } from "@/domains/projects";
-import { usePropertiesStore } from "@/domains/properties";
 import type { Project, ProjectStatus } from "../store/projects.types";
 import { projectSchema, type ProjectFormValues } from "../validation/project.schema";
+import { createProjectRequest, deleteProjectRequest, updateProjectRequest, useProjectQuery, useProjectsQuery } from "../api/projects";
+import { usePropertiesQuery } from "@/domains/properties/api/properties";
+import { ResourceMediaUploader } from "@/domains/media/components/resource-media-uploader";
+import { uploadAndAttachMedia } from "@/domains/media/api/media";
 import { useOperationState } from "@/lib/utils/operation-state";
 import { SearchBox, StatusPill, TextInput, ChoiceGrid, DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, FormErrorSummary, WizardActions } from "@/components/shared/crud-ui";
 import { useUrlListState } from "@/components/shared/use-url-list-state";
@@ -47,7 +48,13 @@ function ProjectTile({ project, onDelete }: { project: Project; onDelete: (proje
   return (
     <article className="group overflow-hidden rounded-[24px] border border-zinc-100 bg-white transition-colors hover:border-zinc-300 dark:border-white/5 dark:bg-[#0A0A0A]">
       <Link href={`/projects/${project.id}`} className="relative block h-44 w-full overflow-hidden bg-zinc-100 text-start focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:bg-white/5">
-        <Image src={project.image} alt={project.name} fill sizes="(max-width: 768px) 100vw, 360px" className="object-cover opacity-80 grayscale transition-transform duration-700 group-hover:scale-105 group-hover:grayscale-0" />
+        {project.coverImageUrl ? (
+          <Image src={project.coverImageUrl} alt={project.name} fill sizes="(max-width: 768px) 100vw, 360px" className="object-cover opacity-80 grayscale transition-transform duration-700 group-hover:scale-105 group-hover:grayscale-0" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-300 dark:bg-white/5 dark:text-white/20">
+            <Building2 className="h-8 w-8" />
+          </div>
+        )}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4">
           <h3 className="truncate text-sm font-black uppercase tracking-tight text-white">{project.name}</h3>
           <p className="mt-1 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-white/60">
@@ -87,7 +94,12 @@ function ProjectTile({ project, onDelete }: { project: Project; onDelete: (proje
 
 export function ProjectsWorkspace() {
   const t = useTranslations('Projects');
-  const { projects, filter, search, view, setFilter, setSearch, setView, deleteProject } = useProjectsStore();
+  const account = useAccountContext();
+  const projectsQuery = useProjectsQuery(account.organization.id ?? undefined);
+  const projects = useMemo(() => (projectsQuery ?? []) as Project[], [projectsQuery]);
+  const [filter, setFilter] = useState<(typeof projectFilters)[number]>("all");
+  const [search, setSearch] = useState("");
+  const [view, setView] = useState<(typeof projectViews)[number]>("grid");
   const [deleting, setDeleting] = useState<Project | null>(null);
   const deleteOperation = useOperationState({ errorMessage: "Project delete failed." });
 
@@ -97,7 +109,7 @@ export function ProjectsWorkspace() {
     view,
     setFilter,
     setSearch,
-    setView,
+    setView: (next) => setView(next as (typeof projectViews)[number]),
     defaultFilter: "all",
     defaultView: "grid",
     validFilters: projectFilters,
@@ -116,7 +128,7 @@ export function ProjectsWorkspace() {
       key: "name",
       header: t('form.nameLabel'),
       render: (project) => (
-        <AppThumbnailCell src={project.image} alt={project.name} title={project.name} meta={<span className="inline-flex items-center gap-1"><MapPin className="h-2.5 w-2.5" />{project.city}</span>} />
+        <AppThumbnailCell src={project.coverImageUrl} alt={project.name} title={project.name} meta={<span className="inline-flex items-center gap-1"><MapPin className="h-2.5 w-2.5" />{project.city}</span>} />
       ),
     },
     { key: "reference", header: t('detail.labels.ref') },
@@ -161,7 +173,7 @@ export function ProjectsWorkspace() {
         activeFilter={filter}
         onFilterChange={(next) => setFilter(next as "all" | ProjectStatus)}
         view={view}
-        onViewChange={setView}
+        onViewChange={(next) => setView(next as (typeof projectViews)[number])}
         sortLabel={t('toolbar.newest')}
         trailing={<SearchBox value={search} onChange={setSearch} placeholder={t('toolbar.search')} name="project-search" ariaLabel="Search projects" />}
       />
@@ -191,7 +203,8 @@ export function ProjectsWorkspace() {
           if (!deleting || !projects.some((project) => project.id === deleting.id)) {
             throw new Error("This project is no longer available.");
           }
-          deleteProject(deleting.id);
+          if (!account.organization.id) throw new Error("Select an organization first.");
+          return deleteProjectRequest(account.organization.id, deleting.id);
         }, {
           successMessage: "Project deleted.",
           onSuccess: () => setDeleting(null),
@@ -205,10 +218,10 @@ export function ProjectDetailScreen({ id }: { id: string }) {
   const t = useTranslations('Projects');
   const td = useTranslations('ProjectDetails');
   const account = useAccountContext();
-  const project = useProjectsStore((state) => state.getById(id));
-  const deleteProject = useProjectsStore((state) => state.deleteProject);
-  const allUnits = usePropertiesStore((state) => state.units);
-  const units = useMemo(() => allUnits.filter(u => u.project === project?.name), [allUnits, project?.name]);
+  const project = useProjectQuery(account.organization.id ?? undefined, id) as Project | null | undefined;
+  const allUnitsQuery = usePropertiesQuery(account.organization.id ?? undefined);
+  const allUnits = useMemo(() => allUnitsQuery ?? [], [allUnitsQuery]);
+  const units = useMemo(() => allUnits.filter(u => u.projectId === id || u.project === project?.name), [allUnits, id, project?.name]);
   const unitColumns = useMemo((): AppDataTableColumn<(typeof units)[0]>[] => [
     { key: "reference", header: td('inventory.cols.ref') },
     { key: "type", header: td('inventory.cols.type') },
@@ -230,6 +243,10 @@ export function ProjectDetailScreen({ id }: { id: string }) {
   const [deleting, setDeleting] = useState(false);
   const router = useRouter();
   const deleteOperation = useOperationState({ errorMessage: "Project delete failed." });
+
+  if (project === undefined) {
+    return <AppPageShell><EmptyWorkspace icon={FolderOpen} title="Loading project" description="Project data is syncing from Convex." /></AppPageShell>;
+  }
 
   if (!project) {
     return <AppPageShell><DetailNotFoundState title={t('detail.notFound')} description={t('detail.notFoundDesc')} backHref="/projects" backLabel={t('detail.back')} /></AppPageShell>;
@@ -260,7 +277,13 @@ export function ProjectDetailScreen({ id }: { id: string }) {
 
         <TabsContent value="details" className="space-y-10">
           <div className="relative min-h-[360px] overflow-hidden rounded-[32px] border border-zinc-100 bg-zinc-100 dark:border-white/5">
-            <Image src={project.image} alt={project.name} fill priority sizes="100vw" className="object-cover grayscale" />
+            {project.coverImageUrl ? (
+              <Image src={project.coverImageUrl} alt={project.name} fill priority sizes="100vw" className="object-cover grayscale" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-300 dark:bg-white/5 dark:text-white/20">
+                <Building2 className="h-12 w-12" />
+              </div>
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/10" />
             <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
               <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
@@ -351,32 +374,16 @@ export function ProjectDetailScreen({ id }: { id: string }) {
         </TabsContent>
 
         <TabsContent value="documents" className="space-y-6">
-          <AppSection title={td('documents.title')} description={td('documents.subtitle')} actions={<UploadDialog />}>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {[
-                { id: 'commercial', label: t('detail.docs.items.commercial'), size: "2.4 MB", type: "PDF" },
-                { id: 'titleDeed', label: t('detail.docs.items.titleDeed'), size: "1.8 MB", type: "PDF" },
-                { id: 'mediaPack', label: t('detail.docs.items.mediaPack'), size: "450 MB", type: "ZIP" },
-                { id: 'architectural', label: "Architectural Plans", size: "12 MB", type: "DWG" },
-              ].map((doc) => (
-                <div key={doc.id} className="group relative rounded-2xl border border-zinc-100 p-5 dark:border-white/5 transition-all hover:border-zinc-300 dark:hover:border-white/20">
-                  <div className="flex items-start justify-between">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-50 dark:bg-white/[0.02]">
-                      <FileText className="h-5 w-5 text-zinc-400" />
-                    </div>
-                    <StatusPill label={td('documents.readyForDeployment')} tone="success" />
-                  </div>
-                  <div className="mt-4">
-                    <p className="text-[11px] font-black uppercase tracking-widest text-zinc-900 dark:text-white">{doc.label}</p>
-                    <div className="mt-1 flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">
-                      <span>{doc.type}</span>
-                      <span>•</span>
-                      <span>{doc.size}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <AppSection title={td('documents.title')} description={td('documents.subtitle')}>
+            <ResourceMediaUploader
+              organizationId={account.organization.id ?? undefined}
+              resourceType="project"
+              resourceId={project.id}
+              pendingFiles={[]}
+              onPendingFilesChange={() => undefined}
+              immediate
+              labels={{ title: td('documents.title'), description: td('documents.subtitle') }}
+            />
           </AppSection>
         </TabsContent>
 
@@ -452,7 +459,8 @@ export function ProjectDetailScreen({ id }: { id: string }) {
         isDeleting={deleteOperation.isRunning}
         error={deleteOperation.error}
         onConfirm={() => deleteOperation.run(() => {
-          deleteProject(project.id);
+          if (!account.organization.id) throw new Error("Select an organization first.");
+          return deleteProjectRequest(account.organization.id, project.id);
         }, {
           successMessage: "Project deleted.",
           onSuccess: () => {
@@ -465,47 +473,12 @@ export function ProjectDetailScreen({ id }: { id: string }) {
   );
 }
 
-function UploadDialog() {
-  const t = useTranslations('Projects');
-  return (
-    <Dialog>
-      <DialogTrigger render={<Button variant="outline" className="h-10 rounded-xl text-[10px] font-black uppercase tracking-widest"><UploadCloud className="me-2 h-3.5 w-3.5" />{t('detail.docs.upload')}</Button>} />
-      <DialogContent className="max-w-lg rounded-[32px] border-zinc-100 bg-white p-8 shadow-none dark:border-white/5 dark:bg-[#0A0A0A]">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-black uppercase tracking-tight">{t('upload.title')}</DialogTitle>
-          <DialogDescription className="text-xs font-medium uppercase leading-relaxed tracking-tight">{t('upload.desc')}</DialogDescription>
-        </DialogHeader>
-        <div 
-          className="rounded-[24px] border border-dashed border-zinc-200 p-10 text-center dark:border-white/10 transition-colors hover:border-zinc-400 dark:hover:border-white/20"
-          onDragOver={(e) => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = "copy";
-          }}
-          onDrop={(e) => {
-            e.preventDefault();
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-              console.log(`Dropped ${files.length} files.`);
-            }
-          }}
-        >
-          <UploadCloud className="mx-auto h-8 w-8 text-zinc-300" />
-          <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('upload.drop')}</p>
-        </div>
-        <DialogFooter>
-          <AppPrimaryButton>{t('upload.attach')}</AppPrimaryButton>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 export function ProjectFormScreen({ id }: { id?: string }) {
   const t = useTranslations('Projects');
-  const existing = useProjectsStore((state) => (id ? state.getById(id) : undefined));
-  const createProject = useProjectsStore((state) => state.createProject);
-  const updateProject = useProjectsStore((state) => state.updateProject);
+  const account = useAccountContext();
+  const existing = useProjectQuery(account.organization.id ?? undefined, id ?? "") as Project | null | undefined;
   const router = useRouter();
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   
   const [step, setStep] = useState(1);
   const totalSteps = 3;
@@ -518,7 +491,6 @@ export function ProjectFormScreen({ id }: { id?: string }) {
       city: existing?.city ?? "",
       area: existing?.area ?? "",
       type: existing?.type ?? "Residential",
-      image: existing?.image ?? "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=800&auto=format&fit=crop",
       status: existing?.status ?? "draft" as ProjectStatus,
       units: String(existing?.units ?? 0),
       priceRange: existing?.priceRange ?? "",
@@ -536,13 +508,21 @@ export function ProjectFormScreen({ id }: { id?: string }) {
   };
 
   const onSubmit = handleSubmit((data) => {
-    saveOperation.run(() => {
-      const payload = { ...data, units: Number(data.units), syncState: existing?.syncState ?? "draft" as const };
-      if (existing) {
-        updateProject(existing.id, payload);
-        return existing.id;
+    saveOperation.run(async () => {
+      if (!account.organization.id) throw new Error("Select an organization first.");
+      const result = existing
+        ? await updateProjectRequest(account.organization.id, existing.id, data)
+        : await createProjectRequest(account.organization.id, data);
+      const nextId = result.project.id;
+      if (pendingFiles.length > 0) {
+        await uploadAndAttachMedia({
+          organizationId: account.organization.id,
+          resourceType: "project",
+          resourceId: nextId,
+          files: pendingFiles,
+        });
       }
-      return createProject(payload).id;
+      return nextId;
     }, {
       successMessage: existing ? "Project saved." : "Project created.",
       onSuccess: (nextId) => router.push(`/projects/${nextId}`),
@@ -560,66 +540,53 @@ export function ProjectFormScreen({ id }: { id?: string }) {
   };
 
   return (
-    <AppPageShell maxWidth="default">
-      <div className="mx-auto max-w-2xl pt-10">
-        <AppPageHeader 
-          eyebrow={t('form.eyebrow')} 
-          title={existing ? t('form.editTitle') : t('form.createTitle')} 
-          subtitle={t('form.subtitle')}
-          className="border-none pb-0 mb-12"
-        />
-        
-        {/* Institutional Progress Tracking */}
-        <div className="mb-12 flex items-center gap-4">
-          <div className="h-1 flex-1 overflow-hidden rounded-full bg-zinc-100 dark:bg-white/5">
-            <div 
-              className="h-full bg-zinc-900 transition-all duration-700 ease-out dark:bg-white shadow-[0_0_8px_rgba(0,0,0,0.1)]" 
-              style={{ width: `${(step / totalSteps) * 100}%` }} 
-            />
-          </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
-            {step} <span className="opacity-30">/</span> {totalSteps}
-          </span>
-        </div>
+    <AppPageShell maxWidth="wide" contentClassName="space-y-8">
+      <AppPageHeader
+        eyebrow={t("form.eyebrow")}
+        title={existing ? t("form.editTitle") : t("form.createTitle")}
+        subtitle={t("form.subtitle")}
+        className="pb-8"
+      />
 
-        <div className="space-y-12 pb-20">
+      <div className="grid gap-8 xl:grid-cols-[minmax(0,680px)_minmax(360px,1fr)] xl:items-start">
+        <div className="space-y-6">
+          <ProjectFormProgress step={step} totalSteps={totalSteps} labels={[t("form.stepIdentity"), t("form.stepLocation"), t("form.stepContext")]} />
           <FormErrorSummary errors={fieldErrors} />
-          
-          <div className="min-h-[400px]">
+
+          <div className="min-h-[440px]">
             {step === 1 && (
-              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <AppSection title="Identity & Ownership" description="Define the fundamental metadata for this real estate asset.">
-                  <div className="space-y-6">
-                    <TextInput name="name" label={t('form.nameLabel')} value={form.name} onChange={(value) => setField("name", value)} placeholder="Al Madinah Residences…" error={fieldErrors.name} />
-                    <TextInput name="developer" label={t('form.devLabel')} value={form.developer} onChange={(value) => setField("developer", value)} placeholder="Acme Development…" error={fieldErrors.developer} />
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <AppSection title={t("form.identityTitle")} description={t("form.identityDesc")}>
+                  <div className="grid gap-5 md:grid-cols-2">
+                    <TextInput name="name" label={t("form.nameLabel")} value={form.name} onChange={(value) => setField("name", value)} placeholder="Al Madinah Residences…" error={fieldErrors.name} />
+                    <TextInput name="developer" label={t("form.devLabel")} value={form.developer} onChange={(value) => setField("developer", value)} placeholder="Acme Development…" error={fieldErrors.developer} />
                   </div>
                 </AppSection>
               </div>
             )}
 
             {step === 2 && (
-              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <AppSection title="Location & Logistics" description="Specify the geographic coordinates and operational scale.">
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <TextInput name="city" label={t('form.cityLabel')} value={form.city} onChange={(value) => setField("city", value)} placeholder="Riyadh…" error={fieldErrors.city} />
-                    <TextInput name="area" label={t('form.areaLabel')} value={form.area} onChange={(value) => setField("area", value)} placeholder="Al Malqa…" error={fieldErrors.area} />
-                    <TextInput name="units" label={t('form.unitsLabel')} type="number" inputMode="numeric" value={form.units} onChange={(value) => setField("units", value)} error={fieldErrors.units} />
-                    <TextInput name="priceRange" label={t('form.priceLabel')} value={form.priceRange} onChange={(value) => setField("priceRange", value)} placeholder="850K SAR…" error={fieldErrors.priceRange} />
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <AppSection title={t("form.locationTitle")} description={t("form.locationDesc")}>
+                  <div className="grid gap-5 md:grid-cols-2">
+                    <TextInput name="city" label={t("form.cityLabel")} value={form.city} onChange={(value) => setField("city", value)} placeholder="Riyadh…" error={fieldErrors.city} />
+                    <TextInput name="area" label={t("form.areaLabel")} value={form.area} onChange={(value) => setField("area", value)} placeholder="Al Malqa…" error={fieldErrors.area} />
+                    <TextInput name="units" label={t("form.unitsLabel")} type="number" inputMode="numeric" value={form.units} onChange={(value) => setField("units", value)} error={fieldErrors.units} />
+                    <TextInput name="priceRange" label={t("form.priceLabel")} value={form.priceRange} onChange={(value) => setField("priceRange", value)} placeholder="850K SAR…" error={fieldErrors.priceRange} />
                   </div>
                 </AppSection>
               </div>
             )}
 
             {step === 3 && (
-              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <AppSection title="Context & Aesthetics" description="Finalize the asset classification and visual representation.">
-                  <div className="space-y-8">
-                    <ChoiceGrid id="type" label={t('form.typeLabel')} value={form.type} onChange={(value) => setField("type", value)} columns="grid-cols-3" options={[{ value: "Residential", label: t('types.Residential') }, { value: "Commercial", label: t('types.Commercial') }, { value: "Mixed Use", label: t('types.Mixed Use') }]} error={fieldErrors.type} />
-                    <ChoiceGrid id="status" label={t('form.statusLabel')} value={form.status} onChange={(value) => setField("status", value)} columns="grid-cols-2 md:grid-cols-4" options={[{ value: "draft", label: t('toolbar.filters.draft') }, { value: "pending", label: t('toolbar.filters.pending') }, { value: "approved", label: t('toolbar.filters.approved') }, { value: "rejected", label: t('toolbar.filters.rejected') }]} error={fieldErrors.status} />
-                    <TextInput name="image" label={t('form.imageLabel')} type="url" value={form.image} onChange={(value) => setField("image", value)} placeholder="https://images.unsplash.com/…" error={fieldErrors.image} />
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <AppSection title={t("form.contextTitle")} description={t("form.contextDesc")}>
+                  <div className="space-y-7">
+                    <ChoiceGrid id="type" label={t("form.typeLabel")} value={form.type} onChange={(value) => setField("type", value)} columns="grid-cols-3" options={[{ value: "Residential", label: t("types.Residential") }, { value: "Commercial", label: t("types.Commercial") }, { value: "Mixed Use", label: t("types.Mixed Use") }]} error={fieldErrors.type} />
+                    <ChoiceGrid id="status" label={t("form.statusLabel")} value={form.status} onChange={(value) => setField("status", value)} columns="grid-cols-2 md:grid-cols-4" options={[{ value: "draft", label: t("toolbar.filters.draft") }, { value: "pending", label: t("toolbar.filters.pending") }, { value: "approved", label: t("toolbar.filters.approved") }, { value: "rejected", label: t("toolbar.filters.rejected") }]} error={fieldErrors.status} />
                     <div className="grid gap-2">
-                      <label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('form.descLabel')}</label>
-                      <Textarea id="description" name="description" value={form.description} onChange={(event) => setField("description", event.target.value)} className="min-h-[140px] rounded-3xl border-zinc-100 bg-zinc-50/50 p-6 text-sm font-medium transition-all focus:bg-white focus:ring-4 focus:ring-zinc-900/5 dark:border-white/5 dark:bg-white/[0.02]" />
+                      <label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t("form.descLabel")}</label>
+                      <Textarea id="description" name="description" value={form.description} onChange={(event) => setField("description", event.target.value)} className="min-h-[150px] rounded-3xl border-zinc-100 bg-zinc-50/50 p-5 text-sm font-medium transition-all focus:bg-white focus:ring-4 focus:ring-zinc-900/5 dark:border-white/5 dark:bg-white/[0.02]" />
                     </div>
                   </div>
                 </AppSection>
@@ -627,15 +594,106 @@ export function ProjectFormScreen({ id }: { id?: string }) {
             )}
           </div>
 
-          <WizardActions 
-            onNext={nextStep} 
-            onBack={prevStep} 
+          <ResourceMediaUploader
+            organizationId={account.organization.id ?? undefined}
+            resourceType="project"
+            resourceId={existing?.id}
+            pendingFiles={pendingFiles}
+            onPendingFilesChange={setPendingFiles}
+            immediate={Boolean(existing)}
+          />
+
+          <WizardActions
+            onNext={nextStep}
+            onBack={prevStep}
             isLastStep={step === totalSteps}
             isSubmitting={saveOperation.isRunning || isSubmitting}
-            className="mt-12"
           />
         </div>
+
+        <ProjectFormPreview form={form} />
       </div>
     </AppPageShell>
+  );
+}
+
+function ProjectFormProgress({ step, totalSteps, labels }: { step: number; totalSteps: number; labels: string[] }) {
+  return (
+    <div className="rounded-[24px] border border-zinc-100 bg-white p-4 dark:border-white/5 dark:bg-[#0A0A0A]">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{step} / {totalSteps}</span>
+        <span className="truncate text-[10px] font-black uppercase tracking-widest text-zinc-900 dark:text-white">{labels[step - 1]}</span>
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        {labels.map((label, index) => {
+          const active = index + 1 <= step;
+          return (
+            <div key={label} className="space-y-2">
+              <div className={cn("h-1.5 rounded-full transition-all", active ? "bg-zinc-900 dark:bg-white" : "bg-zinc-100 dark:bg-white/5")} />
+              <p className={cn("truncate text-[9px] font-black uppercase tracking-widest", active ? "text-zinc-900 dark:text-white" : "text-zinc-400")}>{label}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ProjectFormPreview({ form }: { form: ProjectFormValues }) {
+  const t = useTranslations("Projects");
+
+  return (
+    <aside className="sticky top-24 space-y-5">
+      <article className="overflow-hidden rounded-[28px] border border-zinc-100 bg-white dark:border-white/5 dark:bg-[#0A0A0A]">
+        <div className="relative h-64 bg-zinc-100 dark:bg-white/5">
+          <div className="flex h-full w-full items-center justify-center text-zinc-300 dark:text-white/20">
+            <Building2 className="h-10 w-10" />
+          </div>
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent p-6">
+            <p className="text-[10px] font-black uppercase tracking-widest text-white/50">{form.city || t("form.previewCity")}</p>
+            <h2 className="mt-2 truncate text-2xl font-black uppercase tracking-tight text-white">{form.name || t("form.previewName")}</h2>
+            <p className="mt-1 truncate text-xs font-bold text-white/60">{form.developer || t("form.previewDeveloper")}</p>
+          </div>
+        </div>
+
+        <div className="space-y-4 p-5">
+          <div className="flex items-center justify-between gap-3">
+            <StatusPill label={form.status || "draft"} tone={form.status === "approved" ? "success" : form.status === "pending" ? "warning" : form.status === "rejected" ? "danger" : "neutral"} />
+            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{form.type || t("types.Residential")}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <PreviewMetric label={t("card.units")} value={form.units || "0"} />
+            <PreviewMetric label={t("card.value")} value={form.priceRange || "850K SAR"} />
+          </div>
+          <p className="min-h-16 text-sm font-medium leading-relaxed text-zinc-500 dark:text-zinc-400">{form.description || t("form.previewDescription")}</p>
+        </div>
+      </article>
+
+      <div className="rounded-[24px] border border-zinc-100 bg-zinc-50/70 p-5 dark:border-white/5 dark:bg-white/[0.02]">
+        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t("form.previewChecklist")}</p>
+        <div className="mt-4 grid gap-2">
+          {[
+            [t("form.nameLabel"), form.name],
+            [t("form.cityLabel"), form.city],
+            [t("form.unitsLabel"), form.units],
+            [t("form.descLabel"), form.description],
+          ].map(([label, value]) => (
+            <div key={label} className="flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 dark:bg-[#0A0A0A]">
+              <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{label}</span>
+              <span className={cn("h-2.5 w-2.5 rounded-full", value ? "bg-emerald-500" : "bg-zinc-200 dark:bg-white/10")} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function PreviewMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl bg-zinc-50 p-4 dark:bg-white/[0.025]">
+      <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{label}</p>
+      <p className="mt-2 truncate text-lg font-black text-zinc-900 dark:text-white">{value}</p>
+    </div>
   );
 }

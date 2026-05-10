@@ -13,7 +13,7 @@ export default function OnboardingLayout({
 
       <header className="relative z-10 h-16 px-6 border-b border-zinc-100 dark:border-white/5 flex items-center shrink-0">
         <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-blue-600 text-white shadow-lg shadow-blue-500/20">
+          <div className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-blue-600 text-white">
             <Triangle className="h-4 w-4 fill-current" />
           </div>
           <span className="text-[11px] font-black uppercase tracking-widest text-zinc-900 dark:text-white">Anan Hub</span>

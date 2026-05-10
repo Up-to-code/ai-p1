@@ -489,7 +489,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
                   {units.slice(0, 3).map((u) => (
                     <Link key={u.id} href={`/properties/${u.id}`} className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-zinc-50 dark:hover:bg-white/5">
                       <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-zinc-100 dark:bg-white/5">
-                        <Image src={u.image} alt="" width={40} height={40} className="h-full w-full object-cover grayscale" />
+                        {u.image ? <Image src={u.image} alt="" width={40} height={40} className="h-full w-full object-cover grayscale" /> : null}
                       </div>
                       <div className="min-w-0 flex-1 text-start">
                         <p className="truncate text-xs font-black uppercase text-zinc-900 dark:text-white">{u.title}</p>
@@ -571,7 +571,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
                   render: (u) => (
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 overflow-hidden rounded-lg bg-zinc-100 dark:bg-white/5">
-                        <Image src={u.image} alt="" width={32} height={32} className="h-full w-full object-cover grayscale" />
+                        {u.image ? <Image src={u.image} alt="" width={32} height={32} className="h-full w-full object-cover grayscale" /> : null}
                       </div>
                       <div className="text-start">
                         <p className="text-xs font-black uppercase text-zinc-900 dark:text-white">{u.title}</p>

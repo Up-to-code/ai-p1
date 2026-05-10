@@ -1,34 +1,156 @@
 "use client";
 
-import { Activity, Clock3, ShieldAlert, ShieldCheck } from "lucide-react";
-import { AppDataTable, AppPageHeader, AppPageShell, AppStatsGrid, type AppDataTableColumn } from "@/components/shared";
-import { useActivityStore } from "@/domains/activity";
-import type { ActivityEvent } from "../store/activity.types";
-import { StatusPill } from "@/components/shared/crud-ui";
-import { useTranslations } from "next-intl";
+import { useMemo } from "react";
+import { useQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
+import { Activity, Building2, Clock3, History, Users } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import {
+  AppDataTable,
+  AppPageHeader,
+  AppPageShell,
+  AppStatsGrid,
+  type AppDataTableColumn,
+} from "@/components/shared";
+import { EmptyWorkspace, StatusPill } from "@/components/shared/crud-ui";
+import { useAccountContext } from "@/domains/auth";
+
+type AuditCategory = "organization" | "people" | "roles" | "projects" | "properties" | "media" | "invites";
+
+type AuditEvent = {
+  id: string;
+  actorUserId: string;
+  action: string;
+  category: AuditCategory;
+  target: string;
+  summary: string;
+  createdAt: number;
+};
+
+const businessCategories = new Set<AuditCategory>(["projects", "properties", "media"]);
+const peopleCategories = new Set<AuditCategory>(["organization", "people", "roles", "invites"]);
+
+function categoryTone(category: AuditCategory): "success" | "warning" | "danger" | "neutral" | "info" {
+  if (category === "projects" || category === "properties") return "success";
+  if (category === "media") return "info";
+  if (category === "invites") return "warning";
+  if (category === "people" || category === "roles") return "danger";
+  return "neutral";
+}
+
+function actionLabel(action: string) {
+  return action
+    .split(".")
+    .filter((part) => part !== "organization")
+    .map((part) => part.replace(/_/g, " "))
+    .join(" ");
+}
+
+function shortActor(value: string) {
+  if (value.length <= 12) return value;
+  return `${value.slice(0, 6)}...${value.slice(-4)}`;
+}
+
+function relativeTime(value: number, locale: string) {
+  const diffSeconds = Math.round((value - Date.now()) / 1000);
+  const absolute = Math.abs(diffSeconds);
+  const units: Array<[Intl.RelativeTimeFormatUnit, number]> = [
+    ["year", 60 * 60 * 24 * 365],
+    ["month", 60 * 60 * 24 * 30],
+    ["day", 60 * 60 * 24],
+    ["hour", 60 * 60],
+    ["minute", 60],
+    ["second", 1],
+  ];
+  const [unit, seconds] = units.find(([, threshold]) => absolute >= threshold) ?? ["second", 1];
+  return new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(
+    Math.round(diffSeconds / seconds),
+    unit,
+  );
+}
 
 export function ActivityScreen() {
-  const t = useTranslations('Activity');
-  const events = useActivityStore((state) => state.events);
-  const columns: AppDataTableColumn<ActivityEvent>[] = [
-    { key: "actor", header: t('table.actor') },
-    { key: "action", header: t('table.action') },
-    { key: "target", header: t('table.target') },
-    { key: "status", header: t('table.status'), render: (event) => <StatusPill label={event.status} tone={event.status === "approved" ? "success" : event.status === "blocked" ? "danger" : event.status === "pending" ? "warning" : "neutral"} /> },
-    { key: "date", header: t('table.date'), align: "end" },
+  const t = useTranslations("Activity");
+  const locale = useLocale();
+  const account = useAccountContext();
+  const eventsQuery = useQuery(
+    api.organizations.audit.read.listRecent,
+    account.organization.id ? { organizationId: account.organization.id, limit: 100 } : "skip",
+  );
+  const events = useMemo(() => (eventsQuery ?? []) as AuditEvent[], [eventsQuery]);
+  const latest = events[0]?.createdAt ? relativeTime(events[0].createdAt, locale) : t("stats.none");
+
+  const columns: AppDataTableColumn<AuditEvent>[] = [
+    {
+      key: "when",
+      header: t("table.when"),
+      render: (event) => relativeTime(event.createdAt, locale),
+    },
+    {
+      key: "action",
+      header: t("table.action"),
+      render: (event) => (
+        <span className="font-black uppercase tracking-tight text-zinc-900 dark:text-white">
+          {actionLabel(event.action)}
+        </span>
+      ),
+    },
+    {
+      key: "area",
+      header: t("table.area"),
+      render: (event) => (
+        <StatusPill label={t(`categories.${event.category}`)} tone={categoryTone(event.category)} />
+      ),
+    },
+    {
+      key: "details",
+      header: t("table.details"),
+      render: (event) => (
+        <span className="block max-w-[360px] truncate text-xs font-bold text-zinc-500 dark:text-zinc-400">
+          {event.summary}
+        </span>
+      ),
+    },
+    {
+      key: "actor",
+      header: t("table.actor"),
+      align: "end",
+      render: (event) => (
+        <span className="font-mono text-[10px] font-black uppercase text-zinc-400">
+          {shortActor(event.actorUserId)}
+        </span>
+      ),
+    },
   ];
 
   return (
     <AppPageShell>
-      <AppPageHeader eyebrow={t('eyebrow')} title={t('title') + "."} />
-      <AppStatsGrid stats={[
-        { label: t('stats.events'), value: events.length, icon: Activity },
-        { label: t('stats.approved'), value: events.filter((event) => event.status === "approved").length, icon: ShieldCheck },
-        { label: t('stats.blocked'), value: events.filter((event) => event.status === "blocked").length, icon: ShieldAlert },
-        { label: t('stats.latest'), value: events[0]?.date ?? "N/A", icon: Clock3 },
-      ]} />
-      <AppDataTable columns={columns} data={events} getRowKey={(event) => event.id} />
+      <AppPageHeader
+        eyebrow={t("eyebrow")}
+        title={`${t("title")}.`}
+        subtitle={t("subtitle")}
+      />
+
+      {!account.organization.id ? (
+        <EmptyWorkspace icon={History} title={t("empty.noOrgTitle")} description={t("empty.noOrgDesc")} />
+      ) : events.length === 0 ? (
+        <EmptyWorkspace icon={History} title={t("empty.title")} description={t("empty.desc")} />
+      ) : (
+        <>
+          <AppStatsGrid stats={[
+            { label: t("stats.total"), value: events.length, icon: Activity },
+            { label: t("stats.people"), value: events.filter((event) => peopleCategories.has(event.category)).length, icon: Users },
+            { label: t("stats.business"), value: events.filter((event) => businessCategories.has(event.category)).length, icon: Building2 },
+            { label: t("stats.latest"), value: latest, icon: Clock3 },
+          ]} />
+          <AppDataTable
+            columns={columns}
+            data={events}
+            getRowKey={(event) => event.id}
+            emptyMessage={t("empty.title")}
+          />
+        </>
+      )}
     </AppPageShell>
   );
 }
-

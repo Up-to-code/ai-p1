@@ -31,9 +31,9 @@
     "Invite teammates who should help manage listings, approvals, and integrations___": "Invite teammates who should help manage listings, approvals, and integrations."
   },
   "Dashboard": {
-    "title": "Data Hub",
-    "subtitle": "Central Synchronization Control",
-    "eyebrow": "Central synchronization control",
+    "title": "Today Desk",
+    "subtitle": "Client calendar, inventory readiness, and project movement for the work that matters today.",
+    "eyebrow": "Real estate operating desk",
     "welcome": "Welcome back",
     "stats": {
       "clients": "Clients",
@@ -61,6 +61,88 @@
       "globalSearch": "Global Search",
       "searchPlaceholder": "Search anything...",
       "searchDesc": "Quickly find projects, units, or legal files across the entire index."
+    },
+    "signals": {
+      "followUps": "Client follow-ups",
+      "followUpsDetail": "{count} high-priority clients need care",
+      "viewings": "Viewings today",
+      "noViewings": "No booked visits",
+      "readyInventory": "Ready units",
+      "readyInventoryDetail": "{count} still need review",
+      "blockedApprovals": "Blocked approvals",
+      "blockedApprovalsDetail": "Clear data before launch"
+    },
+    "overview": {
+      "today": "Today",
+      "canShow": "Can show now",
+      "needsWork": "Needs work"
+    },
+    "today": {
+      "title": "Client calendar from today",
+      "description": "Follow-ups and visits ordered by urgency, so the next client move is obvious.",
+      "openClients": "Open clients",
+      "nextAction": "Next move"
+    },
+    "calendar": {
+      "title": "Calendar",
+      "description": "Today’s client meetings and follow-ups in the same rhythm as the full calendar.",
+      "open": "Open calendar",
+      "days": {
+        "today": "Today",
+        "tomorrow": "Tomorrow",
+        "week": "This week",
+        "later": "Later"
+      }
+    },
+    "pipeline": {
+      "title": "Market movement",
+      "description": "A compact read on demand, launch readiness, and units that can be shown now.",
+      "qualifiedDemand": "Qualified demand",
+      "qualifiedDemandHelper": "Clients ready for matching or negotiation",
+      "launchReady": "Launch-ready projects",
+      "launchReadyHelper": "Approved projects with synced data",
+      "availableKeys": "Keys available",
+      "availableKeysHelper": "Units ready for viewing or offer"
+    },
+    "actions": {
+      "title": "Next useful actions",
+      "description": "Only the essential moves, grouped by work role.",
+      "logFollowUp": "Log client follow-up",
+      "scheduleViewing": "Schedule viewing",
+      "addUnit": "Add marketable unit",
+      "prepareProject": "Prepare project",
+      "sales": "Sales",
+      "coordinator": "Coordinator",
+      "inventory": "Inventory",
+      "admin": "Admin"
+    },
+    "chart": {
+      "title": "Pipeline",
+      "description": "A small read on what needs attention.",
+      "center": "Ready",
+      "clients": "Clients",
+      "inventory": "Inventory",
+      "review": "Review",
+      "blocked": "Blocked"
+    },
+    "search": {
+      "title": "Find the deal context",
+      "description": "Search for a client, unit, project, budget range, or document before a call.",
+      "placeholder": "Client, unit, project, or budget..."
+    },
+    "inventory": {
+      "title": "Inventory ready for action",
+      "description": "Units your team can discuss, review, or prepare for viewing.",
+      "open": "Open inventory"
+    },
+    "projects": {
+      "title": "Project movement",
+      "description": "Launch state, unit volume, and market entry point for active projects.",
+      "open": "Open projects",
+      "units": "Units",
+      "market": "Market",
+      "edit": "Edit",
+      "deleteProject": "Delete {name}"
     }
   },
   "Common": {
@@ -232,7 +314,14 @@
     "searchThreads": "Search threads...",
     "noThreads": "No theories found matching your search.",
     "welcome": "What can anan help you today?",
-    "inputPlaceholder": "Start a new conversation..."
+    "inputPlaceholder": "Start a new conversation...",
+    "mockResponse": "I reviewed \"{request}\" against the current workspace context. I can help turn it into a client follow-up, viewing plan, inventory check, or launch-readiness action.",
+    "suggestions": {
+      "findClient": "Find client",
+      "prepareViewing": "Plan viewing",
+      "checkInventory": "Check units",
+      "verifyLaunch": "Launch check"
+    }
   },
   "Workspace": {
     "modeWs": "WS",
@@ -339,7 +428,22 @@
       "statusLabel": "Status",
       "descLabel": "Description",
       "saveBtn": "Save Project",
-      "createBtn": "Create Project"
+      "createBtn": "Create Project",
+      "stepIdentity": "Identity",
+      "stepLocation": "Location",
+      "stepContext": "Context",
+      "identityTitle": "Identity & Ownership",
+      "identityDesc": "Name the project and connect it to the developer people will recognize.",
+      "locationTitle": "Location & Scale",
+      "locationDesc": "Set where the project sits, how large it is, and its market range.",
+      "contextTitle": "Context & Preview",
+      "contextDesc": "Finish the classification, image, status, and public description.",
+      "previewTitle": "Project preview",
+      "previewCity": "City",
+      "previewName": "Project name",
+      "previewDeveloper": "Developer",
+      "previewDescription": "The project description will appear here as you write it.",
+      "previewChecklist": "Record readiness"
     },
     "types": {
       "Residential": "Residential",
@@ -667,22 +771,26 @@
     "eyebrow": "Workspace administration",
     "title": "Organization",
     "subtitle": "Institutional Governance",
+    "saveBtn": "Save",
     "stats": {
-      "members": "Team Members",
-      "keys": "API Keys",
-      "apps": "Authorized Apps",
-      "status": "Status",
+      "members": "Members",
+      "pendingInvites": "Pending invites",
+      "roles": "Work roles",
       "verified": "Verified"
     },
     "tabs": {
-      "info": "Info",
-      "team": "Team",
-      "apps": "Apps",
-      "api": "API"
+      "profile": "Profile",
+      "members": "Members",
+      "invites": "Invites",
+      "roles": "Work roles"
     },
     "sections": {
       "legal": "Legal Identity",
-      "contact": "Operational Contact"
+      "contact": "Operational Contact",
+      "legalDesc": "Official business details and incorporation data.",
+      "contactDesc": "Operational contact methods for the organization.",
+      "workspaceData": "Workspace Data",
+      "workspaceDataDesc": "System identifiers and status."
     },
     "labels": {
       "legalName": "Legal Name",
@@ -691,54 +799,229 @@
       "address": "Address",
       "email": "Email",
       "phone": "Phone",
-      "website": "Website"
+      "website": "Website",
+      "orgId": "Organization ID",
+      "slug": "Slug",
+      "members": "Total Members"
     },
-    "team": {
-      "title": "Team Management",
-      "invite": "Invite Member",
-      "memberCol": "Member",
-      "roleCol": "Role",
-      "statusCol": "Status",
-      "inviteTitle": "Invite Member",
-      "inviteDesc": "Add a mock team member with a role assignment.",
-      "nameLabel": "Name",
+    "logo": {
+      "upload": "Upload organization logo",
+      "remove": "Remove organization logo",
+      "cropTitle": "Crop organization logo",
+      "apply": "Apply",
+      "cancel": "Cancel",
+      "zoom": "Zoom",
+      "chooseImage": "Choose an image file.",
+      "savedTitle": "Logo updated",
+      "savedDescription": "The organization logo was saved.",
+      "removedTitle": "Logo removed",
+      "removedDescription": "The organization logo was cleared.",
+      "uploadFailed": "Logo upload failed."
+    },
+    "noOrganization": {
+      "loading": "Loading organization...",
+      "title": "Choose an organization",
+      "description": "Organization settings need a real workspace. Create or select one before managing profile, members, invites, and work roles.",
+      "action": "Go to organization setup"
+    },
+    "members": {
+      "title": "Members",
+      "description": "Keep people, work roles, and pending invitations in one simple table.",
+      "tableTitle": "Team table",
+      "tableDesc": "Change a person's work role from the dropdown. Create or edit work roles on their own page.",
+      "loading": "Loading members...",
+      "emptyTitle": "No members found",
+      "emptyDesc": "Members will appear here when they join the organization.",
+      "currentUser": "you",
+      "remove": "Remove",
+      "role": "Role",
+      "joined": "Joined",
+      "removeTitle": "Remove member?",
+      "removeDesc": "This removes {name} from the organization.",
+      "roleTitle": "Change member role?",
+      "roleDesc": "This changes {name} to {role}.",
+      "selfRemoveBlocked": "You cannot remove yourself from the organization.",
+      "lastOwnerBlocked": "The organization must keep at least one owner."
+    },
+    "access": {
+      "title": "Your access",
+      "description": "These actions come from your current work role and are checked again on the backend.",
+      "profile": "Profile",
+      "invite": "Invites",
+      "members": "Members",
+      "roles": "Work roles",
+      "allowed": "Allowed",
+      "blocked": "Not allowed"
+    },
+    "invites": {
+      "open": "Invite",
+      "createTitle": "Create invite",
+      "createDesc": "Choose whether to create a URL or invite by email.",
       "emailLabel": "Email",
-      "roleLabel": "Role",
-      "inviteBtn": "Invite",
-      "removeTitle": "Remove team member?",
-      "removeDesc": "This removes {name} from the mock team."
-    },
-    "apps": {
-      "title": "Authorized Applications",
-      "description": "Third-party services with access to institutional data.",
-      "revoke": "Revoke Access"
-    },
-    "api": {
-      "title": "Access Credentials",
-      "description": "Secure tokens for programmatic access to the Anan index.",
-      "generate": "Generate Key",
-      "keyCol": "Key",
-      "tokenCol": "Token",
-      "scopesCol": "Scopes",
-      "createdCol": "Created",
-      "generateTitle": "Generate API Key",
-      "generateDesc": "Create a mock scoped access token.",
-      "keyNameLabel": "Key Name",
-      "scopes": {
-        "read": "Read",
-        "write": "Write",
-        "sync": "Sync"
+      "roleLabel": "Work role",
+      "roleHint": "Pick a ready work role. Custom work roles are created separately so inviting stays simple.",
+      "emailPlaceholder": "member@example.com",
+      "create": "Create invite",
+      "createLink": "Generate link",
+      "generatedLinkLabel": "Generated invite link",
+      "generatedLinkHint": "This link can be used once and expires in 7 days.",
+      "sendEmail": "Send invite",
+      "createAnother": "Create another",
+      "close": "Close",
+      "linkTitle": "Invite link",
+      "emailTitle": "Email invite",
+      "expires": "Expires",
+      "modes": {
+        "link": "Invite by URL",
+        "email": "Invite by email"
       },
-      "generateBtn": "Generate",
-      "deleteTitle": "Delete API key?",
-      "deleteDesc": "This deletes {name} from the mock key ring."
+      "pendingTitle": "Invitations",
+      "pendingDesc": "People waiting to join after an invite was created.",
+      "loading": "Loading invitations...",
+      "emptyTitle": "No invitations",
+      "emptyDesc": "Pending invitations will appear here.",
+      "copy": "Copy link",
+      "copied": "Copied",
+      "cancel": "Cancel"
     },
     "roles": {
-      "Owner": "Owner",
-      "Admin": "Admin",
-      "Manager": "Manager",
-      "Editor": "Editor",
-      "Viewer": "Viewer"
+      "pageEyebrow": "Allowed work",
+      "pageTitle": "Custom work roles",
+      "pageDesc": "Create one clear work rule at a time. The screen stays focused: choose a template, adjust the work grid, and save it for the invite dropdown.",
+      "backToOrganization": "Back to organization",
+      "lessIsMoreHint": "Less is more: invite people on the team table, create work roles here.",
+      "manageWorkRoles": "Custom work roles",
+      "templatesTitle": "Start from a work role",
+      "templatesDesc": "Choose a real estate operations template or start blank. Templates are copied into your new work role and never change the protected built-in roles.",
+      "templateSelect": "Start from",
+      "templateBlank": "Blank custom work role",
+      "defaultLabels": {
+        "owner": "Owner",
+        "admin": "Admin",
+        "member": "Member"
+      },
+      "templates": {
+        "owner": "Owner",
+        "operationsManager": "Operations Manager",
+        "projectManager": "Project Manager",
+        "propertyManager": "Property Manager",
+        "crmSales": "CRM / Sales",
+        "calendarCoordinator": "Calendar Coordinator",
+        "viewer": "Viewer"
+      },
+      "templateHelp": {
+        "owner": "Can run the organization, manage people, work roles, projects, properties, clients, calendar, integrations, API keys, and connected apps.",
+        "operationsManager": "Can manage daily operations across projects, properties, clients, calendar, people, and core integrations.",
+        "projectManager": "Can view, add, manage, and remove projects; can manage related properties, clients, and calendar work.",
+        "propertyManager": "Can view, add, manage, and remove properties; can coordinate projects, clients, and calendar work.",
+        "crmSales": "Can manage clients and sales work, view available projects and properties, and coordinate calendar activity.",
+        "calendarCoordinator": "Can manage schedules and view the people, projects, properties, and clients needed for appointments.",
+        "viewer": "Can view organization work without changing records."
+      },
+      "useTemplate": "Use template",
+      "blankTitle": "Create custom work role",
+      "blankDesc": "Start with no allowed work selected and choose each responsibility yourself.",
+      "createTitle": "Create custom work role",
+      "editTitle": "Edit work role",
+      "createDesc": "Choose the work this person can do. The app saves your selections as backend access rules.",
+      "name": "Work role name",
+      "namePlaceholder": "project-manager",
+      "nameHint": "Use a simple job name. It will be saved as a lowercase system name.",
+      "nameRequired": "Work role name is required.",
+      "create": "Create work role",
+      "update": "Update work role",
+      "cancelEdit": "Cancel",
+      "grid": {
+        "area": "Work area",
+        "allowedWork": "Checked boxes become backend access rules.",
+        "unavailable": "This work action is not available for this area."
+      },
+      "actions": {
+        "read": "View",
+        "create": "Add",
+        "update": "Manage",
+        "delete": "Remove",
+        "authorize": "Authorize apps"
+      },
+      "workAreas": {
+        "organization": "Organization profile",
+        "team": "Teams",
+        "member": "People",
+        "project": "Projects",
+        "property": "Properties",
+        "client": "Clients / CRM",
+        "calendar": "Calendar",
+        "integration": "Integrations",
+        "apiKey": "API keys",
+        "oauthApp": "Connected apps",
+        "role": "Work roles"
+      },
+      "workAreaHelp": {
+        "organization": "Company name, logo, workspace identity, and organization profile settings.",
+        "team": "Internal teams and groups used to organize people.",
+        "member": "People who can access this organization.",
+        "project": "Real estate projects, development pipelines, and project records.",
+        "property": "Property listings, units, inventory, and property records.",
+        "client": "Clients, leads, sales pipeline, and CRM records.",
+        "calendar": "Appointments, site visits, reminders, and team schedules.",
+        "integration": "Connected services used by the organization.",
+        "apiKey": "Technical keys used by external systems.",
+        "oauthApp": "Third-party apps that can connect to this workspace.",
+        "role": "Create and manage other work roles."
+      },
+      "showAdvanced": "Show advanced work controls",
+      "hideAdvanced": "Hide advanced work controls",
+      "listTitle": "Work role catalog",
+      "listDesc": "Built-in work roles are protected. Custom work roles can be edited or removed when unused.",
+      "loading": "Loading work roles...",
+      "builtIn": "Built in",
+      "custom": "Custom",
+      "edit": "Edit",
+      "delete": "Delete",
+      "roleInUse": "This work role is assigned to people. Reassign them before deleting it.",
+      "notAllowed": "Your current work role cannot manage custom work roles."
+    },
+    "common": {
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    },
+    "errors": {
+      "noOrganization": "No active organization was found."
+    },
+    "toasts": {
+      "actionFailed": "Action failed",
+      "profileSavedTitle": "Organization saved",
+      "profileSavedDesc": "Organization profile changes were saved.",
+      "profileSaveFailed": "Organization profile could not be saved.",
+      "inviteCreatedTitle": "Invite created",
+      "inviteCreatedDesc": "The invite link was copied.",
+      "inviteLinkCreatedDesc": "The invite link was created and copied.",
+      "inviteEmailCreatedDesc": "The invitation was created for that email.",
+      "inviteCanceledTitle": "Invite canceled",
+      "inviteCanceledDesc": "The invitation was canceled.",
+      "inviteLinkCanceledDesc": "The invite link was canceled.",
+      "memberRoleTitle": "Work role updated",
+      "memberRoleDesc": "The member work role was updated.",
+      "memberRemovedTitle": "Member removed",
+      "memberRemovedDesc": "The member was removed from the organization.",
+      "roleSavedTitle": "Work role saved",
+      "roleSavedDesc": "The work role was saved.",
+      "roleDeletedTitle": "Work role deleted",
+      "roleDeletedDesc": "The custom work role was deleted."
+    },
+    "acceptInvite": {
+      "loadingTitle": "Accepting invite",
+      "loadingDesc": "We are adding you to the organization.",
+      "acceptedTitle": "Invite accepted",
+      "acceptedDesc": "You are in. Redirecting to the dashboard.",
+      "errorTitle": "Invite failed",
+      "errorDesc": "The invitation could not be accepted.",
+      "missingTitle": "Missing invitation",
+      "missingDesc": "This invite link is missing its invitation id.",
+      "signInTitle": "Sign in to continue",
+      "signInDesc": "Sign in with the invited account before accepting this organization invite.",
+      "signInButton": "Sign in",
+      "dashboardButton": "Go to dashboard"
     }
   },
   "Integrations": {
@@ -1040,18 +1323,35 @@
   "Activity": {
     "eyebrow": "Audit trail",
     "title": "Activity",
+    "subtitle": "Organization actions update here automatically as your team works.",
     "stats": {
-      "events": "Events",
-      "approved": "Approved",
-      "blocked": "Blocked",
-      "latest": "Latest"
+      "total": "Total actions",
+      "people": "People and admin",
+      "business": "Business data",
+      "latest": "Latest",
+      "none": "None yet"
     },
     "table": {
+      "when": "When",
       "actor": "Actor",
       "action": "Action",
-      "target": "Target",
-      "status": "Status",
-      "date": "Date"
+      "area": "Area",
+      "details": "Details"
+    },
+    "categories": {
+      "organization": "Organization",
+      "people": "People",
+      "roles": "Work roles",
+      "projects": "Projects",
+      "properties": "Units",
+      "media": "Media",
+      "invites": "Invites"
+    },
+    "empty": {
+      "title": "No activity yet",
+      "desc": "Nothing needs to be shown yet. When someone changes organization settings, invites a teammate, edits work roles, or creates projects, units, or media, the action will appear here automatically.",
+      "noOrgTitle": "No organization selected",
+      "noOrgDesc": "Choose or create an organization to view its activity log."
     }
   },
   "Calendar": {
@@ -1370,6 +1670,11 @@
     "createTypePlaceholder": "Select your organization type",
     "typeBroker": "Broker",
     "typeDeveloper": "Developer",
-    "createBtn": "Start Setup"
+    "createBtn": "Start Setup",
+    "existingTitle": "Your organizations",
+    "nameRequired": "Enter an organization name first.",
+    "inviteRequired": "Paste an invite link or token first.",
+    "errorTitle": "Organization setup failed",
+    "errorDesc": "Could not complete this organization action."
   }
 }
