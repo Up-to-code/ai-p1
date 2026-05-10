@@ -1,7 +1,8 @@
-import { copyFile, mkdir, readdir, stat } from "node:fs/promises";
+import { copyFile, mkdir, readdir, stat, symlink } from "node:fs/promises";
 import path from "node:path";
 
 const nextDir = path.join(process.cwd(), ".next");
+const nodeModulesDir = path.join(process.cwd(), "node_modules");
 const source = path.join(nextDir, "routes-manifest.json");
 const target = path.join(nextDir, "routes-manifest-deterministic.json");
 
@@ -24,6 +25,21 @@ async function mirrorNextOutput(fromDir, toDir) {
       await copyFile(from, to);
     }
   }));
+}
+
+async function ensureNodeModulesLink(toDir) {
+  const targetPath = path.join(toDir, "node_modules");
+
+  try {
+    await stat(targetPath);
+    return;
+  } catch {
+    // The Vercel finalizer resolves traced "../node_modules" entries from
+    // ancestor .next mirrors. A symlink keeps that lookup valid without copying
+    // the dependency tree.
+  }
+
+  await symlink(nodeModulesDir, targetPath, "dir");
 }
 
 try {
@@ -49,6 +65,7 @@ if (process.env.VERCEL) {
     if (copied.has(ancestorNextDir)) continue;
 
     await mirrorNextOutput(nextDir, ancestorNextDir);
+    await ensureNodeModulesLink(current);
     copied.add(ancestorNextDir);
   }
 
