@@ -192,6 +192,26 @@
   }
 }
 
+.auth-viewport {
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.auth-viewport-frame {
+  min-height: calc(100vh - 3rem);
+  min-height: calc(100svh - 3rem);
+}
+
+@supports (height: 100dvh) {
+  .auth-viewport {
+    min-height: 100dvh;
+  }
+
+  .auth-viewport-frame {
+    min-height: calc(100dvh - 3rem);
+  }
+}
+
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }

@@ -30,11 +30,12 @@ export function AuthAccessScreen({ mode, isPending, onGoogleSignIn }: AuthAccess
   const isSignUp = mode === "sign-up";
 
   return (
-    <main className="min-h-dvh overflow-hidden bg-white px-4 py-5 text-zinc-950 dark:bg-zinc-950 dark:text-white sm:px-6">
-      <div className="relative mx-auto flex min-h-[calc(100dvh-2.5rem)] max-w-7xl items-center justify-center">
-        <div className="absolute inset-x-0 top-0 flex items-center justify-between">
-          <Link href="/" className="group flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-zinc-950 dark:bg-white">
+    <main className="auth-viewport relative overflow-hidden bg-white px-4 py-5 text-zinc-950 dark:bg-zinc-950 dark:text-white sm:px-6">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_28%_18%,rgba(11,92,255,0.18),transparent_34%),radial-gradient(circle_at_82%_84%,rgba(34,197,94,0.13),transparent_30%),linear-gradient(180deg,#fff,rgba(247,249,252,0.94))] dark:bg-[radial-gradient(circle_at_28%_18%,rgba(11,92,255,0.22),transparent_34%),radial-gradient(circle_at_82%_84%,rgba(34,197,94,0.12),transparent_30%),linear-gradient(180deg,#09090b,rgba(9,9,11,0.96))]" />
+      <div className="auth-viewport-frame relative mx-auto flex max-w-7xl flex-col">
+        <div className="flex items-center justify-between gap-4">
+          <Link href="/" className="group flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-zinc-950 text-white transition group-hover:scale-[1.03] dark:bg-white dark:text-zinc-950">
               <Image src="/brand-logo.svg" alt="Anan" width={22} height={22} className="h-5.5 w-5.5 invert dark:invert-0" priority />
             </span>
             <span className="text-lg font-black tracking-tight text-zinc-950 dark:text-white">
@@ -43,38 +44,57 @@ export function AuthAccessScreen({ mode, isPending, onGoogleSignIn }: AuthAccess
           </Link>
           <Link
             href="/"
-            className="inline-flex h-10 items-center gap-2 rounded-full bg-white/55 px-4 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500 backdrop-blur-xl transition hover:text-zinc-950 dark:bg-white/10 dark:text-zinc-300 dark:hover:text-white"
+            className="inline-flex h-10 items-center gap-2 rounded-full border border-white/70 bg-white/70 px-4 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500 shadow-[0_8px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl transition hover:border-blue-200 hover:text-zinc-950 dark:border-white/10 dark:bg-white/[0.07] dark:text-zinc-300 dark:shadow-none dark:hover:border-blue-400/30 dark:hover:text-white"
           >
             <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
             {t("backToHome")}
           </Link>
         </div>
 
-        <section className="w-full max-w-sm pt-24">
-          <div className="text-center">
-            <div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-zinc-950 dark:bg-white">
-              <Image src="/brand-logo.svg" alt="Anan" width={24} height={24} className="h-6 w-6 invert dark:invert-0" priority />
+        <section className="flex flex-1 items-center justify-center py-10 sm:py-12">
+          <div className="w-full max-w-[470px]">
+            <div className="rounded-[32px] bg-white/86 p-8 text-start shadow-[0_24px_70px_rgba(11,92,255,0.12),0_10px_35px_rgba(15,23,42,0.08)] ring-1 ring-white/80 backdrop-blur-2xl dark:bg-zinc-900/82 dark:shadow-[0_24px_70px_rgba(11,92,255,0.12)] dark:ring-white/10 sm:p-9">
+              <div className="mb-9 flex items-center gap-3">
+                <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-[18px] bg-zinc-950 shadow-[0_10px_25px_rgba(11,92,255,0.18)] dark:bg-white">
+                  <Image src="/brand-logo.svg" alt="Anan" width={24} height={24} className="h-6 w-6 invert dark:invert-0" priority />
+                </span>
+                <span className="text-3xl font-black tracking-tight text-zinc-950 dark:text-white">
+                  {isAr ? "عنان" : "anan"}
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                <h1 className="text-2xl font-bold tracking-tight text-zinc-950 dark:text-white">
+                  {isSignUp ? t("createAccount") : t("title")}
+                </h1>
+                <p className="text-base text-zinc-500 dark:text-zinc-400">
+                  {isSignUp ? t("createAccountDesc") : t("description")}
+                </p>
+              </div>
+
+              <button
+                className="mt-7 flex h-12 w-full items-center justify-center gap-3 rounded-2xl border border-blue-100 bg-white/90 px-5 text-sm font-semibold text-zinc-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition hover:border-blue-200 hover:bg-blue-50/50 active:scale-[0.99] disabled:pointer-events-none disabled:opacity-55 dark:border-white/10 dark:bg-zinc-950/80 dark:text-white dark:hover:border-blue-400/30 dark:hover:bg-zinc-900"
+                disabled={isPending}
+                onClick={onGoogleSignIn}
+                type="button"
+              >
+                <GoogleMark />
+                <span>{isPending ? t("connecting") : t("google")}</span>
+                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+              </button>
             </div>
 
-            <div className="space-y-2">
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-950 dark:text-white">
-                {isSignUp ? t("createAccount") : t("title")}
-              </h1>
-              <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-                {isSignUp ? t("createAccountDesc") : t("description")}
-              </p>
-            </div>
-
-            <button
-              className="mt-8 flex h-13 w-full items-center justify-center gap-3 rounded-full bg-zinc-950 px-5 text-[11px] font-black uppercase tracking-[0.16em] text-white transition hover:bg-zinc-800 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-55 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
-              disabled={isPending}
-              onClick={onGoogleSignIn}
-              type="button"
-            >
-              <GoogleMark />
-              <span>{isPending ? t("connecting") : t("google")}</span>
-              <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-            </button>
+            <p className="mt-5 text-center text-sm text-zinc-700 dark:text-zinc-300">
+              {t("agreementPrefix")}{" "}
+              <Link href="/terms" className="text-blue-600 underline-offset-2 hover:underline dark:text-blue-400">
+                {t("agreementTerms")}
+              </Link>{" "}
+              {t("agreementAnd")}{" "}
+              <Link href="/privacy" className="text-blue-600 underline-offset-2 hover:underline dark:text-blue-400">
+                {t("agreementPrivacy")}
+              </Link>
+              {t("agreementSuffix")}
+            </p>
           </div>
         </section>
       </div>
