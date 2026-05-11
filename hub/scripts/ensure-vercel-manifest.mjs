@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readdir, stat, symlink } from "node:fs/promises";
+import { copyFile, mkdir, readlink, readdir, rm, stat, symlink } from "node:fs/promises";
 import path from "node:path";
 
 const nextDir = path.join(process.cwd(), ".next");
@@ -23,6 +23,12 @@ async function mirrorNextOutput(fromDir, toDir) {
 
     if (entry.isFile()) {
       await copyFile(from, to);
+      return;
+    }
+
+    if (entry.isSymbolicLink()) {
+      await rm(to, { force: true, recursive: true });
+      await symlink(await readlink(from), to);
     }
   }));
 }
