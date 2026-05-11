@@ -52,6 +52,42 @@ export type OrganizationInviteLink = {
   updatedAt: number;
 };
 
+export type McpPermissionResource =
+  | "organization"
+  | "client"
+  | "property"
+  | "project"
+  | "calendar"
+  | "task"
+  | "media";
+
+export type McpPermissionAction = "read" | "create" | "update" | "delete";
+
+export type McpConnectionPermission = {
+  resource: McpPermissionResource;
+  actions: McpPermissionAction[];
+};
+
+export type OrganizationMcpConnection = {
+  _id: string;
+  id: string;
+  organizationId: string;
+  publicId: string;
+  keyId: string;
+  keyLast4: string;
+  name: string;
+  instructions?: string;
+  permissions: McpConnectionPermission[];
+  status: "active" | "paused" | "revoked";
+  createdByUserId: string;
+  createdAt: number;
+  updatedAt: number;
+  lastUsedAt?: number;
+  expiresAt?: number;
+  usageCount: number;
+  revokedAt?: number;
+};
+
 export type OrganizationRole = {
   id: string;
   organizationId: string;
@@ -70,6 +106,9 @@ export type OrganizationCapabilities = {
   canCreateRoles: boolean;
   canUpdateRoles: boolean;
   canDeleteRoles: boolean;
+  canReadApiKeys: boolean;
+  canCreateApiKeys: boolean;
+  canDeleteApiKeys: boolean;
 };
 
 type OrganizationApi = {
@@ -176,9 +215,12 @@ export function removeOrganizationMember(organizationId: string, memberIdOrEmail
 }
 
 export function listOrganizationRoles(organizationId: string) {
-  return organizationApi.organization
-    .listOrgRoles({ query: { organizationId } })
-    .then((result) => assertOk(result, "Roles could not be loaded."));
+  return requestOrganizationAction<{ roles: OrganizationRole[] }>(
+    `/api/v1/organizations/${encodeURIComponent(organizationId)}/roles`,
+    "GET",
+    undefined,
+    "Roles could not be loaded.",
+  ).then((result) => result.roles);
 }
 
 export function createOrganizationRole(
@@ -259,6 +301,69 @@ export function getOrganizationCapabilities(organizationId: string) {
     undefined,
     "Organization access could not be loaded.",
   ).then((result) => result.capabilities);
+}
+
+export function listOrganizationMcpConnections(organizationId: string) {
+  return requestOrganizationAction<{ connections: OrganizationMcpConnection[] }>(
+    `/api/v1/organizations/${encodeURIComponent(organizationId)}/mcp-connections`,
+    "GET",
+    undefined,
+    "Agent links could not be loaded.",
+  ).then((result) => result.connections);
+}
+
+export function createOrganizationMcpConnection(
+  organizationId: string,
+  input: {
+    name: string;
+    instructions?: string;
+    permissions: McpConnectionPermission[];
+    expiresAt?: number;
+  },
+) {
+  return requestOrganizationAction<{ connection: OrganizationMcpConnection; agentLink: string }>(
+    `/api/v1/organizations/${encodeURIComponent(organizationId)}/mcp-connections`,
+    "POST",
+    input,
+    "Agent link could not be created.",
+  );
+}
+
+export function updateOrganizationMcpConnection(
+  organizationId: string,
+  connectionId: string,
+  input: {
+    name?: string;
+    instructions?: string;
+    permissions?: McpConnectionPermission[];
+    status?: "active" | "paused";
+    expiresAt?: number | null;
+  },
+) {
+  return requestOrganizationAction<{ connection: OrganizationMcpConnection }>(
+    `/api/v1/organizations/${encodeURIComponent(organizationId)}/mcp-connections/${encodeURIComponent(connectionId)}`,
+    "PATCH",
+    input,
+    "Agent link could not be updated.",
+  ).then((result) => result.connection);
+}
+
+export function revokeOrganizationMcpConnection(organizationId: string, connectionId: string) {
+  return requestOrganizationAction<{ revoked: boolean }>(
+    `/api/v1/organizations/${encodeURIComponent(organizationId)}/mcp-connections/${encodeURIComponent(connectionId)}`,
+    "DELETE",
+    undefined,
+    "Agent link could not be revoked.",
+  );
+}
+
+export function rotateOrganizationMcpConnection(organizationId: string, connectionId: string) {
+  return requestOrganizationAction<{ connection: OrganizationMcpConnection; agentLink: string }>(
+    `/api/v1/organizations/${encodeURIComponent(organizationId)}/mcp-connections/${encodeURIComponent(connectionId)}/rotate`,
+    "POST",
+    undefined,
+    "A new link could not be made.",
+  );
 }
 
 export async function createOrganizationInviteLink(organizationId: string, input: { role: string; locale: string }) {

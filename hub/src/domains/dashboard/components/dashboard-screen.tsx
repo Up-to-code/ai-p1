@@ -8,63 +8,103 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 import { useTranslations } from "next-intl";
 import { AppPageHeader, AppPageShell, AppSection } from "@/components/shared";
-import { StatusPill } from "@/components/shared/crud-ui";
+import { ProgressiveLoadingState, StatusPill, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { DashboardChat } from "@/components/dashboard/dashboard-chat";
 import { Link } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
-import { useClientsStore } from "@/domains/clients";
 import { useAccountContext } from "@/domains/auth";
-import { useProjectsQuery } from "@/domains/projects/api/projects";
-import { usePropertiesQuery } from "@/domains/properties/api/properties";
 import { useWorkspaceStore } from "@/domains/dashboard/store/dashboard.store";
-import type { Project } from "@/domains/projects/store/projects.types";
+import { useHttpQuery } from "@/components/shared/use-http-query";
 
-const TODAY = new Date("2026-05-09T12:00:00");
+const TODAY = new Date();
 const CHART_COLORS = ["#2563eb", "#16a34a", "#f59e0b", "#ef4444"];
+
+type DashboardProject = {
+  id: string;
+  name: string;
+  reference: string;
+  city: string;
+  status: string;
+  units: number;
+  priceRange: string;
+  coverImageUrl?: string;
+};
+
+type DashboardOverview = {
+  counts: {
+    dueToday: number;
+    availableUnits: number;
+    reviewUnits: number;
+    readyProjects: number;
+    blockedProjects: number;
+    totalProjects: number;
+  };
+  projects: DashboardProject[];
+  weekEvents: Array<{
+    id: string;
+    date: string;
+    time: string;
+    title: string;
+    owner: string;
+    clientName?: string;
+    type: string;
+    priority: "normal" | "high" | "urgent";
+  }>;
+};
 
 export function DashboardScreen() {
   const t = useTranslations("Dashboard");
   const mode = useWorkspaceStore((state) => state.mode);
   const account = useAccountContext();
-  const clients = useClientsStore((state) => state.clients);
-  const projectsQuery = useProjectsQuery(account.organization.id ?? undefined);
-  const unitsQuery = usePropertiesQuery(account.organization.id ?? undefined);
-  const projects = useMemo(() => (projectsQuery ?? []) as Project[], [projectsQuery]);
-  const units = useMemo(() => unitsQuery ?? [], [unitsQuery]);
+  const workspaceStatus = account.workspace.status;
+  const isWorkspaceReady = workspaceStatus === "ready";
+  const workspaceOrganizationId = isWorkspaceReady ? account.workspace.organizationId ?? undefined : undefined;
+  const weekRange = useMemo(() => {
+    const days = getWeekDays(TODAY);
+    const start = new Date(days[0]);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(days[days.length - 1]);
+    end.setHours(23, 59, 59, 999);
+    return { startAt: start.getTime(), endAt: end.getTime() };
+  }, []);
+  const overview = useHttpQuery<DashboardOverview>(
+    ["dashboard", workspaceOrganizationId, weekRange.startAt, weekRange.endAt],
+    workspaceOrganizationId ? `/api/v1/organizations/${workspaceOrganizationId}/read/dashboard` : undefined,
+    workspaceOrganizationId ? { startAt: weekRange.startAt, endAt: weekRange.endAt } : undefined,
+  );
+  const isLoading = isWorkspaceReady && overview === undefined;
 
   const desk = useMemo(() => {
-    const calendarClients = clients
-      .map((client) => ({ ...client, dueAt: parseDate(client.nextActionDate) }))
-      .filter((client) => client.status === "active" && client.dueAt)
-      .sort((a, b) => Number(a.dueAt) - Number(b.dueAt))
-      .slice(0, 4);
     const weekDays = getWeekDays(TODAY).map((date) => ({
       date,
-      items: calendarClients.filter((client) => isSameDay(client.dueAt, date)),
+      items: (overview?.weekEvents ?? []).filter((event) => isSameDay(parseDate(event.date), date)),
     }));
-    const dueToday = calendarClients.filter((client) => Number(client.dueAt) <= Number(TODAY));
-    const availableUnits = units.filter((unit) => unit.status === "available");
-    const reviewUnits = units.filter((unit) => unit.status === "pending" || unit.status === "draft");
-    const readyProjects = projects.filter((project) => project.status === "approved" && project.syncState === "synced");
-    const blockedProjects = projects.filter((project) => project.status === "pending" || project.syncState === "blocked");
+    const counts = overview?.counts ?? {
+      dueToday: 0,
+      availableUnits: 0,
+      reviewUnits: 0,
+      readyProjects: 0,
+      blockedProjects: 0,
+      totalProjects: 0,
+    };
     const chartData = [
-      { name: t("chart.clients"), value: Math.max(dueToday.length, 1) },
-      { name: t("chart.inventory"), value: Math.max(availableUnits.length, 1) },
-      { name: t("chart.review"), value: Math.max(reviewUnits.length, 1) },
-      { name: t("chart.blocked"), value: Math.max(blockedProjects.length, 1) },
+      { name: t("chart.clients"), value: Math.max(counts.dueToday, 1) },
+      { name: t("chart.inventory"), value: Math.max(counts.availableUnits, 1) },
+      { name: t("chart.review"), value: Math.max(counts.reviewUnits, 1) },
+      { name: t("chart.blocked"), value: Math.max(counts.blockedProjects, 1) },
     ];
 
     return {
-      calendarClients,
       weekDays,
-      dueToday,
-      availableUnits,
-      reviewUnits,
-      readyProjects,
-      blockedProjects,
+      dueToday: counts.dueToday,
+      availableUnits: counts.availableUnits,
+      reviewUnits: counts.reviewUnits,
+      readyProjects: counts.readyProjects,
+      blockedProjects: counts.blockedProjects,
+      totalProjects: counts.totalProjects,
       chartData,
     };
-  }, [clients, projects, t, units]);
+  }, [overview, t]);
 
   return (
     <AnimatePresence mode="wait">
@@ -78,102 +118,110 @@ export function DashboardScreen() {
             <AppPageHeader eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
 
             <div className="grid gap-3 md:grid-cols-3">
-              <MiniSignal label={t("signals.followUps")} value={desk.dueToday.length} helper={t("overview.today")} tone="blue" />
-              <MiniSignal label={t("signals.readyInventory")} value={desk.availableUnits.length} helper={t("overview.canShow")} tone="green" />
-              <MiniSignal label={t("signals.blockedApprovals")} value={desk.blockedProjects.length} helper={t("overview.needsWork")} tone="amber" />
+              <MiniSignal label={t("signals.followUps")} value={overview ? desk.dueToday : "..."} helper={t("overview.today")} tone="blue" />
+              <MiniSignal label={t("signals.readyInventory")} value={overview ? desk.availableUnits : "..."} helper={t("overview.canShow")} tone="green" />
+              <MiniSignal label={t("signals.blockedApprovals")} value={overview ? desk.blockedProjects : "..."} helper={t("overview.needsWork")} tone="amber" />
             </div>
 
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-              <AppSection
-                title={t("calendar.title")}
-                description={t("calendar.description")}
-                actions={
-                  <Link href="/calendar" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400 transition hover:text-zinc-900 dark:hover:text-white">
-                    {t("calendar.open")}
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                }
-              >
-                <div className="mb-5 grid gap-4 md:grid-cols-3">
-                  {projects.slice(0, 3).map((project) => (
-                    <DashboardProjectCard key={project.id} project={project} />
-                  ))}
-                </div>
-                <div className="overflow-hidden rounded-[22px] border border-zinc-100 bg-white dark:border-white/5 dark:bg-[#0A0A0A]">
-                  <div className="grid grid-cols-7 border-b border-zinc-100 dark:border-white/5">
-                    {desk.weekDays.map(({ date }) => {
-                      const active = isSameDay(date, TODAY);
-                      return (
-                        <div key={date.toISOString()} className={cn("p-3 text-center", active && "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900")}>
-                          <p className="text-[9px] font-black uppercase tracking-widest opacity-60">{date.toLocaleDateString("en", { weekday: "short" })}</p>
-                          <p className="mt-1 text-lg font-black">{date.getDate()}</p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="grid min-h-[330px] grid-cols-7 divide-x divide-zinc-100 rtl:divide-x-reverse dark:divide-white/[0.04]">
-                    {desk.weekDays.map(({ date, items }) => (
-                      <div key={date.toISOString()} className="space-y-2 p-2">
-                        {items.length === 0 ? (
-                          <div className="h-20 rounded-2xl border border-dashed border-zinc-100 dark:border-white/[0.04]" />
-                        ) : (
-                          items.map((client) => (
-                            <div key={client.id} className="rounded-2xl border border-zinc-100 bg-zinc-50 p-3 text-start dark:border-white/5 dark:bg-white/[0.035]">
-                              <div className="flex items-center justify-between gap-2">
-                                <p className="text-[10px] font-black text-zinc-900 dark:text-white">{client.appointmentTime}</p>
-                                <span className={cn("h-2 w-2 rounded-full", priorityDotClassName[client.priority])} />
-                              </div>
-                              <p className="mt-2 truncate text-xs font-black text-zinc-900 dark:text-white">{client.name}</p>
-                              <p className="mt-1 line-clamp-2 text-[10px] font-medium leading-relaxed text-zinc-500 dark:text-zinc-400">{client.nextAction}</p>
-                              <div className="mt-3">
-                                <StatusPill label={client.type} tone="neutral" />
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </AppSection>
-
-              <div className="space-y-6">
-                <AppSection title={t("chart.title")} description={t("chart.description")}>
-                  <div className="relative mx-auto h-[220px] max-w-[250px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie data={desk.chartData} dataKey="value" innerRadius={64} outerRadius={94} strokeWidth={0} paddingAngle={3}>
-                          {desk.chartData.map((entry, index) => (
-                            <Cell key={entry.name} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                          ))}
-                        </Pie>
-                      </PieChart>
-                    </ResponsiveContainer>
-                    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                      <p className="text-3xl font-black tracking-tighter text-zinc-900 dark:text-white">{desk.readyProjects.length}/{projects.length}</p>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t("chart.center")}</p>
+            {workspaceStatus !== "ready" ? (
+              <WorkspaceQueryState status={workspaceStatus} />
+            ) : isLoading ? (
+              <ProgressiveLoadingState />
+            ) : (
+              <>
+                <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+                  <AppSection
+                    title={t("calendar.title")}
+                    description={t("calendar.description")}
+                    actions={
+                      <Link href="/calendar" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400 transition hover:text-zinc-900 dark:hover:text-white">
+                        {t("calendar.open")}
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    }
+                  >
+                    <div className="mb-5 grid gap-4 md:grid-cols-3">
+                      {(overview?.projects ?? []).map((project) => (
+                        <DashboardProjectCard key={project.id} project={project} />
+                      ))}
                     </div>
-                  </div>
-                  <div className="mt-3 grid grid-cols-2 gap-2">
-                    {desk.chartData.map((item, index) => (
-                      <div key={item.name} className="flex items-center gap-2 text-xs font-bold text-zinc-500 dark:text-zinc-400">
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: CHART_COLORS[index] }} />
-                        <span className="truncate">{item.name}</span>
+                    <div className="overflow-hidden rounded-[22px] border border-zinc-100 bg-white dark:border-white/5 dark:bg-[#0A0A0A]">
+                      <div className="grid grid-cols-7 border-b border-zinc-100 dark:border-white/5">
+                        {desk.weekDays.map(({ date }) => {
+                          const active = isSameDay(date, TODAY);
+                          return (
+                            <div key={date.toISOString()} className={cn("p-3 text-center", active && "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900")}>
+                              <p className="text-[9px] font-black uppercase tracking-widest opacity-60">{date.toLocaleDateString("en", { weekday: "short" })}</p>
+                              <p className="mt-1 text-lg font-black">{date.getDate()}</p>
+                            </div>
+                          );
+                        })}
                       </div>
-                    ))}
-                  </div>
-                </AppSection>
+                      <div className="grid min-h-[330px] grid-cols-7 divide-x divide-zinc-100 rtl:divide-x-reverse dark:divide-white/[0.04]">
+                        {desk.weekDays.map(({ date, items }) => (
+                          <div key={date.toISOString()} className="space-y-2 p-2">
+                            {items.length === 0 ? (
+                              <div className="h-20 rounded-2xl border border-dashed border-zinc-100 dark:border-white/[0.04]" />
+                            ) : (
+                              items.map((event) => (
+                                <div key={event.id} className="rounded-2xl border border-zinc-100 bg-zinc-50 p-3 text-start dark:border-white/5 dark:bg-white/[0.035]">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <p className="text-[10px] font-black text-zinc-900 dark:text-white">{event.time}</p>
+                                    <span className={cn("h-2 w-2 rounded-full", priorityDotClassName[event.priority])} />
+                                  </div>
+                                  <p className="mt-2 truncate text-xs font-black text-zinc-900 dark:text-white">{event.clientName ?? event.owner}</p>
+                                  <p className="mt-1 line-clamp-2 text-[10px] font-medium leading-relaxed text-zinc-500 dark:text-zinc-400">{event.title}</p>
+                                  <div className="mt-3">
+                                    <StatusPill label={event.type} tone="neutral" />
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </AppSection>
 
-                <AppSection title={t("actions.title")} description={t("actions.description")}>
-                  <div className="space-y-2">
-                    <RoleAction href="/clients" role={t("actions.sales")} label={t("actions.logFollowUp")} icon={MessageSquareText} primary />
-                    <RoleAction href="/calendar" role={t("actions.coordinator")} label={t("actions.scheduleViewing")} icon={CalendarClock} />
-                    <RoleAction href="/properties/create" role={t("actions.inventory")} label={t("actions.addUnit")} icon={Home} />
-                    <RoleAction href="/projects/create" role={t("actions.admin")} label={t("actions.prepareProject")} icon={Plus} />
+                  <div className="space-y-6">
+                    <AppSection title={t("chart.title")} description={t("chart.description")}>
+                      <div className="relative mx-auto h-[220px] max-w-[250px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie data={desk.chartData} dataKey="value" innerRadius={64} outerRadius={94} strokeWidth={0} paddingAngle={3}>
+                              {desk.chartData.map((entry, index) => (
+                                <Cell key={entry.name} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                              ))}
+                            </Pie>
+                          </PieChart>
+                        </ResponsiveContainer>
+                        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                          <p className="text-3xl font-black tracking-tighter text-zinc-900 dark:text-white">{desk.readyProjects}/{desk.totalProjects}</p>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t("chart.center")}</p>
+                        </div>
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        {desk.chartData.map((item, index) => (
+                          <div key={item.name} className="flex items-center gap-2 text-xs font-bold text-zinc-500 dark:text-zinc-400">
+                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: CHART_COLORS[index] }} />
+                            <span className="truncate">{item.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </AppSection>
+
+                    <AppSection title={t("actions.title")} description={t("actions.description")}>
+                      <div className="space-y-2">
+                        <RoleAction href="/clients" role={t("actions.sales")} label={t("actions.logFollowUp")} icon={MessageSquareText} primary />
+                        <RoleAction href="/calendar" role={t("actions.coordinator")} label={t("actions.scheduleViewing")} icon={CalendarClock} />
+                        <RoleAction href="/properties/create" role={t("actions.inventory")} label={t("actions.addUnit")} icon={Home} />
+                        <RoleAction href="/projects/create" role={t("actions.admin")} label={t("actions.prepareProject")} icon={Plus} />
+                      </div>
+                    </AppSection>
                   </div>
-                </AppSection>
-              </div>
-            </div>
+                </div>
+              </>
+            )}
           </AppPageShell>
         </ModePanel>
       )}
@@ -195,7 +243,7 @@ function ModePanel({ children }: { children: ReactNode }) {
   );
 }
 
-function DashboardProjectCard({ project }: { project: Project }) {
+function DashboardProjectCard({ project }: { project: DashboardProject }) {
   const t = useTranslations("Dashboard");
 
   return (
@@ -251,7 +299,7 @@ function ProjectCardMetric({ label, value }: { label: string; value: string }) {
   );
 }
 
-function MiniSignal({ label, value, helper, tone }: { label: string; value: number; helper: string; tone: "blue" | "green" | "amber" }) {
+function MiniSignal({ label, value, helper, tone }: { label: string; value: number | string; helper: string; tone: "blue" | "green" | "amber" }) {
   return (
     <div className="rounded-[22px] border border-zinc-100 bg-white p-4 dark:border-white/5 dark:bg-[#0A0A0A]">
       <div className="flex items-start justify-between gap-3">

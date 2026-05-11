@@ -9,6 +9,7 @@ export {
   AppThumbnailCell,
   AppToolbar,
 } from "./app-layout-kit";
+export { InfiniteScrollSentinel } from "./infinite-scroll-sentinel";
 export type {
   AppDataTableColumn,
   AppStatItem,

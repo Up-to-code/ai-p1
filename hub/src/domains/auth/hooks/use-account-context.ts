@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { createContext, createElement, useContext, useMemo, type ReactNode } from "react";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
@@ -18,6 +18,51 @@ type OrganizationMetadata = {
   brandColor?: string;
   sound?: string;
 };
+
+export type WorkspaceStatus =
+  | "loadingSession"
+  | "noOrganization"
+  | "convexAuthLoading"
+  | "convexAuthFailed"
+  | "ready";
+
+type AccountContextValue = {
+  isPending: boolean;
+  isSignedIn: boolean;
+  workspace: {
+    status: WorkspaceStatus;
+    organizationId: string | null;
+    isOrganizationPending: boolean;
+    isConvexAuthPending: boolean;
+    isConvexAuthenticated: boolean;
+    isReady: boolean;
+  };
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    image: string | null;
+    initials: string;
+  };
+  organization: {
+    id: string | null;
+    name: string;
+    legalName?: string | null;
+    type?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    website?: string | null;
+    address?: string | null;
+    logo: string | null;
+    slug: string | null;
+    status: string;
+    brandColor?: string;
+    sound?: string;
+    initials: string;
+  };
+};
+
+const AccountContext = createContext<AccountContextValue | null>(null);
 
 function parseMetadata(metadata?: unknown): OrganizationMetadata {
   if (!metadata) return {};
@@ -41,17 +86,25 @@ function getInitials(value: string) {
     .join("") || "AN";
 }
 
-export function useAccountContext() {
+function useAccountContextValue(): AccountContextValue {
   const session = authClient.useSession();
   const activeOrganization = authClient.useActiveOrganization();
   const organizations = authClient.useListOrganizations();
-  const { isAuthenticated } = useConvexAuth();
+  const { isAuthenticated: isConvexAuthenticated, isLoading: isConvexAuthPending } = useConvexAuth();
 
   const listedOrganizations = (organizations.data ?? []) as BetterAuthOrganization[];
   const authOrganization = (activeOrganization.data ?? listedOrganizations[0]) as BetterAuthOrganization | null | undefined;
   const organizationId = authOrganization?.id ?? null;
-  const shouldReadOrganizationProfile = isAuthenticated && Boolean(organizationId);
-  const shouldReadUserProfile = isAuthenticated;
+  const isOrganizationPending = session.isPending || activeOrganization.isPending || organizations.isPending;
+  const workspaceStatus: WorkspaceStatus =
+    session.isPending || isOrganizationPending
+      ? "loadingSession"
+      : !organizationId
+        ? "noOrganization"
+        : "ready";
+  const isWorkspaceReady = workspaceStatus === "ready";
+  const shouldReadOrganizationProfile = isWorkspaceReady && isConvexAuthenticated;
+  const shouldReadUserProfile = isConvexAuthenticated;
   const organizationProfile = useQuery(
     api.organizations.profile.read.getProfile,
     shouldReadOrganizationProfile && organizationId ? { organizationId } : "skip",
@@ -73,12 +126,16 @@ export function useAccountContext() {
     const organizationStatus = metadata.status || (organizationId ? "Active workspace" : "Workspace ready");
 
     return {
-      isPending:
-        session.isPending ||
-        activeOrganization.isPending ||
-        organizations.isPending ||
-        Boolean(shouldReadOrganizationProfile && organizationProfile === undefined) ||
-        Boolean(shouldReadUserProfile && userProfile === undefined),
+      isSignedIn: Boolean(session.data?.session),
+      isPending: workspaceStatus === "loadingSession",
+      workspace: {
+        status: workspaceStatus,
+        organizationId,
+        isOrganizationPending,
+        isConvexAuthPending,
+        isConvexAuthenticated,
+        isReady: isWorkspaceReady,
+      },
       user: {
         id: user?.id ?? "",
         name: userName,
@@ -104,19 +161,32 @@ export function useAccountContext() {
       },
     };
   }, [
-    activeOrganization.isPending,
-    authOrganization?.id,
     authOrganization?.logo,
     authOrganization?.metadata,
     authOrganization?.name,
     authOrganization?.slug,
+    isConvexAuthenticated,
+    isConvexAuthPending,
+    isOrganizationPending,
+    isWorkspaceReady,
     organizationId,
     organizationProfile,
-    organizations.isPending,
+    session.data?.session,
     session.data?.user,
-    session.isPending,
-    shouldReadOrganizationProfile,
-    shouldReadUserProfile,
     userProfile,
+    workspaceStatus,
   ]);
+}
+
+export function AccountProvider({ children }: { children: ReactNode }) {
+  const value = useAccountContextValue();
+  return createElement(AccountContext.Provider, { value }, children);
+}
+
+export function useAccountContext() {
+  const value = useContext(AccountContext);
+  if (!value) {
+    throw new Error("useAccountContext must be used inside AccountProvider.");
+  }
+  return value;
 }

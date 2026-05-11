@@ -6,11 +6,19 @@ import { authComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { getMediaAsset, listResourceMedia } from "./data";
 import { attachMediaInputValidator, mediaAssetValidator, updateMediaInputValidator } from "./validators";
+import type { MediaResourceType } from "./data";
+
+function permissionResourceForMedia(resourceType: MediaResourceType) {
+  if (resourceType === "project") return "project";
+  if (resourceType === "property") return "property";
+  if (resourceType === "calendarEvent") return "calendar";
+  return "client";
+}
 
 async function assertResourceExists(
   ctx: MutationCtx,
   organizationId: string,
-  resourceType: "project" | "property",
+  resourceType: MediaResourceType,
   resourceId: string,
 ) {
   if (resourceType === "project") {
@@ -21,16 +29,40 @@ async function assertResourceExists(
     return;
   }
 
-  const property = await ctx.db.get(resourceId as Id<"propertyUnits">);
-  if (!property || property.organizationId !== organizationId || property.deletedAt) {
-    throw new Error("Property unit was not found.");
+  if (resourceType === "property") {
+    const property = await ctx.db.get(resourceId as Id<"propertyUnits">);
+    if (!property || property.organizationId !== organizationId || property.deletedAt) {
+      throw new Error("Property unit was not found.");
+    }
+    return;
+  }
+
+  if (resourceType === "client") {
+    const client = await ctx.db.get(resourceId as Id<"clients">);
+    if (!client || client.organizationId !== organizationId || client.deletedAt) {
+      throw new Error("Client was not found.");
+    }
+    return;
+  }
+
+  if (resourceType === "calendarEvent") {
+    const event = await ctx.db.get(resourceId as Id<"calendarEvents">);
+    if (!event || event.organizationId !== organizationId || event.deletedAt) {
+      throw new Error("Calendar event was not found.");
+    }
+    return;
+  }
+
+  const task = await ctx.db.get(resourceId as Id<"clientTasks">);
+  if (!task || task.organizationId !== organizationId || task.deletedAt) {
+    throw new Error("Task was not found.");
   }
 }
 
 async function clearExistingCover(
   ctx: MutationCtx,
   organizationId: string,
-  resourceType: "project" | "property",
+  resourceType: MediaResourceType,
   resourceId: string,
 ) {
   const media = await listResourceMedia(ctx, organizationId, resourceType, resourceId);
@@ -49,7 +81,7 @@ export const attachFromHono = mutation({
   returns: mediaAssetValidator,
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const resource = args.input.resourceType === "project" ? "project" : "property";
+    const resource = permissionResourceForMedia(args.input.resourceType);
     await assertOrganizationResourcePermission(ctx, args.organizationId, resource, "update");
     await assertResourceExists(ctx, args.organizationId, args.input.resourceType, args.input.resourceId);
 
@@ -107,7 +139,7 @@ export const updateFromHono = mutation({
       throw new Error("Media asset was not found.");
     }
 
-    const resource = asset.resourceType === "project" ? "project" : "property";
+    const resource = permissionResourceForMedia(asset.resourceType);
     await assertOrganizationResourcePermission(ctx, args.organizationId, resource, "update");
 
     if (args.input.isCover) {
@@ -150,7 +182,7 @@ export const removeFromHono = mutation({
       throw new Error("Media asset was not found.");
     }
 
-    const resource = asset.resourceType === "project" ? "project" : "property";
+    const resource = permissionResourceForMedia(asset.resourceType);
     await assertOrganizationResourcePermission(ctx, args.organizationId, resource, "update");
 
     await ctx.db.delete(args.mediaId);

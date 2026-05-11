@@ -9,6 +9,7 @@ import {
   createOrganizationWorkRole,
   deleteOrganizationWorkRole,
   getCapabilities,
+  listOrganizationWorkRoles,
   removeOrganizationMember,
   updateOrganizationIdentity,
   updateOrganizationMemberRole,
@@ -46,6 +47,18 @@ export async function handleGetOrganizationCapabilities(c: Context) {
   try {
     const capabilities = await getCapabilities(params.organizationId);
     return c.json({ capabilities });
+  } catch (error) {
+    return handleActionError(c, error);
+  }
+}
+
+export async function handleListOrganizationRoles(c: Context) {
+  const params = organizationIdOrResponse(c);
+  if ("response" in params) return params.response;
+
+  try {
+    const roles = await listOrganizationWorkRoles(c, params.organizationId);
+    return c.json({ roles });
   } catch (error) {
     return handleActionError(c, error);
   }

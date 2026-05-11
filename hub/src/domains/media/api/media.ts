@@ -6,7 +6,7 @@ import { uploadFiles } from "@/lib/uploadthing";
 import type { Id } from "@convex/_generated/dataModel";
 
 export type MediaKind = "image" | "video" | "document";
-export type MediaResourceType = "project" | "property";
+export type MediaResourceType = "project" | "property" | "client" | "calendarEvent" | "task";
 
 export function inferMediaKind(mimeType: string): MediaKind {
   if (mimeType.startsWith("image/")) return "image";

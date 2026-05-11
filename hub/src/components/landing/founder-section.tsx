@@ -16,7 +16,7 @@ type Founder = {
 
 export function FounderSection() {
   const t = useTranslations("Landing.about.founders");
-  const foundersRaw = t.raw("items") as any[];
+  const foundersRaw = t.raw("items") as Array<Omit<Founder, "image">>;
   
   const images = [
     "https://lxlnvkv63w.ufs.sh/f/mB2esVAwkuPD0bWXvWPmr7qen1Cs3u8xDVvH5Ij9QEXKYfac",
@@ -41,7 +41,6 @@ export function FounderSection() {
               key={founder.name} 
               founder={founder} 
               index={index} 
-              isLast={index === founders.length - 1}
             />
           ))}
         </div>
@@ -53,11 +52,9 @@ export function FounderSection() {
 function FounderCinematicSection({ 
   founder, 
   index,
-  isLast 
 }: { 
   founder: Founder; 
   index: number;
-  isLast: boolean;
 }) {
   const isEven = index % 2 === 0;
 

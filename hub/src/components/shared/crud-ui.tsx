@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { AlertTriangle, ArrowLeft, Loader2, Search, Trash2 } from "lucide-react";
 import { AppPrimaryButton } from "@/components/shared";
@@ -21,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { WorkspaceStatus } from "@/domains/auth";
 
 type FieldError = string | undefined;
 
@@ -61,7 +63,7 @@ export function SearchBox({
   ariaLabel?: string;
   className?: string;
 }) {
-  const t = useTranslations('Common');
+  const t = useTranslations("Common");
   return (
     <div className={cn("flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 focus-within:ring-2 focus-within:ring-zinc-900/10 dark:border-white/5 dark:bg-white/[0.02] dark:focus-within:ring-white/10", className)}>
       <Search className="h-3.5 w-3.5 text-zinc-400" aria-hidden="true" />
@@ -106,13 +108,105 @@ export function LoadingState({
   title?: string;
   description?: string;
 }) {
-  const t = useTranslations('Common');
+  const t = useTranslations("Common");
   return (
     <div className="flex min-h-64 flex-col items-center justify-center rounded-[24px] border border-zinc-100 bg-zinc-50/40 p-10 text-center dark:border-white/5 dark:bg-white/[0.01]">
       <Loader2 className="h-7 w-7 animate-spin text-zinc-300" aria-hidden="true" />
       <h3 className="mt-5 text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">{title || t('loadingTitle')}</h3>
       <p className="mt-2 max-w-md text-xs font-medium uppercase leading-relaxed tracking-tight text-zinc-500">{description || t('loadingDesc')}</p>
     </div>
+  );
+}
+
+export function ProgressiveLoadingState({
+  title,
+  description,
+  delayMs = 7000,
+}: {
+  title?: string;
+  description?: string;
+  delayMs?: number;
+}) {
+  const t = useTranslations("Common");
+  const [isStalled, setIsStalled] = useState(false);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setIsStalled(true), delayMs);
+    return () => window.clearTimeout(timeout);
+  }, [delayMs]);
+
+  return (
+    <div className="flex min-h-64 flex-col items-center justify-center rounded-[24px] border border-zinc-100 bg-zinc-50/40 p-10 text-center dark:border-white/5 dark:bg-white/[0.01]">
+      <Loader2 className="h-7 w-7 animate-spin text-zinc-300" aria-hidden="true" />
+      <h3 className="mt-5 text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">
+        {isStalled ? t("loadingStillTitle") : title || t("loadingTitle")}
+      </h3>
+      <p className="mt-2 max-w-md text-xs font-medium uppercase leading-relaxed tracking-tight text-zinc-500">
+        {isStalled ? t("loadingStillDesc") : description || t("loadingDesc")}
+      </p>
+      {isStalled && (
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-5 h-9 rounded-xl text-[10px] font-black uppercase tracking-widest"
+          onClick={() => window.location.reload()}
+        >
+          {t("refresh")}
+        </Button>
+      )}
+    </div>
+  );
+}
+
+export function WorkspaceQueryState({
+  status,
+}: {
+  status: Exclude<WorkspaceStatus, "ready">;
+}) {
+  const t = useTranslations("Common");
+
+  if (status === "loadingSession" || status === "convexAuthLoading") {
+    return (
+      <ProgressiveLoadingState
+        title={status === "convexAuthLoading" ? t("convexAuthLoadingTitle") : undefined}
+        description={status === "convexAuthLoading" ? t("convexAuthLoadingDesc") : undefined}
+      />
+    );
+  }
+
+  if (status === "noOrganization") {
+    return (
+      <EmptyWorkspace
+        icon={AlertTriangle}
+        title={t("noOrganizationTitle")}
+        description={t("noOrganizationDesc")}
+      />
+    );
+  }
+
+  return (
+    <ErrorState
+      title={t("convexAuthFailedTitle")}
+      description={t("convexAuthFailedDesc")}
+      action={
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="h-9 rounded-xl text-[10px] font-black uppercase tracking-widest"
+            onClick={() => window.location.reload()}
+          >
+            {t("refresh")}
+          </Button>
+          <Link
+            href="/sign-in"
+            className="inline-flex h-9 items-center justify-center rounded-xl bg-zinc-900 px-4 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-black focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
+          >
+            {t("signIn")}
+          </Link>
+        </div>
+      }
+    />
   );
 }
 
@@ -531,4 +625,3 @@ export function SegmentedControl<TValue extends string>({
     </FormField>
   );
 }
-

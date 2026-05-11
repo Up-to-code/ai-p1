@@ -1,5 +1,9 @@
 import type { QueryCtx, MutationCtx } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
+import type { Infer } from "convex/values";
+import type { mediaResourceTypeValidator } from "./validators";
+
+export type MediaResourceType = Infer<typeof mediaResourceTypeValidator>;
 
 export async function getMediaAsset(ctx: QueryCtx | MutationCtx, mediaId: Id<"mediaAssets">) {
   return ctx.db.get(mediaId);
@@ -8,7 +12,7 @@ export async function getMediaAsset(ctx: QueryCtx | MutationCtx, mediaId: Id<"me
 export async function listResourceMedia(
   ctx: QueryCtx | MutationCtx,
   organizationId: string,
-  resourceType: "project" | "property",
+  resourceType: MediaResourceType,
   resourceId: string,
 ) {
   return ctx.db

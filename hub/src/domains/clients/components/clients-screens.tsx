@@ -12,16 +12,34 @@ import {
   AppStatsGrid,
   AppTabsList,
   AppToolbar,
+  InfiniteScrollSentinel,
   type AppDataTableColumn,
 } from "@/components/shared";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Link, useRouter } from "@/i18n/routing";
-import { useClientsStore } from "@/domains/clients";
-import { usePropertiesStore } from "@/domains/properties";
+import { useAccountContext } from "@/domains/auth";
+import {
+  CLIENTS_PAGE_SIZE,
+  deleteClientRequest,
+  linkClientUnitRequest,
+  updateClientRequest,
+  useClientQuery,
+  useClientsPagedQuery,
+  useClientStatsQuery,
+  useClientUnitLinksQuery,
+} from "@/domains/clients/api/clients";
+import {
+  createClientTaskRequest,
+  updateClientTaskRequest,
+  useClientTasksQuery,
+} from "@/domains/clients/api/client-tasks";
+import { useCalendarEventsQuery, useCalendarStatsRangeQuery } from "@/domains/calendar/api/calendar";
+import { usePropertiesQuery } from "@/domains/properties/api/properties";
+import { ResourceMediaUploader } from "@/domains/media/components/resource-media-uploader";
 import type { Client, ClientType } from "../store/clients.types";
 import { useOperationState } from "@/lib/utils/operation-state";
-import { DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, SearchBox, StatusPill } from "@/components/shared/crud-ui";
+import { DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, ProgressiveLoadingState, SearchBox, StatusPill, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { useUrlListState } from "@/components/shared/use-url-list-state";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -46,6 +64,25 @@ function typeTone(type: ClientType) {
   if (type === "Broker") return "warning";
   if (type === "Tenant") return "info";
   return "neutral";
+}
+
+function clientToFormValues(client: Client) {
+  return {
+    name: client.name,
+    type: client.type,
+    contact: client.contact,
+    phone: client.phone,
+    age: String(client.age),
+    nationality: client.nationality,
+    generation: client.generation,
+    budget: client.budget,
+    propertyInterest: client.propertyInterest,
+    status: client.status,
+    pipelineStage: client.pipelineStage,
+    priority: client.priority,
+    nextAction: client.nextAction,
+    issue: client.issue ?? "",
+  };
 }
 
 function ClientMiniCard({ client, onDelete }: { client: Client; onDelete: (client: Client) => void }) {
@@ -110,13 +147,20 @@ function ClientMiniCard({ client, onDelete }: { client: Client; onDelete: (clien
 
 export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "pipeline" | "calendar" | "list" }) {
   const t = useTranslations('Clients');
-  const { clients, filter, search, view, setFilter, setSearch, setView, deleteClient, moveClient } = useClientsStore();
+  const account = useAccountContext();
+  const workspaceStatus = account.workspace.status;
+  const isWorkspaceReady = workspaceStatus === "ready";
+  const workspaceOrganizationId = isWorkspaceReady ? account.workspace.organizationId ?? undefined : undefined;
+  const [filter, setFilter] = useState<(typeof clientFilters)[number]>("all");
+  const [search, setSearch] = useState("");
+  const [view, setView] = useState<(typeof clientViews)[number]>(initialView);
   const [deleting, setDeleting] = useState<Client | null>(null);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverStage, setDragOverStage] = useState<string | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<{ stage: string; index: number } | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const deleteOperation = useOperationState({ errorMessage: "Client delete failed." });
+  const moveOperation = useOperationState({ errorMessage: "Client move failed." });
 
   useUrlListState({
     filter,
@@ -131,14 +175,24 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
     validViews: clientViews,
   });
 
+  const clientsQuery = useClientsPagedQuery(workspaceOrganizationId, {
+    type: filter === "all" ? undefined : filter,
+    search,
+  });
+  const clients = useMemo(() => clientsQuery.results as Client[], [clientsQuery.results]);
+  const stats = useClientStatsQuery(workspaceOrganizationId);
+  const calendarStats = useCalendarStatsRangeQuery(workspaceOrganizationId, 0, 4102444800000);
+  const calendarEventsQuery = useCalendarEventsQuery(workspaceOrganizationId);
+  const calendarEvents = useMemo(() => calendarEventsQuery ?? [], [calendarEventsQuery]);
+  const isLoading = isWorkspaceReady && clientsQuery.status === "LoadingFirstPage";
+
   const filteredClients = useMemo(() => {
     return clients.filter((client) => {
-      const matchesType = filter === "all" || client.type === filter;
       const q = search.trim().toLowerCase();
       const matchesSearch = !q || [client.name, client.contact, client.propertyInterest, client.budget].some((value) => value.toLowerCase().includes(q));
-      return matchesType && matchesSearch;
+      return matchesSearch;
     });
-  }, [clients, filter, search]);
+  }, [clients, search]);
 
   const columns: AppDataTableColumn<Client>[] = [
     {
@@ -179,10 +233,10 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
     <AppPageShell>
       <AppPageHeader eyebrow={t("eyebrow")} title={t("title") + "."} actions={<AppPrimaryButton onClick={() => setIsCreateOpen(true)}><UserPlus className="me-2 h-3.5 w-3.5" />{t("add")}</AppPrimaryButton>} />
       <AppStatsGrid stats={[
-        { label: t("stats.total"), value: clients.length, icon: Users },
-        { label: t("stats.active"), value: clients.filter((c) => c.status === "active").length, dotClassName: "bg-emerald-500" },
-        { label: t("stats.investors"), value: clients.filter((c) => c.type === "Investor").length, dotClassName: "bg-blue-500" },
-        { label: t("stats.appointments"), value: 12, icon: Copy },
+        { label: t("stats.total"), value: stats?.total ?? "...", icon: Users },
+        { label: t("stats.active"), value: stats?.active ?? "...", dotClassName: "bg-emerald-500" },
+        { label: t("stats.investors"), value: stats?.investors ?? "...", dotClassName: "bg-blue-500" },
+        { label: t("stats.appointments"), value: calendarStats?.total ?? "...", icon: Copy },
       ]} />
       <AppToolbar
         filters={[
@@ -194,8 +248,6 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
         ]}
         activeFilter={filter}
         onFilterChange={(next) => setFilter(next as "all" | ClientType)}
-        view={view === "pipeline" ? "grid" : view === "list" ? "list" : "grid"}
-        onViewChange={(next) => setView(next === "list" ? "list" : "pipeline")}
         sortLabel={t("toolbar.newest")}
         trailing={<SearchBox value={search} onChange={setSearch} placeholder={t("toolbar.search")} name="client-search" ariaLabel="Search clients" />}
       />
@@ -208,7 +260,11 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
         ))}
       </div>
 
-      {view === "pipeline" && (
+      {workspaceStatus !== "ready" ? (
+        <WorkspaceQueryState status={workspaceStatus} />
+      ) : isLoading ? (
+        <ProgressiveLoadingState />
+      ) : view === "pipeline" && (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3 xl:grid-cols-5">
           {pipelineStages.map((stage) => {
             const stageClients = filteredClients.filter((client) => client.pipelineStage === stage);
@@ -233,8 +289,16 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
                   e.preventDefault();
                   setDragOverStage(null);
                   const clientId = e.dataTransfer.getData("clientId") || draggedId;
-                  if (clientId) {
-                    moveClient(clientId, stage, dragOverIndex?.stage === stage ? dragOverIndex.index : undefined);
+                  if (clientId && account.organization.id) {
+                    const movingClient = clients.find((client) => client.id === clientId);
+                    if (movingClient) {
+                      void moveOperation.run(() =>
+                        updateClientRequest(account.organization.id!, movingClient.id, {
+                          ...clientToFormValues(movingClient),
+                          pipelineStage: stage,
+                        }),
+                      );
+                    }
                   }
                   setDraggedId(null);
                   setDragOverIndex(null);
@@ -242,7 +306,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
               >
                 <div className="mb-4 flex items-center justify-between px-2">
                   <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">{t(`stages.${stage}`)}</h2>
-                  <span className="text-[10px] font-black text-zinc-300">{stageClients.length.toString().padStart(2, "0")}</span>
+                  <span className="text-[10px] font-black text-zinc-300">{String(stats?.stages[stage] ?? stageClients.length).padStart(2, "0")}</span>
                 </div>
                 <div className="space-y-3">
                   {stageClients.map((client, index) => {
@@ -287,27 +351,36 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
         </div>
       )}
 
-      {view === "list" && (
+      {isWorkspaceReady && !isLoading && view === "list" && (
         <AppDataTable columns={columns} data={filteredClients} getRowKey={(client) => client.id} />
       )}
 
-      {view === "calendar" && (
+      {isWorkspaceReady && !isLoading && view === "calendar" && (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          {filteredClients.map((client) => (
-            <AppSection key={client.id} title={client.nextActionDate} description={client.appointmentTime}>
+          {calendarEvents
+            .filter((event) => !event.clientId || filteredClients.some((client) => client.id === event.clientId))
+            .map((event) => (
+            <AppSection key={event.id} title={`${event.date} · ${event.time}`} description={event.owner}>
               <div className="flex items-start justify-between gap-4">
                 <div className="text-start">
-                  <p className="text-sm font-black uppercase tracking-tight text-zinc-900 dark:text-white">{client.nextAction}</p>
-                  <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-zinc-400">{client.name}</p>
+                  <p className="text-sm font-black uppercase tracking-tight text-zinc-900 dark:text-white">{event.title}</p>
+                  <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-zinc-400">{event.clientName ?? event.location ?? "Workspace event"}</p>
                 </div>
-                <StatusPill label={t(`stages.${client.pipelineStage}`)} tone="info" />
+                <StatusPill label={event.status} tone="info" />
               </div>
             </AppSection>
           ))}
         </div>
       )}
 
-      {filteredClients.length === 0 && <EmptyWorkspace icon={Users} title={t('empty.title')} description={t('empty.desc')} />}
+      {isWorkspaceReady && !isLoading && filteredClients.length === 0 && <EmptyWorkspace icon={Users} title={t('empty.title')} description={t('empty.desc')} />}
+      {isWorkspaceReady && !isLoading && filteredClients.length > 0 && (
+        <InfiniteScrollSentinel
+          status={clientsQuery.status}
+          loadMore={clientsQuery.loadMore}
+          pageSize={CLIENTS_PAGE_SIZE}
+        />
+      )}
 
       <DeleteRecordDialog
         open={Boolean(deleting)}
@@ -320,7 +393,8 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
           if (!deleting || !clients.some((client) => client.id === deleting.id)) {
             throw new Error("This client is no longer available.");
           }
-          deleteClient(deleting.id);
+          if (!account.organization.id) throw new Error("Select an organization first.");
+          return deleteClientRequest(account.organization.id, deleting.id);
         }, {
           successMessage: "Client deleted.",
           onSuccess: () => setDeleting(null),
@@ -334,12 +408,26 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
 
 export function ClientDetailScreen({ id }: { id: string }) {
   const t = useTranslations('Clients');
-  const client = useClientsStore((state) => state.getById(id));
-  const deleteClient = useClientsStore((state) => state.deleteClient);
-  const units = usePropertiesStore((state) => state.units);
+  const account = useAccountContext();
+  const client = useClientQuery(account.organization.id ?? undefined, id) as Client | null | undefined;
+  const linkedUnitsQuery = useClientUnitLinksQuery(account.organization.id ?? undefined, id);
+  const linkedUnits = useMemo(() => linkedUnitsQuery ?? [], [linkedUnitsQuery]);
+  const units = useMemo(() => linkedUnits.flatMap((row) => (row.unit ? [row.unit] : [])), [linkedUnits]);
+  const allUnits = usePropertiesQuery(account.organization.id ?? undefined) ?? [];
+  const tasks = useClientTasksQuery(account.organization.id ?? undefined, id) ?? [];
+  const events = useCalendarEventsQuery(account.organization.id ?? undefined, id) ?? [];
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [taskTitle, setTaskTitle] = useState("");
+  const [unitToLink, setUnitToLink] = useState("");
   const [deleting, setDeleting] = useState(false);
   const router = useRouter();
   const deleteOperation = useOperationState({ errorMessage: "Client delete failed." });
+  const taskOperation = useOperationState({ errorMessage: "Task action failed." });
+  const linkOperation = useOperationState({ errorMessage: "Unit link failed." });
+
+  if (client === undefined) {
+    return <AppPageShell><EmptyWorkspace icon={Users} title="Loading client" description="Client data is syncing from Convex." /></AppPageShell>;
+  }
 
   if (!client) {
     return (
@@ -489,7 +577,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
                   {units.slice(0, 3).map((u) => (
                     <Link key={u.id} href={`/properties/${u.id}`} className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-zinc-50 dark:hover:bg-white/5">
                       <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-zinc-100 dark:bg-white/5">
-                        {u.image ? <Image src={u.image} alt="" width={40} height={40} className="h-full w-full object-cover grayscale" /> : null}
+                        {u.coverImageUrl ? <Image src={u.coverImageUrl} alt="" width={40} height={40} className="h-full w-full object-cover grayscale" /> : null}
                       </div>
                       <div className="min-w-0 flex-1 text-start">
                         <p className="truncate text-xs font-black uppercase text-zinc-900 dark:text-white">{u.title}</p>
@@ -508,14 +596,14 @@ export function ClientDetailScreen({ id }: { id: string }) {
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-5">{t('detail.activity.subtitle')}</p>
                 <div className="space-y-4">
                   {[
-                    { action: client.nextAction, date: client.nextActionDate, color: "bg-emerald-500" },
-                    { action: t('stages.qualified'), date: client.lastContact, color: "bg-blue-500" },
+                    ...tasks.slice(0, 2).map((task) => ({ action: task.title, date: task.dueAt ? new Date(task.dueAt).toISOString().slice(0, 10) : "Open", color: task.status === "done" ? "bg-zinc-300" : "bg-emerald-500" })),
+                    ...events.slice(0, 2).map((event) => ({ action: event.title, date: `${event.date} ${event.time}`, color: "bg-blue-500" })),
                     { action: t('stages.new'), date: client.added, color: "bg-zinc-300" },
-                  ].map((event, i) => (
+                  ].slice(0, 4).map((event, i, list) => (
                     <div key={i} className="flex items-start gap-3">
                       <div className="flex flex-col items-center">
                         <div className={cn("h-2.5 w-2.5 rounded-full", event.color)} />
-                        {i < 2 && <div className="h-8 w-[2px] bg-zinc-100 dark:bg-white/5" />}
+                        {i < list.length - 1 && <div className="h-8 w-[2px] bg-zinc-100 dark:bg-white/5" />}
                       </div>
                       <div className="text-start -mt-0.5">
                         <p className="text-[11px] font-black uppercase text-zinc-900 dark:text-white">{event.action}</p>
@@ -560,7 +648,28 @@ export function ClientDetailScreen({ id }: { id: string }) {
         </TabsContent>
 
         <TabsContent value="units">
-          <AppSection title={t('detail.tabs.units')}>
+          <AppSection
+            title={t('detail.tabs.units')}
+            actions={
+              <div className="flex flex-wrap items-center gap-2">
+                <select value={unitToLink} onChange={(event) => setUnitToLink(event.target.value)} className="h-10 rounded-xl border border-zinc-100 bg-white px-3 text-xs font-bold dark:border-white/10 dark:bg-white/5">
+                  <option value="">Select unit</option>
+                  {allUnits.map((unit) => <option key={unit.id} value={unit.id}>{unit.title}</option>)}
+                </select>
+                <Button
+                  size="sm"
+                  disabled={!unitToLink || linkOperation.isRunning}
+                  onClick={() => void linkOperation.run(async () => {
+                    if (!account.organization.id) throw new Error("Select an organization first.");
+                    await linkClientUnitRequest(account.organization.id, client.id, unitToLink, "shortlisted");
+                    setUnitToLink("");
+                  }, { successMessage: "Unit linked." })}
+                >
+                  <Plus className="me-2 h-3.5 w-3.5" />Link
+                </Button>
+              </div>
+            }
+          >
             <AppDataTable 
               data={units.slice(0, 3)} 
               getRowKey={(u) => u.id}
@@ -571,7 +680,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
                   render: (u) => (
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 overflow-hidden rounded-lg bg-zinc-100 dark:bg-white/5">
-                        {u.image ? <Image src={u.image} alt="" width={32} height={32} className="h-full w-full object-cover grayscale" /> : null}
+                        {u.coverImageUrl ? <Image src={u.coverImageUrl} alt="" width={32} height={32} className="h-full w-full object-cover grayscale" /> : null}
                       </div>
                       <div className="text-start">
                         <p className="text-xs font-black uppercase text-zinc-900 dark:text-white">{u.title}</p>
@@ -603,19 +712,63 @@ export function ClientDetailScreen({ id }: { id: string }) {
 
         <TabsContent value="activity">
           <AppSection title={t('detail.activity.subtitle')}>
-             <div className="flex min-h-32 flex-col items-center justify-center text-center opacity-40">
-                <ActivityIcon className="h-8 w-8 text-zinc-300" />
-                <p className="mt-4 text-[10px] font-black uppercase tracking-widest">{t('empty.title')}</p>
-             </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-2xl border border-zinc-100 p-4 dark:border-white/5">
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Open tasks</p>
+                <div className="mt-4 space-y-2">
+                  {tasks.map((task) => (
+                    <button
+                      key={task.id}
+                      type="button"
+                      onClick={() => void taskOperation.run(() => {
+                        if (!account.organization.id) throw new Error("Select an organization first.");
+                        return updateClientTaskRequest(account.organization.id, task.id, {
+                          clientId: client.id,
+                          title: task.title,
+                          status: task.status === "done" ? "open" : "done",
+                          priority: task.priority,
+                          dueAt: task.dueAt,
+                          propertyId: task.propertyId,
+                          projectId: task.projectId,
+                          calendarEventId: task.calendarEventId,
+                          notes: task.notes,
+                        });
+                      }, { successMessage: "Task updated." })}
+                      className="flex w-full items-center justify-between rounded-xl bg-zinc-50 p-3 text-start text-xs font-black uppercase dark:bg-white/5"
+                    >
+                      <span>{task.title}</span>
+                      <StatusPill label={task.status} tone={task.status === "done" ? "success" : "warning"} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-2xl border border-zinc-100 p-4 dark:border-white/5">
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Add task</p>
+                <div className="mt-4 flex gap-2">
+                  <input value={taskTitle} onChange={(event) => setTaskTitle(event.target.value)} placeholder="Task title" className="h-10 min-w-0 flex-1 rounded-xl border border-zinc-100 bg-white px-3 text-sm font-bold outline-none dark:border-white/10 dark:bg-white/5" />
+                  <Button disabled={!taskTitle.trim() || taskOperation.isRunning} onClick={() => void taskOperation.run(async () => {
+                    if (!account.organization.id) throw new Error("Select an organization first.");
+                    await createClientTaskRequest(account.organization.id, { clientId: client.id, title: taskTitle, status: "open", priority: client.priority });
+                    setTaskTitle("");
+                  }, { successMessage: "Task added." })}>Add</Button>
+                </div>
+              </div>
+            </div>
           </AppSection>
         </TabsContent>
 
         <TabsContent value="docs">
           <AppSection title={t('detail.documents.subtitle')}>
-             <div className="flex min-h-32 flex-col items-center justify-center text-center opacity-40">
-                <DocsIcon className="h-8 w-8 text-zinc-300" />
-                <p className="mt-4 text-[10px] font-black uppercase tracking-widest">{t('empty.title')}</p>
-             </div>
+            <ResourceMediaUploader
+              organizationId={account.organization.id ?? undefined}
+              resourceType="client"
+              resourceId={client.id}
+              pendingFiles={pendingFiles}
+              onPendingFilesChange={setPendingFiles}
+              immediate
+              allowedKinds={["document", "image"]}
+              labels={{ title: "Client documents", description: "Attach IDs, contracts, notes, and supporting files to this client." }}
+            />
           </AppSection>
         </TabsContent>
       </Tabs>
@@ -628,7 +781,8 @@ export function ClientDetailScreen({ id }: { id: string }) {
         isDeleting={deleteOperation.isRunning}
         error={deleteOperation.error}
         onConfirm={() => deleteOperation.run(() => {
-          deleteClient(client.id);
+          if (!account.organization.id) throw new Error("Select an organization first.");
+          return deleteClientRequest(account.organization.id, client.id);
         }, {
           successMessage: "Client deleted.",
           onSuccess: () => {
@@ -643,8 +797,13 @@ export function ClientDetailScreen({ id }: { id: string }) {
 
 export function ClientFormScreen({ id }: { id?: string }) {
   const t = useTranslations('Clients');
-  const existing = useClientsStore((state) => (id ? state.getById(id) : undefined));
+  const account = useAccountContext();
+  const existing = useClientQuery(account.organization.id ?? undefined, id ?? "") as Client | null | undefined;
   const router = useRouter();
+
+  if (id && existing === undefined) {
+    return <AppPageShell><EmptyWorkspace icon={Users} title="Loading client" description="Client data is syncing from Convex." /></AppPageShell>;
+  }
 
   if (id && !existing) {
     return (
@@ -661,17 +820,17 @@ export function ClientFormScreen({ id }: { id?: string }) {
 
   return (
     <AppPageShell maxWidth="default">
-      <AppPageHeader 
-        eyebrow={t('form.eyebrow')} 
-        title={existing ? t('form.editTitle') + "." : t('form.createTitle') + "."} 
-        subtitle={t('form.subtitle')} 
+      <AppPageHeader
+        eyebrow={t('form.eyebrow')}
+        title={existing ? t('form.editTitle') + "." : t('form.createTitle') + "."}
+        subtitle={t('form.subtitle')}
       />
 
       <div className="rounded-[32px] border border-zinc-100 bg-white p-10 dark:border-white/5 dark:bg-[#0A0A0A]">
-        <ClientForm 
-          existing={existing} 
-          onSuccess={(nextId) => router.push(`/clients/${nextId}`)} 
-          onCancel={() => router.back()} 
+        <ClientForm
+          existing={existing ?? undefined}
+          onSuccess={(nextId) => router.push(`/clients/${nextId}`)}
+          onCancel={() => router.back()}
         />
       </div>
     </AppPageShell>

@@ -4,6 +4,13 @@ import { assertOrganizationResourcePermission } from "../organizations/profile/a
 import { getMediaAsset, listResourceMedia } from "./data";
 import { mediaAssetValidator, mediaResourceTypeValidator } from "./validators";
 
+function permissionResourceForMedia(resourceType: "project" | "property" | "client" | "calendarEvent" | "task") {
+  if (resourceType === "project") return "project";
+  if (resourceType === "property") return "property";
+  if (resourceType === "calendarEvent") return "calendar";
+  return "client";
+}
+
 export const listForResource = query({
   args: {
     organizationId: v.string(),
@@ -12,7 +19,7 @@ export const listForResource = query({
   },
   returns: v.array(mediaAssetValidator),
   handler: async (ctx, args) => {
-    const resource = args.resourceType === "project" ? "project" : "property";
+    const resource = permissionResourceForMedia(args.resourceType);
     await assertOrganizationResourcePermission(ctx, args.organizationId, resource, "read");
 
     const media = await listResourceMedia(ctx, args.organizationId, args.resourceType, args.resourceId);
@@ -32,7 +39,7 @@ export const getForDelete = query({
       throw new Error("Media asset was not found.");
     }
 
-    const resource = asset.resourceType === "project" ? "project" : "property";
+    const resource = permissionResourceForMedia(asset.resourceType);
     await assertOrganizationResourcePermission(ctx, args.organizationId, resource, "update");
 
     return asset;

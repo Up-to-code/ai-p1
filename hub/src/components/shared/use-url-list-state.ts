@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 
 export function useUrlListState<TFilter extends string, TView extends string>({
@@ -27,6 +27,14 @@ export function useUrlListState<TFilter extends string, TView extends string>({
   validViews?: readonly TView[];
 }) {
   const searchParams = useSearchParams();
+  const searchParamsKey = searchParams.toString();
+  const stateRef = useRef({ filter, search, view });
+  const hasReadUrlRef = useRef(false);
+  const hasSkippedInitialWriteRef = useRef(false);
+
+  useEffect(() => {
+    stateRef.current = { filter, search, view };
+  }, [filter, search, view]);
 
   useEffect(() => {
     const filterParam = searchParams.get("filter");
@@ -36,13 +44,31 @@ export function useUrlListState<TFilter extends string, TView extends string>({
     const nextFilter = filterParam && (!validFilters || validFilters.includes(filterParam as TFilter)) ? filterParam as TFilter : defaultFilter;
     const nextView = viewParam && (!validViews || validViews.includes(viewParam as TView)) ? viewParam as TView : defaultView;
     const nextSearch = searchParam?.trim() ?? "";
+    const current = stateRef.current;
 
-    setFilter(nextFilter);
-    setSearch(nextSearch);
-    setView(nextView);
-  }, [defaultFilter, defaultView, searchParams, setFilter, setSearch, setView, validFilters, validViews]);
+    if (nextFilter !== current.filter) setFilter(nextFilter);
+    if (nextSearch !== current.search) setSearch(nextSearch);
+    if (nextView !== current.view) setView(nextView);
+    hasReadUrlRef.current = true;
+  }, [
+    defaultFilter,
+    defaultView,
+    searchParams,
+    searchParamsKey,
+    setFilter,
+    setSearch,
+    setView,
+    validFilters,
+    validViews,
+  ]);
 
   useEffect(() => {
+    if (!hasReadUrlRef.current) return;
+    if (!hasSkippedInitialWriteRef.current) {
+      hasSkippedInitialWriteRef.current = true;
+      return;
+    }
+
     const params = new URLSearchParams(window.location.search);
 
     if (filter && filter !== defaultFilter) params.set("filter", filter);
@@ -55,6 +81,9 @@ export function useUrlListState<TFilter extends string, TView extends string>({
     else params.delete("view");
 
     const nextUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`;
-    window.history.replaceState(null, "", nextUrl);
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    if (nextUrl !== currentUrl) {
+      window.history.replaceState(null, "", nextUrl);
+    }
   }, [defaultFilter, defaultView, filter, search, view]);
 }

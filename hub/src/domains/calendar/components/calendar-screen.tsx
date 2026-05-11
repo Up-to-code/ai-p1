@@ -9,8 +9,13 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { useCalendarStore } from "@/domains/calendar";
 import type { CalendarEvent } from "../store/calendar.types";
 import { calendarEventSchema, type CalendarEventFormValues } from "../validation/calendar.schema";
+import { useAccountContext } from "@/domains/auth";
+import { useClientOptionsQuery } from "@/domains/clients/api/clients";
+import { useClientTaskOptionsQuery } from "@/domains/clients/api/client-tasks";
+import { usePropertyOptionsQuery } from "@/domains/properties/api/properties";
+import { createCalendarEventRequest, deleteCalendarEventRequest, updateCalendarEventRequest, useCalendarEventsRangeQuery, useCalendarStatsRangeQuery } from "../api/calendar";
 import { useOperationState } from "@/lib/utils/operation-state";
-import { ChoiceGrid, DeleteRecordDialog, FormErrorSummary, StatusPill, TextInput } from "@/components/shared/crud-ui";
+import { ChoiceGrid, DeleteRecordDialog, FormErrorSummary, ProgressiveLoadingState, StatusPill, TextInput, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -36,6 +41,13 @@ function getWeekDays(date: Date): Date[] {
 }
 function toIso(d: Date) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function generateTimeSlots() { const s: string[] = []; for (let h=8;h<=20;h++) for (let m=0;m<60;m+=30) s.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`); return s; }
+function startOfDay(date: Date) { const d = new Date(date); d.setHours(0, 0, 0, 0); return d.getTime(); }
+function endOfDay(date: Date) { const d = new Date(date); d.setHours(23, 59, 59, 999); return d.getTime(); }
+function visibleRange(date: Date, view: "month" | "week" | "day") {
+  if (view === "day") return { startAt: startOfDay(date), endAt: endOfDay(date) };
+  const days = view === "week" ? getWeekDays(date) : getDaysInMonth(date);
+  return { startAt: startOfDay(days[0]), endAt: endOfDay(days[days.length - 1]) };
+}
 
 function eventTone(status: CalendarEvent["status"]): StatusPillTone {
   return status === "confirmed" ? "success" : status === "pending" ? "warning" : "neutral";
@@ -55,7 +67,19 @@ function typeBg(type: string) {
 export function CalendarScreen() {
   const t = useTranslations('Calendar');
   const locale = useLocale();
-  const { events, currentDate, view, setCurrentDate, setView, createEvent, deleteEvent } = useCalendarStore();
+  const account = useAccountContext();
+  const workspaceStatus = account.workspace.status;
+  const isWorkspaceReady = workspaceStatus === "ready";
+  const workspaceOrganizationId = isWorkspaceReady ? account.workspace.organizationId ?? undefined : undefined;
+  const { currentDate, view, setCurrentDate, setView } = useCalendarStore();
+  const range = useMemo(() => visibleRange(currentDate, view), [currentDate, view]);
+  const eventsQuery = useCalendarEventsRangeQuery(workspaceOrganizationId, range.startAt, range.endAt);
+  const stats = useCalendarStatsRangeQuery(workspaceOrganizationId, range.startAt, range.endAt);
+  const events = useMemo(() => (eventsQuery ?? []) as CalendarEvent[], [eventsQuery]);
+  const clients = useClientOptionsQuery(workspaceOrganizationId) ?? [];
+  const units = usePropertyOptionsQuery(workspaceOrganizationId) ?? [];
+  const tasks = useClientTaskOptionsQuery(workspaceOrganizationId) ?? [];
+  const isLoading = isWorkspaceReady && eventsQuery === undefined;
   const [deleting, setDeleting] = useState<CalendarEvent | null>(null);
   const [drawerDate, setDrawerDate] = useState<Date | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
@@ -108,15 +132,32 @@ export function CalendarScreen() {
 
   return (
     <AppPageShell>
-      <AppPageHeader eyebrow={t('eyebrow')} title={t('title') + "."} actions={<CreateEventDialog onCreate={createEvent} />} />
+      <AppPageHeader
+        eyebrow={t('eyebrow')}
+        title={t('title') + "."}
+        actions={
+          <CreateEventDialog
+            organizationId={workspaceOrganizationId}
+            clients={clients}
+            units={units}
+            tasks={tasks}
+          />
+        }
+      />
 
       <AppStatsGrid stats={[
-        { label: t('stats.events'), value: events.length, icon: CalendarDays },
-        { label: t('stats.confirmed'), value: events.filter(e => e.status === "confirmed").length, dotClassName: "bg-emerald-500" },
-        { label: t('stats.pending'), value: events.filter(e => e.status === "pending").length, dotClassName: "bg-amber-500" },
-        { label: t('stats.owners'), value: new Set(events.map(e => e.owner)).size, icon: User },
+        { label: t('stats.events'), value: stats?.total ?? "...", icon: CalendarDays },
+        { label: t('stats.confirmed'), value: stats?.confirmed ?? "...", dotClassName: "bg-emerald-500" },
+        { label: t('stats.pending'), value: stats?.pending ?? "...", dotClassName: "bg-amber-500" },
+        { label: t('stats.owners'), value: stats?.owners ?? "...", icon: User },
       ]} />
 
+      {workspaceStatus !== "ready" ? (
+        <WorkspaceQueryState status={workspaceStatus} />
+      ) : isLoading ? (
+        <ProgressiveLoadingState />
+      ) : (
+        <>
       {/* Calendar Card */}
       <div className="rounded-[24px] border border-zinc-100 bg-white overflow-hidden dark:border-white/5 dark:bg-[#0A0A0A]">
         {/* Switcher */}
@@ -225,7 +266,16 @@ export function CalendarScreen() {
 
       {/* ── Day Drawer ── */}
       {drawerDate && (
-        <DayDrawer date={drawerDate} events={eventsForDate(drawerDate)} onClose={() => setDrawerDate(null)} onEventClick={setSelectedEvent} onDelete={(id) => { deleteEvent(id); }} />
+        <DayDrawer
+          date={drawerDate}
+          events={eventsForDate(drawerDate)}
+          onClose={() => setDrawerDate(null)}
+          onEventClick={setSelectedEvent}
+          onDelete={(id) => {
+            if (!account.organization.id) return;
+            void deleteCalendarEventRequest(account.organization.id, id);
+          }}
+        />
       )}
 
       {/* ── Event Detail ── */}
@@ -233,8 +283,20 @@ export function CalendarScreen() {
         <EventDetailDrawer 
           event={selectedEvent} 
           onClose={() => setSelectedEvent(null)} 
-          onDelete={(id) => { deleteEvent(id); setSelectedEvent(null); }}
-          onEdit={(updated) => { useCalendarStore.getState().updateEvent(selectedEvent.id, updated); setSelectedEvent(null); }}
+          onDelete={(id) => {
+            if (!account.organization.id) return;
+            void deleteCalendarEventRequest(account.organization.id, id);
+            setSelectedEvent(null);
+          }}
+          onEdit={(updated) => {
+            if (!account.organization.id) return;
+            void updateCalendarEventRequest(account.organization.id, selectedEvent.id, { ...selectedEvent, ...updated });
+            setSelectedEvent(null);
+          }}
+          organizationId={workspaceOrganizationId}
+          clients={clients}
+          units={units}
+          tasks={tasks}
         />
       )}
 
@@ -245,8 +307,14 @@ export function CalendarScreen() {
         description={t('delete.desc', { name: deleting?.title ?? "..." })}
         isDeleting={deleteOperation.isRunning}
         error={deleteOperation.error}
-        onConfirm={() => deleteOperation.run(() => { if (!deleting) throw new Error("No event"); deleteEvent(deleting.id); }, { successMessage: "Event deleted.", onSuccess: () => setDeleting(null) })}
+        onConfirm={() => deleteOperation.run(() => {
+          if (!deleting) throw new Error("No event");
+          if (!account.organization.id) throw new Error("Select an organization first.");
+          return deleteCalendarEventRequest(account.organization.id, deleting.id);
+        }, { successMessage: "Event deleted.", onSuccess: () => setDeleting(null) })}
       />
+        </>
+      )}
     </AppPageShell>
   );
 }
@@ -308,12 +376,20 @@ function EventDetailDrawer({
   event, 
   onClose, 
   onDelete,
-  onEdit 
+  onEdit,
+  organizationId,
+  clients,
+  units,
+  tasks,
 }: { 
   event: CalendarEvent; 
   onClose: () => void; 
   onDelete: (id: string) => void;
   onEdit: (updated: Partial<CalendarEvent>) => void;
+  organizationId?: string;
+  clients: Array<{ id: string; name: string }>;
+  units: Array<{ id: string; title: string }>;
+  tasks: Array<{ id: string; title: string; clientId: string }>;
 }) {
   const t = useTranslations('Calendar');
   const eventDate = new Date(event.date + "T00:00:00");
@@ -358,7 +434,7 @@ function EventDetailDrawer({
         </div>
 
         <div className="p-5 border-t border-zinc-100 dark:border-white/5 space-y-3">
-          <EditEventDialog event={event} onSave={onEdit} />
+          <EditEventDialog event={event} onSave={onEdit} organizationId={organizationId} clients={clients} units={units} tasks={tasks} />
           <button onClick={() => onDelete(event.id)} className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-red-600 text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all dark:border-red-900 dark:bg-red-900/20 dark:text-red-400">
             <Trash2 className="h-3.5 w-3.5" />
             {t('delete.title')}
@@ -370,12 +446,22 @@ function EventDetailDrawer({
 }
 
 /* ── Create Event Dialog ── */
-function CreateEventDialog({ onCreate }: { onCreate: (input: Omit<CalendarEvent, "id">) => CalendarEvent }) {
+function CreateEventDialog({
+  organizationId,
+  clients,
+  units,
+  tasks,
+}: {
+  organizationId?: string;
+  clients: Array<{ id: string; name: string }>;
+  units: Array<{ id: string; title: string }>;
+  tasks: Array<{ id: string; title: string; clientId: string }>;
+}) {
   const t = useTranslations('Calendar');
   const [open, setOpen] = useState(false);
   const today = new Date();
   const defaultDate = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-  const defaultValues: CalendarEventFormValues = { title: "", owner: "", date: defaultDate, time: "10:00", type: "follow-up", status: "draft" };
+  const defaultValues: CalendarEventFormValues = { title: "", owner: "", date: defaultDate, time: "10:00", type: "follow-up", status: "draft", clientId: "", unitId: "", taskId: "", location: "", notes: "" };
   const { control, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm<CalendarEventFormValues>({
     resolver: zodResolver(calendarEventSchema),
     defaultValues,
@@ -389,7 +475,10 @@ function CreateEventDialog({ onCreate }: { onCreate: (input: Omit<CalendarEvent,
     createOperation.clearError();
   }
   const onSubmit = handleSubmit((data) => {
-    createOperation.run(() => onCreate(data), { successMessage: "Event created.", onSuccess: () => { setOpen(false); reset(defaultValues); } });
+    void createOperation.run(() => {
+      if (!organizationId) throw new Error("Select an organization first.");
+      return createCalendarEventRequest(organizationId, data);
+    }, { successMessage: "Event created.", onSuccess: () => { setOpen(false); reset(defaultValues); } });
   });
 
   return (
@@ -401,6 +490,20 @@ function CreateEventDialog({ onCreate }: { onCreate: (input: Omit<CalendarEvent,
           <FormErrorSummary errors={fieldErrors} />
           <TextInput label={t('form.titleLabel')} name="title" value={form.title} onChange={v => updateField("title", v)} error={fieldErrors.title} />
           <TextInput label={t('form.ownerLabel')} name="owner" value={form.owner} onChange={v => updateField("owner", v)} error={fieldErrors.owner} />
+          <select value={form.clientId ?? ""} onChange={(event) => updateField("clientId", event.target.value)} className="h-11 w-full rounded-xl border border-zinc-100 bg-white px-3 text-xs font-bold dark:border-white/10 dark:bg-white/5">
+            <option value="">Client context</option>
+            {clients.map((client) => <option key={client.id} value={client.id}>{client.name}</option>)}
+          </select>
+          <select value={form.unitId ?? ""} onChange={(event) => updateField("unitId", event.target.value)} className="h-11 w-full rounded-xl border border-zinc-100 bg-white px-3 text-xs font-bold dark:border-white/10 dark:bg-white/5">
+            <option value="">Unit context</option>
+            {units.map((unit) => <option key={unit.id} value={unit.id}>{unit.title}</option>)}
+          </select>
+          <select value={form.taskId ?? ""} onChange={(event) => updateField("taskId", event.target.value)} className="h-11 w-full rounded-xl border border-zinc-100 bg-white px-3 text-xs font-bold dark:border-white/10 dark:bg-white/5">
+            <option value="">Task context</option>
+            {tasks
+              .filter((task) => !form.clientId || task.clientId === form.clientId)
+              .map((task) => <option key={task.id} value={task.id}>{task.title}</option>)}
+          </select>
           <TextInput label={t('form.dateLabel')} name="date" type="date" value={form.date} onChange={v => updateField("date", v)} error={fieldErrors.date} />
           <TextInput label={t('form.timeLabel')} name="time" type="time" value={form.time} onChange={v => updateField("time", v)} error={fieldErrors.time} />
           <ChoiceGrid id="event-type" label={t('form.typeLabel')} value={form.type} onChange={v => updateField("type", v as CalendarEventFormValues["type"])} columns="grid-cols-2 md:grid-cols-4" error={fieldErrors.type}
@@ -425,7 +528,20 @@ function CreateEventDialog({ onCreate }: { onCreate: (input: Omit<CalendarEvent,
 }
 
 /* ── Edit Event Dialog ── */
-function EditEventDialog({ event, onSave }: { event: CalendarEvent; onSave: (input: Partial<CalendarEvent>) => void }) {
+function EditEventDialog({
+  event,
+  onSave,
+  clients,
+  units,
+  tasks,
+}: {
+  event: CalendarEvent;
+  onSave: (input: Partial<CalendarEvent>) => void;
+  organizationId?: string;
+  clients: Array<{ id: string; name: string }>;
+  units: Array<{ id: string; title: string }>;
+  tasks: Array<{ id: string; title: string; clientId: string }>;
+}) {
   const t = useTranslations('Calendar');
   const [open, setOpen] = useState(false);
   const defaultValues: CalendarEventFormValues = { 
@@ -434,7 +550,12 @@ function EditEventDialog({ event, onSave }: { event: CalendarEvent; onSave: (inp
     date: event.date, 
     time: event.time, 
     type: event.type, 
-    status: event.status 
+    status: event.status,
+    clientId: event.clientId ?? "",
+    unitId: event.unitId ?? event.propertyId ?? "",
+    taskId: event.taskId ?? "",
+    location: event.location ?? "",
+    notes: event.notes ?? "",
   };
   const { control, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm<CalendarEventFormValues>({
     resolver: zodResolver(calendarEventSchema),
@@ -461,6 +582,20 @@ function EditEventDialog({ event, onSave }: { event: CalendarEvent; onSave: (inp
           <FormErrorSummary errors={fieldErrors} />
           <TextInput label={t('form.titleLabel')} name="title" value={form.title} onChange={v => updateField("title", v)} error={fieldErrors.title} />
           <TextInput label={t('form.ownerLabel')} name="owner" value={form.owner} onChange={v => updateField("owner", v)} error={fieldErrors.owner} />
+          <select value={form.clientId ?? ""} onChange={(event) => updateField("clientId", event.target.value)} className="h-11 w-full rounded-xl border border-zinc-100 bg-white px-3 text-xs font-bold dark:border-white/10 dark:bg-white/5">
+            <option value="">Client context</option>
+            {clients.map((client) => <option key={client.id} value={client.id}>{client.name}</option>)}
+          </select>
+          <select value={form.unitId ?? ""} onChange={(event) => updateField("unitId", event.target.value)} className="h-11 w-full rounded-xl border border-zinc-100 bg-white px-3 text-xs font-bold dark:border-white/10 dark:bg-white/5">
+            <option value="">Unit context</option>
+            {units.map((unit) => <option key={unit.id} value={unit.id}>{unit.title}</option>)}
+          </select>
+          <select value={form.taskId ?? ""} onChange={(event) => updateField("taskId", event.target.value)} className="h-11 w-full rounded-xl border border-zinc-100 bg-white px-3 text-xs font-bold dark:border-white/10 dark:bg-white/5">
+            <option value="">Task context</option>
+            {tasks
+              .filter((task) => !form.clientId || task.clientId === form.clientId)
+              .map((task) => <option key={task.id} value={task.id}>{task.title}</option>)}
+          </select>
           <TextInput label={t('form.dateLabel')} name="date" type="date" value={form.date} onChange={v => updateField("date", v)} error={fieldErrors.date} />
           <TextInput label={t('form.timeLabel')} name="time" type="time" value={form.time} onChange={v => updateField("time", v)} error={fieldErrors.time} />
           <ChoiceGrid id="edit-event-type" label={t('form.typeLabel')} value={form.type} onChange={v => updateField("type", v as CalendarEventFormValues["type"])} columns="grid-cols-2 md:grid-cols-4" error={fieldErrors.type}

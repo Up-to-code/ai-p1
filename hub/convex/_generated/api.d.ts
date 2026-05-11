@@ -8,8 +8,22 @@
  * @module
  */
 
+import type * as apiKeys from "../apiKeys.js";
 import type * as auth from "../auth.js";
+import type * as calendar_read from "../calendar/read.js";
+import type * as calendar_validators from "../calendar/validators.js";
+import type * as calendar_write from "../calendar/write.js";
+import type * as clientTasks_read from "../clientTasks/read.js";
+import type * as clientTasks_validators from "../clientTasks/validators.js";
+import type * as clientTasks_write from "../clientTasks/write.js";
+import type * as clients_read from "../clients/read.js";
+import type * as clients_validators from "../clients/validators.js";
+import type * as clients_write from "../clients/write.js";
+import type * as dashboard_read from "../dashboard/read.js";
 import type * as http from "../http.js";
+import type * as mcp_connections from "../mcp/connections.js";
+import type * as mcp_tools from "../mcp/tools.js";
+import type * as mcp_validators from "../mcp/validators.js";
 import type * as media_data from "../media/data.js";
 import type * as media_read from "../media/read.js";
 import type * as media_validators from "../media/validators.js";
@@ -45,8 +59,22 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  apiKeys: typeof apiKeys;
   auth: typeof auth;
+  "calendar/read": typeof calendar_read;
+  "calendar/validators": typeof calendar_validators;
+  "calendar/write": typeof calendar_write;
+  "clientTasks/read": typeof clientTasks_read;
+  "clientTasks/validators": typeof clientTasks_validators;
+  "clientTasks/write": typeof clientTasks_write;
+  "clients/read": typeof clients_read;
+  "clients/validators": typeof clients_validators;
+  "clients/write": typeof clients_write;
+  "dashboard/read": typeof dashboard_read;
   http: typeof http;
+  "mcp/connections": typeof mcp_connections;
+  "mcp/tools": typeof mcp_tools;
+  "mcp/validators": typeof mcp_validators;
   "media/data": typeof media_data;
   "media/read": typeof media_read;
   "media/validators": typeof media_validators;
@@ -104,4 +132,5 @@ export declare const internal: FilterApi<
 
 export declare const components: {
   betterAuth: import("../betterAuth/_generated/component.js").ComponentApi<"betterAuth">;
+  apiKeys: import("convex-api-keys/_generated/component.js").ComponentApi<"apiKeys">;
 };

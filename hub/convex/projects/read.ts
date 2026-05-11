@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 import { query } from "../_generated/server";
 import type { QueryCtx } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
@@ -30,6 +31,90 @@ export const list = query({
       .sort((a, b) => b.updatedAt - a.updatedAt);
 
     return Promise.all(active.map((project) => presentProject(ctx, project)));
+  },
+});
+
+export const listPaged = query({
+  args: {
+    organizationId: v.string(),
+    paginationOpts: paginationOptsValidator,
+    status: v.optional(v.union(
+      v.literal("draft"),
+      v.literal("pending"),
+      v.literal("approved"),
+      v.literal("rejected"),
+    )),
+    search: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "read");
+    const search = args.search?.trim().toLowerCase();
+
+    if (search) {
+      const projects = await ctx.db
+        .query("projects")
+        .withIndex("by_organization_updated", (q) => q.eq("organizationId", args.organizationId))
+        .order("desc")
+        .collect();
+      const matches = projects
+        .filter((project) => !project.deletedAt)
+        .filter((project) => !args.status || project.status === args.status)
+        .filter((project) => [project.name, project.reference, project.city, project.developer].some((value) => value.toLowerCase().includes(search)))
+        .slice(0, 100);
+
+      return {
+        page: await Promise.all(matches.map((project) => presentProject(ctx, project))),
+        isDone: true,
+        continueCursor: "",
+      };
+    }
+
+    const page = await ctx.db
+      .query("projects")
+      .withIndex(
+        args.status ? "by_organization_status" : "by_organization_updated",
+        (q) => args.status
+          ? q.eq("organizationId", args.organizationId).eq("status", args.status)
+          : q.eq("organizationId", args.organizationId),
+      )
+      .order("desc")
+      .paginate(args.paginationOpts);
+
+    return {
+      ...page,
+      page: await Promise.all(
+        page.page
+          .filter((project) => !project.deletedAt)
+          .map((project) => presentProject(ctx, project)),
+      ),
+    };
+  },
+});
+
+export const stats = query({
+  args: { organizationId: v.string() },
+  returns: v.object({
+    total: v.number(),
+    approved: v.number(),
+    pending: v.number(),
+    draft: v.number(),
+    rejected: v.number(),
+  }),
+  handler: async (ctx, args) => {
+    await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "read");
+    const projects = await ctx.db
+      .query("projects")
+      .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
+      .collect();
+    const active = projects.filter((project) => !project.deletedAt);
+
+    return {
+      total: active.length,
+      approved: active.filter((project) => project.status === "approved").length,
+      pending: active.filter((project) => project.status === "pending").length,
+      draft: active.filter((project) => project.status === "draft").length,
+      rejected: active.filter((project) => project.status === "rejected").length,
+    };
   },
 });
 

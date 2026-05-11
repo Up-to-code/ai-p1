@@ -1,18 +1,50 @@
 "use client";
 
+import { useMemo } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
-import type { Id } from "@convex/_generated/dataModel";
+import { useHttpPagedQuery, useHttpQuery } from "@/components/shared/use-http-query";
+import type { PropertyStatus } from "../store/properties.types";
+import type { PropertyUnit } from "../store/properties.types";
 import type { PropertyFormValues } from "../validation/property.schema";
+
+export const PROPERTIES_PAGE_SIZE = 30;
 
 export function usePropertiesQuery(organizationId?: string) {
   return useQuery(api.properties.read.list, organizationId ? { organizationId } : "skip");
 }
 
+export function usePropertiesPagedQuery(organizationId?: string, options?: { status?: PropertyStatus; search?: string }) {
+  const status = options?.status;
+  const search = options?.search?.trim();
+  const params = useMemo(() => ({ status, search }), [search, status]);
+
+  return useHttpPagedQuery(
+    ["properties-paged", organizationId],
+    organizationId ? `/api/v1/organizations/${organizationId}/read/properties` : undefined,
+    params,
+    PROPERTIES_PAGE_SIZE,
+  );
+}
+
+export function usePropertyStatsQuery(organizationId?: string) {
+  return useHttpQuery<{ total: number; available: number; pending: number; reserved: number; sold: number; draft: number }>(
+    ["properties-stats", organizationId],
+    organizationId ? `/api/v1/organizations/${organizationId}/read/properties/stats` : undefined,
+  );
+}
+
+export function usePropertyOptionsQuery(organizationId?: string) {
+  return useHttpQuery<{ id: string; title: string }[]>(
+    ["properties-options", organizationId],
+    organizationId ? `/api/v1/organizations/${organizationId}/read/properties/options` : undefined,
+  );
+}
+
 export function usePropertyQuery(organizationId: string | undefined, propertyId: string) {
-  return useQuery(
-    api.properties.read.get,
-    organizationId && propertyId ? { organizationId, propertyId: propertyId as Id<"propertyUnits"> } : "skip",
+  return useHttpQuery<PropertyUnit | null>(
+    ["property", organizationId, propertyId],
+    organizationId && propertyId ? `/api/v1/organizations/${organizationId}/read/properties/${propertyId}` : undefined,
   );
 }
 

@@ -11,12 +11,31 @@ import {
   handleCreateOrganizationRole,
   handleDeleteOrganizationRole,
   handleGetOrganizationCapabilities,
+  handleListOrganizationRoles,
   handleRemoveOrganizationMember,
   handleUpdateOrganizationIdentity,
   handleUpdateOrganizationMemberRole,
   handleUpdateOrganizationRole,
 } from "../handlers/actions";
 import { handleUpdateOrganizationProfile } from "../handlers/update-profile";
+import {
+  handleReadActivity,
+  handleReadActivityStats,
+  handleReadCalendarEvents,
+  handleReadCalendarStats,
+  handleReadClientOptions,
+  handleReadClients,
+  handleReadClientStats,
+  handleReadDashboardOverview,
+  handleReadProject,
+  handleReadProjectStats,
+  handleReadProjects,
+  handleReadProperty,
+  handleReadProperties,
+  handleReadPropertyOptions,
+  handleReadPropertyStats,
+  handleReadTaskOptions,
+} from "../handlers/workspace-read";
 import {
   handleCreateProject,
   handleDeleteProject,
@@ -28,10 +47,34 @@ import {
   handleUpdateProperty,
 } from "@/server/domains/properties/handlers/properties";
 import {
+  handleCreateClient,
+  handleDeleteClient,
+  handleLinkClientUnit,
+  handleUnlinkClientUnit,
+  handleUpdateClient,
+} from "@/server/domains/clients/handlers/clients";
+import {
+  handleCreateClientTask,
+  handleDeleteClientTask,
+  handleUpdateClientTask,
+} from "@/server/domains/clientTasks/handlers/client-tasks";
+import {
+  handleCreateCalendarEvent,
+  handleDeleteCalendarEvent,
+  handleUpdateCalendarEvent,
+} from "@/server/domains/calendar/handlers/calendar";
+import {
   handleAttachMedia,
   handleDeleteMedia,
   handleUpdateMedia,
 } from "@/server/domains/media/handlers/media";
+import {
+  handleCreateMcpConnection,
+  handleListMcpConnections,
+  handleRevokeMcpConnection,
+  handleRotateMcpConnection,
+  handleUpdateMcpConnection,
+} from "@/server/domains/mcpConnections/handlers/mcp-connections";
 
 export const organizationRouter = new Hono();
 
@@ -65,6 +108,23 @@ organizationRouter.get(
   handleGetOrganizationCapabilities,
 );
 
+organizationRouter.get("/:organizationId/read/projects", handleReadProjects);
+organizationRouter.get("/:organizationId/read/projects/stats", handleReadProjectStats);
+organizationRouter.get("/:organizationId/read/projects/:projectId", handleReadProject);
+organizationRouter.get("/:organizationId/read/properties", handleReadProperties);
+organizationRouter.get("/:organizationId/read/properties/stats", handleReadPropertyStats);
+organizationRouter.get("/:organizationId/read/properties/options", handleReadPropertyOptions);
+organizationRouter.get("/:organizationId/read/properties/:propertyId", handleReadProperty);
+organizationRouter.get("/:organizationId/read/clients", handleReadClients);
+organizationRouter.get("/:organizationId/read/clients/stats", handleReadClientStats);
+organizationRouter.get("/:organizationId/read/clients/options", handleReadClientOptions);
+organizationRouter.get("/:organizationId/read/calendar", handleReadCalendarEvents);
+organizationRouter.get("/:organizationId/read/calendar/stats", handleReadCalendarStats);
+organizationRouter.get("/:organizationId/read/tasks/options", handleReadTaskOptions);
+organizationRouter.get("/:organizationId/read/activity", handleReadActivity);
+organizationRouter.get("/:organizationId/read/activity/stats", handleReadActivityStats);
+organizationRouter.get("/:organizationId/read/dashboard", handleReadDashboardOverview);
+
 organizationRouter.patch(
   "/:organizationId/identity",
   handleUpdateOrganizationIdentity,
@@ -93,6 +153,11 @@ organizationRouter.delete(
 organizationRouter.post(
   "/:organizationId/roles",
   handleCreateOrganizationRole,
+);
+
+organizationRouter.get(
+  "/:organizationId/roles",
+  handleListOrganizationRoles,
 );
 
 organizationRouter.patch(
@@ -136,6 +201,61 @@ organizationRouter.delete(
 );
 
 organizationRouter.post(
+  "/:organizationId/clients",
+  handleCreateClient,
+);
+
+organizationRouter.patch(
+  "/:organizationId/clients/:clientId",
+  handleUpdateClient,
+);
+
+organizationRouter.delete(
+  "/:organizationId/clients/:clientId",
+  handleDeleteClient,
+);
+
+organizationRouter.post(
+  "/:organizationId/clients/:clientId/units",
+  handleLinkClientUnit,
+);
+
+organizationRouter.delete(
+  "/:organizationId/clients/:clientId/units/:propertyId",
+  handleUnlinkClientUnit,
+);
+
+organizationRouter.post(
+  "/:organizationId/client-tasks",
+  handleCreateClientTask,
+);
+
+organizationRouter.patch(
+  "/:organizationId/client-tasks/:taskId",
+  handleUpdateClientTask,
+);
+
+organizationRouter.delete(
+  "/:organizationId/client-tasks/:taskId",
+  handleDeleteClientTask,
+);
+
+organizationRouter.post(
+  "/:organizationId/calendar-events",
+  handleCreateCalendarEvent,
+);
+
+organizationRouter.patch(
+  "/:organizationId/calendar-events/:eventId",
+  handleUpdateCalendarEvent,
+);
+
+organizationRouter.delete(
+  "/:organizationId/calendar-events/:eventId",
+  handleDeleteCalendarEvent,
+);
+
+organizationRouter.post(
   "/:organizationId/media/attach",
   handleAttachMedia,
 );
@@ -148,6 +268,31 @@ organizationRouter.patch(
 organizationRouter.delete(
   "/:organizationId/media/:mediaId",
   handleDeleteMedia,
+);
+
+organizationRouter.get(
+  "/:organizationId/mcp-connections",
+  handleListMcpConnections,
+);
+
+organizationRouter.post(
+  "/:organizationId/mcp-connections",
+  handleCreateMcpConnection,
+);
+
+organizationRouter.patch(
+  "/:organizationId/mcp-connections/:connectionId",
+  handleUpdateMcpConnection,
+);
+
+organizationRouter.delete(
+  "/:organizationId/mcp-connections/:connectionId",
+  handleRevokeMcpConnection,
+);
+
+organizationRouter.post(
+  "/:organizationId/mcp-connections/:connectionId/rotate",
+  handleRotateMcpConnection,
 );
 
 export type OrganizationRouterType = typeof organizationRouter;

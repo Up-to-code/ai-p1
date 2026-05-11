@@ -37,6 +37,7 @@ const trustedOrigins = Array.from(
       productionSiteUrl,
       siteUrl,
       "http://localhost:3000",
+      "http://localhost:3001",
       normalizeUrl(envReader.read("VERCEL_URL", "")),
     ].filter(Boolean),
   ),

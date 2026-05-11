@@ -6,7 +6,9 @@ export type PipelineStage = "new" | "qualified" | "viewing" | "negotiation" | "c
 export type Priority = "normal" | "high" | "urgent";
 
 export interface Client {
+  _id?: string;
   id: string;
+  organizationId?: string;
   name: string;
   type: ClientType;
   contact: string;
@@ -26,4 +28,32 @@ export interface Client {
   appointmentTime: string;
   syncState: SyncState;
   issue?: string;
+  createdAt?: number;
+  updatedAt?: number;
+}
+
+export type ClientUnitLinkStatus = "interested" | "shortlisted" | "viewing" | "offer" | "rejected";
+
+export interface ClientUnitLink {
+  id: string;
+  clientId: string;
+  propertyId: string;
+  status: ClientUnitLinkStatus;
+  notes?: string;
+}
+
+export type ClientTaskStatus = "open" | "done" | "canceled";
+
+export interface ClientTask {
+  id: string;
+  clientId: string;
+  title: string;
+  status: ClientTaskStatus;
+  priority: Priority;
+  dueAt?: number;
+  propertyId?: string;
+  projectId?: string;
+  calendarEventId?: string;
+  notes?: string;
+  completedAt?: number;
 }

@@ -56,6 +56,16 @@ test.describe("organization business flow", () => {
     await page.getByRole("button", { name: /save/i }).click();
     await expect(page.getByText("Organization profile changes were saved.")).toBeVisible();
 
+    await page.getByRole("button", { name: /agent links/i }).click();
+    await expect(page.getByRole("heading", { name: /agent links/i })).toBeVisible();
+    await page.getByRole("button", { name: /new agent link/i }).click();
+    const agentDialog = page.getByRole("dialog", { name: /new agent link/i });
+    await expect(agentDialog).toBeVisible();
+    await expect(agentDialog.getByLabel("Name")).toHaveValue("Client operator");
+    await expect(agentDialog.getByText("Apartments", { exact: true })).toBeVisible();
+    await expect(agentDialog.getByText("What should this agent know?")).toBeVisible();
+    await page.keyboard.press("Escape");
+
     await page.getByRole("button", { name: /members/i }).click();
     await page.getByRole("button", { name: /^Invite$/i }).click();
     await expect(page.getByRole("dialog", { name: /create invite/i })).toBeVisible();
@@ -94,5 +104,16 @@ test.describe("organization business flow", () => {
     await page.reload();
     await expect(page.locator("html")).toHaveClass(/dark/);
     await expect(page.getByText("صلاحياتك الحالية")).toBeVisible();
+
+    await page.getByRole("button", { name: "روابط الوكلاء" }).click();
+    await page.getByRole("button", { name: "رابط وكيل جديد" }).click();
+    const agentDialog = page.getByRole("dialog", { name: "رابط وكيل جديد" });
+    await expect(agentDialog).toBeVisible();
+    await expect(agentDialog.getByLabel("الاسم")).toHaveValue("مشغل العملاء");
+    await expect(agentDialog.getByText("العقارات", { exact: true })).toBeVisible();
+    await expect(agentDialog.getByText("ماذا يجب أن يعرف هذا الوكيل؟")).toBeVisible();
+    for (const englishText of ["New agent link", "Client operator", "Apartments", "Make agent link", "What should this agent know"]) {
+      await expect(agentDialog.getByText(englishText, { exact: false })).toHaveCount(0);
+    }
   });
 });

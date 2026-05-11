@@ -14,6 +14,7 @@ import {
   AppStatsGrid,
   AppThumbnailCell,
   AppToolbar,
+  InfiniteScrollSentinel,
   type AppDataTableColumn,
 } from "@/components/shared";
 import { Button } from "@/components/ui/button";
@@ -23,12 +24,12 @@ import { Link, useRouter } from "@/i18n/routing";
 import { useAccountContext } from "@/domains/auth";
 import type { Project, ProjectStatus } from "../store/projects.types";
 import { projectCategories, projectOfferingTypes, projectSchema, type ProjectFormValues } from "../validation/project.schema";
-import { createProjectRequest, deleteProjectRequest, updateProjectRequest, useProjectQuery, useProjectsQuery } from "../api/projects";
+import { createProjectRequest, deleteProjectRequest, PROJECTS_PAGE_SIZE, updateProjectRequest, useProjectQuery, useProjectsPagedQuery, useProjectStatsQuery } from "../api/projects";
 import { usePropertiesQuery } from "@/domains/properties/api/properties";
 import { ResourceMediaUploader } from "@/domains/media/components/resource-media-uploader";
 import { uploadAndAttachMedia } from "@/domains/media/api/media";
 import { useOperationState } from "@/lib/utils/operation-state";
-import { SearchBox, StatusPill, TextInput, ChoiceGrid, DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, FormErrorSummary } from "@/components/shared/crud-ui";
+import { SearchBox, StatusPill, TextInput, ChoiceGrid, DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, FormErrorSummary, ProgressiveLoadingState, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { useUrlListState } from "@/components/shared/use-url-list-state";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -95,8 +96,9 @@ function ProjectTile({ project, onDelete }: { project: Project; onDelete: (proje
 export function ProjectsWorkspace() {
   const t = useTranslations('Projects');
   const account = useAccountContext();
-  const projectsQuery = useProjectsQuery(account.organization.id ?? undefined);
-  const projects = useMemo(() => (projectsQuery ?? []) as Project[], [projectsQuery]);
+  const workspaceStatus = account.workspace.status;
+  const isWorkspaceReady = workspaceStatus === "ready";
+  const workspaceOrganizationId = isWorkspaceReady ? account.workspace.organizationId ?? undefined : undefined;
   const [filter, setFilter] = useState<(typeof projectFilters)[number]>("all");
   const [search, setSearch] = useState("");
   const [view, setView] = useState<(typeof projectViews)[number]>("grid");
@@ -116,12 +118,18 @@ export function ProjectsWorkspace() {
     validViews: projectViews,
   });
 
+  const projectsQuery = useProjectsPagedQuery(workspaceOrganizationId, {
+    status: filter === "all" ? undefined : filter,
+    search,
+  });
+  const stats = useProjectStatsQuery(workspaceOrganizationId);
+  const projects = useMemo(() => projectsQuery.results as Project[], [projectsQuery.results]);
+  const isLoading = isWorkspaceReady && projectsQuery.status === "LoadingFirstPage";
+
   const filteredProjects = useMemo(() => projects.filter((project) => {
-    const matchesFilter = filter === "all" || project.status === filter;
     const q = search.trim().toLowerCase();
-    const matchesSearch = !q || [project.name, project.reference, project.city, project.developer].some((value) => value.toLowerCase().includes(q));
-    return matchesFilter && matchesSearch;
-  }), [projects, filter, search]);
+    return !q || [project.name, project.reference, project.city, project.developer].some((value) => value.toLowerCase().includes(q));
+  }), [projects, search]);
 
   const columns: AppDataTableColumn<Project>[] = [
     {
@@ -157,10 +165,10 @@ export function ProjectsWorkspace() {
         actions={<Link href="/projects/create"><AppPrimaryButton><Plus className="me-2 h-3.5 w-3.5" />{t('add')}</AppPrimaryButton></Link>}
       />
       <AppStatsGrid stats={[
-        { label: t('stats.size'), value: projects.length, icon: FolderOpen },
-        { label: t('stats.approved'), value: projects.filter((project) => project.status === "approved").length, dotClassName: "bg-emerald-500" },
-        { label: t('stats.review'), value: projects.filter((project) => project.status === "pending").length, dotClassName: "bg-amber-500" },
-        { label: t('stats.drafts'), value: projects.filter((project) => project.status === "draft").length, icon: Copy },
+        { label: t('stats.size'), value: stats?.total ?? "...", icon: FolderOpen },
+        { label: t('stats.approved'), value: stats?.approved ?? "...", dotClassName: "bg-emerald-500" },
+        { label: t('stats.review'), value: stats?.pending ?? "...", dotClassName: "bg-amber-500" },
+        { label: t('stats.drafts'), value: stats?.draft ?? "...", icon: Copy },
       ]} />
       <AppToolbar
         filters={[
@@ -178,7 +186,11 @@ export function ProjectsWorkspace() {
         trailing={<SearchBox value={search} onChange={setSearch} placeholder={t('toolbar.search')} name="project-search" ariaLabel="Search projects" />}
       />
 
-      {view === "grid" ? (
+      {workspaceStatus !== "ready" ? (
+        <WorkspaceQueryState status={workspaceStatus} />
+      ) : isLoading ? (
+        <ProgressiveLoadingState />
+      ) : view === "grid" ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredProjects.map((project) => <ProjectTile key={project.id} project={project} onDelete={setDeleting} />)}
         </div>
@@ -186,7 +198,14 @@ export function ProjectsWorkspace() {
         <AppDataTable columns={columns} data={filteredProjects} getRowKey={(project) => project.id} />
       )}
 
-      {filteredProjects.length === 0 && <EmptyWorkspace icon={FolderOpen} title={t('empty.title')} description={t('empty.desc')} />}
+      {isWorkspaceReady && !isLoading && filteredProjects.length === 0 && <EmptyWorkspace icon={FolderOpen} title={t('empty.title')} description={t('empty.desc')} />}
+      {isWorkspaceReady && !isLoading && filteredProjects.length > 0 && (
+        <InfiniteScrollSentinel
+          status={projectsQuery.status}
+          loadMore={projectsQuery.loadMore}
+          pageSize={PROJECTS_PAGE_SIZE}
+        />
+      )}
       <DeleteRecordDialog
         open={Boolean(deleting)}
         onOpenChange={(open) => {

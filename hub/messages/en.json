@@ -165,6 +165,16 @@
     "searchAriaLabel": "Search records",
     "loadingTitle": "Loading workspace",
     "loadingDesc": "Preparing the latest mock data.",
+    "loadingStillTitle": "Still loading",
+    "loadingStillDesc": "The workspace is taking longer than expected. You can refresh while the connection catches up.",
+    "convexAuthLoadingTitle": "Connecting workspace",
+    "convexAuthLoadingDesc": "Signing this browser into the live workspace data.",
+    "convexAuthFailedTitle": "Workspace connection needs a refresh",
+    "convexAuthFailedDesc": "Your app session is signed in, but the realtime data session is not connected. Refresh the page or sign in again.",
+    "noOrganizationTitle": "No workspace selected",
+    "noOrganizationDesc": "Join or create a workspace before viewing these records.",
+    "refresh": "Refresh",
+    "signIn": "Sign in",
     "errorTitle": "Something went wrong",
     "reviewFields": "Review required fields",
     "backToList": "Back to list",
@@ -1238,6 +1248,7 @@
     "tabs": {
       "profile": "Profile",
       "members": "Members",
+      "agentLinks": "Agent links",
       "invites": "Invites",
       "roles": "Work roles"
     },
@@ -1306,6 +1317,7 @@
       "profile": "Profile",
       "invite": "Invites",
       "members": "Members",
+      "agentLinks": "Agent links",
       "roles": "Work roles",
       "allowed": "Allowed",
       "blocked": "Not allowed"
@@ -1340,6 +1352,107 @@
       "copy": "Copy link",
       "copied": "Copied",
       "cancel": "Cancel"
+    },
+    "agentLinks": {
+      "title": "Agent links",
+      "description": "Create one powerful link for Claude, GPT, or another agent. The link only gets the work you allow.",
+      "newButton": "New agent link",
+      "existingTitle": "Existing links",
+      "existingDescription": "Pause, revoke, or make a new secret link. The full link is never shown again after creation.",
+      "stats": {
+        "active": "Active links",
+        "calls": "Total calls",
+        "access": "Access",
+        "canCreate": "Can create",
+        "canView": "Can view",
+        "blocked": "Blocked"
+      },
+      "empty": {
+        "noAccessTitle": "No access",
+        "noAccessDescription": "Your work role cannot view agent links.",
+        "loading": "Loading agent links...",
+        "noLinksTitle": "No agent links",
+        "noLinksDescription": "Create a link when an outside agent needs controlled workspace access."
+      },
+      "modal": {
+        "readyTitle": "Agent link ready",
+        "newTitle": "New agent link",
+        "oneTimeWarning": "This link is shown once. Treat it like a password and paste it into your agent as the MCP server URL.",
+        "canDoTitle": "What this agent can do",
+        "canDoDescription": "The agent cannot work outside these permissions. Revoke this link or make a new one to change the allowed work.",
+        "name": "Name",
+        "startWith": "Start with",
+        "instructions": "What should this agent know?",
+        "deleteConfirmation": "I understand this link can remove selected records, and I want to allow that work.",
+        "make": "Make agent link"
+      },
+      "defaults": {
+        "instructions": "Help the team manage clients, apartments, tasks, and calendar work inside this organization."
+      },
+      "presets": {
+        "client": "Client operator",
+        "apartment": "Apartment operator",
+        "calendar": "Calendar assistant",
+        "full": "Full workspace",
+        "custom": "Custom"
+      },
+      "resources": {
+        "organization": "Organization",
+        "client": "Clients",
+        "property": "Apartments",
+        "project": "Projects",
+        "calendar": "Calendar",
+        "task": "Tasks",
+        "media": "Documents"
+      },
+      "resourceHelp": {
+        "client": "Profiles, pipeline, links to apartments.",
+        "property": "Inventory, open apartment, specific field edits.",
+        "project": "Development context and project records.",
+        "calendar": "Today, month, scheduling and meeting changes.",
+        "task": "Client work, due dates, completion.",
+        "media": "List files and attach URL-backed documents."
+      },
+      "actions": {
+        "read": "View",
+        "create": "Add",
+        "update": "Edit",
+        "delete": "Remove"
+      },
+      "status": {
+        "active": "Active",
+        "paused": "Paused",
+        "revoked": "Revoked"
+      },
+      "labels": {
+        "keyEnding": "ends {last4}",
+        "used": "Used {count} times",
+        "created": "Created {date}",
+        "lastUsed": "Last used {date}",
+        "noWork": "No work selected"
+      },
+      "buttons": {
+        "copy": "Copy link",
+        "close": "Close",
+        "pause": "Pause",
+        "resume": "Resume",
+        "rotate": "Make new link",
+        "revoke": "Revoke",
+        "cancel": "Cancel"
+      },
+      "toasts": {
+        "readyTitle": "Agent link ready",
+        "readyDescription": "The link was copied. It is shown here once.",
+        "failedTitle": "Agent link failed",
+        "updatedTitle": "Agent link updated",
+        "updatedDescription": "The link status changed.",
+        "revokedTitle": "Agent link revoked",
+        "revokedDescription": "That link can no longer be used.",
+        "rotatedTitle": "New link ready",
+        "rotatedDescription": "The new link was copied. The old one stopped working.",
+        "copiedTitle": "Copied",
+        "copiedDescription": "Paste it into your agent as the MCP server URL."
+      }
     },
     "roles": {
       "pageEyebrow": "Allowed work",
@@ -1407,6 +1520,7 @@
         "project": "Projects",
         "property": "Properties",
         "client": "Clients / CRM",
+        "task": "Tasks",
         "calendar": "Calendar",
         "integration": "Integrations",
         "apiKey": "API keys",
@@ -1420,6 +1534,7 @@
         "project": "Real estate projects, development pipelines, and project records.",
         "property": "Property listings, units, inventory, and property records.",
         "client": "Clients, leads, sales pipeline, and CRM records.",
+        "task": "Client tasks, next actions, and follow-up work.",
         "calendar": "Appointments, site visits, reminders, and team schedules.",
         "integration": "Connected services used by the organization.",
         "apiKey": "Technical keys used by external systems.",
@@ -1801,6 +1916,8 @@
       "roles": "Work roles",
       "projects": "Projects",
       "properties": "Units",
+      "clients": "Clients",
+      "calendar": "Calendar",
       "media": "Media",
       "invites": "Invites"
     },

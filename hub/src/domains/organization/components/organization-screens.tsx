@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useQuery as useConvexQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
-import { Building2, CheckCircle2, Copy, HelpCircle, LinkIcon, Loader2, Mail, Plus, Save, ShieldCheck, Trash2, UserRoundCog, Users } from "lucide-react";
+import { Bot, Building2, CalendarDays, Check, CheckCircle2, Copy, FileText, HelpCircle, Home, KeyRound, LinkIcon, Loader2, Mail, PauseCircle, Plus, RefreshCcw, Save, ShieldCheck, Trash2, UserRoundCog, Users } from "lucide-react";
 import { type UseFormRegisterReturn, useForm } from "react-hook-form";
 import { useAccountContext } from "@/domains/auth";
 import { cn } from "@/lib/utils";
@@ -24,18 +24,27 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   cancelOrganizationInviteLink,
   cancelOrganizationInvitation,
+  createOrganizationMcpConnection,
   createOrganizationInviteLink,
   createOrganizationInvitation,
   createOrganizationRole,
   deleteOrganizationRole,
   getOrganizationCapabilities,
+  listOrganizationMcpConnections,
   listOrganizationInvitations,
   listOrganizationMembers,
   listOrganizationRoles,
+  revokeOrganizationMcpConnection,
+  rotateOrganizationMcpConnection,
   removeOrganizationMember,
   updateAuthOrganization,
   updateOrganizationMemberRole,
+  updateOrganizationMcpConnection,
   updateOrganizationRole,
+  type McpConnectionPermission,
+  type McpPermissionAction,
+  type McpPermissionResource,
+  type OrganizationMcpConnection,
   type OrganizationInviteLink,
   type OrganizationInvitation,
   type OrganizationMember,
@@ -43,7 +52,7 @@ import {
 } from "../api/better-auth-organization";
 import { OrganizationLogoUploader } from "./organization-logo-uploader";
 
-type Tab = "profile" | "members" | "invites" | "roles";
+type Tab = "profile" | "members" | "agentLinks" | "invites" | "roles";
 type InviteMode = "link" | "email";
 type PermissionResource = keyof OrganizationPermissionStatement;
 type WorkAction = "read" | "create" | "update" | "delete" | "authorize";
@@ -74,6 +83,7 @@ const workAreas: WorkArea[] = [
   { resource: "project", labelKey: "project", helperKey: "project" },
   { resource: "property", labelKey: "property", helperKey: "property" },
   { resource: "client", labelKey: "client", helperKey: "client" },
+  { resource: "task", labelKey: "task", helperKey: "task" },
   { resource: "calendar", labelKey: "calendar", helperKey: "calendar" },
   { resource: "integration", labelKey: "integration", helperKey: "integration" },
 ];
@@ -96,6 +106,7 @@ const workRoleTemplates: WorkRoleTemplate[] = [
       member: ["create", "read", "update", "delete"],
       role: ["create", "read", "update", "delete"],
       client: ["create", "read", "update", "delete"],
+      task: ["create", "read", "update", "delete"],
       project: ["create", "read", "update", "delete"],
       property: ["create", "read", "update", "delete"],
       calendar: ["create", "read", "update", "delete"],
@@ -114,6 +125,7 @@ const workRoleTemplates: WorkRoleTemplate[] = [
       team: ["create", "read", "update"],
       member: ["create", "read", "update"],
       client: ["create", "read", "update", "delete"],
+      task: ["create", "read", "update", "delete"],
       project: ["create", "read", "update", "delete"],
       property: ["create", "read", "update", "delete"],
       calendar: ["create", "read", "update", "delete"],
@@ -129,6 +141,7 @@ const workRoleTemplates: WorkRoleTemplate[] = [
       project: ["create", "read", "update", "delete"],
       property: ["read", "update"],
       client: ["read", "update"],
+      task: ["read", "update"],
       calendar: ["create", "read", "update"],
       member: ["read"],
       team: ["read"],
@@ -143,6 +156,7 @@ const workRoleTemplates: WorkRoleTemplate[] = [
       property: ["create", "read", "update", "delete"],
       project: ["read", "update"],
       client: ["read", "update"],
+      task: ["read", "update"],
       calendar: ["create", "read", "update"],
       member: ["read"],
     },
@@ -154,6 +168,7 @@ const workRoleTemplates: WorkRoleTemplate[] = [
     helperKey: "crmSales",
     permission: {
       client: ["create", "read", "update", "delete"],
+      task: ["create", "read", "update", "delete"],
       property: ["read"],
       project: ["read"],
       calendar: ["create", "read", "update"],
@@ -167,6 +182,7 @@ const workRoleTemplates: WorkRoleTemplate[] = [
     permission: {
       calendar: ["create", "read", "update", "delete"],
       client: ["read"],
+      task: ["read", "update"],
       project: ["read"],
       property: ["read"],
       member: ["read"],
@@ -182,6 +198,7 @@ const workRoleTemplates: WorkRoleTemplate[] = [
       team: ["read"],
       member: ["read"],
       client: ["read"],
+      task: ["read"],
       project: ["read"],
       property: ["read"],
       calendar: ["read"],
@@ -300,6 +317,9 @@ export function OrganizationScreen() {
   const canUpdateMembers = capabilities?.canUpdateMembers ?? false;
   const canRemoveMembers = capabilities?.canRemoveMembers ?? false;
   const canManageRoles = Boolean(capabilities?.canCreateRoles || capabilities?.canUpdateRoles || capabilities?.canDeleteRoles);
+  const canReadAgentLinks = capabilities?.canReadApiKeys ?? false;
+  const canCreateAgentLinks = capabilities?.canCreateApiKeys ?? false;
+  const canDeleteAgentLinks = capabilities?.canDeleteApiKeys ?? false;
 
   const updateProfile = useUpdateOrganizationProfileMutation(organizationId);
   const refreshOrganizationData = () => {
@@ -412,6 +432,7 @@ export function OrganizationScreen() {
   const tabs: { id: Tab; label: string; icon: typeof Users }[] = [
     { id: "profile", label: t("tabs.profile"), icon: Building2 },
     { id: "members", label: t("tabs.members"), icon: Users },
+    { id: "agentLinks", label: t("tabs.agentLinks"), icon: Bot },
   ];
 
   function makeInviteLink(invite: OrganizationInvitation) {
@@ -591,6 +612,7 @@ export function OrganizationScreen() {
                 { label: t("access.invite"), allowed: canInviteMembers },
                 { label: t("access.members"), allowed: canUpdateMembers || canRemoveMembers },
                 { label: t("access.roles"), allowed: canManageRoles },
+                { label: t("access.agentLinks"), allowed: canReadAgentLinks || canCreateAgentLinks },
               ]}
             />
 
@@ -635,7 +657,7 @@ export function OrganizationScreen() {
                       <Plus className="me-2 h-3.5 w-3.5" />
                       {t("invites.open")}
                     </Button>
-                    <Button variant="outline" render={<Link href={`/${locale}/settings/organization/custom-permissions`} />} className="h-10 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                    <Button nativeButton={false} variant="outline" render={<Link href={`/${locale}/settings/organization/custom-permissions`} />} className="h-10 rounded-xl text-[10px] font-black uppercase tracking-widest">
                       <ShieldCheck className="me-2 h-3.5 w-3.5" />
                       {t("roles.manageWorkRoles")}
                     </Button>
@@ -705,6 +727,15 @@ export function OrganizationScreen() {
               </div>
             </Section>
           </div>
+        )}
+
+        {activeTab === "agentLinks" && (
+          <AgentLinksPanel
+            organizationId={organizationId}
+            canRead={canReadAgentLinks}
+            canCreate={canCreateAgentLinks}
+            canDelete={canDeleteAgentLinks}
+          />
         )}
       </div>
 
@@ -857,6 +888,452 @@ export function TeamScreen() {
   return <OrganizationScreen />;
 }
 
+const agentPermissionAreas: Array<{
+  resource: McpPermissionResource;
+  icon: typeof Users;
+  actions: McpPermissionAction[];
+}> = [
+  { resource: "client", icon: Users, actions: ["read", "create", "update", "delete"] },
+  { resource: "property", icon: Home, actions: ["read", "create", "update", "delete"] },
+  { resource: "project", icon: Building2, actions: ["read", "create", "update", "delete"] },
+  { resource: "calendar", icon: CalendarDays, actions: ["read", "create", "update", "delete"] },
+  { resource: "task", icon: CheckCircle2, actions: ["read", "create", "update", "delete"] },
+  { resource: "media", icon: FileText, actions: ["read", "create"] },
+];
+
+type AgentPresetId = "client" | "apartment" | "calendar" | "full";
+
+const agentPresets: Array<{ id: AgentPresetId; permissions: McpConnectionPermission[] }> = [
+  {
+    id: "client",
+    permissions: [
+      { resource: "organization", actions: ["read"] },
+      { resource: "client", actions: ["read", "create", "update"] },
+      { resource: "property", actions: ["read"] },
+      { resource: "calendar", actions: ["read", "create", "update"] },
+      { resource: "task", actions: ["read", "create", "update"] },
+      { resource: "media", actions: ["read", "create"] },
+    ],
+  },
+  {
+    id: "apartment",
+    permissions: [
+      { resource: "organization", actions: ["read"] },
+      { resource: "client", actions: ["read", "update"] },
+      { resource: "property", actions: ["read", "create", "update"] },
+      { resource: "project", actions: ["read", "update"] },
+      { resource: "media", actions: ["read", "create"] },
+    ],
+  },
+  {
+    id: "calendar",
+    permissions: [
+      { resource: "organization", actions: ["read"] },
+      { resource: "client", actions: ["read"] },
+      { resource: "property", actions: ["read"] },
+      { resource: "project", actions: ["read"] },
+      { resource: "calendar", actions: ["read", "create", "update"] },
+      { resource: "task", actions: ["read", "update"] },
+    ],
+  },
+  {
+    id: "full",
+    permissions: [
+      { resource: "organization", actions: ["read"] },
+      { resource: "client", actions: ["read", "create", "update", "delete"] },
+      { resource: "property", actions: ["read", "create", "update", "delete"] },
+      { resource: "project", actions: ["read", "create", "update", "delete"] },
+      { resource: "calendar", actions: ["read", "create", "update", "delete"] },
+      { resource: "task", actions: ["read", "create", "update", "delete"] },
+      { resource: "media", actions: ["read", "create"] },
+    ],
+  },
+];
+
+function clonePermissions(permissions: McpConnectionPermission[]) {
+  return permissions.map((permission) => ({
+    resource: permission.resource,
+    actions: [...permission.actions],
+  }));
+}
+
+function permissionActions(
+  permissions: McpConnectionPermission[],
+  resource: McpPermissionResource,
+) {
+  return permissions.find((permission) => permission.resource === resource)?.actions ?? [];
+}
+
+function hasDeletePermission(permissions: McpConnectionPermission[]) {
+  return permissions.some((permission) => permission.actions.includes("delete"));
+}
+
+function permissionSummary(
+  permissions: McpConnectionPermission[],
+  labels: {
+    resource: (resource: McpPermissionResource) => string;
+    action: (action: McpPermissionAction) => string;
+  },
+) {
+  return permissions
+    .filter((permission) => permission.resource !== "organization")
+    .map((permission) => `${labels.resource(permission.resource)}: ${permission.actions.map(labels.action).join(", ")}`)
+    .join(" • ");
+}
+
+function AgentLinksPanel({
+  organizationId,
+  canRead,
+  canCreate,
+  canDelete,
+}: {
+  organizationId: string;
+  canRead: boolean;
+  canCreate: boolean;
+  canDelete: boolean;
+}) {
+  const t = useTranslations("Organization.agentLinks");
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [agentName, setAgentName] = useState(() => t("presets.client"));
+  const [instructions, setInstructions] = useState(() => t("defaults.instructions"));
+  const [presetId, setPresetId] = useState<AgentPresetId | "custom">("client");
+  const [permissions, setPermissions] = useState<McpConnectionPermission[]>(clonePermissions(agentPresets[0].permissions));
+  const [allowDelete, setAllowDelete] = useState(false);
+  const [oneTimeLink, setOneTimeLink] = useState("");
+  const [oneTimePermissions, setOneTimePermissions] = useState<McpConnectionPermission[]>([]);
+
+  const query = useQuery({
+    queryKey: ["organization-mcp-connections", organizationId],
+    queryFn: () => listOrganizationMcpConnections(organizationId),
+    enabled: Boolean(organizationId && canRead),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: () => createOrganizationMcpConnection(organizationId, {
+      name: agentName,
+      instructions,
+      permissions,
+    }),
+    onSuccess: async (result) => {
+      setOneTimeLink(result.agentLink);
+      setOneTimePermissions(clonePermissions(permissions));
+      queryClient.invalidateQueries({ queryKey: ["organization-mcp-connections", organizationId] });
+      await navigator.clipboard?.writeText(result.agentLink).catch(() => undefined);
+      toast({ title: t("toasts.readyTitle"), description: t("toasts.readyDescription"), type: "success" });
+    },
+    onError: (error) => toast({ title: t("toasts.failedTitle"), description: error.message, type: "error" }),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ connection, status }: { connection: OrganizationMcpConnection; status: "active" | "paused" }) =>
+      updateOrganizationMcpConnection(organizationId, connection.id, { status }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["organization-mcp-connections", organizationId] });
+      toast({ title: t("toasts.updatedTitle"), description: t("toasts.updatedDescription"), type: "success" });
+    },
+    onError: (error) => toast({ title: t("toasts.failedTitle"), description: error.message, type: "error" }),
+  });
+
+  const revokeMutation = useMutation({
+    mutationFn: (connection: OrganizationMcpConnection) => revokeOrganizationMcpConnection(organizationId, connection.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["organization-mcp-connections", organizationId] });
+      toast({ title: t("toasts.revokedTitle"), description: t("toasts.revokedDescription"), type: "success" });
+    },
+    onError: (error) => toast({ title: t("toasts.failedTitle"), description: error.message, type: "error" }),
+  });
+
+  const rotateMutation = useMutation({
+    mutationFn: (connection: OrganizationMcpConnection) => rotateOrganizationMcpConnection(organizationId, connection.id),
+    onSuccess: async (result) => {
+      setOneTimeLink(result.agentLink);
+      setOneTimePermissions(clonePermissions(result.connection.permissions));
+      setDialogOpen(true);
+      queryClient.invalidateQueries({ queryKey: ["organization-mcp-connections", organizationId] });
+      await navigator.clipboard?.writeText(result.agentLink).catch(() => undefined);
+      toast({ title: t("toasts.rotatedTitle"), description: t("toasts.rotatedDescription"), type: "success" });
+    },
+    onError: (error) => toast({ title: t("toasts.failedTitle"), description: error.message, type: "error" }),
+  });
+
+  function applyPreset(id: string) {
+    setPresetId(id as AgentPresetId | "custom");
+    const preset = agentPresets.find((item) => item.id === id);
+    if (!preset) return;
+    setPermissions(clonePermissions(preset.permissions));
+    setAgentName(t(`presets.${preset.id}`));
+    setAllowDelete(false);
+  }
+
+  function openNewAgentLinkDialog() {
+    const defaultPreset = agentPresets[0];
+    setPresetId(defaultPreset.id);
+    setPermissions(clonePermissions(defaultPreset.permissions));
+    setAgentName(t(`presets.${defaultPreset.id}`));
+    setInstructions(t("defaults.instructions"));
+    setAllowDelete(false);
+    setOneTimeLink("");
+    setOneTimePermissions([]);
+    setDialogOpen(true);
+  }
+
+  function togglePermission(resource: McpPermissionResource, action: McpPermissionAction) {
+    setPresetId("custom");
+    setPermissions((current) => {
+      const existing = current.find((permission) => permission.resource === resource);
+      const nextActions = existing?.actions.includes(action)
+        ? existing.actions.filter((item) => item !== action)
+        : [...(existing?.actions ?? []), action];
+      const without = current.filter((permission) => permission.resource !== resource);
+      if (nextActions.length === 0) return without;
+      return [...without, { resource, actions: nextActions }];
+    });
+  }
+
+  async function copyOneTimeLink() {
+    if (!oneTimeLink) return;
+    await navigator.clipboard?.writeText(oneTimeLink);
+    toast({ title: t("toasts.copiedTitle"), description: t("toasts.copiedDescription"), type: "success" });
+  }
+
+  const requiresDeleteConfirmation = hasDeletePermission(permissions);
+  const canSubmit = canCreate && agentName.trim() && permissions.length > 0 && (!requiresDeleteConfirmation || allowDelete);
+  const connections = query.data ?? [];
+  const oneTimePermissionSummary = permissionSummary(oneTimePermissions, {
+    resource: (resource) => t(`resources.${resource}`),
+    action: (action) => t(`actions.${action}`),
+  });
+
+  return (
+    <div className="space-y-8">
+      <Section title={t("title")} description={t("description")}>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="grid flex-1 gap-3 md:grid-cols-3">
+            <OrgDataCard icon={KeyRound} label={t("stats.active")} value={connections.filter((item) => item.status === "active").length.toString()} />
+            <OrgDataCard icon={Bot} label={t("stats.calls")} value={connections.reduce((sum, item) => sum + item.usageCount, 0).toString()} />
+            <OrgDataCard icon={ShieldCheck} label={t("stats.access")} value={canCreate ? t("stats.canCreate") : canRead ? t("stats.canView") : t("stats.blocked")} />
+          </div>
+          <Button
+            disabled={!canCreate}
+            onClick={openNewAgentLinkDialog}
+            className="h-11 rounded-xl bg-zinc-900 px-5 text-[10px] font-black uppercase tracking-widest text-white hover:bg-black"
+          >
+            <Plus className="me-2 h-4 w-4" />
+            {t("newButton")}
+          </Button>
+        </div>
+      </Section>
+
+      <Section title={t("existingTitle")} description={t("existingDescription")}>
+        <div className="space-y-3">
+          {!canRead && <EmptyState title={t("empty.noAccessTitle")} description={t("empty.noAccessDescription")} />}
+          {canRead && query.isLoading && <LoadingRow label={t("empty.loading")} />}
+          {canRead && !query.isLoading && connections.length === 0 && <EmptyState title={t("empty.noLinksTitle")} description={t("empty.noLinksDescription")} />}
+          {connections.map((connection) => (
+            <div key={connection.id} className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/[0.06] dark:bg-[#111]">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="min-w-0 space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-black text-zinc-900 dark:text-white">{connection.name}</p>
+                    <StatusPill label={t(`status.${connection.status}`)} tone={connection.status === "active" ? "success" : connection.status === "paused" ? "warning" : "neutral"} />
+                    <span className="rounded-full bg-zinc-100 px-2.5 py-1 font-mono text-[10px] font-bold text-zinc-500 dark:bg-white/5">{t("labels.keyEnding", { last4: connection.keyLast4 })}</span>
+                  </div>
+                  <p className="line-clamp-2 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+                    {permissionSummary(connection.permissions, {
+                      resource: (resource) => t(`resources.${resource}`),
+                      action: (action) => t(`actions.${action}`),
+                    }) || t("labels.noWork")}
+                  </p>
+                  <div className="flex flex-wrap gap-3 text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                    <span>{t("labels.used", { count: connection.usageCount })}</span>
+                    <span>{t("labels.created", { date: formatDate(connection.createdAt) })}</span>
+                    {connection.lastUsedAt ? <span>{t("labels.lastUsed", { date: formatDate(connection.lastUsedAt) })}</span> : null}
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {connection.status !== "revoked" && (
+                    <Button
+                      variant="outline"
+                      disabled={updateMutation.isPending}
+                      onClick={() => updateMutation.mutate({ connection, status: connection.status === "active" ? "paused" : "active" })}
+                      className="rounded-xl text-[10px] font-black uppercase tracking-widest"
+                    >
+                      <PauseCircle className="me-2 h-3.5 w-3.5" />
+                      {connection.status === "active" ? t("buttons.pause") : t("buttons.resume")}
+                    </Button>
+                  )}
+                  {connection.status !== "revoked" && (
+                    <Button
+                      variant="outline"
+                      disabled={!canCreate || rotateMutation.isPending}
+                      onClick={() => rotateMutation.mutate(connection)}
+                      className="rounded-xl text-[10px] font-black uppercase tracking-widest"
+                    >
+                      <RefreshCcw className="me-2 h-3.5 w-3.5" />
+                      {t("buttons.rotate")}
+                    </Button>
+                  )}
+                  {connection.status !== "revoked" && (
+                    <Button
+                      variant="outline"
+                      disabled={!canDelete || revokeMutation.isPending}
+                      onClick={() => revokeMutation.mutate(connection)}
+                      className="rounded-xl border-red-200 text-[10px] font-black uppercase tracking-widest text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="me-2 h-3.5 w-3.5" />
+                      {t("buttons.revoke")}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <Dialog open={dialogOpen} onOpenChange={(open) => {
+        setDialogOpen(open);
+        if (!open) setOneTimeLink("");
+      }}>
+        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto rounded-2xl p-6">
+          <DialogHeader className="pe-8 text-start">
+            <DialogTitle className="text-lg font-black text-zinc-900 dark:text-white">
+              {oneTimeLink ? t("modal.readyTitle") : t("modal.newTitle")}
+            </DialogTitle>
+          </DialogHeader>
+
+          {oneTimeLink ? (
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+                {t("modal.oneTimeWarning")}
+              </div>
+              <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4 dark:border-white/[0.08] dark:bg-white/[0.04]">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 shadow-sm dark:bg-zinc-900 dark:text-emerald-300">
+                    <ShieldCheck className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 space-y-1">
+                    <p className="text-sm font-black text-zinc-900 dark:text-white">{t("modal.canDoTitle")}</p>
+                    <p className="text-xs leading-6 text-zinc-600 dark:text-zinc-300">
+                      {oneTimePermissionSummary || t("labels.noWork")}
+                    </p>
+                    <p className="text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">{t("modal.canDoDescription")}</p>
+                  </div>
+                </div>
+              </div>
+              <Input readOnly dir="ltr" value={oneTimeLink} className="h-12 rounded-xl font-mono text-xs" />
+              <DialogFooter className="justify-start">
+                <Button onClick={copyOneTimeLink} className="bg-zinc-900 text-white hover:bg-black">
+                  <Copy className="me-2 h-4 w-4" />
+                  {t("buttons.copy")}
+                </Button>
+                <Button variant="ghost" onClick={() => setDialogOpen(false)}>{t("buttons.close")}</Button>
+              </DialogFooter>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="agentName" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.name")}</Label>
+                  <Input id="agentName" value={agentName} onChange={(event) => setAgentName(event.target.value)} className="h-11 rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="agentPreset" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.startWith")}</Label>
+                  <select id="agentPreset" value={presetId} onChange={(event) => applyPreset(event.target.value)} className="h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm font-bold dark:border-white/10 dark:bg-[#111]">
+                    {agentPresets.map((preset) => <option key={preset.id} value={preset.id}>{t(`presets.${preset.id}`)}</option>)}
+                    <option value="custom">{t("presets.custom")}</option>
+                  </select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="agentInstructions" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.instructions")}</Label>
+                <textarea
+                  id="agentInstructions"
+                  value={instructions}
+                  onChange={(event) => setInstructions(event.target.value)}
+                  rows={3}
+                  className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-medium outline-none transition-colors focus:border-zinc-900 dark:border-white/10 dark:bg-[#111]"
+                />
+              </div>
+              <div className="grid gap-3 md:grid-cols-2">
+                {agentPermissionAreas.map((area) => {
+                  const Icon = area.icon;
+                  const activeActions = permissionActions(permissions, area.resource);
+                  return (
+                    <div key={area.resource} className="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 dark:border-white/[0.06] dark:bg-white/[0.03]">
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-white">
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-black text-zinc-900 dark:text-white">{t(`resources.${area.resource}`)}</p>
+                          <p className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">{t(`resourceHelp.${area.resource}`)}</p>
+                        </div>
+                      </div>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {area.actions.map((action) => (
+                          <button
+                            key={action}
+                            type="button"
+                            onClick={() => togglePermission(area.resource, action)}
+                            className={cn(
+                              "rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-colors",
+                              activeActions.includes(action)
+                                ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900"
+                                : "border-zinc-200 bg-white text-zinc-500 hover:text-zinc-900 dark:border-white/10 dark:bg-transparent dark:hover:text-white",
+                            )}
+                          >
+                            {t(`actions.${action}`)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {requiresDeleteConfirmation && (
+                <label className="flex cursor-pointer select-none items-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-900 transition-colors hover:border-red-300 hover:bg-red-100/70 dark:border-red-400/40 dark:bg-red-950/40 dark:text-red-100">
+                  <input
+                    type="checkbox"
+                    checked={allowDelete}
+                    onChange={(event) => setAllowDelete(event.target.checked)}
+                    className="peer sr-only"
+                  />
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 bg-white shadow-sm transition-colors peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-red-500 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-red-50 dark:bg-zinc-950 dark:peer-focus-visible:ring-offset-red-950",
+                      allowDelete
+                        ? "border-red-600 bg-red-600 text-white dark:border-red-400 dark:bg-red-500"
+                        : "border-red-400 text-transparent dark:border-red-300",
+                    )}
+                  >
+                    <Check className="h-3.5 w-3.5 stroke-[4]" />
+                  </span>
+                  <span className="leading-6">{t("modal.deleteConfirmation")}</span>
+                </label>
+              )}
+              <DialogFooter className="justify-start">
+                <Button variant="ghost" onClick={() => setDialogOpen(false)}>{t("buttons.cancel")}</Button>
+                <Button
+                  disabled={!canSubmit || createMutation.isPending}
+                  onClick={() => createMutation.mutate()}
+                  className="bg-zinc-900 text-white hover:bg-black"
+                >
+                  {createMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <KeyRound className="me-2 h-4 w-4" />}
+                  {t("modal.make")}
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
 export function CustomPermissionsScreen() {
   const t = useTranslations("Organization");
   const locale = useLocale();
@@ -978,7 +1455,7 @@ export function CustomPermissionsScreen() {
     <div className="min-h-screen bg-zinc-50/50 dark:bg-[#0A0A0A]">
       <div className="border-b border-zinc-200 bg-white dark:border-white/[0.06] dark:bg-[#111111]">
         <div className="mx-auto max-w-5xl px-6 py-8">
-          <Button variant="ghost" render={<Link href={`/${locale}/settings/organization`} />} className="mb-5 h-9 rounded-xl text-[10px] font-black uppercase tracking-widest">
+          <Button nativeButton={false} variant="ghost" render={<Link href={`/${locale}/settings/organization`} />} className="mb-5 h-9 rounded-xl text-[10px] font-black uppercase tracking-widest">
             {t("roles.backToOrganization")}
           </Button>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -1450,7 +1927,7 @@ function NoOrganizationState({ title, description, action, href }: { title: stri
         </div>
         <h1 className="mt-5 text-xl font-black uppercase tracking-tight text-zinc-900 dark:text-white">{title}</h1>
         <p className="mt-2 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{description}</p>
-        <Button render={<Link href={href} />} className="mt-6 h-11 rounded-xl bg-zinc-900 px-6 text-[10px] font-black uppercase tracking-widest text-white hover:bg-black">
+        <Button nativeButton={false} render={<Link href={href} />} className="mt-6 h-11 rounded-xl bg-zinc-900 px-6 text-[10px] font-black uppercase tracking-widest text-white hover:bg-black">
           {action}
         </Button>
       </div>

@@ -1,8 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { useQuery } from "convex/react";
-import { api } from "@convex/_generated/api";
 import { Activity, Building2, Clock3, History, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -10,12 +8,23 @@ import {
   AppPageHeader,
   AppPageShell,
   AppStatsGrid,
+  InfiniteScrollSentinel,
   type AppDataTableColumn,
 } from "@/components/shared";
-import { EmptyWorkspace, StatusPill } from "@/components/shared/crud-ui";
+import { EmptyWorkspace, ProgressiveLoadingState, StatusPill, WorkspaceQueryState } from "@/components/shared/crud-ui";
+import { useHttpPagedQuery, useHttpQuery } from "@/components/shared/use-http-query";
 import { useAccountContext } from "@/domains/auth";
 
-type AuditCategory = "organization" | "people" | "roles" | "projects" | "properties" | "media" | "invites";
+type AuditCategory =
+  | "organization"
+  | "people"
+  | "roles"
+  | "projects"
+  | "properties"
+  | "clients"
+  | "calendar"
+  | "media"
+  | "invites";
 
 type AuditEvent = {
   id: string;
@@ -27,12 +36,16 @@ type AuditEvent = {
   createdAt: number;
 };
 
-const businessCategories = new Set<AuditCategory>(["projects", "properties", "media"]);
-const peopleCategories = new Set<AuditCategory>(["organization", "people", "roles", "invites"]);
+type AuditStats = {
+  total: number;
+  people: number;
+  business: number;
+  latestAt?: number;
+};
 
 function categoryTone(category: AuditCategory): "success" | "warning" | "danger" | "neutral" | "info" {
   if (category === "projects" || category === "properties") return "success";
-  if (category === "media") return "info";
+  if (category === "clients" || category === "calendar" || category === "media") return "info";
   if (category === "invites") return "warning";
   if (category === "people" || category === "roles") return "danger";
   return "neutral";
@@ -73,12 +86,22 @@ export function ActivityScreen() {
   const t = useTranslations("Activity");
   const locale = useLocale();
   const account = useAccountContext();
-  const eventsQuery = useQuery(
-    api.organizations.audit.read.listRecent,
-    account.organization.id ? { organizationId: account.organization.id, limit: 100 } : "skip",
+  const workspaceStatus = account.workspace.status;
+  const isWorkspaceReady = workspaceStatus === "ready";
+  const workspaceOrganizationId = isWorkspaceReady ? account.workspace.organizationId ?? undefined : undefined;
+  const eventsQuery = useHttpPagedQuery<AuditEvent>(
+    ["activity", workspaceOrganizationId],
+    workspaceOrganizationId ? `/api/v1/organizations/${workspaceOrganizationId}/read/activity` : undefined,
+    undefined,
+    50,
   );
-  const events = useMemo(() => (eventsQuery ?? []) as AuditEvent[], [eventsQuery]);
-  const latest = events[0]?.createdAt ? relativeTime(events[0].createdAt, locale) : t("stats.none");
+  const stats = useHttpQuery<AuditStats>(
+    ["activity", "stats", workspaceOrganizationId],
+    workspaceOrganizationId ? `/api/v1/organizations/${workspaceOrganizationId}/read/activity/stats` : undefined,
+  );
+  const isLoading = isWorkspaceReady && eventsQuery.status === "LoadingFirstPage";
+  const events = useMemo(() => eventsQuery.results as AuditEvent[], [eventsQuery.results]);
+  const latest = stats?.latestAt ? relativeTime(stats.latestAt, locale) : t("stats.none");
 
   const columns: AppDataTableColumn<AuditEvent>[] = [
     {
@@ -131,24 +154,37 @@ export function ActivityScreen() {
         subtitle={t("subtitle")}
       />
 
-      {!account.organization.id ? (
+      {workspaceStatus !== "ready" ? (
+        <WorkspaceQueryState status={workspaceStatus} />
+      ) : !account.organization.id && !account.isPending ? (
         <EmptyWorkspace icon={History} title={t("empty.noOrgTitle")} description={t("empty.noOrgDesc")} />
-      ) : events.length === 0 ? (
-        <EmptyWorkspace icon={History} title={t("empty.title")} description={t("empty.desc")} />
       ) : (
         <>
           <AppStatsGrid stats={[
-            { label: t("stats.total"), value: events.length, icon: Activity },
-            { label: t("stats.people"), value: events.filter((event) => peopleCategories.has(event.category)).length, icon: Users },
-            { label: t("stats.business"), value: events.filter((event) => businessCategories.has(event.category)).length, icon: Building2 },
+            { label: t("stats.total"), value: stats?.total ?? "...", icon: Activity },
+            { label: t("stats.people"), value: stats?.people ?? "...", icon: Users },
+            { label: t("stats.business"), value: stats?.business ?? "...", icon: Building2 },
             { label: t("stats.latest"), value: latest, icon: Clock3 },
           ]} />
-          <AppDataTable
-            columns={columns}
-            data={events}
-            getRowKey={(event) => event.id}
-            emptyMessage={t("empty.title")}
-          />
+          {isLoading ? (
+            <ProgressiveLoadingState />
+          ) : events.length === 0 ? (
+            <EmptyWorkspace icon={History} title={t("empty.title")} description={t("empty.desc")} />
+          ) : (
+            <>
+              <AppDataTable
+                columns={columns}
+                data={events}
+                getRowKey={(event) => event.id}
+                emptyMessage={t("empty.title")}
+              />
+              <InfiniteScrollSentinel
+                status={eventsQuery.status}
+                loadMore={eventsQuery.loadMore}
+                pageSize={50}
+              />
+            </>
+          )}
         </>
       )}
     </AppPageShell>

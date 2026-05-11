@@ -8,6 +8,13 @@ export const calendarEventSchema = z.object({
   time: requiredText("Time"),
   type: z.enum(["client-visit", "site-viewing", "appointment", "signing", "follow-up", "handover", "audit", "custom"]),
   status: z.enum(["confirmed", "pending", "draft"]),
+  clientId: z.string().optional(),
+  unitId: z.string().optional(),
+  propertyId: z.string().optional(),
+  projectId: z.string().optional(),
+  taskId: z.string().optional(),
+  location: z.string().optional(),
+  notes: z.string().optional(),
 });
 
 export type CalendarEventFormValues = z.input<typeof calendarEventSchema>;

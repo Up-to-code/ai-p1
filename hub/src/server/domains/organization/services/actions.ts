@@ -79,6 +79,11 @@ async function listRoles(c: Context, organizationId: string) {
   });
 }
 
+export async function listOrganizationWorkRoles(c: Context, organizationId: string) {
+  await requireOrganizationAction(organizationId, "role", "read");
+  return listRoles(c, organizationId);
+}
+
 async function assertCanAssignRole(c: Context, organizationId: string, role: string) {
   const roles = await listRoles(c, organizationId);
   assertAssignableRole(role, roles);

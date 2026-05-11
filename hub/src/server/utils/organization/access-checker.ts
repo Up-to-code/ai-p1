@@ -7,6 +7,7 @@ type OrganizationResource =
   | "member"
   | "role"
   | "client"
+  | "task"
   | "project"
   | "property"
   | "calendar"
@@ -50,6 +51,15 @@ export async function getOrganizationCapabilities(organizationId: string) {
     canCreateProperties: ["property", "create"],
     canUpdateProperties: ["property", "update"],
     canDeleteProperties: ["property", "delete"],
+    canCreateClients: ["client", "create"],
+    canUpdateClients: ["client", "update"],
+    canDeleteClients: ["client", "delete"],
+    canReadApiKeys: ["apiKey", "read"],
+    canCreateApiKeys: ["apiKey", "create"],
+    canDeleteApiKeys: ["apiKey", "delete"],
+    canCreateCalendarEvents: ["calendar", "create"],
+    canUpdateCalendarEvents: ["calendar", "update"],
+    canDeleteCalendarEvents: ["calendar", "delete"],
   } as const;
 
   const entries = await Promise.all(

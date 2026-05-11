@@ -8,18 +8,26 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { SidebarProvider } from "@/components/layout/sidebar-context";
 import { Topbar } from "@/components/layout/topbar";
 import { ToastProvider } from "@/components/ui/toast";
-import { authClient } from "@/lib/auth-client";
+import { AccountProvider, useAccountContext } from "@/domains/auth";
 
 // This wrapper is the dashboard boundary: auth and app-wide providers live here.
 export function DashboardAppWrapper({ children }: { children: ReactNode }) {
-  const locale = useLocale();
-  const session = authClient.useSession();
+  return (
+    <AccountProvider>
+      <DashboardAuthenticatedShell>{children}</DashboardAuthenticatedShell>
+    </AccountProvider>
+  );
+}
 
-  if (session.isPending) {
+function DashboardAuthenticatedShell({ children }: { children: ReactNode }) {
+  const locale = useLocale();
+  const account = useAccountContext();
+
+  if (account.workspace.status === "loadingSession") {
     return <DashboardLoadingState />;
   }
 
-  if (!session.data?.session) {
+  if (!account.isSignedIn) {
     redirect(`/${locale}/sign-in`);
   }
 

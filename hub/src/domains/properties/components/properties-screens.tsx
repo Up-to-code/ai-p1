@@ -14,20 +14,21 @@ import {
   AppStatsGrid,
   AppThumbnailCell,
   AppToolbar,
+  InfiniteScrollSentinel,
   type AppDataTableColumn,
 } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Link, useRouter } from "@/i18n/routing";
 import { useAccountContext } from "@/domains/auth";
-import { createPropertyRequest, deletePropertyRequest, updatePropertyRequest, usePropertiesQuery, usePropertyQuery } from "../api/properties";
+import { createPropertyRequest, deletePropertyRequest, PROPERTIES_PAGE_SIZE, updatePropertyRequest, usePropertiesPagedQuery, usePropertyQuery, usePropertyStatsQuery } from "../api/properties";
 import { useProjectsQuery } from "@/domains/projects/api/projects";
 import { ResourceMediaUploader } from "@/domains/media/components/resource-media-uploader";
 import { uploadAndAttachMedia } from "@/domains/media/api/media";
 import type { PropertyStatus, PropertyUnit } from "../store/properties.types";
 import { propertySchema, type PropertyFormValues } from "../validation/property.schema";
 import { useOperationState } from "@/lib/utils/operation-state";
-import { ChoiceGrid, DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, FormErrorSummary, SearchBox, StatusPill, TextInput } from "@/components/shared/crud-ui";
+import { ChoiceGrid, DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, FormErrorSummary, ProgressiveLoadingState, SearchBox, StatusPill, TextInput, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { useUrlListState } from "@/components/shared/use-url-list-state";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -96,8 +97,9 @@ function UnitTile({ unit, onDelete }: { unit: PropertyUnit; onDelete: (unit: Pro
 export function PropertiesWorkspace() {
   const t = useTranslations('Properties');
   const account = useAccountContext();
-  const unitsQuery = usePropertiesQuery(account.organization.id ?? undefined);
-  const units = useMemo(() => (unitsQuery ?? []) as PropertyUnit[], [unitsQuery]);
+  const workspaceStatus = account.workspace.status;
+  const isWorkspaceReady = workspaceStatus === "ready";
+  const workspaceOrganizationId = isWorkspaceReady ? account.workspace.organizationId ?? undefined : undefined;
   const [filter, setFilter] = useState<(typeof propertyFilters)[number]>("all");
   const [search, setSearch] = useState("");
   const [view, setView] = useState<(typeof propertyViews)[number]>("grid");
@@ -115,12 +117,17 @@ export function PropertiesWorkspace() {
     validFilters: propertyFilters,
     validViews: propertyViews,
   });
+  const unitsQuery = usePropertiesPagedQuery(workspaceOrganizationId, {
+    status: filter === "all" ? undefined : filter,
+    search,
+  });
+  const stats = usePropertyStatsQuery(workspaceOrganizationId);
+  const units = useMemo(() => unitsQuery.results as PropertyUnit[], [unitsQuery.results]);
+  const isLoading = isWorkspaceReady && unitsQuery.status === "LoadingFirstPage";
   const filteredUnits = useMemo(() => units.filter((unit) => {
-    const matchesFilter = filter === "all" || unit.status === filter;
     const q = search.trim().toLowerCase();
-    const matchesSearch = !q || [unit.title, unit.project, unit.city, unit.reference].some((value) => value.toLowerCase().includes(q));
-    return matchesFilter && matchesSearch;
-  }), [units, filter, search]);
+    return !q || [unit.title, unit.project, unit.city, unit.reference].some((value) => value.toLowerCase().includes(q));
+  }), [units, search]);
 
   const columns: AppDataTableColumn<PropertyUnit>[] = [
     { key: "title", header: t('form.nameLabel'), render: (unit) => <AppThumbnailCell src={unit.coverImageUrl} alt={unit.title} title={unit.title} meta={<span className="inline-flex items-center gap-1"><MapPin className="h-2.5 w-2.5" />{unit.city}</span>} /> },
@@ -136,10 +143,10 @@ export function PropertiesWorkspace() {
     <AppPageShell>
       <AppPageHeader eyebrow={t('eyebrow')} title={t('title') + "."} actions={<Link href="/properties/create"><AppPrimaryButton><Plus className="me-2 h-3.5 w-3.5" />{t('add')}</AppPrimaryButton></Link>} />
       <AppStatsGrid stats={[
-        { label: t('stats.size'), value: units.length, icon: FolderOpen },
-        { label: t('stats.available'), value: units.filter((unit) => unit.status === "available").length, dotClassName: "bg-emerald-500" },
-        { label: t('stats.pending'), value: units.filter((unit) => unit.status === "pending").length, dotClassName: "bg-amber-500" },
-        { label: t('stats.drafts'), value: units.filter((unit) => unit.status === "draft").length, icon: Home },
+        { label: t('stats.size'), value: stats?.total ?? "...", icon: FolderOpen },
+        { label: t('stats.available'), value: stats?.available ?? "...", dotClassName: "bg-emerald-500" },
+        { label: t('stats.pending'), value: stats?.pending ?? "...", dotClassName: "bg-amber-500" },
+        { label: t('stats.drafts'), value: stats?.draft ?? "...", icon: Home },
       ]} />
       <AppToolbar
         filters={[
@@ -157,14 +164,25 @@ export function PropertiesWorkspace() {
         sortLabel={t('toolbar.priceHigh')}
         trailing={<SearchBox value={search} onChange={setSearch} placeholder={t('toolbar.search')} name="unit-search" ariaLabel="Search units" />}
       />
-      {view === "grid" ? (
+      {workspaceStatus !== "ready" ? (
+        <WorkspaceQueryState status={workspaceStatus} />
+      ) : isLoading ? (
+        <ProgressiveLoadingState />
+      ) : view === "grid" ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredUnits.map((unit) => <UnitTile key={unit.id} unit={unit} onDelete={setDeleting} />)}
         </div>
       ) : (
         <AppDataTable columns={columns} data={filteredUnits} getRowKey={(unit) => unit.id} />
       )}
-      {filteredUnits.length === 0 && <EmptyWorkspace icon={Home} title={t('empty.title')} description={t('empty.desc')} />}
+      {isWorkspaceReady && !isLoading && filteredUnits.length === 0 && <EmptyWorkspace icon={Home} title={t('empty.title')} description={t('empty.desc')} />}
+      {isWorkspaceReady && !isLoading && filteredUnits.length > 0 && (
+        <InfiniteScrollSentinel
+          status={unitsQuery.status}
+          loadMore={unitsQuery.loadMore}
+          pageSize={PROPERTIES_PAGE_SIZE}
+        />
+      )}
       <DeleteRecordDialog
         open={Boolean(deleting)}
         onOpenChange={(open) => {

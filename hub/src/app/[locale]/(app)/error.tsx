@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertTriangle, RefreshCw, ArrowLeft } from "lucide-react";
 import { Link } from "@/i18n/routing";
+import * as Sentry from "@sentry/nextjs";
+import { useEffect } from "react";
 
 export default function AppError({
   error,
@@ -12,6 +14,10 @@ export default function AppError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    Sentry.captureException(error);
+  }, [error]);
+
   return (
     <div className="p-6 max-w-7xl mx-auto flex items-center justify-center min-h-[60vh]">
       <Card className="border-border/60 shadow-none max-w-lg w-full">

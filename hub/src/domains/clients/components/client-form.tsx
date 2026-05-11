@@ -3,7 +3,8 @@
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
-import { useClientsStore } from "@/domains/clients";
+import { useAccountContext } from "@/domains/auth";
+import { createClientRequest, updateClientRequest } from "@/domains/clients/api/clients";
 import type { Client, ClientType, PipelineStage } from "../store/clients.types";
 import { clientSchema, type ClientFormValues } from "../validation/client.schema";
 import { useOperationState } from "@/lib/utils/operation-state";
@@ -19,8 +20,7 @@ const pipelineStages = ["new", "qualified", "viewing", "negotiation", "closed"] 
 
 export function ClientForm({ existing, onSuccess, onCancel }: ClientFormProps) {
   const t = useTranslations('Clients');
-  const createClient = useClientsStore((state) => state.createClient);
-  const updateClient = useClientsStore((state) => state.updateClient);
+  const account = useAccountContext();
   
   const { control, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
@@ -51,13 +51,12 @@ export function ClientForm({ existing, onSuccess, onCancel }: ClientFormProps) {
   };
 
   const onSubmit = handleSubmit((data) => {
-    saveOperation.run(() => {
-      const payload = { ...data, age: Number(data.age) };
-      if (existing) {
-        updateClient(existing.id, payload);
-        return existing.id;
-      }
-      return createClient(payload).id;
+    void saveOperation.run(async () => {
+      if (!account.organization.id) throw new Error("Select an organization first.");
+      const result = existing
+        ? await updateClientRequest(account.organization.id, existing.id, data)
+        : await createClientRequest(account.organization.id, data);
+      return result.client.id;
     }, {
       successMessage: existing ? "Client saved." : "Client created.",
       onSuccess: (nextId) => onSuccess?.(nextId),
