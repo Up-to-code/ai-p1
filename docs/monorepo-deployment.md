@@ -3,7 +3,7 @@
 This repository is an npm-workspaces monorepo. Product apps live under `apps/*`, shared packages live under `packages/*`, and documentation lives under `docs`.
 
 ```txt
-apps/hub
+apps/workspace
 apps/partners
 apps/admin
 apps/demo-partner-app
@@ -39,7 +39,7 @@ npm run build --workspaces --if-present
 You can also target one app:
 
 ```bash
-npm --workspace @anan/hub run build
+npm --workspace @anan/workspace run build
 npm --workspace @anan/partners run typecheck
 npm --workspace @anan/admin-review run test
 npm --workspace @anan/demo-partner-app run build
@@ -51,7 +51,7 @@ Deploy each app as its own Vercel project. Use the same Git repository and set t
 
 | Vercel project | Root Directory | Domain |
 | --- | --- | --- |
-| Hub | `apps/hub` | `app.<root-domain>` |
+| Hub | `apps/workspace` | `app.<root-domain>` |
 | Partners | `apps/partners` | `partners.<root-domain>` |
 | Admin | `apps/admin` | `admin.<root-domain>` |
 | Demo partner app | `apps/demo-partner-app` | `demo.<root-domain>` |
