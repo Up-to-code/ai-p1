@@ -1,0 +1,53 @@
+{
+  "name": "@anan/base-logic",
+  "version": "0.1.0",
+  "description": "Pure shared Anan base logic helpers for text normalization, language detection, parsing, retry, providers, and error utility types.",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./language": {
+      "types": "./dist/language.d.ts",
+      "import": "./dist/language.js"
+    },
+    "./http": {
+      "types": "./dist/http.d.ts",
+      "import": "./dist/http.js"
+    },
+    "./providers": {
+      "types": "./dist/providers.d.ts",
+      "import": "./dist/providers.js"
+    },
+    "./retry": {
+      "types": "./dist/retry.d.ts",
+      "import": "./dist/retry.js"
+    },
+    "./safe-parse": {
+      "types": "./dist/safe-parse.d.ts",
+      "import": "./dist/safe-parse.js"
+    },
+    "./text": {
+      "types": "./dist/text.d.ts",
+      "import": "./dist/text.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "typescript": "^5",
+    "vitest": "^2.0.0"
+  }
+}

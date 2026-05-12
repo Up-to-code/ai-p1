@@ -1,0 +1,78 @@
+{
+  "name": "@anan/auth-sdk",
+  "version": "0.1.0",
+  "description": "Production Anan authentication SDK for React, Next.js, OAuth/OIDC, and resource authorization.",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./authorization": {
+      "types": "./dist/authorization/index.d.ts",
+      "import": "./dist/authorization/index.js"
+    },
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "import": "./dist/client/index.js"
+    },
+    "./errors": {
+      "types": "./dist/errors/index.d.ts",
+      "import": "./dist/errors/index.js"
+    },
+    "./oidc": {
+      "types": "./dist/oidc/index.d.ts",
+      "import": "./dist/oidc/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.js"
+    },
+    "./server": {
+      "types": "./dist/server/index.d.ts",
+      "import": "./dist/server/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/testing/index.js"
+    }
+  },
+  "scripts": {
+    "prebuild": "npm --workspace @anan/platform-core run build && npm --workspace @anan/authorization run build && npm --workspace @anan/auth run build",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@anan/auth": "0.1.0",
+    "@anan/authorization": "0.1.0",
+    "@anan/platform-core": "0.1.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.3",
+    "@types/react-dom": "^19.2.3",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "typescript": "^5",
+    "vitest": "^2.0.0"
+  }
+}

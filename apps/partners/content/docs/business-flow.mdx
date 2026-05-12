@@ -1,0 +1,31 @@
+---
+title: Business flow
+description: How developers, Admin, Hub, and workspace organizations work together.
+---
+
+## Overview
+
+Anan partner authorization is organization-level OAuth. A workspace user can grant access only when their role allows partner app authorization, but the resulting connection belongs to the organization.
+
+## Flow
+
+1. The developer creates a Partners account and registers an app.
+2. The developer chooses redirect URIs, a partner app URL, and requested organization permissions.
+3. The developer submits the app for review.
+4. Anan Admin approves, rejects, or suspends the app.
+5. Approved apps appear in the Hub Integrations catalog.
+6. A workspace admin opens the app details and clicks Visit Partner.
+7. The partner product shows an Authorize with Anan button.
+8. The OAuth consent screen shows the requested organization permissions.
+9. If accepted, Hub creates an organization partner connection for 14 days.
+10. The partner backend exchanges the code, stores tokens securely, and calls Hub Hono APIs.
+
+## Source of truth
+
+- Partners owns developer drafts, app submission state, and developer setup history.
+- Hub owns approved apps, OAuth clients, organization consent, access validation, and resource APIs.
+- Admin owns the review action surface and calls Hub review APIs.
+
+## Data access
+
+Partner apps never call Convex directly. They call Hub resource APIs with bearer tokens. Hub validates the token, app approval, organization connection, expiry, and scopes before returning data.

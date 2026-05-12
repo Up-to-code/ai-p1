@@ -1,0 +1,30 @@
+---
+title: OAuth without an SDK
+description: Use standards-based OAuth 2.1 directly while the official SDK is not published.
+---
+
+## Current v1 path
+
+Use OAuth 2.1 endpoints directly. Do not depend on an `@anan/auth-sdk` package unless your Anan contact has provided a private build.
+
+## Frontend responsibility
+
+The frontend should only start authorization and receive the callback route. Use the button copy Authorize with Anan.
+
+```tsx
+export function AuthorizeWithAnanButton() {
+  return <a href="/api/anan/oauth/start">Authorize with Anan</a>;
+}
+```
+
+## Backend responsibility
+
+Your backend should generate PKCE values, store the verifier in a secure session, exchange the authorization code, refresh tokens, and call Hub APIs.
+
+```ts
+export async function startAnanOAuth() {
+  // Generate code_verifier and S256 code_challenge.
+  // Store the verifier in an HttpOnly session.
+  // Redirect to /oauth/authorize.
+}
+```

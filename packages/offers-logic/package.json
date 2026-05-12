@@ -1,0 +1,30 @@
+{
+  "name": "@anan/offers-logic",
+  "version": "0.1.0",
+  "description": "Pure offers and offer-case state logic for Anan.",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist", "README.md"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./cases": {
+      "types": "./dist/cases.d.ts",
+      "import": "./dist/cases.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "typescript": "^5",
+    "vitest": "^2.0.0"
+  }
+}

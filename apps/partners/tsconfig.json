@@ -1,0 +1,270 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "target": "ES2018",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "types": [
+      "react",
+      "react-dom",
+      "node"
+    ],
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/.source": [
+        "./.source/index.ts"
+      ],
+      "@/.source/server": [
+        "./.source/server.ts"
+      ],
+      "@/*": [
+        "./*"
+      ],
+      "@anan/authorization": [
+        "../../packages/authorization/src/index.ts"
+      ],
+      "@anan/authorization/react": [
+        "../../packages/authorization/src/react/index.tsx"
+      ],
+      "@anan/platform-core": [
+        "../../packages/platform-core/src/index.ts"
+      ],
+      "@anan/platform-core/auth-next": [
+        "../../packages/platform-core/src/auth-next.ts"
+      ],
+      "@anan/platform-core/classnames": [
+        "../../packages/platform-core/src/classnames.ts"
+      ],
+      "@anan/platform-core/convex-api": [
+        "../../packages/platform-core/src/convex-api.ts"
+      ],
+      "@anan/platform-core/errors": [
+        "../../packages/platform-core/src/errors.ts"
+      ],
+      "@anan/platform-core/locale": [
+        "../../packages/platform-core/src/locale.ts"
+      ],
+      "@anan/platform-core/session": [
+        "../../packages/platform-core/src/session.ts"
+      ],
+      "@anan/auth": [
+        "../../packages/auth/src/index.ts"
+      ],
+      "@anan/auth/client": [
+        "../../packages/auth/src/client/index.ts"
+      ],
+      "@anan/auth/react": [
+        "../../packages/auth/src/react/index.ts"
+      ],
+      "@anan/auth/resource-server": [
+        "../../packages/auth/src/resource-server/index.ts"
+      ],
+      "@anan/auth/scopes": [
+        "../../packages/auth/src/scopes/index.ts"
+      ],
+      "@anan/auth/server": [
+        "../../packages/auth/src/server/index.ts"
+      ],
+      "@anan/auth/server/oauth-provider": [
+        "../../packages/auth/src/server/oauth-provider.ts"
+      ],
+      "@anan/auth-client": [
+        "../../packages/auth-client/src/index.ts"
+      ],
+      "@anan/auth-client/web": [
+        "../../packages/auth-client/src/web.ts"
+      ],
+      "@anan/auth-client/admin": [
+        "../../packages/auth-client/src/admin.ts"
+      ],
+      "@anan/auth-client/forms": [
+        "../../packages/auth-client/src/forms.ts"
+      ],
+      "@anan/auth-client/partners": [
+        "../../packages/auth-client/src/partners.ts"
+      ],
+      "@anan/convex-adapters": [
+        "../../packages/convex-adapters/src/index.ts"
+      ],
+      "@anan/convex-adapters/api": [
+        "../../packages/convex-adapters/src/api.ts"
+      ],
+      "@anan/convex-adapters/repository": [
+        "../../packages/convex-adapters/src/repository.ts"
+      ],
+      "@anan/domain-contracts": [
+        "../../packages/domain-contracts/src/index.ts"
+      ],
+      "@anan/domain-contracts/anan-pro": [
+        "../../packages/domain-contracts/src/ananPro.ts"
+      ],
+      "@anan/domain-contracts/compliance": [
+        "../../packages/domain-contracts/src/compliance.ts"
+      ],
+      "@anan/domain-contracts/deals": [
+        "../../packages/domain-contracts/src/deals.ts"
+      ],
+      "@anan/domain-contracts/errors": [
+        "../../packages/domain-contracts/src/errors.ts"
+      ],
+      "@anan/domain-contracts/files": [
+        "../../packages/domain-contracts/src/files.ts"
+      ],
+      "@anan/domain-contracts/gcc-countries": [
+        "../../packages/domain-contracts/src/gccCountries.ts"
+      ],
+      "@anan/domain-contracts/inbox": [
+        "../../packages/domain-contracts/src/inbox.ts"
+      ],
+      "@anan/domain-contracts/market": [
+        "../../packages/domain-contracts/src/market.ts"
+      ],
+      "@anan/domain-contracts/notifications": [
+        "../../packages/domain-contracts/src/notifications.ts"
+      ],
+      "@anan/domain-contracts/oauth": [
+        "../../packages/domain-contracts/src/oauth.ts"
+      ],
+      "@anan/domain-contracts/offers": [
+        "../../packages/domain-contracts/src/offers.ts"
+      ],
+      "@anan/domain-contracts/org-api": [
+        "../../packages/domain-contracts/src/orgApi.ts"
+      ],
+      "@anan/domain-contracts/organization-api-keys": [
+        "../../packages/domain-contracts/src/organizationApiKeys.ts"
+      ],
+      "@anan/domain-contracts/organizations": [
+        "../../packages/domain-contracts/src/organizations.ts"
+      ],
+      "@anan/domain-contracts/profiles": [
+        "../../packages/domain-contracts/src/profiles.ts"
+      ],
+      "@anan/domain-contracts/projects": [
+        "../../packages/domain-contracts/src/projects.ts"
+      ],
+      "@anan/domain-contracts/properties": [
+        "../../packages/domain-contracts/src/properties.ts"
+      ],
+      "@anan/domain-contracts/session": [
+        "../../packages/domain-contracts/src/session.ts"
+      ],
+      "@anan/domain-contracts/verifications": [
+        "../../packages/domain-contracts/src/verifications.ts"
+      ],
+      "@anan/domain-contracts/workspace": [
+        "../../packages/domain-contracts/src/workspace.ts"
+      ],
+      "@anan/testing": [
+        "../../packages/testing/src/index.ts"
+      ],
+      "@anan/testing/oauth": [
+        "../../packages/testing/src/oauth.ts"
+      ],
+      "@anan/testing/profile": [
+        "../../packages/testing/src/profile.ts"
+      ],
+      "@anan/testing/react": [
+        "../../packages/testing/src/react.ts"
+      ],
+      "@anan/testing/repository": [
+        "../../packages/testing/src/repository.ts"
+      ],
+      "@anan/testing/route": [
+        "../../packages/testing/src/route.ts"
+      ],
+      "@anan/testing/session": [
+        "../../packages/testing/src/session.ts"
+      ],
+      "@anan/testing/vitest": [
+        "../../packages/testing/src/vitest.ts"
+      ],
+      "@anan/ui": [
+        "../../packages/ui/src/index.ts"
+      ],
+      "@anan/ui/admin": [
+        "../../packages/ui/src/admin/index.ts"
+      ],
+      "@anan/ui/auth": [
+        "../../packages/ui/src/auth/index.ts"
+      ],
+      "@anan/ui/chat": [
+        "../../packages/ui/src/chat/index.ts"
+      ],
+      "@anan/ui/docs": [
+        "../../packages/ui/src/docs/index.ts"
+      ],
+      "@anan/ui/forms": [
+        "../../packages/ui/src/forms/index.ts"
+      ],
+      "@anan/ui/oauth": [
+        "../../packages/ui/src/oauth/index.ts"
+      ],
+      "@anan/ui/public": [
+        "../../packages/ui/src/public/index.ts"
+      ],
+      "@anan/ui/workspace": [
+        "../../packages/ui/src/workspace/index.ts"
+      ],
+      "@anan/ui/button": [
+        "../../packages/ui/src/components/ui/button.tsx"
+      ],
+      "@anan/ui/dropdown-menu": [
+        "../../packages/ui/src/components/ui/dropdown-menu.tsx"
+      ],
+      "@anan/web-foundation": [
+        "../../packages/web-foundation/src/index.ts"
+      ],
+      "@anan/web-foundation/api": [
+        "../../packages/web-foundation/src/api.ts"
+      ],
+      "@anan/web-foundation/auth-session": [
+        "../../packages/web-foundation/src/auth-session.ts"
+      ],
+      "@anan/web-foundation/convex-provider": [
+        "../../packages/web-foundation/src/convex-provider.tsx"
+      ],
+      "@anan/web-foundation/media": [
+        "../../packages/web-foundation/src/media.ts"
+      ],
+      "@anan/web-foundation/fonts": [
+        "../../packages/web-foundation/src/fonts.ts"
+      ],
+      "@anan/web-foundation/locale": [
+        "../../packages/web-foundation/src/locale.ts"
+      ],
+      "@anan/web-foundation/theme": [
+        "../../packages/web-foundation/src/theme.tsx"
+      ]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    ".source/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

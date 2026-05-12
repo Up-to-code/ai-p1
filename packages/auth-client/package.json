@@ -1,0 +1,49 @@
+{
+  "name": "@anan/auth-client",
+  "version": "0.1.0",
+  "description": "Shared browser Better Auth client factories for Anan apps.",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./web": {
+      "types": "./dist/web.d.ts",
+      "import": "./dist/web.js"
+    },
+    "./admin": {
+      "types": "./dist/admin.d.ts",
+      "import": "./dist/admin.js"
+    },
+    "./forms": {
+      "types": "./dist/forms.d.ts",
+      "import": "./dist/forms.js"
+    },
+    "./external-apps": {
+      "types": "./dist/externalApps.d.ts",
+      "import": "./dist/externalApps.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@convex-dev/better-auth": "^0.11.4",
+    "better-auth": "1.5.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "typescript": "^5",
+    "vitest": "^2.0.0"
+  }
+}

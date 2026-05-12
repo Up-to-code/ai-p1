@@ -1,0 +1,73 @@
+{
+  "name": "@anan/auth",
+  "version": "0.1.0",
+  "description": "Shared OAuth2/OpenID Connect auth, scope, and authorization helpers for Anan apps.",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "import": "./dist/client/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.js"
+    },
+    "./resource-server": {
+      "types": "./dist/resource-server/index.d.ts",
+      "import": "./dist/resource-server/index.js"
+    },
+    "./scopes": {
+      "types": "./dist/scopes/index.d.ts",
+      "import": "./dist/scopes/index.js"
+    },
+    "./server": {
+      "types": "./dist/server/index.d.ts",
+      "import": "./dist/server/index.js"
+    },
+    "./server/oauth-provider": {
+      "types": "./dist/server/oauth-provider.d.ts",
+      "import": "./dist/server/oauth-provider.js"
+    }
+  },
+  "scripts": {
+    "prebuild": "npm --workspace @anan/platform-core run build",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@anan/platform-core": "0.1.0",
+    "better-auth": "1.5.6"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.3",
+    "@types/react-dom": "^19.2.3",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "typescript": "^5",
+    "vitest": "^2.0.0"
+  }
+}

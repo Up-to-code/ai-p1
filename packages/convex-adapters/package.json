@@ -1,0 +1,45 @@
+{
+  "name": "@anan/convex-adapters",
+  "version": "0.1.0",
+  "description": "Shared Convex adapter helpers for Anan Next.js repository layers.",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js"
+    },
+    "./repository": {
+      "types": "./dist/repository.d.ts",
+      "import": "./dist/repository.js"
+    }
+  },
+  "scripts": {
+    "prebuild": "npm --workspace @anan/platform-core run build",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@anan/platform-core": "0.1.0"
+  },
+  "peerDependencies": {
+    "convex": "^1.31.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "convex": "^1.31.6",
+    "typescript": "^5",
+    "vitest": "^2.0.0"
+  }
+}

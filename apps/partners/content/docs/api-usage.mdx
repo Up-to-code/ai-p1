@@ -1,0 +1,35 @@
+---
+title: API usage
+description: Call Hub Hono organization APIs with verified access tokens and least-privilege scopes.
+---
+
+## Resource server checks
+
+Partner apps call Hub Hono APIs, not Convex. Hub validates issuer, audience, signature, expiry, app approval, organization connection, connection expiry, and scopes before business logic runs.
+
+```bash
+curl https://app.anan.test/api/v1/partner/organizations/org_123/clients \
+  -H "Authorization: Bearer $ANAN_ACCESS_TOKEN"
+```
+
+## Common errors
+
+- `Bearer token is required.`: send the access token in the Authorization header.
+- `Token organization does not match this route.`: the token was granted for a different organization.
+- `connection_not_found`: the organization has not authorized this app.
+- `connection_expired`: the 14-day authorization has expired.
+- `scope_denied`: the token or connection does not include the required scope.
+
+## Example backend call
+
+```ts
+import { loadAnanClients } from "../../examples/auth/hub-api";
+
+const clients = await loadAnanClients({
+  hubBaseUrl: "https://app.anan.test",
+  organizationId: "org_123",
+  accessToken: process.env.ANAN_ACCESS_TOKEN!,
+});
+```
+
+The full tested example lives in `examples/auth`.

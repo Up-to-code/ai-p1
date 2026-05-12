@@ -1,0 +1,22 @@
+{
+  "name": "anan",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:hub": "npm --workspace hub run dev",
+    "dev:partners": "npm --workspace @anan/partners run dev",
+    "dev:admin": "npm --workspace @anan/admin-review run dev",
+    "dev:demo": "npm --workspace @anan/demo-partner-app run dev",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@better-auth/core": "1.6.10",
+    "next": "16.2.4"
+  }
+}

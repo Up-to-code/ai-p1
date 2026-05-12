@@ -1,1 +1,0 @@
-import { Link } from "@/i18n/routing"; export default function Page() { return <div className="p-12 max-w-3xl mx-auto"><h1 className="text-4xl font-semibold mb-6">Documentation</h1><p className="text-lg text-text-secondary mb-8">This is the public documentation portal.</p><Link href="/" className="text-primary hover:underline">← Back Home</Link></div>; }

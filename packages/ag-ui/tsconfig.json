@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "baseUrl": "../..",
+    "target": "ES2018",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "typeRoots": ["../../apps/web/node_modules/@types", "../../node_modules/@types"],
+    "types": ["react", "react-dom", "node"],
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": ["apps/web/*"],
+      "@convex/*": ["convex/_generated/*"],
+      "@convex/api": ["convex/_generated/api.d.ts"],
+      "@anan/ag-ui": ["packages/ag-ui/src/index.ts"],
+      "@anan/ag-ui/react": ["packages/ag-ui/src/react/index.ts"],
+      "@anan/ag-ui/anan": ["packages/ag-ui/src/anan/index.ts"],
+      "zod": ["node_modules/zod"]
+    }
+  },
+  "include": [
+    "src/protocol/**/*.ts",
+    "src/cards/**/*.tsx",
+    "src/cards/**/*.ts",
+    "src/react/**/*.tsx",
+    "src/react/**/*.ts",
+    "src/index.ts"
+  ],
+  "exclude": ["node_modules", "src/anan/**/*", "examples/**/*", "**/*.test.ts", "**/*.test.tsx"]
+}

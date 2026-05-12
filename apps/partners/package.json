@@ -1,0 +1,52 @@
+{
+  "name": "@anan/partners",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/dev-next.mjs",
+    "build": "next build",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "convex:dev": "convex dev",
+    "convex:codegen": "convex codegen",
+    "start": "next start --port 3002"
+  },
+  "dependencies": {
+    "@anan/auth": "0.1.0",
+    "@anan/platform-core": "0.1.0",
+    "@anan/ui": "0.1.0",
+    "@anan/web-foundation": "0.1.0",
+    "@convex-dev/better-auth": "^0.11.4",
+    "@djpanda/convex-authz": "0.1.7",
+    "@djpanda/convex-tenants": "0.1.6",
+    "@hookform/resolvers": "^5.2.2",
+    "@types/mdx": "^2.0.13",
+    "better-auth": "1.5.6",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "convex": "^1.31.6",
+    "fumadocs-core": "^16.8.5",
+    "fumadocs-mdx": "^14.3.2",
+    "fumadocs-ui": "^16.8.5",
+    "lucide-react": "^0.577.0",
+    "next": "16.1.6",
+    "next-themes": "^0.3.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-hook-form": "^7.74.0",
+    "tailwind-merge": "^3.5.0",
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "^4.4.1",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19.2.3",
+    "@types/react-dom": "^19.2.3",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^2.1.9"
+  }
+}

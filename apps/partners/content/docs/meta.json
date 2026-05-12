@@ -1,0 +1,14 @@
+{
+  "title": "Partner Docs",
+  "pages": [
+    "index",
+    "business-flow",
+    "quickstart",
+    "sdk-installation",
+    "register-an-app",
+    "oauth-flow",
+    "api-usage",
+    "pdf-generator-example",
+    "troubleshooting"
+  ]
+}

@@ -1,0 +1,46 @@
+---
+title: PDF generator example
+description: A practical read-only integration for generating client profile PDFs.
+---
+
+## Scenario
+
+You are building PDF Creator, a partner product that generates branded client profile PDFs for brokers and developers.
+
+## Requested scopes
+
+```txt
+organization:read
+client:read
+property:read
+media:read
+```
+
+## User journey
+
+1. Create PDF Creator in Partners.
+2. Submit it for Anan review.
+3. After approval, workspace admins see PDF Creator in Hub Integrations.
+4. The admin clicks Visit Partner and lands on your product.
+5. Your product shows Authorize with Anan.
+6. After consent, your backend calls Hub APIs and builds the PDF from authorized organization data.
+
+## Backend sketch
+
+```ts
+export async function generateClientProfilePdf(input: {
+  organizationId: string;
+  clientId: string;
+  accessToken: string;
+}) {
+  const client = await fetch(
+    `https://app.anan.test/api/v1/partner/organizations/${input.organizationId}/clients/${input.clientId}`,
+    { headers: { authorization: `Bearer ${input.accessToken}` } },
+  );
+
+  if (!client.ok) throw new Error(await client.text());
+  const data = await client.json();
+
+  return renderPdf(data);
+}
+```

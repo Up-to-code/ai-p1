@@ -1,0 +1,2723 @@
+{
+  "Navigation": {
+    "dashboard": "Dashboard",
+    "projects": "Projects",
+    "properties": "Properties",
+    "team": "Team",
+    "integrations": "Integrations",
+    "activity": "Activity",
+    "announcements": "Announcements",
+    "settings": "Settings",
+    "units": "Units",
+    "clients": "Clients",
+    "organization": "Organization",
+    "preferences": "Preferences",
+    "components": "UI Components",
+    "activityLog": "Activity Log",
+    "collapse": "Collapse",
+    "expand": "Expand"
+  },
+  "AutoUi": {
+    "The Saudi Arabia Central Real Estate Data Synchronization Engine___": "The Saudi Arabia Central Real Estate Data Synchronization Engine",
+    "© 2026 anan Platform___ All rights reserved___": "© 2026 anan Platform. All rights reserved.",
+    "Sign in to access your real estate data hub___": "Sign in to access your real estate data hub.",
+    "Min___ 8 characters": "Min. 8 characters",
+    "Enter an invite code or use a shared link to join an existing workspace___": "Enter an invite code or use a shared link to join an existing workspace.",
+    "Register your company and complete the setup wizard to start synchronizing data___": "Register your company and complete the setup wizard to start synchronizing data.",
+    "Complete these required steps to submit your organization for approval___": "Complete the basic setup to start using your workspace.",
+    "Provide your company's registered legal information___": "Provide your company's registered legal information.",
+    "Upload the required legal files and identify the authorized signer___": "Add legal files later when a workflow requires verification.",
+    "Set your display identity for shared workspaces and approvals___": "Set your display identity for shared workspaces and approvals.",
+    "Invite teammates who should help manage listings, approvals, and integrations___": "Invite teammates who should help manage listings, approvals, and integrations."
+  },
+  "Dashboard": {
+    "title": "Today Desk",
+    "subtitle": "Client calendar, inventory readiness, and project movement for the work that matters today.",
+    "eyebrow": "Real estate operating desk",
+    "welcome": "Welcome back",
+    "stats": {
+      "clients": "Clients",
+      "projects": "Projects",
+      "units": "Units",
+      "events": "Events"
+    },
+    "activity": {
+      "title": "Recent Activity",
+      "empty": "No recent activity to show"
+    },
+    "upcoming": {
+      "title": "Upcoming Work"
+    },
+    "simple": {
+      "syncStatus": "Sync Status",
+      "recentProjects": "Recent Projects",
+      "viewAllProjects": "View All Projects",
+      "inventoryUnits": "Inventory Units",
+      "fullInventory": "Full Inventory",
+      "quickActions": "Quick Actions",
+      "newProject": "New Project",
+      "addUnit": "Add Unit",
+      "registerClient": "Register Client",
+      "globalSearch": "Global Search",
+      "searchPlaceholder": "Search anything...",
+      "searchDesc": "Quickly find projects, units, or legal files across the entire index."
+    },
+    "signals": {
+      "followUps": "Client follow-ups",
+      "followUpsDetail": "{count} high-priority clients need care",
+      "viewings": "Viewings today",
+      "noViewings": "No booked visits",
+      "readyInventory": "Ready units",
+      "readyInventoryDetail": "{count} still need review",
+      "blockedApprovals": "Blocked approvals",
+      "blockedApprovalsDetail": "Clear data before launch"
+    },
+    "overview": {
+      "today": "Today",
+      "canShow": "Can show now",
+      "needsWork": "Needs work"
+    },
+    "today": {
+      "title": "Client calendar from today",
+      "description": "Follow-ups and visits ordered by urgency, so the next client move is obvious.",
+      "openClients": "Open clients",
+      "nextAction": "Next move"
+    },
+    "calendar": {
+      "title": "Calendar",
+      "description": "Today’s client meetings and follow-ups in the same rhythm as the full calendar.",
+      "open": "Open calendar",
+      "days": {
+        "today": "Today",
+        "tomorrow": "Tomorrow",
+        "week": "This week",
+        "later": "Later"
+      }
+    },
+    "pipeline": {
+      "title": "Market movement",
+      "description": "A compact read on demand, launch readiness, and units that can be shown now.",
+      "qualifiedDemand": "Qualified demand",
+      "qualifiedDemandHelper": "Clients ready for matching or negotiation",
+      "launchReady": "Launch-ready projects",
+      "launchReadyHelper": "Approved projects with synced data",
+      "availableKeys": "Keys available",
+      "availableKeysHelper": "Units ready for viewing or offer"
+    },
+    "actions": {
+      "title": "Next useful actions",
+      "description": "Only the essential moves, grouped by work role.",
+      "logFollowUp": "Log client follow-up",
+      "scheduleViewing": "Schedule viewing",
+      "addUnit": "Add marketable unit",
+      "prepareProject": "Prepare project",
+      "sales": "Sales",
+      "coordinator": "Coordinator",
+      "inventory": "Inventory",
+      "admin": "Admin"
+    },
+    "chart": {
+      "title": "Pipeline",
+      "description": "A small read on what needs attention.",
+      "center": "Ready",
+      "clients": "Clients",
+      "inventory": "Inventory",
+      "review": "Review",
+      "blocked": "Blocked"
+    },
+    "clientFunnel": {
+      "title": "Client funnel",
+      "description": "Lead movement from first contact to closed deal.",
+      "total": "{count} clients",
+      "closed": "Closed",
+      "conversion": "Conversion"
+    },
+    "search": {
+      "title": "Find the deal context",
+      "description": "Search for a client, unit, project, budget range, or document before a call.",
+      "placeholder": "Client, unit, project, or budget..."
+    },
+    "inventory": {
+      "title": "Inventory ready for action",
+      "description": "Units your team can discuss, review, or prepare for viewing.",
+      "open": "Open inventory"
+    },
+    "projects": {
+      "title": "Project movement",
+      "description": "Launch state, unit volume, and market entry point for active projects.",
+      "open": "Open projects",
+      "units": "Units",
+      "market": "Market",
+      "edit": "Edit",
+      "deleteProject": "Delete {name}"
+    }
+  },
+  "Common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "loading": "Loading...",
+    "search": "Search",
+    "noResults": "No results found",
+    "actions": "Actions",
+    "status": "Status",
+    "date": "Date",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish",
+    "pendingApproval": "Pending Approval",
+    "searchPlaceholder": "Search records...",
+    "searchAriaLabel": "Search records",
+    "loadingTitle": "Loading workspace",
+    "loadingDesc": "Preparing the latest live workspace data.",
+    "loadingStillTitle": "Still loading",
+    "loadingStillDesc": "The workspace is taking longer than expected. You can refresh while the connection catches up.",
+    "convexAuthLoadingTitle": "Connecting workspace",
+    "convexAuthLoadingDesc": "Signing this browser into the live workspace data.",
+    "convexAuthFailedTitle": "Workspace connection needs a refresh",
+    "convexAuthFailedDesc": "Your app session is signed in, but Convex realtime data is not connected. Check NEXT_PUBLIC_CONVEX_URL, NEXT_PUBLIC_CONVEX_SITE_URL, and the Convex JWKS route, then hard refresh.",
+    "debugDetails": "Debug details",
+    "requestFailedTitle": "Workspace data could not be loaded",
+    "requestFailedDesc": "Refresh or try again while the live data connection catches up.",
+    "requestTimedOutTitle": "Workspace data timed out",
+    "tryAgain": "Try again",
+    "noOrganizationTitle": "No workspace selected",
+    "noOrganizationDesc": "Join or create a workspace before viewing these records.",
+    "refresh": "Refresh",
+    "signIn": "Sign in",
+    "errorTitle": "Something went wrong",
+    "reviewFields": "Review required fields",
+    "backToList": "Back to list",
+    "deleting": "Deleting...",
+    "optional": "(Optional)",
+    "skipStep": "Skip this step",
+    "saveAndExit": "Save and Exit"
+  },
+  "Sidebar": {
+    "groups": {
+      "workspace": "Workspace",
+      "operations": "Operations",
+      "administration": "Administration"
+    },
+    "dashboard": "WS",
+    "projects": "Projects",
+    "properties": "Properties",
+    "units": "Units",
+    "clients": "Clients",
+    "calendar": "Calendar",
+    "organization": "Organization",
+    "integrations": "Integrations",
+    "components": "UI Components",
+    "activity": "Activity Log",
+    "announcements": "Announcements",
+    "settings": "Settings",
+    "collapse": "Collapse",
+    "expand": "Expand"
+  },
+  "Topbar": {
+    "draftMode": "Draft Mode",
+    "live": "Live",
+    "search": "Search..."
+  },
+  "Landing": {
+    "nav": {
+      "home": "Home",
+      "documentation": "Docs",
+      "developers": "Developers",
+      "brokers": "Brokers",
+      "solutions": "Solutions",
+      "pricing": "Pricing",
+      "resources": "Resources",
+      "company": "Company",
+      "about": "About",
+      "contact": "Contact",
+      "signIn": "Sign In",
+      "dashboard": "Workspace",
+      "getStarted": "Get Started",
+      "workspaceSystem": "Workspace system",
+      "work": "Work",
+      "ai": "AI",
+      "openMenu": "Open public navigation",
+      "closeMenu": "Close public navigation"
+    },
+    "home": {
+      "hero": {
+        "eyebrow": "B2B real estate clarity",
+        "title": "Real AI for real work.",
+        "description": "Introducing anan: the next generation of technology and work for institutional real estate teams.",
+        "primary": "Enter workspace",
+        "secondary": "Partner with us",
+        "structure": [
+          {
+            "label": "Market truth",
+            "value": "01",
+            "helper": "Projects, units, media, and pricing reconciled before teams move."
+          },
+          {
+            "label": "Partner motion",
+            "value": "02",
+            "helper": "Developers, brokers, and operators share the same live context."
+          },
+          {
+            "label": "Workspace action",
+            "value": "03",
+            "helper": "AI, follow-ups, and approvals turn clarity into the next step."
+          }
+        ]
+      },
+      "signals": {
+        "eyebrow": "Micro-proof near the decision point",
+        "projects": {
+          "label": "Market data",
+          "value": "42",
+          "helper": "Projects, media, units, and pricing reconciled."
+        },
+        "approvals": {
+          "label": "Risk",
+          "value": "18",
+          "helper": "Blocks visible before they become revenue events."
+        },
+        "leads": {
+          "label": "Demand",
+          "value": "1.2k",
+          "helper": "Client intent connected to verified inventory."
+        }
+      },
+      "preview": {
+        "workspace": "Workspace overview",
+        "work": "Work",
+        "ai": "AI",
+        "activeListings": "Active listings",
+        "pendingApprovals": "Pending approvals",
+        "qualifiedLeads": "Qualified leads",
+        "syncHealth": "Sync health",
+        "actionRequired": "Action required",
+        "today": "Today",
+        "assistant": "Anan assistant",
+        "prompt": "Find ready waterfront units, prepare the broker context, and flag anything that blocks a viewing today.",
+        "ready": "Ready",
+        "tasks": [
+          {
+            "title": "Approve Riyadh Heights units",
+            "meta": "24 units · developer submitted new pricing",
+            "status": "Review"
+          },
+          {
+            "title": "Resolve duplicate listing claims",
+            "meta": "Palm Residence · 3 broker submissions",
+            "status": "Blocked"
+          },
+          {
+            "title": "Publish verified waterfront units",
+            "meta": "12 units · ready for marketplace sync",
+            "status": "Ready"
+          }
+        ],
+        "chips": [
+          "Find client",
+          "Check inventory",
+          "Prepare viewing",
+          "Verify launch"
+        ]
+      },
+      "partners": {
+        "eyebrow": "Partner with us",
+        "title": "One infinity loop for the teams around every project.",
+        "description": "The platform is built for the movement between developer supply, broker demand, market signals, and workspace execution.",
+        "items": [
+          { "name": "Developers", "label": "Launch" },
+          { "name": "Brokers", "label": "Demand" },
+          { "name": "Sales ops", "label": "Readiness" },
+          { "name": "Marketing", "label": "Media" },
+          { "name": "Finance", "label": "Revenue" },
+          { "name": "Legal", "label": "Approval" },
+          { "name": "Integrations", "label": "Sync" }
+        ]
+      },
+      "audiences": {
+        "eyebrow": "The problem is not data",
+        "title": "Your data is not the problem. Your clarity is.",
+        "description": "Anan turns scattered project, inventory, broker, and client signals into a shared operating view.",
+        "items": [
+          {
+            "eyebrow": "For developers",
+            "title": "Control launch before it reaches the market.",
+            "description": "Track readiness, approvals, inventory, media, and broker access from one command surface.",
+            "href": "/developer",
+            "image": "/images/projects/business-park.png",
+            "stats": [
+              { "label": "Projects", "value": "Live" },
+              { "label": "Units", "value": "Synced" },
+              { "label": "Status", "value": "Clear" }
+            ]
+          },
+          {
+            "eyebrow": "For brokers",
+            "title": "Move from demand to action.",
+            "description": "Keep clients, available units, viewings, and developer context close enough to act immediately.",
+            "href": "/broker",
+            "image": "/images/projects/residential.png",
+            "stats": [
+              { "label": "Clients", "value": "Active" },
+              { "label": "Viewings", "value": "Ready" },
+              { "label": "Context", "value": "Shared" }
+            ]
+          }
+        ]
+      },
+      "city": {
+        "eyebrow": "City area",
+        "title": "Keep the market photo close to the workflow.",
+        "description": "The visual layer stays grounded in the real project environment while every card explains what the team can do next."
+      },
+      "workflow": {
+        "eyebrow": "One layer",
+        "title": "Every metric. Always reconciled.",
+        "description": "Anan makes operational truth visible before the team makes a market move.",
+        "items": [
+          {
+            "title": "One source",
+            "description": "Projects, units, clients, and approvals stop living in separate stories."
+          },
+          {
+            "title": "One status",
+            "description": "Ready, pending, blocked, and synced are visible before handoff."
+          },
+          {
+            "title": "One next step",
+            "description": "AI prompts, follow-ups, and workspace actions point to the same outcome."
+          }
+        ]
+      },
+      "problemSolution": {
+        "eyebrow": "Problem and solution",
+        "problemTitle": "What breaks before Anan",
+        "solutionTitle": "What becomes clear inside Anan",
+        "problems": [
+          {
+            "title": "Launch context is scattered",
+            "description": "Inventory, approvals, media, pricing, and broker access drift across separate tools."
+          },
+          {
+            "title": "Teams cannot trust the same status",
+            "description": "One team sees ready, another sees blocked, and leadership sees the delay too late."
+          },
+          {
+            "title": "Demand loses its next step",
+            "description": "Clients, viewings, follow-ups, and available units are not connected tightly enough to move."
+          }
+        ],
+        "solutions": [
+          {
+            "title": "One project operating layer",
+            "description": "Every project has visible readiness, risk, and partner access before it reaches the market."
+          },
+          {
+            "title": "One shared language",
+            "description": "Developer and broker work uses the same status model: ready, blocked, synced, and action required."
+          },
+          {
+            "title": "One AI-assisted next action",
+            "description": "The workspace converts signals into follow-ups, viewing context, launch checks, and decision prompts."
+          }
+        ]
+      },
+      "docsWorld": {
+        "eyebrow": "Docs world",
+        "title": "Read the system before you plug into it.",
+        "description": "The docs explain the operating model behind Anan: project readiness, inventory truth, partner access, AI workflows, and marketplace sync.",
+        "primary": "Read the docs",
+        "items": [
+          {
+            "title": "Operating model",
+            "description": "How Anan structures projects, units, statuses, and workspace decisions.",
+            "href": "/docs"
+          },
+          {
+            "title": "Developer workflow",
+            "description": "How launch readiness, approvals, media, and broker access become one view.",
+            "href": "/developer"
+          },
+          {
+            "title": "Broker workflow",
+            "description": "How clients, viewings, follow-ups, and verified inventory become one motion.",
+            "href": "/broker"
+          }
+        ]
+      },
+      "realSolutions": {
+        "eyebrow": "Real solutions",
+        "title": "Convert the platform story into operating sections.",
+        "description": "No empty feature wall. Each section answers a real business moment.",
+        "items": [
+          {
+            "eyebrow": "Launch command",
+            "title": "Know what can go live.",
+            "description": "Project teams see unit readiness, missing approvals, media gaps, and partner access before release.",
+            "metric": "Ready / blocked"
+          },
+          {
+            "eyebrow": "Broker room",
+            "title": "Move clients with context.",
+            "description": "Brokers keep demand, availability, viewing plans, and developer notes in one workflow.",
+            "metric": "Client next step"
+          },
+          {
+            "eyebrow": "Inventory truth",
+            "title": "Stop selling stale data.",
+            "description": "Pricing, status, and availability stay tied to the same verified project record.",
+            "metric": "Synced source"
+          },
+          {
+            "eyebrow": "AI follow-up",
+            "title": "Turn signals into action.",
+            "description": "AI helps prepare summaries, questions, handoffs, and follow-up plans from workspace context.",
+            "metric": "Action prepared"
+          }
+        ]
+      },
+      "operations": {
+        "eyebrow": "Revenue health",
+        "title": "See the risk before it becomes a revenue event.",
+        "description": "A B2B surface for teams that need clean status, not more screenshots.",
+        "cards": {
+          "inventory": {
+            "label": "Inventory",
+            "value": "Verified",
+            "helper": "Available units stay tied to project records and launch readiness."
+          },
+          "calendar": {
+            "label": "Calendar",
+            "value": "Today",
+            "helper": "Viewing plans and follow-ups stay visible beside the work."
+          },
+          "comms": {
+            "label": "Context",
+            "value": "Shared",
+            "helper": "Brokers and developers use the same operational language."
+          },
+          "compliance": {
+            "label": "Trust",
+            "value": "Clear",
+            "helper": "Approvals and blocks are visible before work moves forward."
+          }
+        }
+      },
+      "ai": {
+        "eyebrow": "Real-time AI",
+        "title": "Real-time AI analysis & forecasting",
+        "description": "Let the AI automatically analyze, detect patterns, and predict trends in your data before it happens.",
+        "primary": "Learn More"
+      },
+      "testimonials": {
+        "eyebrow": "Testimonials",
+        "title": "Real feedback. Real improvements.",
+        "quote1": "\"This platform is the single most valuable tool for our leadership team. We have absolute visibility.\"",
+        "author1": "Sarah Jenkins",
+        "role1": "Operations Director",
+        "quote2": "\"Our data is finally reconciled and trustworthy. The AI insights alone save us hours every week.\"",
+        "author2": "Michael Chen",
+        "role2": "VP of Engineering"
+      },
+      "team": {
+        "eyebrow": "Our Team",
+        "title": "Built by people who care deeply.",
+        "member1": "Alex Rivera",
+        "role1": "Product Design",
+        "member2": "Jamie Lee",
+        "role2": "Engineering Lead",
+        "member3": "Taylor Smith",
+        "role3": "Customer Success",
+        "member4": "Jordan Davis",
+        "role4": "Data Science"
+      },
+      "integrations": {
+        "eyebrow": "Ecosystem",
+        "title": "Stay connected. Always.",
+        "slack": "Slack",
+        "slackDesc": "Receive real-time alerts and daily digests directly in your channels.",
+        "youtube": "YouTube",
+        "youtubeDesc": "Embed video walkthroughs and market updates effortlessly.",
+        "discord": "Discord",
+        "discordDesc": "Community sync and instant operational notifications."
+      },
+      "animated": {
+        "hero": {
+          "title": "The Single Source for Real Estate.",
+          "description": "Put your data in one place, and it automatically pushes everywhere.",
+          "primary": "Start Syncing"
+        },
+        "problems": {
+          "eyebrow": "The Problem",
+          "title": "Fragmented data kills deals.",
+          "item1": "Scattered inventory across spreadsheets.",
+          "item2": "Agents working with outdated pricing.",
+          "item3": "Manual updates to multiple websites."
+        },
+        "solutions": {
+          "eyebrow": "Anan AI Solutions",
+          "title": "AI that connects the dots.",
+          "description": "Our intelligence layer automatically translates, formats, and syncs your inventory to match any marketplace standard in real-time."
+        },
+        "calendar": {
+          "eyebrow": "Calendar AI",
+          "title": "Schedule with live context.",
+          "description": "Manage viewings and project milestones directly linked to your live inventory. When availability changes, your calendar knows."
+        },
+        "distribution": {
+          "eyebrow": "Connected Apps",
+          "title": "Enter once. Publish everywhere.",
+          "description": "When you put your data in Anan, it is automatically pushed to multiple destinations.",
+          "website": "Your Website",
+          "agent": "Your Agents",
+          "market": "Anan Marketplace",
+          "ai": "AI Marketplaces"
+        }
+      },
+      "cta": {
+        "eyebrow": "Ready for the workspace",
+        "title": "Start where the real work continues.",
+        "description": "Enter the workspace, or contact the team to map Anan to your developer or brokerage workflow.",
+        "primary": "Enter workspace",
+        "secondary": "Contact team"
+      },
+      "faq": {
+        "eyebrow": "FAQ",
+        "title": "Questions before your team moves in.",
+        "description": "Short answers for developers, brokers, and operators evaluating Anan as the shared workspace layer.",
+        "items": [
+          {
+            "question": "Who is Anan built for?",
+            "answer": "Anan is built for real estate developers, brokerage teams, and operators who need one trusted workspace for projects, units, clients, approvals, and handoffs."
+          },
+          {
+            "question": "How does onboarding work?",
+            "answer": "Teams can start with the workspace, then map their project, inventory, client, and organization flows with the Anan team when deeper setup is needed."
+          },
+          {
+            "question": "Can developers and brokers work from the same data?",
+            "answer": "Yes. Anan is designed around shared project and inventory context so developers, brokers, and operations teams can act from the same verified records."
+          },
+          {
+            "question": "How is pricing handled?",
+            "answer": "Pricing starts with the published plans on this page. Larger teams can contact Anan for an implementation conversation around organization structure, workflows, and support."
+          },
+          {
+            "question": "What makes the workspace trustworthy?",
+            "answer": "The product keeps roles, statuses, approvals, media, and operational records close to the work, so teams can see what is ready, blocked, pending, or synced before moving forward."
+          }
+        ]
+      }
+    },
+    "about": {
+      "hero": {
+        "eyebrow": "Our Vision",
+        "title": "A new era for real estate operations.",
+        "description": "We believe that clarity, trust, and shared operational truth are the foundation of a modern real estate market. Our mission is to build the infrastructure that empowers teams to move with confidence."
+      },
+      "signals": {
+        "source": {
+          "label": "Source",
+          "value": "One",
+          "helper": "Workspace data is organized around a shared operational record."
+        },
+        "roles": {
+          "label": "Roles",
+          "value": "Many",
+          "helper": "Developers, brokers, and operators see the context they need."
+        },
+        "trust": {
+          "label": "Trust",
+          "value": "Visible",
+          "helper": "Statuses and approvals make uncertainty easier to resolve."
+        }
+      },
+      "principles": {
+        "eyebrow": "Product principles",
+        "title": "Designed from the workspace outward.",
+        "description": "The public experience should explain the product by showing the product's own habits.",
+        "items": [
+          {
+            "title": "Operational clarity",
+            "description": "Every surface makes it obvious what is ready, blocked, pending, or synced."
+          },
+          {
+            "title": "Shared context",
+            "description": "Developers and brokers work from the same project and inventory truth."
+          },
+          {
+            "title": "Trust before motion",
+            "description": "Approvals, records, and compliance states appear before teams take action."
+          }
+        ]
+      },
+      "operating": {
+        "eyebrow": "Business thinking",
+        "title": "A workspace, not a brochure.",
+        "description": "The Anan brand is strongest when it feels useful immediately. That is why the redesigned public suite uses product controls, signals, previews, and audience routes instead of decorative marketing sections."
+      },
+      "cta": {
+        "eyebrow": "Meet the workspace",
+        "title": "See how Anan fits your operating model.",
+        "description": "Bring your project, brokerage, or integration workflow and we will map it into the workspace.",
+        "primary": "Enter workspace",
+        "secondary": "Contact team"
+      },
+      "story": {
+        "eyebrow": "The Storyline",
+        "title": "How it started.",
+        "items": [
+          {
+            "title": "The Fragmented Reality",
+            "description": "Real estate was a world of silos. Developers, brokers, and clients were speaking different languages, relying on stale data and manual handoffs."
+          },
+          {
+            "title": "The Spark",
+            "description": "We saw a future where every project had a single, verified operational record. A future where trust was built into the system itself."
+          },
+          {
+            "title": "The Build",
+            "description": "Anan wasn't built in a lab. It was built in the field, through thousands of conversations with the people who actually do the work."
+          },
+          {
+            "title": "The Result",
+            "description": "Today, Anan is the operating system for the next generation of institutional real estate teams."
+          }
+        ]
+      },
+      "founders": {
+        "title": "Meet the founders",
+        "items": [
+          {
+            "name": "Ahmed",
+            "role": "Technical Vision & Engineering",
+            "bio": "Ahmed leads the technical architecture and engineering direction of Anan, transforming complex real estate workflows into seamless digital systems.",
+            "quote": "The best way to predict the future is to create it.",
+            "author": "Peter Drucker"
+          },
+          {
+            "name": "Abdulmonem",
+            "role": "Real Estate Expert",
+            "bio": "With deep roots in the real estate sector, Abdulmonem ensures that every feature in Anan is grounded in real-world expertise and institutional standards.",
+            "quote": "Real estate is the basis of all wealth.",
+            "author": "Theodore Roosevelt"
+          }
+        ]
+      }
+    },
+    "contact": {
+      "hero": {
+        "eyebrow": "Contact",
+        "title": "Talk to the team with the right context.",
+        "description": "Whether you are launching projects, coordinating brokers, or connecting data, the conversation starts from how your workspace should operate."
+      },
+      "methods": {
+        "email": {
+          "label": "Email",
+          "value": "hello@anan.sa",
+          "helper": "Best for partnerships, onboarding, and workspace questions."
+        },
+        "phone": {
+          "label": "Phone",
+          "value": "+966 11 XXX XXXX",
+          "helper": "For teams that need a direct operational discussion."
+        },
+        "workspace": {
+          "label": "Workspace",
+          "value": "Anan team",
+          "helper": "Send your workflow and the team will route it."
+        }
+      },
+      "routes": {
+        "developer": {
+          "label": "Developer",
+          "value": "Projects",
+          "helper": "Launch readiness, inventory, approvals, and sync."
+        },
+        "broker": {
+          "label": "Broker",
+          "value": "Clients",
+          "helper": "Follow-ups, viewings, matches, and shared context."
+        },
+        "integration": {
+          "label": "Integration",
+          "value": "Systems",
+          "helper": "CRM, inventory, media, and data handoff workflows."
+        }
+      },
+      "form": {
+        "eyebrow": "Workspace inquiry",
+        "title": "Describe the operating flow",
+        "name": "Name",
+        "email": "Email",
+        "team": "Company or team",
+        "topic": "Topic",
+        "message": "What should Anan help organize?",
+        "submit": "Send inquiry"
+      }
+    },
+    "developer": {
+      "hero": {
+        "eyebrow": "Developer workspace",
+        "title": "Control launch readiness from one operational surface.",
+        "description": "Anan helps development teams prepare projects, verify inventory, coordinate with brokers, and keep market-facing data clear before it moves.",
+        "primary": "Enter workspace",
+        "secondary": "Contact team"
+      },
+      "signals": {
+        "inventory": {
+          "label": "Inventory",
+          "value": "Synced",
+          "helper": "Unit records, media, prices, and availability stay aligned."
+        },
+        "approvals": {
+          "label": "Approvals",
+          "value": "Visible",
+          "helper": "Pending and blocked states are easy to identify."
+        },
+        "sync": {
+          "label": "Sync",
+          "value": "99%",
+          "helper": "Operational health is visible before data moves."
+        },
+        "market": {
+          "label": "Market",
+          "value": "Ready",
+          "helper": "Brokers receive context they can act on."
+        }
+      },
+      "panel": {
+        "eyebrow": "Project command",
+        "title": "See the project the way operations sees it.",
+        "description": "The developer route focuses on project state, available units, launch blockers, and the broker context needed to move inventory.",
+        "stats": {
+          "projects": { "label": "Projects", "value": "42" },
+          "units": { "label": "Units", "value": "1.8k" },
+          "health": { "label": "Health", "value": "99%" }
+        }
+      },
+      "workflow": {
+        "eyebrow": "Developer flow",
+        "title": "Prepare, approve, publish.",
+        "description": "The route explains Anan through the developer team's daily operating sequence.",
+        "items": [
+          {
+            "title": "Prepare the project record",
+            "description": "Centralize project identity, media, unit counts, prices, and launch details."
+          },
+          {
+            "title": "Resolve approval states",
+            "description": "Review what is pending, blocked, approved, or ready before teams act."
+          },
+          {
+            "title": "Share market-ready context",
+            "description": "Give brokers the verified information they need without fragmented handoffs."
+          }
+        ]
+      },
+      "cta": {
+        "eyebrow": "Developer onboarding",
+        "title": "Bring your launch workflow into Anan.",
+        "description": "Start in the workspace or contact the team to map projects, units, and approvals.",
+        "primary": "Enter workspace",
+        "secondary": "Contact team"
+      }
+    },
+    "broker": {
+      "hero": {
+        "eyebrow": "Broker workspace",
+        "title": "Turn client intent into the next clear action.",
+        "description": "Anan helps brokers organize follow-ups, inspect inventory, prepare viewings, and keep developer context close to the client conversation.",
+        "primary": "Enter workspace",
+        "secondary": "Contact team"
+      },
+      "signals": {
+        "clients": {
+          "label": "Clients",
+          "value": "Active",
+          "helper": "Buyer and investor context stays tied to next actions."
+        },
+        "followups": {
+          "label": "Follow-ups",
+          "value": "Today",
+          "helper": "Daily client work is visible without scattered messages."
+        },
+        "inventory": {
+          "label": "Inventory",
+          "value": "Clear",
+          "helper": "Available units and launch state are easier to trust."
+        },
+        "ready": {
+          "label": "Viewings",
+          "value": "Ready",
+          "helper": "Plans connect to verified project and unit context."
+        }
+      },
+      "panel": {
+        "eyebrow": "Broker desk",
+        "title": "Keep the client, inventory, and developer context together.",
+        "description": "The broker route focuses on practical movement: match the client, check availability, plan the viewing, and keep the team aligned.",
+        "stats": {
+          "matches": { "label": "Matches", "value": "Live" },
+          "viewings": { "label": "Viewings", "value": "Today" },
+          "context": { "label": "Context", "value": "Shared" }
+        }
+      },
+      "workflow": {
+        "eyebrow": "Broker flow",
+        "title": "Search, coordinate, follow through.",
+        "description": "The route explains the workspace through the broker's daily operating rhythm.",
+        "items": [
+          {
+            "title": "Find the right inventory",
+            "description": "Start from current project and unit context instead of stale lists."
+          },
+          {
+            "title": "Coordinate with confidence",
+            "description": "Developer information, client notes, and availability sit in one place."
+          },
+          {
+            "title": "Plan the next follow-up",
+            "description": "Viewing plans and client actions stay visible beside the records they depend on."
+          }
+        ]
+      },
+      "cta": {
+        "eyebrow": "Broker onboarding",
+        "title": "Bring your follow-up flow into Anan.",
+        "description": "Start in the workspace or contact the team to map clients, inventory, and viewing work.",
+        "primary": "Enter workspace",
+        "secondary": "Contact team"
+      }
+    },
+    "footer": {
+      "description": "A workspace-native platform for property teams, project operations, broker coordination, and trusted real estate data.",
+      "copyright": "2026 Anan Platform. All rights reserved.",
+      "platform": "Platform",
+      "workspace": "Workspace",
+      "dashboard": "Workspace",
+      "developers": "Developers",
+      "brokers": "Brokers",
+      "about": "About",
+      "contact": "Contact",
+      "documentation": "Docs",
+      "team": "Team",
+      "legal": "Legal",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "tagline": "Workspace infrastructure for real estate teams",
+      "developerReady": "Developer ready",
+      "aiNative": "AI native",
+      "verifiedOps": "Verified ops"
+    }
+  },
+  "signin": {
+    "title": "Welcome Back",
+    "description": "Sign in to access your real estate data hub.",
+    "google": "Sign in with Google",
+    "connecting": "Connecting...",
+    "createAccount": "Create an Account",
+    "createAccountDesc": "Join the central synchronization engine for Saudi real estate.",
+    "encrypted": "End-to-end encrypted",
+    "clearTerms": "Clear legal terms",
+    "agreementPrefix": "By continuing, you agree to our",
+    "agreementTerms": "Terms of Service",
+    "agreementAnd": "and",
+    "agreementPrivacy": "Privacy Policy",
+    "agreementSuffix": ".",
+    "backToHome": "Back to Home"
+  },
+  "ProfileMenu": {
+    "open": "Open profile menu",
+    "viewProfile": "View Profile",
+    "logout": "Logout",
+    "logoutTitle": "Are you sure you want to logout?",
+    "logoutDescription": "You will need to sign in again to access your real estate data hub.",
+    "cancel": "Cancel"
+  },
+  "Assistant": {
+    "placeholderDefault": "How can I help you today?",
+    "placeholderDeveloper": "Ask about projects, synchronization, or legal files...",
+    "placeholderBroker": "Search units, verify claim status, or generate reports...",
+    "attach": "Attach",
+    "voiceTitle": "Voice",
+    "recordingNow": "Recording...",
+    "processing": "Processing...",
+    "statusUploading": "Uploading",
+    "statusUploadFailed": "Failed",
+    "statusReady": "Ready",
+    "removeAttachment": "Remove {name}",
+    "sendFailed": "Failed to send message",
+    "viewAll": "View all",
+    "theories": "Theories",
+    "newTheory": "NEW THEORY",
+    "history": "History",
+    "historySubtitle": "Manage all your previous conversational theories.",
+    "searchThreads": "Search threads...",
+    "noThreads": "No theories found matching your search.",
+    "welcome": "What can anan help you today?",
+    "inputPlaceholder": "Start a new conversation...",
+    "mockResponse": "I reviewed \"{request}\" against the current workspace context. I can help turn it into a client follow-up, viewing plan, inventory check, or launch-readiness action.",
+    "suggestions": {
+      "findClient": "Find client",
+      "prepareViewing": "Plan viewing",
+      "checkInventory": "Check units",
+      "verifyLaunch": "Launch check"
+    }
+  },
+  "Workspace": {
+    "modeWs": "WS",
+    "modeAi": "AI",
+    "systemOverview": "System Overview",
+    "syncEfficiency": "The synchronization engine is running at 99.2% efficiency.",
+    "actionRequired": "Action Required",
+    "quickTools": "Quick Tools",
+    "findData": "Find data",
+    "newProject": "New Project",
+    "searchAnything": "Search anything..."
+  },
+  "Statuses": {
+    "draft": "Draft",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "synced": "Synced",
+    "blocked": "Blocked",
+    "under-construction": "Under Construction",
+    "completed": "Completed",
+    "off-plan": "Off-Plan",
+    "available": "Available",
+    "sold": "Sold",
+    "reserved": "Reserved"
+  },
+  "Projects": {
+    "eyebrow": "Portfolio command center",
+    "title": "Projects",
+    "add": "Add Project",
+    "stats": {
+      "size": "Portfolio Size",
+      "approved": "Approved",
+      "review": "Under Review",
+      "drafts": "Drafts"
+    },
+    "toolbar": {
+      "search": "Search projects…",
+      "newest": "Newest",
+      "filters": {
+        "all": "All",
+        "approved": "Approved",
+        "pending": "Pending",
+        "draft": "Draft",
+        "rejected": "Rejected"
+      }
+    },
+    "card": {
+      "units": "Units",
+      "value": "Value",
+      "edit": "Edit"
+    },
+    "empty": {
+      "title": "No projects found",
+      "desc": "Adjust filters or create the first project record."
+    },
+    "delete": {
+      "title": "Delete project?",
+      "desc": "This removes {name} from the mock store."
+    },
+    "detail": {
+      "loadingTitle": "Loading project",
+      "loadingDesc": "Project data is syncing from Convex.",
+      "notFound": "Project not found",
+      "notFoundDesc": "The requested project was not found in the current workspace.",
+      "back": "Back to projects",
+      "edit": "Edit",
+      "delete": "Delete",
+      "recordTitle": "Project Record",
+      "recordDesc": "Operational attributes for brokers and approval teams.",
+      "labels": {
+        "ref": "Reference",
+        "developer": "Developer",
+        "area": "Area",
+        "sync": "Sync State",
+        "updated": "Updated",
+        "city": "City",
+        "type": "Type",
+        "units": "Units",
+        "value": "Value"
+      },
+      "docs": {
+        "title": "Documents",
+        "upload": "Upload",
+        "ready": "Ready",
+        "items": {
+          "commercial": "Commercial register",
+          "titleDeed": "Title deed",
+          "mediaPack": "Media pack"
+        }
+      }
+    },
+    "form": {
+      "createTitle": "Create Project",
+      "editTitle": "Edit Project",
+      "eyebrow": "Project CRUD",
+      "subtitle": "Structured project record backed by the mock Zustand store.",
+      "nameLabel": "Project Name",
+      "devLabel": "Developer",
+      "cityLabel": "City",
+      "areaLabel": "Area",
+      "unitsLabel": "Units",
+      "priceLabel": "Price Range",
+      "imageLabel": "Image URL",
+      "typeLabel": "Project Type",
+      "statusLabel": "Status",
+      "visibilityLabel": "External visibility",
+      "visibilityPrivate": "Private",
+      "visibilityPublic": "Public",
+      "descLabel": "Description",
+      "saveBtn": "Save Project",
+      "createBtn": "Create Project",
+      "stepIdentity": "Identity",
+      "stepLocation": "Location",
+      "stepContext": "Context",
+      "stepInformation": "Information",
+      "stepGallery": "Gallery",
+      "stepDetails": "Details",
+      "identityTitle": "Identity & Ownership",
+      "identityDesc": "Name the project and connect it to the developer people will recognize.",
+      "locationTitle": "Location & Scale",
+      "locationDesc": "Set where the project sits, how large it is, and its market range.",
+      "contextTitle": "Context & Preview",
+      "contextDesc": "Finish the classification, image, status, and public description.",
+      "informationTitle": "Core project information",
+      "informationDesc": "Capture the commercial basics first so the record feels complete before media and classification.",
+      "galleryTitle": "Review gallery",
+      "galleryDesc": "Add the project images and one overview video people will use to review the project quickly.",
+      "galleryUploaderTitle": "Images and overview video",
+      "galleryUploaderDesc": "Add review images and one short video. Documents belong in the project Assets tab later.",
+      "galleryPick": "Choose images or video",
+      "galleryQueued": "Review media",
+      "galleryVideoLimit": "Only one overview video can be added here.",
+      "galleryUnsupported": "Documents are reserved for the Assets section.",
+      "detailsTitle": "Classification and summary",
+      "detailsDesc": "Set the project category, offering mix, status, and short working description.",
+      "offeringMixLabel": "Offering mix",
+      "previewTitle": "Project preview",
+      "previewCity": "City",
+      "previewName": "Project name",
+      "previewDeveloper": "Developer",
+      "previewDescription": "The project description will appear here as you write it.",
+      "previewChecklist": "Record readiness"
+    },
+    "types": {
+      "Residential": "Residential",
+      "Commercial": "Commercial",
+      "Mixed Use": "Mixed Use",
+      "Apartment": "Apartment",
+      "Studio": "Studio",
+      "Villa": "Villa",
+      "Townhouse": "Townhouse",
+      "Penthouse": "Penthouse",
+      "Compound": "Compound",
+      "Office": "Office",
+      "Retail": "Retail"
+    },
+    "upload": {
+      "title": "Upload Document",
+      "desc": "Mock upload dialog for project evidence and approvals.",
+      "drop": "Drag and drop files here",
+      "attach": "Attach File"
+    }
+  },
+  "Properties": {
+    "eyebrow": "Inventory command center",
+    "title": "Properties",
+    "add": "Add Unit",
+    "stats": {
+      "size": "Inventory Size",
+      "available": "Available",
+      "pending": "Pending",
+      "drafts": "Drafts"
+    },
+    "toolbar": {
+      "search": "Search units…",
+      "priceHigh": "Price High",
+      "filters": {
+        "all": "All",
+        "available": "Available",
+        "pending": "Pending",
+        "reserved": "Reserved",
+        "sold": "Sold",
+        "draft": "Draft"
+      }
+    },
+    "card": {
+      "area": "Area",
+      "layout": "Layout",
+      "beds": "B",
+      "baths": "BA"
+    },
+    "empty": {
+      "title": "No units found",
+      "desc": "Adjust filters or create the first property unit."
+    },
+    "delete": {
+      "title": "Delete unit?",
+      "desc": "This removes {name} from the mock inventory."
+    },
+    "detail": {
+      "loadingTitle": "Loading unit",
+      "loadingDesc": "Unit data is syncing from Convex.",
+      "notFound": "Unit not found",
+      "notFoundDesc": "The requested property unit was not found in the current workspace.",
+      "back": "Back to properties",
+      "edit": "Edit",
+      "delete": "Delete",
+      "recordTitle": "Commercial Record",
+      "recordSubtitle": "Unit profile",
+      "valueTitle": "Asking price",
+      "valueDesc": "Commercial value shown to sales and client-facing workflows.",
+      "readinessTitle": "Record readiness",
+      "readinessScore": "Ready for sales",
+      "mediaTitle": "Unit media",
+      "mediaDesc": "Upload images and one overview video saved against this unit.",
+      "mediaPick": "Choose media",
+      "mediaUnsupported": "Only images and videos can be uploaded in Media.",
+      "filesTitle": "Unit files",
+      "filesDesc": "Upload PDF documents, contracts, and supporting files for this unit.",
+      "filesPick": "Choose files",
+      "filesUnsupported": "Only PDF documents can be uploaded in Files.",
+      "tabs": {
+        "overview": "Overview",
+        "media": "Media",
+        "files": "Files",
+        "clients": "Linked clients"
+      },
+      "linkedClients": {
+        "title": "Linked clients",
+        "subtitle": "Clients connected to this unit sales workflow",
+        "linkClient": "Link client",
+        "emptyTitle": "No linked clients yet",
+        "emptyDesc": "Link a client to track interest, viewing, offer, or rejection status.",
+        "unavailable": "Client unavailable",
+        "unlink": "Unlink",
+        "linked": "Client linked.",
+        "unlinked": "Client unlinked.",
+        "modalTitle": "Link client",
+        "modalDesc": "Search clients and choose the sales status for this unit.",
+        "search": "Search clients",
+        "linkStatus": "Link status",
+        "notes": "Notes",
+        "noClients": "No clients are available.",
+        "noResults": "No clients match your search.",
+        "selected": "Selected: {name}",
+        "noneSelected": "Select a client to link.",
+        "link": "Link",
+        "statuses": {
+          "interested": "Interested",
+          "shortlisted": "Shortlisted",
+          "viewing": "Viewing",
+          "offer": "Offer",
+          "rejected": "Rejected"
+        }
+      },
+      "readiness": {
+        "media": "Cover media",
+        "description": "Client description",
+        "commercial": "Price and area"
+      },
+      "labels": {
+        "project": "Project",
+        "area": "Area",
+        "beds": "Bedrooms",
+        "baths": "Bathrooms",
+        "city": "City",
+        "type": "Type",
+        "purpose": "Purpose",
+        "price": "Price"
+      }
+    },
+    "form": {
+      "createTitle": "Create Unit",
+      "editTitle": "Edit Unit",
+      "eyebrow": "Inventory CRUD",
+      "subtitle": "Structured property record backed by the mock Zustand store.",
+      "nameLabel": "Unit Name",
+      "projectLabel": "Project",
+      "cityLabel": "City",
+      "areaLabel": "Area",
+      "priceLabel": "Price",
+      "bedsLabel": "Bedrooms",
+      "bathsLabel": "Bathrooms",
+      "imageLabel": "Image URL",
+      "typeLabel": "Unit Type",
+      "purposeLabel": "Purpose",
+      "statusLabel": "Status",
+      "visibilityLabel": "External visibility",
+      "visibilityPrivate": "Private",
+      "visibilityPublic": "Public",
+      "descLabel": "Description",
+      "saveBtn": "Save Unit",
+      "createBtn": "Create Unit",
+      "stepInformation": "Information",
+      "stepGallery": "Media",
+      "stepDetails": "Details",
+      "informationTitle": "Unit basics",
+      "informationDesc": "Connect this unit to a project, city, area, and commercial value before adding media.",
+      "galleryTitle": "Unit media",
+      "galleryDesc": "Add images and one overview video. New files are queued until the unit is saved.",
+      "detailsTitle": "Availability and layout",
+      "detailsDesc": "Set the unit layout, purpose, status, and the client-facing description.",
+      "galleryUploaderTitle": "Unit media",
+      "galleryUploaderDesc": "Add unit images and one overview video. The first image can become the cover.",
+      "galleryPick": "Choose media",
+      "galleryQueued": "Queued media",
+      "galleryVideoLimit": "Only one overview video can be added to a unit.",
+      "galleryUnsupported": "Only images and videos are supported for unit media.",
+      "previewTitle": "Unit preview",
+      "previewName": "Unit name",
+      "previewProject": "Project",
+      "previewCity": "City",
+      "previewDescription": "The unit description will appear here as you write it.",
+      "previewChecklist": "Unit readiness",
+      "previewMedia": "Media"
+    },
+    "types": {
+      "Apartment": "Apartment",
+      "Studio": "Studio",
+      "Villa": "Villa",
+      "Penthouse": "Penthouse",
+      "Compound": "Compound",
+      "Office": "Office",
+      "Retail": "Retail"
+    },
+    "purposes": {
+      "sale": "Sale",
+      "rent": "Rent"
+    }
+  },
+  "ProjectDetails": {
+    "back": "Back to Portfolio",
+    "edit": "Edit Asset",
+    "share": "Share",
+    "tabs": {
+      "details": "Details",
+      "inventory": "Inventory",
+      "documents": "Documents",
+      "activity": "Activity",
+      "sales": "Sales"
+    },
+    "gallery": {
+      "label": "Primary Asset Visual",
+      "perspective": "Exterior Perspective.",
+      "vault": "Media Vault"
+    },
+    "narrative": {
+      "title": "Asset Narrative"
+    },
+    "config": {
+      "title": "Configuration"
+    },
+    "specs": {
+      "infrastructure": "Infrastructure",
+      "utilities": "Utilities",
+      "orientation": "Orientation",
+      "gridConnection": "Grid Connection",
+      "waterSupply": "Water Supply",
+      "live": "Live",
+      "ready": "Ready",
+      "verified": "Verified"
+    },
+    "market": {
+      "value": "Estimated Market Value",
+      "avgRate": "Avg. Rate",
+      "paymentPlan": "Payment Plan"
+    },
+    "registry": {
+      "title": "Registry Data",
+      "planNo": "Plan No.",
+      "plotNo": "Plot No.",
+      "postalIdentity": "Postal Identity"
+    },
+    "rega": {
+      "title": "REGA License",
+      "authNo": "Authorization No.",
+      "expires": "Exp: {date}"
+    },
+    "inventory": {
+      "title": "Units Inventory.",
+      "subtitle": "Active units within the project portfolio",
+      "addUnit": "Add Unit",
+      "cols": {
+        "ref": "Reference",
+        "type": "Type",
+        "status": "Status",
+        "price": "Price (SAR)",
+        "area": "Area",
+        "layout": "Layout",
+        "updated": "Updated"
+      }
+    },
+    "activity": {
+      "subtitle": "Chronological ledger of asset lifecycle events"
+    },
+    "documents": {
+      "title": "Asset Documents",
+      "subtitle": "Manage and verify official project documentation",
+      "upload": "Upload Files",
+      "uploadModalTitle": "Upload Asset Media",
+      "uploadModalDesc": "Drag and drop project files to start the verification process",
+      "dropzoneTitle": "Drop institutional files here",
+      "dropzoneSubtitle": "or click to browse local vault",
+      "readyForDeployment": "Ready for Deployment",
+      "signatureActive": "Cryptographic signature active"
+    },
+    "actions": {
+      "projectTitle": "Project Actions",
+      "unitTitle": "Unit Actions",
+      "docTitle": "Document Actions",
+      "edit": "Edit Asset",
+      "share": "Share Intelligence",
+      "archive": "Archive Asset",
+      "view": "View",
+      "duplicate": "Duplicate",
+      "delete": "Delete",
+      "download": "Download",
+      "cancel": "Cancel",
+      "apply": "Apply Files"
+    },
+    "aiInsights": {
+      "title": "AI Structural Analysis",
+      "subtitle": "Predictive ROI & Market Velocity",
+      "roi": "Projected ROI",
+      "velocity": "Absorption Rate",
+      "confidence": "Analysis Confidence",
+      "summary": "AI models predict a high absorption rate for Al Madinah Residences due to its proximity to the KAFD metro hub. Market velocity is expected to peak in Q4 2026."
+    },
+    "sales": {
+      "title": "Sales Performance",
+      "subtitle": "Inventory absorption and revenue metrics",
+      "metrics": {
+        "totalRevenue": "Total Revenue",
+        "avgUnitPrice": "Avg. Unit Price",
+        "absorptionRate": "Absorption Rate",
+        "leadsConverted": "Leads Converted"
+      },
+      "reports": {
+        "title": "Sales Reports",
+        "downloadAll": "Download All Reports"
+      }
+    }
+  },
+  "Clients": {
+    "eyebrow": "Client relationship management",
+    "title": "Clients",
+    "add": "Register Client",
+    "stats": {
+      "total": "Total Clients",
+      "active": "Active",
+      "investors": "Investors",
+      "appointments": "Appointments"
+    },
+    "toolbar": {
+      "search": "Search clients…",
+      "newest": "Newest",
+      "filters": {
+        "all": "All",
+        "Buyer": "Buyers",
+        "Tenant": "Tenants",
+        "Investor": "Investors",
+        "Broker": "Brokers"
+      }
+    },
+    "views": {
+      "pipeline": "Pipeline",
+      "list": "List",
+      "calendar": "Calendar"
+    },
+    "card": {
+      "budget": "Budget",
+      "next": "Next"
+    },
+    "empty": {
+      "title": "No clients found",
+      "desc": "Adjust the active filter or search term to reveal matching clients."
+    },
+    "delete": {
+      "title": "Delete client?",
+      "desc": "This removes {name} from the mock CRM store."
+    },
+    "detail": {
+      "loadingTitle": "Loading client",
+      "loadingDesc": "Client data is syncing from Convex.",
+      "notFound": "Client not found",
+      "notFoundDesc": "The requested client was not found in the current workspace.",
+      "back": "Back to clients",
+      "edit": "Edit",
+      "delete": "Delete",
+      "recordTitle": "Profile Details",
+      "nextTitle": "Next Action",
+      "at": "at",
+      "labels": {
+        "email": "Email",
+        "phone": "Phone",
+        "budget": "Budget",
+        "interest": "Interest",
+        "id": "Client ID",
+        "type": "Type",
+        "status": "Status",
+        "priority": "Priority"
+      },
+      "tabs": {
+        "activity": "Activity",
+        "documents": "Documents",
+        "units": "Units"
+      },
+      "activity": {
+        "subtitle": "Interaction History",
+        "title": "Tasks and follow-ups",
+        "tasks": "tasks",
+        "events": "events",
+        "task": "Task",
+        "addTask": "Add task",
+        "taskTitle": "Task title",
+        "status": "Status",
+        "priority": "Priority",
+        "dueDate": "Due date",
+        "noDate": "No date",
+        "unit": "Unit",
+        "noUnit": "No unit",
+        "notes": "Notes",
+        "save": "Save",
+        "complete": "Complete",
+        "reopen": "Reopen",
+        "deleteTask": "Delete",
+        "add": "Add",
+        "emptyTasks": "No tasks yet.",
+        "calendarEvents": "Calendar events",
+        "noEvents": "No calendar events yet.",
+        "saved": "Task updated.",
+        "deleted": "Task deleted.",
+        "added": "Task added.",
+        "taskStatuses": {
+          "open": "Open",
+          "done": "Done",
+          "canceled": "Canceled"
+        }
+      },
+      "units": {
+        "title": "Client units",
+        "subtitle": "Manage linked inventory without loading the full catalog on the page.",
+        "linkedCount": "linked",
+        "linkUnit": "Link unit",
+        "linkUnitDesc": "Open inventory search, choose a status, and attach a unit to this client.",
+        "modalTitle": "Link a unit",
+        "modalDesc": "Search available inventory and select the unit to attach.",
+        "search": "Search units",
+        "linkStatus": "Link status",
+        "notes": "Notes",
+        "available": "Available units",
+        "showing": "Showing {shown} of {total}",
+        "noAvailable": "No available units to link.",
+        "noResults": "No units match your search.",
+        "unitUnavailable": "Unit unavailable",
+        "price": "Price",
+        "area": "Area",
+        "openUnit": "Open unit",
+        "unlink": "Unlink",
+        "link": "Link",
+        "linked": "Unit linked.",
+        "unlinked": "Unit unlinked.",
+        "statuses": {
+          "interested": "Interested",
+          "shortlisted": "Shortlisted",
+          "viewing": "Viewing",
+          "offer": "Offer",
+          "rejected": "Rejected"
+        }
+      },
+      "documents": {
+        "subtitle": "Shared Files",
+        "eyebrow": "Client documents",
+        "title": "Files and share links",
+        "open": "Open",
+        "emptyTitle": "No files here yet",
+        "emptyDesc": "Open the uploader to add files to this client.",
+        "uploadTitle": "Upload client files",
+        "uploadModalDesc": "Choose files, edit their names if needed, then save to start uploading.",
+        "chooseFiles": "Choose files",
+        "uploadHint": "Images and PDF documents. Upload starts only after Save.",
+        "queuedFiles": "Queued files",
+        "noQueued": "No files selected.",
+        "unsupported": "Only images and PDF documents can be uploaded here.",
+        "uploadFailed": "Upload failed.",
+        "actionFailed": "Media action failed.",
+        "uploaded": "Files uploaded.",
+        "deleted": "File deleted.",
+        "publicEnabled": "Public link enabled.",
+        "madePrivate": "File made private.",
+        "private": "Private",
+        "public": "Public",
+        "visibilityLabel": "File sharing visibility",
+        "manageShare": "Manage",
+        "openShareSettings": "Open share settings for {name}",
+        "shareTitle": "Share settings",
+        "shareDesc": "Choose whether this file is private to the workspace or shareable with an end user.",
+        "currentFile": "Selected file",
+        "sharePrivateTitle": "Private workspace file",
+        "sharePrivateDesc": "Only signed-in team members with access can open this file.",
+        "sharePublicTitle": "End-user share link",
+        "sharePublicDesc": "Creates a public link that can be sent to a client or buyer.",
+        "shareLink": "Public link",
+        "shareLinkUnavailable": "Make this file public to generate an end-user link.",
+        "shareLoading": "Preparing available share actions...",
+        "shareError": "Could not update sharing: {error}",
+        "copyPublicLink": "Copy",
+        "copied": "Copied",
+        "linkCopied": "Share link copied.",
+        "openPublicLink": "Open",
+        "shareLinkPrivateError": "Make this file public before copying an end-user link.",
+        "clipboardUnavailable": "Clipboard access is not available in this browser.",
+        "makePublic": "Make public",
+        "makePrivate": "Make private",
+        "copyLink": "Copy link for {name}",
+        "openFile": "Open {name}",
+        "downloadFile": "Download {name}",
+        "deleteFile": "Delete {name}",
+        "viewQueued": "View {name}",
+        "editName": "Edit name for {name}",
+        "saveName": "Save name for {name}",
+        "removeQueued": "Remove {name}"
+      }
+    },
+    "form": {
+      "createTitle": "Register Client",
+      "editTitle": "Edit Client",
+      "eyebrow": "Client Management",
+      "subtitle": "Create or update a CRM record in the mock Zustand store.",
+      "nameLabel": "Full Name",
+      "emailLabel": "Email",
+      "phoneLabel": "Phone",
+      "ageLabel": "Age",
+      "budgetLabel": "Budget",
+      "interestLabel": "Property Interest",
+      "typeLabel": "Client Type",
+      "statusLabel": "Status",
+      "priorityLabel": "Priority",
+      "stageLabel": "Stage",
+      "visibilityLabel": "External visibility",
+      "visibilityPrivate": "Private",
+      "visibilityPublic": "Public",
+      "actionLabel": "Next Action",
+      "issueLabel": "Open Issue",
+      "saveBtn": "Save Client",
+      "createBtn": "Create Client"
+    },
+    "types": {
+      "Buyer": "Buyer",
+      "Tenant": "Tenant",
+      "Investor": "Investor",
+      "Broker": "Broker"
+    },
+    "priorities": {
+      "normal": "Normal",
+      "high": "High",
+      "urgent": "Urgent"
+    },
+    "statuses": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "stages": {
+      "new": "New",
+      "qualified": "Qualified",
+      "viewing": "Viewing",
+      "negotiation": "Negotiation",
+      "closed": "Closed"
+    }
+  },
+  "Organization": {
+    "eyebrow": "Workspace administration",
+    "title": "Organization",
+    "subtitle": "Institutional Governance",
+    "saveBtn": "Save",
+    "stats": {
+      "members": "Members",
+      "pendingInvites": "Pending invites",
+      "roles": "Work roles",
+      "verified": "Verified"
+    },
+    "tabs": {
+      "profile": "Profile",
+      "members": "Members",
+      "agentLinks": "Agent links",
+      "invites": "Invites",
+      "roles": "Work roles"
+    },
+    "sections": {
+      "legal": "Legal Identity",
+      "contact": "Operational Contact",
+      "legalDesc": "Official business details and incorporation data.",
+      "contactDesc": "Operational contact methods for the organization.",
+      "workspaceData": "Workspace Data",
+      "workspaceDataDesc": "System identifiers and status."
+    },
+    "labels": {
+      "legalName": "Legal Name",
+      "displayName": "Display Name",
+      "type": "Type",
+      "address": "Address",
+      "email": "Email",
+      "phone": "Phone",
+      "website": "Website",
+      "orgId": "Organization ID",
+      "slug": "Slug",
+      "members": "Total Members"
+    },
+    "logo": {
+      "upload": "Upload organization logo",
+      "remove": "Remove organization logo",
+      "cropTitle": "Crop organization logo",
+      "apply": "Apply",
+      "cancel": "Cancel",
+      "zoom": "Zoom",
+      "chooseImage": "Choose an image file.",
+      "savedTitle": "Logo updated",
+      "savedDescription": "The organization logo was saved.",
+      "removedTitle": "Logo removed",
+      "removedDescription": "The organization logo was cleared.",
+      "uploadFailed": "Logo upload failed."
+    },
+    "noOrganization": {
+      "loading": "Loading organization...",
+      "title": "Choose an organization",
+      "description": "Organization settings need a real workspace. Create or select one before managing profile, members, invites, and work roles.",
+      "action": "Go to organization setup"
+    },
+    "members": {
+      "title": "Members",
+      "description": "Keep people, work roles, and pending invitations in one simple table.",
+      "tableTitle": "Team table",
+      "tableDesc": "Change a person's work role from the dropdown. Create or edit work roles on their own page.",
+      "loading": "Loading members...",
+      "emptyTitle": "No members found",
+      "emptyDesc": "Members will appear here when they join the organization.",
+      "currentUser": "you",
+      "remove": "Remove",
+      "role": "Role",
+      "joined": "Joined",
+      "removeTitle": "Remove member?",
+      "removeDesc": "This removes {name} from the organization.",
+      "roleTitle": "Change member role?",
+      "roleDesc": "This changes {name} to {role}.",
+      "selfRemoveBlocked": "You cannot remove yourself from the organization.",
+      "lastOwnerBlocked": "The organization must keep at least one owner."
+    },
+    "access": {
+      "title": "Your access",
+      "description": "These actions come from your current work role and are checked again on the backend.",
+      "profile": "Profile",
+      "invite": "Invites",
+      "members": "Members",
+      "agentLinks": "Agent links",
+      "roles": "Work roles",
+      "allowed": "Allowed",
+      "blocked": "Not allowed"
+    },
+    "invites": {
+      "open": "Invite",
+      "createTitle": "Create invite",
+      "createDesc": "Choose whether to create a URL or invite by email.",
+      "emailLabel": "Email",
+      "roleLabel": "Work role",
+      "roleHint": "Pick a ready work role. Custom work roles are created separately so inviting stays simple.",
+      "emailPlaceholder": "member@example.com",
+      "create": "Create invite",
+      "createLink": "Generate link",
+      "generatedLinkLabel": "Generated invite link",
+      "generatedLinkHint": "This link can be used once and expires in 7 days.",
+      "sendEmail": "Send invite",
+      "createAnother": "Create another",
+      "close": "Close",
+      "linkTitle": "Invite link",
+      "emailTitle": "Email invite",
+      "expires": "Expires",
+      "modes": {
+        "link": "Invite by URL",
+        "email": "Invite by email"
+      },
+      "pendingTitle": "Invitations",
+      "pendingDesc": "People waiting to join after an invite was created.",
+      "loading": "Loading invitations...",
+      "emptyTitle": "No invitations",
+      "emptyDesc": "Pending invitations will appear here.",
+      "copy": "Copy link",
+      "copied": "Copied",
+      "cancel": "Cancel"
+    },
+    "agentLinks": {
+      "title": "Agent links",
+      "description": "Create one powerful link for Claude, GPT, or another agent. External reads expose only records and files marked public.",
+      "newButton": "New agent link",
+      "existingTitle": "Existing links",
+      "existingDescription": "Pause, revoke, or make a new secret link. The full link is never shown again after creation.",
+      "stats": {
+        "active": "Active links",
+        "calls": "Total calls",
+        "access": "Access",
+        "canCreate": "Can create",
+        "canView": "Can view",
+        "blocked": "Blocked"
+      },
+      "empty": {
+        "noAccessTitle": "No access",
+        "noAccessDescription": "Your work role cannot view agent links.",
+        "loading": "Loading agent links...",
+        "noLinksTitle": "No agent links",
+        "noLinksDescription": "Create a link when an outside agent needs controlled workspace access."
+      },
+      "modal": {
+        "readyTitle": "Agent link ready",
+        "newTitle": "New agent link",
+        "oneTimeWarning": "This link is shown once. Treat it like a password and paste it into your agent as the MCP server URL.",
+        "canDoTitle": "What this agent can do",
+        "canDoDescription": "The agent cannot work outside these permissions. Revoke this link or make a new one to change the allowed work.",
+        "name": "Name",
+        "startWith": "Start with",
+        "instructions": "What should this agent know?",
+        "deleteConfirmation": "I understand this link can remove selected records, and I want to allow that work.",
+        "make": "Make agent link"
+      },
+      "defaults": {
+        "instructions": "Help the team manage clients, apartments, tasks, and calendar work inside this organization."
+      },
+      "presets": {
+        "client": "Client operator",
+        "apartment": "Apartment operator",
+        "calendar": "Calendar assistant",
+        "full": "Full workspace",
+        "custom": "Custom"
+      },
+      "resources": {
+        "organization": "Organization",
+        "client": "Clients",
+        "property": "Apartments",
+        "project": "Projects",
+        "calendar": "Calendar",
+        "task": "Tasks",
+        "media": "Documents"
+      },
+      "resourceHelp": {
+        "client": "Profiles, pipeline, links to apartments.",
+        "property": "Inventory, open apartment, specific field edits.",
+        "project": "Development context and project records.",
+        "calendar": "Today, month, scheduling and meeting changes.",
+        "task": "Client work, due dates, completion.",
+        "media": "List files and attach URL-backed documents."
+      },
+      "actions": {
+        "read": "View",
+        "create": "Add",
+        "update": "Edit",
+        "delete": "Remove"
+      },
+      "status": {
+        "active": "Active",
+        "paused": "Paused",
+        "revoked": "Revoked"
+      },
+      "labels": {
+        "keyEnding": "ends {last4}",
+        "used": "Used {count} times",
+        "created": "Created {date}",
+        "lastUsed": "Last used {date}",
+        "noWork": "No work selected"
+      },
+      "buttons": {
+        "copy": "Copy link",
+        "close": "Close",
+        "pause": "Pause",
+        "resume": "Resume",
+        "rotate": "Make new link",
+        "revoke": "Revoke",
+        "cancel": "Cancel"
+      },
+      "toasts": {
+        "readyTitle": "Agent link ready",
+        "readyDescription": "The link was copied. It is shown here once.",
+        "failedTitle": "Agent link failed",
+        "updatedTitle": "Agent link updated",
+        "updatedDescription": "The link status changed.",
+        "revokedTitle": "Agent link revoked",
+        "revokedDescription": "That link can no longer be used.",
+        "rotatedTitle": "New link ready",
+        "rotatedDescription": "The new link was copied. The old one stopped working.",
+        "copiedTitle": "Copied",
+        "copiedDescription": "Paste it into your agent as the MCP server URL."
+      }
+    },
+    "roles": {
+      "pageEyebrow": "Allowed work",
+      "pageTitle": "Custom work roles",
+      "pageDesc": "Create one clear work rule at a time. The screen stays focused: choose a template, adjust the work grid, and save it for the invite dropdown.",
+      "backToOrganization": "Back to organization",
+      "lessIsMoreHint": "Less is more: invite people on the team table, create work roles here.",
+      "manageWorkRoles": "Custom work roles",
+      "templatesTitle": "Start from a work role",
+      "templatesDesc": "Choose a real estate operations template or start blank. Templates are copied into your new work role and never change the protected built-in roles.",
+      "templateSelect": "Start from",
+      "templateBlank": "Blank custom work role",
+      "defaultLabels": {
+        "owner": "Owner",
+        "admin": "Admin",
+        "member": "Member"
+      },
+      "templates": {
+        "owner": "Owner",
+        "operationsManager": "Operations Manager",
+        "projectManager": "Project Manager",
+        "propertyManager": "Property Manager",
+        "crmSales": "CRM / Sales",
+        "calendarCoordinator": "Calendar Coordinator",
+        "viewer": "Viewer"
+      },
+      "templateHelp": {
+        "owner": "Can run the organization, manage people, work roles, projects, properties, clients, calendar, integrations, API keys, and connected apps.",
+        "operationsManager": "Can manage daily operations across projects, properties, clients, calendar, people, and core integrations.",
+        "projectManager": "Can view, add, manage, and remove projects; can manage related properties, clients, and calendar work.",
+        "propertyManager": "Can view, add, manage, and remove properties; can coordinate projects, clients, and calendar work.",
+        "crmSales": "Can manage clients and sales work, view available projects and properties, and coordinate calendar activity.",
+        "calendarCoordinator": "Can manage schedules and view the people, projects, properties, and clients needed for appointments.",
+        "viewer": "Can view organization work without changing records."
+      },
+      "useTemplate": "Use template",
+      "blankTitle": "Create custom work role",
+      "blankDesc": "Start with no allowed work selected and choose each responsibility yourself.",
+      "createTitle": "Create custom work role",
+      "editTitle": "Edit work role",
+      "createDesc": "Choose the work this person can do. The app saves your selections as backend access rules.",
+      "name": "Work role name",
+      "namePlaceholder": "project-manager",
+      "nameHint": "Use a simple job name. It will be saved as a lowercase system name.",
+      "nameRequired": "Work role name is required.",
+      "create": "Create work role",
+      "update": "Update work role",
+      "cancelEdit": "Cancel",
+      "grid": {
+        "area": "Work area",
+        "allowedWork": "Checked boxes become backend access rules.",
+        "unavailable": "This work action is not available for this area."
+      },
+      "actions": {
+        "read": "View",
+        "create": "Add",
+        "update": "Manage",
+        "delete": "Remove",
+        "authorize": "Authorize apps"
+      },
+      "workAreas": {
+        "organization": "Organization profile",
+        "team": "Teams",
+        "member": "People",
+        "project": "Projects",
+        "property": "Properties",
+        "client": "Clients / CRM",
+        "task": "Tasks",
+        "calendar": "Calendar",
+        "media": "Media and files",
+        "visibility": "Public visibility",
+        "integration": "Integrations",
+        "apiKey": "API keys",
+        "oauthApp": "Connected apps",
+        "role": "Work roles"
+      },
+      "workAreaHelp": {
+        "organization": "Company name, logo, workspace identity, and organization profile settings.",
+        "team": "Internal teams and groups used to organize people.",
+        "member": "People who can access this organization.",
+        "project": "Real estate projects, development pipelines, and project records.",
+        "property": "Property listings, units, inventory, and property records.",
+        "client": "Clients, leads, sales pipeline, and CRM records.",
+        "task": "Client tasks, next actions, and follow-up work.",
+        "calendar": "Appointments, site visits, reminders, and team schedules.",
+        "media": "Documents, images, videos, public share links, and attached files.",
+        "visibility": "View which records are private or public. Only platform admins can change public exposure.",
+        "integration": "Connected services used by the organization.",
+        "apiKey": "Technical keys used by external systems.",
+        "oauthApp": "Third-party apps that can connect to this workspace.",
+        "role": "Create and manage other work roles."
+      },
+      "showAdvanced": "Show advanced work controls",
+      "hideAdvanced": "Hide advanced work controls",
+      "listTitle": "Work role catalog",
+      "listDesc": "Built-in work roles are protected. Custom work roles can be edited or removed when unused.",
+      "loading": "Loading work roles...",
+      "builtIn": "Built in",
+      "custom": "Custom",
+      "edit": "Edit",
+      "delete": "Delete",
+      "roleInUse": "This work role is assigned to people. Reassign them before deleting it.",
+      "notAllowed": "Your current work role cannot manage custom work roles."
+    },
+    "common": {
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    },
+    "errors": {
+      "noOrganization": "No active organization was found."
+    },
+    "toasts": {
+      "actionFailed": "Action failed",
+      "profileSavedTitle": "Organization saved",
+      "profileSavedDesc": "Organization profile changes were saved.",
+      "profileSaveFailed": "Organization profile could not be saved.",
+      "inviteCreatedTitle": "Invite created",
+      "inviteCreatedDesc": "The invite link was copied.",
+      "inviteLinkCreatedDesc": "The invite link was created and copied.",
+      "inviteEmailCreatedDesc": "The invitation was created for that email.",
+      "inviteCanceledTitle": "Invite canceled",
+      "inviteCanceledDesc": "The invitation was canceled.",
+      "inviteLinkCanceledDesc": "The invite link was canceled.",
+      "memberRoleTitle": "Work role updated",
+      "memberRoleDesc": "The member work role was updated.",
+      "memberRemovedTitle": "Member removed",
+      "memberRemovedDesc": "The member was removed from the organization.",
+      "roleSavedTitle": "Work role saved",
+      "roleSavedDesc": "The work role was saved.",
+      "roleDeletedTitle": "Work role deleted",
+      "roleDeletedDesc": "The custom work role was deleted."
+    },
+    "acceptInvite": {
+      "loadingTitle": "Accepting invite",
+      "loadingDesc": "We are adding you to the organization.",
+      "acceptedTitle": "Invite accepted",
+      "acceptedDesc": "You are in. Redirecting to the dashboard.",
+      "errorTitle": "Invite failed",
+      "errorDesc": "The invitation could not be accepted.",
+      "missingTitle": "Missing invitation",
+      "missingDesc": "This invite link is missing its invitation id.",
+      "signInTitle": "Sign in to continue",
+      "signInDesc": "Sign in with the invited account before accepting this organization invite.",
+      "signInButton": "Sign in",
+      "dashboardButton": "Go to dashboard"
+    }
+  },
+  "Integrations": {
+    "title": "Integrations",
+    "subtitle": "Cross-Platform Synchronization Hub",
+    "catalog_eyebrow": "Integration catalog",
+    "add": "Add Integration",
+    "tabs": {
+      "catalog": "Catalog",
+      "connected": "Connected",
+      "webhooks": "Webhooks"
+    },
+    "stats": {
+      "connected": "Connected",
+      "pending": "Pending",
+      "events": "Events",
+      "velocity": "Velocity"
+    },
+    "card": {
+      "connect": "Connect",
+      "disconnect": "Disconnect"
+    },
+    "webhooks": {
+      "title": "Webhook Telemetry",
+      "desc": "Mock delivery monitoring is online."
+    },
+    "detail": {
+      "notFound": "Integration not found",
+      "notFoundDesc": "This mock integration is not available in the local store.",
+      "back": "Back to integrations",
+      "backBtn": "Back",
+      "stats": {
+        "status": "Status",
+        "volume": "Volume",
+        "category": "Category",
+        "health": "Health",
+        "online": "Online",
+        "paused": "Paused"
+      },
+      "profile": "Connection Profile",
+      "pending": "Mark Pending",
+      "block": "Block",
+      "payload": "Mock Payload",
+      "payloadDesc": "Local status updates are kept in Zustand for this audit pass.",
+      "fields": {
+        "id": "ID",
+        "name": "Name",
+        "status": "Status",
+        "events": "Events"
+      }
+    },
+    "items": {
+      "aqar": {
+        "name": "Aqar Marketplace",
+        "category": "Marketplace",
+        "desc": "Approved inventory feed with outbound event publishing."
+      },
+      "crm": {
+        "name": "Institutional CRM",
+        "category": "CRM",
+        "desc": "Inbound webhook receiver for property and project draft claims."
+      },
+      "partner": {
+        "name": "Partner API",
+        "category": "Partner API",
+        "desc": "Bidirectional partner access for approved organization-scoped APIs."
+      },
+      "web": {
+        "name": "Website Embed",
+        "category": "Website",
+        "desc": "Read-only approved inventory feed for owned websites and portals."
+      },
+      "mobile": {
+        "name": "Mobile App Feed",
+        "category": "Mobile App",
+        "desc": "Scoped mobile application access with redacted public payloads."
+      },
+      "oauth": {
+        "name": "Developer OAuth",
+        "category": "Developer App",
+        "desc": "OAuth client registration for redirect URIs, scopes, and webhooks."
+      }
+    },
+    "boundary": {
+      "title": "Synchronization Boundary",
+      "description": "The hub remains the absolute validation, approval, and visibility source of truth for all synchronized payloads.",
+      "item1": "Sandbox access does not imply production approval.",
+      "item2": "Marketplace connectors receive only approved visible payloads.",
+      "item3": "CRM submissions remain claims until reviewed by the hub.",
+      "item4": "Organization approval controls all outward distribution."
+    }
+  },
+  "CreateProject": {
+    "title": "Create New Project",
+    "subtitle": "Begin by adding your real estate project data to the portfolio",
+    "back": "Back",
+    "workflow": "Workflow",
+    "progress": "Progress",
+    "activeStage": "Active Stage",
+    "systemTip": "System Tip",
+    "draftAutoSave": "Your drafts are automatically saved to the cloud.",
+    "identity": {
+      "title": "Project Identity",
+      "header": "Core Identity",
+      "subheader": "Enter the primary identification details for the project",
+      "nameLabel": "Project Name",
+      "namePlaceholder": "e.g. Al Manar Residential Complex",
+      "developerLabel": "Real Estate Developer",
+      "developerPlaceholder": "Developer company name",
+      "statusLabel": "Project Status",
+      "statusPlaceholder": "Select status",
+      "useLabel": "Property Use",
+      "usePlaceholder": "Select use type",
+      "residential": "Residential",
+      "commercial": "Commercial",
+      "mixed": "Mixed Use"
+    },
+    "context": {
+      "title": "Location & Context",
+      "header": "Geographic Location",
+      "subheader": "Define the project location precisely on the map",
+      "cityLabel": "City",
+      "cityPlaceholder": "Select city",
+      "areaLabel": "District / Area",
+      "areaPlaceholder": "Enter district name",
+      "streetLabel": "Street",
+      "streetPlaceholder": "Main street name",
+      "planLabel": "Plan Number",
+      "planPlaceholder": "Enter plan number",
+      "plotLabel": "Plot Number",
+      "plotPlaceholder": "Enter plot number",
+      "mapHeader": "Precision Location",
+      "mapTitle": "Location Map",
+      "mapDescription": "Click to precisely pinpoint the project location on the interactive map"
+    },
+    "products": {
+      "title": "Unit Types",
+      "header": "Unit Configuration",
+      "subheader": "Select the types of units available in this project",
+      "types": {
+        "studio": "Studio",
+        "1bed": "1 Bedroom",
+        "2bed": "2 Bedrooms",
+        "villa": "Villa",
+        "townhouse": "Townhouse",
+        "penthouse": "Penthouse",
+        "duplex": "Duplex",
+        "commercial": "Commercial Showroom"
+      },
+      "dimensionHeader": "Unit Dimensions",
+      "areaRangeLabel": "Area Range ({type})",
+      "areaRangePlaceholder": "e.g. 120 - 250 m2"
+    },
+    "economics": {
+      "title": "Pricing & Financials",
+      "header": "Economic Model",
+      "subheader": "Define the pricing strategy for the project",
+      "avgPriceLabel": "Average Price",
+      "avgPricePlaceholder": "Enter average price",
+      "startingPriceLabel": "Starting From",
+      "startingPricePlaceholder": "Enter lowest price",
+      "flexibilityHeader": "Payment Flexibility",
+      "enableInstallments": "Enable Installments",
+      "downPaymentLabel": "Down Payment (%)",
+      "downPaymentPlaceholder": "e.g. 10",
+      "tenureLabel": "Installment Period (Years)",
+      "tenurePlaceholder": "e.g. 5",
+      "interestLabel": "Profit Margin (%)",
+      "interestPlaceholder": "e.g. 0"
+    },
+    "assets": {
+      "title": "Media & Files",
+      "header": "Assets & Documents",
+      "subheader": "Upload images and official documentation for the project",
+      "visualHeader": "Visual Identity",
+      "visualTitle": "Upload Project Images",
+      "visualMeta": "JPG, PNG (Max 10MB)",
+      "legalHeader": "Legal Documentation",
+      "legalTitle": "Upload Deeds & Licenses",
+      "legalMeta": "PDF Only",
+      "complianceHeader": "Compliance & Licensing",
+      "complianceSub": "Real Estate Advertisement License Data",
+      "validCredentials": "Verified Credentials",
+      "licenseLabel": "Ad License Number",
+      "licensePlaceholder": "Enter license number",
+      "expiryLabel": "License Expiry Date",
+      "qrSignature": "Digital Signature (QR)"
+    },
+    "review": {
+      "title": "Final Review",
+      "header": "Data Review",
+      "subheader": "Verify data accuracy before submitting for approval",
+      "summaryHeader": "Identity Summary",
+      "geoHeader": "Location & Economics",
+      "readyTitle": "Ready to Submit?",
+      "readyDescription": "Once submitted, your project will be reviewed by the audit team before official approval.",
+      "edit": "Edit",
+      "identityLabel": "Project Name",
+      "statusLabel": "Status",
+      "districtLabel": "District",
+      "pricingLabel": "Pricing",
+      "startingFrom": "Starting from SAR {price}"
+    },
+    "navigation": {
+      "previous": "Previous",
+      "next": "Next",
+      "complete": "Complete Application"
+    }
+  },
+  "CreateProperty": {
+    "title": "Add Independent Unit",
+    "subtitle": "Add a certified unit record with specs, pricing, and evidence",
+    "back": "Back to Units",
+    "workflow": "Workflow",
+    "identity": {
+      "title": "Unit Identity",
+      "header": "Define Record",
+      "subheader": "Enter the name, location, and description to establish the unit record",
+      "nameLabel": "Unit Name",
+      "namePlaceholder": "e.g. Unit A-101",
+      "typeLabel": "Unit Type",
+      "purposeLabel": "Purpose",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Write a brief description of the unit as it should appear in the record"
+    },
+    "specs": {
+      "title": "Specifications",
+      "header": "Inventory Specs",
+      "subheader": "These fields make the unit searchable, verifiable, and comparable",
+      "areaLabel": "Area (sqm)",
+      "areaPlaceholder": "e.g. 145",
+      "roomsLabel": "Rooms",
+      "bathroomsLabel": "Bathrooms",
+      "floorLabel": "Floor",
+      "parkingLabel": "Parking",
+      "viewLabel": "View",
+      "deliveryLabel": "Delivery Date"
+    },
+    "pricing": {
+      "title": "Pricing & Comparison",
+      "header": "Price & Payment Plan",
+      "subheader": "Combine price and payment plan with market comparison before review",
+      "priceLabel": "Price",
+      "paymentPlanLabel": "Payment Plan",
+      "downPaymentLabel": "Down Payment",
+      "positionLabel": "Market Position",
+      "notesLabel": "Comparison Notes",
+      "below": "Below Market",
+      "fair": "Fair Price",
+      "above": "Above Market"
+    },
+    "evidence": {
+      "title": "Evidence & Readiness",
+      "header": "Attach Evidence",
+      "subheader": "Add unit status, license number, and supporting media for approval",
+      "statusLabel": "Status",
+      "featuresLabel": "Features & Amenities",
+      "notesLabel": "Expert Notes",
+      "licenseLabel": "Ad License Number",
+      "mediaHeader": "Media & Documents",
+      "photosTitle": "Upload Unit Photos",
+      "docsTitle": "Upload License Documents"
+    }
+  },
+  "IntegrationDetails": {
+    "back": "Back to Integrations",
+    "tabs": {
+      "overview": "Overview",
+      "config": "Configuration",
+      "logs": "Activity Logs",
+      "webhooks": "Webhooks"
+    },
+    "stats": {
+      "apiCalls": "API Requests",
+      "syncVelocity": "Sync Velocity",
+      "errorRate": "Error Rate",
+      "latency": "Latency"
+    },
+    "config": {
+      "keys": "API Keys",
+      "endpoints": "Endpoints",
+      "scopes": "Scopes",
+      "regenerate": "Regenerate Key",
+      "apiKeyLabel": "Production API Key",
+      "webhookSecret": "Webhook Signing Secret"
+    },
+    "webhooks": {
+      "url": "Webhook URL",
+      "secret": "Secret Key",
+      "events": "Active Events",
+      "add": "Add Endpoint"
+    },
+    "actions": {
+      "sync": "Trigger Sync",
+      "disconnect": "Disconnect Engine",
+      "save": "Save Configuration"
+    }
+  },
+  "Activity": {
+    "eyebrow": "Audit trail",
+    "title": "Activity",
+    "subtitle": "Organization actions update here automatically as your team works.",
+    "stats": {
+      "total": "Total actions",
+      "people": "People and admin",
+      "business": "Business data",
+      "latest": "Latest",
+      "none": "None yet"
+    },
+    "table": {
+      "when": "When",
+      "actor": "Actor",
+      "action": "Action",
+      "area": "Area",
+      "details": "Details"
+    },
+    "categories": {
+      "organization": "Organization",
+      "people": "People",
+      "roles": "Work roles",
+      "projects": "Projects",
+      "properties": "Units",
+      "clients": "Clients",
+      "calendar": "Calendar",
+      "media": "Media",
+      "invites": "Invites"
+    },
+    "empty": {
+      "title": "No activity yet",
+      "desc": "Nothing needs to be shown yet. When someone changes organization settings, invites a teammate, edits work roles, or creates projects, units, or media, the action will appear here automatically.",
+      "noOrgTitle": "No organization selected",
+      "noOrgDesc": "Choose or create an organization to view its activity log."
+    }
+  },
+  "Calendar": {
+    "eyebrow": "Scheduled work",
+    "title": "Calendar",
+    "add": "Add Event",
+    "scheduleBusiness": "Schedule Business",
+    "editSchedule": "Edit Schedule",
+    "business": "Business",
+    "today": "Today",
+    "month": "Month",
+    "week": "Week",
+    "day": "Day",
+    "stats": {
+      "events": "Events",
+      "confirmed": "Confirmed",
+      "pending": "Pending",
+      "owners": "Owners"
+    },
+    "table": {
+      "event": "Event",
+      "owner": "Owner",
+      "date": "Date",
+      "time": "Time",
+      "status": "Status"
+    },
+    "drawer": {
+      "title": "Day Schedule",
+      "noEvents": "No events scheduled"
+    },
+    "detail": {
+      "eyebrow": "Event Details",
+      "owner": "Owner",
+      "date": "Date",
+      "time": "Time",
+      "edit": "Edit",
+      "customFields": "Custom components"
+    },
+    "delete": {
+      "title": "Delete event?",
+      "desc": "This removes {name} from the mock calendar."
+    },
+    "form": {
+      "title": "Add Event",
+      "drawerDescription": "Create one schedule, link useful work context, and add custom components when the event needs its own structure.",
+      "simpleDrawerDescription": "Set the time, choose what this relates to, and save. Advanced details stay out of the way until needed.",
+      "basics": "Schedule",
+      "context": "Business context",
+      "relatedTo": "Related to",
+      "customFields": "Custom components",
+      "customFieldsEmpty": "Add a custom component for extra schedule context.",
+      "customLabel": "Label",
+      "customValue": "Value",
+      "addCustomField": "Add component",
+      "removeCustomField": "Remove component",
+      "dragCustomField": "Drag custom component {index}",
+      "moveCustomUp": "Move custom component {index} up",
+      "moveCustomDown": "Move custom component {index} down",
+      "titleLabel": "Title",
+      "titleOptionalLabel": "Event name (optional)",
+      "ownerLabel": "Owner",
+      "clientLabel": "Client context",
+      "unitLabel": "Unit context",
+      "taskLabel": "Task context",
+      "selectClient": "Select client",
+      "selectUnit": "Select unit",
+      "selectTask": "Select task",
+      "chooseClient": "Choose client",
+      "chooseUnit": "Choose unit",
+      "chooseTask": "Choose task",
+      "changeSelection": "Change",
+      "clearSelection": "Clear",
+      "noClientSelected": "No client selected",
+      "noUnitSelected": "No unit selected",
+      "noTaskSelected": "No task selected",
+      "otherContext": "Other",
+      "otherContextDesc": "Use location or notes instead.",
+      "useOther": "Use other",
+      "search": "Search...",
+      "noClients": "No clients are available yet.",
+      "noUnits": "No units are available yet.",
+      "noTasks": "No tasks are available yet.",
+      "noPickerResults": "No matching results.",
+      "closePicker": "Done",
+      "locationLabel": "Location",
+      "notesLabel": "Notes",
+      "none": "None",
+      "dateLabel": "Date",
+      "timeLabel": "Time",
+      "typeLabel": "Type",
+      "scheduleModeLabel": "Schedule mode",
+      "businessMode": "Business",
+      "customMode": "Custom event",
+      "customTypeLabel": "Custom event type",
+      "showAdvancedDetails": "Show advanced details",
+      "hideAdvancedDetails": "Hide advanced details",
+      "additionalDates": "Additional date",
+      "addDate": "Add date",
+      "removeDate": "Remove {date}",
+      "selectedDates": "Selected dates",
+      "closeDrawer": "Close schedule drawer",
+      "createBtn": "Create",
+      "saveBtn": "Save",
+      "cancel": "Cancel"
+    },
+    "types": {
+      "visit": "Visit",
+      "call": "Call",
+      "meeting": "Meeting",
+      "client-visit": "Client Visit",
+      "site-viewing": "Site Viewing",
+      "appointment": "Appointment",
+      "signing": "Signing",
+      "follow-up": "Follow-up",
+      "handover": "Handover",
+      "audit": "Audit",
+      "custom": "Custom"
+    },
+    "statuses": {
+      "confirmed": "Confirmed",
+      "pending": "Pending",
+      "draft": "Draft"
+    },
+    "weekDays": {
+      "sun": "Sun",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat"
+    }
+  },
+  "Profile": {
+    "eyebrow": "Personal workspace",
+    "title": "Profile Settings",
+    "subtitle": "Manage your identity, regional preferences, and notification strategies across the Anand ecosystem.",
+    "saveBtn": "Save Changes",
+    "stats": {
+      "role": "Role",
+      "language": "Language",
+      "timezone": "Timezone",
+      "notifications": "Notifications"
+    },
+    "sections": {
+      "identity": "Identity",
+      "preferences": "Preferences",
+      "security": "Security Contact",
+      "personal": "Personal Information",
+      "personalDesc": "Your public identity within the platform.",
+      "work": "Work Information",
+      "workDesc": "Your position and responsibilities within the organization.",
+      "accountData": "Account Data",
+      "accountDataDesc": "Live identity data from your signed-in account and active workspace.",
+      "rolePerms": "Role & Permissions",
+      "rolePermsDesc": "What you can access and manage in this workspace.",
+      "language": "Language",
+      "languageDesc": "Choose your preferred display language.",
+      "timezone": "Timezone",
+      "timezoneDesc": "All dates and times will be displayed in this timezone.",
+      "notifPrefs": "Notification Preferences",
+      "notifPrefsDesc": "Choose what you get notified about. Changes apply immediately.",
+      "accountIdentity": "Account Identity",
+      "accountIdentityDesc": "Core credentials tied to your account.",
+      "accessSecurity": "Access & Security",
+      "accessSecurityDesc": "Manage authentication methods and access control.",
+      "activeSessions": "Active Sessions",
+      "activeSessionsDesc": "Devices currently signed in to your account."
+    },
+    "form": {
+      "nameLabel": "Name",
+      "emailLabel": "Email",
+      "phoneLabel": "Phone (Optional)",
+      "roleLabel": "Role",
+      "languageLabel": "Language",
+      "timezoneLabel": "Timezone",
+      "phoneTooltip": "Used for account recovery and two-factor authentication.",
+      "roleTooltip": "Your job title or position. This is visible to other team members.",
+      "avatarUpload": "Change Photo",
+      "avatarCropTitle": "Crop profile picture",
+      "avatarApply": "Apply",
+      "avatarCancel": "Cancel",
+      "avatarZoom": "Zoom",
+      "avatarChooseImage": "Choose an image file.",
+      "avatarCropPrepareError": "Could not prepare image crop.",
+      "avatarCropExportError": "Could not export cropped image.",
+      "avatarSaveError": "Could not save profile picture.",
+      "avatarUploadMissingUrl": "Upload completed without a file URL.",
+      "avatarUploadFailed": "Profile picture upload failed.",
+      "avatarRemove": "Remove profile picture",
+      "avatarUploadSavedTitle": "Profile picture saved",
+      "avatarUploadSavedDescription": "Your new picture replaced the old one and is already saved.",
+      "avatarRemoveSavedTitle": "Profile picture removed",
+      "avatarRemoveSavedDescription": "Your profile picture was removed and the change is already saved.",
+      "avatarDesc": "JPG or PNG, max 2MB",
+      "orgType": "Organization Type",
+      "timezoneTooltip": "e.g. Asia/Riyadh — affects how timestamps appear across the platform."
+    },
+    "notifications": {
+      "product": "Product",
+      "approvals": "Approvals",
+      "billing": "Billing",
+      "security": "Security",
+      "on": "On",
+      "off": "Off",
+      "enabledNote": "Enabled · You will receive these alerts",
+      "disabledNote": "Disabled · No alerts for this category"
+    },
+    "contact": {
+      "owner": "Owner",
+      "email": "Email",
+      "phone": "Phone"
+    },
+    "account": {
+      "name": "User Name",
+      "email": "User Email",
+      "organization": "Organization",
+      "workspaceStatus": "Workspace Status",
+      "userId": "User ID",
+      "brand": "Brand",
+      "defaultBrand": "Default brand"
+    },
+    "tabs": {
+      "profile": "Profile",
+      "preferences": "Preferences",
+      "notifications": "Notifications",
+      "security": "Security"
+    },
+    "roles": {
+      "organizationAdmin": "Organization Admin",
+      "projectManager": "Project Manager",
+      "projectEditor": "Project Editor",
+      "viewer": "Viewer",
+      "adminNote": "To request a role change, contact your Organization Admin.",
+      "setByAdmin": "Set by your organization admin",
+      "currentRole": "Current Role",
+      "active": "Active"
+    },
+    "permissions": {
+      "manageMembers": "Manage members",
+      "editOrganization": "Edit organization",
+      "viewBilling": "View billing",
+      "apiAccess": "API access",
+      "allProjects": "All projects",
+      "createProjects": "Create projects",
+      "assignTasks": "Assign tasks",
+      "viewReports": "View reports",
+      "inviteMembers": "Invite members",
+      "editProjects": "Edit projects",
+      "uploadDocuments": "Upload documents",
+      "addComments": "Add comments",
+      "viewProjects": "View projects",
+      "downloadReports": "Download reports",
+      "title": "Permissions"
+    },
+    "security": {
+      "fullName": "Full Name",
+      "fullNameNote": "Displayed to teammates and clients",
+      "emailAddress": "Email Address",
+      "emailNote": "Used for login and system notifications",
+      "phoneNumber": "Phone Number",
+      "phoneNote": "Recovery and two-factor authentication",
+      "password": "Password",
+      "passwordNote": "Last changed: never",
+      "twoFactor": "Two-Factor Authentication",
+      "twoFactorValue": "Not configured",
+      "twoFactorNote": "Add an extra layer of security to your account",
+      "changeBtn": "Change",
+      "enableBtn": "Enable",
+      "thisDevice": "This device",
+      "deviceDetail": "macOS · Chrome · Active now",
+      "current": "Current",
+      "authMethod": "Authentication Method",
+      "googleAuth": "Google Account",
+      "googleNote": "Your security and password are managed by Google",
+      "manageBtn": "Manage",
+      "oauthSafetyNote": "Since you use a social login, your account is protected by your provider's advanced security features, including their two-factor authentication and login alerts."
+    },
+    "languages": {
+      "en": "English",
+      "ar": "Arabic"
+    },
+    "saveOperationError": "Profile save failed.",
+    "saveOperationSuccess": "Profile saved.",
+    "notifOperationError": "Notification update failed.",
+    "notifOperationSuccess": "Notification updated."
+  },
+  "Onboarding": {
+    "title": "Setup your Organization",
+    "subtitle": "Complete the basic setup to start using your workspace. Legal documents can be added later when needed.",
+    "stepper": {
+      "company": "Company Information",
+      "legal": "Legal Documentation",
+      "brand": "Logo & Brand",
+      "team": "Invite Team Members"
+    },
+    "company": {
+      "title": "Company Information",
+      "desc": "Enter the official details for your organization.",
+      "legalName": "Legal Company Name",
+      "displayName": "Display Name",
+      "crNumber": "Commercial Registration Number",
+      "city": "Headquarters City",
+      "saveDraft": "Save Draft",
+      "continue": "Continue to Step 2",
+      "crTooltip": "Required for official government verification.",
+      "legalNamePlaceholder": "e.g. Acme Real Estate LLC",
+      "displayNamePlaceholder": "e.g. Acme",
+      "crNumberPlaceholder": "1010XXXXXX",
+      "cityPlaceholder": "e.g. Riyadh",
+      "legalNameTooltip": "Full legal name as registered in official documents.",
+      "displayNameTooltip": "The name that will be visible to your team and clients.",
+      "cityTooltip": "The city where your company main office is located."
+    },
+    "legal": {
+      "title": "Legal Documentation",
+      "desc": "Upload the required legal evidence to verify your organization's identity.",
+      "signerName": "Authorized Signer Name",
+      "signerTitle": "Authorized Signer Title",
+      "crDoc": "Commercial Registration Document",
+      "crDesc": "PDF, PNG, or JPG (max. 10MB)",
+      "authLetter": "Authorization Letter",
+      "authDesc": "PDF, PNG, or JPG (max. 10MB). Must be clearly readable.",
+      "continue": "Continue to Step 3",
+      "nameTooltip": "The person legally authorized to sign on behalf of the company.",
+      "titleTooltip": "The official title of the authorized signer.",
+      "crDocTooltip": "A copy of your Commercial Registration document.",
+      "authLetterTooltip": "An official letter authorizing the signer.",
+      "signerNamePlaceholder": "e.g. Ahmed Mansour",
+      "signerTitlePlaceholder": "e.g. Chief Executive Officer"
+    },
+    "brand": {
+      "title": "Logo & Brand",
+      "desc": "Configure how your organization appears within the Anand ecosystem.",
+      "displayName": "Brand Display Name",
+      "color": "Brand Color (Hex)",
+      "logo": "Organization Logo",
+      "logoDesc": "PNG, JPG, or SVG. Minimum 400x400px recommended.",
+      "continue": "Continue to Invite Team",
+      "brandNamePlaceholder": "e.g. Acme",
+      "brandNameTooltip": "The primary name of your brand.",
+      "brandColorTooltip": "The primary color associated with your brand identity.",
+      "logoTooltip": "Your brand official logo."
+    },
+    "team": {
+      "title": "Invite Team Members",
+      "desc": "Invite collaborators to help manage your projects and integrations.",
+      "emailLabel": "Email Address",
+      "roleLabel": "Role",
+      "addBtn": "Add",
+      "tableEmail": "Email",
+      "tableRole": "Role",
+      "tableActions": "Actions",
+      "skip": "Skip Invites",
+      "submit": "Finish",
+      "emailPlaceholder": "colleague@company.com",
+      "emailTooltip": "The email address of the team member you wish to invite.",
+      "roleTooltip": "The access level granted to this team member."
+    },
+    "common": {
+      "uploadOrDrag": "Click to upload or drag and drop"
+    }
+  },
+  "ChooseOrg": {
+    "title": "Welcome to anan Hub",
+    "subtitle": "How would you like to get started?",
+    "joinTitle": "I was invited to an organization",
+    "joinDesc": "Enter an invite code or use a shared link to join an existing workspace.",
+    "joinCodeLabel": "Invite Code or Link",
+    "joinCodePlaceholder": "e.g. INV-8X3K9",
+    "joinBtn": "Join Workspace",
+    "joinHelp": "Ask your organization admin for an invite code, or check your email for an invitation link.",
+    "createTitle": "Create a new organization",
+    "createDesc": "Register your company and complete the setup wizard to start synchronizing data.",
+    "createNameLabel": "Organization Name",
+    "createNamePlaceholder": "e.g. Acme Real Estate",
+    "createTypeLabel": "Organization Type",
+    "createTypePlaceholder": "Select your organization type",
+    "typeBroker": "Broker",
+    "typeDeveloper": "Developer",
+    "createBtn": "Start Setup",
+    "existingTitle": "Your organizations",
+    "nameRequired": "Enter an organization name first.",
+    "inviteRequired": "Paste an invite link or token first.",
+    "errorTitle": "Organization setup failed",
+    "errorDesc": "Could not complete this organization action."
+  }
+}

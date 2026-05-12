@@ -1,0 +1,33 @@
+
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Convex/local generated state
+.convex/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Build and cache output
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/

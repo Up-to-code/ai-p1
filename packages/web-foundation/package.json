@@ -1,0 +1,69 @@
+{
+  "name": "@anan/web-foundation",
+  "version": "0.1.0",
+  "description": "Shared Next/web foundation helpers for Anan apps.",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js"
+    },
+    "./auth-session": {
+      "types": "./dist/auth-session.d.ts",
+      "import": "./dist/auth-session.js"
+    },
+    "./convex-provider": {
+      "types": "./dist/convex-provider.d.ts",
+      "import": "./dist/convex-provider.js"
+    },
+    "./media": {
+      "types": "./dist/media.d.ts",
+      "import": "./dist/media.js"
+    },
+    "./fonts": {
+      "types": "./dist/fonts.d.ts",
+      "import": "./dist/fonts.js"
+    },
+    "./locale": {
+      "types": "./dist/locale.d.ts",
+      "import": "./dist/locale.js"
+    },
+    "./theme": {
+      "types": "./dist/theme.d.ts",
+      "import": "./dist/theme.js"
+    }
+  },
+  "scripts": {
+    "prebuild": "npm --workspace @anan/platform-core run build",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@anan/platform-core": "0.1.0",
+    "@convex-dev/better-auth": "^0.11.4",
+    "convex": "^1.31.6",
+    "next-themes": "^0.4.6",
+    "react": "19.2.3"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "@types/react": "^19.2.3",
+    "typescript": "^5",
+    "vitest": "^2.0.0"
+  }
+}

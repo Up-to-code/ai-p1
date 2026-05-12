@@ -1,0 +1,121 @@
+{
+  "name": "@anan/domain-contracts",
+  "version": "0.1.0",
+  "description": "Shared Anan DTOs, Zod schemas, and server contract types.",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./anan-pro": {
+      "types": "./dist/ananPro.d.ts",
+      "import": "./dist/ananPro.js"
+    },
+    "./compliance": {
+      "types": "./dist/compliance.d.ts",
+      "import": "./dist/compliance.js"
+    },
+    "./deals": {
+      "types": "./dist/deals.d.ts",
+      "import": "./dist/deals.js"
+    },
+    "./errors": {
+      "types": "./dist/errors.d.ts",
+      "import": "./dist/errors.js"
+    },
+    "./files": {
+      "types": "./dist/files.d.ts",
+      "import": "./dist/files.js"
+    },
+    "./gcc-countries": {
+      "types": "./dist/gccCountries.d.ts",
+      "import": "./dist/gccCountries.js"
+    },
+    "./inbox": {
+      "types": "./dist/inbox.d.ts",
+      "import": "./dist/inbox.js"
+    },
+    "./market": {
+      "types": "./dist/market.d.ts",
+      "import": "./dist/market.js"
+    },
+    "./notifications": {
+      "types": "./dist/notifications.d.ts",
+      "import": "./dist/notifications.js"
+    },
+    "./oauth": {
+      "types": "./dist/oauth.d.ts",
+      "import": "./dist/oauth.js"
+    },
+    "./offers": {
+      "types": "./dist/offers.d.ts",
+      "import": "./dist/offers.js"
+    },
+    "./org-api": {
+      "types": "./dist/orgApi.d.ts",
+      "import": "./dist/orgApi.js"
+    },
+    "./organization-api-keys": {
+      "types": "./dist/organizationApiKeys.d.ts",
+      "import": "./dist/organizationApiKeys.js"
+    },
+    "./organizations": {
+      "types": "./dist/organizations.d.ts",
+      "import": "./dist/organizations.js"
+    },
+    "./profiles": {
+      "types": "./dist/profiles.d.ts",
+      "import": "./dist/profiles.js"
+    },
+    "./projects": {
+      "types": "./dist/projects.d.ts",
+      "import": "./dist/projects.js"
+    },
+    "./properties": {
+      "types": "./dist/properties.d.ts",
+      "import": "./dist/properties.js"
+    },
+    "./session": {
+      "types": "./dist/session.d.ts",
+      "import": "./dist/session.js"
+    },
+    "./verifications": {
+      "types": "./dist/verifications.d.ts",
+      "import": "./dist/verifications.js"
+    },
+    "./workspace": {
+      "types": "./dist/workspace.d.ts",
+      "import": "./dist/workspace.js"
+    }
+  },
+  "scripts": {
+    "prebuild": "npm --workspace @anan/platform-core run build && npm --workspace @anan/auth run build",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@anan/auth": "0.1.0",
+    "@anan/platform-core": "0.1.0",
+    "zod": "^4.3.6"
+  },
+  "peerDependencies": {
+    "@anan/ag-ui": "0.1.0",
+    "convex": "^1.31.6"
+  },
+  "devDependencies": {
+    "@anan/ag-ui": "0.1.0",
+    "@types/node": "^20.14.9",
+    "convex": "^1.31.6",
+    "typescript": "^5",
+    "vitest": "^2.0.0"
+  }
+}

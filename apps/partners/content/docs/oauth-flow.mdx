@@ -1,0 +1,36 @@
+---
+title: OAuth flow
+description: Use authorization code with PKCE for public apps and confidential clients for server apps.
+---
+
+## Authorization code with PKCE
+
+Public clients must generate a verifier and S256 challenge. See `examples/auth/pkce.ts` for a tested implementation.
+
+```ts
+import { createPkcePair } from "../../examples/auth/oauth-url";
+
+const pkce = await createPkcePair();
+```
+
+Send the user to authorization:
+
+```txt
+/oauth/authorize
+  ?response_type=code
+  &client_id=<client-id>
+  &redirect_uri=<registered-callback>
+  &scope=openid profile email offline_access organization:read client:read property:read
+  &code_challenge=<challenge>
+  &code_challenge_method=S256
+```
+
+The user must choose or already have an active organization. Hub records the organization partner connection after consent, not a personal user-only connection.
+
+## Token exchange
+
+Exchange the authorization code on a trusted backend. See `examples/auth/token-exchange.ts` for a tested implementation. Browser code should only start the redirect and never store access tokens in browser storage.
+
+## Revocation and expiry
+
+Organization authorization expires after 14 days. Hub rejects expired connections with `connection_expired`. Send the workspace admin through Authorize with Anan again to reconnect.
