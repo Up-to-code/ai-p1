@@ -116,6 +116,6 @@
     "@types/node": "^20.14.9",
     "convex": "^1.31.6",
     "typescript": "^5",
-    "vitest": "^2.0.0"
+    "vitest": "^4.1.6"
   }
 }

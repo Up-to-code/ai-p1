@@ -37,7 +37,6 @@ interface ProfilePictureUploaderProps {
 type UploadResult = {
   key?: string;
   url?: string;
-  ufsUrl?: string;
 };
 
 type CropPosition = {
@@ -254,7 +253,7 @@ export function ProfilePictureUploader({
         onUploadProgress: ({ progress: nextProgress }) => setProgress(nextProgress),
       });
       const result = uploaded as UploadResult;
-      const avatarUrl = result.ufsUrl ?? result.url;
+      const avatarUrl = result.url;
 
       if (!avatarUrl) {
         throw new Error(labels.uploadMissingUrl);

@@ -52,7 +52,7 @@ export const uploadRouter = {
       key: file.key,
       name: file.name,
       size: file.size,
-      url: file.ufsUrl ?? file.url,
+      url: file.url,
     })),
   organizationLogo: f({
     image: {
@@ -66,7 +66,7 @@ export const uploadRouter = {
       key: file.key,
       name: file.name,
       size: file.size,
-      url: file.ufsUrl ?? file.url,
+      url: file.url,
     })),
   projectMedia: f({
     image: {
@@ -92,7 +92,7 @@ export const uploadRouter = {
       name: file.name,
       size: file.size,
       mimeType: file.type,
-      url: file.ufsUrl ?? file.url,
+      url: file.url,
       organizationId: metadata.organizationId,
       resource: metadata.resource,
     })),
@@ -120,7 +120,7 @@ export const uploadRouter = {
       name: file.name,
       size: file.size,
       mimeType: file.type,
-      url: file.ufsUrl ?? file.url,
+      url: file.url,
       organizationId: metadata.organizationId,
       resource: metadata.resource,
     })),
@@ -148,7 +148,7 @@ export const uploadRouter = {
       name: file.name,
       size: file.size,
       mimeType: file.type,
-      url: file.ufsUrl ?? file.url,
+      url: file.url,
       organizationId: metadata.organizationId,
       resource: metadata.resource,
     })),
@@ -156,6 +156,21 @@ export const uploadRouter = {
 
 export type UploadRouter = typeof uploadRouter;
 
-export const uploadThingHandler = createRouteHandler({
+const uploadThingRoutes = createRouteHandler({
   router: uploadRouter,
 });
+
+export function uploadThingHandler(request: Request) {
+  if (request.method === "GET") {
+    return uploadThingRoutes.GET(request);
+  }
+
+  if (request.method === "POST") {
+    return uploadThingRoutes.POST(request);
+  }
+
+  return new Response(null, {
+    status: 405,
+    headers: { allow: "GET, POST" },
+  });
+}

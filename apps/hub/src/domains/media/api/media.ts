@@ -56,13 +56,12 @@ export async function attachUploadedMedia(params: {
     mimeType?: string;
     type?: string;
     url?: string;
-    ufsUrl?: string;
   };
   isCover?: boolean;
   folderId?: string;
 }) {
   const mimeType = params.upload.mimeType ?? params.upload.type ?? "application/octet-stream";
-  const url = params.upload.ufsUrl ?? params.upload.url;
+  const url = params.upload.url;
   if (!url) throw new Error("Uploaded file did not return a URL.");
 
   const response = await fetch(`/api/v1/organizations/${params.organizationId}/media/attach`, {

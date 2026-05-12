@@ -7,7 +7,10 @@
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -29,6 +32,6 @@
   "devDependencies": {
     "@types/node": "^20.14.9",
     "typescript": "^5",
-    "vitest": "^2.0.0"
+    "vitest": "^4.1.6"
   }
 }

@@ -19,7 +19,7 @@ type DragState = {
   startY: number;
   pointerScale: number;
 };
-type UploadResult = { key?: string; url?: string; ufsUrl?: string };
+type UploadResult = { key?: string; url?: string };
 
 const OUTPUT_SIZE = 512;
 
@@ -194,7 +194,7 @@ export function OrganizationLogoUploader({
         onUploadProgress: ({ progress: nextProgress }) => setProgress(nextProgress),
       });
       const result = uploaded as UploadResult;
-      const logoUrl = result.ufsUrl ?? result.url;
+      const logoUrl = result.url;
 
       if (!logoUrl) {
         throw new Error(labels.uploadFailed);

@@ -17,6 +17,17 @@
   },
   "devDependencies": {
     "@better-auth/core": "1.6.10",
-    "next": "16.2.4"
+    "effect": "^3.21.2",
+    "next": "^16.3.0-canary.19"
+  },
+  "overrides": {
+    "effect": "$effect",
+    "uploadthing": {
+      "effect": "$effect"
+    },
+    "@uploadthing/shared": {
+      "effect": "$effect"
+    },
+    "postcss": "8.5.14"
   }
 }
