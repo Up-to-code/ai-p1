@@ -30,5 +30,10 @@
       "effect": "$effect"
     },
     "postcss": "8.5.14"
+  },
+  "optionalDependencies": {
+    "@parcel/watcher-linux-x64-glibc": "^2.5.6",
+    "@tailwindcss/oxide-linux-x64-gnu": "^4.3.0",
+    "lightningcss-linux-x64-gnu": "^1.32.0"
   }
 }
