@@ -3,10 +3,18 @@ import {
   ArrowRight,
   ArrowUpRight,
   Building2,
+  Check,
   CheckCircle2,
+  ChevronDown,
   Code2,
+  Dumbbell,
+  Gem,
+  Headphones,
+  MessageCircle,
   Network,
+  Rocket,
   ShieldCheck,
+  Slack,
   Sparkles,
   Workflow
 } from "lucide-react";
@@ -16,6 +24,89 @@ import { getContent, type Locale } from "@/lib/content";
 const productIcons = {
   workspace: Building2,
   partners: Code2
+};
+
+const logoNames = ["Logoipsum", "Logoipsum", "Logoipsum", "Logoipsum", "Logoipsum", "Logoipsum"];
+
+const integrations = {
+  en: [
+    { name: "WhatsApp", description: "Conversations and lead follow-up in one operational context.", icon: MessageCircle },
+    { name: "Boom", description: "Lead capture and campaign handoff into the workspace.", icon: Sparkles },
+    { name: "Wafeer", description: "Operational sync for property and customer data.", icon: Gem },
+    { name: "Zapier", description: "Automations between Anan and the tools your team already uses.", icon: Rocket },
+    { name: "Slack", description: "Team notifications, approvals, and activity alerts.", icon: Slack },
+    { name: "Hootsuite", description: "Social media workflow and publishing coordination.", icon: Headphones }
+  ],
+  ar: [
+    { name: "واتساب", description: "المحادثات ومتابعة العملاء ضمن سياق تشغيلي واحد.", icon: MessageCircle },
+    { name: "بوم", description: "التقاط العملاء المحتملين وتسليم الحملات إلى مساحة العمل.", icon: Sparkles },
+    { name: "وفير", description: "مزامنة تشغيلية لبيانات العقارات والعملاء.", icon: Gem },
+    { name: "زابير", description: "أتمتة بين أنان والأدوات التي يستخدمها فريقك بالفعل.", icon: Rocket },
+    { name: "سلاك", description: "إشعارات الفريق والموافقات وتنبيهات النشاط.", icon: Slack },
+    { name: "هوتسويت", description: "تنسيق تدفق النشر والعمل على الشبكات الاجتماعية.", icon: Headphones }
+  ]
+};
+
+const pricing = {
+  en: [
+    {
+      name: "Launch",
+      price: "$79",
+      description: "For teams starting with clean property and client operations.",
+      features: ["Workspace and client records", "Basic integrations", "Team activity timeline", "Property operations"]
+    },
+    {
+      name: "Operate",
+      price: "$149",
+      featured: true,
+      description: "For teams that need approvals, partner access, and daily workflows.",
+      features: ["Everything in Launch", "Partner OAuth integrations", "Advanced approvals", "Workflow automation"]
+    },
+    {
+      name: "Institutional",
+      price: "$299",
+      description: "For larger organizations with multiple teams and governance needs.",
+      features: ["Custom onboarding", "Advanced roles", "Priority support", "Compliance review"]
+    }
+  ],
+  ar: [
+    {
+      name: "إطلاق",
+      price: "$79",
+      description: "للفرق التي تبدأ بتشغيل واضح للعقارات والعملاء.",
+      features: ["سجلات مساحة العمل والعملاء", "تكاملات أساسية", "سجل نشاط الفريق", "تشغيل العقارات"]
+    },
+    {
+      name: "تشغيل",
+      price: "$149",
+      featured: true,
+      description: "للفرق التي تحتاج الموافقات ووصول الشركاء وتدفقات العمل اليومية.",
+      features: ["كل ما في إطلاق", "تكاملات OAuth للشركاء", "موافقات متقدمة", "أتمتة سير العمل"]
+    },
+    {
+      name: "مؤسسي",
+      price: "$299",
+      description: "للمؤسسات الأكبر ذات الفرق المتعددة واحتياجات الحوكمة.",
+      features: ["تهيئة مخصصة", "أدوار متقدمة", "دعم أولوية", "مراجعة امتثال"]
+    }
+  ]
+};
+
+const faqs = {
+  en: [
+    ["Who is Anan for?", "Real estate teams, brokers, developers, and software partners who need one operational workspace."],
+    ["How do integrations work?", "Approved partners use OAuth, scoped permissions, and Hub APIs. They never connect directly to the database."],
+    ["Can I start with one team?", "Yes. Start with one workspace, then expand into more teams, permissions, and integrations."],
+    ["Is this the same as the workspace app?", "This is the public brand site. The workspace app remains the product where teams do daily work."],
+    ["Where do developers go?", "Developers use Anan Partners to register apps, request review, and build approved integrations."]
+  ],
+  ar: [
+    ["لمن صممت أنان؟", "لفرق العقار والوسطاء والمطورين وشركاء البرمجيات الذين يحتاجون مساحة تشغيل واحدة."],
+    ["كيف تعمل التكاملات؟", "يستخدم الشركاء المعتمدون OAuth وصلاحيات محددة وواجهات Hub، ولا يتصلون مباشرة بقاعدة البيانات."],
+    ["هل يمكن البدء بفريق واحد؟", "نعم. ابدأ بمساحة عمل واحدة ثم توسع إلى فرق وصلاحيات وتكاملات أكثر."],
+    ["هل هذا هو تطبيق مساحة العمل؟", "هذه صفحة العلامة العامة. تطبيق مساحة العمل يبقى المنتج الذي تنجز فيه الفرق العمل اليومي."],
+    ["أين يذهب المطورون؟", "يستخدم المطورون بوابة شركاء أنان لتسجيل التطبيقات وطلب المراجعة وبناء التكاملات المعتمدة."]
+  ]
 };
 
 const principles = {
@@ -67,6 +158,26 @@ function buttonClass(variant: "primary" | "secondary" | "dark" = "primary") {
   return "inline-flex h-14 items-center justify-center gap-2 rounded-full bg-zinc-950 px-8 text-[15px] font-bold text-white shadow-2xl shadow-zinc-900/20 transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200";
 }
 
+function LogoCloud({ isAr }: { isAr: boolean }) {
+  return (
+    <section className="border-y border-zinc-200/70 bg-zinc-50/70 px-6 py-10 dark:border-white/10 dark:bg-zinc-950/50">
+      <div className="mx-auto max-w-7xl">
+        <p className="text-center text-xs font-medium text-zinc-500 dark:text-zinc-400">
+          {isAr ? "موثوق من فرق إدارة العقار والوسطاء" : "Trusted by real estate operators and partner teams"}
+        </p>
+        <div className="mt-8 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-6">
+          {logoNames.map((name, index) => (
+            <div className="flex items-center justify-center gap-2 text-sm font-bold text-zinc-500" key={`${name}-${index}`}>
+              <span className={["bg-blue-300", "bg-emerald-400", "bg-orange-500", "bg-rose-400", "bg-violet-500", "bg-indigo-300"][index] + " size-7 rounded-full"} />
+              {name}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function ProductPreview({ isAr }: { isAr: boolean }) {
   return (
     <div className="relative overflow-hidden rounded-[2rem] border border-zinc-200 bg-white/75 p-4 shadow-2xl shadow-zinc-900/10 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]">
@@ -108,6 +219,179 @@ function ProductPreview({ isAr }: { isAr: boolean }) {
   );
 }
 
+function ProblemSection({ isAr }: { isAr: boolean }) {
+  return (
+    <section className="bg-white px-6 py-20 dark:bg-background md:py-28">
+      <div className="mx-auto grid max-w-7xl items-center gap-16 lg:grid-cols-2">
+        <div className="grid grid-cols-2 gap-4 lg:order-first">
+          {[0, 1, 2, 3].map((item) => (
+            <div className="h-28 rounded-[24px] bg-zinc-100 dark:bg-white/10" key={item} />
+          ))}
+        </div>
+        <div className="lg:ps-10">
+          <h2 className="max-w-2xl text-4xl font-bold leading-[0.95] tracking-tight text-zinc-950 dark:text-white md:text-6xl rtl:leading-[1.15]">
+            {isAr ? "العمل العقاري لا يجب أن يكون صعبا." : "Real estate work should not be this hard."}
+          </h2>
+          <p className="mt-6 max-w-xl text-base leading-8 text-zinc-500 dark:text-zinc-400">
+            {isAr
+              ? "العمليات اليومية والبيانات المشتتة وبطء التنفيذ تجعل الشركات تخسر وقتا ثمينا. أنان يحول العمل إلى منظومة واحدة."
+              : "Daily operations, scattered data, and slow handoffs cost teams real time. Anan turns the work into one operating system."}
+          </p>
+          <div className="mt-6 flex flex-wrap gap-2">
+            {(isAr ? ["بيانات مشتتة", "تأخير الموافقات", "تكاملات صعبة"] : ["Scattered data", "Slow approvals", "Hard integrations"]).map((item) => (
+              <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-500 dark:bg-red-500/10 dark:text-red-200" key={item}>
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function IntegrationsSection({ isAr }: { isAr: boolean }) {
+  const items = integrations[isAr ? "ar" : "en"];
+
+  return (
+    <section className="bg-zinc-50/80 px-6 py-20 dark:bg-zinc-950/50 md:py-28">
+      <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="text-4xl font-bold leading-none tracking-tight text-zinc-950 dark:text-white md:text-6xl rtl:leading-[1.18]">
+            {isAr ? "متكامل مع منظومتك العقارية." : "Integrated with your real estate stack."}
+          </h2>
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-zinc-500 dark:text-zinc-400">
+            {isAr
+              ? "اربط أنان مع أدوات التسويق والعمليات لتبسيط سير العمل ومزامنة البيانات بشكل ذكي."
+              : "Connect Anan with marketing and operations tools to simplify workflows and keep data in sync."}
+          </p>
+        </div>
+        <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {items.map((item) => {
+            const Icon = item.icon;
+            return (
+              <article className="rounded-[24px] border border-zinc-200 bg-white p-7 dark:border-white/10 dark:bg-white/[0.04]" key={item.name}>
+                <div className="mb-7 flex items-center justify-between">
+                  <div className="flex size-10 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">
+                    <Icon className="size-5" />
+                  </div>
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                </div>
+                <h3 className="text-lg font-bold text-zinc-950 dark:text-white">{item.name}</h3>
+                <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{item.description}</p>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PricingSection({ isAr }: { isAr: boolean }) {
+  const plans = pricing[isAr ? "ar" : "en"];
+
+  return (
+    <section className="bg-white px-6 py-20 dark:bg-background md:py-28" id="pricing">
+      <div className="mx-auto max-w-7xl">
+        <div className="mx-auto mb-8 flex max-w-5xl flex-col gap-6 rounded-[28px] border border-blue-200 bg-white p-7 dark:border-blue-400/20 dark:bg-white/[0.04] md:flex-row md:items-center md:justify-between">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600 dark:text-blue-300">{isAr ? "الأسعار" : "Pricing"}</span>
+            <h2 className="mt-3 text-3xl font-bold text-zinc-950 dark:text-white md:text-4xl">
+              {isAr ? "اختر طبقة التشغيل المناسبة لفريقك الآن." : "Choose the operating layer that fits your team now."}
+            </h2>
+          </div>
+          <div className="flex rounded-full bg-zinc-100 p-1 dark:bg-white/10">
+            <span className="rounded-full bg-zinc-950 px-6 py-2 text-xs font-bold text-white dark:bg-white dark:text-zinc-950">{isAr ? "شهري" : "Monthly"}</span>
+            <span className="px-6 py-2 text-xs font-bold text-zinc-500">{isAr ? "سنوي" : "Yearly"}</span>
+          </div>
+        </div>
+        <div className="grid gap-5 lg:grid-cols-3">
+          {plans.map((plan) => (
+            <article className={(plan.featured ? "border-blue-500 shadow-2xl shadow-blue-500/10 " : "border-zinc-200 ") + "rounded-[28px] border bg-white p-7 dark:border-white/10 dark:bg-white/[0.04]"} key={plan.name}>
+              <div className="flex items-center justify-between gap-4">
+                <h3 className="text-xl font-bold text-zinc-950 dark:text-white">{plan.name}</h3>
+                {plan.featured ? <span className="rounded-full bg-blue-600 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white">{isAr ? "الأفضل" : "Popular"}</span> : null}
+              </div>
+              <p className="mt-4 min-h-12 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{plan.description}</p>
+              <div className="my-6 rounded-2xl border border-zinc-200 p-5 dark:border-white/10">
+                <span className="text-4xl font-black text-zinc-950 dark:text-white">{plan.price}</span>
+                <span className="ms-2 text-sm text-zinc-400">{isAr ? "شهريا" : "monthly"}</span>
+              </div>
+              <a className={(plan.featured ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 " : "border border-zinc-200 text-zinc-950 dark:border-white/10 dark:text-white ") + "inline-flex h-11 w-full items-center justify-center rounded-full text-sm font-bold"} href="#">
+                {isAr ? "ابدأ الآن" : "Get started"}
+              </a>
+              <ul className="mt-7 space-y-3">
+                {plan.features.map((feature) => (
+                  <li className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300" key={feature}>
+                    <Check className="size-4 text-emerald-500" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FAQSection({ isAr }: { isAr: boolean }) {
+  const items = faqs[isAr ? "ar" : "en"];
+
+  return (
+    <section className="bg-white px-6 py-20 dark:bg-background md:py-28">
+      <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.8fr_1fr] lg:items-start">
+        <div className="lg:order-last">
+          <span className="text-[10px] font-black uppercase tracking-[0.35em] text-blue-600 dark:text-blue-300">{isAr ? "أسئلة شائعة" : "FAQ"}</span>
+          <h2 className="mt-4 text-4xl font-bold leading-none tracking-tight text-zinc-950 dark:text-white md:text-6xl rtl:leading-[1.15]">
+            {isAr ? "أسئلة قبل انتقال فريقك إلى مساحة العمل." : "Questions before your team moves into the workspace."}
+          </h2>
+          <p className="mt-6 max-w-xl text-sm leading-7 text-zinc-500 dark:text-zinc-400">
+            {isAr ? "إجابات مختصرة للمطورين والوسطاء والمديرين الذين يختبرون أنان." : "Short answers for developers, brokers, and operators evaluating Anan."}
+          </p>
+        </div>
+        <div className="rounded-[24px] border border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.04]">
+          {items.map(([question, answer], index) => (
+            <details className="group border-b border-zinc-200 p-6 last:border-b-0 dark:border-white/10" key={question} open={index === 0}>
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-bold text-zinc-950 dark:text-white">
+                {question}
+                <ChevronDown className="size-4 shrink-0 text-zinc-400 transition group-open:rotate-180" />
+              </summary>
+              <p className="mt-4 text-sm leading-7 text-zinc-500 dark:text-zinc-400">{answer}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FinalCTA({ isAr, copy }: { isAr: boolean; copy: ReturnType<typeof getContent> }) {
+  return (
+    <section className="bg-zinc-50 px-6 py-20 dark:bg-zinc-950/50">
+      <div className="mx-auto max-w-7xl overflow-hidden rounded-[32px] border border-white/10 bg-[radial-gradient(circle_at_20%_0%,rgba(255,255,255,0.16),transparent_34%),#071b4f] p-8 text-white md:p-14">
+        <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div className="max-w-3xl">
+            <span className="text-[10px] font-black uppercase tracking-[0.35em] text-blue-200">{isAr ? "ابدأ مساحة العمل" : "Start the workspace"}</span>
+            <h2 className="mt-5 text-4xl font-bold leading-none tracking-tight md:text-6xl rtl:leading-[1.15]">
+              {isAr ? "ابدأ من المكان الذي يستمر فيه العمل الحقيقي." : "Start where the real work keeps going."}
+            </h2>
+            <p className="mt-5 text-sm leading-7 text-blue-100/80">
+              {isAr ? "ادخل مساحة العمل أو تواصل مع الفريق لترتيب تشغيل أنان لفريقك." : "Open the workspace or talk with the team to set up Anan for your operation."}
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+            <a className="inline-flex h-12 items-center justify-center rounded-full bg-white px-7 text-sm font-bold text-zinc-950" href={copy.products[0].href}>{copy.home.primaryCta}</a>
+            <a className="inline-flex h-12 items-center justify-center rounded-full border border-white/20 px-7 text-sm font-bold text-white" href={copy.products[1].href}>{copy.home.secondaryCta}</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function HomePage({ locale }: { locale: Locale }) {
   const copy = getContent(locale);
   const isAr = locale === "ar";
@@ -143,20 +427,11 @@ export function HomePage({ locale }: { locale: Locale }) {
         </div>
       </section>
 
-      <section className="w-full border-b border-zinc-200/70 px-6 py-12 dark:border-white/[0.08] md:py-16">
-        <div className="mx-auto grid max-w-7xl gap-3 md:grid-cols-3">
-          {[
-            [isAr ? "مساحة العمل" : "Workspace", isAr ? "التشغيل" : "Operations"],
-            [isAr ? "الشركاء" : "Partners", isAr ? "التكاملات" : "Integrations"],
-            [isAr ? "التفويض" : "Authorization", isAr ? "على مستوى المؤسسة" : "Organization-level"]
-          ].map(([label, value]) => (
-            <div className="rounded-[22px] border border-zinc-200 bg-white/60 p-5 text-start dark:border-white/10 dark:bg-white/[0.045]" key={label}>
-              <p className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400">{label}</p>
-              <p className="mt-3 text-2xl font-semibold tracking-tight text-zinc-950 dark:text-white">{value}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      <LogoCloud isAr={isAr} />
+      <ProblemSection isAr={isAr} />
+      <IntegrationsSection isAr={isAr} />
+      <PricingSection isAr={isAr} />
+      <FAQSection isAr={isAr} />
 
       <section className="px-5 py-20 md:py-32" id="products">
         <div className="mx-auto max-w-7xl">
@@ -208,21 +483,13 @@ export function HomePage({ locale }: { locale: Locale }) {
         </div>
       </section>
 
-      <section className="bg-zinc-950 px-5 py-20 text-white md:py-28">
+      <section className="bg-white px-5 py-20 text-white dark:bg-background md:py-28">
         <div className="mx-auto max-w-7xl">
-          <div className="max-w-3xl">
-            <p className="mb-5 text-[10px] font-black uppercase tracking-[0.34em] text-blue-200">
-              {isAr ? "مبنية حول التفويض" : "Built around authorization"}
-            </p>
-            <h2 className="text-4xl font-bold sm:text-5xl md:text-6xl">
-              {isAr ? "نفس منطق مساحة العمل، للعلامة العامة." : "The same workspace logic, for the public brand."}
-            </h2>
-          </div>
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-3">
             {principleCopy.map((principle) => {
               const Icon = principle.icon;
               return (
-                <article className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 text-white" key={principle.title}>
+                <article className="rounded-[2rem] border border-zinc-200 bg-zinc-950 p-6 text-white dark:border-white/10" key={principle.title}>
                   <Icon className="mb-4 size-7" />
                   <h3 className="text-lg font-bold">{principle.title}</h3>
                   <p className="mt-3 text-sm leading-6 text-zinc-400">{principle.description}</p>
@@ -230,7 +497,7 @@ export function HomePage({ locale }: { locale: Locale }) {
               );
             })}
           </div>
-          <div className="mt-12 rounded-3xl border border-white/10 bg-white/[0.06] p-8">
+          <div className="mt-12 rounded-3xl border border-zinc-200 bg-zinc-950 p-8 dark:border-white/10">
             <Sparkles className="mb-5 size-8 text-blue-200" />
             <p className="max-w-2xl text-sm leading-7 text-zinc-300">
               {isAr
@@ -248,6 +515,8 @@ export function HomePage({ locale }: { locale: Locale }) {
           </div>
         </div>
       </section>
+
+      <FinalCTA isAr={isAr} copy={copy} />
     </main>
   );
 }
