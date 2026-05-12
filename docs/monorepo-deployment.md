@@ -39,7 +39,7 @@ npm run build --workspaces --if-present
 You can also target one app:
 
 ```bash
-npm --workspace hub run build
+npm --workspace @anan/hub run build
 npm --workspace @anan/partners run typecheck
 npm --workspace @anan/admin-review run test
 npm --workspace @anan/demo-partner-app run build

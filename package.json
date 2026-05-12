@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev:hub": "npm --workspace hub run dev",
+    "dev:hub": "npm --workspace @anan/hub run dev",
     "dev:partners": "npm --workspace @anan/partners run dev",
     "dev:admin": "npm --workspace @anan/admin-review run dev",
     "dev:demo": "npm --workspace @anan/demo-partner-app run dev",
