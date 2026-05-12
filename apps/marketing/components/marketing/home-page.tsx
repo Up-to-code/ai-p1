@@ -1,192 +1,224 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Building2, CheckCircle2, Code2, FileCheck2, Network, UsersRound } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AnimatedReveal } from "@/components/ui/animated-reveal";
-import { getContent, productIcons, type Locale } from "@/lib/content";
-import { cn } from "@/lib/utils";
+import FlowArt, { FlowSection } from "@/components/ui/story-scroll";
+import { getContent, type Locale } from "@/lib/content";
+
+const sectionText = {
+  en: {
+    one: {
+      eyebrow: "01 - The brand",
+      title: ["Work", "Without", "Fragments"],
+      body: "Anan gives real estate teams one public product family for workspace operations, trusted partner access, and organization-level authorization."
+    },
+    two: {
+      eyebrow: "02 - Workspace",
+      title: ["Operate", "Every", "Day"],
+      body: "The workspace is where organizations manage clients, properties, projects, team activity, and the daily work that keeps real estate moving.",
+      items: [
+        ["Clients", "Keep client data organized across the whole organization."],
+        ["Properties", "Manage listings, ownership context, and operational records."],
+        ["Projects", "Coordinate work between teams, brokers, and managers."]
+      ],
+      more: [
+        ["Teams", "Give the right people the right access."],
+        ["Activity", "Track the operational history of the workspace."],
+        ["Integrations", "Connect approved tools through scoped authorization."]
+      ]
+    },
+    three: {
+      eyebrow: "03 - Partners",
+      title: ["Build", "With", "Consent"],
+      body: "Partners register OAuth apps, submit them for review, and access organization data only through approved Hub APIs.",
+      items: [
+        ["Register", "Create the app profile, redirect URLs, and requested scopes."],
+        ["Review", "Anan reviews the product, permissions, and token handling."],
+        ["Authorize", "Workspace admins approve access for their organization."]
+      ],
+      more: [
+        ["Read", "Request only the data needed for the product workflow."],
+        ["Write safely", "Use create and update scopes where the API supports them."],
+        ["Expire", "Connections can expire, pause, or be revoked."]
+      ]
+    },
+    four: {
+      eyebrow: "04 - Public products",
+      title: ["One", "Clear", "Route"],
+      body: "The public site points customers to Workspace and developers to Partners. Internal review tools and demo apps stay outside the public product catalog."
+    },
+    five: {
+      eyebrow: "05 - Start",
+      title: ["Choose", "Your", "Path"],
+      body: "Open the workspace to run your organization, or open the partner portal to build approved integrations for Anan customers."
+    }
+  },
+  ar: {
+    one: {
+      eyebrow: "01 - العلامة",
+      title: ["عمل", "بلا", "تشتت"],
+      body: "تمنح أنان فرق العقار عائلة منتجات عامة واحدة لتشغيل مساحة العمل ووصول الشركاء الموثوق والتفويض على مستوى المؤسسة."
+    },
+    two: {
+      eyebrow: "02 - مساحة العمل",
+      title: ["شغل", "كل", "يوم"],
+      body: "مساحة العمل هي المكان الذي تدير فيه المؤسسات العملاء والعقارات والمشاريع ونشاط الفريق والعمل اليومي.",
+      items: [
+        ["العملاء", "تنظيم بيانات العملاء على مستوى المؤسسة."],
+        ["العقارات", "إدارة القوائم وسياق الملكية والسجلات التشغيلية."],
+        ["المشاريع", "تنسيق العمل بين الفرق والوسطاء والمديرين."]
+      ],
+      more: [
+        ["الفرق", "منح الأشخاص المناسبين الوصول المناسب."],
+        ["النشاط", "تتبع التاريخ التشغيلي لمساحة العمل."],
+        ["التكاملات", "ربط الأدوات المعتمدة عبر تفويض محدد."]
+      ]
+    },
+    three: {
+      eyebrow: "03 - الشركاء",
+      title: ["ابن", "مع", "موافقة"],
+      body: "يسجل الشركاء تطبيقات OAuth ويرسلونها للمراجعة ولا يصلون إلى بيانات المؤسسة إلا عبر واجهات Hub المعتمدة.",
+      items: [
+        ["التسجيل", "إنشاء ملف التطبيق وروابط التحويل والصلاحيات المطلوبة."],
+        ["المراجعة", "تراجع أنان المنتج والصلاحيات وطريقة حفظ الرموز."],
+        ["التفويض", "يعتمد مديرو مساحة العمل الوصول لمؤسستهم."]
+      ],
+      more: [
+        ["القراءة", "طلب البيانات اللازمة فقط لتدفق المنتج."],
+        ["كتابة آمنة", "استخدام صلاحيات الإنشاء والتحديث حيث تدعمها الواجهة."],
+        ["الانتهاء", "يمكن أن تنتهي الاتصالات أو تتوقف أو تلغى."]
+      ]
+    },
+    four: {
+      eyebrow: "04 - المنتجات العامة",
+      title: ["مسار", "واحد", "واضح"],
+      body: "يوجه الموقع العام العملاء إلى مساحة العمل والمطورين إلى الشركاء. تبقى أدوات المراجعة الداخلية وتطبيقات العرض خارج الكتالوج العام."
+    },
+    five: {
+      eyebrow: "05 - البداية",
+      title: ["اختر", "مسارك", "الآن"],
+      body: "افتح مساحة العمل لتشغيل مؤسستك، أو افتح بوابة الشركاء لبناء تكاملات معتمدة لعملاء أنان."
+    }
+  }
+} as const;
+
+function BigTitle({ lines }: { lines: readonly string[] }) {
+  return (
+    <div>
+      <h1 className="text-[clamp(3.5rem,12vw,14rem)] font-bold leading-[0.85] uppercase tracking-tight">
+        {lines.map((line) => (
+          <span className="block" key={line}>
+            {line}
+          </span>
+        ))}
+      </h1>
+    </div>
+  );
+}
+
+function Rule({ light = false }: { light?: boolean }) {
+  return <hr className={light ? "my-[2vw] border-none border-t border-white/60" : "my-[2vw] border-none border-t border-black/60"} />;
+}
+
+function FeatureRows({
+  items,
+  light = false
+}: {
+  items: readonly (readonly [string, string])[];
+  light?: boolean;
+}) {
+  return (
+    <div className="flex flex-wrap gap-[3vw]">
+      {items.map(([title, description]) => (
+        <div className="min-w-[180px] flex-1" key={title}>
+          <p className="mb-2 text-sm font-bold uppercase tracking-wider">{title}</p>
+          <p className={light ? "text-[clamp(0.85rem,1.3vw,1.05rem)] leading-relaxed opacity-75" : "text-[clamp(0.85rem,1.3vw,1.05rem)] leading-relaxed opacity-75"}>
+            {description}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export function HomePage({ locale }: { locale: Locale }) {
   const copy = getContent(locale);
+  const text = sectionText[locale];
   const isAr = locale === "ar";
 
   return (
-    <main className="flex-1" dir={isAr ? "rtl" : "ltr"}>
-      <section className="relative overflow-hidden border-b border-zinc-200/70 pb-20 pt-28 dark:border-white/[0.08] md:pb-24 md:pt-32">
-        <div className="pointer-events-none absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 overflow-hidden" aria-hidden="true">
-          <div className="absolute left-1/2 top-[-14%] h-[74vh] min-h-[560px] w-[136vw] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(11,92,255,0.32),rgba(20,184,166,0.1)_38%,transparent_68%)] opacity-55 blur-3xl [mask-image:linear-gradient(to_bottom,black_0%,black_62%,transparent_100%)] dark:opacity-80" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(247,249,252,0.2),var(--background)_78%)] dark:bg-[linear-gradient(to_bottom,rgba(10,10,10,0.16),var(--background)_82%)]" />
-          <div className="absolute inset-x-0 top-0 h-[620px] bg-[radial-gradient(ellipse_at_top,rgba(11,92,255,0.24),transparent_66%)] dark:bg-[radial-gradient(ellipse_at_top,rgba(11,92,255,0.34),transparent_68%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(11,92,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(11,92,255,0.05)_1px,transparent_1px)] bg-[size:80px_80px] opacity-40 [mask-image:radial-gradient(ellipse_at_top,black,transparent_80%)] dark:opacity-20" />
-        </div>
-        <div className="relative mx-auto flex max-w-7xl flex-col justify-start px-6 py-12 md:py-20">
-          <div className="max-w-4xl">
-            <AnimatedReveal>
-              <Badge variant="outline">{copy.home.eyebrow}</Badge>
-              <h1
-                className={cn(
-                  "mt-6 text-[clamp(2.5rem,8vw,5.5rem)] font-bold text-zinc-950 dark:text-white",
-                  isAr ? "leading-[1.3] tracking-normal" : "leading-[0.92] tracking-tighter"
-                )}
-              >
-                {copy.home.title}
-              </h1>
-              <p className="mt-8 max-w-2xl text-lg leading-relaxed text-zinc-600 dark:text-zinc-400 md:text-xl">{copy.home.description}</p>
-              <div className="mt-10 flex w-full flex-col gap-5 sm:w-auto sm:flex-row">
-                <a className={cn(buttonVariants({ size: "lg" }), "h-14 rounded-full px-10 text-[15px] font-bold shadow-2xl shadow-zinc-900/20")} href={copy.products[0].href}>
-                  {copy.home.primaryCta}
-                  <ArrowRight className={cn("size-4", isAr && "rotate-180")} />
-                </a>
-                <a className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-14 rounded-full px-10 text-[15px] font-bold backdrop-blur-sm")} href={copy.products[1].href}>
-                  {copy.home.secondaryCta}
-                </a>
-              </div>
-            </AnimatedReveal>
-          </div>
-        </div>
-      </section>
+    <div dir={isAr ? "rtl" : "ltr"}>
+      <FlowArt aria-label={isAr ? "قصة منتجات أنان" : "Anan product story"} className="pt-24">
+      <FlowSection aria-label={text.one.eyebrow} style={{ backgroundColor: "#fd5200", color: "#fff" }}>
+        <p className="text-xs font-bold uppercase tracking-[0.2em]">{text.one.eyebrow}</p>
+        <hr className="my-[2vw] border-none border-t border-black opacity-100" />
+        <BigTitle lines={text.one.title} />
+        <hr className="my-[2vw] border-none border-t border-black opacity-100" />
+        <p className="mt-auto max-w-[50ch] text-[clamp(1rem,2.5vw,2rem)] font-normal leading-relaxed">{text.one.body}</p>
+      </FlowSection>
 
-      <section className="w-full border-b border-zinc-200/70 px-6 py-12 dark:border-white/[0.08] md:py-16">
-        <div className="mx-auto max-w-7xl">
-          <p className="text-center text-sm font-bold uppercase tracking-[0.2em] text-zinc-400 md:text-base">
-            {isAr ? "منتجات أنان العامة للعملاء والمطورين" : "Anan public products for customers and developers"}
-          </p>
-          <div className="mt-8 grid gap-3 md:grid-cols-3">
-            {copy.home.proof.map((item) => (
-              <div className="rounded-[22px] border border-zinc-200 bg-white/60 p-4 text-start dark:border-white/10 dark:bg-white/[0.045]" key={item.label}>
-                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400">{item.label}</p>
-                <p className="mt-3 text-2xl font-semibold tracking-tight text-zinc-950 dark:text-white">{item.value}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <FlowSection aria-label={text.two.eyebrow} style={{ backgroundColor: "#000", color: "#fff" }}>
+        <p className="text-xs font-bold uppercase tracking-[0.2em]">{text.two.eyebrow}</p>
+        <Rule light />
+        <BigTitle lines={text.two.title} />
+        <Rule light />
+        <p className="max-w-[50ch] text-[clamp(1rem,2.5vw,2rem)] font-normal leading-relaxed">{text.two.body}</p>
+        <Rule light />
+        <FeatureRows items={text.two.items} light />
+        <Rule light />
+        <FeatureRows items={text.two.more} light />
+        <Rule light />
+        <a className="mt-auto inline-flex w-fit rounded-full bg-white px-7 py-3 text-sm font-bold text-black" href={copy.products[0].href}>
+          {copy.products[0].cta}
+        </a>
+      </FlowSection>
 
-      <section className="bg-zinc-50/80 px-6 py-20 text-foreground dark:bg-zinc-950/50 md:py-32">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-20 lg:grid-cols-2 lg:items-center">
-            <AnimatedReveal>
-              <div className="space-y-8">
-                <h2 className="text-4xl font-bold tracking-tight text-zinc-950 dark:text-white md:text-6xl rtl:leading-[1.2]">
-                  {isAr ? "العلامة العامة يجب أن تكون واضحة." : "The public brand should be clear."}
-                </h2>
-                <p className="text-lg leading-relaxed text-zinc-500 dark:text-zinc-400 md:text-xl">
-                  {isAr
-                    ? "مساحة العمل والشركاء يظهران كمنتجين منفصلين، لكنهما يعملان تحت نفس نظام التفويض والسياسات والهوية."
-                    : "Workspace and Partners are separate products, but they operate under one authorization, policy, and brand system."}
-                </p>
-                <div className="flex flex-wrap gap-4">
-                  {(isAr ? ["مساحة عمل", "شركاء", "تفويض مؤسسي"] : ["Workspace", "Partners", "Organization consent"]).map((tag) => (
-                    <span className="rounded-full bg-blue-500/10 px-4 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-300" key={tag}>
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </AnimatedReveal>
-            <AnimatedReveal delay="160ms">
-              <div className="grid grid-cols-2 gap-4">
-                {[Building2, UsersRound, Code2, FileCheck2].map((Icon, index) => (
-                  <div className="h-32 rounded-[2rem] border border-zinc-200 bg-white/60 p-6 dark:border-white/10 dark:bg-white/5" key={index}>
-                    <Icon className="size-7 text-zinc-950 dark:text-white" />
-                  </div>
-                ))}
-              </div>
-            </AnimatedReveal>
-          </div>
-        </div>
-      </section>
+      <FlowSection aria-label={text.three.eyebrow} style={{ backgroundColor: "#F5F0E8", color: "#000" }}>
+        <p className="text-xs font-bold uppercase tracking-[0.2em]">{text.three.eyebrow}</p>
+        <Rule />
+        <BigTitle lines={text.three.title} />
+        <Rule />
+        <p className="max-w-[50ch] text-[clamp(1rem,2.5vw,2rem)] font-normal leading-relaxed">{text.three.body}</p>
+        <Rule />
+        <FeatureRows items={text.three.items} />
+        <Rule />
+        <FeatureRows items={text.three.more} />
+        <Rule />
+        <a className="inline-flex w-fit rounded-full bg-black px-7 py-3 text-sm font-bold text-white" href={copy.products[1].href}>
+          {copy.products[1].cta}
+        </a>
+      </FlowSection>
 
-      <section className="px-5 py-20 md:py-32" id="products">
-        <div className="mx-auto max-w-7xl">
-          <AnimatedReveal>
-            <div className="max-w-3xl">
-              <div className="flex items-center gap-3">
-                <span className="h-px w-8 bg-zinc-200 dark:bg-white/10" />
-                <span className="text-[10px] font-black uppercase tracking-[0.35em] text-blue-600 dark:text-blue-300">{copy.home.productsTitle}</span>
-              </div>
-              <h2 className="mt-4 text-3xl font-bold leading-none tracking-tight text-zinc-900 dark:text-white md:text-5xl">{copy.home.productsTitle}</h2>
-              <p className="mt-5 max-w-2xl text-sm font-medium leading-relaxed text-zinc-500 dark:text-zinc-400 md:text-base">{copy.home.productsDescription}</p>
-            </div>
-          </AnimatedReveal>
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
-            {copy.products.map((product, index) => {
-              const Icon = productIcons[product.id];
-              return (
-                <AnimatedReveal delay={`${index * 90}ms`} key={product.id}>
-                  <Card className="h-full overflow-hidden rounded-[2rem] border-zinc-200 bg-white/70 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]">
-                    <CardHeader className="p-8">
-                      <div className="mb-6 flex items-center justify-between gap-3">
-                        <span className="flex size-12 items-center justify-center rounded-2xl bg-zinc-950 text-white dark:bg-white dark:text-zinc-950">
-                          <Icon className="size-6" />
-                        </span>
-                        <Badge variant="outline">{product.status}</Badge>
-                      </div>
-                      <CardTitle className="text-2xl">{product.name}</CardTitle>
-                      <CardDescription className="text-base leading-7">{product.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="px-8 pb-8">
-                      <ul className="space-y-3">
-                        {product.bullets.map((bullet) => (
-                          <li className="flex items-start gap-3 text-sm text-zinc-600 dark:text-zinc-300" key={bullet}>
-                            <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-blue-600 dark:text-blue-300" />
-                            <span>{bullet}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <a className={cn(buttonVariants({ variant: "outline" }), "mt-8 h-12 rounded-full px-7 font-bold")} href={product.href}>
-                        {product.cta}
-                        <ArrowUpRight className="size-4 rtl:-rotate-90" />
-                      </a>
-                    </CardContent>
-                  </Card>
-                </AnimatedReveal>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      <FlowSection aria-label={text.four.eyebrow} style={{ backgroundColor: "#1A3DE8", color: "#fff" }}>
+        <p className="text-xs font-bold uppercase tracking-[0.2em]">{text.four.eyebrow}</p>
+        <hr className="my-[2vw] border-none border-t border-white/50" />
+        <BigTitle lines={text.four.title} />
+        <hr className="my-[2vw] border-none border-t border-white/50" />
+        <p className="max-w-[50ch] text-[clamp(1rem,2.5vw,2rem)] font-normal leading-relaxed">{text.four.body}</p>
+        <hr className="my-[2vw] border-none border-t border-white/50" />
+        <FeatureRows
+          light
+          items={copy.products.map((product) => [product.name, product.description] as const)}
+        />
+      </FlowSection>
 
-      <section className="bg-zinc-950 px-5 py-20 text-white md:py-28">
-        <div className="mx-auto max-w-7xl">
-          <div className="max-w-3xl">
-            <p className="mb-5 text-[10px] font-black uppercase tracking-[0.34em] text-blue-200">{copy.home.principlesTitle}</p>
-            <h2 className="text-4xl font-bold sm:text-5xl md:text-6xl">{copy.home.principlesTitle}</h2>
-          </div>
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
-            {copy.home.principles.map((principle) => {
-              const Icon = principle.icon;
-              return (
-                <Card className="border-white/10 bg-white/[0.04] text-white" key={principle.title}>
-                  <CardHeader>
-                    <Icon className="mb-4 size-7" />
-                    <CardTitle className="text-lg">{principle.title}</CardTitle>
-                    <CardDescription className="text-zinc-400">{principle.description}</CardDescription>
-                  </CardHeader>
-                </Card>
-              );
-            })}
-          </div>
-          <div className="mt-12 rounded-3xl border border-white/10 bg-white/[0.06] p-8">
-            <Network className="mb-5 size-8 text-blue-200" />
-            <p className="max-w-2xl text-sm leading-7 text-zinc-300">
-              {isAr
-                ? "للوصول إلى تفاصيل الخصوصية والشروط العامة، راجع صفحات السياسات الرسمية للعلامة."
-                : "For privacy and general terms details, review the brand policy pages."}
-            </p>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <Link className={buttonVariants({ variant: "secondary" })} href={`/${locale}/privacy`}>
-                {copy.nav.privacy}
-              </Link>
-              <Link className={buttonVariants({ variant: "secondary" })} href={`/${locale}/terms`}>
-                {copy.nav.terms}
-              </Link>
-            </div>
-          </div>
+      <FlowSection aria-label={text.five.eyebrow} style={{ backgroundColor: "#000", color: "#fff" }}>
+        <p className="text-xs font-bold uppercase tracking-[0.2em]">{text.five.eyebrow}</p>
+        <hr className="my-[2vw] border-none border-t border-white/60" />
+        <BigTitle lines={text.five.title} />
+        <hr className="my-[2vw] border-none border-t border-white/60" />
+        <p className="mt-auto max-w-[50ch] text-[clamp(1rem,2.5vw,2rem)] font-normal leading-relaxed">{text.five.body}</p>
+        <div className="mt-10 flex flex-wrap gap-4">
+          <a className="inline-flex rounded-full bg-white px-7 py-3 text-sm font-bold text-black" href={copy.products[0].href}>
+            {copy.home.primaryCta}
+          </a>
+          <a className="inline-flex rounded-full border border-white/40 px-7 py-3 text-sm font-bold text-white" href={copy.products[1].href}>
+            {copy.home.secondaryCta}
+          </a>
+          <Link className="inline-flex rounded-full border border-white/40 px-7 py-3 text-sm font-bold text-white" href={`/${locale}/privacy`}>
+            {copy.nav.privacy}
+          </Link>
         </div>
-      </section>
-    </main>
+      </FlowSection>
+      </FlowArt>
+    </div>
   );
 }

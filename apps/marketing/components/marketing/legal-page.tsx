@@ -1,5 +1,3 @@
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { getContent, type Locale } from "@/lib/content";
 
 export function LegalPage({ locale, kind }: { locale: Locale; kind: "privacy" | "terms" }) {
@@ -10,19 +8,19 @@ export function LegalPage({ locale, kind }: { locale: Locale; kind: "privacy" | 
   return (
     <main className="px-5 py-16 md:py-24" dir={locale === "ar" ? "rtl" : "ltr"}>
       <article className="mx-auto max-w-3xl">
-        <Badge variant="outline">{copy.legal.updated}</Badge>
+        <span className="inline-flex rounded-full border border-zinc-200 px-3 py-1 text-xs font-semibold text-zinc-500 dark:border-white/10 dark:text-zinc-300">
+          {copy.legal.updated}
+        </span>
         <h1 className="mt-5 text-4xl font-bold tracking-tight md:text-6xl">{title}</h1>
         <p className="mt-5 text-base leading-8 text-zinc-600 dark:text-zinc-300">{copy.legal.intro}</p>
-        <Card className="mt-10">
-          <CardContent className="space-y-8 p-6 md:p-8">
-            {blocks.map((block) => (
-              <section key={block.title}>
-                <h2 className="text-xl font-bold">{block.title}</h2>
-                <p className="mt-3 text-sm leading-7 text-zinc-600 dark:text-zinc-300">{block.body}</p>
-              </section>
-            ))}
-          </CardContent>
-        </Card>
+        <div className="mt-10 space-y-8 border-t border-zinc-200 pt-8 dark:border-white/10">
+          {blocks.map((block) => (
+            <section key={block.title}>
+              <h2 className="text-xl font-bold">{block.title}</h2>
+              <p className="mt-3 text-sm leading-7 text-zinc-600 dark:text-zinc-300">{block.body}</p>
+            </section>
+          ))}
+        </div>
       </article>
     </main>
   );

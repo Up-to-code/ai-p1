@@ -1,10 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
-import { buttonVariants } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { getAlternateLocale, type Locale } from "@/lib/content";
-import { cn } from "@/lib/utils";
 
 type NavCopy = {
   brand: string;
@@ -37,10 +34,16 @@ export function SiteHeader({ locale, nav }: { locale: Locale; nav: NavCopy }) {
           </Link>
         </nav>
         <div className="flex items-center gap-2">
-          <Link href={`/${alternateLocale}`} className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "hidden sm:inline-flex")}>
+          <Link
+            href={`/${alternateLocale}`}
+            className="hidden h-9 items-center rounded-full px-3 text-sm font-semibold text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 sm:inline-flex dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white"
+          >
             {nav.language}
           </Link>
-          <a className={cn(buttonVariants({ size: "sm" }), "gap-1.5")} href={process.env.NEXT_PUBLIC_WORKSPACE_URL ?? "https://app.anan.sa"}>
+          <a
+            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-black px-4 text-sm font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+            href={process.env.NEXT_PUBLIC_WORKSPACE_URL ?? "https://app.anan.sa"}
+          >
             {nav.workspace}
             <ArrowUpRight className="size-3.5" />
           </a>
@@ -67,7 +70,7 @@ export function SiteFooter({ locale, nav }: { locale: Locale; nav: NavCopy }) {
             <Link href={`/${locale}/terms`}>{nav.terms}</Link>
           </div>
         </div>
-        <Separator className="my-8" />
+        <div className="my-8 h-px w-full bg-zinc-200 dark:bg-white/10" />
         <p className="text-xs text-zinc-400">© {new Date().getFullYear()} {nav.brand}</p>
       </div>
     </footer>

@@ -1,5 +1,3 @@
-import { Blocks, Building2, Code2, ShieldCheck, Workflow } from "lucide-react";
-
 export const locales = ["en", "ar"] as const;
 export type Locale = (typeof locales)[number];
 
@@ -14,11 +12,6 @@ export function getDirection(locale: Locale) {
 export const productUrls = {
   workspace: process.env.NEXT_PUBLIC_WORKSPACE_URL ?? "https://app.anan.sa",
   partners: process.env.NEXT_PUBLIC_PARTNERS_URL ?? "https://partners.anan.sa"
-};
-
-export const productIcons = {
-  workspace: Building2,
-  partners: Code2
 };
 
 export const content = {
@@ -38,33 +31,7 @@ export const content = {
       description:
         "Anan brings workspace operations and partner authorization into one clear product family for brokerages, developers, and software teams.",
       primaryCta: "Open Workspace",
-      secondaryCta: "Explore Partners",
-      proof: [
-        { label: "Workspace", value: "Operations" },
-        { label: "Partners", value: "Integrations" },
-        { label: "Authorization", value: "Organization-level" }
-      ],
-      productsTitle: "Products under the Anan brand",
-      productsDescription:
-        "The public catalog focuses on products customers and developers can use directly.",
-      principlesTitle: "Built around clear authorization",
-      principles: [
-        {
-          title: "Workspace-first data",
-          description: "Organizations manage people, properties, clients, projects, and day-to-day work from the main workspace.",
-          icon: Workflow
-        },
-        {
-          title: "Partner access by consent",
-          description: "Approved partners connect through OAuth and scoped APIs instead of direct database access.",
-          icon: ShieldCheck
-        },
-        {
-          title: "One brand system",
-          description: "Public pages, product surfaces, and developer flows share one Anan identity and policy layer.",
-          icon: Blocks
-        }
-      ]
+      secondaryCta: "Explore Partners"
     },
     products: [
       {
@@ -146,32 +113,7 @@ export const content = {
       description:
         "تجمع أنان بين تشغيل مساحة العمل وتفويض الشركاء ضمن عائلة منتجات واضحة للوسطاء والمطورين وفرق البرمجيات.",
       primaryCta: "فتح مساحة العمل",
-      secondaryCta: "استكشاف الشركاء",
-      proof: [
-        { label: "مساحة العمل", value: "التشغيل" },
-        { label: "الشركاء", value: "التكاملات" },
-        { label: "التفويض", value: "على مستوى المؤسسة" }
-      ],
-      productsTitle: "منتجات تحت علامة أنان",
-      productsDescription: "يعرض الكتالوج العام المنتجات التي يستخدمها العملاء والمطورون مباشرة.",
-      principlesTitle: "مبنية حول تفويض واضح",
-      principles: [
-        {
-          title: "البيانات تبدأ من مساحة العمل",
-          description: "تدير المؤسسات الأشخاص والعقارات والعملاء والمشاريع والعمل اليومي من مساحة العمل الرئيسية.",
-          icon: Workflow
-        },
-        {
-          title: "وصول الشركاء بالموافقة",
-          description: "يتصل الشركاء المعتمدون عبر OAuth وواجهات API محددة الصلاحيات بدلا من الوصول المباشر لقاعدة البيانات.",
-          icon: ShieldCheck
-        },
-        {
-          title: "نظام علامة واحد",
-          description: "تتشارك الصفحات العامة وتجارب المنتج وتدفقات المطورين هوية أنان وطبقة السياسات نفسها.",
-          icon: Blocks
-        }
-      ]
+      secondaryCta: "استكشاف الشركاء"
     },
     products: [
       {
