@@ -1,0 +1,20 @@
+{
+  "id": "b7dcbd00",
+  "phase": "variants_ready",
+  "pageUrl": "/en",
+  "sourceFile": null,
+  "expectedVariants": 3,
+  "arrivedVariants": 3,
+  "visibleVariant": 3,
+  "paramValues": {},
+  "pendingEventSeq": null,
+  "pendingEvent": null,
+  "deliveryLease": null,
+  "checkpointRevision": 32,
+  "activeOwner": "18658904",
+  "sourceMarkers": {},
+  "fallbackMode": null,
+  "annotationArtifacts": [],
+  "diagnostics": [],
+  "updatedAt": "2026-05-12T15:07:20.890Z"
+}

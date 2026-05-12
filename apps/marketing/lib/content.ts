@@ -26,12 +26,32 @@ export const content = {
       language: "العربية"
     },
     home: {
-      eyebrow: "Anan Real Estate Platform",
-      title: "One operating layer for real estate teams and trusted integrations.",
+      eyebrow: "Anan product ecosystem",
+      title: "The real estate operating layer, on one domain.",
       description:
-        "Anan brings workspace operations and partner authorization into one clear product family for brokerages, developers, and software teams.",
+        "Anan gives real estate teams one workspace for daily work and one trusted path for partner integrations around that work.",
       primaryCta: "Open Workspace",
-      secondaryCta: "Explore Partners"
+      secondaryCta: "Explore Partners",
+      contactCta: "Talk to Anan",
+      atlasEyebrow: "Product atlas",
+      atlasTitle: "Two public products. One operating system.",
+      atlasDescription:
+        "Workspace is where teams run clients, properties, projects, and follow-ups. Partners is where approved builders connect useful tools to that workspace.",
+      flowEyebrow: "Operating flow",
+      flowTitle: "From market signal to workspace action.",
+      flowDescription:
+        "The public story is simple: capture the signal, reconcile the operating context, authorize trusted tools, and move the team to the next action.",
+      trustEyebrow: "Trust network",
+      trustTitle: "Integrations connect through consent, not shortcuts.",
+      trustDescription:
+        "Partner products use OAuth, scoped access, and organization-level consent. Anan keeps workspace data behind clear permissions and approved API paths.",
+      futureEyebrow: "What this unlocks next",
+      futureTitle: "The domain can grow without confusing the product.",
+      futureDescription:
+        "Future Anan offerings should feel like more rooms in the same operating layer, not separate brands fighting for attention.",
+      finalTitle: "Start with the workspace. Expand through trusted products.",
+      finalDescription:
+        "Open Anan Workspace for daily real estate work, or explore Partners if you are building approved tools for Anan teams."
     },
     products: [
       {
@@ -40,19 +60,49 @@ export const content = {
         status: "Main product",
         href: productUrls.workspace,
         cta: "Open Workspace",
-        description: "The operating system for real estate organizations to manage clients, properties, teams, projects, and daily work.",
-        bullets: ["Organization workspace", "Real estate workflows", "Client and property operations"]
+        description: "The operating product for real estate organizations to manage clients, properties, projects, teams, approvals, and daily work.",
+        bullets: ["Today desk for real estate teams", "Clients, properties, projects, and calendar work", "Inventory readiness and operational approvals"]
       },
       {
         id: "partners",
         name: "Anan Partners",
-        status: "Developer program",
+        status: "Trusted integration path",
         href: productUrls.partners,
         cta: "Open Partner Portal",
-        description: "The developer portal for registering OAuth apps, requesting review, and connecting approved tools to Anan organizations.",
-        bullets: ["OAuth app registration", "Admin review flow", "Scoped partner APIs"]
+        description: "The partner product for developers and software teams to register apps, request review, and connect approved tools to Anan workspaces.",
+        bullets: ["OAuth app registration", "Scoped organization consent", "Approved partner APIs"]
       }
-    ],
+    ] as const,
+    flow: [
+      {
+        title: "Market signal",
+        description: "Leads, inventory changes, media, pricing, and project updates enter the operating layer."
+      },
+      {
+        title: "Workspace truth",
+        description: "Teams reconcile clients, properties, projects, units, calendar work, and approvals in one place."
+      },
+      {
+        title: "Trusted connection",
+        description: "Approved partners connect through OAuth, scopes, and organization-level consent."
+      },
+      {
+        title: "Next action",
+        description: "Operators know what to follow up, approve, publish, prepare, or hand off next."
+      }
+    ] as const,
+    trust: [
+      "OAuth authorization code with PKCE",
+      "Organization-level consent",
+      "Scoped partner APIs",
+      "Approved app lifecycle",
+      "No direct database access"
+    ] as const,
+    future: [
+      "More workspace workflows",
+      "More approved partner categories",
+      "More market-facing operating views"
+    ] as const,
     legal: {
       privacyTitle: "Privacy Policy",
       termsTitle: "Terms of Service",
@@ -108,12 +158,32 @@ export const content = {
       language: "English"
     },
     home: {
-      eyebrow: "منصة أنان العقارية",
-      title: "طبقة تشغيل واحدة لفرق العقار والتكاملات الموثوقة.",
+      eyebrow: "منظومة منتجات أنان",
+      title: "طبقة التشغيل العقاري على نطاق واحد.",
       description:
-        "تجمع أنان بين تشغيل مساحة العمل وتفويض الشركاء ضمن عائلة منتجات واضحة للوسطاء والمطورين وفرق البرمجيات.",
+        "تمنح أنان فرق العقار مساحة عمل يومية ومسارا موثوقا للتكاملات حول هذا العمل.",
       primaryCta: "فتح مساحة العمل",
-      secondaryCta: "استكشاف الشركاء"
+      secondaryCta: "استكشاف الشركاء",
+      contactCta: "تواصل مع أنان",
+      atlasEyebrow: "خريطة المنتجات",
+      atlasTitle: "منتجان عامان. نظام تشغيل واحد.",
+      atlasDescription:
+        "مساحة العمل هي مكان تشغيل العملاء والعقارات والمشاريع والمتابعات. والشركاء هو مسار ربط الأدوات المعتمدة بهذه المساحة.",
+      flowEyebrow: "سير التشغيل",
+      flowTitle: "من إشارة السوق إلى إجراء داخل مساحة العمل.",
+      flowDescription:
+        "القصة العامة واضحة: التقط الإشارة، وحد سياق العمل، فوض الأدوات الموثوقة، ثم انقل الفريق إلى الخطوة التالية.",
+      trustEyebrow: "شبكة الثقة",
+      trustTitle: "التكاملات تتصل بالموافقة، لا بالاختصارات.",
+      trustDescription:
+        "تستخدم منتجات الشركاء OAuth وصلاحيات محددة وموافقة على مستوى المؤسسة. تبقى بيانات مساحة العمل خلف أذونات واضحة ومسارات API معتمدة.",
+      futureEyebrow: "ما الذي يفتحه هذا لاحقا",
+      futureTitle: "يمكن للنطاق أن ينمو بدون تشتيت المنتج.",
+      futureDescription:
+        "يجب أن تبدو عروض أنان المستقبلية كغرف إضافية داخل طبقة التشغيل نفسها، لا كعلامات منفصلة تتنافس على الانتباه.",
+      finalTitle: "ابدأ بمساحة العمل. وتوسع عبر منتجات موثوقة.",
+      finalDescription:
+        "افتح مساحة عمل أنان لتشغيل العمل العقاري اليومي، أو استكشف الشركاء إذا كنت تبني أدوات معتمدة لفرق أنان."
     },
     products: [
       {
@@ -122,19 +192,49 @@ export const content = {
         status: "المنتج الرئيسي",
         href: productUrls.workspace,
         cta: "فتح مساحة العمل",
-        description: "نظام تشغيل للمؤسسات العقارية لإدارة العملاء والعقارات والفرق والمشاريع والعمل اليومي.",
-        bullets: ["مساحة عمل للمؤسسة", "تدفقات عمل عقارية", "تشغيل العملاء والعقارات"]
+        description: "منتج التشغيل للمؤسسات العقارية لإدارة العملاء والعقارات والمشاريع والفرق والموافقات والعمل اليومي.",
+        bullets: ["مكتب اليوم لفرق العقار", "عملاء وعقارات ومشاريع وتقويم", "جاهزية المخزون والموافقات التشغيلية"]
       },
       {
         id: "partners",
         name: "شركاء أنان",
-        status: "برنامج المطورين",
+        status: "مسار التكاملات الموثوقة",
         href: productUrls.partners,
         cta: "فتح بوابة الشركاء",
-        description: "بوابة المطورين لتسجيل تطبيقات OAuth وطلب المراجعة وربط الأدوات المعتمدة بمؤسسات أنان.",
-        bullets: ["تسجيل تطبيقات OAuth", "تدفق مراجعة إداري", "واجهات شريكة محددة الصلاحيات"]
+        description: "منتج الشركاء للمطورين وفرق البرمجيات لتسجيل التطبيقات وطلب المراجعة وربط الأدوات المعتمدة بمساحات عمل أنان.",
+        bullets: ["تسجيل تطبيقات OAuth", "موافقة مؤسسية محددة الصلاحيات", "واجهات API للشركاء المعتمدين"]
       }
-    ],
+    ] as const,
+    flow: [
+      {
+        title: "إشارة السوق",
+        description: "يدخل الطلب وتغيرات المخزون والوسائط والتسعير وتحديثات المشاريع إلى طبقة التشغيل."
+      },
+      {
+        title: "حقيقة مساحة العمل",
+        description: "يوحد الفريق العملاء والعقارات والمشاريع والوحدات والتقويم والموافقات في مكان واحد."
+      },
+      {
+        title: "اتصال موثوق",
+        description: "يتصل الشركاء المعتمدون عبر OAuth والصلاحيات والموافقة على مستوى المؤسسة."
+      },
+      {
+        title: "الخطوة التالية",
+        description: "يعرف المشغل ما يحتاج متابعة أو اعتمادا أو نشرا أو تحضيرا أو تسليما."
+      }
+    ] as const,
+    trust: [
+      "OAuth مع PKCE",
+      "موافقة على مستوى المؤسسة",
+      "واجهات API محددة الصلاحيات",
+      "دورة حياة للتطبيقات المعتمدة",
+      "بدون وصول مباشر لقاعدة البيانات"
+    ] as const,
+    future: [
+      "تدفقات عمل أكثر داخل مساحة العمل",
+      "فئات أكثر من الشركاء المعتمدين",
+      "رؤى تشغيلية أكثر للسوق"
+    ] as const,
     legal: {
       privacyTitle: "سياسة الخصوصية",
       termsTitle: "شروط الخدمة",

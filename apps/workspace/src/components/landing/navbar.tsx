@@ -28,34 +28,21 @@ export function Navbar() {
       isScrolled ? "top-2" : "top-4"
     )}>
       <nav className={cn(
-        "flex w-full max-w-7xl items-center justify-between rounded-full px-4 py-2 transition-all duration-700",
-        "bg-white/55 backdrop-blur-3xl",
-        "dark:bg-zinc-900/45",
-        isScrolled && "max-w-5xl bg-white/75 dark:bg-zinc-950/75"
+        "flex w-full max-w-7xl items-center justify-between rounded-full px-3 py-2 transition-all duration-700",
+        "bg-white/60 backdrop-blur-3xl ring-1 ring-zinc-950/5",
+        "dark:bg-zinc-900/55 dark:ring-white/10",
+        isScrolled && "max-w-5xl bg-white/80 dark:bg-zinc-950/80"
       )}>
         <Logo />
-
-        {/* Desktop Menu */}
         <NavMenu className="hidden md:block" />
-
-        <div className="flex items-center gap-3">
-          <div className="hidden items-center gap-3 sm:flex">
-            <div className="flex items-center rounded-full bg-zinc-950/5 p-0.5 dark:bg-white/10">
-              <ThemeToggle className="h-8 w-8 border-none bg-transparent shadow-none hover:bg-zinc-950/5 dark:hover:bg-white/5" />
-              <LanguageSwitcher className="h-8 border-none bg-transparent px-3 text-[10px] font-black opacity-60 hover:opacity-100" />
-            </div>
-            
-            <Link
-              href="/dashboard"
-              className={cn(
-                "inline-flex h-10 items-center justify-center rounded-full bg-zinc-950 px-6 text-[11px] font-black uppercase tracking-widest text-white transition-all hover:bg-zinc-800 active:scale-95 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
-              )}
-            >
-              {t("dashboard")}
-            </Link>
+        <div className="flex items-center gap-2">
+          <div className="hidden h-10 items-center gap-1 rounded-full bg-zinc-950/5 p-1 dark:bg-white/10 sm:flex">
+            <ThemeToggle className="h-8 w-8 rounded-full border-none bg-white/80 shadow-none hover:bg-white dark:bg-white/10 dark:hover:bg-white/15" />
+            <LanguageSwitcher className="h-8 min-w-24 rounded-full border-none bg-transparent px-3 text-[10px] font-black opacity-70 hover:bg-white/70 hover:opacity-100 dark:hover:bg-white/10" />
           </div>
-
-          {/* Mobile Menu */}
+          <Link href="/dashboard" className="hidden h-10 items-center justify-center rounded-full bg-zinc-950 px-6 text-[11px] font-black uppercase tracking-widest text-white transition-all hover:bg-zinc-800 active:scale-95 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 sm:inline-flex">
+            {t("dashboard")}
+          </Link>
           <div className="md:hidden">
             <NavigationSheet />
           </div>
