@@ -40,6 +40,7 @@
     "convex": "^1.37.0",
     "convex-api-keys": "^0.2.1",
     "convex-helpers": "^0.1.116",
+    "effect": "^3.21.2",
     "fetch-to-node": "^2.1.0",
     "framer-motion": "^12.38.0",
     "hono": "^4.12.18",

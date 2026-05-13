@@ -7,6 +7,7 @@ import { partnerProfileFormSchema, programmerOrganizationFormSchema } from "@/va
 import { partnerAccountRepository } from "@/server/partnerAccount";
 import { submitPartnerAppRegistration } from "@/server/ananHub";
 import { partnerAppsRepository } from "@/server/partnerApps";
+import { sandboxRepository } from "@/server/sandbox";
 
 export type PartnerAppActionState = {
   ok: boolean;
@@ -178,5 +179,12 @@ export async function syncPartnerAppToHubAction(formData: FormData) {
   const appId = requiredString(formData, "appId");
   await syncPartnerAppToHub(token, appId);
   revalidatePortal();
+  revalidatePath(`/dashboard/apps/${appId}`);
+}
+
+export async function ensureSandboxAction(formData: FormData) {
+  const token = await requirePartnerToken();
+  const appId = requiredString(formData, "appId");
+  await sandboxRepository.ensure(token, appId);
   revalidatePath(`/dashboard/apps/${appId}`);
 }

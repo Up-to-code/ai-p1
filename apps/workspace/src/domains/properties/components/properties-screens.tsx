@@ -1350,8 +1350,16 @@ export function PropertyFormScreen({ id }: { id?: string }) {
                       description: t("form.galleryUploaderDesc"),
                       pick: t("form.galleryPick"),
                       queued: t("form.galleryQueued"),
+                      upload: t("form.uploadMedia"),
+                      cover: t("gallery.cover"),
                       videoLimit: t("form.galleryVideoLimit"),
                       unsupported: t("form.galleryUnsupported"),
+                      statusQueued: t("form.uploadStatusQueued"),
+                      statusUploading: t("form.uploadStatusUploading"),
+                      statusUploaded: t("form.uploadStatusUploaded"),
+                      statusFailed: t("form.uploadStatusFailed"),
+                      remove: t("form.uploadRemove"),
+                      retry: t("form.uploadRetry"),
                     }}
                     className="border-zinc-100 bg-zinc-50/40 shadow-none dark:border-white/[0.06] dark:bg-white/[0.01]"
                   />
@@ -1376,7 +1384,14 @@ export function PropertyFormScreen({ id }: { id?: string }) {
                       description: t("form.documentsUploaderDesc"),
                       pick: t("form.documentsPick"),
                       queued: t("form.documentsQueued"),
+                      upload: t("form.uploadDocuments"),
                       unsupported: t("form.documentsUnsupported"),
+                      statusQueued: t("form.uploadStatusQueued"),
+                      statusUploading: t("form.uploadStatusUploading"),
+                      statusUploaded: t("form.uploadStatusUploaded"),
+                      statusFailed: t("form.uploadStatusFailed"),
+                      remove: t("form.uploadRemove"),
+                      retry: t("form.uploadRetry"),
                     }}
                     className="border-zinc-100 bg-zinc-50/40 shadow-none dark:border-white/[0.06] dark:bg-white/[0.01]"
                   />

@@ -9,6 +9,7 @@ import type {
 } from "@/packages/partner-apps/scopes";
 
 export type PartnerAccessContext = {
+  type?: "oauth";
   token: string;
   organizationId: string;
   oauthClientId: string;
@@ -104,6 +105,7 @@ export async function requirePartnerAccess(
   }
 
   return {
+    type: "oauth",
     token,
     organizationId,
     oauthClientId,

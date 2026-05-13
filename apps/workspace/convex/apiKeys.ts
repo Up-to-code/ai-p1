@@ -4,7 +4,9 @@ import { components } from "./_generated/api";
 export const apiKeys = new ApiKeys<{
   namespace: `organization:${string}`;
   requireName: true;
-  metadata: { kind: "mcpConnection"; organizationId: string };
+  metadata:
+    | { kind: "mcpConnection"; organizationId: string }
+    | { kind: "orgApiKey"; organizationId: string; apiKeyId: string };
   permissions: Record<string, string[]>;
 }>(components.apiKeys, {
   keyDefaults: {

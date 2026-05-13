@@ -43,7 +43,7 @@ describe("Partners backend boundary", () => {
   it("keeps programmer organizations as the only Partners org kind", () => {
     const schema = read("convex/schema.ts");
     const signup = read("lib/partner-signup.ts");
-    const organizations = read("convex/partnerOrganizations.ts");
+    const organizations = read("convex/organizations/current.ts");
 
     expect(schema).toContain('type: v.literal("programmer")');
     expect(schema).toContain("tenantOrganizationId");

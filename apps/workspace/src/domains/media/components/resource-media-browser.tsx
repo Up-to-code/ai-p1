@@ -92,11 +92,17 @@ export function ResourceMediaBrowser({
   const operation = useOperationState({ errorMessage: "Media action failed." });
   const allowedKinds: MediaKind[] = mode === "gallery" ? ["image", "video"] : ["document"];
   const assets = useMemo(
-    () => (media ?? []).filter((asset) => allowedKinds.includes(asset.kind)),
+    () => (media ?? [])
+      .filter((asset) => allowedKinds.includes(asset.kind))
+      .sort((a, b) => {
+        if (mode !== "gallery") return 0;
+        return Number(b.isCover) - Number(a.isCover);
+      }),
     [allowedKinds, media],
   );
-  const visibleAssets = typeof previewLimit === "number" ? assets.slice(0, previewLimit) : assets;
-  const overflowCount = typeof previewLimit === "number" ? Math.max(0, assets.length - previewLimit) : 0;
+  const galleryPreviewLimit = mode === "gallery" ? Math.min(previewLimit ?? 5, 5) : previewLimit;
+  const visibleAssets = typeof galleryPreviewLimit === "number" ? assets.slice(0, galleryPreviewLimit) : assets;
+  const overflowCount = typeof galleryPreviewLimit === "number" ? Math.max(0, assets.length - galleryPreviewLimit) : 0;
   const activeAsset = viewerIndex !== null ? assets[viewerIndex] : null;
   const hasAssets = assets.length > 0;
 
@@ -123,7 +129,9 @@ export function ResourceMediaBrowser({
         </Button>
       </div>
 
-      {!hasAssets ? (
+      {media === undefined ? (
+        mode === "gallery" ? <GallerySkeleton /> : <DocumentSkeleton />
+      ) : !hasAssets ? (
         <button
           type="button"
           onClick={() => setUploadOpen(true)}
@@ -134,27 +142,22 @@ export function ResourceMediaBrowser({
           <span className="max-w-md text-xs font-semibold leading-5 text-zinc-500">{emptyDescription}</span>
         </button>
       ) : mode === "gallery" ? (
-        <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+        <div className="grid min-h-[320px] grid-cols-2 gap-2 md:grid-cols-4 md:grid-rows-2">
           {visibleAssets.map((asset, index) => {
             const Icon = assetKindIcon(asset.kind);
             const isOverflowTile = overflowCount > 0 && index === visibleAssets.length - 1;
             return (
-              <button
+              <GalleryAssetTile
                 key={asset._id}
-                type="button"
+                asset={asset}
+                icon={Icon}
+                isPremium={index === 0}
+                isOverflowTile={isOverflowTile}
+                overflowCount={overflowCount}
+                coverLabel={coverLabel}
+                priority={index === 0}
                 onClick={() => setViewerIndex(index)}
-                className="group relative aspect-[4/3] overflow-hidden bg-zinc-100 text-start text-zinc-400 transition-opacity hover:opacity-90 dark:bg-white/[0.04]"
-              >
-                {asset.kind === "image" ? (
-                  <Image src={asset.url} alt={asset.name} fill sizes="240px" className="object-cover" />
-                ) : asset.kind === "video" ? (
-                  <video src={asset.url} className="h-full w-full object-cover" muted playsInline />
-                ) : (
-                  <Icon className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2" />
-                )}
-                <span className="absolute inset-x-0 bottom-0 truncate bg-black/60 px-3 py-2 text-[10px] font-black text-white">{asset.name}</span>
-                {isOverflowTile && <span className="absolute inset-0 flex items-center justify-center bg-black/70 text-2xl font-black text-white">+{overflowCount}</span>}
-              </button>
+              />
             );
           })}
         </div>
@@ -191,12 +194,12 @@ export function ResourceMediaBrowser({
           {activeAsset && (
             <div className="grid max-h-[90vh] grid-rows-[auto_minmax(0,1fr)_auto]">
               <DialogHeader className="border-b border-white/10 p-4 pe-14 text-start">
-                <DialogTitle className="truncate text-sm font-black text-white">{activeAsset.name}</DialogTitle>
+                <DialogTitle className="text-sm font-black text-white">{title}</DialogTitle>
                 <DialogDescription className="text-xs font-bold text-white/45">{viewerIndex! + 1} / {assets.length}</DialogDescription>
               </DialogHeader>
               <div className="relative flex min-h-[48vh] items-center justify-center bg-black">
                 {activeAsset.kind === "image" ? (
-                  <Image src={activeAsset.url} alt={activeAsset.name} fill sizes="90vw" className="object-contain" />
+                  <Image src={activeAsset.url} alt="" fill sizes="90vw" className="object-contain" />
                 ) : (
                   <video src={activeAsset.url} className="max-h-[70vh] w-full object-contain" controls />
                 )}
@@ -260,5 +263,98 @@ export function ResourceMediaBrowser({
         </DialogContent>
       </Dialog>
     </section>
+  );
+}
+
+function GallerySkeleton() {
+  return (
+    <div className="grid min-h-[320px] grid-cols-2 gap-2 md:grid-cols-4 md:grid-rows-2" aria-hidden="true">
+      <div className="relative col-span-2 row-span-2 overflow-hidden bg-zinc-100 dark:bg-white/[0.04]">
+        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-zinc-100 via-zinc-200/80 to-zinc-100 dark:from-white/[0.04] dark:via-white/[0.08] dark:to-white/[0.04]" />
+      </div>
+      {Array.from({ length: 4 }).map((_, index) => (
+        <div key={index} className="relative min-h-36 overflow-hidden bg-zinc-100 dark:bg-white/[0.04]">
+          <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-zinc-100 via-zinc-200/70 to-zinc-100 dark:from-white/[0.04] dark:via-white/[0.08] dark:to-white/[0.04]" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DocumentSkeleton() {
+  return (
+    <div className="divide-y divide-zinc-200/70 border-y border-zinc-200/70 dark:divide-white/10 dark:border-white/10" aria-hidden="true">
+      {Array.from({ length: 4 }).map((_, index) => (
+        <div key={index} className="grid gap-3 py-3 md:grid-cols-[1fr_auto] md:items-center">
+          <div className="flex items-center gap-3">
+            <span className="h-9 w-9 animate-pulse rounded-lg bg-zinc-100 dark:bg-white/[0.06]" />
+            <span className="h-4 w-52 max-w-[60vw] animate-pulse rounded bg-zinc-100 dark:bg-white/[0.06]" />
+          </div>
+          <span className="h-8 w-20 animate-pulse rounded-lg bg-zinc-100 dark:bg-white/[0.06]" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function GalleryAssetTile({
+  asset,
+  icon: Icon,
+  isPremium,
+  isOverflowTile,
+  overflowCount,
+  coverLabel,
+  priority,
+  onClick,
+}: {
+  asset: ResourceMediaAsset;
+  icon: typeof ImageIcon;
+  isPremium: boolean;
+  isOverflowTile: boolean;
+  overflowCount: number;
+  coverLabel: string;
+  priority?: boolean;
+  onClick: () => void;
+}) {
+  const [loaded, setLoaded] = useState(asset.kind !== "image");
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "group relative min-h-36 overflow-hidden bg-zinc-100 text-start text-zinc-400 transition-opacity hover:opacity-95 dark:bg-white/[0.04]",
+        isPremium && "col-span-2 row-span-2 min-h-[320px]",
+      )}
+      aria-label={asset.name}
+    >
+      {!loaded && <span className="absolute inset-0 z-10 animate-pulse bg-gradient-to-br from-zinc-100 via-zinc-200/80 to-zinc-100 dark:from-white/[0.04] dark:via-white/[0.08] dark:to-white/[0.04]" />}
+      {asset.kind === "image" ? (
+        <Image
+          src={asset.url}
+          alt=""
+          fill
+          priority={priority}
+          sizes={isPremium ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 50vw, 25vw"}
+          className={cn("object-cover transition duration-500", loaded ? "opacity-100" : "opacity-0")}
+          onLoad={() => setLoaded(true)}
+        />
+      ) : asset.kind === "video" ? (
+        <video src={asset.url} className="h-full w-full object-cover" muted playsInline onLoadedData={() => setLoaded(true)} />
+      ) : (
+        <Icon className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2" />
+      )}
+      <span className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/10 opacity-70 transition-opacity group-hover:opacity-90" />
+      {isPremium && asset.isCover && (
+        <span className="absolute start-3 top-3 bg-white/95 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-zinc-950">
+          {coverLabel}
+        </span>
+      )}
+      {isOverflowTile && (
+        <span className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white">
+          <span className="text-3xl font-black">+{overflowCount}</span>
+        </span>
+      )}
+    </button>
   );
 }

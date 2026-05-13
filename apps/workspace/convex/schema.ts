@@ -17,9 +17,10 @@ export default defineSchema({
   organizationAuditEvents: defineTable({
     organizationId: v.string(),
     actorUserId: v.string(),
-    actorType: v.optional(v.union(v.literal("user"), v.literal("mcpConnection"), v.literal("partnerApp"))),
+    actorType: v.optional(v.union(v.literal("user"), v.literal("mcpConnection"), v.literal("partnerApp"), v.literal("apiKey"))),
     actorMcpConnectionId: v.optional(v.string()),
     actorPartnerAppId: v.optional(v.string()),
+    actorApiKeyId: v.optional(v.string()),
     action: v.string(),
     target: v.string(),
     summary: v.string(),
@@ -62,6 +63,41 @@ export default defineSchema({
   })
     .index("by_organization_id", ["organizationId"])
     .index("by_public_id", ["publicId"])
+    .index("by_key_id", ["keyId"]),
+  organizationApiKeys: defineTable({
+    organizationId: v.string(),
+    keyId: v.string(),
+    keyLast4: v.string(),
+    name: v.string(),
+    permissions: v.array(v.object({
+      resource: v.union(
+        v.literal("organization"),
+        v.literal("client"),
+        v.literal("property"),
+        v.literal("project"),
+        v.literal("calendar"),
+        v.literal("task"),
+        v.literal("media"),
+      ),
+      actions: v.array(v.union(
+        v.literal("read"),
+        v.literal("create"),
+        v.literal("update"),
+        v.literal("delete"),
+      )),
+    })),
+    status: v.union(v.literal("active"), v.literal("revoked")),
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    lastUsedAt: v.optional(v.number()),
+    expiresAt: v.optional(v.number()),
+    usageCount: v.number(),
+    quotaWindowStartedAt: v.optional(v.number()),
+    quotaUsed: v.optional(v.number()),
+    revokedAt: v.optional(v.number()),
+  })
+    .index("by_organization_id", ["organizationId"])
     .index("by_key_id", ["keyId"]),
   partnerApps: defineTable({
     ownerUserId: v.string(),

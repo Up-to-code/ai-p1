@@ -1,0 +1,25 @@
+export function presentPartnerApp(app: any) {
+  return {
+    id: app._id,
+    clientId: app.clientId,
+    name: app.name,
+    publisherName: app.publisherName,
+    homepageUrl: app.homepageUrl ?? null,
+    iconUrl: app.iconUrl ?? app.logoUrl ?? null,
+    logoUrl: app.logoUrl ?? null,
+    clientType: app.clientType,
+    status: app.status,
+    hubPartnerAppId: app.hubPartnerAppId ?? null,
+    hubOauthClientId: app.hubOauthClientId ?? null,
+    hubSyncStatus: app.hubSyncStatus ?? "not_synced",
+    hubSyncError: app.hubSyncError ?? null,
+    redirectUris: app.redirectUris,
+    allowedScopes: app.allowedScopes,
+    authorizationExpiresAfterDays: app.authorizationExpiresAfterDays,
+    reviewNotes: app.reviewNotes ?? null,
+    submittedAt: app.submittedAt ?? null,
+    reviewedAt: app.reviewedAt ?? null,
+    createdAt: app.createdAt,
+    updatedAt: app.updatedAt,
+  };
+}

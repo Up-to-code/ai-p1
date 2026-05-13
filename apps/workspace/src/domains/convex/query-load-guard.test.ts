@@ -32,9 +32,9 @@ describe("Convex query load guards", () => {
     }
   });
 
-  it("keeps bulk project and property list presenters free of media fan-out", () => {
-    expect(read("convex/projects/read.ts")).toMatch(/function presentProjectListItem[\s\S]*coverImageUrl: undefined/);
-    expect(read("convex/properties/read.ts")).toMatch(/function presentPropertyListItem[\s\S]*coverImageUrl: undefined/);
+  it("keeps project and property list cards backed by selected cover media", () => {
+    expect(read("convex/projects/read.ts")).toMatch(/function presentProjectListItem[\s\S]*coverImageUrl: selectCoverUrl\(media\)/);
+    expect(read("convex/properties/read.ts")).toMatch(/function presentPropertyListItem[\s\S]*coverImageUrl: selectCoverUrl\(media\)/);
   });
 
   it("keeps bulk client lists free of per-client work fan-out", () => {

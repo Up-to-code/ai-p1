@@ -29,7 +29,7 @@ export default async function AppSettingsPage({
         <p className="mt-2 text-sm text-muted-foreground">Update redirect URIs, publisher metadata, and requested scopes.</p>
       </div>
 
-      <div className="max-w-6xl">
+      <div className="max-w-7xl">
         <PartnerAppForm app={app} mode="edit" />
       </div>
     </div>

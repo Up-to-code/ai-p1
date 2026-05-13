@@ -6,8 +6,9 @@ import { AppDetailsTabs } from "@/components/portal/AppDetailsTabs";
 import { Button } from "@/components/ui/button";
 import { getToken } from "@/lib/auth-server";
 import { canEditPartnerApp } from "@/lib/navigation";
-import { submitPartnerAppForReviewAction, syncPartnerAppToHubAction } from "@/app/(portal)/dashboard/actions";
+import { ensureSandboxAction, submitPartnerAppForReviewAction, syncPartnerAppToHubAction } from "@/app/(portal)/dashboard/actions";
 import { partnerAppsRepository } from "@/server/partnerApps";
+import { sandboxRepository } from "@/server/sandbox";
 
 export default async function AppDetailsPage({
   params,
@@ -19,6 +20,7 @@ export default async function AppDetailsPage({
   if (!token) redirect(`/signin?returnTo=${encodeURIComponent(`/dashboard/apps/${appId}`)}`);
   const app = await partnerAppsRepository.getById(token, appId);
   if (!app) notFound();
+  const sandbox = await sandboxRepository.get(token, app.id).catch(() => null);
 
   return (
     <div>
@@ -73,7 +75,7 @@ export default async function AppDetailsPage({
         </div>
       ) : null}
 
-      <AppDetailsTabs app={app} />
+      <AppDetailsTabs app={app} sandbox={sandbox} ensureSandboxAction={ensureSandboxAction} />
     </div>
   );
 }

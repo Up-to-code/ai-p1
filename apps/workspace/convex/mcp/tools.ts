@@ -66,6 +66,9 @@ const readTools = new Set([
   "media_list",
 ]);
 
+export const mcpToolPermissionMap = toolPermissions;
+export const mcpReadToolNames = readTools;
+
 const DEFAULT_TOOL_LIST_LIMIT = 25;
 const MAX_TOOL_LIST_LIMIT = 50;
 const TOOL_SCAN_LIMIT = 200;

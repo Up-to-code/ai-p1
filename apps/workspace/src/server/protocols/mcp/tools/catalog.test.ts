@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { allowedMcpTools, canUseMcpTool, getMcpToolDefinition } from "./catalog";
+import { mcpReadToolNames, mcpToolPermissionMap } from "../../../../../convex/mcp/tools";
+import { allowedMcpTools, canUseMcpTool, getMcpToolDefinition, mcpToolCatalog } from "./catalog";
 import { createMcpConnectionSchema } from "@/server/domains/mcpConnections/validation/mcp-connection.schema";
 
 describe("MCP tool catalog", () => {
@@ -70,5 +71,30 @@ describe("MCP tool catalog", () => {
         { resource: "member", action: "delete" } as never,
       ),
     ).toBe(false);
+  });
+
+  it("keeps the catalog aligned with Convex tool permissions and handlers", () => {
+    const catalogNames = mcpToolCatalog.map((tool) => tool.name).sort();
+    const permissionNames = Object.keys(mcpToolPermissionMap).sort();
+
+    expect(permissionNames).toEqual(catalogNames);
+    for (const tool of mcpToolCatalog) {
+      expect(mcpToolPermissionMap[tool.name]).toEqual({
+        resource: tool.resource,
+        action: tool.action,
+      });
+    }
+
+    const writeToolNames = catalogNames.filter((name) => !mcpReadToolNames.has(name));
+    expect(writeToolNames).toEqual(
+      expect.arrayContaining([
+        "clients_create",
+        "properties_update",
+        "projects_delete",
+        "calendar_create",
+        "tasks_complete",
+        "media_attach_url",
+      ]),
+    );
   });
 });

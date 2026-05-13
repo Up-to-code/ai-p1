@@ -5,6 +5,12 @@ import {
   handleCreateOrganizationInviteLink,
 } from "../handlers/invite-links";
 import {
+  handleCreateOrganizationApiKey,
+  handleListOrganizationApiKeys,
+  handleRevokeOrganizationApiKey,
+  handleRotateOrganizationApiKey,
+} from "../handlers/api-keys";
+import {
   handleAcceptOrganizationInvitation,
   handleCancelOrganizationInvitation,
   handleCreateOrganizationInvitation,
@@ -125,6 +131,26 @@ organizationRouter.patch(
 organizationRouter.get(
   "/:organizationId/capabilities",
   handleGetOrganizationCapabilities,
+);
+
+organizationRouter.get(
+  "/:organizationId/api-keys",
+  handleListOrganizationApiKeys,
+);
+
+organizationRouter.post(
+  "/:organizationId/api-keys",
+  handleCreateOrganizationApiKey,
+);
+
+organizationRouter.post(
+  "/:organizationId/api-keys/:apiKeyId/rotate",
+  handleRotateOrganizationApiKey,
+);
+
+organizationRouter.delete(
+  "/:organizationId/api-keys/:apiKeyId",
+  handleRevokeOrganizationApiKey,
 );
 
 organizationRouter.get("/:organizationId/read/projects", handleReadProjects);

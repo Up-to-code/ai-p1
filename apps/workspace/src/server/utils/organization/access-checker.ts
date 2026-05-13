@@ -70,6 +70,7 @@ export async function getOrganizationCapabilities(organizationId: string) {
     canDeleteMedia: ["media", "delete"],
     canReadApiKeys: ["apiKey", "read"],
     canCreateApiKeys: ["apiKey", "create"],
+    canUpdateApiKeys: ["apiKey", "update"],
     canDeleteApiKeys: ["apiKey", "delete"],
     canReadCalendarEvents: ["calendar", "read"],
     canCreateCalendarEvents: ["calendar", "create"],

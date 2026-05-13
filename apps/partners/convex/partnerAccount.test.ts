@@ -11,7 +11,7 @@ function read(relativePath: string) {
 
 describe("partner account backend ownership", () => {
   it("requires authenticated Partners identity for account reads and updates", () => {
-    const account = read("convex/partnerAccount.ts");
+    const account = read("convex/account/current.ts");
 
     expect(account).toContain("requirePartnerIdentity(ctx)");
     expect(account).toContain("ensurePartnerProfile(ctx, now)");
@@ -19,8 +19,8 @@ describe("partner account backend ownership", () => {
   });
 
   it("keeps programmer organization updates inside the programmer org boundary", () => {
-    const account = read("convex/partnerAccount.ts");
-    const organizations = read("convex/partnerOrganizations.ts");
+    const account = read("convex/account/current.ts");
+    const organizations = read("convex/organizations/current.ts");
 
     expect(account).toContain('type: "programmer"');
     expect(account).toContain("partner_organization.updated");

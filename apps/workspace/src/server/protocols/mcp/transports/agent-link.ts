@@ -1,20 +1,24 @@
 import type { Context } from "hono";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { toFetchResponse, toReqRes } from "fetch-to-node";
+import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { convexHttp } from "@/server/convex/http-client";
 import { allowedMcpTools, getMcpToolDefinition } from "../tools/catalog";
 
-function jsonRpcMethodNotAllowed() {
+const JSON_RPC_INTERNAL_ERROR = -32603;
+const JSON_RPC_INVALID_REQUEST = -32600;
+const JSON_RPC_METHOD_NOT_ALLOWED = -32000;
+const JSON_RPC_UNAUTHORIZED = -32001;
+
+function jsonRpcError(code: number, message: string, status: number, id: unknown = null) {
   return Response.json(
     {
       jsonrpc: "2.0",
-      error: { code: -32000, message: "Method not allowed. Use POST for this stateless MCP endpoint." },
-      id: null,
+      error: { code, message },
+      id,
     },
-    { status: 405 },
+    { status },
   );
 }
 
@@ -26,6 +30,13 @@ function textContent(value: unknown) {
         text: typeof value === "string" ? value : JSON.stringify(value, null, 2),
       },
     ],
+  };
+}
+
+function errorContent(error: unknown) {
+  return {
+    isError: true,
+    ...textContent(error instanceof Error ? error.message : "Tool call failed."),
   };
 }
 
@@ -43,20 +54,26 @@ function mcpInputSchema(tool: ReturnType<typeof allowedMcpTools>[number]) {
 }
 
 export function handleMcpMethodNotAllowed() {
-  return jsonRpcMethodNotAllowed();
+  return jsonRpcError(
+    JSON_RPC_METHOD_NOT_ALLOWED,
+    "Method not allowed. Use POST for this stateless MCP endpoint.",
+    405,
+  );
 }
 
 export async function handleMcpAgent(c: Context) {
   const publicId = c.req.param("publicId");
   const secret = c.req.param("secret");
-  if (!publicId || !secret) return c.json({ error: "Agent link is required." }, 400);
+  if (!publicId || !secret) {
+    return jsonRpcError(JSON_RPC_INVALID_REQUEST, "Agent link is required.", 400);
+  }
 
   const validation = await convexHttp.query(api.mcp.connections.validateConnection, {
     publicId,
     secret,
   });
   if (!validation.ok || !validation.permissions) {
-    return c.json({ error: "Agent link is not available." }, 401);
+    return jsonRpcError(JSON_RPC_UNAUTHORIZED, "Agent link is not available.", 401);
   }
 
   const server = new McpServer({
@@ -72,16 +89,21 @@ export async function handleMcpAgent(c: Context) {
         description: tool.description,
         inputSchema: mcpInputSchema(tool),
         annotations: tool.destructive ? { destructiveHint: true } : undefined,
+        _meta: validation.instructions ? { "anan/instructions": validation.instructions } : undefined,
       },
       async (input: Record<string, unknown>) => {
-        const result = await convexHttp.action(api.mcp.tools.callTool, {
-          publicId,
-          secret,
-          tool: tool.name,
-          input,
-          appBaseUrl: requestBaseUrl(c),
-        });
-        return textContent(result);
+        try {
+          const result = await convexHttp.action(api.mcp.tools.callTool, {
+            publicId,
+            secret,
+            tool: tool.name,
+            input,
+            appBaseUrl: requestBaseUrl(c),
+          });
+          return textContent(result);
+        } catch (error) {
+          return errorContent(error);
+        }
       },
     );
   }
@@ -91,7 +113,8 @@ export async function handleMcpAgent(c: Context) {
     {
       title: "Allowed work",
       description: "Describe what this agent link can do.",
-      inputSchema: {},
+      inputSchema: passthroughInputSchema,
+      _meta: validation.instructions ? { "anan/instructions": validation.instructions } : undefined,
     },
     async () => {
       const tools = allowedMcpTools(validation.permissions ?? []).map((tool) => ({
@@ -105,14 +128,20 @@ export async function handleMcpAgent(c: Context) {
     },
   );
 
-  const transport = new StreamableHTTPServerTransport({
+  const transport = new WebStandardStreamableHTTPServerTransport({
+    enableJsonResponse: true,
     sessionIdGenerator: undefined,
   });
-  const { req, res } = toReqRes(c.req.raw);
-  const responsePromise = toFetchResponse(res);
-  await server.connect(transport);
-  await transport.handleRequest(req, res);
-  const response = await responsePromise;
-  await server.close();
-  return response;
+  try {
+    await server.connect(transport);
+    return await transport.handleRequest(c.req.raw);
+  } catch (error) {
+    return jsonRpcError(
+      JSON_RPC_INTERNAL_ERROR,
+      error instanceof Error ? error.message : "MCP request failed.",
+      500,
+    );
+  } finally {
+    await server.close();
+  }
 }

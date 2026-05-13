@@ -31,6 +31,7 @@ import type * as media_data from "../media/data.js";
 import type * as media_read from "../media/read.js";
 import type * as media_validators from "../media/validators.js";
 import type * as media_write from "../media/write.js";
+import type * as organizationApiKeys from "../organizationApiKeys.js";
 import type * as organizations_audit_data from "../organizations/audit/data.js";
 import type * as organizations_audit_read from "../organizations/audit/read.js";
 import type * as organizations_audit_validators from "../organizations/audit/validators.js";
@@ -91,6 +92,7 @@ declare const fullApi: ApiFromModules<{
   "media/read": typeof media_read;
   "media/validators": typeof media_validators;
   "media/write": typeof media_write;
+  organizationApiKeys: typeof organizationApiKeys;
   "organizations/audit/data": typeof organizations_audit_data;
   "organizations/audit/read": typeof organizations_audit_read;
   "organizations/audit/validators": typeof organizations_audit_validators;

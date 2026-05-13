@@ -346,80 +346,82 @@ export function ProjectDetailScreen({ id }: { id: string }) {
           </div>
         </section>
 
-        <TabsContent value="details" className="space-y-6">
-          <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-            <div className="space-y-6">
-              <ResourceMediaBrowser
-                organizationId={workspaceOrganizationId}
-                resourceType="project"
-                resourceId={project.id}
-                mode="gallery"
-                title={td('gallery.title')}
-                description={td('gallery.description')}
-                addLabel={td('gallery.add')}
-                emptyTitle={td('gallery.emptyTitle')}
-                emptyDescription={td('gallery.emptyDesc')}
-                uploadTitle={td('gallery.uploadTitle')}
-                uploadDescription={td('gallery.uploadDesc')}
-                uploadPick={td('gallery.uploadPick')}
-                unsupported={t('form.galleryUnsupported')}
-                openLabel={td('actions.view')}
-                coverLabel={td('gallery.cover')}
-                deleteLabel={td('actions.delete')}
-                statusQueued={td('uploadStatus.queued')}
-                statusUploading={td('uploadStatus.uploading')}
-                statusUploaded={td('uploadStatus.uploaded')}
-                statusFailed={td('uploadStatus.failed')}
-                removeLabel={td('actions.delete')}
-                retryLabel={td('uploadStatus.retry')}
-                imageLimit={t('form.galleryImageLimit')}
-                previewLimit={8}
-              />
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <ProjectSignal label={t('detail.labels.units')} value={project.units} icon={Layers3} tone="blue" />
-                <ProjectSignal label={td('metrics.live')} value={liveUnitCount} icon={FolderOpen} tone="zinc" />
-                <ProjectSignal label={td('metrics.available')} value={availableUnits} icon={Landmark} tone="emerald" />
-                <ProjectSignal label={td('metrics.ready')} value={`${launchReadiness}%`} icon={Gauge} tone="amber" />
-              </div>
-              <section className="border-t border-zinc-200/70 pt-5 text-start dark:border-white/10">
-                <p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">{td('narrative.title')}</p>
-                <p className="mt-2 max-w-4xl text-sm font-semibold leading-7 text-zinc-700 dark:text-zinc-300">{project.description}</p>
+        <TabsContent value="details" className="space-y-5">
+          <ResourceMediaBrowser
+            organizationId={workspaceOrganizationId}
+            resourceType="project"
+            resourceId={project.id}
+            mode="gallery"
+            title={td('gallery.title')}
+            description={td('gallery.description')}
+            addLabel={td('gallery.add')}
+            emptyTitle={td('gallery.emptyTitle')}
+            emptyDescription={td('gallery.emptyDesc')}
+            uploadTitle={td('gallery.uploadTitle')}
+            uploadDescription={td('gallery.uploadDesc')}
+            uploadPick={td('gallery.uploadPick')}
+            unsupported={t('form.galleryUnsupported')}
+            openLabel={td('actions.view')}
+            coverLabel={td('gallery.cover')}
+            deleteLabel={td('actions.delete')}
+            statusQueued={td('uploadStatus.queued')}
+            statusUploading={td('uploadStatus.uploading')}
+            statusUploaded={td('uploadStatus.uploaded')}
+            statusFailed={td('uploadStatus.failed')}
+            removeLabel={td('actions.delete')}
+            retryLabel={td('uploadStatus.retry')}
+            imageLimit={t('form.galleryImageLimit')}
+            previewLimit={5}
+          />
+
+          <div className="grid gap-px overflow-hidden border-y border-zinc-200/70 bg-zinc-200/70 dark:border-white/10 dark:bg-white/10 sm:grid-cols-2 xl:grid-cols-4">
+            <ProjectSignal label={t('detail.labels.units')} value={project.units} icon={Layers3} tone="blue" />
+            <ProjectSignal label={td('metrics.live')} value={liveUnitCount} icon={FolderOpen} tone="zinc" />
+            <ProjectSignal label={td('metrics.available')} value={availableUnits} icon={Landmark} tone="emerald" />
+            <ProjectSignal label={td('metrics.ready')} value={`${launchReadiness}%`} icon={Gauge} tone="amber" />
+          </div>
+
+          <section className="grid gap-8 border-y border-zinc-200/70 py-6 text-start dark:border-white/10 xl:grid-cols-[minmax(0,1fr)_420px]">
+            <div className="min-w-0">
+              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('narrative.title')}</p>
+              <p className="mt-3 max-w-4xl text-sm font-semibold leading-7 text-zinc-700 dark:text-zinc-300">{project.description}</p>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-1">
+              <section className="min-w-0">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('registry.title')}</p>
+                    <h2 className="mt-1 text-lg font-black text-zinc-950 dark:text-white">{project.reference}</h2>
+                  </div>
+                  <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
+                </div>
+                <div className="mt-5 space-y-5">
+                  <ReadinessBar label={td('metrics.launchReadiness')} value={launchReadiness} />
+                  <ReadinessBar label={td('metrics.inventoryCoverage')} value={inventoryCoverage} />
+                  <RegistryRows rows={[
+                    [t('detail.labels.type'), t(`types.${project.type}`)],
+                    [t('detail.labels.developer'), project.developer],
+                    [t('detail.labels.city'), project.city],
+                    [t('detail.labels.area'), project.area],
+                    [td('rega.authNo'), project.regaAuthorizationNo || td('empty.value')],
+                    [td('registry.planNo'), project.planNumber || td('empty.value')],
+                    [td('registry.plotNo'), project.plotNumber || td('empty.value')],
+                    [td('registry.postalIdentity'), project.postalIdentity || td('empty.value')],
+                    [td('rega.title'), project.regaExpiresAt ? td('rega.expires', { date: project.regaExpiresAt }) : td('empty.value')],
+                  ]} />
+                </div>
+              </section>
+
+              <section className="min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('documents.title')}</p>
+                <RegistryRows className="mt-4" rows={[
+                  [td('documents.count'), String(documentAssets.length)],
+                  [td('documents.latest'), documentAssets[0]?.name ?? td('documents.none')],
+                ]} />
               </section>
             </div>
-            <aside className="self-start rounded-xl border border-zinc-200/70 bg-zinc-50/70 text-start dark:border-white/10 dark:bg-white/[0.025]">
-              <div className="border-b border-zinc-200/70 p-4 dark:border-white/10">
-                <p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">{td('registry.title')}</p>
-                <h2 className="mt-1 text-lg font-black text-zinc-950 dark:text-white">{project.reference}</h2>
-              </div>
-              <div className="space-y-5 p-4">
-                <ReadinessBar label={td('metrics.launchReadiness')} value={launchReadiness} />
-                <ReadinessBar label={td('metrics.inventoryCoverage')} value={inventoryCoverage} />
-                <table className="w-full text-[11px]">
-                  <tbody className="divide-y divide-zinc-200/70 font-semibold text-zinc-600 dark:divide-white/10 dark:text-zinc-300">
-                    <tr><td className="py-2 pe-3 text-zinc-400">{t('detail.labels.type')}</td><td className="py-2 font-black text-zinc-900 dark:text-white">{t(`types.${project.type}`)}</td></tr>
-                    <tr><td className="py-2 pe-3 text-zinc-400">{t('detail.labels.developer')}</td><td className="py-2">{project.developer}</td></tr>
-                    <tr><td className="py-2 pe-3 text-zinc-400">{t('detail.labels.city')}</td><td className="py-2">{project.city}</td></tr>
-                    <tr><td className="py-2 pe-3 text-zinc-400">{t('detail.labels.area')}</td><td className="py-2">{project.area}</td></tr>
-                    <tr><td className="py-2 pe-3 text-zinc-400">{td('rega.authNo')}</td><td className="py-2">{project.regaAuthorizationNo || td('empty.value')}</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </aside>
           </section>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <CompactFact label={td('registry.planNo')} value={project.planNumber || td('empty.value')} />
-            <CompactFact label={td('registry.plotNo')} value={project.plotNumber || td('empty.value')} />
-            <CompactFact label={td('registry.postalIdentity')} value={project.postalIdentity || td('empty.value')} />
-            <CompactFact label={td('rega.title')} value={project.regaExpiresAt ? td('rega.expires', { date: project.regaExpiresAt }) : td('empty.value')} />
-          </div>
-          <div className="border-t border-zinc-200/70 pt-4 dark:border-white/10">
-            <table className="w-full text-start text-xs">
-              <tbody className="divide-y divide-zinc-200/70 dark:divide-white/10">
-                <tr><td className="py-3 pe-4 font-black text-zinc-400">{td('documents.count')}</td><td className="py-3 font-semibold text-zinc-900 dark:text-white">{documentAssets.length}</td></tr>
-                <tr><td className="py-3 pe-4 font-black text-zinc-400">{td('documents.latest')}</td><td className="py-3 font-semibold text-zinc-900 dark:text-white">{documentAssets[0]?.name ?? td('documents.none')}</td></tr>
-              </tbody>
-            </table>
-          </div>
         </TabsContent>
 
         <TabsContent value="inventory" className="space-y-6">
@@ -482,40 +484,56 @@ export function ProjectDetailScreen({ id }: { id: string }) {
           />
         </TabsContent>
 
-        <TabsContent value="sales" className="space-y-6">
-          <AppStatsGrid stats={salesStats} />
-          <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="space-y-3">
-              <h2 className="text-base font-black text-zinc-950 dark:text-white">{td('sales.pipelineTitle')}</h2>
-              {units.length === 0 ? (
-                <EmptyWorkspace icon={BarChart3} title={td('sales.emptyTitle')} description={td('sales.emptyDesc')} />
-              ) : (
-                <div className="divide-y divide-zinc-200/70 border-y border-zinc-200/70 dark:divide-white/10 dark:border-white/10">
-                  {[
-                    { label: td('sales.status.available'), value: availableUnits, tone: "success" as const },
-                    { label: td('sales.status.reserved'), value: reservedUnits, tone: "warning" as const },
-                    { label: td('sales.status.sold'), value: soldUnits, tone: "neutral" as const },
-                    { label: td('sales.status.pending'), value: pendingUnits, tone: "warning" as const },
-                  ].map((row) => (
-                    <div key={row.label} className="grid grid-cols-[1fr_auto] items-center gap-3 py-3">
-                      <StatusPill label={row.label} tone={row.tone} />
-                      <span className="text-lg font-black text-zinc-950 dark:text-white">{row.value}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <aside className="space-y-3 border-t border-zinc-200/70 pt-4 lg:border-s lg:border-t-0 lg:ps-5 lg:pt-0 dark:border-white/10">
-              <h2 className="text-base font-black text-zinc-950 dark:text-white">{td('sales.nextTitle')}</h2>
-              <p className="text-sm font-semibold leading-6 text-zinc-500 dark:text-zinc-400">
-                {units.length > 0 ? td('sales.nextDesc') : td('sales.nextEmptyDesc')}
-              </p>
+        <TabsContent value="sales" className="space-y-5">
+          <section className="border-y border-zinc-200/70 py-5 text-start dark:border-white/10">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('sales.title')}</p>
+                <h2 className="mt-2 text-xl font-black text-zinc-950 dark:text-white">{td('sales.pipelineTitle')}</h2>
+              </div>
               <Link href="/properties/create" className="inline-flex h-9 items-center rounded-lg bg-zinc-950 px-3 text-[10px] font-black uppercase tracking-widest text-white dark:bg-white dark:text-zinc-950">
                 <Plus className="me-2 h-3.5 w-3.5" />
                 {td('inventory.addUnit')}
               </Link>
-            </aside>
+            </div>
+
+            <div className="mt-5 grid gap-px overflow-hidden border-y border-zinc-200/70 bg-zinc-200/70 dark:border-white/10 dark:bg-white/10 sm:grid-cols-2 xl:grid-cols-4">
+              {salesStats.map((stat) => (
+                <ProjectSignal key={String(stat.label)} label={stat.label} value={stat.value} icon={stat.icon} tone={stat.label === td('sales.metrics.availableUnits') ? "emerald" : stat.label === td('sales.metrics.reservedUnits') ? "blue" : "zinc"} />
+              ))}
+            </div>
           </section>
+
+          {units.length === 0 ? (
+            <EmptyWorkspace icon={BarChart3} title={td('sales.emptyTitle')} description={td('sales.emptyDesc')} />
+          ) : (
+            <section className="grid gap-8 text-start lg:grid-cols-[minmax(0,1fr)_300px]">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-4">
+                  <h2 className="text-base font-black text-zinc-950 dark:text-white">{td('sales.pipelineTitle')}</h2>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{liveUnitCount} / {plannedUnits}</span>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    { label: td('sales.status.available'), value: availableUnits, className: "bg-emerald-500" },
+                    { label: td('sales.status.reserved'), value: reservedUnits, className: "bg-blue-500" },
+                    { label: td('sales.status.sold'), value: soldUnits, className: "bg-zinc-400" },
+                    { label: td('sales.status.pending'), value: pendingUnits, className: "bg-amber-500" },
+                  ].map((row) => (
+                    <SalesMovementRow key={row.label} label={row.label} value={row.value} total={Math.max(liveUnitCount, 1)} className={row.className} />
+                  ))}
+                </div>
+              </div>
+              <aside className="border-y border-zinc-200/70 py-4 dark:border-white/10 lg:border-s lg:border-y-0 lg:py-0 lg:ps-5">
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('sales.nextTitle')}</p>
+                <p className="mt-3 text-sm font-semibold leading-6 text-zinc-500 dark:text-zinc-400">{td('sales.nextDesc')}</p>
+                <div className="mt-5 grid grid-cols-2 gap-px overflow-hidden bg-zinc-200/70 dark:bg-white/10">
+                  <CompactFact label={td('sales.status.reserved')} value={reservedUnits} />
+                  <CompactFact label={td('sales.status.pending')} value={pendingUnits} />
+                </div>
+              </aside>
+            </section>
+          )}
         </TabsContent>
 
         <TabsContent value="activity" className="space-y-6">
@@ -580,21 +598,21 @@ function ProjectSignal({
   tone: "emerald" | "blue" | "amber" | "zinc";
 }) {
   const toneClassName = {
-    emerald: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300",
-    blue: "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300",
-    amber: "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300",
-    zinc: "bg-zinc-100 text-zinc-500 dark:bg-white/10 dark:text-zinc-300",
+    emerald: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-300",
+    blue: "bg-blue-500/10 text-blue-600 dark:text-blue-300",
+    amber: "bg-amber-500/10 text-amber-600 dark:text-amber-300",
+    zinc: "bg-zinc-500/10 text-zinc-500 dark:text-zinc-300",
   }[tone];
 
   return (
-    <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4 dark:border-white/10 dark:bg-white/[0.03]">
-      <div className="mb-5 flex items-center justify-between gap-3">
-        <span className="min-w-0 truncate text-[9px] font-black uppercase tracking-widest text-zinc-400">{label}</span>
-        <span className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-xl", toneClassName)}>
-          <Icon className="h-4 w-4" />
+    <div className="bg-white p-4 dark:bg-[#080808]">
+      <div className="flex items-start justify-between gap-3">
+        <span className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-lg", toneClassName)}>
+          <Icon className="h-3.5 w-3.5" />
         </span>
+        <span className="min-w-0 truncate text-[9px] font-black uppercase tracking-widest text-zinc-400">{label}</span>
       </div>
-      <p className="truncate text-2xl font-black uppercase tracking-tight text-zinc-950 dark:text-white">{value}</p>
+      <p className="mt-5 truncate text-end text-2xl font-black uppercase tracking-tight text-zinc-950 dark:text-white">{value}</p>
     </div>
   );
 }
@@ -606,8 +624,8 @@ function ReadinessBar({ label, value }: { label: ReactNode; value: number }) {
         <span className="truncate text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">{label}</span>
         <span className="text-[10px] font-black tabular-nums text-zinc-900 dark:text-white">{value}%</span>
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-zinc-100 dark:bg-white/10">
-        <div className="h-full rounded-full bg-zinc-900 dark:bg-white" style={{ width: `${value}%` }} />
+      <div className="h-1.5 overflow-hidden bg-zinc-100 dark:bg-white/10">
+        <div className="h-full bg-zinc-900 dark:bg-white" style={{ width: `${value}%` }} />
       </div>
     </div>
   );
@@ -615,9 +633,42 @@ function ReadinessBar({ label, value }: { label: ReactNode; value: number }) {
 
 function CompactFact({ label, value }: { label: ReactNode; value: ReactNode }) {
   return (
-    <div className="min-w-0">
+    <div className="min-w-0 bg-white p-4 dark:bg-[#080808]">
       <p className="truncate text-[9px] font-black uppercase tracking-widest text-zinc-400">{label}</p>
-      <p className="mt-1 truncate text-sm font-black text-zinc-950 dark:text-white">{value}</p>
+      <p className="mt-3 truncate text-sm font-black text-zinc-950 dark:text-white">{value}</p>
+    </div>
+  );
+}
+
+function RegistryRows({ rows, className }: { rows: [ReactNode, ReactNode][]; className?: string }) {
+  return (
+    <table className={cn("w-full text-[11px]", className)}>
+      <tbody className="divide-y divide-zinc-200/70 font-semibold text-zinc-600 dark:divide-white/10 dark:text-zinc-300">
+        {rows.map(([label, value], index) => (
+          <tr key={index}>
+            <td className="py-2.5 pe-4 text-zinc-400">{label}</td>
+            <td className="py-2.5 text-end font-black text-zinc-900 dark:text-white">{value}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function SalesMovementRow({ label, value, total, className }: { label: ReactNode; value: number; total: number; className: string }) {
+  const width = `${Math.max(value > 0 ? 8 : 0, Math.round((value / total) * 100))}%`;
+
+  return (
+    <div className="grid grid-cols-[3rem_minmax(0,1fr)] items-center gap-3">
+      <span className="text-end text-sm font-black tabular-nums text-zinc-950 dark:text-white">{value}</span>
+      <div className="min-w-0">
+        <div className="relative h-8 overflow-hidden bg-zinc-100 dark:bg-white/[0.06]">
+          <div className={cn("absolute inset-y-0 end-0", className)} style={{ width }} />
+          <span className="absolute inset-0 flex items-center justify-end px-3 text-[10px] font-black uppercase tracking-widest text-white mix-blend-difference">
+            {label}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

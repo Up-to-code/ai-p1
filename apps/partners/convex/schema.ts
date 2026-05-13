@@ -18,6 +18,23 @@ export const hubSyncStatusValidator = v.union(
   v.literal("failed"),
 );
 
+export const sandboxResourceTypeValidator = v.union(
+  v.literal("organization"),
+  v.literal("client"),
+  v.literal("property"),
+  v.literal("project"),
+  v.literal("task"),
+  v.literal("calendar"),
+  v.literal("media"),
+);
+
+export const sandboxActionValidator = v.union(
+  v.literal("read"),
+  v.literal("create"),
+  v.literal("update"),
+  v.literal("delete"),
+);
+
 export default defineSchema({
   partnerProfiles: defineTable({
     authSubject: v.string(),
@@ -68,6 +85,83 @@ export default defineSchema({
     .index("by_partnerAuthSubject", ["partnerAuthSubject"])
     .index("by_clientId", ["clientId"])
     .index("by_status", ["status"]),
+
+  sandboxOrganizations: defineTable({
+    partnerAuthSubject: v.string(),
+    partnerAppId: v.id("partnerApps"),
+    organizationId: v.string(),
+    name: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_partnerAppId", ["partnerAppId"])
+    .index("by_organizationId", ["organizationId"])
+    .index("by_partnerAuthSubject", ["partnerAuthSubject"]),
+
+  sandboxOAuthCodes: defineTable({
+    partnerAuthSubject: v.string(),
+    partnerAppId: v.id("partnerApps"),
+    organizationId: v.string(),
+    code: v.string(),
+    clientId: v.string(),
+    redirectUri: v.string(),
+    scopes: v.array(v.string()),
+    codeChallenge: v.string(),
+    codeChallengeMethod: v.literal("S256"),
+    expiresAt: v.number(),
+    consumedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_code", ["code"])
+    .index("by_partnerAppId", ["partnerAppId"]),
+
+  sandboxOAuthTokens: defineTable({
+    partnerAuthSubject: v.string(),
+    partnerAppId: v.id("partnerApps"),
+    organizationId: v.string(),
+    accessTokenHash: v.optional(v.string()),
+    refreshTokenHash: v.optional(v.string()),
+    clientId: v.string(),
+    scopes: v.array(v.string()),
+    status: v.union(v.literal("active"), v.literal("rotated"), v.literal("revoked")),
+    accessExpiresAt: v.number(),
+    refreshExpiresAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_accessTokenHash", ["accessTokenHash"])
+    .index("by_refreshTokenHash", ["refreshTokenHash"])
+    .index("by_partnerAppId", ["partnerAppId"]),
+
+  sandboxResources: defineTable({
+    partnerAuthSubject: v.string(),
+    partnerAppId: v.id("partnerApps"),
+    organizationId: v.string(),
+    resourceType: sandboxResourceTypeValidator,
+    data: v.any(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_organization_resource", ["organizationId", "resourceType"])
+    .index("by_partnerAppId", ["partnerAppId"]),
+
+  sandboxRequestLogs: defineTable({
+    partnerAuthSubject: v.optional(v.string()),
+    partnerAppId: v.optional(v.id("partnerApps")),
+    organizationId: v.optional(v.string()),
+    method: v.string(),
+    path: v.string(),
+    status: v.number(),
+    latencyMs: v.number(),
+    scopes: v.array(v.string()),
+    input: v.optional(v.any()),
+    response: v.optional(v.any()),
+    error: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_partnerAppId", ["partnerAppId"])
+    .index("by_organizationId", ["organizationId"]),
 
   partnerAppReviews: defineTable({
     appId: v.id("partnerApps"),

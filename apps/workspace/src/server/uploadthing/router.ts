@@ -164,12 +164,8 @@ const uploadThingRoutes = createRouteHandler({
 });
 
 export function uploadThingHandler(request: Request) {
-  if (request.method === "GET") {
-    return uploadThingRoutes.GET(request);
-  }
-
-  if (request.method === "POST") {
-    return uploadThingRoutes.POST(request);
+  if (request.method === "GET" || request.method === "POST") {
+    return uploadThingRoutes(request);
   }
 
   return new Response(null, {

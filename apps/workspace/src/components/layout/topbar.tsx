@@ -11,6 +11,7 @@ import { parseWorkspaceMode, useWorkspaceStore, workspaceModeHref, type Workspac
 import { motion } from "framer-motion";
 import { usePathname, useRouter } from "@/i18n/routing";
 import { useSearchParams } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 export function Topbar() {
   const t = useTranslations('Topbar');
@@ -20,6 +21,7 @@ export function Topbar() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const lastAiThreadIdRef = useRef<string | undefined>(undefined);
   const { isDark, setTheme } = useTheme();
   const storedMode = useWorkspaceStore((state) => state.mode);
   const setMode = useWorkspaceStore((state) => state.setMode);
@@ -27,9 +29,14 @@ export function Topbar() {
   const activeToggleClassName = "text-zinc-900 dark:text-zinc-900";
   const inactiveToggleClassName = "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white";
 
+  useEffect(() => {
+    const threadId = searchParams.get("threadId")?.trim();
+    if (threadId) lastAiThreadIdRef.current = threadId;
+  }, [searchParams]);
+
   function selectMode(nextMode: WorkspaceMode) {
     setMode(nextMode);
-    router.push(workspaceModeHref(nextMode));
+    router.push(workspaceModeHref(nextMode, nextMode === "ai" ? lastAiThreadIdRef.current : undefined));
   }
 
   return (

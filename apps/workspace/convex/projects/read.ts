@@ -21,12 +21,13 @@ async function presentProject(ctx: QueryCtx, project: Doc<"projects">) {
   };
 }
 
-function presentProjectListItem(project: Doc<"projects">) {
+async function presentProjectListItem(ctx: QueryCtx, project: Doc<"projects">) {
+  const media = await listResourceMedia(ctx, project.organizationId, "project", project._id);
   return {
     ...project,
     id: project._id,
     visibility: project.visibility ?? "private",
-    coverImageUrl: undefined,
+    coverImageUrl: selectCoverUrl(media),
   };
 }
 
@@ -44,7 +45,7 @@ export const list = query({
       .filter((project) => !project.deletedAt)
       .sort((a, b) => b.updatedAt - a.updatedAt);
 
-    return active.map(presentProjectListItem);
+    return Promise.all(active.map((project) => presentProjectListItem(ctx, project)));
   },
 });
 
@@ -77,7 +78,7 @@ export const listPaged = query({
         .slice(0, 100);
 
       return {
-        page: matches.map(presentProjectListItem),
+        page: await Promise.all(matches.map((project) => presentProjectListItem(ctx, project))),
         isDone: true,
         continueCursor: "",
       };
@@ -96,9 +97,9 @@ export const listPaged = query({
 
     return {
       ...page,
-      page: page.page
+      page: await Promise.all(page.page
         .filter((project) => !project.deletedAt)
-        .map(presentProjectListItem),
+        .map((project) => presentProjectListItem(ctx, project))),
     };
   },
 });

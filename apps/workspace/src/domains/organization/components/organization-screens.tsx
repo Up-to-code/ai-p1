@@ -24,18 +24,22 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   cancelOrganizationInviteLink,
   cancelOrganizationInvitation,
+  createOrganizationApiKey,
   createOrganizationMcpConnection,
   createOrganizationInviteLink,
   createOrganizationInvitation,
   createOrganizationRole,
   deleteOrganizationRole,
   getOrganizationCapabilities,
+  listOrganizationApiKeys,
   listOrganizationMcpConnections,
   listOrganizationInvitations,
   listOrganizationMembers,
   listOrganizationRoles,
   revokeOrganizationMcpConnection,
+  revokeOrganizationApiKey,
   rotateOrganizationMcpConnection,
+  rotateOrganizationApiKey,
   removeOrganizationMember,
   updateAuthOrganization,
   updateOrganizationMemberRole,
@@ -44,6 +48,11 @@ import {
   type McpConnectionPermission,
   type McpPermissionAction,
   type McpPermissionResource,
+  type OrganizationApiKey,
+  type OrganizationApiKeyAction,
+  type OrganizationApiKeyExpiry,
+  type OrganizationApiKeyPermission,
+  type OrganizationApiKeyResource,
   type OrganizationCapabilities,
   type OrganizationMcpConnection,
   type OrganizationInviteLink,
@@ -53,7 +62,7 @@ import {
 } from "../api/better-auth-organization";
 import { OrganizationLogoUploader } from "./organization-logo-uploader";
 
-type Tab = "profile" | "members" | "agentLinks" | "invites" | "roles";
+type Tab = "profile" | "members" | "agentLinks" | "apiKeys" | "invites" | "roles";
 type InviteMode = "link" | "email";
 type PermissionResource = keyof OrganizationPermissionStatement;
 type WorkAction = "read" | "create" | "update" | "delete" | "authorize";
@@ -330,6 +339,10 @@ export function OrganizationScreen() {
   const canReadAgentLinks = capabilities?.canReadApiKeys ?? false;
   const canCreateAgentLinks = Boolean(capabilities?.canCreateApiKeys && capabilities?.isPlatformAdmin);
   const canDeleteAgentLinks = Boolean(capabilities?.canDeleteApiKeys && capabilities?.isPlatformAdmin);
+  const canReadApiKeys = capabilities?.canReadApiKeys ?? false;
+  const canCreateApiKeys = capabilities?.canCreateApiKeys ?? false;
+  const canUpdateApiKeys = capabilities?.canUpdateApiKeys ?? false;
+  const canDeleteApiKeys = capabilities?.canDeleteApiKeys ?? false;
 
   const updateProfile = useUpdateOrganizationProfileMutation(organizationId);
   const refreshOrganizationData = () => {
@@ -443,6 +456,7 @@ export function OrganizationScreen() {
     { id: "profile", label: t("tabs.profile"), icon: Building2 },
     { id: "members", label: t("tabs.members"), icon: Users },
     { id: "agentLinks", label: t("tabs.agentLinks"), icon: Bot },
+    { id: "apiKeys", label: t("tabs.apiKeys"), icon: KeyRound },
   ];
 
   function makeInviteLink(invite: OrganizationInvitation) {
@@ -746,6 +760,17 @@ export function OrganizationScreen() {
             canCreate={canCreateAgentLinks}
             canDelete={canDeleteAgentLinks}
             grantablePermissions={grantableAgentPermissions(capabilities)}
+          />
+        )}
+
+        {activeTab === "apiKeys" && (
+          <ApiKeysPanel
+            organizationId={organizationId}
+            canRead={canReadApiKeys}
+            canCreate={canCreateApiKeys}
+            canUpdate={canUpdateApiKeys}
+            canDelete={canDeleteApiKeys}
+            grantablePermissions={grantableApiKeyPermissions(capabilities)}
           />
         )}
       </div>
@@ -1406,6 +1431,398 @@ function AgentLinksPanel({
                 >
                   {createMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <KeyRound className="me-2 h-4 w-4" />}
                   {t("modal.make")}
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+const apiKeyPermissionAreas: Array<{
+  resource: OrganizationApiKeyResource;
+  icon: typeof Users;
+  actions: OrganizationApiKeyAction[];
+}> = [
+  { resource: "organization", icon: Building2, actions: ["read", "create", "update", "delete"] },
+  { resource: "client", icon: Users, actions: ["read", "create", "update", "delete"] },
+  { resource: "property", icon: Home, actions: ["read", "create", "update", "delete"] },
+  { resource: "project", icon: Building2, actions: ["read", "create", "update", "delete"] },
+  { resource: "calendar", icon: CalendarDays, actions: ["read", "create", "update", "delete"] },
+  { resource: "task", icon: CheckCircle2, actions: ["read", "create", "update", "delete"] },
+  { resource: "media", icon: FileText, actions: ["read", "create", "update", "delete"] },
+];
+
+const apiKeyExpiryOptions: OrganizationApiKeyExpiry[] = ["5h", "14d", "30d", "never"];
+
+function apiKeyPermissionActions(
+  permissions: OrganizationApiKeyPermission[],
+  resource: OrganizationApiKeyResource,
+) {
+  return permissions.find((permission) => permission.resource === resource)?.actions ?? [];
+}
+
+function cloneApiKeyPermissions(permissions: OrganizationApiKeyPermission[]) {
+  return permissions.map((permission) => ({
+    resource: permission.resource,
+    actions: [...permission.actions],
+  }));
+}
+
+function apiKeyPermissionSummary(
+  permissions: OrganizationApiKeyPermission[],
+  labels: {
+    resource: (resource: OrganizationApiKeyResource) => string;
+    action: (action: OrganizationApiKeyAction) => string;
+  },
+) {
+  return permissions
+    .map((permission) => `${labels.resource(permission.resource)}: ${permission.actions.map(labels.action).join(", ")}`)
+    .join(" • ");
+}
+
+function grantableApiKeyPermissions(capabilities?: OrganizationCapabilities): OrganizationApiKeyPermission[] {
+  if (!capabilities) return [];
+  const actions = {
+    organization: [capabilities.canReadOrganization && "read"],
+    client: [
+      capabilities.canReadClients && "read",
+      capabilities.canCreateClients && "create",
+      capabilities.canUpdateClients && "update",
+      capabilities.canDeleteClients && "delete",
+    ],
+    property: [capabilities.canReadProperties && "read"],
+    project: [capabilities.canReadProjects && "read"],
+    calendar: [capabilities.canReadCalendarEvents && "read"],
+    task: [capabilities.canReadTasks && "read"],
+    media: [capabilities.canReadMedia && "read"],
+  } satisfies Record<OrganizationApiKeyResource, Array<OrganizationApiKeyAction | false>>;
+
+  return (Object.keys(actions) as OrganizationApiKeyResource[])
+    .map((resource) => {
+      const resourceActions = actions[resource].filter((action) => action !== false) as OrganizationApiKeyAction[];
+      return { resource, actions: resourceActions };
+    })
+    .filter((permission) => permission.actions.length > 0);
+}
+
+function defaultApiKeyPermissions(grantable: OrganizationApiKeyPermission[]) {
+  return grantable
+    .map((permission) => ({
+      resource: permission.resource,
+      actions: permission.actions.includes("read") ? ["read" as const] : [],
+    }))
+    .filter((permission) => permission.actions.length > 0);
+}
+
+function clampApiKeyPermissionsToGrantable(
+  permissions: OrganizationApiKeyPermission[],
+  grantable: OrganizationApiKeyPermission[],
+) {
+  return permissions
+    .map((permission) => {
+      const allowed = apiKeyPermissionActions(grantable, permission.resource);
+      return {
+        resource: permission.resource,
+        actions: permission.actions.filter((action) => allowed.includes(action)),
+      };
+    })
+    .filter((permission) => permission.actions.length > 0);
+}
+
+function ApiKeysPanel({
+  organizationId,
+  canRead,
+  canCreate,
+  canUpdate,
+  canDelete,
+  grantablePermissions,
+}: {
+  organizationId: string;
+  canRead: boolean;
+  canCreate: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+  grantablePermissions: OrganizationApiKeyPermission[];
+}) {
+  const t = useTranslations("Organization.apiKeys");
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [rotatingKey, setRotatingKey] = useState<OrganizationApiKey | null>(null);
+  const [keyName, setKeyName] = useState("");
+  const [expiry, setExpiry] = useState<OrganizationApiKeyExpiry>("30d");
+  const [permissions, setPermissions] = useState<OrganizationApiKeyPermission[]>(defaultApiKeyPermissions(grantablePermissions));
+  const [oneTimeKey, setOneTimeKey] = useState("");
+  const [oneTimePermissions, setOneTimePermissions] = useState<OrganizationApiKeyPermission[]>([]);
+  const selectedPermissions = clampApiKeyPermissionsToGrantable(permissions, grantablePermissions);
+
+  const query = useQuery({
+    queryKey: ["organization-api-keys", organizationId],
+    queryFn: () => listOrganizationApiKeys(organizationId),
+    enabled: Boolean(organizationId && canRead),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: () => createOrganizationApiKey(organizationId, {
+      name: keyName,
+      expiry,
+      permissions: selectedPermissions,
+    }),
+    onSuccess: async (result) => {
+      setOneTimeKey(result.apiKey);
+      setOneTimePermissions(cloneApiKeyPermissions(selectedPermissions));
+      queryClient.invalidateQueries({ queryKey: ["organization-api-keys", organizationId] });
+      await navigator.clipboard?.writeText(result.apiKey).catch(() => undefined);
+      toast({ title: t("toasts.readyTitle"), description: t("toasts.readyDescription"), type: "success" });
+    },
+    onError: (error) => toast({ title: t("toasts.failedTitle"), description: error.message, type: "error" }),
+  });
+
+  const rotateMutation = useMutation({
+    mutationFn: () => {
+      if (!rotatingKey) throw new Error(t("toasts.failedDescription"));
+      return rotateOrganizationApiKey(organizationId, rotatingKey.id, { expiry });
+    },
+    onSuccess: async (result) => {
+      setOneTimeKey(result.apiKey);
+      setOneTimePermissions(cloneApiKeyPermissions(result.key.permissions));
+      queryClient.invalidateQueries({ queryKey: ["organization-api-keys", organizationId] });
+      await navigator.clipboard?.writeText(result.apiKey).catch(() => undefined);
+      toast({ title: t("toasts.rotatedTitle"), description: t("toasts.rotatedDescription"), type: "success" });
+    },
+    onError: (error) => toast({ title: t("toasts.failedTitle"), description: error.message, type: "error" }),
+  });
+
+  const revokeMutation = useMutation({
+    mutationFn: (key: OrganizationApiKey) => revokeOrganizationApiKey(organizationId, key.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["organization-api-keys", organizationId] });
+      toast({ title: t("toasts.revokedTitle"), description: t("toasts.revokedDescription"), type: "success" });
+    },
+    onError: (error) => toast({ title: t("toasts.failedTitle"), description: error.message, type: "error" }),
+  });
+
+  function openCreateDialog() {
+    setRotatingKey(null);
+    setKeyName(t("defaults.name"));
+    setExpiry("30d");
+    setPermissions(defaultApiKeyPermissions(grantablePermissions));
+    setOneTimeKey("");
+    setOneTimePermissions([]);
+    setDialogOpen(true);
+  }
+
+  function openRotateDialog(key: OrganizationApiKey) {
+    setRotatingKey(key);
+    setKeyName(key.name);
+    setExpiry("30d");
+    setPermissions(cloneApiKeyPermissions(key.permissions));
+    setOneTimeKey("");
+    setOneTimePermissions([]);
+    setDialogOpen(true);
+  }
+
+  function togglePermission(resource: OrganizationApiKeyResource, action: OrganizationApiKeyAction) {
+    if (!apiKeyPermissionActions(grantablePermissions, resource).includes(action)) return;
+    setPermissions((current) => {
+      const existing = current.find((permission) => permission.resource === resource);
+      const nextActions = existing?.actions.includes(action)
+        ? existing.actions.filter((item) => item !== action)
+        : [...(existing?.actions ?? []), action];
+      const without = current.filter((permission) => permission.resource !== resource);
+      if (nextActions.length === 0) return without;
+      return [...without, { resource, actions: nextActions }];
+    });
+  }
+
+  async function copyOneTimeKey() {
+    if (!oneTimeKey) return;
+    await navigator.clipboard?.writeText(oneTimeKey);
+    toast({ title: t("toasts.copiedTitle"), description: t("toasts.copiedDescription"), type: "success" });
+  }
+
+  const keys = query.data ?? [];
+  const canSubmit = rotatingKey ? canUpdate : canCreate && keyName.trim() && selectedPermissions.length > 0;
+  const oneTimePermissionSummary = apiKeyPermissionSummary(oneTimePermissions, {
+    resource: (resource) => t(`resources.${resource}`),
+    action: (action) => t(`actions.${action}`),
+  });
+
+  return (
+    <div className="space-y-8">
+      <Section title={t("title")} description={t("description")}>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="grid flex-1 gap-3 md:grid-cols-3">
+            <OrgDataCard icon={KeyRound} label={t("stats.active")} value={keys.filter((item) => item.status === "active").length.toString()} />
+            <OrgDataCard icon={ShieldCheck} label={t("stats.quota")} value={t("stats.quotaValue")} />
+            <OrgDataCard icon={RefreshCcw} label={t("stats.calls")} value={keys.reduce((sum, item) => sum + item.usageCount, 0).toString()} />
+          </div>
+          <Button
+            disabled={!canCreate}
+            onClick={openCreateDialog}
+            className="h-11 rounded-xl bg-zinc-900 px-5 text-[10px] font-black uppercase tracking-widest text-white hover:bg-black"
+          >
+            <Plus className="me-2 h-4 w-4" />
+            {t("newButton")}
+          </Button>
+        </div>
+      </Section>
+
+      <Section title={t("existingTitle")} description={t("existingDescription")}>
+        <div className="space-y-3">
+          {!canRead && <EmptyState title={t("empty.noAccessTitle")} description={t("empty.noAccessDescription")} />}
+          {canRead && query.isLoading && <LoadingRow label={t("empty.loading")} />}
+          {canRead && !query.isLoading && keys.length === 0 && <EmptyState title={t("empty.noKeysTitle")} description={t("empty.noKeysDescription")} />}
+          {keys.map((key) => (
+            <div key={key.id} className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/[0.06] dark:bg-[#111]">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="min-w-0 space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-black text-zinc-900 dark:text-white">{key.name}</p>
+                    <StatusPill label={t(`status.${key.status}`)} tone={key.status === "active" ? "success" : key.status === "expired" ? "warning" : "neutral"} />
+                    <span className="rounded-full bg-zinc-100 px-2.5 py-1 font-mono text-[10px] font-bold text-zinc-500 dark:bg-white/5">{t("labels.keyEnding", { last4: key.keyLast4 })}</span>
+                  </div>
+                  <p className="line-clamp-2 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+                    {apiKeyPermissionSummary(key.permissions, {
+                      resource: (resource) => t(`resources.${resource}`),
+                      action: (action) => t(`actions.${action}`),
+                    }) || t("labels.noWork")}
+                  </p>
+                  <div className="flex flex-wrap gap-3 text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                    <span>{t("labels.used", { count: key.usageCount })}</span>
+                    <span>{t("labels.quota", { used: key.quotaUsed, limit: key.quotaLimit })}</span>
+                    <span>{key.expiresAt ? t("labels.expires", { date: formatDate(key.expiresAt) }) : t("labels.neverExpires")}</span>
+                    {key.lastUsedAt ? <span>{t("labels.lastUsed", { date: formatDate(key.lastUsedAt) })}</span> : null}
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {key.status !== "revoked" && (
+                    <Button
+                      variant="outline"
+                      disabled={!canUpdate || rotateMutation.isPending}
+                      onClick={() => openRotateDialog(key)}
+                      className="rounded-xl text-[10px] font-black uppercase tracking-widest"
+                    >
+                      <RefreshCcw className="me-2 h-3.5 w-3.5" />
+                      {t("buttons.rotate")}
+                    </Button>
+                  )}
+                  {key.status !== "revoked" && (
+                    <Button
+                      variant="outline"
+                      disabled={!canDelete || revokeMutation.isPending}
+                      onClick={() => revokeMutation.mutate(key)}
+                      className="rounded-xl border-red-200 text-[10px] font-black uppercase tracking-widest text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="me-2 h-3.5 w-3.5" />
+                      {t("buttons.revoke")}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <Dialog open={dialogOpen} onOpenChange={(open) => {
+        setDialogOpen(open);
+        if (!open) {
+          setOneTimeKey("");
+          setRotatingKey(null);
+        }
+      }}>
+        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto rounded-2xl p-6">
+          <DialogHeader className="pe-8 text-start">
+            <DialogTitle className="text-lg font-black text-zinc-900 dark:text-white">
+              {oneTimeKey ? t("modal.readyTitle") : rotatingKey ? t("modal.rotateTitle") : t("modal.newTitle")}
+            </DialogTitle>
+          </DialogHeader>
+
+          {oneTimeKey ? (
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+                {t("modal.oneTimeWarning")}
+              </div>
+              <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4 dark:border-white/[0.08] dark:bg-white/[0.04]">
+                <p className="text-sm font-black text-zinc-900 dark:text-white">{t("modal.canDoTitle")}</p>
+                <p className="mt-1 text-xs leading-6 text-zinc-600 dark:text-zinc-300">{oneTimePermissionSummary}</p>
+              </div>
+              <Input readOnly dir="ltr" value={oneTimeKey} className="h-12 rounded-xl font-mono text-xs" />
+              <DialogFooter className="justify-start">
+                <Button onClick={copyOneTimeKey} className="bg-zinc-900 text-white hover:bg-black">
+                  <Copy className="me-2 h-4 w-4" />
+                  {t("buttons.copy")}
+                </Button>
+                <Button variant="ghost" onClick={() => setDialogOpen(false)}>{t("buttons.close")}</Button>
+              </DialogFooter>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {!rotatingKey && (
+                <div className="space-y-2">
+                  <Label htmlFor="apiKeyName" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.name")}</Label>
+                  <Input id="apiKeyName" value={keyName} onChange={(event) => setKeyName(event.target.value)} className="h-11 rounded-xl" />
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="apiKeyExpiry" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.expiry")}</Label>
+                <select id="apiKeyExpiry" value={expiry} onChange={(event) => setExpiry(event.target.value as OrganizationApiKeyExpiry)} className="h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm font-bold dark:border-white/10 dark:bg-[#111]">
+                  {apiKeyExpiryOptions.map((option) => <option key={option} value={option}>{t(`expiry.${option}`)}</option>)}
+                </select>
+              </div>
+              {!rotatingKey && (
+                <div className="grid gap-3 md:grid-cols-2">
+                  {apiKeyPermissionAreas.map((area) => {
+                    const Icon = area.icon;
+                    const activeActions = apiKeyPermissionActions(permissions, area.resource);
+                    const allowedActions = apiKeyPermissionActions(grantablePermissions, area.resource);
+                    return (
+                      <div key={area.resource} className="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 dark:border-white/[0.06] dark:bg-white/[0.03]">
+                        <div className="flex items-start gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-white">
+                            <Icon className="h-4 w-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-black text-zinc-900 dark:text-white">{t(`resources.${area.resource}`)}</p>
+                            <p className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">{t(`resourceHelp.${area.resource}`)}</p>
+                          </div>
+                        </div>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {area.actions.map((action) => (
+                            <button
+                              key={action}
+                              type="button"
+                              disabled={!allowedActions.includes(action)}
+                              onClick={() => togglePermission(area.resource, action)}
+                              className={cn(
+                                "rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-colors",
+                                activeActions.includes(action) && allowedActions.includes(action)
+                                  ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900"
+                                  : "border-zinc-200 bg-white text-zinc-500 hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:bg-transparent dark:hover:text-white",
+                              )}
+                            >
+                              {t(`actions.${action}`)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              <DialogFooter className="justify-start">
+                <Button variant="ghost" onClick={() => setDialogOpen(false)}>{t("buttons.cancel")}</Button>
+                <Button
+                  disabled={!canSubmit || createMutation.isPending || rotateMutation.isPending}
+                  onClick={() => rotatingKey ? rotateMutation.mutate() : createMutation.mutate()}
+                  className="bg-zinc-900 text-white hover:bg-black"
+                >
+                  {createMutation.isPending || rotateMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <KeyRound className="me-2 h-4 w-4" />}
+                  {rotatingKey ? t("modal.rotate") : t("modal.make")}
                 </Button>
               </DialogFooter>
             </div>

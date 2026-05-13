@@ -1313,6 +1313,14 @@
       "documentsPick": "Choose documents",
       "documentsQueued": "Queued documents",
       "documentsUnsupported": "Only PDF documents are supported for unit files.",
+      "uploadMedia": "Upload media",
+      "uploadDocuments": "Upload documents",
+      "uploadStatusQueued": "Queued",
+      "uploadStatusUploading": "Uploading",
+      "uploadStatusUploaded": "Uploaded",
+      "uploadStatusFailed": "Failed",
+      "uploadRemove": "Remove",
+      "uploadRetry": "Retry",
       "previewTitle": "Unit preview",
       "previewName": "Unit name",
       "previewProject": "Project",
@@ -1737,6 +1745,7 @@
       "profile": "Profile",
       "members": "Members",
       "agentLinks": "Agent links",
+      "apiKeys": "API keys",
       "invites": "Invites",
       "roles": "Work roles"
     },
@@ -1940,6 +1949,103 @@
         "rotatedDescription": "The new link was copied. The old one stopped working.",
         "copiedTitle": "Copied",
         "copiedDescription": "Paste it into your agent as the MCP server URL."
+      }
+    },
+    "apiKeys": {
+      "title": "API keys",
+      "description": "Create scoped bearer keys for server-side integrations. Keys can read workspace resources and write clients only in this version.",
+      "newButton": "New API key",
+      "existingTitle": "Existing keys",
+      "existingDescription": "Rotate or revoke keys. The full secret is shown once after creation or rotation.",
+      "defaults": {
+        "name": "Server integration"
+      },
+      "stats": {
+        "active": "Active keys",
+        "quota": "Quota",
+        "quotaValue": "1,000/hour",
+        "calls": "Total calls"
+      },
+      "empty": {
+        "noAccessTitle": "No access",
+        "noAccessDescription": "Your work role cannot view API keys.",
+        "loading": "Loading API keys...",
+        "noKeysTitle": "No API keys",
+        "noKeysDescription": "Create a key when an external server needs controlled workspace access."
+      },
+      "modal": {
+        "readyTitle": "API key ready",
+        "newTitle": "New API key",
+        "rotateTitle": "Rotate API key",
+        "oneTimeWarning": "This secret is shown once. Treat it like a password and store it in the external system now.",
+        "canDoTitle": "Allowed access",
+        "name": "Name",
+        "expiry": "Expires",
+        "make": "Create API key",
+        "rotate": "Rotate key"
+      },
+      "expiry": {
+        "5h": "5 hours",
+        "14d": "14 days",
+        "30d": "30 days",
+        "never": "Never"
+      },
+      "resources": {
+        "organization": "Organization",
+        "client": "Clients",
+        "property": "Apartments",
+        "project": "Projects",
+        "calendar": "Calendar",
+        "task": "Tasks",
+        "media": "Documents"
+      },
+      "resourceHelp": {
+        "organization": "Workspace profile and organization identity.",
+        "client": "Profiles and pipeline records. Create, edit, and remove are supported.",
+        "property": "Inventory is read-only for API keys in this version.",
+        "project": "Project records are read-only for API keys in this version.",
+        "calendar": "Calendar records are read-only for API keys in this version.",
+        "task": "Task records are read-only for API keys in this version.",
+        "media": "File metadata is read-only for API keys in this version."
+      },
+      "actions": {
+        "read": "View",
+        "create": "Add",
+        "update": "Edit",
+        "delete": "Remove"
+      },
+      "status": {
+        "active": "Active",
+        "revoked": "Revoked",
+        "expired": "Expired"
+      },
+      "labels": {
+        "keyEnding": "ends {last4}",
+        "used": "Used {count} times",
+        "quota": "{used}/{limit} this hour",
+        "expires": "Expires {date}",
+        "neverExpires": "Never expires",
+        "lastUsed": "Last used {date}",
+        "noWork": "No access selected"
+      },
+      "buttons": {
+        "copy": "Copy key",
+        "close": "Close",
+        "rotate": "Rotate",
+        "revoke": "Revoke",
+        "cancel": "Cancel"
+      },
+      "toasts": {
+        "readyTitle": "API key ready",
+        "readyDescription": "The secret was copied. It is shown here once.",
+        "failedTitle": "API key failed",
+        "failedDescription": "API key action failed.",
+        "revokedTitle": "API key revoked",
+        "revokedDescription": "That key can no longer be used.",
+        "rotatedTitle": "New API key ready",
+        "rotatedDescription": "The new secret was copied. The old key stopped working.",
+        "copiedTitle": "Copied",
+        "copiedDescription": "Store it in your external server secret manager."
       }
     },
     "roles": {

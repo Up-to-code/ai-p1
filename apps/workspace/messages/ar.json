@@ -1313,6 +1313,14 @@
       "documentsPick": "اختيار مستندات",
       "documentsQueued": "مستندات في الانتظار",
       "documentsUnsupported": "ملفات الوحدة تدعم مستندات PDF فقط.",
+      "uploadMedia": "رفع الوسائط",
+      "uploadDocuments": "رفع المستندات",
+      "uploadStatusQueued": "في الانتظار",
+      "uploadStatusUploading": "جاري الرفع",
+      "uploadStatusUploaded": "تم الرفع",
+      "uploadStatusFailed": "فشل",
+      "uploadRemove": "إزالة",
+      "uploadRetry": "إعادة المحاولة",
       "previewTitle": "معاينة الوحدة",
       "previewName": "اسم الوحدة",
       "previewProject": "المشروع",
@@ -1737,6 +1745,7 @@
       "profile": "الملف",
       "members": "الأعضاء",
       "agentLinks": "روابط الوكلاء",
+      "apiKeys": "مفاتيح API",
       "invites": "الدعوات",
       "roles": "أدوار العمل"
     },
@@ -1940,6 +1949,103 @@
         "rotatedDescription": "تم نسخ الرابط الجديد. توقف الرابط القديم عن العمل.",
         "copiedTitle": "تم النسخ",
         "copiedDescription": "الصقه في وكيلك كرابط خادم MCP."
+      }
+    },
+    "apiKeys": {
+      "title": "مفاتيح API",
+      "description": "أنشئ مفاتيح Bearer محددة الصلاحيات للتكاملات الخادمية. تستطيع المفاتيح قراءة موارد مساحة العمل والكتابة في العملاء فقط في هذا الإصدار.",
+      "newButton": "مفتاح API جديد",
+      "existingTitle": "المفاتيح الحالية",
+      "existingDescription": "دوّر المفاتيح أو ألغها. يظهر السر الكامل مرة واحدة بعد الإنشاء أو التدوير.",
+      "defaults": {
+        "name": "تكامل خادمي"
+      },
+      "stats": {
+        "active": "مفاتيح نشطة",
+        "quota": "الحصة",
+        "quotaValue": "1000/ساعة",
+        "calls": "إجمالي الطلبات"
+      },
+      "empty": {
+        "noAccessTitle": "لا توجد صلاحية",
+        "noAccessDescription": "دور عملك لا يسمح بعرض مفاتيح API.",
+        "loading": "جار تحميل مفاتيح API...",
+        "noKeysTitle": "لا توجد مفاتيح API",
+        "noKeysDescription": "أنشئ مفتاحا عندما يحتاج خادم خارجي إلى دخول مضبوط لمساحة العمل."
+      },
+      "modal": {
+        "readyTitle": "مفتاح API جاهز",
+        "newTitle": "مفتاح API جديد",
+        "rotateTitle": "تدوير مفتاح API",
+        "oneTimeWarning": "يظهر هذا السر مرة واحدة. عامله مثل كلمة مرور واحفظه الآن في النظام الخارجي.",
+        "canDoTitle": "الصلاحية المسموحة",
+        "name": "الاسم",
+        "expiry": "ينتهي بعد",
+        "make": "إنشاء مفتاح API",
+        "rotate": "تدوير المفتاح"
+      },
+      "expiry": {
+        "5h": "5 ساعات",
+        "14d": "14 يوما",
+        "30d": "30 يوما",
+        "never": "لا ينتهي"
+      },
+      "resources": {
+        "organization": "المؤسسة",
+        "client": "العملاء",
+        "property": "العقارات",
+        "project": "المشاريع",
+        "calendar": "المواعيد",
+        "task": "المهام",
+        "media": "المستندات"
+      },
+      "resourceHelp": {
+        "organization": "ملف مساحة العمل وهوية المؤسسة.",
+        "client": "ملفات العملاء وخط المتابعة. الإنشاء والتعديل والإزالة مدعومة.",
+        "property": "المخزون متاح للقراءة فقط لمفاتيح API في هذا الإصدار.",
+        "project": "سجلات المشاريع متاحة للقراءة فقط لمفاتيح API في هذا الإصدار.",
+        "calendar": "سجلات المواعيد متاحة للقراءة فقط لمفاتيح API في هذا الإصدار.",
+        "task": "سجلات المهام متاحة للقراءة فقط لمفاتيح API في هذا الإصدار.",
+        "media": "بيانات الملفات متاحة للقراءة فقط لمفاتيح API في هذا الإصدار."
+      },
+      "actions": {
+        "read": "عرض",
+        "create": "إضافة",
+        "update": "تعديل",
+        "delete": "إزالة"
+      },
+      "status": {
+        "active": "نشط",
+        "revoked": "ملغي",
+        "expired": "منتهي"
+      },
+      "labels": {
+        "keyEnding": "ينتهي بـ {last4}",
+        "used": "استخدم {count} مرة",
+        "quota": "{used}/{limit} هذه الساعة",
+        "expires": "ينتهي {date}",
+        "neverExpires": "لا ينتهي",
+        "lastUsed": "آخر استخدام {date}",
+        "noWork": "لا توجد صلاحية محددة"
+      },
+      "buttons": {
+        "copy": "نسخ المفتاح",
+        "close": "إغلاق",
+        "rotate": "تدوير",
+        "revoke": "إلغاء",
+        "cancel": "إلغاء"
+      },
+      "toasts": {
+        "readyTitle": "مفتاح API جاهز",
+        "readyDescription": "تم نسخ السر. يظهر هنا مرة واحدة فقط.",
+        "failedTitle": "فشل مفتاح API",
+        "failedDescription": "فشل إجراء مفتاح API.",
+        "revokedTitle": "تم إلغاء مفتاح API",
+        "revokedDescription": "لم يعد هذا المفتاح قابلا للاستخدام.",
+        "rotatedTitle": "مفتاح API الجديد جاهز",
+        "rotatedDescription": "تم نسخ السر الجديد. توقف المفتاح القديم عن العمل.",
+        "copiedTitle": "تم النسخ",
+        "copiedDescription": "احفظه في مدير أسرار الخادم الخارجي."
       }
     },
     "roles": {

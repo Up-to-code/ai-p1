@@ -63,6 +63,24 @@ export type McpPermissionResource =
 
 export type McpPermissionAction = "read" | "create" | "update" | "delete";
 
+export type OrganizationApiKeyResource =
+  | "organization"
+  | "client"
+  | "property"
+  | "project"
+  | "calendar"
+  | "task"
+  | "media";
+
+export type OrganizationApiKeyAction = "read" | "create" | "update" | "delete";
+
+export type OrganizationApiKeyPermission = {
+  resource: OrganizationApiKeyResource;
+  actions: OrganizationApiKeyAction[];
+};
+
+export type OrganizationApiKeyExpiry = "5h" | "14d" | "30d" | "never";
+
 export type McpConnectionPermission = {
   resource: McpPermissionResource;
   actions: McpPermissionAction[];
@@ -85,6 +103,28 @@ export type OrganizationMcpConnection = {
   lastUsedAt?: number;
   expiresAt?: number;
   usageCount: number;
+  revokedAt?: number;
+};
+
+export type OrganizationApiKey = {
+  _id: string;
+  id: string;
+  organizationId: string;
+  keyId: string;
+  keyLast4: string;
+  name: string;
+  permissions: OrganizationApiKeyPermission[];
+  status: "active" | "revoked" | "expired";
+  createdByUserId: string;
+  createdAt: number;
+  updatedAt: number;
+  lastUsedAt?: number;
+  expiresAt?: number;
+  usageCount: number;
+  quotaWindowStartedAt?: number;
+  quotaLimit: number;
+  quotaWindowMs: number;
+  quotaUsed: number;
   revokedAt?: number;
 };
 
@@ -129,6 +169,7 @@ export type OrganizationCapabilities = {
   canDeleteMedia: boolean;
   canReadApiKeys: boolean;
   canCreateApiKeys: boolean;
+  canUpdateApiKeys: boolean;
   canDeleteApiKeys: boolean;
   canReadCalendarEvents: boolean;
   canCreateCalendarEvents: boolean;
@@ -390,6 +431,53 @@ export function rotateOrganizationMcpConnection(organizationId: string, connecti
     "POST",
     undefined,
     "A new link could not be made.",
+  );
+}
+
+export function listOrganizationApiKeys(organizationId: string) {
+  return requestOrganizationAction<{ keys: OrganizationApiKey[] }>(
+    `/api/v1/organizations/${encodeURIComponent(organizationId)}/api-keys`,
+    "GET",
+    undefined,
+    "API keys could not be loaded.",
+  ).then((result) => result.keys);
+}
+
+export function createOrganizationApiKey(
+  organizationId: string,
+  input: {
+    name: string;
+    permissions: OrganizationApiKeyPermission[];
+    expiry: OrganizationApiKeyExpiry;
+  },
+) {
+  return requestOrganizationAction<{ key: OrganizationApiKey; apiKey: string }>(
+    `/api/v1/organizations/${encodeURIComponent(organizationId)}/api-keys`,
+    "POST",
+    input,
+    "API key could not be created.",
+  );
+}
+
+export function rotateOrganizationApiKey(
+  organizationId: string,
+  apiKeyId: string,
+  input: { expiry: OrganizationApiKeyExpiry },
+) {
+  return requestOrganizationAction<{ key: OrganizationApiKey; apiKey: string }>(
+    `/api/v1/organizations/${encodeURIComponent(organizationId)}/api-keys/${encodeURIComponent(apiKeyId)}/rotate`,
+    "POST",
+    input,
+    "API key could not be rotated.",
+  );
+}
+
+export function revokeOrganizationApiKey(organizationId: string, apiKeyId: string) {
+  return requestOrganizationAction<{ revoked: boolean }>(
+    `/api/v1/organizations/${encodeURIComponent(organizationId)}/api-keys/${encodeURIComponent(apiKeyId)}`,
+    "DELETE",
+    undefined,
+    "API key could not be revoked.",
   );
 }
 

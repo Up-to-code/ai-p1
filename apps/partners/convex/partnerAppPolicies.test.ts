@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assertPartnerOwnsApp, normalizeRedirectUris, normalizeScopes } from "./partnerAppPolicies";
+import { assertPartnerOwnsApp, normalizeRedirectUris, normalizeScopes } from "./shared/appPolicies";
 
 describe("partner app backend policies", () => {
   it("deduplicates and sorts scopes before persistence", () => {

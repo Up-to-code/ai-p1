@@ -734,16 +734,22 @@ export function ClientDetailScreen({ id }: { id: string }) {
   };
 
   return (
-    <AppPageShell contentClassName="space-y-6 pb-16">
-      <div className="rounded-[24px] border border-zinc-100 bg-white p-5 dark:border-white/5 dark:bg-[#0A0A0A] md:p-6">
-        <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-          <div className="flex min-w-0 items-center gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-lg font-black uppercase text-white dark:bg-white dark:text-zinc-900">
+    <AppPageShell contentClassName="space-y-5 pb-16">
+      <section className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white text-start dark:border-zinc-800 dark:bg-[#0B0B0B]">
+        <div className="grid gap-5 p-5 md:grid-cols-[minmax(0,1fr)_auto] md:p-6">
+          <div className="flex min-w-0 items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-950 text-base font-black uppercase text-white dark:bg-zinc-100 dark:text-zinc-950">
               {client.name.charAt(0)}
             </div>
-            <div className="min-w-0 text-start">
-              <p className="text-[11px] font-bold text-zinc-400">{client.id.toUpperCase()}</p>
-              <h1 className="mt-1 truncate text-2xl font-black leading-tight text-zinc-900 dark:text-white md:text-3xl">{client.name}</h1>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="max-w-full truncate text-[10px] font-black uppercase tracking-wider text-zinc-400">{client.id.toUpperCase()}</p>
+                <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                <StatusPill label={t(`stages.${client.pipelineStage}`)} tone={client.pipelineStage === "closed" ? "success" : "info"} />
+              </div>
+              <h1 className="mt-2 max-w-4xl text-2xl font-black leading-tight text-zinc-950 dark:text-zinc-50 md:text-3xl">
+                {client.name}
+              </h1>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <StatusPill label={t(`types.${client.type}`)} tone={typeTone(client.type)} />
                 <StatusPill label={t(`statuses.${client.status}`)} tone={client.status === "active" ? "success" : "neutral"} />
@@ -751,52 +757,78 @@ export function ClientDetailScreen({ id }: { id: string }) {
               </div>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2 md:justify-end">
+
+          <div className="flex flex-wrap items-center gap-2 md:justify-end">
+            <Button variant="ghost" onClick={() => setDeleting(true)} className="h-10 rounded-xl px-4 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30">
+              <Trash2 className="me-2 h-3.5 w-3.5" />
+              {t('detail.delete')}
+            </Button>
+            <Link href={`/clients/${client.id}/edit`} className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 text-xs font-bold text-zinc-900 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:bg-zinc-900">
+              <Edit className="me-2 h-3.5 w-3.5" />
+              {t('detail.edit')}
+            </Link>
             {client.pipelineStage !== "closed" && (
               <Button
                 type="button"
-                variant="outline"
                 disabled={closeOperation.isRunning}
                 onClick={markClosed}
-                className="h-10 rounded-xl px-4 text-xs font-bold text-emerald-700 hover:text-emerald-800 dark:text-emerald-300"
+                className="h-10 rounded-xl px-4 text-xs font-bold"
               >
                 <CheckCircle2 className="me-2 h-3.5 w-3.5" />
                 {t("actions.markClosed")}
               </Button>
             )}
-            <Link href={`/clients/${client.id}/edit`} className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-100 bg-white px-4 text-xs font-bold transition-colors hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10">
-              <Edit className="me-2 h-3.5 w-3.5" />
-              {t('detail.edit')}
-            </Link>
-            <Button variant="ghost" onClick={() => setDeleting(true)} className="h-10 rounded-xl px-4 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30">
-              <Trash2 className="me-2 h-3.5 w-3.5" />
-              {t('detail.delete')}
-            </Button>
           </div>
         </div>
 
-        <div className="mt-6 grid gap-3 rounded-2xl border border-zinc-100 bg-zinc-50/50 p-3 dark:border-white/5 dark:bg-white/[0.02] sm:grid-cols-5">
-          {pipelineStages.map((stage, i) => (
-            <div
-              key={stage}
-              className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors",
-                i <= currentStageIndex ? "bg-white text-zinc-900 dark:bg-white/10 dark:text-white" : "text-zinc-400"
-              )}
-            >
-              <span
+        <div className="grid border-t border-zinc-100 dark:border-zinc-800 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="grid gap-px bg-zinc-100 dark:bg-zinc-800 sm:grid-cols-3">
+            {[
+              { label: t('detail.labels.budget'), value: client.budget },
+              { label: t('detail.labels.interest'), value: client.propertyInterest },
+              { label: t('card.next'), value: client.nextActionDate },
+            ].map((item) => (
+              <div key={item.label} className="min-w-0 bg-zinc-50 px-5 py-4 dark:bg-zinc-950/60">
+                <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{item.label}</p>
+                <p className="mt-1 truncate text-sm font-black text-zinc-950 dark:text-zinc-50">{item.value}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center gap-3 border-t border-zinc-100 px-5 py-4 dark:border-zinc-800 lg:border-s lg:border-t-0">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950">
+              <Phone className="h-4 w-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t('detail.labels.phone')}</p>
+              <p className="mt-1 truncate text-sm font-black text-zinc-950 dark:text-zinc-50">{client.phone}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-zinc-100 p-3 dark:border-zinc-800 md:p-4">
+          <div className="grid gap-2 sm:grid-cols-5">
+            {pipelineStages.map((stage, i) => (
+              <div
+                key={stage}
                 className={cn(
-                  "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-black",
-                  i <= currentStageIndex ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900" : "border border-zinc-200 dark:border-white/10"
+                  "flex min-w-0 items-center gap-2 rounded-xl px-3 py-2.5 transition-colors",
+                  i <= currentStageIndex ? "bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950" : "bg-zinc-50 text-zinc-400 dark:bg-zinc-950/60"
                 )}
               >
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <span className="min-w-0 truncate text-xs font-bold">{t(`stages.${stage}`)}</span>
-            </div>
-          ))}
+                <span
+                  className={cn(
+                    "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9px] font-black",
+                    i <= currentStageIndex ? "bg-white/15 text-current dark:bg-zinc-950/10" : "border border-zinc-200 dark:border-zinc-800"
+                  )}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="min-w-0 truncate text-xs font-black">{t(`stages.${stage}`)}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
 
       <Tabs defaultValue="overview" className="space-y-6">
         <AppTabsList tabs={[
@@ -809,30 +841,30 @@ export function ClientDetailScreen({ id }: { id: string }) {
 
         <TabsContent value="overview">
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
-            <section className="rounded-[24px] border border-zinc-900 bg-zinc-950 p-6 text-start text-white dark:border-white/10 dark:bg-white/[0.06] lg:col-span-5">
+            <section className="rounded-[24px] border border-zinc-200 bg-white p-6 text-start dark:border-zinc-800 dark:bg-[#0B0B0B] lg:col-span-5">
               <div className="flex h-full min-h-[220px] flex-col justify-between gap-8">
                 <div>
                   <div className="mb-6 flex items-center justify-between gap-4">
-                    <p className="text-xs font-bold text-white/55">{t('detail.nextTitle')}</p>
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-white">
+                    <p className="text-xs font-black uppercase tracking-wider text-zinc-400">{t('detail.nextTitle')}</p>
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950">
                       <ArrowUpRight className="h-5 w-5" />
                     </span>
                   </div>
-                  <h2 className="text-2xl font-black leading-tight tracking-tight md:text-3xl">{client.nextAction}</h2>
+                  <h2 className="text-2xl font-black leading-tight tracking-tight text-zinc-950 dark:text-zinc-50 md:text-3xl">{client.nextAction}</h2>
                 </div>
-                <div className="flex items-center gap-3 border-t border-white/10 pt-5">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10">
-                    <CalendarDays className="h-4 w-4 text-white/60" />
+                <div className="flex items-center gap-3 border-t border-zinc-100 pt-5 dark:border-zinc-800">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-950">
+                    <CalendarDays className="h-4 w-4 text-zinc-500" />
                   </span>
                   <div className="min-w-0">
-                    <p className="text-[11px] font-bold text-white/45">{t('card.next')}</p>
-                    <p className="truncate text-sm font-bold text-white">{client.nextActionDate} {t('detail.at')} {client.appointmentTime}</p>
+                    <p className="text-[11px] font-bold text-zinc-400">{t('card.next')}</p>
+                    <p className="truncate text-sm font-black text-zinc-950 dark:text-zinc-50">{client.nextActionDate} {t('detail.at')} {client.appointmentTime}</p>
                   </div>
                 </div>
               </div>
             </section>
 
-            <section className="rounded-[24px] border border-zinc-100 bg-white p-6 text-start dark:border-white/5 dark:bg-[#0A0A0A] lg:col-span-4">
+            <section className="rounded-[24px] border border-zinc-200 bg-white p-6 text-start dark:border-zinc-800 dark:bg-[#0B0B0B] lg:col-span-4">
               <div className="mb-5 flex items-start gap-4">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">
                   <Building className="h-5 w-5" />
@@ -854,7 +886,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
               </div>
             </section>
 
-            <section className="rounded-[24px] border border-zinc-100 bg-white p-6 text-start dark:border-white/5 dark:bg-[#0A0A0A] lg:col-span-3">
+            <section className="rounded-[24px] border border-zinc-200 bg-white p-6 text-start dark:border-zinc-800 dark:bg-[#0B0B0B] lg:col-span-3">
               <p className="mb-5 text-xs font-bold text-zinc-400">{t('detail.recordTitle')}</p>
               <div className="space-y-4">
                 {[
@@ -874,7 +906,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
               </div>
             </section>
 
-            <section className="rounded-[24px] border border-zinc-100 bg-white p-6 text-start dark:border-white/5 dark:bg-[#0A0A0A] lg:col-span-7">
+            <section className="rounded-[24px] border border-zinc-200 bg-white p-6 text-start dark:border-zinc-800 dark:bg-[#0B0B0B] lg:col-span-7">
               <div className="mb-5 flex items-center justify-between gap-4">
                 <p className="text-xs font-bold text-zinc-400">{t('detail.tabs.units')}</p>
                 <span className="text-xs font-black text-zinc-300">{String(units.slice(0, 3).length).padStart(2, "0")}</span>
@@ -898,7 +930,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
               </div>
             </section>
 
-            <section className="rounded-[24px] border border-zinc-100 bg-white p-6 text-start dark:border-white/5 dark:bg-[#0A0A0A] lg:col-span-5">
+            <section className="rounded-[24px] border border-zinc-200 bg-white p-6 text-start dark:border-zinc-800 dark:bg-[#0B0B0B] lg:col-span-5">
               <p className="mb-5 text-xs font-bold text-zinc-400">{t('detail.activity.subtitle')}</p>
               <div className="space-y-4">
                 {activityPreview.map((event, i, list) => (
@@ -977,14 +1009,14 @@ export function ClientDetailScreen({ id }: { id: string }) {
 
         <TabsContent value="units">
           <div className="space-y-5">
-            <section className="rounded-[24px] border border-zinc-100 bg-white p-5 text-start dark:border-white/5 dark:bg-[#0A0A0A] md:p-6">
-              <div className="flex flex-col gap-4 border-b border-zinc-100 pb-5 dark:border-white/5 md:flex-row md:items-end md:justify-between">
+            <section className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white text-start dark:border-zinc-800 dark:bg-[#0B0B0B]">
+              <div className="flex flex-col gap-4 border-b border-zinc-100 p-5 dark:border-zinc-800 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <p className="text-xs font-bold text-zinc-400">{t("detail.units.subtitle")}</p>
-                  <h2 className="mt-1 text-xl font-black text-zinc-900 dark:text-white">{t("detail.units.title")}</h2>
+                  <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t("detail.units.subtitle")}</p>
+                  <h2 className="mt-1 text-xl font-black text-zinc-950 dark:text-zinc-50">{t("detail.units.title")}</h2>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-zinc-50 px-3 py-1.5 text-xs font-bold text-zinc-500 dark:bg-white/[0.04]">{linkedUnits.length} {t("detail.units.linkedCount")}</span>
+                  <span className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-bold text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">{linkedUnits.length} {t("detail.units.linkedCount")}</span>
                   <Button type="button" onClick={() => setIsUnitPickerOpen(true)} className="h-10 rounded-xl px-4 text-xs font-bold">
                     <Plus className="me-2 h-3.5 w-3.5" />{t("detail.units.linkUnit")}
                   </Button>
@@ -993,67 +1025,71 @@ export function ClientDetailScreen({ id }: { id: string }) {
 
               {linkOperation.error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-bold text-red-600 dark:border-red-950/50 dark:bg-red-950/20">{linkOperation.error}</p>}
 
-              <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-px bg-zinc-100 dark:bg-zinc-800 md:grid-cols-2">
                 <button
                   type="button"
                   onClick={() => setIsUnitPickerOpen(true)}
-                  className="flex min-h-[300px] flex-col items-center justify-center rounded-[24px] border border-dashed border-zinc-200 bg-zinc-50/50 p-6 text-center transition hover:border-zinc-300 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/[0.02] dark:hover:bg-white/[0.04]"
+                  className="flex min-h-28 items-center gap-4 bg-zinc-50 p-5 text-start transition hover:bg-zinc-100 dark:bg-zinc-950/70 dark:hover:bg-zinc-950"
                 >
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950">
                     <Plus className="h-5 w-5" />
                   </span>
-                  <span className="mt-4 text-base font-black text-zinc-900 dark:text-white">{t("detail.units.linkUnit")}</span>
-                  <span className="mt-2 max-w-xs text-sm font-semibold leading-6 text-zinc-400">{t("detail.units.linkUnitDesc")}</span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-black text-zinc-950 dark:text-zinc-50">{t("detail.units.linkUnit")}</span>
+                    <span className="mt-1 block max-w-sm text-xs font-semibold leading-5 text-zinc-500 dark:text-zinc-400">{t("detail.units.linkUnitDesc")}</span>
+                  </span>
                 </button>
 
                 {linkedUnits.map(({ link, unit }) => (
-                  <article key={link.id} className="overflow-hidden rounded-[24px] border border-zinc-100 bg-white dark:border-white/5 dark:bg-[#0A0A0A]">
-                    <div className="relative aspect-[16/9] bg-zinc-100 dark:bg-white/[0.03]">
+                  <article key={link.id} className="grid min-h-28 grid-cols-[84px_minmax(0,1fr)] gap-4 bg-white p-4 dark:bg-[#0B0B0B]">
+                    <div className="relative overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-950">
                       {unit?.coverImageUrl ? (
-                        <Image src={unit.coverImageUrl} alt="" fill sizes="360px" className="object-cover grayscale" />
+                        <Image src={unit.coverImageUrl} alt="" fill sizes="84px" className="object-cover" />
                       ) : (
-                        <div className="flex h-full items-center justify-center text-zinc-300"><Building className="h-8 w-8" /></div>
+                        <div className="flex h-full min-h-20 items-center justify-center text-zinc-300 dark:text-zinc-700"><Building className="h-5 w-5" /></div>
                       )}
-                      <div className="absolute inset-x-3 top-3 flex items-center justify-between gap-2">
-                        <StatusPill label={link.status} tone="info" />
-                        {unit && <StatusPill label={unit.status} tone={unitStatusTone(unit.status)} />}
-                      </div>
                     </div>
-                    <div className="space-y-4 p-4">
-                      <div className="min-w-0 text-start">
-                        {unit ? (
-                          <Link href={`/properties/${unit.id}`} className="block truncate text-base font-black text-zinc-900 hover:underline dark:text-white">{unit.title}</Link>
-                        ) : (
-                          <p className="text-base font-black text-zinc-400">{t("detail.units.unitUnavailable")}</p>
+                    <div className="min-w-0">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          {unit ? (
+                            <Link href={`/properties/${unit.id}`} className="block truncate text-sm font-black text-zinc-950 hover:underline dark:text-zinc-50">{unit.title}</Link>
+                          ) : (
+                            <p className="text-sm font-black text-zinc-400">{t("detail.units.unitUnavailable")}</p>
+                          )}
+                          <p className="mt-1 truncate text-[11px] font-bold text-zinc-400">{unit ? unit.project : link.propertyId}</p>
+                        </div>
+                        <div className="flex shrink-0 flex-wrap justify-end gap-1">
+                          <StatusPill label={link.status} tone="info" />
+                          {unit && <StatusPill label={unit.status} tone={unitStatusTone(unit.status)} />}
+                        </div>
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
+                        <span>{unit?.price ?? "-"}</span>
+                        <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                        <span>{unit?.area ?? "-"}</span>
+                        {link.notes && (
+                          <>
+                            <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                            <span className="truncate">{link.notes}</span>
+                          </>
                         )}
-                        <p className="mt-1 truncate text-xs font-bold text-zinc-400">{unit ? unit.project : link.propertyId}</p>
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="rounded-2xl bg-zinc-50 p-3 text-start dark:bg-white/[0.03]">
-                          <p className="text-[10px] font-bold text-zinc-400">{t("detail.units.price")}</p>
-                          <p className="mt-1 truncate text-sm font-black text-zinc-900 dark:text-white">{unit?.price ?? "-"}</p>
-                        </div>
-                        <div className="rounded-2xl bg-zinc-50 p-3 text-start dark:bg-white/[0.03]">
-                          <p className="text-[10px] font-bold text-zinc-400">{t("detail.units.area")}</p>
-                          <p className="mt-1 truncate text-sm font-black text-zinc-900 dark:text-white">{unit?.area ?? "-"}</p>
-                        </div>
-                      </div>
-                      {link.notes && <p className="rounded-2xl border border-zinc-100 p-3 text-start text-xs font-semibold text-zinc-500 dark:border-white/5 dark:text-zinc-400">{link.notes}</p>}
-                      <div className="flex gap-2">
+                      <div className="mt-3 flex gap-2">
                         {unit && (
-                          <Link href={`/properties/${unit.id}`} className="inline-flex h-10 flex-1 items-center justify-center rounded-xl border border-zinc-100 text-xs font-bold text-zinc-900 transition hover:bg-zinc-50 dark:border-white/10 dark:text-white dark:hover:bg-white/5">
+                          <Link href={`/properties/${unit.id}`} className="inline-flex h-9 items-center justify-center rounded-xl border border-zinc-200 px-3 text-xs font-bold text-zinc-900 transition hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-950">
                             <ArrowUpRight className="me-2 h-3.5 w-3.5" />{t("detail.units.openUnit")}
                           </Link>
                         )}
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="ghost"
                           disabled={linkOperation.isRunning}
                           onClick={() => void linkOperation.run(() => {
                             if (!workspaceOrganizationId) throw new Error("Select an organization first.");
                             return unlinkClientUnitRequest(workspaceOrganizationId, client.id, link.propertyId);
                           }, { successMessage: t("detail.units.unlinked") })}
-                          className="h-10 flex-1 rounded-xl text-xs font-bold text-red-600 hover:text-red-700"
+                          className="h-9 rounded-xl px-3 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
                         >
                           <Trash2 className="me-2 h-3.5 w-3.5" />{t("detail.units.unlink")}
                         </Button>
@@ -1068,13 +1104,13 @@ export function ClientDetailScreen({ id }: { id: string }) {
               setIsUnitPickerOpen(open);
               if (!open) setUnitSearch("");
             }}>
-              <DialogContent className="max-h-[88vh] max-w-5xl overflow-hidden rounded-[28px] border-zinc-100 bg-white p-0 text-zinc-900 shadow-2xl dark:border-white/10 dark:bg-[#0A0A0A] dark:text-white">
-                <DialogHeader className="border-b border-zinc-100 p-5 pe-14 text-start dark:border-white/5 md:p-6">
-                  <DialogTitle className="text-xl font-black text-zinc-900 dark:text-white">{t("detail.units.modalTitle")}</DialogTitle>
-                  <DialogDescription className="text-sm font-semibold text-zinc-400">{t("detail.units.modalDesc")}</DialogDescription>
+              <DialogContent className="max-h-[88vh] max-w-5xl overflow-hidden rounded-[24px] border-zinc-200 bg-white p-0 text-zinc-950 shadow-none dark:border-zinc-800 dark:bg-[#0B0B0B] dark:text-zinc-50">
+                <DialogHeader className="border-b border-zinc-100 p-5 pe-14 text-start dark:border-zinc-800">
+                  <DialogTitle className="text-xl font-black text-zinc-950 dark:text-zinc-50">{t("detail.units.modalTitle")}</DialogTitle>
+                  <DialogDescription className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">{t("detail.units.modalDesc")}</DialogDescription>
                 </DialogHeader>
 
-                <div className="grid gap-3 border-b border-zinc-100 p-5 dark:border-white/5 md:grid-cols-[minmax(0,1fr)_180px_220px] md:p-6">
+                <div className="sticky top-0 z-10 grid gap-3 border-b border-zinc-100 bg-white p-5 dark:border-zinc-800 dark:bg-[#0B0B0B] md:grid-cols-[minmax(0,1fr)_170px_220px]">
                   <label className="relative block">
                     <span className="sr-only">{t("detail.units.search")}</span>
                     <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
@@ -1082,33 +1118,33 @@ export function ClientDetailScreen({ id }: { id: string }) {
                       value={unitSearch}
                       onChange={(event) => setUnitSearch(event.target.value)}
                       placeholder={t("detail.units.search")}
-                      className="h-11 w-full rounded-xl border border-zinc-100 bg-zinc-50 ps-10 pe-3 text-sm font-bold text-zinc-900 outline-none transition focus:border-zinc-300 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:focus:border-white/20"
+                      className="h-11 w-full rounded-xl border border-zinc-200 bg-zinc-50 ps-10 pe-3 text-sm font-bold text-zinc-950 outline-none transition focus:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-600"
                     />
                   </label>
                   <label className="block text-start">
-                    <span className="text-[11px] font-bold text-zinc-400">{t("detail.units.linkStatus")}</span>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t("detail.units.linkStatus")}</span>
                     <select
                       value={unitLinkStatus}
                       onChange={(event) => setUnitLinkStatus(event.target.value as (typeof unitLinkStatuses)[number])}
-                      className="mt-1 h-11 w-full rounded-xl border border-zinc-100 bg-zinc-50 px-3 text-sm font-bold text-zinc-900 outline-none dark:border-white/10 dark:bg-white/[0.03] dark:text-white"
+                      className="mt-1 h-11 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-sm font-bold text-zinc-950 outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50"
                     >
                       {unitLinkStatuses.map((status) => <option key={status} value={status}>{t(`detail.units.statuses.${status}`)}</option>)}
                     </select>
                   </label>
                   <label className="block text-start">
-                    <span className="text-[11px] font-bold text-zinc-400">{t("detail.units.notes")}</span>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t("detail.units.notes")}</span>
                     <input
                       value={unitLinkNotes}
                       onChange={(event) => setUnitLinkNotes(event.target.value)}
                       placeholder={t("detail.units.notes")}
-                      className="mt-1 h-11 w-full rounded-xl border border-zinc-100 bg-zinc-50 px-3 text-sm font-bold text-zinc-900 outline-none dark:border-white/10 dark:bg-white/[0.03] dark:text-white"
+                      className="mt-1 h-11 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-sm font-bold text-zinc-950 outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50"
                     />
                   </label>
                 </div>
 
-                <div className="max-h-[52vh] overflow-y-auto p-5 md:p-6">
+                <div className="max-h-[54vh] overflow-y-auto p-5">
                   <div className="mb-4 flex items-center justify-between gap-4">
-                    <h3 className="text-sm font-black text-zinc-900 dark:text-white">{t("detail.units.available")}</h3>
+                    <h3 className="text-sm font-black text-zinc-950 dark:text-zinc-50">{t("detail.units.available")}</h3>
                     <span className="text-xs font-bold text-zinc-400">
                       {t("detail.units.showing", { shown: visibleAvailableUnits.length, total: filteredAvailableUnits.length })}
                     </span>
@@ -1117,38 +1153,38 @@ export function ClientDetailScreen({ id }: { id: string }) {
                   {isUnitCatalogLoading ? (
                     <div className="grid gap-3 md:grid-cols-2">
                       {Array.from({ length: 4 }).map((_, index) => (
-                        <div key={index} className="h-32 animate-pulse rounded-2xl bg-zinc-100 dark:bg-white/[0.04]" />
+                        <div key={index} className="h-28 animate-pulse rounded-2xl bg-zinc-100 dark:bg-zinc-950" />
                       ))}
                     </div>
                   ) : availableUnits.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-zinc-200 p-8 text-center text-sm font-bold text-zinc-400 dark:border-white/10">{t("detail.units.noAvailable")}</div>
+                    <div className="rounded-2xl border border-dashed border-zinc-200 p-8 text-center text-sm font-bold text-zinc-400 dark:border-zinc-800">{t("detail.units.noAvailable")}</div>
                   ) : filteredAvailableUnits.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-zinc-200 p-8 text-center text-sm font-bold text-zinc-400 dark:border-white/10">{t("detail.units.noResults")}</div>
+                    <div className="rounded-2xl border border-dashed border-zinc-200 p-8 text-center text-sm font-bold text-zinc-400 dark:border-zinc-800">{t("detail.units.noResults")}</div>
                   ) : (
                     <div className="grid gap-3 md:grid-cols-2">
                       {visibleAvailableUnits.map((unit) => (
-                        <article key={unit.id} className="grid grid-cols-[96px_minmax(0,1fr)] gap-4 rounded-2xl border border-zinc-100 bg-white p-3 dark:border-white/5 dark:bg-white/[0.02]">
-                          <div className="relative overflow-hidden rounded-xl bg-zinc-100 dark:bg-white/[0.03]">
+                        <article key={unit.id} className="grid grid-cols-[88px_minmax(0,1fr)] gap-4 rounded-2xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950/50">
+                          <div className="relative overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-950">
                             {unit.coverImageUrl ? (
-                              <Image src={unit.coverImageUrl} alt="" fill sizes="96px" className="object-cover grayscale" />
+                              <Image src={unit.coverImageUrl} alt="" fill sizes="88px" className="object-cover" />
                             ) : (
-                              <div className="flex h-full min-h-24 items-center justify-center text-zinc-300"><Building className="h-5 w-5" /></div>
+                              <div className="flex h-full min-h-24 items-center justify-center text-zinc-300 dark:text-zinc-700"><Building className="h-5 w-5" /></div>
                             )}
                           </div>
-                          <div className="min-w-0 space-y-3 text-start">
-                            <div className="min-w-0">
-                              <div className="flex items-start justify-between gap-2">
-                                <p className="truncate text-sm font-black text-zinc-900 dark:text-white">{unit.title}</p>
-                                <StatusPill label={unit.status} tone={unitStatusTone(unit.status)} />
+                          <div className="min-w-0 text-start">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-black text-zinc-950 dark:text-zinc-50">{unit.title}</p>
+                                <p className="mt-1 truncate text-xs font-bold text-zinc-400">{unit.project}</p>
                               </div>
-                              <p className="mt-1 truncate text-xs font-bold text-zinc-400">{unit.project}</p>
+                              <StatusPill label={unit.status} tone={unitStatusTone(unit.status)} />
                             </div>
-                            <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-zinc-500 dark:text-zinc-400">
+                            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-bold text-zinc-500 dark:text-zinc-400">
                               <span>{unit.price}</span>
-                              <span className="h-1 w-1 rounded-full bg-zinc-300" />
+                              <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
                               <span>{unit.area}</span>
                             </div>
-                            <Button type="button" disabled={linkOperation.isRunning} onClick={() => linkUnit(unit.id)} className="h-9 w-full rounded-xl text-xs font-bold">
+                            <Button type="button" disabled={linkOperation.isRunning} onClick={() => linkUnit(unit.id)} className="mt-3 h-9 w-full rounded-xl text-xs font-bold">
                               <Plus className="me-2 h-3.5 w-3.5" />{t("detail.units.link")}
                             </Button>
                           </div>
@@ -1161,7 +1197,6 @@ export function ClientDetailScreen({ id }: { id: string }) {
             </Dialog>
           </div>
         </TabsContent>
-
         <TabsContent value="docs">
           <ClientDocumentsManager
             organizationId={workspaceOrganizationId}
@@ -1170,20 +1205,20 @@ export function ClientDetailScreen({ id }: { id: string }) {
         </TabsContent>
 
         <TabsContent value="activity">
-          <section className="space-y-5 text-start">
-            <div className="flex flex-col gap-3 border-b border-zinc-100 pb-4 dark:border-white/10 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-xs font-bold text-zinc-400">{t('detail.activity.subtitle')}</p>
-                <h2 className="mt-1 text-xl font-black text-zinc-900 dark:text-white">{t('detail.activity.title')}</h2>
+          <section className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white text-start dark:border-zinc-800 dark:bg-[#0B0B0B]">
+            <div className="flex flex-col gap-3 border-b border-zinc-100 p-5 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t('detail.activity.subtitle')}</p>
+                <h2 className="mt-1 text-xl font-black text-zinc-950 dark:text-zinc-50">{t('detail.activity.title')}</h2>
               </div>
               <div className="flex gap-2">
-                <span className="rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-bold text-zinc-500 dark:bg-white/10 dark:text-zinc-300">{tasks.length} {t('detail.activity.tasks')}</span>
-                {events.length > 0 && <span className="rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-bold text-zinc-500 dark:bg-white/10 dark:text-zinc-300">{events.length} {t('detail.activity.events')}</span>}
+                <span className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-bold text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">{tasks.length} {t('detail.activity.tasks')}</span>
+                <span className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-bold text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">{events.length} {t('detail.activity.events')}</span>
               </div>
             </div>
 
             <form
-              className="grid gap-2 rounded-2xl border border-zinc-100 bg-white p-2 dark:border-white/10 dark:bg-[#0A0A0A] md:grid-cols-[minmax(220px,1fr)_140px_140px_140px_140px_auto]"
+              className="grid gap-2 border-b border-zinc-100 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/50 md:grid-cols-[150px_minmax(220px,1fr)_140px_140px_160px_auto]"
               onSubmit={(event) => {
                 event.preventDefault();
                 const form = event.currentTarget;
@@ -1198,7 +1233,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
             >
               <input type="hidden" name="status" value="open" />
               {canManageVisibility ? (
-                <select name="visibility" defaultValue="private" className="h-10 rounded-xl border border-transparent bg-zinc-50 px-3 text-xs font-bold text-zinc-700 outline-none dark:bg-white/[0.04] dark:text-white">
+                <select name="visibility" defaultValue="private" className="h-10 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-bold text-zinc-700 outline-none dark:border-zinc-800 dark:bg-[#0B0B0B] dark:text-zinc-100">
                   <option value="private">{t("form.visibilityPrivate")}</option>
                   <option value="public">{t("form.visibilityPublic")}</option>
                 </select>
@@ -1210,139 +1245,137 @@ export function ClientDetailScreen({ id }: { id: string }) {
                 value={taskTitle}
                 onChange={(event) => setTaskTitle(event.target.value)}
                 placeholder={t('detail.activity.taskTitle')}
-                className="h-10 min-w-0 rounded-xl border border-transparent bg-zinc-50 px-3 text-sm font-bold text-zinc-900 outline-none transition focus:border-zinc-200 dark:bg-white/[0.04] dark:text-white dark:focus:border-white/10"
+                className="h-10 min-w-0 rounded-xl border border-zinc-200 bg-white px-3 text-sm font-bold text-zinc-950 outline-none transition focus:border-zinc-400 dark:border-zinc-800 dark:bg-[#0B0B0B] dark:text-zinc-50 dark:focus:border-zinc-600"
               />
-              <select name="priority" defaultValue={client.priority} className="h-10 rounded-xl border border-transparent bg-zinc-50 px-3 text-xs font-bold text-zinc-700 outline-none dark:bg-white/[0.04] dark:text-white">
+              <select name="priority" defaultValue={client.priority} className="h-10 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-bold text-zinc-700 outline-none dark:border-zinc-800 dark:bg-[#0B0B0B] dark:text-zinc-100">
                 {clientPriorities.map((value) => <option key={value} value={value}>{t(`priorities.${value}`)}</option>)}
               </select>
-              <input name="dueAt" type="date" className="h-10 rounded-xl border border-transparent bg-zinc-50 px-3 text-xs font-bold text-zinc-700 outline-none dark:bg-white/[0.04] dark:text-white" />
-              <select name="propertyId" defaultValue="" className="h-10 rounded-xl border border-transparent bg-zinc-50 px-3 text-xs font-bold text-zinc-700 outline-none dark:bg-white/[0.04] dark:text-white">
+              <input name="dueAt" type="date" className="h-10 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-bold text-zinc-700 outline-none dark:border-zinc-800 dark:bg-[#0B0B0B] dark:text-zinc-100" />
+              <select name="propertyId" defaultValue="" className="h-10 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-bold text-zinc-700 outline-none dark:border-zinc-800 dark:bg-[#0B0B0B] dark:text-zinc-100">
                 <option value="">{t('detail.activity.noUnit')}</option>
                 {units.map((unit) => <option key={unit.id} value={unit.id}>{unit.title}</option>)}
               </select>
-              <Button type="submit" disabled={!taskTitle.trim() || taskOperation.isRunning} className="h-10 rounded-xl px-5 text-xs font-black uppercase tracking-widest">
+              <Button type="submit" disabled={!taskTitle.trim() || taskOperation.isRunning} className="h-10 rounded-xl px-5 text-xs font-black">
                 {t('detail.activity.add')}
               </Button>
             </form>
 
-            {taskOperation.error && <p className="text-xs font-bold text-red-500">{taskOperation.error}</p>}
+            {taskOperation.error && <p className="mx-5 mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-bold text-red-600 dark:border-red-950/50 dark:bg-red-950/20">{taskOperation.error}</p>}
 
-            {tasks.length > 0 ? (
-              <div className="overflow-hidden rounded-2xl border border-zinc-100 bg-white dark:border-white/10 dark:bg-[#0A0A0A]">
-                <div className="divide-y divide-zinc-100 dark:divide-white/10">
-                  {tasks.map((task) => {
-                    const linkedUnit = units.find((unit) => unit.id === task.propertyId);
-                    const isDone = task.status === "done";
-                    return (
-                      <article key={task.id} className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <StatusPill label={t(`detail.activity.taskStatuses.${task.status}`)} tone={isDone ? "success" : task.status === "canceled" ? "neutral" : "warning"} />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t(`priorities.${task.priority}`)}</span>
-                          </div>
-                          <p className={cn("mt-2 truncate text-sm font-black text-zinc-900 dark:text-white", isDone && "text-zinc-400 line-through dark:text-zinc-500")}>
-                            {task.title}
-                          </p>
-                          <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] font-bold text-zinc-400">
-                            <span>{task.dueAt ? new Date(task.dueAt).toLocaleDateString(locale) : t('detail.activity.noDate')}</span>
-                            {linkedUnit && (
-                              <>
-                                <span className="h-1 w-1 rounded-full bg-zinc-300" />
-                                <span>{linkedUnit.title}</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex shrink-0 items-center gap-2">
-                          {canManageVisibility && (
-                            <select
-                              value={task.visibility ?? "private"}
-                              disabled={taskOperation.isRunning}
-                              onChange={(event) => void taskOperation.run(() => {
-                                if (!workspaceOrganizationId) throw new Error("Select an organization first.");
-                                return updateClientTaskRequest(workspaceOrganizationId, task.id, {
-                                  clientId: client.id,
-                                  title: task.title,
-                                  status: task.status,
-                                  visibility: event.target.value as ClientTaskPayload["visibility"],
-                                  priority: task.priority,
-                                  dueAt: task.dueAt,
-                                  propertyId: task.propertyId,
-                                  projectId: task.projectId,
-                                  calendarEventId: task.calendarEventId,
-                                  notes: task.notes,
-                                });
-                              }, { successMessage: t("detail.activity.saved") })}
-                              className="h-9 rounded-xl border border-zinc-100 bg-white px-3 text-xs font-bold text-zinc-700 outline-none dark:border-white/10 dark:bg-white/5 dark:text-white"
-                            >
-                              <option value="private">{t("form.visibilityPrivate")}</option>
-                              <option value="public">{t("form.visibilityPublic")}</option>
-                            </select>
-                          )}
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            disabled={taskOperation.isRunning}
-                            onClick={() => void taskOperation.run(() => {
-                              if (!workspaceOrganizationId) throw new Error("Select an organization first.");
-                              return updateClientTaskRequest(workspaceOrganizationId, task.id, {
-                                clientId: client.id,
-                                title: task.title,
-                                status: isDone ? "open" : "done",
-                                visibility: task.visibility ?? "private",
-                                priority: task.priority,
-                                dueAt: task.dueAt,
-                                propertyId: task.propertyId,
-                                projectId: task.projectId,
-                                calendarEventId: task.calendarEventId,
-                                notes: task.notes,
-                              });
-                            }, { successMessage: t('detail.activity.saved') })}
-                            className="h-9 rounded-xl text-xs font-bold"
-                          >
-                            {isDone ? t('detail.activity.reopen') : t('detail.activity.complete')}
-                          </Button>
-                          <button
-                            type="button"
-                            disabled={taskOperation.isRunning}
-                            onClick={() => void taskOperation.run(() => {
-                              if (!workspaceOrganizationId) throw new Error("Select an organization first.");
-                              return deleteClientTaskRequest(workspaceOrganizationId, task.id);
-                            }, { successMessage: t('detail.activity.deleted') })}
-                            className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-300 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-50 dark:hover:bg-red-950/30"
-                            aria-label={t('detail.activity.deleteTask')}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </article>
-                    );
-                  })}
+            <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+              {tasks.length === 0 && events.length === 0 ? (
+                <div className="p-8 text-center text-sm font-bold text-zinc-400">
+                  {t('detail.activity.emptyTasks')}
                 </div>
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-zinc-200 p-8 text-center text-sm font-bold text-zinc-400 dark:border-white/10">
-                {t('detail.activity.emptyTasks')}
-              </div>
-            )}
+              ) : null}
 
-            {events.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('detail.activity.calendarEvents')}</p>
-                <div className="grid gap-2 md:grid-cols-2">
-                  {events.slice(0, 4).map((event) => (
-                    <div key={event.id} className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-100 bg-white px-4 py-3 dark:border-white/10 dark:bg-[#0A0A0A]">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-black text-zinc-900 dark:text-white">{event.title}</p>
-                        <p className="mt-1 text-[11px] font-bold text-zinc-400">{event.date} · {event.time}</p>
+              {tasks.map((task) => {
+                const linkedUnit = units.find((unit) => unit.id === task.propertyId);
+                const isDone = task.status === "done";
+                return (
+                  <article key={task.id} className="grid gap-4 p-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <StatusPill label={t(`detail.activity.taskStatuses.${task.status}`)} tone={isDone ? "success" : task.status === "canceled" ? "neutral" : "warning"} />
+                        <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t(`priorities.${task.priority}`)}</span>
+                        <span className="text-[10px] font-bold text-zinc-400">{task.dueAt ? new Date(task.dueAt).toLocaleDateString(locale) : t('detail.activity.noDate')}</span>
                       </div>
-                      <StatusPill label={event.status} tone="info" />
+                      <p className={cn("mt-2 truncate text-sm font-black text-zinc-950 dark:text-zinc-50", isDone && "text-zinc-400 line-through dark:text-zinc-500")}>
+                        {task.title}
+                      </p>
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] font-bold text-zinc-400">
+                        <span>{t('detail.activity.tasks')}</span>
+                        {linkedUnit && (
+                          <>
+                            <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                            <span>{linkedUnit.title}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                    <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                      {canManageVisibility && (
+                        <select
+                          value={task.visibility ?? "private"}
+                          disabled={taskOperation.isRunning}
+                          onChange={(event) => void taskOperation.run(() => {
+                            if (!workspaceOrganizationId) throw new Error("Select an organization first.");
+                            return updateClientTaskRequest(workspaceOrganizationId, task.id, {
+                              clientId: client.id,
+                              title: task.title,
+                              status: task.status,
+                              visibility: event.target.value as ClientTaskPayload["visibility"],
+                              priority: task.priority,
+                              dueAt: task.dueAt,
+                              propertyId: task.propertyId,
+                              projectId: task.projectId,
+                              calendarEventId: task.calendarEventId,
+                              notes: task.notes,
+                            });
+                          }, { successMessage: t("detail.activity.saved") })}
+                          className="h-9 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-bold text-zinc-700 outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+                        >
+                          <option value="private">{t("form.visibilityPrivate")}</option>
+                          <option value="public">{t("form.visibilityPublic")}</option>
+                        </select>
+                      )}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={taskOperation.isRunning}
+                        onClick={() => void taskOperation.run(() => {
+                          if (!workspaceOrganizationId) throw new Error("Select an organization first.");
+                          return updateClientTaskRequest(workspaceOrganizationId, task.id, {
+                            clientId: client.id,
+                            title: task.title,
+                            status: isDone ? "open" : "done",
+                            visibility: task.visibility ?? "private",
+                            priority: task.priority,
+                            dueAt: task.dueAt,
+                            propertyId: task.propertyId,
+                            projectId: task.projectId,
+                            calendarEventId: task.calendarEventId,
+                            notes: task.notes,
+                          });
+                        }, { successMessage: t('detail.activity.saved') })}
+                        className="h-9 rounded-xl text-xs font-bold"
+                      >
+                        {isDone ? t('detail.activity.reopen') : t('detail.activity.complete')}
+                      </Button>
+                      <button
+                        type="button"
+                        disabled={taskOperation.isRunning}
+                        onClick={() => void taskOperation.run(() => {
+                          if (!workspaceOrganizationId) throw new Error("Select an organization first.");
+                          return deleteClientTaskRequest(workspaceOrganizationId, task.id);
+                        }, { successMessage: t('detail.activity.deleted') })}
+                        className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-300 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-50 dark:hover:bg-red-950/30"
+                        aria-label={t('detail.activity.deleteTask')}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
+
+              {events.map((event) => (
+                <article key={event.id} className="grid gap-4 p-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusPill label={event.status} tone="info" />
+                      <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t('detail.activity.calendarEvents')}</span>
+                      <span className="text-[10px] font-bold text-zinc-400">{event.date} · {event.time}</span>
+                    </div>
+                    <p className="mt-2 truncate text-sm font-black text-zinc-950 dark:text-zinc-50">{event.title}</p>
+                  </div>
+                  <span className="inline-flex h-9 items-center justify-center rounded-xl border border-zinc-200 px-3 text-xs font-bold text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+                    {t('detail.activity.events')}
+                  </span>
+                </article>
+              ))}
+            </div>
           </section>
         </TabsContent>
       </Tabs>
@@ -1361,7 +1394,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
           successMessage: "Client deleted.",
           onSuccess: () => {
             setDeleting(false);
-          router.push("/clients");
+            router.push("/clients");
           },
         })}
       />

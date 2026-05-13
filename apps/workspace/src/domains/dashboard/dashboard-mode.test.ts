@@ -26,10 +26,13 @@ describe("dashboard mode routing", () => {
     const topbar = readSource("src/components/layout/topbar.tsx");
     const sidebar = readSource("src/components/layout/sidebar.tsx");
     const dashboard = readSource("src/domains/dashboard/components/dashboard-screen.tsx");
+    const dashboardChat = readSource("src/components/dashboard/dashboard-chat.tsx");
 
-    expect(topbar).toContain("router.push(workspaceModeHref(nextMode))");
+    expect(topbar).toContain("lastAiThreadIdRef");
+    expect(topbar).toContain('nextMode === "ai" ? lastAiThreadIdRef.current : undefined');
     expect(sidebar).toContain('workspaceModeHref("ws")');
     expect(sidebar).toContain('workspaceModeHref("ai", thread.id)');
     expect(dashboard).toContain('parseWorkspaceMode(searchParams.get("mode"))');
+    expect(dashboardChat).toContain('params.set("mode", "ai")');
   });
 });

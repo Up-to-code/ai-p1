@@ -21,12 +21,13 @@ async function presentProperty(ctx: QueryCtx, property: Doc<"propertyUnits">) {
   };
 }
 
-function presentPropertyListItem(property: Doc<"propertyUnits">) {
+async function presentPropertyListItem(ctx: QueryCtx, property: Doc<"propertyUnits">) {
+  const media = await listResourceMedia(ctx, property.organizationId, "property", property._id);
   return {
     ...property,
     id: property._id,
     visibility: property.visibility ?? "private",
-    coverImageUrl: undefined,
+    coverImageUrl: selectCoverUrl(media),
   };
 }
 
@@ -56,7 +57,7 @@ export const list = query({
       .filter((unit) => !unit.deletedAt)
       .sort((a, b) => b.updatedAt - a.updatedAt);
 
-    return active.map(presentPropertyListItem);
+    return Promise.all(active.map((unit) => presentPropertyListItem(ctx, unit)));
   },
 });
 
@@ -90,7 +91,7 @@ export const listPaged = query({
         .slice(0, 100);
 
       return {
-        page: matches.map(presentPropertyListItem),
+        page: await Promise.all(matches.map((unit) => presentPropertyListItem(ctx, unit))),
         isDone: true,
         continueCursor: "",
       };
@@ -109,9 +110,9 @@ export const listPaged = query({
 
     return {
       ...page,
-      page: page.page
+      page: await Promise.all(page.page
         .filter((unit) => !unit.deletedAt)
-        .map(presentPropertyListItem),
+        .map((unit) => presentPropertyListItem(ctx, unit))),
     };
   },
 });
@@ -181,10 +182,10 @@ export const listByProject = query({
       .withIndex("by_project_id", (q) => q.eq("projectId", args.projectId))
       .take(limit);
 
-    return units
+    return Promise.all(units
       .filter((unit) => unit.organizationId === args.organizationId && !unit.deletedAt)
       .sort((a, b) => b.updatedAt - a.updatedAt)
-      .map(presentPropertyListItem);
+      .map((unit) => presentPropertyListItem(ctx, unit)));
   },
 });
 

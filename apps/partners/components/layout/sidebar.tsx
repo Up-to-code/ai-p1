@@ -9,7 +9,7 @@ export function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
   
   return (
-    <aside className={cn("flex h-full w-[244px] flex-shrink-0 flex-col border-r border-border bg-white/72 dark:bg-card/75", className)}>
+    <aside className={cn("flex h-full w-[228px] flex-shrink-0 flex-col border-r border-border bg-white/72 dark:bg-card/75", className)}>
       <div className="border-b border-border px-5 py-5">
         <p className="text-[11px] font-semibold uppercase text-muted-foreground">Partner console</p>
         <p className="mt-1 text-sm font-semibold text-foreground">OAuth lifecycle</p>
@@ -28,7 +28,7 @@ export function Sidebar({ className }: { className?: string }) {
               className={cn(
                 "group flex items-center rounded-[7px] px-3 py-2.5 text-sm font-semibold transition-colors",
                 isActive 
-                  ? "bg-[#071A34] text-white shadow-sm" 
+                  ? "bg-[#071A34] !text-white shadow-sm" 
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
@@ -41,7 +41,7 @@ export function Sidebar({ className }: { className?: string }) {
                   aria-hidden="true"
                 />
               ) : null}
-              {item.label}
+              <span className={cn("min-w-0 flex-1 truncate", isActive ? "!text-white" : "")}>{item.label}</span>
             </Link>
           );
         })}

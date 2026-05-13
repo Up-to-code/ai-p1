@@ -135,6 +135,7 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
   const values = form.watch();
   const currentStep = steps[activeStep];
   const fieldClassName = inputClassName();
+  const exitHref = app ? `/dashboard/apps/${app.id}` : "/dashboard/apps";
 
   useEffect(() => {
     form.setValue("allowedScopes", checkpoints.resolvedScopes.join("\n"), { shouldValidate: true });
@@ -177,22 +178,24 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
   }
 
   return (
-    <form onSubmit={form.handleSubmit(submit)} className="overflow-hidden rounded-[15px] border border-border bg-white dark:border-white/10 dark:bg-card">
+    <form onSubmit={form.handleSubmit(submit)} className="overflow-hidden rounded-[15px] border border-border bg-white shadow-[0_18px_70px_rgba(7,26,52,0.06)] dark:border-white/10 dark:bg-card">
       <input type="hidden" {...form.register("appId")} />
       <input type="hidden" {...form.register("allowedScopes")} />
       <input type="hidden" {...form.register("logoUrl")} />
       <input type="hidden" {...form.register("iconUrl")} />
 
-      <div className="grid lg:grid-cols-[260px_minmax(0,1fr)]">
+      <div className="grid lg:grid-cols-[248px_minmax(0,1fr)]">
         <aside className="border-b border-border bg-background p-4 dark:bg-white/[0.02] lg:border-b-0 lg:border-r">
-          <div className="mb-5 rounded-[15px] border border-border bg-white p-4 dark:bg-white/[0.03]">
-            <p className="text-xs font-bold uppercase text-primary">{mode === "edit" ? "Edit app" : "New app"}</p>
-            <h2 className="mt-2 text-xl font-bold text-foreground">OAuth setup</h2>
-            <p className="mt-2 text-xs font-medium leading-5 text-muted-foreground">
-              Add only what Anan needs to issue a reviewed client safely.
-            </p>
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase text-primary">{mode === "edit" ? "Edit app" : "New app"}</p>
+              <h2 className="mt-1 text-lg font-bold text-foreground">OAuth setup</h2>
+            </div>
+            <span className="rounded-full border border-border bg-white px-2 py-1 text-xs font-bold text-muted-foreground dark:bg-white/[0.03]">
+              {activeStep + 1}/{steps.length}
+            </span>
           </div>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+          <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-1">
             {steps.map((step, index) => {
               const active = index === activeStep;
               const complete = completedSteps[index];
@@ -204,7 +207,7 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
                   type="button"
                   onClick={() => setActiveStep(index)}
                   className={cn(
-                    "flex items-start gap-3 rounded-[7px] border p-3 text-start transition-colors",
+                    "flex items-center gap-3 rounded-[7px] border p-2.5 text-start transition-colors",
                     active
                       ? "border-[#071A34] bg-white dark:border-white dark:bg-white/[0.04]"
                       : "border-transparent hover:border-border hover:bg-white dark:hover:border-white/10 dark:hover:bg-white/[0.03]",
@@ -213,7 +216,7 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
                   <StepMarker active={active} complete={complete} icon={Icon} />
                   <span className="min-w-0">
                     <span className="block text-sm font-bold text-foreground">{step.title}</span>
-                    <span className="mt-1 block text-xs font-medium leading-5 text-muted-foreground">{step.description}</span>
+                    {active ? <span className="mt-1 block text-xs font-medium leading-5 text-muted-foreground">{step.description}</span> : null}
                   </span>
                 </button>
               );
@@ -221,36 +224,48 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
           </div>
         </aside>
 
-        <main className="min-h-[580px] p-5 md:p-7">
+        <main className="min-h-[500px] p-5 md:p-8">
           {activeStep === 0 && (
-            <section className="mx-auto max-w-2xl space-y-6">
-              <div>
-                <p className="text-xs font-bold uppercase text-primary">Basics</p>
-                <h3 className="mt-2 text-2xl font-bold text-foreground">What should Anan show users?</h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  These fields appear in the partner catalog, review queue, and authorization handoff.
-                </p>
+            <section className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_280px]">
+              <div className="space-y-6">
+                <div>
+                  <p className="text-xs font-bold uppercase text-primary">Basics</p>
+                  <h3 className="mt-2 text-2xl font-bold text-foreground">What should Anan show users?</h3>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                    These fields appear in the partner catalog, review queue, and authorization handoff.
+                  </p>
+                </div>
+
+                <div className="grid gap-5 md:grid-cols-2">
+                  <Field label={<LabelText help="The product name workspace admins will recognize before opening your partner app.">App name</LabelText>} error={form.formState.errors.name?.message}>
+                    <Input {...form.register("name")} placeholder="PDF Creator" className={fieldClassName} />
+                  </Field>
+                  <Field label={<LabelText help="The company, team, or developer organization responsible for this app.">Publisher</LabelText>} error={form.formState.errors.publisherName?.message}>
+                    <Input {...form.register("publisherName")} placeholder="Your company" className={fieldClassName} />
+                  </Field>
+                  <Field label={<LabelText help="This is where Anan sends a workspace admin when they choose Visit Partner.">Partner app URL</LabelText>} error={form.formState.errors.homepageUrl?.message}>
+                    <Input {...form.register("homepageUrl")} placeholder="https://partner.example.com" className={fieldClassName} />
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                      Need a local demo? Use <span className="font-mono text-foreground">http://localhost:3004</span> while developing.
+                    </p>
+                  </Field>
+                </div>
               </div>
 
-              <div className="grid gap-5">
-                <Field label={<LabelText help="The product name workspace admins will recognize before opening your partner app.">App name</LabelText>} error={form.formState.errors.name?.message}>
-                  <Input {...form.register("name")} placeholder="PDF Creator" className={fieldClassName} />
-                </Field>
-                <Field label={<LabelText help="The company, team, or developer organization responsible for this app.">Publisher</LabelText>} error={form.formState.errors.publisherName?.message}>
-                  <Input {...form.register("publisherName")} placeholder="Your company" className={fieldClassName} />
-                </Field>
-                <Field label={<LabelText help="This is where Anan sends a workspace admin when they choose Visit Partner.">Partner app URL</LabelText>} error={form.formState.errors.homepageUrl?.message}>
-                  <Input {...form.register("homepageUrl")} placeholder="https://partner.example.com" className={fieldClassName} />
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                    Need a local demo? Use <span className="font-mono text-foreground">http://localhost:3004</span> while developing.
-                  </p>
-                </Field>
+              <div className="rounded-[11px] border border-border bg-background p-4">
+                <p className="text-xs font-bold uppercase text-primary">User-facing preview</p>
+                <div className="mt-4 rounded-[9px] border border-border bg-white p-4 dark:bg-white/[0.03]">
+                  <p className="text-[11px] font-bold uppercase text-muted-foreground">Partner app</p>
+                  <p className="mt-2 text-lg font-bold text-foreground">{values.name || "App name"}</p>
+                  <p className="mt-1 text-sm font-semibold text-muted-foreground">{values.publisherName || "Publisher"}</p>
+                  <p className="mt-4 break-words text-xs leading-5 text-muted-foreground">{values.homepageUrl || "https://partner.example.com"}</p>
+                </div>
               </div>
             </section>
           )}
 
           {activeStep === 1 && (
-            <section className="mx-auto max-w-2xl space-y-6">
+            <section className="max-w-4xl space-y-6">
               <div>
                 <p className="text-xs font-bold uppercase text-primary">Authorization</p>
                 <h3 className="mt-2 text-2xl font-bold text-foreground">How does Anan return users?</h3>
@@ -270,19 +285,21 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
                 </div>
               </div>
 
-              <Field label={<LabelText help="Public apps use PKCE and no secret. Confidential apps use a server-side client secret.">App type</LabelText>} error={form.formState.errors.clientType?.message}>
-                <Select {...form.register("clientType")} disabled={mode === "edit"} className={fieldClassName}>
-                  <option value="public">Public PKCE app</option>
-                  <option value="confidential">Confidential server app</option>
-                </Select>
-              </Field>
-              <Field label={<LabelText help="Anan redirects users to this URL after consent. Add one per line if you need multiple environments.">Redirect URI</LabelText>} error={form.formState.errors.redirectUris?.message as string | undefined}>
-                <Textarea
-                  {...form.register("redirectUris")}
-                  placeholder="https://partner.example.com/api/auth/anan/callback"
-                  className={cn("min-h-[112px] font-mono text-sm", fieldClassName)}
-                />
-              </Field>
+              <div className="grid gap-5 lg:grid-cols-[280px_minmax(0,1fr)]">
+                <Field label={<LabelText help="Public apps use PKCE and no secret. Confidential apps use a server-side client secret.">App type</LabelText>} error={form.formState.errors.clientType?.message}>
+                  <Select {...form.register("clientType")} disabled={mode === "edit"} className={fieldClassName}>
+                    <option value="public">Public PKCE app</option>
+                    <option value="confidential">Confidential server app</option>
+                  </Select>
+                </Field>
+                <Field label={<LabelText help="Anan redirects users to this URL after consent. Add one per line if you need multiple environments.">Redirect URI</LabelText>} error={form.formState.errors.redirectUris?.message as string | undefined}>
+                  <Textarea
+                    {...form.register("redirectUris")}
+                    placeholder="https://partner.example.com/api/auth/anan/callback"
+                    className={cn("min-h-[112px] font-mono text-sm", fieldClassName)}
+                  />
+                </Field>
+              </div>
               <div className="rounded-[15px] border border-border bg-[#071A34] p-4 text-white">
                 <p className="text-xs font-bold uppercase text-[#B1BCC7]">Button copy</p>
                 <p className="mt-2 text-lg font-bold">{AUTHORIZATION_CTA_COPY}</p>
@@ -388,10 +405,20 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
       </div>
 
       <div className="flex flex-col gap-3 border-t border-border bg-background px-5 py-4 sm:flex-row sm:items-center sm:justify-between md:px-6">
-        <Button type="button" variant="outline" onClick={goBack} disabled={activeStep === 0 || isPending} className="h-10 gap-2">
-          <ArrowLeft className="size-4" />
-          Back
-        </Button>
+        {activeStep === 0 ? (
+          <Link
+            href={exitHref}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-[7px] border border-border bg-white px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted dark:bg-card"
+          >
+            <ArrowLeft className="size-4" />
+            Back to app
+          </Link>
+        ) : (
+          <Button type="button" variant="outline" onClick={goBack} disabled={isPending} className="h-10 gap-2">
+            <ArrowLeft className="size-4" />
+            Back
+          </Button>
+        )}
         {activeStep < steps.length - 1 ? (
           <Button type="button" onClick={goNext} disabled={isPending} className="h-10 gap-2">
             Continue

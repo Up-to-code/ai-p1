@@ -67,6 +67,46 @@ export const partnerBackendRefs = {
       { ok: true }
     >("partnerApps:applyHubReviewDecision"),
   },
+  sandbox: {
+    getSandboxForApp: makeFunctionReference<"query", { appId: string }, unknown>("sandbox:getSandboxForApp"),
+    ensureSandboxForApp: makeFunctionReference<"mutation", { appId: string }, unknown>("sandbox:ensureSandboxForApp"),
+    createAuthorizationCode: makeFunctionReference<
+      "mutation",
+      {
+        clientId: string;
+        redirectUri: string;
+        scopes: string[];
+        codeChallenge: string;
+        codeChallengeMethod: "S256";
+      },
+      { code: string; redirectUri: string; organizationId: string }
+    >("sandbox:createAuthorizationCode"),
+    exchangeAuthorizationCode: makeFunctionReference<
+      "mutation",
+      {
+        code: string;
+        clientId: string;
+        redirectUri: string;
+        codeChallenge: string;
+        accessTokenHash: string;
+        refreshTokenHash: string;
+      },
+      { organizationId: string; scopes: string[]; expiresIn: number }
+    >("sandbox:exchangeAuthorizationCode"),
+    rotateRefreshToken: makeFunctionReference<
+      "mutation",
+      {
+        refreshTokenHash: string;
+        accessTokenHash: string;
+        nextRefreshTokenHash: string;
+      },
+      { organizationId: string; scopes: string[]; expiresIn: number }
+    >("sandbox:rotateRefreshToken"),
+    validateAccess: makeFunctionReference<"query", Record<string, unknown>, unknown>("sandbox:validateAccess"),
+    readResource: makeFunctionReference<"query", Record<string, unknown>, unknown>("sandbox:readResource"),
+    writeResource: makeFunctionReference<"mutation", Record<string, unknown>, unknown>("sandbox:writeResource"),
+    recordRequestLog: makeFunctionReference<"mutation", Record<string, unknown>, { ok: true }>("sandbox:recordRequestLog"),
+  },
   partnerOrganizations: {
     ensureCurrentPartnerProfile: makeFunctionReference<"mutation", Record<string, never>, { ok: true }>("partnerOrganizations:ensureCurrentPartnerProfile"),
     createProgrammerOrganizationForCurrentPartner: makeFunctionReference<"mutation", Record<string, unknown>, { organizationId: string }>(
