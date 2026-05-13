@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useAccessCheckpointsStore } from "@/stores/access-checkpoints-store";
 import { COMMON_PERMISSION_GROUPS, mergeCheckpointScopes } from "@/validation/access-checkpoints";
 
@@ -19,12 +19,17 @@ export function useAccessCheckpoints(initialScopes: string[] = []) {
     reset(selected, manual);
   }, [initialScopes.join("|"), reset]);
 
+  const resolvedScopes = useMemo(
+    () => mergeCheckpointScopes(selectedScopes, manualScopes),
+    [manualScopes, selectedScopes],
+  );
+
   return {
     groups: COMMON_PERMISSION_GROUPS,
     selectedScopes,
     manualScopes,
     toggleScope,
     setManualScopes,
-    resolvedScopes: mergeCheckpointScopes(selectedScopes, manualScopes),
+    resolvedScopes,
   };
 }
