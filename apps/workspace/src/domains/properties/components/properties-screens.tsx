@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery as useReactQuery } from "@tanstack/react-query";
-import { Bath, Bed, Building, CheckCircle2, Edit, FileText, FolderOpen, Home, ImageIcon, Mail, MapPin, Phone, Plus, Ruler, Search, Trash2, UserPlus, Users } from "lucide-react";
+import { Bath, Bed, Building, CheckCircle2, ChevronLeft, ChevronRight, Download, Edit, Eye, FileText, FolderOpen, Home, ImageIcon, Mail, MapPin, Phone, Plus, Ruler, Search, Star, Trash2, Unlink, UploadCloud, UserPlus, Users, Video, type LucideIcon } from "lucide-react";
 import {
   AppTabsList,
   AppDataTable,
@@ -25,11 +25,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Link, useRouter } from "@/i18n/routing";
 import { useAccountContext } from "@/domains/auth";
 import { getOrganizationCapabilities } from "@/domains/organization/api/better-auth-organization";
-import { linkClientUnitRequest, unlinkClientUnitRequest, useClientOptionsQuery, usePropertyClientLinksQuery } from "@/domains/clients/api/clients";
+import { CLIENTS_PAGE_SIZE, linkClientUnitRequest, unlinkClientUnitRequest, useClientsPagedQuery, usePropertyClientLinksQuery } from "@/domains/clients/api/clients";
 import { createPropertyRequest, deletePropertyRequest, PROPERTIES_PAGE_SIZE, updatePropertyRequest, usePropertiesIndexQuery, usePropertyQuery } from "../api/properties";
 import { useProjectOptionsQuery } from "@/domains/projects/api/projects";
 import { ResourceMediaUploader } from "@/domains/media/components/resource-media-uploader";
-import { uploadAndAttachMedia } from "@/domains/media/api/media";
+import { deleteMediaRequest, setMediaCoverRequest, uploadAndAttachMedia, useResourceMediaQuery } from "@/domains/media/api/media";
 import type { PropertyStatus, PropertyUnit } from "../store/properties.types";
 import { propertySchema, type PropertyFormValues } from "../validation/property.schema";
 import { useOperationState } from "@/lib/utils/operation-state";
@@ -49,12 +49,26 @@ const propertyFilters = ["all", "available", "pending", "reserved", "sold", "dra
 const propertyViews = ["grid", "list"] as const;
 const unitLinkStatuses = ["interested", "shortlisted", "viewing", "offer", "rejected"] as const;
 const translatedPropertyTypes = ["Apartment", "Studio", "Villa", "Penthouse", "Compound", "Office", "Retail"] as const;
+type PropertyMediaAsset = NonNullable<ReturnType<typeof useResourceMediaQuery>>[number];
 
 function statusTone(status: PropertyStatus) {
   if (status === "available") return "success";
   if (status === "pending" || status === "reserved") return "warning";
   if (status === "sold") return "info";
   return "neutral";
+}
+
+function linkStatusTone(status: (typeof unitLinkStatuses)[number]) {
+  if (status === "offer") return "success";
+  if (status === "viewing" || status === "shortlisted") return "info";
+  if (status === "rejected") return "danger";
+  return "neutral";
+}
+
+function formatFileSize(size: number) {
+  if (!Number.isFinite(size) || size <= 0) return "0 KB";
+  if (size < 1024 * 1024) return `${Math.ceil(size / 1024)} KB`;
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function UnitTile({ unit, onDelete }: { unit: PropertyUnit; onDelete: (unit: PropertyUnit) => void }) {
@@ -173,9 +187,9 @@ export function PropertiesWorkspace() {
         trailing={<SearchBox value={search} onChange={setSearch} placeholder={t('toolbar.search')} name="unit-search" ariaLabel="Search units" />}
       />
       {workspaceStatus !== "ready" ? (
-        <WorkspaceQueryState status={workspaceStatus} />
+        <WorkspaceQueryState status={workspaceStatus} variant={view === "grid" ? "grid" : "table"} />
       ) : isQueryBlocked ? (
-        <HttpQueryState query={unitsQuery} />
+        <HttpQueryState query={unitsQuery} variant={view === "grid" ? "grid" : "table"} />
       ) : view === "grid" ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredUnits.map((unit) => <UnitTile key={unit.id} unit={unit} onDelete={setDeleting} />)}
@@ -225,20 +239,35 @@ export function PropertyDetailScreen({ id }: { id: string }) {
   const isWorkspaceReady = workspaceStatus === "ready";
   const workspaceOrganizationId = isWorkspaceReady ? account.workspace.organizationId ?? undefined : undefined;
   const unit = usePropertyQuery(workspaceOrganizationId, id) as PropertyUnit | null | undefined;
-  const propertyClientLinksQuery = usePropertyClientLinksQuery(workspaceOrganizationId, id);
+  const propertyClientLinksQuery = usePropertyClientLinksQuery(workspaceOrganizationId, unit?.id);
   const propertyClientLinks = useMemo(() => propertyClientLinksQuery ?? [], [propertyClientLinksQuery]);
-  const clientOptions = useClientOptionsQuery(workspaceOrganizationId) ?? [];
   const [pendingMediaFiles, setPendingMediaFiles] = useState<File[]>([]);
   const [pendingDocumentFiles, setPendingDocumentFiles] = useState<File[]>([]);
   const [isClientLinkOpen, setIsClientLinkOpen] = useState(false);
+  const [isMediaUploadOpen, setIsMediaUploadOpen] = useState(false);
+  const [isDocumentUploadOpen, setIsDocumentUploadOpen] = useState(false);
+  const [mediaViewerIndex, setMediaViewerIndex] = useState<number | null>(null);
   const [clientSearch, setClientSearch] = useState("");
   const [clientToLink, setClientToLink] = useState("");
   const [clientLinkStatus, setClientLinkStatus] = useState<(typeof unitLinkStatuses)[number]>("interested");
   const [clientLinkNotes, setClientLinkNotes] = useState("");
+  const [clientLinkEdit, setClientLinkEdit] = useState<{
+    clientId: string;
+    clientName: string;
+    status: (typeof unitLinkStatuses)[number];
+    notes: string;
+  } | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const mediaQuery = useResourceMediaQuery(workspaceOrganizationId, "property", unit?.id);
+  const mediaAssets = useMemo(() => mediaQuery ?? [], [mediaQuery]);
+  const galleryAssets = useMemo(() => mediaAssets.filter((asset) => asset.kind === "image" || asset.kind === "video"), [mediaAssets]);
+  const documentAssets = useMemo(() => mediaAssets.filter((asset) => asset.kind === "document"), [mediaAssets]);
+  const clientCandidatesQuery = useClientsPagedQuery(isClientLinkOpen ? workspaceOrganizationId : undefined, { search: clientSearch });
+  const clientCandidates = clientCandidatesQuery.results;
   const router = useRouter();
   const deleteOperation = useOperationState({ errorMessage: "Unit delete failed." });
   const linkOperation = useOperationState({ errorMessage: "Client link failed." });
+  const mediaOperation = useOperationState({ errorMessage: "Media action failed." });
   const queryDebug = {
     resourceType: "property",
     resourceId: id,
@@ -249,36 +278,35 @@ export function PropertyDetailScreen({ id }: { id: string }) {
   };
 
   if (workspaceStatus !== "ready") {
-    return <AppPageShell><WorkspaceQueryState status={workspaceStatus} /></AppPageShell>;
+    return <AppPageShell><WorkspaceQueryState status={workspaceStatus} variant="detail" /></AppPageShell>;
   }
 
   if (unit === undefined) {
-    return <AppPageShell><ProgressiveLoadingState title={t("detail.loadingTitle")} description={t("detail.loadingDesc")} debug={queryDebug} /></AppPageShell>;
+    return <AppPageShell><ProgressiveLoadingState title={t("detail.loadingTitle")} description={t("detail.loadingDesc")} debug={queryDebug} variant="detail" /></AppPageShell>;
   }
 
   if (unit === null) {
     return <AppPageShell><DetailNotFoundState title={t('detail.notFound')} description={t('detail.notFoundDesc')} backHref="/properties" backLabel={t('detail.back')} /></AppPageShell>;
   }
 
-  const recordFields = [
-    { label: t('detail.labels.city'), value: unit.city, icon: MapPin },
-    { label: t('detail.labels.type'), value: translatedPropertyTypes.includes(unit.type as (typeof translatedPropertyTypes)[number]) ? t(`types.${unit.type}`) : unit.type, icon: Home },
-    { label: t('detail.labels.purpose'), value: t(`purposes.${unit.purpose}`), icon: CheckCircle2 },
-    { label: t('detail.labels.price'), value: formatSAR(unit.price), icon: FolderOpen },
-  ];
-  const specFields = [
-    { label: t('detail.labels.project'), value: unit.project, icon: Building },
+  const optionItems = [
     { label: t('detail.labels.area'), value: unit.area, icon: Ruler },
     { label: t('detail.labels.beds'), value: unit.bedrooms, icon: Bed },
     { label: t('detail.labels.baths'), value: unit.bathrooms, icon: Bath },
+    { label: t('detail.labels.city'), value: unit.city, icon: MapPin },
+    { label: t('detail.labels.project'), value: unit.project, icon: Building },
+    { label: t('detail.labels.type'), value: translatedPropertyTypes.includes(unit.type as (typeof translatedPropertyTypes)[number]) ? t(`types.${unit.type}`) : unit.type, icon: Home },
+    { label: t('detail.labels.price'), value: formatSAR(unit.price), icon: FolderOpen },
+    { label: t('form.statusLabel'), value: t(`toolbar.filters.${unit.status}`), icon: CheckCircle2 },
+    { label: t('detail.labels.purpose'), value: t(`purposes.${unit.purpose}`), icon: FolderOpen },
   ];
   const linkedClientIds = new Set(propertyClientLinks.map(({ link }) => String(link.clientId)));
-  const clientSearchQuery = clientSearch.trim().toLowerCase();
-  const availableClients = clientOptions.filter((client) => !linkedClientIds.has(client.id));
-  const filteredAvailableClients = clientSearchQuery
-    ? availableClients.filter((client) => client.name.toLowerCase().includes(clientSearchQuery))
-    : availableClients;
-  const selectedClientName = clientOptions.find((client) => client.id === clientToLink)?.name;
+  const filteredAvailableClients = clientCandidates.filter((client) => !linkedClientIds.has(client.id));
+  const selectedClientName = clientCandidates.find((client) => client.id === clientToLink)?.name;
+  const activeMedia = mediaViewerIndex === null ? null : galleryAssets[mediaViewerIndex] ?? null;
+  const previewGallery = galleryAssets.slice(0, 5);
+  const hiddenGalleryCount = Math.max(0, galleryAssets.length - previewGallery.length);
+  const latestDocuments = documentAssets.slice(0, 3);
   const linkSelectedClient = () => {
     if (!clientToLink) return;
     void linkOperation.run(async () => {
@@ -290,164 +318,125 @@ export function PropertyDetailScreen({ id }: { id: string }) {
       setIsClientLinkOpen(false);
     }, { successMessage: t('detail.linkedClients.linked') });
   };
+  const saveClientLinkEdit = () => {
+    if (!clientLinkEdit) return;
+    void linkOperation.run(async () => {
+      if (!workspaceOrganizationId) throw new Error("Select an organization first.");
+      await linkClientUnitRequest(workspaceOrganizationId, clientLinkEdit.clientId, unit.id, clientLinkEdit.status, clientLinkEdit.notes);
+      setClientLinkEdit(null);
+    }, { successMessage: t('detail.linkedClients.linked') });
+  };
+  const openMediaViewer = (asset: PropertyMediaAsset) => {
+    const index = galleryAssets.findIndex((item) => item._id === asset._id);
+    if (index >= 0) setMediaViewerIndex(index);
+  };
+  const moveMediaViewer = (direction: -1 | 1) => {
+    setMediaViewerIndex((current) => {
+      if (current === null || galleryAssets.length === 0) return current;
+      return (current + direction + galleryAssets.length) % galleryAssets.length;
+    });
+  };
 
   return (
-    <AppPageShell contentClassName="space-y-6 pb-16">
-      <section className="rounded-[28px] border border-zinc-100 bg-white p-5 text-start dark:border-white/5 dark:bg-[#0A0A0A] md:p-6">
-        <div className="flex flex-col gap-4 border-b border-zinc-100 pb-5 dark:border-white/5 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-zinc-400">
-              <span>{unit.reference}</span>
-              <span className="h-1 w-1 rounded-full bg-zinc-300" />
-              <span>{unit.project}</span>
+    <AppPageShell contentClassName="space-y-6 pb-14">
+      <Tabs defaultValue="overview" className="space-y-6">
+        <section className="border-b border-zinc-200/70 pb-4 text-start dark:border-white/10">
+          <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+            <div className="min-w-0 space-y-3">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-500">
+                <span>{unit.project}</span>
+                <span className="h-1 w-1 rounded-full bg-zinc-400/70" />
+                <span>{unit.reference}</span>
+              </div>
+              <h1 className="max-w-5xl text-2xl font-black leading-tight text-zinc-950 dark:text-white md:text-3xl">
+                {unit.title}
+              </h1>
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusPill label={t(`toolbar.filters.${unit.status}`)} tone={statusTone(unit.status)} />
+                <StatusPill label={t(`purposes.${unit.purpose}`)} tone="neutral" />
+                <span className="inline-flex h-8 items-center rounded-full bg-zinc-950 px-3 text-xs font-black text-white dark:bg-white dark:text-zinc-950">{formatSAR(unit.price)}</span>
+              </div>
             </div>
-            <h1 className="mt-2 max-w-4xl text-3xl font-black leading-tight text-zinc-950 dark:text-white md:text-4xl">
-              {unit.title}
-            </h1>
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <StatusPill label={t(`toolbar.filters.${unit.status}`)} tone={statusTone(unit.status)} />
-              <StatusPill label={t(`purposes.${unit.purpose}`)} tone="neutral" />
-              <span className="rounded-full bg-zinc-50 px-3 py-1.5 text-xs font-bold text-zinc-500 dark:bg-white/[0.04]">{formatSAR(unit.price)}</span>
+            <div className="flex flex-wrap items-center gap-2 pt-1 xl:justify-end">
+              <Link href={`/properties/${unit.id}/edit`} className="inline-flex h-9 items-center justify-center rounded-xl border border-zinc-200 bg-transparent px-3 text-xs font-bold text-zinc-700 transition hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:border-white/10 dark:text-zinc-200 dark:hover:bg-white/5">
+                <Edit className="me-2 h-3.5 w-3.5" />{t('detail.edit')}
+              </Link>
+              <Button variant="ghost" onClick={() => setDeleting(true)} className="h-9 rounded-xl px-3 text-xs font-bold text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/25">
+                <Trash2 className="me-2 h-3.5 w-3.5" />{t('detail.delete')}
+              </Button>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2 lg:justify-end">
-            <Link href={`/properties/${unit.id}/edit`} className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-100 bg-white px-4 text-xs font-bold text-zinc-900 transition hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10">
-              <Edit className="me-2 h-3.5 w-3.5" />{t('detail.edit')}
-            </Link>
-            <Button variant="ghost" onClick={() => setDeleting(true)} className="h-10 rounded-xl px-4 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30">
-              <Trash2 className="me-2 h-3.5 w-3.5" />{t('detail.delete')}
+
+          <div className="mt-6">
+            <AppTabsList
+              className="gap-8"
+              tabs={[
+                { value: "overview", label: t('detail.tabs.overview'), icon: Home },
+                { value: "media", label: t('detail.tabs.media'), icon: ImageIcon },
+                { value: "files", label: t('detail.tabs.files'), icon: FileText },
+                { value: "clients", label: t('detail.tabs.clients'), icon: Users },
+              ]}
+            />
+          </div>
+        </section>
+        <TabsContent value="overview" className="space-y-6">
+          <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+            <div className="space-y-6">
+              <PropertyGalleryPreview
+                assets={previewGallery}
+                hiddenCount={hiddenGalleryCount}
+                isLoading={mediaQuery === undefined}
+                onOpen={openMediaViewer}
+                onAdd={() => setIsMediaUploadOpen(true)}
+              />
+              <PropertyOptionStrip options={optionItems} />
+              <section className="border-t border-zinc-200/70 pt-5 text-start dark:border-white/10" data-property-description-section>
+                <p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">{t('form.descLabel')}</p>
+                <p className="mt-2 max-w-4xl text-sm font-semibold leading-7 text-zinc-700 dark:text-zinc-300">{unit.description}</p>
+              </section>
+            </div>
+            <PropertyLegalSummary unit={unit} documents={latestDocuments} documentCount={documentAssets.length} />
+          </section>
+        </TabsContent>
+
+        <TabsContent value="media" className="space-y-4" data-property-media-tab>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="text-start">
+              <p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">{t('detail.tabs.media')}</p>
+              <h2 className="mt-1 text-lg font-black text-zinc-950 dark:text-white">{t('detail.mediaTitle')}</h2>
+            </div>
+            <Button type="button" onClick={() => setIsMediaUploadOpen(true)} className="h-9 rounded-xl px-3 text-xs font-bold">
+              <UploadCloud className="me-2 h-3.5 w-3.5" />
+              {t('detail.mediaPick')}
             </Button>
           </div>
-        </div>
-
-        <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.25fr)_420px]">
-          <div className="overflow-hidden rounded-[24px] border border-zinc-100 bg-zinc-50 dark:border-white/5 dark:bg-white/[0.02]">
-            <div className="relative aspect-[16/9] min-h-[260px]">
-              {unit.coverImageUrl ? (
-                <Image src={unit.coverImageUrl} alt={unit.title} fill priority sizes="(max-width: 1280px) 100vw, 720px" className="object-cover grayscale" />
-              ) : (
-                <div className="flex h-full min-h-[260px] w-full items-center justify-center bg-zinc-100 text-zinc-300 dark:bg-white/5 dark:text-white/20">
-                  <Home className="h-12 w-12" />
-                </div>
-              )}
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-5 text-white">
-                <p className="max-w-3xl text-lg font-black leading-7 md:text-xl">{unit.description}</p>
-              </div>
-            </div>
-          </div>
-
-          <aside className="rounded-[24px] border border-zinc-100 bg-zinc-50/50 p-4 dark:border-white/5 dark:bg-white/[0.02]">
-            <div className="grid grid-cols-2 gap-3">
-              {specFields.map(({ label, value, icon: Icon }) => (
-                <div key={label} className="rounded-2xl bg-white p-4 text-start dark:bg-[#0A0A0A]">
-                  <Icon className="h-4 w-4 text-zinc-300" />
-                  <p className="mt-4 text-[11px] font-bold text-zinc-400">{label}</p>
-                  <p className="mt-1 truncate text-base font-black text-zinc-950 dark:text-white">{value}</p>
-                </div>
-              ))}
-            </div>
-            <div className="mt-3 rounded-2xl bg-zinc-950 p-4 text-white dark:bg-white dark:text-zinc-950">
-              <p className="text-[11px] font-bold opacity-60">{t('detail.valueTitle')}</p>
-              <p className="mt-2 text-2xl font-black">{formatSAR(unit.price)}</p>
-              <p className="mt-3 text-xs font-semibold leading-5 opacity-60">{t('detail.valueDesc')}</p>
-            </div>
-          </aside>
-        </div>
-      </section>
-
-      <Tabs defaultValue="overview" className="space-y-5">
-        <AppTabsList tabs={[
-          { value: "overview", label: t('detail.tabs.overview'), icon: Home },
-          { value: "media", label: t('detail.tabs.media'), icon: ImageIcon },
-          { value: "files", label: t('detail.tabs.files'), icon: FileText },
-          { value: "clients", label: t('detail.tabs.clients'), icon: Users },
-        ]} />
-
-        <TabsContent value="overview" className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="rounded-[24px] border border-zinc-100 bg-white p-5 text-start dark:border-white/5 dark:bg-[#0A0A0A]">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-xs font-bold text-zinc-400">{t('detail.recordSubtitle')}</p>
-                <h2 className="mt-1 text-xl font-black text-zinc-950 dark:text-white">{t('detail.recordTitle')}</h2>
-              </div>
-              <StatusPill label={t(`toolbar.filters.${unit.status}`)} tone={statusTone(unit.status)} />
-            </div>
-            <div className="mt-5 grid gap-3 md:grid-cols-2">
-              {recordFields.map(({ label, value, icon: Icon }) => (
-                <div key={label} className="rounded-2xl border border-zinc-100 p-4 dark:border-white/5">
-                  <div className="flex items-center gap-2 text-zinc-400">
-                    <Icon className="h-4 w-4" />
-                    <p className="text-[11px] font-bold">{label}</p>
-                  </div>
-                  <p className="mt-3 truncate text-sm font-black text-zinc-950 dark:text-white">{value}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-[24px] border border-zinc-100 bg-white p-5 text-start dark:border-white/5 dark:bg-[#0A0A0A]">
-            <p className="text-xs font-bold text-zinc-400">{t('detail.readinessTitle')}</p>
-            <h2 className="mt-1 text-xl font-black text-zinc-950 dark:text-white">{t('detail.readinessScore')}</h2>
-            <div className="mt-5 space-y-3">
-              {[
-                [t('detail.readiness.media'), Boolean(unit.coverImageUrl)],
-                [t('detail.readiness.description'), Boolean(unit.description)],
-                [t('detail.readiness.commercial'), Boolean(unit.price && unit.area)],
-              ].map(([label, active]) => (
-                <div key={String(label)} className="flex items-center justify-between rounded-2xl bg-zinc-50 px-4 py-3 dark:bg-white/[0.03]">
-                  <span className="text-sm font-bold text-zinc-700 dark:text-zinc-200">{label}</span>
-                  <span className={cn("h-2.5 w-2.5 rounded-full", active ? "bg-emerald-500" : "bg-zinc-300")} />
-                </div>
-              ))}
-            </div>
-          </div>
+          <PropertyMediaGrid assets={galleryAssets} isLoading={mediaQuery === undefined} onOpen={openMediaViewer} onSetCover={(asset) => void mediaOperation.run(() => setMediaCoverRequest(asset.organizationId, asset._id), { successMessage: "Cover updated." })} onDelete={(asset) => void mediaOperation.run(() => deleteMediaRequest(asset.organizationId, asset._id), { successMessage: "Media deleted." })} />
+          {mediaOperation.error && <p className="text-xs font-bold text-red-500">{mediaOperation.error}</p>}
         </TabsContent>
 
-        <TabsContent value="media" className="rounded-[24px] border border-zinc-100 bg-white p-5 text-start dark:border-white/5 dark:bg-[#0A0A0A]">
-          <ResourceMediaUploader
-            organizationId={workspaceOrganizationId}
-            resourceType="property"
-            resourceId={unit.id}
-            pendingFiles={pendingMediaFiles}
-            onPendingFilesChange={setPendingMediaFiles}
-            allowedKinds={["image", "video"]}
-            maxVideos={1}
-            immediate
-            labels={{
-              title: t('detail.mediaTitle'),
-              description: t('detail.mediaDesc'),
-              pick: t('detail.mediaPick'),
-              unsupported: t('detail.mediaUnsupported'),
-            }}
-          />
-        </TabsContent>
-
-        <TabsContent value="files" className="rounded-[24px] border border-zinc-100 bg-white p-5 text-start dark:border-white/5 dark:bg-[#0A0A0A]">
-          <ResourceMediaUploader
-            organizationId={workspaceOrganizationId}
-            resourceType="property"
-            resourceId={unit.id}
-            pendingFiles={pendingDocumentFiles}
-            onPendingFilesChange={setPendingDocumentFiles}
-            allowedKinds={["document"]}
-            immediate
-            labels={{
-              title: t('detail.filesTitle'),
-              description: t('detail.filesDesc'),
-              pick: t('detail.filesPick'),
-              unsupported: t('detail.filesUnsupported'),
-            }}
-          />
+        <TabsContent value="files" className="space-y-4" data-property-files-tab>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="text-start">
+              <p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">{t('detail.tabs.files')}</p>
+              <h2 className="mt-1 text-lg font-black text-zinc-950 dark:text-white">{t('detail.filesTitle')}</h2>
+            </div>
+            <Button type="button" onClick={() => setIsDocumentUploadOpen(true)} className="h-9 rounded-xl px-3 text-xs font-bold">
+              <UploadCloud className="me-2 h-3.5 w-3.5" />
+              {t('detail.filesPick')}
+            </Button>
+          </div>
+          <PropertyDocumentList documents={documentAssets} isLoading={mediaQuery === undefined} onDelete={(asset) => void mediaOperation.run(() => deleteMediaRequest(asset.organizationId, asset._id), { successMessage: "Media deleted." })} />
+          {mediaOperation.error && <p className="text-xs font-bold text-red-500">{mediaOperation.error}</p>}
         </TabsContent>
 
         <TabsContent value="clients" className="space-y-4">
-          <section className="rounded-[24px] border border-zinc-100 bg-white p-5 text-start dark:border-white/5 dark:bg-[#0A0A0A]">
+          <section className="text-start">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-xs font-bold text-zinc-400">{t('detail.linkedClients.subtitle')}</p>
-                <h2 className="mt-1 text-xl font-black text-zinc-950 dark:text-white">{t('detail.linkedClients.title')}</h2>
+                <p className="text-[11px] font-bold text-zinc-500">{t('detail.linkedClients.subtitle')}</p>
+                <h2 className="mt-1 text-lg font-black text-zinc-950 dark:text-white">{t('detail.linkedClients.title')}</h2>
               </div>
-              <Button type="button" onClick={() => setIsClientLinkOpen(true)} className="h-10 rounded-xl px-4 text-xs font-bold">
+              <Button type="button" onClick={() => setIsClientLinkOpen(true)} className="h-9 rounded-xl px-3 text-xs font-bold">
                 <UserPlus className="me-2 h-3.5 w-3.5" />
                 {t('detail.linkedClients.linkClient')}
               </Button>
@@ -456,52 +445,177 @@ export function PropertyDetailScreen({ id }: { id: string }) {
             {linkOperation.error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-bold text-red-600 dark:border-red-950/50 dark:bg-red-950/20">{linkOperation.error}</p>}
 
             {propertyClientLinksQuery === undefined ? (
-              <div className="mt-5 grid gap-3 md:grid-cols-2">
-                {Array.from({ length: 2 }).map((_, index) => <div key={index} className="h-36 animate-pulse rounded-2xl bg-zinc-100 dark:bg-white/[0.04]" />)}
+              <div className="mt-4 overflow-hidden border-y border-zinc-200/70 dark:border-white/10" data-property-linked-clients-loading>
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <div key={index} className="grid grid-cols-[120px_minmax(0,1fr)_140px_140px_44px] items-center gap-3 border-b border-zinc-200/70 px-3 py-3 last:border-b-0 dark:border-white/10">
+                    <div className="h-5 animate-pulse rounded-full bg-zinc-200 dark:bg-white/10" />
+                    <div className="h-4 animate-pulse rounded-full bg-zinc-200 dark:bg-white/10" />
+                    <div className="h-4 animate-pulse rounded-full bg-zinc-200 dark:bg-white/10" />
+                    <div className="h-4 animate-pulse rounded-full bg-zinc-200 dark:bg-white/10" />
+                    <div className="h-8 animate-pulse rounded-xl bg-zinc-200 dark:bg-white/10" />
+                  </div>
+                ))}
               </div>
             ) : propertyClientLinks.length === 0 ? (
-              <div className="mt-5 rounded-[24px] border border-dashed border-zinc-200 p-8 text-center dark:border-white/10">
+              <div className="mt-4 border-y border-dashed border-zinc-300/80 py-8 text-center dark:border-white/15">
                 <Users className="mx-auto h-8 w-8 text-zinc-300" />
                 <p className="mt-3 text-sm font-black text-zinc-900 dark:text-white">{t('detail.linkedClients.emptyTitle')}</p>
                 <p className="mt-1 text-xs font-semibold text-zinc-400">{t('detail.linkedClients.emptyDesc')}</p>
+                <Button type="button" onClick={() => setIsClientLinkOpen(true)} className="mt-5 h-9 rounded-xl px-4 text-xs font-bold">
+                  <UserPlus className="me-2 h-3.5 w-3.5" />
+                  {t('detail.linkedClients.linkClient')}
+                </Button>
               </div>
             ) : (
-              <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {propertyClientLinks.map(({ link, client }) => (
-                  <article key={link.id} className="rounded-[22px] border border-zinc-100 bg-zinc-50/50 p-4 dark:border-white/5 dark:bg-white/[0.02]">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        {client ? (
-                          <Link href={`/clients/${client.id}`} className="block truncate text-base font-black text-zinc-950 hover:underline dark:text-white">{client.name}</Link>
-                        ) : (
-                          <p className="text-base font-black text-zinc-400">{t('detail.linkedClients.unavailable')}</p>
-                        )}
-                        <p className="mt-1 truncate text-xs font-bold text-zinc-400">{client ? client.type : link.clientId}</p>
-                      </div>
-                      <StatusPill label={t(`detail.linkedClients.statuses.${link.status}`)} tone="info" />
-                    </div>
-                    {client && (
-                      <div className="mt-4 space-y-2 text-xs font-bold text-zinc-500 dark:text-zinc-400">
-                        <p className="flex min-w-0 items-center gap-2"><Mail className="h-3.5 w-3.5 shrink-0 text-zinc-300" /><span className="truncate">{client.contact}</span></p>
-                        <p className="flex min-w-0 items-center gap-2"><Phone className="h-3.5 w-3.5 shrink-0 text-zinc-300" /><span className="truncate">{client.phone}</span></p>
-                      </div>
-                    )}
-                    {link.notes && <p className="mt-4 rounded-2xl border border-zinc-100 bg-white p-3 text-xs font-semibold text-zinc-500 dark:border-white/5 dark:bg-[#0A0A0A] dark:text-zinc-400">{link.notes}</p>}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={linkOperation.isRunning}
-                      onClick={() => void linkOperation.run(() => {
-                        if (!workspaceOrganizationId) throw new Error("Select an organization first.");
-                        return unlinkClientUnitRequest(workspaceOrganizationId, link.clientId, unit.id);
-                      }, { successMessage: t('detail.linkedClients.unlinked') })}
-                      className="mt-4 h-10 w-full rounded-xl text-xs font-bold text-red-600 hover:text-red-700"
+              <div className="mt-4" data-property-linked-clients-table>
+                <div className="hidden overflow-hidden border-y border-zinc-200/70 dark:border-white/10 md:block">
+                  <table className="w-full table-fixed text-start">
+                    <thead className="bg-zinc-100/70 text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:bg-white/[0.035]">
+                      <tr>
+                        <th className="w-32 px-3 py-3 text-start">{t('form.statusLabel')}</th>
+                        <th className="px-3 py-3 text-start">{t('detail.linkedClients.title')}</th>
+                        <th className="w-44 px-3 py-3 text-start">{t('detail.labels.type')}</th>
+                        <th className="w-52 px-3 py-3 text-start">{t('detail.linkedClients.notes')}</th>
+                        <th className="w-24 px-3 py-3 text-end" aria-label={t('detail.linkedClients.unlink')} />
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200/70 dark:divide-white/10">
+                      {propertyClientLinks.map(({ link, client }) => (
+                        <tr
+                          key={link.id}
+                          className={cn("transition hover:bg-zinc-100/60 dark:hover:bg-white/[0.025]", client && "cursor-pointer")}
+                          onClick={() => {
+                            if (client) router.push(`/clients/${client.id}`);
+                          }}
+                        >
+                          <td className="px-3 py-3"><StatusPill label={t(`detail.linkedClients.statuses.${link.status}`)} tone="info" /></td>
+                          <td className="min-w-0 px-3 py-3">
+                            {client ? (
+                              <Link href={`/clients/${client.id}`} className="block truncate text-sm font-black text-zinc-950 hover:underline dark:text-white">{client.name}</Link>
+                            ) : (
+                              <p className="truncate text-sm font-black text-zinc-400">{t('detail.linkedClients.unavailable')}</p>
+                            )}
+                            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-bold text-zinc-500">
+                              {client && <span className="flex min-w-0 items-center gap-1"><Mail className="h-3 w-3 shrink-0" /><span className="truncate">{client.contact}</span></span>}
+                              {client && <span className="flex min-w-0 items-center gap-1"><Phone className="h-3 w-3 shrink-0" /><span className="truncate">{client.phone}</span></span>}
+                            </div>
+                          </td>
+                          <td className="px-3 py-3 text-xs font-bold text-zinc-500">{client ? client.type : link.clientId}</td>
+                          <td className="px-3 py-3 text-xs font-semibold text-zinc-500"><span className="line-clamp-2">{link.notes || "—"}</span></td>
+                          <td className="px-3 py-3 text-end">
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                aria-label="Quick edit client link"
+                                disabled={linkOperation.isRunning}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  setClientLinkEdit({
+                                    clientId: String(link.clientId),
+                                    clientName: client?.name ?? t('detail.linkedClients.unavailable'),
+                                    status: link.status,
+                                    notes: link.notes ?? "",
+                                  });
+                                }}
+                                className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-white/[0.05] dark:hover:text-white"
+                              >
+                                <Edit className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                aria-label={t('detail.linkedClients.unlink')}
+                                disabled={linkOperation.isRunning}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  void linkOperation.run(() => {
+                                  if (!workspaceOrganizationId) throw new Error("Select an organization first.");
+                                  return unlinkClientUnitRequest(workspaceOrganizationId, link.clientId, unit.id);
+                                }, { successMessage: t('detail.linkedClients.unlinked') });
+                                }}
+                                className="h-8 w-8 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/25"
+                              >
+                                <Unlink className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="grid gap-2 md:hidden">
+                  {propertyClientLinks.map(({ link, client }) => (
+                    <article
+                      key={link.id}
+                      className={cn("border-b border-zinc-200/70 py-3 last:border-b-0 dark:border-white/10", client && "cursor-pointer")}
+                      onClick={() => {
+                        if (client) router.push(`/clients/${client.id}`);
+                      }}
                     >
-                      <Trash2 className="me-2 h-3.5 w-3.5" />
-                      {t('detail.linkedClients.unlink')}
-                    </Button>
-                  </article>
-                ))}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <StatusPill label={t(`detail.linkedClients.statuses.${link.status}`)} tone="info" />
+                          {client ? (
+                            <Link href={`/clients/${client.id}`} className="mt-2 block truncate text-sm font-black text-zinc-950 dark:text-white">{client.name}</Link>
+                          ) : (
+                            <p className="mt-2 truncate text-sm font-black text-zinc-400">{t('detail.linkedClients.unavailable')}</p>
+                          )}
+                          <p className="mt-1 truncate text-xs font-bold text-zinc-500">{client ? client.type : link.clientId}</p>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Quick edit client link"
+                            disabled={linkOperation.isRunning}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setClientLinkEdit({
+                                clientId: String(link.clientId),
+                                clientName: client?.name ?? t('detail.linkedClients.unavailable'),
+                                status: link.status,
+                                notes: link.notes ?? "",
+                              });
+                            }}
+                            className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-white/[0.05] dark:hover:text-white"
+                          >
+                            <Edit className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            aria-label={t('detail.linkedClients.unlink')}
+                            disabled={linkOperation.isRunning}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              void linkOperation.run(() => {
+                              if (!workspaceOrganizationId) throw new Error("Select an organization first.");
+                              return unlinkClientUnitRequest(workspaceOrganizationId, link.clientId, unit.id);
+                            }, { successMessage: t('detail.linkedClients.unlinked') });
+                            }}
+                            className="h-8 w-8 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/25"
+                          >
+                            <Unlink className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                      {client && (
+                        <div className="mt-3 space-y-1 text-xs font-bold text-zinc-500">
+                          <p className="flex min-w-0 items-center gap-2"><Mail className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{client.contact}</span></p>
+                          <p className="flex min-w-0 items-center gap-2"><Phone className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{client.phone}</span></p>
+                        </div>
+                      )}
+                      {link.notes && <p className="mt-3 line-clamp-2 text-xs font-semibold text-zinc-500">{link.notes}</p>}
+                    </article>
+                  ))}
+                </div>
               </div>
             )}
           </section>
@@ -515,13 +629,13 @@ export function PropertyDetailScreen({ id }: { id: string }) {
           setClientToLink("");
         }
       }}>
-        <DialogContent className="max-h-[88vh] max-w-3xl overflow-hidden rounded-[28px] border-zinc-100 bg-white p-0 text-zinc-900 shadow-2xl dark:border-white/10 dark:bg-[#0A0A0A] dark:text-white">
-          <DialogHeader className="border-b border-zinc-100 p-5 pe-14 text-start dark:border-white/5">
-            <DialogTitle className="text-xl font-black text-zinc-950 dark:text-white">{t('detail.linkedClients.modalTitle')}</DialogTitle>
-            <DialogDescription className="text-sm font-semibold text-zinc-400">{t('detail.linkedClients.modalDesc')}</DialogDescription>
+        <DialogContent className="max-h-[88vh] max-w-2xl overflow-hidden rounded-2xl border-zinc-200 bg-zinc-50 p-0 text-zinc-900 shadow-2xl dark:border-white/10 dark:bg-[#0A0A0A] dark:text-white">
+          <DialogHeader className="border-b border-zinc-200/80 p-4 pe-14 text-start dark:border-white/10">
+            <DialogTitle className="text-lg font-black text-zinc-950 dark:text-white">{t('detail.linkedClients.modalTitle')}</DialogTitle>
+            <DialogDescription className="text-xs font-semibold text-zinc-500">{t('detail.linkedClients.modalDesc')}</DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-3 border-b border-zinc-100 p-5 dark:border-white/5 md:grid-cols-[minmax(0,1fr)_180px]">
+          <div className="grid gap-4 border-b border-zinc-200/80 p-4 dark:border-white/10">
             <label className="relative block">
               <span className="sr-only">{t('detail.linkedClients.search')}</span>
               <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
@@ -529,35 +643,61 @@ export function PropertyDetailScreen({ id }: { id: string }) {
                 value={clientSearch}
                 onChange={(event) => setClientSearch(event.target.value)}
                 placeholder={t('detail.linkedClients.search')}
-                className="h-11 w-full rounded-xl border border-zinc-100 bg-zinc-50 ps-10 pe-3 text-sm font-bold text-zinc-900 outline-none transition focus:border-zinc-300 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:focus:border-white/20"
+                className="h-11 w-full rounded-xl border border-zinc-200 bg-zinc-100/70 ps-10 pe-3 text-sm font-bold text-zinc-900 outline-none transition focus:border-zinc-400 dark:border-white/10 dark:bg-white/[0.035] dark:text-white dark:focus:border-white/20"
               />
             </label>
-            <label className="block text-start">
+            <div className="text-start" data-client-link-status-chips>
               <span className="text-[11px] font-bold text-zinc-400">{t('detail.linkedClients.linkStatus')}</span>
-              <select
-                value={clientLinkStatus}
-                onChange={(event) => setClientLinkStatus(event.target.value as (typeof unitLinkStatuses)[number])}
-                className="mt-1 h-11 w-full rounded-xl border border-zinc-100 bg-zinc-50 px-3 text-sm font-bold text-zinc-900 outline-none dark:border-white/10 dark:bg-white/[0.03] dark:text-white"
-              >
-                {unitLinkStatuses.map((status) => <option key={status} value={status}>{t(`detail.linkedClients.statuses.${status}`)}</option>)}
-              </select>
-            </label>
-            <label className="block text-start md:col-span-2">
+              <div className="mt-2 flex flex-wrap gap-2">
+                {unitLinkStatuses.map((status) => {
+                  const tone = linkStatusTone(status);
+                  return (
+                    <button
+                      key={status}
+                      type="button"
+                      onClick={() => setClientLinkStatus(status)}
+                      className={cn(
+                        "inline-flex h-8 items-center gap-2 rounded-full border px-3 text-[11px] font-black transition",
+                        clientLinkStatus === status
+                          ? "border-zinc-950 bg-zinc-950 text-white dark:border-white dark:bg-white dark:text-zinc-950"
+                          : "border-zinc-200 bg-transparent text-zinc-500 hover:bg-zinc-100 dark:border-white/10 dark:hover:bg-white/[0.04]",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "h-1.5 w-1.5 rounded-full",
+                          tone === "success" && "bg-emerald-500",
+                          tone === "info" && "bg-blue-500",
+                          tone === "danger" && "bg-red-500",
+                          tone === "neutral" && "bg-zinc-400",
+                        )}
+                      />
+                      {t(`detail.linkedClients.statuses.${status}`)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <label className="block text-start">
               <span className="text-[11px] font-bold text-zinc-400">{t('detail.linkedClients.notes')}</span>
               <input
                 value={clientLinkNotes}
                 onChange={(event) => setClientLinkNotes(event.target.value)}
                 placeholder={t('detail.linkedClients.notes')}
-                className="mt-1 h-11 w-full rounded-xl border border-zinc-100 bg-zinc-50 px-3 text-sm font-bold text-zinc-900 outline-none dark:border-white/10 dark:bg-white/[0.03] dark:text-white"
+                className="mt-1 h-10 w-full rounded-xl border border-zinc-200 bg-zinc-100/70 px-3 text-sm font-bold text-zinc-900 outline-none dark:border-white/10 dark:bg-white/[0.035] dark:text-white"
               />
             </label>
           </div>
 
-          <div className="max-h-[46vh] overflow-y-auto p-5">
-            {clientOptions.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-zinc-200 p-8 text-center text-sm font-bold text-zinc-400 dark:border-white/10">{t('detail.linkedClients.noClients')}</div>
+          <div className="max-h-[46vh] overflow-y-auto p-4" data-client-candidate-paged-list>
+            {clientCandidatesQuery.queryStatus === "loading" ? (
+              <div className="grid gap-2">
+                {Array.from({ length: 4 }).map((_, index) => <div key={index} className="h-16 animate-pulse rounded-lg bg-zinc-200/70 dark:bg-white/10" />)}
+              </div>
+            ) : clientCandidates.length === 0 ? (
+              <div className="border-y border-dashed border-zinc-200 py-8 text-center text-sm font-bold text-zinc-400 dark:border-white/10">{t('detail.linkedClients.noClients')}</div>
             ) : filteredAvailableClients.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-zinc-200 p-8 text-center text-sm font-bold text-zinc-400 dark:border-white/10">{t('detail.linkedClients.noResults')}</div>
+              <div className="border-y border-dashed border-zinc-200 py-8 text-center text-sm font-bold text-zinc-400 dark:border-white/10">{t('detail.linkedClients.noResults')}</div>
             ) : (
               <div className="grid gap-2">
                 {filteredAvailableClients.map((client) => (
@@ -566,27 +706,200 @@ export function PropertyDetailScreen({ id }: { id: string }) {
                     type="button"
                     onClick={() => setClientToLink(client.id)}
                     className={cn(
-                      "flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-start transition",
+                      "flex min-h-16 items-center justify-between gap-4 rounded-lg border px-4 py-3 text-start transition",
                       clientToLink === client.id
                         ? "border-zinc-950 bg-zinc-950 text-white dark:border-white dark:bg-white dark:text-zinc-950"
                         : "border-zinc-100 bg-white text-zinc-950 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/[0.02] dark:text-white dark:hover:bg-white/[0.05]",
                     )}
                   >
-                    <span className="min-w-0 truncate text-sm font-black">{client.name}</span>
-                    <span className="text-[11px] font-bold opacity-50">{client.id}</span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-black">{client.name}</span>
+                      <span className="mt-1 flex min-w-0 flex-wrap items-center gap-2 text-[11px] font-bold opacity-65">
+                        <StatusPill label={t(`types.${client.type}`)} tone="neutral" />
+                        <span className="truncate">{client.contact}</span>
+                        <span className="truncate">{client.phone}</span>
+                      </span>
+                    </span>
+                    <span className="shrink-0 text-[11px] font-black opacity-55">{client.status}</span>
                   </button>
                 ))}
+                <InfiniteScrollSentinel
+                  status={clientCandidatesQuery.status}
+                  loadMore={clientCandidatesQuery.loadMore}
+                  pageSize={CLIENTS_PAGE_SIZE}
+                  className="py-2"
+                />
               </div>
             )}
           </div>
 
-          <div className="flex flex-col-reverse gap-2 border-t border-zinc-100 p-5 dark:border-white/5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col-reverse gap-2 border-t border-zinc-200/80 p-4 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
             <p className="truncate text-xs font-bold text-zinc-400">{selectedClientName ? t('detail.linkedClients.selected', { name: selectedClientName }) : t('detail.linkedClients.noneSelected')}</p>
             <Button type="button" disabled={!clientToLink || linkOperation.isRunning} onClick={linkSelectedClient} className="h-10 rounded-xl px-5 text-xs font-bold">
               <UserPlus className="me-2 h-3.5 w-3.5" />
               {t('detail.linkedClients.link')}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={Boolean(clientLinkEdit)} onOpenChange={(open) => {
+        if (!open) setClientLinkEdit(null);
+      }}>
+        <DialogContent className="max-w-xl rounded-2xl border-zinc-200 bg-zinc-50 p-6 text-zinc-900 dark:border-white/10 dark:bg-[#0A0A0A] dark:text-white">
+          <DialogHeader className="pe-10 text-start pb-5">
+            <DialogTitle className="text-lg font-black">Quick edit client link</DialogTitle>
+            <DialogDescription className="mt-2 max-w-lg text-xs font-semibold leading-6 text-zinc-500">
+              {clientLinkEdit?.clientName}
+            </DialogDescription>
+          </DialogHeader>
+
+          {clientLinkEdit && (
+            <div className="space-y-5" data-client-link-quick-edit>
+              <div className="text-start">
+                <span className="text-[11px] font-bold text-zinc-400">{t('detail.linkedClients.linkStatus')}</span>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {unitLinkStatuses.map((status) => {
+                    const tone = linkStatusTone(status);
+                    return (
+                      <button
+                        key={status}
+                        type="button"
+                        onClick={() => setClientLinkEdit((current) => current ? { ...current, status } : current)}
+                        className={cn(
+                          "inline-flex h-8 items-center gap-2 rounded-full border px-3 text-[11px] font-black transition",
+                          clientLinkEdit.status === status
+                            ? "border-zinc-950 bg-zinc-950 text-white dark:border-white dark:bg-white dark:text-zinc-950"
+                            : "border-zinc-200 bg-transparent text-zinc-500 hover:bg-zinc-100 dark:border-white/10 dark:hover:bg-white/[0.04]",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "h-1.5 w-1.5 rounded-full",
+                            tone === "success" && "bg-emerald-500",
+                            tone === "info" && "bg-blue-500",
+                            tone === "danger" && "bg-red-500",
+                            tone === "neutral" && "bg-zinc-400",
+                          )}
+                        />
+                        {t(`detail.linkedClients.statuses.${status}`)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <label className="block text-start">
+                <span className="text-[11px] font-bold text-zinc-400">{t('detail.linkedClients.notes')}</span>
+                <Textarea
+                  value={clientLinkEdit.notes}
+                  onChange={(event) => setClientLinkEdit((current) => current ? { ...current, notes: event.target.value } : current)}
+                  className="mt-2 min-h-28 rounded-lg border-zinc-200 bg-white text-sm font-semibold dark:border-white/10 dark:bg-white/[0.035]"
+                />
+              </label>
+
+              {linkOperation.error && <p className="text-xs font-bold text-red-500">{linkOperation.error}</p>}
+
+              <div className="flex flex-col-reverse gap-2 border-t border-zinc-200/70 pt-4 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
+                <Button type="button" variant="ghost" onClick={() => setClientLinkEdit(null)} className="h-10 rounded-lg px-4 text-xs font-bold">
+                  {t('detail.back')}
+                </Button>
+                <Button type="button" onClick={saveClientLinkEdit} disabled={linkOperation.isRunning} className="h-10 rounded-lg px-5 text-xs font-bold">
+                  <Edit className="me-2 h-3.5 w-3.5" />
+                  {t('detail.edit')}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      <Dialog open={mediaViewerIndex !== null} onOpenChange={(open) => !open && setMediaViewerIndex(null)}>
+        <DialogContent className="max-h-[92vh] max-w-5xl overflow-hidden rounded-2xl border-zinc-200 bg-zinc-950 p-0 text-white dark:border-white/10" overlayClassName="bg-black/70 supports-backdrop-filter:backdrop-blur-sm">
+          {activeMedia && (
+            <div data-property-media-viewer>
+              <div className="flex items-center justify-between gap-4 border-b border-white/10 p-4 pe-14">
+                <div className="min-w-0 text-start">
+                  <DialogTitle className="truncate text-base font-black text-white">{activeMedia.name}</DialogTitle>
+                  <DialogDescription className="mt-1 text-xs font-bold text-white/45">{mediaViewerIndex! + 1} / {galleryAssets.length}</DialogDescription>
+                </div>
+              </div>
+              <div className="relative flex h-[min(68vh,720px)] items-center justify-center bg-black">
+                {activeMedia.kind === "image" ? (
+                  <Image src={activeMedia.url} alt={activeMedia.name} fill sizes="90vw" className="object-contain" />
+                ) : (
+                  <video src={activeMedia.url} controls className="h-full w-full object-contain" />
+                )}
+                {galleryAssets.length > 1 && (
+                  <>
+                    <Button type="button" variant="ghost" size="icon" onClick={() => moveMediaViewer(-1)} className="absolute start-3 top-1/2 h-10 w-10 -translate-y-1/2 rounded-full bg-white/10 text-white hover:bg-white/20">
+                      <ChevronLeft className="h-5 w-5 rtl:rotate-180" />
+                    </Button>
+                    <Button type="button" variant="ghost" size="icon" onClick={() => moveMediaViewer(1)} className="absolute end-3 top-1/2 h-10 w-10 -translate-y-1/2 rounded-full bg-white/10 text-white hover:bg-white/20">
+                      <ChevronRight className="h-5 w-5 rtl:rotate-180" />
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isMediaUploadOpen} onOpenChange={(open) => {
+        setIsMediaUploadOpen(open);
+        if (!open) setPendingMediaFiles([]);
+      }}>
+        <DialogContent className="max-h-[88vh] max-w-3xl overflow-y-auto rounded-2xl border-zinc-200 bg-zinc-50 p-6 text-zinc-900 dark:border-white/10 dark:bg-[#0A0A0A] dark:text-white">
+          <DialogHeader className="pe-10 text-start pb-5">
+            <DialogTitle className="text-lg font-black">{t('detail.mediaTitle')}</DialogTitle>
+            <DialogDescription className="mt-2 max-w-xl text-xs font-semibold leading-6 text-zinc-500">{t('detail.mediaDesc')}</DialogDescription>
+          </DialogHeader>
+          <ResourceMediaUploader
+            organizationId={workspaceOrganizationId}
+            resourceType="property"
+            resourceId={unit.id}
+            pendingFiles={pendingMediaFiles}
+            onPendingFilesChange={setPendingMediaFiles}
+            allowedKinds={["image", "video"]}
+            maxVideos={1}
+            immediate
+            className="mt-2 rounded-none border-0 bg-transparent p-0 dark:border-0 dark:bg-transparent"
+            labels={{
+              title: t('detail.mediaTitle'),
+              description: t('detail.mediaDesc'),
+              hideHeader: true,
+              hideDropDescription: true,
+              pick: t('detail.mediaPick'),
+              unsupported: t('detail.mediaUnsupported'),
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isDocumentUploadOpen} onOpenChange={(open) => {
+        setIsDocumentUploadOpen(open);
+        if (!open) setPendingDocumentFiles([]);
+      }}>
+        <DialogContent className="max-h-[88vh] max-w-3xl overflow-y-auto rounded-2xl border-zinc-200 bg-zinc-50 p-6 text-zinc-900 dark:border-white/10 dark:bg-[#0A0A0A] dark:text-white">
+          <DialogHeader className="pe-10 text-start pb-5">
+            <DialogTitle className="text-lg font-black">{t('detail.filesTitle')}</DialogTitle>
+            <DialogDescription className="mt-2 max-w-xl text-xs font-semibold leading-6 text-zinc-500">{t('detail.filesDesc')}</DialogDescription>
+          </DialogHeader>
+          <ResourceMediaUploader
+            organizationId={workspaceOrganizationId}
+            resourceType="property"
+            resourceId={unit.id}
+            pendingFiles={pendingDocumentFiles}
+            onPendingFilesChange={setPendingDocumentFiles}
+            allowedKinds={["document"]}
+            immediate
+            className="mt-2 rounded-none border-0 bg-transparent p-0 dark:border-0 dark:bg-transparent"
+            labels={{
+              title: t('detail.filesTitle'),
+              description: t('detail.filesDesc'),
+              hideHeader: true,
+              hideDropDescription: true,
+              pick: t('detail.filesPick'),
+              unsupported: t('detail.filesUnsupported'),
+            }}
+          />
         </DialogContent>
       </Dialog>
       <DeleteRecordDialog
@@ -614,6 +927,222 @@ export function PropertyDetailScreen({ id }: { id: string }) {
   );
 }
 
+function PropertyGalleryPreview({
+  assets,
+  hiddenCount,
+  isLoading,
+  onOpen,
+  onAdd,
+}: {
+  assets: PropertyMediaAsset[];
+  hiddenCount: number;
+  isLoading: boolean;
+  onOpen: (asset: PropertyMediaAsset) => void;
+  onAdd: () => void;
+}) {
+  if (isLoading) {
+    return (
+      <section className="grid min-h-[320px] gap-2 rounded-xl border border-zinc-200/70 bg-zinc-50/70 p-2 dark:border-white/10 dark:bg-white/[0.025] sm:grid-cols-4" data-property-overview-gallery>
+        {Array.from({ length: 4 }).map((_, index) => <div key={index} className={cn("animate-pulse rounded-lg bg-zinc-200/80 dark:bg-white/[0.06]", index === 0 ? "min-h-[300px] sm:col-span-2 sm:row-span-2" : "min-h-36")} />)}
+      </section>
+    );
+  }
+
+  if (assets.length === 0) {
+    return (
+      <section className="grid min-h-[320px] place-items-center rounded-xl border border-dashed border-zinc-300/80 bg-zinc-50/70 px-6 py-10 text-center dark:border-white/15 dark:bg-white/[0.025]" data-property-overview-gallery>
+        <div className="max-w-sm">
+          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-white text-zinc-500 shadow-sm shadow-zinc-950/[0.04] dark:bg-white/[0.06] dark:text-zinc-300 dark:shadow-none">
+            <ImageIcon className="h-5 w-5" />
+          </span>
+          <p className="mt-4 text-sm font-black text-zinc-950 dark:text-white">No gallery media yet</p>
+          <p className="mt-1 text-xs font-semibold leading-6 text-zinc-500">Add photos or a short video so the unit record has a usable visual reference.</p>
+          <Button type="button" onClick={onAdd} className="mt-5 h-9 rounded-lg px-4 text-xs font-bold">
+            <UploadCloud className="me-2 h-3.5 w-3.5" />
+            Add media
+          </Button>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="grid min-h-[320px] gap-2 rounded-xl border border-zinc-200/70 bg-zinc-50/70 p-2 dark:border-white/10 dark:bg-white/[0.025] sm:grid-cols-4" data-property-overview-gallery>
+      {assets.map((asset, index) => {
+        const isLarge = index === 0;
+        return (
+          <button
+            key={asset._id}
+            type="button"
+            onClick={() => onOpen(asset)}
+            className={cn(
+              "group relative min-h-36 overflow-hidden rounded-lg bg-zinc-100 text-start outline-none ring-1 ring-zinc-200/70 transition focus-visible:ring-2 focus-visible:ring-zinc-900/20 dark:bg-white/[0.04] dark:ring-white/10",
+              isLarge && "min-h-[300px] sm:col-span-2 sm:row-span-2",
+            )}
+          >
+            {asset.kind === "image" ? (
+              <Image src={asset.url} alt={asset.name} fill sizes={isLarge ? "640px" : "320px"} className="object-cover transition duration-300 group-hover:scale-[1.02]" />
+            ) : (
+              <div className="flex h-full min-h-32 items-center justify-center bg-zinc-950 text-white">
+                <Video className="h-8 w-8 opacity-70" />
+              </div>
+            )}
+            <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-xs font-black text-white">{asset.name}</span>
+            {hiddenCount > 0 && index === assets.length - 1 && (
+              <span className="absolute inset-0 flex items-center justify-center bg-black/55 text-3xl font-black text-white">+{hiddenCount}</span>
+            )}
+          </button>
+        );
+      })}
+    </section>
+  );
+}
+
+function PropertyOptionStrip({
+  options,
+}: {
+  options: { label: string; value: ReactNode; icon: LucideIcon }[];
+}) {
+  return (
+    <section className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4" data-property-option-chips>
+      {options.map(({ label, value, icon: Icon }) => (
+        <div key={label} className="flex min-h-14 items-center gap-3 rounded-lg border border-zinc-200/70 bg-zinc-50/60 px-3 py-2 text-start dark:border-white/10 dark:bg-white/[0.025]">
+          <Icon className="h-4 w-4 shrink-0 text-zinc-500" />
+          <span className="min-w-0">
+            <span className="block text-[10px] font-bold text-zinc-500">{label}</span>
+            <span className="block truncate text-sm font-black text-zinc-950 dark:text-white">{value}</span>
+          </span>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function PropertyLegalSummary({
+  unit,
+  documents,
+  documentCount,
+}: {
+  unit: PropertyUnit;
+  documents: PropertyMediaAsset[];
+  documentCount: number;
+}) {
+  return (
+    <section className="self-start rounded-xl border border-zinc-200/70 bg-zinc-50/70 text-start dark:border-white/10 dark:bg-white/[0.025]" data-property-legal-summary>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200/70 p-4 dark:border-white/10">
+        <div>
+          <p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Legal and documents</p>
+          <h2 className="mt-1 text-lg font-black text-zinc-950 dark:text-white">{unit.reference}</h2>
+        </div>
+        <StatusPill label={unit.status} tone={statusTone(unit.status)} />
+      </div>
+      <div className="overflow-hidden p-4">
+        <table className="w-full text-[11px]">
+          <thead className="font-black uppercase tracking-widest text-zinc-400">
+            <tr className="border-b border-zinc-200/70 dark:border-white/10">
+              <th className="pb-2 text-start">Field</th>
+              <th className="pb-2 text-start">Value</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-200/70 font-semibold text-zinc-600 dark:divide-white/10 dark:text-zinc-300">
+            <tr><td className="py-2 pe-3 text-zinc-400">Reference</td><td className="py-2 font-black text-zinc-900 dark:text-white">{unit.reference}</td></tr>
+            <tr><td className="py-2 pe-3 text-zinc-400">Status</td><td className="py-2">{unit.status}</td></tr>
+            <tr><td className="py-2 pe-3 text-zinc-400">Documents</td><td className="py-2">{documentCount}</td></tr>
+            {documents.length === 0 ? (
+              <tr><td className="py-2 pe-3 text-zinc-400">Latest</td><td className="py-2">No legal documents uploaded yet.</td></tr>
+            ) : documents.map((document, index) => (
+              <tr key={document._id}><td className="py-2 pe-3 text-zinc-400">Latest {index + 1}</td><td className="py-2">{document.name}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function PropertyMediaGrid({
+  assets,
+  isLoading,
+  onOpen,
+  onSetCover,
+  onDelete,
+}: {
+  assets: PropertyMediaAsset[];
+  isLoading: boolean;
+  onOpen: (asset: PropertyMediaAsset) => void;
+  onSetCover: (asset: PropertyMediaAsset) => void;
+  onDelete: (asset: PropertyMediaAsset) => void;
+}) {
+  if (isLoading) {
+    return <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{Array.from({ length: 8 }).map((_, index) => <div key={index} className="h-40 animate-pulse rounded-lg bg-zinc-100 dark:bg-white/[0.05]" />)}</div>;
+  }
+
+  if (assets.length === 0) {
+    return <div className="border-y border-dashed border-zinc-300/80 py-8 text-center text-xs font-bold text-zinc-500 dark:border-white/15">No images or videos uploaded yet.</div>;
+  }
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {assets.map((asset) => (
+        <article key={asset._id} className="overflow-hidden rounded-lg border border-zinc-200/70 bg-zinc-50/60 dark:border-white/10 dark:bg-white/[0.025]">
+          <button type="button" onClick={() => onOpen(asset)} className="relative flex aspect-video w-full items-center justify-center bg-zinc-100 text-zinc-400 dark:bg-black/30">
+            {asset.kind === "image" ? <Image src={asset.url} alt={asset.name} fill sizes="320px" className="object-cover" /> : <Video className="h-8 w-8" />}
+            {asset.isCover && <span className="absolute start-2 top-2 rounded-lg bg-white px-2 py-1 text-[9px] font-black text-zinc-900">Cover</span>}
+          </button>
+          <div className="flex items-center justify-between gap-2 p-3">
+            <p className="min-w-0 truncate text-xs font-black text-zinc-700 dark:text-zinc-200">{asset.name}</p>
+            <div className="flex shrink-0 items-center gap-1">
+              <Button type="button" variant="ghost" size="icon-xs" onClick={() => onOpen(asset)} aria-label={`Preview ${asset.name}`}><Eye className="h-3.5 w-3.5" /></Button>
+              {asset.kind === "image" && !asset.isCover && <Button type="button" variant="ghost" size="icon-xs" onClick={() => onSetCover(asset)} aria-label={`Set ${asset.name} as cover`}><Star className="h-3.5 w-3.5" /></Button>}
+              <Button type="button" variant="ghost" size="icon-xs" onClick={() => onDelete(asset)} aria-label={`Delete ${asset.name}`} className="text-red-500"><Trash2 className="h-3.5 w-3.5" /></Button>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function PropertyDocumentList({
+  documents,
+  isLoading,
+  onDelete,
+}: {
+  documents: PropertyMediaAsset[];
+  isLoading: boolean;
+  onDelete: (asset: PropertyMediaAsset) => void;
+}) {
+  if (isLoading) {
+    return <div className="divide-y divide-zinc-200/70 dark:divide-white/10">{Array.from({ length: 5 }).map((_, index) => <div key={index} className="h-14 animate-pulse bg-zinc-100 dark:bg-white/[0.04]" />)}</div>;
+  }
+
+  if (documents.length === 0) {
+    return <div className="border-y border-dashed border-zinc-300/80 py-8 text-center text-xs font-bold text-zinc-500 dark:border-white/15">No documents uploaded yet.</div>;
+  }
+
+  return (
+    <div className="divide-y divide-zinc-200/70 border-y border-zinc-200/70 dark:divide-white/10 dark:border-white/10">
+      {documents.map((document) => (
+        <div key={document._id} className="grid min-h-14 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500 dark:bg-white/[0.05]"><FileText className="h-4 w-4" /></span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-black text-zinc-950 dark:text-white">{document.name}</p>
+              <p className="mt-0.5 text-[11px] font-bold text-zinc-500">{document.mimeType} · {formatFileSize(document.size)}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <a href={document.url} target="_blank" rel="noreferrer" className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-white/[0.05] dark:hover:text-white" aria-label={`Open ${document.name}`}>
+              <Download className="h-3.5 w-3.5" />
+            </a>
+            <Button type="button" variant="ghost" size="icon-xs" onClick={() => onDelete(document)} aria-label={`Delete ${document.name}`} className="text-red-500"><Trash2 className="h-3.5 w-3.5" /></Button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function PropertyFormScreen({ id }: { id?: string }) {
   const t = useTranslations('Properties');
   const common = useTranslations('Common');
@@ -624,7 +1153,8 @@ export function PropertyFormScreen({ id }: { id?: string }) {
   const existing = usePropertyQuery(workspaceOrganizationId, id ?? "") as PropertyUnit | null | undefined;
   const projects = useProjectOptionsQuery(workspaceOrganizationId) ?? [];
   const router = useRouter();
-  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [pendingMediaFiles, setPendingMediaFiles] = useState<File[]>([]);
+  const [pendingDocumentFiles, setPendingDocumentFiles] = useState<File[]>([]);
   const queryDebug = {
     resourceType: "property",
     resourceId: id,
@@ -634,7 +1164,7 @@ export function PropertyFormScreen({ id }: { id?: string }) {
     isConvexAuthenticated: account.workspace.isConvexAuthenticated,
   };
   const [step, setStep] = useState(1);
-  const totalSteps = 3;
+  const totalSteps = 4;
   const capabilitiesQuery = useReactQuery({
     queryKey: ["organization-capabilities", workspaceOrganizationId],
     queryFn: () => getOrganizationCapabilities(workspaceOrganizationId!),
@@ -699,12 +1229,20 @@ export function PropertyFormScreen({ id }: { id?: string }) {
         ? await updatePropertyRequest(workspaceOrganizationId, existing.id, payload)
         : await createPropertyRequest(workspaceOrganizationId, payload);
       const nextId = result.property.id;
-      if (pendingFiles.length > 0) {
+      if (pendingMediaFiles.length > 0) {
         await uploadAndAttachMedia({
           organizationId: workspaceOrganizationId,
           resourceType: "property",
           resourceId: nextId,
-          files: pendingFiles,
+          files: pendingMediaFiles,
+        });
+      }
+      if (pendingDocumentFiles.length > 0) {
+        await uploadAndAttachMedia({
+          organizationId: workspaceOrganizationId,
+          resourceType: "property",
+          resourceId: nextId,
+          files: pendingDocumentFiles,
         });
       }
       return nextId;
@@ -728,11 +1266,11 @@ export function PropertyFormScreen({ id }: { id?: string }) {
   };
 
   if (id && workspaceStatus !== "ready") {
-    return <AppPageShell><WorkspaceQueryState status={workspaceStatus} /></AppPageShell>;
+    return <AppPageShell><WorkspaceQueryState status={workspaceStatus} variant="detail" /></AppPageShell>;
   }
 
   if (id && existing === undefined) {
-    return <AppPageShell><ProgressiveLoadingState title={t("detail.loadingTitle")} description={t("detail.loadingDesc")} debug={queryDebug} /></AppPageShell>;
+    return <AppPageShell><ProgressiveLoadingState title={t("detail.loadingTitle")} description={t("detail.loadingDesc")} debug={queryDebug} variant="detail" /></AppPageShell>;
   }
 
   if (id && existing === null) {
@@ -754,10 +1292,10 @@ export function PropertyFormScreen({ id }: { id?: string }) {
           nextStep();
         }}
       >
-        <PropertyFormPreview form={form} projectName={previewProjectName} pendingFileCount={pendingFiles.length} existing={existing} />
+        <PropertyFormPreview form={form} projectName={previewProjectName} pendingMediaCount={pendingMediaFiles.length} pendingDocumentCount={pendingDocumentFiles.length} existing={existing} />
 
-        <section className="order-1 rounded-[32px] border border-zinc-100 bg-white p-4 shadow-sm shadow-zinc-950/[0.03] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none md:p-6">
-          <PropertyFormProgress step={step} labels={[t("form.stepInformation"), t("form.stepGallery"), t("form.stepDetails")]} />
+        <section className="order-1 rounded-2xl border border-zinc-100 bg-white p-4 shadow-sm shadow-zinc-950/[0.03] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none md:p-6">
+          <PropertyFormProgress step={step} labels={[t("form.stepInformation"), t("form.stepGallery"), t("form.stepDocuments"), t("form.stepDetails")]} />
           <FormErrorSummary errors={fieldErrors} />
 
           <div className="mt-6 min-h-[360px]">
@@ -801,8 +1339,8 @@ export function PropertyFormScreen({ id }: { id?: string }) {
                     organizationId={workspaceOrganizationId}
                     resourceType="property"
                     resourceId={existing?.id}
-                    pendingFiles={pendingFiles}
-                    onPendingFilesChange={setPendingFiles}
+                    pendingFiles={pendingMediaFiles}
+                    onPendingFilesChange={setPendingMediaFiles}
                     immediate={Boolean(existing)}
                     allowedKinds={["image", "video"]}
                     maxVideos={1}
@@ -823,13 +1361,38 @@ export function PropertyFormScreen({ id }: { id?: string }) {
 
             {step === 3 && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <PropertyWizardPanel title={t("form.documentsTitle")} description={t("form.documentsDesc")}>
+                  <ResourceMediaUploader
+                    organizationId={workspaceOrganizationId}
+                    resourceType="property"
+                    resourceId={existing?.id}
+                    pendingFiles={pendingDocumentFiles}
+                    onPendingFilesChange={setPendingDocumentFiles}
+                    immediate={Boolean(existing)}
+                    allowedKinds={["document"]}
+                    variant="review"
+                    labels={{
+                      title: t("form.documentsUploaderTitle"),
+                      description: t("form.documentsUploaderDesc"),
+                      pick: t("form.documentsPick"),
+                      queued: t("form.documentsQueued"),
+                      unsupported: t("form.documentsUnsupported"),
+                    }}
+                    className="border-zinc-100 bg-zinc-50/40 shadow-none dark:border-white/[0.06] dark:bg-white/[0.01]"
+                  />
+                </PropertyWizardPanel>
+              </div>
+            )}
+
+            {step === 4 && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <PropertyWizardPanel title={t("form.detailsTitle")} description={t("form.detailsDesc")}>
                   <div className="space-y-6">
                     <div className="grid gap-4 md:grid-cols-2">
                       <TextInput name="bedrooms" label={t('form.bedsLabel')} type="number" inputMode="numeric" value={form.bedrooms} onChange={(value) => setField("bedrooms", value)} error={fieldErrors.bedrooms} />
                       <TextInput name="bathrooms" label={t('form.bathsLabel')} type="number" inputMode="numeric" value={form.bathrooms} onChange={(value) => setField("bathrooms", value)} error={fieldErrors.bathrooms} />
                     </div>
-                    <ChoiceGrid id="type" label={t('form.typeLabel')} value={form.type} onChange={(value) => setField("type", value)} columns="grid-cols-2 md:grid-cols-4" options={[{ value: "Apartment", label: t('types.Apartment') }, { value: "Villa", label: t('types.Villa') }, { value: "Penthouse", label: t('types.Penthouse') }, { value: "Office", label: t('types.Office') }]} error={fieldErrors.type} />
+                    <ChoiceGrid id="type" label={t('form.typeLabel')} value={form.type} onChange={(value) => setField("type", value)} columns="grid-cols-2 md:grid-cols-4" options={translatedPropertyTypes.map((type) => ({ value: type, label: t(`types.${type}`) }))} error={fieldErrors.type} />
                     <ChoiceGrid id="purpose" label={t('form.purposeLabel')} value={form.purpose} onChange={(value) => setField("purpose", value)} columns="grid-cols-2" options={[{ value: "sale", label: t('purposes.sale') }, { value: "rent", label: t('purposes.rent') }]} error={fieldErrors.purpose} />
                     <ChoiceGrid id="status" label={t('form.statusLabel')} value={form.status} onChange={(value) => setField("status", value)} columns="grid-cols-2 md:grid-cols-5" options={[{ value: "draft", label: t('toolbar.filters.draft') }, { value: "available", label: t('toolbar.filters.available') }, { value: "pending", label: t('toolbar.filters.pending') }, { value: "reserved", label: t('toolbar.filters.reserved') }, { value: "sold", label: t('toolbar.filters.sold') }]} error={fieldErrors.status} />
                     {canManageVisibility && (
@@ -881,13 +1444,13 @@ export function PropertyFormScreen({ id }: { id?: string }) {
 
 function PropertyFormProgress({ step, labels }: { step: number; labels: string[] }) {
   return (
-    <div className="rounded-[24px] border border-zinc-100 bg-zinc-50/70 p-3 dark:border-white/10 dark:bg-white/[0.025]">
-      <div className="grid grid-cols-3 gap-2">
+    <div className="rounded-xl border border-zinc-100 bg-zinc-50/70 p-3 dark:border-white/10 dark:bg-white/[0.025]">
+      <div className="grid gap-2 sm:grid-cols-4">
         {labels.map((label, index) => {
           const isDone = index + 1 < step;
           const isActive = index + 1 === step;
           return (
-            <div key={label} className={cn("rounded-2xl px-3 py-2 transition-all", isActive ? "bg-white shadow-sm shadow-zinc-950/[0.03] dark:bg-[#0A0A0A]" : "bg-transparent")}>
+            <div key={label} className={cn("rounded-lg px-3 py-2 transition-all", isActive ? "bg-white shadow-sm shadow-zinc-950/[0.03] dark:bg-[#0A0A0A]" : "bg-transparent")}>
               <div className="flex items-center gap-2 rtl:flex-row-reverse">
                 <span className={cn(
                   "inline-flex h-2.5 w-2.5 shrink-0 rounded-full transition-all",
@@ -958,31 +1521,35 @@ function PropertyWizardActions({
 function PropertyFormPreview({
   form,
   projectName,
-  pendingFileCount,
+  pendingMediaCount,
+  pendingDocumentCount,
   existing,
 }: {
   form: PropertyFormValues;
   projectName?: string;
-  pendingFileCount: number;
+  pendingMediaCount: number;
+  pendingDocumentCount: number;
   existing?: PropertyUnit | null;
 }) {
   const t = useTranslations("Properties");
   const previewTitle = form.title || t("form.previewName");
   const previewProject = projectName || t("form.previewProject");
   const previewCity = form.city || t("form.previewCity");
-  const mediaReady = pendingFileCount > 0 || Boolean(existing?.coverImageUrl || existing?.image);
+  const mediaReady = pendingMediaCount > 0 || Boolean(existing?.coverImageUrl || existing?.image);
+  const documentsReady = pendingDocumentCount > 0;
 
   const checklist = [
     { label: t("form.nameLabel"), ready: Boolean(form.title) },
     { label: t("form.projectLabel"), ready: Boolean(projectName || form.project) },
     { label: t("form.priceLabel"), ready: Boolean(form.price) },
     { label: t("form.previewMedia"), ready: mediaReady },
+    { label: t("form.previewDocuments"), ready: documentsReady },
     { label: t("form.descLabel"), ready: Boolean(form.description) },
   ];
 
   return (
     <aside className="order-2 space-y-4 xl:sticky xl:top-24">
-      <article className="overflow-hidden rounded-[32px] border border-zinc-100 bg-white shadow-sm shadow-zinc-950/[0.03] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none">
+      <article className="overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm shadow-zinc-950/[0.03] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none">
         <div className="relative h-72 bg-zinc-950">
           {existing?.coverImageUrl || existing?.image ? (
             <Image
@@ -1023,10 +1590,16 @@ function PropertyFormPreview({
             <span className="rounded-full bg-zinc-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:bg-white/10 dark:text-zinc-300">
               {form.type ? t(`types.${form.type}`) : t("types.Apartment")}
             </span>
-            {pendingFileCount > 0 && (
+            {pendingMediaCount > 0 && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
                 <ImageIcon className="h-3 w-3" />
-                {pendingFileCount}
+                {pendingMediaCount}
+              </span>
+            )}
+            {pendingDocumentCount > 0 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-300">
+                <FileText className="h-3 w-3" />
+                {pendingDocumentCount}
               </span>
             )}
           </div>
@@ -1034,11 +1607,11 @@ function PropertyFormPreview({
         </div>
       </article>
 
-      <div className="rounded-[28px] border border-zinc-100 bg-white p-5 shadow-sm shadow-zinc-950/[0.02] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none">
+      <div className="rounded-2xl border border-zinc-100 bg-white p-5 shadow-sm shadow-zinc-950/[0.02] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none">
         <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t("form.previewChecklist")}</p>
         <div className="mt-4 grid gap-2">
           {checklist.map((item) => (
-            <div key={item.label} className="flex items-center justify-between gap-3 rounded-2xl bg-zinc-50 px-4 py-3 dark:bg-white/[0.03]">
+            <div key={item.label} className="flex items-center justify-between gap-3 rounded-lg bg-zinc-50 px-4 py-3 dark:bg-white/[0.03]">
               <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{item.label}</span>
               <span className={cn("inline-flex h-6 w-6 items-center justify-center rounded-full", item.ready ? "bg-emerald-500/10 text-emerald-500" : "bg-zinc-200 text-zinc-400 dark:bg-white/10")}>
                 {item.ready ? <CheckCircle2 className="h-3.5 w-3.5" /> : <span className="h-2 w-2 rounded-full bg-current" />}
@@ -1053,7 +1626,7 @@ function PropertyFormPreview({
 
 function PropertyPreviewMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-zinc-50 p-4 dark:bg-white/[0.025]">
+    <div className="rounded-lg bg-zinc-50 p-4 dark:bg-white/[0.025]">
       <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{label}</p>
       <p className="mt-2 truncate text-lg font-black text-zinc-900 dark:text-white">{value}</p>
     </div>

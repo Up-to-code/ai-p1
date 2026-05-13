@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Check, CheckCircle2, KeyRound, Link2, Save, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ExternalLink, HelpCircle, KeyRound, Save, ShieldCheck, Sparkles } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useForm, type FieldPath } from "react-hook-form";
@@ -19,7 +20,7 @@ import { cn } from "@/lib/utils";
 import type { PartnerAppSummary } from "@/server/partnerApps";
 import { createPartnerAppAction, updatePartnerAppAction, type PartnerAppActionState } from "@/app/(portal)/dashboard/actions";
 
-type StepId = "identity" | "oauth" | "permissions" | "review";
+type StepId = "basics" | "authorization" | "access" | "review";
 
 const steps: Array<{
   id: StepId;
@@ -29,31 +30,31 @@ const steps: Array<{
   fields: FieldPath<PartnerAppFormValues>[];
 }> = [
   {
-    id: "identity",
-    title: "App identity",
-    description: "How your product appears before a workspace admin leaves Hub.",
+    id: "basics",
+    title: "Basics",
+    description: "Name, publisher, and the page users will open.",
     icon: Sparkles,
-    fields: ["name", "publisherName", "homepageUrl", "logoUrl", "iconUrl"],
+    fields: ["name", "publisherName", "homepageUrl"],
   },
   {
-    id: "oauth",
-    title: "OAuth setup",
-    description: "Redirect URLs, client type, and the partner authorization button.",
+    id: "authorization",
+    title: "Authorization",
+    description: "Client type and callback URL for OAuth.",
     icon: KeyRound,
     fields: ["clientType", "redirectUris"],
   },
   {
-    id: "permissions",
-    title: "Permissions",
-    description: "Organization-level scopes shown during consent.",
+    id: "access",
+    title: "Access",
+    description: "The organization data your app can request.",
     icon: ShieldCheck,
     fields: ["allowedScopes"],
   },
   {
     id: "review",
     title: "Review",
-    description: "Confirm the app is ready for admin review.",
-    icon: CheckCircle2,
+    description: "Check the setup before saving.",
+    icon: Check,
     fields: [],
   },
 ];
@@ -72,25 +73,51 @@ function defaultValues(app?: PartnerAppSummary): PartnerAppFormValues {
   };
 }
 
-function StepIcon({ complete, active, icon: Icon }: { complete: boolean; active: boolean; icon: typeof Sparkles }) {
+function StepMarker({ complete, active, icon: Icon }: { complete: boolean; active: boolean; icon: typeof Sparkles }) {
   return (
     <span
       className={cn(
-        "flex h-9 w-9 shrink-0 items-center justify-center rounded-md border transition-colors",
+        "flex size-8 shrink-0 items-center justify-center rounded-[7px] border transition-colors",
         active
-          ? "border-zinc-950 bg-zinc-950 text-white dark:border-white dark:bg-white dark:text-zinc-950"
+          ? "border-[#071A34] bg-[#071A34] text-white dark:border-white dark:bg-white dark:text-zinc-950"
           : complete
-            ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-            : "border-border bg-background text-muted-foreground",
+            ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600"
+            : "border-border bg-white text-muted-foreground dark:bg-white/[0.03]",
       )}
     >
-      {complete ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+      {complete ? <Check className="size-4" /> : <Icon className="size-4" />}
     </span>
   );
 }
 
-function HubFieldInputClass() {
-  return "border-zinc-200 bg-zinc-50/60 text-[13px] font-medium focus:border-zinc-950 focus:ring-zinc-950/10 dark:border-white/10 dark:bg-white/[0.03] dark:focus:border-white dark:focus:ring-white/10";
+function HelpTip({ text }: { text: string }) {
+  return (
+    <span className="group relative inline-flex">
+      <button
+        type="button"
+        aria-label={text}
+        className="inline-flex size-5 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+      >
+        <HelpCircle className="size-3.5" />
+      </button>
+      <span className="pointer-events-none absolute left-1/2 top-7 z-20 hidden w-64 -translate-x-1/2 rounded-[7px] border border-border bg-white p-3 text-xs font-medium leading-5 text-muted-foreground shadow-[0_16px_50px_rgba(7,26,52,0.14)] group-hover:block group-focus-within:block dark:bg-card">
+        {text}
+      </span>
+    </span>
+  );
+}
+
+function LabelText({ children, help }: { children: string; help: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      {children}
+      <HelpTip text={help} />
+    </span>
+  );
+}
+
+function inputClassName() {
+  return "border-border bg-white text-[13px] font-medium focus:border-primary focus:ring-primary/15 dark:border-white/10 dark:bg-white/[0.03] dark:focus:border-white dark:focus:ring-white/10";
 }
 
 export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSummary; mode?: "create" | "edit" }) {
@@ -105,14 +132,13 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
     defaultValues: defaultValues(app),
     mode: "onBlur",
   });
-  const resolvedScopesValue = checkpoints.resolvedScopes.join("\n");
   const values = form.watch();
   const currentStep = steps[activeStep];
-  const hubInputClassName = HubFieldInputClass();
+  const fieldClassName = inputClassName();
 
   useEffect(() => {
-    form.setValue("allowedScopes", resolvedScopesValue, { shouldValidate: true });
-  }, [form, resolvedScopesValue]);
+    form.setValue("allowedScopes", checkpoints.resolvedScopes.join("\n"), { shouldValidate: true });
+  }, [checkpoints.resolvedScopes, form]);
 
   const completedSteps = useMemo(() => {
     return steps.map((step, index) => {
@@ -146,64 +172,48 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
         ? await updatePartnerAppAction(formData)
         : await createPartnerAppAction({ ok: false }, formData);
       setState(result);
-      if (result.ok && mode === "edit") {
-        router.refresh();
-      }
+      if (result.ok && mode === "edit") router.refresh();
     });
   }
 
   return (
-    <form onSubmit={form.handleSubmit(submit)} className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0A0A0A]">
+    <form onSubmit={form.handleSubmit(submit)} className="overflow-hidden rounded-[15px] border border-border bg-white dark:border-white/10 dark:bg-card">
       <input type="hidden" {...form.register("appId")} />
       <input type="hidden" {...form.register("allowedScopes")} />
+      <input type="hidden" {...form.register("logoUrl")} />
+      <input type="hidden" {...form.register("iconUrl")} />
 
-      <div className="border-b border-zinc-100 bg-zinc-50/60 px-5 py-5 dark:border-white/5 dark:bg-white/[0.02] md:px-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Partner app setup</p>
-            <h2 className="mt-2 text-xl font-black uppercase tracking-tight text-zinc-950 dark:text-white">
-              {mode === "edit" ? "Application settings" : "Create application"}
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-zinc-500">
-              Register the partner page, OAuth redirect URIs, and organization permissions shown during workspace authorization.
+      <div className="grid lg:grid-cols-[260px_minmax(0,1fr)]">
+        <aside className="border-b border-border bg-background p-4 dark:bg-white/[0.02] lg:border-b-0 lg:border-r">
+          <div className="mb-5 rounded-[15px] border border-border bg-white p-4 dark:bg-white/[0.03]">
+            <p className="text-xs font-bold uppercase text-primary">{mode === "edit" ? "Edit app" : "New app"}</p>
+            <h2 className="mt-2 text-xl font-bold text-foreground">OAuth setup</h2>
+            <p className="mt-2 text-xs font-medium leading-5 text-muted-foreground">
+              Add only what Anan needs to issue a reviewed client safely.
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-2 sm:flex">
-            <div className="rounded-md border border-zinc-200 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/[0.03]">
-              <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">CTA</p>
-              <p className="mt-1 text-xs font-black uppercase text-zinc-950 dark:text-white">{AUTHORIZATION_CTA_COPY}</p>
-            </div>
-            <div className="rounded-md border border-zinc-200 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/[0.03]">
-              <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Lifetime</p>
-              <p className="mt-1 text-xs font-black uppercase text-zinc-950 dark:text-white">{authorizationExpiryLabel()}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid min-h-[620px] lg:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="border-b border-zinc-100 bg-zinc-50/35 p-4 dark:border-white/5 dark:bg-white/[0.01] lg:border-b-0 lg:border-r">
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
             {steps.map((step, index) => {
               const active = index === activeStep;
               const complete = completedSteps[index];
+              const Icon = step.icon;
+
               return (
                 <button
                   key={step.id}
                   type="button"
                   onClick={() => setActiveStep(index)}
                   className={cn(
-                    "flex items-start gap-3 rounded-md border p-3 text-start transition-colors",
+                    "flex items-start gap-3 rounded-[7px] border p-3 text-start transition-colors",
                     active
-                      ? "border-zinc-950 bg-white shadow-sm dark:border-white dark:bg-white/[0.04]"
-                      : "border-transparent hover:border-zinc-200 hover:bg-white dark:hover:border-white/10 dark:hover:bg-white/[0.03]",
+                      ? "border-[#071A34] bg-white dark:border-white dark:bg-white/[0.04]"
+                      : "border-transparent hover:border-border hover:bg-white dark:hover:border-white/10 dark:hover:bg-white/[0.03]",
                   )}
                 >
-                  <StepIcon complete={complete} active={active} icon={step.icon} />
+                  <StepMarker active={active} complete={complete} icon={Icon} />
                   <span className="min-w-0">
-                    <span className="block text-[10px] font-black uppercase tracking-[0.18em] text-zinc-400">Step {index + 1}</span>
-                    <span className="mt-1 block text-sm font-black uppercase tracking-tight text-zinc-950 dark:text-white">{step.title}</span>
-                    <span className="mt-1 block text-xs font-medium leading-5 text-zinc-500">{step.description}</span>
+                    <span className="block text-sm font-bold text-foreground">{step.title}</span>
+                    <span className="mt-1 block text-xs font-medium leading-5 text-muted-foreground">{step.description}</span>
                   </span>
                 </button>
               );
@@ -211,89 +221,93 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
           </div>
         </aside>
 
-        <main className="min-w-0 p-5 md:p-7">
+        <main className="min-h-[580px] p-5 md:p-7">
           {activeStep === 0 && (
-            <section className="space-y-6">
+            <section className="mx-auto max-w-2xl space-y-6">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Identity</p>
-                <h3 className="mt-2 text-lg font-black uppercase tracking-tight text-zinc-950 dark:text-white">Product details shown in Hub</h3>
-                <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-zinc-500">
-                  This is the information a workspace admin sees before visiting your product to start authorization.
+                <p className="text-xs font-bold uppercase text-primary">Basics</p>
+                <h3 className="mt-2 text-2xl font-bold text-foreground">What should Anan show users?</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  These fields appear in the partner catalog, review queue, and authorization handoff.
                 </p>
               </div>
-              <div className="grid gap-5 md:grid-cols-2">
-                <Field label="App name" error={form.formState.errors.name?.message}>
-                  <Input {...form.register("name")} placeholder="PDF Creator" className={hubInputClassName} />
+
+              <div className="grid gap-5">
+                <Field label={<LabelText help="The product name workspace admins will recognize before opening your partner app.">App name</LabelText>} error={form.formState.errors.name?.message}>
+                  <Input {...form.register("name")} placeholder="PDF Creator" className={fieldClassName} />
                 </Field>
-                <Field label="Publisher" error={form.formState.errors.publisherName?.message}>
-                  <Input {...form.register("publisherName")} placeholder="Your company" className={hubInputClassName} />
+                <Field label={<LabelText help="The company, team, or developer organization responsible for this app.">Publisher</LabelText>} error={form.formState.errors.publisherName?.message}>
+                  <Input {...form.register("publisherName")} placeholder="Your company" className={fieldClassName} />
                 </Field>
-                <Field label="Partner app URL" error={form.formState.errors.homepageUrl?.message} className="md:col-span-2">
-                  <Input {...form.register("homepageUrl")} placeholder="https://partner.example.com" className={hubInputClassName} />
-                </Field>
-                <Field label="Logo URL" error={form.formState.errors.logoUrl?.message}>
-                  <Input {...form.register("logoUrl")} placeholder="https://..." className={hubInputClassName} />
-                </Field>
-                <Field label="Icon URL" error={form.formState.errors.iconUrl?.message}>
-                  <Input {...form.register("iconUrl")} placeholder="https://..." className={hubInputClassName} />
+                <Field label={<LabelText help="This is where Anan sends a workspace admin when they choose Visit Partner.">Partner app URL</LabelText>} error={form.formState.errors.homepageUrl?.message}>
+                  <Input {...form.register("homepageUrl")} placeholder="https://partner.example.com" className={fieldClassName} />
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                    Need a local demo? Use <span className="font-mono text-foreground">http://localhost:3004</span> while developing.
+                  </p>
                 </Field>
               </div>
             </section>
           )}
 
           {activeStep === 1 && (
-            <section className="space-y-6">
+            <section className="mx-auto max-w-2xl space-y-6">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">OAuth</p>
-                <h3 className="mt-2 text-lg font-black uppercase tracking-tight text-zinc-950 dark:text-white">Authorization settings</h3>
-                <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-zinc-500">
-                  Your frontend should display the “{AUTHORIZATION_CTA_COPY}” button. Hub handles consent, organization selection, and token exchange.
+                <p className="text-xs font-bold uppercase text-primary">Authorization</p>
+                <h3 className="mt-2 text-2xl font-bold text-foreground">How does Anan return users?</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Your app starts the OAuth flow. Anan redirects back to your callback with an authorization code.
                 </p>
               </div>
-              <div className="grid gap-5">
-                <Field label="App type" error={form.formState.errors.clientType?.message}>
-                  <Select {...form.register("clientType")} disabled={mode === "edit"} className={hubInputClassName}>
-                    <option value="public">Public PKCE app (Browser-based)</option>
-                    <option value="confidential">Confidential server app (Trusted servers)</option>
-                  </Select>
-                </Field>
-                <Field label="Redirect URIs (one per line)" error={form.formState.errors.redirectUris?.message as string | undefined}>
-                  <Textarea
-                    {...form.register("redirectUris")}
-                    placeholder="https://partner.example.com/oauth/callback"
-                    className={cn("min-h-[150px] font-mono text-sm", hubInputClassName)}
-                  />
-                </Field>
+
+              <div className="rounded-[15px] border border-border bg-background p-4">
+                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-muted-foreground">
+                  <Link href="/docs/oauth-flow" className="inline-flex items-center gap-1 rounded-full border border-border bg-white px-3 py-1.5 hover:text-foreground dark:bg-card">
+                    OAuth guide <ExternalLink className="size-3" />
+                  </Link>
+                  <Link href="/docs/register-an-app" className="inline-flex items-center gap-1 rounded-full border border-border bg-white px-3 py-1.5 hover:text-foreground dark:bg-card">
+                    Redirect URI rules <ExternalLink className="size-3" />
+                  </Link>
+                </div>
               </div>
-              <div className="rounded-md border border-zinc-200 bg-zinc-50/70 p-4 dark:border-white/10 dark:bg-white/[0.02]">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Frontend example</p>
-                <pre className="mt-3 overflow-x-auto rounded-md bg-zinc-950 p-4 text-xs font-medium leading-6 text-white">
-{`<button>
-  ${AUTHORIZATION_CTA_COPY}
-</button>`}
-                </pre>
+
+              <Field label={<LabelText help="Public apps use PKCE and no secret. Confidential apps use a server-side client secret.">App type</LabelText>} error={form.formState.errors.clientType?.message}>
+                <Select {...form.register("clientType")} disabled={mode === "edit"} className={fieldClassName}>
+                  <option value="public">Public PKCE app</option>
+                  <option value="confidential">Confidential server app</option>
+                </Select>
+              </Field>
+              <Field label={<LabelText help="Anan redirects users to this URL after consent. Add one per line if you need multiple environments.">Redirect URI</LabelText>} error={form.formState.errors.redirectUris?.message as string | undefined}>
+                <Textarea
+                  {...form.register("redirectUris")}
+                  placeholder="https://partner.example.com/api/auth/anan/callback"
+                  className={cn("min-h-[112px] font-mono text-sm", fieldClassName)}
+                />
+              </Field>
+              <div className="rounded-[15px] border border-border bg-[#071A34] p-4 text-white">
+                <p className="text-xs font-bold uppercase text-[#B1BCC7]">Button copy</p>
+                <p className="mt-2 text-lg font-bold">{AUTHORIZATION_CTA_COPY}</p>
+                <p className="mt-2 text-xs leading-5 text-[#B1BCC7]">
+                  Use this copy exactly so users understand they are authorizing Anan organization access.
+                </p>
               </div>
             </section>
           )}
 
           {activeStep === 2 && (
             <section className="space-y-6">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Permissions</p>
-                <h3 className="mt-2 text-lg font-black uppercase tracking-tight text-zinc-950 dark:text-white">Consent checkpoints</h3>
-                <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-zinc-500">
-                  Choose the organization data your app needs. Delete scopes require manual Anan approval and are not available in self-serve setup.
+              <div className="mx-auto max-w-2xl">
+                <p className="text-xs font-bold uppercase text-primary">Access</p>
+                <h3 className="mt-2 text-2xl font-bold text-foreground">What data does the app need?</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Start with read-only scopes. Add write scopes only when the product cannot work without them.
                 </p>
               </div>
               <div className="grid gap-3 xl:grid-cols-3">
                 {checkpoints.groups.map((group) => (
-                  <div key={group.id} className="rounded-md border border-zinc-200 bg-zinc-50/60 p-4 dark:border-white/10 dark:bg-white/[0.02]">
-                    <div className="mb-4 flex items-start gap-3">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 text-zinc-950 dark:text-white" aria-hidden="true" />
-                      <div>
-                        <p className="text-sm font-black uppercase tracking-tight text-zinc-950 dark:text-white">{group.title}</p>
-                        <p className="mt-1 text-xs font-medium leading-5 text-zinc-500">{group.description}</p>
-                      </div>
+                  <div key={group.id} className="rounded-[15px] border border-border bg-background p-4 dark:bg-white/[0.02]">
+                    <div className="mb-4">
+                      <p className="text-sm font-bold text-foreground">{group.title}</p>
+                      <p className="mt-1 text-xs font-medium leading-5 text-muted-foreground">{group.description}</p>
                     </div>
                     <div className="space-y-2">
                       {group.scopes.map((scope) => {
@@ -302,17 +316,15 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
                           <label
                             key={scope.value}
                             className={cn(
-                              "flex min-h-11 cursor-pointer items-center gap-3 rounded-md border px-3 py-2 text-sm font-bold transition-colors",
-                              checked
-                                ? "border-zinc-950 bg-white text-zinc-950 dark:border-white dark:bg-white/[0.04] dark:text-white"
-                                : "border-zinc-200 bg-white/60 text-zinc-600 hover:border-zinc-400 dark:border-white/10 dark:bg-white/[0.02] dark:text-zinc-300",
+                              "flex min-h-11 cursor-pointer items-center gap-3 rounded-[7px] border bg-white px-3 py-2 text-sm font-semibold transition-colors dark:bg-white/[0.03]",
+                              checked ? "border-primary text-foreground" : "border-border text-muted-foreground hover:text-foreground",
                             )}
                           >
                             <input
                               type="checkbox"
                               checked={checked}
                               onChange={() => checkpoints.toggleScope(scope.value)}
-                              className="h-4 w-4 accent-zinc-950 dark:accent-white"
+                              className="size-4 accent-[#071A34]"
                             />
                             <span>{scope.label}</span>
                           </label>
@@ -322,85 +334,72 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
                   </div>
                 ))}
               </div>
-              <Field label="Advanced custom scopes" error={form.formState.errors.allowedScopes?.message as string | undefined}>
-                <Textarea
-                  value={checkpoints.manualScopes}
-                  onChange={(event) => checkpoints.setManualScopes(event.target.value)}
-                  placeholder="custom:scope_name"
-                  className={cn("min-h-[96px] font-mono text-sm", hubInputClassName)}
-                />
-              </Field>
+              <div className="mx-auto max-w-2xl">
+                <Field label={<LabelText help="Use custom scopes only if Anan has told you to include one.">Advanced custom scopes</LabelText>} error={form.formState.errors.allowedScopes?.message as string | undefined}>
+                  <Textarea
+                    value={checkpoints.manualScopes}
+                    onChange={(event) => checkpoints.setManualScopes(event.target.value)}
+                    placeholder="custom:scope_name"
+                    className={cn("min-h-[88px] font-mono text-sm", fieldClassName)}
+                  />
+                </Field>
+              </div>
             </section>
           )}
 
           {activeStep === 3 && (
-            <section className="space-y-6">
+            <section className="mx-auto max-w-3xl space-y-6">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Review</p>
-                <h3 className="mt-2 text-lg font-black uppercase tracking-tight text-zinc-950 dark:text-white">Ready for admin review</h3>
-                <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-zinc-500">
-                  Confirm your app explains data use, has the correct authorization CTA, and stores tokens only on your backend.
+                <p className="text-xs font-bold uppercase text-primary">Review</p>
+                <h3 className="mt-2 text-2xl font-bold text-foreground">Ready to save</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Check the values below. You can save a draft first, then submit from the app details page.
                 </p>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
-                {[
-                  ["Application", values.name || "Not set"],
+                {([
+                  ["App", values.name || "Not set"],
                   ["Publisher", values.publisherName || "Not set"],
                   ["Partner URL", values.homepageUrl || "Not set"],
                   ["Client type", values.clientType === "confidential" ? "Confidential server app" : "Public PKCE app"],
-                  ["Authorization", `${AUTHORIZATION_CTA_COPY}, ${authorizationExpiryLabel()}`],
+                  ["Redirect URI", String(values.redirectUris || "Not set")],
                   ["Scopes", checkpoints.resolvedScopes.join(", ") || "No scopes selected"],
-                ].map(([label, value]) => (
-                  <div key={label} className="rounded-md border border-zinc-200 bg-zinc-50/60 p-4 dark:border-white/10 dark:bg-white/[0.02]">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{label}</p>
-                    <p className="mt-2 break-words text-sm font-bold leading-6 text-zinc-950 dark:text-white">{value}</p>
+                ] satisfies Array<[string, string]>).map(([label, value]) => (
+                  <div key={label} className="rounded-[7px] border border-border bg-background p-4">
+                    <p className="text-[11px] font-bold uppercase text-muted-foreground">{label}</p>
+                    <p className="mt-2 break-words text-sm font-semibold leading-6 text-foreground">{value}</p>
                   </div>
                 ))}
               </div>
-              <div className="rounded-md border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm font-medium leading-6 text-emerald-700 dark:text-emerald-300">
-                <p className="font-black uppercase tracking-tight">Review checklist</p>
-                <ul className="mt-2 space-y-1">
-                  <li>Partner page explains what workspace data is used.</li>
-                  <li>Frontend button says “{AUTHORIZATION_CTA_COPY}”.</li>
-                  <li>OAuth tokens are stored and refreshed from your backend only.</li>
-                </ul>
-              </div>
+              <Alert variant="default">
+                Authorization expires after {authorizationExpiryLabel()}. Admin review can still reject broad scope requests.
+              </Alert>
             </section>
           )}
 
           {state.message ? (
-            <Alert variant={state.ok ? "success" : "danger"} className="mt-7 border-zinc-200 bg-zinc-50/60 dark:border-white/10 dark:bg-white/[0.03]">
-              <p className="font-medium">{state.message}</p>
-              {state.clientId && (
-                <div className="mt-3 rounded-md border border-zinc-200 bg-white p-3 dark:border-white/10 dark:bg-white/[0.03]">
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Client ID</p>
-                  <p className="break-all font-mono text-sm text-foreground">{state.clientId}</p>
-                </div>
-              )}
-              {state.clientSecret && (
-                <div className="mt-3 rounded-md border border-zinc-200 bg-white p-3 dark:border-white/10 dark:bg-white/[0.03]">
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Client Secret</p>
-                  <p className="break-all font-mono text-sm text-foreground">{state.clientSecret}</p>
-                </div>
-              )}
+            <Alert variant={state.ok ? "success" : "danger"} className="mt-7">
+              <p>{state.message}</p>
+              {state.clientId ? <p className="mt-2 break-all font-mono text-xs">Client ID: {state.clientId}</p> : null}
+              {state.clientSecret ? <p className="mt-2 break-all font-mono text-xs">Client secret: {state.clientSecret}</p> : null}
             </Alert>
           ) : null}
         </main>
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-zinc-100 bg-zinc-50/60 px-5 py-4 dark:border-white/5 dark:bg-white/[0.02] sm:flex-row sm:items-center sm:justify-between md:px-6">
+      <div className="flex flex-col gap-3 border-t border-border bg-background px-5 py-4 sm:flex-row sm:items-center sm:justify-between md:px-6">
         <Button type="button" variant="outline" onClick={goBack} disabled={activeStep === 0 || isPending} className="h-10 gap-2">
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="size-4" />
           Back
         </Button>
         {activeStep < steps.length - 1 ? (
           <Button type="button" onClick={goNext} disabled={isPending} className="h-10 gap-2">
             Continue
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight className="size-4" />
           </Button>
         ) : (
           <Button type="submit" disabled={isPending} className="h-10 gap-2">
-            <Save className="h-4 w-4" />
+            <Save className="size-4" />
             {isPending ? "Saving..." : mode === "edit" ? "Save settings" : "Create app"}
           </Button>
         )}

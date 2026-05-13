@@ -138,6 +138,7 @@ function clientFields(input: Input) {
     status: (optionalString(input, "status") ?? "active") as "active" | "inactive",
     visibility: "private" as const,
     pipelineStage: (optionalString(input, "pipelineStage") ?? "new") as "new" | "qualified" | "viewing" | "negotiation" | "closed",
+    ...(optionalNumber(input, "pipelineOrder") !== undefined ? { pipelineOrder: optionalNumber(input, "pipelineOrder")! } : {}),
     priority: (optionalString(input, "priority") ?? "normal") as "normal" | "high" | "urgent",
     nextAction: optionalString(input, "nextAction") ?? "",
     issue: optionalString(input, "issue"),

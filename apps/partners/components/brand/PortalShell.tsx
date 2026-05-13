@@ -4,7 +4,7 @@ import { DashboardNav } from "./DashboardNav";
 
 export function PortalShell({ children }: { children: ReactNode }) {
   return (
-    <main className="workspace-root-chrome min-h-screen bg-[var(--workspace-shell)]">
+    <main className="workspace-root-chrome min-h-dvh bg-[var(--workspace-shell)]">
       <header className="border-b border-[var(--workspace-border)] bg-[var(--workspace-chrome-header-bg)]">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-5 lg:flex-row lg:items-center lg:justify-between">
           <PartnerLogo href="/dashboard" />

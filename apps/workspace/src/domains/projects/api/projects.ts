@@ -84,6 +84,11 @@ export function projectPayloadFromForm(values: ProjectFormValues) {
     visibility: values.visibility ?? "private",
     units: Number(values.units || 0),
     priceRange: values.priceRange,
+    regaAuthorizationNo: values.regaAuthorizationNo || undefined,
+    regaExpiresAt: values.regaExpiresAt || undefined,
+    planNumber: values.planNumber || undefined,
+    plotNumber: values.plotNumber || undefined,
+    postalIdentity: values.postalIdentity || undefined,
     description: values.description,
   };
 }

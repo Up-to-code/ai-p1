@@ -20,6 +20,11 @@ export const projectInputValidator = v.object({
   visibility: v.optional(visibilityValidator),
   units: v.number(),
   priceRange: v.string(),
+  regaAuthorizationNo: v.optional(v.string()),
+  regaExpiresAt: v.optional(v.string()),
+  planNumber: v.optional(v.string()),
+  plotNumber: v.optional(v.string()),
+  postalIdentity: v.optional(v.string()),
   description: v.string(),
 });
 
@@ -40,6 +45,11 @@ export const projectValidator = v.object({
   syncState: v.union(v.literal("draft"), v.literal("blocked"), v.literal("synced")),
   units: v.number(),
   priceRange: v.string(),
+  regaAuthorizationNo: v.optional(v.string()),
+  regaExpiresAt: v.optional(v.string()),
+  planNumber: v.optional(v.string()),
+  plotNumber: v.optional(v.string()),
+  postalIdentity: v.optional(v.string()),
   description: v.string(),
   coverImageUrl: v.optional(v.string()),
   createdByUserId: v.string(),

@@ -5,21 +5,21 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery as useReactQuery } from "@tanstack/react-query";
-import { BarChart3, Building2, CheckCircle2, Copy, Edit, FolderOpen, Gauge, History, Landmark, Layers3, MapPin, Plus, Share2, Trash2, TrendingUp } from "lucide-react";
+import { BarChart3, Building2, CheckCircle2, Copy, Edit, FileText, FolderOpen, Gauge, History, ImageIcon, Landmark, Layers3, LayoutGrid, List, MapPin, Plus, Share2, Trash2, TrendingUp } from "lucide-react";
 import {
   AppDataTable,
   AppPageHeader,
   AppPageShell,
   AppPrimaryButton,
-  AppSection,
   AppStatsGrid,
+  AppTabsList,
   AppThumbnailCell,
   AppToolbar,
   InfiniteScrollSentinel,
   type AppDataTableColumn,
 } from "@/components/shared";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Link, useRouter } from "@/i18n/routing";
 import { useAccountContext } from "@/domains/auth";
@@ -29,7 +29,8 @@ import { projectCategories, projectOfferingTypes, projectSchema, type ProjectFor
 import { createProjectRequest, deleteProjectRequest, PROJECTS_PAGE_SIZE, updateProjectRequest, useProjectQuery, useProjectsIndexQuery } from "../api/projects";
 import { useProjectPropertiesQuery } from "@/domains/properties/api/properties";
 import { ResourceMediaUploader } from "@/domains/media/components/resource-media-uploader";
-import { uploadAndAttachMedia } from "@/domains/media/api/media";
+import { ResourceMediaBrowser } from "@/domains/media/components/resource-media-browser";
+import { uploadAndAttachMedia, useResourceMediaQuery } from "@/domains/media/api/media";
 import { useOperationState } from "@/lib/utils/operation-state";
 import { SearchBox, StatusPill, TextInput, ChoiceGrid, DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, FormErrorSummary, HttpQueryState, ProgressiveLoadingState, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { useUrlListState } from "@/components/shared/use-url-list-state";
@@ -190,9 +191,9 @@ export function ProjectsWorkspace() {
       />
 
       {workspaceStatus !== "ready" ? (
-        <WorkspaceQueryState status={workspaceStatus} />
+        <WorkspaceQueryState status={workspaceStatus} variant={view === "grid" ? "grid" : "table"} />
       ) : isQueryBlocked ? (
-        <HttpQueryState query={projectsQuery} />
+        <HttpQueryState query={projectsQuery} variant={view === "grid" ? "grid" : "table"} />
       ) : view === "grid" ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredProjects.map((project) => <ProjectTile key={project.id} project={project} onDelete={setDeleting} />)}
@@ -246,6 +247,10 @@ export function ProjectDetailScreen({ id }: { id: string }) {
   const project = useProjectQuery(workspaceOrganizationId, id) as Project | null | undefined;
   const unitsQuery = useProjectPropertiesQuery(workspaceOrganizationId, project ? id : undefined);
   const units = useMemo(() => unitsQuery ?? [], [unitsQuery]);
+  const mediaQuery = useResourceMediaQuery(workspaceOrganizationId, "project", project?.id);
+  const projectMedia = useMemo(() => mediaQuery ?? [], [mediaQuery]);
+  const documentAssets = useMemo(() => projectMedia.filter((asset) => asset.kind === "document"), [projectMedia]);
+  const [inventoryView, setInventoryView] = useState<"cards" | "table">("cards");
   const unitColumns = useMemo((): AppDataTableColumn<(typeof units)[0]>[] => [
     { key: "reference", header: td('inventory.cols.ref') },
     { key: "type", header: td('inventory.cols.type') },
@@ -254,20 +259,20 @@ export function ProjectDetailScreen({ id }: { id: string }) {
     { key: "area", header: td('inventory.cols.area') },
     { key: "updated", header: td('inventory.cols.updated') },
   ], [td]);
-  const salesStats = useMemo(() => [
-    { label: td('sales.metrics.totalRevenue'), value: "42.8M SAR", icon: TrendingUp },
-    { label: td('sales.metrics.avgUnitPrice'), value: "1.2M SAR", icon: Building2 },
-    { label: td('sales.metrics.absorptionRate'), value: "64%", icon: BarChart3 },
-    { label: td('sales.metrics.leadsConverted'), value: "128", icon: Share2 },
-  ].map((stat) => ({
-    ...stat,
-    iconClassName: stat.label === td('sales.metrics.totalRevenue') ? "text-emerald-500" : stat.label === td('sales.metrics.absorptionRate') ? "text-blue-500" : undefined
-  })), [td]);
   const plannedUnits = project?.units ?? 0;
-  const inventoryCoverage = plannedUnits > 0 ? Math.min(100, Math.round(((units.length || plannedUnits) / plannedUnits) * 100)) : 0;
+  const inventoryCoverage = plannedUnits > 0 ? Math.min(100, Math.round((units.length / plannedUnits) * 100)) : 0;
   const availableUnits = units.filter((unit) => String(unit.status).toLowerCase() === "available").length;
-  const liveUnitCount = units.length || plannedUnits;
+  const reservedUnits = units.filter((unit) => String(unit.status).toLowerCase() === "reserved").length;
+  const soldUnits = units.filter((unit) => String(unit.status).toLowerCase() === "sold").length;
+  const pendingUnits = units.filter((unit) => String(unit.status).toLowerCase() === "pending").length;
+  const liveUnitCount = units.length;
   const launchReadiness = project?.status === "approved" ? 92 : project?.status === "pending" ? 68 : project?.status === "rejected" ? 32 : 48;
+  const salesStats = useMemo(() => [
+    { label: td('sales.metrics.totalUnits'), value: liveUnitCount, icon: Layers3 },
+    { label: td('sales.metrics.availableUnits'), value: availableUnits, icon: Landmark, iconClassName: "text-emerald-500" },
+    { label: td('sales.metrics.reservedUnits'), value: reservedUnits, icon: TrendingUp, iconClassName: "text-blue-500" },
+    { label: td('sales.metrics.soldUnits'), value: soldUnits, icon: BarChart3 },
+  ], [availableUnits, liveUnitCount, reservedUnits, soldUnits, td]);
   
   const [deleting, setDeleting] = useState(false);
   const router = useRouter();
@@ -282,11 +287,11 @@ export function ProjectDetailScreen({ id }: { id: string }) {
   };
 
   if (workspaceStatus !== "ready") {
-    return <AppPageShell><WorkspaceQueryState status={workspaceStatus} /></AppPageShell>;
+    return <AppPageShell><WorkspaceQueryState status={workspaceStatus} variant="detail" /></AppPageShell>;
   }
 
   if (project === undefined) {
-    return <AppPageShell><ProgressiveLoadingState title={t("detail.loadingTitle")} description={t("detail.loadingDesc")} debug={queryDebug} /></AppPageShell>;
+    return <AppPageShell><ProgressiveLoadingState title={t("detail.loadingTitle")} description={t("detail.loadingDesc")} debug={queryDebug} variant="detail" /></AppPageShell>;
   }
 
   if (project === null) {
@@ -294,168 +299,227 @@ export function ProjectDetailScreen({ id }: { id: string }) {
   }
 
   return (
-    <AppPageShell contentClassName="space-y-8">
-      <AppPageHeader
-        eyebrow={project.reference}
-        title={project.name}
-        subtitle={`${project.area}, ${project.city} · ${project.priceRange} · ${project.units} units`}
-        actions={
-          <>
-            <Button variant="outline" size="icon-lg" aria-label={td('share')} className="rounded-full border-zinc-200 dark:border-white/10">
-              <Share2 className="h-4 w-4" />
-            </Button>
-            <Link href={`/projects/${project.id}/edit`} className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-zinc-200 px-5 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:border-white/10 dark:hover:bg-white/5">
-              <Edit className="h-3.5 w-3.5" />
-              {t('detail.edit')}
-            </Link>
-            <Button variant="destructive" size="icon-lg" aria-label={t('detail.delete')} onClick={() => setDeleting(true)} className="rounded-full">
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </>
-        }
-      />
+    <AppPageShell contentClassName="space-y-6 pb-14">
+      <Tabs defaultValue="details" className="space-y-6">
+        <section className="border-b border-zinc-200/70 pb-4 text-start dark:border-white/10">
+          <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+            <div className="min-w-0 space-y-3">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-500">
+                <span>{project.reference}</span>
+                <span className="h-1 w-1 rounded-full bg-zinc-400/70" />
+                <span>{project.developer}</span>
+              </div>
+              <h1 className="max-w-5xl text-2xl font-black leading-tight text-zinc-950 dark:text-white md:text-3xl">{project.name}</h1>
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
+                <StatusPill label={t(`types.${project.type}`)} tone="neutral" />
+                <span className="inline-flex h-8 items-center rounded-full bg-zinc-950 px-3 text-xs font-black text-white dark:bg-white dark:text-zinc-950">{project.priceRange}</span>
+                <span className="inline-flex h-8 items-center rounded-full bg-zinc-100 px-3 text-xs font-black text-zinc-600 dark:bg-white/[0.06] dark:text-zinc-300">{project.units} {t('card.units')}</span>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 pt-1 xl:justify-end">
+              <Button variant="outline" size="icon-lg" aria-label={td('share')} className="rounded-xl border-zinc-200 dark:border-white/10">
+                <Share2 className="h-4 w-4" />
+              </Button>
+              <Link href={`/projects/${project.id}/edit`} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 px-4 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:border-white/10 dark:hover:bg-white/5">
+                <Edit className="h-3.5 w-3.5" />
+                {t('detail.edit')}
+              </Link>
+              <Button variant="ghost" aria-label={t('detail.delete')} onClick={() => setDeleting(true)} className="h-10 rounded-xl px-3 text-xs font-bold text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/25">
+                <Trash2 className="me-2 h-3.5 w-3.5" />
+                {t('detail.delete')}
+              </Button>
+            </div>
+          </div>
 
-      <Tabs defaultValue="details" className="space-y-8">
-        <TabsList variant="line" className="scrollbar-none w-full justify-start gap-8 overflow-x-auto border-b border-zinc-100 px-0 dark:border-white/5">
-          <TabsTrigger value="details" className="h-10 flex-none px-1 text-[10px] font-black uppercase tracking-[0.2em]">{td('tabs.details')}</TabsTrigger>
-          <TabsTrigger value="inventory" className="h-10 flex-none px-1 text-[10px] font-black uppercase tracking-[0.2em]">{td('tabs.inventory')}</TabsTrigger>
-          <TabsTrigger value="documents" className="h-10 flex-none px-1 text-[10px] font-black uppercase tracking-[0.2em]">{td('tabs.documents')}</TabsTrigger>
-          <TabsTrigger value="sales" className="h-10 flex-none px-1 text-[10px] font-black uppercase tracking-[0.2em]">{td('tabs.sales')}</TabsTrigger>
-          <TabsTrigger value="activity" className="h-10 flex-none px-1 text-[10px] font-black uppercase tracking-[0.2em]">{td('tabs.activity')}</TabsTrigger>
-        </TabsList>
+          <div className="mt-6">
+            <AppTabsList
+              className="gap-8"
+              tabs={[
+                { value: "details", label: td('tabs.details'), icon: Building2 },
+                { value: "inventory", label: td('tabs.inventory'), icon: Layers3 },
+                { value: "documents", label: td('tabs.documents'), icon: FileText },
+                { value: "sales", label: td('tabs.sales'), icon: TrendingUp },
+                { value: "activity", label: td('tabs.activity'), icon: History },
+              ]}
+            />
+          </div>
+        </section>
 
         <TabsContent value="details" className="space-y-6">
-          <section className="grid overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0A0A0A] lg:grid-cols-[minmax(0,1.35fr)_minmax(340px,0.65fr)]">
-            <div className="relative min-h-[420px] overflow-hidden bg-zinc-100 dark:bg-white/[0.03]">
-              {project.coverImageUrl ? (
-                <Image src={project.coverImageUrl} alt={project.name} fill priority sizes="(max-width: 1024px) 100vw, 64vw" className="object-cover" />
-              ) : (
-                <Image src="/vectors/anan_project_blueprint.svg" alt="" fill priority sizes="(max-width: 1024px) 100vw, 64vw" className="object-contain p-12 opacity-80 dark:invert" />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/5 to-transparent" />
-              <div className="absolute inset-x-5 top-5 flex flex-wrap items-center justify-between gap-2">
-                <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
-                <span className="inline-flex h-7 items-center gap-2 rounded-full bg-black/45 px-3 text-[9px] font-bold uppercase tracking-widest text-white backdrop-blur" dir="auto">
-                  <MapPin className="h-3 w-3" />
-                  {project.city}
-                </span>
-              </div>
-              <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-5 p-6 text-white md:p-8">
-                <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/65" dir="auto">{project.reference}</p>
-                  <h2 className="mt-2 max-w-2xl text-xl font-bold uppercase tracking-tight md:text-2xl line-clamp-2" dir="auto">{project.name}</h2>
-                </div>
-                <p className="hidden shrink-0 text-end text-lg font-bold md:block" dir="auto">{project.priceRange}</p>
-              </div>
-            </div>
-            <div className="flex flex-col justify-between gap-6 p-5 md:p-6">
-              <div className="grid grid-cols-2 gap-3">
+          <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+            <div className="space-y-6">
+              <ResourceMediaBrowser
+                organizationId={workspaceOrganizationId}
+                resourceType="project"
+                resourceId={project.id}
+                mode="gallery"
+                title={td('gallery.title')}
+                description={td('gallery.description')}
+                addLabel={td('gallery.add')}
+                emptyTitle={td('gallery.emptyTitle')}
+                emptyDescription={td('gallery.emptyDesc')}
+                uploadTitle={td('gallery.uploadTitle')}
+                uploadDescription={td('gallery.uploadDesc')}
+                uploadPick={td('gallery.uploadPick')}
+                unsupported={t('form.galleryUnsupported')}
+                openLabel={td('actions.view')}
+                coverLabel={td('gallery.cover')}
+                deleteLabel={td('actions.delete')}
+                statusQueued={td('uploadStatus.queued')}
+                statusUploading={td('uploadStatus.uploading')}
+                statusUploaded={td('uploadStatus.uploaded')}
+                statusFailed={td('uploadStatus.failed')}
+                removeLabel={td('actions.delete')}
+                retryLabel={td('uploadStatus.retry')}
+                imageLimit={t('form.galleryImageLimit')}
+                previewLimit={8}
+              />
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <ProjectSignal label={t('detail.labels.units')} value={project.units} icon={Layers3} tone="blue" />
-                <ProjectSignal label="Live" value={liveUnitCount} icon={FolderOpen} tone="zinc" />
-                <ProjectSignal label="Available" value={availableUnits || "TBC"} icon={Landmark} tone="emerald" />
-                <ProjectSignal label="Ready" value={`${launchReadiness}%`} icon={Gauge} tone="amber" />
+                <ProjectSignal label={td('metrics.live')} value={liveUnitCount} icon={FolderOpen} tone="zinc" />
+                <ProjectSignal label={td('metrics.available')} value={availableUnits} icon={Landmark} tone="emerald" />
+                <ProjectSignal label={td('metrics.ready')} value={`${launchReadiness}%`} icon={Gauge} tone="amber" />
               </div>
-              <div className="space-y-4">
-                <ReadinessBar label="Launch readiness" value={launchReadiness} />
-                <ReadinessBar label="Inventory coverage" value={inventoryCoverage} />
-              </div>
-              <div className="grid gap-4 border-t border-zinc-100 pt-5 dark:border-white/10">
-                <CompactFact label={t('detail.labels.type')} value={t(`types.${project.type}`)} />
-                <CompactFact label="Developer" value={project.developer} />
-                <CompactFact label={td('rega.authNo')} value="REGA-8829-01" />
-              </div>
+              <section className="border-t border-zinc-200/70 pt-5 text-start dark:border-white/10">
+                <p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">{td('narrative.title')}</p>
+                <p className="mt-2 max-w-4xl text-sm font-semibold leading-7 text-zinc-700 dark:text-zinc-300">{project.description}</p>
+              </section>
             </div>
+            <aside className="self-start rounded-xl border border-zinc-200/70 bg-zinc-50/70 text-start dark:border-white/10 dark:bg-white/[0.025]">
+              <div className="border-b border-zinc-200/70 p-4 dark:border-white/10">
+                <p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">{td('registry.title')}</p>
+                <h2 className="mt-1 text-lg font-black text-zinc-950 dark:text-white">{project.reference}</h2>
+              </div>
+              <div className="space-y-5 p-4">
+                <ReadinessBar label={td('metrics.launchReadiness')} value={launchReadiness} />
+                <ReadinessBar label={td('metrics.inventoryCoverage')} value={inventoryCoverage} />
+                <table className="w-full text-[11px]">
+                  <tbody className="divide-y divide-zinc-200/70 font-semibold text-zinc-600 dark:divide-white/10 dark:text-zinc-300">
+                    <tr><td className="py-2 pe-3 text-zinc-400">{t('detail.labels.type')}</td><td className="py-2 font-black text-zinc-900 dark:text-white">{t(`types.${project.type}`)}</td></tr>
+                    <tr><td className="py-2 pe-3 text-zinc-400">{t('detail.labels.developer')}</td><td className="py-2">{project.developer}</td></tr>
+                    <tr><td className="py-2 pe-3 text-zinc-400">{t('detail.labels.city')}</td><td className="py-2">{project.city}</td></tr>
+                    <tr><td className="py-2 pe-3 text-zinc-400">{t('detail.labels.area')}</td><td className="py-2">{project.area}</td></tr>
+                    <tr><td className="py-2 pe-3 text-zinc-400">{td('rega.authNo')}</td><td className="py-2">{project.regaAuthorizationNo || td('empty.value')}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </aside>
           </section>
-
-          <AppSection title={td('registry.title')} className="rounded-3xl">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              <CompactFact label={td('registry.planNo')} value="1024/B" />
-              <CompactFact label={td('registry.plotNo')} value="42-45" />
-              <CompactFact label={td('registry.postalIdentity')} value="12345-6789" />
-              <CompactFact label={td('rega.title')} value={td('rega.expires', { date: '2027-12-12' })} />
-              <CompactFact label={t('detail.labels.value')} value={project.priceRange} />
-            </div>
-          </AppSection>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <CompactFact label={td('registry.planNo')} value={project.planNumber || td('empty.value')} />
+            <CompactFact label={td('registry.plotNo')} value={project.plotNumber || td('empty.value')} />
+            <CompactFact label={td('registry.postalIdentity')} value={project.postalIdentity || td('empty.value')} />
+            <CompactFact label={td('rega.title')} value={project.regaExpiresAt ? td('rega.expires', { date: project.regaExpiresAt }) : td('empty.value')} />
+          </div>
+          <div className="border-t border-zinc-200/70 pt-4 dark:border-white/10">
+            <table className="w-full text-start text-xs">
+              <tbody className="divide-y divide-zinc-200/70 dark:divide-white/10">
+                <tr><td className="py-3 pe-4 font-black text-zinc-400">{td('documents.count')}</td><td className="py-3 font-semibold text-zinc-900 dark:text-white">{documentAssets.length}</td></tr>
+                <tr><td className="py-3 pe-4 font-black text-zinc-400">{td('documents.latest')}</td><td className="py-3 font-semibold text-zinc-900 dark:text-white">{documentAssets[0]?.name ?? td('documents.none')}</td></tr>
+              </tbody>
+            </table>
+          </div>
         </TabsContent>
 
         <TabsContent value="inventory" className="space-y-6">
-          <AppSection title={td('inventory.title')} description={td('inventory.subtitle')} actions={<AppPrimaryButton><Plus className="me-2 h-3.5 w-3.5" />{td('inventory.addUnit')}</AppPrimaryButton>}>
-            <AppDataTable columns={unitColumns} data={units} getRowKey={(u) => u.id} />
-          </AppSection>
+          <section className="space-y-4">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 className="text-base font-black text-zinc-950 dark:text-white">{td('inventory.title')}</h2>
+                <p className="mt-1 text-xs font-semibold text-zinc-500">{td('inventory.subtitle')}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="inline-flex h-9 items-center overflow-hidden rounded-lg border border-zinc-200 dark:border-white/10">
+                  <button type="button" onClick={() => setInventoryView("cards")} className={cn("flex h-full w-9 items-center justify-center", inventoryView === "cards" ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950" : "text-zinc-400 hover:text-zinc-950 dark:hover:text-white")} aria-label={td('inventory.cards')}>
+                    <LayoutGrid className="h-3.5 w-3.5" />
+                  </button>
+                  <button type="button" onClick={() => setInventoryView("table")} className={cn("flex h-full w-9 items-center justify-center", inventoryView === "table" ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950" : "text-zinc-400 hover:text-zinc-950 dark:hover:text-white")} aria-label={td('inventory.table')}>
+                    <List className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                <Link href="/properties/create">
+                  <AppPrimaryButton><Plus className="me-2 h-3.5 w-3.5" />{td('inventory.addUnit')}</AppPrimaryButton>
+                </Link>
+              </div>
+            </div>
+            {units.length === 0 ? (
+              <EmptyWorkspace icon={Layers3} title={td('inventory.emptyTitle')} description={td('inventory.emptyDesc')} />
+            ) : inventoryView === "table" ? (
+              <AppDataTable columns={unitColumns} data={units} getRowKey={(u) => u.id} />
+            ) : (
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {units.map((unit) => <ProjectUnitCard key={unit.id} unit={unit} />)}
+              </div>
+            )}
+          </section>
         </TabsContent>
 
         <TabsContent value="documents" className="space-y-6">
-          <AppSection title={td('documents.title')} description={td('documents.subtitle')}>
-            <ResourceMediaUploader
-              organizationId={workspaceOrganizationId}
-              resourceType="project"
-              resourceId={project.id}
-              pendingFiles={[]}
-              onPendingFilesChange={() => undefined}
-              immediate
-              labels={{ title: td('documents.title'), description: td('documents.subtitle') }}
-            />
-          </AppSection>
+          <ResourceMediaBrowser
+            organizationId={workspaceOrganizationId}
+            resourceType="project"
+            resourceId={project.id}
+            mode="documents"
+            title={td('documents.title')}
+            description={td('documents.subtitle')}
+            addLabel={td('documents.upload')}
+            emptyTitle={td('documents.emptyTitle')}
+            emptyDescription={td('documents.emptyDesc')}
+            uploadTitle={td('documents.uploadModalTitle')}
+            uploadDescription={td('documents.uploadModalDesc')}
+            uploadPick={t('form.documentsPick')}
+            unsupported={t('form.documentsUnsupported')}
+            openLabel={td('actions.view')}
+            coverLabel={td('gallery.cover')}
+            deleteLabel={td('actions.delete')}
+            statusQueued={td('uploadStatus.queued')}
+            statusUploading={td('uploadStatus.uploading')}
+            statusUploaded={td('uploadStatus.uploaded')}
+            statusFailed={td('uploadStatus.failed')}
+            removeLabel={td('actions.delete')}
+            retryLabel={td('uploadStatus.retry')}
+          />
         </TabsContent>
 
         <TabsContent value="sales" className="space-y-6">
           <AppStatsGrid stats={salesStats} />
-          
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <AppSection title={td('sales.reports.title')}>
-              <div className="space-y-3">
-                {[
-                  "Monthly Absorption Report - April 2026",
-                  "Revenue Forecast Q3-Q4",
-                  "Broker Performance Ledger",
-                ].map((report) => (
-                  <div key={report} className="flex items-center justify-between rounded-xl border border-zinc-100 p-4 dark:border-white/5">
-                    <div className="flex items-center gap-3">
-                      <BarChart3 className="h-4 w-4 text-zinc-400" />
-                      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-300">{report}</span>
+          <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="space-y-3">
+              <h2 className="text-base font-black text-zinc-950 dark:text-white">{td('sales.pipelineTitle')}</h2>
+              {units.length === 0 ? (
+                <EmptyWorkspace icon={BarChart3} title={td('sales.emptyTitle')} description={td('sales.emptyDesc')} />
+              ) : (
+                <div className="divide-y divide-zinc-200/70 border-y border-zinc-200/70 dark:divide-white/10 dark:border-white/10">
+                  {[
+                    { label: td('sales.status.available'), value: availableUnits, tone: "success" as const },
+                    { label: td('sales.status.reserved'), value: reservedUnits, tone: "warning" as const },
+                    { label: td('sales.status.sold'), value: soldUnits, tone: "neutral" as const },
+                    { label: td('sales.status.pending'), value: pendingUnits, tone: "warning" as const },
+                  ].map((row) => (
+                    <div key={row.label} className="grid grid-cols-[1fr_auto] items-center gap-3 py-3">
+                      <StatusPill label={row.label} tone={row.tone} />
+                      <span className="text-lg font-black text-zinc-950 dark:text-white">{row.value}</span>
                     </div>
-                    <button className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white">{td('actions.view')}</button>
-                  </div>
-                ))}
-              </div>
-              <AppPrimaryButton className="mt-6 w-full">{td('sales.reports.downloadAll')}</AppPrimaryButton>
-            </AppSection>
-
-            <AppSection title={td('aiInsights.title')} description="Market Sentiment Analysis">
-              <div className="flex h-full flex-col justify-center py-8 text-center">
-                <TrendingUp className="mx-auto mb-4 h-12 w-12 text-zinc-100 dark:text-white/5" />
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
-                  Sentiment remains strong. Absorption velocity is 12% above market average for {project.area}.
-                </p>
-              </div>
-            </AppSection>
-          </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <aside className="space-y-3 border-t border-zinc-200/70 pt-4 lg:border-s lg:border-t-0 lg:ps-5 lg:pt-0 dark:border-white/10">
+              <h2 className="text-base font-black text-zinc-950 dark:text-white">{td('sales.nextTitle')}</h2>
+              <p className="text-sm font-semibold leading-6 text-zinc-500 dark:text-zinc-400">
+                {units.length > 0 ? td('sales.nextDesc') : td('sales.nextEmptyDesc')}
+              </p>
+              <Link href="/properties/create" className="inline-flex h-9 items-center rounded-lg bg-zinc-950 px-3 text-[10px] font-black uppercase tracking-widest text-white dark:bg-white dark:text-zinc-950">
+                <Plus className="me-2 h-3.5 w-3.5" />
+                {td('inventory.addUnit')}
+              </Link>
+            </aside>
+          </section>
         </TabsContent>
 
         <TabsContent value="activity" className="space-y-6">
-          <AppSection title="Lifecycle Events" description={td('activity.subtitle')}>
-            <div className="space-y-6">
-              {[
-                { event: "Inventory Synced", actor: "System", date: "2h ago", icon: History },
-                { event: "Price Updated", actor: "Sarah Ahmed", date: "1d ago", icon: Edit },
-                { event: "Media Vault Approved", actor: "Institutional Node", date: "3d ago", icon: Share2 },
-                { event: "Project Created", actor: account.user.name, date: "1w ago", icon: Plus },
-              ].map((log) => (
-                <div key={log.event} className="flex gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-50 dark:bg-white/[0.02]">
-                    <log.icon className="h-4 w-4 text-zinc-400" />
-                  </div>
-                  <div className="flex-1 border-b border-zinc-50 pb-4 dark:border-white/[0.02]">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[11px] font-black uppercase tracking-widest text-zinc-900 dark:text-white">{log.event}</p>
-                      <span className="text-[9px] font-black uppercase tracking-widest text-zinc-300">{log.date}</span>
-                    </div>
-                    <p className="mt-1 text-[10px] font-medium uppercase text-zinc-500">By {log.actor}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </AppSection>
+          <EmptyWorkspace icon={History} title={td('activity.emptyTitle')} description={td('activity.emptyDesc')} />
         </TabsContent>
       </Tabs>
 
@@ -481,6 +545,26 @@ export function ProjectDetailScreen({ id }: { id: string }) {
         })}
       />
     </AppPageShell>
+  );
+}
+
+function ProjectUnitCard({ unit }: { unit: { id: string; title: string; reference: string; type: string; status: string; price: string; area: string; bedrooms?: number | string; bathrooms?: number | string } }) {
+  return (
+    <Link href={`/properties/${unit.reference || unit.id}`} className="block border border-zinc-200/70 bg-zinc-50/50 p-4 text-start transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/[0.025] dark:hover:bg-white/[0.04]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{unit.reference}</p>
+          <h3 className="mt-2 line-clamp-2 text-sm font-black text-zinc-950 dark:text-white">{unit.title}</h3>
+        </div>
+        <StatusPill label={unit.status} tone={unit.status === "available" ? "success" : unit.status === "sold" ? "neutral" : "warning"} />
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-xs font-bold text-zinc-500 dark:text-zinc-400">
+        <span>{unit.type}</span>
+        <span className="text-end">{unit.area}</span>
+        <span className="text-zinc-950 dark:text-white">{unit.price}</span>
+        <span className="text-end">{[unit.bedrooms, unit.bathrooms].filter((value) => typeof value === "number").join(" / ")}</span>
+      </div>
+    </Link>
   );
 }
 
@@ -547,7 +631,8 @@ export function ProjectFormScreen({ id }: { id?: string }) {
   const workspaceOrganizationId = isWorkspaceReady ? account.workspace.organizationId ?? undefined : undefined;
   const existing = useProjectQuery(workspaceOrganizationId, id ?? "") as Project | null | undefined;
   const router = useRouter();
-  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [pendingMediaFiles, setPendingMediaFiles] = useState<File[]>([]);
+  const [pendingDocumentFiles, setPendingDocumentFiles] = useState<File[]>([]);
   const queryDebug = {
     resourceType: "project",
     resourceId: id,
@@ -558,7 +643,7 @@ export function ProjectFormScreen({ id }: { id?: string }) {
   };
   
   const [step, setStep] = useState(1);
-  const totalSteps = 3;
+  const totalSteps = 5;
   const existingType = projectCategories.includes(existing?.type as ProjectFormValues["type"]) ? existing?.type as ProjectFormValues["type"] : "Residential";
   const existingUnitTypes = (existing?.unitTypes ?? []).filter((type): type is ProjectFormValues["unitTypes"][number] =>
     projectOfferingTypes.includes(type as ProjectFormValues["unitTypes"][number]),
@@ -583,6 +668,11 @@ export function ProjectFormScreen({ id }: { id?: string }) {
       visibility: existing?.visibility ?? "private",
       units: String(existing?.units ?? 0),
       priceRange: existing?.priceRange ?? "",
+      regaAuthorizationNo: existing?.regaAuthorizationNo ?? "",
+      regaExpiresAt: existing?.regaExpiresAt ?? "",
+      planNumber: existing?.planNumber ?? "",
+      plotNumber: existing?.plotNumber ?? "",
+      postalIdentity: existing?.postalIdentity ?? "",
       description: existing?.description ?? "",
     },
   });
@@ -606,6 +696,11 @@ export function ProjectFormScreen({ id }: { id?: string }) {
       visibility: existing.visibility ?? "private",
       units: String(existing.units ?? 0),
       priceRange: existing.priceRange ?? "",
+      regaAuthorizationNo: existing.regaAuthorizationNo ?? "",
+      regaExpiresAt: existing.regaExpiresAt ?? "",
+      planNumber: existing.planNumber ?? "",
+      plotNumber: existing.plotNumber ?? "",
+      postalIdentity: existing.postalIdentity ?? "",
       description: existing.description ?? "",
     });
   }, [existing, reset]);
@@ -629,12 +724,20 @@ export function ProjectFormScreen({ id }: { id?: string }) {
         ? await updateProjectRequest(workspaceOrganizationId, existing.id, data)
         : await createProjectRequest(workspaceOrganizationId, data);
       const nextId = result.project.id;
-      if (pendingFiles.length > 0) {
+      if (pendingMediaFiles.length > 0) {
         await uploadAndAttachMedia({
           organizationId: workspaceOrganizationId,
           resourceType: "project",
           resourceId: nextId,
-          files: pendingFiles,
+          files: pendingMediaFiles,
+        });
+      }
+      if (pendingDocumentFiles.length > 0) {
+        await uploadAndAttachMedia({
+          organizationId: workspaceOrganizationId,
+          resourceType: "project",
+          resourceId: nextId,
+          files: pendingDocumentFiles,
         });
       }
       return nextId;
@@ -655,11 +758,11 @@ export function ProjectFormScreen({ id }: { id?: string }) {
   };
 
   if (id && workspaceStatus !== "ready") {
-    return <AppPageShell><WorkspaceQueryState status={workspaceStatus} /></AppPageShell>;
+    return <AppPageShell><WorkspaceQueryState status={workspaceStatus} variant="detail" /></AppPageShell>;
   }
 
   if (id && existing === undefined) {
-    return <AppPageShell><ProgressiveLoadingState title={t("detail.loadingTitle")} description={t("detail.loadingDesc")} debug={queryDebug} /></AppPageShell>;
+    return <AppPageShell><ProgressiveLoadingState title={t("detail.loadingTitle")} description={t("detail.loadingDesc")} debug={queryDebug} variant="detail" /></AppPageShell>;
   }
 
   if (id && existing === null) {
@@ -676,10 +779,10 @@ export function ProjectFormScreen({ id }: { id?: string }) {
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,760px)_380px] xl:items-start xl:justify-center">
-        <ProjectFormPreview form={form} />
+        <ProjectFormPreview form={form} pendingMediaCount={pendingMediaFiles.length} pendingDocumentCount={pendingDocumentFiles.length} />
 
-        <section className="order-1 rounded-[32px] border border-zinc-100 bg-white p-4 shadow-sm shadow-zinc-950/[0.03] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none md:p-6">
-          <ProjectFormProgress step={step} labels={[t("form.stepInformation"), t("form.stepGallery"), t("form.stepDetails")]} />
+        <section className="order-1 rounded-2xl border border-zinc-100 bg-white p-4 shadow-sm shadow-zinc-950/[0.03] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none md:p-6">
+          <ProjectFormProgress step={step} labels={[t("form.stepInformation"), t("form.stepGallery"), t("form.stepLegal"), t("form.stepDocuments"), t("form.stepDetails")]} />
           <FormErrorSummary errors={fieldErrors} />
 
           <div className="mt-6 min-h-[360px]">
@@ -705,8 +808,8 @@ export function ProjectFormScreen({ id }: { id?: string }) {
                     organizationId={workspaceOrganizationId}
                     resourceType="project"
                     resourceId={existing?.id}
-                    pendingFiles={pendingFiles}
-                    onPendingFilesChange={setPendingFiles}
+                    pendingFiles={pendingMediaFiles}
+                    onPendingFilesChange={setPendingMediaFiles}
                     immediate={Boolean(existing)}
                     allowedKinds={["image", "video"]}
                     maxVideos={1}
@@ -717,7 +820,14 @@ export function ProjectFormScreen({ id }: { id?: string }) {
                       pick: t("form.galleryPick"),
                       queued: t("form.galleryQueued"),
                       videoLimit: t("form.galleryVideoLimit"),
+                      imageLimit: t("form.galleryImageLimit"),
                       unsupported: t("form.galleryUnsupported"),
+                      statusQueued: t("form.uploadStatusQueued"),
+                      statusUploading: t("form.uploadStatusUploading"),
+                      statusUploaded: t("form.uploadStatusUploaded"),
+                      statusFailed: t("form.uploadStatusFailed"),
+                      remove: t("form.uploadRemove"),
+                      retry: t("form.uploadRetry"),
                     }}
                     className="border-zinc-100 bg-zinc-50/40 shadow-none dark:border-white/[0.06] dark:bg-white/[0.01]"
                   />
@@ -726,6 +836,51 @@ export function ProjectFormScreen({ id }: { id?: string }) {
             )}
 
             {step === 3 && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <ProjectWizardPanel title={t("form.legalTitle")} description={t("form.legalDesc")}>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <TextInput name="regaAuthorizationNo" label={t("form.regaAuthorizationNoLabel")} value={form.regaAuthorizationNo ?? ""} onChange={(value) => setField("regaAuthorizationNo", value)} placeholder={t("form.regaAuthorizationNoPlaceholder")} error={fieldErrors.regaAuthorizationNo} />
+                    <TextInput name="regaExpiresAt" label={t("form.regaExpiresAtLabel")} type="date" value={form.regaExpiresAt ?? ""} onChange={(value) => setField("regaExpiresAt", value)} error={fieldErrors.regaExpiresAt} />
+                    <TextInput name="planNumber" label={t("form.planNumberLabel")} value={form.planNumber ?? ""} onChange={(value) => setField("planNumber", value)} placeholder={t("form.planNumberPlaceholder")} error={fieldErrors.planNumber} />
+                    <TextInput name="plotNumber" label={t("form.plotNumberLabel")} value={form.plotNumber ?? ""} onChange={(value) => setField("plotNumber", value)} placeholder={t("form.plotNumberPlaceholder")} error={fieldErrors.plotNumber} />
+                    <TextInput name="postalIdentity" label={t("form.postalIdentityLabel")} value={form.postalIdentity ?? ""} onChange={(value) => setField("postalIdentity", value)} placeholder={t("form.postalIdentityPlaceholder")} error={fieldErrors.postalIdentity} />
+                  </div>
+                </ProjectWizardPanel>
+              </div>
+            )}
+
+            {step === 4 && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <ProjectWizardPanel title={t("form.documentsTitle")} description={t("form.documentsDesc")}>
+                  <ResourceMediaUploader
+                    organizationId={workspaceOrganizationId}
+                    resourceType="project"
+                    resourceId={existing?.id}
+                    pendingFiles={pendingDocumentFiles}
+                    onPendingFilesChange={setPendingDocumentFiles}
+                    immediate={Boolean(existing)}
+                    allowedKinds={["document"]}
+                    variant="review"
+                    labels={{
+                      title: t("form.documentsUploaderTitle"),
+                      description: t("form.documentsUploaderDesc"),
+                      pick: t("form.documentsPick"),
+                      queued: t("form.documentsQueued"),
+                      unsupported: t("form.documentsUnsupported"),
+                      statusQueued: t("form.uploadStatusQueued"),
+                      statusUploading: t("form.uploadStatusUploading"),
+                      statusUploaded: t("form.uploadStatusUploaded"),
+                      statusFailed: t("form.uploadStatusFailed"),
+                      remove: t("form.uploadRemove"),
+                      retry: t("form.uploadRetry"),
+                    }}
+                    className="border-zinc-100 bg-zinc-50/40 shadow-none dark:border-white/[0.06] dark:bg-white/[0.01]"
+                  />
+                </ProjectWizardPanel>
+              </div>
+            )}
+
+            {step === 5 && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <ProjectWizardPanel title={t("form.detailsTitle")} description={t("form.detailsDesc")}>
                   <div className="space-y-6">
@@ -772,13 +927,13 @@ export function ProjectFormScreen({ id }: { id?: string }) {
 
 function ProjectFormProgress({ step, labels }: { step: number; labels: string[] }) {
   return (
-    <div className="rounded-[24px] border border-zinc-100 bg-zinc-50/70 p-3 dark:border-white/10 dark:bg-white/[0.025]">
-      <div className="grid grid-cols-3 gap-2">
+    <div className="rounded-xl border border-zinc-100 bg-zinc-50/70 p-3 dark:border-white/10 dark:bg-white/[0.025]">
+      <div className="grid gap-2 sm:grid-cols-5">
         {labels.map((label, index) => {
           const isDone = index + 1 < step;
           const isActive = index + 1 === step;
           return (
-            <div key={label} className={cn("rounded-2xl px-3 py-2 transition-all", isActive ? "bg-white shadow-sm shadow-zinc-950/[0.03] dark:bg-[#0A0A0A]" : "bg-transparent")}>
+            <div key={label} className={cn("rounded-lg px-3 py-2 transition-all", isActive ? "bg-white shadow-sm shadow-zinc-950/[0.03] dark:bg-[#0A0A0A]" : "bg-transparent")}>
               <div className="flex items-center gap-2 rtl:flex-row-reverse">
                 <span className={cn(
                   "inline-flex h-2.5 w-2.5 shrink-0 rounded-full transition-all",
@@ -885,12 +1040,20 @@ function OfferingMixGrid({
   );
 }
 
-function ProjectFormPreview({ form }: { form: ProjectFormValues }) {
+function ProjectFormPreview({
+  form,
+  pendingMediaCount,
+  pendingDocumentCount,
+}: {
+  form: ProjectFormValues;
+  pendingMediaCount: number;
+  pendingDocumentCount: number;
+}) {
   const t = useTranslations("Projects");
 
   return (
     <aside className="order-2 space-y-4 xl:sticky xl:top-24">
-      <article className="overflow-hidden rounded-[32px] border border-zinc-100 bg-white shadow-sm shadow-zinc-950/[0.03] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none">
+      <article className="overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm shadow-zinc-950/[0.03] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none">
         <div className="relative h-72 bg-zinc-950">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,255,255,0.18),transparent_30%),linear-gradient(135deg,rgba(255,255,255,0.10),transparent_45%)]" />
           <div className="absolute inset-x-6 top-6 flex items-center justify-between gap-3">
@@ -921,11 +1084,25 @@ function ProjectFormPreview({ form }: { form: ProjectFormValues }) {
               ))}
             </div>
           )}
+          <div className="flex flex-wrap gap-2">
+            {pendingMediaCount > 0 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                <ImageIcon className="h-3 w-3" />
+                {pendingMediaCount}
+              </span>
+            )}
+            {pendingDocumentCount > 0 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-300">
+                <FileText className="h-3 w-3" />
+                {pendingDocumentCount}
+              </span>
+            )}
+          </div>
           <p className="min-h-16 text-sm font-semibold leading-relaxed text-zinc-500 dark:text-zinc-400">{form.description || t("form.previewDescription")}</p>
         </div>
       </article>
 
-      <div className="rounded-[28px] border border-zinc-100 bg-white p-5 shadow-sm shadow-zinc-950/[0.02] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none">
+      <div className="rounded-2xl border border-zinc-100 bg-white p-5 shadow-sm shadow-zinc-950/[0.02] dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-none">
         <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t("form.previewChecklist")}</p>
         <div className="mt-4 grid gap-2">
           {[
@@ -933,9 +1110,12 @@ function ProjectFormPreview({ form }: { form: ProjectFormValues }) {
             [t("form.cityLabel"), form.city],
             [t("form.unitsLabel"), form.units],
             [t("form.offeringMixLabel"), form.unitTypes?.length ? String(form.unitTypes.length) : ""],
+            [t("form.legalChecklist"), form.regaAuthorizationNo || form.planNumber || form.plotNumber || form.postalIdentity],
+            [t("form.previewMedia"), pendingMediaCount ? String(pendingMediaCount) : ""],
+            [t("form.previewDocuments"), pendingDocumentCount ? String(pendingDocumentCount) : ""],
             [t("form.descLabel"), form.description],
           ].map(([label, value]) => (
-            <div key={label} className="flex items-center justify-between gap-3 rounded-2xl bg-zinc-50 px-4 py-3 dark:bg-white/[0.03]">
+            <div key={label} className="flex items-center justify-between gap-3 rounded-lg bg-zinc-50 px-4 py-3 dark:bg-white/[0.03]">
               <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{label}</span>
               <span className={cn("inline-flex h-6 w-6 items-center justify-center rounded-full", value ? "bg-emerald-500/10 text-emerald-500" : "bg-zinc-200 text-zinc-400 dark:bg-white/10")}>
                 {value ? <CheckCircle2 className="h-3.5 w-3.5" /> : <span className="h-2 w-2 rounded-full bg-current" />}

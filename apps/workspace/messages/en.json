@@ -1062,7 +1062,7 @@
       "createTitle": "Create Project",
       "editTitle": "Edit Project",
       "eyebrow": "Project CRUD",
-      "subtitle": "Structured project record backed by the mock Zustand store.",
+      "subtitle": "Create a complete operational project record backed by the workspace database.",
       "nameLabel": "Project Name",
       "devLabel": "Developer",
       "cityLabel": "City",
@@ -1083,6 +1083,8 @@
       "stepContext": "Context",
       "stepInformation": "Information",
       "stepGallery": "Gallery",
+      "stepLegal": "Legal",
+      "stepDocuments": "Documents",
       "stepDetails": "Details",
       "identityTitle": "Identity & Ownership",
       "identityDesc": "Name the project and connect it to the developer people will recognize.",
@@ -1095,11 +1097,37 @@
       "galleryTitle": "Review gallery",
       "galleryDesc": "Add the project images and one overview video people will use to review the project quickly.",
       "galleryUploaderTitle": "Images and overview video",
-      "galleryUploaderDesc": "Add review images and one short video. Documents belong in the project Assets tab later.",
+      "galleryUploaderDesc": "Add review images and one short video.",
       "galleryPick": "Choose images or video",
       "galleryQueued": "Review media",
+      "galleryImageLimit": "You can upload up to 10 images at a time.",
       "galleryVideoLimit": "Only one overview video can be added here.",
-      "galleryUnsupported": "Documents are reserved for the Assets section.",
+      "galleryUnsupported": "Only images and videos are supported for project media.",
+      "documentsTitle": "Project documents",
+      "documentsDesc": "Attach official project PDFs, approvals, and supporting files. Documents are optional during creation and appear in the documents tab.",
+      "documentsUploaderTitle": "Project documents",
+      "documentsUploaderDesc": "Attach project PDF documents and supporting files for operations.",
+      "documentsPick": "Choose documents",
+      "documentsQueued": "Queued documents",
+      "documentsUnsupported": "Only PDF documents are supported for project files.",
+      "uploadStatusQueued": "Queued",
+      "uploadStatusUploading": "Uploading",
+      "uploadStatusUploaded": "Uploaded",
+      "uploadStatusFailed": "Failed",
+      "uploadRemove": "Remove",
+      "uploadRetry": "Retry",
+      "legalTitle": "Legal and registry",
+      "legalDesc": "Store project registry values that must appear in the workspace. Leave unknown fields empty instead of using placeholders.",
+      "regaAuthorizationNoLabel": "REGA authorization",
+      "regaAuthorizationNoPlaceholder": "Authorization number",
+      "regaExpiresAtLabel": "REGA expiry",
+      "planNumberLabel": "Plan number",
+      "planNumberPlaceholder": "Plan / block",
+      "plotNumberLabel": "Plot number",
+      "plotNumberPlaceholder": "Plot",
+      "postalIdentityLabel": "Postal identity",
+      "postalIdentityPlaceholder": "Postal code or national address",
+      "legalChecklist": "Legal registry",
       "detailsTitle": "Classification and summary",
       "detailsDesc": "Set the project category, offering mix, status, and short working description.",
       "offeringMixLabel": "Offering mix",
@@ -1108,7 +1136,9 @@
       "previewName": "Project name",
       "previewDeveloper": "Developer",
       "previewDescription": "The project description will appear here as you write it.",
-      "previewChecklist": "Record readiness"
+      "previewChecklist": "Record readiness",
+      "previewMedia": "Media",
+      "previewDocuments": "Documents"
     },
     "types": {
       "Residential": "Residential",
@@ -1242,7 +1272,7 @@
       "createTitle": "Create Unit",
       "editTitle": "Edit Unit",
       "eyebrow": "Inventory CRUD",
-      "subtitle": "Structured property record backed by the mock Zustand store.",
+      "subtitle": "Create a complete operational unit record backed by the workspace database.",
       "nameLabel": "Unit Name",
       "projectLabel": "Project",
       "cityLabel": "City",
@@ -1262,11 +1292,14 @@
       "createBtn": "Create Unit",
       "stepInformation": "Information",
       "stepGallery": "Media",
+      "stepDocuments": "Documents",
       "stepDetails": "Details",
       "informationTitle": "Unit basics",
       "informationDesc": "Connect this unit to a project, city, area, and commercial value before adding media.",
       "galleryTitle": "Unit media",
       "galleryDesc": "Add images and one overview video. New files are queued until the unit is saved.",
+      "documentsTitle": "Unit documents",
+      "documentsDesc": "Attach contracts, PDFs, and supporting files. Documents are optional during creation but available in the unit file tab.",
       "detailsTitle": "Availability and layout",
       "detailsDesc": "Set the unit layout, purpose, status, and the client-facing description.",
       "galleryUploaderTitle": "Unit media",
@@ -1275,13 +1308,19 @@
       "galleryQueued": "Queued media",
       "galleryVideoLimit": "Only one overview video can be added to a unit.",
       "galleryUnsupported": "Only images and videos are supported for unit media.",
+      "documentsUploaderTitle": "Unit documents",
+      "documentsUploaderDesc": "Attach PDF documents and supporting files for operations.",
+      "documentsPick": "Choose documents",
+      "documentsQueued": "Queued documents",
+      "documentsUnsupported": "Only PDF documents are supported for unit files.",
       "previewTitle": "Unit preview",
       "previewName": "Unit name",
       "previewProject": "Project",
       "previewCity": "City",
       "previewDescription": "The unit description will appear here as you write it.",
       "previewChecklist": "Unit readiness",
-      "previewMedia": "Media"
+      "previewMedia": "Media",
+      "previewDocuments": "Documents"
     },
     "types": {
       "Apartment": "Apartment",
@@ -1311,7 +1350,33 @@
     "gallery": {
       "label": "Primary Asset Visual",
       "perspective": "Exterior Perspective.",
-      "vault": "Media Vault"
+      "vault": "Media Vault",
+      "title": "Project gallery",
+      "description": "Images and video used by the sales team to understand the project quickly.",
+      "add": "Add media",
+      "emptyTitle": "No gallery media yet",
+      "emptyDesc": "Add project images or one overview video when the visual package is ready.",
+      "uploadTitle": "Add project media",
+      "uploadDesc": "Upload images or video for this project gallery.",
+      "uploadPick": "Choose media",
+      "cover": "Cover"
+    },
+    "empty": {
+      "value": "Not set"
+    },
+    "metrics": {
+      "live": "Live",
+      "available": "Available",
+      "ready": "Ready",
+      "launchReadiness": "Launch readiness",
+      "inventoryCoverage": "Inventory coverage"
+    },
+    "uploadStatus": {
+      "queued": "Queued",
+      "uploading": "Uploading",
+      "uploaded": "Uploaded",
+      "failed": "Failed",
+      "retry": "Retry"
     },
     "narrative": {
       "title": "Asset Narrative"
@@ -1349,6 +1414,10 @@
       "title": "Units Inventory.",
       "subtitle": "Active units within the project portfolio",
       "addUnit": "Add Unit",
+      "cards": "Card view",
+      "table": "Table view",
+      "emptyTitle": "No units linked",
+      "emptyDesc": "Create or connect units to make this project operational.",
       "cols": {
         "ref": "Reference",
         "type": "Type",
@@ -1360,14 +1429,21 @@
       }
     },
     "activity": {
-      "subtitle": "Chronological ledger of asset lifecycle events"
+      "subtitle": "Chronological ledger of asset lifecycle events",
+      "emptyTitle": "No project activity yet",
+      "emptyDesc": "Real project activity will appear here after saved changes, uploads, and unit operations."
     },
     "documents": {
       "title": "Asset Documents",
       "subtitle": "Manage and verify official project documentation",
       "upload": "Upload Files",
-      "uploadModalTitle": "Upload Asset Media",
-      "uploadModalDesc": "Drag and drop project files to start the verification process",
+      "uploadModalTitle": "Upload project documents",
+      "uploadModalDesc": "Attach PDFs and supporting files to the project record.",
+      "emptyTitle": "No documents yet",
+      "emptyDesc": "Upload legal, approval, and operational documents when they are available.",
+      "count": "Documents",
+      "latest": "Latest document",
+      "none": "No documents uploaded",
       "dropzoneTitle": "Drop institutional files here",
       "dropzoneSubtitle": "or click to browse local vault",
       "readyForDeployment": "Ready for Deployment",
@@ -1387,26 +1463,26 @@
       "cancel": "Cancel",
       "apply": "Apply Files"
     },
-    "aiInsights": {
-      "title": "AI Structural Analysis",
-      "subtitle": "Predictive ROI & Market Velocity",
-      "roi": "Projected ROI",
-      "velocity": "Absorption Rate",
-      "confidence": "Analysis Confidence",
-      "summary": "AI models predict a high absorption rate for Al Madinah Residences due to its proximity to the KAFD metro hub. Market velocity is expected to peak in Q4 2026."
-    },
     "sales": {
       "title": "Sales Performance",
       "subtitle": "Inventory absorption and revenue metrics",
       "metrics": {
-        "totalRevenue": "Total Revenue",
-        "avgUnitPrice": "Avg. Unit Price",
-        "absorptionRate": "Absorption Rate",
-        "leadsConverted": "Leads Converted"
+        "totalUnits": "Live Units",
+        "availableUnits": "Available",
+        "reservedUnits": "Reserved",
+        "soldUnits": "Sold"
       },
-      "reports": {
-        "title": "Sales Reports",
-        "downloadAll": "Download All Reports"
+      "pipelineTitle": "Inventory movement",
+      "emptyTitle": "No sales movement yet",
+      "emptyDesc": "Add units and client links before using the sales workspace.",
+      "nextTitle": "Next useful action",
+      "nextDesc": "Review reserved and pending units first. They are the closest records to operational follow-up.",
+      "nextEmptyDesc": "Create units first. Sales movement needs real inventory.",
+      "status": {
+        "available": "Available",
+        "reserved": "Reserved",
+        "sold": "Sold",
+        "pending": "Pending"
       }
     }
   },
@@ -1435,6 +1511,15 @@
       "pipeline": "Pipeline",
       "list": "List",
       "calendar": "Calendar"
+    },
+    "stageFilters": {
+      "all": "All",
+      "active": "Active Journey",
+      "closed": "Closed"
+    },
+    "actions": {
+      "markClosed": "Mark closed",
+      "closed": "Client closed."
     },
     "card": {
       "budget": "Budget",

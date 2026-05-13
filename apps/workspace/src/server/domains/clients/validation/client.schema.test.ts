@@ -15,12 +15,14 @@ describe("client validation", () => {
       propertyInterest: "2BR apartment, Riyadh",
       status: "active",
       pipelineStage: "qualified",
+      pipelineOrder: 12.5,
       priority: "high",
       nextAction: "Send mortgage options",
       issue: "",
     });
 
     expect(parsed.age).toBe(34);
+    expect(parsed.pipelineOrder).toBe(12.5);
     expect(parsed.issue).toBeUndefined();
   });
 

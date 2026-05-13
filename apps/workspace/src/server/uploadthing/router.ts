@@ -3,6 +3,9 @@ import { createRouteHandler, createUploadthing, type FileRouter, UploadThingErro
 import { z } from "zod";
 import { convexRuntimeConfig } from "@/packages/config";
 import { assertCanUseOrganizationResource } from "@/server/utils/organization/access-checker";
+import { hydrateUploadThingEnvFromToken } from "./config";
+
+hydrateUploadThingEnvFromToken();
 
 const f = createUploadthing();
 const organizationUploadInputSchema = z.object({

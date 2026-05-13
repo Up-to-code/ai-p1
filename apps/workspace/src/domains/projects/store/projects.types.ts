@@ -17,6 +17,11 @@ export interface Project {
   syncState: "draft" | "blocked" | "synced";
   units: number;
   priceRange: string;
+  regaAuthorizationNo?: string;
+  regaExpiresAt?: string;
+  planNumber?: string;
+  plotNumber?: string;
+  postalIdentity?: string;
   updated?: string;
   updatedAt?: number;
   createdAt?: number;

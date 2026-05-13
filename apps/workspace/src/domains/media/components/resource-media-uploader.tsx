@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
-import { FileText, ImageIcon, Star, Trash2, UploadCloud, Video } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { CheckCircle2, FileText, ImageIcon, Loader2, RotateCcw, Star, Trash2, UploadCloud, Video, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import {
   deleteMediaRequest,
@@ -23,20 +25,43 @@ type ResourceMediaUploaderProps = {
   onPendingFilesChange: (files: File[]) => void;
   className?: string;
   allowedKinds?: MediaKind[];
+  maxImages?: number;
   maxVideos?: number;
   variant?: "default" | "review";
   labels?: {
     title?: string;
     description?: string;
+    hideHeader?: boolean;
+    hideDropDescription?: boolean;
     pick?: string;
     queued?: string;
     upload?: string;
     setCover?: string;
     delete?: string;
     videoLimit?: string;
+    imageLimit?: string;
     unsupported?: string;
+    statusQueued?: string;
+    statusUploading?: string;
+    statusUploaded?: string;
+    statusFailed?: string;
+    remove?: string;
+    retry?: string;
   };
   immediate?: boolean;
+  hideExisting?: boolean;
+};
+
+type UploadQueueStatus = "queued" | "uploading" | "uploaded" | "failed";
+
+type UploadQueueItem = {
+  id: string;
+  file: File;
+  kind: MediaKind;
+  previewUrl: string | null;
+  status: UploadQueueStatus;
+  error?: string;
+  asset?: Awaited<ReturnType<typeof uploadAndAttachMedia>>[number];
 };
 
 const defaultLabels = {
@@ -48,13 +73,124 @@ const defaultLabels = {
   setCover: "Set cover",
   delete: "Delete",
   videoLimit: "Only one overview video can be added here.",
+  imageLimit: "You can upload up to 10 images at a time.",
   unsupported: "This file type is reserved for the Assets section.",
+  statusQueued: "Queued",
+  statusUploading: "Uploading",
+  statusUploaded: "Uploaded",
+  statusFailed: "Failed",
+  remove: "Remove",
+  retry: "Retry",
 };
 
 function MediaIcon({ kind }: { kind: string }) {
   if (kind === "image") return <ImageIcon className="h-4 w-4" />;
   if (kind === "video") return <Video className="h-4 w-4" />;
   return <FileText className="h-4 w-4" />;
+}
+
+function userFacingUploadError(error: unknown) {
+  const message = error instanceof Error ? error.message : "Upload failed.";
+  if (/no secret provided/i.test(message) || /uploadthing/i.test(message)) {
+    return "Upload storage is not configured. Check UploadThing environment keys.";
+  }
+  return message;
+}
+
+function createQueueItem(file: File): UploadQueueItem {
+  const kind: MediaKind = file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "document";
+  const previewUrl = kind === "image" || kind === "video" ? URL.createObjectURL(file) : null;
+  return {
+    id: `${file.name}-${file.size}-${file.lastModified}-${crypto.randomUUID()}`,
+    file,
+    kind,
+    previewUrl,
+    status: "queued",
+  };
+}
+
+function useQueuedMediaUpload(params: {
+  organizationId?: string;
+  resourceType: MediaResourceType;
+  resourceId?: string;
+}) {
+  const { toast } = useToast();
+  const [queue, setQueue] = useState<UploadQueueItem[]>([]);
+  const queueRef = useRef<UploadQueueItem[]>([]);
+
+  useEffect(() => {
+    queueRef.current = queue;
+  }, [queue]);
+
+  useEffect(() => () => {
+    queueRef.current.forEach((item) => {
+      if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+    });
+  }, []);
+
+  const uploadMutation = useMutation({
+    mutationFn: async ({ itemIds, items: providedItems }: { itemIds: string[]; items?: UploadQueueItem[] }) => {
+      if (!params.organizationId || !params.resourceId) throw new Error("Media destination is not ready.");
+      const items = providedItems ?? queue.filter((item) => itemIds.includes(item.id));
+      if (!items.length) return [];
+      setQueue((current) => current.map((item) => itemIds.includes(item.id) ? { ...item, status: "uploading", error: undefined } : item));
+      const assets = await uploadAndAttachMedia({
+        organizationId: params.organizationId,
+        resourceType: params.resourceType,
+        resourceId: params.resourceId,
+        files: items.map((item) => item.file),
+      });
+      return items.map((item, index) => ({ itemId: item.id, asset: assets[index] }));
+    },
+    onSuccess: (uploaded) => {
+      setQueue((current) => current.map((item) => {
+        const match = uploaded.find((upload) => upload.itemId === item.id);
+        return match ? { ...item, status: "uploaded", asset: match.asset } : item;
+      }));
+      if (uploaded.length > 0) toast({ title: "Media uploaded.", type: "success" });
+    },
+    onError: (error, variables) => {
+      const message = userFacingUploadError(error);
+      setQueue((current) => current.map((item) => variables.itemIds.includes(item.id) ? { ...item, status: "failed", error: message } : item));
+      toast({ title: "Upload failed.", description: message, type: "error" });
+    },
+  });
+
+  const addToQueue = (files: File[]) => {
+    const next = files.map(createQueueItem);
+    setQueue((current) => [...current, ...next]);
+    return next.map((item) => item.id);
+  };
+
+  const addAndUpload = (files: File[]) => {
+    const next = files.map(createQueueItem);
+    setQueue((current) => [...current, ...next]);
+    uploadMutation.mutate({ itemIds: next.map((item) => item.id), items: next });
+  };
+
+  const removeFromQueue = async (itemId: string) => {
+    const item = queue.find((entry) => entry.id === itemId);
+    if (!item || item.status === "uploading") return;
+    if (item.status === "uploaded" && item.asset && params.organizationId) {
+      await deleteMediaRequest(params.organizationId, item.asset._id);
+    }
+    if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+    setQueue((current) => current.filter((entry) => entry.id !== itemId));
+  };
+
+  const uploadQueued = (itemIds?: string[]) => {
+    const ids = itemIds ?? queue.filter((item) => item.status === "queued" || item.status === "failed").map((item) => item.id);
+    if (ids.length > 0) uploadMutation.mutate({ itemIds: ids });
+  };
+
+  return {
+    queue,
+    addToQueue,
+    addAndUpload,
+    removeFromQueue,
+    uploadQueued,
+    isUploading: uploadMutation.isPending,
+  };
 }
 
 export function ResourceMediaUploader({
@@ -65,14 +201,17 @@ export function ResourceMediaUploader({
   onPendingFilesChange,
   className,
   allowedKinds = ["image", "video", "document"],
+  maxImages = 10,
   maxVideos,
   variant = "default",
   labels,
   immediate = false,
+  hideExisting = false,
 }: ResourceMediaUploaderProps) {
   const copy = { ...defaultLabels, ...labels };
   const media = useResourceMediaQuery(organizationId, resourceType, resourceId);
   const operation = useOperationState({ errorMessage: "Media action failed." });
+  const uploadQueue = useQueuedMediaUpload({ organizationId, resourceType, resourceId });
   const [validationError, setValidationError] = useState<string | null>(null);
   const canUpload = Boolean(organizationId && resourceId);
   const accept = [
@@ -82,24 +221,22 @@ export function ResourceMediaUploader({
   ].filter(Boolean).join(",");
   const existingVideoCount = media?.filter((asset) => asset.kind === "video").length ?? 0;
   const visibleMedia = media?.filter((asset) => allowedKinds.includes(asset.kind));
+  const queuedImageCount = immediate
+    ? uploadQueue.queue.filter((item) => item.kind === "image" && item.status !== "uploaded").length
+    : pendingFiles.filter((file) => file.type.startsWith("image/")).length;
   const pendingVideoCount = pendingFiles.filter((file) => file.type.startsWith("video/")).length;
-  const pendingPreviews = useMemo(() => {
-    return pendingFiles.map((file) => ({
-      file,
-      kind: file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "document",
-      url: file.type.startsWith("image/") || file.type.startsWith("video/") ? URL.createObjectURL(file) : null,
-    }));
-  }, [pendingFiles]);
+  const pendingPreviews = useMemo(() => pendingFiles.map(createQueueItem), [pendingFiles]);
 
   useEffect(() => {
     return () => pendingPreviews.forEach((preview) => {
-      if (preview.url) URL.revokeObjectURL(preview.url);
+      if (preview.previewUrl) URL.revokeObjectURL(preview.previewUrl);
     });
   }, [pendingPreviews]);
 
   async function addFiles(files: FileList | null) {
     setValidationError(null);
     const accepted: File[] = [];
+    let nextImageCount = queuedImageCount;
     let nextVideoCount = existingVideoCount + pendingVideoCount;
 
     for (const file of Array.from(files ?? [])) {
@@ -108,10 +245,15 @@ export function ResourceMediaUploader({
         setValidationError(copy.unsupported);
         continue;
       }
+      if (kind === "image" && typeof maxImages === "number" && nextImageCount >= maxImages) {
+        setValidationError(copy.imageLimit);
+        continue;
+      }
       if (kind === "video" && typeof maxVideos === "number" && nextVideoCount >= maxVideos) {
         setValidationError(copy.videoLimit);
         continue;
       }
+      if (kind === "image") nextImageCount += 1;
       if (kind === "video") nextVideoCount += 1;
       accepted.push(file);
     }
@@ -120,14 +262,7 @@ export function ResourceMediaUploader({
     if (!next.length) return;
 
     if (immediate && organizationId && resourceId) {
-      await operation.run(() =>
-        uploadAndAttachMedia({
-          organizationId,
-          resourceType,
-          resourceId,
-          files: next,
-        }), { successMessage: "Media uploaded." },
-      );
+      uploadQueue.addAndUpload(next);
       return;
     }
 
@@ -149,25 +284,30 @@ export function ResourceMediaUploader({
     );
   }
 
+  const uploadQueueItems = immediate ? uploadQueue.queue : pendingPreviews;
+
   return (
     <section className={cn("rounded-[28px] border border-zinc-100 bg-white p-4 dark:border-white/10 dark:bg-[#0A0A0A] md:p-5", className)}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3 className="text-sm font-black uppercase tracking-tight text-zinc-900 dark:text-white">{copy.title}</h3>
-          <p className="mt-1 max-w-xl text-xs font-semibold leading-relaxed text-zinc-400">{copy.description}</p>
+      {!copy.hideHeader && (
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-black uppercase tracking-tight text-zinc-900 dark:text-white">{copy.title}</h3>
+            <p className="mt-1 max-w-xl text-xs font-semibold leading-relaxed text-zinc-400">{copy.description}</p>
+          </div>
         </div>
-      </div>
+      )}
 
       <label className={cn(
-        "mt-4 flex cursor-pointer flex-col items-center justify-center gap-3 rounded-[24px] border border-dashed border-zinc-200 bg-zinc-50/70 p-5 text-center transition-all hover:border-zinc-300 hover:bg-zinc-50 dark:border-white/[0.06] dark:bg-white/[0.015] dark:hover:border-white/[0.12] dark:hover:bg-white/[0.03]",
+        "flex cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-zinc-200 bg-zinc-50/70 p-6 text-center transition-all hover:border-zinc-300 hover:bg-zinc-50 dark:border-white/[0.06] dark:bg-white/[0.015] dark:hover:border-white/[0.12] dark:hover:bg-white/[0.03]",
+        !copy.hideHeader && "mt-4",
         variant === "review" ? "min-h-28" : "min-h-32",
-        operation.isRunning && "pointer-events-none opacity-60",
+        (operation.isRunning || uploadQueue.isUploading) && "pointer-events-none opacity-60",
       )}>
-        <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-zinc-900 shadow-sm shadow-zinc-950/[0.04] dark:bg-white/10 dark:text-white dark:shadow-none">
+        <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white text-zinc-900 shadow-sm shadow-zinc-950/[0.04] dark:bg-white/10 dark:text-white dark:shadow-none">
           <UploadCloud className="h-5 w-5" />
         </span>
         <span className="text-[10px] font-black uppercase tracking-widest text-zinc-900 dark:text-white">{copy.pick}</span>
-        <span className="max-w-md text-xs font-semibold leading-relaxed text-zinc-400">{copy.description}</span>
+        {!copy.hideDropDescription && <span className="max-w-md text-xs font-semibold leading-relaxed text-zinc-400">{copy.description}</span>}
         <input
           type="file"
           className="sr-only"
@@ -177,41 +317,72 @@ export function ResourceMediaUploader({
         />
       </label>
 
-      {pendingFiles.length > 0 && (
-        <div className="mt-4 rounded-[24px] border border-zinc-100 bg-zinc-50/50 p-4 dark:border-white/10 dark:bg-white/[0.025]">
+      {uploadQueueItems.length > 0 && (
+        <div className="mt-4 border border-zinc-100 bg-zinc-50/50 p-3 dark:border-white/10 dark:bg-white/[0.025]">
           <div className="flex items-center justify-between gap-3">
             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{copy.queued}</p>
-            {canUpload && (
+            {canUpload && !immediate && (
               <Button type="button" size="sm" onClick={() => void uploadPending()} disabled={operation.isRunning}>
                 {copy.upload}
               </Button>
             )}
+            {canUpload && immediate && uploadQueue.queue.some((item) => item.status === "queued" || item.status === "failed") && (
+              <Button type="button" size="sm" onClick={() => uploadQueue.uploadQueued()} disabled={uploadQueue.isUploading}>
+                {copy.upload}
+              </Button>
+            )}
           </div>
-          <div className={cn("mt-3 flex flex-wrap gap-3", variant !== "review" && "sm:grid sm:grid-cols-2")}>
-            {pendingPreviews.map((preview, index) => (
-              <div key={`${preview.file.name}-${index}`} className={cn(
-                "group relative overflow-hidden rounded-2xl bg-white dark:bg-[#0A0A0A]",
-                variant === "review" ? "h-28 min-w-28 flex-[1_1_128px] border border-zinc-100 dark:border-white/10" : "flex min-w-0 items-center justify-between gap-3 px-3 py-2",
-              )}>
-                {variant === "review" && preview.url ? (
-                  preview.kind === "image" ? (
-                    <Image src={preview.url} alt={preview.file.name} fill sizes="160px" className="object-cover" />
+          <div className="mt-3 grid gap-2">
+            {uploadQueueItems.map((preview, index) => (
+              <div key={preview.id} className={cn(
+                "group relative grid min-h-20 grid-cols-[64px_minmax(0,1fr)_auto] items-center gap-3 overflow-hidden border bg-white p-2 transition-colors dark:bg-[#0A0A0A]",
+                "border-zinc-100 dark:border-white/10",
+                preview.status === "uploading" && "border-blue-400/30 bg-blue-50/30 dark:border-blue-400/30 dark:bg-blue-500/[0.04]",
+                preview.status === "failed" && "border-amber-400/35 bg-amber-50/30 dark:border-amber-400/25 dark:bg-amber-500/[0.035]",
+                preview.status === "uploaded" && "border-emerald-400/30 bg-emerald-50/30 dark:border-emerald-400/30 dark:bg-emerald-500/[0.04]",
+                variant !== "review" && "grid-cols-[44px_minmax(0,1fr)_auto] min-h-14",
+              )}
+              dir="ltr"
+              >
+                {preview.status === "uploading" && (
+                  <span className="absolute inset-x-0 top-0 h-0.5 overflow-hidden bg-blue-500/10">
+                    <span className="block h-full w-1/2 animate-[upload-slide_1.1s_ease-in-out_infinite] bg-blue-500" />
+                  </span>
+                )}
+                <div className={cn("relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-zinc-100 text-zinc-400 dark:bg-white/[0.05]", variant !== "review" && "h-10 w-10")}>
+                  {preview.previewUrl && preview.kind === "image" ? (
+                    <Image src={preview.previewUrl} alt={preview.file.name} fill sizes="96px" className="object-cover" />
+                  ) : preview.previewUrl && preview.kind === "video" ? (
+                    <video src={preview.previewUrl} className="h-full w-full object-cover" muted playsInline />
                   ) : (
-                    <video src={preview.url} className="h-full w-full object-cover" muted playsInline />
-                  )
-                ) : null}
-                <span className={cn(
-                  "truncate text-xs font-bold text-zinc-600 dark:text-zinc-300",
-                  variant === "review" && "absolute inset-x-2 bottom-2 rounded-xl bg-black/55 px-2 py-1 text-[10px] text-white backdrop-blur",
-                )}>{preview.file.name}</span>
+                    <MediaIcon kind={preview.kind} />
+                  )}
+                </div>
+                <div className="min-w-0 text-start" dir="auto">
+                  <p className="truncate text-xs font-black text-zinc-800 dark:text-zinc-100">{preview.file.name}</p>
+                  <p className="mt-1 truncate text-[10px] font-bold text-zinc-400">{Math.max(1, Math.round(preview.file.size / 1024))} KB</p>
+                  <UploadQueueBadge status={preview.status} labels={copy} />
+                  {preview.error && <p className="mt-1 line-clamp-2 text-[10px] font-bold leading-4 text-amber-600 dark:text-amber-300">{preview.error}</p>}
+                </div>
+                <div className="flex items-center gap-1">
+                  {immediate && preview.status === "failed" && (
+                    <button type="button" className="p-2 text-zinc-400 hover:text-zinc-950 dark:hover:text-white" onClick={() => uploadQueue.uploadQueued([preview.id])} aria-label={copy.retry}>
+                      <RotateCcw className="h-3.5 w-3.5" />
+                    </button>
+                  )}
                 <button
                   type="button"
-                  className={cn("text-zinc-300 hover:text-red-500", variant === "review" && "absolute right-2 top-2 rounded-full bg-black/45 p-1 text-white backdrop-blur hover:text-red-200")}
-                  onClick={() => onPendingFilesChange(pendingFiles.filter((_, fileIndex) => fileIndex !== index))}
-                  aria-label={`Remove ${preview.file.name}`}
+                  className="p-2 text-zinc-400 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                  disabled={preview.status === "uploading"}
+                  onClick={() => {
+                    if (immediate) void uploadQueue.removeFromQueue(preview.id);
+                    else onPendingFilesChange(pendingFiles.filter((_, fileIndex) => fileIndex !== index));
+                  }}
+                  aria-label={`${copy.remove} ${preview.file.name}`}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
+                </div>
               </div>
             ))}
           </div>
@@ -220,7 +391,7 @@ export function ResourceMediaUploader({
 
       {validationError && <p className="mt-3 text-xs font-bold text-amber-600 dark:text-amber-300">{validationError}</p>}
 
-      {visibleMedia && visibleMedia.length > 0 && (
+      {!hideExisting && visibleMedia && visibleMedia.length > 0 && (
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {visibleMedia.map((asset) => (
             <article key={asset._id} className="overflow-hidden rounded-2xl border border-zinc-100 bg-zinc-50 dark:border-white/10 dark:bg-white/[0.03]">
@@ -257,5 +428,22 @@ export function ResourceMediaUploader({
 
       {operation.error && <p className="mt-3 text-xs font-bold text-red-500">{operation.error}</p>}
     </section>
+  );
+}
+
+function UploadQueueBadge({ status, labels }: { status: UploadQueueStatus; labels: typeof defaultLabels }) {
+  const Icon = status === "uploading" ? Loader2 : status === "uploaded" ? CheckCircle2 : status === "failed" ? XCircle : UploadCloud;
+  const label = status === "uploading" ? labels.statusUploading : status === "uploaded" ? labels.statusUploaded : status === "failed" ? labels.statusFailed : labels.statusQueued;
+  return (
+    <span className={cn(
+      "mt-2 inline-flex h-6 items-center gap-1.5 rounded-full px-2 text-[9px] font-black uppercase tracking-widest",
+      status === "uploaded" && "bg-emerald-500/10 text-emerald-600 dark:text-emerald-300",
+      status === "failed" && "bg-amber-500/10 text-amber-700 dark:text-amber-300",
+      status === "uploading" && "bg-blue-500/10 text-blue-600 dark:text-blue-300",
+      status === "queued" && "bg-zinc-100 text-zinc-500 dark:bg-white/10 dark:text-zinc-300",
+    )}>
+      <Icon className={cn("h-3 w-3", status === "uploading" && "animate-spin")} />
+      {label}
+    </span>
   );
 }

@@ -1,6 +1,7 @@
 import { api } from "@convex/_generated/api";
 import { UTApi } from "uploadthing/server";
 import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/better-auth/server";
+import { hydrateUploadThingEnvFromToken } from "@/server/uploadthing/config";
 import {
   validateMediaKind,
   type AttachMediaPayload,
@@ -41,6 +42,7 @@ export async function deleteMedia(organizationId: string, mediaId: string) {
     mediaId: mediaId as never,
   });
 
+  hydrateUploadThingEnvFromToken();
   const utapi = new UTApi();
   await utapi.deleteFiles(asset.key);
 

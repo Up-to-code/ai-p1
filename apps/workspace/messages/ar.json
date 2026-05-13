@@ -1062,7 +1062,7 @@
       "createTitle": "إنشاء مشروع",
       "editTitle": "تعديل المشروع",
       "eyebrow": "CRUD المشروع",
-      "subtitle": "سجل مشروع منظم مدعوم بمتجر Zustand الوهمي.",
+      "subtitle": "إنشاء سجل مشروع تشغيلي كامل محفوظ في قاعدة بيانات مساحة العمل.",
       "nameLabel": "اسم المشروع",
       "devLabel": "المطور",
       "cityLabel": "المدينة",
@@ -1083,6 +1083,8 @@
       "stepContext": "السياق",
       "stepInformation": "المعلومات",
       "stepGallery": "المعرض",
+      "stepLegal": "القانوني",
+      "stepDocuments": "المستندات",
       "stepDetails": "التفاصيل",
       "identityTitle": "الهوية والملكية",
       "identityDesc": "سم المشروع واربطه بالمطور الذي سيتعرف عليه الفريق.",
@@ -1095,11 +1097,37 @@
       "galleryTitle": "معرض المراجعة",
       "galleryDesc": "أضف صور المشروع وفيديو تعريفي واحد ليتمكن الفريق من مراجعته بسرعة.",
       "galleryUploaderTitle": "الصور والفيديو التعريفي",
-      "galleryUploaderDesc": "أضف صور المراجعة وفيديو قصير واحد. المستندات ستكون في تبويب الأصول لاحقاً.",
+      "galleryUploaderDesc": "أضف صور المراجعة وفيديو قصير واحد.",
       "galleryPick": "اختيار صور أو فيديو",
       "galleryQueued": "وسائط المراجعة",
+      "galleryImageLimit": "يمكن رفع حتى 10 صور في كل مرة.",
       "galleryVideoLimit": "يمكن إضافة فيديو تعريفي واحد فقط هنا.",
-      "galleryUnsupported": "المستندات مخصصة لقسم الأصول.",
+      "galleryUnsupported": "وسائط المشروع تدعم الصور والفيديو فقط.",
+      "documentsTitle": "مستندات المشروع",
+      "documentsDesc": "أرفق ملفات PDF الرسمية والاعتمادات والملفات الداعمة. المستندات اختيارية أثناء الإنشاء وتظهر في تبويب المستندات.",
+      "documentsUploaderTitle": "مستندات المشروع",
+      "documentsUploaderDesc": "أرفق مستندات PDF والملفات الداعمة للتشغيل.",
+      "documentsPick": "اختيار مستندات",
+      "documentsQueued": "مستندات في الانتظار",
+      "documentsUnsupported": "ملفات المشروع تدعم مستندات PDF فقط.",
+      "uploadStatusQueued": "في الانتظار",
+      "uploadStatusUploading": "جاري الرفع",
+      "uploadStatusUploaded": "تم الرفع",
+      "uploadStatusFailed": "فشل",
+      "uploadRemove": "إزالة",
+      "uploadRetry": "إعادة المحاولة",
+      "legalTitle": "البيانات القانونية والسجل",
+      "legalDesc": "احفظ بيانات السجل التي يجب أن تظهر في مساحة المشروع. اترك الحقول غير المعروفة فارغة بدل القيم الوهمية.",
+      "regaAuthorizationNoLabel": "ترخيص فال",
+      "regaAuthorizationNoPlaceholder": "رقم الترخيص",
+      "regaExpiresAtLabel": "انتهاء الترخيص",
+      "planNumberLabel": "رقم المخطط",
+      "planNumberPlaceholder": "المخطط / البلوك",
+      "plotNumberLabel": "رقم القطعة",
+      "plotNumberPlaceholder": "القطعة",
+      "postalIdentityLabel": "الهوية البريدية",
+      "postalIdentityPlaceholder": "الرمز البريدي أو العنوان الوطني",
+      "legalChecklist": "السجل القانوني",
       "detailsTitle": "التصنيف والملخص",
       "detailsDesc": "حدد فئة المشروع، ومزيج العروض، والحالة، ووصفاً عملياً مختصراً.",
       "offeringMixLabel": "مزيج العروض",
@@ -1108,7 +1136,9 @@
       "previewName": "اسم المشروع",
       "previewDeveloper": "المطور",
       "previewDescription": "سيظهر وصف المشروع هنا أثناء كتابته.",
-      "previewChecklist": "جاهزية السجل"
+      "previewChecklist": "جاهزية السجل",
+      "previewMedia": "الوسائط",
+      "previewDocuments": "المستندات"
     },
     "types": {
       "Residential": "سكني",
@@ -1242,7 +1272,7 @@
       "createTitle": "إنشاء وحدة",
       "editTitle": "تعديل الوحدة",
       "eyebrow": "CRUD المخزون",
-      "subtitle": "سجل عقاري منظم مدعوم بمتجر Zustand الوهمي.",
+      "subtitle": "إنشاء سجل وحدة تشغيلي كامل محفوظ في قاعدة بيانات مساحة العمل.",
       "nameLabel": "اسم الوحدة",
       "projectLabel": "المشروع",
       "cityLabel": "المدينة",
@@ -1262,11 +1292,14 @@
       "createBtn": "إنشاء وحدة",
       "stepInformation": "المعلومات",
       "stepGallery": "الوسائط",
+      "stepDocuments": "المستندات",
       "stepDetails": "التفاصيل",
       "informationTitle": "أساسيات الوحدة",
       "informationDesc": "اربط هذه الوحدة بالمشروع والمدينة والمساحة والقيمة التجارية قبل إضافة الوسائط.",
       "galleryTitle": "وسائط الوحدة",
       "galleryDesc": "أضف صوراً وفيديو تعريفي واحد. تبقى الملفات الجديدة في الانتظار حتى حفظ الوحدة.",
+      "documentsTitle": "مستندات الوحدة",
+      "documentsDesc": "أرفق العقود وملفات PDF والملفات الداعمة. المستندات اختيارية أثناء الإنشاء وتظهر في تبويب الملفات.",
       "detailsTitle": "التوفر والتخطيط",
       "detailsDesc": "حدد تخطيط الوحدة والغرض والحالة والوصف الظاهر للعميل.",
       "galleryUploaderTitle": "وسائط الوحدة",
@@ -1275,13 +1308,19 @@
       "galleryQueued": "وسائط في الانتظار",
       "galleryVideoLimit": "يمكن إضافة فيديو تعريفي واحد فقط للوحدة.",
       "galleryUnsupported": "وسائط الوحدة تدعم الصور والفيديو فقط.",
+      "documentsUploaderTitle": "مستندات الوحدة",
+      "documentsUploaderDesc": "أرفق ملفات PDF والملفات الداعمة للتشغيل.",
+      "documentsPick": "اختيار مستندات",
+      "documentsQueued": "مستندات في الانتظار",
+      "documentsUnsupported": "ملفات الوحدة تدعم مستندات PDF فقط.",
       "previewTitle": "معاينة الوحدة",
       "previewName": "اسم الوحدة",
       "previewProject": "المشروع",
       "previewCity": "المدينة",
       "previewDescription": "سيظهر وصف الوحدة هنا أثناء كتابته.",
       "previewChecklist": "جاهزية الوحدة",
-      "previewMedia": "الوسائط"
+      "previewMedia": "الوسائط",
+      "previewDocuments": "المستندات"
     },
     "types": {
       "Apartment": "شقة",
@@ -1311,7 +1350,33 @@
     "gallery": {
       "label": "العرض الرئيسي للأصل",
       "perspective": "منظور خارجي",
-      "vault": "مخزن الوسائط"
+      "vault": "مخزن الوسائط",
+      "title": "معرض المشروع",
+      "description": "صور وفيديو يستخدمها فريق المبيعات لفهم المشروع بسرعة.",
+      "add": "إضافة وسائط",
+      "emptyTitle": "لا توجد وسائط بعد",
+      "emptyDesc": "أضف صور المشروع أو فيديو تعريفي واحد عندما تكون الحزمة البصرية جاهزة.",
+      "uploadTitle": "إضافة وسائط للمشروع",
+      "uploadDesc": "ارفع صوراً أو فيديو لهذا المعرض.",
+      "uploadPick": "اختيار وسائط",
+      "cover": "غلاف"
+    },
+    "empty": {
+      "value": "غير محدد"
+    },
+    "metrics": {
+      "live": "مباشر",
+      "available": "متاح",
+      "ready": "جاهز",
+      "launchReadiness": "جاهزية الإطلاق",
+      "inventoryCoverage": "تغطية المخزون"
+    },
+    "uploadStatus": {
+      "queued": "في الانتظار",
+      "uploading": "جاري الرفع",
+      "uploaded": "تم الرفع",
+      "failed": "فشل",
+      "retry": "إعادة المحاولة"
     },
     "narrative": {
       "title": "سرد الأصل"
@@ -1349,6 +1414,10 @@
       "title": "مخزون الوحدات.",
       "subtitle": "الوحدات النشطة داخل محفظة المشروع",
       "addUnit": "إضافة وحدة",
+      "cards": "عرض البطاقات",
+      "table": "عرض الجدول",
+      "emptyTitle": "لا توجد وحدات مرتبطة",
+      "emptyDesc": "أنشئ أو اربط وحدات حتى يصبح المشروع تشغيلياً.",
       "cols": {
         "ref": "المرجع",
         "type": "النوع",
@@ -1360,14 +1429,21 @@
       }
     },
     "activity": {
-      "subtitle": "سجل زمني لأحداث دورة حياة الأصل"
+      "subtitle": "سجل زمني لأحداث دورة حياة الأصل",
+      "emptyTitle": "لا يوجد نشاط للمشروع بعد",
+      "emptyDesc": "سيظهر النشاط الحقيقي هنا بعد الحفظ والرفع وعمليات الوحدات."
     },
     "documents": {
       "title": "مستندات الأصل",
       "subtitle": "إدارة والتحقق من الوثائق الرسمية للمشروع",
       "upload": "رفع ملفات",
-      "uploadModalTitle": "رفع وسائط الأصل",
-      "uploadModalDesc": "اسحب وأفلت ملفات المشروع لبدء عملية التحقق",
+      "uploadModalTitle": "رفع مستندات المشروع",
+      "uploadModalDesc": "أرفق ملفات PDF والملفات الداعمة بسجل المشروع.",
+      "emptyTitle": "لا توجد مستندات بعد",
+      "emptyDesc": "ارفع المستندات القانونية والاعتمادات والتشغيل عندما تكون متاحة.",
+      "count": "المستندات",
+      "latest": "آخر مستند",
+      "none": "لا توجد مستندات مرفوعة",
       "dropzoneTitle": "أفلت الملفات المؤسسية هنا",
       "dropzoneSubtitle": "أو انقر للتصفح في الخزنة المحلية",
       "readyForDeployment": "جاهز للنشر",
@@ -1387,26 +1463,26 @@
       "cancel": "إلغاء",
       "apply": "تطبيق الملفات"
     },
-    "aiInsights": {
-      "title": "التحليل الهيكلي للذكاء الاصطناعي",
-      "subtitle": "عائد الاستثمار المتوقع وسرعة السوق",
-      "roi": "عائد الاستثمار المتوقع",
-      "velocity": "معدل الامتصاص",
-      "confidence": "ثقة التحليل",
-      "summary": "تتوقع نماذج الذكاء الاصطناعي معدل امتصاص مرتفع لمشروع مساكن المدينة نظراً لقربه من مركز مترو KAFD. من المتوقع أن تصل سرعة السوق إلى ذروتها في الربع الرابع من عام 2026."
-    },
     "sales": {
       "title": "أداء المبيعات",
       "subtitle": "مقاييس امتصاص المخزون والإيرادات",
       "metrics": {
-        "totalRevenue": "إجمالي الإيرادات",
-        "avgUnitPrice": "متوسط سعر الوحدة",
-        "absorptionRate": "معدل الامتصاص",
-        "leadsConverted": "العملاء المحولون"
+        "totalUnits": "الوحدات المباشرة",
+        "availableUnits": "المتاحة",
+        "reservedUnits": "المحجوزة",
+        "soldUnits": "المباعة"
       },
-      "reports": {
-        "title": "تقارير المبيعات",
-        "downloadAll": "تحميل جميع التقارير"
+      "pipelineTitle": "حركة المخزون",
+      "emptyTitle": "لا توجد حركة مبيعات بعد",
+      "emptyDesc": "أضف الوحدات وروابط العملاء قبل استخدام مساحة المبيعات.",
+      "nextTitle": "الخطوة المفيدة التالية",
+      "nextDesc": "راجع الوحدات المحجوزة والمعلقة أولاً، فهي أقرب سجلات للمتابعة التشغيلية.",
+      "nextEmptyDesc": "أنشئ وحدات أولاً. حركة المبيعات تحتاج مخزوناً حقيقياً.",
+      "status": {
+        "available": "متاح",
+        "reserved": "محجوز",
+        "sold": "مباع",
+        "pending": "معلق"
       }
     }
   },
@@ -1435,6 +1511,15 @@
       "pipeline": "المسار",
       "list": "القائمة",
       "calendar": "التقويم"
+    },
+    "stageFilters": {
+      "all": "الكل",
+      "active": "المسار النشط",
+      "closed": "المغلقون"
+    },
+    "actions": {
+      "markClosed": "إغلاق العميل",
+      "closed": "تم إغلاق العميل."
     },
     "card": {
       "budget": "الميزانية",

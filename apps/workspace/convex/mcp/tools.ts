@@ -805,6 +805,7 @@ function clientInput(input: Input) {
     propertyInterest: optionalString(input, "propertyInterest") ?? "",
     status: oneOf(input.status, ["active", "inactive"] as const, "active"),
     pipelineStage: oneOf(input.pipelineStage, ["new", "qualified", "viewing", "negotiation", "closed"] as const, "new"),
+    ...(optionalNumber(input, "pipelineOrder") !== undefined ? { pipelineOrder: optionalNumber(input, "pipelineOrder")! } : {}),
     priority: priority(input),
     nextAction: optionalString(input, "nextAction") ?? "Follow up",
     issue: optionalString(input, "issue"),
@@ -850,6 +851,11 @@ function projectInput(input: Input) {
     status: projectStatus(input),
     units: optionalNumber(input, "units") ?? 0,
     priceRange: optionalString(input, "priceRange") ?? "",
+    regaAuthorizationNo: optionalString(input, "regaAuthorizationNo"),
+    regaExpiresAt: optionalString(input, "regaExpiresAt"),
+    planNumber: optionalString(input, "planNumber"),
+    plotNumber: optionalString(input, "plotNumber"),
+    postalIdentity: optionalString(input, "postalIdentity"),
     description: optionalString(input, "description") ?? "",
   };
 }

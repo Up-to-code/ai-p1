@@ -352,9 +352,9 @@ export function CalendarScreen() {
       />
 
       {workspaceStatus !== "ready" ? (
-        <WorkspaceQueryState status={workspaceStatus} />
+        <WorkspaceQueryState status={workspaceStatus} variant="calendar" />
       ) : isQueryBlocked ? (
-        <HttpQueryState query={eventsQuery} />
+        <HttpQueryState query={eventsQuery} variant="calendar" />
       ) : (
         <>
           {/* Calendar Card */}
@@ -800,18 +800,30 @@ function EventDetailDialog({
   const t = useTranslations("Calendar");
   const eventDate = new Date(event.date + "T00:00:00");
   const [quickViewEntity, setQuickViewEntity] = useState<{ id: string; type: "client" | "unit" | "task"; title: string } | null>(null);
+  const closeEventDialog = () => {
+    setQuickViewEntity(null);
+    onClose();
+  };
 
   return (
     <>
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+    <Dialog open onOpenChange={(open) => { if (!open) closeEventDialog(); }}>
       <DialogContent showCloseButton={false} className="max-w-2xl w-[94vw] p-0 overflow-hidden bg-white dark:bg-[#0A0A0A] border-zinc-100 dark:border-white/5 rounded-[32px] shadow-2xl flex flex-col max-h-[90vh]">
+        <div
+          aria-hidden={Boolean(quickViewEntity)}
+          className={cn(
+            "flex min-h-0 flex-1 flex-col transition duration-150",
+            quickViewEntity && "pointer-events-none select-none opacity-35 blur-[1px]",
+          )}
+        >
         <div className="p-5 border-b border-zinc-100 dark:border-white/5">
           <div className="flex items-center justify-between">
             <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
               {t("detail.eyebrow")}
             </p>
             <button
-              onClick={onClose}
+              onClick={closeEventDialog}
+              disabled={Boolean(quickViewEntity)}
               className="p-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-all"
             >
               <X className="h-5 w-5 text-zinc-400" />
@@ -923,21 +935,24 @@ function EventDetailDialog({
         </div>
 
         <div className="p-5 border-t border-zinc-100 dark:border-white/5 space-y-3">
-          <Button
-            variant="outline"
-            onClick={() => onEditClick(event)}
-            className="w-full h-10 rounded-xl text-[10px] font-black uppercase tracking-widest border-zinc-100 dark:border-white/10"
-          >
+            <Button
+              variant="outline"
+              onClick={() => onEditClick(event)}
+              disabled={Boolean(quickViewEntity)}
+              className="w-full h-10 rounded-xl text-[10px] font-black uppercase tracking-widest border-zinc-100 dark:border-white/10"
+            >
             <Eye className="me-2 h-3.5 w-3.5" />
             {t("detail.edit") || "Edit"}
           </Button>
           <button
             onClick={() => onDelete(event.id)}
+            disabled={Boolean(quickViewEntity)}
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-red-600 text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all dark:border-red-900 dark:bg-red-900/20 dark:text-red-400"
           >
             <Trash2 className="h-3.5 w-3.5" />
             {t("delete.title")}
           </button>
+        </div>
         </div>
       </DialogContent>
     </Dialog>
@@ -1480,15 +1495,23 @@ function EntityQuickViewDialog({
 }) {
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent showCloseButton={false} className="max-w-2xl w-[94vw] rounded-[32px] p-0 overflow-hidden dark:bg-[#0A0A0A] border-zinc-100 dark:border-white/5 shadow-2xl flex flex-col max-h-[85vh]">
+      <DialogContent
+        showCloseButton={false}
+        overlayClassName="z-[70] bg-black/55 supports-backdrop-filter:backdrop-blur-sm"
+        containerClassName="z-[80] p-3 sm:p-4"
+        className="z-[80] flex max-h-[min(86vh,720px)] w-[min(94vw,560px)] max-w-none flex-col overflow-hidden rounded-[22px] border-zinc-200 bg-zinc-50 p-0 text-zinc-950 shadow-none dark:border-white/10 dark:bg-[#111111] dark:text-white"
+      >
         {entity.type === "client" && <ClientQuickView clientId={entity.id} onClose={onClose} />}
         {entity.type === "unit" && <UnitQuickView propertyId={entity.id} onClose={onClose} />}
         {entity.type === "task" && (
-          <div className="p-8 text-center">
-            <ClipboardList className="mx-auto h-10 w-10 text-zinc-300 dark:text-zinc-600 mb-4" />
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400 mb-2">Task</p>
-            <h2 className="text-xl font-black text-zinc-900 dark:text-white mb-6">{entity.title}</h2>
-            <button onClick={onClose} className="h-12 w-full rounded-2xl border border-zinc-100 text-xs font-black uppercase tracking-widest text-zinc-500 hover:bg-zinc-50 dark:border-white/5 dark:text-zinc-400 dark:hover:bg-white/5 transition-colors">Close</button>
+          <div className="p-5 text-center">
+            <button onClick={onClose} className="mb-5 flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-400 transition hover:bg-white hover:text-zinc-900 dark:border-white/10 dark:hover:bg-white/5 dark:hover:text-white">
+              <X className="h-4 w-4" />
+            </button>
+            <ClipboardList className="mx-auto mb-4 h-10 w-10 text-zinc-300 dark:text-zinc-600" />
+            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400">Task</p>
+            <h2 className="mb-6 text-xl font-black text-zinc-900 dark:text-white">{entity.title}</h2>
+            <button onClick={onClose} className="h-11 w-full rounded-2xl border border-zinc-200 bg-white text-xs font-black uppercase tracking-widest text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-400 dark:hover:bg-white/5">Close</button>
           </div>
         )}
       </DialogContent>
@@ -1523,15 +1546,14 @@ function ClientQuickView({ clientId, onClose }: { clientId: string; onClose: () 
 
   return (
     <>
-      {/* Header */}
-      <div className="flex items-start gap-5 p-6 border-b border-zinc-100 dark:border-white/5">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[22px] bg-zinc-900 text-white text-2xl font-black dark:bg-white dark:text-zinc-900">
+      <div className="flex items-start gap-4 border-b border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-[#111111]">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-950 text-lg font-black text-white dark:bg-white dark:text-zinc-950">
           {client.name.charAt(0).toUpperCase()}
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[9px] font-black uppercase tracking-[0.25em] text-zinc-400 mb-1">Client Profile</p>
-          <h2 className="text-lg font-black text-zinc-900 dark:text-white leading-tight truncate">{client.name}</h2>
-          <div className="flex flex-wrap items-center gap-2 mt-2">
+        <div className="min-w-0 flex-1">
+          <p className="mb-1 text-[9px] font-black uppercase tracking-[0.25em] text-zinc-400">Client Profile</p>
+          <h2 className="truncate text-base font-black leading-tight text-zinc-950 dark:text-white">{client.name}</h2>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             <span className={cn("rounded-lg border px-2 py-0.5 text-[9px] font-black uppercase tracking-widest", stageColors[client.pipelineStage] || stageColors.new)}>
               {client.pipelineStage}
             </span>
@@ -1545,48 +1567,38 @@ function ClientQuickView({ clientId, onClose }: { clientId: string; onClose: () 
             )}
           </div>
         </div>
-        <button onClick={onClose} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-zinc-200 text-zinc-400 hover:bg-zinc-50 hover:text-zinc-900 dark:border-white/10 dark:hover:bg-white/5 dark:hover:text-white transition-colors">
+        <button onClick={onClose} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-200 text-zinc-400 transition hover:bg-zinc-50 hover:text-zinc-950 dark:border-white/10 dark:hover:bg-white/5 dark:hover:text-white">
           <X className="h-4 w-4" />
         </button>
       </div>
 
-      {/* Contact Overview */}
-      <div className="grid grid-cols-2 gap-px bg-zinc-100 dark:bg-white/5 border-b border-zinc-100 dark:border-white/5">
-        <div className="flex items-center gap-3 bg-white px-5 py-3.5 dark:bg-[#0A0A0A]">
+      <div className="grid grid-cols-2 border-b border-zinc-200 bg-white dark:border-white/10 dark:bg-[#111111] sm:grid-cols-4">
+        <div className="min-w-0 border-e border-b border-zinc-100 px-4 py-3 dark:border-white/5 sm:border-b-0">
           <Phone className="h-4 w-4 text-zinc-400" />
-          <div className="min-w-0">
-            <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Phone</p>
-            <p className="text-xs font-bold text-zinc-900 dark:text-white truncate" dir="ltr">{client.phone || "—"}</p>
-          </div>
+          <p className="mt-2 text-[8px] font-black uppercase tracking-widest text-zinc-400">Phone</p>
+          <p className="mt-1 truncate text-xs font-bold text-zinc-950 dark:text-white" dir="ltr">{client.phone || "—"}</p>
         </div>
-        <div className="flex items-center gap-3 bg-white px-5 py-3.5 dark:bg-[#0A0A0A]">
+        <div className="min-w-0 border-b border-zinc-100 px-4 py-3 dark:border-white/5 sm:border-e sm:border-b-0">
           <Mail className="h-4 w-4 text-zinc-400" />
-          <div className="min-w-0">
-            <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Email</p>
-            <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">{client.contact || "—"}</p>
-          </div>
+          <p className="mt-2 text-[8px] font-black uppercase tracking-widest text-zinc-400">Email</p>
+          <p className="mt-1 truncate text-xs font-bold text-zinc-950 dark:text-white">{client.contact || "—"}</p>
         </div>
-        <div className="flex items-center gap-3 bg-white px-5 py-3.5 dark:bg-[#0A0A0A]">
+        <div className="min-w-0 border-e border-zinc-100 px-4 py-3 dark:border-white/5">
           <DollarSign className="h-4 w-4 text-zinc-400" />
-          <div className="min-w-0">
-            <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Budget</p>
-            <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">{client.budget || "—"}</p>
-          </div>
+          <p className="mt-2 text-[8px] font-black uppercase tracking-widest text-zinc-400">Budget</p>
+          <p className="mt-1 truncate text-xs font-bold text-zinc-950 dark:text-white">{client.budget || "—"}</p>
         </div>
-        <div className="flex items-center gap-3 bg-white px-5 py-3.5 dark:bg-[#0A0A0A]">
+        <div className="min-w-0 px-4 py-3">
           <Building2 className="h-4 w-4 text-zinc-400" />
-          <div className="min-w-0">
-            <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Interest</p>
-            <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">{client.propertyInterest || "—"}</p>
-          </div>
+          <p className="mt-2 text-[8px] font-black uppercase tracking-widest text-zinc-400">Interest</p>
+          <p className="mt-1 truncate text-xs font-bold text-zinc-950 dark:text-white">{client.propertyInterest || "—"}</p>
         </div>
       </div>
 
-      {/* Linked Units */}
-      <div className="flex-1 overflow-y-auto p-5">
-        <p className="text-[9px] font-black uppercase tracking-[0.25em] text-zinc-400 mb-3">Linked Properties</p>
+      <div className="min-h-0 flex-1 overflow-y-auto p-4">
+        <p className="mb-3 text-[9px] font-black uppercase tracking-[0.25em] text-zinc-400">Linked Properties</p>
         {!unitLinks || unitLinks.length === 0 ? (
-          <div className="flex h-24 items-center justify-center rounded-2xl border border-dashed border-zinc-200 text-xs font-bold text-zinc-400 dark:border-white/10">
+          <div className="flex h-20 items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-white text-xs font-bold text-zinc-400 dark:border-white/10 dark:bg-white/[0.02]">
             No linked properties
           </div>
         ) : (
@@ -1598,10 +1610,9 @@ function ClientQuickView({ clientId, onClose }: { clientId: string; onClose: () 
         )}
       </div>
 
-      {/* Footer */}
-      <div className="p-5 border-t border-zinc-100 dark:border-white/5">
+      <div className="border-t border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-[#111111]">
         <AppPrimaryButton
-          className="h-14 w-full rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-zinc-900/10 dark:shadow-white/5"
+          className="h-12 w-full rounded-2xl text-xs font-black uppercase tracking-widest shadow-none"
           onClick={() => { onClose(); router.push(`/${locale}/clients/${clientId}`); }}
         >
           <ExternalLink className="me-2 h-4 w-4" />
@@ -1637,10 +1648,9 @@ function LinkedUnitCard({ propertyId, status, locale }: { propertyId: string; st
   return (
     <Link
       href={`/${locale}/properties/${property.reference || propertyId}`}
-      className="group flex items-center gap-3 rounded-2xl border border-zinc-100 bg-white p-2.5 transition-all hover:border-zinc-300 hover:shadow-sm dark:border-white/5 dark:bg-white/[0.02] dark:hover:border-white/15"
+      className="group flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-3 transition-colors hover:border-zinc-300 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-white/15"
     >
-      {/* Image */}
-      <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-xl bg-zinc-100 dark:bg-white/5">
+      <div className="relative h-12 w-14 shrink-0 overflow-hidden rounded-xl bg-zinc-100 dark:bg-white/5">
         {property.coverImageUrl ? (
           <img src={property.coverImageUrl} alt={property.title} className="h-full w-full object-cover" />
         ) : (
@@ -1649,7 +1659,6 @@ function LinkedUnitCard({ propertyId, status, locale }: { propertyId: string; st
           </div>
         )}
       </div>
-      {/* Details */}
       <div className="flex-1 min-w-0">
         <p className="text-xs font-black text-zinc-900 dark:text-white truncate">{property.title}</p>
         <p className="text-[10px] font-bold text-zinc-400 truncate mt-0.5">{property.project} · {property.city}</p>
@@ -1693,76 +1702,73 @@ function UnitQuickView({ propertyId, onClose }: { propertyId: string; onClose: (
 
   return (
     <>
-      {/* Cover Image */}
-      <div className="relative h-48 w-full bg-zinc-100 dark:bg-white/5">
-        {property.coverImageUrl ? (
-          <img src={property.coverImageUrl} alt={property.title} className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <Building2 className="h-12 w-12 text-zinc-300 dark:text-zinc-600" />
-          </div>
-        )}
-        <button onClick={onClose} className="absolute top-4 end-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white/80 backdrop-blur-sm text-zinc-600 hover:bg-white transition-all dark:bg-black/50 dark:text-white dark:hover:bg-black/70">
-          <X className="h-4 w-4" />
-        </button>
-        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-5 pt-12">
-          <div className="flex items-center gap-2 mb-1">
+      <div className="flex items-start gap-4 border-b border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-[#111111]">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-zinc-100 dark:bg-white/5">
+          {property.coverImageUrl ? (
+            <img src={property.coverImageUrl} alt={property.title} className="h-full w-full object-cover" />
+          ) : (
+            <Building2 className="h-6 w-6 text-zinc-300 dark:text-zinc-600" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="mb-1 text-[9px] font-black uppercase tracking-[0.25em] text-zinc-400">Property</p>
+          <h2 className="text-base font-black leading-tight text-zinc-950 dark:text-white">{property.title}</h2>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             <span className={cn("rounded-lg border px-2 py-0.5 text-[9px] font-black uppercase tracking-widest", statusColors[property.status] || statusColors.draft)}>
               {property.status}
             </span>
-            <span className="rounded-lg border border-white/20 bg-white/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white">
+            <span className="rounded-lg border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400">
               {property.purpose}
             </span>
           </div>
-          <h2 className="text-xl font-black text-white leading-tight">{property.title}</h2>
         </div>
+        <button onClick={onClose} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-200 text-zinc-400 transition hover:bg-zinc-50 hover:text-zinc-950 dark:border-white/10 dark:hover:bg-white/5 dark:hover:text-white">
+          <X className="h-4 w-4" />
+        </button>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-4 gap-px bg-zinc-100 dark:bg-white/5 border-b border-zinc-100 dark:border-white/5">
-        <div className="flex flex-col items-center justify-center bg-white py-4 dark:bg-[#0A0A0A]">
+      <div className="grid grid-cols-2 border-b border-zinc-200 bg-white dark:border-white/10 dark:bg-[#111111] sm:grid-cols-4">
+        <div className="min-w-0 border-e border-b border-zinc-100 px-4 py-3 dark:border-white/5 sm:border-b-0">
           <DollarSign className="h-4 w-4 text-zinc-400 mb-1" />
           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Price</p>
-          <p className="text-xs font-black text-zinc-900 dark:text-white mt-0.5">{property.price || "—"}</p>
+          <p className="mt-1 truncate text-xs font-black text-zinc-950 dark:text-white">{property.price || "—"}</p>
         </div>
-        <div className="flex flex-col items-center justify-center bg-white py-4 dark:bg-[#0A0A0A]">
+        <div className="min-w-0 border-b border-zinc-100 px-4 py-3 dark:border-white/5 sm:border-e sm:border-b-0">
           <Ruler className="h-4 w-4 text-zinc-400 mb-1" />
           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Area</p>
-          <p className="text-xs font-black text-zinc-900 dark:text-white mt-0.5">{property.area || "—"}</p>
+          <p className="mt-1 truncate text-xs font-black text-zinc-950 dark:text-white">{property.area || "—"}</p>
         </div>
-        <div className="flex flex-col items-center justify-center bg-white py-4 dark:bg-[#0A0A0A]">
+        <div className="min-w-0 border-e border-zinc-100 px-4 py-3 dark:border-white/5">
           <BedDouble className="h-4 w-4 text-zinc-400 mb-1" />
           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Beds</p>
-          <p className="text-xs font-black text-zinc-900 dark:text-white mt-0.5">{property.bedrooms || "—"}</p>
+          <p className="mt-1 truncate text-xs font-black text-zinc-950 dark:text-white">{property.bedrooms || "—"}</p>
         </div>
-        <div className="flex flex-col items-center justify-center bg-white py-4 dark:bg-[#0A0A0A]">
+        <div className="min-w-0 px-4 py-3">
           <MapPin className="h-4 w-4 text-zinc-400 mb-1" />
           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">City</p>
-          <p className="text-xs font-black text-zinc-900 dark:text-white mt-0.5 truncate max-w-[80px]">{property.city || "—"}</p>
+          <p className="mt-1 truncate text-xs font-black text-zinc-950 dark:text-white">{property.city || "—"}</p>
         </div>
       </div>
 
-      {/* Project Info & Description */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-4">
-        <div className="flex items-center gap-3 rounded-2xl border border-zinc-100 bg-zinc-50/50 p-4 dark:border-white/5 dark:bg-white/[0.02]">
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
+        <div className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.02]">
           <Building2 className="h-4 w-4 text-zinc-400" />
           <div className="min-w-0">
             <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Project</p>
-            <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">{property.project || "—"}</p>
+            <p className="truncate text-xs font-bold text-zinc-950 dark:text-white">{property.project || "—"}</p>
           </div>
         </div>
         {property.description && (
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.25em] text-zinc-400 mb-2">Description</p>
-            <p className="text-xs font-bold leading-5 text-zinc-600 dark:text-zinc-300 whitespace-pre-wrap">{property.description}</p>
+            <p className="whitespace-pre-wrap text-xs font-bold leading-5 text-zinc-600 dark:text-zinc-300">{property.description}</p>
           </div>
         )}
       </div>
 
-      {/* Footer */}
-      <div className="p-5 border-t border-zinc-100 dark:border-white/5">
+      <div className="border-t border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-[#111111]">
         <AppPrimaryButton
-          className="h-14 w-full rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-zinc-900/10 dark:shadow-white/5"
+          className="h-12 w-full rounded-2xl text-xs font-black uppercase tracking-widest shadow-none"
           onClick={() => { onClose(); router.push(`/${locale}/properties/${property.reference || propertyId}`); }}
         >
           <ExternalLink className="me-2 h-4 w-4" />

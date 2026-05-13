@@ -177,7 +177,7 @@ export async function handleReadPropertiesByProject(c: Context) {
 export async function handleReadProperty(c: Context) {
   const params = organizationIdOrResponse(c);
   if ("response" in params) return params.response;
-  const propertyId = readIdParam<"propertyUnits">(c, "propertyId", "Property id");
+  const propertyId = readParam(c, "propertyId", "Property id");
   if (!propertyId.ok) return propertyId.response;
   return workspaceReadJson(c, "property detail", () =>
     fetchAuthQuery(api.properties.read.get, {

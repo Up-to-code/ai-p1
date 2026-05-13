@@ -25,4 +25,29 @@ describe("index HTTP loading states", () => {
       expect(source).toContain('queryStatus === "error"');
     }
   });
+
+  it("uses contextual skeleton variants instead of one generic page loader", () => {
+    const expectations = [
+      ["src/domains/projects/components/projects-screens.tsx", 'variant={view === "grid" ? "grid" : "table"}'],
+      ["src/domains/properties/components/properties-screens.tsx", 'variant={view === "grid" ? "grid" : "table"}'],
+      ["src/domains/clients/components/clients-screens.tsx", 'variant={view === "pipeline" ? "pipeline" : view === "calendar" ? "calendar" : "table"}'],
+      ["src/domains/calendar/components/calendar-screen.tsx", 'variant="calendar"'],
+      ["src/domains/activity/components/activity-screen.tsx", 'variant="activity"'],
+      ["src/domains/dashboard/components/dashboard-screen.tsx", 'variant="dashboard"'],
+    ];
+
+    for (const [path, expectedVariant] of expectations) {
+      expect(readSource(path)).toContain(expectedVariant);
+    }
+
+    const sharedLoadingSource = readSource("src/components/shared/crud-ui.tsx");
+    expect(sharedLoadingSource).toContain("function ResourceLoadingSkeleton");
+    expect(sharedLoadingSource).not.toContain("Loader2");
+    expect(sharedLoadingSource).not.toContain("animate-spin");
+  });
+
+  it("keeps root and app route loading empty so real page actions remain responsible for loading", () => {
+    expect(readSource("src/app/[locale]/loading.tsx")).toContain("return null");
+    expect(readSource("src/app/[locale]/(app)/loading.tsx")).toContain("return null");
+  });
 });

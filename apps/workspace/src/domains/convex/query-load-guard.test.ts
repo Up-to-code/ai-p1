@@ -53,6 +53,20 @@ describe("Convex query load guards", () => {
     expect(read("src/domains/properties/components/properties-screens.tsx")).toContain("useProjectOptionsQuery");
   });
 
+  it("resolves public property references before strict property-unit link reads", () => {
+    const propertiesRead = read("convex/properties/read.ts");
+    const workspaceRead = read("src/server/domains/organization/handlers/workspace-read.ts");
+    const propertyScreen = read("src/domains/properties/components/properties-screens.tsx");
+    const clientsApi = read("src/domains/clients/api/clients.ts");
+
+    expect(propertiesRead).toContain("propertyId: v.string()");
+    expect(propertiesRead).toContain('ctx.db.normalizeId("propertyUnits", identifier)');
+    expect(propertiesRead).toContain('q.field("reference")');
+    expect(workspaceRead).toContain('const propertyId = readParam(c, "propertyId", "Property id")');
+    expect(propertyScreen).toContain("usePropertyClientLinksQuery(workspaceOrganizationId, unit?.id)");
+    expect(clientsApi).toContain('!propertyId.startsWith("UNT-")');
+  });
+
   it("keeps calendar-heavy supporting reads lazy or bounded", () => {
     const router = read("src/server/domains/organization/routing/router.ts");
     expect(read("convex/calendar/read.ts")).toContain("export const listUpcoming");

@@ -8,15 +8,15 @@ export function Field({
   className,
   htmlFor,
 }: {
-  label: string;
+  label: ReactNode;
   error?: string;
   children: ReactNode;
   className?: string;
   htmlFor?: string;
 }) {
   return (
-    <label htmlFor={htmlFor} className={cn("block space-y-1.5 text-sm font-medium text-foreground", className)}>
-      <span>{label}</span>
+    <label htmlFor={htmlFor} className={cn("block space-y-2 text-sm font-medium text-foreground", className)}>
+      <span className="text-[13px] font-semibold">{label}</span>
       {children}
       {error ? <span className="block text-xs font-medium text-destructive">{error}</span> : null}
     </label>

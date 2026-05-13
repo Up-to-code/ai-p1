@@ -23,6 +23,7 @@ export interface Client {
   visibility?: Visibility;
   added: string;
   pipelineStage: PipelineStage;
+  pipelineOrder?: number;
   priority: Priority;
   lastContact: string;
   nextAction: string;

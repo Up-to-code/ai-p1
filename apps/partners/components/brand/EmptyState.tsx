@@ -11,7 +11,7 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center">
+    <div className="rounded-[15px] border border-dashed border-border bg-card p-10 text-center">
       <Code2 className="mx-auto h-8 w-8 text-muted-foreground" />
       <h2 className="mt-4 text-lg font-bold text-foreground">{title}</h2>
       <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-muted-foreground">{description}</p>

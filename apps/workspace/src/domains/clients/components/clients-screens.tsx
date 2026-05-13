@@ -3,7 +3,7 @@
 import { useMemo, useState, type ComponentProps } from "react";
 import Image from "next/image";
 import { useQuery as useReactQuery } from "@tanstack/react-query";
-import { ArrowUpRight, CalendarDays, Copy, Edit, Mail, Phone, Plus, Search, Trash2, User, UserPlus, Users, History as ActivityIcon, FileText as DocsIcon, LayoutDashboard, Building } from "lucide-react";
+import { ArrowUpRight, CalendarDays, CheckCircle2, Copy, Edit, Mail, Phone, Plus, Search, Trash2, User, UserPlus, Users, History as ActivityIcon, FileText as DocsIcon, LayoutDashboard, Building } from "lucide-react";
 import {
   AppDataTable,
   AppPageHeader,
@@ -30,6 +30,9 @@ import {
   useClientQuery,
   useClientsIndexQuery,
   useClientUnitLinksQuery,
+  useDeleteClientOptimisticMutation,
+  useMoveClientInPipelineMutation,
+  useUpdateClientOptimisticMutation,
 } from "@/domains/clients/api/clients";
 import {
   createClientTaskRequest,
@@ -52,15 +55,19 @@ import { ClientSheet } from "./client-sheet";
 import type { PropertyStatus } from "@/domains/properties";
 import type { ClientFormValues } from "../validation/client.schema";
 import type { ClientTaskPayload } from "@/domains/clients/api/client-tasks";
+import { sortPipelineClients } from "@/domains/clients/pipeline-order";
 
 const pipelineStages = ["new", "qualified", "viewing", "negotiation", "closed"] as const;
+const activePipelineStages = ["new", "qualified", "viewing", "negotiation"] as const;
 const clientFilters = ["all", "Buyer", "Tenant", "Investor", "Broker"] as const;
 const clientViews = ["pipeline", "list", "calendar"] as const;
+const clientStageFilters = ["all", "active", "closed"] as const;
 const clientTypes = ["Buyer", "Tenant", "Investor", "Broker"] as const;
 const clientStatuses = ["active", "inactive"] as const;
 const clientPriorities = ["normal", "high", "urgent"] as const;
 const unitLinkStatuses = ["interested", "shortlisted", "viewing", "offer", "rejected"] as const;
 type StatusPillTone = ComponentProps<typeof StatusPill>["tone"];
+type PipelineStage = (typeof pipelineStages)[number];
 
 function unitStatusTone(status: PropertyStatus): StatusPillTone {
   if (status === "available") return "success";
@@ -90,6 +97,7 @@ function clientToFormValues(client: Client) {
     status: client.status,
     visibility: client.visibility ?? "private",
     pipelineStage: client.pipelineStage,
+    pipelineOrder: client.pipelineOrder,
     priority: client.priority,
     nextAction: client.nextAction,
     issue: client.issue ?? "",
@@ -194,11 +202,20 @@ function ClientDetailSelect({
   );
 }
 
-function ClientMiniCard({ client, onDelete }: { client: Client; onDelete: (client: Client) => void }) {
+function ClientMiniCard({
+  client,
+  onDelete,
+  onMarkClosed,
+  isClosing,
+}: {
+  client: Client;
+  onDelete: (client: Client) => void;
+  onMarkClosed: (client: Client) => void;
+  isClosing: boolean;
+}) {
   const t = useTranslations('Clients');
   return (
     <article
-      draggable
       className="group rounded-[24px] border border-zinc-100 bg-white p-5 transition-colors hover:border-zinc-300 dark:border-white/5 dark:bg-[#0A0A0A]"
     >
       <div className="flex items-start justify-between gap-4">
@@ -236,19 +253,34 @@ function ClientMiniCard({ client, onDelete }: { client: Client; onDelete: (clien
         </div>
       </div>
 
-      <div className="mt-5 flex items-center justify-between">
+      <div className="mt-5 flex items-center justify-between gap-3">
         <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{client.lastContact}</span>
-        <button
-          type="button"
-          aria-label={`Delete ${client.name}`}
-          onClick={(event) => {
-            event.stopPropagation();
-            onDelete(client);
-          }}
-          className="text-zinc-300 transition-colors hover:text-red-500 focus-visible:ring-2 focus-visible:ring-red-500/20"
-        >
-          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            aria-label={t("actions.markClosed")}
+            disabled={isClosing}
+            onClick={(event) => {
+              event.stopPropagation();
+              onMarkClosed(client);
+            }}
+            className="inline-flex h-8 items-center gap-1.5 rounded-xl px-2 text-[9px] font-black uppercase tracking-widest text-zinc-400 transition-colors hover:bg-emerald-50 hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-300"
+          >
+            <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+            {t("actions.markClosed")}
+          </button>
+          <button
+            type="button"
+            aria-label={`Delete ${client.name}`}
+            onClick={(event) => {
+              event.stopPropagation();
+              onDelete(client);
+            }}
+            className="text-zinc-300 transition-colors hover:text-red-500 focus-visible:ring-2 focus-visible:ring-red-500/20"
+          >
+            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+          </button>
+        </div>
       </div>
     </article>
   );
@@ -262,15 +294,14 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
   const isWorkspaceReady = workspaceStatus === "ready";
   const workspaceOrganizationId = isWorkspaceReady ? account.workspace.organizationId ?? undefined : undefined;
   const [filter, setFilter] = useState<(typeof clientFilters)[number]>("all");
+  const [stageFilter, setStageFilter] = useState<(typeof clientStageFilters)[number]>("all");
   const [search, setSearch] = useState("");
   const [view, setView] = useState<(typeof clientViews)[number]>(initialView);
   const [deleting, setDeleting] = useState<Client | null>(null);
   const [draggedId, setDraggedId] = useState<string | null>(null);
-  const [dragOverStage, setDragOverStage] = useState<string | null>(null);
-  const [dragOverIndex, setDragOverIndex] = useState<{ stage: string; index: number } | null>(null);
+  const [dragOverStage, setDragOverStage] = useState<PipelineStage | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<{ stage: PipelineStage; index: number } | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const deleteOperation = useOperationState({ errorMessage: "Client delete failed." });
-  const moveOperation = useOperationState({ errorMessage: "Client move failed." });
 
   useUrlListState({
     filter,
@@ -289,6 +320,9 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
     type: filter === "all" ? undefined : filter,
     search,
   });
+  const moveClientMutation = useMoveClientInPipelineMutation(clientsQuery.queryKey);
+  const updateClientMutation = useUpdateClientOptimisticMutation(clientsQuery.queryKey);
+  const deleteClientMutation = useDeleteClientOptimisticMutation(clientsQuery.queryKey);
   const clients = useMemo(() => clientsQuery.results as Client[], [clientsQuery.results]);
   const stats = clientsQuery.stats;
   const calendarEventsQuery = useUpcomingCalendarEventsQuery(workspaceOrganizationId, {
@@ -299,13 +333,42 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
   const isLoading = isWorkspaceReady && clientsQuery.queryStatus === "loading";
   const isQueryBlocked = isLoading || clientsQuery.queryStatus === "error";
 
-  const filteredClients = useMemo(() => {
+  const searchedClients = useMemo(() => {
     return clients.filter((client) => {
       const q = search.trim().toLowerCase();
       const matchesSearch = !q || [client.name, client.contact, client.propertyInterest, client.budget].some((value) => value.toLowerCase().includes(q));
       return matchesSearch;
     });
   }, [clients, search]);
+
+  const activeJourneyClients = useMemo(
+    () => searchedClients.filter((client) => activePipelineStages.includes(client.pipelineStage as typeof activePipelineStages[number])),
+    [searchedClients],
+  );
+
+  const tableClients = useMemo(() => {
+    if (stageFilter === "active") {
+      return searchedClients.filter((client) => activePipelineStages.includes(client.pipelineStage as typeof activePipelineStages[number]));
+    }
+    if (stageFilter === "closed") {
+      return searchedClients.filter((client) => client.pipelineStage === "closed");
+    }
+    return searchedClients;
+  }, [searchedClients, stageFilter]);
+
+  const displayedClients = view === "pipeline" ? activeJourneyClients : view === "list" ? tableClients : searchedClients;
+
+  const markClientClosed = (client: Client) => {
+    if (!account.organization.id) return;
+    updateClientMutation.mutate({
+      organizationId: account.organization.id,
+      client,
+      values: {
+        ...clientToFormValues(client),
+        pipelineStage: "closed",
+      },
+    });
+  };
 
   const columns: AppDataTableColumn<Client>[] = [
     {
@@ -335,6 +398,20 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
       align: "end",
       render: (client) => (
         <div className="flex justify-end gap-1">
+          {client.pipelineStage !== "closed" && (
+            <button
+              type="button"
+              aria-label={t("actions.markClosed")}
+              disabled={updateClientMutation.isPending}
+              onClick={(event) => {
+                event.stopPropagation();
+                markClientClosed(client);
+              }}
+              className="p-2 text-zinc-300 hover:text-emerald-600 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+            >
+              <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+          )}
           <Link
             href={`/clients/${client.id}/edit`}
             aria-label={`Edit ${client.name}`}
@@ -380,16 +457,35 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
             {t(`views.${mode}`)}
           </Button>
         ))}
+        {view === "list" && (
+          <div className="ms-auto flex flex-wrap gap-1 rounded-full border border-zinc-100 bg-white p-1 dark:border-white/10 dark:bg-white/[0.03]">
+            {clientStageFilters.map((stage) => (
+              <button
+                key={stage}
+                type="button"
+                onClick={() => setStageFilter(stage)}
+                className={cn(
+                  "h-8 rounded-full px-3 text-[10px] font-black uppercase tracking-widest transition-colors",
+                  stageFilter === stage
+                    ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
+                    : "text-zinc-400 hover:text-zinc-900 dark:hover:text-white",
+                )}
+              >
+                {t(`stageFilters.${stage}`)}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {workspaceStatus !== "ready" ? (
-        <WorkspaceQueryState status={workspaceStatus} />
+        <WorkspaceQueryState status={workspaceStatus} variant={view === "pipeline" ? "pipeline" : view === "calendar" ? "calendar" : "table"} />
       ) : isQueryBlocked ? (
-        <HttpQueryState query={clientsQuery} />
+        <HttpQueryState query={clientsQuery} variant={view === "pipeline" ? "pipeline" : view === "calendar" ? "calendar" : "table"} />
       ) : view === "pipeline" && (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3 xl:grid-cols-5">
-          {pipelineStages.map((stage) => {
-            const stageClients = filteredClients.filter((client) => client.pipelineStage === stage);
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+          {activePipelineStages.map((stage) => {
+            const stageClients = sortPipelineClients(activeJourneyClients.filter((client) => client.pipelineStage === stage));
             const isDragOver = dragOverStage === stage;
 
             return (
@@ -414,12 +510,14 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
                   if (clientId && account.organization.id) {
                     const movingClient = clients.find((client) => client.id === clientId);
                     if (movingClient) {
-                      void moveOperation.run(() =>
-                        updateClientRequest(account.organization.id!, movingClient.id, {
-                          ...clientToFormValues(movingClient),
-                          pipelineStage: stage,
-                        }),
-                      );
+                      const targetIndex = dragOverIndex?.stage === stage ? dragOverIndex.index : stageClients.length;
+                      moveClientMutation.mutate({
+                        organizationId: account.organization.id,
+                        client: movingClient,
+                        stage,
+                        stageClients,
+                        targetIndex,
+                      });
                     }
                   }
                   setDraggedId(null);
@@ -462,7 +560,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
                           isDragOverItem && "pt-12 relative before:absolute before:top-4 before:left-0 before:right-0 before:h-1 before:bg-primary/40 before:rounded-full"
                         )}
                       >
-                        <ClientMiniCard client={client} onDelete={setDeleting} />
+                        <ClientMiniCard client={client} onDelete={setDeleting} onMarkClosed={markClientClosed} isClosing={updateClientMutation.isPending} />
                       </div>
                     );
                   })}
@@ -476,7 +574,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
       {isWorkspaceReady && !isLoading && view === "list" && (
         <AppDataTable
           columns={columns}
-          data={filteredClients}
+          data={tableClients}
           getRowKey={(client) => client.id}
           onRowClick={(client) => router.push(`/clients/${client.id}`)}
         />
@@ -485,7 +583,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
       {isWorkspaceReady && !isLoading && view === "calendar" && (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {calendarEvents
-            .filter((event) => !event.clientId || filteredClients.some((client) => client.id === event.clientId))
+            .filter((event) => !event.clientId || searchedClients.some((client) => client.id === event.clientId))
             .map((event) => (
             <AppSection key={event.id} title={`${event.date} · ${event.time}`} description={event.owner}>
               <div className="flex items-start justify-between gap-4">
@@ -500,8 +598,8 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
         </div>
       )}
 
-      {isWorkspaceReady && !isQueryBlocked && filteredClients.length === 0 && <EmptyWorkspace icon={Users} title={t('empty.title')} description={t('empty.desc')} />}
-      {isWorkspaceReady && !isQueryBlocked && filteredClients.length > 0 && (
+      {isWorkspaceReady && !isQueryBlocked && displayedClients.length === 0 && <EmptyWorkspace icon={Users} title={t('empty.title')} description={t('empty.desc')} />}
+      {isWorkspaceReady && !isQueryBlocked && searchedClients.length > 0 && (
         <InfiniteScrollSentinel
           status={clientsQuery.status}
           loadMore={clientsQuery.loadMore}
@@ -514,18 +612,17 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
         onOpenChange={(open) => !open && setDeleting(null)}
         title={t('delete.title')}
         description={t('delete.desc', { name: deleting?.name ?? "..." })}
-        isDeleting={deleteOperation.isRunning}
-        error={deleteOperation.error}
-        onConfirm={() => deleteOperation.run(() => {
+        isDeleting={deleteClientMutation.isPending}
+        error={deleteClientMutation.error instanceof Error ? deleteClientMutation.error.message : null}
+        onConfirm={() => {
           if (!deleting || !clients.some((client) => client.id === deleting.id)) {
-            throw new Error("This client is no longer available.");
+            return;
           }
-          if (!account.organization.id) throw new Error("Select an organization first.");
-          return deleteClientRequest(account.organization.id, deleting.id);
-        }, {
-          successMessage: "Client deleted.",
-          onSuccess: () => setDeleting(null),
-        })}
+          if (!account.organization.id) return;
+          const clientId = deleting.id;
+          setDeleting(null);
+          deleteClientMutation.mutate({ organizationId: account.organization.id, clientId });
+        }}
       />
 
       <ClientSheet open={isCreateOpen} onOpenChange={setIsCreateOpen} />
@@ -557,6 +654,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
   const router = useRouter();
   const profileOperation = useOperationState({ errorMessage: "Client update failed." });
   const deleteOperation = useOperationState({ errorMessage: "Client delete failed." });
+  const closeOperation = useOperationState({ errorMessage: "Client close failed." });
   const taskOperation = useOperationState({ errorMessage: "Task action failed." });
   const linkOperation = useOperationState({ errorMessage: "Unit link failed." });
   const queryDebug = {
@@ -575,11 +673,11 @@ export function ClientDetailScreen({ id }: { id: string }) {
   const canManageVisibility = capabilitiesQuery.data?.canManageVisibility ?? false;
 
   if (workspaceStatus !== "ready") {
-    return <AppPageShell><WorkspaceQueryState status={workspaceStatus} /></AppPageShell>;
+    return <AppPageShell><WorkspaceQueryState status={workspaceStatus} variant="detail" /></AppPageShell>;
   }
 
   if (client === undefined) {
-    return <AppPageShell><ProgressiveLoadingState title={t("detail.loadingTitle")} description={t("detail.loadingDesc")} debug={queryDebug} /></AppPageShell>;
+    return <AppPageShell><ProgressiveLoadingState title={t("detail.loadingTitle")} description={t("detail.loadingDesc")} debug={queryDebug} variant="detail" /></AppPageShell>;
   }
 
   if (client === null) {
@@ -622,6 +720,18 @@ export function ClientDetailScreen({ id }: { id: string }) {
       setIsUnitPickerOpen(false);
     }, { successMessage: t("detail.units.linked") });
   };
+  const markClosed = () => {
+    void closeOperation.run(
+      () => {
+        if (!workspaceOrganizationId) throw new Error("Select an organization first.");
+        return updateClientRequest(workspaceOrganizationId, client.id, {
+          ...clientToFormValues(client),
+          pipelineStage: "closed",
+        });
+      },
+      { successMessage: t("actions.closed") },
+    );
+  };
 
   return (
     <AppPageShell contentClassName="space-y-6 pb-16">
@@ -642,6 +752,18 @@ export function ClientDetailScreen({ id }: { id: string }) {
             </div>
           </div>
           <div className="flex flex-wrap gap-2 md:justify-end">
+            {client.pipelineStage !== "closed" && (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={closeOperation.isRunning}
+                onClick={markClosed}
+                className="h-10 rounded-xl px-4 text-xs font-bold text-emerald-700 hover:text-emerald-800 dark:text-emerald-300"
+              >
+                <CheckCircle2 className="me-2 h-3.5 w-3.5" />
+                {t("actions.markClosed")}
+              </Button>
+            )}
             <Link href={`/clients/${client.id}/edit`} className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-100 bg-white px-4 text-xs font-bold transition-colors hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10">
               <Edit className="me-2 h-3.5 w-3.5" />
               {t('detail.edit')}
@@ -1265,11 +1387,11 @@ export function ClientFormScreen({ id }: { id?: string }) {
   };
 
   if (id && workspaceStatus !== "ready") {
-    return <AppPageShell><WorkspaceQueryState status={workspaceStatus} /></AppPageShell>;
+    return <AppPageShell><WorkspaceQueryState status={workspaceStatus} variant="detail" /></AppPageShell>;
   }
 
   if (id && existing === undefined) {
-    return <AppPageShell><ProgressiveLoadingState title={t("detail.loadingTitle")} description={t("detail.loadingDesc")} debug={queryDebug} /></AppPageShell>;
+    return <AppPageShell><ProgressiveLoadingState title={t("detail.loadingTitle")} description={t("detail.loadingDesc")} debug={queryDebug} variant="detail" /></AppPageShell>;
   }
 
   if (id && existing === null) {

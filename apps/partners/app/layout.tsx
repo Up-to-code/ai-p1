@@ -14,8 +14,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`min-h-screen bg-background ${rootFontClassName}`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <body className={`min-h-dvh bg-background ${rootFontClassName}`}>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <RootProvider>{children}</RootProvider>
         </ThemeProvider>
       </body>

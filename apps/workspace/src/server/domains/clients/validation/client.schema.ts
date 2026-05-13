@@ -13,6 +13,7 @@ export const clientPayloadSchema = z.object({
   status: z.enum(["active", "inactive"]),
   visibility: z.enum(["private", "public"]).optional(),
   pipelineStage: z.enum(["new", "qualified", "viewing", "negotiation", "closed"]),
+  pipelineOrder: z.number().finite().optional(),
   priority: z.enum(["normal", "high", "urgent"]),
   nextAction: z.string().trim().min(1),
   issue: z.string().trim().optional().transform((value) => value || undefined),

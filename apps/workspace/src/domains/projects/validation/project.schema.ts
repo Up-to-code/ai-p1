@@ -16,6 +16,11 @@ export const projectSchema = z.object({
   visibility: z.enum(["private", "public"]).optional(),
   units: nonNegativeIntegerText("Units"),
   priceRange: requiredText("Price range"),
+  regaAuthorizationNo: z.string().trim().optional(),
+  regaExpiresAt: z.string().trim().optional(),
+  planNumber: z.string().trim().optional(),
+  plotNumber: z.string().trim().optional(),
+  postalIdentity: z.string().trim().optional(),
   description: requiredText("Description", 10),
 });
 
@@ -30,5 +35,10 @@ export interface ProjectFormValues {
   visibility?: "private" | "public";
   units: string;
   priceRange: string;
+  regaAuthorizationNo?: string;
+  regaExpiresAt?: string;
+  planNumber?: string;
+  plotNumber?: string;
+  postalIdentity?: string;
   description: string;
 }

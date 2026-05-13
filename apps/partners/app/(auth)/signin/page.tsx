@@ -16,41 +16,42 @@ export default async function SignInPage({
   const redirectTo = safeReturnTo(returnTo);
 
   return (
-    <main className="grid min-h-screen lg:grid-cols-2">
-      {/* Left panel — branding */}
-      <div className="hidden lg:flex flex-col justify-between bg-black text-white p-12">
+    <main className="grid min-h-dvh bg-background lg:grid-cols-[0.9fr_1.1fr]">
+      <div className="hidden flex-col justify-between bg-[#071A34] p-12 text-white lg:flex">
         <div>
-          <Link href="/" className="text-lg font-bold tracking-tight">
+          <Link href="/" className="text-lg font-bold">
             anan<span className="text-primary">portal</span>
           </Link>
         </div>
         <div className="max-w-md">
-          <blockquote className="text-2xl font-bold leading-snug tracking-tight">
-            "The fastest way to build trusted integrations for real-estate workflows."
+          <p className="mb-4 text-xs font-bold uppercase text-[#B1BCC7]">Developer console</p>
+          <blockquote className="text-balance text-4xl font-bold leading-tight">
+            The fastest path from OAuth draft to reviewed partner app.
           </blockquote>
-          <p className="mt-6 text-sm text-slate-400 font-medium">
+          <p className="mt-6 text-sm font-medium leading-6 text-[#B1BCC7]">
             Anan Partner Developer Portal
           </p>
         </div>
-        <p className="text-xs text-slate-600">© 2026 Anan Partners</p>
+        <p className="text-xs text-[#737883]">© 2026 Anan Partners</p>
       </div>
 
-      {/* Right panel — form */}
-      <div className="flex items-center justify-center px-6 py-12 bg-background">
-        <div className="w-full max-w-sm space-y-8">
+      <div className="flex items-center justify-center px-4 py-12 sm:px-6">
+        <div className="w-full max-w-sm rounded-[22px] border border-border bg-white p-6 shadow-[0_24px_80px_rgba(7,26,52,0.08)] sm:p-8">
           <div className="lg:hidden">
-            <Link href="/" className="text-lg font-bold tracking-tight text-foreground">
+            <Link href="/" className="text-lg font-bold text-foreground">
               anan<span className="text-primary">portal</span>
             </Link>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Sign in to your account</h1>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+          <div className="mt-8 lg:mt-0">
+            <h1 className="text-2xl font-bold text-foreground">Sign in to your account</h1>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
               Use the same partner account that owns your programmer organization.
             </p>
           </div>
+          <div className="mt-8">
           <SignInForm redirectTo={redirectTo} />
-          <p className="text-center text-sm text-muted-foreground">
+          </div>
+          <p className="mt-8 text-center text-sm text-muted-foreground">
             Need a developer account?{" "}
             <Link className="font-semibold text-primary hover:text-primary/80 transition-colors" href={`/signup?returnTo=${encodeURIComponent(redirectTo)}`}>
               Create one

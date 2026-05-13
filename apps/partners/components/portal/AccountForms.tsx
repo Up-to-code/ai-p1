@@ -26,13 +26,13 @@ export function AccountForms({ account }: { account: PartnerAccountView }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-      <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
+      <section className="rounded-[15px] border border-border bg-card p-6">
         <div className="flex items-center gap-4">
           <GeneratedAvatarView avatar={avatar} className="h-16 w-16 text-lg" />
           <div className="min-w-0">
             <h2 className="truncate text-xl font-semibold text-foreground">{displayName}</h2>
             <p className="truncate text-sm text-muted-foreground">{displayEmail ?? "No email available"}</p>
-            <p className="mt-1 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="mt-1 text-xs font-medium uppercase text-muted-foreground">
               Developer account
             </p>
           </div>
@@ -51,7 +51,7 @@ export function AccountForms({ account }: { account: PartnerAccountView }) {
         </form>
       </section>
 
-      <section className="rounded-xl border border-border bg-card p-6 shadow-sm">
+      <section className="rounded-[15px] border border-border bg-card p-6">
         <div>
           <h2 className="text-xl font-semibold text-foreground">Programmer organization</h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -61,17 +61,17 @@ export function AccountForms({ account }: { account: PartnerAccountView }) {
 
         {organization ? (
           <>
-            <div className="mt-5 grid gap-3 rounded-lg border border-border bg-muted/30 p-4 text-sm sm:grid-cols-2">
+            <div className="mt-5 grid gap-3 rounded-[15px] border border-border bg-background p-4 text-sm sm:grid-cols-2">
               <div>
-                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Type</div>
+                <div className="text-xs font-semibold uppercase text-muted-foreground">Type</div>
                 <div className="mt-1 font-medium text-foreground">Programmer</div>
               </div>
               <div>
-                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Created</div>
+                <div className="text-xs font-semibold uppercase text-muted-foreground">Created</div>
                 <div className="mt-1 font-medium text-foreground">{formatDateLabel(organization.createdAt)}</div>
               </div>
               <div className="sm:col-span-2">
-                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Tenant organization</div>
+                <div className="text-xs font-semibold uppercase text-muted-foreground">Tenant organization</div>
                 <div className="mt-1 break-all font-mono text-xs text-foreground">
                   {organization.tenantOrganizationId ?? "Pending tenant link"}
                 </div>

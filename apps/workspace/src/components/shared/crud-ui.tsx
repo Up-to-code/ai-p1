@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { LucideIcon } from "lucide-react";
-import { AlertTriangle, ArrowLeft, Loader2, Search, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Search, Trash2 } from "lucide-react";
 import { AppPrimaryButton } from "@/components/shared";
 import { Link } from "@/i18n/routing";
 import {
@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -33,6 +34,8 @@ type HttpQueryStateLike = {
   timedOut?: boolean;
   debug?: QueryDebugMetadata;
 };
+
+type LoadingSkeletonVariant = "grid" | "table" | "pipeline" | "calendar" | "activity" | "dashboard" | "detail";
 
 export function StatusPill({
   label,
@@ -110,20 +113,13 @@ export function EmptyWorkspace({
 }
 
 export function LoadingState({
-  title,
-  description,
+  variant = "table",
 }: {
   title?: string;
   description?: string;
+  variant?: LoadingSkeletonVariant;
 }) {
-  const t = useTranslations("Common");
-  return (
-    <div className="flex min-h-64 flex-col items-center justify-center rounded-[24px] border border-zinc-100 bg-zinc-50/40 p-10 text-center dark:border-white/5 dark:bg-white/[0.01]">
-      <Loader2 className="h-7 w-7 animate-spin text-zinc-300" aria-hidden="true" />
-      <h3 className="mt-5 text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">{title || t('loadingTitle')}</h3>
-      <p className="mt-2 max-w-md text-xs font-medium uppercase leading-relaxed tracking-tight text-zinc-500">{description || t('loadingDesc')}</p>
-    </div>
-  );
+  return <ResourceLoadingSkeleton variant={variant} />;
 }
 
 export function ProgressiveLoadingState({
@@ -131,11 +127,13 @@ export function ProgressiveLoadingState({
   description,
   delayMs = 7000,
   debug,
+  variant = "table",
 }: {
   title?: string;
   description?: string;
   delayMs?: number;
   debug?: QueryDebugMetadata;
+  variant?: LoadingSkeletonVariant;
 }) {
   const t = useTranslations("Common");
   const [isStalled, setIsStalled] = useState(false);
@@ -148,16 +146,16 @@ export function ProgressiveLoadingState({
   }, [delayMs]);
 
   return (
-    <div className="flex min-h-64 flex-col items-center justify-center rounded-[24px] border border-zinc-100 bg-zinc-50/40 p-10 text-center dark:border-white/5 dark:bg-white/[0.01]">
-      <Loader2 className="h-7 w-7 animate-spin text-zinc-300" aria-hidden="true" />
-      <h3 className="mt-5 text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">
-        {isStalled ? t("loadingStillTitle") : title || t("loadingTitle")}
-      </h3>
-      <p className="mt-2 max-w-md text-xs font-medium uppercase leading-relaxed tracking-tight text-zinc-500">
-        {isStalled ? t("loadingStillDesc") : description || t("loadingDesc")}
-      </p>
+    <div className="space-y-4">
+      <ResourceLoadingSkeleton variant={variant} />
       {isStalled && (
-        <>
+        <div className="rounded-[24px] border border-zinc-100 bg-white p-4 text-start dark:border-white/5 dark:bg-[#0A0A0A]">
+          <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">
+            {t("loadingStillTitle")}
+          </h3>
+          <p className="mt-2 max-w-md text-xs font-medium uppercase leading-relaxed tracking-tight text-zinc-500">
+            {t("loadingStillDesc")}
+          </p>
           <Button
             type="button"
             variant="outline"
@@ -181,7 +179,7 @@ export function ProgressiveLoadingState({
               </dl>
             </details>
           )}
-        </>
+        </div>
       )}
     </div>
   );
@@ -189,8 +187,10 @@ export function ProgressiveLoadingState({
 
 export function WorkspaceQueryState({
   status,
+  variant = "table",
 }: {
   status: Exclude<WorkspaceStatus, "ready">;
+  variant?: LoadingSkeletonVariant;
 }) {
   const t = useTranslations("Common");
 
@@ -199,6 +199,7 @@ export function WorkspaceQueryState({
       <ProgressiveLoadingState
         title={status === "convexAuthLoading" ? t("convexAuthLoadingTitle") : undefined}
         description={status === "convexAuthLoading" ? t("convexAuthLoadingDesc") : undefined}
+        variant={variant}
       />
     );
   }
@@ -271,10 +272,12 @@ export function HttpQueryState({
   query,
   title,
   description,
+  variant = "table",
 }: {
   query: HttpQueryStateLike;
   title?: string;
   description?: string;
+  variant?: LoadingSkeletonVariant;
 }) {
   const t = useTranslations("Common");
 
@@ -305,7 +308,175 @@ export function HttpQueryState({
       title={title}
       description={description}
       debug={query.debug}
+      variant={variant}
     />
+  );
+}
+
+function ResourceLoadingSkeleton({ variant }: { variant: LoadingSkeletonVariant }) {
+  if (variant === "grid") {
+    return (
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-hidden="true">
+        {[0, 1, 2, 3].map((item) => (
+          <article key={item} className="overflow-hidden rounded-[24px] border border-zinc-100 bg-white dark:border-white/5 dark:bg-[#0A0A0A]">
+            <Skeleton className="h-44 rounded-none" />
+            <div className="space-y-4 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <Skeleton className="h-6 w-20 rounded-full" />
+                <Skeleton className="h-3 w-16 rounded-full" />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Skeleton className="h-16 rounded-xl" />
+                <Skeleton className="h-16 rounded-xl" />
+              </div>
+              <div className="flex items-center justify-between border-t border-zinc-100 pt-4 dark:border-white/5">
+                <Skeleton className="h-4 w-24 rounded-full" />
+                <Skeleton className="h-7 w-7 rounded-xl" />
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    );
+  }
+
+  if (variant === "pipeline") {
+    return (
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3 xl:grid-cols-5" aria-hidden="true">
+        {[0, 1, 2, 3, 4].map((column) => (
+          <section key={column} className="min-h-[420px] rounded-[28px] border border-zinc-100 bg-zinc-50/40 p-3 dark:border-white/5 dark:bg-white/[0.01]">
+            <div className="mb-4 flex items-center justify-between px-2">
+              <Skeleton className="h-3 w-20 rounded-full" />
+              <Skeleton className="h-5 w-5 rounded-full" />
+            </div>
+            <div className="space-y-3">
+              {[0, 1, 2].map((card) => (
+                <div key={card} className="rounded-[20px] border border-zinc-100 bg-white p-4 dark:border-white/5 dark:bg-[#0A0A0A]">
+                  <div className="flex items-start gap-3">
+                    <Skeleton className="h-10 w-10 rounded-2xl" />
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <Skeleton className="h-4 w-28 rounded-full" />
+                      <Skeleton className="h-3 w-20 rounded-full" />
+                    </div>
+                  </div>
+                  <Skeleton className="mt-4 h-8 rounded-xl" />
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    );
+  }
+
+  if (variant === "calendar") {
+    return (
+      <div className="overflow-hidden rounded-[24px] border border-zinc-100 bg-white dark:border-white/5 dark:bg-[#0A0A0A]" aria-hidden="true">
+        <div className="flex items-center justify-between border-b border-zinc-100 p-5 dark:border-white/5">
+          <Skeleton className="h-6 w-36 rounded-full" />
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-9 rounded-xl" />
+            <Skeleton className="h-9 w-20 rounded-xl" />
+            <Skeleton className="h-9 w-9 rounded-xl" />
+          </div>
+        </div>
+        <div className="grid grid-cols-7 border-b border-zinc-100 dark:border-white/5">
+          {[0, 1, 2, 3, 4, 5, 6].map((day) => (
+            <div key={day} className="border-e border-zinc-100 p-3 last:border-e-0 dark:border-white/5">
+              <Skeleton className="mx-auto h-3 w-12 rounded-full" />
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7">
+          {Array.from({ length: 35 }).map((_, day) => (
+            <div key={day} className="min-h-24 border-e border-t border-zinc-100 p-3 last:border-e-0 dark:border-white/5">
+              <Skeleton className="h-4 w-5 rounded-full" />
+              {day % 3 === 0 && <Skeleton className="mt-4 h-6 rounded-lg" />}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (variant === "dashboard") {
+    return (
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]" aria-hidden="true">
+        <div className="space-y-6">
+          <div className="rounded-[24px] border border-zinc-100 bg-white p-5 dark:border-white/5 dark:bg-[#0A0A0A]">
+            <div className="mb-5 flex items-center justify-between">
+              <Skeleton className="h-5 w-32 rounded-full" />
+              <Skeleton className="h-9 w-20 rounded-full" />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[0, 1, 2].map((item) => <Skeleton key={item} className="h-40 rounded-[20px]" />)}
+            </div>
+          </div>
+          <TableLoadingSkeleton rows={4} />
+        </div>
+        <div className="rounded-[24px] border border-zinc-100 bg-white p-5 dark:border-white/5 dark:bg-[#0A0A0A]">
+          <Skeleton className="h-5 w-32 rounded-full" />
+          <div className="mt-5 space-y-3">
+            {[0, 1, 2, 3].map((item) => <Skeleton key={item} className="h-16 rounded-2xl" />)}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (variant === "detail") {
+    return (
+      <div className="space-y-6" aria-hidden="true">
+        <section className="rounded-[28px] border border-zinc-100 bg-white p-5 dark:border-white/5 dark:bg-[#0A0A0A] md:p-6">
+          <div className="flex flex-col gap-4 border-b border-zinc-100 pb-5 dark:border-white/5 lg:flex-row lg:items-start lg:justify-between">
+            <div className="space-y-3">
+              <Skeleton className="h-3 w-32 rounded-full" />
+              <Skeleton className="h-9 w-80 max-w-full rounded-xl" />
+              <Skeleton className="h-6 w-56 max-w-full rounded-full" />
+            </div>
+            <div className="flex gap-2">
+              <Skeleton className="h-10 w-24 rounded-xl" />
+              <Skeleton className="h-10 w-10 rounded-xl" />
+            </div>
+          </div>
+          <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.25fr)_420px]">
+            <Skeleton className="aspect-[16/9] min-h-[260px] rounded-[24px]" />
+            <div className="grid grid-cols-2 gap-3">
+              {[0, 1, 2, 3].map((item) => <Skeleton key={item} className="h-24 rounded-2xl" />)}
+            </div>
+          </div>
+        </section>
+        <TableLoadingSkeleton rows={3} />
+      </div>
+    );
+  }
+
+  return <TableLoadingSkeleton rows={variant === "activity" ? 6 : 5} />;
+}
+
+function TableLoadingSkeleton({ rows }: { rows: number }) {
+  return (
+    <div className="overflow-hidden rounded-[24px] border border-zinc-100 bg-white dark:border-white/5 dark:bg-[#0A0A0A]" aria-hidden="true">
+      <div className="flex items-center gap-10 border-b border-zinc-100 bg-zinc-50/50 p-4 dark:border-white/5 dark:bg-white/[0.02]">
+        {[0, 1, 2, 3].map((cell) => (
+          <Skeleton key={cell} className="h-3 w-20 rounded-full" />
+        ))}
+      </div>
+      {Array.from({ length: rows }).map((_, row) => (
+        <div key={row} className="grid grid-cols-[minmax(0,1.4fr)_0.8fr_0.7fr_0.5fr] items-center gap-8 border-b border-zinc-100 p-4 last:border-b-0 dark:border-white/5">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-10 w-10 rounded-xl" />
+            <div className="min-w-0 flex-1 space-y-2">
+              <Skeleton className="h-4 w-36 max-w-full rounded-full" />
+              <Skeleton className="h-3 w-24 max-w-full rounded-full" />
+            </div>
+          </div>
+          <Skeleton className="h-4 rounded-full" />
+          <Skeleton className="h-6 rounded-full" />
+          <Skeleton className="h-8 w-8 justify-self-end rounded-full" />
+        </div>
+      ))}
+    </div>
   );
 }
 

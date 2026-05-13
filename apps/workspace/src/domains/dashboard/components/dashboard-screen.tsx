@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { ArrowRight, Bath, BedDouble, Building2, CalendarClock, Eye, Ruler, UsersRound } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -13,10 +13,11 @@ import { cn } from "@/lib/utils";
 import { useAccountContext } from "@/domains/auth";
 import { useClientsIndexQuery } from "@/domains/clients/api/clients";
 import type { Client } from "@/domains/clients/store/clients.types";
-import { useWorkspaceStore } from "@/domains/dashboard/store/dashboard.store";
+import { parseWorkspaceMode, useWorkspaceStore } from "@/domains/dashboard/store/dashboard.store";
 import { usePropertiesIndexQuery } from "@/domains/properties/api/properties";
 import type { PropertyUnit } from "@/domains/properties/store/properties.types";
 import { useHttpQueryResult } from "@/components/shared/use-http-query";
+import { useSearchParams } from "next/navigation";
 
 const TODAY = new Date();
 
@@ -35,7 +36,10 @@ type DashboardOverview = {
 
 export function DashboardScreen() {
   const t = useTranslations("Dashboard");
-  const mode = useWorkspaceStore((state) => state.mode);
+  const searchParams = useSearchParams();
+  const queryMode = parseWorkspaceMode(searchParams.get("mode"));
+  const setMode = useWorkspaceStore((state) => state.setMode);
+  const mode = queryMode;
   const account = useAccountContext();
   const workspaceStatus = account.workspace.status;
   const isWorkspaceReady = workspaceStatus === "ready";
@@ -60,6 +64,10 @@ export function DashboardScreen() {
   const properties = useMemo(() => propertiesQuery.results as PropertyUnit[], [propertiesQuery.results]);
   const isLoading = isWorkspaceReady && overviewQuery.queryStatus === "loading";
   const isQueryBlocked = isLoading || overviewQuery.queryStatus === "error";
+
+  useEffect(() => {
+    setMode(queryMode);
+  }, [queryMode, setMode]);
 
   const desk = useMemo(() => {
     const todayEvents = (overview?.weekEvents ?? [])
@@ -111,9 +119,9 @@ export function DashboardScreen() {
         />
 
         {workspaceStatus !== "ready" ? (
-          <WorkspaceQueryState status={workspaceStatus} />
+          <WorkspaceQueryState status={workspaceStatus} variant="dashboard" />
         ) : isQueryBlocked ? (
-          <HttpQueryState query={overviewQuery} />
+          <HttpQueryState query={overviewQuery} variant="dashboard" />
         ) : (
           <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
             <div className="space-y-6">

@@ -17,5 +17,5 @@ export function Alert({
   variant?: keyof typeof variants;
   className?: string;
 }) {
-  return <div className={cn("rounded-md border p-3 text-sm font-medium leading-6", variants[variant], className)}>{children}</div>;
+  return <div className={cn("rounded-[7px] border p-3 text-sm font-medium leading-6", variants[variant], className)}>{children}</div>;
 }

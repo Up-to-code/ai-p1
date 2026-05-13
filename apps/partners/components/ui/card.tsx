@@ -3,7 +3,7 @@ import { cn } from "@anan/platform-core/classnames";
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
   return (
-    <section className={cn("rounded-xl border border-border bg-card shadow-sm", className)}>
+    <section className={cn("rounded-[15px] border border-border bg-card", className)}>
       {children}
     </section>
   );

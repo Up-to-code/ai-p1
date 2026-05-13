@@ -19,9 +19,10 @@ export default async function StatusPage() {
   }
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
+    <div>
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-foreground">Status Overview</h2>
+        <p className="text-xs font-bold uppercase text-primary">Status</p>
+        <h1 className="mt-2 text-3xl font-bold text-foreground">Review overview</h1>
         <p className="mt-2 text-sm text-muted-foreground">Track every app from draft through production approval.</p>
       </div>
 
@@ -29,7 +30,7 @@ export default async function StatusPage() {
         {statuses.map((status) => {
           const matches = apps.filter((app: any) => app.status === status);
           return (
-            <div key={status} className="rounded-xl border border-border bg-card p-6">
+            <div key={status} className="rounded-[15px] border border-border bg-card p-6">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-sm font-semibold text-foreground capitalize">{getStatusLabel(status)}</span>
                 <StatusBadge status={status} />
@@ -37,7 +38,7 @@ export default async function StatusPage() {
               <p className="text-3xl font-bold text-foreground">{matches.length}</p>
               <div className="mt-4 space-y-2">
                 {matches.slice(0, 4).map((app: any) => (
-                  <Link key={app.id} href={`/dashboard/apps/${app.id}`} className="block rounded-md bg-muted/50 p-3 text-sm font-medium text-foreground hover:bg-muted transition-colors">
+                  <Link key={app.id} href={`/dashboard/apps/${app.id}`} className="block rounded-[7px] border border-border bg-background p-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted">
                     {app.name}
                   </Link>
                 ))}

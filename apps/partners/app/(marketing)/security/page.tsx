@@ -10,22 +10,23 @@ export default function SecurityPage() {
   return (
     <main>
       {/* Header */}
-      <section className="py-20 px-6 bg-muted/30 border-b border-border">
+      <section className="border-b border-border bg-white px-4 py-20 sm:px-6">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">Security Model</h1>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl leading-relaxed">
+          <p className="mb-4 text-xs font-bold uppercase text-primary">Security</p>
+          <h1 className="text-balance text-[53px] font-bold leading-[1.04] text-foreground">Security model</h1>
+          <p className="mt-4 max-w-2xl text-pretty text-lg font-medium leading-8 text-muted-foreground">
             The portal is designed around scoped authorization, review gates, and least-privilege API access.
           </p>
         </div>
       </section>
 
       {/* Features */}
-      <section className="py-16 px-6 bg-background">
+      <section className="bg-background px-4 py-16 sm:px-6">
         <div className="max-w-4xl mx-auto grid gap-6 md:grid-cols-3">
           {features.map((feature) => {
             const Icon = feature.icon;
             return (
-              <div key={feature.title} className="rounded-xl border border-border bg-card p-8">
+              <div key={feature.title} className="rounded-[15px] border border-border bg-card p-6">
                 <Icon className="h-8 w-8 text-primary mb-5" />
                 <h2 className="text-lg font-bold text-foreground mb-2">{feature.title}</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>

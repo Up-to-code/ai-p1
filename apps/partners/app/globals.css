@@ -51,63 +51,63 @@
 
 :root {
   color-scheme: light;
-  --background: #f4f7fb;
-  --foreground: #0f172a;
+  --background: #f2f6f9;
+  --foreground: #071a34;
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: #071a34;
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
-  --secondary: #ecf1f8;
-  --secondary-foreground: #122033;
-  --muted: #eef3f9;
-  --muted-foreground: #61748b;
-  --accent: #eef3f9;
-  --accent-foreground: #122033;
+  --popover-foreground: #071a34;
+  --primary: #517bdf;
+  --primary-foreground: #fbfdff;
+  --secondary: #e8eef7;
+  --secondary-foreground: #071a34;
+  --muted: #e8eef7;
+  --muted-foreground: #626870;
+  --accent: #e8eef7;
+  --accent-foreground: #071a34;
   --destructive: oklch(0.6 0.22 25);
   --destructive-foreground: oklch(0.985 0 0);
-  --border: rgba(15, 23, 42, 0.12);
-  --input: #e7edf5;
-  --ring: #2563eb;
+  --border: rgba(19, 30, 43, 0.13);
+  --input: #dfe8f3;
+  --ring: #517bdf;
   --chart-1: oklch(0.6 0.22 25);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --radius: 6px;
-  --sidebar: #f2f6fb;
-  --sidebar-foreground: #122033;
-  --sidebar-primary: #0f172a;
+  --radius: 7px;
+  --sidebar: #edf3f8;
+  --sidebar-foreground: #071a34;
+  --sidebar-primary: #517bdf;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e8eef6;
-  --sidebar-accent-foreground: #122033;
-  --sidebar-border: rgba(15, 23, 42, 0.11);
-  --sidebar-ring: #2563eb;
-  --workspace-shell: #eef3f8;
+  --sidebar-accent: #e1eaf4;
+  --sidebar-accent-foreground: #071a34;
+  --sidebar-border: rgba(19, 30, 43, 0.12);
+  --sidebar-ring: #517bdf;
+  --workspace-shell: #edf3f8;
   --workspace-canvas: #f8fbff;
   --workspace-panel: #ffffff;
-  --workspace-panel-strong: #f7fafe;
+  --workspace-panel-strong: #f5f8fb;
   --workspace-chrome-header-bg: var(--workspace-panel);
   --workspace-chrome-sidebar-bg: var(--workspace-sidebar);
   --workspace-elevated: #eef3f9;
   --workspace-sidebar: #f3f6fb;
   --workspace-sidebar-strong: #e9eef5;
-  --workspace-border: rgba(15, 23, 42, 0.13);
-  --workspace-grid: rgba(15, 23, 42, 0.08);
-  --workspace-muted: #61748b;
-  --workspace-ink: #0f172a;
-  --workspace-bubble-self: #2563eb;
+  --workspace-border: rgba(19, 30, 43, 0.12);
+  --workspace-grid: rgba(19, 30, 43, 0.07);
+  --workspace-muted: #626870;
+  --workspace-ink: #071a34;
+  --workspace-bubble-self: #517bdf;
   --workspace-bubble-self-foreground: #eff6ff;
   --workspace-bubble-self-muted: #bfdbfe;
   --workspace-bubble-other: #eef3f9;
   --workspace-bubble-other-foreground: #122033;
   --workspace-bubble-other-muted: #61748b;
   --workspace-accent-soft: #e9eff7;
-  --workspace-highlight: #2563eb;
-  --workspace-highlight-soft: color-mix(in srgb, #2563eb 12%, white);
-  --workspace-highlight-strong: color-mix(in srgb, #2563eb 80%, #071120);
-  --workspace-highlight-border: color-mix(in srgb, #2563eb 26%, transparent);
+  --workspace-highlight: #517bdf;
+  --workspace-highlight-soft: color-mix(in srgb, #517bdf 12%, white);
+  --workspace-highlight-strong: color-mix(in srgb, #517bdf 82%, #071a34);
+  --workspace-highlight-border: color-mix(in srgb, #517bdf 26%, transparent);
 
   /* Fumadocs Theme Overrides */
   --color-fd-primary: var(--primary);
@@ -213,10 +213,9 @@ body {
     @apply bg-background text-foreground;
     min-height: 100dvh;
     background-image:
-      linear-gradient(to bottom, color-mix(in srgb, var(--workspace-grid) 55%, transparent) 1px, transparent 1px),
-      linear-gradient(to left, color-mix(in srgb, var(--workspace-grid) 40%, transparent) 1px, transparent 1px),
-      radial-gradient(circle at top right, color-mix(in srgb, var(--workspace-highlight) 7%, transparent), transparent 30%);
-    background-size: 100% 24px, 24px 100%, 100% 100%;
+      linear-gradient(to bottom, color-mix(in srgb, var(--workspace-grid) 44%, transparent) 1px, transparent 1px),
+      linear-gradient(to left, color-mix(in srgb, var(--workspace-grid) 26%, transparent) 1px, transparent 1px);
+    background-size: 100% 32px, 32px 100%;
     background-attachment: fixed;
   }
 
@@ -250,6 +249,11 @@ body {
 
 input, select, textarea, button {
   font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }
 
 a {

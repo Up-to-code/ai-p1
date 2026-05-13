@@ -7,18 +7,30 @@ import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { cn } from "@/lib/utils";
 import { useTranslations, useLocale } from 'next-intl';
 import { useTheme } from "@/components/providers/theme-provider";
-import { useWorkspaceStore } from "@/domains/dashboard/store/dashboard.store";
+import { parseWorkspaceMode, useWorkspaceStore, workspaceModeHref, type WorkspaceMode } from "@/domains/dashboard/store/dashboard.store";
 import { motion } from "framer-motion";
+import { usePathname, useRouter } from "@/i18n/routing";
+import { useSearchParams } from "next/navigation";
 
 export function Topbar() {
   const t = useTranslations('Topbar');
   const tWorkspace = useTranslations('Workspace');
   const locale = useLocale();
   const isRtl = locale === 'ar';
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { isDark, setTheme } = useTheme();
-  const { mode, setMode } = useWorkspaceStore();
+  const storedMode = useWorkspaceStore((state) => state.mode);
+  const setMode = useWorkspaceStore((state) => state.setMode);
+  const mode = pathname === "/dashboard" ? parseWorkspaceMode(searchParams.get("mode")) : storedMode;
   const activeToggleClassName = "text-zinc-900 dark:text-zinc-900";
   const inactiveToggleClassName = "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white";
+
+  function selectMode(nextMode: WorkspaceMode) {
+    setMode(nextMode);
+    router.push(workspaceModeHref(nextMode));
+  }
 
   return (
     <header className={cn(
@@ -38,7 +50,7 @@ export function Topbar() {
           <div className="hidden items-center rounded-full border border-zinc-100 bg-zinc-100 p-1 dark:border-white/10 dark:bg-white/5 md:flex">
             <button
               type="button"
-              onClick={() => setMode("ws")}
+              onClick={() => selectMode("ws")}
               aria-pressed={mode === "ws"}
               className={cn(
                 "relative flex h-8 items-center gap-1.5 overflow-hidden rounded-full px-3 text-[10px] font-black uppercase tracking-widest transition-colors",
@@ -57,7 +69,7 @@ export function Topbar() {
             </button>
             <button
               type="button"
-              onClick={() => setMode("ai")}
+              onClick={() => selectMode("ai")}
               aria-pressed={mode === "ai"}
               className={cn(
                 "relative flex h-8 items-center gap-1.5 overflow-hidden rounded-full px-3 text-[10px] font-black uppercase tracking-widest transition-colors",

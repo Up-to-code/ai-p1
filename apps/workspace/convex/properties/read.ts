@@ -30,6 +30,18 @@ function presentPropertyListItem(property: Doc<"propertyUnits">) {
   };
 }
 
+async function findPropertyByIdOrReference(ctx: QueryCtx, organizationId: string, identifier: string) {
+  const normalizedId = ctx.db.normalizeId("propertyUnits", identifier);
+  const unitById = normalizedId ? await ctx.db.get(normalizedId) : null;
+  if (unitById) return unitById;
+
+  return ctx.db
+    .query("propertyUnits")
+    .withIndex("by_organization_id", (q) => q.eq("organizationId", organizationId))
+    .filter((q) => q.eq(q.field("reference"), identifier))
+    .first();
+}
+
 export const list = query({
   args: { organizationId: v.string() },
   returns: v.array(propertyUnitValidator),
@@ -177,11 +189,11 @@ export const listByProject = query({
 });
 
 export const get = query({
-  args: { organizationId: v.string(), propertyId: v.id("propertyUnits") },
+  args: { organizationId: v.string(), propertyId: v.string() },
   returns: v.union(propertyUnitValidator, v.null()),
   handler: async (ctx, args) => {
     await assertOrganizationResourcePermission(ctx, args.organizationId, "property", "read");
-    const unit = await ctx.db.get(args.propertyId);
+    const unit = await findPropertyByIdOrReference(ctx, args.organizationId, args.propertyId.trim());
     if (!unit || unit.organizationId !== args.organizationId || unit.deletedAt) {
       return null;
     }

@@ -14,6 +14,11 @@ export const projectPayloadSchema = z.object({
   visibility: z.enum(["private", "public"]).optional(),
   units: z.coerce.number().int().min(0),
   priceRange: z.string().trim().min(1),
+  regaAuthorizationNo: z.string().trim().optional(),
+  regaExpiresAt: z.string().trim().optional(),
+  planNumber: z.string().trim().optional(),
+  plotNumber: z.string().trim().optional(),
+  postalIdentity: z.string().trim().optional(),
   description: z.string().trim().min(10),
 });
 

@@ -1,4 +1,4 @@
-import { Activity, LayoutGrid, UserCircle } from "lucide-react";
+import { Activity, AppWindow, Gauge, UserCircle } from "lucide-react";
 import type { PartnerAppStatus } from "@/server/partnerApps";
 import type { DashboardNavItem } from "@/types/nav";
 
@@ -10,8 +10,8 @@ export const marketingNav = [
 ] as const;
 
 export const dashboardNav: DashboardNavItem[] = [
-  { href: "/dashboard", label: "Overview", icon: LayoutGrid },
-  { href: "/dashboard/apps", label: "Apps", icon: LayoutGrid },
+  { href: "/dashboard", label: "Overview", icon: Gauge },
+  { href: "/dashboard/apps", label: "Apps", icon: AppWindow },
   { href: "/dashboard/status", label: "Status", icon: Activity },
   { href: "/dashboard/account", label: "Account", icon: UserCircle },
 ];

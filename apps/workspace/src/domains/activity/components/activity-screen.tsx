@@ -154,7 +154,7 @@ export function ActivityScreen() {
       />
 
       {workspaceStatus !== "ready" ? (
-        <WorkspaceQueryState status={workspaceStatus} />
+        <WorkspaceQueryState status={workspaceStatus} variant="activity" />
       ) : !account.organization.id && !account.isPending ? (
         <EmptyWorkspace icon={History} title={t("empty.noOrgTitle")} description={t("empty.noOrgDesc")} />
       ) : (
@@ -166,7 +166,7 @@ export function ActivityScreen() {
             { label: t("stats.latest"), value: latest, icon: Clock3 },
           ]} />
           {isQueryBlocked ? (
-            <HttpQueryState query={eventsQuery} />
+            <HttpQueryState query={eventsQuery} variant="activity" />
           ) : events.length === 0 ? (
             <EmptyWorkspace icon={History} title={t("empty.title")} description={t("empty.desc")} />
           ) : (

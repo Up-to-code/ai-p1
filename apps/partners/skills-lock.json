@@ -36,6 +36,12 @@
       "sourceType": "github",
       "skillPath": "skills/convex-setup-auth/SKILL.md",
       "computedHash": "f60559165edd5b616fda726ed5726c798e33f905361ed9892ab6013e53ab2588"
+    },
+    "stripe-ui-skills": {
+      "source": "ihlamury/design-skills",
+      "sourceType": "github",
+      "skillPath": "skills/stripe/SKILL.md",
+      "computedHash": "8e65e006f937b7b00aabb57958a68b553acfa65b1d6f8d645b78ae7d44aab3aa"
     }
   }
 }

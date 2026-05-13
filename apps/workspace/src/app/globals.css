@@ -244,6 +244,12 @@
   }
 }
 
+@keyframes upload-slide {
+  0% { transform: translateX(-110%); }
+  50% { transform: translateX(70%); }
+  100% { transform: translateX(210%); }
+}
+
 .animate-blink {
   animation: blink 0.8s step-end infinite;
 }

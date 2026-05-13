@@ -32,6 +32,7 @@ import { authClient } from "@/lib/auth-client";
 import { selectExistingOrganization, type AuthResult } from "@/domains/auth/organization-selection";
 import { writeAuthHandoff } from "@/domains/auth";
 import { useAgentThreadsQuery } from "@/domains/agents";
+import { workspaceModeHref } from "@/domains/dashboard/store/dashboard.store";
 
 type BetterAuthOrganization = {
   id: string;
@@ -209,6 +210,7 @@ export function Sidebar() {
               )}>{t(`groups.${group.label}`)}</h4>
             )}
             {group.items.map((item) => {
+              const itemHref = item.href === "/dashboard" ? workspaceModeHref("ws") : item.href;
               const isActive = pathname.startsWith(item.href);
               const itemName = t(item.name);
 
@@ -217,7 +219,7 @@ export function Sidebar() {
                   <TooltipTrigger
                     render={
                       <Link
-                        href={item.href}
+                        href={itemHref}
                         className={cn(
                           "flex h-10 items-center rounded-xl px-3 transition-all duration-200 group relative",
                           isActive
@@ -333,7 +335,7 @@ export function Sidebar() {
                   {threadsLabel}
                 </p>
                 <Link
-                  href="/dashboard"
+                  href={workspaceModeHref("ai")}
                   className={cn(
                     "inline-flex h-6 items-center gap-1 rounded-full px-2 text-[9px] font-black uppercase tracking-wider transition-all",
                     isDarkMode ? "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white" : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-900"
@@ -351,7 +353,7 @@ export function Sidebar() {
                     return (
                       <Link
                         key={thread.id}
-                        href={`/dashboard?threadId=${encodeURIComponent(thread.id)}`}
+                        href={workspaceModeHref("ai", thread.id)}
                         className={cn(
                           "flex min-h-9 items-center gap-2 rounded-xl px-2.5 py-2 text-start transition-all",
                           isActive
@@ -544,7 +546,7 @@ export function Sidebar() {
                 return (
                   <Link
                     key={thread.id}
-                    href={`/dashboard?threadId=${encodeURIComponent(thread.id)}`}
+                    href={workspaceModeHref("ai", thread.id)}
                     onClick={() => setThreadHistoryOpen(false)}
                     className={cn(
                       "flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-start transition-all",

@@ -19,6 +19,7 @@ describe("detail loading states", () => {
       expect(source).toContain("workspaceStatus !== \"ready\"");
       expect(source).toContain("ProgressiveLoadingState");
       expect(source).toContain("debug={queryDebug}");
+      expect(source).toContain('variant="detail"');
       expect(source).not.toContain('title="Loading client"');
       expect(source).not.toContain('title="Loading project"');
       expect(source).not.toContain('title="Loading unit"');

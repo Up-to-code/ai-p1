@@ -41,16 +41,20 @@ function DialogOverlay({
 
 function DialogContent({
   className,
+  containerClassName,
   children,
+  overlayClassName,
   showCloseButton = true,
   ...props
 }: DialogPrimitive.Popup.Props & {
+  containerClassName?: string
+  overlayClassName?: string
   showCloseButton?: boolean
 }) {
   return (
     <DialogPortal>
-      <DialogOverlay />
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+      <DialogOverlay className={overlayClassName} />
+      <div className={cn("fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none", containerClassName)}>
         <DialogPrimitive.Popup
           data-slot="dialog-content"
           className={cn(

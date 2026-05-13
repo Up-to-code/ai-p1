@@ -10,22 +10,22 @@ export default function PricingPage() {
   return (
     <main>
       {/* Header */}
-      <section className="py-20 px-6 bg-muted/30 border-b border-border">
+      <section className="border-b border-border bg-white px-4 py-20 sm:px-6">
         <div className="max-w-4xl mx-auto">
-          <p className="text-xs font-mono font-bold uppercase tracking-widest text-primary mb-4">Pricing</p>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">Start building free. Launch after review.</h1>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl leading-relaxed">
+          <p className="mb-4 text-xs font-bold uppercase text-primary">Pricing</p>
+          <h1 className="text-balance text-[53px] font-bold leading-[1.04] text-foreground">Start building free. Launch after review.</h1>
+          <p className="mt-4 max-w-2xl text-pretty text-lg font-medium leading-8 text-muted-foreground">
             Partner app access is gated by review, not surprise pricing. Production commercial terms are handled during approval.
           </p>
         </div>
       </section>
 
       {/* Plans */}
-      <section className="py-16 px-6 bg-background">
+      <section className="bg-background px-4 py-16 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <div className="grid gap-6 md:grid-cols-2">
             {plans.map((plan) => (
-              <article key={plan.name} className="rounded-xl border border-border bg-card p-8">
+              <article key={plan.name} className="rounded-[15px] border border-border bg-card p-8">
                 <h2 className="text-2xl font-bold text-foreground">{plan.name}</h2>
                 <p className="mt-2 text-3xl font-bold text-primary">{plan.price}</p>
                 <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{plan.description}</p>
@@ -40,7 +40,7 @@ export default function PricingPage() {
               </article>
             ))}
           </div>
-          <Link href="/signup" className="mt-10 inline-flex h-12 items-center rounded-md bg-primary px-8 text-sm font-bold text-primary-foreground transition-transform hover:scale-105">
+          <Link href="/signup" className="mt-10 inline-flex h-12 items-center rounded-[7px] bg-primary px-8 text-sm font-bold text-primary-foreground transition-colors hover:bg-[#6b90e6]">
             Create developer account
           </Link>
         </div>

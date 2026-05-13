@@ -10,6 +10,9 @@ export default function Layout({ children }: { children: ReactNode }) {
         title: "Anan Partner Docs",
         url: "/",
       }}
+      sidebar={{
+        tabs: false,
+      }}
     >
       {children}
     </DocsLayout>

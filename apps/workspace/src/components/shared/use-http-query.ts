@@ -177,7 +177,7 @@ export function useHttpQueryResult<T>(
   };
 }
 
-type IndexedInfinitePage<T, TStats> = {
+export type IndexedInfinitePage<T, TStats> = {
   list: PagedResponse<T>;
   stats?: TStats;
 };
@@ -341,6 +341,7 @@ export function useHttpIndexedPagedQuery<T, TStats>(
     stats,
     status,
     queryStatus,
+    queryKey,
     errorMessage: query.isError ? normalizeErrorMessage(query.error) : undefined,
     isFetching: query.isFetching,
     refetch: query.refetch,

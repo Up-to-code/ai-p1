@@ -1,11 +1,23 @@
 import { create } from 'zustand';
 
+export type WorkspaceMode = 'ws' | 'ai';
+
 interface WorkspaceState {
-  mode: 'ws' | 'ai';
-  setMode: (mode: 'ws' | 'ai') => void;
+  mode: WorkspaceMode;
+  setMode: (mode: WorkspaceMode) => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({
-  mode: 'ai', // Defaulting to AI as per user's pro-first preference
+  mode: 'ws',
   setMode: (mode) => set({ mode }),
 }));
+
+export function parseWorkspaceMode(value: string | null): WorkspaceMode {
+  return value === "ai" ? "ai" : "ws";
+}
+
+export function workspaceModeHref(mode: WorkspaceMode, threadId?: string) {
+  const params = new URLSearchParams({ mode });
+  if (mode === "ai" && threadId) params.set("threadId", threadId);
+  return `/dashboard?${params.toString()}`;
+}
