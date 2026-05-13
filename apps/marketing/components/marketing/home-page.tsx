@@ -98,8 +98,8 @@ function Hero({ copy, isAr }: { copy: HomeCopy; isAr: boolean }) {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[680px] bg-[radial-gradient(ellipse_at_top,rgba(11,92,255,0.20),transparent_65%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(11,92,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(11,92,255,0.04)_1px,transparent_1px)] bg-[size:88px_88px] opacity-70 [mask-image:radial-gradient(ellipse_at_top,black,transparent_78%)]" />
 
-      <div className="relative mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_360px] lg:items-end">
-        <div>
+      <div className="relative mx-auto max-w-7xl">
+        <div className="max-w-5xl">
           <span className="inline-flex rounded-full border border-zinc-200 bg-white px-4 py-2 text-[10px] font-black uppercase tracking-[0.28em] text-blue-600 dark:border-white/10 dark:bg-white/5 dark:text-blue-300">
             {copy.home.eyebrow}
           </span>
@@ -114,17 +114,6 @@ function Hero({ copy, isAr }: { copy: HomeCopy; isAr: boolean }) {
             <ActionLink href={copy.products[1].href} isAr={isAr} variant="secondary">
               {copy.home.secondaryCta}
             </ActionLink>
-          </div>
-        </div>
-        <div className="rounded-[24px] border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/[0.04]">
-          <p className="text-[10px] font-black uppercase tracking-[0.24em] text-zinc-400">{isAr ? "مسارات المنتج" : "Product paths"}</p>
-          <div className="mt-4 grid gap-2">
-            {copy.products.map((product) => (
-              <a className="flex items-center justify-between gap-3 rounded-2xl bg-zinc-50 px-4 py-3 text-sm font-bold text-zinc-950 transition hover:bg-white dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.08]" href={product.href} key={product.id}>
-                <span>{product.name}</span>
-                <ArrowUpRight className={cx("size-4 text-zinc-400", isAr && "-rotate-90")} />
-              </a>
-            ))}
           </div>
         </div>
       </div>
