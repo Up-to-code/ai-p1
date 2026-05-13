@@ -1,12 +1,12 @@
 # Schema Boundaries
 
-Purpose: Better Auth component schema is separate from hub domain schema.
+Purpose: Better Auth component schema is separate from workspace domain schema.
 
 ## Owns
 
-- Better Auth component schema is separate from hub domain schema.
-- Projection tables link auth records to hub domains.
-- Convex schema owns canonical hub data.
+- Better Auth component schema is separate from workspace domain schema.
+- Projection tables link auth records to workspace domains.
+- Convex schema owns canonical workspace data.
 
 ## Does Not Own
 

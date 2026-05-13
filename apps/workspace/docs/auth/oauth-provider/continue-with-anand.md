@@ -5,7 +5,7 @@ Purpose: Continue with Anand is OAuth 2.1 Authorization Code plus PKCE.
 ## Owns
 
 - Continue with Anand is OAuth 2.1 Authorization Code plus PKCE.
-- Third-party apps open a popup or redirect to the hub authorization endpoint.
+- Third-party apps open a popup or redirect to the workspace authorization endpoint.
 - The consent screen binds access to selected organization context.
 
 ## Does Not Own
@@ -19,7 +19,7 @@ Purpose: Continue with Anand is OAuth 2.1 Authorization Code plus PKCE.
 - Better Auth OAuth 2.1 Provider and Organization plugin are mandatory.
 - Plain Convex Auth is forbidden.
 - Organization context is required for organization-scoped access.
-- Scopes grant client capability; hub permissions and visibility decide resource access.
+- Scopes grant client capability; workspace permissions and visibility decide resource access.
 
 ## Implementation Rules
 

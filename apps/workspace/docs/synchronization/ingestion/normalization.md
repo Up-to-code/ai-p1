@@ -17,7 +17,7 @@ Purpose: Normalize Saudi identifiers, property type, location, lifecycle, and re
 ## Synchronization Boundary
 
 - External systems submit claims, not truth.
-- Approved canonical hub state wins.
+- Approved canonical workspace state wins.
 - Idempotency is mandatory for inbound claims and outbound sync.
 - Visibility recompute follows canonical state changes.
 

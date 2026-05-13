@@ -1,5 +1,5 @@
 <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" id="anan_ai_thinking">
-  <rect x="98" y="98" width="4" height="4" fill="#2563EB" id="core_hub"/>
+  <rect x="98" y="98" width="4" height="4" fill="#2563EB" id="core_workspace"/>
   
   <path d="M100 20L170 60V140L100 180L30 140V60L100 20Z" stroke="#0F172A" stroke-width="2" id="outer_boundary"/>
   

@@ -1,10 +1,10 @@
 # Sync Principles
 
-Purpose: The hub is the synchronization engine.
+Purpose: The workspace is the synchronization engine.
 
 ## Owns
 
-- The hub is the synchronization engine.
+- The workspace is the synchronization engine.
 - External systems submit claims.
 - Approved canonical state wins.
 
@@ -17,7 +17,7 @@ Purpose: The hub is the synchronization engine.
 ## Synchronization Boundary
 
 - External systems submit claims, not truth.
-- Approved canonical hub state wins.
+- Approved canonical workspace state wins.
 - Idempotency is mandatory for inbound claims and outbound sync.
 - Visibility recompute follows canonical state changes.
 

@@ -19,7 +19,7 @@ export function SafeWritePanel() {
       }),
     });
     setBusy(false);
-    setMessage(response.ok ? "Client create request sent to Hub." : await response.text());
+    setMessage(response.ok ? "Client create request sent to Workspace." : await response.text());
   }
 
   async function submitUpdate(formData: FormData) {
@@ -36,7 +36,7 @@ export function SafeWritePanel() {
       }),
     });
     setBusy(false);
-    setMessage(response.ok ? "Client update request sent to Hub." : await response.text());
+    setMessage(response.ok ? "Client update request sent to Workspace." : await response.text());
   }
 
   return (
@@ -44,7 +44,7 @@ export function SafeWritePanel() {
       <p className="micro">Safe writes</p>
       <h2 style={{ margin: "8px 0 4px", fontSize: 22 }}>Create or update clients</h2>
       <p style={{ color: "var(--muted)", lineHeight: 1.6 }}>
-        These forms call this demo backend first. The backend then calls Hub Hono APIs with the stored bearer token.
+        These forms call this demo backend first. The backend then calls Workspace Hono APIs with the stored bearer token.
       </p>
       <div className="grid two" style={{ marginTop: 16 }}>
         <form action={submitCreate} className="grid panel" style={{ padding: 16 }}>

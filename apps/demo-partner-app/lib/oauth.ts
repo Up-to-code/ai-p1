@@ -1,7 +1,7 @@
 import { requestedScopes } from "./config";
 
-export function partnerResourceAudience(hubBaseUrl: string) {
-  return new URL("/api/v1/partner", hubBaseUrl).toString();
+export function partnerResourceAudience(workspaceBaseUrl: string) {
+  return new URL("/api/v1/partner", workspaceBaseUrl).toString();
 }
 
 export type OAuthTokens = {
@@ -15,18 +15,18 @@ export type OAuthTokens = {
 };
 
 export function buildAuthorizeUrl(input: {
-  hubBaseUrl: string;
+  workspaceBaseUrl: string;
   clientId: string;
   redirectUri: string;
   state: string;
   codeChallenge: string;
 }) {
-  const url = new URL("/oauth/authorize", input.hubBaseUrl);
+  const url = new URL("/oauth/authorize", input.workspaceBaseUrl);
   url.searchParams.set("response_type", "code");
   url.searchParams.set("client_id", input.clientId);
   url.searchParams.set("redirect_uri", input.redirectUri);
   url.searchParams.set("scope", requestedScopes.join(" "));
-  url.searchParams.set("resource", partnerResourceAudience(input.hubBaseUrl));
+  url.searchParams.set("resource", partnerResourceAudience(input.workspaceBaseUrl));
   url.searchParams.set("state", input.state);
   url.searchParams.set("code_challenge", input.codeChallenge);
   url.searchParams.set("code_challenge_method", "S256");
@@ -34,7 +34,7 @@ export function buildAuthorizeUrl(input: {
 }
 
 export async function exchangeAuthorizationCode(input: {
-  hubBaseUrl: string;
+  workspaceBaseUrl: string;
   clientId: string;
   clientSecret?: string;
   redirectUri: string;
@@ -48,11 +48,11 @@ export async function exchangeAuthorizationCode(input: {
     redirect_uri: input.redirectUri,
     code: input.code,
     code_verifier: input.codeVerifier,
-    resource: partnerResourceAudience(input.hubBaseUrl),
+    resource: partnerResourceAudience(input.workspaceBaseUrl),
   });
   if (input.clientSecret) body.set("client_secret", input.clientSecret);
 
-  const response = await (input.fetcher ?? fetch)(new URL("/oauth/token", input.hubBaseUrl), {
+  const response = await (input.fetcher ?? fetch)(new URL("/oauth/token", input.workspaceBaseUrl), {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body,

@@ -4,7 +4,7 @@ Purpose: Defines the official developer SDK plan for OAuth, API access, token ha
 
 ## Scope
 
-This domain owns documentation for sdk decisions in the Saudi Arabia Central Real Estate Data Hub.
+This domain owns documentation for sdk decisions in the Saudi Arabia Central Real Estate Data Workspace.
 
 This domain does not own unrelated CRM, marketplace, lead pipeline, or deal pipeline behavior.
 

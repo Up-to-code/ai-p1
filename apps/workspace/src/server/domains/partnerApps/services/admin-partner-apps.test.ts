@@ -20,58 +20,58 @@ vi.mock("@/server/convex/http-client", () => ({
 const convexActionMock = vi.mocked(convexHttp.action);
 const convexMutationMock = vi.mocked(convexHttp.mutation);
 
-describe("Hub partner app service tokens", () => {
+describe("Workspace partner app service tokens", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.HUB_ADMIN_SERVICE_TOKEN = "hub-secret";
+    process.env.WORKSPACE_ADMIN_SERVICE_TOKEN = "workspace-secret";
     process.env.PARTNERS_REVIEW_CALLBACK_TOKEN = "callback-secret";
   });
 
-  it("uses only the Hub admin token for inbound admin API access", () => {
+  it("uses only the Workspace admin token for inbound admin API access", () => {
     expect(adminServiceTokenFromEnv({
-      HUB_ADMIN_SERVICE_TOKEN: " hub-secret ",
+      WORKSPACE_ADMIN_SERVICE_TOKEN: " workspace-secret ",
       PARTNERS_REVIEW_CALLBACK_TOKEN: "callback-secret",
-    })).toBe("hub-secret");
+    })).toBe("workspace-secret");
   });
 
   it("does not accept the legacy platform token as an admin fallback", () => {
     const headers = new Headers({ authorization: "Bearer platform-secret" });
 
     expect(() => assertAdminServiceToken(headers, {
-      HUB_ADMIN_SERVICE_TOKEN: undefined,
+      WORKSPACE_ADMIN_SERVICE_TOKEN: undefined,
       PARTNERS_REVIEW_CALLBACK_TOKEN: "callback-secret",
-    })).toThrow("Invalid Hub admin service token.");
+    })).toThrow("Invalid Workspace admin service token.");
   });
 
   it("accepts bearer and explicit header admin tokens", () => {
     expect(() => assertAdminServiceToken(
-      new Headers({ authorization: "Bearer hub-secret" }),
-      { HUB_ADMIN_SERVICE_TOKEN: "hub-secret", PARTNERS_REVIEW_CALLBACK_TOKEN: undefined },
+      new Headers({ authorization: "Bearer workspace-secret" }),
+      { WORKSPACE_ADMIN_SERVICE_TOKEN: "workspace-secret", PARTNERS_REVIEW_CALLBACK_TOKEN: undefined },
     )).not.toThrow();
 
     expect(() => assertAdminServiceToken(
-      new Headers({ "x-hub-admin-service-token": "hub-secret" }),
-      { HUB_ADMIN_SERVICE_TOKEN: "hub-secret", PARTNERS_REVIEW_CALLBACK_TOKEN: undefined },
+      new Headers({ "x-workspace-admin-service-token": "workspace-secret" }),
+      { WORKSPACE_ADMIN_SERVICE_TOKEN: "workspace-secret", PARTNERS_REVIEW_CALLBACK_TOKEN: undefined },
     )).not.toThrow();
   });
 
-  it("uses a separate callback token when Hub notifies Partners", () => {
+  it("uses a separate callback token when Workspace notifies Partners", () => {
     expect(partnersReviewCallbackTokenFromEnv({
-      HUB_ADMIN_SERVICE_TOKEN: "hub-secret",
+      WORKSPACE_ADMIN_SERVICE_TOKEN: "workspace-secret",
       PARTNERS_REVIEW_CALLBACK_TOKEN: " callback-secret ",
     })).toBe("callback-secret");
   });
 
-  it("falls back to the Hub admin token for local callback development only", () => {
+  it("falls back to the Workspace admin token for local callback development only", () => {
     expect(partnersReviewCallbackTokenFromEnv({
-      HUB_ADMIN_SERVICE_TOKEN: "hub-secret",
+      WORKSPACE_ADMIN_SERVICE_TOKEN: "workspace-secret",
       PARTNERS_REVIEW_CALLBACK_TOKEN: undefined,
-    })).toBe("hub-secret");
+    })).toBe("workspace-secret");
   });
 
   it("upserts the Better Auth OAuth client after Partners registration sync", async () => {
     convexMutationMock.mockResolvedValueOnce({
-      id: "hub_app_1",
+      id: "workspace_app_1",
       partnersAppId: "partners_app_1",
       partnersClientId: "partners_client_demo",
       oauthClientId: "partners_client_demo",
@@ -100,7 +100,7 @@ describe("Hub partner app service tokens", () => {
 
     expect(convexActionMock).toHaveBeenCalledWith(expect.anything(), {
       input: expect.objectContaining({
-        hubPartnerAppId: "hub_app_1",
+        workspacePartnerAppId: "workspace_app_1",
         clientId: "partners_client_demo",
         status: "pending",
         redirectUris: ["http://localhost:3004/api/auth/anan/callback"],
@@ -110,7 +110,7 @@ describe("Hub partner app service tokens", () => {
 
   it("syncs approved OAuth client metadata before notifying Partners", async () => {
     convexMutationMock.mockResolvedValueOnce({
-      id: "hub_app_1",
+      id: "workspace_app_1",
       partnersAppId: "partners_app_1",
       partnersClientId: "partners_client_demo",
       oauthClientId: "partners_client_demo",
@@ -127,7 +127,7 @@ describe("Hub partner app service tokens", () => {
     convexActionMock.mockResolvedValueOnce({ clientId: "partners_client_demo", created: false });
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response(null, { status: 204 }));
 
-    await reviewAdminPartnerApp("hub_app_1", { status: "approved", reviewNotes: "Approved" });
+    await reviewAdminPartnerApp("workspace_app_1", { status: "approved", reviewNotes: "Approved" });
 
     expect(convexActionMock).toHaveBeenCalledWith(expect.anything(), {
       input: expect.objectContaining({
@@ -146,7 +146,7 @@ describe("Hub partner app service tokens", () => {
     convexActionMock.mockResolvedValueOnce({ clientId: "client_1", created: false });
 
     await syncOAuthClientForPartnerApp({
-      id: "hub_app_1",
+      id: "workspace_app_1",
       oauthClientId: "client_1",
       name: "PDF Creator",
       description: "Demo",

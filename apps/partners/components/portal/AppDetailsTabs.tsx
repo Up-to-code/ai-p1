@@ -14,9 +14,10 @@ import {
   ShieldCheck,
   Workflow,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { StatusBadge } from "@/components/brand/StatusBadge";
 import { cn } from "@/lib/utils";
+import type { SandboxActionState } from "@/app/(portal)/dashboard/actions";
 import type { PartnerAppSummary } from "@/server/partnerApps";
 import type { SandboxInfo } from "@/server/sandbox";
 
@@ -48,7 +49,7 @@ const architecture = [
     icon: KeyRound,
   },
   {
-    title: "Hub API access",
+    title: "Workspace API access",
     description: "Your backend calls reviewed organization APIs.",
     icon: Database,
   },
@@ -82,7 +83,7 @@ const config: AnanOAuthConfig = {
   scopes: ${JSON.stringify(app.allowedScopes, null, 2)},
 };
 
-const authorizeUrl = new URL("/oauth/authorize", process.env.ANAN_HUB_URL);
+const authorizeUrl = new URL("/oauth/authorize", process.env.ANAN_WORKSPACE_API_URL);
 authorizeUrl.searchParams.set("client_id", config.clientId);
 authorizeUrl.searchParams.set("response_type", "code");
 authorizeUrl.searchParams.set("redirect_uri", config.redirectUri);
@@ -92,7 +93,7 @@ authorizeUrl.searchParams.set("code_challenge_method", "S256");`;
   }
 
   if (language === "javascript") {
-    return `const authorizeUrl = new URL("/oauth/authorize", process.env.ANAN_HUB_URL);
+    return `const authorizeUrl = new URL("/oauth/authorize", process.env.ANAN_WORKSPACE_API_URL);
 
 authorizeUrl.searchParams.set("client_id", "${app.clientId}");
 authorizeUrl.searchParams.set("response_type", "code");
@@ -104,7 +105,7 @@ authorizeUrl.searchParams.set("code_challenge_method", "S256");
 return Response.redirect(authorizeUrl);`;
   }
 
-  return `curl "https://hub.anan.example/oauth/authorize?client_id=${app.clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}&code_challenge=<pkce-challenge>&code_challenge_method=S256"`;
+  return `curl "https://workspace.anan.example/oauth/authorize?client_id=${app.clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}&code_challenge=<pkce-challenge>&code_challenge_method=S256"`;
 }
 
 function codeTitle(language: LanguageId) {
@@ -152,7 +153,7 @@ export function AppDetailsTabs({
 }: {
   app: PartnerAppSummary;
   sandbox: SandboxInfo | null;
-  ensureSandboxAction: (formData: FormData) => void | Promise<void>;
+  ensureSandboxAction: (previousState: SandboxActionState, formData: FormData) => Promise<SandboxActionState>;
 }) {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [language, setLanguage] = useState<LanguageId>("typescript");
@@ -216,7 +217,7 @@ export function AppDetailsTabs({
                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
                   <InfoBlock label="Client type" value={app.clientType === "public" ? "Public PKCE" : "Confidential"} />
                   <InfoBlock label="Lifetime" value={`${app.authorizationExpiresAfterDays} days`} />
-                  <InfoBlock label="Hub sync" value={app.hubSyncStatus ?? "not_synced"} />
+                  <InfoBlock label="Workspace sync" value={app.workspaceSyncStatus ?? "not_synced"} />
                 </div>
               </div>
 
@@ -257,7 +258,7 @@ export function AppDetailsTabs({
                 <ComponentCard
                   icon={ShieldCheck}
                   title="Scoped consent"
-                  description="Workspace admins approve this exact scope list before your app can call Hub APIs."
+                  description="Workspace admins approve this exact scope list before your app can call Workspace APIs."
                   value={`${app.allowedScopes.length} scopes`}
                 />
                 <ComponentCard
@@ -381,7 +382,7 @@ function SandboxPanel({
 }: {
   app: PartnerAppSummary;
   sandbox: SandboxInfo | null;
-  ensureSandboxAction: (formData: FormData) => void | Promise<void>;
+  ensureSandboxAction: (previousState: SandboxActionState, formData: FormData) => Promise<SandboxActionState>;
 }) {
   const [resource, setResource] = useState("clients");
   const [method, setMethod] = useState("GET");
@@ -389,6 +390,7 @@ function SandboxPanel({
   const [accessToken, setAccessToken] = useState("");
   const [body, setBody] = useState('{\n  "name": "Sandbox Buyer"\n}');
   const [response, setResponse] = useState<string>("Run a sandbox request to see the response.");
+  const [sandboxState, createSandboxAction, createSandboxPending] = useActionState(ensureSandboxAction, { ok: false });
   const organizationId = sandbox?.organization?.organizationId;
   const basePath = organizationId ? `/api/v1/partner/organizations/${organizationId}` : "/api/v1/partner/organizations/<sandbox_org>";
   const path = resource === "me"
@@ -425,7 +427,7 @@ function SandboxPanel({
             <StatusBadge status={app.status === "active" ? "active" : "draft"} />
           </div>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Sandbox calls stay inside the Partners backend. They do not create Hub registrations, workspace connections, or production data.
+            Sandbox calls stay inside the Partners backend. They do not create Workspace registrations, workspace connections, or production data.
           </p>
           {organizationId ? (
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -433,11 +435,18 @@ function SandboxPanel({
               <InfoBlock label="Sandbox base URL" value="/api/v1/partner" />
             </div>
           ) : (
-            <form action={ensureSandboxAction} className="mt-5">
+            <form action={createSandboxAction} className="mt-5">
               <input type="hidden" name="appId" value={app.id} />
-              <button className="inline-flex h-10 items-center rounded-[7px] bg-primary px-4 text-sm font-bold text-primary-foreground" type="submit">
-                Create sandbox
+              <button
+                className="inline-flex h-10 items-center rounded-[7px] bg-primary px-4 text-sm font-bold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={createSandboxPending}
+                type="submit"
+              >
+                {createSandboxPending ? "Creating..." : "Create sandbox"}
               </button>
+              {sandboxState.message ? (
+                <p className={cn("mt-3 text-sm", sandboxState.ok ? "text-emerald-600" : "text-red-600")}>{sandboxState.message}</p>
+              ) : null}
             </form>
           )}
         </div>
@@ -517,11 +526,11 @@ code_verifier=<pkce-verifier>`}
         <div className="rounded-[15px] border border-border bg-card p-5">
           <p className="text-xs font-bold uppercase text-primary">Production switch</p>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            After approval, change only the base URL to your Hub API URL. Real workspace data still requires workspace admin consent.
+            After approval, change only the base URL to your Workspace API URL. Real workspace data still requires workspace admin consent.
           </p>
           <div className="mt-4 grid gap-3">
             <InfoBlock label="Sandbox base" value="/api/v1/partner" />
-            <InfoBlock label="Production base" value="https://hub.anan.example/api/v1/partner" />
+            <InfoBlock label="Production base" value="https://workspace.anan.example/api/v1/partner" />
           </div>
         </div>
       </div>

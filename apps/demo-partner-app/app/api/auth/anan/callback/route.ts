@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   }
 
   const tokens = await exchangeAuthorizationCode({
-    hubBaseUrl: config.hubBaseUrl,
+    workspaceBaseUrl: config.workspaceBaseUrl,
     clientId: config.clientId,
     clientSecret: config.clientSecret,
     redirectUri: `${config.partnerAppUrl}/api/auth/anan/callback`,

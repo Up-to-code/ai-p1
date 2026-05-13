@@ -1,9 +1,9 @@
 ---
 title: Anan Partner Docs
-description: Build secure integrations for Anan organizations with OAuth, scoped API access, and Hub resource APIs.
+description: Build secure integrations for Anan organizations with OAuth, scoped API access, and Workspace resource APIs.
 ---
 
-Welcome to the Anan Partner Portal. These docs cover the production path for registering an app, requesting review, authorizing an Anan organization, and calling Hub APIs from your backend.
+Welcome to the Anan Partner Portal. These docs cover the production path for registering an app, requesting review, authorizing an Anan organization, and calling Workspace APIs from your backend.
 
 <Callout title="Security model">
 Partner apps should request the smallest useful scope set, use PKCE for public clients, and keep token exchange, refresh, and storage on the server whenever possible.
@@ -15,10 +15,14 @@ Partner apps should request the smallest useful scope set, use PKCE for public c
 - Internal developer tools that act on behalf of a verified organization.
 - Server-side API integrations that keep secrets outside the browser.
 
+## Fast implementation
+
+Use the [AI agent implementation prompt](/docs/ai-agent-implementation) to copy a complete, server-safe brief for adding the OAuth button, PKCE routes, env setup, token exchange, and Workspace API reads.
+
 ## Portal flow
 
 1. Create a partner programmer account.
 2. Register an app with a partner app URL, redirect URIs, and scopes.
 3. Submit the app for Anan review.
 4. Send workspace admins to OAuth from your Authorize with Anan button.
-5. Call Hub Hono APIs after the organization authorizes access.
+5. Call Workspace Hono APIs after the organization authorizes access.

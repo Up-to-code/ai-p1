@@ -6,7 +6,7 @@ Purpose: Canonical property version is the distribution source.
 
 - Canonical property version is the distribution source.
 - External stale updates become conflicts.
-- Downstream platforms must accept hub suppression events.
+- Downstream platforms must accept workspace suppression events.
 
 ## Does Not Own
 
@@ -17,7 +17,7 @@ Purpose: Canonical property version is the distribution source.
 ## Synchronization Boundary
 
 - External systems submit claims, not truth.
-- Approved canonical hub state wins.
+- Approved canonical workspace state wins.
 - Idempotency is mandatory for inbound claims and outbound sync.
 - Visibility recompute follows canonical state changes.
 

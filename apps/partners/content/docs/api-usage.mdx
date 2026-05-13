@@ -1,14 +1,14 @@
 ---
 title: API usage
-description: Call Hub Hono organization APIs with verified access tokens and least-privilege scopes.
+description: Call Workspace Hono organization APIs with verified access tokens and least-privilege scopes.
 ---
 
 ## Resource server checks
 
-Partner apps call Hub Hono APIs, not Convex. Hub validates issuer, audience, signature, expiry, app approval, organization connection, connection expiry, and scopes before business logic runs.
+Partner apps call Workspace Hono APIs, not Convex. Workspace validates issuer, audience, signature, expiry, app approval, organization connection, connection expiry, and scopes before business logic runs.
 
 ```bash
-curl https://app.anan.test/api/v1/partner/organizations/org_123/clients \
+curl "$ANAN_WORKSPACE_API_URL/api/v1/partner/organizations/org_123/clients" \
   -H "Authorization: Bearer $ANAN_ACCESS_TOKEN"
 ```
 
@@ -23,10 +23,10 @@ curl https://app.anan.test/api/v1/partner/organizations/org_123/clients \
 ## Example backend call
 
 ```ts
-import { loadAnanClients } from "../../examples/auth/hub-api";
+import { loadAnanClients } from "../../examples/auth/workspace-api";
 
 const clients = await loadAnanClients({
-  hubBaseUrl: "https://app.anan.test",
+  workspaceBaseUrl: process.env.ANAN_WORKSPACE_API_URL!,
   organizationId: "org_123",
   accessToken: process.env.ANAN_ACCESS_TOKEN!,
 });

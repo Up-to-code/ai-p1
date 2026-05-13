@@ -1,6 +1,6 @@
 import { SafeWritePanel } from "@/components/SafeWritePanel";
 import { publicDemoConfig, requestedScopes } from "@/lib/config";
-import { loadAnanClients, loadAnanMe, loadAnanProperties } from "@/lib/hub-api";
+import { loadAnanClients, loadAnanMe, loadAnanProperties } from "@/lib/workspace-api";
 import { readTokenSession } from "@/lib/session";
 
 function JsonPanel({ title, data }: { title: string; data: unknown }) {
@@ -63,12 +63,12 @@ export default async function DashboardPage() {
           <div className="panel" style={{ padding: 16 }}>
             <p className="micro">Token expiry</p>
             <h2 style={{ margin: "8px 0 0" }}>{expiresAt ? expiresAt.toLocaleString() : "No token"}</h2>
-            <p style={{ color: "var(--muted)" }}>Organization authorization lifetime is 14 days in Hub.</p>
+            <p style={{ color: "var(--muted)" }}>Organization authorization lifetime is 14 days in Workspace.</p>
           </div>
           <div className="panel" style={{ padding: 16 }}>
-            <p className="micro">Hub</p>
-            <h2 style={{ margin: "8px 0 0", wordBreak: "break-word" }}>{publicConfig.hubBaseUrl}</h2>
-            <p style={{ color: "var(--muted)" }}>All workspace data is loaded through Hub Hono APIs.</p>
+            <p className="micro">Workspace</p>
+            <h2 style={{ margin: "8px 0 0", wordBreak: "break-word" }}>{publicConfig.workspaceBaseUrl}</h2>
+            <p style={{ color: "var(--muted)" }}>All workspace data is loaded through Workspace Hono APIs.</p>
           </div>
         </section>
 
@@ -83,7 +83,7 @@ export default async function DashboardPage() {
           <section className="panel" style={{ padding: 24 }}>
             <h2 style={{ marginTop: 0 }}>Start the organization authorization flow</h2>
             <p style={{ color: "var(--muted)", lineHeight: 1.7 }}>
-              Click the CTA to visit Hub, choose the workspace, consent to the scopes, and return to this demo app.
+              Click the CTA to visit Workspace, choose the workspace, consent to the scopes, and return to this demo app.
             </p>
             <a className="button" href="/api/auth/anan/start">Authorize with Anan</a>
           </section>
@@ -92,7 +92,7 @@ export default async function DashboardPage() {
             <p className="micro">Reconnect required</p>
             <h2 style={{ marginTop: 8 }}>Organization authorization is missing</h2>
             <p style={{ color: "var(--muted)", lineHeight: 1.7 }}>
-              This browser has an older demo token cookie that does not include Hub&apos;s organization id. Clear the demo session, then authorize again so the callback stores the organization-level authorization.
+              This browser has an older demo token cookie that does not include Workspace&apos;s organization id. Clear the demo session, then authorize again so the callback stores the organization-level authorization.
             </p>
             <form action="/api/auth/anan/logout" method="post">
               <button className="button" type="submit">Clear session and reconnect</button>

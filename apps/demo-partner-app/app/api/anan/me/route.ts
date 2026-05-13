@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { loadAnanMe } from "@/lib/hub-api";
+import { loadAnanMe } from "@/lib/workspace-api";
 import { readTokenSession } from "@/lib/session";
 
 export async function GET() {
@@ -9,7 +9,7 @@ export async function GET() {
     return NextResponse.json(await loadAnanMe(session));
   } catch (error) {
     const status = typeof error === "object" && error && "status" in error ? Number(error.status) : 500;
-    const code = typeof error === "object" && error && "code" in error ? String(error.code) : "hub_api_error";
+    const code = typeof error === "object" && error && "code" in error ? String(error.code) : "workspace_api_error";
     return NextResponse.json({ error: code, message: error instanceof Error ? error.message : code }, { status });
   }
 }

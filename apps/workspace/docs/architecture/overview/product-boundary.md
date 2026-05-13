@@ -1,11 +1,11 @@
 # Product Boundary
 
-Purpose: The hub is a synchronization engine, not a CRM and not a marketplace.
+Purpose: The workspace is a synchronization engine, not a CRM and not a marketplace.
 
 ## Owns
 
-- The hub is a synchronization engine, not a CRM and not a marketplace.
-- External systems push claims; the hub decides canonical state.
+- The workspace is a synchronization engine, not a CRM and not a marketplace.
+- External systems push claims; the workspace decides canonical state.
 - No lead pipeline, deal pipeline, buyer inbox, or public search feature belongs here.
 
 ## Does Not Own

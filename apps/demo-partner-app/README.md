@@ -1,31 +1,79 @@
-# Anan Standalone Partner Auth Demo
+# Anan Demo Partner App
 
-This is a deployable Next.js partner app that demonstrates organization-level OAuth with Anan.
+The Demo Partner App is a deployable Next.js reference implementation for
+external partners integrating with Anan Workspace OAuth and resource APIs.
 
-It shows:
+It demonstrates:
 
-- A custom setup-token gate for public demo URLs.
-- `Authorize with Anan` OAuth 2.1 authorization code + PKCE.
-- Backend token exchange and encrypted HttpOnly token cookie storage.
-- Hub Hono API reads for organization, clients, and properties.
-- Safe client create/update calls through Hub Hono APIs.
+- a public setup-token gate for demo deployments
+- `Authorize with Anan`
+- OAuth 2.1 authorization code flow with PKCE
+- server-side authorization code exchange
+- encrypted HttpOnly cookie session storage for demo use
+- Workspace resource API calls for organization, clients, and properties
+- safe server-side create/update calls through Workspace APIs
 
-The OAuth request sends `resource=${ANAN_HUB_API_URL}/api/v1/partner` so Hub returns a JWT access token that the partner resource APIs can verify.
+Production partner apps should store OAuth tokens in a durable server-side token
+vault or database with rotation and audit logging. This demo uses encrypted
+cookies so it can run without an extra database.
+
+## Local Development
+
+From the repository root:
+
+```bash
+npm run dev:demo
+```
+
+From this app folder:
+
+```bash
+npm run dev
+```
+
+Default local URL: `http://localhost:3004`.
+
+Open the app, unlock with `DEMO_ACCESS_TOKEN`, then click `Authorize with Anan`.
+
+## Important Routes And Files
+
+| Path | Purpose |
+| --- | --- |
+| `app/page.tsx` | Entry page and unlock redirect |
+| `app/unlock/page.tsx` | Demo setup-token form |
+| `app/dashboard/page.tsx` | Authorized demo dashboard |
+| `app/api/unlock/route.ts` | Demo unlock route |
+| `app/api/auth/anan/start/route.ts` | Starts OAuth with state and PKCE |
+| `app/api/auth/anan/callback/route.ts` | Exchanges authorization code server-side |
+| `app/api/anan/me/route.ts` | Organization/account resource call |
+| `app/api/anan/clients/route.ts` | Client list/create proxy |
+| `app/api/anan/clients/[clientId]/route.ts` | Client update proxy |
+| `app/api/anan/properties/route.ts` | Property list proxy |
+| `lib/oauth.ts` | OAuth, PKCE, state, and token helpers |
+| `lib/workspace-api.ts` | Workspace resource API client |
+| `lib/config.ts` | Environment loading |
 
 ## Environment
 
-Create `.env.local` locally and set the same values in Vercel:
+Create `.env.local` locally and set matching production values in Vercel:
 
 ```bash
-ANAN_HUB_API_URL=http://localhost:3000
-ANAN_CLIENT_ID=partners_client_4p2f001r194s5z6e15473f582m331f4z4s0f
+ANAN_WORKSPACE_API_URL=http://localhost:3000
+ANAN_CLIENT_ID=partners_client_local
 ANAN_CLIENT_SECRET=
 PARTNER_APP_URL=http://localhost:3004
-DEMO_ACCESS_TOKEN=demo-token
-SESSION_SECRET=abcdefghijklmnopqrstuvwxyz123456
+DEMO_ACCESS_TOKEN=local-demo-access
+SESSION_SECRET=replace-with-a-local-random-value
 ```
 
-`ANAN_CLIENT_SECRET` is optional. Leave it empty for public PKCE apps.
+`ANAN_CLIENT_SECRET` is optional for public PKCE clients. Leave it empty when
+testing a public client.
+
+See:
+
+- [Environment variables](../../docs/ENVIRONMENT.md)
+- [Setup and configuration](../../SETUP_AND_CONFIGURATION.md)
+- [Partner implementation guide](../../docs/partner-platform/partner-implementation-guide.md)
 
 ## Partners Registration
 
@@ -33,9 +81,8 @@ Use these values when creating the app in Anan Partners:
 
 - Partner app URL: `${PARTNER_APP_URL}`
 - Redirect URI: `${PARTNER_APP_URL}/api/auth/anan/callback`
-- Local client ID: `partners_client_4p2f001r194s5z6e15473f582m331f4z4s0f`
-- CTA copy on your page: `Authorize with Anan`
-- Requested scopes:
+- CTA copy: `Authorize with Anan`
+- Requested scopes commonly used by the demo:
   - `calendar:read`
   - `client:create`
   - `client:read`
@@ -46,33 +93,32 @@ Use these values when creating the app in Anan Partners:
   - `property:read`
   - `task:read`
 
-After admin approval, copy the OAuth client id into `ANAN_CLIENT_ID`.
+After review approval, copy the issued OAuth client ID into `ANAN_CLIENT_ID`.
 
-## Local Development
+## Vercel Deployment
 
-```bash
-npm run dev
-```
-
-Open `http://localhost:3004`, unlock with `DEMO_ACCESS_TOKEN`, then click `Authorize with Anan`.
-
-## Vercel
-
-1. Create a new Vercel project using this folder as the project root.
-2. Add all environment variables above.
-3. Set `PARTNER_APP_URL` to the Vercel production URL.
-4. Add `${PARTNER_APP_URL}/api/auth/anan/callback` to the Partners app redirect URIs.
-5. Submit the Partners app for review and approve it in Admin.
-6. Visit the Vercel URL, unlock with `DEMO_ACCESS_TOKEN`, and authorize a workspace.
-
-## Production Note
-
-This example stores OAuth tokens in an encrypted HttpOnly cookie to avoid requiring a database. A production partner app should store organization tokens in a durable backend token vault or database, keyed by organization id, with rotation and audit logging.
+1. Create a Vercel project with root directory `apps/demo-partner-app`.
+2. Add the environment variables above.
+3. Set `PARTNER_APP_URL` to the deployed production URL.
+4. Add `${PARTNER_APP_URL}/api/auth/anan/callback` to the Partners app redirect
+   URIs.
+5. Submit the Partners app for review and approve it through Admin Review.
+6. Visit the deployed URL, unlock the demo, and authorize a Workspace
+   organization.
 
 ## Scripts
 
 ```bash
+npm run dev
+npm run build
+npm run start
 npm run typecheck
 npm test
-npm run build
+```
+
+From the repository root:
+
+```bash
+npm --workspace @anan/demo-partner-app run typecheck
+npm --workspace @anan/demo-partner-app test
 ```

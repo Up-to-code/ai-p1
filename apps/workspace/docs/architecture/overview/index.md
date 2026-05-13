@@ -12,7 +12,7 @@ This folder does not own broad system-wide specification text. If content crosse
 
 | File | Purpose |
 | --- | --- |
-| [Product Boundary](product-boundary.md) | The hub is a synchronization engine, not a CRM and not a marketplace. |
+| [Product Boundary](product-boundary.md) | The workspace is a synchronization engine, not a CRM and not a marketplace. |
 | [System Context](system-context.md) | Primary actors are platform admins, publisher organizations, integration partners, auditors, legal/government observers, and connected platforms. |
 | [Source Of Truth](source-of-truth.md) | Approved canonical property versions are authoritative. |
 

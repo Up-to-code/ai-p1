@@ -16,7 +16,7 @@ Purpose: Suppression record stores hidden reason and platform impact.
 
 ## Data Boundary
 
-- Hub-owned tables store domain state.
+- Workspace-owned tables store domain state.
 - Better Auth component tables remain separate.
 - Projection tables support indexed authorization and must not become alternate auth sources.
 

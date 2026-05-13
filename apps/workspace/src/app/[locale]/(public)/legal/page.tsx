@@ -4,7 +4,7 @@ export default function LegalPage() {
   return (
     <LegalArticle title="Legal Notice" updated="Last updated: May 4, 2026">
       <LegalBlock title="Company Information">
-        <p>Anand Hub is operated by Anand Technology Co., registered in the Kingdom of Saudi Arabia under Commercial Registration No. 1010XXXXXX.</p>
+        <p>Anand Workspace is operated by Anand Technology Co., registered in the Kingdom of Saudi Arabia under Commercial Registration No. 1010XXXXXX.</p>
         <ul className="list-inside list-disc space-y-1">
           <li>Headquarters: Riyadh, Kingdom of Saudi Arabia</li>
           <li>
@@ -18,7 +18,7 @@ export default function LegalPage() {
       </LegalBlock>
 
       <LegalBlock title="Regulatory Compliance">
-        <p>Anand Hub operates in accordance with the regulations set forth by the Real Estate General Authority (REGA) and the Saudi Central Bank (SAMA) where applicable. All property data synchronization processes comply with local data protection and real estate advertising standards.</p>
+        <p>Anand Workspace operates in accordance with the regulations set forth by the Real Estate General Authority (REGA) and the Saudi Central Bank (SAMA) where applicable. All property data synchronization processes comply with local data protection and real estate advertising standards.</p>
       </LegalBlock>
 
       <LegalBlock title="Intellectual Property">

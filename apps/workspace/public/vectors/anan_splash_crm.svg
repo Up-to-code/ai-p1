@@ -1,8 +1,8 @@
 <svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg" id="anan_splash_crm">
-  <!-- Lead Matrix Hub -->
-  <g id="crm_hub" transform="translate(400, 300)">
-    <!-- Central Connection Hub -->
-    <rect x="-40" y="-40" width="80" height="80" stroke="#2563EB" stroke-width="4" id="core_hub"/>
+  <!-- Lead Matrix Workspace -->
+  <g id="crm_workspace" transform="translate(400, 300)">
+    <!-- Central Connection Workspace -->
+    <rect x="-40" y="-40" width="80" height="80" stroke="#2563EB" stroke-width="4" id="core_workspace"/>
     <rect x="-10" y="-10" width="20" height="20" fill="#2563EB"/>
     
     <!-- Radiating Lines -->

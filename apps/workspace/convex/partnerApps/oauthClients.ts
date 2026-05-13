@@ -10,15 +10,15 @@ function oauthClientScopes(scopes: string[]) {
   return Array.from(new Set([...baseOAuthScopes, ...normalizeScopes(scopes)]));
 }
 
-function oauthMetadata(hubPartnerAppId: string, status: string) {
+function oauthMetadata(workspacePartnerAppId: string, status: string) {
   return JSON.stringify({
-    partnerAppId: hubPartnerAppId,
+    partnerAppId: workspacePartnerAppId,
     partnerAppStatus: status,
   });
 }
 
 const oauthClientSyncInputValidator = v.object({
-  hubPartnerAppId: v.string(),
+  workspacePartnerAppId: v.string(),
   clientId: v.string(),
   clientType: v.union(v.literal("public"), v.literal("confidential")),
   name: v.string(),
@@ -50,7 +50,7 @@ export const upsertFromPartnersService = action({
       type: publicClient ? "spa" : "web",
       requirePKCE: true,
       disabled: input.status === "suspended",
-      metadata: oauthMetadata(input.hubPartnerAppId, input.status),
+      metadata: oauthMetadata(input.workspacePartnerAppId, input.status),
       updatedAt: now,
     };
 

@@ -1,12 +1,12 @@
 Ara Strict Mode – Complete UI Interface Documentation
 
-Purpose: Defines the complete Anand UI interface, tokenized system design, onboarding flow, major pages, key components, states, and synchronization UX for the Saudi Arabia Central Real Estate Data Hub.
+Purpose: Defines the complete Anand UI interface, tokenized system design, onboarding flow, major pages, key components, states, and synchronization UX for the Saudi Arabia Central Real Estate Data Workspace.
 
 # Interface Boundary
 
-Anand is the Saudi Arabia Central Real Estate Data Hub interface. It is a synchronization engine interface. It is not a marketplace product. It is not a CRM product. It is not a lead pipeline. It is not a deal pipeline.
+Anand is the Saudi Arabia Central Real Estate Data Workspace interface. It is a synchronization engine interface. It is not a marketplace product. It is not a CRM product. It is not a lead pipeline. It is not a deal pipeline.
 
-The interface allows authenticated organization users to create an organization, complete onboarding, wait for platform approval, prepare draft projects, invite team members, prepare draft properties and units, configure draft integrations, and observe activity. The server-side hub remains authoritative for validation, approval, visibility, and synchronization.
+The interface allows authenticated organization users to create an organization, complete onboarding, wait for platform approval, prepare draft projects, invite team members, prepare draft properties and units, configure draft integrations, and observe activity. The server-side workspace remains authoritative for validation, approval, visibility, and synchronization.
 
 The interface must use:
 

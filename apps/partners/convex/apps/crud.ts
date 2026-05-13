@@ -41,7 +41,7 @@ export const createPartnerApp = mutationGeneric({
       redirectUris: normalizeRedirectUris(args.redirectUris),
       allowedScopes: normalizeScopes(args.allowedScopes),
       status: "draft",
-      hubSyncStatus: "not_synced",
+      workspaceSyncStatus: "not_synced",
       authorizationExpiresAfterDays: DEFAULT_AUTHORIZATION_EXPIRY_DAYS,
       createdAt: now,
       updatedAt: now,
@@ -95,8 +95,8 @@ export const updatePartnerApp = mutationGeneric({
       allowedScopes: normalizeScopes(args.allowedScopes),
       status: app.status === "rejected" ? "draft" : app.status,
       reviewNotes: undefined,
-      hubSyncStatus: "not_synced",
-      hubSyncError: undefined,
+      workspaceSyncStatus: "not_synced",
+      workspaceSyncError: undefined,
       updatedAt: now,
     });
     await auditPartnerEvent(ctx, { actorAuthSubject: identity.subject, appId: app._id, eventType: "partner_app.updated", now });

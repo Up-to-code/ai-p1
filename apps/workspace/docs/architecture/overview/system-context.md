@@ -5,8 +5,8 @@ Purpose: Primary actors are platform admins, publisher organizations, integratio
 ## Owns
 
 - Primary actors are platform admins, publisher organizations, integration partners, auditors, legal/government observers, and connected platforms.
-- Every actor is scoped by Better Auth Organization context and hub permissions.
-- The hub connects ingestion, approval, visibility, and distribution.
+- Every actor is scoped by Better Auth Organization context and workspace permissions.
+- The workspace connects ingestion, approval, visibility, and distribution.
 
 ## Does Not Own
 

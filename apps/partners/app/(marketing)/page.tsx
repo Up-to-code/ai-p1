@@ -14,7 +14,7 @@ const authorization: PartnerAuthorization = {
   scopes: ["organization:read", "client:read", "property:read"],
 };
 
-const url = new URL("/oauth/authorize", ANAN_HUB_URL);
+const url = new URL("/oauth/authorize", ANAN_WORKSPACE_API_URL);
 url.searchParams.set("client_id", authorization.clientId);
 url.searchParams.set("response_type", "code");
 url.searchParams.set("redirect_uri", authorization.redirectUri);
@@ -41,7 +41,7 @@ const partnerValue = [
   },
   {
     title: "Build around real workflows",
-    description: "Connect to organization data through Hub APIs instead of inventing a separate sync path for every customer.",
+    description: "Connect to organization data through Workspace APIs instead of inventing a separate sync path for every customer.",
     icon: Workflow,
   },
 ];
@@ -87,7 +87,7 @@ export default async function LandingPage() {
               Register OAuth clients, request scoped organization access, and ship partner integrations through one developer console.
             </p>
             <p className="mt-4 max-w-xl text-sm font-medium leading-6 text-muted-foreground">
-              The story is simple: your product keeps its own experience, Anan handles organization trust, and Hub becomes the reviewed bridge between them.
+              The story is simple: your product keeps its own experience, Anan handles organization trust, and Workspace becomes the reviewed bridge between them.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link href="/signup" className="inline-flex h-12 items-center justify-center rounded-[7px] bg-primary px-6 text-sm font-bold text-primary-foreground transition-colors hover:bg-[#6b90e6]">
@@ -214,7 +214,7 @@ export default async function LandingPage() {
                 <div>
                   <p className="text-sm font-bold text-foreground">{item}</p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Built through reviewed scopes, organization consent, and server-side Hub API access.
+                    Built through reviewed scopes, organization consent, and server-side Workspace API access.
                   </p>
                 </div>
               </div>

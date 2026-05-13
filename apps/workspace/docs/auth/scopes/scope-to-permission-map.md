@@ -5,7 +5,7 @@ Purpose: Scopes are coarse OAuth grants.
 ## Owns
 
 - Scopes are coarse OAuth grants.
-- Permissions are fine-grained hub actions.
+- Permissions are fine-grained workspace actions.
 - Every protected resource checks both.
 
 ## Does Not Own
@@ -19,7 +19,7 @@ Purpose: Scopes are coarse OAuth grants.
 - Better Auth OAuth 2.1 Provider and Organization plugin are mandatory.
 - Plain Convex Auth is forbidden.
 - Organization context is required for organization-scoped access.
-- Scopes grant client capability; hub permissions and visibility decide resource access.
+- Scopes grant client capability; workspace permissions and visibility decide resource access.
 
 ## Implementation Rules
 

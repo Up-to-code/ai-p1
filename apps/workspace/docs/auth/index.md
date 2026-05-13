@@ -4,7 +4,7 @@ Purpose: Defines Better Auth, OAuth 2.1 Provider behavior, Organization authoriz
 
 ## Scope
 
-This domain owns documentation for auth decisions in the Saudi Arabia Central Real Estate Data Hub.
+This domain owns documentation for auth decisions in the Saudi Arabia Central Real Estate Data Workspace.
 
 This domain does not own unrelated CRM, marketplace, lead pipeline, or deal pipeline behavior.
 
@@ -15,7 +15,7 @@ This domain does not own unrelated CRM, marketplace, lead pipeline, or deal pipe
 | `better-auth/index.md` | Explains Better Auth installation and Convex integration. |
 | `oauth-provider/index.md` | Explains the OAuth 2.1 Provider and Continue with Anand flow. |
 | `organizations/index.md` | Explains organization, membership, and publisher profiles. |
-| `scopes/index.md` | Explains OAuth scopes and their mapping to hub permissions. |
+| `scopes/index.md` | Explains OAuth scopes and their mapping to workspace permissions. |
 | `credentials/index.md` | Explains tokens, client secrets, and API keys. |
 
 ## Read Order

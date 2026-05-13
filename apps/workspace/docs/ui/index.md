@@ -4,7 +4,7 @@ Purpose: Defines the Anand user interface documentation domain for layout, onboa
 
 ## Scope
 
-This folder owns UI interface specifications for the Anand synchronization hub.
+This folder owns UI interface specifications for the Anand synchronization workspace.
 
 This folder does not own backend authorization, Convex schema, synchronization policy, visibility policy, SDK contracts, Saudi compliance interpretation, or developer onboarding flows. Those subjects stay in their owning domains and are linked when needed.
 

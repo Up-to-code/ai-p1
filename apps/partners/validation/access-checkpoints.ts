@@ -25,7 +25,7 @@ export const COMMON_PERMISSION_GROUPS = [
   {
     id: "write",
     title: "Safe workspace writes",
-    description: "Request create or update scopes only for workflows that write back to Hub.",
+    description: "Request create or update scopes only for workflows that write back to Workspace.",
     scopes: [
       { value: "client:create", label: "Create clients" },
       { value: "client:update", label: "Update clients" },

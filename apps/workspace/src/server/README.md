@@ -1,7 +1,7 @@
 # Server Backend Architecture
 
 ## Purpose
-Owns the Hono backend architecture for the hub application. The Next app may host the adapter, but server routing, access, validation, protocols, and domain orchestration live here.
+Owns the Hono backend architecture for the workspace application. The Next app may host the adapter, but server routing, access, validation, protocols, and domain orchestration live here.
 
 ## What Belongs Here
 - Hono app composition

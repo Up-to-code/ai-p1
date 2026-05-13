@@ -42,30 +42,30 @@ export const partnerBackendRefs = {
       { ok: true }
     >("partnerApps:updatePartnerApp"),
     submitPartnerAppForReview: makeFunctionReference<"mutation", { appId: string }, { ok: true }>("partnerApps:submitPartnerAppForReview"),
-    recordHubSyncResult: makeFunctionReference<
+    recordWorkspaceSyncResult: makeFunctionReference<
       "mutation",
       {
         appId: string;
         ok: boolean;
-        hubPartnerAppId?: string;
-        hubOauthClientId?: string;
+        workspacePartnerAppId?: string;
+        workspaceOauthClientId?: string;
         error?: string;
       },
       { ok: true }
-    >("partnerApps:recordHubSyncResult"),
-    applyHubReviewDecision: makeFunctionReference<
+    >("partnerApps:recordWorkspaceSyncResult"),
+    applyWorkspaceReviewDecision: makeFunctionReference<
       "mutation",
       {
         serviceToken: string;
         appId: string;
         status: "approved" | "rejected" | "suspended";
-        hubPartnerAppId?: string;
-        hubOauthClientId?: string;
+        workspacePartnerAppId?: string;
+        workspaceOauthClientId?: string;
         reviewNotes?: string;
         clientSecret?: string;
       },
       { ok: true }
-    >("partnerApps:applyHubReviewDecision"),
+    >("partnerApps:applyWorkspaceReviewDecision"),
   },
   sandbox: {
     getSandboxForApp: makeFunctionReference<"query", { appId: string }, unknown>("sandbox:getSandboxForApp"),

@@ -23,7 +23,7 @@ export async function GET() {
   });
 
   return NextResponse.redirect(buildAuthorizeUrl({
-    hubBaseUrl: config.hubBaseUrl,
+    workspaceBaseUrl: config.workspaceBaseUrl,
     clientId: config.clientId,
     redirectUri,
     state,

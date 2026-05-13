@@ -9,7 +9,7 @@
     <!-- Scanning Grid -->
     <rect x="0" y="0" width="600" height="400" stroke="#F1F5F9" stroke-width="1" stroke-dasharray="10 10"/>
     
-    <!-- Active Scan Hub -->
+    <!-- Active Scan Workspace -->
     <rect x="100" y="100" width="120" height="300" stroke="#2563EB" stroke-width="2" fill="none" id="scan_frame"/>
     <path d="M100 150H220M100 200H220M100 250H220" stroke="#2563EB" stroke-width="2" opacity="0.5"/>
     

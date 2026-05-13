@@ -6,14 +6,14 @@ This folder is intentionally separate from `docs/`. The documentation explains t
 
 ## Why This File Exists
 
-Git does not keep empty folders. This `README.md` makes `hub/convex/` persistent until `npx convex dev` creates the generated runtime files.
+Git does not keep empty folders. This `README.md` makes `workspace/convex/` persistent until `npx convex dev` creates the generated runtime files.
 
 ## Initialization
 
-Run Convex initialization from the hub app root:
+Run Convex initialization from the workspace app root:
 
 ```sh
-cd hub
+cd workspace
 npx convex dev
 ```
 

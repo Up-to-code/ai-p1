@@ -7,7 +7,7 @@ type OAuthTokenResponse = {
 };
 
 type TokenRequestInput = {
-  hubBaseUrl: string;
+  workspaceBaseUrl: string;
   clientId: string;
   clientSecret?: string;
   fetcher?: typeof fetch;
@@ -23,15 +23,15 @@ export type RefreshAccessTokenInput = TokenRequestInput & {
   refreshToken: string;
 };
 
-function tokenEndpoint(hubBaseUrl: string) {
-  const normalized = hubBaseUrl.trim().replace(/\/+$/u, "");
-  if (!normalized) throw new Error("hubBaseUrl is required.");
+function tokenEndpoint(workspaceBaseUrl: string) {
+  const normalized = workspaceBaseUrl.trim().replace(/\/+$/u, "");
+  if (!normalized) throw new Error("workspaceBaseUrl is required.");
   return `${/^https?:\/\//iu.test(normalized) ? normalized : `https://${normalized}`}/oauth/token`;
 }
 
-function partnerResourceAudience(hubBaseUrl: string) {
-  const normalized = hubBaseUrl.trim().replace(/\/+$/u, "");
-  if (!normalized) throw new Error("hubBaseUrl is required.");
+function partnerResourceAudience(workspaceBaseUrl: string) {
+  const normalized = workspaceBaseUrl.trim().replace(/\/+$/u, "");
+  if (!normalized) throw new Error("workspaceBaseUrl is required.");
   return `${/^https?:\/\//iu.test(normalized) ? normalized : `https://${normalized}`}/api/v1/partner`;
 }
 
@@ -62,10 +62,10 @@ export async function exchangeAuthorizationCode(input: ExchangeAuthorizationCode
     code: input.code,
     redirect_uri: input.redirectUri,
     code_verifier: input.codeVerifier,
-    resource: partnerResourceAudience(input.hubBaseUrl),
+    resource: partnerResourceAudience(input.workspaceBaseUrl),
   });
   if (input.clientSecret) body.set("client_secret", input.clientSecret);
-  return postTokenRequest(tokenEndpoint(input.hubBaseUrl), body, input.fetcher ?? fetch);
+  return postTokenRequest(tokenEndpoint(input.workspaceBaseUrl), body, input.fetcher ?? fetch);
 }
 
 export async function refreshAccessToken(input: RefreshAccessTokenInput) {
@@ -75,5 +75,5 @@ export async function refreshAccessToken(input: RefreshAccessTokenInput) {
     refresh_token: input.refreshToken,
   });
   if (input.clientSecret) body.set("client_secret", input.clientSecret);
-  return postTokenRequest(tokenEndpoint(input.hubBaseUrl), body, input.fetcher ?? fetch);
+  return postTokenRequest(tokenEndpoint(input.workspaceBaseUrl), body, input.fetcher ?? fetch);
 }

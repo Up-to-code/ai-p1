@@ -3,12 +3,12 @@ import { v } from "convex/values";
 import { auditPartnerEvent, ensurePartnerProfile } from "../shared/runtime";
 import { requireOwnedApp } from "./db";
 
-export const recordHubSyncResult = mutationGeneric({
+export const recordWorkspaceSyncResult = mutationGeneric({
   args: {
     appId: v.string(),
     ok: v.boolean(),
-    hubPartnerAppId: v.optional(v.string()),
-    hubOauthClientId: v.optional(v.string()),
+    workspacePartnerAppId: v.optional(v.string()),
+    workspaceOauthClientId: v.optional(v.string()),
     error: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -16,19 +16,19 @@ export const recordHubSyncResult = mutationGeneric({
     const { identity } = await ensurePartnerProfile(ctx, now);
     const app = await requireOwnedApp(ctx, args.appId, identity.subject);
     await ctx.db.patch(app._id, {
-      hubPartnerAppId: args.hubPartnerAppId ?? app.hubPartnerAppId,
-      hubOauthClientId: args.hubOauthClientId ?? app.hubOauthClientId,
-      hubSyncStatus: args.ok ? "synced" : "failed",
-      hubSyncError: args.ok ? undefined : args.error ?? "Hub sync failed.",
+      workspacePartnerAppId: args.workspacePartnerAppId ?? app.workspacePartnerAppId,
+      workspaceOauthClientId: args.workspaceOauthClientId ?? app.workspaceOauthClientId,
+      workspaceSyncStatus: args.ok ? "synced" : "failed",
+      workspaceSyncError: args.ok ? undefined : args.error ?? "Workspace sync failed.",
       updatedAt: now,
     });
     await auditPartnerEvent(ctx, {
       actorAuthSubject: identity.subject,
       appId: app._id,
-      eventType: args.ok ? "partner_app.hub_synced" : "partner_app.hub_sync_failed",
+      eventType: args.ok ? "partner_app.workspace_synced" : "partner_app.workspace_sync_failed",
       payload: {
-        hubPartnerAppId: args.hubPartnerAppId,
-        hubOauthClientId: args.hubOauthClientId,
+        workspacePartnerAppId: args.workspacePartnerAppId,
+        workspaceOauthClientId: args.workspaceOauthClientId,
         error: args.error,
       },
       now,

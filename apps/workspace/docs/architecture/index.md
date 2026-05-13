@@ -1,10 +1,10 @@
 # Architecture
 
-Purpose: Defines the technical structure of the Saudi Arabia Central Real Estate Data Hub as a synchronization engine.
+Purpose: Defines the technical structure of the Saudi Arabia Central Real Estate Data Workspace as a synchronization engine.
 
 ## Scope
 
-This domain owns documentation for architecture decisions in the Saudi Arabia Central Real Estate Data Hub.
+This domain owns documentation for architecture decisions in the Saudi Arabia Central Real Estate Data Workspace.
 
 This domain does not own unrelated CRM, marketplace, lead pipeline, or deal pipeline behavior.
 

@@ -25,7 +25,7 @@ Send the user to authorization:
   &code_challenge_method=S256
 ```
 
-The user must choose or already have an active organization. Hub records the organization partner connection after consent, not a personal user-only connection.
+The user must choose or already have an active organization. Workspace records the organization partner connection after consent, not a personal user-only connection.
 
 ## Token exchange
 
@@ -33,4 +33,4 @@ Exchange the authorization code on a trusted backend. See `examples/auth/token-e
 
 ## Revocation and expiry
 
-Organization authorization expires after 14 days. Hub rejects expired connections with `connection_expired`. Send the workspace admin through Authorize with Anan again to reconnect.
+Organization authorization expires after 14 days. Workspace rejects expired connections with `connection_expired`. Send the workspace admin through Authorize with Anan again to reconnect.

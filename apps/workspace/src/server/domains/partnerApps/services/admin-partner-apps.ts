@@ -51,7 +51,7 @@ export type PartnerAppRecord = {
 
 type ServiceTokenEnv = Record<string, string | undefined>;
 type OAuthClientSyncInput = {
-  hubPartnerAppId: string;
+  workspacePartnerAppId: string;
   clientId: string;
   clientType: "public" | "confidential";
   name: string;
@@ -63,20 +63,20 @@ type OAuthClientSyncInput = {
 };
 
 export function adminServiceTokenFromEnv(env: ServiceTokenEnv = process.env) {
-  return env.HUB_ADMIN_SERVICE_TOKEN?.trim() || "";
+  return env.WORKSPACE_ADMIN_SERVICE_TOKEN?.trim() || "";
 }
 
 export function partnersReviewCallbackTokenFromEnv(env: ServiceTokenEnv = process.env) {
-  return env.PARTNERS_REVIEW_CALLBACK_TOKEN?.trim() || env.HUB_ADMIN_SERVICE_TOKEN?.trim() || "";
+  return env.PARTNERS_REVIEW_CALLBACK_TOKEN?.trim() || env.WORKSPACE_ADMIN_SERVICE_TOKEN?.trim() || "";
 }
 
 export function assertAdminServiceToken(headers: Headers, env: ServiceTokenEnv = process.env) {
   const expected = adminServiceTokenFromEnv(env);
   const authorization = headers.get("authorization");
   const bearer = authorization?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
-  const supplied = bearer || headers.get("x-hub-admin-service-token")?.trim();
+  const supplied = bearer || headers.get("x-workspace-admin-service-token")?.trim();
   if (!expected || supplied !== expected) {
-    throw new Error("Invalid Hub admin service token.");
+    throw new Error("Invalid Workspace admin service token.");
   }
 }
 
@@ -111,8 +111,8 @@ async function notifyPartnersReview(app: PartnerAppRecord, input: AdminReviewPar
     body: JSON.stringify({
       appId: app.partnersAppId,
       status: input.status,
-      hubPartnerAppId: app.id,
-      hubOauthClientId: app.oauthClientId,
+      workspacePartnerAppId: app.id,
+      workspaceOauthClientId: app.oauthClientId,
       reviewNotes: input.reviewNotes,
     }),
   });
@@ -134,7 +134,7 @@ export function syncOAuthClientForPartnerApp(app: PartnerAppRecord) {
   const clientId = app.partnersClientId || app.oauthClientId;
   return convexHttp.action(refs.upsertOAuthClientFromPartnersService, {
     input: {
-      hubPartnerAppId: app.id,
+      workspacePartnerAppId: app.id,
       clientId,
       clientType: app.clientType ?? "public",
       name: app.name,

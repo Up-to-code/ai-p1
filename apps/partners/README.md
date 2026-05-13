@@ -1,64 +1,142 @@
-# Partners App
+# Anan Partners App
 
-Standalone developer environment for Partner Programmers creating Anan authorization apps.
+Partners is the developer portal for people building Anan partner integrations.
+It owns partner developer identity, app drafts, submission flow, review callback
+state, partner-facing documentation, and the sandbox OAuth experience.
 
-The `apps/partners` workspace is the canonical Partners app. It owns its own
-Convex deployment, partner auth session, app lifecycle data, review state, and
-portal events. Anan workspace access goes through explicit integration
-contracts instead of direct imports from Anan's generated Convex API.
-
-Partners uses one independent Convex database configured only by Partners env vars:
-`CONVEX_DEPLOYMENT`, `CONVEX_URL`, `CONVEX_SITE_URL`, `NEXT_PUBLIC_CONVEX_URL`,
-and `NEXT_PUBLIC_CONVEX_SITE_URL`.
+Workspace remains the source of truth for workspace permissions, consent,
+approved OAuth clients, and Workspace-side partner resource APIs. Partners
+communicates with Workspace through explicit integration contracts and service
+tokens, not through Workspace generated Convex imports.
 
 ## Local Development
 
-- Default local URL: `http://localhost:3002`
-- `npm run dev:partners` from the monorepo root starts on `3002`, or the next open port when `3002` is busy.
-- `/signup` creates a Partner Programmer account and a programmer organization for app review work.
-- `/dashboard/account` manages the developer profile and programmer organization.
-- `npm --workspace @anan/partners run convex:dev` runs the Partners Convex backend.
+From the repository root:
 
-## Portal Architecture
+```bash
+npm run dev:partners
+```
 
-- `server/` repositories are the boundary for server-side Convex calls.
-- `hooks/` contains client hooks for account, organization, avatar, app form, and access checkpoint state.
-- `stores/` contains Zustand UI stores for portal chrome, account snapshots, and app permission checkpoints.
-- `types/`, `utilities/`, and `validation/` hold shared contracts, pure helpers, and Zod schemas.
-- `security/`, `trust/`, and `rate-limits/` are only used where runtime wrappers need production checks, trusted auth headers, or sensitive-route throttling.
+From this app folder:
 
-## Account And Avatar
+```bash
+npm run dev
+```
 
-- Partners owns developer identity, profile display name, and programmer organization records.
-- The dashboard topbar reads real account and organization data from the Partners backend.
-- Avatars are generated from initials and a stable auth-subject color. Uploads, remote images, and storage are intentionally out of scope for this pass.
+Default local URL: `http://localhost:3002`. The local dev script selects the
+next available port if `3002` is busy.
 
-## App Permissions
+Run the Partners Convex backend:
 
-- App creation uses access checkpoints instead of a raw scope-only textarea.
-- Common permissions are grouped in the UI, and advanced custom scopes remain available for future Anan platform capabilities.
-- The server payload still persists `allowedScopes: string[]` for OAuth mirror compatibility.
+```bash
+npm run convex:dev
+```
 
-## Signup Bridge
+## Responsibilities
 
-Email/password sign-up is routed through `/api/partner-signup` so the raw Better Auth sign-up endpoint stays gated.
+- Partner developer sign-up and sign-in.
+- Developer account and programmer organization profile.
+- App draft creation, editing, scopes, redirect URIs, and submission.
+- Review callback handling from Workspace.
+- Partner docs powered by MDX/Fumadocs.
+- Sandbox OAuth endpoints for docs and local exploration.
+- Partner integration contracts under `lib/anan-integration`.
 
-- Local development uses a built-in partner bridge secret.
-- Production should set `PARTNER_SIGNUP_BRIDGE_SECRET` on the partners app and Convex deployment.
-- `ADMIN_SIGNUP_BRIDGE_SECRET` is accepted only as a fallback for shared local/bootstrap environments.
+## Important Routes And Files
 
-## Production Environment Checklist
+| Path | Purpose |
+| --- | --- |
+| `app/(marketing)` | Public Partners landing, pricing, security, policies, and support |
+| `app/(auth)` | Partner sign-in and sign-up |
+| `app/(portal)/dashboard` | Authenticated portal shell, account, apps, status |
+| `app/docs/[[...slug]]/page.tsx` | Partner docs route |
+| `app/api/anan-review-callback/route.ts` | Workspace review callback endpoint |
+| `app/api/partner-signup/route.ts` | Protected sign-up bridge |
+| `app/api/partner-signin/route.ts` | Protected sign-in bridge |
+| `app/sandbox/oauth` | Sandbox OAuth authorize/token endpoints |
+| `content/docs` | Partner-facing MDX docs |
+| `components/docs` | MDX docs components |
+| `convex` | Partners-owned backend and schema |
+| `server` | Server repositories and integration boundary |
+| `lib/anan-integration` | Workspace integration contracts |
 
-- `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL`
-- `CONVEX_SITE_URL` or `NEXT_PUBLIC_CONVEX_SITE_URL`
+## Environment
+
+Partners uses an independent Convex deployment. Configure only Partners env
+values in the Partners app and Partners Convex deployment.
+
+Common variables:
+
+- `CONVEX_DEPLOYMENT`
+- `CONVEX_URL`
+- `CONVEX_SITE_URL`
+- `NEXT_PUBLIC_CONVEX_URL`
+- `NEXT_PUBLIC_CONVEX_SITE_URL`
 - `BETTER_AUTH_SECRET`
 - `PARTNER_SIGNUP_BRIDGE_SECRET`
 - `ANAN_PLATFORM_SERVICE_TOKEN`
 - `PARTNERS_REVIEW_CALLBACK_TOKEN`
-- `ANAN_HUB_API_URL`
+- `ANAN_WORKSPACE_API_URL`
 
-## Anan Integration Boundary
+See:
 
-- Partners publishes app registration, workspace capability discovery, authorization status, and event delivery payloads from `lib/anan-integration/contracts.ts`.
-- Anan remains the source of truth for workspace permissions, consent, and workspace-side execution.
-- Do not import `anan/convex/_generated/api` from this app.
+- [Environment variables](../../docs/ENVIRONMENT.md)
+- [Setup and configuration](../../SETUP_AND_CONFIGURATION.md)
+
+## Docs System
+
+Partner-facing docs live in `content/docs` and render through the app docs
+route. MDX components must be registered in `components/docs/mdx.tsx`.
+
+Useful docs files:
+
+- `content/docs/index.mdx`
+- `content/docs/quickstart.mdx`
+- `content/docs/register-an-app.mdx`
+- `content/docs/oauth-flow.mdx`
+- `content/docs/api-usage.mdx`
+- `content/docs/ai-agent-implementation.mdx`
+
+Run a build after changing partner MDX or docs components:
+
+```bash
+npm --workspace @anan/partners run build
+```
+
+## App Registration Flow
+
+1. Partner developer signs up in Partners.
+2. Developer creates an app draft with redirect URIs and requested scopes.
+3. Partners submits the app to Workspace using `ANAN_PLATFORM_SERVICE_TOKEN`.
+4. Admin Review approves, rejects, or suspends the app through Workspace.
+5. Workspace calls `app/api/anan-review-callback/route.ts`.
+6. Partners updates portal status and exposes the approved client information.
+
+## Scripts
+
+```bash
+npm run dev
+npm run build
+npm run start
+npm run typecheck
+npm test
+npm run convex:dev
+npm run convex:codegen
+```
+
+From the repository root:
+
+```bash
+npm --workspace @anan/partners run typecheck
+npm --workspace @anan/partners test
+npm --workspace @anan/partners run build
+```
+
+## Related Documentation
+
+- [Root README](../../README.md)
+- [Architecture](../../docs/ARCHITECTURE.md)
+- [Apps and packages](../../docs/APPS.md)
+- [Partner platform flow](../../docs/partner-platform/README.md)
+- [Partner implementation guide](../../docs/partner-platform/partner-implementation-guide.md)
+- [AI agent implementation prompt](./content/docs/ai-agent-implementation.mdx)

@@ -12,7 +12,7 @@ This folder does not own broad system-wide specification text. If content crosse
 
 | File | Purpose |
 | --- | --- |
-| [Identity](identity.md) | Property identity uses hub ID plus Saudi identifiers where available. |
+| [Identity](identity.md) | Property identity uses workspace ID plus Saudi identifiers where available. |
 | [Location](location.md) | Location includes city, district, address, coordinates, National Address where available, and geospatial confidence. |
 | [Lifecycle Status](lifecycle-status.md) | Lifecycle statuses include draft, pending, approved, active, sold, off_market, withdrawn, leased, expired, rejected, suspended, disputed, and hidden. |
 | [Saudi Identifiers](saudi-identifiers.md) | Saudi identifiers include RER property number, title deed references, Ejar reference, Wafi/off-plan references, plan, plot, block, and National Address. |

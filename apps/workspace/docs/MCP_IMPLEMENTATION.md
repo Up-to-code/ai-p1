@@ -1,6 +1,6 @@
-# MCP Implementation Guide — Anan Hub
+# MCP Implementation Guide — Anan Workspace
 
-> **Platform:** Saudi Arabia Central Real Estate Data Hub
+> **Platform:** Saudi Arabia Central Real Estate Data Workspace
 > **Stack:** Next.js 16.2.4 · Convex · Better Auth · TypeScript · Zod
 > **Scope:** How to understand, maintain, and extend the MCP server in this codebase.
 
@@ -14,7 +14,7 @@ The **Model Context Protocol (MCP)** is an open standard that lets AI assistants
 
 ### Why We Use It
 
-Anan Hub is a real estate data synchronization engine. Agents that work with our platform — for lead qualification, appointment scheduling, property search, or compliance checks — need reliable access to our Convex-backed data without screen-scraping or undocumented API calls.
+Anan Workspace is a real estate data synchronization engine. Agents that work with our platform — for lead qualification, appointment scheduling, property search, or compliance checks — need reliable access to our Convex-backed data without screen-scraping or undocumented API calls.
 
 MCP gives us:
 
@@ -48,7 +48,7 @@ The MCP endpoint lives at `/api/mcp` and is protected behind the same Better Aut
 ## 3. Project Structure
 
 ```
-hub/
+workspace/
 ├── app/
 │   └── api/
 │       └── mcp/
@@ -64,7 +64,7 @@ hub/
 │       │   └── calendar.ts       ← schedule/availability tools
 │       └── types.ts              ← Shared MCP context types
 ├── convex/
-│   ├── schema.ts                 ← Hub domain schema
+│   ├── schema.ts                 ← Workspace domain schema
 │   ├── betterAuth/
 │   │   └── auth.ts               ← authComponent, createAuth
 │   └── _generated/
@@ -93,7 +93,7 @@ import { registerAllTools } from "@/lib/mcp/tools/index";
 
 // One persistent server instance per cold start (stateless transport per request)
 const mcpServer = new McpServer({
-  name: "anan-hub",
+  name: "anan-workspace",
   version: "0.1.0",
 });
 
@@ -155,7 +155,7 @@ export async function POST(req: NextRequest) {
 
 // MCP clients send GET to discover the server
 export async function GET() {
-  return NextResponse.json({ name: "anan-hub", version: "0.1.0" });
+  return NextResponse.json({ name: "anan-workspace", version: "0.1.0" });
 }
 ```
 
@@ -489,7 +489,7 @@ Third-party AI clients must request these scopes during the OAuth authorization 
 Environment variable required:
 
 ```bash
-npx convex env set OAUTH_RESOURCE_MCP "https://hub.anand.sa/mcp"
+npx convex env set OAUTH_RESOURCE_MCP "https://workspace.anand.sa/mcp"
 ```
 
 ---
@@ -608,7 +608,7 @@ try {
 | `NEXT_PUBLIC_CONVEX_URL` | `.env.local` | Convex deployment URL (public) |
 | `OAUTH_RESOURCE_MCP` | `npx convex env set` | MCP resource audience for token validation |
 | `BETTER_AUTH_SECRET` | `npx convex env set` | Better Auth signing secret |
-| `SITE_URL` | `npx convex env set` | Base URL of the hub app |
+| `SITE_URL` | `npx convex env set` | Base URL of the workspace app |
 
 ---
 

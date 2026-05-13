@@ -12,7 +12,7 @@ This folder does not own broad system-wide specification text. If content crosse
 
 | File | Purpose |
 | --- | --- |
-| [Sync Principles](sync-principles.md) | The hub is the synchronization engine. |
+| [Sync Principles](sync-principles.md) | The workspace is the synchronization engine. |
 | [Canonical Wins](canonical-wins.md) | Canonical property version is the distribution source. |
 | [Idempotency](idempotency.md) | Inbound requests require idempotency keys. |
 | [Conflict Resolution](conflict-resolution.md) | Conflicts become reviewable submissions. |

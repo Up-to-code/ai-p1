@@ -19,7 +19,7 @@ Purpose: High-risk scopes include properties.write, properties.sync, properties.
 - Better Auth OAuth 2.1 Provider and Organization plugin are mandatory.
 - Plain Convex Auth is forbidden.
 - Organization context is required for organization-scoped access.
-- Scopes grant client capability; hub permissions and visibility decide resource access.
+- Scopes grant client capability; workspace permissions and visibility decide resource access.
 
 ## Implementation Rules
 

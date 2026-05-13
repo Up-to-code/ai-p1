@@ -6,7 +6,7 @@ import { AppDetailsTabs } from "@/components/portal/AppDetailsTabs";
 import { Button } from "@/components/ui/button";
 import { getToken } from "@/lib/auth-server";
 import { canEditPartnerApp } from "@/lib/navigation";
-import { ensureSandboxAction, submitPartnerAppForReviewAction, syncPartnerAppToHubAction } from "@/app/(portal)/dashboard/actions";
+import { ensureSandboxAction, submitPartnerAppForReviewAction, syncPartnerAppToWorkspaceAction } from "@/app/(portal)/dashboard/actions";
 import { partnerAppsRepository } from "@/server/partnerApps";
 import { sandboxRepository } from "@/server/sandbox";
 
@@ -52,7 +52,7 @@ export default async function AppDetailsPage({
               </form>
             ) : null}
             {app.status === "pending_review" ? (
-              <form action={syncPartnerAppToHubAction}>
+              <form action={syncPartnerAppToWorkspaceAction}>
                 <input type="hidden" name="appId" value={app.id} />
                 <Button type="submit" variant="outline" className="h-9 gap-2">
                   <Send className="h-4 w-4" /> Sync to admin
@@ -63,9 +63,9 @@ export default async function AppDetailsPage({
         </div>
       </div>
 
-      {app.hubSyncStatus === "failed" && app.hubSyncError ? (
+      {app.workspaceSyncStatus === "failed" && app.workspaceSyncError ? (
         <div className="mb-6 rounded-[15px] border border-red-500/30 bg-red-500/10 p-4">
-          <p className="text-sm font-medium text-foreground">Hub sync failed: {app.hubSyncError}</p>
+          <p className="text-sm font-medium text-foreground">Workspace sync failed: {app.workspaceSyncError}</p>
         </div>
       ) : null}
 

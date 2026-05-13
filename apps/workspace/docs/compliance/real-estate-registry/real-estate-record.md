@@ -5,7 +5,7 @@ Purpose: Real estate record includes description, location, legal status, rights
 ## Owns
 
 - Real estate record includes description, location, legal status, rights, obligations, and changes.
-- Hub model must support change history.
+- Workspace model must support change history.
 - Access must be restricted.
 
 ## Does Not Own

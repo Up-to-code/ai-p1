@@ -22,8 +22,8 @@ function makeRequest(body: Record<string, unknown>, token = "callback-token") {
 const validPayload = {
   appId: "partner_app_1",
   status: "approved",
-  hubPartnerAppId: "hub_app_1",
-  hubOauthClientId: "oauth_client_1",
+  workspacePartnerAppId: "workspace_app_1",
+  workspaceOauthClientId: "oauth_client_1",
   reviewNotes: "Approved.",
 };
 
@@ -50,13 +50,13 @@ describe("review callback route", () => {
   });
 
   it("returns a clear service unavailable error when Convex functions are not deployed", async () => {
-    fetchMutationMock.mockRejectedValueOnce(new Error("Could not find public function for 'partnerApps:applyHubReviewDecision'. Did you forget to run `npx convex dev`?"));
+    fetchMutationMock.mockRejectedValueOnce(new Error("Could not find public function for 'partnerApps:applyWorkspaceReviewDecision'. Did you forget to run `npx convex dev`?"));
 
     const response = await POST(makeRequest(validPayload) as never);
     const body = await response.json();
 
     expect(response.status).toBe(503);
     expect(body.error).toContain("Partners backend is not deployed");
-    expect(body.detail).toContain("partnerApps:applyHubReviewDecision");
+    expect(body.detail).toContain("partnerApps:applyWorkspaceReviewDecision");
   });
 });

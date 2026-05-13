@@ -4,7 +4,7 @@ Purpose: Defines threat controls, token safety, API protection, webhook safety, 
 
 ## Scope
 
-This domain owns documentation for security decisions in the Saudi Arabia Central Real Estate Data Hub.
+This domain owns documentation for security decisions in the Saudi Arabia Central Real Estate Data Workspace.
 
 This domain does not own unrelated CRM, marketplace, lead pipeline, or deal pipeline behavior.
 

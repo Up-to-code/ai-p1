@@ -4,7 +4,7 @@ Purpose: Defines data shapes, table responsibilities, relationships, indexes, va
 
 ## Scope
 
-This domain owns documentation for data model decisions in the Saudi Arabia Central Real Estate Data Hub.
+This domain owns documentation for data model decisions in the Saudi Arabia Central Real Estate Data Workspace.
 
 This domain does not own unrelated CRM, marketplace, lead pipeline, or deal pipeline behavior.
 

@@ -4,7 +4,7 @@ Purpose: Defines how external claims become approved canonical state and how tha
 
 ## Scope
 
-This domain owns documentation for synchronization decisions in the Saudi Arabia Central Real Estate Data Hub.
+This domain owns documentation for synchronization decisions in the Saudi Arabia Central Real Estate Data Workspace.
 
 This domain does not own unrelated CRM, marketplace, lead pipeline, or deal pipeline behavior.
 

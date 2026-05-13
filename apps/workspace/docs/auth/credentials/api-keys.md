@@ -21,7 +21,7 @@ Purpose: API keys are secondary to OAuth.
 - Better Auth OAuth 2.1 Provider and Organization plugin are mandatory.
 - Plain Convex Auth is forbidden.
 - Organization context is required for organization-scoped access.
-- Scopes grant client capability; hub permissions and visibility decide resource access.
+- Scopes grant client capability; workspace permissions and visibility decide resource access.
 - Organization API keys can be created, listed, rotated, or revoked by organization owners or users with effective `apiKey:create/read/update/delete`.
 - API keys cannot exceed the grantable permissions of the user creating or rotating them.
 - Organization API keys use the `anan_org_` bearer prefix, are shown once at creation or rotation, and are stored only as hashes plus suffix metadata.

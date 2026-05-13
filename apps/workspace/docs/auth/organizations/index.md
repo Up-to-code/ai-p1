@@ -16,7 +16,7 @@ This folder does not own broad system-wide specification text. If content crosse
 | [Organization Login](organization-login.md) | User signs in personally, then selects active organization. |
 | [Roles](roles.md) | Roles include owner, admin, integration_admin, publisher_manager, publisher_editor, reviewer, compliance_officer, auditor, legal_observer, workspace_viewer, and support_operator. |
 | [Permissions](permissions.md) | Permissions describe allowed actions. |
-| [Membership Projections](membership-projections.md) | Projection tables index Better Auth organization membership for hub queries. |
+| [Membership Projections](membership-projections.md) | Projection tables index Better Auth organization membership for workspace queries. |
 
 ## Read Order
 

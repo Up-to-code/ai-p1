@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { ArrowLeft, CheckCircle2, PauseCircle, XCircle } from "lucide-react";
-import { listPartnerApps, reviewPartnerApp, type PartnerAppStatus } from "@/lib/hub";
+import { listPartnerApps, reviewPartnerApp, type PartnerAppStatus } from "@/lib/workspace";
 
 async function reviewAction(formData: FormData) {
   "use server";
@@ -65,7 +65,7 @@ export default async function PartnerAppDetailPage({
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
         <section className="space-y-6">
           <Panel title="OAuth client">
-            <KeyValue label="Hub OAuth client ID" value={app.oauthClientId} />
+            <KeyValue label="Workspace OAuth client ID" value={app.oauthClientId} />
             <KeyValue label="Partners app ID" value={app.partnersAppId ?? "Not linked"} />
             <KeyValue label="Partners client ID" value={app.partnersClientId ?? "Not linked"} />
             <KeyValue label="Partner app URL" value={app.homepageUrl ?? "Not provided"} />

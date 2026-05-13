@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { actionForMethod, parseSandboxPath } from "./resources";
 
-describe("sandbox mirrored Hub routes", () => {
-  it("maps Hub-like paths to sandbox resources", () => {
+describe("sandbox mirrored Workspace routes", () => {
+  it("maps Workspace-like paths to sandbox resources", () => {
     expect(parseSandboxPath(["me"])).toEqual({ resource: "organization", action: "read" });
     expect(parseSandboxPath(["clients"])).toEqual({ resource: "client", action: "read", resourceId: undefined });
     expect(parseSandboxPath(["clients", "client_1"])).toEqual({ resource: "client", action: "read", resourceId: "client_1" });

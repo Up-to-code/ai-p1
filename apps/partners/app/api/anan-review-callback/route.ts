@@ -39,12 +39,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid review callback payload." }, { status: 400 });
     }
 
-    await fetchMutation(partnerBackendRefs.partnerApps.applyHubReviewDecision as never, {
+    await fetchMutation(partnerBackendRefs.partnerApps.applyWorkspaceReviewDecision as never, {
       serviceToken,
       appId,
       status,
-      hubPartnerAppId: readString(body.hubPartnerAppId) || undefined,
-      hubOauthClientId: readString(body.hubOauthClientId) || undefined,
+      workspacePartnerAppId: readString(body.workspacePartnerAppId) || undefined,
+      workspaceOauthClientId: readString(body.workspaceOauthClientId) || undefined,
       reviewNotes: readString(body.reviewNotes) || undefined,
       clientSecret: readString(body.clientSecret) || undefined,
     } as never);

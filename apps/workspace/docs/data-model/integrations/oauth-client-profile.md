@@ -1,10 +1,10 @@
 # Oauth Client Profile
 
-Purpose: OAuth client profile stores hub approval state for Better Auth OAuth client.
+Purpose: OAuth client profile stores workspace approval state for Better Auth OAuth client.
 
 ## Owns
 
-- OAuth client profile stores hub approval state for Better Auth OAuth client.
+- OAuth client profile stores workspace approval state for Better Auth OAuth client.
 - Includes environment, scopes, trusted URLs, and status.
 - Protocol secrets remain in Better Auth.
 
@@ -16,7 +16,7 @@ Purpose: OAuth client profile stores hub approval state for Better Auth OAuth cl
 
 ## Data Boundary
 
-- Hub-owned tables store domain state.
+- Workspace-owned tables store domain state.
 - Better Auth component tables remain separate.
 - Projection tables support indexed authorization and must not become alternate auth sources.
 

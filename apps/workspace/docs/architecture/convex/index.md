@@ -12,7 +12,7 @@ This folder does not own broad system-wide specification text. If content crosse
 
 | File | Purpose |
 | --- | --- |
-| [Schema Boundaries](schema-boundaries.md) | Better Auth component schema is separate from hub domain schema. |
+| [Schema Boundaries](schema-boundaries.md) | Better Auth component schema is separate from workspace domain schema. |
 | [Queries](queries.md) | Queries enforce server-side authorization. |
 | [Mutations](mutations.md) | Mutations validate input, enforce permission, modify state, and write audit records where required. |
 | [Actions](actions.md) | Actions handle webhooks, official checks, URL probes, and other external I/O. |

@@ -1,6 +1,6 @@
 ---
 title: Business flow
-description: How developers, Admin, Hub, and workspace organizations work together.
+description: How developers, Admin, Workspace, and workspace organizations work together.
 ---
 
 ## Overview
@@ -13,19 +13,19 @@ Anan partner authorization is organization-level OAuth. A workspace user can gra
 2. The developer chooses redirect URIs, a partner app URL, and requested organization permissions.
 3. The developer submits the app for review.
 4. Anan Admin approves, rejects, or suspends the app.
-5. Approved apps appear in the Hub Integrations catalog.
+5. Approved apps appear in the Workspace Integrations catalog.
 6. A workspace admin opens the app details and clicks Visit Partner.
 7. The partner product shows an Authorize with Anan button.
 8. The OAuth consent screen shows the requested organization permissions.
-9. If accepted, Hub creates an organization partner connection for 14 days.
-10. The partner backend exchanges the code, stores tokens securely, and calls Hub Hono APIs.
+9. If accepted, Workspace creates an organization partner connection for 14 days.
+10. The partner backend exchanges the code, stores tokens securely, and calls Workspace Hono APIs.
 
 ## Source of truth
 
 - Partners owns developer drafts, app submission state, and developer setup history.
-- Hub owns approved apps, OAuth clients, organization consent, access validation, and resource APIs.
-- Admin owns the review action surface and calls Hub review APIs.
+- Workspace owns approved apps, OAuth clients, organization consent, access validation, and resource APIs.
+- Admin owns the review action surface and calls Workspace review APIs.
 
 ## Data access
 
-Partner apps never call Convex directly. They call Hub resource APIs with bearer tokens. Hub validates the token, app approval, organization connection, expiry, and scopes before returning data.
+Partner apps never call Convex directly. They call Workspace resource APIs with bearer tokens. Workspace validates the token, app approval, organization connection, expiry, and scopes before returning data.

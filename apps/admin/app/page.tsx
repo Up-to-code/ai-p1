@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CheckCircle2, Clock3, ShieldCheck, XCircle } from "lucide-react";
-import { listPartnerApps, type PartnerAppRecord } from "@/lib/hub";
+import { listPartnerApps, type PartnerAppRecord } from "@/lib/workspace";
 
 const statusStyles = {
   pending: "border-amber-200 bg-amber-50 text-amber-800",
@@ -15,7 +15,7 @@ export default async function AdminHomePage() {
   try {
     apps = await listPartnerApps();
   } catch (error) {
-    loadError = error instanceof Error ? error.message : "Hub admin API could not be loaded.";
+    loadError = error instanceof Error ? error.message : "Workspace admin API could not be loaded.";
   }
   const pending = apps.filter((app) => app.status === "pending");
   const approved = apps.filter((app) => app.status === "approved");
@@ -28,7 +28,7 @@ export default async function AdminHomePage() {
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--muted)]">Anan Admin</p>
           <h1 className="mt-3 text-3xl font-black tracking-tight">Partner app review</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
-            Review developer submissions, approve production OAuth access, and publish approved apps into Hub integrations.
+            Review developer submissions, approve production OAuth access, and publish approved apps into Workspace integrations.
           </p>
         </div>
         <div className="flex gap-2 text-sm font-bold">
@@ -47,7 +47,7 @@ export default async function AdminHomePage() {
         </div>
         {loadError ? (
           <div className="flex min-h-64 flex-col items-center justify-center gap-2 px-6 text-center text-sm font-bold text-rose-700">
-            <span>Hub admin API is not connected.</span>
+            <span>Workspace admin API is not connected.</span>
             <span className="max-w-xl text-xs font-medium leading-5 text-[var(--muted)]">{loadError}</span>
           </div>
         ) : apps.length === 0 ? (

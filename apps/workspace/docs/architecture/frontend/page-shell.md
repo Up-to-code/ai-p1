@@ -1,10 +1,10 @@
 # Page Shell
 
-Purpose: Use one hub shell for sidebar, topbar, organization selector, and content region.
+Purpose: Use one workspace shell for sidebar, topbar, organization selector, and content region.
 
 ## Owns
 
-- Use one hub shell for sidebar, topbar, organization selector, and content region.
+- Use one workspace shell for sidebar, topbar, organization selector, and content region.
 - Do not place domain authorization in shell navigation.
 - Navigation visibility is presentation only.
 

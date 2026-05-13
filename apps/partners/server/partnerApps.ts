@@ -13,10 +13,10 @@ export type PartnerAppSummary = {
   logoUrl?: string | null;
   clientType: PartnerAppClientType;
   status: PartnerAppStatus;
-  hubPartnerAppId?: string | null;
-  hubOauthClientId?: string | null;
-  hubSyncStatus?: "not_synced" | "pending" | "synced" | "failed" | null;
-  hubSyncError?: string | null;
+  workspacePartnerAppId?: string | null;
+  workspaceOauthClientId?: string | null;
+  workspaceSyncStatus?: "not_synced" | "pending" | "synced" | "failed" | null;
+  workspaceSyncError?: string | null;
   redirectUris: string[];
   allowedScopes: string[];
   authorizationExpiresAfterDays: number;
@@ -99,16 +99,16 @@ export const partnerAppsRepository = {
     await partnerMutation<{ ok: true }>(token, partnerBackendRefs.partnerApps.submitPartnerAppForReview, { appId });
   },
 
-  async recordHubSyncResult(
+  async recordWorkspaceSyncResult(
     token: string,
     input: {
       appId: string;
       ok: boolean;
-      hubPartnerAppId?: string;
-      hubOauthClientId?: string;
+      workspacePartnerAppId?: string;
+      workspaceOauthClientId?: string;
       error?: string;
     },
   ) {
-    await partnerMutation<{ ok: true }>(token, partnerBackendRefs.partnerApps.recordHubSyncResult, input);
+    await partnerMutation<{ ok: true }>(token, partnerBackendRefs.partnerApps.recordWorkspaceSyncResult, input);
   },
 };

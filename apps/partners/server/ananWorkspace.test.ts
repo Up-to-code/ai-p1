@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { ananHubConfig, normalizeHubScopes } from "./ananHub";
+import { ananWorkspaceConfig, normalizeWorkspaceScopes } from "./ananWorkspace";
 
-describe("Anan Hub registration config", () => {
+describe("Anan Workspace registration config", () => {
   it("uses the explicit platform service token and normalizes URLs", () => {
-    expect(ananHubConfig({
-      ANAN_HUB_API_URL: "localhost:3000/",
+    expect(ananWorkspaceConfig({
+      ANAN_WORKSPACE_API_URL: "localhost:3000/",
       ANAN_PLATFORM_SERVICE_TOKEN: " platform-secret ",
       SITE_URL: "http://localhost:3002/",
     })).toEqual({
@@ -14,15 +14,15 @@ describe("Anan Hub registration config", () => {
     });
   });
 
-  it("falls back to the legacy Hub token during migration", () => {
-    expect(ananHubConfig({
-      ANAN_HUB_API_URL: "http://localhost:3000",
-      ANAN_HUB_SERVICE_TOKEN: "hub-secret",
-    }).serviceToken).toBe("hub-secret");
+  it("falls back to the legacy Workspace token during migration", () => {
+    expect(ananWorkspaceConfig({
+      ANAN_WORKSPACE_API_URL: "http://localhost:3000",
+      ANAN_WORKSPACE_SERVICE_TOKEN: "workspace-secret",
+    }).serviceToken).toBe("workspace-secret");
   });
 
-  it("maps legacy Partners scopes to Hub API scopes and drops auth-only scopes", () => {
-    expect(normalizeHubScopes([
+  it("maps legacy Partners scopes to Workspace API scopes and drops auth-only scopes", () => {
+    expect(normalizeWorkspaceScopes([
       "openid",
       "clients:read_own",
       "properties:read_own",

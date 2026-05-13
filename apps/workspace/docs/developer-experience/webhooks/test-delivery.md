@@ -6,7 +6,7 @@ Purpose: Test delivery sends signed sample event.
 
 - Test delivery sends signed sample event.
 - Developer verifies signature.
-- Hub records result.
+- Workspace records result.
 
 ## Does Not Own
 

@@ -1,10 +1,10 @@
 # Identity
 
-Purpose: Property identity uses hub ID plus Saudi identifiers where available.
+Purpose: Property identity uses workspace ID plus Saudi identifiers where available.
 
 ## Owns
 
-- Property identity uses hub ID plus Saudi identifiers where available.
+- Property identity uses workspace ID plus Saudi identifiers where available.
 - Identity matching is conservative.
 - Do not merge identities without approval.
 
@@ -16,7 +16,7 @@ Purpose: Property identity uses hub ID plus Saudi identifiers where available.
 
 ## Data Boundary
 
-- Hub-owned tables store domain state.
+- Workspace-owned tables store domain state.
 - Better Auth component tables remain separate.
 - Projection tables support indexed authorization and must not become alternate auth sources.
 

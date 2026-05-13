@@ -5,7 +5,7 @@ import { getToken } from "@/lib/auth-server";
 import { parsePartnerAppFormData } from "@/lib/schemas/partner-app";
 import { partnerProfileFormSchema, programmerOrganizationFormSchema } from "@/validation/account";
 import { partnerAccountRepository } from "@/server/partnerAccount";
-import { submitPartnerAppRegistration } from "@/server/ananHub";
+import { submitPartnerAppRegistration } from "@/server/ananWorkspace";
 import { partnerAppsRepository } from "@/server/partnerApps";
 import { sandboxRepository } from "@/server/sandbox";
 
@@ -17,6 +17,11 @@ export type PartnerAppActionState = {
 };
 
 export type AccountActionState = {
+  ok: boolean;
+  message?: string;
+};
+
+export type SandboxActionState = {
   ok: boolean;
   message?: string;
 };
@@ -40,20 +45,20 @@ function revalidatePortal() {
   revalidatePath("/dashboard/account");
 }
 
-async function recordHubSyncResultBestEffort(
+async function recordWorkspaceSyncResultBestEffort(
   token: string,
   input: {
     appId: string;
     ok: boolean;
-    hubPartnerAppId?: string;
-    hubOauthClientId?: string;
+    workspacePartnerAppId?: string;
+    workspaceOauthClientId?: string;
     error?: string;
   },
 ) {
   try {
-    await partnerAppsRepository.recordHubSyncResult(token, input);
+    await partnerAppsRepository.recordWorkspaceSyncResult(token, input);
   } catch (error) {
-    console.warn("Partner app Hub sync result could not be recorded.", error);
+    console.warn("Partner app Workspace sync result could not be recorded.", error);
   }
 }
 
@@ -149,42 +154,58 @@ export async function submitPartnerAppForReviewAction(formData: FormData) {
   const token = await requirePartnerToken();
   const appId = requiredString(formData, "appId");
   await partnerAppsRepository.submitForReview(token, appId);
-  await syncPartnerAppToHub(token, appId);
+  await syncPartnerAppToWorkspace(token, appId);
   revalidatePortal();
   revalidatePath(`/dashboard/apps/${appId}`);
 }
 
-async function syncPartnerAppToHub(token: string, appId: string) {
+async function syncPartnerAppToWorkspace(token: string, appId: string) {
   try {
     const app = await partnerAppsRepository.getById(token, appId);
     if (!app) throw new Error("Submitted partner app could not be reloaded.");
-    const hubApp = await submitPartnerAppRegistration(app);
-    await recordHubSyncResultBestEffort(token, {
+    const workspaceApp = await submitPartnerAppRegistration(app);
+    await recordWorkspaceSyncResultBestEffort(token, {
       appId,
       ok: true,
-      hubPartnerAppId: hubApp.id,
-      hubOauthClientId: hubApp.oauthClientId,
+      workspacePartnerAppId: workspaceApp.id,
+      workspaceOauthClientId: workspaceApp.oauthClientId,
     });
   } catch (error) {
-    await recordHubSyncResultBestEffort(token, {
+    await recordWorkspaceSyncResultBestEffort(token, {
       appId,
       ok: false,
-      error: error instanceof Error ? error.message : "Hub registration sync failed.",
+      error: error instanceof Error ? error.message : "Workspace registration sync failed.",
     });
   }
 }
 
-export async function syncPartnerAppToHubAction(formData: FormData) {
+export async function syncPartnerAppToWorkspaceAction(formData: FormData) {
   const token = await requirePartnerToken();
   const appId = requiredString(formData, "appId");
-  await syncPartnerAppToHub(token, appId);
+  await syncPartnerAppToWorkspace(token, appId);
   revalidatePortal();
   revalidatePath(`/dashboard/apps/${appId}`);
 }
 
-export async function ensureSandboxAction(formData: FormData) {
-  const token = await requirePartnerToken();
-  const appId = requiredString(formData, "appId");
-  await sandboxRepository.ensure(token, appId);
-  revalidatePath(`/dashboard/apps/${appId}`);
+function readableConvexError(error: unknown, fallback: string) {
+  const message = error instanceof Error ? error.message : "";
+  if (message.includes("Could not find public function") || message.includes("Did you forget to run `npx convex dev`")) {
+    return "Partners Convex backend is not up to date. Run `npm --workspace @anan/partners run convex:dev` and try again.";
+  }
+  return message || fallback;
+}
+
+export async function ensureSandboxAction(
+  _previousState: SandboxActionState,
+  formData: FormData,
+): Promise<SandboxActionState> {
+  try {
+    const token = await requirePartnerToken();
+    const appId = requiredString(formData, "appId");
+    await sandboxRepository.ensure(token, appId);
+    revalidatePath(`/dashboard/apps/${appId}`);
+    return { ok: true, message: "Sandbox created." };
+  } catch (error) {
+    return { ok: false, message: readableConvexError(error, "Could not create sandbox.") };
+  }
 }

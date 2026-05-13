@@ -1,10 +1,10 @@
 # Membership Projections
 
-Purpose: Projection tables index Better Auth organization membership for hub queries.
+Purpose: Projection tables index Better Auth organization membership for workspace queries.
 
 ## Owns
 
-- Projection tables index Better Auth organization membership for hub queries.
+- Projection tables index Better Auth organization membership for workspace queries.
 - Better Auth remains source of truth.
 - Stale projection denies sensitive actions until repaired.
 
@@ -19,7 +19,7 @@ Purpose: Projection tables index Better Auth organization membership for hub que
 - Better Auth OAuth 2.1 Provider and Organization plugin are mandatory.
 - Plain Convex Auth is forbidden.
 - Organization context is required for organization-scoped access.
-- Scopes grant client capability; hub permissions and visibility decide resource access.
+- Scopes grant client capability; workspace permissions and visibility decide resource access.
 
 ## Implementation Rules
 

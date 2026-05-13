@@ -12,7 +12,7 @@ This folder does not own broad system-wide specification text. If content crosse
 
 | File | Purpose |
 | --- | --- |
-| [Organization Profile](organization-profile.md) | Organization profile projects Better Auth organization into hub domain. |
+| [Organization Profile](organization-profile.md) | Organization profile projects Better Auth organization into workspace domain. |
 | [Membership Profile](membership-profile.md) | Membership profile projects user role by organization. |
 | [Publisher Profile](publisher-profile.md) | Publisher profile links organization to publisher/developer data. |
 

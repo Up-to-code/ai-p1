@@ -60,7 +60,7 @@ export const createAuthOptions = (
     scopes.some((scope) => Boolean(scopeToPermission(scope)));
 
   return {
-    appName: "Anan Hub",
+    appName: "Anan Workspace",
     baseURL: authRuntimeConfig.siteUrl,
     trustedOrigins: authRuntimeConfig.trustedOrigins,
     secret: authRuntimeConfig.secret,

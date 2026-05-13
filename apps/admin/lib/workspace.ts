@@ -25,16 +25,16 @@ function normalizeBaseUrl(value?: string) {
   return /^https?:\/\//iu.test(trimmed) ? trimmed : `https://${trimmed}`;
 }
 
-export function hubAdminConfig(env: Record<string, string | undefined> = process.env) {
+export function workspaceAdminConfig(env: Record<string, string | undefined> = process.env) {
   return {
-    baseUrl: normalizeBaseUrl(env.HUB_API_BASE_URL),
-    token: env.HUB_ADMIN_SERVICE_TOKEN?.trim() ?? "",
+    baseUrl: normalizeBaseUrl(env.WORKSPACE_API_BASE_URL),
+    token: env.WORKSPACE_ADMIN_SERVICE_TOKEN?.trim() ?? "",
   };
 }
 
-async function hubFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const config = hubAdminConfig();
-  if (!config.token) throw new Error("Set HUB_ADMIN_SERVICE_TOKEN before using the admin review app.");
+async function workspaceFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const config = workspaceAdminConfig();
+  if (!config.token) throw new Error("Set WORKSPACE_ADMIN_SERVICE_TOKEN before using the admin review app.");
   const response = await fetch(`${config.baseUrl}${path}`, {
     ...init,
     headers: {
@@ -45,17 +45,17 @@ async function hubFetch<T>(path: string, init?: RequestInit): Promise<T> {
     cache: "no-store",
   });
   const payload = await response.json().catch(() => null) as T & { error?: string };
-  if (!response.ok) throw new Error(payload?.error ?? "Hub API request failed.");
+  if (!response.ok) throw new Error(payload?.error ?? "Workspace API request failed.");
   return payload;
 }
 
 export async function listPartnerApps() {
-  const payload = await hubFetch<{ apps: PartnerAppRecord[] }>("/api/v1/admin/partner-apps");
+  const payload = await workspaceFetch<{ apps: PartnerAppRecord[] }>("/api/v1/admin/partner-apps");
   return payload.apps;
 }
 
 export async function reviewPartnerApp(appId: string, input: { status: PartnerAppStatus; reviewNotes?: string }) {
-  return hubFetch<{ app: PartnerAppRecord }>(`/api/v1/admin/partner-apps/${encodeURIComponent(appId)}/review`, {
+  return workspaceFetch<{ app: PartnerAppRecord }>(`/api/v1/admin/partner-apps/${encodeURIComponent(appId)}/review`, {
     method: "PATCH",
     body: JSON.stringify(input),
   });

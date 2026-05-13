@@ -5,7 +5,7 @@ Purpose: REGA context affects licensing, advertising, brokerage, registration, a
 ## Owns
 
 - REGA context affects licensing, advertising, brokerage, registration, and market trust.
-- Hub records must support compliance evidence.
+- Workspace records must support compliance evidence.
 - Do not claim official integration without credentials.
 
 ## Does Not Own

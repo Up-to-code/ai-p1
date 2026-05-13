@@ -20,7 +20,7 @@
   "AutoUi": {
     "The Saudi Arabia Central Real Estate Data Synchronization Engine___": "The Saudi Arabia Central Real Estate Data Synchronization Engine",
     "© 2026 anan Platform___ All rights reserved___": "© 2026 anan Platform. All rights reserved.",
-    "Sign in to access your real estate data hub___": "Sign in to access your real estate data hub.",
+    "Sign in to access your real estate data workspace___": "Sign in to access your real estate data workspace.",
     "Min___ 8 characters": "Min. 8 characters",
     "Enter an invite code or use a shared link to join an existing workspace___": "Enter an invite code or use a shared link to join an existing workspace.",
     "Register your company and complete the setup wizard to start synchronizing data___": "Register your company and complete the setup wizard to start synchronizing data.",
@@ -915,7 +915,7 @@
   },
   "signin": {
     "title": "Welcome Back",
-    "description": "Sign in to access your real estate data hub.",
+    "description": "Sign in to access your real estate data workspace.",
     "google": "Sign in with Google",
     "connecting": "Connecting...",
     "createAccount": "Create an Account",
@@ -934,7 +934,7 @@
     "viewProfile": "View Profile",
     "logout": "Logout",
     "logoutTitle": "Are you sure you want to logout?",
-    "logoutDescription": "You will need to sign in again to access your real estate data hub.",
+    "logoutDescription": "You will need to sign in again to access your real estate data workspace.",
     "cancel": "Cancel"
   },
   "Assistant": {
@@ -2196,7 +2196,7 @@
   },
   "Integrations": {
     "title": "Integrations",
-    "subtitle": "Cross-Platform Synchronization Hub",
+    "subtitle": "Cross-Platform Synchronization Workspace",
     "catalog_eyebrow": "Integration catalog",
     "add": "Add Integration",
     "tabs": {
@@ -2277,10 +2277,10 @@
     },
     "boundary": {
       "title": "Synchronization Boundary",
-      "description": "The hub remains the absolute validation, approval, and visibility source of truth for all synchronized payloads.",
+      "description": "The workspace remains the absolute validation, approval, and visibility source of truth for all synchronized payloads.",
       "item1": "Sandbox access does not imply production approval.",
       "item2": "Marketplace connectors receive only approved visible payloads.",
-      "item3": "CRM submissions remain claims until reviewed by the hub.",
+      "item3": "CRM submissions remain claims until reviewed by the workspace.",
       "item4": "Organization approval controls all outward distribution."
     }
   },
@@ -2888,7 +2888,7 @@
     }
   },
   "ChooseOrg": {
-    "title": "Welcome to anan Hub",
+    "title": "Welcome to anan Workspace",
     "subtitle": "How would you like to get started?",
     "joinTitle": "I was invited to an organization",
     "joinDesc": "Enter an invite code or use a shared link to join an existing workspace.",

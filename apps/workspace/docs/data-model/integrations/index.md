@@ -13,7 +13,7 @@ This folder does not own broad system-wide specification text. If content crosse
 | File | Purpose |
 | --- | --- |
 | [Connected Platform](connected-platform.md) | Connected platform represents external CRM, app, marketplace, workspace, or partner system. |
-| [Oauth Client Profile](oauth-client-profile.md) | OAuth client profile stores hub approval state for Better Auth OAuth client. |
+| [Oauth Client Profile](oauth-client-profile.md) | OAuth client profile stores workspace approval state for Better Auth OAuth client. |
 | [Webhook Endpoint](webhook-endpoint.md) | Webhook endpoint stores URL, status, signing configuration reference, last test, and approval state. |
 | [Api Key Record](api-key-record.md) | API key record stores hash, prefix, scopes, status, organization, platform, expiry, and audit metadata. |
 

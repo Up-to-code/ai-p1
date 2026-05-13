@@ -1,10 +1,10 @@
 # Documentation Guidelines
 
-Purpose: Master documentation rules for the granular hub documentation system.
+Purpose: Master documentation rules for the granular workspace documentation system.
 
 ## Mandatory Structure
 
-- Documentation is organized by domain folders under hub/docs.
+- Documentation is organized by domain folders under workspace/docs.
 - Every folder must contain index.md.
 - Every major topic gets a focused file.
 - No new giant root-level specification file is allowed.
@@ -70,7 +70,7 @@ When behavior changes, update the smallest owning doc and its folder index in th
 
 ## Root Folder Rule
 
-Only these Markdown files are allowed directly under `hub/docs/`:
+Only these Markdown files are allowed directly under `workspace/docs/`:
 
 - `README.md`
 - `GUIDELINES.md`

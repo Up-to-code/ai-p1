@@ -1,10 +1,10 @@
 # Organization Profile
 
-Purpose: Organization profile projects Better Auth organization into hub domain.
+Purpose: Organization profile projects Better Auth organization into workspace domain.
 
 ## Owns
 
-- Organization profile projects Better Auth organization into hub domain.
+- Organization profile projects Better Auth organization into workspace domain.
 - Includes organization type and status.
 - Projection supports indexed authorization.
 
@@ -16,7 +16,7 @@ Purpose: Organization profile projects Better Auth organization into hub domain.
 
 ## Data Boundary
 
-- Hub-owned tables store domain state.
+- Workspace-owned tables store domain state.
 - Better Auth component tables remain separate.
 - Projection tables support indexed authorization and must not become alternate auth sources.
 

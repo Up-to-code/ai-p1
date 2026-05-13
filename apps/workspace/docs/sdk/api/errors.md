@@ -18,7 +18,7 @@ Purpose: SDK errors use stable codes.
 
 - Browser SDK code must not store client secrets.
 - Server SDK code handles token exchange and webhook verification.
-- SDK helpers simplify integration; they do not bypass hub authorization.
+- SDK helpers simplify integration; they do not bypass workspace authorization.
 
 ## Implementation Rules
 

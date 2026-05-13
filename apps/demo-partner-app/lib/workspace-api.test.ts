@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { HubApiError, createAnanClient, loadAnanClients, updateAnanClient } from "./hub-api";
+import { WorkspaceApiError, createAnanClient, loadAnanClients, updateAnanClient } from "./workspace-api";
 import type { TokenSession } from "./session";
 
 function jsonResponse(payload: unknown, status = 200) {
@@ -17,16 +17,16 @@ const session: TokenSession = {
   organizationId: "org_123",
 };
 
-describe("Hub Hono API wrappers", () => {
+describe("Workspace Hono API wrappers", () => {
   beforeEach(() => {
-    process.env.ANAN_HUB_API_URL = "http://localhost:3000";
+    process.env.ANAN_WORKSPACE_API_URL = "http://localhost:3000";
     process.env.ANAN_CLIENT_ID = "partners_client_123";
     process.env.PARTNER_APP_URL = "http://localhost:3004";
     process.env.DEMO_ACCESS_TOKEN = "demo-token";
     process.env.SESSION_SECRET = "abcdefghijklmnopqrstuvwxyz123456";
   });
 
-  it("loads clients through Hub partner APIs, not Convex", async () => {
+  it("loads clients through Workspace partner APIs, not Convex", async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse({ data: [{ id: "client_1" }] }));
 
     await expect(loadAnanClients(session, fetcher)).resolves.toEqual({ data: [{ id: "client_1" }] });
@@ -52,25 +52,25 @@ describe("Hub Hono API wrappers", () => {
     expect(fetcher.mock.calls[0][1]?.method).toBe("PATCH");
   });
 
-  it("maps Hub expired connection errors", async () => {
+  it("maps Workspace expired connection errors", async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse({
       error: "connection_expired",
       message: "Reconnect this organization.",
     }, 401));
 
     await expect(loadAnanClients(session, fetcher)).rejects.toMatchObject(
-      new HubApiError("Reconnect this organization.", "connection_expired", 401),
+      new WorkspaceApiError("Reconnect this organization.", "connection_expired", 401),
     );
   });
 
-  it("maps Hub scope denied errors", async () => {
+  it("maps Workspace scope denied errors", async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse({
       error: "scope_denied",
       message: "Scope is missing.",
     }, 403));
 
     await expect(loadAnanClients(session, fetcher)).rejects.toMatchObject(
-      new HubApiError("Scope is missing.", "scope_denied", 403),
+      new WorkspaceApiError("Scope is missing.", "scope_denied", 403),
     );
   });
 });

@@ -4,7 +4,7 @@ Use this checklist before major Convex data-layer or Hono read changes.
 
 ## Required MCP Checks
 
-1. Run `status` for the Hub project and use the dev cloud deployment unless production debugging was explicitly requested.
+1. Run `status` for the Workspace project and use the dev cloud deployment unless production debugging was explicitly requested.
 2. Run `insights` for the selected deployment.
 3. Run `functionSpec` when changing function arguments, return shapes, or public/internal visibility.
 4. Run `tables` when adding filters, sort orders, search behavior, or pagination.

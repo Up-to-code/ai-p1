@@ -1,17 +1,17 @@
-# Hub Documentation
+# Workspace Documentation
 
-Purpose: Navigation entry point for the Saudi Arabia Central Real Estate Data Hub documentation.
+Purpose: Navigation entry point for the Saudi Arabia Central Real Estate Data Workspace documentation.
 
-The hub is a synchronization engine and OAuth 2.1 Provider. External CRMs, mobile apps, and partner platforms submit claims. The hub validates, approves, computes visibility, and synchronizes authoritative state.
+The workspace is a synchronization engine and OAuth 2.1 Provider. External CRMs, mobile apps, and partner platforms submit claims. The workspace validates, approves, computes visibility, and synchronizes authoritative state.
 
 ## Domain Indexes
 
 | Domain | Purpose |
 | --- | --- |
-| [Architecture](architecture/index.md) | Defines the technical structure of the Saudi Arabia Central Real Estate Data Hub as a synchronization engine. |
+| [Architecture](architecture/index.md) | Defines the technical structure of the Saudi Arabia Central Real Estate Data Workspace as a synchronization engine. |
 | [Auth](auth/index.md) | Defines Better Auth, OAuth 2.1 Provider behavior, Organization authorization, consent, scopes, and credentials. |
 | [Synchronization](synchronization/index.md) | Defines how external claims become approved canonical state and how that state is synchronized outward. |
-| [Visibility](visibility/index.md) | Defines how the hub decides which property data is visible to each platform, audience, organization, and channel. |
+| [Visibility](visibility/index.md) | Defines how the workspace decides which property data is visible to each platform, audience, organization, and channel. |
 | [UI](ui/index.md) | Defines Anand interface layout, tokenized design system, onboarding flow, pages, components, states, and synchronization UX. |
 | [Sdk](sdk/index.md) | Defines the official developer SDK plan for OAuth, API access, token handling, and webhook verification. |
 | [Security](security/index.md) | Defines threat controls, token safety, API protection, webhook safety, frontend safety, and secrets handling. |
@@ -41,4 +41,4 @@ The hub is a synchronization engine and OAuth 2.1 Provider. External CRMs, mobil
 - Every Markdown file uses lowercase kebab-case.
 - Keep docs small and focused.
 - Link across domains instead of copying large sections.
-- Do not modify partners/ from hub documentation work.
+- Do not modify partners/ from workspace documentation work.

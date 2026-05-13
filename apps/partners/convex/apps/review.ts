@@ -14,8 +14,8 @@ export const submitPartnerAppForReview = mutationGeneric({
       status: "pending_review",
       submittedAt: now,
       reviewNotes: undefined,
-      hubSyncStatus: "pending",
-      hubSyncError: undefined,
+      workspaceSyncStatus: "pending",
+      workspaceSyncError: undefined,
       updatedAt: now,
     });
     await ctx.db.insert("partnerAppReviews", {
@@ -28,13 +28,13 @@ export const submitPartnerAppForReview = mutationGeneric({
   },
 });
 
-export const applyHubReviewDecision = mutationGeneric({
+export const applyWorkspaceReviewDecision = mutationGeneric({
   args: {
     serviceToken: v.string(),
     appId: v.string(),
     status: v.union(v.literal("approved"), v.literal("rejected"), v.literal("suspended")),
-    hubPartnerAppId: v.optional(v.string()),
-    hubOauthClientId: v.optional(v.string()),
+    workspacePartnerAppId: v.optional(v.string()),
+    workspaceOauthClientId: v.optional(v.string()),
     reviewNotes: v.optional(v.string()),
     clientSecret: v.optional(v.string()),
   },
@@ -52,10 +52,10 @@ export const applyHubReviewDecision = mutationGeneric({
     const nextStatus = args.status === "approved" ? "active" : args.status;
     await ctx.db.patch(app._id, {
       status: nextStatus,
-      hubPartnerAppId: args.hubPartnerAppId ?? app.hubPartnerAppId,
-      hubOauthClientId: args.hubOauthClientId ?? app.hubOauthClientId,
-      hubSyncStatus: "synced",
-      hubSyncError: undefined,
+      workspacePartnerAppId: args.workspacePartnerAppId ?? app.workspacePartnerAppId,
+      workspaceOauthClientId: args.workspaceOauthClientId ?? app.workspaceOauthClientId,
+      workspaceSyncStatus: "synced",
+      workspaceSyncError: undefined,
       reviewNotes: args.reviewNotes,
       reviewedAt: now,
       updatedAt: now,
@@ -63,17 +63,17 @@ export const applyHubReviewDecision = mutationGeneric({
     await ctx.db.insert("partnerAppReviews", {
       appId: app._id,
       status: nextStatus,
-      reviewerAuthSubject: "anan-hub",
+      reviewerAuthSubject: "anan-workspace",
       notes: args.reviewNotes,
       createdAt: now,
     });
     await auditPartnerEvent(ctx, {
       appId: app._id,
-      eventType: "partner_app.hub_reviewed",
+      eventType: "partner_app.workspace_reviewed",
       payload: {
         status: args.status,
-        hubPartnerAppId: args.hubPartnerAppId,
-        hubOauthClientId: args.hubOauthClientId,
+        workspacePartnerAppId: args.workspacePartnerAppId,
+        workspaceOauthClientId: args.workspaceOauthClientId,
         hasClientSecret: Boolean(args.clientSecret),
       },
       now,

@@ -1,10 +1,10 @@
 # Visibility
 
-Purpose: Defines how the hub decides which property data is visible to each platform, audience, organization, and channel.
+Purpose: Defines how the workspace decides which property data is visible to each platform, audience, organization, and channel.
 
 ## Scope
 
-This domain owns documentation for visibility decisions in the Saudi Arabia Central Real Estate Data Hub.
+This domain owns documentation for visibility decisions in the Saudi Arabia Central Real Estate Data Workspace.
 
 This domain does not own unrelated CRM, marketplace, lead pipeline, or deal pipeline behavior.
 

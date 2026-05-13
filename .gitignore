@@ -18,8 +18,8 @@ coverage
 !.env.example
 !.env.local.example
 
-!apps/hub/src/packages/
-!apps/hub/src/packages/config/
-!apps/hub/src/packages/config/partner-apps.ts
-!apps/hub/src/packages/partner-apps/
-!apps/hub/src/packages/partner-apps/**
+!apps/workspace/src/packages/
+!apps/workspace/src/packages/config/
+!apps/workspace/src/packages/config/partner-apps.ts
+!apps/workspace/src/packages/partner-apps/
+!apps/workspace/src/packages/partner-apps/**

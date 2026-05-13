@@ -1,6 +1,6 @@
 # Scopes
 
-Purpose: Explains OAuth scopes and their mapping to hub permissions.
+Purpose: Explains OAuth scopes and their mapping to workspace permissions.
 
 ## Scope
 

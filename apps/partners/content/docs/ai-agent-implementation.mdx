@@ -1,0 +1,36 @@
+---
+title: AI agent implementation prompt
+description: Copy a complete prompt for implementing Anan partner OAuth, env setup, and Workspace API reads.
+---
+
+Use this page when you want a coding agent to wire Anan into a partner product. The prompt keeps the integration server-first: browser code starts OAuth, while token exchange, token storage, and Workspace API calls stay on your backend.
+
+<AgentPromptCopyCard />
+
+## Environment variables
+
+Use the existing Anan partner env names. Do not rename these unless your app already has an env mapping layer.
+
+```bash
+ANAN_WORKSPACE_API_URL=https://your-anan-workspace-host.example
+ANAN_CLIENT_ID=partners_client_...
+ANAN_CLIENT_SECRET=
+PARTNER_APP_URL=https://partner.example.com
+SESSION_SECRET=replace-with-at-least-32-characters
+```
+
+`ANAN_WORKSPACE_API_URL` is the Anan Workspace base URL. Use `http://localhost:3000` for local development when the workspace app is running locally, and use the hosted workspace URL for production.
+
+`ANAN_CLIENT_SECRET` is optional for public PKCE clients. Leave it empty unless the app is a confidential server-side client.
+
+## What the agent should build
+
+- A frontend `Authorize with Anan` button that starts OAuth through a backend route.
+- A PKCE start route that creates state, verifier, and S256 challenge.
+- A callback route that validates state and exchanges the code server-side.
+- Server-side token storage keyed by the returned `organization_id`.
+- Backend calls to Workspace partner resources for organization, clients, and properties.
+
+## Security notes
+
+Never put Anan access tokens, refresh tokens, client secrets, or authorization codes in browser storage, query params, client logs, or client-rendered JSON. Partner apps should request the smallest useful scope set and reconnect users when Workspace returns `connection_expired` or `connection_not_found`.

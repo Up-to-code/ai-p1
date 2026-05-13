@@ -5,7 +5,7 @@ Purpose: Use Next.js 16.2.4 App Router.
 ## Owns
 
 - Use Next.js 16.2.4 App Router.
-- Separate auth routes from hub admin routes.
+- Separate auth routes from workspace admin routes.
 - Server components may preload authenticated Convex queries; client components handle ShadCN interactions.
 
 ## Does Not Own

@@ -4,7 +4,7 @@ export default function PrivacyPage() {
   return (
     <LegalArticle title="Privacy Policy" updated="Last updated: May 4, 2026">
       <LegalBlock title="1. Introduction">
-        <p>Anand Hub ("we", "us", "our") operates the central real estate data synchronization platform for Saudi Arabia. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.</p>
+        <p>Anand Workspace ("we", "us", "our") operates the central real estate data synchronization platform for Saudi Arabia. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.</p>
       </LegalBlock>
 
       <LegalBlock title="2. Information We Collect">

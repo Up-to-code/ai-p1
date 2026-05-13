@@ -22,7 +22,7 @@ function fakeJwt(payload: unknown) {
 describe("Anan OAuth helpers", () => {
   it("builds the PKCE authorization URL with requested scopes", () => {
     const url = new URL(buildAuthorizeUrl({
-      hubBaseUrl: "http://localhost:3000",
+      workspaceBaseUrl: "http://localhost:3000",
       clientId: "partners_client_123",
       redirectUri: "https://demo.vercel.app/api/auth/anan/callback",
       state: "state-123",
@@ -56,7 +56,7 @@ describe("Anan OAuth helpers", () => {
     }));
 
     const tokens = await exchangeAuthorizationCode({
-      hubBaseUrl: "http://localhost:3000",
+      workspaceBaseUrl: "http://localhost:3000",
       clientId: "partners_client_123",
       clientSecret: "secret",
       redirectUri: "https://demo.vercel.app/api/auth/anan/callback",

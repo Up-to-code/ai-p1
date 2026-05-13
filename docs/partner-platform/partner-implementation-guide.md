@@ -9,7 +9,7 @@ The short version:
 3. Start OAuth 2.1 authorization code with PKCE.
 4. Exchange the callback code on your backend.
 5. Store tokens on your backend.
-6. Call Hub Hono APIs with `Authorization: Bearer <access_token>`.
+6. Call Workspace Hono APIs with `Authorization: Bearer <access_token>`.
 
 Do not call Convex directly from a partner app.
 
@@ -52,7 +52,7 @@ Delete scopes are not normal self-serve v1 scopes.
 ## Environment Variables
 
 ```bash
-ANAN_HUB_API_URL=https://hub.example.com
+ANAN_WORKSPACE_API_URL=https://workspace.example.com
 ANAN_CLIENT_ID=partners_client_...
 ANAN_CLIENT_SECRET=
 PARTNER_APP_URL=https://pdf.example.com
@@ -66,22 +66,22 @@ Use `ANAN_CLIENT_SECRET` only for confidential server apps. Browser-started publ
 Authorize endpoint:
 
 ```txt
-GET {ANAN_HUB_API_URL}/oauth/authorize
+GET {ANAN_WORKSPACE_API_URL}/oauth/authorize
 ```
 
 Token endpoint:
 
 ```txt
-POST {ANAN_HUB_API_URL}/oauth/token
+POST {ANAN_WORKSPACE_API_URL}/oauth/token
 ```
 
 Partner API audience:
 
 ```txt
-{ANAN_HUB_API_URL}/api/v1/partner
+{ANAN_WORKSPACE_API_URL}/api/v1/partner
 ```
 
-The `resource` parameter must be sent to both the authorize request and token request. This asks Hub for a JWT access token that can be verified by partner resource APIs.
+The `resource` parameter must be sent to both the authorize request and token request. This asks Workspace for a JWT access token that can be verified by partner resource APIs.
 
 ## TypeScript Helpers
 
@@ -100,7 +100,7 @@ export type AnanTokenResponse = {
 };
 
 export type AnanConfig = {
-  hubBaseUrl: string;
+  workspaceBaseUrl: string;
   clientId: string;
   clientSecret?: string;
   partnerAppUrl: string;
@@ -117,8 +117,8 @@ export function redirectUri(config: AnanConfig) {
   return `${normalizeBaseUrl(config.partnerAppUrl)}${config.redirectPath ?? "/api/auth/anan/callback"}`;
 }
 
-export function partnerResourceAudience(hubBaseUrl: string) {
-  return `${normalizeBaseUrl(hubBaseUrl)}/api/v1/partner`;
+export function partnerResourceAudience(workspaceBaseUrl: string) {
+  return `${normalizeBaseUrl(workspaceBaseUrl)}/api/v1/partner`;
 }
 
 export function createPkceVerifier() {
@@ -130,20 +130,20 @@ export function createPkceChallenge(verifier: string) {
 }
 
 export function buildAuthorizeUrl(input: {
-  hubBaseUrl: string;
+  workspaceBaseUrl: string;
   clientId: string;
   redirectUri: string;
   scopes: string[];
   state: string;
   codeChallenge: string;
 }) {
-  const hubBaseUrl = normalizeBaseUrl(input.hubBaseUrl);
-  const url = new URL("/oauth/authorize", hubBaseUrl);
+  const workspaceBaseUrl = normalizeBaseUrl(input.workspaceBaseUrl);
+  const url = new URL("/oauth/authorize", workspaceBaseUrl);
   url.searchParams.set("response_type", "code");
   url.searchParams.set("client_id", input.clientId);
   url.searchParams.set("redirect_uri", input.redirectUri);
   url.searchParams.set("scope", input.scopes.join(" "));
-  url.searchParams.set("resource", partnerResourceAudience(hubBaseUrl));
+  url.searchParams.set("resource", partnerResourceAudience(workspaceBaseUrl));
   url.searchParams.set("state", input.state);
   url.searchParams.set("code_challenge", input.codeChallenge);
   url.searchParams.set("code_challenge_method", "S256");
@@ -151,7 +151,7 @@ export function buildAuthorizeUrl(input: {
 }
 
 export async function exchangeAuthorizationCode(input: {
-  hubBaseUrl: string;
+  workspaceBaseUrl: string;
   clientId: string;
   clientSecret?: string;
   redirectUri: string;
@@ -159,18 +159,18 @@ export async function exchangeAuthorizationCode(input: {
   codeVerifier: string;
   fetcher?: typeof fetch;
 }) {
-  const hubBaseUrl = normalizeBaseUrl(input.hubBaseUrl);
+  const workspaceBaseUrl = normalizeBaseUrl(input.workspaceBaseUrl);
   const body = new URLSearchParams({
     grant_type: "authorization_code",
     client_id: input.clientId,
     redirect_uri: input.redirectUri,
     code: input.code,
     code_verifier: input.codeVerifier,
-    resource: partnerResourceAudience(hubBaseUrl),
+    resource: partnerResourceAudience(workspaceBaseUrl),
   });
   if (input.clientSecret) body.set("client_secret", input.clientSecret);
 
-  const response = await (input.fetcher ?? fetch)(new URL("/oauth/token", hubBaseUrl), {
+  const response = await (input.fetcher ?? fetch)(new URL("/oauth/token", workspaceBaseUrl), {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body,
@@ -190,22 +190,22 @@ export async function exchangeAuthorizationCode(input: {
 }
 
 export async function refreshAccessToken(input: {
-  hubBaseUrl: string;
+  workspaceBaseUrl: string;
   clientId: string;
   clientSecret?: string;
   refreshToken: string;
   fetcher?: typeof fetch;
 }) {
-  const hubBaseUrl = normalizeBaseUrl(input.hubBaseUrl);
+  const workspaceBaseUrl = normalizeBaseUrl(input.workspaceBaseUrl);
   const body = new URLSearchParams({
     grant_type: "refresh_token",
     client_id: input.clientId,
     refresh_token: input.refreshToken,
-    resource: partnerResourceAudience(hubBaseUrl),
+    resource: partnerResourceAudience(workspaceBaseUrl),
   });
   if (input.clientSecret) body.set("client_secret", input.clientSecret);
 
-  const response = await (input.fetcher ?? fetch)(new URL("/oauth/token", hubBaseUrl), {
+  const response = await (input.fetcher ?? fetch)(new URL("/oauth/token", workspaceBaseUrl), {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body,
@@ -232,8 +232,8 @@ export function normalizeBaseUrl(value) {
   return /^https?:\/\//iu.test(trimmed) ? trimmed : `https://${trimmed}`;
 }
 
-export function partnerResourceAudience(hubBaseUrl) {
-  return `${normalizeBaseUrl(hubBaseUrl)}/api/v1/partner`;
+export function partnerResourceAudience(workspaceBaseUrl) {
+  return `${normalizeBaseUrl(workspaceBaseUrl)}/api/v1/partner`;
 }
 
 export function createPkceVerifier() {
@@ -244,33 +244,33 @@ export function createPkceChallenge(verifier) {
   return createHash("sha256").update(verifier).digest("base64url");
 }
 
-export function buildAuthorizeUrl({ hubBaseUrl, clientId, redirectUri, scopes, state, codeChallenge }) {
-  const hub = normalizeBaseUrl(hubBaseUrl);
-  const url = new URL("/oauth/authorize", hub);
+export function buildAuthorizeUrl({ workspaceBaseUrl, clientId, redirectUri, scopes, state, codeChallenge }) {
+  const workspace = normalizeBaseUrl(workspaceBaseUrl);
+  const url = new URL("/oauth/authorize", workspace);
   url.searchParams.set("response_type", "code");
   url.searchParams.set("client_id", clientId);
   url.searchParams.set("redirect_uri", redirectUri);
   url.searchParams.set("scope", scopes.join(" "));
-  url.searchParams.set("resource", partnerResourceAudience(hub));
+  url.searchParams.set("resource", partnerResourceAudience(workspace));
   url.searchParams.set("state", state);
   url.searchParams.set("code_challenge", codeChallenge);
   url.searchParams.set("code_challenge_method", "S256");
   return url.toString();
 }
 
-export async function exchangeAuthorizationCode({ hubBaseUrl, clientId, clientSecret, redirectUri, code, codeVerifier }) {
-  const hub = normalizeBaseUrl(hubBaseUrl);
+export async function exchangeAuthorizationCode({ workspaceBaseUrl, clientId, clientSecret, redirectUri, code, codeVerifier }) {
+  const workspace = normalizeBaseUrl(workspaceBaseUrl);
   const body = new URLSearchParams({
     grant_type: "authorization_code",
     client_id: clientId,
     redirect_uri: redirectUri,
     code,
     code_verifier: codeVerifier,
-    resource: partnerResourceAudience(hub),
+    resource: partnerResourceAudience(workspace),
   });
   if (clientSecret) body.set("client_secret", clientSecret);
 
-  const response = await fetch(new URL("/oauth/token", hub), {
+  const response = await fetch(new URL("/oauth/token", workspace), {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body,
@@ -338,7 +338,7 @@ export async function GET() {
 
   const redirectUri = `${process.env.PARTNER_APP_URL}/api/auth/anan/callback`;
   const url = buildAuthorizeUrl({
-    hubBaseUrl: process.env.ANAN_HUB_API_URL!,
+    workspaceBaseUrl: process.env.ANAN_WORKSPACE_API_URL!,
     clientId: process.env.ANAN_CLIENT_ID!,
     redirectUri,
     scopes,
@@ -370,7 +370,7 @@ export async function GET(request: NextRequest) {
 
   const redirectUri = `${process.env.PARTNER_APP_URL}/api/auth/anan/callback`;
   const tokens = await exchangeAuthorizationCode({
-    hubBaseUrl: process.env.ANAN_HUB_API_URL!,
+    workspaceBaseUrl: process.env.ANAN_WORKSPACE_API_URL!,
     clientId: process.env.ANAN_CLIENT_ID!,
     clientSecret: process.env.ANAN_CLIENT_SECRET || undefined,
     redirectUri,
@@ -398,9 +398,9 @@ export async function GET(request: NextRequest) {
 
 `saveAnanTokens` should write to your backend database or token vault. The standalone demo app uses encrypted HttpOnly cookies only to keep the example deployable without a database.
 
-## Calling Hub APIs
+## Calling Workspace APIs
 
-Copy this into `anan-hub-api.ts`.
+Copy this into `anan-workspace-api.ts`.
 
 ```ts
 export class AnanApiError extends Error {
@@ -415,18 +415,18 @@ export class AnanApiError extends Error {
 
 async function parseAnanError(response: Response) {
   const payload = await response.json().catch(() => null) as { error?: string; message?: string } | null;
-  return new AnanApiError(payload?.message ?? payload?.error ?? "Anan API error", payload?.error ?? "hub_api_error", response.status);
+  return new AnanApiError(payload?.message ?? payload?.error ?? "Anan API error", payload?.error ?? "workspace_api_error", response.status);
 }
 
 export async function ananFetch<T>(input: {
-  hubBaseUrl: string;
+  workspaceBaseUrl: string;
   organizationId: string;
   accessToken: string;
   path: string;
   init?: RequestInit;
 }) {
-  const hub = input.hubBaseUrl.replace(/\/+$/u, "");
-  const response = await fetch(`${hub}/api/v1/partner/organizations/${encodeURIComponent(input.organizationId)}${input.path}`, {
+  const workspace = input.workspaceBaseUrl.replace(/\/+$/u, "");
+  const response = await fetch(`${workspace}/api/v1/partner/organizations/${encodeURIComponent(input.organizationId)}${input.path}`, {
     ...input.init,
     headers: {
       authorization: `Bearer ${input.accessToken}`,
@@ -438,21 +438,21 @@ export async function ananFetch<T>(input: {
   return response.json() as Promise<T>;
 }
 
-export function getOrganization(input: { hubBaseUrl: string; organizationId: string; accessToken: string }) {
+export function getOrganization(input: { workspaceBaseUrl: string; organizationId: string; accessToken: string }) {
   return ananFetch({
     ...input,
     path: "/me",
   });
 }
 
-export function listClients(input: { hubBaseUrl: string; organizationId: string; accessToken: string }) {
+export function listClients(input: { workspaceBaseUrl: string; organizationId: string; accessToken: string }) {
   return ananFetch({
     ...input,
     path: "/clients",
   });
 }
 
-export function listProperties(input: { hubBaseUrl: string; organizationId: string; accessToken: string }) {
+export function listProperties(input: { workspaceBaseUrl: string; organizationId: string; accessToken: string }) {
   return ananFetch({
     ...input,
     path: "/properties",
@@ -460,13 +460,13 @@ export function listProperties(input: { hubBaseUrl: string; organizationId: stri
 }
 
 export function createClient(input: {
-  hubBaseUrl: string;
+  workspaceBaseUrl: string;
   organizationId: string;
   accessToken: string;
   client: { name: string; contact?: string; phone?: string; type?: "Buyer" | "Tenant" | "Investor" | "Broker" };
 }) {
   return ananFetch({
-    hubBaseUrl: input.hubBaseUrl,
+    workspaceBaseUrl: input.workspaceBaseUrl,
     organizationId: input.organizationId,
     accessToken: input.accessToken,
     path: "/clients",
@@ -478,14 +478,14 @@ export function createClient(input: {
 }
 
 export function updateClient(input: {
-  hubBaseUrl: string;
+  workspaceBaseUrl: string;
   organizationId: string;
   accessToken: string;
   clientId: string;
   patch: { name?: string; contact?: string; phone?: string; status?: "active" | "inactive" };
 }) {
   return ananFetch({
-    hubBaseUrl: input.hubBaseUrl,
+    workspaceBaseUrl: input.workspaceBaseUrl,
     organizationId: input.organizationId,
     accessToken: input.accessToken,
     path: `/clients/${encodeURIComponent(input.clientId)}`,
@@ -523,7 +523,7 @@ app.get("/auth/anan/start", (req, res) => {
   res.cookie("anan_pkce_verifier", verifier, { httpOnly: true, sameSite: "lax", maxAge: 10 * 60 * 1000 });
 
   res.redirect(buildAuthorizeUrl({
-    hubBaseUrl: process.env.ANAN_HUB_API_URL,
+    workspaceBaseUrl: process.env.ANAN_WORKSPACE_API_URL,
     clientId: process.env.ANAN_CLIENT_ID,
     redirectUri: `${process.env.PARTNER_APP_URL}/auth/anan/callback`,
     scopes,
@@ -540,7 +540,7 @@ app.get("/auth/anan/callback", async (req, res, next) => {
     }
 
     const tokens = await exchangeAuthorizationCode({
-      hubBaseUrl: process.env.ANAN_HUB_API_URL,
+      workspaceBaseUrl: process.env.ANAN_WORKSPACE_API_URL,
       clientId: process.env.ANAN_CLIENT_ID,
       clientSecret: process.env.ANAN_CLIENT_SECRET || undefined,
       redirectUri: `${process.env.PARTNER_APP_URL}/auth/anan/callback`,
@@ -581,10 +581,10 @@ Backend flow:
 Example:
 
 ```ts
-import { getOrganization, listClients, listProperties } from "./anan-hub-api";
+import { getOrganization, listClients, listProperties } from "./anan-workspace-api";
 
 export async function buildProfilePdfData(input: {
-  hubBaseUrl: string;
+  workspaceBaseUrl: string;
   organizationId: string;
   accessToken: string;
 }) {
@@ -626,7 +626,7 @@ Never place access tokens in browser JavaScript, query params, logs, or local st
 - Key token records by `organization_id`.
 - Refresh tokens before access-token expiry when using `offline_access`.
 - Delete tokens when a workspace disconnects your app.
-- Treat all Hub API failures as authorization-sensitive and avoid logging token values.
+- Treat all Workspace API failures as authorization-sensitive and avoid logging token values.
 
 ## Existing Examples
 

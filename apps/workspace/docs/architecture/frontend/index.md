@@ -13,7 +13,7 @@ This folder does not own broad system-wide specification text. If content crosse
 | File | Purpose |
 | --- | --- |
 | [App Router](app-router.md) | Use Next.js 16.2.4 App Router. |
-| [Page Shell](page-shell.md) | Use one hub shell for sidebar, topbar, organization selector, and content region. |
+| [Page Shell](page-shell.md) | Use one workspace shell for sidebar, topbar, organization selector, and content region. |
 | [Realtime Ui](realtime-ui.md) | Use Convex reactive queries for submissions, properties, sync events, and audit state. |
 | [Shadcn Usage](shadcn-usage.md) | Use official ShadCN/UI primitives. |
 

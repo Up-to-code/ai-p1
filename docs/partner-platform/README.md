@@ -1,6 +1,6 @@
 # Anan Partner Platform Flow
 
-This document explains how Partners, Admin, Hub, workspace authorization, and partner apps work together.
+This document explains how Partners, Admin, Workspace, workspace authorization, and partner apps work together.
 
 The product model is organization-level OAuth. A workspace user does not authorize personal data for a partner app. A user with the `oauthApp:authorize` permission authorizes a partner app for the whole organization, for the approved scopes, for a limited lifetime.
 
@@ -8,12 +8,12 @@ The product model is organization-level OAuth. A workspace user does not authori
 
 | App | Local port | Responsibility | Source of truth |
 | --- | --- | --- | --- |
-| Hub | `http://localhost:3000` | OAuth server, partner app approval state, catalog, organization consent, partner resource APIs | Approved apps, OAuth clients, organization partner connections |
+| Workspace | `http://localhost:3000` | OAuth server, partner app approval state, catalog, organization consent, partner resource APIs | Approved apps, OAuth clients, organization partner connections |
 | Partners | `http://localhost:3002` | Developer portal, drafts, app setup, submission history | Developer drafts and submission state |
-| Admin | `http://localhost:3003` | Internal review UI for pending partner app submissions | Review action UI, backed by Hub APIs |
+| Admin | `http://localhost:3003` | Internal review UI for pending partner app submissions | Review action UI, backed by Workspace APIs |
 | Demo partner app | `http://localhost:3004` | Standalone partner implementation example | Partner-side OAuth/session/token storage example |
 
-Hub owns production authorization. Partners owns developer drafts. Admin is a review surface over Hub service APIs. Partner apps only access workspace data through Hub Hono APIs.
+Workspace owns production authorization. Partners owns developer drafts. Admin is a review surface over Workspace service APIs. Partner apps only access workspace data through Workspace Hono APIs.
 
 ## Business Flow
 
@@ -22,29 +22,29 @@ sequenceDiagram
   participant Dev as Developer
   participant Partners as Partners
   participant Admin as Admin
-  participant Hub as Hub
+  participant Workspace as Workspace
   participant Workspace as Workspace admin
   participant App as Partner app
 
   Dev->>Partners: Create app draft
   Dev->>Partners: Submit for review
-  Partners->>Hub: POST /api/v1/admin/partner-app-registrations
-  Hub->>Hub: Upsert pending partner app and OAuth client metadata
-  Admin->>Hub: Review pending submission
-  Admin->>Hub: PATCH /api/v1/admin/partner-apps/:appId/review
-  Hub->>Partners: POST /api/anan-review-callback
-  Hub->>Hub: Publish approved app in integrations catalog
-  Workspace->>Hub: Open approved app details
-  Hub-->>Workspace: Visit Partner
+  Partners->>Workspace: POST /api/v1/admin/partner-app-registrations
+  Workspace->>Workspace: Upsert pending partner app and OAuth client metadata
+  Admin->>Workspace: Review pending submission
+  Admin->>Workspace: PATCH /api/v1/admin/partner-apps/:appId/review
+  Workspace->>Partners: POST /api/anan-review-callback
+  Workspace->>Workspace: Publish approved app in integrations catalog
+  Workspace->>Workspace: Open approved app details
+  Workspace-->>Workspace: Visit Partner
   Workspace->>App: Open partner product
   App-->>Workspace: Authorize with Anan
-  Workspace->>Hub: OAuth authorization-code + PKCE
-  Hub->>Hub: Create organization partner connection
-  Hub-->>App: Return code to redirect URI
-  App->>Hub: POST /oauth/token
-  Hub-->>App: Access token, optional refresh token, organization_id
-  App->>Hub: GET /api/v1/partner/organizations/:organizationId/...
-  Hub-->>App: Authorized organization data
+  Workspace->>Workspace: OAuth authorization-code + PKCE
+  Workspace->>Workspace: Create organization partner connection
+  Workspace-->>App: Return code to redirect URI
+  App->>Workspace: POST /oauth/token
+  Workspace-->>App: Access token, optional refresh token, organization_id
+  App->>Workspace: GET /api/v1/partner/organizations/:organizationId/...
+  Workspace-->>App: Authorized organization data
 ```
 
 ## Developer App Registration
@@ -52,19 +52,19 @@ sequenceDiagram
 The developer creates an app in Partners with:
 
 - App name and publisher.
-- Partner app URL. This is where Hub sends users when they click `Visit Partner`.
+- Partner app URL. This is where Workspace sends users when they click `Visit Partner`.
 - Redirect URI. Example: `https://partner.example.com/api/auth/anan/callback`.
 - Client type: public PKCE for browser-started flows, confidential for trusted server apps.
 - Requested scopes. V1 supports read scopes and safe client write scopes.
 - Optional logo, icon, and webhook settings.
 
-Partners stores draft state locally. Drafts do not appear in Hub.
+Partners stores draft state locally. Drafts do not appear in Workspace.
 
-On submit, Partners sends a versioned registration payload to Hub. Hub upserts the partner app as `pending` and syncs OAuth client metadata. Approval changes the Hub partner app to `approved` and publishes it to the catalog.
+On submit, Partners sends a versioned registration payload to Workspace. Workspace upserts the partner app as `pending` and syncs OAuth client metadata. Approval changes the Workspace partner app to `approved` and publishes it to the catalog.
 
 ## Admin Review
 
-Admin calls Hub with a service token:
+Admin calls Workspace with a service token:
 
 ```txt
 GET   /api/v1/admin/partner-apps
@@ -73,11 +73,11 @@ PATCH /api/v1/admin/partner-apps/:appId/review
 
 Review statuses:
 
-- `approved`: app can appear in Hub Integrations and can complete OAuth.
+- `approved`: app can appear in Workspace Integrations and can complete OAuth.
 - `rejected`: app remains unavailable to workspace users.
 - `suspended`: existing catalog/authorization access should be blocked.
 
-When Admin approves, Hub syncs the OAuth client and calls Partners:
+When Admin approves, Workspace syncs the OAuth client and calls Partners:
 
 ```txt
 POST /api/anan-review-callback
@@ -85,9 +85,9 @@ POST /api/anan-review-callback
 
 Partners then marks the developer app `active`.
 
-## Hub Integrations
+## Workspace Integrations
 
-Hub Integrations has two production paths:
+Workspace Integrations has two production paths:
 
 - Catalog: approved partner apps only.
 - Connected: organization partner connections with status.
@@ -113,13 +113,13 @@ Partners use OAuth 2.1 authorization code with PKCE.
 Authorization endpoint:
 
 ```txt
-GET {ANAN_HUB_API_URL}/oauth/authorize
+GET {ANAN_WORKSPACE_API_URL}/oauth/authorize
 ```
 
 Token endpoint:
 
 ```txt
-POST {ANAN_HUB_API_URL}/oauth/token
+POST {ANAN_WORKSPACE_API_URL}/oauth/token
 ```
 
 Required authorization parameters:
@@ -130,16 +130,16 @@ Required authorization parameters:
 | `client_id` | Approved OAuth client ID |
 | `redirect_uri` | Registered callback URI |
 | `scope` | Space-separated approved scopes |
-| `resource` | `{ANAN_HUB_API_URL}/api/v1/partner` |
+| `resource` | `{ANAN_WORKSPACE_API_URL}/api/v1/partner` |
 | `state` | Random CSRF value stored server-side |
 | `code_challenge` | S256 PKCE challenge |
 | `code_challenge_method` | `S256` |
 
-The `resource` parameter is important. Without it, Hub can issue an opaque access token. Partner Hono APIs expect a JWT access token with the partner API audience.
+The `resource` parameter is important. Without it, Workspace can issue an opaque access token. Partner Hono APIs expect a JWT access token with the partner API audience.
 
 ## Organization Consent
 
-Hub handles:
+Workspace handles:
 
 - Sign-in if the user is not authenticated.
 - Organization selection if no active organization is selected.
@@ -156,10 +156,10 @@ Connection defaults:
 | User role | Only decides whether the user can grant/revoke |
 | Delete scopes | Hidden from normal self-serve v1 |
 
-Hub stores organization partner connections with:
+Workspace stores organization partner connections with:
 
 - `organizationId`
-- Hub partner app ID
+- Workspace partner app ID
 - OAuth client ID
 - `authorizedByUserId`
 - approved `scopes`
@@ -168,7 +168,7 @@ Hub stores organization partner connections with:
 
 ## Partner Resource APIs
 
-Partner data access must go through Hub Hono routes:
+Partner data access must go through Workspace Hono routes:
 
 ```txt
 GET   /api/v1/partner/organizations/:organizationId/me
@@ -210,28 +210,28 @@ Common errors:
 Partners:
 
 ```bash
-ANAN_HUB_API_URL=http://localhost:3000
+ANAN_WORKSPACE_API_URL=http://localhost:3000
 ANAN_PLATFORM_SERVICE_TOKEN=shared-service-token
 ```
 
 Admin:
 
 ```bash
-HUB_API_BASE_URL=http://localhost:3000
-HUB_ADMIN_SERVICE_TOKEN=shared-service-token
+WORKSPACE_API_BASE_URL=http://localhost:3000
+WORKSPACE_ADMIN_SERVICE_TOKEN=shared-service-token
 ```
 
-Hub:
+Workspace:
 
 ```bash
 SITE_URL=http://localhost:3000
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 PARTNER_APPS_ENABLED=true
-HUB_ADMIN_SERVICE_TOKEN=shared-service-token
+WORKSPACE_ADMIN_SERVICE_TOKEN=shared-service-token
 PARTNERS_REVIEW_CALLBACK_TOKEN=shared-service-token
 ```
 
-Optional Hub overrides:
+Optional Workspace overrides:
 
 ```bash
 PARTNER_OAUTH_ISSUER=http://localhost:3000
@@ -241,7 +241,7 @@ PARTNER_OAUTH_AUDIENCE=http://localhost:3000/api/v1/partner
 Demo partner app:
 
 ```bash
-ANAN_HUB_API_URL=http://localhost:3000
+ANAN_WORKSPACE_API_URL=http://localhost:3000
 ANAN_CLIENT_ID=partners_client_...
 ANAN_CLIENT_SECRET=
 PARTNER_APP_URL=http://localhost:3004
@@ -253,7 +253,7 @@ Leave `ANAN_CLIENT_SECRET` empty for public PKCE apps.
 
 ## Local Acceptance Checklist
 
-1. Start Hub on `http://localhost:3000`.
+1. Start Workspace on `http://localhost:3000`.
 2. Start Partners on `http://localhost:3002`.
 3. Start Admin on `http://localhost:3003`.
 4. Start the demo app on `http://localhost:3004`.
@@ -267,9 +267,9 @@ Leave `ANAN_CLIENT_SECRET` empty for public PKCE apps.
 7. Approve in Admin.
 8. Copy the approved client ID to the demo app `ANAN_CLIENT_ID`.
 9. Open the demo, unlock it, and click `Authorize with Anan`.
-10. Consent in Hub.
+10. Consent in Workspace.
 11. Confirm the demo reads organization, clients, and properties.
-12. Create and update a demo client through Hub Hono APIs.
+12. Create and update a demo client through Workspace Hono APIs.
 
 ## Developer Guide
 

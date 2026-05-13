@@ -23,7 +23,7 @@ export function demoConfig(env: Record<string, string | undefined> = process.env
   if (sessionSecret.length < 32) throw new Error("SESSION_SECRET must be at least 32 characters.");
 
   return {
-    hubBaseUrl: normalizeBaseUrl(requiredEnv("ANAN_HUB_API_URL", env)),
+    workspaceBaseUrl: normalizeBaseUrl(requiredEnv("ANAN_WORKSPACE_API_URL", env)),
     clientId: requiredEnv("ANAN_CLIENT_ID", env),
     clientSecret: optionalEnv("ANAN_CLIENT_SECRET", env),
     partnerAppUrl: normalizeBaseUrl(requiredEnv("PARTNER_APP_URL", env)),
@@ -34,7 +34,7 @@ export function demoConfig(env: Record<string, string | undefined> = process.env
 
 export function publicDemoConfig(env: Record<string, string | undefined> = process.env) {
   return {
-    hubBaseUrl: normalizeBaseUrl(env.ANAN_HUB_API_URL ?? "http://localhost:3000"),
+    workspaceBaseUrl: normalizeBaseUrl(env.ANAN_WORKSPACE_API_URL ?? "http://localhost:3000"),
     partnerAppUrl: normalizeBaseUrl(env.PARTNER_APP_URL ?? "http://localhost:3004"),
   };
 }

@@ -9,9 +9,11 @@ description: Create an app and complete your first OAuth authorization-code flow
 - Choose a public client for browser-based integrations.
 - Add your partner app URL, for example `https://partner.example.com`.
 - Add your callback URL, for example `https://partner.example.com/oauth/callback`.
-- Start with read-only scopes during development. Add create or update scopes only when the workflow writes back to Hub.
+- Start with read-only scopes during development. Add create or update scopes only when the workflow writes back to Workspace.
 
 ## Add the authorization button
+
+If you are using a coding agent, start with the [AI agent implementation prompt](/docs/ai-agent-implementation). It includes the button, PKCE routes, existing env names, and server-side Workspace API requirements.
 
 ```tsx
 export function AuthorizeWithAnanButton() {
@@ -26,7 +28,8 @@ export function AuthorizeWithAnanButton() {
 ## Build the authorization URL
 
 ```ts
-const authorizationUrl = new URL("https://app.anan.test/oauth/authorize");
+const workspaceBaseUrl = process.env.ANAN_WORKSPACE_API_URL!;
+const authorizationUrl = new URL("/oauth/authorize", workspaceBaseUrl);
 authorizationUrl.searchParams.set("response_type", "code");
 authorizationUrl.searchParams.set("client_id", process.env.ANAN_CLIENT_ID!);
 authorizationUrl.searchParams.set("redirect_uri", "https://partner.example.com/oauth/callback");

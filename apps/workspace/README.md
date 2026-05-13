@@ -1,36 +1,125 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Anan Workspace App
 
-## Getting Started
+Workspace is the main Anan product and platform authority. It owns the
+customer-facing workspace, organization auth, OAuth provider, partner resource
+APIs, admin service APIs, Convex backend, and most Workspace domain logic.
 
-First, run the development server:
+## Local Development
+
+From the repository root:
+
+```bash
+npm run dev:workspace
+```
+
+From this app folder:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Default local URL: `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The dev script starts Next.js and Convex together. Use
+`npm run dev:next` or `npm run dev:convex` when debugging only one side.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Main Responsibilities
 
-## Learn More
+- Authenticated Workspace product pages.
+- Public localized pages and legal pages.
+- Better Auth integration and organization-aware session handling.
+- OAuth authorization code + PKCE provider for partner apps.
+- Partner resource APIs under `/api/v1/partner`.
+- Internal service APIs used by Partners and Admin Review.
+- Upload, map, AI runtime, observability, permissions, and domain services.
 
-To learn more about Next.js, take a look at the following resources:
+## Important Routes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Route area | Purpose |
+| --- | --- |
+| `src/app/[locale]/(app)` | Authenticated product pages: dashboard, activity, calendar, clients, integrations, organization, projects, properties, team |
+| `src/app/[locale]/(auth)` | Sign-in, sign-up, invite acceptance, organization selection |
+| `src/app/[locale]/(public)` | Public website and legal pages inside Workspace |
+| `src/app/oauth/authorize` | OAuth authorization endpoint |
+| `src/app/oauth/token` | OAuth token endpoint |
+| `src/app/oauth/consent` | Consent page for partner access |
+| `src/app/oauth/select-organization` | Organization selection for OAuth |
+| `src/app/api/auth/[...all]` | Better Auth route handler |
+| `src/app/api/[[...route]]` | Hono/API route entrypoint |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Important Folders
 
-## Deploy on Vercel
+| Folder | Purpose |
+| --- | --- |
+| `convex` | Workspace Convex schema, functions, auth bridge, generated clients |
+| `src/app` | Next.js App Router pages, layouts, and route handlers |
+| `src/components` | Workspace UI components |
+| `src/lib` | App-level helpers and integrations |
+| `src/server` | Server domains, auth, cache, protocols, routing, validation, observability |
+| `docs` | Deep Workspace architecture, auth, data model, SDK, security, and visibility docs |
+| `messages` | Locale message files |
+| `public` | Static assets |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Do not edit generated folders by hand, including `.next` and
+`convex/_generated`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Environment
+
+See the canonical repo reference:
+
+- [Setup and configuration](../../SETUP_AND_CONFIGURATION.md)
+- [Environment variables](../../docs/ENVIRONMENT.md)
+
+Common Workspace variables include:
+
+- `NEXT_PUBLIC_SITE_URL`
+- `SITE_URL`
+- `BETTER_AUTH_SECRET`
+- `NEXT_PUBLIC_CONVEX_URL`
+- `CONVEX_URL`
+- `NEXT_PUBLIC_CONVEX_SITE_URL`
+- `CONVEX_SITE_URL`
+- `PARTNER_APPS_ENABLED`
+- `PARTNER_OAUTH_ISSUER`
+- `PARTNER_OAUTH_AUDIENCE`
+- `WORKSPACE_ADMIN_SERVICE_TOKEN`
+- `PARTNERS_REVIEW_CALLBACK_TOKEN`
+- `OPENROUTER_API_KEY`
+- `UPLOADTHING_TOKEN`
+- `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`
+- `NEXT_PUBLIC_SENTRY_DSN`
+
+Secret values belong in `.env.local`, Vercel, or Convex deployment env. Do not
+commit real token values.
+
+## Scripts
+
+```bash
+npm run dev
+npm run dev:stack
+npm run dev:next
+npm run dev:convex
+npm run build
+npm run typecheck
+npm run lint
+npm run check:convex-runtime
+npm test
+npm run test:e2e
+```
+
+From the repository root:
+
+```bash
+npm --workspace @anan/workspace run typecheck
+npm --workspace @anan/workspace test
+npm --workspace @anan/workspace run test:e2e
+```
+
+## Documentation
+
+- [Root README](../../README.md)
+- [Repo architecture](../../docs/ARCHITECTURE.md)
+- [Apps and packages](../../docs/APPS.md)
+- [Workspace docs index](./docs/README.md)
+- [Workspace server README](./src/server/README.md)
+- [Workspace Convex README](./convex/README.md)

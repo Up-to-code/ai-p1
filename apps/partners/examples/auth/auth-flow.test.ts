@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { HubApiError, loadAnanClients } from "./hub-api";
+import { WorkspaceApiError, loadAnanClients } from "./workspace-api";
 import { buildAnanAuthorizeUrl } from "./oauth-url";
 import { localDemoRegistration } from "./local-demo-registration";
 import { createCodeChallenge, createCodeVerifier } from "./pkce";
@@ -15,7 +15,7 @@ function jsonResponse(payload: unknown, status = 200) {
 describe("partner OAuth examples", () => {
   it("builds an organization authorization URL with PKCE and canonical scopes", () => {
     const url = new URL(buildAnanAuthorizeUrl({
-      hubBaseUrl: "http://localhost:3000/",
+      workspaceBaseUrl: "http://localhost:3000/",
       clientId: "partners_client_123",
       redirectUri: "https://pdf.example.com/api/auth/anan/callback",
       scopes: ["organization:read", "client:read", "property:read"],
@@ -36,7 +36,7 @@ describe("partner OAuth examples", () => {
 
   it("builds the current local Anan OAuth Demo authorization URL", () => {
     const url = new URL(buildAnanAuthorizeUrl({
-      hubBaseUrl: "http://localhost:3000",
+      workspaceBaseUrl: "http://localhost:3000",
       clientId: localDemoRegistration.clientId,
       redirectUri: localDemoRegistration.redirectUri,
       scopes: [...localDemoRegistration.scopes],
@@ -80,7 +80,7 @@ describe("partner OAuth examples", () => {
     }));
 
     const tokens = await exchangeAuthorizationCode({
-      hubBaseUrl: "localhost:3000",
+      workspaceBaseUrl: "localhost:3000",
       clientId: "partners_client_123",
       code: "code-123",
       redirectUri: "https://pdf.example.com/api/auth/anan/callback",
@@ -105,7 +105,7 @@ describe("partner OAuth examples", () => {
     }));
 
     const tokens = await refreshAccessToken({
-      hubBaseUrl: "http://localhost:3000",
+      workspaceBaseUrl: "http://localhost:3000",
       clientId: "partners_client_123",
       refreshToken: "refresh-token",
       fetcher,
@@ -115,11 +115,11 @@ describe("partner OAuth examples", () => {
     expect(String(fetcher.mock.calls[0][1]?.body)).toContain("grant_type=refresh_token");
   });
 
-  it("loads clients from Hub Hono APIs using the bearer token", async () => {
+  it("loads clients from Workspace Hono APIs using the bearer token", async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse({ clients: [{ id: "client_1" }] }));
 
     const payload = await loadAnanClients({
-      hubBaseUrl: "http://localhost:3000",
+      workspaceBaseUrl: "http://localhost:3000",
       organizationId: "org_123",
       accessToken: "access-token",
       fetcher,
@@ -137,10 +137,10 @@ describe("partner OAuth examples", () => {
     }, 401));
 
     await expect(loadAnanClients({
-      hubBaseUrl: "http://localhost:3000",
+      workspaceBaseUrl: "http://localhost:3000",
       organizationId: "org_123",
       accessToken: "expired-token",
       fetcher,
-    })).rejects.toMatchObject(new HubApiError("Reconnect this organization.", "connection_expired", 401));
+    })).rejects.toMatchObject(new WorkspaceApiError("Reconnect this organization.", "connection_expired", 401));
   });
 });

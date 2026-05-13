@@ -11,7 +11,7 @@ export const partnerAppStatusValidator = v.union(
 
 export const partnerAppClientTypeValidator = v.union(v.literal("public"), v.literal("confidential"));
 
-export const hubSyncStatusValidator = v.union(
+export const workspaceSyncStatusValidator = v.union(
   v.literal("not_synced"),
   v.literal("pending"),
   v.literal("synced"),
@@ -70,10 +70,10 @@ export default defineSchema({
     redirectUris: v.array(v.string()),
     allowedScopes: v.array(v.string()),
     status: partnerAppStatusValidator,
-    hubPartnerAppId: v.optional(v.string()),
-    hubOauthClientId: v.optional(v.string()),
-    hubSyncStatus: v.optional(hubSyncStatusValidator),
-    hubSyncError: v.optional(v.string()),
+    workspacePartnerAppId: v.optional(v.string()),
+    workspaceOauthClientId: v.optional(v.string()),
+    workspaceSyncStatus: v.optional(workspaceSyncStatusValidator),
+    workspaceSyncError: v.optional(v.string()),
     ananWorkspaceClientId: v.optional(v.string()),
     authorizationExpiresAfterDays: v.number(),
     reviewNotes: v.optional(v.string()),

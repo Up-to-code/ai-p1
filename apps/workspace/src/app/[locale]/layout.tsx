@@ -48,7 +48,7 @@ const themeInitScript = `
 
 export const metadata: Metadata = {
   title: "Anand Platform",
-  description: "Saudi Arabia Central Real Estate Data Hub",
+  description: "Saudi Arabia Central Real Estate Data Workspace",
 };
 
 export default async function RootLayout({

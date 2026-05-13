@@ -11,7 +11,7 @@ export function getMissingPartnersProductionEnv() {
   const missing: string[] = [];
   if (!hasAnyEnv(CONVEX_URL_KEYS)) missing.push("CONVEX_URL or NEXT_PUBLIC_CONVEX_URL");
   if (!hasAnyEnv(CONVEX_SITE_URL_KEYS)) missing.push("CONVEX_SITE_URL or NEXT_PUBLIC_CONVEX_SITE_URL");
-  for (const key of ["BETTER_AUTH_SECRET", "PARTNER_SIGNUP_BRIDGE_SECRET", "ANAN_HUB_SERVICE_TOKEN", "PARTNERS_REVIEW_CALLBACK_TOKEN"]) {
+  for (const key of ["BETTER_AUTH_SECRET", "PARTNER_SIGNUP_BRIDGE_SECRET", "ANAN_WORKSPACE_SERVICE_TOKEN", "PARTNERS_REVIEW_CALLBACK_TOKEN"]) {
     if (!process.env[key]?.trim()) missing.push(key);
   }
   return missing;

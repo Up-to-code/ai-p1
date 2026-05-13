@@ -5,7 +5,7 @@ import { localDemoRegistration } from "./local-demo-registration";
 describe("demo config", () => {
   it("requires a long session secret", () => {
     expect(() => demoConfig({
-      ANAN_HUB_API_URL: "http://localhost:3000",
+      ANAN_WORKSPACE_API_URL: "http://localhost:3000",
       ANAN_CLIENT_ID: "client",
       PARTNER_APP_URL: "http://localhost:3004",
       DEMO_ACCESS_TOKEN: "token",

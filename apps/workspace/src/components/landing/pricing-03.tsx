@@ -44,7 +44,7 @@ const planCopy = {
         id: "launch",
         name: "Launch",
         price: 79,
-        description: "For lean teams moving live inventory and client work into one trusted hub.",
+        description: "For lean teams moving live inventory and client work into one trusted workspace.",
         buttonText: "Start launch",
         features: [
           { title: "Project and unit workspace", tooltip: "sync" },
