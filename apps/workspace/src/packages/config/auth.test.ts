@@ -46,4 +46,28 @@ describe("auth runtime config", () => {
       ]),
     );
   });
+
+  it("trusts the production Workspace and Admin origins by default", async () => {
+    const { getAuthRuntimeConfig } = await loadAuthConfig({
+      BETTER_AUTH_SECRET: "x".repeat(32),
+      VERCEL_URL: "",
+      VERCEL_PROJECT_PRODUCTION_URL: "",
+      NEXT_PUBLIC_SITE_URL: "",
+      SITE_URL: "",
+      BETTER_AUTH_URL: "",
+      ADMIN_SITE_URL: "",
+      BETTER_AUTH_TRUSTED_ORIGINS: "",
+      TRUSTED_ORIGINS: "",
+    });
+
+    const config = getAuthRuntimeConfig("runtime");
+
+    expect(config.siteUrl).toBe("https://app.qentrah.com");
+    expect(config.trustedOrigins).toEqual(expect.arrayContaining([
+      "https://app.qentrah.com",
+      "https://admin.qentrah.com",
+      "http://localhost:3000",
+      "http://localhost:3003",
+    ]));
+  });
 });

@@ -1,4 +1,5 @@
 import { makeFunctionReference } from "convex/server";
+import { timingSafeEqual } from "node:crypto";
 import type { Id } from "@convex/_generated/dataModel";
 import { convexHttp } from "@/server/convex/http-client";
 import type {
@@ -67,7 +68,14 @@ export function adminServiceTokenFromEnv(env: ServiceTokenEnv = process.env) {
 }
 
 export function partnersReviewCallbackTokenFromEnv(env: ServiceTokenEnv = process.env) {
-  return env.PARTNERS_REVIEW_CALLBACK_TOKEN?.trim() || env.WORKSPACE_ADMIN_SERVICE_TOKEN?.trim() || "";
+  return env.PARTNERS_REVIEW_CALLBACK_TOKEN?.trim() || "";
+}
+
+function timingSafeTokenEqual(supplied: string, expected: string) {
+  const suppliedBuffer = Buffer.from(supplied);
+  const expectedBuffer = Buffer.from(expected);
+  if (suppliedBuffer.length !== expectedBuffer.length) return false;
+  return timingSafeEqual(suppliedBuffer, expectedBuffer);
 }
 
 export function assertAdminServiceToken(headers: Headers, env: ServiceTokenEnv = process.env) {
@@ -75,8 +83,27 @@ export function assertAdminServiceToken(headers: Headers, env: ServiceTokenEnv =
   const authorization = headers.get("authorization");
   const bearer = authorization?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
   const supplied = bearer || headers.get("x-workspace-admin-service-token")?.trim();
-  if (!expected || supplied !== expected) {
+  if (!expected || !supplied || !timingSafeTokenEqual(supplied, expected)) {
     throw new Error("Invalid Workspace admin service token.");
+  }
+}
+
+function normalizeOrigin(value: string | undefined) {
+  return value?.trim().replace(/\/+$/u, "") ?? "";
+}
+
+export function trustedAdminOriginsFromEnv(env: ServiceTokenEnv = process.env) {
+  return Array.from(new Set([
+    normalizeOrigin(env.ADMIN_SITE_URL) || "https://admin.qentrah.com",
+    env.NODE_ENV === "production" ? "" : "http://localhost:3003",
+  ].filter(Boolean)));
+}
+
+export function assertTrustedAdminOrigin(headers: Headers, env: ServiceTokenEnv = process.env) {
+  const supplied = normalizeOrigin(headers.get("origin") ?? headers.get("x-qentrah-admin-origin") ?? undefined);
+  const trusted = trustedAdminOriginsFromEnv(env);
+  if (!supplied || !trusted.includes(supplied)) {
+    throw new Error("Invalid Workspace admin request origin.");
   }
 }
 

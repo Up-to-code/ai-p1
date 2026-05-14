@@ -48,7 +48,7 @@ const languages: Array<{ id: LanguageId; label: string }> = [
 const architecture = [
   {
     title: "Partner product",
-    description: "Starts consent from your own app with a PKCE challenge.",
+    description: "Starts consent from your app through the Qentrah SDK.",
     icon: Braces,
   },
   {
@@ -63,57 +63,103 @@ const architecture = [
   },
 ];
 
-function oauthAuthorizeUrl(app: PartnerAppSummary) {
+function sdkRouteConfig(app: PartnerAppSummary) {
   const redirectUri = app.redirectUris[0] ?? "https://partner.example.com/api/auth/qentrah/callback";
-  return `GET /oauth/authorize
-  ?client_id=${app.clientId}
-  &response_type=code
-  &redirect_uri=${encodeURIComponent(redirectUri)}
-  &scope=${encodeURIComponent(app.allowedScopes.join(" "))}
-  &code_challenge=<pkce-challenge>
-  &code_challenge_method=S256`;
+  return `npm install @qentrah/auth-sdk
+
+QENTRAH_WORKSPACE_API_URL=https://app.qentrah.com
+QENTRAH_CLIENT_ID=${app.clientId}
+QENTRAH_CLIENT_SECRET=
+QENTRAH_WEBHOOK_SECRET=whsec_...
+PARTNER_APP_URL=${redirectUri.replace(/\/api\/qentrah\/oauth\/callback$/, "")}
+
+Scopes:
+${app.allowedScopes.map((scope) => `- ${scope}`).join("\n")}`;
 }
 
 function codeFor(app: PartnerAppSummary, language: LanguageId) {
   const redirectUri = app.redirectUris[0] ?? "https://partner.example.com/api/auth/qentrah/callback";
-  const scopes = app.allowedScopes.join(" ");
+  const scopes = JSON.stringify(app.allowedScopes, null, 2);
 
   if (language === "typescript") {
-    return `type QentrahOAuthConfig = {
-  clientId: string;
-  redirectUri: string;
-  scopes: string[];
-};
+    return `// Browser entry
+import { mountQentrahAuthorizeButton } from "@qentrah/auth-sdk/partner/browser";
 
-const config: QentrahOAuthConfig = {
+mountQentrahAuthorizeButton({
+  buttonId: "qentrah-authorize",
+  startUrl: "/api/qentrah/oauth/start",
+  label: "Authorize with Qentrah",
+  disabledLabel: "Opening Qentrah...",
+});
+
+// app/api/qentrah/oauth/config.ts
+import { createQentrahPartnerAuthHandlers } from "@qentrah/auth-sdk/partner/next";
+import { createQentrahWebhookHandler } from "@qentrah/auth-sdk/partner/webhooks";
+import { createQentrahServiceAppClient } from "@qentrah/auth-sdk/partner/service-app";
+
+export const runtime = "nodejs";
+
+export const qentrahAuth = createQentrahPartnerAuthHandlers({
+  workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL!,
   clientId: "${app.clientId}",
+  clientSecret: process.env.QENTRAH_CLIENT_SECRET,
   redirectUri: "${redirectUri}",
-  scopes: ${JSON.stringify(app.allowedScopes, null, 2)},
-};
+  scopes: ${scopes},
+  sessionStore,
+  tokenStore,
+});
 
-const authorizeUrl = new URL("/oauth/authorize", process.env.QENTRAH_WORKSPACE_API_URL);
-authorizeUrl.searchParams.set("client_id", config.clientId);
-authorizeUrl.searchParams.set("response_type", "code");
-authorizeUrl.searchParams.set("redirect_uri", config.redirectUri);
-authorizeUrl.searchParams.set("scope", config.scopes.join(" "));
-authorizeUrl.searchParams.set("code_challenge", pkce.challenge);
-authorizeUrl.searchParams.set("code_challenge_method", "S256");`;
+export const qentrahWebhook = createQentrahWebhookHandler({
+  signingSecret: process.env.QENTRAH_WEBHOOK_SECRET!,
+  handlers: {
+    "client.created": async (event) => {
+      console.log("Client created", event.data);
+    },
+  },
+});
+
+const serviceApp = createQentrahServiceAppClient({
+  workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL!,
+  accessToken: "read-from-your-token-store",
+});`;
   }
 
   if (language === "javascript") {
-    return `const authorizeUrl = new URL("/oauth/authorize", process.env.QENTRAH_WORKSPACE_API_URL);
+    return `<button id="qentrah-authorize">Authorize with Qentrah</button>
+<script src="https://cdn.jsdelivr.net/npm/@qentrah/auth-sdk@0.1.5/dist/qentrah-auth.js"></script>
+<script>
+  window.QentrahAuth.mountAuthorizeButton({
+    buttonId: "qentrah-authorize",
+    startUrl: "/api/qentrah/oauth/start",
+    disabledLabel: "Opening Qentrah..."
+  });
+</script>
 
-authorizeUrl.searchParams.set("client_id", "${app.clientId}");
-authorizeUrl.searchParams.set("response_type", "code");
-authorizeUrl.searchParams.set("redirect_uri", "${redirectUri}");
-authorizeUrl.searchParams.set("scope", "${scopes}");
-authorizeUrl.searchParams.set("code_challenge", pkce.challenge);
-authorizeUrl.searchParams.set("code_challenge_method", "S256");
+// app/api/qentrah/oauth/start/route.js
+// app/api/qentrah/oauth/callback/route.js
+import { createQentrahPartnerAuthHandlers } from "@qentrah/auth-sdk/partner/next";
 
-return Response.redirect(authorizeUrl);`;
+export const runtime = "nodejs";
+const handlers = createQentrahPartnerAuthHandlers({
+  workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL,
+  clientId: "${app.clientId}",
+  clientSecret: process.env.QENTRAH_CLIENT_SECRET,
+  redirectUri: "${redirectUri}",
+  scopes: ${JSON.stringify(app.allowedScopes)},
+  sessionStore,
+  tokenStore
+});`;
   }
 
-  return `curl "https://workspace.qentrah.example/oauth/authorize?client_id=${app.clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}&code_challenge=<pkce-challenge>&code_challenge_method=S256"`;
+  return `# The browser helper can be loaded without npm:
+curl -L "https://cdn.jsdelivr.net/npm/@qentrah/auth-sdk@0.1.5/dist/qentrah-auth.js" -o public/vendor/qentrah/qentrah-auth.js
+
+# Backend calls still use saved server-side tokens:
+curl -X POST "https://app.qentrah.com/api/v1/partner/organizations/<organization-id>/resources/client/create" \\
+  -H "Authorization: Bearer <access-token>" \\
+  -H "Content-Type: application/json" \\
+  -H "Idempotency-Key: client-create-001" \\
+  -d '{"input":{"name":"New client","contact":"New client"}}'`;
 }
 
 function codeTitle(language: LanguageId) {
@@ -306,7 +352,7 @@ export function AppDetailsTabs({
             <div>
               <h2 className="text-xl font-bold text-foreground">Authorization values</h2>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Use these values in your app’s Qentrah authorization button and callback handler.
+                Use these values in the Qentrah SDK button, backend OAuth routes, and token storage.
               </p>
               <div className="mt-5 space-y-3">
                 <InfoBlock label="Client ID" value={app.clientId} />
@@ -314,14 +360,14 @@ export function AppDetailsTabs({
                 <InfoBlock label="Scopes" value={app.allowedScopes.join(", ")} />
               </div>
               <a
-                href="/docs/oauth-flow"
+                href="/docs/sdk-installation"
                 className="mt-5 inline-flex items-center gap-2 rounded-[7px] border border-border px-3 py-2 text-sm font-bold text-foreground transition-colors hover:bg-muted"
               >
-                Read OAuth flow
+                Read SDK setup
                 <ExternalLink className="size-4" />
               </a>
             </div>
-            <CodeEditor title="GET /oauth/authorize" code={oauthAuthorizeUrl(app)} compact />
+            <CodeEditor title="qentrah-sdk-values.txt" code={sdkRouteConfig(app)} compact />
           </div>
         ) : null}
 
@@ -335,7 +381,7 @@ export function AppDetailsTabs({
               <div>
                 <h2 className="text-xl font-bold text-foreground">Implementation starter</h2>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Pick the closest shape for your backend. Keep token exchange and refresh on your server.
+                  Pick the closest SDK shape for your product. Keep token exchange, refresh, and webhook secrets on your server.
                 </p>
               </div>
               <div className="flex rounded-[7px] border border-border bg-background p-1">

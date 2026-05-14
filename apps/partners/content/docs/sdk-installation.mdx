@@ -1,30 +1,222 @@
 ---
-title: OAuth without an SDK
-description: Use standards-based OAuth 2.1 directly while the official SDK is not published.
+title: Install the SDK
+description: Connect partner products with the Qentrah SDK, HTTPS browser bundle, OAuth routes, webhooks, and service-app APIs.
 ---
 
-## Current v1 path
+The SDK is the recommended integration path. Your browser only opens the authorization flow. Your backend owns PKCE state, token exchange, refresh, webhook verification, and token storage.
 
-Use OAuth 2.1 endpoints directly. Do not depend on an `@qentrah/auth-sdk` package unless your Qentrah contact has provided a private build.
+## Option 1: npm package
 
-## Frontend responsibility
+Use this path if your app has a JavaScript build step.
 
-The frontend should only start authorization and receive the callback route. Use the button copy Authorize with Qentrah.
+```bash
+npm install @qentrah/auth-sdk
+```
 
-```tsx
-export function AuthorizeWithQentrahButton() {
-  return <a href="/api/qentrah/oauth/start">Authorize with Qentrah</a>;
+```html
+<button id="qentrah-authorize">Authorize with Qentrah</button>
+```
+
+```js
+import { mountQentrahAuthorizeButton } from "@qentrah/auth-sdk/partner/browser";
+
+mountQentrahAuthorizeButton({
+  buttonId: "qentrah-authorize",
+  startUrl: "/api/qentrah/oauth/start",
+  label: "Authorize with Qentrah",
+  disabledLabel: "Opening Qentrah...",
+});
+```
+
+## Option 2: HTTPS script URL
+
+Use this path if your app does not use npm, TypeScript, or a bundler.
+
+```html
+<button id="qentrah-authorize">Authorize with Qentrah</button>
+
+<script src="https://cdn.jsdelivr.net/npm/@qentrah/auth-sdk@0.1.5/dist/qentrah-auth.js"></script>
+<script>
+  window.QentrahAuth.mountAuthorizeButton({
+    buttonId: "qentrah-authorize",
+    startUrl: "/api/qentrah/oauth/start",
+    label: "Authorize with Qentrah",
+    disabledLabel: "Opening Qentrah..."
+  });
+</script>
+```
+
+Alternative CDN:
+
+```html
+<script src="https://unpkg.com/@qentrah/auth-sdk@0.1.5/dist/qentrah-auth.js"></script>
+```
+
+Pin the version in production. Avoid `@latest` because it can change without a code review.
+
+## Option 3: host the browser file yourself
+
+If you prefer same-origin static assets, copy the bundle into your public folder:
+
+```bash
+mkdir -p public/vendor/qentrah
+cp node_modules/@qentrah/auth-sdk/dist/qentrah-auth.js public/vendor/qentrah/qentrah-auth.js
+```
+
+Then load it:
+
+```html
+<script src="/vendor/qentrah/qentrah-auth.js"></script>
+```
+
+You can automate the copy:
+
+```json
+{
+  "scripts": {
+    "postinstall": "mkdir -p public/vendor/qentrah && cp node_modules/@qentrah/auth-sdk/dist/qentrah-auth.js public/vendor/qentrah/qentrah-auth.js"
+  }
 }
 ```
 
-## Backend responsibility
+## Backend OAuth routes
 
-Your backend should generate PKCE values, store the verifier in a secure session, exchange the authorization code, refresh tokens, and call Workspace APIs.
+Create these routes in your backend:
+
+```txt
+GET /api/qentrah/oauth/start
+GET /api/qentrah/oauth/callback
+```
+
+Next.js route config:
 
 ```ts
-export async function startQentrahOAuth() {
-  // Generate code_verifier and S256 code_challenge.
-  // Store the verifier in an HttpOnly session.
-  // Redirect to /oauth/authorize.
-}
+// app/api/qentrah/oauth/config.ts
+import { createQentrahPartnerAuthHandlers } from "@qentrah/auth-sdk/partner/next";
+
+const pendingByState = new Map<string, any>();
+
+export const qentrahAuth = createQentrahPartnerAuthHandlers({
+  workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL!,
+  clientId: process.env.QENTRAH_CLIENT_ID!,
+  clientSecret: process.env.QENTRAH_CLIENT_SECRET,
+  redirectUri: `${process.env.PARTNER_APP_URL}/api/qentrah/oauth/callback`,
+  scopes: ["organization:read", "client:read"],
+
+  sessionStore: {
+    async savePendingAuthorization({ pending }) {
+      pendingByState.set(pending.state, pending);
+    },
+    async loadPendingAuthorization({ state }) {
+      return pendingByState.get(state) ?? null;
+    },
+    async clearPendingAuthorization({ state }) {
+      pendingByState.delete(state);
+    },
+  },
+
+  tokenStore: {
+    async saveTokens({ organizationId, tokenSet, scopes }) {
+      // Save encrypted tokens in your database or secrets store.
+      // Do not return tokens to the browser.
+      console.log("Connected", organizationId, scopes, tokenSet.expiresIn);
+    },
+  },
+
+  afterSuccessRedirect: "/settings/integrations/qentrah?connected=1",
+  afterErrorRedirect: "/settings/integrations/qentrah?error=1",
+});
 ```
+
+Start route:
+
+```ts
+// app/api/qentrah/oauth/start/route.ts
+import { qentrahAuth } from "../config";
+
+export const runtime = "nodejs";
+export const GET = qentrahAuth.start;
+```
+
+Callback route:
+
+```ts
+// app/api/qentrah/oauth/callback/route.ts
+import { qentrahAuth } from "../config";
+
+export const runtime = "nodejs";
+export const GET = qentrahAuth.callback;
+```
+
+The `Map` example is only for local development. In production, use durable session storage, encrypted cookies, Redis, or your database.
+
+## Webhook route
+
+```ts
+// app/api/qentrah/webhooks/route.ts
+import { createQentrahWebhookHandler } from "@qentrah/auth-sdk/partner/webhooks";
+
+export const runtime = "nodejs";
+
+export const POST = createQentrahWebhookHandler({
+  signingSecret: process.env.QENTRAH_WEBHOOK_SECRET!,
+  handlers: {
+    "client.created": async (event) => {
+      console.log("Client created", event.data);
+    },
+    "client.updated": async (event) => {
+      console.log("Client updated", event.data);
+    },
+    "client.deleted": async (event) => {
+      console.log("Client deleted", event.data.id);
+    },
+  },
+});
+```
+
+Do not parse JSON before verification. The SDK verifies the raw request body.
+
+## Service-app calls
+
+Use service-app calls from backend code only:
+
+```ts
+import { createQentrahServiceAppClient } from "@qentrah/auth-sdk/partner/service-app";
+
+const qentrah = createQentrahServiceAppClient({
+  workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL!,
+  accessToken: "read-from-your-token-store",
+});
+
+await qentrah.write({
+  organizationId: "org_123",
+  resource: "client",
+  action: "create",
+  idempotencyKey: "client-create-001",
+  input: { name: "New client", contact: "New client" },
+});
+```
+
+## Environment variables
+
+```bash
+QENTRAH_WORKSPACE_API_URL=https://app.qentrah.com
+QENTRAH_CLIENT_ID=partners_client_...
+QENTRAH_CLIENT_SECRET=
+QENTRAH_WEBHOOK_SECRET=whsec_...
+PARTNER_APP_URL=https://partner.example.com
+SESSION_SECRET=replace-with-at-least-32-characters
+```
+
+Set these in production, preview, and local environments. `QENTRAH_CLIENT_SECRET` is optional for public PKCE clients and required only for confidential server-side clients.
+
+## Security checklist
+
+- Keep `clientSecret`, access tokens, refresh tokens, authorization codes, and webhook secrets out of browser JavaScript.
+- Pin CDN script versions in production.
+- Prefer a same-origin hosted script when your app has a deployment pipeline.
+- Use `script-src 'self' https://cdn.jsdelivr.net https://unpkg.com` only if you load from those CDNs.
+- Keep token exchange and refresh on your backend.
+- Request the smallest useful scope set.
+
+The supported partner integration path is the SDK. Do not build authorization URLs, PKCE, state validation, token exchange, or webhook signature checks by hand unless Qentrah support asks you to do so.

@@ -716,7 +716,7 @@
       "methods": {
         "email": {
           "label": "البريد",
-          "value": "hello@qentrah.sa",
+          "value": "hello@qentrah.com",
           "helper": "للشراكات، التهيئة، وأسئلة مساحة العمل."
         },
         "phone": {

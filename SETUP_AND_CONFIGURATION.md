@@ -404,14 +404,14 @@ npm run dev:marketing
 Production project:
 
 - Vercel root directory: `apps/marketing`
-- Suggested domain: root marketing domain, for example `https://qentrah.sa`
+- Suggested domain: root marketing domain, for example `https://qentrah.com`
 
 Env variables:
 
 | Variable | Required | Where it lives | Purpose | Where to get it |
 | --- | --- | --- | --- | --- |
-| `NEXT_PUBLIC_WORKSPACE_URL` | Optional | Vercel/local | Link target for Workspace CTAs; defaults to `https://app.qentrah.sa`. | Workspace production URL. |
-| `NEXT_PUBLIC_PARTNERS_URL` | Optional | Vercel/local | Link target for Partners CTAs; defaults to `https://partners.qentrah.sa`. | Partners production URL. |
+| `NEXT_PUBLIC_WORKSPACE_URL` | Optional | Vercel/local | Link target for Workspace CTAs; defaults to `https://app.qentrah.com`. | Workspace production URL. |
+| `NEXT_PUBLIC_PARTNERS_URL` | Optional | Vercel/local | Link target for Partners CTAs; defaults to `https://partners.qentrah.com`. | Partners production URL. |
 
 ## Package Configuration
 

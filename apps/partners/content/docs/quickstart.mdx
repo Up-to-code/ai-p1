@@ -1,6 +1,6 @@
 ---
 title: Quickstart
-description: Create an app and complete your first OAuth authorization-code flow.
+description: Create an app and connect it with the Qentrah SDK.
 ---
 
 ## Create a partner app
@@ -13,27 +13,56 @@ description: Create an app and complete your first OAuth authorization-code flow
 
 ## Add the authorization button
 
-If you are using a coding agent, start with the [AI agent implementation prompt](/docs/ai-agent-implementation). It includes the button, PKCE routes, existing env names, and server-side Workspace API requirements.
+Use the SDK button helper. The browser only starts authorization; token exchange stays on your backend.
 
-```tsx
-export function AuthorizeWithQentrahButton() {
-  return (
-    <a href="/api/qentrah/oauth/start">
-      Authorize with Qentrah
-    </a>
-  );
-}
+```bash
+npm install @qentrah/auth-sdk
 ```
 
-## Build the authorization URL
+Bundled app:
+
+```js
+import { mountQentrahAuthorizeButton } from "@qentrah/auth-sdk/partner/browser";
+
+mountQentrahAuthorizeButton({
+  buttonId: "qentrah-authorize",
+  startUrl: "/api/qentrah/oauth/start",
+  label: "Authorize with Qentrah",
+});
+```
+
+No-build HTML app:
+
+```html
+<button id="qentrah-authorize">Authorize with Qentrah</button>
+<script src="https://cdn.jsdelivr.net/npm/@qentrah/auth-sdk@0.1.5/dist/qentrah-auth.js"></script>
+<script>
+  window.QentrahAuth.mountAuthorizeButton({
+    buttonId: "qentrah-authorize",
+    startUrl: "/api/qentrah/oauth/start"
+  });
+</script>
+```
+
+## Add backend routes
 
 ```ts
-const workspaceBaseUrl = process.env.QENTRAH_WORKSPACE_API_URL!;
-const authorizationUrl = new URL("/oauth/authorize", workspaceBaseUrl);
-authorizationUrl.searchParams.set("response_type", "code");
-authorizationUrl.searchParams.set("client_id", process.env.QENTRAH_CLIENT_ID!);
-authorizationUrl.searchParams.set("redirect_uri", "https://partner.example.com/oauth/callback");
-authorizationUrl.searchParams.set("scope", "openid profile email offline_access organization:read client:read property:read");
-authorizationUrl.searchParams.set("code_challenge", codeChallenge);
-authorizationUrl.searchParams.set("code_challenge_method", "S256");
+import { createQentrahPartnerAuthHandlers } from "@qentrah/auth-sdk/partner/next";
+
+export const runtime = "nodejs";
+
+const handlers = createQentrahPartnerAuthHandlers({
+  workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL!,
+  clientId: process.env.QENTRAH_CLIENT_ID!,
+  redirectUri: "https://partner.example.com/api/qentrah/oauth/callback",
+  scopes: ["organization:read", "client:read", "property:read"],
+  sessionStore,
+  tokenStore,
+});
+
+export const GET = handlers.start;
 ```
+
+Create the callback route with `export const GET = handlers.callback`.
+
+Read the [SDK installation guide](/docs/sdk-installation) for production storage, HTTPS script loading, webhook routes, service-app calls, and Vercel environment notes. Use [Developer mode](/docs/developer-mode) for local callback URLs, preview apps, webhook tunnels, and safe development tokens.

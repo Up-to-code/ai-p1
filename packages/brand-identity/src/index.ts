@@ -16,10 +16,10 @@ export const brandIdentity = {
   envPrefix: "QENTRAH",
   themeStorageKey: "qentrah-theme",
   domains: {
-    root: "qentrah.sa",
-    workspace: "app.qentrah.sa",
-    partners: "partners.qentrah.sa",
-    email: "hello@qentrah.sa",
+    root: "qentrah.com",
+    workspace: "app.qentrah.com",
+    partners: "partners.qentrah.com",
+    email: "hello@qentrah.com",
   },
   colors: {
     primary: "#0b5cff",

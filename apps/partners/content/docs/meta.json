@@ -4,10 +4,10 @@
     "index",
     "business-flow",
     "quickstart",
+    "developer-mode",
     "ai-agent-implementation",
     "sdk-installation",
     "register-an-app",
-    "oauth-flow",
     "api-usage",
     "pdf-generator-example",
     "troubleshooting"

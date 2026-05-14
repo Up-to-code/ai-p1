@@ -2,7 +2,8 @@ import { envReader } from "./env-reader";
 
 type AuthConfigMode = "runtime" | "schema";
 
-const productionSiteUrl = "https://qentrah-0-1-2.vercel.app";
+const productionSiteUrl = "https://app.qentrah.com";
+const productionAdminUrl = "https://admin.qentrah.com";
 
 function normalizeUrl(value: string) {
   const trimmed = value.trim();
@@ -35,6 +36,7 @@ const siteUrl = readUrl(
   "SITE_URL",
   envReader.read("BETTER_AUTH_URL", publicSiteUrl),
 );
+const adminSiteUrl = readUrl("ADMIN_SITE_URL", productionAdminUrl);
 const configuredTrustedOrigins = [
   ...parseTrustedOrigins(envReader.read("BETTER_AUTH_TRUSTED_ORIGINS", "")),
   ...parseTrustedOrigins(envReader.read("TRUSTED_ORIGINS", "")),
@@ -46,10 +48,12 @@ const trustedOrigins = Array.from(
     [
       productionSiteUrl,
       siteUrl,
+      adminSiteUrl,
       publicSiteUrl,
       vercelProjectProductionUrl,
       vercelUrl,
       "http://localhost:3000",
+      "http://localhost:3003",
       "http://localhost:3001",
       ...configuredTrustedOrigins,
     ].filter(Boolean),

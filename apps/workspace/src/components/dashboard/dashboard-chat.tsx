@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import AiComposer from "./ai-composer";
+import { BrandMark } from "@/components/logo";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { ArrowDown, Building2, CalendarClock, CheckCircle2, Loader2, Search } from "lucide-react";
@@ -222,8 +223,8 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
         <div className="relative flex flex-1 flex-col items-center justify-center px-4 py-8">
           <div className="w-full max-w-3xl space-y-8 text-center">
             <div className="space-y-3">
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface text-primary">
-                <Search className="h-4 w-4" />
+              <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface">
+                <BrandMark className="h-6 w-6" priority />
               </div>
                <h2 className="text-2xl font-black leading-tight tracking-tight text-text-primary sm:text-4xl">
                  {t('welcome')}

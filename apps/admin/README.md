@@ -1,8 +1,9 @@
 # Qentrah Admin Review App
 
-Admin Review is the internal Next.js console for reviewing partner app
-submissions. It does not own the primary partner app data model. It reads and
-writes review state through Workspace service APIs.
+Admin Review is the internal Next.js console for platform security,
+authorization, partner app review, and operational control surfaces. It owns
+the Admin entry session, while Workspace remains the source of truth for
+Workspace data and review mutations.
 
 ## Local Development
 
@@ -22,28 +23,45 @@ Default local URL: `http://localhost:3003`.
 
 ## Responsibilities
 
-- List partner app submissions that need review.
-- Show partner app details, requested scopes, redirect URIs, and status.
-- Approve, reject, or suspend submissions through Workspace admin APIs.
-- Keep internal review UI separate from the partner-facing Partners portal.
+- Provide a Workspace-style Admin shell in Arabic and English.
+- Authenticate Admin directly through env-controlled Admin credentials.
+- Resolve Admin roles from operator-controlled env or DB-backed allowlists.
+- List and review partner app submissions through Workspace admin APIs.
+- Keep Admin promotion outside every UI path.
 
 ## Important Routes And Files
 
 | Path | Purpose |
 | --- | --- |
-| `app/page.tsx` | Review queue page |
-| `app/apps/[appId]/page.tsx` | Review detail page |
-| `app/layout.tsx` | App shell and metadata |
-| `lib/workspace.ts` | Workspace admin service API client |
-| `lib/config.ts` | Required environment loading |
-| `lib/*.test.ts` | Admin service client and config tests |
+| `src/app/(auth)/sign-in/page.tsx` | Admin env credential sign-in |
+| `src/app/api/admin/[[...route]]/route.ts` | Hono auth backend for Admin login/session/logout |
+| `src/app/(console)/page.tsx` | Admin security overview |
+| `src/app/(console)/apps/[appId]/page.tsx` | Partner review detail |
+| `src/app/(console)/layout.tsx` | Protected Admin console shell |
+| `src/lib/admin-session.ts` | Signed HttpOnly Admin session cookie |
+| `src/lib/admin-roles.ts` | Env-controlled Admin role model |
+| `src/lib/workspace.ts` | Workspace admin service API client |
 
 ## Environment
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `WORKSPACE_API_BASE_URL` | Yes | Workspace origin, for example `http://localhost:3000` |
-| `WORKSPACE_ADMIN_SERVICE_TOKEN` | Yes | Service token accepted by Workspace admin APIs |
+| `ADMIN_AUTH_SECRET` | Yes | 32+ char secret used to sign Admin session cookies. Can share `BETTER_AUTH_SECRET` only if intentionally managed together. |
+| `ADMIN_AUTH_EMAIL` | Yes for single local/admin account | Admin login email for a single env credential. |
+| `ADMIN_AUTH_PASSWORD_SHA256` | Yes for single local/admin account | SHA-256 hex of the Admin login password. Do not store raw passwords. |
+| `ADMIN_AUTH_CREDENTIALS` | Optional | Comma-separated `email:sha256hex:name` entries for multiple env credentials. |
+| `PLATFORM_ADMIN_EMAILS` | Yes for mutation access | Operator-controlled platform-admin emails. No UI can edit this. |
+| `PLATFORM_SECURITY_REVIEWER_EMAILS` | Optional | Read-only security reviewer emails. |
+| `PLATFORM_SUPPORT_OPERATOR_EMAILS` | Optional | Read-only support operator emails. |
+| `PLATFORM_AUDIT_VIEWER_EMAILS` | Optional | Read-only audit viewer emails. |
+| `WORKSPACE_API_BASE_URL` | Yes | Workspace origin, for example `http://localhost:3000`. |
+| `WORKSPACE_ADMIN_SERVICE_TOKEN` | Yes for live Workspace data | Service token accepted by Workspace admin APIs. Browser never receives it. |
+
+Generate a password hash with:
+
+```bash
+node -e "console.log(require('node:crypto').createHash('sha256').update(process.argv[1]).digest('hex'))" 'your-password'
+```
 
 Set values in local `.env.local` and in the Admin Review Vercel project. Never
 commit the service token value.

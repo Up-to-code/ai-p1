@@ -1,5 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Link, usePathname } from "@/i18n/routing";
 import {
@@ -188,8 +189,18 @@ export function Sidebar() {
         </button>
         {!isCollapsed && (
           <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded bg-red-600 flex items-center justify-center">
-               <div className="w-0 h-0 border-t-[4px] border-t-transparent border-l-[7px] border-l-white border-b-[4px] border-b-transparent ml-0.5" />
+            <div className={cn(
+              "flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full ring-1",
+              isDarkMode ? "bg-white/10 ring-white/10" : "bg-white ring-zinc-200"
+            )}>
+              <Image
+                src={isDarkMode ? "/brand-logo-white.svg" : "/brand-logo-dark-blue.svg"}
+                alt="Qentrah"
+                width={20}
+                height={24}
+                className="h-5 w-5"
+                priority
+              />
             </div>
             <span className={cn(
               "font-black text-lg tracking-tight lowercase",

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   adminServiceTokenFromEnv,
   assertAdminServiceToken,
+  assertTrustedAdminOrigin,
   partnersReviewCallbackTokenFromEnv,
   reviewAdminPartnerApp,
   syncOAuthClientForPartnerApp,
@@ -62,11 +63,35 @@ describe("Workspace partner app service tokens", () => {
     })).toBe("callback-secret");
   });
 
-  it("falls back to the Workspace admin token for local callback development only", () => {
+  it("does not fall back to the Workspace admin token for review callbacks", () => {
     expect(partnersReviewCallbackTokenFromEnv({
       WORKSPACE_ADMIN_SERVICE_TOKEN: "workspace-secret",
       PARTNERS_REVIEW_CALLBACK_TOKEN: undefined,
-    })).toBe("workspace-secret");
+    })).toBe("");
+  });
+
+  it("rejects same-prefix or length-mismatched admin token attempts", () => {
+    expect(() => assertAdminServiceToken(
+      new Headers({ authorization: "Bearer workspace-secret-extra" }),
+      { WORKSPACE_ADMIN_SERVICE_TOKEN: "workspace-secret" },
+    )).toThrow("Invalid Workspace admin service token.");
+
+    expect(() => assertAdminServiceToken(
+      new Headers({ authorization: "Bearer workspace-secreu" }),
+      { WORKSPACE_ADMIN_SERVICE_TOKEN: "workspace-secret" },
+    )).toThrow("Invalid Workspace admin service token.");
+  });
+
+  it("accepts only configured admin origins for browser-facing admin calls", () => {
+    expect(() => assertTrustedAdminOrigin(
+      new Headers({ "x-qentrah-admin-origin": "https://admin.qentrah.com" }),
+      { NODE_ENV: "production", ADMIN_SITE_URL: "https://admin.qentrah.com" },
+    )).not.toThrow();
+
+    expect(() => assertTrustedAdminOrigin(
+      new Headers({ "x-qentrah-admin-origin": "https://evil.example.com" }),
+      { NODE_ENV: "production", ADMIN_SITE_URL: "https://admin.qentrah.com" },
+    )).toThrow("Invalid Workspace admin request origin.");
   });
 
   it("upserts the Better Auth OAuth client after Partners registration sync", async () => {

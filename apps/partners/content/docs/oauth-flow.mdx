@@ -1,36 +1,56 @@
 ---
-title: OAuth flow
-description: Use authorization code with PKCE for public apps and confidential clients for server apps.
+title: Legacy manual OAuth
+description: Manual OAuth is no longer the standard integration path. Use the Qentrah SDK unless your team has custom infrastructure requirements.
 ---
 
-## Authorization code with PKCE
+The recommended path is the [SDK installation guide](/docs/sdk-installation). It handles the authorization redirect, PKCE, state validation, token exchange, refresh helpers, and friendly errors for you.
 
-Public clients must generate a verifier and S256 challenge. See `examples/auth/pkce.ts` for a tested implementation.
+Use manual OAuth only if your team has a custom OAuth framework that cannot use `@qentrah/auth-sdk`.
+
+## Recommended replacement
+
+```bash
+npm install @qentrah/auth-sdk
+```
+
+```html
+<button id="qentrah-authorize">Authorize with Qentrah</button>
+<script src="https://cdn.jsdelivr.net/npm/@qentrah/auth-sdk@0.1.5/dist/qentrah-auth.js"></script>
+<script>
+  window.QentrahAuth.mountAuthorizeButton({
+    buttonId: "qentrah-authorize",
+    startUrl: "/api/qentrah/oauth/start"
+  });
+</script>
+```
+
+Then add backend routes with `createQentrahPartnerAuthHandlers`.
 
 ```ts
-import { createPkcePair } from "../../examples/auth/oauth-url";
+import { createQentrahPartnerAuthHandlers } from "@qentrah/auth-sdk/partner/next";
 
-const pkce = await createPkcePair();
+const handlers = createQentrahPartnerAuthHandlers({
+  workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL!,
+  clientId: process.env.QENTRAH_CLIENT_ID!,
+  clientSecret: process.env.QENTRAH_CLIENT_SECRET,
+  redirectUri: `${process.env.PARTNER_APP_URL}/api/qentrah/oauth/callback`,
+  scopes: ["organization:read", "client:read"],
+  sessionStore,
+  tokenStore,
+});
+
+export const GET = handlers.start;
 ```
 
-Send the user to authorization:
+The callback route should export `handlers.callback`.
 
-```txt
-/oauth/authorize
-  ?response_type=code
-  &client_id=<client-id>
-  &redirect_uri=<registered-callback>
-  &scope=openid profile email offline_access organization:read client:read property:read
-  &code_challenge=<challenge>
-  &code_challenge_method=S256
-```
+## What changed
 
-The user must choose or already have an active organization. Workspace records the organization partner connection after consent, not a personal user-only connection.
+- Partners should not build authorization URLs by hand.
+- Partners should not implement PKCE/state/token exchange themselves unless they have a strong reason.
+- Browser code should only open your backend start route.
+- Tokens, client secrets, webhook secrets, and authorization codes must stay server-side.
 
-## Token exchange
+## Expiry and reconnection
 
-Exchange the authorization code on a trusted backend. See `examples/auth/token-exchange.ts` for a tested implementation. Browser code should only start the redirect and never store access tokens in browser storage.
-
-## Revocation and expiry
-
-Organization authorization expires after 14 days. Workspace rejects expired connections with `connection_expired`. Send the workspace admin through Authorize with Qentrah again to reconnect.
+Organization authorization expires after the app's configured authorization lifetime. Workspace rejects expired connections with `connection_expired`. Send the workspace admin through Authorize with Qentrah again to reconnect.

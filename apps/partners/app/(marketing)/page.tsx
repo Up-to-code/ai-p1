@@ -8,25 +8,23 @@ const workspaceName = brandProductName("workspace", "en");
 const partnersName = brandProductName("partners", "en");
 const oauthCallbackPath = brandRoutePath("oauthCallback");
 
-const heroCode = `type PartnerAuthorization = {
-  clientId: string;
-  redirectUri: string;
-  scopes: string[];
-};
+const heroCode = `import { mountQentrahAuthorizeButton } from "@qentrah/auth-sdk/partner/browser";
+import { createQentrahPartnerAuthHandlers } from "@qentrah/auth-sdk/partner/next";
 
-const authorization: PartnerAuthorization = {
+mountQentrahAuthorizeButton({
+  buttonId: "qentrah-authorize",
+  startUrl: "/api/qentrah/oauth/start",
+  label: "Authorize with Qentrah",
+});
+
+export const qentrahAuth = createQentrahPartnerAuthHandlers({
+  workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL!,
   clientId: "partners_client_...",
   redirectUri: "https://app.example.com${oauthCallbackPath}",
   scopes: ["organization:read", "client:read", "property:read"],
-};
-
-const url = new URL("/oauth/authorize", QENTRAH_WORKSPACE_API_URL);
-url.searchParams.set("client_id", authorization.clientId);
-url.searchParams.set("response_type", "code");
-url.searchParams.set("redirect_uri", authorization.redirectUri);
-url.searchParams.set("scope", authorization.scopes.join(" "));
-url.searchParams.set("code_challenge", pkce.challenge);
-url.searchParams.set("code_challenge_method", "S256");`;
+  sessionStore,
+  tokenStore,
+});`;
 
 const flow = [
   { title: "Create the OAuth client", description: "Add a partner URL, callback URL, and client type.", icon: KeyRound },

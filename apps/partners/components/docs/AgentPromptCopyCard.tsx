@@ -9,7 +9,7 @@ const agentImplementationPrompt = String.raw`You are implementing a Qentrah part
 Goal:
 - Add organization-level OAuth with Qentrah.
 - Keep all token exchange, token refresh, and token storage on the server.
-- Add a frontend button with the exact copy: "Authorize with Qentrah".
+- Use @qentrah/auth-sdk for the frontend button, OAuth routes, webhook route, and service-app API calls.
 - After authorization, call Qentrah Workspace partner APIs for organization, clients, and properties.
 
 Use these existing environment variables:
@@ -19,42 +19,28 @@ Use these existing environment variables:
 - PARTNER_APP_URL: public URL of this partner app
 - SESSION_SECRET: at least 32 characters if this app stores an encrypted session cookie
 
-OAuth requirements:
-- Use OAuth 2.1 authorization code flow with PKCE.
-- Generate a random state value and PKCE verifier on the server.
-- Store state and verifier in HttpOnly, SameSite=Lax, short-lived cookies or an equivalent server session.
-- Redirect users to {QENTRAH_WORKSPACE_API_URL}/oauth/authorize with:
-  - response_type=code
-  - client_id={QENTRAH_CLIENT_ID}
-  - redirect_uri={PARTNER_APP_URL}/api/auth/qentrah/callback
-  - scope=organization:read client:read property:read offline_access
-  - resource={QENTRAH_WORKSPACE_API_URL}/api/v1/partner
-  - state=<random state>
-  - code_challenge=<S256 challenge>
-  - code_challenge_method=S256
-- In the callback route, validate state before exchanging the code.
-- Exchange the code on the backend at {QENTRAH_WORKSPACE_API_URL}/oauth/token with:
-  - grant_type=authorization_code
-  - client_id={QENTRAH_CLIENT_ID}
-  - client_secret={QENTRAH_CLIENT_SECRET}, only when present
-  - redirect_uri={PARTNER_APP_URL}/api/auth/qentrah/callback
-  - code=<authorization code>
-  - code_verifier=<stored PKCE verifier>
-  - resource={QENTRAH_WORKSPACE_API_URL}/api/v1/partner
-- Require tokens.organization_id in the token response.
+SDK requirements:
+- Install @qentrah/auth-sdk.
+- Add a frontend button with the exact copy: "Authorize with Qentrah".
+- For bundled apps, use mountQentrahAuthorizeButton from @qentrah/auth-sdk/partner/browser.
+- For no-build HTML apps, load the pinned HTTPS script:
+  https://cdn.jsdelivr.net/npm/@qentrah/auth-sdk@0.1.5/dist/qentrah-auth.js
+- The button should navigate to /api/qentrah/oauth/start.
+- Add backend start and callback routes using createQentrahPartnerAuthHandlers from @qentrah/auth-sdk/partner/next.
+- Implement sessionStore for pending state/PKCE using HttpOnly, SameSite=Lax, short-lived cookies or an equivalent server session.
+- Implement tokenStore to save tokens server-side, keyed by organizationId.
 
 Frontend:
 - Add an accessible button or link labeled "Authorize with Qentrah".
-- The button should navigate to the server route that starts OAuth, for example /api/auth/qentrah/start.
+- The button should navigate to the server route that starts OAuth, for example /api/qentrah/oauth/start.
 - Do not expose access tokens, refresh tokens, client secrets, or authorization codes to browser JavaScript.
 
 Backend Workspace API client:
-- Store tokens server-side, keyed by organization_id.
-- Send access tokens only in backend Authorization headers.
-- Call:
-  - GET {QENTRAH_WORKSPACE_API_URL}/api/v1/partner/organizations/{organizationId}/me
-  - GET {QENTRAH_WORKSPACE_API_URL}/api/v1/partner/organizations/{organizationId}/clients
-  - GET {QENTRAH_WORKSPACE_API_URL}/api/v1/partner/organizations/{organizationId}/properties
+- Use createQentrahServiceAppClient from @qentrah/auth-sdk/partner/service-app.
+- Store tokens server-side, keyed by organizationId.
+- Send access tokens only from backend code.
+- Read clients with qentrah.read({ organizationId, resource: "client", input }).
+- Write clients with qentrah.write({ organizationId, resource: "client", action, input, idempotencyKey }).
 - Parse Workspace errors and handle these codes in product UI where possible:
   - missing_bearer
   - wrong_organization
@@ -62,6 +48,12 @@ Backend Workspace API client:
   - connection_not_found
   - connection_expired
   - scope_denied
+
+Webhook route:
+- Add a POST route using createQentrahWebhookHandler from @qentrah/auth-sdk/partner/webhooks.
+- Use export const runtime = "nodejs" in Next.js.
+- Verify webhooks before parsing JSON.
+- Handle client.created, client.updated, and client.deleted events.
 
 Security rules:
 - Never place Qentrah access tokens in localStorage, query params, browser logs, or client-rendered payloads.
@@ -73,6 +65,7 @@ Acceptance criteria:
 - A user can click "Authorize with Qentrah", consent in Qentrah, and return to the partner app.
 - The backend stores the organization id and tokens server-side.
 - The app can load organization, clients, and properties through Workspace APIs.
+- The app can receive and verify Qentrah webhooks.
 - Missing/expired connection states prompt the user to authorize or reconnect.
 - Typecheck and build pass.`;
 
@@ -105,7 +98,7 @@ export function AgentPromptCopyCard() {
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">AI agent starter</p>
           <h2 className="mt-2 text-xl font-semibold tracking-normal text-foreground">Copy a complete implementation brief</h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Paste this into your coding agent to build the OAuth button, PKCE routes, server-side token exchange, env usage, and Workspace API reads.
+            Paste this into your coding agent to build the SDK button, backend routes, token storage, webhooks, env usage, and Workspace API reads.
           </p>
         </div>
         <Button type="button" onClick={copyPrompt} aria-live="polite" className="h-9 gap-2 self-start">

@@ -5,6 +5,7 @@ import { getDisplayEmail, getDisplayName, getGeneratedAvatar } from "@/utilities
 import type { PartnerAccountView } from "@/types/account";
 import Link from "next/link";
 import { dashboardNav } from "@/lib/navigation";
+import { PartnerLogo } from "@/components/brand/PartnerLogo";
 
 export function Topbar({ account }: { account: PartnerAccountView | null }) {
   const organizationName = account?.organization?.name ?? "Programmer organization";
@@ -16,9 +17,7 @@ export function Topbar({ account }: { account: PartnerAccountView | null }) {
     <header className="sticky top-0 z-40 w-full border-b border-border bg-white/88 px-4 backdrop-blur-md dark:bg-card/90 sm:px-6">
       <div className="flex h-[69px] items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
-          <Link href="/dashboard" className="shrink-0 text-lg font-bold text-foreground">
-            qentrah<span className="text-primary">portal</span>
-          </Link>
+          <PartnerLogo href="/dashboard" compact className="shrink-0" />
           <span className="hidden text-muted-foreground sm:block">/</span>
           <Link href="/dashboard/account" className="hidden min-w-0 items-center gap-2 rounded-[7px] border border-border bg-background px-3 py-1.5 hover:bg-muted sm:flex">
             <GeneratedAvatarView avatar={avatar} className="h-6 w-6 text-[10px]" />

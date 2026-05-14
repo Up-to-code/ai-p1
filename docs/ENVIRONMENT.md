@@ -31,6 +31,14 @@ walkthrough, see [Setup and configuration](../SETUP_AND_CONFIGURATION.md).
 
 ## Cross-App Integration Variables
 
+Production domain defaults:
+
+| Surface | URL |
+| --- | --- |
+| Marketing | `https://qentrah.com` |
+| Workspace | `https://app.qentrah.com` |
+| Partners | `https://partners.qentrah.com` |
+
 | Variable | Used by | Required when | Purpose |
 | --- | --- | --- | --- |
 | `QENTRAH_WORKSPACE_API_URL` | Partners, Demo Partner App | Calling Workspace APIs or OAuth | Canonical Workspace origin |
@@ -44,6 +52,14 @@ walkthrough, see [Setup and configuration](../SETUP_AND_CONFIGURATION.md).
 | `SESSION_SECRET` | Demo Partner App | Demo session cookie encryption | Local encryption/signing secret |
 
 ## Workspace Variables
+
+Production baseline:
+
+```bash
+NEXT_PUBLIC_SITE_URL=https://app.qentrah.com
+SITE_URL=https://app.qentrah.com
+BETTER_AUTH_URL=https://app.qentrah.com
+```
 
 Common Workspace variables:
 
@@ -82,6 +98,15 @@ Common Workspace variables:
 
 ## Partners Variables
 
+Production baseline:
+
+```bash
+SITE_URL=https://partners.qentrah.com
+NEXT_PUBLIC_PARTNERS_AUTH_URL=https://partners.qentrah.com
+BETTER_AUTH_URL=https://partners.qentrah.com
+QENTRAH_WORKSPACE_API_URL=https://app.qentrah.com
+```
+
 Common Partners variables:
 
 | Variable | Exposure | Purpose |
@@ -106,6 +131,13 @@ Common Partners variables:
 
 ## Demo Partner App Variables
 
+Production baseline:
+
+```bash
+QENTRAH_WORKSPACE_API_URL=https://app.qentrah.com
+PARTNER_APP_URL=https://demo.qentrah.com
+```
+
 | Variable | Exposure | Purpose |
 | --- | --- | --- |
 | `QENTRAH_WORKSPACE_API_URL` | Server | Workspace OAuth and resource API origin |
@@ -116,6 +148,13 @@ Common Partners variables:
 | `SESSION_SECRET` | Secret | Cookie encryption/signing secret |
 
 ## Marketing Variables
+
+Production baseline:
+
+```bash
+NEXT_PUBLIC_WORKSPACE_URL=https://app.qentrah.com
+NEXT_PUBLIC_PARTNERS_URL=https://partners.qentrah.com
+```
 
 Marketing currently has no required private integration token documented at the
 repo level. Add variables here when the app gains runtime integrations.

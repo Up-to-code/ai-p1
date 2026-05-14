@@ -1,6 +1,7 @@
 {
   "name": "@qentrah/authorization",
   "version": "0.1.0",
+  "private": true,
   "description": "Qentrah organization authorization SDK for external applications.",
   "type": "module",
   "sideEffects": false,

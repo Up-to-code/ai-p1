@@ -7,6 +7,7 @@ import {
 } from "../validation/admin-partner-app.schema";
 import {
   assertAdminServiceToken,
+  assertTrustedAdminOrigin,
   listAdminPartnerApps,
   listApprovedPartnerApps,
   reviewAdminPartnerApp,
@@ -37,6 +38,7 @@ export async function handleRegisterPartnerAppFromPartners(c: Context) {
 export async function handleListAdminPartnerApps(c: Context) {
   try {
     assertAdminServiceToken(c.req.raw.headers);
+    assertTrustedAdminOrigin(c.req.raw.headers);
     return c.json({ apps: await listAdminPartnerApps() });
   } catch (error) {
     return handleError(c, error);
@@ -46,6 +48,7 @@ export async function handleListAdminPartnerApps(c: Context) {
 export async function handleReviewAdminPartnerApp(c: Context) {
   try {
     assertAdminServiceToken(c.req.raw.headers);
+    assertTrustedAdminOrigin(c.req.raw.headers);
   } catch (error) {
     return handleError(c, error);
   }

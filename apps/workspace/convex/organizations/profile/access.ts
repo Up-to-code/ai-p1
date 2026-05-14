@@ -49,6 +49,25 @@ export async function assertOrganizationResourcePermission(
   }
 }
 
+export async function canUseOrganizationResourceAction(
+  ctx: QueryCtx | MutationCtx,
+  organizationId: string,
+  resource: OrganizationPermissionResource,
+  action: string,
+) {
+  await authComponent.getAuthUser(ctx);
+  const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
+  const permission = await auth.api.hasPermission({
+    body: {
+      organizationId,
+      permissions: { [resource]: [action] },
+    },
+    headers,
+  });
+
+  return permission.success;
+}
+
 export const canUpdateProfile = query({
   args: { organizationId: v.string() },
   returns: v.object({ allowed: v.boolean() }),

@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { query } from "../../_generated/server";
-import { assertOrganizationResourcePermission } from "../profile/access";
+import { assertOrganizationResourcePermission, canUseOrganizationResourceAction } from "../profile/access";
 import { organizationInviteLinkValidator } from "./validators";
 import { toPublicInviteLink } from "./data";
 
@@ -10,7 +10,8 @@ export const listPending = query({
   args: { organizationId: v.string() },
   returns: v.array(organizationInviteLinkValidator),
   handler: async (ctx, args) => {
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "member", "create");
+    const canInviteMembers = await canUseOrganizationResourceAction(ctx, args.organizationId, "member", "create");
+    if (!canInviteMembers) return [];
 
     const now = Date.now();
     const inviteLinks = await ctx.db

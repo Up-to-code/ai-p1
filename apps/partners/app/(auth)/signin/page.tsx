@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SignInForm } from "@/components/forms/SignInForm";
+import { PartnerLogo } from "@/components/brand/PartnerLogo";
 
 function safeReturnTo(value: unknown) {
   return typeof value === "string" && value.startsWith("/") && !value.startsWith("//")
@@ -19,9 +20,7 @@ export default async function SignInPage({
     <main className="grid min-h-dvh bg-background lg:grid-cols-[0.9fr_1.1fr]">
       <div className="hidden flex-col justify-between bg-[#071A34] p-12 text-white lg:flex">
         <div>
-          <Link href="/" className="text-lg font-bold">
-            qentrah<span className="text-primary">portal</span>
-          </Link>
+          <PartnerLogo inverse />
         </div>
         <div className="max-w-md">
           <p className="mb-4 text-xs font-bold uppercase text-[#B1BCC7]">Developer console</p>
@@ -38,9 +37,7 @@ export default async function SignInPage({
       <div className="flex items-center justify-center px-4 py-12 sm:px-6">
         <div className="w-full max-w-sm rounded-[22px] border border-border bg-card p-6 text-card-foreground shadow-[0_24px_80px_rgba(7,26,52,0.08)] dark:shadow-[0_24px_80px_rgba(0,0,0,0.34)] sm:p-8">
           <div className="lg:hidden">
-            <Link href="/" className="text-lg font-bold text-foreground">
-              qentrah<span className="text-primary">portal</span>
-            </Link>
+            <PartnerLogo />
           </div>
           <div className="mt-8 lg:mt-0">
             <h1 className="text-2xl font-bold text-foreground">Sign in to your account</h1>

@@ -301,23 +301,66 @@ export function ProjectDetailScreen({ id }: { id: string }) {
   return (
     <AppPageShell contentClassName="space-y-6 pb-14">
       <Tabs defaultValue="details" className="space-y-6">
-        <section className="border-b border-zinc-200/70 pb-4 text-start dark:border-white/10">
-          <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-            <div className="min-w-0 space-y-3">
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-500">
-                <span>{project.reference}</span>
-                <span className="h-1 w-1 rounded-full bg-zinc-400/70" />
-                <span>{project.developer}</span>
+        <section className="text-start">
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="grid min-h-[360px] overflow-hidden rounded-[28px] border border-zinc-200/70 bg-zinc-100 dark:border-white/10 dark:bg-white/[0.04] lg:grid-cols-[minmax(0,1fr)_360px]">
+              <div className="relative min-h-[280px] overflow-hidden">
+                {project.coverImageUrl ? (
+                  <Image src={project.coverImageUrl} alt={project.name} fill sizes="(max-width: 1024px) 100vw, 760px" className="object-cover" priority />
+                ) : (
+                  <div className="flex h-full min-h-[280px] items-center justify-center bg-zinc-200 text-zinc-400 dark:bg-white/[0.05] dark:text-white/25">
+                    <Building2 className="h-12 w-12" />
+                  </div>
+                )}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-zinc-950/85 to-transparent p-5 text-white">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
+                    <span className="rounded-full bg-white/15 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white">{project.reference}</span>
+                  </div>
+                </div>
               </div>
-              <h1 className="max-w-5xl text-2xl font-black leading-tight text-zinc-950 dark:text-white md:text-3xl">{project.name}</h1>
-              <div className="flex flex-wrap items-center gap-2">
-                <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
-                <StatusPill label={t(`types.${project.type}`)} tone="neutral" />
-                <span className="inline-flex h-8 items-center rounded-full bg-zinc-950 px-3 text-xs font-black text-white dark:bg-white dark:text-zinc-950">{project.priceRange}</span>
-                <span className="inline-flex h-8 items-center rounded-full bg-zinc-100 px-3 text-xs font-black text-zinc-600 dark:bg-white/[0.06] dark:text-zinc-300">{project.units} {t('card.units')}</span>
+
+              <div className="flex flex-col justify-between gap-8 bg-white p-6 dark:bg-[#090909]">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{project.developer}</p>
+                  <h1 className="mt-3 text-3xl font-black leading-tight text-zinc-950 dark:text-white md:text-4xl">{project.name}</h1>
+                  <p className="mt-4 line-clamp-4 text-sm font-semibold leading-7 text-zinc-600 dark:text-zinc-300">{project.description}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-zinc-200/70 dark:bg-white/10">
+                  <CompactFact label={t('detail.labels.city')} value={project.city} />
+                  <CompactFact label={t('detail.labels.type')} value={t(`types.${project.type}`)} />
+                  <CompactFact label={t('detail.labels.units')} value={project.units} />
+                  <CompactFact label={td('market.value')} value={project.priceRange} />
+                </div>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2 pt-1 xl:justify-end">
+
+            <aside className="grid content-start gap-3">
+              <div className="rounded-[24px] border border-zinc-200/70 bg-white p-5 dark:border-white/10 dark:bg-[#090909]">
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('metrics.launchReadiness')}</p>
+                <p className="mt-4 text-4xl font-black text-zinc-950 dark:text-white">{launchReadiness}%</p>
+                <div className="mt-4">
+                  <ReadinessBar label={td('metrics.inventoryCoverage')} value={inventoryCoverage} />
+                </div>
+              </div>
+              <div className="rounded-[24px] border border-zinc-200/70 bg-white p-5 dark:border-white/10 dark:bg-[#090909]">
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('sales.pipelineTitle')}</p>
+                <div className="mt-5 space-y-3">
+                  <MiniMovement label={td('sales.status.available')} value={availableUnits} total={Math.max(liveUnitCount, 1)} className="bg-emerald-500" />
+                  <MiniMovement label={td('sales.status.reserved')} value={reservedUnits} total={Math.max(liveUnitCount, 1)} className="bg-blue-500" />
+                  <MiniMovement label={td('sales.status.sold')} value={soldUnits} total={Math.max(liveUnitCount, 1)} className="bg-zinc-400" />
+                </div>
+              </div>
+            </aside>
+          </div>
+
+          <div className="mt-4 flex flex-col gap-3 border-b border-zinc-200/70 pb-4 dark:border-white/10 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex flex-wrap items-center gap-2">
+              <StatusPill label={t(`types.${project.type}`)} tone="neutral" />
+              <span className="inline-flex h-8 items-center rounded-full bg-zinc-950 px-3 text-xs font-black text-white dark:bg-white dark:text-zinc-950">{project.priceRange}</span>
+              <span className="inline-flex h-8 items-center rounded-full bg-zinc-100 px-3 text-xs font-black text-zinc-600 dark:bg-white/[0.06] dark:text-zinc-300">{project.units} {t('card.units')}</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 xl:justify-end">
               <Button variant="outline" size="icon-lg" aria-label={td('share')} className="rounded-xl border-zinc-200 dark:border-white/10">
                 <Share2 className="h-4 w-4" />
               </Button>
@@ -347,48 +390,45 @@ export function ProjectDetailScreen({ id }: { id: string }) {
         </section>
 
         <TabsContent value="details" className="space-y-5">
-          <ResourceMediaBrowser
-            organizationId={workspaceOrganizationId}
-            resourceType="project"
-            resourceId={project.id}
-            mode="gallery"
-            title={td('gallery.title')}
-            description={td('gallery.description')}
-            addLabel={td('gallery.add')}
-            emptyTitle={td('gallery.emptyTitle')}
-            emptyDescription={td('gallery.emptyDesc')}
-            uploadTitle={td('gallery.uploadTitle')}
-            uploadDescription={td('gallery.uploadDesc')}
-            uploadPick={td('gallery.uploadPick')}
-            unsupported={t('form.galleryUnsupported')}
-            openLabel={td('actions.view')}
-            coverLabel={td('gallery.cover')}
-            deleteLabel={td('actions.delete')}
-            statusQueued={td('uploadStatus.queued')}
-            statusUploading={td('uploadStatus.uploading')}
-            statusUploaded={td('uploadStatus.uploaded')}
-            statusFailed={td('uploadStatus.failed')}
-            removeLabel={td('actions.delete')}
-            retryLabel={td('uploadStatus.retry')}
-            imageLimit={t('form.galleryImageLimit')}
-            previewLimit={5}
-          />
-
-          <div className="grid gap-px overflow-hidden border-y border-zinc-200/70 bg-zinc-200/70 dark:border-white/10 dark:bg-white/10 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-px overflow-hidden rounded-[24px] border border-zinc-200/70 bg-zinc-200/70 dark:border-white/10 dark:bg-white/10 sm:grid-cols-2 xl:grid-cols-4">
             <ProjectSignal label={t('detail.labels.units')} value={project.units} icon={Layers3} tone="blue" />
             <ProjectSignal label={td('metrics.live')} value={liveUnitCount} icon={FolderOpen} tone="zinc" />
             <ProjectSignal label={td('metrics.available')} value={availableUnits} icon={Landmark} tone="emerald" />
             <ProjectSignal label={td('metrics.ready')} value={`${launchReadiness}%`} icon={Gauge} tone="amber" />
           </div>
 
-          <section className="grid gap-8 border-y border-zinc-200/70 py-6 text-start dark:border-white/10 xl:grid-cols-[minmax(0,1fr)_420px]">
+          <section className="grid gap-6 text-start xl:grid-cols-[minmax(0,1fr)_420px]">
             <div className="min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('narrative.title')}</p>
-              <p className="mt-3 max-w-4xl text-sm font-semibold leading-7 text-zinc-700 dark:text-zinc-300">{project.description}</p>
+              <ResourceMediaBrowser
+                organizationId={workspaceOrganizationId}
+                resourceType="project"
+                resourceId={project.id}
+                mode="gallery"
+                title={td('gallery.title')}
+                description={td('gallery.description')}
+                addLabel={td('gallery.add')}
+                emptyTitle={td('gallery.emptyTitle')}
+                emptyDescription={td('gallery.emptyDesc')}
+                uploadTitle={td('gallery.uploadTitle')}
+                uploadDescription={td('gallery.uploadDesc')}
+                uploadPick={td('gallery.uploadPick')}
+                unsupported={t('form.galleryUnsupported')}
+                openLabel={td('actions.view')}
+                coverLabel={td('gallery.cover')}
+                deleteLabel={td('actions.delete')}
+                statusQueued={td('uploadStatus.queued')}
+                statusUploading={td('uploadStatus.uploading')}
+                statusUploaded={td('uploadStatus.uploaded')}
+                statusFailed={td('uploadStatus.failed')}
+                removeLabel={td('actions.delete')}
+                retryLabel={td('uploadStatus.retry')}
+                imageLimit={t('form.galleryImageLimit')}
+                previewLimit={5}
+              />
             </div>
 
-            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-1">
-              <section className="min-w-0">
+            <div className="grid content-start gap-5">
+              <section className="rounded-[24px] border border-zinc-200/70 bg-white p-5 dark:border-white/10 dark:bg-[#090909]">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('registry.title')}</p>
@@ -413,7 +453,7 @@ export function ProjectDetailScreen({ id }: { id: string }) {
                 </div>
               </section>
 
-              <section className="min-w-0">
+              <section className="rounded-[24px] border border-zinc-200/70 bg-white p-5 dark:border-white/10 dark:bg-[#090909]">
                 <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('documents.title')}</p>
                 <RegistryRows className="mt-4" rows={[
                   [td('documents.count'), String(documentAssets.length)],
@@ -626,6 +666,21 @@ function ReadinessBar({ label, value }: { label: ReactNode; value: number }) {
       </div>
       <div className="h-1.5 overflow-hidden bg-zinc-100 dark:bg-white/10">
         <div className="h-full bg-zinc-900 dark:bg-white" style={{ width: `${value}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function MiniMovement({ label, value, total, className }: { label: ReactNode; value: number; total: number; className: string }) {
+  const width = `${Math.max(value > 0 ? 8 : 0, Math.round((value / total) * 100))}%`;
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-3">
+        <span className="truncate text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">{label}</span>
+        <span className="text-xs font-black tabular-nums text-zinc-950 dark:text-white">{value}</span>
+      </div>
+      <div className="mt-2 h-2 overflow-hidden rounded-full bg-zinc-100 dark:bg-white/10">
+        <div className={cn("h-full rounded-full", className)} style={{ width }} />
       </div>
     </div>
   );

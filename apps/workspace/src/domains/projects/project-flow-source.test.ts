@@ -12,9 +12,10 @@ function readSource(path: string) {
 describe("project flow source", () => {
   const source = readSource("src/domains/projects/components/projects-screens.tsx");
 
-  it("uses the shared unit-style detail header and tab spacing pattern", () => {
+  it("uses the project command detail header and tab spacing pattern", () => {
     expect(source).toContain("<Tabs defaultValue=\"details\" className=\"space-y-6\"");
-    expect(source).toContain("className=\"min-w-0 space-y-3\"");
+    expect(source).toContain("grid min-h-[360px] overflow-hidden rounded-[28px]");
+    expect(source).toContain("MiniMovement label={td('sales.status.available')}");
     expect(source).toContain("<AppTabsList");
     expect(source).toContain("<div className=\"mt-6\">");
     expect(source).not.toContain("<TabsList");

@@ -489,7 +489,7 @@ Third-party AI clients must request these scopes during the OAuth authorization 
 Environment variable required:
 
 ```bash
-npx convex env set OAUTH_RESOURCE_MCP "https://workspace.qentrah.sa/mcp"
+npx convex env set OAUTH_RESOURCE_MCP "https://app.qentrah.com/mcp"
 ```
 
 ---

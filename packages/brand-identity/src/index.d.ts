@@ -15,10 +15,10 @@ export declare const brandIdentity: {
     readonly envPrefix: "QENTRAH";
     readonly themeStorageKey: "qentrah-theme";
     readonly domains: {
-        readonly root: "qentrah.sa";
-        readonly workspace: "app.qentrah.sa";
-        readonly partners: "partners.qentrah.sa";
-        readonly email: "hello@qentrah.sa";
+        readonly root: "qentrah.com";
+        readonly workspace: "app.qentrah.com";
+        readonly partners: "partners.qentrah.com";
+        readonly email: "hello@qentrah.com";
     };
     readonly colors: {
         readonly primary: "#0b5cff";
