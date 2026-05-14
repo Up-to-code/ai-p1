@@ -187,11 +187,8 @@ export async function syncPartnerAppToWorkspaceAction(formData: FormData) {
   revalidatePath(`/dashboard/apps/${appId}`);
 }
 
-function readableConvexError(error: unknown, fallback: string) {
+function readableSandboxError(error: unknown, fallback: string) {
   const message = error instanceof Error ? error.message : "";
-  if (message.includes("Could not find public function") || message.includes("Did you forget to run `npx convex dev`")) {
-    return "Partners Convex backend is not up to date. Run `npm --workspace @anan/partners run convex:dev` and try again.";
-  }
   return message || fallback;
 }
 
@@ -206,6 +203,6 @@ export async function ensureSandboxAction(
     revalidatePath(`/dashboard/apps/${appId}`);
     return { ok: true, message: "Sandbox created." };
   } catch (error) {
-    return { ok: false, message: readableConvexError(error, "Could not create sandbox.") };
+    return { ok: false, message: readableSandboxError(error, "Could not create sandbox.") };
   }
 }

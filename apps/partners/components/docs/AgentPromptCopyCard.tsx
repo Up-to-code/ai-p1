@@ -4,18 +4,18 @@ import { useState } from "react";
 import { Check, Clipboard, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const agentImplementationPrompt = String.raw`You are implementing an Anan partner integration in an existing web app.
+const agentImplementationPrompt = String.raw`You are implementing a Qentrah partner integration in an existing web app.
 
 Goal:
-- Add organization-level OAuth with Anan.
+- Add organization-level OAuth with Qentrah.
 - Keep all token exchange, token refresh, and token storage on the server.
-- Add a frontend button with the exact copy: "Authorize with Anan".
-- After authorization, call Anan Workspace partner APIs for organization, clients, and properties.
+- Add a frontend button with the exact copy: "Authorize with Qentrah".
+- After authorization, call Qentrah Workspace partner APIs for organization, clients, and properties.
 
 Use these existing environment variables:
-- ANAN_WORKSPACE_API_URL: Anan Workspace base URL, for example http://localhost:3000 locally or the hosted Anan workspace URL in production
-- ANAN_CLIENT_ID: approved OAuth client id from Anan Partners
-- ANAN_CLIENT_SECRET: optional; use only for confidential server apps
+- QENTRAH_WORKSPACE_API_URL: Qentrah Workspace base URL, for example http://localhost:3000 locally or the hosted Qentrah workspace URL in production
+- QENTRAH_CLIENT_ID: approved OAuth client id from Qentrah Partners
+- QENTRAH_CLIENT_SECRET: optional; use only for confidential server apps
 - PARTNER_APP_URL: public URL of this partner app
 - SESSION_SECRET: at least 32 characters if this app stores an encrypted session cookie
 
@@ -23,28 +23,28 @@ OAuth requirements:
 - Use OAuth 2.1 authorization code flow with PKCE.
 - Generate a random state value and PKCE verifier on the server.
 - Store state and verifier in HttpOnly, SameSite=Lax, short-lived cookies or an equivalent server session.
-- Redirect users to {ANAN_WORKSPACE_API_URL}/oauth/authorize with:
+- Redirect users to {QENTRAH_WORKSPACE_API_URL}/oauth/authorize with:
   - response_type=code
-  - client_id={ANAN_CLIENT_ID}
+  - client_id={QENTRAH_CLIENT_ID}
   - redirect_uri={PARTNER_APP_URL}/api/auth/anan/callback
   - scope=organization:read client:read property:read offline_access
-  - resource={ANAN_WORKSPACE_API_URL}/api/v1/partner
+  - resource={QENTRAH_WORKSPACE_API_URL}/api/v1/partner
   - state=<random state>
   - code_challenge=<S256 challenge>
   - code_challenge_method=S256
 - In the callback route, validate state before exchanging the code.
-- Exchange the code on the backend at {ANAN_WORKSPACE_API_URL}/oauth/token with:
+- Exchange the code on the backend at {QENTRAH_WORKSPACE_API_URL}/oauth/token with:
   - grant_type=authorization_code
-  - client_id={ANAN_CLIENT_ID}
-  - client_secret={ANAN_CLIENT_SECRET}, only when present
+  - client_id={QENTRAH_CLIENT_ID}
+  - client_secret={QENTRAH_CLIENT_SECRET}, only when present
   - redirect_uri={PARTNER_APP_URL}/api/auth/anan/callback
   - code=<authorization code>
   - code_verifier=<stored PKCE verifier>
-  - resource={ANAN_WORKSPACE_API_URL}/api/v1/partner
+  - resource={QENTRAH_WORKSPACE_API_URL}/api/v1/partner
 - Require tokens.organization_id in the token response.
 
 Frontend:
-- Add an accessible button or link labeled "Authorize with Anan".
+- Add an accessible button or link labeled "Authorize with Qentrah".
 - The button should navigate to the server route that starts OAuth, for example /api/auth/anan/start.
 - Do not expose access tokens, refresh tokens, client secrets, or authorization codes to browser JavaScript.
 
@@ -52,9 +52,9 @@ Backend Workspace API client:
 - Store tokens server-side, keyed by organization_id.
 - Send access tokens only in backend Authorization headers.
 - Call:
-  - GET {ANAN_WORKSPACE_API_URL}/api/v1/partner/organizations/{organizationId}/me
-  - GET {ANAN_WORKSPACE_API_URL}/api/v1/partner/organizations/{organizationId}/clients
-  - GET {ANAN_WORKSPACE_API_URL}/api/v1/partner/organizations/{organizationId}/properties
+  - GET {QENTRAH_WORKSPACE_API_URL}/api/v1/partner/organizations/{organizationId}/me
+  - GET {QENTRAH_WORKSPACE_API_URL}/api/v1/partner/organizations/{organizationId}/clients
+  - GET {QENTRAH_WORKSPACE_API_URL}/api/v1/partner/organizations/{organizationId}/properties
 - Parse Workspace errors and handle these codes in product UI where possible:
   - missing_bearer
   - wrong_organization
@@ -64,13 +64,13 @@ Backend Workspace API client:
   - scope_denied
 
 Security rules:
-- Never place Anan access tokens in localStorage, query params, browser logs, or client-rendered payloads.
-- Never expose ANAN_CLIENT_SECRET to the browser.
+- Never place Qentrah access tokens in localStorage, query params, browser logs, or client-rendered payloads.
+- Never expose QENTRAH_CLIENT_SECRET to the browser.
 - Request the smallest useful scope set for the feature.
 - If refresh tokens are used, rotate/store them in a durable backend token vault or database.
 
 Acceptance criteria:
-- A user can click "Authorize with Anan", consent in Anan, and return to the partner app.
+- A user can click "Authorize with Qentrah", consent in Qentrah, and return to the partner app.
 - The backend stores the organization id and tokens server-side.
 - The app can load organization, clients, and properties through Workspace APIs.
 - Missing/expired connection states prompt the user to authorize or reconnect.

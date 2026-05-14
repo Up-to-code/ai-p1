@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { demoConfig } from "@/lib/config";
+import { demoBrandConfig, demoConfig } from "@/lib/config";
 import { oauthStateCookieName, pkceVerifierCookieName } from "@/lib/cookies";
 import { verifySignedValue } from "@/lib/crypto";
 import { organizationIdFromAccessToken } from "@/lib/jwt";
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     workspaceBaseUrl: config.workspaceBaseUrl,
     clientId: config.clientId,
     clientSecret: config.clientSecret,
-    redirectUri: `${config.partnerAppUrl}/api/auth/anan/callback`,
+    redirectUri: `${config.partnerAppUrl}${demoBrandConfig.oauthCallbackPath}`,
     code,
     codeVerifier,
   });

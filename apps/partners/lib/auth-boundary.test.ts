@@ -29,32 +29,20 @@ describe("Partners auth boundary", () => {
     delete process.env.PARTNER_SIGNUP_BRIDGE_SECRET;
   });
 
-  it("mounts Better Auth and tenant Convex components", () => {
-    const generatedApi = read("convex/_generated/api.d.ts");
-    const convexConfig = read("convex/convex.config.ts");
-
-    expect(convexConfig).toContain("@convex-dev/better-auth/convex.config");
-    expect(convexConfig).toContain("@djpanda/convex-tenants/convex.config.js");
-    expect(generatedApi).toContain("components: {");
-    expect(generatedApi).toContain("betterAuth:");
-    expect(generatedApi).toContain("tenants:");
-  });
-
-  it("uses Partners Better Auth directly instead of the Anan auth bridge", () => {
+  it("uses Better Auth with the Prisma adapter and Partners Prisma client", () => {
     const authServer = read("lib/auth-server.ts");
-
-    expect(authServer).toContain("@convex-dev/better-auth/nextjs");
-    expect(authServer).toContain("convexBetterAuthNextJs");
-    expect(authServer).not.toContain("createAnanAuthBridge");
+    expect(authServer).toContain("better-auth/adapters/prisma");
+    expect(authServer).toContain("prismaAdapter(prisma");
+    expect(authServer).toContain('provider: "postgresql"');
     expect(authServer).not.toContain("@anan/auth/server");
+    expect(authServer).not.toContain("createAnanAuthBridge");
   });
 
   it("keeps direct password signup behind the trusted Partners wrapper", () => {
-    const auth = read("convex/betterAuth/auth.ts");
-
-    expect(auth).toContain("x-anan-partner-signup-secret");
-    expect(auth).toContain("Partner password signup requires the trusted signup flow.");
-    expect(auth).not.toContain("x-anan-admin-signup-secret");
+    const authServer = read("lib/auth-server.ts");
+    expect(authServer).toContain("x-anan-partner-signup-secret");
+    expect(authServer).toContain("Partner password signup requires the trusted signup flow.");
+    expect(authServer).not.toContain("x-anan-admin-signup-secret");
   });
 
   it("partner signin proxies to the Better Auth email signin endpoint and copies cookies", async () => {
@@ -75,11 +63,7 @@ describe("Partners auth boundary", () => {
     expect(await response.json()).toEqual({ ok: true });
     expect(fetchMock).toHaveBeenCalledWith(new URL("http://localhost:3002/api/auth/sign-in/email"), expect.objectContaining({
       method: "POST",
-      body: JSON.stringify({
-        email: "ada@example.com",
-        password: "StrongPassword123",
-        rememberMe: true,
-      }),
+      body: JSON.stringify({ email: "ada@example.com", password: "StrongPassword123", rememberMe: true }),
     }));
     expect(response.headers.get("set-cookie")).toContain("better-auth.session_token=signin");
   });
@@ -108,11 +92,7 @@ describe("Partners auth boundary", () => {
     expect(await response.json()).toEqual({ ok: true, redirectTo: "/dashboard" });
     expect(fetchMock).toHaveBeenCalledWith(new URL("http://localhost:3002/api/auth/sign-up/email"), expect.objectContaining({
       method: "POST",
-      body: JSON.stringify({
-        email: "ada@example.com",
-        password: "StrongPassword123",
-        name: "Ada Lovelace",
-      }),
+      body: JSON.stringify({ email: "ada@example.com", password: "StrongPassword123", name: "Ada Lovelace" }),
     }));
     expect(new Headers(init?.headers).get("x-anan-partner-signup-secret")).toBe("test-secret");
     expect(response.headers.get("set-cookie")).toContain("better-auth.session_token=signup");

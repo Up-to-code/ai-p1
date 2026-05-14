@@ -90,8 +90,8 @@ export const docsTopics: DocsTopic[] = [
       ar: "MCP لمؤسستك بلغة بسيطة",
     },
     description: {
-      en: "Connect ChatGPT, Claude, Grok, Codex, Cursor, or your own agent to one Anan organization without giving anyone a dashboard login.",
-      ar: "اربط ChatGPT أو Claude أو Grok أو Codex أو Cursor أو وكيلك الخاص بمؤسسة واحدة في عنان بدون إعطاء أي شخص دخولاً للوحة التحكم.",
+      en: "Connect ChatGPT, Claude, Grok, Codex, Cursor, or your own agent to one Qentrah organization without giving anyone a dashboard login.",
+      ar: "اربط ChatGPT أو Claude أو Grok أو Codex أو Cursor أو وكيلك الخاص بمؤسسة واحدة في قنطرة بدون إعطاء أي شخص دخولاً للوحة التحكم.",
     },
   },
   {
@@ -114,8 +114,8 @@ export const docsTopics: DocsTopic[] = [
       ar: "رابط MCP هو باب مضبوط",
     },
     description: {
-      en: "The link is the address the agent uses to ask Anan for approved tools and approved data.",
-      ar: "هذا الرابط هو العنوان الذي يستخدمه الوكيل لطلب الأدوات والبيانات المسموحة فقط من عنان.",
+      en: "The link is the address the agent uses to ask Qentrah for approved tools and approved data.",
+      ar: "هذا الرابط هو العنوان الذي يستخدمه الوكيل لطلب الأدوات والبيانات المسموحة فقط من قنطرة.",
     },
   },
   {
@@ -150,8 +150,8 @@ export const docsTopics: DocsTopic[] = [
       ar: "كيف تساعدك الوكلاء المختلفة",
     },
     description: {
-      en: "Use the same Anan organization link with popular AI agents or with your own internal assistant.",
-      ar: "استخدم نفس رابط مؤسسة عنان مع الوكلاء المشهورين أو مع مساعدك الداخلي الخاص.",
+      en: "Use the same Qentrah organization link with popular AI agents or with your own internal assistant.",
+      ar: "استخدم نفس رابط مؤسسة قنطرة مع الوكلاء المشهورين أو مع مساعدك الداخلي الخاص.",
     },
   },
   {
@@ -208,17 +208,17 @@ const codeSamples = {
   "tools": [
     {
       "type": "mcp",
-      "server_label": "anan",
+      "server_label": "qentrah",
       "server_url": "https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET",
       "allowed_tools": ["organization_info", "clients_list", "tasks_create"],
       "require_approval": "never"
     }
   ]
 }`,
-  chatgpt: `Connector name: Anan organization
+  chatgpt: `Connector name: Qentrah organization
 Connector URL: https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET
 Suggested scope: only the tools selected when the link was created`,
-  claude: `Name: Anan organization
+  claude: `Name: Qentrah organization
 Remote MCP URL: https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET
 Notes: Claude cloud must be able to reach this HTTPS endpoint.`,
   grok: `{
@@ -227,16 +227,16 @@ Notes: Claude cloud must be able to reach this HTTPS endpoint.`,
   "tools": [
     {
       "type": "mcp",
-      "server_label": "anan",
+      "server_label": "qentrah",
       "server_url": "https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET"
     }
   ]
 }`,
-  ide: `codex mcp add anan --url https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET
+  ide: `codex mcp add qentrah --url https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET
 
 {
   "mcpServers": {
-    "anan": {
+    "qentrah": {
       "url": "https://your-domain.com/api/mcp/agent/PUBLIC_ID/SECRET"
     }
   }
@@ -258,7 +258,7 @@ const copyByLocale: Record<Locale, DocsCopy> = {
       "Private records stay hidden",
     ],
     overviewBody: [
-      "MCP is the connection language. It lets an AI agent ask Anan for specific tools, like reading public client records, checking available properties, or creating a task.",
+      "MCP is the connection language. It lets an AI agent ask Qentrah for specific tools, like reading public client records, checking available properties, or creating a task.",
       "The important part is that the agent does not get a full dashboard account. It only receives a special organization link and only sees the tools that an admin allowed.",
       "Every company keeps its own data bubble. Company A's link opens Company A's approved tools. Company B's link opens Company B's approved tools. The two do not mix.",
     ],
@@ -274,7 +274,7 @@ const copyByLocale: Record<Locale, DocsCopy> = {
     steps: [
       { title: "Choose the organization", description: "Pick the company workspace the agent is allowed to help with. This keeps each company's data separate." },
       { title: "Create an agent link", description: "Give it a human name like ChatGPT Sales Helper or Claude Vendor Review so everyone knows why it exists." },
-      { title: "Select permissions", description: "Start with read-only access. Turn on create or update only for jobs where the agent must write back to Anan." },
+      { title: "Select permissions", description: "Start with read-only access. Turn on create or update only for jobs where the agent must write back to Qentrah." },
       { title: "Copy the MCP URL", description: "Paste the generated URL into ChatGPT, Claude, Grok, Codex, Cursor, or your custom agent as the MCP server URL." },
       { title: "Test and manage", description: "Ask the agent what it can do. If anything looks wrong, pause, rotate, or revoke the link from settings." },
     ],
@@ -290,13 +290,13 @@ const copyByLocale: Record<Locale, DocsCopy> = {
       { resource: "Media", bestFor: "Read approved files or attach URL-based documents", actions: "read, create" },
     ],
     examplesDescription:
-      "Different agents can use the same Anan link, but you should create separate links when the purpose is different. A sales helper, a vendor helper, and an internal automation should not share one broad key.",
+      "Different agents can use the same Qentrah link, but you should create separate links when the purpose is different. A sales helper, a vendor helper, and an internal automation should not share one broad key.",
     examples: [
       { name: "ChatGPT", description: "Good for a non-technical team member asking questions, drafting follow-ups, or summarizing approved records.", code: codeSamples.chatgpt },
       { name: "Claude", description: "Good for reviewing long notes, vendor handoffs, policy documents, or detailed client context.", code: codeSamples.claude },
-      { name: "Grok / xAI", description: "Good for a custom cloud workflow that needs the same approved Anan tools.", code: codeSamples.grok },
+      { name: "Grok / xAI", description: "Good for a custom cloud workflow that needs the same approved Qentrah tools.", code: codeSamples.grok },
       { name: "Codex, Cursor, or IDE agents", description: "Good for technical teams building automation around your organization data.", code: codeSamples.ide },
-      { name: "OpenAI API", description: "Good when your own product calls OpenAI and attaches Anan as a remote MCP server.", code: codeSamples.openai },
+      { name: "OpenAI API", description: "Good when your own product calls OpenAI and attaches Qentrah as a remote MCP server.", code: codeSamples.openai },
     ],
     securityDescription: "Before you connect an agent, agree on what it is allowed to touch and who owns the link.",
     securityItems: [
@@ -331,7 +331,7 @@ const copyByLocale: Record<Locale, DocsCopy> = {
       "البيانات الخاصة تبقى مخفية",
     ],
     overviewBody: [
-      "MCP هي لغة الربط. تسمح للوكيل الذكي أن يطلب من عنان أدوات محددة، مثل قراءة سجلات العملاء العامة، فحص العقارات المتاحة، أو إنشاء مهمة.",
+      "MCP هي لغة الربط. تسمح للوكيل الذكي أن يطلب من قنطرة أدوات محددة، مثل قراءة سجلات العملاء العامة، فحص العقارات المتاحة، أو إنشاء مهمة.",
       "النقطة المهمة أن الوكيل لا يحصل على حساب كامل في لوحة التحكم. يحصل فقط على رابط خاص بالمؤسسة، ويرى فقط الأدوات التي سمح بها المسؤول.",
       "كل شركة تحتفظ بفقاعة بيانات منفصلة. رابط الشركة الأولى يفتح أدوات الشركة الأولى المسموحة. رابط الشركة الثانية يفتح أدوات الشركة الثانية المسموحة. لا يتم خلط البيانات.",
     ],
@@ -347,7 +347,7 @@ const copyByLocale: Record<Locale, DocsCopy> = {
     steps: [
       { title: "اختر المؤسسة", description: "حدد مساحة عمل الشركة التي يسمح للوكيل بمساعدتها. هذا يفصل بيانات كل شركة عن الأخرى." },
       { title: "أنشئ رابط وكيل", description: "اكتب اسماً مفهوماً مثل مساعد مبيعات ChatGPT أو مراجعة مورد Claude حتى يعرف الجميع سبب وجوده." },
-      { title: "حدد الصلاحيات", description: "ابدأ بالقراءة فقط. شغل الإنشاء أو التحديث فقط عندما يحتاج الوكيل للكتابة داخل عنان." },
+      { title: "حدد الصلاحيات", description: "ابدأ بالقراءة فقط. شغل الإنشاء أو التحديث فقط عندما يحتاج الوكيل للكتابة داخل قنطرة." },
       { title: "انسخ رابط MCP", description: "الصق الرابط الناتج داخل ChatGPT أو Claude أو Grok أو Codex أو Cursor أو وكيلك المخصص كرابط خادم MCP." },
       { title: "اختبر وأدر الرابط", description: "اسأل الوكيل عما يستطيع فعله. إذا كان هناك شيء غير صحيح، أوقف الرابط أو دوّره أو ألغِه من الإعدادات." },
     ],
@@ -363,13 +363,13 @@ const copyByLocale: Record<Locale, DocsCopy> = {
       { resource: "الوسائط", bestFor: "قراءة الملفات المعتمدة أو إرفاق مستندات عبر روابط", actions: "قراءة، إنشاء" },
     ],
     examplesDescription:
-      "يمكن للوكلاء المختلفين استخدام رابط عنان، لكن الأفضل إنشاء روابط منفصلة عندما يختلف الغرض. مساعد المبيعات ومساعد المورد والأتمتة الداخلية لا يجب أن يتشاركوا مفتاحاً واسعاً واحداً.",
+      "يمكن للوكلاء المختلفين استخدام رابط قنطرة، لكن الأفضل إنشاء روابط منفصلة عندما يختلف الغرض. مساعد المبيعات ومساعد المورد والأتمتة الداخلية لا يجب أن يتشاركوا مفتاحاً واسعاً واحداً.",
     examples: [
       { name: "ChatGPT", description: "مناسب لعضو فريق غير تقني يسأل أسئلة أو يكتب متابعات أو يلخص السجلات المسموحة.", code: codeSamples.chatgpt },
       { name: "Claude", description: "مناسب لمراجعة الملاحظات الطويلة وتسليمات الموردين والسياسات وسياق العملاء المفصل.", code: codeSamples.claude },
-      { name: "Grok / xAI", description: "مناسب لسير عمل سحابي مخصص يحتاج نفس أدوات عنان المسموحة.", code: codeSamples.grok },
+      { name: "Grok / xAI", description: "مناسب لسير عمل سحابي مخصص يحتاج نفس أدوات قنطرة المسموحة.", code: codeSamples.grok },
       { name: "Codex أو Cursor أو وكلاء IDE", description: "مناسب للفرق التقنية التي تبني أتمتة حول بيانات المؤسسة.", code: codeSamples.ide },
-      { name: "OpenAI API", description: "مناسب عندما يستدعي منتجك OpenAI ويربط عنان كخادم MCP بعيد.", code: codeSamples.openai },
+      { name: "OpenAI API", description: "مناسب عندما يستدعي منتجك OpenAI ويربط قنطرة كخادم MCP بعيد.", code: codeSamples.openai },
     ],
     securityDescription: "قبل ربط أي وكيل، اتفقوا على ما يسمح له بلمسه ومن يملك الرابط.",
     securityItems: [
@@ -421,7 +421,7 @@ export function getDocsMetadata(locale: string, topicSlug: DocsTopicSlug): Metad
   const topic = topicBySlug(topicSlug);
 
   return {
-    title: `${topic.title[language]} | Anan MCP`,
+    title: `${topic.title[language]} | Qentrah MCP`,
     description: topic.description[language],
   };
 }
@@ -630,8 +630,8 @@ function EndpointVisual({ isArabic }: { isArabic: boolean }) {
         <TopicCard icon={DoorOpen} title={textFor(isArabic, "One controlled doorway", "باب مضبوط واحد")} tone="green">
           {textFor(
             isArabic,
-            "The agent knocks on this link whenever it needs approved Anan tools.",
-            "الوكيل يستخدم هذا الرابط كلما احتاج أدوات عنان المسموحة.",
+            "The agent knocks on this link whenever it needs approved Qentrah tools.",
+            "الوكيل يستخدم هذا الرابط كلما احتاج أدوات قنطرة المسموحة.",
           )}
         </TopicCard>
         <div className={subtlePanelClassName}>
@@ -729,8 +729,8 @@ function AgentCloudVisual({ isArabic }: { isArabic: boolean }) {
         <TopicCard icon={Workflow} title={textFor(isArabic, "Best practice", "أفضل ممارسة")} tone="green">
           {textFor(
             isArabic,
-            "Create a separate Anan link for each agent or job, so you can pause one workflow without breaking the rest.",
-            "أنشئ رابط عنان منفصلاً لكل وكيل أو وظيفة، حتى تستطيع إيقاف سير عمل واحد بدون تعطيل البقية.",
+            "Create a separate Qentrah link for each agent or job, so you can pause one workflow without breaking the rest.",
+            "أنشئ رابط قنطرة منفصلاً لكل وكيل أو وظيفة، حتى تستطيع إيقاف سير عمل واحد بدون تعطيل البقية.",
           )}
         </TopicCard>
       </div>

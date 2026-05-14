@@ -1,7 +1,7 @@
 {
   "name": "@anan/auth",
   "version": "0.1.0",
-  "description": "Shared OAuth2/OpenID Connect auth, scope, and authorization helpers for Anan apps.",
+  "description": "Shared OAuth2/OpenID Connect auth, scope, and authorization helpers for Qentrah apps.",
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",
@@ -42,11 +42,12 @@
     }
   },
   "scripts": {
-    "prebuild": "npm --workspace @anan/platform-core run build",
+    "prebuild": "npm --workspace @anan/brand-identity run build && npm --workspace @anan/platform-core run build",
     "build": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
   "dependencies": {
+    "@anan/brand-identity": "0.1.0",
     "@anan/platform-core": "0.1.0",
     "better-auth": "1.5.6"
   },

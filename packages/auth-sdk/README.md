@@ -1,6 +1,6 @@
 # @anan/auth-sdk
 
-Production authentication SDK for Anan apps. The SDK is an umbrella over the existing Better Auth, OIDC, external authorization, and resource authorization surfaces.
+Production authentication SDK for Qentrah apps. The SDK is an umbrella over the existing Better Auth, OIDC, external authorization, and resource authorization surfaces.
 
 ## Security Model
 

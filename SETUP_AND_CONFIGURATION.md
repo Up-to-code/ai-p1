@@ -1,6 +1,6 @@
-# Anan Setup And Configuration
+# Qentrah Setup And Configuration
 
-This document is the repo-level setup guide for rebuilding, configuring, developing, and operating the Anan monorepo from a clean machine or a new deployment account.
+This document is the repo-level setup guide for rebuilding, configuring, developing, and operating the Qentrah monorepo from a clean machine or a new deployment account.
 
 It is written for maintainers, future developers, and integration engineers who need to understand the architecture, app boundaries, environment variables, external tokens, local development flow, and production deployment shape.
 
@@ -54,7 +54,7 @@ The repo is an npm workspaces monorepo.
 ```txt
 anan/
   apps/
-    workspace/          Main Anan product, OAuth provider, partner resource API, admin service API
+    workspace/          Main Qentrah product, OAuth provider, partner resource API, admin service API
     partners/           Partner developer portal, app registration, docs, sandbox
     admin/              Internal review console for partner app submissions
     demo-partner-app/   Standalone OAuth reference partner app
@@ -110,13 +110,13 @@ sequenceDiagram
 
 OAuth/resource flow:
 
-1. Partner product renders `Authorize with Anan`.
+1. Partner product renders `Authorize with Qentrah`.
 2. Partner backend creates OAuth `state`, PKCE verifier, and PKCE challenge.
-3. Partner redirects to `ANAN_WORKSPACE_API_URL/oauth/authorize`.
+3. Partner redirects to `QENTRAH_WORKSPACE_API_URL/oauth/authorize`.
 4. Workspace authenticates the user, checks organization permission, validates requested scopes, and records consent.
 5. Workspace redirects back to the partner callback with an authorization code.
-6. Partner backend exchanges the code at `ANAN_WORKSPACE_API_URL/oauth/token`.
-7. Partner stores tokens server-side and calls `ANAN_WORKSPACE_API_URL/api/v1/partner/...` with `Authorization: Bearer <access_token>`.
+6. Partner backend exchanges the code at `QENTRAH_WORKSPACE_API_URL/oauth/token`.
+7. Partner stores tokens server-side and calls `QENTRAH_WORKSPACE_API_URL/api/v1/partner/...` with `Authorization: Bearer <access_token>`.
 
 ## Development Workflow
 
@@ -217,7 +217,7 @@ Core env variables:
 | `SENTRY_ORG` | Optional build upload | Vercel | Sentry source map upload org. | Sentry settings. |
 | `SENTRY_PROJECT` | Optional build upload | Vercel | Sentry source map upload project. | Sentry settings. |
 | `SENTRY_AUTH_TOKEN` | Optional build upload | Vercel | Token for Sentry source map upload. | Sentry user/org auth token. |
-| `NEXT_PUBLIC_ANAN_PERF_DEBUG` | Optional local/debug | Vercel/local | Enables extra performance debug logs. | Set `1` only when debugging. |
+| `NEXT_PUBLIC_QENTRAH_PERF_DEBUG` | Optional local/debug | Vercel/local | Enables extra performance debug logs. | Set `1` only when debugging. |
 | `NEXT_PUBLIC_API_URL` | Optional | Vercel/local | Public API base config exposed through `public.ts`. | Workspace API URL if needed. |
 | `E2E_BASE_URL` | Optional tests | Local/CI | Playwright target URL. | Running app URL. |
 
@@ -279,10 +279,10 @@ Core env variables:
 | `NEXT_PUBLIC_CONVEX_URL` | Required | Vercel/local | Browser Convex URL; can be derived from `CONVEX_URL` by local script. | Convex dashboard. |
 | `NEXT_PUBLIC_CONVEX_SITE_URL` | Required | Vercel/local | Browser-visible Convex site URL; can be derived from `CONVEX_SITE_URL`. | Convex dashboard. |
 | `PARTNER_SIGNUP_BRIDGE_SECRET` | Required production | Vercel and Convex | Guards local/signup bridge into Better Auth. | Generate a shared internal secret. |
-| `ANAN_WORKSPACE_API_URL` | Required for submission sync | Vercel/local | Workspace base URL. | Workspace deployment URL. |
-| `ANAN_PLATFORM_API_URL` | Optional fallback | Vercel/local | Legacy/fallback Workspace API URL. | Workspace deployment URL. |
-| `ANAN_PLATFORM_SERVICE_TOKEN` | Required for app submission sync | Vercel/local | Service token Partners uses to submit registrations to Workspace. | Must match Workspace admin/service configuration. |
-| `ANAN_WORKSPACE_SERVICE_TOKEN` | Optional fallback | Vercel/local | Alternate service token name accepted by Partners config. | Generate shared internal secret. |
+| `QENTRAH_WORKSPACE_API_URL` | Required for submission sync | Vercel/local | Workspace base URL. | Workspace deployment URL. |
+| `QENTRAH_PLATFORM_API_URL` | Optional fallback | Vercel/local | Legacy/fallback Workspace API URL. | Workspace deployment URL. |
+| `QENTRAH_PLATFORM_SERVICE_TOKEN` | Required for app submission sync | Vercel/local | Service token Partners uses to submit registrations to Workspace. | Must match Workspace admin/service configuration. |
+| `QENTRAH_WORKSPACE_SERVICE_TOKEN` | Optional fallback | Vercel/local | Alternate service token name accepted by Partners config. | Generate shared internal secret. |
 | `PARTNERS_REVIEW_CALLBACK_TOKEN` | Required production | Vercel and Workspace | Token used to verify review callbacks. | Generate shared internal secret. |
 
 Minimal local Partners `.env.local`:
@@ -296,8 +296,8 @@ NEXT_PUBLIC_CONVEX_URL=https://<partners-deployment>.convex.cloud
 NEXT_PUBLIC_CONVEX_SITE_URL=https://<partners-deployment>.convex.site
 BETTER_AUTH_SECRET=replace-with-at-least-32-characters
 PARTNER_SIGNUP_BRIDGE_SECRET=local-partner-signup-secret
-ANAN_WORKSPACE_API_URL=http://localhost:3000
-ANAN_PLATFORM_SERVICE_TOKEN=local-workspace-admin-token
+QENTRAH_WORKSPACE_API_URL=http://localhost:3000
+QENTRAH_PLATFORM_SERVICE_TOKEN=local-workspace-admin-token
 PARTNERS_REVIEW_CALLBACK_TOKEN=local-review-callback-token
 ```
 
@@ -361,9 +361,9 @@ Env variables:
 
 | Variable | Required | Where it lives | Purpose | Where to get it |
 | --- | --- | --- | --- | --- |
-| `ANAN_WORKSPACE_API_URL` | Required | Vercel/local | Workspace base URL for OAuth and partner APIs. | Workspace deployment URL. |
-| `ANAN_CLIENT_ID` | Required | Vercel/local | Approved OAuth client ID for this partner app. | Partners app record after registration/review. |
-| `ANAN_CLIENT_SECRET` | Optional | Vercel/local | OAuth client secret for confidential clients. | Partners/Workspace OAuth client record, if confidential. |
+| `QENTRAH_WORKSPACE_API_URL` | Required | Vercel/local | Workspace base URL for OAuth and partner APIs. | Workspace deployment URL. |
+| `QENTRAH_CLIENT_ID` | Required | Vercel/local | Approved OAuth client ID for this partner app. | Partners app record after registration/review. |
+| `QENTRAH_CLIENT_SECRET` | Optional | Vercel/local | OAuth client secret for confidential clients. | Partners/Workspace OAuth client record, if confidential. |
 | `PARTNER_APP_URL` | Required | Vercel/local | Public URL of the demo partner app. | Demo deployment URL or `http://localhost:3004`. |
 | `DEMO_ACCESS_TOKEN` | Required | Vercel/local | Gate token for opening public demo URL. | Generate any strong random string. |
 | `SESSION_SECRET` | Required | Vercel/local | Encrypts HttpOnly token cookie; minimum 32 characters. | Generate with `openssl rand -base64 32`. |
@@ -371,9 +371,9 @@ Env variables:
 Minimal local Demo `.env.local`:
 
 ```bash
-ANAN_WORKSPACE_API_URL=http://localhost:3000
-ANAN_CLIENT_ID=partners_client_...
-ANAN_CLIENT_SECRET=
+QENTRAH_WORKSPACE_API_URL=http://localhost:3000
+QENTRAH_CLIENT_ID=partners_client_...
+QENTRAH_CLIENT_SECRET=
 PARTNER_APP_URL=http://localhost:3004
 DEMO_ACCESS_TOKEN=demo-token
 SESSION_SECRET=abcdefghijklmnopqrstuvwxyz123456
@@ -388,7 +388,7 @@ Demo OAuth checklist:
 5. Use `http://localhost:3004/api/auth/anan/callback` as redirect URI.
 6. Request read scopes first: `organization:read`, `client:read`, `property:read`.
 7. Approve/sync the app through Admin Review or the relevant local flow.
-8. Copy the OAuth client ID into `ANAN_CLIENT_ID`.
+8. Copy the OAuth client ID into `QENTRAH_CLIENT_ID`.
 9. Open `http://localhost:3004`, unlock with `DEMO_ACCESS_TOKEN`, then authorize.
 
 ## Marketing App Configuration
@@ -404,14 +404,14 @@ npm run dev:marketing
 Production project:
 
 - Vercel root directory: `apps/marketing`
-- Suggested domain: root marketing domain, for example `https://anan.sa`
+- Suggested domain: root marketing domain, for example `https://qentrah.sa`
 
 Env variables:
 
 | Variable | Required | Where it lives | Purpose | Where to get it |
 | --- | --- | --- | --- | --- |
-| `NEXT_PUBLIC_WORKSPACE_URL` | Optional | Vercel/local | Link target for Workspace CTAs; defaults to `https://app.anan.sa`. | Workspace production URL. |
-| `NEXT_PUBLIC_PARTNERS_URL` | Optional | Vercel/local | Link target for Partners CTAs; defaults to `https://partners.anan.sa`. | Partners production URL. |
+| `NEXT_PUBLIC_WORKSPACE_URL` | Optional | Vercel/local | Link target for Workspace CTAs; defaults to `https://app.qentrah.sa`. | Workspace production URL. |
+| `NEXT_PUBLIC_PARTNERS_URL` | Optional | Vercel/local | Link target for Partners CTAs; defaults to `https://partners.qentrah.sa`. | Partners production URL. |
 
 ## Package Configuration
 
@@ -457,7 +457,7 @@ Suggested internal token mapping:
 
 | Same secret value | Set in |
 | --- | --- |
-| Workspace admin/service token | `WORKSPACE_ADMIN_SERVICE_TOKEN` in Workspace/Admin, `ANAN_PLATFORM_SERVICE_TOKEN` in Partners |
+| Workspace admin/service token | `WORKSPACE_ADMIN_SERVICE_TOKEN` in Workspace/Admin, `QENTRAH_PLATFORM_SERVICE_TOKEN` in Partners |
 | Review callback token | `PARTNERS_REVIEW_CALLBACK_TOKEN` in Workspace and Partners |
 | Partner signup bridge token | `PARTNER_SIGNUP_BRIDGE_SECRET` in Partners Vercel and Partners Convex |
 
@@ -624,8 +624,8 @@ npm --workspace @anan/workspace run test:e2e
 Partner app submission fails from Partners:
 
 - Confirm Workspace is running.
-- Confirm `ANAN_WORKSPACE_API_URL` points to Workspace.
-- Confirm `ANAN_PLATFORM_SERVICE_TOKEN` in Partners matches the token Workspace expects.
+- Confirm `QENTRAH_WORKSPACE_API_URL` points to Workspace.
+- Confirm `QENTRAH_PLATFORM_SERVICE_TOKEN` in Partners matches the token Workspace expects.
 - Confirm the app has at least one approved/requested partner API scope.
 
 Admin Review cannot load apps:
@@ -638,13 +638,13 @@ Demo Partner App OAuth callback fails:
 
 - Confirm `PARTNER_APP_URL` exactly matches the registered redirect URI origin.
 - Confirm redirect URI is registered as `${PARTNER_APP_URL}/api/auth/anan/callback`.
-- Confirm `ANAN_CLIENT_ID` matches the approved OAuth client.
+- Confirm `QENTRAH_CLIENT_ID` matches the approved OAuth client.
 - Confirm `SESSION_SECRET` is at least 32 characters.
-- Confirm the OAuth request includes `resource=${ANAN_WORKSPACE_API_URL}/api/v1/partner`.
+- Confirm the OAuth request includes `resource=${QENTRAH_WORKSPACE_API_URL}/api/v1/partner`.
 
 Workspace partner resource API returns `connection_expired`:
 
-- Send the user through `Authorize with Anan` again.
+- Send the user through `Authorize with Qentrah` again.
 - A production partner app should keep reconnect UX available.
 
 Workspace partner resource API returns `scope_denied`:

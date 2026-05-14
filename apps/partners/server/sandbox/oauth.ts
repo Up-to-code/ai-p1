@@ -1,9 +1,8 @@
 import { Hono } from "hono";
-import { fetchMutation } from "convex/nextjs";
 import { getToken } from "@/lib/auth-server";
-import { partnerBackendRefs } from "@/server/partnerBackendRefs";
 import { pkceS256, sandboxToken, sha256 } from "./crypto";
 import { formValue, json, oauthError, scopesFrom } from "./http";
+import { sandboxStore } from "./store";
 
 export const sandboxOAuthApp = new Hono().basePath("/sandbox/oauth");
 
@@ -26,13 +25,13 @@ sandboxOAuthApp.get("/authorize", async (c) => {
       return oauthError("invalid_request", 400, "Sandbox OAuth requires PKCE S256.");
     }
 
-    const result = (await fetchMutation(partnerBackendRefs.sandbox.createAuthorizationCode as never, {
+    const result = await sandboxStore.createAuthorizationCode(token, {
       clientId,
       redirectUri,
       scopes,
       codeChallenge,
       codeChallengeMethod: "S256",
-    } as never, { token })) as { code: string; redirectUri: string; organizationId: string };
+    });
 
     const redirect = new URL(result.redirectUri);
     redirect.searchParams.set("code", result.code);
@@ -58,14 +57,14 @@ sandboxOAuthApp.post("/token", async (c) => {
       const codeVerifier = formValue(body, "code_verifier");
       if (!code || !clientId || !redirectUri || !codeVerifier) return oauthError("invalid_request");
 
-      const result = (await fetchMutation(partnerBackendRefs.sandbox.exchangeAuthorizationCode as never, {
+      const result = await sandboxStore.exchangeAuthorizationCode({
         code,
         clientId,
         redirectUri,
         codeChallenge: pkceS256(codeVerifier),
         accessTokenHash: sha256(accessToken),
         refreshTokenHash: sha256(refreshToken),
-      } as never)) as { organizationId: string; scopes: string[]; expiresIn: number };
+      });
 
       return json({
         access_token: accessToken,
@@ -81,11 +80,11 @@ sandboxOAuthApp.post("/token", async (c) => {
     if (grantType === "refresh_token") {
       const suppliedRefreshToken = formValue(body, "refresh_token");
       if (!suppliedRefreshToken) return oauthError("invalid_request");
-      const result = (await fetchMutation(partnerBackendRefs.sandbox.rotateRefreshToken as never, {
+      const result = await sandboxStore.rotateRefreshToken({
         refreshTokenHash: sha256(suppliedRefreshToken),
         accessTokenHash: sha256(accessToken),
         nextRefreshTokenHash: sha256(refreshToken),
-      } as never)) as { organizationId: string; scopes: string[]; expiresIn: number };
+      });
 
       return json({
         access_token: accessToken,

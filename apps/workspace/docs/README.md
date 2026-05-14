@@ -12,7 +12,7 @@ The workspace is a synchronization engine and OAuth 2.1 Provider. External CRMs,
 | [Auth](auth/index.md) | Defines Better Auth, OAuth 2.1 Provider behavior, Organization authorization, consent, scopes, and credentials. |
 | [Synchronization](synchronization/index.md) | Defines how external claims become approved canonical state and how that state is synchronized outward. |
 | [Visibility](visibility/index.md) | Defines how the workspace decides which property data is visible to each platform, audience, organization, and channel. |
-| [UI](ui/index.md) | Defines Anand interface layout, tokenized design system, onboarding flow, pages, components, states, and synchronization UX. |
+| [UI](ui/index.md) | Defines Qentrah interface layout, tokenized design system, onboarding flow, pages, components, states, and synchronization UX. |
 | [Sdk](sdk/index.md) | Defines the official developer SDK plan for OAuth, API access, token handling, and webhook verification. |
 | [Security](security/index.md) | Defines threat controls, token safety, API protection, webhook safety, frontend safety, and secrets handling. |
 | [Compliance](compliance/index.md) | Defines Saudi regulatory context for REGA, Real Estate Registry, Ejar, PDPL, and auditability. |

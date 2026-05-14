@@ -72,7 +72,7 @@ const planCopy = {
         name: "Institutional",
         price: 299,
         description: "For multi-team operators who need stronger governance and portfolio-grade execution.",
-        buttonText: "Talk to Anan",
+        buttonText: "Talk to Qentrah",
         features: [
           { title: "Everything in Operate" },
           { title: "Custom onboarding workflows" },
@@ -129,7 +129,7 @@ const planCopy = {
         name: "مؤسسي",
         price: 299,
         description: "للمشغلين متعددي الفرق الذين يحتاجون حوكمة أقوى وتنفيذاً مؤسسياً.",
-        buttonText: "تحدث مع أنان",
+        buttonText: "تحدث مع قنطرة",
         features: [
           { title: "كل ما في تشغيل" },
           { title: "سير عمل مخصص للتفعيل" },

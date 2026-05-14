@@ -1,10 +1,10 @@
 # Crm Example
 
-Purpose: Show CRM app registering OAuth client, running Continue with Anand, and syncing property updates.
+Purpose: Show CRM app registering OAuth client, running Continue with Qentrah, and syncing property updates.
 
 ## Owns
 
-- Show CRM app registering OAuth client, running Continue with Anand, and syncing property updates.
+- Show CRM app registering OAuth client, running Continue with Qentrah, and syncing property updates.
 - CRM submits claims, not truth.
 - CRM handles suppression events.
 

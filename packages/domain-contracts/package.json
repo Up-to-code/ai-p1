@@ -1,7 +1,7 @@
 {
   "name": "@anan/domain-contracts",
   "version": "0.1.0",
-  "description": "Shared Anan DTOs, Zod schemas, and server contract types.",
+  "description": "Shared Qentrah DTOs, Zod schemas, and server contract types.",
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",

@@ -1,9 +1,11 @@
+import { brandProductName, brandRoutePath } from "@anan/brand-identity";
+
 export const localDemoRegistration = {
-  appName: "Anan OAuth Demo",
+  appName: brandProductName("demo", "en"),
   publisherName: "ZA",
   partnerAppUrl: "http://localhost:3004",
   clientId: "partners_client_4p2f001r194s5z6e15473f582m331f4z4s0f",
-  redirectUri: "http://localhost:3004/api/auth/anan/callback",
+  redirectUri: `http://localhost:3004${brandRoutePath("oauthCallback")}`,
   scopes: [
     "calendar:read",
     "client:create",

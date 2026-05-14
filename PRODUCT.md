@@ -14,7 +14,7 @@ The default register is product because the repo's core value is operational wor
 
 ## Product Purpose
 
-Mino Design is the repo-wide design language for the Anan monorepo. It should make every surface feel like one composed Saudi real estate operating system, from the public workspace landing page to dashboards, OAuth consent, partner review, admin surfaces, and reusable UI packages.
+Mino Design is the repo-wide design language for the Qentrah monorepo. It should make every surface feel like one composed Saudi real estate operating system, from the public workspace landing page to dashboards, OAuth consent, partner review, admin surfaces, and reusable UI packages.
 
 The product exists to help real estate teams see what matters today, act on client and inventory work, trust shared data, and move between human operations and platform automation without visual friction.
 

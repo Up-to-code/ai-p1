@@ -26,7 +26,7 @@ export default async function DashboardPage() {
         <div>
           <p className="text-xs font-bold uppercase text-primary">Overview</p>
           <h1 className="mt-2 text-3xl font-bold text-foreground">Partner applications</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Register, review, and monitor OAuth clients for Anan workspace access.</p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Register, review, and monitor OAuth clients for Qentrah workspace access.</p>
         </div>
         <Link
           href="/dashboard/apps/new"

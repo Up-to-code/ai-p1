@@ -57,7 +57,7 @@ Each index.md must include:
 - auth owns Better Auth, OAuth 2.1, Organization plugin, scopes, credentials.
 - synchronization owns claims, approval, canonical state, distribution.
 - visibility owns computed visibility and suppression.
-- sdk owns @anand/sdk plans and examples.
+- sdk owns @qentrah/sdk plans and examples.
 - security owns threat controls.
 - compliance owns Saudi regulatory context.
 - data-model owns schema and table documentation.

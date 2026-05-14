@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Code2, FileCheck, KeyRound, ShieldCheck, UsersRound, Workflow } from "lucide-react";
 import { codeToHtml } from "shiki";
+import { brandLabel, brandProductName, brandRoutePath } from "@anan/brand-identity";
+
+const brand = brandLabel("en");
+const workspaceName = brandProductName("workspace", "en");
+const partnersName = brandProductName("partners", "en");
+const oauthCallbackPath = brandRoutePath("oauthCallback");
 
 const heroCode = `type PartnerAuthorization = {
   clientId: string;
@@ -10,11 +16,11 @@ const heroCode = `type PartnerAuthorization = {
 
 const authorization: PartnerAuthorization = {
   clientId: "partners_client_...",
-  redirectUri: "https://app.example.com/api/auth/anan/callback",
+  redirectUri: "https://app.example.com${oauthCallbackPath}",
   scopes: ["organization:read", "client:read", "property:read"],
 };
 
-const url = new URL("/oauth/authorize", ANAN_WORKSPACE_API_URL);
+const url = new URL("/oauth/authorize", QENTRAH_WORKSPACE_API_URL);
 url.searchParams.set("client_id", authorization.clientId);
 url.searchParams.set("response_type", "code");
 url.searchParams.set("redirect_uri", authorization.redirectUri);
@@ -25,13 +31,13 @@ url.searchParams.set("code_challenge_method", "S256");`;
 const flow = [
   { title: "Create the OAuth client", description: "Add a partner URL, callback URL, and client type.", icon: KeyRound },
   { title: "Choose small scopes", description: "Request only the organization data your product needs.", icon: ShieldCheck },
-  { title: "Submit for review", description: "Anan reviews production readiness before the app goes live.", icon: FileCheck },
+  { title: "Submit for review", description: `${brand} reviews production readiness before the app goes live.`, icon: FileCheck },
 ];
 
 const partnerValue = [
   {
     title: "Reach operating teams",
-    description: "Put your product in front of real estate teams already managing clients, properties, media, tasks, and follow-up inside Anan.",
+    description: `Put your product in front of real estate teams already managing clients, properties, media, tasks, and follow-up inside ${brand}.`,
     icon: UsersRound,
   },
   {
@@ -47,7 +53,7 @@ const partnerValue = [
 ];
 
 const productUseCases = [
-  "Generate signed PDFs from Anan client and property records.",
+  `Generate signed PDFs from ${brand} client and property records.`,
   "Sync qualified leads into a broker follow-up workflow.",
   "Enrich property media, documents, or listing operations.",
   "Run partner automations after an organization grants consent.",
@@ -78,16 +84,16 @@ export default async function LandingPage() {
           <div>
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-white px-3 py-1 text-xs font-semibold text-primary dark:bg-card">
               <Code2 className="size-3.5" />
-              Anan Partner Platform
+              {partnersName}
             </div>
             <h1 className="max-w-3xl text-balance text-[44px] font-bold leading-[1.02] text-foreground md:text-[64px]">
-              Build reviewed apps for Anan workspaces.
+              Build reviewed apps for {brand} workspaces.
             </h1>
             <p className="mt-5 max-w-xl text-pretty text-base font-medium leading-7 text-muted-foreground">
               Register OAuth clients, request scoped organization access, and ship partner integrations through one developer console.
             </p>
             <p className="mt-4 max-w-xl text-sm font-medium leading-6 text-muted-foreground">
-              The story is simple: your product keeps its own experience, Anan handles organization trust, and Workspace becomes the reviewed bridge between them.
+              The story is simple: your product keeps its own experience, {brand} handles organization trust, and {workspaceName} becomes the reviewed bridge between them.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link href="/signup" className="inline-flex h-12 items-center justify-center rounded-[7px] bg-primary px-6 text-sm font-bold text-primary-foreground transition-colors hover:bg-[#6b90e6]">
@@ -107,7 +113,7 @@ export default async function LandingPage() {
                 <span className="size-3 rounded-full bg-[#ffbd2e]" />
                 <span className="size-3 rounded-full bg-[#28c840]" />
               </div>
-              <span className="text-xs font-semibold text-[#B1BCC7]">authorize-with-anan.ts</span>
+              <span className="text-xs font-semibold text-[#B1BCC7]">authorize-with-qentrah.ts</span>
             </div>
             <div
               className="max-h-[520px] overflow-auto [&_pre]:bg-transparent [&_pre]:font-mono [&_pre]:text-xs [&_pre]:leading-6"
@@ -162,7 +168,7 @@ export default async function LandingPage() {
             <p className="text-xs font-bold uppercase text-primary">Review-ready by design</p>
             <h2 className="mt-3 text-4xl font-bold text-foreground">The portal keeps setup, permissions, and code in one clean path.</h2>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              Developers see what Anan needs for review: callback URLs, client type, exact scopes, and server-side authorization code.
+              Developers see what {brand} needs for review: callback URLs, client type, exact scopes, and server-side authorization code.
             </p>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
               Each app starts as a draft, becomes a reviewed integration, then appears as a trusted authorization option for workspace admins.
@@ -202,7 +208,7 @@ export default async function LandingPage() {
             <p className="text-xs font-bold uppercase text-primary">What partners can ship</p>
             <h2 className="mt-3 text-4xl font-bold text-foreground">Products that sit next to the work, not outside it.</h2>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              The best partner apps remove manual copying, reporting gaps, and disconnected follow-up between Anan and specialist tools.
+              The best partner apps remove manual copying, reporting gaps, and disconnected follow-up between {brand} and specialist tools.
             </p>
           </div>
           <div className="overflow-hidden rounded-[15px] border border-border bg-background">

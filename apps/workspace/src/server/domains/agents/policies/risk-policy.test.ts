@@ -8,7 +8,7 @@ describe("agent risk policy", () => {
   });
 
   it("blocks organization identity edits", () => {
-    expect(evaluateAgentRequestRisk("rename the organization name to Anan Pro").allowed).toBe(false);
+    expect(evaluateAgentRequestRisk("rename the organization name to Qentrah Pro").allowed).toBe(false);
     expect(evaluateAgentToolRisk({ resource: "organization", action: "update" }).allowed).toBe(false);
   });
 

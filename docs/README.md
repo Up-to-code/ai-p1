@@ -1,4 +1,4 @@
-# Anan Documentation
+# Qentrah Documentation
 
 This directory is the repo-level documentation index. It links the root setup
 guide, app-specific READMEs, architecture notes, feature lifecycle guidance, and

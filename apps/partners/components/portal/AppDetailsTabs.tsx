@@ -44,7 +44,7 @@ const architecture = [
     icon: Braces,
   },
   {
-    title: "Anan authorization",
+    title: "Qentrah authorization",
     description: "Workspace admins review scopes and approve access.",
     icon: KeyRound,
   },
@@ -71,19 +71,19 @@ function codeFor(app: PartnerAppSummary, language: LanguageId) {
   const scopes = app.allowedScopes.join(" ");
 
   if (language === "typescript") {
-    return `type AnanOAuthConfig = {
+    return `type QentrahOAuthConfig = {
   clientId: string;
   redirectUri: string;
   scopes: string[];
 };
 
-const config: AnanOAuthConfig = {
+const config: QentrahOAuthConfig = {
   clientId: "${app.clientId}",
   redirectUri: "${redirectUri}",
   scopes: ${JSON.stringify(app.allowedScopes, null, 2)},
 };
 
-const authorizeUrl = new URL("/oauth/authorize", process.env.ANAN_WORKSPACE_API_URL);
+const authorizeUrl = new URL("/oauth/authorize", process.env.QENTRAH_WORKSPACE_API_URL);
 authorizeUrl.searchParams.set("client_id", config.clientId);
 authorizeUrl.searchParams.set("response_type", "code");
 authorizeUrl.searchParams.set("redirect_uri", config.redirectUri);
@@ -93,7 +93,7 @@ authorizeUrl.searchParams.set("code_challenge_method", "S256");`;
   }
 
   if (language === "javascript") {
-    return `const authorizeUrl = new URL("/oauth/authorize", process.env.ANAN_WORKSPACE_API_URL);
+    return `const authorizeUrl = new URL("/oauth/authorize", process.env.QENTRAH_WORKSPACE_API_URL);
 
 authorizeUrl.searchParams.set("client_id", "${app.clientId}");
 authorizeUrl.searchParams.set("response_type", "code");
@@ -105,13 +105,13 @@ authorizeUrl.searchParams.set("code_challenge_method", "S256");
 return Response.redirect(authorizeUrl);`;
   }
 
-  return `curl "https://workspace.anan.example/oauth/authorize?client_id=${app.clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}&code_challenge=<pkce-challenge>&code_challenge_method=S256"`;
+  return `curl "https://workspace.qentrah.example/oauth/authorize?client_id=${app.clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}&code_challenge=<pkce-challenge>&code_challenge_method=S256"`;
 }
 
 function codeTitle(language: LanguageId) {
-  if (language === "typescript") return "authorize-with-anan.ts";
-  if (language === "javascript") return "authorize-with-anan.js";
-  return "authorize-with-anan.sh";
+  if (language === "typescript") return "authorize-with-qentrah.ts";
+  if (language === "javascript") return "authorize-with-qentrah.js";
+  return "authorize-with-qentrah.sh";
 }
 
 function sandboxAuthorizeUrl(app: PartnerAppSummary) {
@@ -252,8 +252,8 @@ export function AppDetailsTabs({
                 <ComponentCard
                   icon={KeyRound}
                   title="Authorization button"
-                  description="Use the same call to action wherever users connect an Anan organization."
-                  value="Authorize with Anan"
+                  description="Use the same call to action wherever users connect a Qentrah organization."
+                  value="Authorize with Qentrah"
                 />
                 <ComponentCard
                   icon={ShieldCheck}
@@ -298,7 +298,7 @@ export function AppDetailsTabs({
             <div>
               <h2 className="text-xl font-bold text-foreground">Authorization values</h2>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Use these values in your app’s Anan authorization button and callback handler.
+                Use these values in your app’s Qentrah authorization button and callback handler.
               </p>
               <div className="mt-5 space-y-3">
                 <InfoBlock label="Client ID" value={app.clientId} />
@@ -530,7 +530,7 @@ code_verifier=<pkce-verifier>`}
           </p>
           <div className="mt-4 grid gap-3">
             <InfoBlock label="Sandbox base" value="/api/v1/partner" />
-            <InfoBlock label="Production base" value="https://workspace.anan.example/api/v1/partner" />
+            <InfoBlock label="Production base" value="https://workspace.qentrah.example/api/v1/partner" />
           </div>
         </div>
       </div>
@@ -582,7 +582,7 @@ function highlightCodeLine(line: string) {
   return escaped
     .replace(/("[^"]*")/g, '<span class="text-[#A5D6FF]">$1</span>')
     .replace(/\b(type|const|return|new|process|Response)\b/g, '<span class="text-[#FF7B72]">$1</span>')
-    .replace(/\b(string|string\[\]|URL|AnanOAuthConfig)\b/g, '<span class="text-[#D2A8FF]">$1</span>')
+    .replace(/\b(string|string\[\]|URL|QentrahOAuthConfig)\b/g, '<span class="text-[#D2A8FF]">$1</span>')
     .replace(/\b(searchParams|set|join|redirect)\b/g, '<span class="text-[#79C0FF]">$1</span>')
     .replace(/(&lt;[^&]*&gt;)/g, '<span class="text-[#7EE787]">$1</span>');
 }

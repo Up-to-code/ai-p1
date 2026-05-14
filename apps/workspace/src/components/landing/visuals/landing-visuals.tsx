@@ -48,7 +48,7 @@ function CenterBrandMark({
       whileHover={reduceMotion ? undefined : { scale: 1.04 }}
     >
       <div className={borderClassName}>
-        <Image src="/brand-logo.svg" alt="Anan" width={size} height={size} style={{ width: size, height: size }} priority />
+        <Image src="/brand-logo.svg" alt="Qentrah" width={size} height={size} style={{ width: size, height: size }} priority />
       </div>
     </motion.div>
   );
@@ -93,7 +93,7 @@ export function HeroBrandNetworkVisual() {
       >
         <Image
           src="/vectors/landing/anan_landing_hero_brand_v2.svg"
-          alt="شبكة عنان"
+          alt="شبكة قنطرة"
           width={680}
           height={500}
           className="h-auto w-full"
@@ -210,7 +210,7 @@ export function AiIntelligenceVisual() {
   return (
     <MotionVector
       src="/vectors/landing/anan_landing_ai_intelligence_v3.svg"
-      alt="ذكاء عنان"
+      alt="ذكاء قنطرة"
       overlay={
         <ConnectionOverlay
           viewBoxWidth={520}

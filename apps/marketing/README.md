@@ -1,4 +1,4 @@
-# Anan Marketing App
+# Qentrah Marketing App
 
 Marketing is the public website app. It is deployed separately from Workspace,
 Partners, Admin Review, and the Demo Partner App.

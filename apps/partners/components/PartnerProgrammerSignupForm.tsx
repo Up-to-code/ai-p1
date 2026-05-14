@@ -107,7 +107,7 @@ export default function PartnerProgrammerSignupForm({ redirectTo }: { redirectTo
             required
             value={name}
             onChange={(event) => setName(event.target.value)}
-            className="h-11 w-full rounded-[7px] border border-border bg-white px-3 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15"
+            className="h-11 w-full rounded-[7px] border border-input bg-background px-3 text-sm text-foreground caret-primary outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15"
           />
         </Field>
         <Field label="Email" htmlFor="partner-signup-email">
@@ -119,7 +119,7 @@ export default function PartnerProgrammerSignupForm({ redirectTo }: { redirectTo
             required
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="h-11 w-full rounded-[7px] border border-border bg-white px-3 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15"
+            className="h-11 w-full rounded-[7px] border border-input bg-background px-3 text-sm text-foreground caret-primary outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15"
           />
         </Field>
       </div>
@@ -136,7 +136,7 @@ export default function PartnerProgrammerSignupForm({ redirectTo }: { redirectTo
               required
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="h-11 w-full rounded-[7px] border border-border bg-white px-3 pr-11 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15"
+              className="h-11 w-full rounded-[7px] border border-input bg-background px-3 pr-11 text-sm text-foreground caret-primary outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15"
             />
             <button
               type="button"
@@ -159,7 +159,7 @@ export default function PartnerProgrammerSignupForm({ redirectTo }: { redirectTo
               required
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
-              className="h-11 w-full rounded-[7px] border border-border bg-white px-3 pr-11 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15"
+              className="h-11 w-full rounded-[7px] border border-input bg-background px-3 pr-11 text-sm text-foreground caret-primary outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15"
             />
             <button
               type="button"
@@ -181,7 +181,7 @@ export default function PartnerProgrammerSignupForm({ redirectTo }: { redirectTo
           required
           value={organizationName}
           onChange={(event) => setOrganizationName(event.target.value)}
-          className="h-11 w-full rounded-[7px] border border-border bg-white px-3 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15"
+          className="h-11 w-full rounded-[7px] border border-input bg-background px-3 text-sm text-foreground caret-primary outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15"
         />
       </Field>
 
@@ -192,7 +192,7 @@ export default function PartnerProgrammerSignupForm({ redirectTo }: { redirectTo
             name="countryCode"
             value={countryCode}
             onChange={(event) => setCountryCode(event.target.value)}
-            className="h-11 w-full rounded-[7px] border border-border bg-white px-3 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15"
+            className="h-11 w-full rounded-[7px] border border-input bg-background px-3 text-sm text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15"
           >
             {PARTNER_COUNTRY_OPTIONS.map((country) => (
               <option key={country.code} value={country.code}>

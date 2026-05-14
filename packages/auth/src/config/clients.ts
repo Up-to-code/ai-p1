@@ -1,4 +1,5 @@
 import { readAuthEnv, type AuthRuntimeEnv } from "./env";
+import { brandProductName } from "@anan/brand-identity";
 
 export type TrustedOidcClient = {
   clientId: string;
@@ -29,7 +30,7 @@ export function resolveTrustedOidcClients(env: AuthRuntimeEnv = process.env): Tr
       ? {
           clientId: webClientId,
           clientSecret: readAuthEnv("ANAN_WEB_OIDC_CLIENT_SECRET", env),
-          name: "Anan Web",
+          name: brandProductName("workspace", "en"),
           redirectUrls: readCsv(readAuthEnv("ANAN_WEB_OIDC_REDIRECT_URIS", env)),
           type: "web" as const,
           skipConsent: true,
@@ -39,7 +40,7 @@ export function resolveTrustedOidcClients(env: AuthRuntimeEnv = process.env): Tr
       ? {
           clientId: adminClientId,
           clientSecret: readAuthEnv("ANAN_ADMIN_OIDC_CLIENT_SECRET", env),
-          name: "Anan Admin",
+          name: brandProductName("admin", "en"),
           redirectUrls: readCsv(readAuthEnv("ANAN_ADMIN_OIDC_REDIRECT_URIS", env)),
           type: "web" as const,
           skipConsent: true,
@@ -49,7 +50,7 @@ export function resolveTrustedOidcClients(env: AuthRuntimeEnv = process.env): Tr
       ? {
           clientId: externalAppClientId,
           clientSecret: readAuthEnv("ANAN_EXTERNAL_APPS_OIDC_CLIENT_SECRET", env),
-          name: "Anan External Apps",
+          name: `${brandProductName("platform", "en")} External Apps`,
           redirectUrls: readCsv(readAuthEnv("ANAN_EXTERNAL_APPS_OIDC_REDIRECT_URIS", env)),
           type: "web" as const,
           skipConsent: true,

@@ -17,7 +17,7 @@ export function Topbar({ account }: { account: PartnerAccountView | null }) {
       <div className="flex h-[69px] items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
           <Link href="/dashboard" className="shrink-0 text-lg font-bold text-foreground">
-            anan<span className="text-primary">portal</span>
+            qentrah<span className="text-primary">portal</span>
           </Link>
           <span className="hidden text-muted-foreground sm:block">/</span>
           <Link href="/dashboard/account" className="hidden min-w-0 items-center gap-2 rounded-[7px] border border-border bg-background px-3 py-1.5 hover:bg-muted sm:flex">

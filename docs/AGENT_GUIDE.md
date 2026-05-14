@@ -1,6 +1,6 @@
 # AI Agent And Developer Guide
 
-This guide helps AI agents and human developers work safely in the Anan
+This guide helps AI agents and human developers work safely in the Qentrah
 monorepo.
 
 ## First Pass

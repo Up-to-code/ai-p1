@@ -155,9 +155,9 @@ export function WorkflowSteps() {
               <div className="p-6">
                 <pre dir="ltr" className="text-left text-xs font-mono leading-relaxed">
                   <code dir="ltr" className="text-left text-[#A1A1AA]">
-<span className="text-[#3385FF]">import</span> {"{ Anand }"} <span className="text-[#3385FF]">from</span> <span className="text-[#22C55E]">'@anand/sdk'</span>;<br/><br/>
+<span className="text-[#3385FF]">import</span> {"{ Qentrah }"} <span className="text-[#3385FF]">from</span> <span className="text-[#22C55E]">'@qentrah/sdk'</span>;<br/><br/>
 <span className="text-[#22C55E]">{"// Just one endpoint to rule them all."}</span><br/>
-<span className="text-[#3385FF]">await</span> anand.webhooks.<span className="text-[#FCD34D]">listen</span>({"{"}<br/>
+<span className="text-[#3385FF]">await</span> qentrah.webhooks.<span className="text-[#FCD34D]">listen</span>({"{"}<br/>
 {"  "}events: [<span className="text-[#22C55E]">'property.state_changed'</span>],<br/>
 {"  "}onFire: (event) <span className="text-[#3385FF]">{"=>"}</span> {"{"}<br/>
 {"    "}<span className="text-[#3385FF]">await</span> db.properties.update(event.data);<br/>

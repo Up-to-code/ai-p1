@@ -1,5 +1,5 @@
 import { SafeWritePanel } from "@/components/SafeWritePanel";
-import { publicDemoConfig, requestedScopes } from "@/lib/config";
+import { demoBrandConfig, publicDemoConfig, requestedScopes } from "@/lib/config";
 import { loadAnanClients, loadAnanMe, loadAnanProperties } from "@/lib/workspace-api";
 import { readTokenSession } from "@/lib/session";
 
@@ -31,20 +31,20 @@ export default async function DashboardPage() {
     <main className="shell">
       <div className="container">
         <header style={{ borderBottom: "1px solid var(--line)", paddingBottom: 24, marginBottom: 24 }}>
-          <p className="micro">Anan partner example</p>
+          <p className="micro">{demoBrandConfig.appName} partner example</p>
           <div className="grid two" style={{ alignItems: "end" }}>
             <div>
               <h1 style={{ margin: "10px 0 0", fontSize: 38, letterSpacing: "-0.05em" }}>
                 Workspace OAuth demo
               </h1>
               <p style={{ color: "var(--muted)", maxWidth: 680, lineHeight: 1.7 }}>
-                A deployable partner app that authorizes an Anan organization, stores tokens server-side, reads workspace data, and demonstrates safe client writes.
+                A deployable partner app that authorizes a workspace organization, stores tokens server-side, reads workspace data, and demonstrates safe client writes.
               </p>
             </div>
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap" }}>
-              <a className="button" href="/api/auth/anan/start">Authorize with Anan</a>
+              <a className="button" href={demoBrandConfig.oauthStartPath}>Authorize with {demoBrandConfig.brandName}</a>
               {session ? (
-                <form action="/api/auth/anan/logout" method="post">
+                <form action={demoBrandConfig.oauthLogoutPath} method="post">
                   <button className="button danger" type="submit">Clear demo session</button>
                 </form>
               ) : null}
@@ -85,7 +85,7 @@ export default async function DashboardPage() {
             <p style={{ color: "var(--muted)", lineHeight: 1.7 }}>
               Click the CTA to visit Workspace, choose the workspace, consent to the scopes, and return to this demo app.
             </p>
-            <a className="button" href="/api/auth/anan/start">Authorize with Anan</a>
+            <a className="button" href={demoBrandConfig.oauthStartPath}>Authorize with {demoBrandConfig.brandName}</a>
           </section>
         ) : !canLoadWorkspaceData ? (
           <section className="panel" style={{ padding: 24 }}>
@@ -94,7 +94,7 @@ export default async function DashboardPage() {
             <p style={{ color: "var(--muted)", lineHeight: 1.7 }}>
               This browser has an older demo token cookie that does not include Workspace&apos;s organization id. Clear the demo session, then authorize again so the callback stores the organization-level authorization.
             </p>
-            <form action="/api/auth/anan/logout" method="post">
+            <form action={demoBrandConfig.oauthLogoutPath} method="post">
               <button className="button" type="submit">Clear session and reconnect</button>
             </form>
           </section>

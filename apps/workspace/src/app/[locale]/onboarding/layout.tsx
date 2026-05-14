@@ -1,4 +1,5 @@
 import { Triangle } from "lucide-react";
+import { brandProductName } from "@anan/brand-identity";
 import { Link } from "@/i18n/routing";
 
 export default function OnboardingLayout({
@@ -16,7 +17,7 @@ export default function OnboardingLayout({
           <div className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-blue-600 text-white">
             <Triangle className="h-4 w-4 fill-current" />
           </div>
-          <span className="text-[11px] font-black uppercase tracking-widest text-zinc-900 dark:text-white">Anan Workspace</span>
+          <span className="text-[11px] font-black uppercase tracking-widest text-zinc-900 dark:text-white">{brandProductName("workspace", "en")}</span>
         </Link>
       </header>
       <main className="relative z-10 flex-1 flex flex-col items-center p-6 sm:p-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">

@@ -1,10 +1,10 @@
 # Package Name
 
-Purpose: Primary SDK package is @anand/sdk.
+Purpose: Primary SDK package is @qentrah/sdk.
 
 ## Owns
 
-- Primary SDK package is @anand/sdk.
+- Primary SDK package is @qentrah/sdk.
 - Optional framework packages must not exist until duplication proves necessary.
 - Package name must remain stable after publication.
 

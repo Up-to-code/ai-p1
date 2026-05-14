@@ -77,7 +77,7 @@ export async function handleMcpAgent(c: Context) {
   }
 
   const server = new McpServer({
-    name: `Anan ${validation.name ?? "Agent Link"}`,
+    name: `Qentrah ${validation.name ?? "Agent Link"}`,
     version: "1.0.0",
   });
 

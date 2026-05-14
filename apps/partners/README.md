@@ -1,13 +1,13 @@
-# Anan Partners App
+# Qentrah Partners App
 
-Partners is the developer portal for people building Anan partner integrations.
+Partners is the developer portal for people building Qentrah partner integrations.
 It owns partner developer identity, app drafts, submission flow, review callback
 state, partner-facing documentation, and the sandbox OAuth experience.
 
 Workspace remains the source of truth for workspace permissions, consent,
 approved OAuth clients, and Workspace-side partner resource APIs. Partners
 communicates with Workspace through explicit integration contracts and service
-tokens, not through Workspace generated Convex imports.
+tokens, not through generated Workspace backend imports.
 
 ## Local Development
 
@@ -25,12 +25,6 @@ npm run dev
 
 Default local URL: `http://localhost:3002`. The local dev script selects the
 next available port if `3002` is busy.
-
-Run the Partners Convex backend:
-
-```bash
-npm run convex:dev
-```
 
 ## Responsibilities
 
@@ -56,27 +50,24 @@ npm run convex:dev
 | `app/sandbox/oauth` | Sandbox OAuth authorize/token endpoints |
 | `content/docs` | Partner-facing MDX docs |
 | `components/docs` | MDX docs components |
-| `convex` | Partners-owned backend and schema |
-| `server` | Server repositories and integration boundary |
+| `prisma/schema.prisma` | Partners-owned Postgres schema |
+| `server` | Prisma repositories and integration boundary |
 | `lib/anan-integration` | Workspace integration contracts |
 
 ## Environment
 
-Partners uses an independent Convex deployment. Configure only Partners env
-values in the Partners app and Partners Convex deployment.
+Partners uses Postgres through Prisma. Configure `DATABASE_URL` for local and
+production persistence.
 
 Common variables:
 
-- `CONVEX_DEPLOYMENT`
-- `CONVEX_URL`
-- `CONVEX_SITE_URL`
-- `NEXT_PUBLIC_CONVEX_URL`
-- `NEXT_PUBLIC_CONVEX_SITE_URL`
+- `DATABASE_URL`
 - `BETTER_AUTH_SECRET`
 - `PARTNER_SIGNUP_BRIDGE_SECRET`
-- `ANAN_PLATFORM_SERVICE_TOKEN`
+- `QENTRAH_PLATFORM_SERVICE_TOKEN`
+- `QENTRAH_WORKSPACE_SERVICE_TOKEN`
 - `PARTNERS_REVIEW_CALLBACK_TOKEN`
-- `ANAN_WORKSPACE_API_URL`
+- `QENTRAH_WORKSPACE_API_URL`
 
 See:
 
@@ -107,7 +98,7 @@ npm --workspace @anan/partners run build
 
 1. Partner developer signs up in Partners.
 2. Developer creates an app draft with redirect URIs and requested scopes.
-3. Partners submits the app to Workspace using `ANAN_PLATFORM_SERVICE_TOKEN`.
+3. Partners submits the app to Workspace using `QENTRAH_PLATFORM_SERVICE_TOKEN`.
 4. Admin Review approves, rejects, or suspends the app through Workspace.
 5. Workspace calls `app/api/anan-review-callback/route.ts`.
 6. Partners updates portal status and exposes the approved client information.
@@ -120,8 +111,8 @@ npm run build
 npm run start
 npm run typecheck
 npm test
-npm run convex:dev
-npm run convex:codegen
+npm run prisma:generate
+npm run prisma:migrate
 ```
 
 From the repository root:

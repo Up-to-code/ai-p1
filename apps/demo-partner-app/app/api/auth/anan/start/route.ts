@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { demoConfig } from "@/lib/config";
+import { demoBrandConfig, demoConfig } from "@/lib/config";
 import { oauthStateCookieName, pkceVerifierCookieName, secureCookieOptions } from "@/lib/cookies";
 import { signValue } from "@/lib/crypto";
 import { buildAuthorizeUrl } from "@/lib/oauth";
@@ -10,7 +10,7 @@ export async function GET() {
   const config = demoConfig();
   const state = crypto.randomUUID();
   const pkce = await createPkcePair();
-  const redirectUri = `${config.partnerAppUrl}/api/auth/anan/callback`;
+  const redirectUri = `${config.partnerAppUrl}${demoBrandConfig.oauthCallbackPath}`;
   const cookieStore = await cookies();
 
   cookieStore.set(oauthStateCookieName, await signValue(state, config.sessionSecret), {

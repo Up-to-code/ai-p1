@@ -1,7 +1,9 @@
 import { useTranslations } from "next-intl";
+import { brandEnvName, brandLabel } from "@anan/brand-identity";
 
 export function CodePreview() {
   const t = useTranslations("Landing.codePreview");
+  const brand = brandLabel("en");
 
   return (
     <section className="py-16 px-6 md:px-12 w-full max-w-5xl mx-auto">
@@ -44,11 +46,11 @@ export function CodePreview() {
             <div className="p-6 overflow-x-auto">
               <pre dir="ltr" className="text-left text-sm font-mono leading-relaxed">
                 <code dir="ltr" className="text-left text-[#A1A1AA]">
-<span className="text-[#3385FF]">import</span> {"{ AnandClient }"} <span className="text-[#3385FF]">from</span> <span className="text-[#22C55E]">'@anand/sdk'</span>;<br/><br/>
-<span className="text-[#3385FF]">const</span> anand = <span className="text-[#3385FF]">new</span> AnandClient({"{"}<br/>
-{"  "}apiKey: process.env.<span className="text-[#F4F4F5]">ANAND_API_KEY</span>,<br/>
+<span className="text-[#3385FF]">import</span> {`{ ${brand}Client }`} <span className="text-[#3385FF]">from</span> <span className="text-[#22C55E]">{`'@${brand.toLowerCase()}/sdk'`}</span>;<br/><br/>
+<span className="text-[#3385FF]">const</span> client = <span className="text-[#3385FF]">new</span> {brand}Client({"{"}<br/>
+{"  "}apiKey: process.env.<span className="text-[#F4F4F5]">{brandEnvName("API_KEY")}</span>,<br/>
 {"}"});<br/><br/>
-<span className="text-[#3385FF]">await</span> anand.properties.<span className="text-[#FCD34D]">submitClaim</span>({"{"}<br/>
+<span className="text-[#3385FF]">await</span> client.properties.<span className="text-[#FCD34D]">submitClaim</span>({"{"}<br/>
 {"  "}referenceId: <span className="text-[#22C55E]">'ryd-tw-402'</span>,<br/>
 {"  "}city: <span className="text-[#22C55E]">'Riyadh'</span>,<br/>
 {"  "}type: <span className="text-[#22C55E]">'Residential'</span>,<br/>

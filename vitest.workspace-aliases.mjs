@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 const fromRoot = (path) => fileURLToPath(new URL(path, import.meta.url));
 
 export const workspaceAliases = [
+  { find: "@anan/brand-identity", replacement: fromRoot("./packages/brand-identity/src/index.ts") },
   { find: "@anan/auth/client", replacement: fromRoot("./packages/auth/src/client/index.ts") },
   { find: "@anan/auth/react", replacement: fromRoot("./packages/auth/src/react/index.ts") },
   { find: "@anan/auth/resource-server", replacement: fromRoot("./packages/auth/src/resource-server/index.ts") },

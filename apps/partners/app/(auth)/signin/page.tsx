@@ -20,7 +20,7 @@ export default async function SignInPage({
       <div className="hidden flex-col justify-between bg-[#071A34] p-12 text-white lg:flex">
         <div>
           <Link href="/" className="text-lg font-bold">
-            anan<span className="text-primary">portal</span>
+            qentrah<span className="text-primary">portal</span>
           </Link>
         </div>
         <div className="max-w-md">
@@ -29,17 +29,17 @@ export default async function SignInPage({
             The fastest path from OAuth draft to reviewed partner app.
           </blockquote>
           <p className="mt-6 text-sm font-medium leading-6 text-[#B1BCC7]">
-            Anan Partner Developer Portal
+            Qentrah Partner Developer Portal
           </p>
         </div>
-        <p className="text-xs text-[#737883]">© 2026 Anan Partners</p>
+        <p className="text-xs text-[#737883]">© 2026 Qentrah Partners</p>
       </div>
 
       <div className="flex items-center justify-center px-4 py-12 sm:px-6">
-        <div className="w-full max-w-sm rounded-[22px] border border-border bg-white p-6 shadow-[0_24px_80px_rgba(7,26,52,0.08)] sm:p-8">
+        <div className="w-full max-w-sm rounded-[22px] border border-border bg-card p-6 text-card-foreground shadow-[0_24px_80px_rgba(7,26,52,0.08)] dark:shadow-[0_24px_80px_rgba(0,0,0,0.34)] sm:p-8">
           <div className="lg:hidden">
             <Link href="/" className="text-lg font-bold text-foreground">
-              anan<span className="text-primary">portal</span>
+              qentrah<span className="text-primary">portal</span>
             </Link>
           </div>
           <div className="mt-8 lg:mt-0">
@@ -49,7 +49,7 @@ export default async function SignInPage({
             </p>
           </div>
           <div className="mt-8">
-          <SignInForm redirectTo={redirectTo} />
+            <SignInForm redirectTo={redirectTo} />
           </div>
           <p className="mt-8 text-center text-sm text-muted-foreground">
             Need a developer account?{" "}

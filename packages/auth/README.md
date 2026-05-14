@@ -1,8 +1,8 @@
 # @anan/auth
 
-Shared OAuth2/OpenID Connect helpers for Anan apps.
+Shared OAuth2/OpenID Connect helpers for Qentrah apps.
 
-This package owns the stable Anan auth API surface:
+This package owns the stable Qentrah auth API surface:
 
 - Better Auth OIDC provider configuration
 - OAuth scope and organization API permission catalogs

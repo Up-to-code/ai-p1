@@ -3,11 +3,11 @@
 import { spawn } from "node:child_process";
 import { assertDevDependencies } from "./check-dev-deps.mjs";
 import { parsePreferredPort, resolveDevServerPlan } from "./dev-port.mjs";
-import { ensurePartnerConvexEnv, loadLocalEnv } from "./load-local-env.mjs";
+import { ensurePartnerDatabaseEnv, loadLocalEnv } from "./load-local-env.mjs";
 import { clearNextDevCaches } from "./next-cache.mjs";
 
 loadLocalEnv();
-ensurePartnerConvexEnv();
+ensurePartnerDatabaseEnv();
 assertDevDependencies();
 
 const preferredPort = parsePreferredPort(process.env.PARTNERS_PORT ?? process.env.PORT, 3002);

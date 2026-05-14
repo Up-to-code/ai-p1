@@ -1,10 +1,10 @@
 # Connect Crm
 
-Purpose: CRM connects with Continue with Anand, obtains consent, pushes claims, and receives sync events.
+Purpose: CRM connects with Continue with Qentrah, obtains consent, pushes claims, and receives sync events.
 
 ## Owns
 
-- CRM connects with Continue with Anand, obtains consent, pushes claims, and receives sync events.
+- CRM connects with Continue with Qentrah, obtains consent, pushes claims, and receives sync events.
 - CRM must handle suppression.
 - CRM visibility is not marketplace visibility.
 

@@ -59,7 +59,7 @@ export default function ChooseOrgPage() {
   const organizationsQuery = authClient.useListOrganizations();
   const organizations = (organizationsQuery.data ?? []) as BetterAuthOrganization[];
   const backLabel = isAr ? "العودة للرئيسية" : "Back to Home";
-  const brandLabel = isAr ? "عنان" : "anan";
+  const brandLabel = isAr ? "قنطرة" : "qentrah";
   const hasOrganizations = organizations.length > 0;
 
   async function setActiveOrganization(organizationId: string) {
@@ -142,7 +142,7 @@ export default function ChooseOrgPage() {
         <div className="flex items-center justify-between gap-4">
           <Link href="/" className="group flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-border bg-surface text-foreground transition group-hover:bg-muted">
-              <Image src="/brand-logo.svg" alt="Anan" width={22} height={22} className="h-5.5 w-5.5" priority />
+              <Image src="/brand-logo.svg" alt="Qentrah" width={22} height={22} className="h-5.5 w-5.5" priority />
             </span>
             <span className="text-lg font-black tracking-tight text-foreground">
               {brandLabel}
@@ -162,7 +162,7 @@ export default function ChooseOrgPage() {
             <div className="space-y-5 rounded-[24px] border border-border bg-surface p-5 text-start sm:p-6">
               <div className="flex items-start gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-background">
-                  <Image src="/brand-logo.svg" alt="Anan" width={22} height={22} className="h-5.5 w-5.5" priority />
+                  <Image src="/brand-logo.svg" alt="Qentrah" width={22} height={22} className="h-5.5 w-5.5" priority />
                 </span>
                 <div className="min-w-0 space-y-1">
                   <h1 className="text-2xl font-bold tracking-tight text-foreground">

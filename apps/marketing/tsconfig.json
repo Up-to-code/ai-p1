@@ -17,6 +17,7 @@
     "types": ["node", "react", "react-dom"],
     "plugins": [{ "name": "next" }],
     "paths": {
+      "@anan/brand-identity": ["../../packages/brand-identity/src/index.ts"],
       "@/*": ["./*"]
     }
   },

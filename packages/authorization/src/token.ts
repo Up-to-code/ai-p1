@@ -1,3 +1,5 @@
+import { brandLabel } from "@anan/brand-identity";
+
 import { AnanAuthorizationError } from "./errors";
 import type {
   AnanAuthorizationServerMetadata,
@@ -94,7 +96,7 @@ export async function revokeToken(input: AnanRevokeTokenInput): Promise<void> {
 export async function getMetadata(issuer: string): Promise<AnanAuthorizationServerMetadata> {
   const response = await fetch(`${normalizeIssuer(issuer)}/.well-known/oauth-authorization-server`);
   if (!response.ok) {
-    throw new AnanAuthorizationError("network_error", "Unable to load Anan authorization metadata", {
+    throw new AnanAuthorizationError("network_error", `Unable to load ${brandLabel("en")} authorization metadata`, {
       status: response.status,
     });
   }

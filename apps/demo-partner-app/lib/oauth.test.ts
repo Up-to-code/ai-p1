@@ -19,7 +19,7 @@ function fakeJwt(payload: unknown) {
   ].join(".");
 }
 
-describe("Anan OAuth helpers", () => {
+describe("Qentrah OAuth helpers", () => {
   it("builds the PKCE authorization URL with requested scopes", () => {
     const url = new URL(buildAuthorizeUrl({
       workspaceBaseUrl: "http://localhost:3000",

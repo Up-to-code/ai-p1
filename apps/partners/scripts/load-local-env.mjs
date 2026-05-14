@@ -78,11 +78,8 @@ export function loadLocalEnv(options = {}) {
   return loaded;
 }
 
-export function ensurePartnerConvexEnv() {
-  if (!process.env.NEXT_PUBLIC_CONVEX_URL?.trim() && process.env.CONVEX_URL?.trim()) {
-    process.env.NEXT_PUBLIC_CONVEX_URL = process.env.CONVEX_URL.trim();
-  }
-  if (!process.env.NEXT_PUBLIC_CONVEX_SITE_URL?.trim() && process.env.CONVEX_SITE_URL?.trim()) {
-    process.env.NEXT_PUBLIC_CONVEX_SITE_URL = process.env.CONVEX_SITE_URL.trim();
+export function ensurePartnerDatabaseEnv() {
+  if (!process.env.DATABASE_URL?.trim()) {
+    process.env.DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/anan_partners";
   }
 }

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { DocsLayout } from "fumadocs-ui/layouts/docs";
+import { brandProductName } from "@anan/brand-identity";
 import { source } from "@/lib/source";
 
 export default function Layout({ children }: { children: ReactNode }) {
@@ -7,7 +8,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     <DocsLayout
       tree={source.pageTree}
       nav={{
-        title: "Anan Partner Docs",
+        title: `${brandProductName("partners", "en")} Docs`,
         url: "/",
       }}
       sidebar={{

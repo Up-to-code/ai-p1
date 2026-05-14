@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
+import { brandCssVariables, brandIdentity, brandProductName } from "@anan/brand-identity";
 import { Geist, Geist_Mono, Cairo } from "next/font/google";
 import "../globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +15,7 @@ import { ToastProvider } from "@/components/ui/toast";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 
 type Locale = (typeof routing.locales)[number];
+const brandStyle = brandCssVariables() as CSSProperties;
 
 function isLocale(locale: string): locale is Locale {
   return routing.locales.includes(locale as Locale);
@@ -36,7 +39,7 @@ const cairo = Cairo({
 const themeInitScript = `
 (() => {
   try {
-    const theme = window.localStorage.getItem("anan-theme") === "dark" ? "dark" : "light";
+    const theme = window.localStorage.getItem("${brandIdentity.legacy.themeStorageKey}") === "dark" ? "dark" : "light";
     document.documentElement.classList.toggle("dark", theme === "dark");
     document.documentElement.style.colorScheme = theme;
   } catch {
@@ -47,7 +50,7 @@ const themeInitScript = `
 `;
 
 export const metadata: Metadata = {
-  title: "Anand Platform",
+  title: brandProductName("platform", "en"),
   description: "Saudi Arabia Central Real Estate Data Workspace",
 };
 
@@ -74,6 +77,7 @@ export default async function RootLayout({
     <html
       lang={locale}
       dir={locale === 'ar' ? 'rtl' : 'ltr'}
+      style={brandStyle}
       className={`${geistSans.variable} ${geistMono.variable} ${cairo.variable} h-full antialiased`}
       suppressHydrationWarning
     >

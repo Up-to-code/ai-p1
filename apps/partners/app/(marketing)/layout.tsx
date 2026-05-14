@@ -7,7 +7,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
     <>
       <header className="sticky top-0 z-50 flex h-[69px] w-full items-center justify-between border-b border-border bg-white/88 px-4 backdrop-blur-lg dark:bg-card/90 sm:px-6">
         <Link href="/" className="text-lg font-bold text-foreground">
-          anan<span className="text-primary">portal</span>
+          qentrah<span className="text-primary">portal</span>
         </Link>
         <div className="flex items-center gap-2 sm:gap-4">
           <Link href="/docs" className="hidden rounded-[7px] px-2 py-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex">Docs</Link>

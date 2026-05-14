@@ -14,9 +14,9 @@
       .logo-text {
         font-family: 'Montserrat', 'Helvetica Neue', Helvetica, Arial, sans-serif;
         font-weight: 700;
-        font-size: 46px;
+        font-size: 34px;
         fill: #0c2d54;
-        letter-spacing: 16px;
+        letter-spacing: 7px;
       }
     </style>
   </defs>
@@ -35,5 +35,5 @@
   <circle class="node" cx="235" cy="145" r="12" /> 
   <circle class="node" cx="275" cy="175" r="12" /> 
   <circle class="node" cx="242" cy="223" r="12" /> 
-  <text class="logo-text" x="208" y="325" text-anchor="middle">ANAN</text>
+  <text class="logo-text" x="204" y="325" text-anchor="middle">QENTRAH</text>
 </svg> 

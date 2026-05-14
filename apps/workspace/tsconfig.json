@@ -19,6 +19,7 @@
       }
     ],
     "paths": {
+      "@anan/brand-identity": ["../../packages/brand-identity/src/index.ts"],
       "@/*": ["./src/*"],
       "@convex/*": ["./convex/*"]
     }

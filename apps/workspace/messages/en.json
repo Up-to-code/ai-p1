@@ -19,7 +19,7 @@
   },
   "AutoUi": {
     "The Saudi Arabia Central Real Estate Data Synchronization Engine___": "The Saudi Arabia Central Real Estate Data Synchronization Engine",
-    "© 2026 anan Platform___ All rights reserved___": "© 2026 anan Platform. All rights reserved.",
+    "© 2026 qentrah Platform___ All rights reserved___": "© 2026 qentrah Platform. All rights reserved.",
     "Sign in to access your real estate data workspace___": "Sign in to access your real estate data workspace.",
     "Min___ 8 characters": "Min. 8 characters",
     "Enter an invite code or use a shared link to join an existing workspace___": "Enter an invite code or use a shared link to join an existing workspace.",
@@ -246,7 +246,7 @@
       "hero": {
         "eyebrow": "B2B real estate clarity",
         "title": "Real AI for real work.",
-        "description": "Introducing anan: the next generation of technology and work for institutional real estate teams.",
+        "description": "Introducing qentrah: the next generation of technology and work for institutional real estate teams.",
         "primary": "Enter workspace",
         "secondary": "Partner with us",
         "structure": [
@@ -295,7 +295,7 @@
         "syncHealth": "Sync health",
         "actionRequired": "Action required",
         "today": "Today",
-        "assistant": "Anan assistant",
+        "assistant": "Qentrah assistant",
         "prompt": "Find ready waterfront units, prepare the broker context, and flag anything that blocks a viewing today.",
         "ready": "Ready",
         "tasks": [
@@ -339,7 +339,7 @@
       "audiences": {
         "eyebrow": "The problem is not data",
         "title": "Your data is not the problem. Your clarity is.",
-        "description": "Anan turns scattered project, inventory, broker, and client signals into a shared operating view.",
+        "description": "Qentrah turns scattered project, inventory, broker, and client signals into a shared operating view.",
         "items": [
           {
             "eyebrow": "For developers",
@@ -375,7 +375,7 @@
       "workflow": {
         "eyebrow": "One layer",
         "title": "Every metric. Always reconciled.",
-        "description": "Anan makes operational truth visible before the team makes a market move.",
+        "description": "Qentrah makes operational truth visible before the team makes a market move.",
         "items": [
           {
             "title": "One source",
@@ -393,8 +393,8 @@
       },
       "problemSolution": {
         "eyebrow": "Problem and solution",
-        "problemTitle": "What breaks before Anan",
-        "solutionTitle": "What becomes clear inside Anan",
+        "problemTitle": "What breaks before Qentrah",
+        "solutionTitle": "What becomes clear inside Qentrah",
         "problems": [
           {
             "title": "Launch context is scattered",
@@ -427,12 +427,12 @@
       "docsWorld": {
         "eyebrow": "Docs world",
         "title": "Read the system before you plug into it.",
-        "description": "The docs explain the operating model behind Anan: project readiness, inventory truth, partner access, AI workflows, and marketplace sync.",
+        "description": "The docs explain the operating model behind Qentrah: project readiness, inventory truth, partner access, AI workflows, and marketplace sync.",
         "primary": "Read the docs",
         "items": [
           {
             "title": "Operating model",
-            "description": "How Anan structures projects, units, statuses, and workspace decisions.",
+            "description": "How Qentrah structures projects, units, statuses, and workspace decisions.",
             "href": "/docs"
           },
           {
@@ -557,7 +557,7 @@
           "item3": "Manual updates to multiple websites."
         },
         "solutions": {
-          "eyebrow": "Anan AI Solutions",
+          "eyebrow": "Qentrah AI Solutions",
           "title": "AI that connects the dots.",
           "description": "Our intelligence layer automatically translates, formats, and syncs your inventory to match any marketplace standard in real-time."
         },
@@ -569,40 +569,40 @@
         "distribution": {
           "eyebrow": "Connected Apps",
           "title": "Enter once. Publish everywhere.",
-          "description": "When you put your data in Anan, it is automatically pushed to multiple destinations.",
+          "description": "When you put your data in Qentrah, it is automatically pushed to multiple destinations.",
           "website": "Your Website",
           "agent": "Your Agents",
-          "market": "Anan Marketplace",
+          "market": "Qentrah Marketplace",
           "ai": "AI Marketplaces"
         }
       },
       "cta": {
         "eyebrow": "Ready for the workspace",
         "title": "Start where the real work continues.",
-        "description": "Enter the workspace, or contact the team to map Anan to your developer or brokerage workflow.",
+        "description": "Enter the workspace, or contact the team to map Qentrah to your developer or brokerage workflow.",
         "primary": "Enter workspace",
         "secondary": "Contact team"
       },
       "faq": {
         "eyebrow": "FAQ",
         "title": "Questions before your team moves in.",
-        "description": "Short answers for developers, brokers, and operators evaluating Anan as the shared workspace layer.",
+        "description": "Short answers for developers, brokers, and operators evaluating Qentrah as the shared workspace layer.",
         "items": [
           {
-            "question": "Who is Anan built for?",
-            "answer": "Anan is built for real estate developers, brokerage teams, and operators who need one trusted workspace for projects, units, clients, approvals, and handoffs."
+            "question": "Who is Qentrah built for?",
+            "answer": "Qentrah is built for real estate developers, brokerage teams, and operators who need one trusted workspace for projects, units, clients, approvals, and handoffs."
           },
           {
             "question": "How does onboarding work?",
-            "answer": "Teams can start with the workspace, then map their project, inventory, client, and organization flows with the Anan team when deeper setup is needed."
+            "answer": "Teams can start with the workspace, then map their project, inventory, client, and organization flows with the Qentrah team when deeper setup is needed."
           },
           {
             "question": "Can developers and brokers work from the same data?",
-            "answer": "Yes. Anan is designed around shared project and inventory context so developers, brokers, and operations teams can act from the same verified records."
+            "answer": "Yes. Qentrah is designed around shared project and inventory context so developers, brokers, and operations teams can act from the same verified records."
           },
           {
             "question": "How is pricing handled?",
-            "answer": "Pricing starts with the published plans on this page. Larger teams can contact Anan for an implementation conversation around organization structure, workflows, and support."
+            "answer": "Pricing starts with the published plans on this page. Larger teams can contact Qentrah for an implementation conversation around organization structure, workflows, and support."
           },
           {
             "question": "What makes the workspace trustworthy?",
@@ -656,11 +656,11 @@
       "operating": {
         "eyebrow": "Business thinking",
         "title": "A workspace, not a brochure.",
-        "description": "The Anan brand is strongest when it feels useful immediately. That is why the redesigned public suite uses product controls, signals, previews, and audience routes instead of decorative marketing sections."
+        "description": "The Qentrah brand is strongest when it feels useful immediately. That is why the redesigned public suite uses product controls, signals, previews, and audience routes instead of decorative marketing sections."
       },
       "cta": {
         "eyebrow": "Meet the workspace",
-        "title": "See how Anan fits your operating model.",
+        "title": "See how Qentrah fits your operating model.",
         "description": "Bring your project, brokerage, or integration workflow and we will map it into the workspace.",
         "primary": "Enter workspace",
         "secondary": "Contact team"
@@ -679,11 +679,11 @@
           },
           {
             "title": "The Build",
-            "description": "Anan wasn't built in a lab. It was built in the field, through thousands of conversations with the people who actually do the work."
+            "description": "Qentrah wasn't built in a lab. It was built in the field, through thousands of conversations with the people who actually do the work."
           },
           {
             "title": "The Result",
-            "description": "Today, Anan is the operating system for the next generation of institutional real estate teams."
+            "description": "Today, Qentrah is the operating system for the next generation of institutional real estate teams."
           }
         ]
       },
@@ -693,14 +693,14 @@
           {
             "name": "Ahmed",
             "role": "Technical Vision & Engineering",
-            "bio": "Ahmed leads the technical architecture and engineering direction of Anan, transforming complex real estate workflows into seamless digital systems.",
+            "bio": "Ahmed leads the technical architecture and engineering direction of Qentrah, transforming complex real estate workflows into seamless digital systems.",
             "quote": "The best way to predict the future is to create it.",
             "author": "Peter Drucker"
           },
           {
             "name": "Abdulmonem",
             "role": "Real Estate Expert",
-            "bio": "With deep roots in the real estate sector, Abdulmonem ensures that every feature in Anan is grounded in real-world expertise and institutional standards.",
+            "bio": "With deep roots in the real estate sector, Abdulmonem ensures that every feature in Qentrah is grounded in real-world expertise and institutional standards.",
             "quote": "Real estate is the basis of all wealth.",
             "author": "Theodore Roosevelt"
           }
@@ -716,7 +716,7 @@
       "methods": {
         "email": {
           "label": "Email",
-          "value": "hello@anan.sa",
+          "value": "hello@qentrah.sa",
           "helper": "Best for partnerships, onboarding, and workspace questions."
         },
         "phone": {
@@ -726,7 +726,7 @@
         },
         "workspace": {
           "label": "Workspace",
-          "value": "Anan team",
+          "value": "Qentrah team",
           "helper": "Send your workflow and the team will route it."
         }
       },
@@ -754,7 +754,7 @@
         "email": "Email",
         "team": "Company or team",
         "topic": "Topic",
-        "message": "What should Anan help organize?",
+        "message": "What should Qentrah help organize?",
         "submit": "Send inquiry"
       }
     },
@@ -762,7 +762,7 @@
       "hero": {
         "eyebrow": "Developer workspace",
         "title": "Control launch readiness from one operational surface.",
-        "description": "Anan helps development teams prepare projects, verify inventory, coordinate with brokers, and keep market-facing data clear before it moves.",
+        "description": "Qentrah helps development teams prepare projects, verify inventory, coordinate with brokers, and keep market-facing data clear before it moves.",
         "primary": "Enter workspace",
         "secondary": "Contact team"
       },
@@ -801,7 +801,7 @@
       "workflow": {
         "eyebrow": "Developer flow",
         "title": "Prepare, approve, publish.",
-        "description": "The route explains Anan through the developer team's daily operating sequence.",
+        "description": "The route explains Qentrah through the developer team's daily operating sequence.",
         "items": [
           {
             "title": "Prepare the project record",
@@ -819,7 +819,7 @@
       },
       "cta": {
         "eyebrow": "Developer onboarding",
-        "title": "Bring your launch workflow into Anan.",
+        "title": "Bring your launch workflow into Qentrah.",
         "description": "Start in the workspace or contact the team to map projects, units, and approvals.",
         "primary": "Enter workspace",
         "secondary": "Contact team"
@@ -829,7 +829,7 @@
       "hero": {
         "eyebrow": "Broker workspace",
         "title": "Turn client intent into the next clear action.",
-        "description": "Anan helps brokers organize follow-ups, inspect inventory, prepare viewings, and keep developer context close to the client conversation.",
+        "description": "Qentrah helps brokers organize follow-ups, inspect inventory, prepare viewings, and keep developer context close to the client conversation.",
         "primary": "Enter workspace",
         "secondary": "Contact team"
       },
@@ -886,7 +886,7 @@
       },
       "cta": {
         "eyebrow": "Broker onboarding",
-        "title": "Bring your follow-up flow into Anan.",
+        "title": "Bring your follow-up flow into Qentrah.",
         "description": "Start in the workspace or contact the team to map clients, inventory, and viewing work.",
         "primary": "Enter workspace",
         "secondary": "Contact team"
@@ -894,7 +894,7 @@
     },
     "footer": {
       "description": "A workspace-native platform for property teams, project operations, broker coordination, and trusted real estate data.",
-      "copyright": "2026 Anan Platform. All rights reserved.",
+      "copyright": "2026 Qentrah Platform. All rights reserved.",
       "platform": "Platform",
       "workspace": "Workspace",
       "dashboard": "Workspace",
@@ -957,7 +957,7 @@
     "historySubtitle": "Manage all your previous conversational theories.",
     "searchThreads": "Search threads...",
     "noThreads": "No theories found matching your search.",
-    "welcome": "What can anan help you today?",
+    "welcome": "What can qentrah help you today?",
     "inputPlaceholder": "Start a new conversation...",
     "mockResponse": "I reviewed \"{request}\" against the current workspace context. I can help turn it into a client follow-up, viewing plan, inventory check, or launch-readiness action.",
     "suggestions": {
@@ -2660,7 +2660,7 @@
   "Profile": {
     "eyebrow": "Personal workspace",
     "title": "Profile Settings",
-    "subtitle": "Manage your identity, regional preferences, and notification strategies across the Anand ecosystem.",
+    "subtitle": "Manage your identity, regional preferences, and notification strategies across the Qentrah ecosystem.",
     "saveBtn": "Save Changes",
     "stats": {
       "role": "Role",
@@ -2857,7 +2857,7 @@
     },
     "brand": {
       "title": "Logo & Brand",
-      "desc": "Configure how your organization appears within the Anand ecosystem.",
+      "desc": "Configure how your organization appears within the Qentrah ecosystem.",
       "displayName": "Brand Display Name",
       "color": "Brand Color (Hex)",
       "logo": "Organization Logo",
@@ -2888,7 +2888,7 @@
     }
   },
   "ChooseOrg": {
-    "title": "Welcome to anan Workspace",
+    "title": "Welcome to qentrah Workspace",
     "subtitle": "How would you like to get started?",
     "joinTitle": "I was invited to an organization",
     "joinDesc": "Enter an invite code or use a shared link to join an existing workspace.",

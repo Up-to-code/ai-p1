@@ -1,7 +1,7 @@
 {
   "name": "@anan/auth-sdk",
   "version": "0.1.0",
-  "description": "Production Anan authentication SDK for React, Next.js, OAuth/OIDC, and resource authorization.",
+  "description": "Production Qentrah authentication SDK for React, Next.js, OAuth/OIDC, and resource authorization.",
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",

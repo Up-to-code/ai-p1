@@ -1,86 +1,179 @@
-import { convexBetterAuthNextJs } from "@convex-dev/better-auth/nextjs";
+import { headers } from "next/headers";
+import { prismaAdapter } from "better-auth/adapters/prisma";
+import { betterAuth, type BetterAuthOptions, type BetterAuthPlugin } from "better-auth";
+import { APIError, createAuthMiddleware } from "better-auth/api";
+import { prisma } from "@/lib/prisma";
 
-export type PartnersAuthBridgeConfig = {
-  convexUrl: string;
-  convexSiteUrl: string;
-  isConfigured: boolean;
-};
+const LOCAL_PARTNER_SIGNUP_BRIDGE_SECRET = "local-anan-partner-signup-bridge-secret";
+const LOCAL_BETTER_AUTH_SECRET = "local-anan-partners-better-auth-secret";
+
+function readOptionalEnv(name: string) {
+  const value = process.env[name]?.trim();
+  return value && value.length > 0 ? value : undefined;
+}
+
+function readCsvEnv(name: string) {
+  return (readOptionalEnv(name) ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
 
 function normalizeBaseUrl(value?: string | null) {
   const trimmed = value?.trim().replace(/\/+$/u, "");
-  if (!trimmed) return null;
+  if (!trimmed) return undefined;
   if (!/^https?:\/\//iu.test(trimmed)) return `https://${trimmed}`;
   return trimmed;
 }
 
-function deriveConvexSiteUrl(convexUrl: string | null) {
-  if (!convexUrl) return null;
+function isLoopbackOrigin(value?: string | null) {
+  const normalized = normalizeBaseUrl(value);
+  if (!normalized) return false;
 
   try {
-    const parsed = new URL(convexUrl);
-    if (!parsed.hostname.endsWith(".convex.cloud")) return null;
-    parsed.hostname = parsed.hostname.replace(/\.convex\.cloud$/u, ".convex.site");
-    return parsed.toString().replace(/\/$/u, "");
+    const url = new URL(normalized);
+    return url.hostname === "localhost" || url.hostname === "127.0.0.1";
   } catch {
-    return null;
+    return false;
   }
 }
 
-export function resolveAuthBridgeConfig(env: Record<string, string | undefined> = process.env): PartnersAuthBridgeConfig {
-  const convexUrl = normalizeBaseUrl(env.CONVEX_URL) ?? normalizeBaseUrl(env.NEXT_PUBLIC_CONVEX_URL);
-  const convexSiteUrl =
-    normalizeBaseUrl(env.CONVEX_SITE_URL)
-    ?? normalizeBaseUrl(env.NEXT_PUBLIC_CONVEX_SITE_URL)
-    ?? deriveConvexSiteUrl(convexUrl);
+function isProductionLikeEnv() {
+  return process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production";
+}
 
-  if (!convexUrl || !convexSiteUrl) {
-    return {
-      convexUrl: "http://localhost:3210",
-      convexSiteUrl: "http://localhost:3211",
-      isConfigured: false,
-    };
+function isHostedProductionEnv() {
+  return process.env.VERCEL_ENV === "production";
+}
+
+function isLocalDevelopmentEnv() {
+  const hasLoopbackOrigin = [
+    process.env.SITE_URL,
+    process.env.NEXT_PUBLIC_PARTNERS_AUTH_URL,
+    process.env.BETTER_AUTH_URL,
+  ].some((value) => isLoopbackOrigin(value));
+
+  return process.env.VERCEL_ENV !== "production" && (process.env.NODE_ENV === "development" || hasLoopbackOrigin);
+}
+
+function getAuthBaseUrl() {
+  const isHostedProduction = isHostedProductionEnv();
+  const candidates = [
+    process.env.NEXT_PUBLIC_PARTNERS_AUTH_URL,
+    process.env.BETTER_AUTH_URL,
+    process.env.SITE_URL,
+    process.env.VERCEL_URL,
+    "http://localhost:3002",
+  ];
+
+  for (const candidate of candidates) {
+    const normalized = normalizeBaseUrl(candidate);
+    if (!normalized) continue;
+    if (isHostedProduction && isLoopbackOrigin(normalized)) continue;
+    return normalized;
   }
 
+  return undefined;
+}
+
+function getTrustedOrigins() {
+  const localOrigins = isHostedProductionEnv()
+    ? []
+    : [
+        "http://localhost:3002",
+        "http://127.0.0.1:3002",
+        process.env.PARTNERS_PORT ? `http://localhost:${process.env.PARTNERS_PORT}` : undefined,
+        process.env.PORT ? `http://localhost:${process.env.PORT}` : undefined,
+      ];
+
+  return [...new Set([
+    getAuthBaseUrl(),
+    ...localOrigins,
+    ...readCsvEnv("BETTER_AUTH_TRUSTED_ORIGINS"),
+    ...readCsvEnv("PARTNERS_AUTH_ALLOWED_ORIGINS"),
+  ]
+    .map((origin) => normalizeBaseUrl(origin))
+    .filter((origin): origin is string => Boolean(origin)))];
+}
+
+function getPartnerSignupBridgeSecret() {
+  return readOptionalEnv("PARTNER_SIGNUP_BRIDGE_SECRET")
+    ?? (isLocalDevelopmentEnv() ? LOCAL_PARTNER_SIGNUP_BRIDGE_SECRET : undefined);
+}
+
+function getBetterAuthSecret() {
+  return readOptionalEnv("BETTER_AUTH_SECRET")
+    ?? (isProductionLikeEnv() ? undefined : LOCAL_BETTER_AUTH_SECRET);
+}
+
+function passwordSignupGatePlugin(): BetterAuthPlugin {
   return {
-    convexUrl,
-    convexSiteUrl,
-    isConfigured: true,
+    id: "partners-password-signup-gate",
+    hooks: {
+      before: [
+        {
+          matcher: (context) => context.path === "/sign-up/email",
+          handler: createAuthMiddleware(async (ctx) => {
+            const expected = getPartnerSignupBridgeSecret();
+            const provided = ctx.headers?.get("x-anan-partner-signup-secret");
+
+            if (expected && provided === expected) return;
+
+            throw new APIError("FORBIDDEN", {
+              message: "Partner password signup requires the trusted signup flow.",
+            });
+          }),
+        },
+      ],
+    },
   };
 }
 
-function createAuthConfigurationError() {
-  const error = new Error(
-    "Partners auth is missing Convex auth URLs. Set NEXT_PUBLIC_CONVEX_URL and NEXT_PUBLIC_CONVEX_SITE_URL or CONVEX_URL and CONVEX_SITE_URL.",
-  ) as Error & { status?: number; code?: string };
-  error.code = "AUTH_CONFIGURATION_ERROR";
-  error.status = 503;
-  return error;
-}
+export const authOptions = {
+  appName: "Qentrah Partners",
+  baseURL: getAuthBaseUrl(),
+  secret: getBetterAuthSecret(),
+  trustedOrigins: getTrustedOrigins(),
+  database: prismaAdapter(prisma, {
+    provider: "postgresql",
+    transaction: true,
+  }),
+  emailAndPassword: {
+    enabled: true,
+    minPasswordLength: 12,
+    maxPasswordLength: 128,
+  },
+  plugins: [passwordSignupGatePlugin()],
+} satisfies BetterAuthOptions;
 
-const config = resolveAuthBridgeConfig();
-const bridge = convexBetterAuthNextJs({
-  convexUrl: config.convexUrl,
-  convexSiteUrl: config.convexSiteUrl,
-});
-
-function ensureAuthBridgeConfigured() {
-  if (!config.isConfigured) {
-    throw createAuthConfigurationError();
-  }
-}
+export const auth = betterAuth(authOptions);
 
 export const handler = {
-  GET: (...args: Parameters<typeof bridge.handler.GET>) => {
-    ensureAuthBridgeConfigured();
-    return bridge.handler.GET(...args);
-  },
-  POST: (...args: Parameters<typeof bridge.handler.POST>) => {
-    ensureAuthBridgeConfigured();
-    return bridge.handler.POST(...args);
-  },
+  GET: (request: Request) => auth.handler(request),
+  POST: (request: Request) => auth.handler(request),
 };
 
-export async function getToken(...args: Parameters<typeof bridge.getToken>) {
-  ensureAuthBridgeConfigured();
-  return await bridge.getToken(...args);
+export async function getCurrentPartnerSession(requestHeaders?: Headers) {
+  return auth.api.getSession({
+    headers: requestHeaders ?? await headers(),
+  });
+}
+
+export async function getPartnerSessionFromRequest(request: Request) {
+  return getCurrentPartnerSession(request.headers);
+}
+
+export async function requireCurrentPartnerSession(requestHeaders?: Headers) {
+  const session = await getCurrentPartnerSession(requestHeaders);
+  if (!session?.user?.id) throw new Error("Authentication required");
+  return session;
+}
+
+export async function requireCurrentPartnerSubject(requestHeaders?: Headers) {
+  const session = await requireCurrentPartnerSession(requestHeaders);
+  return session.user.id;
+}
+
+export async function getToken() {
+  return (await getCurrentPartnerSession())?.user?.id ?? null;
 }

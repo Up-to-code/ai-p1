@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { brandLabel, brandProductName } from "@anan/brand-identity";
 import "./globals.css";
 
+const brand = brandLabel("en");
+
 export const metadata: Metadata = {
-  title: "Anan Partner Review",
-  description: "Review and approve Anan partner app submissions.",
+  title: brandProductName("admin", "en"),
+  description: `Review and approve ${brand} partner app submissions.`,
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

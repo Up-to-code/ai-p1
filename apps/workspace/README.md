@@ -1,6 +1,6 @@
-# Anan Workspace App
+# Qentrah Workspace App
 
-Workspace is the main Anan product and platform authority. It owns the
+Workspace is the main Qentrah product and platform authority. It owns the
 customer-facing workspace, organization auth, OAuth provider, partner resource
 APIs, admin service APIs, Convex backend, and most Workspace domain logic.
 

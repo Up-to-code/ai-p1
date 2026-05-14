@@ -12,7 +12,7 @@ This folder does not own broad system-wide specification text. If content crosse
 
 | File | Purpose |
 | --- | --- |
-| [Connect Crm](connect-crm.md) | CRM connects with Continue with Anand, obtains consent, pushes claims, and receives sync events. |
+| [Connect Crm](connect-crm.md) | CRM connects with Continue with Qentrah, obtains consent, pushes claims, and receives sync events. |
 | [Connect Mobile App](connect-mobile-app.md) | Mobile app uses public client and PKCE. |
 | [Connect Partner Platform](connect-partner-platform.md) | Partner platform registers OAuth client and webhook endpoints. |
 

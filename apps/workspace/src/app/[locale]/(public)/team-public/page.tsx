@@ -16,7 +16,7 @@ export default function TeamPublicPage() {
     <>
       <PublicHero
         eyebrow="Team"
-        title="The people building anan."
+        title="The people building qentrah."
         description="A focused team shaping workspace infrastructure for property teams, project operations, broker coordination, and trusted real estate data."
       >
         <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">

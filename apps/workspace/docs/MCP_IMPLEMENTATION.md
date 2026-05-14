@@ -1,4 +1,4 @@
-# MCP Implementation Guide — Anan Workspace
+# MCP Implementation Guide — Qentrah Workspace
 
 > **Platform:** Saudi Arabia Central Real Estate Data Workspace
 > **Stack:** Next.js 16.2.4 · Convex · Better Auth · TypeScript · Zod
@@ -14,7 +14,7 @@ The **Model Context Protocol (MCP)** is an open standard that lets AI assistants
 
 ### Why We Use It
 
-Anan Workspace is a real estate data synchronization engine. Agents that work with our platform — for lead qualification, appointment scheduling, property search, or compliance checks — need reliable access to our Convex-backed data without screen-scraping or undocumented API calls.
+Qentrah Workspace is a real estate data synchronization engine. Agents that work with our platform — for lead qualification, appointment scheduling, property search, or compliance checks — need reliable access to our Convex-backed data without screen-scraping or undocumented API calls.
 
 MCP gives us:
 
@@ -489,7 +489,7 @@ Third-party AI clients must request these scopes during the OAuth authorization 
 Environment variable required:
 
 ```bash
-npx convex env set OAUTH_RESOURCE_MCP "https://workspace.anand.sa/mcp"
+npx convex env set OAUTH_RESOURCE_MCP "https://workspace.qentrah.sa/mcp"
 ```
 
 ---

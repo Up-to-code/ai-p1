@@ -1,12 +1,14 @@
-import { fetchMutation } from "convex/nextjs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "./route";
+import { partnerAppsRepository } from "@/server/partnerApps";
 
-vi.mock("convex/nextjs", () => ({
-  fetchMutation: vi.fn(),
+vi.mock("@/server/partnerApps", () => ({
+  partnerAppsRepository: {
+    applyWorkspaceReviewDecision: vi.fn(),
+  },
 }));
 
-const fetchMutationMock = vi.mocked(fetchMutation);
+const applyReviewMock = vi.mocked(partnerAppsRepository.applyWorkspaceReviewDecision);
 
 function makeRequest(body: Record<string, unknown>, token = "callback-token") {
   return new Request("http://localhost:3002/api/anan-review-callback", {
@@ -37,11 +39,11 @@ describe("review callback route", () => {
 
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({ error: "Invalid review callback payload." });
-    expect(fetchMutationMock).not.toHaveBeenCalled();
+    expect(applyReviewMock).not.toHaveBeenCalled();
   });
 
   it("returns unauthorized for callback token failures", async () => {
-    fetchMutationMock.mockRejectedValueOnce(new Error("Invalid Partners review callback token."));
+    applyReviewMock.mockRejectedValueOnce(new Error("Invalid Partners review callback token."));
 
     const response = await POST(makeRequest(validPayload) as never);
 
@@ -49,14 +51,17 @@ describe("review callback route", () => {
     await expect(response.json()).resolves.toEqual({ error: "Invalid Partners review callback token." });
   });
 
-  it("returns a clear service unavailable error when Convex functions are not deployed", async () => {
-    fetchMutationMock.mockRejectedValueOnce(new Error("Could not find public function for 'partnerApps:applyWorkspaceReviewDecision'. Did you forget to run `npx convex dev`?"));
+  it("applies workspace review decisions through the Prisma repository", async () => {
+    applyReviewMock.mockResolvedValueOnce({ ok: true });
 
     const response = await POST(makeRequest(validPayload) as never);
-    const body = await response.json();
 
-    expect(response.status).toBe(503);
-    expect(body.error).toContain("Partners backend is not deployed");
-    expect(body.detail).toContain("partnerApps:applyWorkspaceReviewDecision");
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ ok: true });
+    expect(applyReviewMock).toHaveBeenCalledWith(expect.objectContaining({
+      serviceToken: "callback-token",
+      appId: "partner_app_1",
+      status: "approved",
+    }));
   });
 });

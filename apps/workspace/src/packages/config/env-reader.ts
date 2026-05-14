@@ -1,5 +1,8 @@
+import { readBrandEnv } from "@anan/brand-identity";
+
 function readEnvValue(key: string, fallback: string) {
-  const value = process.env[key];
+  const brandedKey = key.startsWith("ANAN_") ? key.slice("ANAN_".length) : key;
+  const value = readBrandEnv(brandedKey, process.env) ?? process.env[key];
   return typeof value === "string" && value.trim().length > 0
     ? value
     : fallback;

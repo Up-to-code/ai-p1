@@ -12,7 +12,7 @@ This folder does not own broad system-wide specification text. If content crosse
 
 | File | Purpose |
 | --- | --- |
-| [Package Name](package-name.md) | Primary SDK package is @anand/sdk. |
+| [Package Name](package-name.md) | Primary SDK package is @qentrah/sdk. |
 | [Exports](exports.md) | Exports include OAuth client, API client, webhook utilities, types, and errors. |
 | [Build Targets](build-targets.md) | Build ESM first. |
 

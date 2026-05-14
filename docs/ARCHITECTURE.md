@@ -1,6 +1,6 @@
-# Anan Architecture
+# Qentrah Architecture
 
-Anan is an npm workspaces monorepo with separate deployable apps and shared
+Qentrah is an npm workspaces monorepo with separate deployable apps and shared
 packages. The apps are independent runtime boundaries. Shared packages provide
 contracts, UI, auth helpers, and pure domain logic.
 
@@ -76,16 +76,16 @@ sequenceDiagram
 
 ## OAuth And Resource API Flow
 
-1. The partner frontend renders an `Authorize with Anan` button.
+1. The partner frontend renders an `Authorize with Qentrah` button.
 2. The partner backend creates `state`, PKCE verifier, and PKCE challenge.
-3. The user is redirected to `ANAN_WORKSPACE_API_URL/oauth/authorize`.
+3. The user is redirected to `QENTRAH_WORKSPACE_API_URL/oauth/authorize`.
 4. Workspace authenticates the user, asks for organization selection and
    consent when needed, and validates scopes.
 5. Workspace redirects to the partner callback with an authorization code.
 6. The partner backend exchanges the code at
-   `ANAN_WORKSPACE_API_URL/oauth/token`.
+   `QENTRAH_WORKSPACE_API_URL/oauth/token`.
 7. The partner stores tokens server-side and calls
-   `ANAN_WORKSPACE_API_URL/api/v1/partner/...`.
+   `QENTRAH_WORKSPACE_API_URL/api/v1/partner/...`.
 
 Access tokens, refresh tokens, client secrets, and service tokens must stay
 server-side. Browser code should only see public URLs, public client IDs, and

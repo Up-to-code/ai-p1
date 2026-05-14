@@ -5,11 +5,11 @@ description: Call Workspace Hono organization APIs with verified access tokens a
 
 ## Resource server checks
 
-Partner apps call Workspace Hono APIs, not Convex. Workspace validates issuer, audience, signature, expiry, app approval, organization connection, connection expiry, and scopes before business logic runs.
+Partner apps call Workspace Hono APIs. Workspace validates issuer, audience, signature, expiry, app approval, organization connection, connection expiry, and scopes before business logic runs.
 
 ```bash
-curl "$ANAN_WORKSPACE_API_URL/api/v1/partner/organizations/org_123/clients" \
-  -H "Authorization: Bearer $ANAN_ACCESS_TOKEN"
+curl "$QENTRAH_WORKSPACE_API_URL/api/v1/partner/organizations/org_123/clients" \
+  -H "Authorization: Bearer $QENTRAH_ACCESS_TOKEN"
 ```
 
 ## Common errors
@@ -23,12 +23,12 @@ curl "$ANAN_WORKSPACE_API_URL/api/v1/partner/organizations/org_123/clients" \
 ## Example backend call
 
 ```ts
-import { loadAnanClients } from "../../examples/auth/workspace-api";
+import { loadQentrahClients } from "../../examples/auth/workspace-api";
 
-const clients = await loadAnanClients({
-  workspaceBaseUrl: process.env.ANAN_WORKSPACE_API_URL!,
+const clients = await loadQentrahClients({
+  workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL!,
   organizationId: "org_123",
-  accessToken: process.env.ANAN_ACCESS_TOKEN!,
+  accessToken: process.env.QENTRAH_ACCESS_TOKEN!,
 });
 ```
 

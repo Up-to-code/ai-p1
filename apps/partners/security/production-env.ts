@@ -1,18 +1,14 @@
-const CONVEX_URL_KEYS = ["CONVEX_URL", "NEXT_PUBLIC_CONVEX_URL"] as const;
-const CONVEX_SITE_URL_KEYS = ["CONVEX_SITE_URL", "NEXT_PUBLIC_CONVEX_SITE_URL"] as const;
-
-function hasAnyEnv(keys: readonly string[]) {
-  return keys.some((key) => Boolean(process.env[key]?.trim()));
-}
+import { readBrandEnv } from "@anan/brand-identity";
 
 export function getMissingPartnersProductionEnv() {
   if (process.env.NODE_ENV !== "production") return [];
 
   const missing: string[] = [];
-  if (!hasAnyEnv(CONVEX_URL_KEYS)) missing.push("CONVEX_URL or NEXT_PUBLIC_CONVEX_URL");
-  if (!hasAnyEnv(CONVEX_SITE_URL_KEYS)) missing.push("CONVEX_SITE_URL or NEXT_PUBLIC_CONVEX_SITE_URL");
-  for (const key of ["BETTER_AUTH_SECRET", "PARTNER_SIGNUP_BRIDGE_SECRET", "ANAN_WORKSPACE_SERVICE_TOKEN", "PARTNERS_REVIEW_CALLBACK_TOKEN"]) {
+  for (const key of ["DATABASE_URL", "BETTER_AUTH_SECRET", "PARTNER_SIGNUP_BRIDGE_SECRET", "PARTNERS_REVIEW_CALLBACK_TOKEN"]) {
     if (!process.env[key]?.trim()) missing.push(key);
+  }
+  if (!readBrandEnv("WORKSPACE_SERVICE_TOKEN", process.env)) {
+    missing.push("QENTRAH_WORKSPACE_SERVICE_TOKEN");
   }
   return missing;
 }

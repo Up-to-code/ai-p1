@@ -1,6 +1,6 @@
 # Feature Lifecycle
 
-This guide describes how features should move through the Anan repo from idea to
+This guide describes how features should move through the Qentrah repo from idea to
 maintenance. It is meant for both human developers and AI agents.
 
 ## 1. Locate The Owner

@@ -14,7 +14,7 @@ This folder does not own broad system-wide specification text. If content crosse
 | --- | --- |
 | [Nextjs Example](nextjs-example.md) | Show Next.js route handler integration. |
 | [Express Example](express-example.md) | Show Express raw-body webhook route. |
-| [Crm Example](crm-example.md) | Show CRM app registering OAuth client, running Continue with Anand, and syncing property updates. |
+| [Crm Example](crm-example.md) | Show CRM app registering OAuth client, running Continue with Qentrah, and syncing property updates. |
 
 ## Read Order
 

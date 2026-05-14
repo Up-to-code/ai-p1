@@ -1,4 +1,4 @@
-# Anan Admin Review App
+# Qentrah Admin Review App
 
 Admin Review is the internal Next.js console for reviewing partner app
 submissions. It does not own the primary partner app data model. It reads and

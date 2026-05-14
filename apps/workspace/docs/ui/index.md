@@ -1,10 +1,10 @@
 # UI
 
-Purpose: Defines the Anand user interface documentation domain for layout, onboarding, design tokens, page behavior, and reusable ShadCN/UI component rules.
+Purpose: Defines the Qentrah user interface documentation domain for layout, onboarding, design tokens, page behavior, and reusable ShadCN/UI component rules.
 
 ## Scope
 
-This folder owns UI interface specifications for the Anand synchronization workspace.
+This folder owns UI interface specifications for the Qentrah synchronization workspace.
 
 This folder does not own backend authorization, Convex schema, synchronization policy, visibility policy, SDK contracts, Saudi compliance interpretation, or developer onboarding flows. Those subjects stay in their owning domains and are linked when needed.
 
@@ -12,7 +12,7 @@ This folder does not own backend authorization, Convex schema, synchronization p
 
 | File | Purpose |
 | --- | --- |
-| [Interface](interface.md) | Defines the complete Anand UI interface, tokenized design system, onboarding flow, sidebar layout, major pages, components, states, and synchronization UX. |
+| [Interface](interface.md) | Defines the complete Qentrah UI interface, tokenized design system, onboarding flow, sidebar layout, major pages, components, states, and synchronization UX. |
 
 ## Read Order
 

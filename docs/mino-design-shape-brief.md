@@ -2,7 +2,7 @@
 
 ## 1. Feature Summary
 
-Mino Design foundations define the repo-wide design language for the Anan monorepo. The brief is for engineers and agents building product surfaces, public landing pages, partner flows, admin tools, and shared UI packages.
+Mino Design foundations define the repo-wide design language for the Qentrah monorepo. The brief is for engineers and agents building product surfaces, public landing pages, partner flows, admin tools, and shared UI packages.
 
 The primary audience is real estate operators: brokers, sales teams, coordinators, admins, and organization owners. The system should make every surface feel calm, precise, premium, and operationally clear.
 

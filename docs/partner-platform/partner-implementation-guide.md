@@ -1,11 +1,11 @@
 # Partner Implementation Guide
 
-This guide is for external developers building an Anan partner app.
+This guide is for external developers building an Qentrah partner app.
 
 The short version:
 
-1. Register your app in Anan Partners.
-2. Put an `Authorize with Anan` button in your product.
+1. Register your app in Qentrah Partners.
+2. Put an `Authorize with Qentrah` button in your product.
 3. Start OAuth 2.1 authorization code with PKCE.
 4. Exchange the callback code on your backend.
 5. Store tokens on your backend.
@@ -24,7 +24,7 @@ Use these fields in Partners:
 | Partner app URL | `https://pdf.example.com` |
 | Redirect URI | `https://pdf.example.com/api/auth/anan/callback` |
 | Client type | Public PKCE app |
-| CTA copy | `Authorize with Anan` |
+| CTA copy | `Authorize with Qentrah` |
 | Authorization lifetime | 14 days |
 
 Recommended scopes for a read-only PDF generator:
@@ -52,33 +52,33 @@ Delete scopes are not normal self-serve v1 scopes.
 ## Environment Variables
 
 ```bash
-ANAN_WORKSPACE_API_URL=https://workspace.example.com
-ANAN_CLIENT_ID=partners_client_...
-ANAN_CLIENT_SECRET=
+QENTRAH_WORKSPACE_API_URL=https://workspace.example.com
+QENTRAH_CLIENT_ID=partners_client_...
+QENTRAH_CLIENT_SECRET=
 PARTNER_APP_URL=https://pdf.example.com
 SESSION_SECRET=replace-with-32-plus-characters
 ```
 
-Use `ANAN_CLIENT_SECRET` only for confidential server apps. Browser-started public PKCE apps should leave it empty.
+Use `QENTRAH_CLIENT_SECRET` only for confidential server apps. Browser-started public PKCE apps should leave it empty.
 
 ## OAuth Details
 
 Authorize endpoint:
 
 ```txt
-GET {ANAN_WORKSPACE_API_URL}/oauth/authorize
+GET {QENTRAH_WORKSPACE_API_URL}/oauth/authorize
 ```
 
 Token endpoint:
 
 ```txt
-POST {ANAN_WORKSPACE_API_URL}/oauth/token
+POST {QENTRAH_WORKSPACE_API_URL}/oauth/token
 ```
 
 Partner API audience:
 
 ```txt
-{ANAN_WORKSPACE_API_URL}/api/v1/partner
+{QENTRAH_WORKSPACE_API_URL}/api/v1/partner
 ```
 
 The `resource` parameter must be sent to both the authorize request and token request. This asks Workspace for a JWT access token that can be verified by partner resource APIs.
@@ -90,7 +90,7 @@ Copy this into `anan-oauth.ts`.
 ```ts
 import { createHash, randomBytes } from "node:crypto";
 
-export type AnanTokenResponse = {
+export type QentrahTokenResponse = {
   access_token: string;
   token_type: "Bearer";
   expires_in: number;
@@ -99,7 +99,7 @@ export type AnanTokenResponse = {
   organization_id?: string;
 };
 
-export type AnanConfig = {
+export type QentrahConfig = {
   workspaceBaseUrl: string;
   clientId: string;
   clientSecret?: string;
@@ -113,7 +113,7 @@ export function normalizeBaseUrl(value: string) {
   return /^https?:\/\//iu.test(trimmed) ? trimmed : `https://${trimmed}`;
 }
 
-export function redirectUri(config: AnanConfig) {
+export function redirectUri(config: QentrahConfig) {
   return `${normalizeBaseUrl(config.partnerAppUrl)}${config.redirectPath ?? "/api/auth/anan/callback"}`;
 }
 
@@ -176,13 +176,13 @@ export async function exchangeAuthorizationCode(input: {
     body,
   });
 
-  const payload = await response.json().catch(() => null) as AnanTokenResponse | { error?: string; error_description?: string } | null;
+  const payload = await response.json().catch(() => null) as QentrahTokenResponse | { error?: string; error_description?: string } | null;
   if (!response.ok || !payload || !("access_token" in payload)) {
     const message = payload && "error_description" in payload && payload.error_description
       ? payload.error_description
       : payload && "error" in payload && payload.error
         ? payload.error
-        : "Anan token exchange failed.";
+        : "Qentrah token exchange failed.";
     throw new Error(message);
   }
 
@@ -211,9 +211,9 @@ export async function refreshAccessToken(input: {
     body,
   });
 
-  const payload = await response.json().catch(() => null) as AnanTokenResponse | { error?: string; error_description?: string } | null;
+  const payload = await response.json().catch(() => null) as QentrahTokenResponse | { error?: string; error_description?: string } | null;
   if (!response.ok || !payload || !("access_token" in payload)) {
-    throw new Error(payload && "error_description" in payload ? payload.error_description : "Anan token refresh failed.");
+    throw new Error(payload && "error_description" in payload ? payload.error_description : "Qentrah token refresh failed.");
   }
   return payload;
 }
@@ -277,7 +277,7 @@ export async function exchangeAuthorizationCode({ workspaceBaseUrl, clientId, cl
   });
   const payload = await response.json().catch(() => null);
   if (!response.ok || !payload?.access_token) {
-    throw new Error(payload?.error_description || payload?.error || "Anan token exchange failed.");
+    throw new Error(payload?.error_description || payload?.error || "Qentrah token exchange failed.");
   }
   return payload;
 }
@@ -288,10 +288,10 @@ export async function exchangeAuthorizationCode({ workspaceBaseUrl, clientId, cl
 Frontend button:
 
 ```tsx
-export function AuthorizeWithAnanButton() {
+export function AuthorizeWithQentrahButton() {
   return (
     <a href="/api/auth/anan/start">
-      Authorize with Anan
+      Authorize with Qentrah
     </a>
   );
 }
@@ -338,8 +338,8 @@ export async function GET() {
 
   const redirectUri = `${process.env.PARTNER_APP_URL}/api/auth/anan/callback`;
   const url = buildAuthorizeUrl({
-    workspaceBaseUrl: process.env.ANAN_WORKSPACE_API_URL!,
-    clientId: process.env.ANAN_CLIENT_ID!,
+    workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL!,
+    clientId: process.env.QENTRAH_CLIENT_ID!,
     redirectUri,
     scopes,
     state,
@@ -356,7 +356,7 @@ Callback route at `app/api/auth/anan/callback/route.ts`:
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { exchangeAuthorizationCode } from "@/lib/anan-oauth";
-import { saveAnanTokens } from "@/lib/token-store";
+import { saveQentrahTokens } from "@/lib/token-store";
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
@@ -370,9 +370,9 @@ export async function GET(request: NextRequest) {
 
   const redirectUri = `${process.env.PARTNER_APP_URL}/api/auth/anan/callback`;
   const tokens = await exchangeAuthorizationCode({
-    workspaceBaseUrl: process.env.ANAN_WORKSPACE_API_URL!,
-    clientId: process.env.ANAN_CLIENT_ID!,
-    clientSecret: process.env.ANAN_CLIENT_SECRET || undefined,
+    workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL!,
+    clientId: process.env.QENTRAH_CLIENT_ID!,
+    clientSecret: process.env.QENTRAH_CLIENT_SECRET || undefined,
     redirectUri,
     code,
     codeVerifier: cookieStore.get("anan_pkce_verifier")?.value ?? "",
@@ -382,7 +382,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "missing_organization_id" }, { status: 400 });
   }
 
-  await saveAnanTokens({
+  await saveQentrahTokens({
     organizationId: tokens.organization_id,
     accessToken: tokens.access_token,
     refreshToken: tokens.refresh_token,
@@ -396,14 +396,14 @@ export async function GET(request: NextRequest) {
 }
 ```
 
-`saveAnanTokens` should write to your backend database or token vault. The standalone demo app uses encrypted HttpOnly cookies only to keep the example deployable without a database.
+`saveQentrahTokens` should write to your backend database or token vault. The standalone demo app uses encrypted HttpOnly cookies only to keep the example deployable without a database.
 
 ## Calling Workspace APIs
 
 Copy this into `anan-workspace-api.ts`.
 
 ```ts
-export class AnanApiError extends Error {
+export class QentrahApiError extends Error {
   constructor(
     message: string,
     public readonly code: string,
@@ -413,9 +413,9 @@ export class AnanApiError extends Error {
   }
 }
 
-async function parseAnanError(response: Response) {
+async function parseQentrahError(response: Response) {
   const payload = await response.json().catch(() => null) as { error?: string; message?: string } | null;
-  return new AnanApiError(payload?.message ?? payload?.error ?? "Anan API error", payload?.error ?? "workspace_api_error", response.status);
+  return new QentrahApiError(payload?.message ?? payload?.error ?? "Qentrah API error", payload?.error ?? "workspace_api_error", response.status);
 }
 
 export async function ananFetch<T>(input: {
@@ -434,7 +434,7 @@ export async function ananFetch<T>(input: {
       ...input.init?.headers,
     },
   });
-  if (!response.ok) throw await parseAnanError(response);
+  if (!response.ok) throw await parseQentrahError(response);
   return response.json() as Promise<T>;
 }
 
@@ -523,8 +523,8 @@ app.get("/auth/anan/start", (req, res) => {
   res.cookie("anan_pkce_verifier", verifier, { httpOnly: true, sameSite: "lax", maxAge: 10 * 60 * 1000 });
 
   res.redirect(buildAuthorizeUrl({
-    workspaceBaseUrl: process.env.ANAN_WORKSPACE_API_URL,
-    clientId: process.env.ANAN_CLIENT_ID,
+    workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL,
+    clientId: process.env.QENTRAH_CLIENT_ID,
     redirectUri: `${process.env.PARTNER_APP_URL}/auth/anan/callback`,
     scopes,
     state,
@@ -540,16 +540,16 @@ app.get("/auth/anan/callback", async (req, res, next) => {
     }
 
     const tokens = await exchangeAuthorizationCode({
-      workspaceBaseUrl: process.env.ANAN_WORKSPACE_API_URL,
-      clientId: process.env.ANAN_CLIENT_ID,
-      clientSecret: process.env.ANAN_CLIENT_SECRET || undefined,
+      workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL,
+      clientId: process.env.QENTRAH_CLIENT_ID,
+      clientSecret: process.env.QENTRAH_CLIENT_SECRET || undefined,
       redirectUri: `${process.env.PARTNER_APP_URL}/auth/anan/callback`,
       code: String(req.query.code),
       codeVerifier: req.cookies.anan_pkce_verifier,
     });
 
     // Store this in your database, keyed by tokens.organization_id.
-    console.log("Authorized Anan organization", tokens.organization_id);
+    console.log("Authorized Qentrah organization", tokens.organization_id);
     res.redirect("/dashboard");
   } catch (error) {
     next(error);
@@ -569,7 +569,7 @@ organization:read client:read property:read offline_access
 
 Backend flow:
 
-1. User clicks `Authorize with Anan`.
+1. User clicks `Authorize with Qentrah`.
 2. You store tokens keyed by `organization_id`.
 3. User opens your PDF generator.
 4. Your backend calls:
@@ -609,10 +609,10 @@ Handle these errors directly in your product:
 
 | Error | Recommended partner response |
 | --- | --- |
-| `connection_expired` | Show `Reconnect with Anan`. Start OAuth again. |
-| `connection_not_found` | Show `Authorize with Anan`. |
+| `connection_expired` | Show `Reconnect with Qentrah`. Start OAuth again. |
+| `connection_not_found` | Show `Authorize with Qentrah`. |
 | `scope_denied` | Explain the missing feature permission and ask the user to reconnect after you update app scopes. |
-| `app_not_approved` | Hide the integration and contact Anan review/admin. |
+| `app_not_approved` | Hide the integration and contact Qentrah review/admin. |
 | `missing_bearer` | Fix backend token loading; do not send tokens from the browser. |
 
 Never place access tokens in browser JavaScript, query params, logs, or local storage.

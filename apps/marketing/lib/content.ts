@@ -1,3 +1,5 @@
+import { brandDomainUrl, brandIdentity, brandLabel, brandProductName } from "@anan/brand-identity";
+
 export const locales = ["en", "ar"] as const;
 export type Locale = (typeof locales)[number];
 
@@ -10,14 +12,21 @@ export function getDirection(locale: Locale) {
 }
 
 export const productUrls = {
-  workspace: process.env.NEXT_PUBLIC_WORKSPACE_URL ?? "https://app.anan.sa",
-  partners: process.env.NEXT_PUBLIC_PARTNERS_URL ?? "https://partners.anan.sa"
+  workspace: process.env.NEXT_PUBLIC_WORKSPACE_URL ?? brandDomainUrl("workspace"),
+  partners: process.env.NEXT_PUBLIC_PARTNERS_URL ?? brandDomainUrl("partners")
 };
+
+const brandEn = brandLabel("en");
+const brandAr = brandLabel("ar");
+const workspaceEn = brandProductName("workspace", "en");
+const workspaceAr = brandProductName("workspace", "ar");
+const partnersEn = brandProductName("partners", "en");
+const partnersAr = brandProductName("partners", "ar");
 
 export const content = {
   en: {
     nav: {
-      brand: "Anan",
+      brand: brandEn,
       products: "Products",
       privacy: "Privacy",
       terms: "Terms",
@@ -26,13 +35,13 @@ export const content = {
       language: "العربية"
     },
     home: {
-      eyebrow: "Anan product ecosystem",
+      eyebrow: `${brandEn} product ecosystem`,
       title: "The real estate operating layer, on one domain.",
       description:
-        "Anan gives real estate teams one workspace for daily work and one trusted path for partner integrations around that work.",
+        `${brandEn} gives real estate teams one workspace for daily work and one trusted path for partner integrations around that work.`,
       primaryCta: "Open Workspace",
       secondaryCta: "Explore Partners",
-      contactCta: "Talk to Anan",
+      contactCta: `Talk to ${brandEn}`,
       atlasEyebrow: "Product atlas",
       atlasTitle: "Two public products. One operating system.",
       atlasDescription:
@@ -44,19 +53,19 @@ export const content = {
       trustEyebrow: "Trust network",
       trustTitle: "Integrations connect through consent, not shortcuts.",
       trustDescription:
-        "Partner products use OAuth, scoped access, and organization-level consent. Anan keeps workspace data behind clear permissions and approved API paths.",
+        `Partner products use OAuth, scoped access, and organization-level consent. ${brandEn} keeps workspace data behind clear permissions and approved API paths.`,
       futureEyebrow: "What this unlocks next",
       futureTitle: "The domain can grow without confusing the product.",
       futureDescription:
-        "Future Anan offerings should feel like more rooms in the same operating layer, not separate brands fighting for attention.",
+        `Future ${brandEn} offerings should feel like more rooms in the same operating layer, not separate brands fighting for attention.`,
       finalTitle: "Start with the workspace. Expand through trusted products.",
       finalDescription:
-        "Open Anan Workspace for daily real estate work, or explore Partners if you are building approved tools for Anan teams."
+        `Open ${workspaceEn} for daily real estate work, or explore Partners if you are building approved tools for ${brandEn} teams.`
     },
     products: [
       {
         id: "workspace",
-        name: "Anan Workspace",
+        name: workspaceEn,
         status: "Main product",
         href: productUrls.workspace,
         cta: "Open Workspace",
@@ -65,11 +74,11 @@ export const content = {
       },
       {
         id: "partners",
-        name: "Anan Partners",
+        name: partnersEn,
         status: "Trusted integration path",
         href: productUrls.partners,
         cta: "Open Partner Portal",
-        description: "The partner product for developers and software teams to register apps, request review, and connect approved tools to Anan workspaces.",
+        description: `The partner product for developers and software teams to register apps, request review, and connect approved tools to ${brandEn} workspaces.`,
         bullets: ["OAuth app registration", "Scoped organization consent", "Approved partner APIs"]
       }
     ] as const,
@@ -108,7 +117,7 @@ export const content = {
       termsTitle: "Terms of Service",
       updated: "Last updated: May 12, 2026",
       intro:
-        "These pages summarize how Anan handles public website, workspace, and partner-program information. They should be reviewed by counsel before production use.",
+        `These pages summarize how ${brandEn} handles public website, workspace, and partner-program information. They should be reviewed by counsel before production use.`,
       privacy: [
         {
           title: "Information we collect",
@@ -116,40 +125,40 @@ export const content = {
         },
         {
           title: "How information is used",
-          body: "Information is used to operate Anan products, verify organizations, provide workspace features, review partner apps, support integrations, and maintain security and compliance records."
+          body: `Information is used to operate ${brandEn} products, verify organizations, provide workspace features, review partner apps, support integrations, and maintain security and compliance records.`
         },
         {
           title: "Data sharing",
-          body: "Anan shares data with connected services only when an organization authorizes that access or when required to operate the requested product workflow. We do not sell personal data."
+          body: `${brandEn} shares data with connected services only when an organization authorizes that access or when required to operate the requested product workflow. We do not sell personal data.`
         },
         {
           title: "Security and retention",
-          body: "Anan uses access controls, encrypted transport, audit records, and scoped authorization. Data is retained while accounts, organizations, or required compliance records remain active."
+          body: `${brandEn} uses access controls, encrypted transport, audit records, and scoped authorization. Data is retained while accounts, organizations, or required compliance records remain active.`
         }
       ],
       terms: [
         {
           title: "Acceptance",
-          body: "By using Anan products, you agree to these terms. If you use Anan on behalf of an organization, you confirm that you have authority to bind that organization."
+          body: `By using ${brandEn} products, you agree to these terms. If you use ${brandEn} on behalf of an organization, you confirm that you have authority to bind that organization.`
         },
         {
           title: "Product use",
-          body: "Anan provides real estate workspace tools and partner authorization flows. Users are responsible for accurate information, lawful use, and protecting their account credentials."
+          body: `${brandEn} provides real estate workspace tools and partner authorization flows. Users are responsible for accurate information, lawful use, and protecting their account credentials.`
         },
         {
           title: "Partner integrations",
-          body: "Partner apps must use approved OAuth flows, scoped APIs, and secure token handling. Anan may reject, suspend, or revoke integrations that misuse data or violate review requirements."
+          body: `Partner apps must use approved OAuth flows, scoped APIs, and secure token handling. ${brandEn} may reject, suspend, or revoke integrations that misuse data or violate review requirements.`
         },
         {
           title: "Limitations",
-          body: "Anan products are provided without warranties beyond those required by law. Anan is not liable for indirect or consequential damages arising from use of the platform."
+          body: `${brandEn} products are provided without warranties beyond those required by law. ${brandEn} is not liable for indirect or consequential damages arising from use of the platform.`
         }
       ]
     }
   },
   ar: {
     nav: {
-      brand: "أنان",
+      brand: brandAr,
       products: "المنتجات",
       privacy: "الخصوصية",
       terms: "الشروط",
@@ -158,13 +167,13 @@ export const content = {
       language: "English"
     },
     home: {
-      eyebrow: "منظومة منتجات أنان",
+      eyebrow: `منظومة منتجات ${brandAr}`,
       title: "طبقة التشغيل العقاري على نطاق واحد.",
       description:
-        "تمنح أنان فرق العقار مساحة عمل يومية ومسارا موثوقا للتكاملات حول هذا العمل.",
+        `تمنح ${brandAr} فرق العقار مساحة عمل يومية ومسارا موثوقا للتكاملات حول هذا العمل.`,
       primaryCta: "فتح مساحة العمل",
       secondaryCta: "استكشاف الشركاء",
-      contactCta: "تواصل مع أنان",
+      contactCta: `تواصل مع ${brandAr}`,
       atlasEyebrow: "خريطة المنتجات",
       atlasTitle: "منتجان عامان. نظام تشغيل واحد.",
       atlasDescription:
@@ -180,15 +189,15 @@ export const content = {
       futureEyebrow: "ما الذي يفتحه هذا لاحقا",
       futureTitle: "يمكن للنطاق أن ينمو بدون تشتيت المنتج.",
       futureDescription:
-        "يجب أن تبدو عروض أنان المستقبلية كغرف إضافية داخل طبقة التشغيل نفسها، لا كعلامات منفصلة تتنافس على الانتباه.",
+        `يجب أن تبدو عروض ${brandAr} المستقبلية كغرف إضافية داخل طبقة التشغيل نفسها، لا كعلامات منفصلة تتنافس على الانتباه.`,
       finalTitle: "ابدأ بمساحة العمل. وتوسع عبر منتجات موثوقة.",
       finalDescription:
-        "افتح مساحة عمل أنان لتشغيل العمل العقاري اليومي، أو استكشف الشركاء إذا كنت تبني أدوات معتمدة لفرق أنان."
+        `افتح ${workspaceAr} لتشغيل العمل العقاري اليومي، أو استكشف الشركاء إذا كنت تبني أدوات معتمدة لفرق ${brandAr}.`
     },
     products: [
       {
         id: "workspace",
-        name: "مساحة عمل أنان",
+        name: workspaceAr,
         status: "المنتج الرئيسي",
         href: productUrls.workspace,
         cta: "فتح مساحة العمل",
@@ -197,11 +206,11 @@ export const content = {
       },
       {
         id: "partners",
-        name: "شركاء أنان",
+        name: partnersAr,
         status: "مسار التكاملات الموثوقة",
         href: productUrls.partners,
         cta: "فتح بوابة الشركاء",
-        description: "منتج الشركاء للمطورين وفرق البرمجيات لتسجيل التطبيقات وطلب المراجعة وربط الأدوات المعتمدة بمساحات عمل أنان.",
+        description: `منتج الشركاء للمطورين وفرق البرمجيات لتسجيل التطبيقات وطلب المراجعة وربط الأدوات المعتمدة بمساحات عمل ${brandAr}.`,
         bullets: ["تسجيل تطبيقات OAuth", "موافقة مؤسسية محددة الصلاحيات", "واجهات API للشركاء المعتمدين"]
       }
     ] as const,
@@ -240,7 +249,7 @@ export const content = {
       termsTitle: "شروط الخدمة",
       updated: "آخر تحديث: 12 مايو 2026",
       intro:
-        "تلخص هذه الصفحات كيفية تعامل أنان مع معلومات الموقع العام ومساحة العمل وبرنامج الشركاء. يجب مراجعتها قانونيا قبل الاستخدام الإنتاجي.",
+        `تلخص هذه الصفحات كيفية تعامل ${brandAr} مع معلومات الموقع العام ومساحة العمل وبرنامج الشركاء. يجب مراجعتها قانونيا قبل الاستخدام الإنتاجي.`,
       privacy: [
         {
           title: "المعلومات التي نجمعها",
@@ -248,33 +257,33 @@ export const content = {
         },
         {
           title: "كيفية استخدام المعلومات",
-          body: "تستخدم المعلومات لتشغيل منتجات أنان، والتحقق من المؤسسات، وتوفير ميزات مساحة العمل، ومراجعة تطبيقات الشركاء، ودعم التكاملات، وحفظ سجلات الأمان والامتثال."
+          body: `تستخدم المعلومات لتشغيل منتجات ${brandAr}، والتحقق من المؤسسات، وتوفير ميزات مساحة العمل، ومراجعة تطبيقات الشركاء، ودعم التكاملات، وحفظ سجلات الأمان والامتثال.`
         },
         {
           title: "مشاركة البيانات",
-          body: "تشارك أنان البيانات مع الخدمات المتصلة فقط عندما تفوض المؤسسة هذا الوصول أو عندما يكون ذلك مطلوبا لتشغيل تدفق المنتج المطلوب. لا نبيع البيانات الشخصية."
+          body: `تشارك ${brandAr} البيانات مع الخدمات المتصلة فقط عندما تفوض المؤسسة هذا الوصول أو عندما يكون ذلك مطلوبا لتشغيل تدفق المنتج المطلوب. لا نبيع البيانات الشخصية.`
         },
         {
           title: "الأمان والاحتفاظ",
-          body: "تستخدم أنان ضوابط وصول ونقلا مشفرا وسجلات تدقيق وتفويضا محدد الصلاحيات. يتم الاحتفاظ بالبيانات ما دامت الحسابات أو المؤسسات أو سجلات الامتثال المطلوبة نشطة."
+          body: `تستخدم ${brandAr} ضوابط وصول ونقلا مشفرا وسجلات تدقيق وتفويضا محدد الصلاحيات. يتم الاحتفاظ بالبيانات ما دامت الحسابات أو المؤسسات أو سجلات الامتثال المطلوبة نشطة.`
         }
       ],
       terms: [
         {
           title: "القبول",
-          body: "باستخدام منتجات أنان، فإنك توافق على هذه الشروط. إذا كنت تستخدم أنان نيابة عن مؤسسة، فأنت تؤكد أن لديك صلاحية إلزام تلك المؤسسة."
+          body: `باستخدام منتجات ${brandAr}، فإنك توافق على هذه الشروط. إذا كنت تستخدم ${brandAr} نيابة عن مؤسسة، فأنت تؤكد أن لديك صلاحية إلزام تلك المؤسسة.`
         },
         {
           title: "استخدام المنتج",
-          body: "توفر أنان أدوات مساحة عمل عقارية وتدفقات تفويض للشركاء. يتحمل المستخدمون مسؤولية دقة المعلومات والاستخدام النظامي وحماية بيانات الدخول."
+          body: `توفر ${brandAr} أدوات مساحة عمل عقارية وتدفقات تفويض للشركاء. يتحمل المستخدمون مسؤولية دقة المعلومات والاستخدام النظامي وحماية بيانات الدخول.`
         },
         {
           title: "تكاملات الشركاء",
-          body: "يجب أن تستخدم تطبيقات الشركاء تدفقات OAuth المعتمدة وواجهات API محددة الصلاحيات والتعامل الآمن مع الرموز. قد ترفض أنان أو تعلق أو تلغي التكاملات التي تسيء استخدام البيانات أو تخالف متطلبات المراجعة."
+          body: `يجب أن تستخدم تطبيقات الشركاء تدفقات OAuth المعتمدة وواجهات API محددة الصلاحيات والتعامل الآمن مع الرموز. قد ترفض ${brandAr} أو تعلق أو تلغي التكاملات التي تسيء استخدام البيانات أو تخالف متطلبات المراجعة.`
         },
         {
           title: "الحدود",
-          body: "تقدم منتجات أنان دون ضمانات تتجاوز ما يتطلبه القانون. لا تتحمل أنان مسؤولية الأضرار غير المباشرة أو التبعية الناتجة عن استخدام المنصة."
+          body: `تقدم منتجات ${brandAr} دون ضمانات تتجاوز ما يتطلبه القانون. لا تتحمل ${brandAr} مسؤولية الأضرار غير المباشرة أو التبعية الناتجة عن استخدام المنصة.`
         }
       ]
     }

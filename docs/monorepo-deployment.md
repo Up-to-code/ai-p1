@@ -1,4 +1,4 @@
-# Anan Monorepo Deployment
+# Qentrah Monorepo Deployment
 
 This repository is an npm-workspaces monorepo. Product apps live under `apps/*`, shared packages live under `packages/*`, and documentation lives under `docs`.
 
@@ -71,7 +71,7 @@ Demo redirect URI:
 https://demo.<root-domain>/api/auth/anan/callback
 ```
 
-Partners submits app registrations to Workspace using `ANAN_WORKSPACE_API_URL` and `ANAN_PLATFORM_SERVICE_TOKEN`. Admin reviews through Workspace using `WORKSPACE_API_BASE_URL` and `WORKSPACE_ADMIN_SERVICE_TOKEN`. The demo app starts OAuth against Workspace with `ANAN_WORKSPACE_API_URL`, `ANAN_CLIENT_ID`, and `PARTNER_APP_URL`.
+Partners submits app registrations to Workspace using `QENTRAH_WORKSPACE_API_URL` and `QENTRAH_PLATFORM_SERVICE_TOKEN`. Admin reviews through Workspace using `WORKSPACE_API_BASE_URL` and `WORKSPACE_ADMIN_SERVICE_TOKEN`. The demo app starts OAuth against Workspace with `QENTRAH_WORKSPACE_API_URL`, `QENTRAH_CLIENT_ID`, and `PARTNER_APP_URL`.
 
 ## Boundaries
 

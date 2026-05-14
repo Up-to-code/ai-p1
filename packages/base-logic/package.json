@@ -1,7 +1,7 @@
 {
   "name": "@anan/base-logic",
   "version": "0.1.0",
-  "description": "Pure shared Anan base logic helpers for text normalization, language detection, parsing, retry, providers, and error utility types.",
+  "description": "Pure shared Qentrah base logic helpers for text normalization, language detection, parsing, retry, providers, and error utility types.",
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",

@@ -1,6 +1,6 @@
-# Anan
+# Qentrah
 
-Anan is a multi-app real estate workspace and partner integration platform. The
+Qentrah is a multi-app real estate workspace and partner integration platform. The
 monorepo contains the main Workspace product, the Partners developer portal, an
 internal Admin Review console, a deployable partner OAuth demo, a marketing
 site, shared packages, and repo-level documentation.
@@ -99,9 +99,9 @@ documentation.
 
 Important integration variables include:
 
-- `ANAN_WORKSPACE_API_URL`
-- `ANAN_CLIENT_ID`
-- `ANAN_CLIENT_SECRET`
+- `QENTRAH_WORKSPACE_API_URL`
+- `QENTRAH_CLIENT_ID`
+- `QENTRAH_CLIENT_SECRET`
 - `PARTNER_APP_URL`
 - `SESSION_SECRET`
 - `WORKSPACE_API_BASE_URL`

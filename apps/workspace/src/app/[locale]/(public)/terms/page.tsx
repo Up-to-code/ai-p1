@@ -1,14 +1,16 @@
 import { LegalArticle, LegalBlock } from "@/components/landing/public-page-shell";
+import { brandProductName } from "@anan/brand-identity";
 
 export default function TermsPage() {
+  const workspaceName = brandProductName("workspace", "en");
   return (
     <LegalArticle title="Terms of Service" updated="Last updated: May 4, 2026">
       <LegalBlock title="1. Acceptance of Terms">
-        <p>By accessing or using the Anand Workspace platform, you agree to be bound by these Terms of Service. If you are using the platform on behalf of an organization, you represent that you have the authority to bind that organization to these terms.</p>
+        <p>By accessing or using the {workspaceName} platform, you agree to be bound by these Terms of Service. If you are using the platform on behalf of an organization, you represent that you have the authority to bind that organization to these terms.</p>
       </LegalBlock>
 
       <LegalBlock title="2. Platform Description">
-        <p>Anand Workspace is a centralized real estate data synchronization engine for the Saudi Arabian market. The platform facilitates the exchange, validation, and distribution of property data between authorized organizations including brokers, developers, and integration partners.</p>
+        <p>{workspaceName} is a centralized real estate data synchronization engine for the Saudi Arabian market. The platform facilitates the exchange, validation, and distribution of property data between authorized organizations including brokers, developers, and integration partners.</p>
       </LegalBlock>
 
       <LegalBlock title="3. Account Responsibilities">
@@ -16,15 +18,15 @@ export default function TermsPage() {
       </LegalBlock>
 
       <LegalBlock title="4. Data Accuracy">
-        <p>Organizations are solely responsible for the accuracy of property data submitted to the platform. Anand Workspace validates data against regulatory schemas but does not guarantee the correctness of user-submitted information.</p>
+        <p>Organizations are solely responsible for the accuracy of property data submitted to the platform. {workspaceName} validates data against regulatory schemas but does not guarantee the correctness of user-submitted information.</p>
       </LegalBlock>
 
       <LegalBlock title="5. Synchronization Rules">
-        <p>Data synchronization is subject to platform approval. Draft records are not distributed until the organization is approved and the records pass validation. Anand Workspace reserves the right to suspend synchronization for organizations that violate data quality standards.</p>
+        <p>Data synchronization is subject to platform approval. Draft records are not distributed until the organization is approved and the records pass validation. {workspaceName} reserves the right to suspend synchronization for organizations that violate data quality standards.</p>
       </LegalBlock>
 
       <LegalBlock title="6. Limitation of Liability">
-        <p>Anand Workspace is provided "as is" without warranties of any kind. We are not liable for any indirect, incidental, or consequential damages arising from the use of the platform or reliance on synchronized data.</p>
+        <p>{workspaceName} is provided "as is" without warranties of any kind. We are not liable for any indirect, incidental, or consequential damages arising from the use of the platform or reliance on synchronized data.</p>
       </LegalBlock>
 
       <LegalBlock title="7. Governing Law">

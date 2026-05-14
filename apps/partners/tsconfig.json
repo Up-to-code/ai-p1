@@ -29,6 +29,9 @@
       }
     ],
     "paths": {
+      "@anan/brand-identity": [
+        "../../packages/brand-identity/src/index.ts"
+      ],
       "@/.source": [
         "./.source/index.ts"
       ],
@@ -52,9 +55,6 @@
       ],
       "@anan/platform-core/classnames": [
         "../../packages/platform-core/src/classnames.ts"
-      ],
-      "@anan/platform-core/convex-api": [
-        "../../packages/platform-core/src/convex-api.ts"
       ],
       "@anan/platform-core/errors": [
         "../../packages/platform-core/src/errors.ts"
@@ -100,15 +100,6 @@
       ],
       "@anan/auth-client/partners": [
         "../../packages/auth-client/src/partners.ts"
-      ],
-      "@anan/convex-adapters": [
-        "../../packages/convex-adapters/src/index.ts"
-      ],
-      "@anan/convex-adapters/api": [
-        "../../packages/convex-adapters/src/api.ts"
-      ],
-      "@anan/convex-adapters/repository": [
-        "../../packages/convex-adapters/src/repository.ts"
       ],
       "@anan/domain-contracts": [
         "../../packages/domain-contracts/src/index.ts"
@@ -238,9 +229,6 @@
       ],
       "@anan/web-foundation/auth-session": [
         "../../packages/web-foundation/src/auth-session.ts"
-      ],
-      "@anan/web-foundation/convex-provider": [
-        "../../packages/web-foundation/src/convex-provider.tsx"
       ],
       "@anan/web-foundation/media": [
         "../../packages/web-foundation/src/media.ts"

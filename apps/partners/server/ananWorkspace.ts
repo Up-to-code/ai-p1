@@ -1,3 +1,5 @@
+import { brandEnvName, brandProductName, readBrandEnv } from "@anan/brand-identity";
+
 import type { PartnerAppSummary } from "@/server/partnerApps";
 
 type WorkspaceRegistrationResponse = {
@@ -16,8 +18,8 @@ function normalizeBaseUrl(value?: string) {
 
 export function ananWorkspaceConfig(env: Record<string, string | undefined> = process.env) {
   return {
-    baseUrl: normalizeBaseUrl(env.ANAN_WORKSPACE_API_URL ?? env.ANAN_PLATFORM_API_URL),
-    serviceToken: env.ANAN_PLATFORM_SERVICE_TOKEN?.trim() ?? env.ANAN_WORKSPACE_SERVICE_TOKEN?.trim() ?? "",
+    baseUrl: normalizeBaseUrl(readBrandEnv("WORKSPACE_API_URL", env) ?? readBrandEnv("PLATFORM_API_URL", env)),
+    serviceToken: readBrandEnv("PLATFORM_SERVICE_TOKEN", env) ?? readBrandEnv("WORKSPACE_SERVICE_TOKEN", env) ?? "",
     callbackBaseUrl: normalizeBaseUrl(env.SITE_URL ?? env.NEXT_PUBLIC_PARTNERS_AUTH_URL ?? "http://localhost:3002"),
   };
 }
@@ -45,7 +47,7 @@ export function normalizeWorkspaceScopes(scopes: string[]) {
 export async function submitPartnerAppRegistration(app: PartnerAppSummary) {
   const config = ananWorkspaceConfig();
   if (!config.baseUrl || !config.serviceToken) {
-    throw new Error("Set ANAN_WORKSPACE_API_URL and ANAN_PLATFORM_SERVICE_TOKEN to sync app review submissions.");
+    throw new Error(`Set ${brandEnvName("WORKSPACE_API_URL")} and ${brandEnvName("PLATFORM_SERVICE_TOKEN")} to sync app review submissions.`);
   }
 
   const allowedScopes = normalizeWorkspaceScopes(app.allowedScopes);
@@ -64,7 +66,7 @@ export async function submitPartnerAppRegistration(app: PartnerAppSummary) {
       partnersClientId: app.clientId,
       name: app.name,
       publisherName: app.publisherName,
-      description: `${app.publisherName} partner app submitted from Anan Partners.`,
+      description: `${app.publisherName} partner app submitted from ${brandProductName("partners", "en")}.`,
       homepageUrl: app.homepageUrl ?? undefined,
       logoUrl: app.logoUrl ?? app.iconUrl ?? undefined,
       redirectUris: app.redirectUris,

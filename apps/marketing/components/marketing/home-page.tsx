@@ -15,6 +15,7 @@ import {
   Sparkles,
   Workflow,
 } from "lucide-react";
+import { brandLabel } from "@anan/brand-identity";
 
 import { getContent, type Locale } from "@/lib/content";
 
@@ -239,7 +240,7 @@ function FutureLayer({ copy }: { copy: HomeCopy }) {
           </div>
           <div>
             <p className="text-base font-medium leading-8 text-zinc-600 dark:text-zinc-400">
-              We are shaping Anan so teams can open Workspace, connect trusted integrations, and build the AI-assisted real estate workflows their organizations need.
+              {`We are shaping ${brandLabel("en")} so teams can open Workspace, connect trusted integrations, and build the AI-assisted real estate workflows their organizations need.`}
             </p>
             <div className="mt-7 grid gap-3 sm:grid-cols-3">
               {copy.future.map((item) => (

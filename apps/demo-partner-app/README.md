@@ -1,12 +1,12 @@
-# Anan Demo Partner App
+# Qentrah Demo Partner App
 
 The Demo Partner App is a deployable Next.js reference implementation for
-external partners integrating with Anan Workspace OAuth and resource APIs.
+external partners integrating with Qentrah Workspace OAuth and resource APIs.
 
 It demonstrates:
 
 - a public setup-token gate for demo deployments
-- `Authorize with Anan`
+- `Authorize with Qentrah`
 - OAuth 2.1 authorization code flow with PKCE
 - server-side authorization code exchange
 - encrypted HttpOnly cookie session storage for demo use
@@ -33,7 +33,7 @@ npm run dev
 
 Default local URL: `http://localhost:3004`.
 
-Open the app, unlock with `DEMO_ACCESS_TOKEN`, then click `Authorize with Anan`.
+Open the app, unlock with `DEMO_ACCESS_TOKEN`, then click `Authorize with Qentrah`.
 
 ## Important Routes And Files
 
@@ -58,15 +58,15 @@ Open the app, unlock with `DEMO_ACCESS_TOKEN`, then click `Authorize with Anan`.
 Create `.env.local` locally and set matching production values in Vercel:
 
 ```bash
-ANAN_WORKSPACE_API_URL=http://localhost:3000
-ANAN_CLIENT_ID=partners_client_local
-ANAN_CLIENT_SECRET=
+QENTRAH_WORKSPACE_API_URL=http://localhost:3000
+QENTRAH_CLIENT_ID=partners_client_local
+QENTRAH_CLIENT_SECRET=
 PARTNER_APP_URL=http://localhost:3004
 DEMO_ACCESS_TOKEN=local-demo-access
 SESSION_SECRET=replace-with-a-local-random-value
 ```
 
-`ANAN_CLIENT_SECRET` is optional for public PKCE clients. Leave it empty when
+`QENTRAH_CLIENT_SECRET` is optional for public PKCE clients. Leave it empty when
 testing a public client.
 
 See:
@@ -77,11 +77,11 @@ See:
 
 ## Partners Registration
 
-Use these values when creating the app in Anan Partners:
+Use these values when creating the app in Qentrah Partners:
 
 - Partner app URL: `${PARTNER_APP_URL}`
 - Redirect URI: `${PARTNER_APP_URL}/api/auth/anan/callback`
-- CTA copy: `Authorize with Anan`
+- CTA copy: `Authorize with Qentrah`
 - Requested scopes commonly used by the demo:
   - `calendar:read`
   - `client:create`
@@ -93,7 +93,7 @@ Use these values when creating the app in Anan Partners:
   - `property:read`
   - `task:read`
 
-After review approval, copy the issued OAuth client ID into `ANAN_CLIENT_ID`.
+After review approval, copy the issued OAuth client ID into `QENTRAH_CLIENT_ID`.
 
 ## Vercel Deployment
 

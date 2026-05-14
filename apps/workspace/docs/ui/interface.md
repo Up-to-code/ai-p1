@@ -1,10 +1,10 @@
 Ara Strict Mode – Complete UI Interface Documentation
 
-Purpose: Defines the complete Anand UI interface, tokenized system design, onboarding flow, major pages, key components, states, and synchronization UX for the Saudi Arabia Central Real Estate Data Workspace.
+Purpose: Defines the complete Qentrah UI interface, tokenized system design, onboarding flow, major pages, key components, states, and synchronization UX for the Saudi Arabia Central Real Estate Data Workspace.
 
 # Interface Boundary
 
-Anand is the Saudi Arabia Central Real Estate Data Workspace interface. It is a synchronization engine interface. It is not a marketplace product. It is not a CRM product. It is not a lead pipeline. It is not a deal pipeline.
+Qentrah is the Saudi Arabia Central Real Estate Data Workspace interface. It is a synchronization engine interface. It is not a marketplace product. It is not a CRM product. It is not a lead pipeline. It is not a deal pipeline.
 
 The interface allows authenticated organization users to create an organization, complete onboarding, wait for platform approval, prepare draft projects, invite team members, prepare draft properties and units, configure draft integrations, and observe activity. The server-side workspace remains authoritative for validation, approval, visibility, and synchronization.
 
@@ -27,7 +27,7 @@ The interface must not:
 
 # Design Direction
 
-The Anand interface direction is clean, modern, and professional like Stripe. This means restrained visual density, precise spacing, crisp typography, low-noise surfaces, subtle borders, strong focus states, and direct operational language.
+The Qentrah interface direction is clean, modern, and professional like Stripe. This means restrained visual density, precise spacing, crisp typography, low-noise surfaces, subtle borders, strong focus states, and direct operational language.
 
 The design must not use decorative gradients, large marketing hero sections, consumer listing layouts, decorative property cards as a landing page, real estate browsing patterns, CRM pipeline patterns, or unrequested visual features.
 
@@ -314,7 +314,7 @@ No other menu item may be inserted without updating this document.
 Expanded sidebar:
 
 - Width: `--sidebar-width-expanded`.
-- Shows Anand wordmark.
+- Shows Qentrah wordmark.
 - Shows current organization name.
 - Shows organization status badge.
 - Shows full menu labels.
@@ -333,7 +333,7 @@ Menu item layout:
 Collapsed sidebar:
 
 - Width: `--sidebar-width-collapsed`.
-- Shows compact Anand mark only.
+- Shows compact Qentrah mark only.
 - Hides organization name.
 - Shows icons only.
 - Shows ShadCN Tooltip on hover/focus for each menu item.

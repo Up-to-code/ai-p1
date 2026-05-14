@@ -1,6 +1,5 @@
-import { fetchMutation } from "convex/nextjs";
 import { NextResponse, type NextRequest } from "next/server";
-import { partnerBackendRefs } from "@/server/partnerBackendRefs";
+import { partnerAppsRepository } from "@/server/partnerApps";
 
 function bearerToken(request: NextRequest) {
   const authorization = request.headers.get("authorization");
@@ -12,17 +11,12 @@ function readString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function isReviewStatus(value: string): value is "approved" | "rejected" | "suspended" {
+  return ["approved", "rejected", "suspended"].includes(value);
+}
+
 function reviewCallbackError(error: unknown) {
   const message = error instanceof Error ? error.message : "Review callback failed.";
-  if (message.includes("Could not find public function")) {
-    return NextResponse.json(
-      {
-        error: "Partners backend is not deployed with the review callback functions. Run `npx convex dev` or deploy the Partners Convex backend, then retry the admin action.",
-        detail: message,
-      },
-      { status: 503 },
-    );
-  }
   if (message.includes("Invalid Partners review callback token")) {
     return NextResponse.json({ error: message }, { status: 401 });
   }
@@ -35,11 +29,11 @@ export async function POST(request: NextRequest) {
     const serviceToken = bearerToken(request);
     const appId = readString(body.appId);
     const status = readString(body.status);
-    if (!appId || !["approved", "rejected", "suspended"].includes(status)) {
+    if (!appId || !isReviewStatus(status)) {
       return NextResponse.json({ error: "Invalid review callback payload." }, { status: 400 });
     }
 
-    await fetchMutation(partnerBackendRefs.partnerApps.applyWorkspaceReviewDecision as never, {
+    await partnerAppsRepository.applyWorkspaceReviewDecision({
       serviceToken,
       appId,
       status,
@@ -47,7 +41,7 @@ export async function POST(request: NextRequest) {
       workspaceOauthClientId: readString(body.workspaceOauthClientId) || undefined,
       reviewNotes: readString(body.reviewNotes) || undefined,
       clientSecret: readString(body.clientSecret) || undefined,
-    } as never);
+    });
 
     return NextResponse.json({ ok: true });
   } catch (error) {

@@ -1,3 +1,5 @@
+import { brandLabel } from "@anan/brand-identity";
+
 import { AnanAuthorizationError } from "./errors";
 import { createPkcePair, randomString } from "./pkce";
 import type {
@@ -57,7 +59,7 @@ function parseMessageError(data: unknown): AnanAuthorizationError | null {
 function fallbackToRedirect(url: string, emit: AnanAuthorizationClientOptions["onEvent"]): never {
   emit?.({ type: "redirect_fallback", url });
   window.location.assign(url);
-  throw new AnanAuthorizationError("popup_blocked", "Redirecting to Anan authorization");
+  throw new AnanAuthorizationError("popup_blocked", `Redirecting to ${brandLabel("en")} authorization`);
 }
 
 async function waitForPopupResult(args: {

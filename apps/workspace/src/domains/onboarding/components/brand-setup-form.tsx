@@ -12,6 +12,7 @@ import { brandSetupSchema, type BrandSetupInput } from "../validation/onboarding
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { HelpCircle } from "lucide-react";
+import { brandIdentity } from "@anan/brand-identity";
 
 interface FormProps {
   onNext: () => void;
@@ -21,9 +22,10 @@ interface FormProps {
 export function BrandSetupForm({ onNext, onBack }: FormProps) {
   const t = useTranslations("Onboarding.brand");
   const tc = useTranslations("Common");
+  const defaultBrandColor = brandIdentity.colors.primary;
   const { register, handleSubmit, formState: { errors } } = useForm<BrandSetupInput>({
     resolver: zodResolver(brandSetupSchema),
-    defaultValues: { brandColor: "#2563EB" },
+    defaultValues: { brandColor: defaultBrandColor },
   });
   
   return (
@@ -50,8 +52,8 @@ export function BrandSetupForm({ onNext, onBack }: FormProps) {
                 </Tooltip>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl border border-zinc-200 dark:border-white/10 shadow-none shrink-0" style={{ backgroundColor: "#2563EB" }} />
-                <Input id="brandColor" placeholder="#2563EB" className="h-12 rounded-xl border-zinc-200 bg-white font-medium focus-visible:ring-blue-600/20 dark:border-white/10 dark:bg-[#0A0A0A] font-mono" aria-invalid={Boolean(errors.brandColor)} {...register("brandColor")} />
+                <div className="w-12 h-12 rounded-xl border border-zinc-200 dark:border-white/10 shadow-none shrink-0" style={{ backgroundColor: defaultBrandColor }} />
+                <Input id="brandColor" placeholder={defaultBrandColor} className="h-12 rounded-xl border-zinc-200 bg-white font-medium focus-visible:ring-blue-600/20 dark:border-white/10 dark:bg-[#0A0A0A] font-mono" aria-invalid={Boolean(errors.brandColor)} {...register("brandColor")} />
               </div>
               {errors.brandColor && <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider">{errors.brandColor.message}</p>}
             </div>

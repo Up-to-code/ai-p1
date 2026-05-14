@@ -45,7 +45,7 @@ export default function Footer() {
             <Link href="/" className="inline-flex items-center gap-3">
               <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-zinc-950 dark:bg-white">
                 <Image
-                  alt="Anan"
+                  alt="Qentrah"
                   className="h-5 w-5 invert dark:invert-0"
                   height={22}
                   src="/brand-logo.svg"
@@ -53,7 +53,7 @@ export default function Footer() {
                 />
               </span>
               <span>
-                <span className="block text-lg font-black tracking-tight text-zinc-950 dark:text-white">anan</span>
+                <span className="block text-lg font-black tracking-tight text-zinc-950 dark:text-white">qentrah</span>
                 <span className="block text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">
                   {t("tagline")}
                 </span>

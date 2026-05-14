@@ -24,7 +24,7 @@ export default function PoliciesPage() {
           <article className="rounded-[15px] border border-border bg-card p-6">
             <h2 className="text-xl font-bold text-foreground mb-3">Review and Revocation</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Anan may reject, suspend, or revoke apps that misuse scopes, redirect users deceptively, or fail to protect credentials.
+              Qentrah may reject, suspend, or revoke apps that misuse scopes, redirect users deceptively, or fail to protect credentials.
             </p>
           </article>
           <article className="rounded-[15px] border border-border bg-card p-6">

@@ -1,4 +1,4 @@
-# Anan Partner Platform Flow
+# Qentrah Partner Platform Flow
 
 This document explains how Partners, Admin, Workspace, workspace authorization, and partner apps work together.
 
@@ -37,7 +37,7 @@ sequenceDiagram
   Workspace->>Workspace: Open approved app details
   Workspace-->>Workspace: Visit Partner
   Workspace->>App: Open partner product
-  App-->>Workspace: Authorize with Anan
+  App-->>Workspace: Authorize with Qentrah
   Workspace->>Workspace: OAuth authorization-code + PKCE
   Workspace->>Workspace: Create organization partner connection
   Workspace-->>App: Return code to redirect URI
@@ -103,7 +103,7 @@ Visit Partner
 The partner page then shows:
 
 ```txt
-Authorize with Anan
+Authorize with Qentrah
 ```
 
 ## OAuth Authorization
@@ -113,13 +113,13 @@ Partners use OAuth 2.1 authorization code with PKCE.
 Authorization endpoint:
 
 ```txt
-GET {ANAN_WORKSPACE_API_URL}/oauth/authorize
+GET {QENTRAH_WORKSPACE_API_URL}/oauth/authorize
 ```
 
 Token endpoint:
 
 ```txt
-POST {ANAN_WORKSPACE_API_URL}/oauth/token
+POST {QENTRAH_WORKSPACE_API_URL}/oauth/token
 ```
 
 Required authorization parameters:
@@ -130,7 +130,7 @@ Required authorization parameters:
 | `client_id` | Approved OAuth client ID |
 | `redirect_uri` | Registered callback URI |
 | `scope` | Space-separated approved scopes |
-| `resource` | `{ANAN_WORKSPACE_API_URL}/api/v1/partner` |
+| `resource` | `{QENTRAH_WORKSPACE_API_URL}/api/v1/partner` |
 | `state` | Random CSRF value stored server-side |
 | `code_challenge` | S256 PKCE challenge |
 | `code_challenge_method` | `S256` |
@@ -210,8 +210,8 @@ Common errors:
 Partners:
 
 ```bash
-ANAN_WORKSPACE_API_URL=http://localhost:3000
-ANAN_PLATFORM_SERVICE_TOKEN=shared-service-token
+QENTRAH_WORKSPACE_API_URL=http://localhost:3000
+QENTRAH_PLATFORM_SERVICE_TOKEN=shared-service-token
 ```
 
 Admin:
@@ -241,15 +241,15 @@ PARTNER_OAUTH_AUDIENCE=http://localhost:3000/api/v1/partner
 Demo partner app:
 
 ```bash
-ANAN_WORKSPACE_API_URL=http://localhost:3000
-ANAN_CLIENT_ID=partners_client_...
-ANAN_CLIENT_SECRET=
+QENTRAH_WORKSPACE_API_URL=http://localhost:3000
+QENTRAH_CLIENT_ID=partners_client_...
+QENTRAH_CLIENT_SECRET=
 PARTNER_APP_URL=http://localhost:3004
 DEMO_ACCESS_TOKEN=demo-token
 SESSION_SECRET=abcdefghijklmnopqrstuvwxyz123456
 ```
 
-Leave `ANAN_CLIENT_SECRET` empty for public PKCE apps.
+Leave `QENTRAH_CLIENT_SECRET` empty for public PKCE apps.
 
 ## Local Acceptance Checklist
 
@@ -258,15 +258,15 @@ Leave `ANAN_CLIENT_SECRET` empty for public PKCE apps.
 3. Start Admin on `http://localhost:3003`.
 4. Start the demo app on `http://localhost:3004`.
 5. In Partners, create an app:
-   - Name: `Anan OAuth Demo`
+   - Name: `Qentrah OAuth Demo`
    - Publisher: `ZA`
    - Partner URL: `http://localhost:3004`
    - Redirect URI: `http://localhost:3004/api/auth/anan/callback`
    - Scopes: `organization:read`, `client:read`, `property:read`, `client:create`, `client:update`
 6. Submit for review.
 7. Approve in Admin.
-8. Copy the approved client ID to the demo app `ANAN_CLIENT_ID`.
-9. Open the demo, unlock it, and click `Authorize with Anan`.
+8. Copy the approved client ID to the demo app `QENTRAH_CLIENT_ID`.
+9. Open the demo, unlock it, and click `Authorize with Qentrah`.
 10. Consent in Workspace.
 11. Confirm the demo reads organization, clients, and properties.
 12. Create and update a demo client through Workspace Hono APIs.

@@ -5,6 +5,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL(".", import.meta.url)),
+      "@anan/brand-identity": fileURLToPath(new URL("../../packages/brand-identity/src/index.ts", import.meta.url)),
       "@anan/platform-core/classnames": fileURLToPath(new URL("../../packages/platform-core/src/classnames.ts", import.meta.url)),
       "@anan/platform-core/errors": fileURLToPath(new URL("../../packages/platform-core/src/errors.ts", import.meta.url)),
       "@anan/platform-core": fileURLToPath(new URL("../../packages/platform-core/src/index.ts", import.meta.url)),
@@ -14,7 +15,7 @@ export default defineConfig({
     },
   },
   test: {
-    include: ["scripts/*.test.mjs", "app/**/*.test.ts", "examples/**/*.test.ts", "lib/**/*.test.ts", "server/**/*.test.ts", "convex/**/*.test.ts", "utilities/**/*.test.ts", "validation/**/*.test.ts"],
+    include: ["scripts/*.test.mjs", "app/**/*.test.ts", "examples/**/*.test.ts", "lib/**/*.test.ts", "server/**/*.test.ts", "utilities/**/*.test.ts", "validation/**/*.test.ts"],
     environment: "node",
   },
 });

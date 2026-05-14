@@ -1,10 +1,13 @@
 import { LegalArticle, LegalBlock } from "@/components/landing/public-page-shell";
+import { brandDomainUrl, brandProductName } from "@anan/brand-identity";
 
 export default function PrivacyPage() {
+  const workspaceName = brandProductName("workspace", "en");
+  const privacyEmail = `privacy@${brandDomainUrl("root").replace("https://", "")}`;
   return (
     <LegalArticle title="Privacy Policy" updated="Last updated: May 4, 2026">
       <LegalBlock title="1. Introduction">
-        <p>Anand Workspace ("we", "us", "our") operates the central real estate data synchronization platform for Saudi Arabia. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.</p>
+        <p>{workspaceName} ("we", "us", "our") operates the central real estate data synchronization platform for Saudi Arabia. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.</p>
       </LegalBlock>
 
       <LegalBlock title="2. Information We Collect">
@@ -31,8 +34,8 @@ export default function PrivacyPage() {
       <LegalBlock title="7. Contact Us">
         <p>
           If you have questions about this Privacy Policy, contact us at{" "}
-          <a href="mailto:privacy@anand.sa" className="font-black text-blue-600 hover:underline dark:text-blue-300">
-            privacy@anand.sa
+          <a href={`mailto:${privacyEmail}`} className="font-black text-blue-600 hover:underline dark:text-blue-300">
+            {privacyEmail}
           </a>
           .
         </p>

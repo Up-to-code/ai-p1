@@ -20,6 +20,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@anan/brand-identity": "0.1.0",
     "@base-ui/react": "^1.4.1",
     "@better-auth/oauth-provider": "^1.6.9",
     "@convex-dev/better-auth": "^0.12.2",

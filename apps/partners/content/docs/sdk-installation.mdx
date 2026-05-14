@@ -5,15 +5,15 @@ description: Use standards-based OAuth 2.1 directly while the official SDK is no
 
 ## Current v1 path
 
-Use OAuth 2.1 endpoints directly. Do not depend on an `@anan/auth-sdk` package unless your Anan contact has provided a private build.
+Use OAuth 2.1 endpoints directly. Do not depend on an `@anan/auth-sdk` package unless your Qentrah contact has provided a private build.
 
 ## Frontend responsibility
 
-The frontend should only start authorization and receive the callback route. Use the button copy Authorize with Anan.
+The frontend should only start authorization and receive the callback route. Use the button copy Authorize with Qentrah.
 
 ```tsx
-export function AuthorizeWithAnanButton() {
-  return <a href="/api/anan/oauth/start">Authorize with Anan</a>;
+export function AuthorizeWithQentrahButton() {
+  return <a href="/api/anan/oauth/start">Authorize with Qentrah</a>;
 }
 ```
 
@@ -22,7 +22,7 @@ export function AuthorizeWithAnanButton() {
 Your backend should generate PKCE values, store the verifier in a secure session, exchange the authorization code, refresh tokens, and call Workspace APIs.
 
 ```ts
-export async function startAnanOAuth() {
+export async function startQentrahOAuth() {
   // Generate code_verifier and S256 code_challenge.
   // Store the verifier in an HttpOnly session.
   // Redirect to /oauth/authorize.

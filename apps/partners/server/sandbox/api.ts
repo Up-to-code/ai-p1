@@ -1,8 +1,7 @@
 import { Hono } from "hono";
-import { fetchMutation, fetchQuery } from "convex/nextjs";
-import { partnerBackendRefs } from "@/server/partnerBackendRefs";
 import { optionalJson, recordLog, requireSandboxAccess, type SandboxAccess } from "./http";
 import { actionForMethod, parseSandboxPath } from "./resources";
+import { sandboxStore } from "./store";
 
 export const sandboxPartnerApiApp = new Hono().basePath("/api/v1/partner");
 
@@ -22,21 +21,21 @@ sandboxPartnerApiApp.all("/organizations/:organizationId/*", async (c) => {
     if (c.req.method !== "GET" && c.req.method !== "DELETE") requestInput = await optionalJson(c.req.raw.clone());
 
     const result = action === "read"
-      ? await fetchQuery(partnerBackendRefs.sandbox.readResource as never, {
+      ? await sandboxStore.readResource({
           partnerAppId: access.partnerAppId,
           organizationId,
           resource: parsed.resource,
           resourceId: parsed.resourceId,
           limit: Number(new URL(c.req.url).searchParams.get("limit") ?? "25"),
-        } as never)
-      : await fetchMutation(partnerBackendRefs.sandbox.writeResource as never, {
+        })
+      : await sandboxStore.writeResource({
           partnerAppId: access.partnerAppId,
           organizationId,
           resource: parsed.resource,
           action,
           resourceId: parsed.resourceId,
           input: requestInput,
-        } as never);
+        });
 
     const response = parsed.resource === "organization" ? result : { data: result };
     await recordLog({ access, request: c.req.raw, status: 200, startedAt, input: requestInput, response });

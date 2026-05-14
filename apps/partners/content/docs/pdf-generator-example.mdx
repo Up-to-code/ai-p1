@@ -19,10 +19,10 @@ media:read
 ## User journey
 
 1. Create PDF Creator in Partners.
-2. Submit it for Anan review.
+2. Submit it for Qentrah review.
 3. After approval, workspace admins see PDF Creator in Workspace Integrations.
 4. The admin clicks Visit Partner and lands on your product.
-5. Your product shows Authorize with Anan.
+5. Your product shows Authorize with Qentrah.
 6. After consent, your backend calls Workspace APIs and builds the PDF from authorized organization data.
 
 ## Backend sketch
@@ -34,7 +34,7 @@ export async function generateClientProfilePdf(input: {
   accessToken: string;
 }) {
   const client = await fetch(
-    `${process.env.ANAN_WORKSPACE_API_URL}/api/v1/partner/organizations/${input.organizationId}/clients/${input.clientId}`,
+    `${process.env.QENTRAH_WORKSPACE_API_URL}/api/v1/partner/organizations/${input.organizationId}/clients/${input.clientId}`,
     { headers: { authorization: `Bearer ${input.accessToken}` } },
   );
 

@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowUpRight, Menu, X } from "lucide-react";
+import { brandDomainUrl, brandLabel } from "@anan/brand-identity";
 
 import { getAlternateLocale, type Locale } from "@/lib/content";
+
+const workspaceUrl = process.env.NEXT_PUBLIC_WORKSPACE_URL ?? brandDomainUrl("workspace");
 
 type NavCopy = {
   brand: string;
@@ -48,7 +51,7 @@ export function SiteHeader({ locale, nav }: { locale: Locale; nav: NavCopy }) {
           </Link>
           <a
             className="inline-flex size-9 items-center justify-center gap-1.5 rounded-full bg-black text-sm font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 sm:w-auto sm:px-4"
-            href={process.env.NEXT_PUBLIC_WORKSPACE_URL ?? "https://app.anan.sa"}
+            href={workspaceUrl}
           >
             <span className="hidden sm:inline">{nav.workspace}</span>
             <ArrowUpRight className="size-3.5" />
@@ -77,7 +80,7 @@ export function SiteHeader({ locale, nav }: { locale: Locale; nav: NavCopy }) {
               </Link>
             ))}
             <a
-              href={process.env.NEXT_PUBLIC_WORKSPACE_URL ?? "https://app.anan.sa"}
+              href={workspaceUrl}
               className="rounded-2xl bg-zinc-950 px-4 py-3 text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
               onClick={() => setIsMenuOpen(false)}
             >
@@ -105,7 +108,9 @@ export function SiteFooter({ locale, nav }: { locale: Locale; nav: NavCopy }) {
           <div>
             <div className="font-bold">{nav.brand}</div>
             <p className="mt-2 max-w-md text-sm leading-6 text-zinc-500 dark:text-zinc-400">
-              {locale === "ar" ? "منصة عامة لمنتجات أنان العقارية ومساحات العمل والتكاملات." : "The public home for Anan real estate workspace and partner products."}
+              {locale === "ar"
+                ? `منصة عامة لمنتجات ${brandLabel("ar")} العقارية ومساحات العمل والتكاملات.`
+                : `The public home for ${brandLabel("en")} real estate workspace and partner products.`}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">

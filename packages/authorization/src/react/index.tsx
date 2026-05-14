@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { brandLabel } from "@anan/brand-identity";
 import { createAnanAuthorizationClient } from "../client";
 import type { AnanAuthorizationClientOptions, AnanAuthorizeCodeResult, AnanAuthorizeOptions } from "../types";
 
@@ -26,7 +27,7 @@ export function useAnanAuthorization() {
 }
 
 export function AnanAuthorizeButton({
-  children = "Connect with Anan",
+  children = `Connect with ${brandLabel("en")}`,
   options,
   className,
   onSuccess,
@@ -58,7 +59,7 @@ export function AnanAuthorizeButton({
         }
       }}
     >
-      {pending ? "Opening Anan..." : children}
+      {pending ? `Opening ${brandLabel("en")}...` : children}
     </button>
   );
 }

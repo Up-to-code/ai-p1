@@ -33,13 +33,13 @@ walkthrough, see [Setup and configuration](../SETUP_AND_CONFIGURATION.md).
 
 | Variable | Used by | Required when | Purpose |
 | --- | --- | --- | --- |
-| `ANAN_WORKSPACE_API_URL` | Partners, Demo Partner App | Calling Workspace APIs or OAuth | Canonical Workspace origin |
+| `QENTRAH_WORKSPACE_API_URL` | Partners, Demo Partner App | Calling Workspace APIs or OAuth | Canonical Workspace origin |
 | `WORKSPACE_API_BASE_URL` | Admin Review | Reviewing partner apps | Workspace origin for admin service APIs |
 | `WORKSPACE_ADMIN_SERVICE_TOKEN` | Admin Review, Workspace | Reviewing partner apps | Shared service token for Workspace admin APIs |
-| `ANAN_PLATFORM_SERVICE_TOKEN` | Partners, Workspace | Submitting apps from Partners to Workspace | Shared service token for platform registration APIs |
+| `QENTRAH_PLATFORM_SERVICE_TOKEN` | Partners, Workspace | Submitting apps from Partners to Workspace | Shared service token for platform registration APIs |
 | `PARTNERS_REVIEW_CALLBACK_TOKEN` | Workspace, Partners | Review callback delivery | Authenticates Workspace callback requests to Partners |
-| `ANAN_CLIENT_ID` | Demo Partner App, partner products | OAuth integration | Public OAuth client ID issued after partner app approval |
-| `ANAN_CLIENT_SECRET` | Confidential partner products | Confidential OAuth clients | Secret used only by server-side token exchange |
+| `QENTRAH_CLIENT_ID` | Demo Partner App, partner products | OAuth integration | Public OAuth client ID issued after partner app approval |
+| `QENTRAH_CLIENT_SECRET` | Confidential partner products | Confidential OAuth clients | Secret used only by server-side token exchange |
 | `PARTNER_APP_URL` | Demo Partner App, partner products | OAuth callback construction | Partner app public origin |
 | `SESSION_SECRET` | Demo Partner App | Demo session cookie encryption | Local encryption/signing secret |
 
@@ -78,7 +78,7 @@ Common Workspace variables:
 | `SENTRY_ORG` | Build | Sentry source map org |
 | `SENTRY_PROJECT` | Build | Sentry source map project |
 | `SENTRY_AUTH_TOKEN` | Secret | Sentry source map upload token |
-| `NEXT_PUBLIC_ANAN_PERF_DEBUG` | Browser | Optional performance debug flag |
+| `NEXT_PUBLIC_QENTRAH_PERF_DEBUG` | Browser | Optional performance debug flag |
 
 ## Partners Variables
 
@@ -93,9 +93,9 @@ Common Partners variables:
 | `NEXT_PUBLIC_CONVEX_SITE_URL` | Browser | Partners Convex site URL |
 | `BETTER_AUTH_SECRET` | Secret | Partners auth signing secret |
 | `PARTNER_SIGNUP_BRIDGE_SECRET` | Secret | Secures sign-up bridge route |
-| `ANAN_PLATFORM_SERVICE_TOKEN` | Secret | Submits apps to Workspace |
+| `QENTRAH_PLATFORM_SERVICE_TOKEN` | Secret | Submits apps to Workspace |
 | `PARTNERS_REVIEW_CALLBACK_TOKEN` | Secret | Validates Workspace review callback |
-| `ANAN_WORKSPACE_API_URL` | Server/browser as needed | Workspace origin for integrations |
+| `QENTRAH_WORKSPACE_API_URL` | Server/browser as needed | Workspace origin for integrations |
 
 ## Admin Review Variables
 
@@ -108,9 +108,9 @@ Common Partners variables:
 
 | Variable | Exposure | Purpose |
 | --- | --- | --- |
-| `ANAN_WORKSPACE_API_URL` | Server | Workspace OAuth and resource API origin |
-| `ANAN_CLIENT_ID` | Public/server | OAuth client ID |
-| `ANAN_CLIENT_SECRET` | Secret | Optional confidential client secret |
+| `QENTRAH_WORKSPACE_API_URL` | Server | Workspace OAuth and resource API origin |
+| `QENTRAH_CLIENT_ID` | Public/server | OAuth client ID |
+| `QENTRAH_CLIENT_SECRET` | Secret | Optional confidential client secret |
 | `PARTNER_APP_URL` | Server | Demo app public origin |
 | `DEMO_ACCESS_TOKEN` | Secret | Demo unlock value |
 | `SESSION_SECRET` | Secret | Cookie encryption/signing secret |

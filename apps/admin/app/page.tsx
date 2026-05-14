@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CheckCircle2, Clock3, ShieldCheck, XCircle } from "lucide-react";
+import { brandProductName } from "@anan/brand-identity";
 import { listPartnerApps, type PartnerAppRecord } from "@/lib/workspace";
 
 const statusStyles = {
@@ -25,7 +26,7 @@ export default async function AdminHomePage() {
     <main className="mx-auto min-h-screen max-w-7xl px-6 py-8">
       <header className="flex flex-col gap-4 border-b border-[var(--border)] pb-8 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--muted)]">Anan Admin</p>
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--muted)]">{brandProductName("admin", "en")}</p>
           <h1 className="mt-3 text-3xl font-black tracking-tight">Partner app review</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
             Review developer submissions, approve production OAuth access, and publish approved apps into Workspace integrations.

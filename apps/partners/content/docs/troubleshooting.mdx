@@ -16,12 +16,12 @@ description: Common integration errors and safe fixes.
 ## Token verification failed
 
 - Confirm your API validates against the current issuer.
-- Use the Workspace JWKS route `/api/auth/convex/jwks`.
+- Use the Workspace JWKS route documented by the Workspace auth service.
 - Reject expired tokens instead of extending them locally.
 
 ## Connection expired
 
-Organization authorization expires after 14 days. Send the user back through Authorize with Anan to reconnect.
+Organization authorization expires after 14 days. Send the user back through Authorize with Qentrah to reconnect.
 
 ## Local development
 

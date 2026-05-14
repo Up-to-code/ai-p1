@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
+import { brandCssVariables, brandIdentity, brandProductName } from "@anan/brand-identity";
 import { Cairo, Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 
@@ -16,11 +18,12 @@ const cairo = Cairo({
   variable: "--font-cairo",
   subsets: ["arabic", "latin"],
 });
+const brandStyle = brandCssVariables() as CSSProperties;
 
 const themeInitScript = `
 (() => {
   try {
-    const theme = window.localStorage.getItem("anan-theme") === "dark" ? "dark" : "light";
+    const theme = window.localStorage.getItem("${brandIdentity.legacy.themeStorageKey}") === "dark" ? "dark" : "light";
     document.documentElement.classList.toggle("dark", theme === "dark");
     document.documentElement.style.colorScheme = theme;
   } catch {
@@ -31,13 +34,13 @@ const themeInitScript = `
 `;
 
 export const metadata: Metadata = {
-  title: "Shared file | Anand Platform",
-  description: "View a shared file from Anand Platform.",
+  title: `Shared file | ${brandProductName("platform", "en")}`,
+  description: `View a shared file from ${brandProductName("platform", "en")}.`,
 };
 
 export default function FileShareLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${cairo.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang="en" style={brandStyle} className={`${geistSans.variable} ${geistMono.variable} ${cairo.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="h-full bg-background text-text-primary" suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         {children}

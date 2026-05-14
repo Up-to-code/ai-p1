@@ -1,6 +1,6 @@
 # @anan/location-map
 
-Reusable Mapbox-backed location primitives for Anan workspace lifecycle screens.
+Reusable Mapbox-backed location primitives for Qentrah workspace lifecycle screens.
 
 - `LocationValue`: serializable selected point data.
 - `LocationPicker`: client search + selected point preview.

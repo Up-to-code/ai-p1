@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
+import { brandCssVariables, brandIdentity, brandLabel, brandProductName } from "@anan/brand-identity";
 import { Cairo, Geist, Geist_Mono } from "next/font/google";
 import { cookies, headers } from "next/headers";
 import "../globals.css";
@@ -18,11 +20,12 @@ const cairo = Cairo({
   variable: "--font-cairo",
   subsets: ["arabic", "latin"],
 });
+const brandStyle = brandCssVariables() as CSSProperties;
 
 const themeInitScript = `
 (() => {
   try {
-    const theme = window.localStorage.getItem("anan-theme") === "dark" ? "dark" : "light";
+    const theme = window.localStorage.getItem("${brandIdentity.legacy.themeStorageKey}") === "dark" ? "dark" : "light";
     document.documentElement.classList.toggle("dark", theme === "dark");
     document.documentElement.style.colorScheme = theme;
   } catch {
@@ -33,8 +36,8 @@ const themeInitScript = `
 `;
 
 export const metadata: Metadata = {
-  title: "Partner authorization | Anand Platform",
-  description: "Authorize partner application access to an Anand workspace.",
+  title: `Partner authorization | ${brandProductName("platform", "en")}`,
+  description: `Authorize partner application access to a ${brandLabel("en")} workspace.`,
 };
 
 export default async function OAuthLayout({ children }: { children: React.ReactNode }) {
@@ -50,6 +53,7 @@ export default async function OAuthLayout({ children }: { children: React.ReactN
     <html
       lang={locale}
       dir={isArabic ? "rtl" : "ltr"}
+      style={brandStyle}
       className={`${geistSans.variable} ${geistMono.variable} ${cairo.variable} h-full antialiased`}
       suppressHydrationWarning
     >

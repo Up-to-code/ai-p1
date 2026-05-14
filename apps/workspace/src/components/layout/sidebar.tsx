@@ -194,7 +194,7 @@ export function Sidebar() {
             <span className={cn(
               "font-black text-lg tracking-tight lowercase",
               isDarkMode ? "text-white" : "text-zinc-900"
-            )}>anan</span>
+            )}>qentrah</span>
           </div>
         )}
       </div>

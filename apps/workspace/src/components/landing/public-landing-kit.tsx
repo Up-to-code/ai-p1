@@ -212,7 +212,7 @@ export function WorkspacePreview({ labels }: { labels: WorkspacePreviewLabels })
             <Home className="h-4 w-4" />
           </div>
           <div>
-            <p className="text-xs font-black lowercase tracking-tight text-white">anan</p>
+            <p className="text-xs font-black lowercase tracking-tight text-white">qentrah</p>
             <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{labels.workspace}</p>
           </div>
         </div>

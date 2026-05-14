@@ -420,11 +420,11 @@ export const deliver = action({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Anan-Event-Id": target.delivery.eventId,
-          "Anan-Event-Type": target.delivery.eventType,
-          "Anan-Timestamp": String(timestamp),
-          "Anan-Delivery-Id": args.deliveryId,
-          "Anan-Signature": signature,
+          "Qentrah-Event-Id": target.delivery.eventId,
+          "Qentrah-Event-Type": target.delivery.eventType,
+          "Qentrah-Timestamp": String(timestamp),
+          "Qentrah-Delivery-Id": args.deliveryId,
+          "Qentrah-Signature": signature,
         },
         body,
       });

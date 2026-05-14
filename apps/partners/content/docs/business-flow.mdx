@@ -5,17 +5,17 @@ description: How developers, Admin, Workspace, and workspace organizations work 
 
 ## Overview
 
-Anan partner authorization is organization-level OAuth. A workspace user can grant access only when their role allows partner app authorization, but the resulting connection belongs to the organization.
+Qentrah partner authorization is organization-level OAuth. A workspace user can grant access only when their role allows partner app authorization, but the resulting connection belongs to the organization.
 
 ## Flow
 
 1. The developer creates a Partners account and registers an app.
 2. The developer chooses redirect URIs, a partner app URL, and requested organization permissions.
 3. The developer submits the app for review.
-4. Anan Admin approves, rejects, or suspends the app.
+4. Qentrah Admin approves, rejects, or suspends the app.
 5. Approved apps appear in the Workspace Integrations catalog.
 6. A workspace admin opens the app details and clicks Visit Partner.
-7. The partner product shows an Authorize with Anan button.
+7. The partner product shows an Authorize with Qentrah button.
 8. The OAuth consent screen shows the requested organization permissions.
 9. If accepted, Workspace creates an organization partner connection for 14 days.
 10. The partner backend exchanges the code, stores tokens securely, and calls Workspace Hono APIs.
@@ -28,4 +28,4 @@ Anan partner authorization is organization-level OAuth. A workspace user can gra
 
 ## Data access
 
-Partner apps never call Convex directly. They call Workspace resource APIs with bearer tokens. Workspace validates the token, app approval, organization connection, expiry, and scopes before returning data.
+Partner apps call Workspace resource APIs with bearer tokens. Workspace validates the token, app approval, organization connection, expiry, and scopes before returning data.

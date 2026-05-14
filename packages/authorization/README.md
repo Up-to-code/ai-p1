@@ -1,11 +1,11 @@
 # @anan/authorization
 
-TypeScript SDK for connecting external applications to Anan organization data using Authorization Code + PKCE.
+TypeScript SDK for connecting external applications to Qentrah organization data using Authorization Code + PKCE.
 
 ```ts
-import { createAnanAuthorizationClient, exchangeCode } from "@anan/authorization";
+import { createQentrahAuthorizationClient, exchangeCode } from "@anan/authorization";
 
-const anan = createAnanAuthorizationClient({
+const anan = createQentrahAuthorizationClient({
   issuer: "https://auth.example.convex.site",
   clientId: "anan_client_...",
   redirectUri: "https://external.example.com/oauth/callback",
@@ -22,4 +22,4 @@ await exchangeCode({
 });
 ```
 
-The SDK opens Anan's branded consent popup, validates the returned `state`, and falls back to redirect when popups are unavailable. Confidential clients must exchange codes on a trusted server.
+The SDK opens Qentrah's branded consent popup, validates the returned `state`, and falls back to redirect when popups are unavailable. Confidential clients must exchange codes on a trusted server.

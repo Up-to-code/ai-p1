@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import { brandLabel } from "@anan/brand-identity";
 import "./globals.css";
 
+const brand = brandLabel("en");
+
 export const metadata: Metadata = {
-  title: "Anan Partner Auth Demo",
-  description: "Standalone partner OAuth demo for Anan organization authorization.",
+  title: `${brand} Partner Auth Demo`,
+  description: `Standalone partner OAuth demo for ${brand} organization authorization.`,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

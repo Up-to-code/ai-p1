@@ -1,5 +1,6 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
+import { brandLabel } from "@anan/brand-identity";
 import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/better-auth/server";
 import { agentRuntimeConfig } from "@/server/config/agent-runtime";
 import { evaluateAgentRequestRisk } from "../policies/risk-policy";
@@ -207,8 +208,9 @@ async function retrieveContext(ids: AgentRunIds, organizationId: string, message
 }
 
 function buildSystemPrompt() {
+  const brand = brandLabel("en");
   return [
-    "You are Anan's organization agent for a real estate workspace.",
+    `You are ${brand}'s organization agent for a real estate workspace.`,
     "You can help with clients, properties, projects, calendar, tasks, and media context.",
     "Never claim to have changed data unless the tool context explicitly says an action succeeded.",
     "Dangerous organization settings are blocked: removing members, editing organization identity/name, and editing legal documents.",

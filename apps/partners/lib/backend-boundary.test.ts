@@ -11,70 +11,61 @@ function read(relativePath: string) {
 
 function listSourceFiles(dir: string, files: string[] = []) {
   for (const entry of readdirSync(dir)) {
-    if ([".next", "node_modules", ".git"].includes(entry)) continue;
+    if ([".git", ".next", "node_modules"].includes(entry)) continue;
     const fullPath = join(dir, entry);
     const stats = statSync(fullPath);
-    if (stats.isDirectory()) {
-      listSourceFiles(fullPath, files);
-    } else if (/\.(ts|tsx|js|jsx|mjs|cjs)$/u.test(entry)) {
-      files.push(fullPath);
-    }
+    if (stats.isDirectory()) listSourceFiles(fullPath, files);
+    else if (/\.(ts|tsx|js|jsx|mjs|cjs|json|md|mdx|prisma)$/u.test(entry)) files.push(fullPath);
   }
   return files;
 }
 
 describe("Partners backend boundary", () => {
-  it("keeps Partners-owned domains in the Partners Convex schema", () => {
-    const schema = read("convex/schema.ts");
-
-    for (const table of [
-      "partnerProfiles",
-      "partnerOrganizations",
-      "partnerApps",
-      "partnerAppReviews",
-      "partnerEvents",
-      "ananWorkspaceLinks",
-      "ananIntegrationEvents",
+  it("keeps Partners-owned domains in the Prisma schema", () => {
+    const schema = read("prisma/schema.prisma");
+    for (const model of [
+      "PartnerProfile",
+      "ProgrammerOrganization",
+      "PartnerApp",
+      "SandboxOrganization",
+      "SandboxOAuthCode",
+      "SandboxOAuthToken",
+      "SandboxResource",
+      "SandboxRequestLog",
+      "PartnerAppReview",
+      "PartnerEvent",
+      "AnanWorkspaceLink",
+      "AnanIntegrationEvent",
     ]) {
-      expect(schema).toContain(`${table}: defineTable`);
+      expect(schema).toContain(`model ${model}`);
     }
+    expect(schema).toContain('url      = env("DATABASE_URL")');
   });
 
   it("keeps programmer organizations as the only Partners org kind", () => {
-    const schema = read("convex/schema.ts");
+    const schema = read("prisma/schema.prisma");
     const signup = read("lib/partner-signup.ts");
-    const organizations = read("convex/organizations/current.ts");
+    const organizations = read("server/partnerOrganizations.ts");
 
-    expect(schema).toContain('type: v.literal("programmer")');
-    expect(schema).toContain("tenantOrganizationId");
-    expect(organizations).toContain("createProgrammerTenantOrganization");
-    expect(organizations).toContain("tenantOrganizationId");
+    expect(schema).toContain('@default("programmer")');
+    expect(organizations).toContain('type: "programmer"');
     expect(signup).toContain('type: "programmer"');
-    expect(schema).not.toMatch(/v\.literal\("(broker|red|testing)"\)/u);
+    expect(schema).not.toMatch(/"(broker|red|testing)"/u);
     expect(signup).not.toMatch(/organizationType|type:\s*"broker"|type:\s*"red"/u);
   });
 
-  it("keeps generated Convex modules pointed at the Partners backend only", () => {
-    const generatedApi = read("convex/_generated/api.d.ts");
-
-    expect(generatedApi).toContain("partnerApps");
-    expect(generatedApi).toContain("partnerOrganizations");
-    expect(generatedApi).toContain("ananIntegrationEvents");
-    expect(generatedApi).not.toContain("anan/convex/_generated");
-  });
-
-  it("does not import Anan generated Convex APIs from Partners source", () => {
+  it("does not keep retired backend runtime code or imports in Partners source", () => {
+    const retiredPatterns = [
+      String.raw`from\s+["'][^"']*` + "conv" + "ex",
+      "@" + "conv" + "ex",
+      "conv" + "ex/_generated",
+      "CON" + "VEX_",
+      "NEXT_PUBLIC_CON" + "VEX",
+    ];
+    const retiredBackendPattern = new RegExp(retiredPatterns.join("|"), "u");
     const offenders = listSourceFiles(partnersRoot)
-      .map((file) => {
-        const source = readFileSync(file, "utf8");
-        return {
-          file: relative(partnersRoot, file),
-          source,
-        };
-      })
-      .filter(({ source }) =>
-        /from\s+["'][^"']*anan\/convex\/_generated\/api|import\s*\(\s*["'][^"']*anan\/convex\/_generated\/api/u.test(source),
-      )
+      .map((file) => ({ file: relative(partnersRoot, file), source: readFileSync(file, "utf8") }))
+      .filter(({ source }) => retiredBackendPattern.test(source))
       .map(({ file }) => file);
 
     expect(offenders).toEqual([]);

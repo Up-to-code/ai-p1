@@ -275,7 +275,7 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
                 <div key={i} className={cn("group flex animate-in flex-col gap-2 fade-in slide-in-from-bottom-2 duration-300", msg.role === "user" ? "items-end" : "items-start")}>
                   <div className={cn("flex max-w-[min(760px,100%)] flex-col gap-2", msg.role === "user" ? "items-end" : "items-start")}>
                     <span className="px-1 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">
-                      {msg.role === "user" ? "you" : "anan"}
+                      {msg.role === "user" ? "you" : "qentrah"}
                     </span>
                     {msg.content && (
                       msg.role === "user" ? (

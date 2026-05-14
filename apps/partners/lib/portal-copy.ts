@@ -2,7 +2,7 @@ import { BookOpen, CheckCircle2, Code2, KeyRound, ShieldCheck, Workflow } from "
 
 export const oauthFlowSteps = [
   { label: "Register", text: "Create a public PKCE or confidential app in the portal." },
-  { label: "Connect", text: "Use explicit Anan workspace authorization to verify scopes and redirects." },
+  { label: "Connect", text: "Use explicit Qentrah workspace authorization to verify scopes and redirects." },
   { label: "Review", text: "Submit the app for security and UX review." },
   { label: "Launch", text: "Enable trusted workspace access after approval." },
 ] as const;
@@ -25,7 +25,7 @@ export const portalFeatures = [
   },
   {
     title: "Tenant-safe by default",
-    description: "Every app connects to Anan workspaces only through explicit consent and scoped access.",
+    description: "Every app connects to Qentrah workspaces only through explicit consent and scoped access.",
     icon: ShieldCheck,
   },
 ];
@@ -40,9 +40,9 @@ export const sdkInstallSnippet = `pnpm add @anan/auth-sdk
 
 import { createOidcClient } from "@anan/auth-sdk/client";
 
-export const anan = createOidcClient({
-  issuer: process.env.ANAN_ISSUER!,
-  clientId: process.env.ANAN_CLIENT_ID!,
+export const qentrah = createOidcClient({
+  issuer: process.env.QENTRAH_ISSUER!,
+  clientId: process.env.QENTRAH_CLIENT_ID!,
   redirectUri: "/oauth/callback",
 });`;
 

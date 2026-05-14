@@ -1,19 +1,22 @@
+import { brandLabel, brandProductName } from "@anan/brand-identity";
+
 export default async function UnlockPage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string; returnTo?: string }>;
 }) {
   const params = await searchParams;
+  const brand = brandLabel("en");
   return (
     <main className="shell">
       <div className="container" style={{ maxWidth: 520, paddingTop: 80 }}>
         <section className="panel" style={{ padding: 28 }}>
           <p className="micro">Protected partner demo</p>
           <h1 style={{ margin: "12px 0 0", fontSize: 32, letterSpacing: "-0.04em" }}>
-            Unlock the Anan OAuth demo
+            Unlock the {brandProductName("demo", "en")}
           </h1>
           <p style={{ color: "var(--muted)", lineHeight: 1.7 }}>
-            Enter the custom setup token before opening the demo app. OAuth still requires workspace consent inside Anan.
+            Enter the custom setup token before opening the demo app. OAuth still requires workspace consent inside {brand}.
           </p>
           {params.error === "invalid" ? (
             <div className="error" role="alert">That setup token is not valid.</div>

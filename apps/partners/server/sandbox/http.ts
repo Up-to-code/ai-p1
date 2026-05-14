@@ -1,7 +1,6 @@
-import { fetchMutation, fetchQuery } from "convex/nextjs";
-import { partnerBackendRefs } from "@/server/partnerBackendRefs";
 import { sha256 } from "./crypto";
 import type { SandboxAction, SandboxResource } from "./resources";
+import { sandboxStore } from "./store";
 
 export type SandboxAccess = {
   ok: true;
@@ -60,12 +59,12 @@ export async function requireSandboxAccess(
   action: SandboxAction,
 ) {
   const token = bearerToken(request);
-  const validation = (await fetchQuery(partnerBackendRefs.sandbox.validateAccess as never, {
+  const validation = await sandboxStore.validateAccess({
     accessTokenHash: sha256(token),
     organizationId,
     resource,
     action,
-  } as never)) as SandboxAccess | { ok: false; reason?: string };
+  });
 
   if (!validation.ok) {
     throw new Response(JSON.stringify({ error: validation.reason ?? "sandbox_access_denied" }), {
@@ -85,7 +84,7 @@ export async function recordLog(input: {
   response?: unknown;
   error?: string;
 }) {
-  await fetchMutation(partnerBackendRefs.sandbox.recordRequestLog as never, {
+  await sandboxStore.recordRequestLog({
     partnerAuthSubject: input.access?.partnerAuthSubject,
     partnerAppId: input.access?.partnerAppId,
     organizationId: input.access?.organizationId,
@@ -97,5 +96,5 @@ export async function recordLog(input: {
     input: input.input,
     response: input.response,
     error: input.error,
-  } as never).catch(() => null);
+  }).catch(() => null);
 }

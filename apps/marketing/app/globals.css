@@ -38,7 +38,7 @@
   --card-foreground: #0e1726;
   --popover: #ffffff;
   --popover-foreground: #0e1726;
-  --primary: #0b5cff;
+  --primary: var(--brand-primary, #0b5cff);
   --primary-foreground: #ffffff;
   --secondary: #ecf1f8;
   --secondary-foreground: #122033;
@@ -48,7 +48,7 @@
   --accent-foreground: #122033;
   --border: rgba(15, 23, 42, 0.12);
   --input: #e7edf5;
-  --ring: #0b5cff;
+  --ring: var(--brand-primary, #0b5cff);
 }
 
 .dark {

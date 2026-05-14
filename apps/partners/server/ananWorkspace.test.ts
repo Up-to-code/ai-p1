@@ -21,6 +21,16 @@ describe("Anan Workspace registration config", () => {
     }).serviceToken).toBe("workspace-secret");
   });
 
+  it("prefers configured brand env names for workspace sync", () => {
+    expect(ananWorkspaceConfig({
+      ANAN_WORKSPACE_API_URL: "http://workspace.localhost:3000",
+      ANAN_PLATFORM_SERVICE_TOKEN: "platform-secret",
+    })).toMatchObject({
+      baseUrl: "http://workspace.localhost:3000",
+      serviceToken: "platform-secret",
+    });
+  });
+
   it("maps legacy Partners scopes to Workspace API scopes and drops auth-only scopes", () => {
     expect(normalizeWorkspaceScopes([
       "openid",

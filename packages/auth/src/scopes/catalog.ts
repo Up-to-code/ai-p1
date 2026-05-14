@@ -1,8 +1,12 @@
+import { brandLabel } from "@anan/brand-identity";
+
+const brand = brandLabel("en");
+
 export const OAUTH_SCOPE_CATALOG = [
   { id: "openid", label: "Authenticate the current user with OpenID Connect" },
   { id: "profile", label: "Read basic profile information" },
   { id: "email", label: "Read the authenticated user's email address" },
-  { id: "offline_access", label: "Keep the organization connected when nobody is actively using Anan" },
+  { id: "offline_access", label: `Keep the organization connected when nobody is actively using ${brand}` },
   { id: "clients:read", label: "Read client records available to the connected organization" },
   { id: "clients:create", label: "Create clients for the connected organization" },
   { id: "clients:update_own", label: "Update clients that belong to the connected organization" },

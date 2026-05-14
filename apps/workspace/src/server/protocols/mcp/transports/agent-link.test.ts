@@ -116,7 +116,7 @@ describe("MCP agent link transport", () => {
       id: 1,
       result: {
         serverInfo: {
-          name: "Anan Client operator",
+          name: "Qentrah Client operator",
           version: "1.0.0",
         },
       },
@@ -139,7 +139,7 @@ describe("MCP agent link transport", () => {
   });
 
   it("returns text content for successful tool calls", async () => {
-    convexActionMock.mockResolvedValueOnce({ organization: { name: "Anan" } });
+    convexActionMock.mockResolvedValueOnce({ organization: { name: "Qentrah" } });
 
     const response = await postMcp(
       mcpRequest("tools/call", {
@@ -156,7 +156,7 @@ describe("MCP agent link transport", () => {
         content: [
           {
             type: "text",
-            text: expect.stringContaining("Anan"),
+            text: expect.stringContaining("Qentrah"),
           },
         ],
       },

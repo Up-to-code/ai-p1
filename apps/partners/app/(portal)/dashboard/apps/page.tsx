@@ -22,7 +22,7 @@ export default async function AppsPage() {
         <div>
           <p className="text-xs font-bold uppercase text-primary">Applications</p>
           <h1 className="mt-2 text-3xl font-bold text-foreground">OAuth clients</h1>
-          <p className="mt-1 text-sm text-muted-foreground">OAuth clients registered for Anan organization access.</p>
+          <p className="mt-1 text-sm text-muted-foreground">OAuth clients registered for Qentrah organization access.</p>
         </div>
         <Link href="/dashboard/apps/new" className="inline-flex h-10 items-center justify-center gap-2 rounded-[7px] bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-[#6b90e6]">
           <Plus className="h-4 w-4" /> Create app

@@ -1,6 +1,6 @@
 ---
 name: Mino Design
-description: Calm, precise, premium design language for the Anan real estate operating workspace.
+description: Calm, precise, premium design language for the Qentrah real estate operating workspace.
 colors:
   primary: "#0B5CFF"
   primary-hover: "#084AD6"
