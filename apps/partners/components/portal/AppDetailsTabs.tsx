@@ -23,6 +23,14 @@ import type { SandboxInfo } from "@/server/sandbox";
 
 type TabId = "overview" | "authorization" | "sandbox" | "code";
 type LanguageId = "typescript" | "javascript" | "curl";
+type SandboxLog = {
+  createdAt: number;
+  error?: string | null;
+  latencyMs: number;
+  method: string;
+  path: string;
+  status: number;
+};
 
 const tabs: Array<{ id: TabId; label: string; icon: typeof LayoutList }> = [
   { id: "overview", label: "Overview", icon: LayoutList },
@@ -392,6 +400,7 @@ function SandboxPanel({
   const [response, setResponse] = useState<string>("Run a sandbox request to see the response.");
   const [sandboxState, createSandboxAction, createSandboxPending] = useActionState(ensureSandboxAction, { ok: false });
   const organizationId = sandbox?.organization?.organizationId;
+  const recentLogs = ((sandbox?.logs ?? []) as SandboxLog[]).slice(0, 12);
   const basePath = organizationId ? `/api/v1/partner/organizations/${organizationId}` : "/api/v1/partner/organizations/<sandbox_org>";
   const path = resource === "me"
     ? `${basePath}/me`
@@ -469,7 +478,7 @@ code_verifier=<pkce-verifier>`}
             <p className="text-xs font-bold uppercase text-primary">Recent debug logs</p>
           </div>
           <div className="max-h-[420px] overflow-auto divide-y divide-border">
-            {(sandbox?.logs ?? []).length ? sandbox!.logs.slice(0, 12).map((log) => (
+            {recentLogs.length ? recentLogs.map((log) => (
               <div key={`${log.createdAt}-${log.path}`} className="grid gap-2 p-4 text-xs">
                 <div className="flex flex-wrap items-center gap-2 font-bold text-foreground">
                   <span>{log.method}</span>
