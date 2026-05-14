@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import type { CSSProperties } from "react";
-import { brandCssVariables, brandIdentity, brandLabel, brandProductName } from "@qentrah/brand-identity";
+import { brandIdentity, brandLabel, brandProductName } from "@qentrah/brand-identity";
 import { Cairo, Geist, Geist_Mono } from "next/font/google";
 import { cookies, headers } from "next/headers";
 import "../globals.css";
@@ -20,7 +19,6 @@ const cairo = Cairo({
   variable: "--font-cairo",
   subsets: ["arabic", "latin"],
 });
-const brandStyle = brandCssVariables() as CSSProperties;
 
 const themeInitScript = `
 (() => {
@@ -53,7 +51,6 @@ export default async function OAuthLayout({ children }: { children: React.ReactN
     <html
       lang={locale}
       dir={isArabic ? "rtl" : "ltr"}
-      style={brandStyle}
       className={`${geistSans.variable} ${geistMono.variable} ${cairo.variable} h-full antialiased`}
       suppressHydrationWarning
     >
