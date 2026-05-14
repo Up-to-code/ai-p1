@@ -2,6 +2,10 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { randomToken } from "@/server/partnerRuntime";
 
+type SandboxResourceData = Parameters<typeof prisma.sandboxResource.create>[0]["data"]["data"];
+type SandboxRequestLogInput = Parameters<typeof prisma.sandboxRequestLog.create>[0]["data"]["input"];
+type SandboxRequestLogResponse = Parameters<typeof prisma.sandboxRequestLog.create>[0]["data"]["response"];
+
 export const ACCESS_TOKEN_TTL_MS = 60 * 60 * 1000;
 export const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 export const AUTH_CODE_TTL_MS = 10 * 60 * 1000;
@@ -87,7 +91,7 @@ async function seedSandbox(app: { id: string; partnerAuthSubject: string; name: 
       partnerAppId: app.id,
       organizationId,
       resourceType: seed.resourceType,
-      data: seed.data as Prisma.InputJsonValue,
+      data: seed.data as SandboxResourceData,
       createdAt: now,
       updatedAt: now,
     })),
@@ -308,7 +312,7 @@ export const sandboxStore = {
           partnerAppId: app.id,
           organizationId: input.organizationId,
           resourceType: input.resource,
-          data: (input.input ?? {}) as Prisma.InputJsonValue,
+          data: (input.input ?? {}) as SandboxResourceData,
         },
       });
       return presentResource(resource);
@@ -321,7 +325,7 @@ export const sandboxStore = {
       const resource = await prisma.sandboxResource.update({
         where: { id: existing.id },
         data: {
-          data: { ...((existing.data as Record<string, unknown>) ?? {}), ...((input.input as Record<string, unknown>) ?? {}) } as Prisma.InputJsonValue,
+          data: { ...((existing.data as Record<string, unknown>) ?? {}), ...((input.input as Record<string, unknown>) ?? {}) } as SandboxResourceData,
         },
       });
       return presentResource(resource);
@@ -356,8 +360,8 @@ export const sandboxStore = {
         status: input.status,
         latencyMs: input.latencyMs,
         scopes: input.scopes,
-        input: input.input === undefined ? undefined : input.input as Prisma.InputJsonValue,
-        response: input.response === undefined ? undefined : input.response as Prisma.InputJsonValue,
+        input: input.input === undefined ? undefined : input.input as SandboxRequestLogInput,
+        response: input.response === undefined ? undefined : input.response as SandboxRequestLogResponse,
         error: input.error,
       },
     });

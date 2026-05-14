@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
-import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+
+type PartnerEventPayload = Parameters<typeof prisma.partnerEvent.create>[0]["data"]["payload"];
 
 export type PartnerIdentity = {
   subject: string;
@@ -45,8 +46,7 @@ export async function auditPartnerEvent(input: {
       actorAuthSubject: input.actorAuthSubject ?? undefined,
       appId: input.appId ?? undefined,
       eventType: input.eventType,
-      payload: input.payload === undefined ? undefined : input.payload as Prisma.InputJsonValue,
+      payload: input.payload === undefined ? undefined : input.payload as PartnerEventPayload,
     },
   });
 }
-

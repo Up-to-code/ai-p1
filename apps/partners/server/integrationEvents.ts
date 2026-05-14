@@ -1,5 +1,6 @@
-import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+
+type IntegrationEventPayload = Parameters<typeof prisma.ananIntegrationEvent.create>[0]["data"]["payload"];
 
 export async function recordIntegrationEvent(input: {
   direction: "outbound" | "inbound";
@@ -19,9 +20,8 @@ export async function recordIntegrationEvent(input: {
       idempotencyKey: input.idempotencyKey,
       status: "pending",
       attempts: 0,
-      payload: input.payload as Prisma.InputJsonValue,
+      payload: input.payload as IntegrationEventPayload,
     },
   });
   return { eventId: event.id, deduped: false };
 }
-
