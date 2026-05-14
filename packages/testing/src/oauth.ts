@@ -1,4 +1,4 @@
-import type { OAuthAuthorizationPrompt } from "@anan/domain-contracts/oauth";
+import type { OAuthAuthorizationPrompt } from "@qentrah/domain-contracts/oauth";
 
 export function buildOAuthAuthorizationPrompt(
   overrides: Partial<OAuthAuthorizationPrompt> = {},
@@ -8,12 +8,12 @@ export function buildOAuthAuthorizationPrompt(
     client: {
       clientId: "client-1",
       name: "External App",
-      publisherName: "Anan",
+      publisherName: "Qentrah",
       trusted: true,
     },
     user: {
-      email: "user@anan.test",
-      name: "Anan User",
+      email: "user@qentrah.test",
+      name: "Qentrah User",
     },
     state: "state",
     redirectUri: "https://external.test/callback",

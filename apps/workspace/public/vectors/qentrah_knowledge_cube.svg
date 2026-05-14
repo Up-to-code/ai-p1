@@ -1,0 +1,12 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" id="qentrah_knowledge_cube">
+  <!-- Insight Repository (Isometric Cube) -->
+  <g id="cube" transform="translate(100, 100)">
+    <!-- Right Face (Solid Blue) -->
+    <path d="M100 50L200 100V200L100 150V50Z" fill="#2563EB"/>
+    <!-- Left Face (Dark Slate) -->
+    <path d="M100 50L0 100V200L100 150V50Z" fill="#0F172A"/>
+    <!-- Top Face (Grid) -->
+    <path d="M0 100L100 50L200 100L100 150L0 100Z" fill="#FFFFFF" stroke="#64748B" stroke-width="2"/>
+    <path d="M50 75L150 125M50 125L150 75" stroke="#F1F5F9" stroke-width="1"/>
+  </g>
+</svg>

@@ -1,9 +1,9 @@
-import { createNextAuthBridge } from "@anan/platform-core/auth-next";
-import type { SessionContext } from "@anan/platform-core/session";
+import { createNextAuthBridge } from "@qentrah/platform-core/auth-next";
+import type { SessionContext } from "@qentrah/platform-core/session";
 import { AuthError, type AuthContext } from "../types";
 import { authContextFromSessionContext } from "./claims";
 
-export { resolveAuthBridgeConfig } from "@anan/platform-core/auth-next";
+export { resolveAuthBridgeConfig } from "@qentrah/platform-core/auth-next";
 
 export type ResolvedAuthSession = {
   token: string;
@@ -12,12 +12,12 @@ export type ResolvedAuthSession = {
 
 export type AuthSessionResolver = () => Promise<ResolvedAuthSession | null>;
 
-export type AnanAuthServerOptions = {
+export type QentrahAuthServerOptions = {
   appId: "web" | "admin" | "external-apps" | string;
   getOptionalSessionContext?: AuthSessionResolver;
 };
 
-export function createAnanAuthServer(options: AnanAuthServerOptions) {
+export function createQentrahAuthServer(options: QentrahAuthServerOptions) {
   const bridge = createNextAuthBridge();
 
   async function getOptionalAuth(): Promise<AuthContext | null> {
@@ -44,7 +44,7 @@ export function createAnanAuthServer(options: AnanAuthServerOptions) {
   };
 }
 
-export function createAnanAuthBridge() {
+export function createQentrahAuthBridge() {
   return createNextAuthBridge();
 }
 

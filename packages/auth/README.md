@@ -1,4 +1,4 @@
-# @anan/auth
+# @qentrah/auth
 
 Shared OAuth2/OpenID Connect helpers for Qentrah apps.
 
@@ -12,5 +12,5 @@ This package owns the stable Qentrah auth API surface:
 - React auth context helpers
 
 The package intentionally hides provider-library details so apps import
-`@anan/auth/server`, `@anan/auth/client`, `@anan/auth/resource-server`, or
-`@anan/auth/scopes` instead of reaching into Convex or Better Auth internals.
+`@qentrah/auth/server`, `@qentrah/auth/client`, `@qentrah/auth/resource-server`, or
+`@qentrah/auth/scopes` instead of reaching into Convex or Better Auth internals.

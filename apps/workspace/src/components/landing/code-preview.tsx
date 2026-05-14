@@ -1,5 +1,5 @@
 import { useTranslations } from "next-intl";
-import { brandEnvName, brandLabel } from "@anan/brand-identity";
+import { brandEnvName, brandLabel } from "@qentrah/brand-identity";
 
 export function CodePreview() {
   const t = useTranslations("Landing.codePreview");

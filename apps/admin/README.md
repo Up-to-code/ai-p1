@@ -66,8 +66,8 @@ npm test
 From the repository root:
 
 ```bash
-npm --workspace @anan/admin-review run typecheck
-npm --workspace @anan/admin-review test
+npm --workspace @qentrah/admin-review run typecheck
+npm --workspace @qentrah/admin-review test
 ```
 
 ## Related Documentation

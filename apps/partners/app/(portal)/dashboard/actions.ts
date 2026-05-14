@@ -5,7 +5,7 @@ import { getToken } from "@/lib/auth-server";
 import { parsePartnerAppFormData } from "@/lib/schemas/partner-app";
 import { partnerProfileFormSchema, programmerOrganizationFormSchema } from "@/validation/account";
 import { partnerAccountRepository } from "@/server/partnerAccount";
-import { submitPartnerAppRegistration } from "@/server/ananWorkspace";
+import { submitPartnerAppRegistration } from "@/server/qentrahWorkspace";
 import { partnerAppsRepository } from "@/server/partnerApps";
 import { sandboxRepository } from "@/server/sandbox";
 

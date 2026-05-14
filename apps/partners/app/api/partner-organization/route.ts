@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createdResponse, okResponse, safeJsonBody } from "@anan/web-foundation/api";
+import { createdResponse, okResponse, safeJsonBody } from "@qentrah/web-foundation/api";
 import { getToken } from "@/lib/auth-server";
 import { validatePartnerOrganizationInput, type PartnerOrganizationInput } from "@/lib/partner-signup";
 import {

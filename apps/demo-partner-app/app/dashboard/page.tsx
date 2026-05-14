@@ -1,6 +1,6 @@
 import { SafeWritePanel } from "@/components/SafeWritePanel";
 import { demoBrandConfig, publicDemoConfig, requestedScopes } from "@/lib/config";
-import { loadAnanClients, loadAnanMe, loadAnanProperties } from "@/lib/workspace-api";
+import { loadQentrahClients, loadQentrahMe, loadQentrahProperties } from "@/lib/workspace-api";
 import { readTokenSession } from "@/lib/session";
 
 function JsonPanel({ title, data }: { title: string; data: unknown }) {
@@ -21,9 +21,9 @@ export default async function DashboardPage() {
   const canLoadWorkspaceData = Boolean(session?.organizationId);
   const data = canLoadWorkspaceData && session
     ? await Promise.allSettled([
-      loadAnanMe(session),
-      loadAnanClients(session),
-      loadAnanProperties(session),
+      loadQentrahMe(session),
+      loadQentrahClients(session),
+      loadQentrahProperties(session),
     ])
     : null;
 

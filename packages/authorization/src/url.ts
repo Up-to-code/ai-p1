@@ -1,10 +1,10 @@
-import type { AnanAuthorizeUrlInput } from "./types";
+import type { QentrahAuthorizeUrlInput } from "./types";
 
 export function normalizeIssuer(issuer: string) {
   return issuer.replace(/\/+$/u, "");
 }
 
-export function buildAuthorizeUrl(input: AnanAuthorizeUrlInput) {
+export function buildAuthorizeUrl(input: QentrahAuthorizeUrlInput) {
   const url = new URL("/authorize", normalizeIssuer(input.issuer));
   url.searchParams.set("response_type", "code");
   url.searchParams.set("client_id", input.clientId);

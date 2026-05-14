@@ -1,1 +1,1 @@
-export * from "@anan/auth/scopes";
+export * from "@qentrah/auth/scopes";

@@ -11,9 +11,9 @@ export {
   resolveLocale,
   type AppLocale,
   type LocaleDirection,
-} from "@anan/platform-core/locale";
+} from "@qentrah/platform-core/locale";
 
-import { resolveLocale } from "@anan/platform-core/locale";
+import { resolveLocale } from "@qentrah/platform-core/locale";
 
 export function createLocaleCookieValue(locale: string): string {
   return resolveLocale(locale);

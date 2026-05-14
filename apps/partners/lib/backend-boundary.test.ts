@@ -34,8 +34,8 @@ describe("Partners backend boundary", () => {
       "SandboxRequestLog",
       "PartnerAppReview",
       "PartnerEvent",
-      "AnanWorkspaceLink",
-      "AnanIntegrationEvent",
+      "QentrahWorkspaceLink",
+      "QentrahIntegrationEvent",
     ]) {
       expect(schema).toContain(`model ${model}`);
     }

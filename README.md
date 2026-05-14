@@ -46,22 +46,22 @@ npm run build --workspaces --if-present
 Target one workspace:
 
 ```bash
-npm --workspace @anan/workspace run typecheck
-npm --workspace @anan/partners run test
-npm --workspace @anan/admin-review run build
-npm --workspace @anan/demo-partner-app run build
-npm --workspace @anan/marketing run typecheck
+npm --workspace @qentrah/workspace run typecheck
+npm --workspace @qentrah/partners run test
+npm --workspace @qentrah/admin-review run build
+npm --workspace @qentrah/demo-partner-app run build
+npm --workspace @qentrah/marketing run typecheck
 ```
 
 ## Apps
 
 | App | Package | Local URL | Purpose |
 | --- | --- | --- | --- |
-| Workspace | `@anan/workspace` | `http://localhost:3000` | Main product, OAuth provider, resource APIs, organization workspace |
-| Partners | `@anan/partners` | `http://localhost:3002` | Developer portal, app registration, docs, sandbox |
-| Admin Review | `@anan/admin-review` | `http://localhost:3003` | Internal partner app review console |
-| Demo Partner App | `@anan/demo-partner-app` | `http://localhost:3004` | Reference OAuth partner integration |
-| Marketing | `@anan/marketing` | `http://localhost:3005` | Public marketing site |
+| Workspace | `@qentrah/workspace` | `http://localhost:3000` | Main product, OAuth provider, resource APIs, organization workspace |
+| Partners | `@qentrah/partners` | `http://localhost:3002` | Developer portal, app registration, docs, sandbox |
+| Admin Review | `@qentrah/admin-review` | `http://localhost:3003` | Internal partner app review console |
+| Demo Partner App | `@qentrah/demo-partner-app` | `http://localhost:3004` | Reference OAuth partner integration |
+| Marketing | `@qentrah/marketing` | `http://localhost:3005` | Public marketing site |
 
 Shared packages live in `packages/*`. Apps may import shared packages, but they
 should not import another app's generated Convex internals.
@@ -132,16 +132,16 @@ contracts, auth, routing, or docs generation were touched.
 Useful checks:
 
 ```bash
-npm --workspace @anan/workspace run typecheck
-npm --workspace @anan/workspace test
-npm --workspace @anan/partners run typecheck
-npm --workspace @anan/partners test
-npm --workspace @anan/partners run build
-npm --workspace @anan/admin-review run typecheck
-npm --workspace @anan/demo-partner-app test
-npm --workspace @anan/marketing run typecheck
+npm --workspace @qentrah/workspace run typecheck
+npm --workspace @qentrah/workspace test
+npm --workspace @qentrah/partners run typecheck
+npm --workspace @qentrah/partners test
+npm --workspace @qentrah/partners run build
+npm --workspace @qentrah/admin-review run typecheck
+npm --workspace @qentrah/demo-partner-app test
+npm --workspace @qentrah/marketing run typecheck
 ```
 
 Partner MDX docs compile through the Partners build, so run
-`npm --workspace @anan/partners run build` when changing
+`npm --workspace @qentrah/partners run build` when changing
 `apps/partners/content/docs/*` or docs components.

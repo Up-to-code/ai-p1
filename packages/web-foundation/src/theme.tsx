@@ -7,12 +7,12 @@ type NextThemesProviderWithChildrenProps = PropsWithChildren<ComponentProps<type
 const StableNextThemesProvider =
   NextThemesProvider as React.ComponentType<NextThemesProviderWithChildrenProps>;
 
-export type AnanThemeProviderProps = {
+export type QentrahThemeProviderProps = {
   children: React.ReactNode;
   storageKey?: string;
 };
 
-export function AnanThemeProvider({ children, storageKey }: AnanThemeProviderProps) {
+export function QentrahThemeProvider({ children, storageKey }: QentrahThemeProviderProps) {
   return (
     <StableNextThemesProvider
       attribute="class"

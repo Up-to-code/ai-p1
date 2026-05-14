@@ -1,5 +1,5 @@
 {
-  "name": "@anan/base-logic",
+  "name": "@qentrah/base-logic",
   "version": "0.1.0",
   "description": "Pure shared Qentrah base logic helpers for text normalization, language detection, parsing, retry, providers, and error utility types.",
   "type": "module",

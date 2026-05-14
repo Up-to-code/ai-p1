@@ -1,6 +1,6 @@
-import type { SessionContext } from "@anan/platform-core/session";
+import type { SessionContext } from "@qentrah/platform-core/session";
 import { normalizeScopes } from "../scopes/catalog";
-import type { AnanOidcClaims, AuthContext } from "../types";
+import type { QentrahOidcClaims, AuthContext } from "../types";
 
 function readString(value: unknown): string | undefined {
   return typeof value === "string" && value.trim().length > 0 ? value : undefined;
@@ -16,7 +16,7 @@ function readStringArray(value: unknown): string[] {
   return [];
 }
 
-export function getClaimScopes(claims: AnanOidcClaims): string[] {
+export function getClaimScopes(claims: QentrahOidcClaims): string[] {
   return normalizeScopes(
     Array.isArray(claims.scp)
       ? claims.scp
@@ -28,7 +28,7 @@ export function getClaimScopes(claims: AnanOidcClaims): string[] {
   );
 }
 
-export function getClaimEntitlements(claims: AnanOidcClaims): string[] {
+export function getClaimEntitlements(claims: QentrahOidcClaims): string[] {
   const explicit = readStringArray(claims.entitlements);
   const permissions = readStringArray(claims.permissions);
   const organizationPermissions = readStringArray(
@@ -39,7 +39,7 @@ export function getClaimEntitlements(claims: AnanOidcClaims): string[] {
   return [...new Set([...explicit, ...permissions, ...organizationPermissions, ...roleEntitlements])].sort();
 }
 
-export function authContextFromClaims(claims: AnanOidcClaims, token?: string): AuthContext {
+export function authContextFromClaims(claims: QentrahOidcClaims, token?: string): AuthContext {
   const subject = readString(claims.sub);
   if (!subject) {
     throw new Error("OIDC subject claim is required");
@@ -83,7 +83,7 @@ export function authContextFromClaims(claims: AnanOidcClaims, token?: string): A
 }
 
 export function authContextFromSessionContext(session: SessionContext, token?: string): AuthContext {
-  const claims: AnanOidcClaims = {
+  const claims: QentrahOidcClaims = {
     sub: session.userId,
     email: session.email,
     name: session.name,

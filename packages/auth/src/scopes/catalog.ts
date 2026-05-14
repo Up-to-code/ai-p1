@@ -1,4 +1,4 @@
-import { brandLabel } from "@anan/brand-identity";
+import { brandLabel } from "@qentrah/brand-identity";
 
 const brand = brandLabel("en");
 

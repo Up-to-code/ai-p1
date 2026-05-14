@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildAvatarLabel, mapClient, mapDeal } from "./mappers";
 
-describe("@anan/crm-logic mappers", () => {
+describe("@qentrah/crm-logic mappers", () => {
   it("builds Arabic fallback avatars", () => {
     expect(buildAvatarLabel("")).toBe("و");
     expect(buildAvatarLabel("ahmed")).toBe("A");

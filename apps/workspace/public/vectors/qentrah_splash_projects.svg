@@ -1,0 +1,20 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg" id="qentrah_splash_projects">
+  <!-- Institutional Skyline Background -->
+  <g id="skyline" transform="translate(100, 100)">
+    <rect x="0" y="200" width="80" height="200" fill="#0F172A" opacity="0.8"/>
+    <rect x="100" y="100" width="120" height="300" fill="#0F172A" id="central_pylon"/>
+    <rect x="250" y="150" width="60" height="250" fill="#0F172A" opacity="0.6"/>
+    <rect x="350" y="50" width="100" height="350" fill="#0F172A" opacity="0.4"/>
+    
+    <!-- Scanning Grid -->
+    <rect x="0" y="0" width="600" height="400" stroke="#F1F5F9" stroke-width="1" stroke-dasharray="10 10"/>
+    
+    <!-- Active Scan Workspace -->
+    <rect x="100" y="100" width="120" height="300" stroke="#2563EB" stroke-width="2" fill="none" id="scan_frame"/>
+    <path d="M100 150H220M100 200H220M100 250H220" stroke="#2563EB" stroke-width="2" opacity="0.5"/>
+    
+    <!-- Accent Nodes -->
+    <rect x="98" y="98" width="4" height="4" fill="#2563EB"/>
+    <rect x="218" y="98" width="4" height="4" fill="#2563EB"/>
+  </g>
+</svg>

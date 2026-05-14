@@ -1,0 +1,18 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" id="qentrah_properties_empty">
+  <defs>
+    <pattern id="grid_pattern" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#F1F5F9" stroke-width="1"/>
+    </pattern>
+  </defs>
+  
+  <rect x="1" y="1" width="398" height="398" stroke="#0F172A" stroke-width="2" id="frame"/>
+
+  <g id="grid" transform="translate(40, 40) rotate(15 160 160)">
+    <rect width="320" height="320" fill="url(#grid_pattern)" id="grid_fill"/>
+    
+    <g id="crosshair" transform="translate(160, 160)">
+      <path d="M-20 0H20M0-20V20" stroke="#2563EB" stroke-width="2" id="crosshair_lines"/>
+      <rect x="-2" y="-2" width="4" height="4" fill="#2563EB" id="crosshair_center"/>
+    </g>
+  </g>
+</svg>

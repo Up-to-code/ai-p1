@@ -6,13 +6,13 @@ import {
   readJsonBody,
   resolveBridgeSecret,
   safeResponseJson,
-} from "@anan/web-foundation/api";
+} from "@qentrah/web-foundation/api";
 import { validatePartnerSignupInput } from "@/lib/partner-signup";
 import { checkRateLimit, getClientRateLimitKey } from "@/rate-limits/memory";
 import { assertPartnersProductionEnv } from "@/security/production-env";
 import { buildTrustedSignupHeaders } from "@/trust/auth-request";
 
-const LOCAL_PARTNER_SIGNUP_BRIDGE_SECRET = "local-anan-partner-signup-bridge-secret";
+const LOCAL_PARTNER_SIGNUP_BRIDGE_SECRET = "local-qentrah-partner-signup-bridge-secret";
 
 function isLocalDevelopmentEnv() {
   return process.env.NODE_ENV === "development" && process.env.VERCEL_ENV !== "production";
@@ -21,9 +21,9 @@ function isLocalDevelopmentEnv() {
 function readBridgeSecret() {
   return resolveBridgeSecret(
     [
-      { header: "x-anan-partner-signup-secret", value: process.env.PARTNER_SIGNUP_BRIDGE_SECRET },
+      { header: "x-qentrah-partner-signup-secret", value: process.env.PARTNER_SIGNUP_BRIDGE_SECRET },
       {
-        header: "x-anan-partner-signup-secret",
+        header: "x-qentrah-partner-signup-secret",
         value: isLocalDevelopmentEnv() ? LOCAL_PARTNER_SIGNUP_BRIDGE_SECRET : undefined,
       },
     ],

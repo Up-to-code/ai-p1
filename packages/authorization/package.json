@@ -1,5 +1,5 @@
 {
-  "name": "@anan/authorization",
+  "name": "@qentrah/authorization",
   "version": "0.1.0",
   "description": "Qentrah organization authorization SDK for external applications.",
   "type": "module",
@@ -22,12 +22,12 @@
     }
   },
   "scripts": {
-    "prebuild": "npm --workspace @anan/brand-identity run build",
+    "prebuild": "npm --workspace @qentrah/brand-identity run build",
     "build": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
   "dependencies": {
-    "@anan/brand-identity": "0.1.0"
+    "@qentrah/brand-identity": "0.1.0"
   },
   "peerDependencies": {
     "react": "^19.0.0",

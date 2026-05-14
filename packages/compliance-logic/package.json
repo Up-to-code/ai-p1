@@ -1,5 +1,5 @@
 {
-  "name": "@anan/compliance-logic",
+  "name": "@qentrah/compliance-logic",
   "version": "0.1.0",
   "description": "Pure compliance status and organization-type helpers for Qentrah.",
   "type": "module",

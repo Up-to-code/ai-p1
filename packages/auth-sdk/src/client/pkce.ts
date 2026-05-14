@@ -1,4 +1,4 @@
 export {
   createPkcePair,
   createRandomString,
-} from "@anan/auth/client";
+} from "@qentrah/auth/client";

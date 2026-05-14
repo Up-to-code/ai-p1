@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { brandIdentity } from "@anan/brand-identity";
+import { brandIdentity } from "@qentrah/brand-identity";
 
 type Theme = "light" | "dark";
 
@@ -12,7 +12,7 @@ type ThemeContextValue = {
   toggleTheme: () => void;
 };
 
-const THEME_STORAGE_KEY = brandIdentity.legacy.themeStorageKey;
+const THEME_STORAGE_KEY = brandIdentity.themeStorageKey;
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function applyTheme(theme: Theme) {

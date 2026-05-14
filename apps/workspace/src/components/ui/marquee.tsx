@@ -42,7 +42,7 @@ export function Marquee({
   ...props
 }: MarqueeProps) {
   const trackStyle: CSSProperties = {
-    animation: `${vertical ? "anan-marquee-vertical" : "anan-marquee"} var(--duration, 40s) linear infinite`,
+    animation: `${vertical ? "qentrah-marquee-vertical" : "qentrah-marquee"} var(--duration, 40s) linear infinite`,
     animationDirection: reverse ? "reverse" : "normal",
   };
 
@@ -50,7 +50,7 @@ export function Marquee({
     <div
       {...props}
       className={cn(
-        "anan-marquee group flex overflow-hidden p-2 [--duration:40s] [--gap:1rem] [gap:var(--gap)]",
+        "qentrah-marquee group flex overflow-hidden p-2 [--duration:40s] [--gap:1rem] [gap:var(--gap)]",
         {
           "flex-row": !vertical,
           "flex-col": vertical,
@@ -60,19 +60,19 @@ export function Marquee({
       data-pause-on-hover={pauseOnHover ? "true" : undefined}
     >
       <style>{`
-        @keyframes anan-marquee {
+        @keyframes qentrah-marquee {
           from { transform: translateX(0); }
           to { transform: translateX(calc(-100% - var(--gap, 1rem))); }
         }
-        @keyframes anan-marquee-vertical {
+        @keyframes qentrah-marquee-vertical {
           from { transform: translateY(0); }
           to { transform: translateY(calc(-100% - var(--gap, 1rem))); }
         }
-        .anan-marquee[data-pause-on-hover="true"]:hover .anan-marquee-track {
+        .qentrah-marquee[data-pause-on-hover="true"]:hover .qentrah-marquee-track {
           animation-play-state: paused;
         }
         @media (prefers-reduced-motion: reduce) {
-          .anan-marquee-track {
+          .qentrah-marquee-track {
             animation: none !important;
           }
         }
@@ -82,8 +82,8 @@ export function Marquee({
         .map((_, i) => (
           <div
             className={cn("flex shrink-0 justify-around [gap:var(--gap)]", {
-              "anan-marquee-track flex-row": !vertical,
-              "anan-marquee-track flex-col": vertical,
+              "qentrah-marquee-track flex-row": !vertical,
+              "qentrah-marquee-track flex-col": vertical,
             })}
             key={i}
             style={trackStyle}

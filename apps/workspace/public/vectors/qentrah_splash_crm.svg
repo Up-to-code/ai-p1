@@ -1,0 +1,23 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg" id="qentrah_splash_crm">
+  <!-- Lead Matrix Workspace -->
+  <g id="crm_workspace" transform="translate(400, 300)">
+    <!-- Central Connection Workspace -->
+    <rect x="-40" y="-40" width="80" height="80" stroke="#2563EB" stroke-width="4" id="core_workspace"/>
+    <rect x="-10" y="-10" width="20" height="20" fill="#2563EB"/>
+    
+    <!-- Radiating Lines -->
+    <g id="connectors" stroke="#64748B" stroke-width="2">
+      <path d="M0 -40 V -200 M -40 -40 L -200 -200 M 40 -40 L 200 -200"/>
+      <path d="M-40 0 H -300 M 40 0 H 300"/>
+      <path d="M0 40 V 200 M -40 40 L -200 200 M 40 40 L 200 200"/>
+    </g>
+    
+    <!-- Edge Nodes -->
+    <rect x="-305" y="-5" width="10" height="10" fill="#0F172A"/>
+    <rect x="295" y="-5" width="10" height="10" fill="#0F172A"/>
+    <rect x="-210" y="-210" width="20" height="20" stroke="#2563EB" stroke-width="2"/>
+    
+    <!-- Background Plot Geometry -->
+    <rect x="-350" y="-250" width="700" height="500" stroke="#F1F5F9" stroke-width="2" opacity="0.2"/>
+  </g>
+</svg>

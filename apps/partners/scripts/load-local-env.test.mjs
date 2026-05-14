@@ -33,7 +33,7 @@ describe("partners local env loader", () => {
   });
 
   it("loads later files over earlier files while preserving shell env", () => {
-    const dir = mkdtempSync(join(tmpdir(), "anan-partners-env-"));
+    const dir = mkdtempSync(join(tmpdir(), "qentrah-partners-env-"));
     const first = join(dir, ".env");
     const second = join(dir, ".env.local");
     writeFileSync(first, "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/first\nSHELL_VALUE=file\n");
@@ -61,6 +61,6 @@ describe("partners local env loader", () => {
 
     ensurePartnerDatabaseEnv();
 
-    expect(process.env.DATABASE_URL).toBe("postgresql://postgres:postgres@localhost:5432/anan_partners");
+    expect(process.env.DATABASE_URL).toBe("postgresql://postgres:postgres@localhost:5432/qentrah_partners");
   });
 });

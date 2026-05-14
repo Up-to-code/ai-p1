@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { cn } from "@anan/platform-core/classnames";
+import { cn } from "@qentrah/platform-core/classnames";
 
 const variants = {
   default: "border-slate-200 bg-white text-slate-700",

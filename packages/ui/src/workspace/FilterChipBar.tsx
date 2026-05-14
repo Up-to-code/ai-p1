@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { cn } from "@anan/platform-core/classnames";
+import { cn } from "@qentrah/platform-core/classnames";
 
 export type FilterChip = {
   key: string;

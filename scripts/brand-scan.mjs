@@ -7,9 +7,9 @@ import { spawnSync } from "node:child_process";
 const root = fileURLToPath(new URL("..", import.meta.url));
 
 const patterns = [
-  "\\bAnan\\b",
+  "\\bQentrah\\b",
   "أنان",
-  "\\bAnand\\b",
+  "\\bQentrahd\\b",
   "#0b5cff",
   "#2563EB",
 ];
@@ -55,28 +55,28 @@ const allowPath = [
 ];
 
 const allowLine = [
-  /@anan\//u,
-  /"name":\s*"@?anan/u,
-  /ANAN_/u,
-  /anan-theme/u,
-  /\/api\/auth\/anan/u,
-  /\/api\/anan/u,
-  /anan-review-callback/u,
-  /anan\.sa/u,
-  /anan\.test/u,
-  /function .*Anan/u,
-  /type .*Anan/u,
-  /const .*Anan/u,
+  /@qentrah\//u,
+  /"name":\s*"@?qentrah/u,
+  /QENTRAH_/u,
+  /qentrah-theme/u,
+  /\/api\/auth\/qentrah/u,
+  /\/api\/qentrah/u,
+  /qentrah-review-callback/u,
+  /qentrah\.sa/u,
+  /qentrah\.test/u,
+  /function .*Qentrah/u,
+  /type .*Qentrah/u,
+  /const .*Qentrah/u,
   /describe\(/u,
   /expect\(/u,
   /\.test\./u,
   /replaceAll\(/u,
   /var\(--brand-primary,/u,
   /brand-logo\.svg/u,
-  /Anan-Event-/u,
-  /Anan-Timestamp/u,
-  /Anan-Delivery-Id/u,
-  /Anan-Signature/u,
+  /Qentrah-Event-/u,
+  /Qentrah-Timestamp/u,
+  /Qentrah-Delivery-Id/u,
+  /Qentrah-Signature/u,
   /#2563EB/u,
 ];
 

@@ -6,8 +6,7 @@ function isPerformanceDebugEnabled() {
   return (
     typeof window !== "undefined" &&
     (process.env.NODE_ENV === "development" ||
-      process.env.NEXT_PUBLIC_QENTRAH_PERF_DEBUG === "1" ||
-      process.env.NEXT_PUBLIC_ANAN_PERF_DEBUG === "1")
+      process.env.NEXT_PUBLIC_QENTRAH_PERF_DEBUG === "1")
   );
 }
 
@@ -19,7 +18,7 @@ export function markAppPerformance(name: string, detail?: PerformanceDetail) {
   } catch {
     performance.mark(markName);
   }
-  if (process.env.NEXT_PUBLIC_QENTRAH_PERF_DEBUG === "1" || process.env.NEXT_PUBLIC_ANAN_PERF_DEBUG === "1") {
+  if (process.env.NEXT_PUBLIC_QENTRAH_PERF_DEBUG === "1") {
     console.debug("[qentrah:perf]", name, detail ?? "");
   }
 }

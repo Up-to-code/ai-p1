@@ -2,11 +2,11 @@ import type {
   WorkspaceAudience,
   WorkspaceCapabilities,
   WorkspaceZoneKey,
-} from "@anan/domain-contracts/workspace";
+} from "@qentrah/domain-contracts/workspace";
 import {
   resolveVisibleZoneKeys,
   resolveWorkspaceCapabilities,
-} from "@anan/domain-contracts/workspace";
+} from "@qentrah/domain-contracts/workspace";
 
 export const WORKSPACE_BASE_ZONE_KEYS = ["overview", "settings"] as const satisfies readonly WorkspaceZoneKey[];
 export const WORKSPACE_BUSINESS_ZONE_KEYS = [

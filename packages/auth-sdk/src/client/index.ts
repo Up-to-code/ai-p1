@@ -7,7 +7,7 @@ export {
   createOidcClient,
   exchangeAuthorizationCode,
   refreshAccessToken,
-} from "@anan/auth/client";
+} from "@qentrah/auth/client";
 export {
-  createAnanAuthorizationClient,
-} from "@anan/authorization";
+  createQentrahAuthorizationClient,
+} from "@qentrah/authorization";

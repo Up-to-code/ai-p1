@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
-import { cn } from "@anan/platform-core/classnames";
+import { cn } from "@qentrah/platform-core/classnames";
 
 interface SectionLabelProps {
     icon?: LucideIcon;

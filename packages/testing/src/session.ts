@@ -1,11 +1,11 @@
-import type { SessionContext } from "@anan/platform-core/session";
-import type { ProfileSummary } from "@anan/domain-contracts/profiles";
+import type { SessionContext } from "@qentrah/platform-core/session";
+import type { ProfileSummary } from "@qentrah/domain-contracts/profiles";
 
 export function buildSessionContext(overrides: Partial<SessionContext> = {}): SessionContext {
   return {
     userId: "auth-user-1",
-    email: "user@anan.test",
-    name: "Anan User",
+    email: "user@qentrah.test",
+    name: "Qentrah User",
     role: "broker",
     isAdmin: false,
     isActive: true,
@@ -15,9 +15,9 @@ export function buildSessionContext(overrides: Partial<SessionContext> = {}): Se
 
 export function buildProfileSummary(overrides: Partial<ProfileSummary> = {}): ProfileSummary {
   return {
-    email: "user@anan.test",
-    name: "Anan User",
-    username: "anan.user",
+    email: "user@qentrah.test",
+    name: "Qentrah User",
+    username: "qentrah.user",
     role: "broker",
     showInOffersDirectory: false,
     authProvider: {

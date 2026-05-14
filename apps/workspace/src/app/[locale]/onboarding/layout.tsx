@@ -1,5 +1,5 @@
 import { Triangle } from "lucide-react";
-import { brandProductName } from "@anan/brand-identity";
+import { brandProductName } from "@qentrah/brand-identity";
 import { Link } from "@/i18n/routing";
 
 export default function OnboardingLayout({

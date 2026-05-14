@@ -2,7 +2,7 @@
   <!-- The Nexus (Single Point of Truth) -->
   <g id="nexus" transform="translate(300, 300)">
     <!-- Central Pylon -->
-    <rect x="-20" y="-30" width="40" height="60" fill="#2563EB" id="anan_core"/>
+    <rect x="-20" y="-30" width="40" height="60" fill="#2563EB" id="qentrah_core"/>
     <rect x="-15" y="-25" width="30" height="50" stroke="#FFFFFF" stroke-width="1" fill="none"/>
     
     <!-- Outer Dots & Lines -->

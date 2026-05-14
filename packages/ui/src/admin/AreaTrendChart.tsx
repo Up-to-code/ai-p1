@@ -8,7 +8,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { cn } from "@anan/platform-core/classnames";
+import { cn } from "@qentrah/platform-core/classnames";
 import { type ChartDatum, type ChartSeries, formatChartNumber } from "./chartTypes";
 import ResponsiveChartFrame from "./ResponsiveChartFrame";
 

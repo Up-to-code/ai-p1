@@ -20,8 +20,8 @@ vi.mock("@convex/_generated/api", () => ({
 
 vi.mock("@/packages/config", () => ({
   partnerAppsRuntimeConfig: {
-    issuer: "https://anan.test",
-    oauthAudience: "https://api.anan.test",
+    issuer: "https://qentrah.test",
+    oauthAudience: "https://api.qentrah.test",
   },
 }));
 
@@ -53,13 +53,13 @@ describe("partner bearer access", () => {
   });
 
   it("uses the Better Auth Convex JWKS route", () => {
-    expect(partnerJwksUrl("https://anan.test/")).toBe("https://anan.test/api/auth/convex/jwks");
+    expect(partnerJwksUrl("https://qentrah.test/")).toBe("https://qentrah.test/api/auth/convex/jwks");
   });
 
   it("accepts both site and Better Auth route issuers", () => {
-    expect(partnerIssuerCandidates("https://anan.test/")).toEqual([
-      "https://anan.test",
-      "https://anan.test/api/auth",
+    expect(partnerIssuerCandidates("https://qentrah.test/")).toEqual([
+      "https://qentrah.test",
+      "https://qentrah.test/api/auth",
     ]);
   });
 
@@ -77,7 +77,7 @@ describe("partner bearer access", () => {
     const response = await appForAccessTests().request("/organizations/org_1/clients");
 
     expect(response.status).toBe(401);
-    expect(response.headers.get("www-authenticate")).toContain("https://api.anan.test");
+    expect(response.headers.get("www-authenticate")).toContain("https://api.qentrah.test");
     expect(verifyAccessTokenMock).not.toHaveBeenCalled();
   });
 
@@ -127,9 +127,9 @@ describe("partner bearer access", () => {
       scopes: ["client:read"],
     });
     expect(verifyAccessTokenMock).toHaveBeenCalledWith("partner-token", expect.objectContaining({
-      jwksUrl: "https://anan.test/api/auth/convex/jwks",
+      jwksUrl: "https://qentrah.test/api/auth/convex/jwks",
       verifyOptions: expect.objectContaining({
-        issuer: ["https://anan.test", "https://anan.test/api/auth"],
+        issuer: ["https://qentrah.test", "https://qentrah.test/api/auth"],
       }),
       scopes: ["client:read"],
     }));

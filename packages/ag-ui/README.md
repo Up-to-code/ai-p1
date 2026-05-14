@@ -1,4 +1,4 @@
-# `@anan/ag-ui`
+# `@qentrah/ag-ui`
 
 Reusable AG UI package for rendering structured agent turns as ready-made UI cards.
 
@@ -12,17 +12,17 @@ Reusable AG UI package for rendering structured agent turns as ready-made UI car
 ## Entry points
 
 ```ts
-import type { AgUiConversationTurn } from "@anan/ag-ui";
-import { resolveAgUiTurn } from "@anan/ag-ui";
-import { AgUiTurnRenderer } from "@anan/ag-ui/react";
-import { AgPropertyForm } from "@anan/ag-ui/anan";
+import type { AgUiConversationTurn } from "@qentrah/ag-ui";
+import { resolveAgUiTurn } from "@qentrah/ag-ui";
+import { AgUiTurnRenderer } from "@qentrah/ag-ui/react";
+import { AgPropertyForm } from "@qentrah/ag-ui/qentrah";
 ```
 
 ## First render
 
 ```tsx
-import { AgUiTurnRenderer } from "@anan/ag-ui/react";
-import type { AgUiConversationTurn } from "@anan/ag-ui";
+import { AgUiTurnRenderer } from "@qentrah/ag-ui/react";
+import type { AgUiConversationTurn } from "@qentrah/ag-ui";
 
 export function AssistantSurface({ turn }: { turn: AgUiConversationTurn }) {
   return <AgUiTurnRenderer turn={turn} />;
@@ -50,7 +50,7 @@ export function AssistantSurface({ turn }: { turn: AgUiConversationTurn }) {
 ## Registry overrides
 
 ```tsx
-import { AgUiTurnRenderer } from "@anan/ag-ui/react";
+import { AgUiTurnRenderer } from "@qentrah/ag-ui/react";
 
 function CustomLatestUpdateCard(props: Record<string, unknown>) {
   return <div data-card="custom-latest-update">{String(props["entity"])}</div>;

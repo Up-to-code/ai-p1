@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Building2, MapPin } from "lucide-react";
-import { cn } from "@anan/platform-core/classnames";
+import { cn } from "@qentrah/platform-core/classnames";
 
 export type DeveloperCardData = {
   id: string;

@@ -1,4 +1,4 @@
-# @anan/brand-identity
+# @qentrah/brand-identity
 
 Shared brand identity configuration for app display names, route slugs, env prefixes, domains, and color tokens.
 

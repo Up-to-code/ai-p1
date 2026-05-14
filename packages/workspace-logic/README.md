@@ -1,3 +1,3 @@
-# @anan/workspace-logic
+# @qentrah/workspace-logic
 
 Pure workspace zone and capability helpers. Route handlers, redirects, and app shells stay app-local.

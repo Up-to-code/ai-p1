@@ -77,7 +77,7 @@ describe("Workspace partner app service tokens", () => {
       oauthClientId: "partners_client_demo",
       name: "Qentrah OAuth Demo",
       description: "Demo",
-      redirectUris: ["http://localhost:3004/api/auth/anan/callback"],
+      redirectUris: ["http://localhost:3004/api/auth/qentrah/callback"],
       allowedScopes: ["organization:read", "client:read"],
       clientType: "public",
       status: "pending",
@@ -93,7 +93,7 @@ describe("Workspace partner app service tokens", () => {
       publisherName: "Qentrah",
       description: "Demo",
       homepageUrl: "http://localhost:3004",
-      redirectUris: ["http://localhost:3004/api/auth/anan/callback"],
+      redirectUris: ["http://localhost:3004/api/auth/qentrah/callback"],
       allowedScopes: ["organization:read", "client:read"],
       clientType: "public",
     });
@@ -103,7 +103,7 @@ describe("Workspace partner app service tokens", () => {
         workspacePartnerAppId: "workspace_app_1",
         clientId: "partners_client_demo",
         status: "pending",
-        redirectUris: ["http://localhost:3004/api/auth/anan/callback"],
+        redirectUris: ["http://localhost:3004/api/auth/qentrah/callback"],
       }),
     });
   });
@@ -114,10 +114,10 @@ describe("Workspace partner app service tokens", () => {
       partnersAppId: "partners_app_1",
       partnersClientId: "partners_client_demo",
       oauthClientId: "partners_client_demo",
-      callbackUrl: "http://localhost:3002/api/anan-review-callback",
+      callbackUrl: "http://localhost:3002/api/qentrah-review-callback",
       name: "Qentrah OAuth Demo",
       description: "Demo",
-      redirectUris: ["http://localhost:3004/api/auth/anan/callback"],
+      redirectUris: ["http://localhost:3004/api/auth/qentrah/callback"],
       allowedScopes: ["organization:read", "client:read"],
       clientType: "public",
       status: "approved",
@@ -136,7 +136,7 @@ describe("Workspace partner app service tokens", () => {
       }),
     });
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3002/api/anan-review-callback",
+      "http://localhost:3002/api/qentrah-review-callback",
       expect.objectContaining({ method: "POST" }),
     );
     fetchMock.mockRestore();
@@ -150,7 +150,7 @@ describe("Workspace partner app service tokens", () => {
       oauthClientId: "client_1",
       name: "PDF Creator",
       description: "Demo",
-      redirectUris: ["http://localhost:3004/api/auth/anan/callback"],
+      redirectUris: ["http://localhost:3004/api/auth/qentrah/callback"],
       allowedScopes: ["client:update"],
       clientType: "public",
       status: "approved",

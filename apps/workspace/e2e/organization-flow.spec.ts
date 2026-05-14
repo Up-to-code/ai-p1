@@ -100,7 +100,7 @@ test.describe("organization business flow", () => {
     await expect(page.getByText("صلاحياتك الحالية")).toBeVisible();
     await expect(page.getByText(/MISSING_MESSAGE/)).toHaveCount(0);
 
-    await page.evaluate(() => localStorage.setItem("anan-theme", "dark"));
+    await page.evaluate(() => localStorage.setItem("qentrah-theme", "dark"));
     await page.reload();
     await expect(page.locator("html")).toHaveClass(/dark/);
     await expect(page.getByText("صلاحياتك الحالية")).toBeVisible();

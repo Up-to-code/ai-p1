@@ -1,5 +1,5 @@
 {
-  "name": "@anan/location-map",
+  "name": "@qentrah/location-map",
   "version": "0.1.0",
   "description": "Shared Mapbox location picker and preview components for Qentrah workspace flows.",
   "type": "module",

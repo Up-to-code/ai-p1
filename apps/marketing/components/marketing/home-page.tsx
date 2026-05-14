@@ -15,7 +15,7 @@ import {
   Sparkles,
   Workflow,
 } from "lucide-react";
-import { brandLabel } from "@anan/brand-identity";
+import { brandLabel } from "@qentrah/brand-identity";
 
 import { getContent, type Locale } from "@/lib/content";
 

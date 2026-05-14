@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { brandLabel, brandProductName } from "@anan/brand-identity";
+import { brandLabel, brandProductName } from "@qentrah/brand-identity";
 import "./globals.css";
 
 const brand = brandLabel("en");

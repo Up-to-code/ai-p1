@@ -17,7 +17,7 @@ import {
 } from "./locale";
 import { toSessionUser, type SessionContext } from "./session";
 
-describe("@anan/platform-core auth-next", () => {
+describe("@qentrah/platform-core auth-next", () => {
   it("uses local Convex defaults outside production", () => {
     expect(resolveAuthBridgeConfig({ NODE_ENV: "development" })).toEqual({
       convexUrl: "http://localhost:3210",
@@ -45,13 +45,13 @@ describe("@anan/platform-core auth-next", () => {
   });
 
   it("normalizes URLs and detects loopback hosts", () => {
-    expect(normalizeBaseUrl("anan.test/")).toBe("https://anan.test");
+    expect(normalizeBaseUrl("qentrah.test/")).toBe("https://qentrah.test");
     expect(isLoopbackOrigin("http://localhost:3000")).toBe(true);
-    expect(isLoopbackOrigin("https://anan.test")).toBe(false);
+    expect(isLoopbackOrigin("https://qentrah.test")).toBe(false);
   });
 });
 
-describe("@anan/platform-core errors", () => {
+describe("@qentrah/platform-core errors", () => {
   it("preserves existing DomainError instances", () => {
     const error = new DomainError({ code: "FORBIDDEN", message: "No", status: 403 });
     expect(normalizeDomainError(error)).toBe(error);
@@ -67,7 +67,7 @@ describe("@anan/platform-core errors", () => {
   });
 });
 
-describe("@anan/platform-core session", () => {
+describe("@qentrah/platform-core session", () => {
   it("projects session context to UI user shape", () => {
     const context: SessionContext = {
       userId: "user-1",
@@ -94,7 +94,7 @@ describe("@anan/platform-core session", () => {
   });
 });
 
-describe("@anan/platform-core locale", () => {
+describe("@qentrah/platform-core locale", () => {
   it("resolves supported locales and formatting helpers", () => {
     expect(resolveLocale("fr")).toBe("fr");
     expect(resolveLocale("es")).toBe("ar");
@@ -105,7 +105,7 @@ describe("@anan/platform-core locale", () => {
   });
 });
 
-describe("@anan/platform-core classnames and Convex API adapters", () => {
+describe("@qentrah/platform-core classnames and Convex API adapters", () => {
   it("merges conditional class names", () => {
     expect(cn("px-2", false && "hidden", "px-4")).toBe("px-4");
   });

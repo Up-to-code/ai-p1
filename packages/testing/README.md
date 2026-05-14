@@ -1,4 +1,4 @@
-# @anan/testing
+# @qentrah/testing
 
 Shared fixtures and small helpers for Qentrah Vitest suites.
 

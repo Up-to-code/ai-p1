@@ -9,4 +9,4 @@ export {
   type OrganizationApiKeyAction,
   type OrganizationApiKeyPermission,
   type OrganizationApiKeyResource,
-} from "@anan/auth/scopes";
+} from "@qentrah/auth/scopes";

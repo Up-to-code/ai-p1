@@ -8,7 +8,7 @@ import { assertCsrfRequest } from "./server/csrf";
 import { serializeSecureCookie } from "./server/cookies";
 import { requireAuthContext, sanitizeAuthContext } from "./server/session";
 
-describe("@anan/auth-sdk", () => {
+describe("@qentrah/auth-sdk", () => {
   it("keeps access tokens in memory without touching browser storage", () => {
     const store = createMemoryTokenStore();
     store.set({
@@ -27,8 +27,8 @@ describe("@anan/auth-sdk", () => {
     const request = new Request("https://example.com/api/auth-sdk/refresh", {
       method: "POST",
       headers: {
-        cookie: `__Host-anan_csrf=${pair.cookieToken}`,
-        "x-anan-csrf": pair.headerToken,
+        cookie: `__Host-qentrah_csrf=${pair.cookieToken}`,
+        "x-qentrah-csrf": pair.headerToken,
       },
     });
 

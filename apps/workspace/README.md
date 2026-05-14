@@ -110,9 +110,9 @@ npm run test:e2e
 From the repository root:
 
 ```bash
-npm --workspace @anan/workspace run typecheck
-npm --workspace @anan/workspace test
-npm --workspace @anan/workspace run test:e2e
+npm --workspace @qentrah/workspace run typecheck
+npm --workspace @qentrah/workspace test
+npm --workspace @qentrah/workspace run test:e2e
 ```
 
 ## Documentation

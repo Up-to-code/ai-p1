@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { ArrowRight, ChevronLeft } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/routing";
+import { BrandMark } from "@/components/logo";
 
 type AuthAccessScreenProps = {
   mode: "sign-in" | "sign-up";
@@ -42,7 +42,7 @@ export function AuthAccessScreen({ mode, isPending, onGoogleSignIn }: AuthAccess
         <div className="flex items-center justify-between gap-4">
           <Link href="/" className="group flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-border bg-surface text-foreground transition group-hover:bg-muted">
-              <Image src="/brand-logo.svg" alt="Qentrah" width={22} height={22} className="h-5.5 w-5.5" priority />
+              <BrandMark className="h-5.5 w-5.5" priority />
             </span>
             <span className="text-lg font-black tracking-tight text-foreground">
               {isAr ? "قنطرة" : "qentrah"}
@@ -62,7 +62,7 @@ export function AuthAccessScreen({ mode, isPending, onGoogleSignIn }: AuthAccess
             <div className="rounded-[24px] border border-border bg-surface p-6 text-start sm:p-7">
               <div className="mb-7 flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl border border-border bg-background">
-                  <Image src="/brand-logo.svg" alt="Qentrah" width={22} height={22} className="h-5.5 w-5.5" priority />
+                  <BrandMark className="h-5.5 w-5.5" priority />
                 </span>
                 <span className="text-2xl font-black tracking-tight text-foreground">
                   {isAr ? "قنطرة" : "qentrah"}

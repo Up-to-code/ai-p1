@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Code2, FileCheck, KeyRound, ShieldCheck, UsersRound, Workflow } from "lucide-react";
 import { codeToHtml } from "shiki";
-import { brandLabel, brandProductName, brandRoutePath } from "@anan/brand-identity";
+import { brandLabel, brandProductName, brandRoutePath } from "@qentrah/brand-identity";
 
 const brand = brandLabel("en");
 const workspaceName = brandProductName("workspace", "en");

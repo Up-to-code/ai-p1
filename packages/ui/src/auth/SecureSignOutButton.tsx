@@ -1,7 +1,7 @@
 "use client";
 
 import type { ButtonHTMLAttributes } from "react";
-import { useAuth } from "@anan/auth-sdk/react";
+import { useAuth } from "@qentrah/auth-sdk/react";
 
 export function SecureSignOutButton({
   redirectTo = "/signin",

@@ -1,5 +1,5 @@
 {
-  "name": "@anan/workspace-logic",
+  "name": "@qentrah/workspace-logic",
   "version": "0.1.0",
   "description": "Pure workspace zone and capability logic for Qentrah.",
   "type": "module",
@@ -22,12 +22,12 @@
     }
   },
   "scripts": {
-    "prebuild": "npm --workspace @anan/domain-contracts run build",
+    "prebuild": "npm --workspace @qentrah/domain-contracts run build",
     "build": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
   "dependencies": {
-    "@anan/domain-contracts": "0.1.0"
+    "@qentrah/domain-contracts": "0.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.9",

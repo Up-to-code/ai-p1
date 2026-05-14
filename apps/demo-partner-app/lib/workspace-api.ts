@@ -57,26 +57,26 @@ export function propertiesPath(organizationId: string) {
   return `/api/v1/partner/organizations/${organizationId}/properties`;
 }
 
-export function loadAnanMe(session: TokenSession, fetcher?: typeof fetch) {
+export function loadQentrahMe(session: TokenSession, fetcher?: typeof fetch) {
   return workspaceFetch<Record<string, unknown>>(mePath(session.organizationId ?? ""), session, undefined, fetcher);
 }
 
-export function loadAnanClients(session: TokenSession, fetcher?: typeof fetch) {
+export function loadQentrahClients(session: TokenSession, fetcher?: typeof fetch) {
   return workspaceFetch<Record<string, unknown>>(clientsPath(session.organizationId ?? ""), session, undefined, fetcher);
 }
 
-export function loadAnanProperties(session: TokenSession, fetcher?: typeof fetch) {
+export function loadQentrahProperties(session: TokenSession, fetcher?: typeof fetch) {
   return workspaceFetch<Record<string, unknown>>(propertiesPath(session.organizationId ?? ""), session, undefined, fetcher);
 }
 
-export function createAnanClient(session: TokenSession, input: unknown, fetcher?: typeof fetch) {
+export function createQentrahClient(session: TokenSession, input: unknown, fetcher?: typeof fetch) {
   return workspaceFetch<Record<string, unknown>>(clientsPath(session.organizationId ?? ""), session, {
     method: "POST",
     body: JSON.stringify(input),
   }, fetcher);
 }
 
-export function updateAnanClient(session: TokenSession, clientId: string, input: unknown, fetcher?: typeof fetch) {
+export function updateQentrahClient(session: TokenSession, clientId: string, input: unknown, fetcher?: typeof fetch) {
   return workspaceFetch<Record<string, unknown>>(clientPath(session.organizationId ?? "", clientId), session, {
     method: "PATCH",
     body: JSON.stringify(input),

@@ -5,7 +5,7 @@ description: Use standards-based OAuth 2.1 directly while the official SDK is no
 
 ## Current v1 path
 
-Use OAuth 2.1 endpoints directly. Do not depend on an `@anan/auth-sdk` package unless your Qentrah contact has provided a private build.
+Use OAuth 2.1 endpoints directly. Do not depend on an `@qentrah/auth-sdk` package unless your Qentrah contact has provided a private build.
 
 ## Frontend responsibility
 
@@ -13,7 +13,7 @@ The frontend should only start authorization and receive the callback route. Use
 
 ```tsx
 export function AuthorizeWithQentrahButton() {
-  return <a href="/api/anan/oauth/start">Authorize with Qentrah</a>;
+  return <a href="/api/qentrah/oauth/start">Authorize with Qentrah</a>;
 }
 ```
 

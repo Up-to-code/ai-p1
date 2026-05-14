@@ -1,4 +1,4 @@
-import { createRootFontClassName } from "@anan/web-foundation/fonts";
+import { createRootFontClassName } from "@qentrah/web-foundation/fonts";
 import localFont from "next/font/local";
 
 const cairo = localFont({

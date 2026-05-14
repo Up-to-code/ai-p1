@@ -5,9 +5,9 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const brandSource = readFileSync(join(root, "packages/brand-identity/src/index.ts"), "utf8");
-const slug = brandSource.match(/slug:\s*"([^"]+)"/u)?.[1] ?? "anan";
-const packageScope = brandSource.match(/packageScope:\s*"([^"]+)"/u)?.[1] ?? "@anan";
-const envPrefix = brandSource.match(/envPrefix:\s*"([^"]+)"/u)?.[1] ?? "ANAN";
+const slug = brandSource.match(/slug:\s*"([^"]+)"/u)?.[1] ?? "qentrah";
+const packageScope = brandSource.match(/packageScope:\s*"([^"]+)"/u)?.[1] ?? "@qentrah";
+const envPrefix = brandSource.match(/envPrefix:\s*"([^"]+)"/u)?.[1] ?? "QENTRAH";
 
 console.log(`Brand static sync check`);
 console.log(`- slug: ${slug}`);

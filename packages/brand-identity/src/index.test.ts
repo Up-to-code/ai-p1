@@ -9,7 +9,7 @@ import {
   readBrandEnv,
 } from "./index";
 
-describe("@anan/brand-identity", () => {
+describe("@qentrah/brand-identity", () => {
   it("exposes localized brand and product names", () => {
     expect(brandLabel("en")).toBe("Qentrah");
     expect(brandLabel("ar")).toBe("قنطرة");
@@ -19,13 +19,12 @@ describe("@anan/brand-identity", () => {
 
   it("derives env names and route paths", () => {
     expect(brandEnvName("CLIENT_ID")).toBe("QENTRAH_CLIENT_ID");
-    expect(brandRoutePath("oauthStart")).toBe("/api/auth/anan/start");
+    expect(brandRoutePath("oauthStart")).toBe("/api/auth/qentrah/start");
     expect(brandIdentity.colors.primary).toBe("#0b5cff");
   });
 
-  it("reads canonical env values before legacy values", () => {
-    expect(readBrandEnv("CLIENT_ID", { ANAN_CLIENT_ID: "legacy" })).toBe("legacy");
-    expect(readBrandEnv("CLIENT_ID", { QENTRAH_CLIENT_ID: "canonical", ANAN_CLIENT_ID: "legacy" })).toBe("canonical");
+  it("reads canonical env values", () => {
+    expect(readBrandEnv("CLIENT_ID", { QENTRAH_CLIENT_ID: "canonical" })).toBe("canonical");
     expect(readBrandEnv("CLIENT_ID", {}, "fallback")).toBe("fallback");
   });
 });

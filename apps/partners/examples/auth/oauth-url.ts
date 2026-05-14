@@ -2,7 +2,7 @@ import { createPkcePair } from "./pkce";
 
 export { createPkcePair };
 
-export type BuildAnanAuthorizeUrlInput = {
+export type BuildQentrahAuthorizeUrlInput = {
   workspaceBaseUrl: string;
   clientId: string;
   redirectUri: string;
@@ -22,7 +22,7 @@ export function partnerResourceAudience(workspaceBaseUrl: string) {
   return new URL("/api/v1/partner", normalizeBaseUrl(workspaceBaseUrl)).toString();
 }
 
-export function buildAnanAuthorizeUrl(input: BuildAnanAuthorizeUrlInput) {
+export function buildQentrahAuthorizeUrl(input: BuildQentrahAuthorizeUrlInput) {
   if (input.scopes.length === 0) throw new Error("At least one scope is required.");
 
   const url = new URL("/oauth/authorize", normalizeBaseUrl(input.workspaceBaseUrl));

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import type { ReactNode } from "react";
-import { brandIdentity, brandLabel } from "@anan/brand-identity";
+import { brandIdentity, brandLabel } from "@qentrah/brand-identity";
 
 import "./globals.css";
 

@@ -3,5 +3,5 @@ import type { UploadRouter } from "@/server/uploadthing/router";
 
 export const { uploadFiles } = genUploader<UploadRouter>({
   url: "/api/uploadthing",
-  package: "anan-workspace",
+  package: "qentrah-workspace",
 });

@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/routing";
+import { BrandMark } from "@/components/logo";
 
 const footerGroups = [
   {
@@ -43,14 +43,8 @@ export default function Footer() {
         <div className="flex flex-col items-start justify-between gap-x-10 gap-y-10 px-6 py-12 sm:flex-row xl:px-0">
           <div className="max-w-sm">
             <Link href="/" className="inline-flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-zinc-950 dark:bg-white">
-                <Image
-                  alt="Qentrah"
-                  className="h-5 w-5 invert dark:invert-0"
-                  height={22}
-                  src="/brand-logo.svg"
-                  width={22}
-                />
+              <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-white ring-1 ring-zinc-200 dark:bg-zinc-950 dark:ring-white/10">
+                <BrandMark className="h-5 w-5" />
               </span>
               <span>
                 <span className="block text-lg font-black tracking-tight text-zinc-950 dark:text-white">qentrah</span>

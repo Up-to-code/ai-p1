@@ -1,4 +1,4 @@
-import { brandProductName } from "@anan/brand-identity";
+import { brandProductName } from "@qentrah/brand-identity";
 
 import { envReader } from "@/packages/config/env-reader";
 

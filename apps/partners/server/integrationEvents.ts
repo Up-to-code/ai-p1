@@ -10,12 +10,12 @@ export async function recordIntegrationEvent(input: {
   idempotencyKey: string;
   payload: unknown;
 }) {
-  const existing = await prisma.ananIntegrationEvent.findUnique({
+  const existing = await prisma.qentrahIntegrationEvent.findUnique({
     where: { idempotencyKey: input.idempotencyKey },
   });
   if (existing) return { eventId: existing.id, deduped: true };
 
-  const event = await prisma.ananIntegrationEvent.create({
+  const event = await prisma.qentrahIntegrationEvent.create({
     data: {
       direction: input.direction,
       contract: input.contract,

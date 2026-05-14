@@ -4,7 +4,7 @@ import { authContextFromClaims } from "./server/claims";
 import { requireEntitlement, requireOrganization, requireResourceOwner, requireScopes } from "./server/guards";
 import { AuthError } from "./types";
 
-describe("@anan/auth", () => {
+describe("@qentrah/auth", () => {
   it("normalizes supported OAuth scopes", () => {
     expect(normalizeRequestedScopes("email openid properties:read nope properties:read")).toEqual([
       "email",

@@ -7,7 +7,7 @@ import {
 
 describe("partner authorization defaults", () => {
   it("uses the v1 organization authorization copy and expiry", () => {
-    expect(AUTHORIZATION_CTA_COPY).toBe("Authorize with Anan");
+    expect(AUTHORIZATION_CTA_COPY).toBe("Authorize with Qentrah");
     expect(DEFAULT_AUTHORIZATION_EXPIRY_DAYS).toBe(14);
     expect(authorizationExpiryLabel()).toBe("14 days");
   });

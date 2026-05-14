@@ -8,6 +8,6 @@ export const mdxComponents: MDXComponents = {
   ...defaultMdxComponents,
   AgentPromptCopyCard,
   Callout,
-  SDKName: () => <code>@anan/auth-sdk</code>,
+  SDKName: () => <code>@qentrah/auth-sdk</code>,
   CodeIcon: () => <Code2 className="inline h-4 w-4" />,
 };

@@ -117,7 +117,7 @@ model PartnerApp {
   workspaceOauthClientId        String?
   workspaceSyncStatus           String?
   workspaceSyncError            String?
-  ananWorkspaceClientId         String?
+  qentrahWorkspaceClientId         String?
   authorizationExpiresAfterDays Int
   reviewNotes                   String?
   submittedAt                   DateTime?
@@ -129,7 +129,7 @@ model PartnerApp {
   organization         ProgrammerOrganization?  @relation(fields: [partnerOrganizationId], references: [id], onDelete: SetNull)
   reviews              PartnerAppReview[]
   events               PartnerEvent[]
-  links                AnanWorkspaceLink[]
+  links                QentrahWorkspaceLink[]
   sandboxOrganizations SandboxOrganization[]
   sandboxResources     SandboxResource[]
   sandboxOAuthCodes    SandboxOAuthCode[]
@@ -264,11 +264,11 @@ model PartnerEvent {
   @@index([eventType])
 }
 
-model AnanWorkspaceLink {
+model QentrahWorkspaceLink {
   id                 String   @id @default(cuid())
   partnerAppId       String
-  ananWorkspaceId    String
-  ananOrganizationId String
+  qentrahWorkspaceId    String
+  qentrahOrganizationId String
   grantedScopes      String[]
   status             String
   createdAt          DateTime @default(now())
@@ -277,11 +277,11 @@ model AnanWorkspaceLink {
   app PartnerApp @relation(fields: [partnerAppId], references: [id], onDelete: Cascade)
 
   @@index([partnerAppId])
-  @@index([ananWorkspaceId])
+  @@index([qentrahWorkspaceId])
   @@index([status])
 }
 
-model AnanIntegrationEvent {
+model QentrahIntegrationEvent {
   id             String   @id @default(cuid())
   direction      String
   contract       String

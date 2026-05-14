@@ -5,4 +5,4 @@ export {
   hasScope,
   requireScopes,
   type AuthContext,
-} from "@anan/auth/server";
+} from "@qentrah/auth/server";

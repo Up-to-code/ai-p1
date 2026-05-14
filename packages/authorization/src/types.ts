@@ -1,4 +1,4 @@
-export const ANAN_OAUTH_SCOPES = [
+export const QENTRAH_OAUTH_SCOPES = [
   "offline_access",
   "clients:read",
   "clients:create",
@@ -11,9 +11,9 @@ export const ANAN_OAUTH_SCOPES = [
   "properties:read_own",
 ] as const;
 
-export type AnanOAuthScope = (typeof ANAN_OAUTH_SCOPES)[number];
+export type QentrahOAuthScope = (typeof QENTRAH_OAUTH_SCOPES)[number];
 
-export type AnanAuthorizationErrorCode =
+export type QentrahAuthorizationErrorCode =
   | "popup_blocked"
   | "access_denied"
   | "invalid_state"
@@ -23,27 +23,27 @@ export type AnanAuthorizationErrorCode =
   | "network_error"
   | "invalid_response";
 
-export type AnanAuthorizationClientOptions = {
+export type QentrahAuthorizationClientOptions = {
   issuer: string;
   clientId: string;
   redirectUri: string;
-  scopes: readonly AnanOAuthScope[] | readonly string[];
+  scopes: readonly QentrahOAuthScope[] | readonly string[];
   sourceApp?: "web" | "admin";
   popup?: {
     width?: number;
     height?: number;
     timeoutMs?: number;
   };
-  onEvent?: (event: AnanAuthorizationEvent) => void;
+  onEvent?: (event: QentrahAuthorizationEvent) => void;
 };
 
-export type AnanAuthorizeOptions = Partial<Pick<AnanAuthorizationClientOptions, "redirectUri" | "scopes" | "sourceApp">> & {
+export type QentrahAuthorizeOptions = Partial<Pick<QentrahAuthorizationClientOptions, "redirectUri" | "scopes" | "sourceApp">> & {
   state?: string;
   nonce?: string;
-  popup?: false | AnanAuthorizationClientOptions["popup"];
+  popup?: false | QentrahAuthorizationClientOptions["popup"];
 };
 
-export type AnanAuthorizeUrlInput = {
+export type QentrahAuthorizeUrlInput = {
   issuer: string;
   clientId: string;
   redirectUri: string;
@@ -54,17 +54,17 @@ export type AnanAuthorizeUrlInput = {
   sourceApp?: "web" | "admin";
 };
 
-export type AnanAuthorizeResult = {
+export type QentrahAuthorizeResult = {
   code: string;
   state: string;
   redirectUri: string;
 };
 
-export type AnanAuthorizeCodeResult = AnanAuthorizeResult & {
+export type QentrahAuthorizeCodeResult = QentrahAuthorizeResult & {
   codeVerifier: string;
 };
 
-export type AnanTokenSet = {
+export type QentrahTokenSet = {
   accessToken: string;
   tokenType: "Bearer";
   expiresIn: number;
@@ -73,7 +73,7 @@ export type AnanTokenSet = {
   idToken?: string;
 };
 
-export type AnanTokenExchangeInput = {
+export type QentrahTokenExchangeInput = {
   issuer: string;
   clientId: string;
   code: string;
@@ -82,21 +82,21 @@ export type AnanTokenExchangeInput = {
   clientSecret?: string;
 };
 
-export type AnanRefreshTokenInput = {
+export type QentrahRefreshTokenInput = {
   issuer: string;
   clientId: string;
   refreshToken: string;
   clientSecret?: string;
 };
 
-export type AnanRevokeTokenInput = {
+export type QentrahRevokeTokenInput = {
   issuer: string;
   clientId: string;
   token: string;
   clientSecret?: string;
 };
 
-export type AnanAuthorizationServerMetadata = {
+export type QentrahAuthorizationServerMetadata = {
   issuer: string;
   authorization_endpoint: string;
   token_endpoint: string;
@@ -108,10 +108,10 @@ export type AnanAuthorizationServerMetadata = {
   code_challenge_methods_supported?: string[];
 };
 
-export type AnanAuthorizationEvent =
+export type QentrahAuthorizationEvent =
   | { type: "authorize_url_created"; url: string }
   | { type: "popup_opened" }
   | { type: "popup_blocked" }
   | { type: "popup_closed" }
   | { type: "redirect_fallback"; url: string }
-  | { type: "authorized"; result: AnanAuthorizeResult };
+  | { type: "authorized"; result: QentrahAuthorizeResult };

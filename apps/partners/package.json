@@ -1,5 +1,5 @@
 {
-  "name": "@anan/partners",
+  "name": "@qentrah/partners",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -12,11 +12,11 @@
     "start": "next start --port 3002"
   },
   "dependencies": {
-    "@anan/brand-identity": "0.1.0",
-    "@anan/auth": "0.1.0",
-    "@anan/platform-core": "0.1.0",
-    "@anan/ui": "0.1.0",
-    "@anan/web-foundation": "0.1.0",
+    "@qentrah/brand-identity": "0.1.0",
+    "@qentrah/auth": "0.1.0",
+    "@qentrah/platform-core": "0.1.0",
+    "@qentrah/ui": "0.1.0",
+    "@qentrah/web-foundation": "0.1.0",
     "@better-auth/prisma-adapter": "1.5.6",
     "@hookform/resolvers": "^5.2.2",
     "@types/mdx": "^2.0.13",

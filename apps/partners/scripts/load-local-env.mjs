@@ -80,6 +80,6 @@ export function loadLocalEnv(options = {}) {
 
 export function ensurePartnerDatabaseEnv() {
   if (!process.env.DATABASE_URL?.trim()) {
-    process.env.DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/anan_partners";
+    process.env.DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/qentrah_partners";
   }
 }

@@ -2,4 +2,4 @@ export {
   requireOrganization,
   requireResourceOwner,
   type ResourceOwner,
-} from "@anan/auth/server";
+} from "@qentrah/auth/server";

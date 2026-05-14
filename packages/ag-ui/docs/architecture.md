@@ -2,7 +2,7 @@
 
 ## Summary
 
-`@anan/ag-ui` separates the AG UI contract from any single host app. The package owns the turn protocol, default card set, registry, and React renderer. Hosts own data fetching, mutations, transport, and side effects.
+`@qentrah/ag-ui` separates the AG UI contract from any single host app. The package owns the turn protocol, default card set, registry, and React renderer. Hosts own data fetching, mutations, transport, and side effects.
 
 ## Layers
 
@@ -12,8 +12,8 @@
   Ships the default ready-to-use card components.
 - `src/react`
   Provides the renderer plus registry merge helpers and action dispatch plumbing.
-- `src/anan`
-  Keeps the currently coupled Anan workspace adapters behind a dedicated entrypoint.
+- `src/qentrah`
+  Keeps the currently coupled Qentrah workspace adapters behind a dedicated entrypoint.
 
 ## Rendering lifecycle
 
@@ -29,11 +29,11 @@
 - Consumers can override only the card ids they care about.
 - Unknown card ids fail safely and render nothing.
 
-## Generic core vs Anan adapter
+## Generic core vs Qentrah adapter
 
 - Generic core:
   Cards, protocol, schemas, orchestration helper, and renderer.
-- Anan adapter:
+- Qentrah adapter:
   `AgPropertyForm`, `AgRichTextEditor`, and `AgDeleteConfirmModal`.
 
-The adapter exists because those components still depend on UploadThing, Anan workspace visuals, and Anan-specific contracts. That keeps the generic package usable in other projects without importing workspace-only code.
+The adapter exists because those components still depend on UploadThing, Qentrah workspace visuals, and Qentrah-specific contracts. That keeps the generic package usable in other projects without importing workspace-only code.

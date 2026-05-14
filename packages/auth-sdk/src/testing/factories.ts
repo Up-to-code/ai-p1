@@ -1,4 +1,4 @@
-import type { AuthContext } from "@anan/auth/server";
+import type { AuthContext } from "@qentrah/auth/server";
 
 export function createMockAuthContext(overrides: Partial<AuthContext> = {}): AuthContext {
   return {

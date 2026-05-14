@@ -3,7 +3,7 @@ import {
   fetchMutation as convexFetchMutation,
   fetchQuery as convexFetchQuery,
 } from "convex/nextjs";
-import type { UnsafeApiRecord } from "@anan/platform-core/convex-api";
+import type { UnsafeApiRecord } from "@qentrah/platform-core/convex-api";
 import { getApiRefs } from "./api";
 
 export type ConvexToken = string;

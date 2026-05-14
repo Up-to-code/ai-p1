@@ -34,7 +34,7 @@ next available port if `3002` is busy.
 - Review callback handling from Workspace.
 - Partner docs powered by MDX/Fumadocs.
 - Sandbox OAuth endpoints for docs and local exploration.
-- Partner integration contracts under `lib/anan-integration`.
+- Partner integration contracts under `lib/qentrah-integration`.
 
 ## Important Routes And Files
 
@@ -44,7 +44,7 @@ next available port if `3002` is busy.
 | `app/(auth)` | Partner sign-in and sign-up |
 | `app/(portal)/dashboard` | Authenticated portal shell, account, apps, status |
 | `app/docs/[[...slug]]/page.tsx` | Partner docs route |
-| `app/api/anan-review-callback/route.ts` | Workspace review callback endpoint |
+| `app/api/qentrah-review-callback/route.ts` | Workspace review callback endpoint |
 | `app/api/partner-signup/route.ts` | Protected sign-up bridge |
 | `app/api/partner-signin/route.ts` | Protected sign-in bridge |
 | `app/sandbox/oauth` | Sandbox OAuth authorize/token endpoints |
@@ -52,7 +52,7 @@ next available port if `3002` is busy.
 | `components/docs` | MDX docs components |
 | `prisma/schema.prisma` | Partners-owned Postgres schema |
 | `server` | Prisma repositories and integration boundary |
-| `lib/anan-integration` | Workspace integration contracts |
+| `lib/qentrah-integration` | Workspace integration contracts |
 
 ## Environment
 
@@ -91,7 +91,7 @@ Useful docs files:
 Run a build after changing partner MDX or docs components:
 
 ```bash
-npm --workspace @anan/partners run build
+npm --workspace @qentrah/partners run build
 ```
 
 ## App Registration Flow
@@ -100,7 +100,7 @@ npm --workspace @anan/partners run build
 2. Developer creates an app draft with redirect URIs and requested scopes.
 3. Partners submits the app to Workspace using `QENTRAH_PLATFORM_SERVICE_TOKEN`.
 4. Admin Review approves, rejects, or suspends the app through Workspace.
-5. Workspace calls `app/api/anan-review-callback/route.ts`.
+5. Workspace calls `app/api/qentrah-review-callback/route.ts`.
 6. Partners updates portal status and exposes the approved client information.
 
 ## Scripts
@@ -118,9 +118,9 @@ npm run prisma:migrate
 From the repository root:
 
 ```bash
-npm --workspace @anan/partners run typecheck
-npm --workspace @anan/partners test
-npm --workspace @anan/partners run build
+npm --workspace @qentrah/partners run typecheck
+npm --workspace @qentrah/partners test
+npm --workspace @qentrah/partners run build
 ```
 
 ## Related Documentation

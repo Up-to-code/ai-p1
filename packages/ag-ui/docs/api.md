@@ -1,6 +1,6 @@
 # API Reference
 
-## `@anan/ag-ui`
+## `@qentrah/ag-ui`
 
 Exports:
 
@@ -20,7 +20,7 @@ Exports:
 - Default card components
 - Registry helpers re-exported from `src/react/registry`
 
-## `@anan/ag-ui/react`
+## `@qentrah/ag-ui/react`
 
 Exports:
 
@@ -44,7 +44,7 @@ Exports:
 3. `byActionId[actionId]`
 4. `onAction`
 
-## `@anan/ag-ui/anan`
+## `@qentrah/ag-ui/qentrah`
 
 Exports:
 
@@ -53,4 +53,4 @@ Exports:
 - `AgRichTextEditor`
 - `AgDeleteConfirmModal`
 
-These exports are intentionally adapter-scoped and may depend on Anan workspace infrastructure.
+These exports are intentionally adapter-scoped and may depend on Qentrah workspace infrastructure.

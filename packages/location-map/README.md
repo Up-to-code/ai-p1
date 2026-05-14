@@ -1,4 +1,4 @@
-# @anan/location-map
+# @qentrah/location-map
 
 Reusable Mapbox-backed location primitives for Qentrah workspace lifecycle screens.
 

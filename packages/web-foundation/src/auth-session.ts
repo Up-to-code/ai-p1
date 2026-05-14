@@ -1,4 +1,4 @@
-import { toSessionUser, type SessionContext, type SessionUser } from "@anan/platform-core/session";
+import { toSessionUser, type SessionContext, type SessionUser } from "@qentrah/platform-core/session";
 
 export type OptionalSessionResult = {
   token: string;

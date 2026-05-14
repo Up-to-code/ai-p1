@@ -41,10 +41,10 @@ npm run build --workspaces --if-present
 Target one workspace:
 
 ```bash
-npm --workspace @anan/workspace run typecheck
-npm --workspace @anan/partners run test
-npm --workspace @anan/admin-review run build
-npm --workspace @anan/demo-partner-app run build
+npm --workspace @qentrah/workspace run typecheck
+npm --workspace @qentrah/partners run test
+npm --workspace @qentrah/admin-review run build
+npm --workspace @qentrah/demo-partner-app run build
 ```
 
 ## Repository Architecture
@@ -52,7 +52,7 @@ npm --workspace @anan/demo-partner-app run build
 The repo is an npm workspaces monorepo.
 
 ```txt
-anan/
+qentrah/
   apps/
     workspace/          Main Qentrah product, OAuth provider, partner resource API, admin service API
     partners/           Partner developer portal, app registration, docs, sandbox
@@ -100,7 +100,7 @@ sequenceDiagram
   Dev->>Partners: Submit app for review
   Partners->>Workspace: POST /api/v1/admin/partner-app-registrations
   Admin->>Workspace: Review submission
-  Workspace->>Partners: POST /api/anan-review-callback
+  Workspace->>Partners: POST /api/qentrah-review-callback
   Partners->>Partners: Mark app active/rejected/suspended
   Partner->>Workspace: OAuth authorize request
   Workspace->>Partner: Authorization code
@@ -140,7 +140,7 @@ Useful scripts:
 | `npm run dev:marketing` | Starts Marketing on port 3005. |
 | `npm --workspace <name> run typecheck` | TypeScript validation for one workspace. |
 | `npm --workspace <name> test` | Vitest for one workspace. |
-| `npm --workspace @anan/workspace run test:e2e` | Playwright E2E tests for Workspace. |
+| `npm --workspace @qentrah/workspace run test:e2e` | Playwright E2E tests for Workspace. |
 
 ## Environment Strategy
 
@@ -385,7 +385,7 @@ Demo OAuth checklist:
 2. Start Partners at `http://localhost:3002`.
 3. Create a partner app in Partners.
 4. Use `http://localhost:3004` as the partner app URL.
-5. Use `http://localhost:3004/api/auth/anan/callback` as redirect URI.
+5. Use `http://localhost:3004/api/auth/qentrah/callback` as redirect URI.
 6. Request read scopes first: `organization:read`, `client:read`, `property:read`.
 7. Approve/sync the app through Admin Review or the relevant local flow.
 8. Copy the OAuth client ID into `QENTRAH_CLIENT_ID`.
@@ -417,16 +417,16 @@ Env variables:
 
 Packages under `packages/*` are mostly pure TypeScript libraries. They generally do not own runtime env. Important exceptions:
 
-- `@anan/location-map` reads `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` from the host app.
-- `@anan/platform-core` contains helpers that read auth/Convex env through app-provided contexts.
-- `@anan/auth` reads OIDC-related env only when used by a host app/package runtime.
+- `@qentrah/location-map` reads `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` from the host app.
+- `@qentrah/platform-core` contains helpers that read auth/Convex env through app-provided contexts.
+- `@qentrah/auth` reads OIDC-related env only when used by a host app/package runtime.
 
 Build/test package examples:
 
 ```bash
-npm --workspace @anan/domain-contracts run build
-npm --workspace @anan/ui run test
-npm --workspace @anan/auth-sdk run build
+npm --workspace @qentrah/domain-contracts run build
+npm --workspace @qentrah/ui run test
+npm --workspace @qentrah/auth-sdk run build
 ```
 
 ## External Token Sources
@@ -562,16 +562,16 @@ Partners:
 
 - Docs: `/docs`
 - App dashboard: `/dashboard/apps`
-- Review callback: `/api/anan-review-callback`
+- Review callback: `/api/qentrah-review-callback`
 - Sandbox OAuth: `/sandbox/oauth/authorize`, `/sandbox/oauth/token`
 - Sandbox partner resources: `/api/v1/partner/organizations/:organizationId/...`
 
 Demo Partner App:
 
-- OAuth start: `/api/auth/anan/start`
-- OAuth callback: `/api/auth/anan/callback`
-- Logout: `/api/auth/anan/logout`
-- Local proxy APIs: `/api/anan/me`, `/api/anan/clients`, `/api/anan/properties`
+- OAuth start: `/api/auth/qentrah/start`
+- OAuth callback: `/api/auth/qentrah/callback`
+- Logout: `/api/auth/qentrah/logout`
+- Local proxy APIs: `/api/qentrah/me`, `/api/qentrah/clients`, `/api/qentrah/properties`
 
 ## Validation Checklist
 
@@ -586,26 +586,26 @@ npm run build --workspaces --if-present
 For partner-platform changes:
 
 ```bash
-npm --workspace @anan/workspace run typecheck
-npm --workspace @anan/partners run typecheck
-npm --workspace @anan/admin-review run typecheck
-npm --workspace @anan/demo-partner-app run typecheck
-npm --workspace @anan/partners test
-npm --workspace @anan/admin-review test
-npm --workspace @anan/demo-partner-app test
+npm --workspace @qentrah/workspace run typecheck
+npm --workspace @qentrah/partners run typecheck
+npm --workspace @qentrah/admin-review run typecheck
+npm --workspace @qentrah/demo-partner-app run typecheck
+npm --workspace @qentrah/partners test
+npm --workspace @qentrah/admin-review test
+npm --workspace @qentrah/demo-partner-app test
 ```
 
 For docs/MDX changes in Partners:
 
 ```bash
-npm --workspace @anan/partners run build
+npm --workspace @qentrah/partners run build
 ```
 
 For Workspace UI or auth changes:
 
 ```bash
-npm --workspace @anan/workspace run test
-npm --workspace @anan/workspace run test:e2e
+npm --workspace @qentrah/workspace run test
+npm --workspace @qentrah/workspace run test:e2e
 ```
 
 ## Troubleshooting
@@ -637,7 +637,7 @@ Admin Review cannot load apps:
 Demo Partner App OAuth callback fails:
 
 - Confirm `PARTNER_APP_URL` exactly matches the registered redirect URI origin.
-- Confirm redirect URI is registered as `${PARTNER_APP_URL}/api/auth/anan/callback`.
+- Confirm redirect URI is registered as `${PARTNER_APP_URL}/api/auth/qentrah/callback`.
 - Confirm `QENTRAH_CLIENT_ID` matches the approved OAuth client.
 - Confirm `SESSION_SECRET` is at least 32 characters.
 - Confirm the OAuth request includes `resource=${QENTRAH_WORKSPACE_API_URL}/api/v1/partner`.

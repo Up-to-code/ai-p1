@@ -1,5 +1,5 @@
 {
-  "name": "@anan/ui",
+  "name": "@qentrah/ui",
   "version": "0.1.0",
   "description": "Shared Qentrah React UI primitives for apps.",
   "type": "module",
@@ -58,15 +58,15 @@
     }
   },
   "scripts": {
-    "prebuild": "npm --workspace @anan/brand-identity run build && npm --workspace @anan/platform-core run build && npm --workspace @anan/auth-sdk run build",
+    "prebuild": "npm --workspace @qentrah/brand-identity run build && npm --workspace @qentrah/platform-core run build && npm --workspace @qentrah/auth-sdk run build",
     "build": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
   "dependencies": {
-    "@anan/brand-identity": "0.1.0",
-    "@anan/auth-sdk": "0.1.0",
-    "@anan/platform-core": "0.1.0",
     "@base-ui/react": "^1.2.0",
+    "@qentrah/auth-sdk": "0.1.0",
+    "@qentrah/brand-identity": "0.1.0",
+    "@qentrah/platform-core": "0.1.0",
     "class-variance-authority": "^0.7.1",
     "lucide-react": "^0.577.0",
     "marked": "^17.0.5",
@@ -85,8 +85,8 @@
     "@types/node": "^20.14.9",
     "@types/react": "^19.2.3",
     "@types/react-dom": "^19.2.3",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "react": "19.2.4",
+    "react-dom": "^19.2.3",
     "typescript": "^5",
     "vitest": "^4.1.6"
   }

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { Link, useRouter } from "@/i18n/routing";
+import { BrandMark } from "@/components/logo";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -142,7 +142,7 @@ export default function ChooseOrgPage() {
         <div className="flex items-center justify-between gap-4">
           <Link href="/" className="group flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-border bg-surface text-foreground transition group-hover:bg-muted">
-              <Image src="/brand-logo.svg" alt="Qentrah" width={22} height={22} className="h-5.5 w-5.5" priority />
+              <BrandMark className="h-5.5 w-5.5" priority />
             </span>
             <span className="text-lg font-black tracking-tight text-foreground">
               {brandLabel}
@@ -162,7 +162,7 @@ export default function ChooseOrgPage() {
             <div className="space-y-5 rounded-[24px] border border-border bg-surface p-5 text-start sm:p-6">
               <div className="flex items-start gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-background">
-                  <Image src="/brand-logo.svg" alt="Qentrah" width={22} height={22} className="h-5.5 w-5.5" priority />
+                  <BrandMark className="h-5.5 w-5.5" priority />
                 </span>
                 <div className="min-w-0 space-y-1">
                   <h1 className="text-2xl font-bold tracking-tight text-foreground">
@@ -201,7 +201,7 @@ export default function ChooseOrgPage() {
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img src={organization.logo} alt="" className="h-7 w-7 object-contain" />
                               ) : (
-                                <Image src="/brand-logo.svg" alt="" width={26} height={26} className="h-6.5 w-6.5" />
+                                <BrandMark className="h-6.5 w-6.5" />
                               )}
                             </span>
                             <span className="min-w-0">

@@ -1,0 +1,19 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" id="qentrah_ai_thinking">
+  <rect x="98" y="98" width="4" height="4" fill="#2563EB" id="core_workspace"/>
+  
+  <path d="M100 20L170 60V140L100 180L30 140V60L100 20Z" stroke="#0F172A" stroke-width="2" id="outer_boundary"/>
+  
+  <g id="data_paths">
+    <path d="M100 98V20M100 102V180M98 100H30M102 100H170" stroke="#64748B" stroke-width="2"/>
+    
+    <g id="diagonal_paths" stroke="#64748B" stroke-width="2">
+      <path d="M101.5 98.5L130 70"/>
+      <path d="M98.5 98.5L70 70"/>
+      <path d="M101.5 101.5L130 130"/>
+      <path d="M98.5 101.5L70 130"/>
+    </g>
+    
+    <rect x="99" y="50" width="2" height="10" fill="#2563EB" id="blue_node_top"/>
+    <rect x="140" y="99" width="10" height="2" fill="#2563EB" id="blue_node_right"/>
+  </g>
+</svg>

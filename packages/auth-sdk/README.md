@@ -1,4 +1,4 @@
-# @anan/auth-sdk
+# @qentrah/auth-sdk
 
 Production authentication SDK for Qentrah apps. The SDK is an umbrella over the existing Better Auth, OIDC, external authorization, and resource authorization surfaces.
 
@@ -13,8 +13,8 @@ Production authentication SDK for Qentrah apps. The SDK is an umbrella over the 
 ## Import Surfaces
 
 ```ts
-import { createAuthBrowserClient } from "@anan/auth-sdk/client";
-import { AuthProvider, useAuth } from "@anan/auth-sdk/react";
-import { requireAuthContext } from "@anan/auth-sdk/server";
-import { requireEntitlement } from "@anan/auth-sdk/authorization";
+import { createAuthBrowserClient } from "@qentrah/auth-sdk/client";
+import { AuthProvider, useAuth } from "@qentrah/auth-sdk/react";
+import { requireAuthContext } from "@qentrah/auth-sdk/server";
+import { requireEntitlement } from "@qentrah/auth-sdk/authorization";
 ```

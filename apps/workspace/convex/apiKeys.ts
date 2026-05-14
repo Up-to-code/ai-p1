@@ -10,7 +10,7 @@ export const apiKeys = new ApiKeys<{
   permissions: Record<string, string[]>;
 }>(components.apiKeys, {
   keyDefaults: {
-    prefix: "anan_mcp_",
+    prefix: "qentrah_mcp_",
     keyLengthBytes: 32,
     ttlMs: null,
     idleTimeoutMs: 30 * 24 * 60 * 60 * 1000,

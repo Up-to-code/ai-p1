@@ -1,4 +1,4 @@
-import { brandEnvName, brandLabel, brandProductName, brandRoutePath, readBrandEnv } from "@anan/brand-identity";
+import { brandEnvName, brandLabel, brandProductName, brandRoutePath, readBrandEnv } from "@qentrah/brand-identity";
 
 import { localDemoRegistration } from "./local-demo-registration";
 

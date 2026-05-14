@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { DocsLayout } from "fumadocs-ui/layouts/docs";
-import { brandProductName } from "@anan/brand-identity";
+import { brandProductName } from "@qentrah/brand-identity";
 import { source } from "@/lib/source";
 
 export default function Layout({ children }: { children: ReactNode }) {

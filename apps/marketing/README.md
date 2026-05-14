@@ -58,7 +58,7 @@ npm run typecheck
 From the repository root:
 
 ```bash
-npm --workspace @anan/marketing run typecheck
+npm --workspace @qentrah/marketing run typecheck
 ```
 
 ## Related Documentation

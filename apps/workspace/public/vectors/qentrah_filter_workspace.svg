@@ -1,0 +1,11 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" id="qentrah_filter_workspace">
+  <!-- Sorting Sieve -->
+  <g id="sieve" transform="translate(80, 100)">
+    <rect width="240" height="200" stroke="#0F172A" stroke-width="4" id="outer_sieve"/>
+    <!-- Lanes -->
+    <path d="M80 0V200M160 0V200" stroke="#F1F5F9" stroke-width="2"/>
+    <!-- Selection -->
+    <rect x="100" y="40" width="40" height="40" fill="#2563EB" id="selection_sector"/>
+    <path d="M100 100H140M100 120H140" stroke="#64748B" stroke-width="2" opacity="0.3"/>
+  </g>
+</svg>

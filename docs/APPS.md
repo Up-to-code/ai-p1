@@ -7,11 +7,11 @@ it when deciding where a change belongs.
 
 | App | Package | Path | Purpose |
 | --- | --- | --- | --- |
-| Workspace | `@anan/workspace` | `apps/workspace` | Main product, organization workspace, OAuth provider, partner resource APIs |
-| Partners | `@anan/partners` | `apps/partners` | Developer portal, app registration, partner docs, sandbox |
-| Admin Review | `@anan/admin-review` | `apps/admin` | Internal review console for partner app submissions |
-| Demo Partner App | `@anan/demo-partner-app` | `apps/demo-partner-app` | Standalone OAuth integration example |
-| Marketing | `@anan/marketing` | `apps/marketing` | Public marketing site |
+| Workspace | `@qentrah/workspace` | `apps/workspace` | Main product, organization workspace, OAuth provider, partner resource APIs |
+| Partners | `@qentrah/partners` | `apps/partners` | Developer portal, app registration, partner docs, sandbox |
+| Admin Review | `@qentrah/admin-review` | `apps/admin` | Internal review console for partner app submissions |
+| Demo Partner App | `@qentrah/demo-partner-app` | `apps/demo-partner-app` | Standalone OAuth integration example |
+| Marketing | `@qentrah/marketing` | `apps/marketing` | Public marketing site |
 
 ## Workspace
 
@@ -36,9 +36,9 @@ Run:
 
 ```bash
 npm run dev:workspace
-npm --workspace @anan/workspace run typecheck
-npm --workspace @anan/workspace test
-npm --workspace @anan/workspace run test:e2e
+npm --workspace @qentrah/workspace run typecheck
+npm --workspace @qentrah/workspace test
+npm --workspace @qentrah/workspace run test:e2e
 ```
 
 ## Partners
@@ -62,9 +62,9 @@ Run:
 
 ```bash
 npm run dev:partners
-npm --workspace @anan/partners run typecheck
-npm --workspace @anan/partners test
-npm --workspace @anan/partners run build
+npm --workspace @qentrah/partners run typecheck
+npm --workspace @qentrah/partners test
+npm --workspace @qentrah/partners run build
 ```
 
 ## Admin Review
@@ -82,8 +82,8 @@ Run:
 
 ```bash
 npm run dev:admin
-npm --workspace @anan/admin-review run typecheck
-npm --workspace @anan/admin-review test
+npm --workspace @qentrah/admin-review run typecheck
+npm --workspace @qentrah/admin-review test
 ```
 
 ## Demo Partner App
@@ -95,9 +95,9 @@ Important areas:
 
 - `app/page.tsx` and `app/unlock/page.tsx`: setup-token gate.
 - `app/dashboard/page.tsx`: authorized demo dashboard.
-- `app/api/auth/anan/start`: starts OAuth with PKCE.
-- `app/api/auth/anan/callback`: exchanges code server-side.
-- `app/api/anan/*`: resource API proxy routes for organization, clients, and
+- `app/api/auth/qentrah/start`: starts OAuth with PKCE.
+- `app/api/auth/qentrah/callback`: exchanges code server-side.
+- `app/api/qentrah/*`: resource API proxy routes for organization, clients, and
   properties.
 - `lib/oauth.ts`: PKCE and OAuth helpers.
 - `lib/workspace-api.ts`: Workspace resource API client.
@@ -106,8 +106,8 @@ Run:
 
 ```bash
 npm run dev:demo
-npm --workspace @anan/demo-partner-app run typecheck
-npm --workspace @anan/demo-partner-app test
+npm --workspace @qentrah/demo-partner-app run typecheck
+npm --workspace @qentrah/demo-partner-app test
 ```
 
 ## Marketing
@@ -125,8 +125,8 @@ Run:
 
 ```bash
 npm run dev:marketing
-npm --workspace @anan/marketing run typecheck
-npm --workspace @anan/marketing run build
+npm --workspace @qentrah/marketing run typecheck
+npm --workspace @qentrah/marketing run build
 ```
 
 ## Shared Packages

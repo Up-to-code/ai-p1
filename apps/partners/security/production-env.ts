@@ -1,4 +1,4 @@
-import { readBrandEnv } from "@anan/brand-identity";
+import { readBrandEnv } from "@qentrah/brand-identity";
 
 export function getMissingPartnersProductionEnv() {
   if (process.env.NODE_ENV !== "production") return [];

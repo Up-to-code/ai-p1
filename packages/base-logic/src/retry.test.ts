@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { getBackoffWithJitter, isRetryableError, withRetry } from "./retry";
 import { safeJsonParse } from "./safe-parse";
 
-describe("@anan/base-logic retry and parsing", () => {
+describe("@qentrah/base-logic retry and parsing", () => {
   it("detects retryable transport errors", () => {
     expect(isRetryableError(new Error("upstream 503"))).toBe(true);
     expect(isRetryableError(new Error("validation failed"))).toBe(false);

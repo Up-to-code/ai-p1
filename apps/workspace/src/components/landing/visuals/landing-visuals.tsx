@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 import { ChartOverlay, ConnectionOverlay } from "./motion-overlays";
+import { BrandMark } from "@/components/logo";
 
 type MotionVectorProps = {
   src: string;
@@ -31,7 +32,6 @@ const CONVERGENCE_LINES = [
 
 function CenterBrandMark({
   reduceMotion,
-  size,
   wrapperClassName,
   borderClassName,
 }: {
@@ -48,7 +48,7 @@ function CenterBrandMark({
       whileHover={reduceMotion ? undefined : { scale: 1.04 }}
     >
       <div className={borderClassName}>
-        <Image src="/brand-logo.svg" alt="Qentrah" width={size} height={size} style={{ width: size, height: size }} priority />
+        <BrandMark className="h-full w-full" priority />
       </div>
     </motion.div>
   );
@@ -92,7 +92,7 @@ export function HeroBrandNetworkVisual() {
         whileHover={reduceMotion ? undefined : { scale: 1.01 }}
       >
         <Image
-          src="/vectors/landing/anan_landing_hero_brand_v2.svg"
+          src="/vectors/landing/qentrah_landing_hero_brand_v2.svg"
           alt="شبكة قنطرة"
           width={680}
           height={500}
@@ -121,7 +121,7 @@ export function HeroBrandNetworkVisual() {
 export function BuyerIntelligenceVisual() {
   return (
     <MotionVector
-      src="/vectors/landing/anan_landing_buyers_flow_v3.svg"
+      src="/vectors/landing/qentrah_landing_buyers_flow_v3.svg"
       alt="مسار التعريف بالمنصة"
       overlay={
         <ConnectionOverlay
@@ -140,7 +140,7 @@ export function BuyerIntelligenceVisual() {
 export function DeveloperPulseVisual() {
   return (
     <MotionVector
-      src="/vectors/landing/anan_landing_developer_pulse_v3.svg"
+      src="/vectors/landing/qentrah_landing_developer_pulse_v3.svg"
       alt="إشارات الطلب للمطور"
       dark
       overlay={<ChartOverlay />}
@@ -151,7 +151,7 @@ export function DeveloperPulseVisual() {
 export function BrokerNetworkVisual() {
   return (
     <MotionVector
-      src="/vectors/landing/anan_landing_broker_network_v2.svg"
+      src="/vectors/landing/qentrah_landing_broker_network_v2.svg"
       alt="شبكة الربط بين الوسطاء"
       overlay={
         <ConnectionOverlay
@@ -182,7 +182,7 @@ export function ConvergenceFieldVisual() {
     >
       <div className="relative w-full max-w-[620px]">
         <Image
-          src="/vectors/landing/anan_landing_convergence_v3.svg"
+          src="/vectors/landing/qentrah_landing_convergence_v3.svg"
           alt="نقطة التقاء السوق"
           width={620}
           height={520}
@@ -209,7 +209,7 @@ export function ConvergenceFieldVisual() {
 export function AiIntelligenceVisual() {
   return (
     <MotionVector
-      src="/vectors/landing/anan_landing_ai_intelligence_v3.svg"
+      src="/vectors/landing/qentrah_landing_ai_intelligence_v3.svg"
       alt="ذكاء قنطرة"
       overlay={
         <ConnectionOverlay
@@ -230,7 +230,7 @@ export function AiIntelligenceVisual() {
 export function EcosystemConnectionVisual() {
   return (
     <MotionVector
-      src="/vectors/landing/anan_landing_ecosystem_connection_v3.svg"
+      src="/vectors/landing/qentrah_landing_ecosystem_connection_v3.svg"
       alt="منظومة الربط المؤسسي"
       overlay={
         <ConnectionOverlay

@@ -1,0 +1,11 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" id="qentrah_inbox_empty">
+  <!-- Systematic Hollow Frames -->
+  <g id="inbox_frames" transform="translate(60, 100)">
+    <rect width="280" height="40" stroke="#F1F5F9" stroke-width="2" id="frame_1"/>
+    <rect y="60" width="280" height="40" stroke="#F1F5F9" stroke-width="2" id="frame_2"/>
+    <rect y="120" width="280" height="40" stroke="#0F172A" stroke-width="2" id="frame_active"/>
+    <rect y="180" width="280" height="40" stroke="#F1F5F9" stroke-width="2" id="frame_3"/>
+    <!-- Muted Content Implication -->
+    <rect x="20" y="138" width="80" height="4" fill="#2563EB" opacity="0.3"/>
+  </g>
+</svg>

@@ -7,7 +7,7 @@ import { BrokerCard, DeveloperCard, FilterChipBar, WorkspacePropertyCardContent 
 import { PageHeader, StatusBadge } from "./admin";
 import { Section } from "./public";
 
-describe("@anan/ui", () => {
+describe("@qentrah/ui", () => {
   it("renders migrated UI primitives", () => {
     expect(renderToStaticMarkup(<Button>Save</Button>)).toContain("Save");
     expect(renderToStaticMarkup(<PageHeader eyebrow="Ops" title="Overview" />)).toContain("Overview");

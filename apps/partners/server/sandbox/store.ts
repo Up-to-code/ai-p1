@@ -1,10 +1,22 @@
-import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { randomToken } from "@/server/partnerRuntime";
 
 function jsonInput(value: unknown): never {
   return value as never;
 }
+
+type SandboxRequestLogRow = {
+  id: string;
+  method: string;
+  path: string;
+  status: number;
+  latencyMs: number | null;
+  scopes: string[];
+  input: unknown;
+  response: unknown;
+  error: string | null;
+  createdAt: Date;
+};
 
 export const ACCESS_TOKEN_TTL_MS = 60 * 60 * 1000;
 export const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
@@ -33,7 +45,7 @@ export function normalizeRequestedScopes(scopes: string[]) {
 function presentResource(resource: {
   id: string;
   resourceType: string;
-  data: Prisma.JsonValue;
+  data: unknown;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
@@ -82,7 +94,7 @@ async function seedSandbox(app: { id: string; partnerAuthSubject: string; name: 
     { resourceType: "project", data: { name: "Sandbox Project", stage: "planning" } },
     { resourceType: "task", data: { title: "Follow up with sandbox lead", status: "open" } },
     { resourceType: "calendar", data: { title: "Sandbox showing", startsAt: new Date(Date.now() + 86_400_000).toISOString() } },
-    { resourceType: "media", data: { name: "sandbox-brochure.pdf", resourceType: "property", url: "https://partners.anan.local/sandbox/media/demo.pdf" } },
+    { resourceType: "media", data: { name: "sandbox-brochure.pdf", resourceType: "property", url: "https://partners.qentrah.local/sandbox/media/demo.pdf" } },
   ];
 
   await prisma.sandboxResource.createMany({
@@ -123,7 +135,7 @@ export const sandboxStore = {
       where: { partnerAppId: app.id },
       orderBy: { createdAt: "desc" },
       take: 50,
-    });
+    }) as SandboxRequestLogRow[];
     return {
       organization: organization
         ? {

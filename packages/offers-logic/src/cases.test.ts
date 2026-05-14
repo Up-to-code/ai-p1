@@ -9,7 +9,7 @@ import {
   resolveVisibility,
 } from "./cases";
 
-describe("@anan/offers-logic cases", () => {
+describe("@qentrah/offers-logic cases", () => {
   it("maps modern stages to legacy state", () => {
     expect(legacyStatusFromStage("closed_won")).toBe("accepted");
     expect(legacyStatusFromStage("closed_lost")).toBe("rejected");

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { WorkspaceApiError, loadAnanClients } from "./workspace-api";
-import { buildAnanAuthorizeUrl } from "./oauth-url";
+import { WorkspaceApiError, loadQentrahClients } from "./workspace-api";
+import { buildQentrahAuthorizeUrl } from "./oauth-url";
 import { localDemoRegistration } from "./local-demo-registration";
 import { createCodeChallenge, createCodeVerifier } from "./pkce";
 import { exchangeAuthorizationCode, refreshAccessToken } from "./token-exchange";
@@ -14,10 +14,10 @@ function jsonResponse(payload: unknown, status = 200) {
 
 describe("partner OAuth examples", () => {
   it("builds an organization authorization URL with PKCE and canonical scopes", () => {
-    const url = new URL(buildAnanAuthorizeUrl({
+    const url = new URL(buildQentrahAuthorizeUrl({
       workspaceBaseUrl: "http://localhost:3000/",
       clientId: "partners_client_123",
-      redirectUri: "https://pdf.example.com/api/auth/anan/callback",
+      redirectUri: "https://pdf.example.com/api/auth/qentrah/callback",
       scopes: ["organization:read", "client:read", "property:read"],
       state: "state-123",
       codeChallenge: "challenge-123",
@@ -34,8 +34,8 @@ describe("partner OAuth examples", () => {
     expect(url.searchParams.get("organization_id")).toBe("org_123");
   });
 
-  it("builds the current local Anan OAuth Demo authorization URL", () => {
-    const url = new URL(buildAnanAuthorizeUrl({
+  it("builds the current local Qentrah OAuth Demo authorization URL", () => {
+    const url = new URL(buildQentrahAuthorizeUrl({
       workspaceBaseUrl: "http://localhost:3000",
       clientId: localDemoRegistration.clientId,
       redirectUri: localDemoRegistration.redirectUri,
@@ -46,7 +46,7 @@ describe("partner OAuth examples", () => {
 
     expect(url.pathname).toBe("/oauth/authorize");
     expect(url.searchParams.get("client_id")).toBe("partners_client_4p2f001r194s5z6e15473f582m331f4z4s0f");
-    expect(url.searchParams.get("redirect_uri")).toBe("http://localhost:3004/api/auth/anan/callback");
+    expect(url.searchParams.get("redirect_uri")).toBe("http://localhost:3004/api/auth/qentrah/callback");
     expect(url.searchParams.get("resource")).toBe("http://localhost:3000/api/v1/partner");
     expect(url.searchParams.get("scope")).toBe([
       "calendar:read",
@@ -83,7 +83,7 @@ describe("partner OAuth examples", () => {
       workspaceBaseUrl: "localhost:3000",
       clientId: "partners_client_123",
       code: "code-123",
-      redirectUri: "https://pdf.example.com/api/auth/anan/callback",
+      redirectUri: "https://pdf.example.com/api/auth/qentrah/callback",
       codeVerifier: "verifier-123",
       fetcher,
     });
@@ -118,7 +118,7 @@ describe("partner OAuth examples", () => {
   it("loads clients from Workspace Hono APIs using the bearer token", async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse({ clients: [{ id: "client_1" }] }));
 
-    const payload = await loadAnanClients({
+    const payload = await loadQentrahClients({
       workspaceBaseUrl: "http://localhost:3000",
       organizationId: "org_123",
       accessToken: "access-token",
@@ -136,7 +136,7 @@ describe("partner OAuth examples", () => {
       message: "Reconnect this organization.",
     }, 401));
 
-    await expect(loadAnanClients({
+    await expect(loadQentrahClients({
       workspaceBaseUrl: "http://localhost:3000",
       organizationId: "org_123",
       accessToken: "expired-token",

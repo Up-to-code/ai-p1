@@ -1,7 +1,7 @@
 "use client";
 
 import { Cell, Pie, PieChart } from "recharts";
-import { cn } from "@anan/platform-core/classnames";
+import { cn } from "@qentrah/platform-core/classnames";
 import { formatChartNumber, type ChartBreakdownDatum } from "./chartTypes";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./chart";
 import ResponsiveChartFrame from "./ResponsiveChartFrame";

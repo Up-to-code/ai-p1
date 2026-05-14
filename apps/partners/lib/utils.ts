@@ -1,1 +1,1 @@
-export { cn } from "@anan/platform-core/classnames";
+export { cn } from "@qentrah/platform-core/classnames";

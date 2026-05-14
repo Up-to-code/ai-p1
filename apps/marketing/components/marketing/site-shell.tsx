@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowUpRight, Menu, X } from "lucide-react";
-import { brandDomainUrl, brandLabel } from "@anan/brand-identity";
+import { brandDomainUrl, brandLabel } from "@qentrah/brand-identity";
 
 import { getAlternateLocale, type Locale } from "@/lib/content";
 

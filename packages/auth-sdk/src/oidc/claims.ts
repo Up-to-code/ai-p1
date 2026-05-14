@@ -3,8 +3,8 @@ export {
   authContextFromSessionContext,
   getClaimEntitlements,
   getClaimScopes,
-} from "@anan/auth/server";
+} from "@qentrah/auth/server";
 export type {
-  AnanOidcClaims,
+  QentrahOidcClaims,
   AuthContext,
-} from "@anan/auth/server";
+} from "@qentrah/auth/server";

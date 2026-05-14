@@ -283,7 +283,7 @@ export const partnerAppsRepository = {
         data: {
           appId: app.id,
           status: nextStatus,
-          reviewerAuthSubject: "anan-workspace",
+          reviewerAuthSubject: "qentrah-workspace",
           notes: input.reviewNotes,
         },
       }),

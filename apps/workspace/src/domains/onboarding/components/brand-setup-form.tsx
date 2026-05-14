@@ -12,7 +12,7 @@ import { brandSetupSchema, type BrandSetupInput } from "../validation/onboarding
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { HelpCircle } from "lucide-react";
-import { brandIdentity } from "@anan/brand-identity";
+import { brandIdentity } from "@qentrah/brand-identity";
 
 interface FormProps {
   onNext: () => void;

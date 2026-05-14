@@ -1,5 +1,5 @@
 import {getRequestConfig} from 'next-intl/server';
-import { brandLabel, brandProductName } from '@anan/brand-identity';
+import { brandLabel, brandProductName } from '@qentrah/brand-identity';
 import {routing} from '@/i18n/routing';
 
 type Locale = (typeof routing.locales)[number];
@@ -15,12 +15,12 @@ function applyBrandMessages(value: unknown, locale: Locale): unknown {
     const platform = brandProductName("platform", locale);
 
     return value
-      .replaceAll("Anand Workspace", workspace)
-      .replaceAll("Anand Platform", platform)
-      .replaceAll("Anand", brand)
-      .replaceAll("Anan Workspace", workspace)
-      .replaceAll("Anan Platform", platform)
-      .replaceAll("Anan", brand)
+      .replaceAll("Qentrahd Workspace", workspace)
+      .replaceAll("Qentrahd Platform", platform)
+      .replaceAll("Qentrahd", brand)
+      .replaceAll("Qentrah Workspace", workspace)
+      .replaceAll("Qentrah Platform", platform)
+      .replaceAll("Qentrah", brand)
       .replaceAll("أنان", brand);
   }
 

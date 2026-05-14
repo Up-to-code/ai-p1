@@ -43,12 +43,12 @@ Open the app, unlock with `DEMO_ACCESS_TOKEN`, then click `Authorize with Qentra
 | `app/unlock/page.tsx` | Demo setup-token form |
 | `app/dashboard/page.tsx` | Authorized demo dashboard |
 | `app/api/unlock/route.ts` | Demo unlock route |
-| `app/api/auth/anan/start/route.ts` | Starts OAuth with state and PKCE |
-| `app/api/auth/anan/callback/route.ts` | Exchanges authorization code server-side |
-| `app/api/anan/me/route.ts` | Organization/account resource call |
-| `app/api/anan/clients/route.ts` | Client list/create proxy |
-| `app/api/anan/clients/[clientId]/route.ts` | Client update proxy |
-| `app/api/anan/properties/route.ts` | Property list proxy |
+| `app/api/auth/qentrah/start/route.ts` | Starts OAuth with state and PKCE |
+| `app/api/auth/qentrah/callback/route.ts` | Exchanges authorization code server-side |
+| `app/api/qentrah/me/route.ts` | Organization/account resource call |
+| `app/api/qentrah/clients/route.ts` | Client list/create proxy |
+| `app/api/qentrah/clients/[clientId]/route.ts` | Client update proxy |
+| `app/api/qentrah/properties/route.ts` | Property list proxy |
 | `lib/oauth.ts` | OAuth, PKCE, state, and token helpers |
 | `lib/workspace-api.ts` | Workspace resource API client |
 | `lib/config.ts` | Environment loading |
@@ -80,7 +80,7 @@ See:
 Use these values when creating the app in Qentrah Partners:
 
 - Partner app URL: `${PARTNER_APP_URL}`
-- Redirect URI: `${PARTNER_APP_URL}/api/auth/anan/callback`
+- Redirect URI: `${PARTNER_APP_URL}/api/auth/qentrah/callback`
 - CTA copy: `Authorize with Qentrah`
 - Requested scopes commonly used by the demo:
   - `calendar:read`
@@ -100,7 +100,7 @@ After review approval, copy the issued OAuth client ID into `QENTRAH_CLIENT_ID`.
 1. Create a Vercel project with root directory `apps/demo-partner-app`.
 2. Add the environment variables above.
 3. Set `PARTNER_APP_URL` to the deployed production URL.
-4. Add `${PARTNER_APP_URL}/api/auth/anan/callback` to the Partners app redirect
+4. Add `${PARTNER_APP_URL}/api/auth/qentrah/callback` to the Partners app redirect
    URIs.
 5. Submit the Partners app for review and approve it through Admin Review.
 6. Visit the deployed URL, unlock the demo, and authorize a Workspace
@@ -119,6 +119,6 @@ npm test
 From the repository root:
 
 ```bash
-npm --workspace @anan/demo-partner-app run typecheck
-npm --workspace @anan/demo-partner-app test
+npm --workspace @qentrah/demo-partner-app run typecheck
+npm --workspace @qentrah/demo-partner-app test
 ```

@@ -29,7 +29,7 @@ async function parseWorkspaceError(response: Response): Promise<WorkspaceApiErro
   return new WorkspaceApiError(payload?.message ?? code, code, response.status);
 }
 
-export async function loadAnanClients(input: {
+export async function loadQentrahClients(input: {
   workspaceBaseUrl: string;
   organizationId: string;
   accessToken: string;

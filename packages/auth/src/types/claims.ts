@@ -1,6 +1,6 @@
-export type AnanOwnerType = "broker" | "developer" | "RED";
+export type QentrahOwnerType = "broker" | "developer" | "RED";
 
-export type AnanOidcClaims = {
+export type QentrahOidcClaims = {
   iss?: string;
   aud?: string | string[];
   sub?: string;
@@ -33,7 +33,7 @@ export type AnanOidcClaims = {
   redId?: string | null;
   developer_id?: string | null;
   developerId?: string | null;
-  owner_type?: AnanOwnerType | string | null;
+  owner_type?: QentrahOwnerType | string | null;
   owner_id?: string | null;
   [claim: string]: unknown;
 };

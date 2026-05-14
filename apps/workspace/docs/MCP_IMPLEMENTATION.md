@@ -93,7 +93,7 @@ import { registerAllTools } from "@/lib/mcp/tools/index";
 
 // One persistent server instance per cold start (stateless transport per request)
 const mcpServer = new McpServer({
-  name: "anan-workspace",
+  name: "qentrah-workspace",
   version: "0.1.0",
 });
 
@@ -155,7 +155,7 @@ export async function POST(req: NextRequest) {
 
 // MCP clients send GET to discover the server
 export async function GET() {
-  return NextResponse.json({ name: "anan-workspace", version: "0.1.0" });
+  return NextResponse.json({ name: "qentrah-workspace", version: "0.1.0" });
 }
 ```
 

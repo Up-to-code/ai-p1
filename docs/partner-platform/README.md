@@ -32,7 +32,7 @@ sequenceDiagram
   Workspace->>Workspace: Upsert pending partner app and OAuth client metadata
   Admin->>Workspace: Review pending submission
   Admin->>Workspace: PATCH /api/v1/admin/partner-apps/:appId/review
-  Workspace->>Partners: POST /api/anan-review-callback
+  Workspace->>Partners: POST /api/qentrah-review-callback
   Workspace->>Workspace: Publish approved app in integrations catalog
   Workspace->>Workspace: Open approved app details
   Workspace-->>Workspace: Visit Partner
@@ -53,7 +53,7 @@ The developer creates an app in Partners with:
 
 - App name and publisher.
 - Partner app URL. This is where Workspace sends users when they click `Visit Partner`.
-- Redirect URI. Example: `https://partner.example.com/api/auth/anan/callback`.
+- Redirect URI. Example: `https://partner.example.com/api/auth/qentrah/callback`.
 - Client type: public PKCE for browser-started flows, confidential for trusted server apps.
 - Requested scopes. V1 supports read scopes and safe client write scopes.
 - Optional logo, icon, and webhook settings.
@@ -80,7 +80,7 @@ Review statuses:
 When Admin approves, Workspace syncs the OAuth client and calls Partners:
 
 ```txt
-POST /api/anan-review-callback
+POST /api/qentrah-review-callback
 ```
 
 Partners then marks the developer app `active`.
@@ -261,7 +261,7 @@ Leave `QENTRAH_CLIENT_SECRET` empty for public PKCE apps.
    - Name: `Qentrah OAuth Demo`
    - Publisher: `ZA`
    - Partner URL: `http://localhost:3004`
-   - Redirect URI: `http://localhost:3004/api/auth/anan/callback`
+   - Redirect URI: `http://localhost:3004/api/auth/qentrah/callback`
    - Scopes: `organization:read`, `client:read`, `property:read`, `client:create`, `client:update`
 6. Submit for review.
 7. Approve in Admin.

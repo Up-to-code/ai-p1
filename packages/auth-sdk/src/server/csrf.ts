@@ -1,8 +1,8 @@
 import { constantTimeEqual, randomToken } from "../internal/crypto";
 import { AuthSdkError } from "../errors";
 
-export const DEFAULT_CSRF_COOKIE_NAME = "__Host-anan_csrf";
-export const DEFAULT_CSRF_HEADER_NAME = "x-anan-csrf";
+export const DEFAULT_CSRF_COOKIE_NAME = "__Host-qentrah_csrf";
+export const DEFAULT_CSRF_HEADER_NAME = "x-qentrah-csrf";
 
 export function createServerCsrfToken(): string {
   return randomToken(32);

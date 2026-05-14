@@ -1,0 +1,11 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" id="qentrah_team_cluster">
+  <!-- Interlocking Monolithic Workspaces -->
+  <g id="cluster" transform="translate(100, 100)">
+    <rect x="0" y="40" width="60" height="160" fill="#0F172A" id="member_1"/>
+    <rect x="40" y="0" width="60" height="200" fill="#64748B" id="member_2"/>
+    <rect x="80" y="60" width="60" height="140" fill="#0F172A" id="member_3"/>
+    <!-- Intersection Markers -->
+    <rect x="40" y="40" width="20" height="160" stroke="#2563EB" stroke-width="2" fill="none" id="link_1"/>
+    <rect x="80" y="60" width="20" height="140" stroke="#2563EB" stroke-width="2" fill="none" id="link_2"/>
+  </g>
+</svg>

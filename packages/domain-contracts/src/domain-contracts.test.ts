@@ -3,7 +3,7 @@ import { normalizeDomainError } from "./errors";
 import { updateProfileInputSchema } from "./profiles";
 import type { AdminOAuthAuthorizationPrompt } from "./oauth";
 
-describe("@anan/domain-contracts", () => {
+describe("@qentrah/domain-contracts", () => {
   it("keeps platform error normalization available", () => {
     expect(
       normalizeDomainError({
@@ -25,8 +25,8 @@ describe("@anan/domain-contracts", () => {
   it("keeps admin OAuth prompts narrower than web prompts", () => {
     const adminPrompt = {
       flowId: "flow-1",
-      client: { clientId: "client-1", name: "External Publisher", publisherName: "Anan" },
-      user: { email: "admin@anan.test" },
+      client: { clientId: "client-1", name: "External Publisher", publisherName: "Qentrah" },
+      user: { email: "admin@qentrah.test" },
       state: "state",
       redirectUri: "https://app.test/callback",
       requestedScopes: [{ id: "properties:read", label: "Read properties" }],

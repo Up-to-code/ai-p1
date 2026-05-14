@@ -1,4 +1,4 @@
-import { cn } from "@anan/platform-core/classnames";
+import { cn } from "@qentrah/platform-core/classnames";
 
 type FieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
   className?: string;

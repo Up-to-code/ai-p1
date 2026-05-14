@@ -11,8 +11,9 @@ export declare const brandIdentity: {
         readonly ar: "شركة قنطرة التقنية";
     };
     readonly slug: "qentrah";
-    readonly packageScope: "@anan";
+    readonly packageScope: "@qentrah";
     readonly envPrefix: "QENTRAH";
+    readonly themeStorageKey: "qentrah-theme";
     readonly domains: {
         readonly root: "qentrah.sa";
         readonly workspace: "app.qentrah.sa";
@@ -61,23 +62,18 @@ export declare const brandIdentity: {
         };
     };
     readonly routes: {
-        readonly auth: "auth/anan";
-        readonly api: "anan";
-        readonly reviewCallback: "anan-review-callback";
-        readonly oauthStart: "api/auth/anan/start";
-        readonly oauthCallback: "api/auth/anan/callback";
-        readonly oauthLogout: "api/auth/anan/logout";
-    };
-    readonly legacy: {
-        readonly envPrefix: "ANAN";
-        readonly themeStorageKey: "anan-theme";
+        readonly auth: "auth/qentrah";
+        readonly api: "qentrah";
+        readonly reviewCallback: "qentrah-review-callback";
+        readonly oauthStart: "api/auth/qentrah/start";
+        readonly oauthCallback: "api/auth/qentrah/callback";
+        readonly oauthLogout: "api/auth/qentrah/logout";
     };
 };
 export declare function brandLabel(locale?: BrandLocale): "Qentrah" | "قنطرة";
 export declare function brandProductName(product: BrandProduct, locale?: BrandLocale): string;
 export declare function brandEnvName(key: string): string;
-export declare function legacyBrandEnvName(key: string): string;
-export declare function brandRouteSlug(route: BrandRoute): "anan" | "auth/anan" | "anan-review-callback" | "api/auth/anan/start" | "api/auth/anan/callback" | "api/auth/anan/logout";
+export declare function brandRouteSlug(route: BrandRoute): "qentrah" | "auth/qentrah" | "qentrah-review-callback" | "api/auth/qentrah/start" | "api/auth/qentrah/callback" | "api/auth/qentrah/logout";
 export declare function brandRoutePath(route: BrandRoute): string;
 export declare function brandDomainUrl(domain: keyof typeof brandIdentity.domains): string;
 export declare function readBrandEnv(key: string, env?: Record<string, string | undefined>, fallback?: string): string | undefined;

@@ -1,0 +1,11 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" id="qentrah_analytics_signal">
+  <!-- Market Heat / Intelligence -->
+  <g id="signals" transform="translate(80, 150)">
+    <!-- Steps -->
+    <rect x="0" y="60" width="40" height="40" fill="#F1F5F9" id="step_1"/>
+    <rect x="60" y="40" width="40" height="60" fill="#64748B" id="step_2"/>
+    <rect x="120" y="0" width="40" height="100" fill="#0F172A" id="step_3"/>
+    <!-- The Conversion Line -->
+    <path d="M160 20L190 60L210 30L240 70" stroke="#2563EB" stroke-width="4" stroke-linejoin="miter" id="heat_line"/>
+  </g>
+</svg>

@@ -1,5 +1,5 @@
 {
-  "name": "@anan/testing",
+  "name": "@qentrah/testing",
   "version": "0.1.0",
   "description": "Shared Qentrah test fixtures and Vitest helpers.",
   "type": "module",
@@ -46,13 +46,13 @@
     }
   },
   "scripts": {
-    "prebuild": "npm --workspace @anan/domain-contracts run build && npm --workspace @anan/platform-core run build",
+    "prebuild": "npm --workspace @qentrah/domain-contracts run build && npm --workspace @qentrah/platform-core run build",
     "build": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
   "dependencies": {
-    "@anan/domain-contracts": "0.1.0",
-    "@anan/platform-core": "0.1.0"
+    "@qentrah/domain-contracts": "0.1.0",
+    "@qentrah/platform-core": "0.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.9",

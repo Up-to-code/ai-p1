@@ -1,21 +1,21 @@
-# @anan/authorization
+# @qentrah/authorization
 
 TypeScript SDK for connecting external applications to Qentrah organization data using Authorization Code + PKCE.
 
 ```ts
-import { createQentrahAuthorizationClient, exchangeCode } from "@anan/authorization";
+import { createQentrahAuthorizationClient, exchangeCode } from "@qentrah/authorization";
 
-const anan = createQentrahAuthorizationClient({
+const qentrah = createQentrahAuthorizationClient({
   issuer: "https://auth.example.convex.site",
-  clientId: "anan_client_...",
+  clientId: "qentrah_client_...",
   redirectUri: "https://external.example.com/oauth/callback",
   scopes: ["clients:read_own", "offline_access"],
 });
 
-const result = await anan.authorize();
+const result = await qentrah.authorize();
 await exchangeCode({
   issuer: "https://auth.example.convex.site",
-  clientId: "anan_client_...",
+  clientId: "qentrah_client_...",
   code: result.code,
   redirectUri: result.redirectUri,
   codeVerifier: result.codeVerifier,

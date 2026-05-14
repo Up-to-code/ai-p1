@@ -22,7 +22,7 @@ Use these fields in Partners:
 | App name | `PDF Creator` |
 | Publisher | `Your Company` |
 | Partner app URL | `https://pdf.example.com` |
-| Redirect URI | `https://pdf.example.com/api/auth/anan/callback` |
+| Redirect URI | `https://pdf.example.com/api/auth/qentrah/callback` |
 | Client type | Public PKCE app |
 | CTA copy | `Authorize with Qentrah` |
 | Authorization lifetime | 14 days |
@@ -85,7 +85,7 @@ The `resource` parameter must be sent to both the authorize request and token re
 
 ## TypeScript Helpers
 
-Copy this into `anan-oauth.ts`.
+Copy this into `qentrah-oauth.ts`.
 
 ```ts
 import { createHash, randomBytes } from "node:crypto";
@@ -114,7 +114,7 @@ export function normalizeBaseUrl(value: string) {
 }
 
 export function redirectUri(config: QentrahConfig) {
-  return `${normalizeBaseUrl(config.partnerAppUrl)}${config.redirectPath ?? "/api/auth/anan/callback"}`;
+  return `${normalizeBaseUrl(config.partnerAppUrl)}${config.redirectPath ?? "/api/auth/qentrah/callback"}`;
 }
 
 export function partnerResourceAudience(workspaceBaseUrl: string) {
@@ -221,7 +221,7 @@ export async function refreshAccessToken(input: {
 
 ## JavaScript Helpers
 
-Copy this into `anan-oauth.js` for plain Node.js.
+Copy this into `qentrah-oauth.js` for plain Node.js.
 
 ```js
 import { createHash, randomBytes } from "node:crypto";
@@ -290,14 +290,14 @@ Frontend button:
 ```tsx
 export function AuthorizeWithQentrahButton() {
   return (
-    <a href="/api/auth/anan/start">
+    <a href="/api/auth/qentrah/start">
       Authorize with Qentrah
     </a>
   );
 }
 ```
 
-Start route at `app/api/auth/anan/start/route.ts`:
+Start route at `app/api/auth/qentrah/start/route.ts`:
 
 ```ts
 import { cookies } from "next/headers";
@@ -306,7 +306,7 @@ import {
   buildAuthorizeUrl,
   createPkceChallenge,
   createPkceVerifier,
-} from "@/lib/anan-oauth";
+} from "@/lib/qentrah-oauth";
 
 const scopes = [
   "organization:read",
@@ -321,14 +321,14 @@ export async function GET() {
   const challenge = createPkceChallenge(verifier);
   const cookieStore = await cookies();
 
-  cookieStore.set("anan_oauth_state", state, {
+  cookieStore.set("qentrah_oauth_state", state, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 600,
   });
-  cookieStore.set("anan_pkce_verifier", verifier, {
+  cookieStore.set("qentrah_pkce_verifier", verifier, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -336,7 +336,7 @@ export async function GET() {
     maxAge: 600,
   });
 
-  const redirectUri = `${process.env.PARTNER_APP_URL}/api/auth/anan/callback`;
+  const redirectUri = `${process.env.PARTNER_APP_URL}/api/auth/qentrah/callback`;
   const url = buildAuthorizeUrl({
     workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL!,
     clientId: process.env.QENTRAH_CLIENT_ID!,
@@ -350,12 +350,12 @@ export async function GET() {
 }
 ```
 
-Callback route at `app/api/auth/anan/callback/route.ts`:
+Callback route at `app/api/auth/qentrah/callback/route.ts`:
 
 ```ts
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { exchangeAuthorizationCode } from "@/lib/anan-oauth";
+import { exchangeAuthorizationCode } from "@/lib/qentrah-oauth";
 import { saveQentrahTokens } from "@/lib/token-store";
 
 export async function GET(request: NextRequest) {
@@ -364,18 +364,18 @@ export async function GET(request: NextRequest) {
   const cookieStore = await cookies();
 
   if (!code) return NextResponse.json({ error: "missing_code" }, { status: 400 });
-  if (!state || state !== cookieStore.get("anan_oauth_state")?.value) {
+  if (!state || state !== cookieStore.get("qentrah_oauth_state")?.value) {
     return NextResponse.json({ error: "state_mismatch" }, { status: 400 });
   }
 
-  const redirectUri = `${process.env.PARTNER_APP_URL}/api/auth/anan/callback`;
+  const redirectUri = `${process.env.PARTNER_APP_URL}/api/auth/qentrah/callback`;
   const tokens = await exchangeAuthorizationCode({
     workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL!,
     clientId: process.env.QENTRAH_CLIENT_ID!,
     clientSecret: process.env.QENTRAH_CLIENT_SECRET || undefined,
     redirectUri,
     code,
-    codeVerifier: cookieStore.get("anan_pkce_verifier")?.value ?? "",
+    codeVerifier: cookieStore.get("qentrah_pkce_verifier")?.value ?? "",
   });
 
   if (!tokens.organization_id) {
@@ -390,8 +390,8 @@ export async function GET(request: NextRequest) {
     scope: tokens.scope,
   });
 
-  cookieStore.delete("anan_oauth_state");
-  cookieStore.delete("anan_pkce_verifier");
+  cookieStore.delete("qentrah_oauth_state");
+  cookieStore.delete("qentrah_pkce_verifier");
   return NextResponse.redirect(new URL("/dashboard", request.url));
 }
 ```
@@ -400,7 +400,7 @@ export async function GET(request: NextRequest) {
 
 ## Calling Workspace APIs
 
-Copy this into `anan-workspace-api.ts`.
+Copy this into `qentrah-workspace-api.ts`.
 
 ```ts
 export class QentrahApiError extends Error {
@@ -418,7 +418,7 @@ async function parseQentrahError(response: Response) {
   return new QentrahApiError(payload?.message ?? payload?.error ?? "Qentrah API error", payload?.error ?? "workspace_api_error", response.status);
 }
 
-export async function ananFetch<T>(input: {
+export async function qentrahFetch<T>(input: {
   workspaceBaseUrl: string;
   organizationId: string;
   accessToken: string;
@@ -439,21 +439,21 @@ export async function ananFetch<T>(input: {
 }
 
 export function getOrganization(input: { workspaceBaseUrl: string; organizationId: string; accessToken: string }) {
-  return ananFetch({
+  return qentrahFetch({
     ...input,
     path: "/me",
   });
 }
 
 export function listClients(input: { workspaceBaseUrl: string; organizationId: string; accessToken: string }) {
-  return ananFetch({
+  return qentrahFetch({
     ...input,
     path: "/clients",
   });
 }
 
 export function listProperties(input: { workspaceBaseUrl: string; organizationId: string; accessToken: string }) {
-  return ananFetch({
+  return qentrahFetch({
     ...input,
     path: "/properties",
   });
@@ -465,7 +465,7 @@ export function createClient(input: {
   accessToken: string;
   client: { name: string; contact?: string; phone?: string; type?: "Buyer" | "Tenant" | "Investor" | "Broker" };
 }) {
-  return ananFetch({
+  return qentrahFetch({
     workspaceBaseUrl: input.workspaceBaseUrl,
     organizationId: input.organizationId,
     accessToken: input.accessToken,
@@ -484,7 +484,7 @@ export function updateClient(input: {
   clientId: string;
   patch: { name?: string; contact?: string; phone?: string; status?: "active" | "inactive" };
 }) {
-  return ananFetch({
+  return qentrahFetch({
     workspaceBaseUrl: input.workspaceBaseUrl,
     organizationId: input.organizationId,
     accessToken: input.accessToken,
@@ -507,35 +507,35 @@ import {
   createPkceChallenge,
   createPkceVerifier,
   exchangeAuthorizationCode,
-} from "./anan-oauth.js";
+} from "./qentrah-oauth.js";
 
 const app = express();
 app.use(cookieParser());
 
 const scopes = ["organization:read", "client:read", "property:read", "offline_access"];
 
-app.get("/auth/anan/start", (req, res) => {
+app.get("/auth/qentrah/start", (req, res) => {
   const state = crypto.randomUUID();
   const verifier = createPkceVerifier();
   const challenge = createPkceChallenge(verifier);
 
-  res.cookie("anan_oauth_state", state, { httpOnly: true, sameSite: "lax", maxAge: 10 * 60 * 1000 });
-  res.cookie("anan_pkce_verifier", verifier, { httpOnly: true, sameSite: "lax", maxAge: 10 * 60 * 1000 });
+  res.cookie("qentrah_oauth_state", state, { httpOnly: true, sameSite: "lax", maxAge: 10 * 60 * 1000 });
+  res.cookie("qentrah_pkce_verifier", verifier, { httpOnly: true, sameSite: "lax", maxAge: 10 * 60 * 1000 });
 
   res.redirect(buildAuthorizeUrl({
     workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL,
     clientId: process.env.QENTRAH_CLIENT_ID,
-    redirectUri: `${process.env.PARTNER_APP_URL}/auth/anan/callback`,
+    redirectUri: `${process.env.PARTNER_APP_URL}/auth/qentrah/callback`,
     scopes,
     state,
     codeChallenge: challenge,
   }));
 });
 
-app.get("/auth/anan/callback", async (req, res, next) => {
+app.get("/auth/qentrah/callback", async (req, res, next) => {
   try {
     if (!req.query.code) return res.status(400).json({ error: "missing_code" });
-    if (req.query.state !== req.cookies.anan_oauth_state) {
+    if (req.query.state !== req.cookies.qentrah_oauth_state) {
       return res.status(400).json({ error: "state_mismatch" });
     }
 
@@ -543,9 +543,9 @@ app.get("/auth/anan/callback", async (req, res, next) => {
       workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL,
       clientId: process.env.QENTRAH_CLIENT_ID,
       clientSecret: process.env.QENTRAH_CLIENT_SECRET || undefined,
-      redirectUri: `${process.env.PARTNER_APP_URL}/auth/anan/callback`,
+      redirectUri: `${process.env.PARTNER_APP_URL}/auth/qentrah/callback`,
       code: String(req.query.code),
-      codeVerifier: req.cookies.anan_pkce_verifier,
+      codeVerifier: req.cookies.qentrah_pkce_verifier,
     });
 
     // Store this in your database, keyed by tokens.organization_id.
@@ -581,7 +581,7 @@ Backend flow:
 Example:
 
 ```ts
-import { getOrganization, listClients, listProperties } from "./anan-workspace-api";
+import { getOrganization, listClients, listProperties } from "./qentrah-workspace-api";
 
 export async function buildProfilePdfData(input: {
   workspaceBaseUrl: string;

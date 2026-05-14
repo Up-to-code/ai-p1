@@ -1,19 +1,19 @@
-import { brandLabel } from "@anan/brand-identity";
+import { brandLabel } from "@qentrah/brand-identity";
 
-import { AnanAuthorizationError } from "./errors";
+import { QentrahAuthorizationError } from "./errors";
 import { createPkcePair, randomString } from "./pkce";
 import type {
-  AnanAuthorizationClientOptions,
-  AnanAuthorizeOptions,
-  AnanAuthorizeCodeResult,
-  AnanAuthorizeResult,
+  QentrahAuthorizationClientOptions,
+  QentrahAuthorizeOptions,
+  QentrahAuthorizeCodeResult,
+  QentrahAuthorizeResult,
 } from "./types";
 import { buildAuthorizeUrl, normalizeIssuer } from "./url";
 
 type PendingAuthorization = {
   state: string;
   redirectUri: string;
-  resolve: (result: AnanAuthorizeResult) => void;
+  resolve: (result: QentrahAuthorizeResult) => void;
   reject: (error: unknown) => void;
   popup: Window | null;
   timer: ReturnType<typeof setTimeout>;
@@ -25,10 +25,10 @@ function getPopupFeatures(width = 520, height = 720) {
   return `popup=yes,width=${width},height=${height},left=${Math.round(left)},top=${Math.round(top)},noopener=no,noreferrer=no`;
 }
 
-function parseMessageResult(data: unknown): AnanAuthorizeResult | null {
+function parseMessageResult(data: unknown): QentrahAuthorizeResult | null {
   if (!data || typeof data !== "object") return null;
   const value = data as Record<string, unknown>;
-  if (value.type !== "anan.authorization.result") return null;
+  if (value.type !== "qentrah.authorization.result") return null;
   if (typeof value.code !== "string" || typeof value.state !== "string" || typeof value.redirectUri !== "string") {
     return null;
   }
@@ -39,10 +39,10 @@ function parseMessageResult(data: unknown): AnanAuthorizeResult | null {
   };
 }
 
-function parseMessageError(data: unknown): AnanAuthorizationError | null {
+function parseMessageError(data: unknown): QentrahAuthorizationError | null {
   if (!data || typeof data !== "object") return null;
   const value = data as Record<string, unknown>;
-  if (value.type !== "anan.authorization.result" || typeof value.error !== "string") return null;
+  if (value.type !== "qentrah.authorization.result" || typeof value.error !== "string") return null;
   const code = value.error;
   if (
     code !== "access_denied" &&
@@ -51,15 +51,15 @@ function parseMessageError(data: unknown): AnanAuthorizationError | null {
     code !== "inactive_client" &&
     code !== "authorization_expired"
   ) {
-    return new AnanAuthorizationError("invalid_response", String(value.error_description ?? "Authorization failed"));
+    return new QentrahAuthorizationError("invalid_response", String(value.error_description ?? "Authorization failed"));
   }
-  return new AnanAuthorizationError(code, String(value.error_description ?? value.error));
+  return new QentrahAuthorizationError(code, String(value.error_description ?? value.error));
 }
 
-function fallbackToRedirect(url: string, emit: AnanAuthorizationClientOptions["onEvent"]): never {
+function fallbackToRedirect(url: string, emit: QentrahAuthorizationClientOptions["onEvent"]): never {
   emit?.({ type: "redirect_fallback", url });
   window.location.assign(url);
-  throw new AnanAuthorizationError("popup_blocked", `Redirecting to ${brandLabel("en")} authorization`);
+  throw new QentrahAuthorizationError("popup_blocked", `Redirecting to ${brandLabel("en")} authorization`);
 }
 
 async function waitForPopupResult(args: {
@@ -67,14 +67,14 @@ async function waitForPopupResult(args: {
   issuer: string;
   state: string;
   redirectUri: string;
-  popupOptions: NonNullable<AnanAuthorizationClientOptions["popup"]>;
-  emit?: AnanAuthorizationClientOptions["onEvent"];
-}): Promise<AnanAuthorizeResult> {
+  popupOptions: NonNullable<QentrahAuthorizationClientOptions["popup"]>;
+  emit?: QentrahAuthorizationClientOptions["onEvent"];
+}): Promise<QentrahAuthorizeResult> {
   if (typeof window === "undefined") {
-    throw new AnanAuthorizationError("popup_blocked", "Popup authorization requires a browser window");
+    throw new QentrahAuthorizationError("popup_blocked", "Popup authorization requires a browser window");
   }
 
-  const popup = window.open(args.url, "anan_authorization", getPopupFeatures(args.popupOptions.width, args.popupOptions.height));
+  const popup = window.open(args.url, "qentrah_authorization", getPopupFeatures(args.popupOptions.width, args.popupOptions.height));
   if (!popup) {
     return fallbackToRedirect(args.url, args.emit);
   }
@@ -90,7 +90,7 @@ async function waitForPopupResult(args: {
       popup,
       timer: setTimeout(() => {
         cleanup();
-        reject(new AnanAuthorizationError("popup_blocked", "Authorization popup timed out"));
+        reject(new QentrahAuthorizationError("popup_blocked", "Authorization popup timed out"));
       }, args.popupOptions.timeoutMs ?? 5 * 60 * 1000),
     };
 
@@ -98,7 +98,7 @@ async function waitForPopupResult(args: {
       if (pending.popup?.closed) {
         cleanup();
         args.emit?.({ type: "popup_closed" });
-        reject(new AnanAuthorizationError("access_denied", "Authorization popup was closed"));
+        reject(new QentrahAuthorizationError("access_denied", "Authorization popup was closed"));
       }
     }, 500);
 
@@ -122,7 +122,7 @@ async function waitForPopupResult(args: {
       cleanup();
       pending.popup?.close();
       if (result.state !== pending.state) {
-        reject(new AnanAuthorizationError("invalid_state", "Authorization state mismatch"));
+        reject(new QentrahAuthorizationError("invalid_state", "Authorization state mismatch"));
         return;
       }
       args.emit?.({ type: "authorized", result });
@@ -133,8 +133,8 @@ async function waitForPopupResult(args: {
   });
 }
 
-export function createAnanAuthorizationClient(options: AnanAuthorizationClientOptions) {
-  async function authorize(overrides: AnanAuthorizeOptions = {}): Promise<AnanAuthorizeCodeResult> {
+export function createQentrahAuthorizationClient(options: QentrahAuthorizationClientOptions) {
+  async function authorize(overrides: QentrahAuthorizeOptions = {}): Promise<QentrahAuthorizeCodeResult> {
     const pkce = await createPkcePair();
     const state = overrides.state ?? randomString(32);
     const redirectUri = overrides.redirectUri ?? options.redirectUri;
@@ -171,7 +171,7 @@ export function createAnanAuthorizationClient(options: AnanAuthorizationClientOp
 
   return {
     authorize,
-    buildAuthorizeUrl: async (overrides: AnanAuthorizeOptions = {}) => {
+    buildAuthorizeUrl: async (overrides: QentrahAuthorizeOptions = {}) => {
       const pkce = await createPkcePair();
       const state = overrides.state ?? randomString(32);
       const redirectUri = overrides.redirectUri ?? options.redirectUri;

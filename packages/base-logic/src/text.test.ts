@@ -3,7 +3,7 @@ import { detectPreferredLanguage } from "./language";
 import { resolveEmbeddingModelName } from "./providers";
 import { sanitizeWebText, tokenizeQuery, truncate } from "./text";
 
-describe("@anan/base-logic", () => {
+describe("@qentrah/base-logic", () => {
   it("sanitizes provider branding and fallback text", () => {
     expect(sanitizeWebText("Google result from Serper")).toBe("result from");
     expect(sanitizeWebText("   ", "fallback")).toBe("fallback");

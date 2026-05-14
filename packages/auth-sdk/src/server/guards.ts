@@ -7,4 +7,4 @@ export {
   requireScopes,
   type AuthContext,
   type ResourceOwner,
-} from "@anan/auth/server";
+} from "@qentrah/auth/server";

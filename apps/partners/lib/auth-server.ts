@@ -4,8 +4,8 @@ import { betterAuth, type BetterAuthOptions, type BetterAuthPlugin } from "bette
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { prisma } from "@/lib/prisma";
 
-const LOCAL_PARTNER_SIGNUP_BRIDGE_SECRET = "local-anan-partner-signup-bridge-secret";
-const LOCAL_BETTER_AUTH_SECRET = "local-anan-partners-better-auth-secret";
+const LOCAL_PARTNER_SIGNUP_BRIDGE_SECRET = "local-qentrah-partner-signup-bridge-secret";
+const LOCAL_BETTER_AUTH_SECRET = "local-qentrah-partners-better-auth-secret";
 
 function readOptionalEnv(name: string) {
   const value = process.env[name]?.trim();
@@ -115,7 +115,7 @@ function passwordSignupGatePlugin(): BetterAuthPlugin {
           matcher: (context) => context.path === "/sign-up/email",
           handler: createAuthMiddleware(async (ctx) => {
             const expected = getPartnerSignupBridgeSecret();
-            const provided = ctx.headers?.get("x-anan-partner-signup-secret");
+            const provided = ctx.headers?.get("x-qentrah-partner-signup-secret");
 
             if (expected && provided === expected) return;
 

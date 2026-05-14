@@ -1,4 +1,4 @@
-import { brandLabel, brandProductName } from "@anan/brand-identity";
+import { brandLabel, brandProductName } from "@qentrah/brand-identity";
 
 export default async function UnlockPage({
   searchParams,

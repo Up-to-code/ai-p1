@@ -4,4 +4,4 @@ export {
   normalizeDomainError,
   toErrorResponse,
   type DomainErrorShape,
-} from "@anan/platform-core/errors";
+} from "@qentrah/platform-core/errors";

@@ -1,4 +1,4 @@
-export const AUTH_HANDOFF_STORAGE_KEY = "anan-auth-handoff";
+export const AUTH_HANDOFF_STORAGE_KEY = "qentrah-auth-handoff";
 export const AUTH_HANDOFF_TTL_MS = 12_000;
 
 type AuthHandoff = {

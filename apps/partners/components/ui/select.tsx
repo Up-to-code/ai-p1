@@ -1,5 +1,5 @@
 import type { SelectHTMLAttributes } from "react";
-import { cn } from "@anan/platform-core/classnames";
+import { cn } from "@qentrah/platform-core/classnames";
 
 export function Select({ className, children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (

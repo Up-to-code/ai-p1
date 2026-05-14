@@ -2,7 +2,7 @@ import { envReader } from "./env-reader";
 
 type AuthConfigMode = "runtime" | "schema";
 
-const productionSiteUrl = "https://anan-0-1-2.vercel.app";
+const productionSiteUrl = "https://qentrah-0-1-2.vercel.app";
 
 function normalizeUrl(value: string) {
   const trimmed = value.trim();

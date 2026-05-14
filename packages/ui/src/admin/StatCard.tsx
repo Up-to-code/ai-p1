@@ -1,5 +1,5 @@
 import { LucideIcon } from "lucide-react";
-import { cn } from "@anan/platform-core/classnames";
+import { cn } from "@qentrah/platform-core/classnames";
 
 type StatCardProps = {
   label: string;

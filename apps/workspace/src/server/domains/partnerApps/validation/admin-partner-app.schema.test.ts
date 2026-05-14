@@ -16,7 +16,7 @@ describe("admin partner app schemas", () => {
       redirectUris: ["https://partner.example.com/oauth/callback"],
       allowedScopes: ["client:read"],
       clientType: "confidential",
-      callbackUrl: "https://partners.example.com/api/anan-review-callback",
+      callbackUrl: "https://partners.example.com/api/qentrah-review-callback",
     });
 
     expect(parsed.partnersAppId).toBe("app_1");

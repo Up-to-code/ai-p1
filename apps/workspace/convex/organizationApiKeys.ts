@@ -6,7 +6,7 @@ import { apiKeys } from "./apiKeys";
 import { authComponent } from "./auth";
 import { assertOrganizationResourcePermission } from "./organizations/profile/access";
 
-const API_KEY_PREFIX = "anan_org_";
+const API_KEY_PREFIX = "qentrah_org_";
 const QUOTA_LIMIT = 1_000;
 const QUOTA_WINDOW_MS = 60 * 60 * 1000;
 const DEFAULT_LIMIT = 100;

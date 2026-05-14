@@ -9,13 +9,13 @@ export function SafeWritePanel() {
   async function submitCreate(formData: FormData) {
     setBusy(true);
     setMessage(null);
-    const response = await fetch("/api/anan/clients", {
+    const response = await fetch("/api/qentrah/clients", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         name: String(formData.get("name") ?? ""),
         email: String(formData.get("email") ?? ""),
-        source: "anan-partner-demo",
+        source: "qentrah-partner-demo",
       }),
     });
     setBusy(false);
@@ -27,12 +27,12 @@ export function SafeWritePanel() {
     if (!clientId) return setMessage("Enter a client id to update.");
     setBusy(true);
     setMessage(null);
-    const response = await fetch(`/api/anan/clients/${encodeURIComponent(clientId)}`, {
+    const response = await fetch(`/api/qentrah/clients/${encodeURIComponent(clientId)}`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         name: String(formData.get("name") ?? ""),
-        source: "anan-partner-demo",
+        source: "qentrah-partner-demo",
       }),
     });
     setBusy(false);

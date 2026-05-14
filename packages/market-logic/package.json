@@ -1,5 +1,5 @@
 {
-  "name": "@anan/market-logic",
+  "name": "@qentrah/market-logic",
   "version": "0.1.0",
   "description": "Pure market intelligence normalization and helper logic for Qentrah.",
   "type": "module",

@@ -1,0 +1,24 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg" id="qentrah_splash_ai">
+  <!-- Neural Infrastructure Blueprint -->
+  <g id="ai_structure" transform="translate(100, 50)">
+    <!-- Base Grid -->
+    <path d="M0 250 L300 100 L600 250 L300 400 Z" fill="#F1F5F9" opacity="0.1"/>
+    
+    <!-- Isometric Core Frame -->
+    <g id="isometric_core" transform="translate(250, 150)">
+      <path d="M50 0 L150 50 V150 L50 100 V0Z" stroke="#0F172A" stroke-width="2"/>
+      <path d="M50 0 L-50 50 V150 L50 100 V0Z" stroke="#0F172A" stroke-width="2"/>
+      <path d="M-50 50 L50 100 L150 50 L50 0 L-50 50Z" stroke="#0F172A" stroke-width="2"/>
+      
+      <!-- Blue Thinking Core -->
+      <rect x="40" y="60" width="20" height="20" fill="#2563EB" id="core_pulse"/>
+      <path d="M50 70 L250 170" stroke="#2563EB" stroke-width="2" opacity="0.5"/>
+    </g>
+    
+    <!-- Data Stream Lines -->
+    <g id="data_streams" stroke="#64748B" stroke-width="2">
+      <path d="M0 100H200 M0 120H200 M0 140H100"/>
+      <rect x="0" y="100" width="10" height="4" fill="#2563EB"/>
+    </g>
+  </g>
+</svg>

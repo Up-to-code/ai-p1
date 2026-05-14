@@ -24,7 +24,7 @@ describe("Qentrah OAuth helpers", () => {
     const url = new URL(buildAuthorizeUrl({
       workspaceBaseUrl: "http://localhost:3000",
       clientId: "partners_client_123",
-      redirectUri: "https://demo.vercel.app/api/auth/anan/callback",
+      redirectUri: "https://demo.vercel.app/api/auth/qentrah/callback",
       state: "state-123",
       codeChallenge: "challenge-123",
     }));
@@ -59,7 +59,7 @@ describe("Qentrah OAuth helpers", () => {
       workspaceBaseUrl: "http://localhost:3000",
       clientId: "partners_client_123",
       clientSecret: "secret",
-      redirectUri: "https://demo.vercel.app/api/auth/anan/callback",
+      redirectUri: "https://demo.vercel.app/api/auth/qentrah/callback",
       code: "code-123",
       codeVerifier: "verifier-123",
       fetcher,

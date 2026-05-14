@@ -26,7 +26,7 @@ OAuth requirements:
 - Redirect users to {QENTRAH_WORKSPACE_API_URL}/oauth/authorize with:
   - response_type=code
   - client_id={QENTRAH_CLIENT_ID}
-  - redirect_uri={PARTNER_APP_URL}/api/auth/anan/callback
+  - redirect_uri={PARTNER_APP_URL}/api/auth/qentrah/callback
   - scope=organization:read client:read property:read offline_access
   - resource={QENTRAH_WORKSPACE_API_URL}/api/v1/partner
   - state=<random state>
@@ -37,7 +37,7 @@ OAuth requirements:
   - grant_type=authorization_code
   - client_id={QENTRAH_CLIENT_ID}
   - client_secret={QENTRAH_CLIENT_SECRET}, only when present
-  - redirect_uri={PARTNER_APP_URL}/api/auth/anan/callback
+  - redirect_uri={PARTNER_APP_URL}/api/auth/qentrah/callback
   - code=<authorization code>
   - code_verifier=<stored PKCE verifier>
   - resource={QENTRAH_WORKSPACE_API_URL}/api/v1/partner
@@ -45,7 +45,7 @@ OAuth requirements:
 
 Frontend:
 - Add an accessible button or link labeled "Authorize with Qentrah".
-- The button should navigate to the server route that starts OAuth, for example /api/auth/anan/start.
+- The button should navigate to the server route that starts OAuth, for example /api/auth/qentrah/start.
 - Do not expose access tokens, refresh tokens, client secrets, or authorization codes to browser JavaScript.
 
 Backend Workspace API client:

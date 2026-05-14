@@ -1,9 +1,9 @@
-import { readBrandEnv } from "@anan/brand-identity";
+import { readBrandEnv } from "@qentrah/brand-identity";
 
 export type AuthRuntimeEnv = Record<string, string | undefined>;
 
 export function readAuthEnv(name: string, env: AuthRuntimeEnv = process.env): string | undefined {
-  const brandedKey = name.startsWith("ANAN_") ? name.slice("ANAN_".length) : name;
+  const brandedKey = name.startsWith("QENTRAH_") ? name.slice("QENTRAH_".length) : name;
   const value = readBrandEnv(brandedKey, env) ?? env[name]?.trim();
   return value ? value : undefined;
 }

@@ -64,7 +64,7 @@ const architecture = [
 ];
 
 function oauthAuthorizeUrl(app: PartnerAppSummary) {
-  const redirectUri = app.redirectUris[0] ?? "https://partner.example.com/api/auth/anan/callback";
+  const redirectUri = app.redirectUris[0] ?? "https://partner.example.com/api/auth/qentrah/callback";
   return `GET /oauth/authorize
   ?client_id=${app.clientId}
   &response_type=code
@@ -75,7 +75,7 @@ function oauthAuthorizeUrl(app: PartnerAppSummary) {
 }
 
 function codeFor(app: PartnerAppSummary, language: LanguageId) {
-  const redirectUri = app.redirectUris[0] ?? "https://partner.example.com/api/auth/anan/callback";
+  const redirectUri = app.redirectUris[0] ?? "https://partner.example.com/api/auth/qentrah/callback";
   const scopes = app.allowedScopes.join(" ");
 
   if (language === "typescript") {
@@ -123,7 +123,7 @@ function codeTitle(language: LanguageId) {
 }
 
 function sandboxAuthorizeUrl(app: PartnerAppSummary) {
-  const redirectUri = app.redirectUris[0] ?? "https://partner.example.com/api/auth/anan/callback";
+  const redirectUri = app.redirectUris[0] ?? "https://partner.example.com/api/auth/qentrah/callback";
   const scopes = [
     "organization:read",
     "client:read",
@@ -468,7 +468,7 @@ function SandboxPanel({
 POST /sandbox/oauth/token
 grant_type=authorization_code
 client_id=${app.clientId}
-redirect_uri=${app.redirectUris[0] ?? "https://partner.example.com/api/auth/anan/callback"}
+redirect_uri=${app.redirectUris[0] ?? "https://partner.example.com/api/auth/qentrah/callback"}
 code=<code>
 code_verifier=<pkce-verifier>`}
         />

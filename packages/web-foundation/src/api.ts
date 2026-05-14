@@ -1,4 +1,4 @@
-import { DomainError, toErrorResponse, type DomainErrorShape } from "@anan/platform-core/errors";
+import { DomainError, toErrorResponse, type DomainErrorShape } from "@qentrah/platform-core/errors";
 
 export type JsonResponseInit = ResponseInit & {
   status?: number;

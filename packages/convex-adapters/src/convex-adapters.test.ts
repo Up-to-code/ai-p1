@@ -22,7 +22,7 @@ import {
   withOptionalOrigin,
 } from "./repository";
 
-describe("@anan/convex-adapters", () => {
+describe("@qentrah/convex-adapters", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -38,10 +38,10 @@ describe("@anan/convex-adapters", () => {
 
   it("omits origin when it is absent and forwards it when present", () => {
     expect(withOptionalOrigin({ secretHash: "hash", now: 1 })).toEqual({ secretHash: "hash", now: 1 });
-    expect(withOptionalOrigin({ secretHash: "hash", now: 1 }, "https://app.anan.test")).toEqual({
+    expect(withOptionalOrigin({ secretHash: "hash", now: 1 }, "https://app.qentrah.test")).toEqual({
       secretHash: "hash",
       now: 1,
-      origin: "https://app.anan.test",
+      origin: "https://app.qentrah.test",
     });
   });
 

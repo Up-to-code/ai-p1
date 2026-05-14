@@ -1,5 +1,5 @@
 {
-  "name": "@anan/demo-partner-app",
+  "name": "@qentrah/demo-partner-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@anan/brand-identity": "0.1.0",
+    "@qentrah/brand-identity": "0.1.0",
     "@types/node": "^20",
     "@types/react": "^19.2.3",
     "@types/react-dom": "^19.2.3",

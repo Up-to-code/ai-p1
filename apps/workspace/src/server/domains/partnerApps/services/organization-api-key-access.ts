@@ -17,7 +17,7 @@ export type OrganizationApiKeyAccessContext = {
   scopes: string[];
 };
 
-const API_KEY_PREFIX = "anan_org_";
+const API_KEY_PREFIX = "qentrah_org_";
 
 export function isOrganizationApiKeyToken(token: string) {
   return token.startsWith(API_KEY_PREFIX);

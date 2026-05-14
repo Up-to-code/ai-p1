@@ -6,7 +6,7 @@ import { createJsonRequest, readJsonResponse } from "./route";
 import { buildProfileSummary, buildSessionContext } from "./session";
 import { resetMocks } from "./vitest";
 
-describe("@anan/testing", () => {
+describe("@qentrah/testing", () => {
   it("builds session and profile fixtures with overrides", () => {
     expect(buildSessionContext({ role: "developer" }).role).toBe("developer");
     expect(buildProfileSummary({ showInOffersDirectory: true }).showInOffersDirectory).toBe(true);
@@ -17,7 +17,7 @@ describe("@anan/testing", () => {
   });
 
   it("provides route helpers", async () => {
-    const request = createJsonRequest("https://anan.test/api", { ok: true });
+    const request = createJsonRequest("https://qentrah.test/api", { ok: true });
     expect(await request.json()).toEqual({ ok: true });
     await expect(readJsonResponse<{ ok: boolean }>(Response.json({ ok: true }))).resolves.toEqual({ ok: true });
   });

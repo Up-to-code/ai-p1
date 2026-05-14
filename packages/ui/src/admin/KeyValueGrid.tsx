@@ -1,4 +1,4 @@
-import { cn } from "@anan/platform-core/classnames";
+import { cn } from "@qentrah/platform-core/classnames";
 
 type KeyValueGridProps = {
   items: Array<{ label: string; value: React.ReactNode }>;

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { brandLabel, brandProductName } from "@anan/brand-identity";
+import { brandLabel, brandProductName } from "@qentrah/brand-identity";
 import { RootProvider } from "fumadocs-ui/provider/next";
 import { ThemeProvider } from "@/components/brand/theme-provider";
 import { rootFontClassName } from "@/lib/rootFonts";

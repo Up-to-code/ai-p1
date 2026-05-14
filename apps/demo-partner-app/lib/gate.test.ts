@@ -19,7 +19,7 @@ describe("demo gate", () => {
   });
 
   it("extracts the gate cookie from a cookie header", () => {
-    expect(gateCookieHeader("x=1; anan_demo_gate=signed-value; y=2")).toBe("signed-value");
+    expect(gateCookieHeader("x=1; qentrah_demo_gate=signed-value; y=2")).toBe("signed-value");
     expect(gateCookieHeader("x=1")).toBeUndefined();
   });
 });

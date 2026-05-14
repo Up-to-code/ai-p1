@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchJsonWithRetry } from "./http";
 
-describe("@anan/base-logic http", () => {
+describe("@qentrah/base-logic http", () => {
   const originalFetch = global.fetch;
 
   beforeEach(() => {

@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  AnanAuthorizationError,
+  QentrahAuthorizationError,
   buildAuthorizeUrl,
-  createAnanAuthorizationClient,
+  createQentrahAuthorizationClient,
   createPkcePair,
   exchangeCode,
   refreshToken,
@@ -40,7 +40,7 @@ function stubWindow(args: {
   return { addEventListener, locationAssign, removeEventListener };
 }
 
-describe("@anan/authorization", () => {
+describe("@qentrah/authorization", () => {
   it("generates PKCE material", async () => {
     const pair = await createPkcePair();
 
@@ -51,7 +51,7 @@ describe("@anan/authorization", () => {
 
   it("builds an authorization URL with PKCE and scopes", () => {
     const url = new URL(buildAuthorizeUrl({
-      issuer: "https://auth.anan.test/",
+      issuer: "https://auth.qentrah.test/",
       clientId: "client-1",
       redirectUri: "https://external.test/callback",
       scopes: ["clients:read_own", "offline_access"],
@@ -60,7 +60,7 @@ describe("@anan/authorization", () => {
       sourceApp: "web",
     }));
 
-    expect(url.origin).toBe("https://auth.anan.test");
+    expect(url.origin).toBe("https://auth.qentrah.test");
     expect(url.pathname).toBe("/authorize");
     expect(url.searchParams.get("response_type")).toBe("code");
     expect(url.searchParams.get("scope")).toBe("clients:read_own offline_access");
@@ -74,9 +74,9 @@ describe("@anan/authorization", () => {
       open: () => popup,
       onMessageListener: (listener) => {
         queueMicrotask(() => listener({
-          origin: "https://auth.anan.test",
+          origin: "https://auth.qentrah.test",
           data: {
-            type: "anan.authorization.result",
+            type: "qentrah.authorization.result",
             code: "code-1",
             state: "state-1",
             redirectUri: "https://external.test/callback",
@@ -85,8 +85,8 @@ describe("@anan/authorization", () => {
       },
     });
 
-    const client = createAnanAuthorizationClient({
-      issuer: "https://auth.anan.test",
+    const client = createQentrahAuthorizationClient({
+      issuer: "https://auth.qentrah.test",
       clientId: "client-1",
       redirectUri: "https://external.test/callback",
       scopes: ["clients:read_own"],
@@ -104,9 +104,9 @@ describe("@anan/authorization", () => {
       open: () => popup,
       onMessageListener: (listener) => {
         queueMicrotask(() => listener({
-          origin: "https://auth.anan.test",
+          origin: "https://auth.qentrah.test",
           data: {
-            type: "anan.authorization.result",
+            type: "qentrah.authorization.result",
             error: "access_denied",
             error_description: "Denied",
           },
@@ -114,8 +114,8 @@ describe("@anan/authorization", () => {
       },
     });
 
-    const client = createAnanAuthorizationClient({
-      issuer: "https://auth.anan.test",
+    const client = createQentrahAuthorizationClient({
+      issuer: "https://auth.qentrah.test",
       clientId: "client-1",
       redirectUri: "https://external.test/callback",
       scopes: ["clients:read_own"],
@@ -127,8 +127,8 @@ describe("@anan/authorization", () => {
   it("rejects when popup closes before authorization completes", async () => {
     const popup = { closed: false, close: vi.fn() };
     stubWindow({ open: () => popup });
-    const client = createAnanAuthorizationClient({
-      issuer: "https://auth.anan.test",
+    const client = createQentrahAuthorizationClient({
+      issuer: "https://auth.qentrah.test",
       clientId: "client-1",
       redirectUri: "https://external.test/callback",
       scopes: ["clients:read_own"],
@@ -143,14 +143,14 @@ describe("@anan/authorization", () => {
 
   it("falls back to redirect when popup is blocked", async () => {
     const { locationAssign } = stubWindow({ open: () => null });
-    const client = createAnanAuthorizationClient({
-      issuer: "https://auth.anan.test",
+    const client = createQentrahAuthorizationClient({
+      issuer: "https://auth.qentrah.test",
       clientId: "client-1",
       redirectUri: "https://external.test/callback",
       scopes: ["clients:read_own"],
     });
 
-    await expect(client.authorize({ state: "state-1" })).rejects.toBeInstanceOf(AnanAuthorizationError);
+    await expect(client.authorize({ state: "state-1" })).rejects.toBeInstanceOf(QentrahAuthorizationError);
     expect(locationAssign).toHaveBeenCalledWith(expect.stringContaining("client_id=client-1"));
   });
 
@@ -162,7 +162,7 @@ describe("@anan/authorization", () => {
         listener({
           origin: "https://evil.example",
           data: {
-            type: "anan.authorization.result",
+            type: "qentrah.authorization.result",
             code: "code-1",
             state: "state-1",
             redirectUri: "https://external.test/callback",
@@ -170,8 +170,8 @@ describe("@anan/authorization", () => {
         } as MessageEvent);
       },
     });
-    const client = createAnanAuthorizationClient({
-      issuer: "https://auth.anan.test",
+    const client = createQentrahAuthorizationClient({
+      issuer: "https://auth.qentrah.test",
       clientId: "client-1",
       redirectUri: "https://external.test/callback",
       scopes: ["clients:read_own"],
@@ -184,9 +184,9 @@ describe("@anan/authorization", () => {
       open: () => popup,
       onMessageListener: (listener) => {
         listener({
-          origin: "https://auth.anan.test",
+          origin: "https://auth.qentrah.test",
           data: {
-            type: "anan.authorization.result",
+            type: "qentrah.authorization.result",
             code: "code-1",
             state: "wrong-state",
             redirectUri: "https://external.test/callback",
@@ -207,7 +207,7 @@ describe("@anan/authorization", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const token = await exchangeCode({
-      issuer: "https://auth.anan.test",
+      issuer: "https://auth.qentrah.test",
       clientId: "client-1",
       code: "code-1",
       redirectUri: "https://external.test/callback",
@@ -231,13 +231,13 @@ describe("@anan/authorization", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await refreshToken({
-      issuer: "https://auth.anan.test",
+      issuer: "https://auth.qentrah.test",
       clientId: "client-1",
       clientSecret: "secret-1",
       refreshToken: "refresh-1",
     });
     await revokeToken({
-      issuer: "https://auth.anan.test",
+      issuer: "https://auth.qentrah.test",
       clientId: "client-1",
       clientSecret: "secret-1",
       token: "refresh-1",

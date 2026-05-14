@@ -1,3 +1,3 @@
 export {
   resolveJwksUrl,
-} from "@anan/auth/resource-server";
+} from "@qentrah/auth/resource-server";

@@ -1,5 +1,5 @@
 {
-  "name": "@anan/auth-client",
+  "name": "@qentrah/auth-client",
   "version": "0.1.0",
   "description": "Shared browser Better Auth client factories for Qentrah apps.",
   "type": "module",

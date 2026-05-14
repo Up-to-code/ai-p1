@@ -1,32 +1,32 @@
 "use client";
 
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
-import { brandLabel } from "@anan/brand-identity";
-import { createAnanAuthorizationClient } from "../client";
-import type { AnanAuthorizationClientOptions, AnanAuthorizeCodeResult, AnanAuthorizeOptions } from "../types";
+import { brandLabel } from "@qentrah/brand-identity";
+import { createQentrahAuthorizationClient } from "../client";
+import type { QentrahAuthorizationClientOptions, QentrahAuthorizeCodeResult, QentrahAuthorizeOptions } from "../types";
 
-const AuthorizationContext = createContext<ReturnType<typeof createAnanAuthorizationClient> | null>(null);
+const AuthorizationContext = createContext<ReturnType<typeof createQentrahAuthorizationClient> | null>(null);
 
-export function AnanAuthorizationProvider({
+export function QentrahAuthorizationProvider({
   options,
   children,
 }: {
-  options: AnanAuthorizationClientOptions;
+  options: QentrahAuthorizationClientOptions;
   children: ReactNode;
 }) {
-  const client = useMemo(() => createAnanAuthorizationClient(options), [options]);
+  const client = useMemo(() => createQentrahAuthorizationClient(options), [options]);
   return <AuthorizationContext.Provider value={client}>{children}</AuthorizationContext.Provider>;
 }
 
-export function useAnanAuthorization() {
+export function useQentrahAuthorization() {
   const client = useContext(AuthorizationContext);
   if (!client) {
-    throw new Error("useAnanAuthorization must be used inside AnanAuthorizationProvider");
+    throw new Error("useQentrahAuthorization must be used inside QentrahAuthorizationProvider");
   }
   return client;
 }
 
-export function AnanAuthorizeButton({
+export function QentrahAuthorizeButton({
   children = `Connect with ${brandLabel("en")}`,
   options,
   className,
@@ -34,12 +34,12 @@ export function AnanAuthorizeButton({
   onError,
 }: {
   children?: ReactNode;
-  options?: AnanAuthorizeOptions;
+  options?: QentrahAuthorizeOptions;
   className?: string;
-  onSuccess?: (result: AnanAuthorizeCodeResult) => void;
+  onSuccess?: (result: QentrahAuthorizeCodeResult) => void;
   onError?: (error: unknown) => void;
 }) {
-  const client = useAnanAuthorization();
+  const client = useQentrahAuthorization();
   const [pending, setPending] = useState(false);
 
   return (

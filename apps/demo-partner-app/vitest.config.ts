@@ -5,7 +5,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL(".", import.meta.url)),
-      "@anan/brand-identity": fileURLToPath(new URL("../../packages/brand-identity/src/index.ts", import.meta.url)),
+      "@qentrah/brand-identity": fileURLToPath(new URL("../../packages/brand-identity/src/index.ts", import.meta.url)),
     },
   },
   test: {

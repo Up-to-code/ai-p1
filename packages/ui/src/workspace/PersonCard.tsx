@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { CheckCircle2, ShieldCheck } from "lucide-react";
-import { cn } from "@anan/platform-core/classnames";
+import { cn } from "@qentrah/platform-core/classnames";
 import type { BrokerPresence } from "./BrokerPresenceChip";
 import type {
   WorkspacePersonBadge,

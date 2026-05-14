@@ -1,5 +1,5 @@
 {
-  "name": "@anan/convex-adapters",
+  "name": "@qentrah/convex-adapters",
   "version": "0.1.0",
   "description": "Shared Convex adapter helpers for Qentrah Next.js repository layers.",
   "type": "module",
@@ -26,12 +26,12 @@
     }
   },
   "scripts": {
-    "prebuild": "npm --workspace @anan/platform-core run build",
+    "prebuild": "npm --workspace @qentrah/platform-core run build",
     "build": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
   "dependencies": {
-    "@anan/platform-core": "0.1.0"
+    "@qentrah/platform-core": "0.1.0"
   },
   "peerDependencies": {
     "convex": "^1.31.6"

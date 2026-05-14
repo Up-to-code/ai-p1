@@ -8,8 +8,9 @@ export const brandIdentity = {
         ar: "شركة قنطرة التقنية",
     },
     slug: "qentrah",
-    packageScope: "@anan",
+    packageScope: "@qentrah",
     envPrefix: "QENTRAH",
+    themeStorageKey: "qentrah-theme",
     domains: {
         root: "qentrah.sa",
         workspace: "app.qentrah.sa",
@@ -40,16 +41,12 @@ export const brandIdentity = {
         platform: { en: "Platform", ar: "المنصة" },
     },
     routes: {
-        auth: "auth/anan",
-        api: "anan",
-        reviewCallback: "anan-review-callback",
-        oauthStart: "api/auth/anan/start",
-        oauthCallback: "api/auth/anan/callback",
-        oauthLogout: "api/auth/anan/logout",
-    },
-    legacy: {
-        envPrefix: "ANAN",
-        themeStorageKey: "anan-theme",
+        auth: "auth/qentrah",
+        api: "qentrah",
+        reviewCallback: "qentrah-review-callback",
+        oauthStart: "api/auth/qentrah/start",
+        oauthCallback: "api/auth/qentrah/callback",
+        oauthLogout: "api/auth/qentrah/logout",
     },
 };
 export function brandLabel(locale = "en") {
@@ -62,9 +59,6 @@ export function brandProductName(product, locale = "en") {
 }
 export function brandEnvName(key) {
     return `${brandIdentity.envPrefix}_${key}`;
-}
-export function legacyBrandEnvName(key) {
-    return `${brandIdentity.legacy.envPrefix}_${key}`;
 }
 export function brandRouteSlug(route) {
     return brandIdentity.routes[route];
@@ -80,9 +74,6 @@ export function readBrandEnv(key, env = process.env, fallback) {
     const canonical = env[brandEnvName(key)]?.trim();
     if (canonical)
         return canonical;
-    const legacy = env[legacyBrandEnvName(key)]?.trim();
-    if (legacy)
-        return legacy;
     return fallback;
 }
 export function brandCssVariables() {

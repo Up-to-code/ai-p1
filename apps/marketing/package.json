@@ -1,5 +1,5 @@
 {
-  "name": "@anan/marketing",
+  "name": "@qentrah/marketing",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@anan/brand-identity": "0.1.0",
+    "@qentrah/brand-identity": "0.1.0",
     "@tailwindcss/postcss": "^4.3.0",
     "@types/node": "^20",
     "@types/react": "^19.2.3",

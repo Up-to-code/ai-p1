@@ -1,4 +1,4 @@
-import { brandProductName, brandRoutePath } from "@anan/brand-identity";
+import { brandProductName, brandRoutePath } from "@qentrah/brand-identity";
 
 export const localDemoRegistration = {
   appName: brandProductName("demo", "en"),

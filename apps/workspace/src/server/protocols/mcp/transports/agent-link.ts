@@ -89,7 +89,7 @@ export async function handleMcpAgent(c: Context) {
         description: tool.description,
         inputSchema: mcpInputSchema(tool),
         annotations: tool.destructive ? { destructiveHint: true } : undefined,
-        _meta: validation.instructions ? { "anan/instructions": validation.instructions } : undefined,
+        _meta: validation.instructions ? { "qentrah/instructions": validation.instructions } : undefined,
       },
       async (input: Record<string, unknown>) => {
         try {
@@ -114,7 +114,7 @@ export async function handleMcpAgent(c: Context) {
       title: "Allowed work",
       description: "Describe what this agent link can do.",
       inputSchema: passthroughInputSchema,
-      _meta: validation.instructions ? { "anan/instructions": validation.instructions } : undefined,
+      _meta: validation.instructions ? { "qentrah/instructions": validation.instructions } : undefined,
     },
     async () => {
       const tools = allowedMcpTools(validation.permissions ?? []).map((tool) => ({

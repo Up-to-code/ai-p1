@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "@anan/platform-core/classnames";
+import { cn } from "@qentrah/platform-core/classnames";
 import type {
   WorkspacePersonBadge,
   WorkspacePersonCardType,

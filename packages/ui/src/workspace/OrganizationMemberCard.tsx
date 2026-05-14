@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Mail } from "lucide-react";
-import { cn } from "@anan/platform-core/classnames";
+import { cn } from "@qentrah/platform-core/classnames";
 import type {
   WorkspaceOrganizationMemberDisplay,
   WorkspaceOrganizationMemberRole,

@@ -13,18 +13,18 @@ describe("demo config", () => {
     })).toThrow("SESSION_SECRET must be at least 32 characters.");
   });
 
-  it("prefers configured brand env aliases while keeping legacy names valid", () => {
+  it("reads configured brand env names", () => {
     const base = {
-      QENTRAH_WORKSPACE_API_URL: "http://legacy.localhost:3000",
-      QENTRAH_CLIENT_ID: "legacy-client",
+      QENTRAH_WORKSPACE_API_URL: "http://workspace.localhost:3000",
+      QENTRAH_CLIENT_ID: "workspace-client",
       PARTNER_APP_URL: "http://localhost:3004",
       DEMO_ACCESS_TOKEN: "token",
       SESSION_SECRET: "12345678901234567890123456789012",
     };
 
     expect(demoConfig(base)).toMatchObject({
-      workspaceBaseUrl: "http://legacy.localhost:3000",
-      clientId: "legacy-client",
+      workspaceBaseUrl: "http://workspace.localhost:3000",
+      clientId: "workspace-client",
     });
 
     expect(demoConfig({
@@ -43,7 +43,7 @@ describe("demo config", () => {
       publisherName: "ZA",
       partnerAppUrl: "http://localhost:3004",
       clientId: "partners_client_4p2f001r194s5z6e15473f582m331f4z4s0f",
-      redirectUri: "http://localhost:3004/api/auth/anan/callback",
+      redirectUri: "http://localhost:3004/api/auth/qentrah/callback",
     });
     expect(requestedScopes).toEqual([
       "calendar:read",

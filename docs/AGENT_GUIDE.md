@@ -41,8 +41,8 @@ Then inspect the relevant source files before editing. Prefer `rg` and
 | Partners backend | `apps/partners/convex` and `apps/partners/server` |
 | Admin review UI | `apps/admin/app` |
 | Admin Workspace API client | `apps/admin/lib/workspace.ts` |
-| Demo OAuth flow | `apps/demo-partner-app/app/api/auth/anan` |
-| Demo resource API calls | `apps/demo-partner-app/app/api/anan` and `apps/demo-partner-app/lib/workspace-api.ts` |
+| Demo OAuth flow | `apps/demo-partner-app/app/api/auth/qentrah` |
+| Demo resource API calls | `apps/demo-partner-app/app/api/qentrah` and `apps/demo-partner-app/lib/workspace-api.ts` |
 | Marketing pages | `apps/marketing/app` |
 | Shared schemas | `packages/domain-contracts` |
 | Shared UI | `packages/ui` |
@@ -60,15 +60,15 @@ Then inspect the relevant source files before editing. Prefer `rg` and
 
 | Change | Check |
 | --- | --- |
-| Workspace TypeScript | `npm --workspace @anan/workspace run typecheck` |
-| Workspace behavior | `npm --workspace @anan/workspace test` |
-| Workspace browser flow | `npm --workspace @anan/workspace run test:e2e` |
-| Partners TypeScript | `npm --workspace @anan/partners run typecheck` |
-| Partners behavior | `npm --workspace @anan/partners test` |
-| Partner MDX/docs components | `npm --workspace @anan/partners run build` |
-| Admin Review | `npm --workspace @anan/admin-review run typecheck` and `npm --workspace @anan/admin-review test` |
-| Demo Partner App | `npm --workspace @anan/demo-partner-app run typecheck` and `npm --workspace @anan/demo-partner-app test` |
-| Marketing | `npm --workspace @anan/marketing run typecheck` |
+| Workspace TypeScript | `npm --workspace @qentrah/workspace run typecheck` |
+| Workspace behavior | `npm --workspace @qentrah/workspace test` |
+| Workspace browser flow | `npm --workspace @qentrah/workspace run test:e2e` |
+| Partners TypeScript | `npm --workspace @qentrah/partners run typecheck` |
+| Partners behavior | `npm --workspace @qentrah/partners test` |
+| Partner MDX/docs components | `npm --workspace @qentrah/partners run build` |
+| Admin Review | `npm --workspace @qentrah/admin-review run typecheck` and `npm --workspace @qentrah/admin-review test` |
+| Demo Partner App | `npm --workspace @qentrah/demo-partner-app run typecheck` and `npm --workspace @qentrah/demo-partner-app test` |
+| Marketing | `npm --workspace @qentrah/marketing run typecheck` |
 
 ## Documentation Expectations
 

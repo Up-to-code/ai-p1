@@ -1,4 +1,4 @@
-import { brandDomainUrl, brandIdentity, brandLabel, brandProductName } from "@anan/brand-identity";
+import { brandDomainUrl, brandIdentity, brandLabel, brandProductName } from "@qentrah/brand-identity";
 
 export const locales = ["en", "ar"] as const;
 export type Locale = (typeof locales)[number];

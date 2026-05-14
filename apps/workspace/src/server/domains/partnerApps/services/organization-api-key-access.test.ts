@@ -42,7 +42,7 @@ describe("organization API key bearer access", () => {
   });
 
   it("detects organization API key tokens by prefix", () => {
-    expect(isOrganizationApiKeyToken("anan_org_secret")).toBe(true);
+    expect(isOrganizationApiKeyToken("qentrah_org_secret")).toBe(true);
     expect(isOrganizationApiKeyToken("partner-token")).toBe(false);
   });
 
@@ -57,7 +57,7 @@ describe("organization API key bearer access", () => {
     });
 
     const response = await appForApiKeyTests().request("/organizations/org_1/clients", {
-      headers: { Authorization: "Bearer anan_org_secret" },
+      headers: { Authorization: "Bearer qentrah_org_secret" },
     });
 
     expect(response.status).toBe(200);
@@ -70,7 +70,7 @@ describe("organization API key bearer access", () => {
     });
     expect(convexMutationMock).toHaveBeenCalledWith("organizationApiKeys.validateAndReserve", {
       organizationId: "org_1",
-      secret: "anan_org_secret",
+      secret: "qentrah_org_secret",
       resource: "client",
       action: "read",
     });
@@ -80,7 +80,7 @@ describe("organization API key bearer access", () => {
     convexMutationMock.mockResolvedValueOnce({ ok: false, reason: "rate_limited" });
 
     const response = await appForApiKeyTests().request("/organizations/org_1/clients", {
-      headers: { Authorization: "Bearer anan_org_secret" },
+      headers: { Authorization: "Bearer qentrah_org_secret" },
     });
 
     expect(response.status).toBe(429);

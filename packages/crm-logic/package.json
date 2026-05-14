@@ -1,5 +1,5 @@
 {
-  "name": "@anan/crm-logic",
+  "name": "@qentrah/crm-logic",
   "version": "0.1.0",
   "description": "Pure CRM projection and normalization logic for Qentrah.",
   "type": "module",

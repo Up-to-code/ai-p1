@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { hasEntitlement, hasScope } from "@anan/auth/server";
+import { hasEntitlement, hasScope } from "@qentrah/auth/server";
 import { useAuthProviderValue } from "./AuthProvider";
 
 export function useAuth() {

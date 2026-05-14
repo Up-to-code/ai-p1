@@ -1,5 +1,5 @@
 {
-  "name": "@anan/offers-logic",
+  "name": "@qentrah/offers-logic",
   "version": "0.1.0",
   "description": "Pure offers and offer-case state logic for Qentrah.",
   "type": "module",

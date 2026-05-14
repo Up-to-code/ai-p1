@@ -1,5 +1,5 @@
 {
-  "name": "@anan/platform-core",
+  "name": "@qentrah/platform-core",
   "version": "0.1.0",
   "description": "Shared Qentrah platform primitives for auth, session contracts, errors, locale, and app adapters.",
   "type": "module",

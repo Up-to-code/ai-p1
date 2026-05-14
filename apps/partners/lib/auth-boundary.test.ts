@@ -34,15 +34,15 @@ describe("Partners auth boundary", () => {
     expect(authServer).toContain("better-auth/adapters/prisma");
     expect(authServer).toContain("prismaAdapter(prisma");
     expect(authServer).toContain('provider: "postgresql"');
-    expect(authServer).not.toContain("@anan/auth/server");
-    expect(authServer).not.toContain("createAnanAuthBridge");
+    expect(authServer).not.toContain("@qentrah/auth/server");
+    expect(authServer).not.toContain("createQentrahAuthBridge");
   });
 
   it("keeps direct password signup behind the trusted Partners wrapper", () => {
     const authServer = read("lib/auth-server.ts");
-    expect(authServer).toContain("x-anan-partner-signup-secret");
+    expect(authServer).toContain("x-qentrah-partner-signup-secret");
     expect(authServer).toContain("Partner password signup requires the trusted signup flow.");
-    expect(authServer).not.toContain("x-anan-admin-signup-secret");
+    expect(authServer).not.toContain("x-qentrah-admin-signup-secret");
   });
 
   it("partner signin proxies to the Better Auth email signin endpoint and copies cookies", async () => {
@@ -94,7 +94,7 @@ describe("Partners auth boundary", () => {
       method: "POST",
       body: JSON.stringify({ email: "ada@example.com", password: "StrongPassword123", name: "Ada Lovelace" }),
     }));
-    expect(new Headers(init?.headers).get("x-anan-partner-signup-secret")).toBe("test-secret");
+    expect(new Headers(init?.headers).get("x-qentrah-partner-signup-secret")).toBe("test-secret");
     expect(response.headers.get("set-cookie")).toContain("better-auth.session_token=signup");
   });
 });

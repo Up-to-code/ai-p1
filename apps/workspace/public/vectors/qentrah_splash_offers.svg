@@ -1,0 +1,24 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg" id="qentrah_splash_offers">
+  <!-- The Transaction Bridge (Hero Scale) -->
+  <g id="bridge_system" transform="translate(100, 100)">
+    <!-- Platform A (Developer) -->
+    <rect x="0" y="50" width="120" height="300" fill="#0F172A" id="dev_platform"/>
+    <rect x="0" y="50" width="120" height="8" fill="#2563EB"/>
+    
+    <!-- Platform B (Broker) -->
+    <rect x="480" y="50" width="120" height="300" fill="#0F172A" id="broker_platform"/>
+    <rect x="480" y="50" width="120" height="8" fill="#64748B"/>
+    
+    <!-- The Connector Exchange -->
+    <g id="exchange_rail" transform="translate(120, 150)">
+      <path d="M0 0H360M0 100H360" stroke="#F1F5F9" stroke-width="4"/>
+      <!-- Active Deal Nodes -->
+      <rect x="40" y="-10" width="20" height="20" fill="#2563EB" id="deal_1"/>
+      <rect x="200" y="90" width="20" height="20" fill="#2563EB" id="deal_2"/>
+      <rect x="300" y="-10" width="20" height="20" fill="#64748B" id="deal_3"/>
+      
+      <!-- Data Threads -->
+      <path d="M0 50H360" stroke="#F1F5F9" stroke-width="1" stroke-dasharray="15 15"/>
+    </g>
+  </g>
+</svg>

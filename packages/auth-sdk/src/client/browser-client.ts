@@ -52,7 +52,7 @@ export function createAuthBrowserClient<TContext = unknown>(options: AuthBrowser
       timeoutMs: options.fetchTimeoutMs,
       headers: {
         "Content-Type": "application/json",
-        ...(csrfToken ? { "x-anan-csrf": csrfToken } : {}),
+        ...(csrfToken ? { "x-qentrah-csrf": csrfToken } : {}),
       },
     })
       .then((session) => {

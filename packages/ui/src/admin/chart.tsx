@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
-import { cn } from "@anan/platform-core/classnames";
+import { cn } from "@qentrah/platform-core/classnames";
 
 const THEMES = { light: "", dark: ".dark" } as const;
 

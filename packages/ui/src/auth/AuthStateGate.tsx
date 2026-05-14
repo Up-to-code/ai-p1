@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { RequireAuth, RequireEntitlement, useAuth } from "@anan/auth-sdk/react";
+import { RequireAuth, RequireEntitlement, useAuth } from "@qentrah/auth-sdk/react";
 
 export function AuthStateGate({
   children,

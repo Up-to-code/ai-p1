@@ -55,13 +55,13 @@ Use existing local patterns:
 Choose the narrowest useful validation first:
 
 ```bash
-npm --workspace @anan/workspace run typecheck
-npm --workspace @anan/workspace test
-npm --workspace @anan/partners run typecheck
-npm --workspace @anan/partners test
-npm --workspace @anan/admin-review run typecheck
-npm --workspace @anan/demo-partner-app test
-npm --workspace @anan/marketing run typecheck
+npm --workspace @qentrah/workspace run typecheck
+npm --workspace @qentrah/workspace test
+npm --workspace @qentrah/partners run typecheck
+npm --workspace @qentrah/partners test
+npm --workspace @qentrah/admin-review run typecheck
+npm --workspace @qentrah/demo-partner-app test
+npm --workspace @qentrah/marketing run typecheck
 ```
 
 Broaden to root workspace checks when shared packages, auth contracts, routing,
@@ -73,7 +73,7 @@ npm run test --workspaces --if-present
 npm run build --workspaces --if-present
 ```
 
-Run `npm --workspace @anan/partners run build` when changing partner MDX docs or
+Run `npm --workspace @qentrah/partners run build` when changing partner MDX docs or
 docs components.
 
 ## 5. Document

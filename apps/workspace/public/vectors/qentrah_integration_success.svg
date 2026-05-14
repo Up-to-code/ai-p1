@@ -1,0 +1,8 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" id="qentrah_integration_success">
+  <rect x="40" y="100" width="80" height="200" fill="#0F172A" id="block_left"/>
+  <rect x="280" y="100" width="80" height="200" fill="#0F172A" id="block_right"/>
+  <rect x="120" y="180" width="160" height="40" fill="#2563EB" id="bridge_connection"/>
+  
+  <rect x="42" y="102" width="76" height="196" stroke="#64748B" stroke-width="2" fill="none" opacity="0.5" id="detail_left"/>
+  <rect x="282" y="102" width="76" height="196" stroke="#64748B" stroke-width="2" fill="none" opacity="0.5" id="detail_right"/>
+</svg>

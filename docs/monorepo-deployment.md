@@ -39,10 +39,10 @@ npm run build --workspaces --if-present
 You can also target one app:
 
 ```bash
-npm --workspace @anan/workspace run build
-npm --workspace @anan/partners run typecheck
-npm --workspace @anan/admin-review run test
-npm --workspace @anan/demo-partner-app run build
+npm --workspace @qentrah/workspace run build
+npm --workspace @qentrah/partners run typecheck
+npm --workspace @qentrah/admin-review run test
+npm --workspace @qentrah/demo-partner-app run build
 ```
 
 ## Vercel Projects
@@ -68,7 +68,7 @@ Partners:    https://partners.<root-domain>
 Admin:       https://admin.<root-domain>
 Demo:        https://demo.<root-domain>
 Demo redirect URI:
-https://demo.<root-domain>/api/auth/anan/callback
+https://demo.<root-domain>/api/auth/qentrah/callback
 ```
 
 Partners submits app registrations to Workspace using `QENTRAH_WORKSPACE_API_URL` and `QENTRAH_PLATFORM_SERVICE_TOKEN`. Admin reviews through Workspace using `WORKSPACE_API_BASE_URL` and `WORKSPACE_ADMIN_SERVICE_TOKEN`. The demo app starts OAuth against Workspace with `QENTRAH_WORKSPACE_API_URL`, `QENTRAH_CLIENT_ID`, and `PARTNER_APP_URL`.

@@ -1,8 +1,8 @@
 import {
   authContextFromSessionContext,
   type AuthContext,
-} from "@anan/auth/server";
-import type { SessionContext } from "@anan/platform-core/session";
+} from "@qentrah/auth/server";
+import type { SessionContext } from "@qentrah/platform-core/session";
 import { AuthSdkError } from "../errors";
 
 export type ResolvedAuthSession = {

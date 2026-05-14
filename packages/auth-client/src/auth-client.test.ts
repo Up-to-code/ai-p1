@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { signInWithEmailPassword, signOutWithAuthClient } from "./forms";
 import { createAdminAuthPlugins, createExternalAppAuthPlugins, createWebAuthPlugins } from "./presets";
 
-describe("@anan/auth-client plugin presets", () => {
+describe("@qentrah/auth-client plugin presets", () => {
   it("keeps web on Convex, organization, and email OTP plugins", () => {
     expect(createWebAuthPlugins()).toHaveLength(3);
   });
@@ -25,11 +25,11 @@ describe("@anan/auth-client plugin presets", () => {
     };
 
     await expect(signInWithEmailPassword(authClient, {
-      email: " user@anan.test ",
+      email: " user@qentrah.test ",
       password: "secret",
       callbackURL: "https://app.test",
     })).resolves.toEqual({ error: null });
-    expect(calls[0]).toMatchObject({ email: "user@anan.test" });
+    expect(calls[0]).toMatchObject({ email: "user@qentrah.test" });
     await expect(signOutWithAuthClient(authClient)).resolves.toBe("signed-out");
   });
 });

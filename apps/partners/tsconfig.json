@@ -29,7 +29,7 @@
       }
     ],
     "paths": {
-      "@anan/brand-identity": [
+      "@qentrah/brand-identity": [
         "../../packages/brand-identity/src/index.ts"
       ],
       "@/.source": [
@@ -41,205 +41,205 @@
       "@/*": [
         "./*"
       ],
-      "@anan/authorization": [
+      "@qentrah/authorization": [
         "../../packages/authorization/src/index.ts"
       ],
-      "@anan/authorization/react": [
+      "@qentrah/authorization/react": [
         "../../packages/authorization/src/react/index.tsx"
       ],
-      "@anan/platform-core": [
+      "@qentrah/platform-core": [
         "../../packages/platform-core/src/index.ts"
       ],
-      "@anan/platform-core/auth-next": [
+      "@qentrah/platform-core/auth-next": [
         "../../packages/platform-core/src/auth-next.ts"
       ],
-      "@anan/platform-core/classnames": [
+      "@qentrah/platform-core/classnames": [
         "../../packages/platform-core/src/classnames.ts"
       ],
-      "@anan/platform-core/errors": [
+      "@qentrah/platform-core/errors": [
         "../../packages/platform-core/src/errors.ts"
       ],
-      "@anan/platform-core/locale": [
+      "@qentrah/platform-core/locale": [
         "../../packages/platform-core/src/locale.ts"
       ],
-      "@anan/platform-core/session": [
+      "@qentrah/platform-core/session": [
         "../../packages/platform-core/src/session.ts"
       ],
-      "@anan/auth": [
+      "@qentrah/auth": [
         "../../packages/auth/src/index.ts"
       ],
-      "@anan/auth/client": [
+      "@qentrah/auth/client": [
         "../../packages/auth/src/client/index.ts"
       ],
-      "@anan/auth/react": [
+      "@qentrah/auth/react": [
         "../../packages/auth/src/react/index.ts"
       ],
-      "@anan/auth/resource-server": [
+      "@qentrah/auth/resource-server": [
         "../../packages/auth/src/resource-server/index.ts"
       ],
-      "@anan/auth/scopes": [
+      "@qentrah/auth/scopes": [
         "../../packages/auth/src/scopes/index.ts"
       ],
-      "@anan/auth/server": [
+      "@qentrah/auth/server": [
         "../../packages/auth/src/server/index.ts"
       ],
-      "@anan/auth/server/oauth-provider": [
+      "@qentrah/auth/server/oauth-provider": [
         "../../packages/auth/src/server/oauth-provider.ts"
       ],
-      "@anan/auth-client": [
+      "@qentrah/auth-client": [
         "../../packages/auth-client/src/index.ts"
       ],
-      "@anan/auth-client/web": [
+      "@qentrah/auth-client/web": [
         "../../packages/auth-client/src/web.ts"
       ],
-      "@anan/auth-client/admin": [
+      "@qentrah/auth-client/admin": [
         "../../packages/auth-client/src/admin.ts"
       ],
-      "@anan/auth-client/forms": [
+      "@qentrah/auth-client/forms": [
         "../../packages/auth-client/src/forms.ts"
       ],
-      "@anan/auth-client/partners": [
+      "@qentrah/auth-client/partners": [
         "../../packages/auth-client/src/partners.ts"
       ],
-      "@anan/domain-contracts": [
+      "@qentrah/domain-contracts": [
         "../../packages/domain-contracts/src/index.ts"
       ],
-      "@anan/domain-contracts/anan-pro": [
-        "../../packages/domain-contracts/src/ananPro.ts"
+      "@qentrah/domain-contracts/qentrah-pro": [
+        "../../packages/domain-contracts/src/qentrahPro.ts"
       ],
-      "@anan/domain-contracts/compliance": [
+      "@qentrah/domain-contracts/compliance": [
         "../../packages/domain-contracts/src/compliance.ts"
       ],
-      "@anan/domain-contracts/deals": [
+      "@qentrah/domain-contracts/deals": [
         "../../packages/domain-contracts/src/deals.ts"
       ],
-      "@anan/domain-contracts/errors": [
+      "@qentrah/domain-contracts/errors": [
         "../../packages/domain-contracts/src/errors.ts"
       ],
-      "@anan/domain-contracts/files": [
+      "@qentrah/domain-contracts/files": [
         "../../packages/domain-contracts/src/files.ts"
       ],
-      "@anan/domain-contracts/gcc-countries": [
+      "@qentrah/domain-contracts/gcc-countries": [
         "../../packages/domain-contracts/src/gccCountries.ts"
       ],
-      "@anan/domain-contracts/inbox": [
+      "@qentrah/domain-contracts/inbox": [
         "../../packages/domain-contracts/src/inbox.ts"
       ],
-      "@anan/domain-contracts/market": [
+      "@qentrah/domain-contracts/market": [
         "../../packages/domain-contracts/src/market.ts"
       ],
-      "@anan/domain-contracts/notifications": [
+      "@qentrah/domain-contracts/notifications": [
         "../../packages/domain-contracts/src/notifications.ts"
       ],
-      "@anan/domain-contracts/oauth": [
+      "@qentrah/domain-contracts/oauth": [
         "../../packages/domain-contracts/src/oauth.ts"
       ],
-      "@anan/domain-contracts/offers": [
+      "@qentrah/domain-contracts/offers": [
         "../../packages/domain-contracts/src/offers.ts"
       ],
-      "@anan/domain-contracts/org-api": [
+      "@qentrah/domain-contracts/org-api": [
         "../../packages/domain-contracts/src/orgApi.ts"
       ],
-      "@anan/domain-contracts/organization-api-keys": [
+      "@qentrah/domain-contracts/organization-api-keys": [
         "../../packages/domain-contracts/src/organizationApiKeys.ts"
       ],
-      "@anan/domain-contracts/organizations": [
+      "@qentrah/domain-contracts/organizations": [
         "../../packages/domain-contracts/src/organizations.ts"
       ],
-      "@anan/domain-contracts/profiles": [
+      "@qentrah/domain-contracts/profiles": [
         "../../packages/domain-contracts/src/profiles.ts"
       ],
-      "@anan/domain-contracts/projects": [
+      "@qentrah/domain-contracts/projects": [
         "../../packages/domain-contracts/src/projects.ts"
       ],
-      "@anan/domain-contracts/properties": [
+      "@qentrah/domain-contracts/properties": [
         "../../packages/domain-contracts/src/properties.ts"
       ],
-      "@anan/domain-contracts/session": [
+      "@qentrah/domain-contracts/session": [
         "../../packages/domain-contracts/src/session.ts"
       ],
-      "@anan/domain-contracts/verifications": [
+      "@qentrah/domain-contracts/verifications": [
         "../../packages/domain-contracts/src/verifications.ts"
       ],
-      "@anan/domain-contracts/workspace": [
+      "@qentrah/domain-contracts/workspace": [
         "../../packages/domain-contracts/src/workspace.ts"
       ],
-      "@anan/testing": [
+      "@qentrah/testing": [
         "../../packages/testing/src/index.ts"
       ],
-      "@anan/testing/oauth": [
+      "@qentrah/testing/oauth": [
         "../../packages/testing/src/oauth.ts"
       ],
-      "@anan/testing/profile": [
+      "@qentrah/testing/profile": [
         "../../packages/testing/src/profile.ts"
       ],
-      "@anan/testing/react": [
+      "@qentrah/testing/react": [
         "../../packages/testing/src/react.ts"
       ],
-      "@anan/testing/repository": [
+      "@qentrah/testing/repository": [
         "../../packages/testing/src/repository.ts"
       ],
-      "@anan/testing/route": [
+      "@qentrah/testing/route": [
         "../../packages/testing/src/route.ts"
       ],
-      "@anan/testing/session": [
+      "@qentrah/testing/session": [
         "../../packages/testing/src/session.ts"
       ],
-      "@anan/testing/vitest": [
+      "@qentrah/testing/vitest": [
         "../../packages/testing/src/vitest.ts"
       ],
-      "@anan/ui": [
+      "@qentrah/ui": [
         "../../packages/ui/src/index.ts"
       ],
-      "@anan/ui/admin": [
+      "@qentrah/ui/admin": [
         "../../packages/ui/src/admin/index.ts"
       ],
-      "@anan/ui/auth": [
+      "@qentrah/ui/auth": [
         "../../packages/ui/src/auth/index.ts"
       ],
-      "@anan/ui/chat": [
+      "@qentrah/ui/chat": [
         "../../packages/ui/src/chat/index.ts"
       ],
-      "@anan/ui/docs": [
+      "@qentrah/ui/docs": [
         "../../packages/ui/src/docs/index.ts"
       ],
-      "@anan/ui/forms": [
+      "@qentrah/ui/forms": [
         "../../packages/ui/src/forms/index.ts"
       ],
-      "@anan/ui/oauth": [
+      "@qentrah/ui/oauth": [
         "../../packages/ui/src/oauth/index.ts"
       ],
-      "@anan/ui/public": [
+      "@qentrah/ui/public": [
         "../../packages/ui/src/public/index.ts"
       ],
-      "@anan/ui/workspace": [
+      "@qentrah/ui/workspace": [
         "../../packages/ui/src/workspace/index.ts"
       ],
-      "@anan/ui/button": [
+      "@qentrah/ui/button": [
         "../../packages/ui/src/components/ui/button.tsx"
       ],
-      "@anan/ui/dropdown-menu": [
+      "@qentrah/ui/dropdown-menu": [
         "../../packages/ui/src/components/ui/dropdown-menu.tsx"
       ],
-      "@anan/web-foundation": [
+      "@qentrah/web-foundation": [
         "../../packages/web-foundation/src/index.ts"
       ],
-      "@anan/web-foundation/api": [
+      "@qentrah/web-foundation/api": [
         "../../packages/web-foundation/src/api.ts"
       ],
-      "@anan/web-foundation/auth-session": [
+      "@qentrah/web-foundation/auth-session": [
         "../../packages/web-foundation/src/auth-session.ts"
       ],
-      "@anan/web-foundation/media": [
+      "@qentrah/web-foundation/media": [
         "../../packages/web-foundation/src/media.ts"
       ],
-      "@anan/web-foundation/fonts": [
+      "@qentrah/web-foundation/fonts": [
         "../../packages/web-foundation/src/fonts.ts"
       ],
-      "@anan/web-foundation/locale": [
+      "@qentrah/web-foundation/locale": [
         "../../packages/web-foundation/src/locale.ts"
       ],
-      "@anan/web-foundation/theme": [
+      "@qentrah/web-foundation/theme": [
         "../../packages/web-foundation/src/theme.tsx"
       ]
     }

@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { cn } from "@anan/platform-core/classnames";
+import { cn } from "@qentrah/platform-core/classnames";
 import Card from "./Card";
 
 interface FeatureCardItem {

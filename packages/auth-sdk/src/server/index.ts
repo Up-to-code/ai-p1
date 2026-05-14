@@ -4,8 +4,8 @@ export * from "./guards";
 export * from "./next";
 export * from "./session";
 export {
-  createAnanAuthBridge,
-  createAnanAuthServer,
-  createAnanOAuthProviderPlugin,
+  createQentrahAuthBridge,
+  createQentrahAuthServer,
+  createQentrahOAuthProviderPlugin,
   resolveAuthBridgeConfig,
-} from "@anan/auth/server";
+} from "@qentrah/auth/server";

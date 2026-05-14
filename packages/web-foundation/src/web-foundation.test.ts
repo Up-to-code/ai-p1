@@ -21,7 +21,7 @@ import { createExtraFontFaceCss, createRootFontClassName } from "./fonts";
 import { createLocaleCookieValue } from "./locale";
 import { resolveAvatarImageUrl } from "./media";
 
-describe("@anan/web-foundation", () => {
+describe("@qentrah/web-foundation", () => {
   it("sanitizes internal return paths", () => {
     expect(sanitizeInternalReturnTo("/ws/settings", "/ws")).toBe("/ws/settings");
     expect(sanitizeInternalReturnTo("https://evil.test", "/ws")).toBe("/ws");
@@ -63,7 +63,7 @@ describe("@anan/web-foundation", () => {
   });
 
   it("shares API route JSON, validation, and response helpers", async () => {
-    const validRequest = new Request("https://app.test", { method: "POST", body: "{\"name\":\"Anan\"}" });
+    const validRequest = new Request("https://app.test", { method: "POST", body: "{\"name\":\"Qentrah\"}" });
     await expect(
       parseJsonBody(validRequest, {
         safeParse: (input) =>
@@ -71,7 +71,7 @@ describe("@anan/web-foundation", () => {
             ? { success: true, data: input as { name: string } }
             : { success: false, error: { issues: [{ message: "Name is required" }] } },
       }),
-    ).resolves.toEqual({ name: "Anan" });
+    ).resolves.toEqual({ name: "Qentrah" });
 
     const invalidRequest = new Request("https://app.test", { method: "POST", body: "{}" });
     await expect(

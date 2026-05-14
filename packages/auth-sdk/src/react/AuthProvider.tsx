@@ -10,7 +10,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { AuthContext } from "@anan/auth/server";
+import type { AuthContext } from "@qentrah/auth/server";
 import {
   createAuthBrowserClient,
   type AuthSdkSessionPayload,

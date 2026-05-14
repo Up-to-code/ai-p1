@@ -4,7 +4,7 @@ import { readAuthEnv } from "./env";
 
 describe("auth env reader", () => {
   it("reads brand-prefixed auth env values and trims them", () => {
-    expect(readAuthEnv("ANAN_AUTH_ISSUER", { ANAN_AUTH_ISSUER: " https://auth.example.com " })).toBe("https://auth.example.com");
+    expect(readAuthEnv("QENTRAH_AUTH_ISSUER", { QENTRAH_AUTH_ISSUER: " https://auth.example.com " })).toBe("https://auth.example.com");
   });
 
   it("keeps direct non-brand env names available", () => {

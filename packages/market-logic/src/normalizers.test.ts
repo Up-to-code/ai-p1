@@ -7,7 +7,7 @@ import {
   parseSaudiGeography,
 } from "./normalizers";
 
-describe("@anan/market-logic normalizers", () => {
+describe("@qentrah/market-logic normalizers", () => {
   it("normalizes Saudi geography", () => {
     expect(normalizeSaudiCity("Riyadh")).toBe("الرياض");
     expect(normalizeMarketArea("Riyadh - Al Narjis")).toBe("narjis");

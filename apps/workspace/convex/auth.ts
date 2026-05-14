@@ -152,9 +152,9 @@ export const createAuthOptions = (
           return { organization_id: verificationValue.referenceId };
         },
         prefix: {
-          clientSecret: "anan_oac_",
-          refreshToken: "anan_ort_",
-          opaqueAccessToken: "anan_oat_",
+          clientSecret: "qentrah_oac_",
+          refreshToken: "qentrah_ort_",
+          opaqueAccessToken: "qentrah_oat_",
         },
       }),
       organization({

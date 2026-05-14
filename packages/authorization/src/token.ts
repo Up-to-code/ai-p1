@@ -1,12 +1,12 @@
-import { brandLabel } from "@anan/brand-identity";
+import { brandLabel } from "@qentrah/brand-identity";
 
-import { AnanAuthorizationError } from "./errors";
+import { QentrahAuthorizationError } from "./errors";
 import type {
-  AnanAuthorizationServerMetadata,
-  AnanRefreshTokenInput,
-  AnanRevokeTokenInput,
-  AnanTokenExchangeInput,
-  AnanTokenSet,
+  QentrahAuthorizationServerMetadata,
+  QentrahRefreshTokenInput,
+  QentrahRevokeTokenInput,
+  QentrahTokenExchangeInput,
+  QentrahTokenSet,
 } from "./types";
 import { normalizeIssuer } from "./url";
 
@@ -18,7 +18,7 @@ function appendClientAuth(params: URLSearchParams, headers: Headers, clientId: s
   headers.set("Authorization", `Basic ${btoa(`${clientId}:${clientSecret}`)}`);
 }
 
-async function readTokenResponse(response: Response): Promise<AnanTokenSet> {
+async function readTokenResponse(response: Response): Promise<QentrahTokenSet> {
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
     const code =
@@ -28,14 +28,14 @@ async function readTokenResponse(response: Response): Promise<AnanTokenSet> {
       body.error === "access_denied"
         ? body.error
         : "invalid_response";
-    throw new AnanAuthorizationError(
+    throw new QentrahAuthorizationError(
       code,
       String(body.error_description ?? body.error ?? "Token request failed"),
       { status: response.status },
     );
   }
   if (!body.access_token || body.token_type !== "Bearer") {
-    throw new AnanAuthorizationError("invalid_response", "Token endpoint returned an invalid response");
+    throw new QentrahAuthorizationError("invalid_response", "Token endpoint returned an invalid response");
   }
   return {
     accessToken: String(body.access_token),
@@ -47,7 +47,7 @@ async function readTokenResponse(response: Response): Promise<AnanTokenSet> {
   };
 }
 
-export async function exchangeCode(input: AnanTokenExchangeInput): Promise<AnanTokenSet> {
+export async function exchangeCode(input: QentrahTokenExchangeInput): Promise<QentrahTokenSet> {
   const headers = new Headers({ "Content-Type": "application/x-www-form-urlencoded" });
   const params = new URLSearchParams({
     grant_type: "authorization_code",
@@ -64,7 +64,7 @@ export async function exchangeCode(input: AnanTokenExchangeInput): Promise<AnanT
   return readTokenResponse(response);
 }
 
-export async function refreshToken(input: AnanRefreshTokenInput): Promise<AnanTokenSet> {
+export async function refreshToken(input: QentrahRefreshTokenInput): Promise<QentrahTokenSet> {
   const headers = new Headers({ "Content-Type": "application/x-www-form-urlencoded" });
   const params = new URLSearchParams({
     grant_type: "refresh_token",
@@ -79,7 +79,7 @@ export async function refreshToken(input: AnanRefreshTokenInput): Promise<AnanTo
   return readTokenResponse(response);
 }
 
-export async function revokeToken(input: AnanRevokeTokenInput): Promise<void> {
+export async function revokeToken(input: QentrahRevokeTokenInput): Promise<void> {
   const headers = new Headers({ "Content-Type": "application/x-www-form-urlencoded" });
   const params = new URLSearchParams({ token: input.token });
   appendClientAuth(params, headers, input.clientId, input.clientSecret);
@@ -89,16 +89,16 @@ export async function revokeToken(input: AnanRevokeTokenInput): Promise<void> {
     body: params,
   });
   if (!response.ok) {
-    throw new AnanAuthorizationError("invalid_response", "Token revocation failed", { status: response.status });
+    throw new QentrahAuthorizationError("invalid_response", "Token revocation failed", { status: response.status });
   }
 }
 
-export async function getMetadata(issuer: string): Promise<AnanAuthorizationServerMetadata> {
+export async function getMetadata(issuer: string): Promise<QentrahAuthorizationServerMetadata> {
   const response = await fetch(`${normalizeIssuer(issuer)}/.well-known/oauth-authorization-server`);
   if (!response.ok) {
-    throw new AnanAuthorizationError("network_error", `Unable to load ${brandLabel("en")} authorization metadata`, {
+    throw new QentrahAuthorizationError("network_error", `Unable to load ${brandLabel("en")} authorization metadata`, {
       status: response.status,
     });
   }
-  return response.json() as Promise<AnanAuthorizationServerMetadata>;
+  return response.json() as Promise<QentrahAuthorizationServerMetadata>;
 }

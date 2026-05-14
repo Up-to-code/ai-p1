@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
-import { brandCssVariables, brandIdentity, brandProductName } from "@anan/brand-identity";
+import { brandCssVariables, brandIdentity, brandProductName } from "@qentrah/brand-identity";
 import { Cairo, Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 
@@ -23,7 +23,7 @@ const brandStyle = brandCssVariables() as CSSProperties;
 const themeInitScript = `
 (() => {
   try {
-    const theme = window.localStorage.getItem("${brandIdentity.legacy.themeStorageKey}") === "dark" ? "dark" : "light";
+    const theme = window.localStorage.getItem("${brandIdentity.themeStorageKey}") === "dark" ? "dark" : "light";
     document.documentElement.classList.toggle("dark", theme === "dark");
     document.documentElement.style.colorScheme = theme;
   } catch {

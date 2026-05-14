@@ -1,6 +1,6 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { brandLabel } from "@anan/brand-identity";
+import { brandLabel } from "@qentrah/brand-identity";
 import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/better-auth/server";
 import { agentRuntimeConfig } from "@/server/config/agent-runtime";
 import { evaluateAgentRequestRisk } from "../policies/risk-policy";

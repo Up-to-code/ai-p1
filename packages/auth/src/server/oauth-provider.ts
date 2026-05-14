@@ -3,7 +3,7 @@ import type { BetterAuthPlugin } from "better-auth";
 import { OAUTH_SCOPE_IDS } from "../scopes/catalog";
 import { resolveTrustedOidcClients, type TrustedOidcClient } from "../config/clients";
 
-export type AnanOidcProviderOptions = {
+export type QentrahOidcProviderOptions = {
   loginPage: string;
   consentPage?: string;
   issuer?: string;
@@ -13,7 +13,7 @@ export type AnanOidcProviderOptions = {
   allowDynamicClientRegistration?: boolean;
 };
 
-export function createAnanOAuthProviderPlugin(options: AnanOidcProviderOptions): BetterAuthPlugin {
+export function createQentrahOAuthProviderPlugin(options: QentrahOidcProviderOptions): BetterAuthPlugin {
   const trustedClients = options.trustedClients ?? resolveTrustedOidcClients();
   return oidcProvider({
     loginPage: options.loginPage,

@@ -1,5 +1,5 @@
 import { LegalArticle, LegalBlock } from "@/components/landing/public-page-shell";
-import { brandDomainUrl, brandProductName } from "@anan/brand-identity";
+import { brandDomainUrl, brandProductName } from "@qentrah/brand-identity";
 
 export default function PrivacyPage() {
   const workspaceName = brandProductName("workspace", "en");

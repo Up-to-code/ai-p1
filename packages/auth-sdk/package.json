@@ -1,5 +1,5 @@
 {
-  "name": "@anan/auth-sdk",
+  "name": "@qentrah/auth-sdk",
   "version": "0.1.0",
   "description": "Production Qentrah authentication SDK for React, Next.js, OAuth/OIDC, and resource authorization.",
   "type": "module",
@@ -46,14 +46,14 @@
     }
   },
   "scripts": {
-    "prebuild": "npm --workspace @anan/platform-core run build && npm --workspace @anan/authorization run build && npm --workspace @anan/auth run build",
+    "prebuild": "npm --workspace @qentrah/platform-core run build && npm --workspace @qentrah/authorization run build && npm --workspace @qentrah/auth run build",
     "build": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
   "dependencies": {
-    "@anan/auth": "0.1.0",
-    "@anan/authorization": "0.1.0",
-    "@anan/platform-core": "0.1.0"
+    "@qentrah/auth": "0.1.0",
+    "@qentrah/authorization": "0.1.0",
+    "@qentrah/platform-core": "0.1.0"
   },
   "peerDependencies": {
     "react": "^19.0.0",

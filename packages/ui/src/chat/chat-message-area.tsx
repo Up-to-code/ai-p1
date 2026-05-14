@@ -2,7 +2,7 @@ import { ChevronDown } from "lucide-react";
 import { type ComponentProps, useCallback } from "react";
 import { StickToBottom, useStickToBottomContext } from "use-stick-to-bottom";
 import { Button } from "../components/ui/button";
-import { cn } from "@anan/platform-core/classnames";
+import { cn } from "@qentrah/platform-core/classnames";
 
 interface ChatMessageAreaScrollButtonProps {
 	alignment?: "left" | "center" | "right";

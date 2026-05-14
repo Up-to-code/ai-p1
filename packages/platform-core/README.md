@@ -1,4 +1,4 @@
-# @anan/platform-core
+# @qentrah/platform-core
 
 Shared platform primitives for Qentrah apps.
 

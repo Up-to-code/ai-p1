@@ -1,0 +1,17 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg" id="qentrah_splash_me">
+  <!-- Profile & Identity Hero -->
+  <g id="profile_hero" transform="translate(300, 100)">
+    <!-- Institutional Silhouette -->
+    <rect x="40" y="50" width="120" height="120" fill="#0F172A" id="hero_head"/>
+    <rect x="0" y="200" width="200" height="200" fill="#64748B" id="hero_torso"/>
+    
+    <!-- Identity Pulse -->
+    <rect x="0" y="200" width="200" height="8" fill="#2563EB"/>
+    
+    <!-- Background Activity Signals -->
+    <g transform="translate(-200, 0)" stroke="#F1F5F9" stroke-width="2">
+      <path d="M0 100H150 M0 150H100 M0 250H180"/>
+      <rect x="0" y="100" width="4" height="40" fill="#2563EB" opacity="0.3"/>
+    </g>
+  </g>
+</svg>

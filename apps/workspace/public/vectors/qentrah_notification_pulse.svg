@@ -1,0 +1,11 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" id="qentrah_notification_pulse">
+  <!-- The Core Wave -->
+  <g id="pulse" transform="translate(150, 150)">
+    <rect x="42" y="42" width="16" height="16" fill="#2563EB" id="core"/>
+    <rect x="25" y="25" width="50" height="50" stroke="#F1F5F9" stroke-width="2" id="wave_inner"/>
+    <rect x="0" y="0" width="100" height="100" stroke="#64748B" stroke-width="2" opacity="0.2" id="wave_outer"/>
+    <!-- Directional Markers -->
+    <rect x="48" y="-10" width="4" height="10" fill="#2563EB"/>
+    <rect x="48" y="100" width="4" height="10" fill="#2563EB"/>
+  </g>
+</svg>

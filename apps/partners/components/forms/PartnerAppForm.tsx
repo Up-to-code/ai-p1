@@ -230,7 +230,7 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
                 <Field label="Redirect URI" error={form.formState.errors.redirectUris?.message as string | undefined}>
                   <Textarea
                     {...form.register("redirectUris")}
-                    placeholder="https://partner.example.com/api/auth/anan/callback"
+                    placeholder="https://partner.example.com/api/auth/qentrah/callback"
                     className={cn("min-h-[112px] font-mono text-sm", fieldClassName)}
                   />
                 </Field>

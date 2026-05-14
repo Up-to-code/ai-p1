@@ -1,5 +1,5 @@
 {
-  "name": "@anan/web-foundation",
+  "name": "@qentrah/web-foundation",
   "version": "0.1.0",
   "description": "Shared Next/web foundation helpers for Qentrah apps.",
   "type": "module",
@@ -46,12 +46,12 @@
     }
   },
   "scripts": {
-    "prebuild": "npm --workspace @anan/platform-core run build",
+    "prebuild": "npm --workspace @qentrah/platform-core run build",
     "build": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
   "dependencies": {
-    "@anan/platform-core": "0.1.0",
+    "@qentrah/platform-core": "0.1.0",
     "@convex-dev/better-auth": "^0.11.4",
     "convex": "^1.31.6",
     "next-themes": "^0.4.6",

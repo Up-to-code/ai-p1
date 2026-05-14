@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { buildAuthBridgeHeaders } from "@anan/web-foundation/api";
+import { buildAuthBridgeHeaders } from "@qentrah/web-foundation/api";
 
 export function getPartnersAuthOrigin(request: NextRequest) {
   return process.env.NEXT_PUBLIC_PARTNERS_AUTH_URL?.trim()

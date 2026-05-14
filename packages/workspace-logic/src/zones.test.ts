@@ -6,7 +6,7 @@ import {
   WORKSPACE_BUSINESS_ZONE_KEYS,
 } from "./zones";
 
-describe("@anan/workspace-logic zones", () => {
+describe("@qentrah/workspace-logic zones", () => {
   it("keeps neutral audiences on base zones", () => {
     expect(getWorkspaceZoneKeysForAudience("none")).toEqual(["overview", "settings"]);
     expect(getWorkspaceCapabilitiesForAudience("none").canManageProjects).toBe(false);

@@ -1,5 +1,5 @@
 {
-  "name": "@anan/domain-contracts",
+  "name": "@qentrah/domain-contracts",
   "version": "0.1.0",
   "description": "Shared Qentrah DTOs, Zod schemas, and server contract types.",
   "type": "module",
@@ -16,9 +16,9 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./anan-pro": {
-      "types": "./dist/ananPro.d.ts",
-      "import": "./dist/ananPro.js"
+    "./qentrah-pro": {
+      "types": "./dist/qentrahPro.d.ts",
+      "import": "./dist/qentrahPro.js"
     },
     "./compliance": {
       "types": "./dist/compliance.d.ts",
@@ -98,21 +98,21 @@
     }
   },
   "scripts": {
-    "prebuild": "npm --workspace @anan/platform-core run build && npm --workspace @anan/auth run build",
+    "prebuild": "npm --workspace @qentrah/platform-core run build && npm --workspace @qentrah/auth run build",
     "build": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
   "dependencies": {
-    "@anan/auth": "0.1.0",
-    "@anan/platform-core": "0.1.0",
+    "@qentrah/auth": "0.1.0",
+    "@qentrah/platform-core": "0.1.0",
     "zod": "^4.3.6"
   },
   "peerDependencies": {
-    "@anan/ag-ui": "0.1.0",
+    "@qentrah/ag-ui": "0.1.0",
     "convex": "^1.31.6"
   },
   "devDependencies": {
-    "@anan/ag-ui": "0.1.0",
+    "@qentrah/ag-ui": "0.1.0",
     "@types/node": "^20.14.9",
     "convex": "^1.31.6",
     "typescript": "^5",

@@ -24,7 +24,7 @@ Purpose: API keys are secondary to OAuth.
 - Scopes grant client capability; workspace permissions and visibility decide resource access.
 - Organization API keys can be created, listed, rotated, or revoked by organization owners or users with effective `apiKey:create/read/update/delete`.
 - API keys cannot exceed the grantable permissions of the user creating or rotating them.
-- Organization API keys use the `anan_org_` bearer prefix, are shown once at creation or rotation, and are stored only as hashes plus suffix metadata.
+- Organization API keys use the `qentrah_org_` bearer prefix, are shown once at creation or rotation, and are stored only as hashes plus suffix metadata.
 - API key creation and rotation require an expiry selection: `5 hours`, `14 days`, `30 days`, or `Never`; default to `30 days`.
 - Organization API keys are limited to 1,000 requests per hour per key.
 - V1 API key writes are limited to client create, update, and delete. Other live workspace resources are read-only.

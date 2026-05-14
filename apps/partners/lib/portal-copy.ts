@@ -20,7 +20,7 @@ export const portalFeatures = [
   },
   {
     title: "SDKs and docs together",
-    description: "Install @anan/auth-sdk, wire callbacks, verify tokens, and call APIs from the same documentation surface.",
+    description: "Install @qentrah/auth-sdk, wire callbacks, verify tokens, and call APIs from the same documentation surface.",
     icon: BookOpen,
   },
   {
@@ -32,13 +32,13 @@ export const portalFeatures = [
 
 export const dashboardMetrics = [
   { label: "OAuth app lifecycle", value: "4 stages" },
-  { label: "SDK install path", value: "@anan/auth-sdk" },
+  { label: "SDK install path", value: "@qentrah/auth-sdk" },
   { label: "Token model", value: "OIDC + scopes" },
 ];
 
-export const sdkInstallSnippet = `pnpm add @anan/auth-sdk
+export const sdkInstallSnippet = `pnpm add @qentrah/auth-sdk
 
-import { createOidcClient } from "@anan/auth-sdk/client";
+import { createOidcClient } from "@qentrah/auth-sdk/client";
 
 export const qentrah = createOidcClient({
   issuer: process.env.QENTRAH_ISSUER!,
@@ -48,6 +48,6 @@ export const qentrah = createOidcClient({
 
 export const quickStartCards = [
   { title: "Create credentials", description: "Register an app and store the generated client ID.", icon: KeyRound },
-  { title: "Add the SDK", description: "Use @anan/auth-sdk for browser PKCE and server verification helpers.", icon: Code2 },
+  { title: "Add the SDK", description: "Use @qentrah/auth-sdk for browser PKCE and server verification helpers.", icon: Code2 },
   { title: "Request review", description: "Submit the tested app and review notes before production access.", icon: ShieldCheck },
 ] as const;

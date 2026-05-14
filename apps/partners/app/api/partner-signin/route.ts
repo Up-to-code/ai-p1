@@ -4,7 +4,7 @@ import {
   getJsonMessage,
   readJsonBody,
   safeResponseJson,
-} from "@anan/web-foundation/api";
+} from "@qentrah/web-foundation/api";
 import { checkRateLimit, getClientRateLimitKey } from "@/rate-limits/memory";
 import { assertPartnersProductionEnv } from "@/security/production-env";
 import { buildSameOriginAuthHeaders } from "@/trust/auth-request";

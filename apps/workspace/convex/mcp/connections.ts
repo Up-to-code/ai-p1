@@ -252,7 +252,7 @@ export const rotateFromHono = mutation({
 
     const rotated = await apiKeys.refresh(ctx, {
       keyId: existing.keyId,
-      prefix: "anan_mcp_",
+      prefix: "qentrah_mcp_",
       reason: "rotated from organization settings",
       metadata: { organizationId: args.organizationId, connectionId: args.connectionId },
     });

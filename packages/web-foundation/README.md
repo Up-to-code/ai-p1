@@ -1,4 +1,4 @@
-# @anan/web-foundation
+# @qentrah/web-foundation
 
 Shared web app foundation helpers. App wrappers still own cookies, redirects,
 font source paths, and route defaults.

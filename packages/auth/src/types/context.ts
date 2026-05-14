@@ -1,4 +1,4 @@
-import type { AnanOidcClaims } from "./claims";
+import type { QentrahOidcClaims } from "./claims";
 
 export type AuthContext = {
   token?: string;
@@ -20,7 +20,7 @@ export type AuthContext = {
   ownerType?: "broker" | "developer" | "RED" | null;
   ownerId?: string | null;
   isActive: boolean;
-  claims: AnanOidcClaims;
+  claims: QentrahOidcClaims;
 };
 
 export type ResourceOwner = {

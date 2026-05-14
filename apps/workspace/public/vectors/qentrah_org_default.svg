@@ -1,0 +1,10 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" id="qentrah_org_default">
+  <!-- Architectural Pylons -->
+  <g id="pylons" transform="translate(140, 100)">
+    <rect x="0" y="80" width="40" height="120" fill="#64748B" id="pylon_1"/>
+    <rect x="40" y="0" width="40" height="200" fill="#0F172A" id="pylon_main"/>
+    <rect x="80" y="40" width="40" height="160" fill="#64748B" id="pylon_3"/>
+    <!-- Institutional Accent -->
+    <rect x="40" y="0" width="40" height="8" fill="#2563EB"/>
+  </g>
+</svg>

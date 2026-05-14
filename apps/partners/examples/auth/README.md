@@ -29,14 +29,14 @@ App: Qentrah OAuth Demo
 Publisher: ZA
 Partner URL: http://localhost:3004
 Client ID: partners_client_4p2f001r194s5z6e15473f582m331f4z4s0f
-Redirect URI: http://localhost:3004/api/auth/anan/callback
+Redirect URI: http://localhost:3004/api/auth/qentrah/callback
 Scopes: calendar:read client:create client:read client:update media:read organization:read project:read property:read task:read
 ```
 
 ## Frontend button
 
 ```tsx
-<a href="/api/auth/anan/start">
+<a href="/api/auth/qentrah/start">
   Authorize with Qentrah
 </a>
 ```
@@ -77,7 +77,7 @@ export async function GET(request: Request) {
   const tokens = await exchangeAuthorizationCode({
     workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL!,
     clientId: process.env.QENTRAH_CLIENT_ID!,
-    redirectUri: `${process.env.PARTNER_APP_URL}/api/auth/anan/callback`,
+    redirectUri: `${process.env.PARTNER_APP_URL}/api/auth/qentrah/callback`,
     code,
     codeVerifier: "read-from-http-only-session",
   });

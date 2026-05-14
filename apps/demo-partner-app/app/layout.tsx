@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { brandLabel } from "@anan/brand-identity";
+import { brandLabel } from "@qentrah/brand-identity";
 import "./globals.css";
 
 const brand = brandLabel("en");
