@@ -1,6 +1,6 @@
 {
   "name": "@qentrah/auth-sdk",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "description": "Public Qentrah partner authorization SDK for OAuth, webhooks, and service-app API calls.",
   "type": "module",
   "sideEffects": false,
@@ -8,10 +8,7 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist/index.js",
-    "dist/index.d.ts",
-    "dist/partner",
-    "dist/qentrah-auth.js",
+    "dist",
     "README.md"
   ],
   "publishConfig": {
@@ -21,6 +18,22 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./authorization": {
+      "types": "./dist/authorization/index.d.ts",
+      "import": "./dist/authorization/index.js"
+    },
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "import": "./dist/client/index.js"
+    },
+    "./errors": {
+      "types": "./dist/errors/index.d.ts",
+      "import": "./dist/errors/index.js"
+    },
+    "./oidc": {
+      "types": "./dist/oidc/index.d.ts",
+      "import": "./dist/oidc/index.js"
     },
     "./partner": {
       "types": "./dist/partner/index.d.ts",
@@ -41,6 +54,18 @@
     "./partner/webhooks": {
       "types": "./dist/partner/webhooks/index.d.ts",
       "import": "./dist/partner/webhooks/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.js"
+    },
+    "./server": {
+      "types": "./dist/server/index.d.ts",
+      "import": "./dist/server/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/testing/index.js"
     },
     "./qentrah-auth.js": "./dist/qentrah-auth.js",
     "./package.json": "./package.json"
