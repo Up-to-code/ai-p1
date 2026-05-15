@@ -538,7 +538,7 @@ export function OrganizationScreen() {
   return (
     <div className="min-h-screen bg-zinc-50/50 dark:bg-[#0A0A0A]">
       <div className="border-b border-zinc-200 bg-white dark:border-white/[0.06] dark:bg-[#111111]">
-        <div className="mx-auto max-w-5xl px-6 py-10">
+        <div className="mx-auto max-w-7xl px-6 py-10">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
             {organizationId ? (
               <OrganizationLogoUploader
@@ -620,7 +620,7 @@ export function OrganizationScreen() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-5xl px-6 py-10">
+      <div className="mx-auto max-w-7xl px-6 py-10">
         {activeTab === "profile" && (
           <div className="space-y-8">
             <AccessSummary
@@ -1213,13 +1213,10 @@ function AgentLinksPanel({
 
   return (
     <div className="space-y-8">
-      <Section title={t("title")} description={t("description")}>
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="grid flex-1 gap-3 md:grid-cols-3">
-            <OrgDataCard icon={KeyRound} label={t("stats.active")} value={connections.filter((item) => item.status === "active").length.toString()} />
-            <OrgDataCard icon={Bot} label={t("stats.calls")} value={connections.reduce((sum, item) => sum + item.usageCount, 0).toString()} />
-            <OrgDataCard icon={ShieldCheck} label={t("stats.access")} value={canCreate ? t("stats.canCreate") : canRead ? t("stats.canView") : t("stats.blocked")} />
-          </div>
+      <Section
+        title={t("title")}
+        description={t("description")}
+        actions={(
           <Button
             disabled={!canCreate}
             onClick={openNewAgentLinkDialog}
@@ -1228,36 +1225,47 @@ function AgentLinksPanel({
             <Plus className="me-2 h-4 w-4" />
             {t("newButton")}
           </Button>
+        )}
+      >
+        <div className="grid gap-3 md:grid-cols-3">
+          <OrgDataCard icon={KeyRound} label={t("stats.active")} value={connections.filter((item) => item.status === "active").length.toString()} />
+          <OrgDataCard icon={Bot} label={t("stats.calls")} value={connections.reduce((sum, item) => sum + item.usageCount, 0).toString()} />
+          <OrgDataCard icon={ShieldCheck} label={t("stats.access")} value={canCreate ? t("stats.canCreate") : canRead ? t("stats.canView") : t("stats.blocked")} />
         </div>
       </Section>
 
       <Section title={t("existingTitle")} description={t("existingDescription")}>
-        <div className="space-y-3">
+        <div className="grid gap-3 xl:grid-cols-2">
           {!canRead && <EmptyState title={t("empty.noAccessTitle")} description={t("empty.noAccessDescription")} />}
           {canRead && query.isLoading && <LoadingRow label={t("empty.loading")} />}
           {canRead && !query.isLoading && connections.length === 0 && <EmptyState title={t("empty.noLinksTitle")} description={t("empty.noLinksDescription")} />}
           {connections.map((connection) => (
-            <div key={connection.id} className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/[0.06] dark:bg-[#111]">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div className="min-w-0 space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-black text-zinc-900 dark:text-white">{connection.name}</p>
-                    <StatusPill label={t(`status.${connection.status}`)} tone={connection.status === "active" ? "success" : connection.status === "paused" ? "warning" : "neutral"} />
-                    <span className="rounded-full bg-zinc-100 px-2.5 py-1 font-mono text-[10px] font-bold text-zinc-500 dark:bg-white/5">{t("labels.keyEnding", { last4: connection.keyLast4 })}</span>
+            <div key={connection.id} className="rounded-[24px] border border-zinc-200 bg-white p-4 dark:border-white/[0.06] dark:bg-[#111]">
+              <div className="flex h-full flex-col gap-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusPill label={t(`status.${connection.status}`)} tone={connection.status === "active" ? "success" : connection.status === "paused" ? "warning" : "neutral"} />
+                      <span className="rounded-full bg-zinc-100 px-2.5 py-1 font-mono text-[10px] font-bold text-zinc-500 dark:bg-white/5">{t("labels.keyEnding", { last4: connection.keyLast4 })}</span>
+                    </div>
+                    <p className="mt-3 truncate text-base font-black text-zinc-900 dark:text-white">{connection.name}</p>
                   </div>
-                  <p className="line-clamp-2 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-500 dark:bg-white/5">
+                    <Bot className="h-4 w-4" />
+                  </div>
+                </div>
+                <p className="line-clamp-3 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
                     {permissionSummary(connection.permissions, {
                       resource: (resource) => t(`resources.${resource}`),
                       action: (action) => t(`actions.${action}`),
                     }) || t("labels.noWork")}
-                  </p>
-                  <div className="flex flex-wrap gap-3 text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                    <span>{t("labels.used", { count: connection.usageCount })}</span>
-                    <span>{t("labels.created", { date: formatDate(connection.createdAt) })}</span>
-                    {connection.lastUsedAt ? <span>{t("labels.lastUsed", { date: formatDate(connection.lastUsedAt) })}</span> : null}
-                  </div>
+                </p>
+                <div className="grid gap-2 rounded-2xl bg-zinc-50 p-3 text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:bg-white/[0.03] sm:grid-cols-3">
+                  <span>{t("labels.used", { count: connection.usageCount })}</span>
+                  <span>{t("labels.created", { date: formatDate(connection.createdAt) })}</span>
+                  <span>{connection.lastUsedAt ? t("labels.lastUsed", { date: formatDate(connection.lastUsedAt) }) : t("labels.noWork")}</span>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="mt-auto flex flex-wrap gap-2 border-t border-zinc-100 pt-3 dark:border-white/[0.06]">
                   {connection.status !== "revoked" && (
                     <Button
                       variant="outline"
@@ -1653,13 +1661,10 @@ function ApiKeysPanel({
 
   return (
     <div className="space-y-8">
-      <Section title={t("title")} description={t("description")}>
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="grid flex-1 gap-3 md:grid-cols-3">
-            <OrgDataCard icon={KeyRound} label={t("stats.active")} value={keys.filter((item) => item.status === "active").length.toString()} />
-            <OrgDataCard icon={ShieldCheck} label={t("stats.quota")} value={t("stats.quotaValue")} />
-            <OrgDataCard icon={RefreshCcw} label={t("stats.calls")} value={keys.reduce((sum, item) => sum + item.usageCount, 0).toString()} />
-          </div>
+      <Section
+        title={t("title")}
+        description={t("description")}
+        actions={(
           <Button
             disabled={!canCreate}
             onClick={openCreateDialog}
@@ -1668,37 +1673,48 @@ function ApiKeysPanel({
             <Plus className="me-2 h-4 w-4" />
             {t("newButton")}
           </Button>
+        )}
+      >
+        <div className="grid gap-3 md:grid-cols-3">
+          <OrgDataCard icon={KeyRound} label={t("stats.active")} value={keys.filter((item) => item.status === "active").length.toString()} />
+          <OrgDataCard icon={ShieldCheck} label={t("stats.quota")} value={t("stats.quotaValue")} />
+          <OrgDataCard icon={RefreshCcw} label={t("stats.calls")} value={keys.reduce((sum, item) => sum + item.usageCount, 0).toString()} />
         </div>
       </Section>
 
       <Section title={t("existingTitle")} description={t("existingDescription")}>
-        <div className="space-y-3">
+        <div className="grid gap-3 xl:grid-cols-2">
           {!canRead && <EmptyState title={t("empty.noAccessTitle")} description={t("empty.noAccessDescription")} />}
           {canRead && query.isLoading && <LoadingRow label={t("empty.loading")} />}
           {canRead && !query.isLoading && keys.length === 0 && <EmptyState title={t("empty.noKeysTitle")} description={t("empty.noKeysDescription")} />}
           {keys.map((key) => (
-            <div key={key.id} className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/[0.06] dark:bg-[#111]">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div className="min-w-0 space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-black text-zinc-900 dark:text-white">{key.name}</p>
-                    <StatusPill label={t(`status.${key.status}`)} tone={key.status === "active" ? "success" : key.status === "expired" ? "warning" : "neutral"} />
-                    <span className="rounded-full bg-zinc-100 px-2.5 py-1 font-mono text-[10px] font-bold text-zinc-500 dark:bg-white/5">{t("labels.keyEnding", { last4: key.keyLast4 })}</span>
+            <div key={key.id} className="rounded-[24px] border border-zinc-200 bg-white p-4 dark:border-white/[0.06] dark:bg-[#111]">
+              <div className="flex h-full flex-col gap-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusPill label={t(`status.${key.status}`)} tone={key.status === "active" ? "success" : key.status === "expired" ? "warning" : "neutral"} />
+                      <span className="rounded-full bg-zinc-100 px-2.5 py-1 font-mono text-[10px] font-bold text-zinc-500 dark:bg-white/5">{t("labels.keyEnding", { last4: key.keyLast4 })}</span>
+                    </div>
+                    <p className="mt-3 truncate text-base font-black text-zinc-900 dark:text-white">{key.name}</p>
                   </div>
-                  <p className="line-clamp-2 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-500 dark:bg-white/5">
+                    <KeyRound className="h-4 w-4" />
+                  </div>
+                </div>
+                <p className="line-clamp-3 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
                     {apiKeyPermissionSummary(key.permissions, {
                       resource: (resource) => t(`resources.${resource}`),
                       action: (action) => t(`actions.${action}`),
                     }) || t("labels.noWork")}
-                  </p>
-                  <div className="flex flex-wrap gap-3 text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                    <span>{t("labels.used", { count: key.usageCount })}</span>
-                    <span>{t("labels.quota", { used: key.quotaUsed, limit: key.quotaLimit })}</span>
-                    <span>{key.expiresAt ? t("labels.expires", { date: formatDate(key.expiresAt) }) : t("labels.neverExpires")}</span>
-                    {key.lastUsedAt ? <span>{t("labels.lastUsed", { date: formatDate(key.lastUsedAt) })}</span> : null}
-                  </div>
+                </p>
+                <div className="grid gap-2 rounded-2xl bg-zinc-50 p-3 text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:bg-white/[0.03] sm:grid-cols-2">
+                  <span>{t("labels.used", { count: key.usageCount })}</span>
+                  <span>{t("labels.quota", { used: key.quotaUsed, limit: key.quotaLimit })}</span>
+                  <span>{key.expiresAt ? t("labels.expires", { date: formatDate(key.expiresAt) }) : t("labels.neverExpires")}</span>
+                  <span>{key.lastUsedAt ? t("labels.lastUsed", { date: formatDate(key.lastUsedAt) }) : t("labels.noWork")}</span>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="mt-auto flex flex-wrap gap-2 border-t border-zinc-100 pt-3 dark:border-white/[0.06]">
                   {key.status !== "revoked" && (
                     <Button
                       variant="outline"
@@ -2093,12 +2109,15 @@ export function CustomPermissionsScreen() {
   );
 }
 
-function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+function Section({ title, description, actions, children }: { title: string; description?: string; actions?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-zinc-900 dark:text-white">{title}</h2>
-        {description && <p className="mt-1 text-[10px] font-medium text-zinc-400">{description}</p>}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-zinc-900 dark:text-white">{title}</h2>
+          {description && <p className="mt-1 max-w-3xl text-[10px] font-medium leading-5 text-zinc-400">{description}</p>}
+        </div>
+        {actions && <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">{actions}</div>}
       </div>
       {children}
     </div>

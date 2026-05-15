@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState, type ComponentProps } from "react";
+import { useMemo, useState, type ComponentProps, type ReactNode } from "react";
 import Image from "next/image";
 import { useQuery as useReactQuery } from "@tanstack/react-query";
-import { ArrowUpRight, CalendarDays, CheckCircle2, Copy, Edit, Mail, Phone, Plus, Search, Trash2, User, UserPlus, Users, History as ActivityIcon, FileText as DocsIcon, LayoutDashboard, Building } from "lucide-react";
+import { ArrowUpRight, CalendarDays, CheckCircle2, Copy, Edit, Mail, Phone, Plus, Search, Trash2, User, UserPlus, Users, History as ActivityIcon, FileText as DocsIcon, LayoutDashboard, Building, type LucideIcon } from "lucide-react";
 import {
   AppDataTable,
   AppPageHeader,
@@ -199,6 +199,97 @@ function ClientDetailSelect({
         ))}
       </select>
     </label>
+  );
+}
+
+function ClientMetaPill({ icon: Icon, children }: { icon: LucideIcon; children: ReactNode }) {
+  return (
+    <span className="inline-flex h-8 min-w-0 max-w-full items-center gap-2 rounded-full bg-zinc-100 px-3 text-xs font-bold text-zinc-600 dark:bg-white/[0.06] dark:text-zinc-300">
+      <Icon className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+      <span className="truncate">{children}</span>
+    </span>
+  );
+}
+
+function ClientInfoRow({ icon: Icon, label, value }: { icon: LucideIcon; label: ReactNode; value: ReactNode }) {
+  return (
+    <div className="min-w-0 rounded-2xl bg-zinc-50 p-4 dark:bg-white/[0.03]">
+      <span className="flex items-center gap-2 text-[11px] font-bold text-zinc-400">
+        <Icon className="h-3.5 w-3.5 shrink-0" />
+        <span className="truncate">{label}</span>
+      </span>
+      <p className="mt-3 truncate text-sm font-black text-zinc-900 dark:text-white">{value}</p>
+    </div>
+  );
+}
+
+function CompactClientFact({ label, value }: { label: ReactNode; value: ReactNode }) {
+  return (
+    <div className="min-w-0 rounded-2xl bg-zinc-50 p-4 dark:bg-white/[0.03]">
+      <p className="text-[11px] font-bold text-zinc-400">{label}</p>
+      <p className="mt-2 line-clamp-2 text-sm font-black leading-snug text-zinc-900 dark:text-white">{value}</p>
+    </div>
+  );
+}
+
+function ClientLinkedUnitCard({
+  unit,
+  linkStatus,
+  notes,
+}: {
+  unit: {
+    id: string;
+    title: string;
+    reference: string;
+    project: string;
+    coverImageUrl?: string;
+    image?: string;
+    status: PropertyStatus;
+    price: string;
+    area: string;
+    bedrooms: number | string;
+    bathrooms: number;
+    updated?: string;
+  };
+  linkStatus?: string;
+  notes?: string | null;
+}) {
+  const t = useTranslations('Properties');
+  const tc = useTranslations('Clients');
+  const image = unit.coverImageUrl ?? unit.image;
+
+  return (
+    <article className="group overflow-hidden rounded-[24px] border border-zinc-100 bg-white transition-colors hover:border-zinc-300 dark:border-white/5 dark:bg-[#0A0A0A]">
+      <Link href={`/properties/${unit.id}`} className="relative block h-32 w-full overflow-hidden bg-zinc-100 text-start focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:bg-white/5">
+        {image ? (
+          <Image src={image} alt={unit.title} fill sizes="(max-width: 768px) 100vw, 360px" className="object-cover opacity-80 grayscale transition-transform duration-700 group-hover:scale-105 group-hover:grayscale-0" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-300 dark:bg-white/5 dark:text-white/20">
+            <Building className="h-8 w-8" />
+          </div>
+        )}
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+          <h3 className="truncate text-sm font-black uppercase tracking-tight text-white">{unit.title}</h3>
+          <p className="mt-1 text-[9px] font-black uppercase tracking-widest text-white/60">{unit.project}</p>
+        </div>
+      </Link>
+      <div className="space-y-3 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <StatusPill label={t(`toolbar.filters.${unit.status}`)} tone={unitStatusTone(unit.status)} />
+          {linkStatus && <StatusPill label={tc(`detail.units.statuses.${linkStatus}`)} tone="info" />}
+          <span className="ms-auto text-[9px] font-black uppercase tracking-widest text-zinc-300">{unit.reference}</span>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <CompactClientFact label={t('card.area')} value={unit.area} />
+          <CompactClientFact label={t('card.layout')} value={`${unit.bedrooms}${t('card.beds')} / ${unit.bathrooms}${t('card.baths')}`} />
+        </div>
+        {notes && <p className="line-clamp-2 rounded-xl bg-zinc-50 p-3 text-xs font-semibold leading-5 text-zinc-500 dark:bg-white/[0.03] dark:text-zinc-400">{notes}</p>}
+        <div className="flex items-center justify-between border-t border-zinc-100 pt-3 dark:border-white/5">
+          <p className="text-sm font-black uppercase text-zinc-900 dark:text-white">{unit.price}</p>
+          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{unit.updated ?? ""}</p>
+        </div>
+      </div>
+    </article>
   );
 }
 
@@ -632,6 +723,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
 
 export function ClientDetailScreen({ id }: { id: string }) {
   const t = useTranslations('Clients');
+  const propertyT = useTranslations('Properties');
   const locale = useLocale();
   const account = useAccountContext();
   const workspaceStatus = account.workspace.status;
@@ -648,6 +740,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
   const [unitLinkNotes, setUnitLinkNotes] = useState("");
   const [isUnitPickerOpen, setIsUnitPickerOpen] = useState(false);
   const [unitSearch, setUnitSearch] = useState("");
+  const [unitStatusFilter, setUnitStatusFilter] = useState<"all" | PropertyStatus>("all");
   const allUnitsQuery = usePropertiesQuery(workspaceOrganizationId, { enabled: isUnitPickerOpen });
   const allUnits = allUnitsQuery ?? [];
   const [deleting, setDeleting] = useState(false);
@@ -689,26 +782,17 @@ export function ClientDetailScreen({ id }: { id: string }) {
   }
 
   const currentStageIndex = Math.max(0, pipelineStages.indexOf(client.pipelineStage as typeof pipelineStages[number]));
-  const activityPreview = [
-    ...tasks.slice(0, 2).map((task) => ({
-      action: task.title,
-      date: task.dueAt ? new Date(task.dueAt).toISOString().slice(0, 10) : "Open",
-      color: task.status === "done" ? "bg-zinc-300" : "bg-emerald-500",
-    })),
-    ...events.slice(0, 2).map((event) => ({
-      action: event.title,
-      date: `${event.date} ${event.time}`,
-      color: "bg-blue-500",
-    })),
-    { action: t('stages.new'), date: client.added, color: "bg-zinc-300" },
-  ].slice(0, 4);
   const linkedUnitIds = new Set(linkedUnits.map(({ link }) => link.propertyId));
   const availableUnits = allUnits.filter((unit) => !linkedUnitIds.has(unit.id));
   const unitSearchQuery = unitSearch.trim().toLowerCase();
-  const filteredAvailableUnits = unitSearchQuery
-    ? availableUnits.filter((unit) => [unit.title, unit.project, unit.price, unit.area, unit.status]
-      .some((value) => String(value ?? "").toLowerCase().includes(unitSearchQuery)))
-    : availableUnits;
+  const filteredAvailableUnits = availableUnits.filter((unit) => {
+    const matchesStatus = unitStatusFilter === "all" || unit.status === unitStatusFilter;
+    const matchesSearch = unitSearchQuery
+      ? [unit.title, unit.project, unit.price, unit.area, unit.status, unit.reference]
+        .some((value) => String(value ?? "").toLowerCase().includes(unitSearchQuery))
+      : true;
+    return matchesStatus && matchesSearch;
+  });
   const visibleAvailableUnits = filteredAvailableUnits.slice(0, 36);
   const isUnitCatalogLoading = allUnitsQuery === undefined;
   const linkUnit = (propertyId: string) => {
@@ -734,44 +818,42 @@ export function ClientDetailScreen({ id }: { id: string }) {
   };
 
   return (
-    <AppPageShell contentClassName="space-y-5 pb-16">
-      <section className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white text-start dark:border-zinc-800 dark:bg-[#0B0B0B]">
-        <div className="grid gap-5 p-5 md:grid-cols-[minmax(0,1fr)_auto] md:p-6">
+    <AppPageShell contentClassName="space-y-8 pb-16">
+      <section className="space-y-5 text-start">
+        <div className="flex flex-col gap-4 border-b border-zinc-100 pb-6 dark:border-white/5 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-950 text-base font-black uppercase text-white dark:bg-zinc-100 dark:text-zinc-950">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-zinc-950 text-lg font-black uppercase text-white dark:bg-zinc-100 dark:text-zinc-950">
               {client.name.charAt(0)}
             </div>
             <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="max-w-full truncate text-[10px] font-black uppercase tracking-wider text-zinc-400">{client.id.toUpperCase()}</p>
-                <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-                <StatusPill label={t(`stages.${client.pipelineStage}`)} tone={client.pipelineStage === "closed" ? "success" : "info"} />
-              </div>
-              <h1 className="mt-2 max-w-4xl text-2xl font-black leading-tight text-zinc-950 dark:text-zinc-50 md:text-3xl">
+              <p className="truncate text-[10px] font-black uppercase tracking-widest text-zinc-400">{client.id.toUpperCase()}</p>
+              <h1 className="mt-2 max-w-5xl text-3xl font-black leading-tight text-zinc-950 dark:text-zinc-50 md:text-[32px]">
                 {client.name}
               </h1>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <StatusPill label={t(`types.${client.type}`)} tone={typeTone(client.type)} />
-                <StatusPill label={t(`statuses.${client.status}`)} tone={client.status === "active" ? "success" : "neutral"} />
-                <StatusPill label={t(`priorities.${client.priority}`)} tone={client.priority === "urgent" ? "danger" : client.priority === "high" ? "warning" : "neutral"} />
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <ClientMetaPill icon={Mail}>{client.contact}</ClientMetaPill>
+                <ClientMetaPill icon={Phone}>{client.phone}</ClientMetaPill>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 md:justify-end">
-            <Button variant="ghost" onClick={() => setDeleting(true)} className="h-10 rounded-xl px-4 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30">
+          <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+            <Button variant="outline" onClick={() => setDeleting(true)} className="h-10 rounded-xl border-red-200 px-4 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-500/20 dark:hover:bg-red-950/30">
               <Trash2 className="me-2 h-3.5 w-3.5" />
               {t('detail.delete')}
             </Button>
-            <Link href={`/clients/${client.id}/edit`} className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 text-xs font-bold text-zinc-900 transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:bg-zinc-900">
-              <Edit className="me-2 h-3.5 w-3.5" />
-              {t('detail.edit')}
+            <Link href={`/clients/${client.id}/edit`}>
+              <AppPrimaryButton>
+                <Edit className="me-2 h-3.5 w-3.5" />
+                {t('detail.edit')}
+              </AppPrimaryButton>
             </Link>
             {client.pipelineStage !== "closed" && (
               <Button
                 type="button"
                 disabled={closeOperation.isRunning}
                 onClick={markClosed}
+                variant="outline"
                 className="h-10 rounded-xl px-4 text-xs font-bold"
               >
                 <CheckCircle2 className="me-2 h-3.5 w-3.5" />
@@ -781,37 +863,13 @@ export function ClientDetailScreen({ id }: { id: string }) {
           </div>
         </div>
 
-        <div className="grid border-t border-zinc-100 dark:border-zinc-800 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="grid gap-px bg-zinc-100 dark:bg-zinc-800 sm:grid-cols-3">
-            {[
-              { label: t('detail.labels.budget'), value: client.budget },
-              { label: t('detail.labels.interest'), value: client.propertyInterest },
-              { label: t('card.next'), value: client.nextActionDate },
-            ].map((item) => (
-              <div key={item.label} className="min-w-0 bg-zinc-50 px-5 py-4 dark:bg-zinc-950/60">
-                <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{item.label}</p>
-                <p className="mt-1 truncate text-sm font-black text-zinc-950 dark:text-zinc-50">{item.value}</p>
-              </div>
-            ))}
-          </div>
-          <div className="flex items-center gap-3 border-t border-zinc-100 px-5 py-4 dark:border-zinc-800 lg:border-s lg:border-t-0">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950">
-              <Phone className="h-4 w-4" />
-            </span>
-            <div className="min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t('detail.labels.phone')}</p>
-              <p className="mt-1 truncate text-sm font-black text-zinc-950 dark:text-zinc-50">{client.phone}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="border-t border-zinc-100 p-3 dark:border-zinc-800 md:p-4">
-          <div className="grid gap-2 sm:grid-cols-5">
+        <div className="inline-flex max-w-full rounded-[24px] border border-zinc-100 bg-white p-3 dark:border-white/5 dark:bg-[#0A0A0A] md:p-4">
+          <div className="flex flex-wrap items-center gap-2">
             {pipelineStages.map((stage, i) => (
               <div
                 key={stage}
                 className={cn(
-                  "flex min-w-0 items-center gap-2 rounded-xl px-3 py-2.5 transition-colors",
+                  "flex min-w-0 items-center gap-2 rounded-xl px-3 py-2 transition-colors",
                   i <= currentStageIndex ? "bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950" : "bg-zinc-50 text-zinc-400 dark:bg-zinc-950/60"
                 )}
               >
@@ -840,113 +898,46 @@ export function ClientDetailScreen({ id }: { id: string }) {
         ]} />
 
         <TabsContent value="overview">
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
-            <section className="rounded-[24px] border border-zinc-200 bg-white p-6 text-start dark:border-zinc-800 dark:bg-[#0B0B0B] lg:col-span-5">
-              <div className="flex h-full min-h-[220px] flex-col justify-between gap-8">
-                <div>
-                  <div className="mb-6 flex items-center justify-between gap-4">
-                    <p className="text-xs font-black uppercase tracking-wider text-zinc-400">{t('detail.nextTitle')}</p>
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950">
-                      <ArrowUpRight className="h-5 w-5" />
-                    </span>
-                  </div>
-                  <h2 className="text-2xl font-black leading-tight tracking-tight text-zinc-950 dark:text-zinc-50 md:text-3xl">{client.nextAction}</h2>
+          <div className="space-y-5">
+            <AppSection
+              title={t('detail.recordTitle')}
+              actions={(
+                <div className="flex flex-wrap items-center gap-2">
+                  <StatusPill label={t(`stages.${client.pipelineStage}`)} tone={client.pipelineStage === "closed" ? "success" : "info"} />
+                  <StatusPill label={t(`types.${client.type}`)} tone={typeTone(client.type)} />
+                  <StatusPill label={t(`statuses.${client.status}`)} tone={client.status === "active" ? "success" : "neutral"} />
+                  <StatusPill label={t(`priorities.${client.priority}`)} tone={client.priority === "urgent" ? "danger" : client.priority === "high" ? "warning" : "neutral"} />
                 </div>
-                <div className="flex items-center gap-3 border-t border-zinc-100 pt-5 dark:border-zinc-800">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-950">
-                    <CalendarDays className="h-4 w-4 text-zinc-500" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-bold text-zinc-400">{t('card.next')}</p>
-                    <p className="truncate text-sm font-black text-zinc-950 dark:text-zinc-50">{client.nextActionDate} {t('detail.at')} {client.appointmentTime}</p>
-                  </div>
+              )}
+            >
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <CompactClientFact label={t('detail.labels.budget')} value={client.budget} />
+                <CompactClientFact label={t('detail.nextTitle')} value={client.nextAction} />
+                <ClientInfoRow icon={Search} label={t('detail.labels.interest')} value={client.propertyInterest} />
+                <div className="grid gap-3 md:col-span-2 xl:col-span-3 xl:grid-cols-3">
+                  <ClientInfoRow icon={Mail} label={t('detail.labels.email')} value={client.contact} />
+                  <ClientInfoRow icon={Phone} label={t('detail.labels.phone')} value={client.phone} />
+                  <ClientInfoRow icon={CalendarDays} label={t('card.next')} value={`${client.nextActionDate} ${t('detail.at')} ${client.appointmentTime}`} />
                 </div>
               </div>
-            </section>
+            </AppSection>
 
-            <section className="rounded-[24px] border border-zinc-200 bg-white p-6 text-start dark:border-zinc-800 dark:bg-[#0B0B0B] lg:col-span-4">
-              <div className="mb-5 flex items-start gap-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">
-                  <Building className="h-5 w-5" />
+            <AppSection
+              title={t('detail.tabs.units')}
+              actions={<span className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-bold text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">{linkedUnits.length} {t("detail.units.linkedCount")}</span>}
+            >
+              {linkedUnits.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-zinc-200 p-6 text-sm font-bold text-zinc-400 dark:border-white/10">
+                  {t("detail.units.linkUnitDesc")}
                 </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-zinc-400">{t('detail.labels.interest')}</p>
-                  <h2 className="mt-1 text-lg font-black leading-snug text-zinc-900 dark:text-white">{client.propertyInterest}</h2>
+              ) : (
+                <div className="grid max-w-6xl grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3">
+                  {linkedUnits.map(({ link, unit }) => unit ? (
+                    <ClientLinkedUnitCard key={link.id} unit={unit} linkStatus={link.status} notes={link.notes} />
+                  ) : null)}
                 </div>
-              </div>
-              <div className="grid gap-3 border-t border-zinc-100 pt-5 dark:border-white/5 sm:grid-cols-2">
-                <div className="rounded-2xl bg-zinc-50 p-4 dark:bg-white/[0.03]">
-                  <p className="text-[11px] font-bold text-zinc-400">{t('detail.labels.budget')}</p>
-                  <p className="mt-2 text-base font-black leading-snug text-zinc-900 dark:text-white">{client.budget}</p>
-                </div>
-                <div className="rounded-2xl bg-zinc-50 p-4 dark:bg-white/[0.03]">
-                  <p className="text-[11px] font-bold text-zinc-400">{t('detail.labels.priority')}</p>
-                  <p className="mt-2 text-base font-black leading-snug text-zinc-900 dark:text-white">{t(`priorities.${client.priority}`)}</p>
-                </div>
-              </div>
-            </section>
-
-            <section className="rounded-[24px] border border-zinc-200 bg-white p-6 text-start dark:border-zinc-800 dark:bg-[#0B0B0B] lg:col-span-3">
-              <p className="mb-5 text-xs font-bold text-zinc-400">{t('detail.recordTitle')}</p>
-              <div className="space-y-4">
-                {[
-                  { label: t('detail.labels.email'), value: client.contact, icon: Mail },
-                  { label: t('detail.labels.phone'), value: client.phone, icon: Phone },
-                ].map(({ label, value, icon: Icon }) => (
-                  <div key={label} className="flex min-w-0 items-center gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-50 text-zinc-400 dark:bg-white/5">
-                      <Icon className="h-4 w-4" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-[11px] font-bold text-zinc-400">{label}</p>
-                      <p className="mt-1 truncate text-sm font-black text-zinc-900 dark:text-white">{value}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section className="rounded-[24px] border border-zinc-200 bg-white p-6 text-start dark:border-zinc-800 dark:bg-[#0B0B0B] lg:col-span-7">
-              <div className="mb-5 flex items-center justify-between gap-4">
-                <p className="text-xs font-bold text-zinc-400">{t('detail.tabs.units')}</p>
-                <span className="text-xs font-black text-zinc-300">{String(units.slice(0, 3).length).padStart(2, "0")}</span>
-              </div>
-              <div className="grid gap-3 md:grid-cols-3">
-                {units.slice(0, 3).length > 0 ? units.slice(0, 3).map((u) => (
-                  <Link key={u.id} href={`/properties/${u.id}`} className="flex min-w-0 items-center gap-3 rounded-2xl border border-zinc-100 p-3 transition-colors hover:bg-zinc-50 dark:border-white/5 dark:hover:bg-white/[0.03]">
-                    <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl bg-zinc-100 dark:bg-white/5">
-                      {u.coverImageUrl ? <Image src={u.coverImageUrl} alt="" width={44} height={44} className="h-full w-full object-cover grayscale" /> : null}
-                    </div>
-                    <div className="min-w-0 flex-1 text-start">
-                      <p className="truncate text-sm font-black text-zinc-900 dark:text-white">{u.title}</p>
-                      <p className="mt-1 truncate text-[11px] font-bold text-zinc-400">{u.price} SAR</p>
-                    </div>
-                  </Link>
-                )) : (
-                  <div className="rounded-2xl border border-dashed border-zinc-200 p-4 text-sm font-bold text-zinc-400 dark:border-white/10 md:col-span-3">
-                    {t('detail.tabs.units')}
-                  </div>
-                )}
-              </div>
-            </section>
-
-            <section className="rounded-[24px] border border-zinc-200 bg-white p-6 text-start dark:border-zinc-800 dark:bg-[#0B0B0B] lg:col-span-5">
-              <p className="mb-5 text-xs font-bold text-zinc-400">{t('detail.activity.subtitle')}</p>
-              <div className="space-y-4">
-                {activityPreview.map((event, i, list) => (
-                  <div key={`${event.action}-${i}`} className="flex items-start gap-3">
-                    <div className="flex flex-col items-center">
-                      <div className={cn("h-2.5 w-2.5 rounded-full", event.color)} />
-                      {i < list.length - 1 && <div className="h-8 w-px bg-zinc-100 dark:bg-white/5" />}
-                    </div>
-                    <div className="-mt-1 min-w-0 text-start">
-                      <p className="truncate text-sm font-black text-zinc-900 dark:text-white">{event.action}</p>
-                      <p className="mt-1 text-[11px] font-bold text-zinc-400">{event.date}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
+              )}
+            </AppSection>
           </div>
         </TabsContent>
 
@@ -1009,27 +1000,27 @@ export function ClientDetailScreen({ id }: { id: string }) {
 
         <TabsContent value="units">
           <div className="space-y-5">
-            <section className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white text-start dark:border-zinc-800 dark:bg-[#0B0B0B]">
-              <div className="flex flex-col gap-4 border-b border-zinc-100 p-5 dark:border-zinc-800 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t("detail.units.subtitle")}</p>
-                  <h2 className="mt-1 text-xl font-black text-zinc-950 dark:text-zinc-50">{t("detail.units.title")}</h2>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
+            <AppSection
+              title={t("detail.units.title")}
+              description={t("detail.units.subtitle")}
+              contentClassName="space-y-4"
+              actions={(
+                <>
                   <span className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-bold text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">{linkedUnits.length} {t("detail.units.linkedCount")}</span>
                   <Button type="button" onClick={() => setIsUnitPickerOpen(true)} className="h-10 rounded-xl px-4 text-xs font-bold">
                     <Plus className="me-2 h-3.5 w-3.5" />{t("detail.units.linkUnit")}
                   </Button>
-                </div>
-              </div>
+                </>
+              )}
+            >
 
               {linkOperation.error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-bold text-red-600 dark:border-red-950/50 dark:bg-red-950/20">{linkOperation.error}</p>}
 
-              <div className="grid gap-px bg-zinc-100 dark:bg-zinc-800 md:grid-cols-2">
+              <div className="grid max-w-6xl grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3">
                 <button
                   type="button"
                   onClick={() => setIsUnitPickerOpen(true)}
-                  className="flex min-h-28 items-center gap-4 bg-zinc-50 p-5 text-start transition hover:bg-zinc-100 dark:bg-zinc-950/70 dark:hover:bg-zinc-950"
+                  className="flex min-h-[316px] items-center gap-4 rounded-[24px] border border-dashed border-zinc-200 bg-zinc-50 p-5 text-start transition hover:bg-zinc-100 dark:border-white/10 dark:bg-white/[0.02] dark:hover:bg-white/[0.04]"
                 >
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950">
                     <Plus className="h-5 w-5" />
@@ -1040,47 +1031,13 @@ export function ClientDetailScreen({ id }: { id: string }) {
                   </span>
                 </button>
 
-                {linkedUnits.map(({ link, unit }) => (
-                  <article key={link.id} className="grid min-h-28 grid-cols-[84px_minmax(0,1fr)] gap-4 bg-white p-4 dark:bg-[#0B0B0B]">
-                    <div className="relative overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-950">
-                      {unit?.coverImageUrl ? (
-                        <Image src={unit.coverImageUrl} alt="" fill sizes="84px" className="object-cover" />
-                      ) : (
-                        <div className="flex h-full min-h-20 items-center justify-center text-zinc-300 dark:text-zinc-700"><Building className="h-5 w-5" /></div>
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          {unit ? (
-                            <Link href={`/properties/${unit.id}`} className="block truncate text-sm font-black text-zinc-950 hover:underline dark:text-zinc-50">{unit.title}</Link>
-                          ) : (
-                            <p className="text-sm font-black text-zinc-400">{t("detail.units.unitUnavailable")}</p>
-                          )}
-                          <p className="mt-1 truncate text-[11px] font-bold text-zinc-400">{unit ? unit.project : link.propertyId}</p>
-                        </div>
-                        <div className="flex shrink-0 flex-wrap justify-end gap-1">
-                          <StatusPill label={link.status} tone="info" />
-                          {unit && <StatusPill label={unit.status} tone={unitStatusTone(unit.status)} />}
-                        </div>
-                      </div>
-                      <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
-                        <span>{unit?.price ?? "-"}</span>
-                        <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-                        <span>{unit?.area ?? "-"}</span>
-                        {link.notes && (
-                          <>
-                            <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-                            <span className="truncate">{link.notes}</span>
-                          </>
-                        )}
-                      </div>
-                      <div className="mt-3 flex gap-2">
-                        {unit && (
-                          <Link href={`/properties/${unit.id}`} className="inline-flex h-9 items-center justify-center rounded-xl border border-zinc-200 px-3 text-xs font-bold text-zinc-900 transition hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-950">
-                            <ArrowUpRight className="me-2 h-3.5 w-3.5" />{t("detail.units.openUnit")}
-                          </Link>
-                        )}
+                {linkedUnits.map(({ link, unit }) => unit ? (
+                  <div key={link.id} className="rounded-[24px] border border-zinc-100 bg-white p-3 dark:border-white/5 dark:bg-[#0B0B0B]">
+                    <ClientLinkedUnitCard unit={unit} linkStatus={link.status} notes={link.notes} />
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Link href={`/properties/${unit.id}`} className="inline-flex h-9 items-center justify-center rounded-xl border border-zinc-200 px-3 text-xs font-bold text-zinc-900 transition hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-950">
+                        <ArrowUpRight className="me-2 h-3.5 w-3.5" />{t("detail.units.openUnit")}
+                      </Link>
                         <Button
                           type="button"
                           variant="ghost"
@@ -1093,16 +1050,18 @@ export function ClientDetailScreen({ id }: { id: string }) {
                         >
                           <Trash2 className="me-2 h-3.5 w-3.5" />{t("detail.units.unlink")}
                         </Button>
-                      </div>
                     </div>
-                  </article>
-                ))}
+                  </div>
+                ) : null)}
               </div>
-            </section>
+            </AppSection>
 
             <Dialog open={isUnitPickerOpen} onOpenChange={(open) => {
               setIsUnitPickerOpen(open);
-              if (!open) setUnitSearch("");
+              if (!open) {
+                setUnitSearch("");
+                setUnitStatusFilter("all");
+              }
             }}>
               <DialogContent className="max-h-[88vh] max-w-5xl overflow-hidden rounded-[24px] border-zinc-200 bg-white p-0 text-zinc-950 shadow-none dark:border-zinc-800 dark:bg-[#0B0B0B] dark:text-zinc-50">
                 <DialogHeader className="border-b border-zinc-100 p-5 pe-14 text-start dark:border-zinc-800">
@@ -1110,7 +1069,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
                   <DialogDescription className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">{t("detail.units.modalDesc")}</DialogDescription>
                 </DialogHeader>
 
-                <div className="sticky top-0 z-10 grid gap-3 border-b border-zinc-100 bg-white p-5 dark:border-zinc-800 dark:bg-[#0B0B0B] md:grid-cols-[minmax(0,1fr)_170px_220px]">
+                <div className="sticky top-0 z-10 space-y-4 border-b border-zinc-100 bg-white p-5 dark:border-zinc-800 dark:bg-[#0B0B0B]">
                   <label className="relative block">
                     <span className="sr-only">{t("detail.units.search")}</span>
                     <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
@@ -1121,25 +1080,44 @@ export function ClientDetailScreen({ id }: { id: string }) {
                       className="h-11 w-full rounded-xl border border-zinc-200 bg-zinc-50 ps-10 pe-3 text-sm font-bold text-zinc-950 outline-none transition focus:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-600"
                     />
                   </label>
-                  <label className="block text-start">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t("detail.units.linkStatus")}</span>
-                    <select
-                      value={unitLinkStatus}
-                      onChange={(event) => setUnitLinkStatus(event.target.value as (typeof unitLinkStatuses)[number])}
-                      className="mt-1 h-11 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-sm font-bold text-zinc-950 outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50"
-                    >
-                      {unitLinkStatuses.map((status) => <option key={status} value={status}>{t(`detail.units.statuses.${status}`)}</option>)}
-                    </select>
-                  </label>
-                  <label className="block text-start">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t("detail.units.notes")}</span>
-                    <input
-                      value={unitLinkNotes}
-                      onChange={(event) => setUnitLinkNotes(event.target.value)}
-                      placeholder={t("detail.units.notes")}
-                      className="mt-1 h-11 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-sm font-bold text-zinc-950 outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50"
-                    />
-                  </label>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {(["all", "available", "reserved", "pending", "sold", "draft"] as const).map((status) => (
+                      <button
+                        key={status}
+                        type="button"
+                        onClick={() => setUnitStatusFilter(status)}
+                        className={cn(
+                          "h-9 rounded-xl border px-3 text-[10px] font-black uppercase tracking-widest transition",
+                          unitStatusFilter === status
+                            ? "border-zinc-950 bg-zinc-950 text-white dark:border-white dark:bg-white dark:text-zinc-950"
+                            : "border-zinc-200 text-zinc-500 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-white/[0.04]",
+                        )}
+                      >
+                        {status === "all" ? t("stageFilters.all") : propertyT(`toolbar.filters.${status}`)}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-[220px_minmax(0,1fr)]">
+                    <label className="block text-start">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t("detail.units.linkStatus")}</span>
+                      <select
+                        value={unitLinkStatus}
+                        onChange={(event) => setUnitLinkStatus(event.target.value as (typeof unitLinkStatuses)[number])}
+                        className="mt-1 h-11 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-sm font-bold text-zinc-950 outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50"
+                      >
+                        {unitLinkStatuses.map((status) => <option key={status} value={status}>{t(`detail.units.statuses.${status}`)}</option>)}
+                      </select>
+                    </label>
+                    <label className="block text-start">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t("detail.units.notes")}</span>
+                      <input
+                        value={unitLinkNotes}
+                        onChange={(event) => setUnitLinkNotes(event.target.value)}
+                        placeholder={t("detail.units.notes")}
+                        className="mt-1 h-11 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-sm font-bold text-zinc-950 outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50"
+                      />
+                    </label>
+                  </div>
                 </div>
 
                 <div className="max-h-[54vh] overflow-y-auto p-5">
@@ -1161,34 +1139,14 @@ export function ClientDetailScreen({ id }: { id: string }) {
                   ) : filteredAvailableUnits.length === 0 ? (
                     <div className="rounded-2xl border border-dashed border-zinc-200 p-8 text-center text-sm font-bold text-zinc-400 dark:border-zinc-800">{t("detail.units.noResults")}</div>
                   ) : (
-                    <div className="grid gap-3 md:grid-cols-2">
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3">
                       {visibleAvailableUnits.map((unit) => (
-                        <article key={unit.id} className="grid grid-cols-[88px_minmax(0,1fr)] gap-4 rounded-2xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950/50">
-                          <div className="relative overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-950">
-                            {unit.coverImageUrl ? (
-                              <Image src={unit.coverImageUrl} alt="" fill sizes="88px" className="object-cover" />
-                            ) : (
-                              <div className="flex h-full min-h-24 items-center justify-center text-zinc-300 dark:text-zinc-700"><Building className="h-5 w-5" /></div>
-                            )}
-                          </div>
-                          <div className="min-w-0 text-start">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="min-w-0">
-                                <p className="truncate text-sm font-black text-zinc-950 dark:text-zinc-50">{unit.title}</p>
-                                <p className="mt-1 truncate text-xs font-bold text-zinc-400">{unit.project}</p>
-                              </div>
-                              <StatusPill label={unit.status} tone={unitStatusTone(unit.status)} />
-                            </div>
-                            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-bold text-zinc-500 dark:text-zinc-400">
-                              <span>{unit.price}</span>
-                              <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-                              <span>{unit.area}</span>
-                            </div>
+                        <div key={unit.id} className="rounded-[24px] border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950/50">
+                          <ClientLinkedUnitCard unit={unit} />
                             <Button type="button" disabled={linkOperation.isRunning} onClick={() => linkUnit(unit.id)} className="mt-3 h-9 w-full rounded-xl text-xs font-bold">
                               <Plus className="me-2 h-3.5 w-3.5" />{t("detail.units.link")}
                             </Button>
-                          </div>
-                        </article>
+                        </div>
                       ))}
                     </div>
                   )}
@@ -1198,27 +1156,29 @@ export function ClientDetailScreen({ id }: { id: string }) {
           </div>
         </TabsContent>
         <TabsContent value="docs">
-          <ClientDocumentsManager
-            organizationId={workspaceOrganizationId}
-            clientId={client.id}
-          />
+          <AppSection tone="muted" contentClassName="min-w-0">
+            <ClientDocumentsManager
+              organizationId={workspaceOrganizationId}
+              clientId={client.id}
+            />
+          </AppSection>
         </TabsContent>
 
         <TabsContent value="activity">
-          <section className="overflow-hidden rounded-[24px] border border-zinc-200 bg-white text-start dark:border-zinc-800 dark:bg-[#0B0B0B]">
-            <div className="flex flex-col gap-3 border-b border-zinc-100 p-5 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t('detail.activity.subtitle')}</p>
-                <h2 className="mt-1 text-xl font-black text-zinc-950 dark:text-zinc-50">{t('detail.activity.title')}</h2>
-              </div>
-              <div className="flex gap-2">
+          <AppSection
+            title={t('detail.activity.title')}
+            description={t('detail.activity.subtitle')}
+            contentClassName="space-y-4"
+            actions={(
+              <>
                 <span className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-bold text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">{tasks.length} {t('detail.activity.tasks')}</span>
                 <span className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-bold text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">{events.length} {t('detail.activity.events')}</span>
-              </div>
-            </div>
+              </>
+            )}
+          >
 
             <form
-              className="grid gap-2 border-b border-zinc-100 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/50 md:grid-cols-[150px_minmax(220px,1fr)_140px_140px_160px_auto]"
+              className="grid gap-2 rounded-[20px] bg-zinc-50 p-3 dark:bg-white/[0.03] md:grid-cols-[140px_minmax(220px,1fr)_132px_132px_156px_auto]"
               onSubmit={(event) => {
                 event.preventDefault();
                 const form = event.currentTarget;
@@ -1260,11 +1220,11 @@ export function ClientDetailScreen({ id }: { id: string }) {
               </Button>
             </form>
 
-            {taskOperation.error && <p className="mx-5 mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-bold text-red-600 dark:border-red-950/50 dark:bg-red-950/20">{taskOperation.error}</p>}
+            {taskOperation.error && <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-bold text-red-600 dark:border-red-950/50 dark:bg-red-950/20">{taskOperation.error}</p>}
 
-            <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+            <div className="grid gap-3">
               {tasks.length === 0 && events.length === 0 ? (
-                <div className="p-8 text-center text-sm font-bold text-zinc-400">
+                <div className="rounded-[20px] border border-dashed border-zinc-200 p-8 text-center text-sm font-bold text-zinc-400 dark:border-white/10">
                   {t('detail.activity.emptyTasks')}
                 </div>
               ) : null}
@@ -1273,7 +1233,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
                 const linkedUnit = units.find((unit) => unit.id === task.propertyId);
                 const isDone = task.status === "done";
                 return (
-                  <article key={task.id} className="grid gap-4 p-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+                  <article key={task.id} className="grid gap-4 rounded-[20px] border border-zinc-100 bg-white p-4 dark:border-white/5 dark:bg-[#0A0A0A] md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <StatusPill label={t(`detail.activity.taskStatuses.${task.status}`)} tone={isDone ? "success" : task.status === "canceled" ? "neutral" : "warning"} />
@@ -1361,7 +1321,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
               })}
 
               {events.map((event) => (
-                <article key={event.id} className="grid gap-4 p-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+                <article key={event.id} className="grid gap-4 rounded-[20px] border border-zinc-100 bg-white p-4 dark:border-white/5 dark:bg-[#0A0A0A] md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <StatusPill label={event.status} tone="info" />
@@ -1376,7 +1336,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
                 </article>
               ))}
             </div>
-          </section>
+          </AppSection>
         </TabsContent>
       </Tabs>
 

@@ -1,4 +1,4 @@
-import { QentrahPartnerAuthError } from "../errors";
+import { QentrahPartnerAuthError } from "../errors.js";
 
 export type QentrahWebhookEventType = "client.created" | "client.updated" | "client.deleted" | string;
 

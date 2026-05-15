@@ -1244,6 +1244,7 @@
         "selected": "المحدد: {name}",
         "noneSelected": "اختر عميلاً للربط.",
         "link": "ربط",
+        "quickEdit": "تعديل سريع لرابط العميل",
         "statuses": {
           "interested": "مهتم",
           "shortlisted": "مختارة",
@@ -1251,6 +1252,17 @@
           "offer": "عرض",
           "rejected": "مرفوضة"
         }
+      },
+      "legal": {
+        "title": "القانوني والمستندات",
+        "field": "الحقل",
+        "value": "القيمة",
+        "reference": "المرجع",
+        "status": "الحالة",
+        "documents": "المستندات",
+        "latest": "الأحدث",
+        "latestNumber": "الأحدث {number}",
+        "empty": "لا توجد مستندات قانونية مرفوعة بعد."
       },
       "readiness": {
         "media": "وسائط الغلاف",
@@ -1265,7 +1277,9 @@
         "city": "المدينة",
         "type": "النوع",
         "purpose": "الغرض",
-        "price": "السعر"
+        "price": "السعر",
+        "email": "البريد الإلكتروني",
+        "phone": "الهاتف"
       }
     },
     "form": {

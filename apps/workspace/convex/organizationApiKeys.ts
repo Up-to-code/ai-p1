@@ -110,7 +110,12 @@ function optionalString(input: Input, key: string) {
 
 function optionalNumber(input: Input, key: string) {
   const value = input[key];
-  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  return undefined;
 }
 
 function requiredString(input: Input, key: string, fallback = "") {
@@ -123,7 +128,7 @@ function present<T extends { _id: string }>(doc: T) {
 
 function limitFromInput(input: Input) {
   const value = optionalNumber(input, "limit") ?? DEFAULT_LIMIT;
-  return Math.max(1, Math.min(100, Math.floor(value)));
+  return Math.max(1, Math.min(500, Math.floor(value)));
 }
 
 function clientPatch(input: Input) {

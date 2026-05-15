@@ -1244,6 +1244,7 @@
         "selected": "Selected: {name}",
         "noneSelected": "Select a client to link.",
         "link": "Link",
+        "quickEdit": "Quick edit client link",
         "statuses": {
           "interested": "Interested",
           "shortlisted": "Shortlisted",
@@ -1251,6 +1252,17 @@
           "offer": "Offer",
           "rejected": "Rejected"
         }
+      },
+      "legal": {
+        "title": "Legal and documents",
+        "field": "Field",
+        "value": "Value",
+        "reference": "Reference",
+        "status": "Status",
+        "documents": "Documents",
+        "latest": "Latest",
+        "latestNumber": "Latest {number}",
+        "empty": "No legal documents uploaded yet."
       },
       "readiness": {
         "media": "Cover media",
@@ -1265,7 +1277,9 @@
         "city": "City",
         "type": "Type",
         "purpose": "Purpose",
-        "price": "Price"
+        "price": "Price",
+        "email": "Email",
+        "phone": "Phone"
       }
     },
     "form": {

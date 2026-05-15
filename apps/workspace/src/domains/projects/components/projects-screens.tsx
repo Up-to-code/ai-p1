@@ -11,6 +11,7 @@ import {
   AppPageHeader,
   AppPageShell,
   AppPrimaryButton,
+  AppSection,
   AppStatsGrid,
   AppTabsList,
   AppThumbnailCell,
@@ -299,136 +300,142 @@ export function ProjectDetailScreen({ id }: { id: string }) {
   }
 
   return (
-    <AppPageShell contentClassName="space-y-6 pb-14">
-      <Tabs defaultValue="details" className="space-y-6">
-        <section className="text-start">
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="grid min-h-[360px] overflow-hidden rounded-[28px] border border-zinc-200/70 bg-zinc-100 dark:border-white/10 dark:bg-white/[0.04] lg:grid-cols-[minmax(0,1fr)_360px]">
-              <div className="relative min-h-[280px] overflow-hidden">
-                {project.coverImageUrl ? (
-                  <Image src={project.coverImageUrl} alt={project.name} fill sizes="(max-width: 1024px) 100vw, 760px" className="object-cover" priority />
-                ) : (
-                  <div className="flex h-full min-h-[280px] items-center justify-center bg-zinc-200 text-zinc-400 dark:bg-white/[0.05] dark:text-white/25">
-                    <Building2 className="h-12 w-12" />
-                  </div>
-                )}
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-zinc-950/85 to-transparent p-5 text-white">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
-                    <span className="rounded-full bg-white/15 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white">{project.reference}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col justify-between gap-8 bg-white p-6 dark:bg-[#090909]">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{project.developer}</p>
-                  <h1 className="mt-3 text-3xl font-black leading-tight text-zinc-950 dark:text-white md:text-4xl">{project.name}</h1>
-                  <p className="mt-4 line-clamp-4 text-sm font-semibold leading-7 text-zinc-600 dark:text-zinc-300">{project.description}</p>
-                </div>
-                <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-zinc-200/70 dark:bg-white/10">
-                  <CompactFact label={t('detail.labels.city')} value={project.city} />
-                  <CompactFact label={t('detail.labels.type')} value={t(`types.${project.type}`)} />
-                  <CompactFact label={t('detail.labels.units')} value={project.units} />
-                  <CompactFact label={td('market.value')} value={project.priceRange} />
-                </div>
+    <AppPageShell contentClassName="space-y-8 pb-14">
+      <Tabs defaultValue="details" className="space-y-8">
+        <section className="space-y-5 text-start">
+          <div className="flex flex-col gap-4 border-b border-zinc-100 pb-6 dark:border-white/5 xl:flex-row xl:items-start xl:justify-between">
+            <div className="min-w-0 max-w-4xl">
+              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{project.developer}</p>
+              <h1 className="mt-2 text-3xl font-black leading-tight text-zinc-950 dark:text-white md:text-5xl">{project.name}</h1>
+              <p className="mt-3 max-w-3xl text-sm font-semibold leading-7 text-zinc-600 dark:text-zinc-300">{project.description}</p>
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
+                <ProjectMetaPill icon={Copy}>{project.reference}</ProjectMetaPill>
+                <ProjectMetaPill icon={MapPin}>{project.city}</ProjectMetaPill>
+                <ProjectMetaPill icon={Building2}>{t(`types.${project.type}`)}</ProjectMetaPill>
+                <ProjectMetaPill icon={Layers3}>{project.units} {t('card.units')}</ProjectMetaPill>
+                <ProjectMetaPill icon={Landmark}>{project.priceRange}</ProjectMetaPill>
               </div>
             </div>
 
-            <aside className="grid content-start gap-3">
-              <div className="rounded-[24px] border border-zinc-200/70 bg-white p-5 dark:border-white/10 dark:bg-[#090909]">
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('metrics.launchReadiness')}</p>
-                <p className="mt-4 text-4xl font-black text-zinc-950 dark:text-white">{launchReadiness}%</p>
-                <div className="mt-4">
-                  <ReadinessBar label={td('metrics.inventoryCoverage')} value={inventoryCoverage} />
-                </div>
-              </div>
-              <div className="rounded-[24px] border border-zinc-200/70 bg-white p-5 dark:border-white/10 dark:bg-[#090909]">
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('sales.pipelineTitle')}</p>
-                <div className="mt-5 space-y-3">
-                  <MiniMovement label={td('sales.status.available')} value={availableUnits} total={Math.max(liveUnitCount, 1)} className="bg-emerald-500" />
-                  <MiniMovement label={td('sales.status.reserved')} value={reservedUnits} total={Math.max(liveUnitCount, 1)} className="bg-blue-500" />
-                  <MiniMovement label={td('sales.status.sold')} value={soldUnits} total={Math.max(liveUnitCount, 1)} className="bg-zinc-400" />
-                </div>
-              </div>
-            </aside>
-          </div>
-
-          <div className="mt-4 flex flex-col gap-3 border-b border-zinc-200/70 pb-4 dark:border-white/10 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex flex-wrap items-center gap-2">
-              <StatusPill label={t(`types.${project.type}`)} tone="neutral" />
-              <span className="inline-flex h-8 items-center rounded-full bg-zinc-950 px-3 text-xs font-black text-white dark:bg-white dark:text-zinc-950">{project.priceRange}</span>
-              <span className="inline-flex h-8 items-center rounded-full bg-zinc-100 px-3 text-xs font-black text-zinc-600 dark:bg-white/[0.06] dark:text-zinc-300">{project.units} {t('card.units')}</span>
-            </div>
             <div className="flex flex-wrap items-center gap-2 xl:justify-end">
               <Button variant="outline" size="icon-lg" aria-label={td('share')} className="rounded-xl border-zinc-200 dark:border-white/10">
                 <Share2 className="h-4 w-4" />
               </Button>
-              <Link href={`/projects/${project.id}/edit`} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 px-4 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:border-white/10 dark:hover:bg-white/5">
-                <Edit className="h-3.5 w-3.5" />
-                {t('detail.edit')}
+              <Link href={`/projects/${project.id}/edit`}>
+                <AppPrimaryButton>
+                  <Edit className="me-2 h-3.5 w-3.5" />
+                  {t('detail.edit')}
+                </AppPrimaryButton>
               </Link>
-              <Button variant="ghost" aria-label={t('detail.delete')} onClick={() => setDeleting(true)} className="h-10 rounded-xl px-3 text-xs font-bold text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/25">
+              <Button variant="outline" aria-label={t('detail.delete')} onClick={() => setDeleting(true)} className="h-10 rounded-xl border-red-200 px-3 text-xs font-bold text-red-500 hover:bg-red-50 hover:text-red-600 dark:border-red-500/20 dark:hover:bg-red-950/25">
                 <Trash2 className="me-2 h-3.5 w-3.5" />
                 {t('detail.delete')}
               </Button>
             </div>
           </div>
 
-          <div className="mt-6">
-            <AppTabsList
-              className="gap-8"
-              tabs={[
-                { value: "details", label: td('tabs.details'), icon: Building2 },
-                { value: "inventory", label: td('tabs.inventory'), icon: Layers3 },
-                { value: "documents", label: td('tabs.documents'), icon: FileText },
-                { value: "sales", label: td('tabs.sales'), icon: TrendingUp },
-                { value: "activity", label: td('tabs.activity'), icon: History },
-              ]}
-            />
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+            <div className="relative min-h-[360px] overflow-hidden rounded-[24px] border border-zinc-100 bg-zinc-100 dark:border-white/5 dark:bg-white/[0.04]">
+              {project.coverImageUrl ? (
+                <Image src={project.coverImageUrl} alt={project.name} fill sizes="(max-width: 1280px) 100vw, 900px" className="object-cover" priority />
+              ) : (
+                <div className="flex h-full min-h-[360px] items-center justify-center bg-zinc-200 text-zinc-400 dark:bg-white/[0.05] dark:text-white/25">
+                  <Building2 className="h-12 w-12" />
+                </div>
+              )}
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-zinc-950/85 to-transparent p-5 text-white">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex h-8 items-center rounded-full bg-white px-3 text-xs font-black text-zinc-950">{project.priceRange}</span>
+                  <span className="inline-flex h-8 items-center rounded-full bg-white/15 px-3 text-xs font-black text-white">{project.units} {t('card.units')}</span>
+                  <span className="inline-flex h-8 items-center rounded-full bg-emerald-500/20 px-3 text-xs font-black text-emerald-100">{td('metrics.ready')} {launchReadiness}%</span>
+                </div>
+              </div>
+            </div>
+
+            <aside className="rounded-[24px] border border-zinc-100 bg-white p-6 dark:border-white/5 dark:bg-[#0A0A0A]">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('metrics.launchReadiness')}</p>
+                  <p className="mt-2 text-4xl font-black text-zinc-950 dark:text-white">{launchReadiness}%</p>
+                </div>
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-300">
+                  <Gauge className="h-4 w-4" />
+                </span>
+              </div>
+              <div className="mt-5 space-y-4">
+                <ReadinessBar label={td('metrics.inventoryCoverage')} value={inventoryCoverage} />
+                <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-zinc-200/70 dark:bg-white/10">
+                  <CompactFact label={td('metrics.live')} value={liveUnitCount} />
+                  <CompactFact label={td('metrics.available')} value={availableUnits} />
+                </div>
+                <div className="space-y-3 border-t border-zinc-100 pt-4 dark:border-white/5">
+                  <MiniMovement label={td('sales.status.available')} value={availableUnits} total={Math.max(liveUnitCount, 1)} className="bg-emerald-500" />
+                  <MiniMovement label={td('sales.status.reserved')} value={reservedUnits} total={Math.max(liveUnitCount, 1)} className="bg-blue-500" />
+                  <MiniMovement label={td('sales.status.sold')} value={soldUnits} total={Math.max(liveUnitCount, 1)} className="bg-zinc-400" />
+                </div>
+                <div className="flex flex-wrap gap-2 border-t border-zinc-100 pt-4 dark:border-white/5">
+                  <ProjectMetaPill icon={MapPin}>{project.area}</ProjectMetaPill>
+                  <ProjectMetaPill icon={FileText}>{project.regaAuthorizationNo || td('empty.value')}</ProjectMetaPill>
+                </div>
+              </div>
+            </aside>
           </div>
+
+          <AppStatsGrid stats={[
+            { label: String(t('detail.labels.units')), value: project.units, icon: Layers3, iconClassName: "text-blue-500" },
+            { label: String(td('metrics.live')), value: liveUnitCount, icon: FolderOpen },
+            { label: String(td('metrics.available')), value: availableUnits, icon: Landmark, iconClassName: "text-emerald-500" },
+            { label: String(td('metrics.ready')), value: `${launchReadiness}%`, icon: Gauge, iconClassName: "text-amber-500" },
+          ]} />
+
+          <AppTabsList
+            className="gap-8"
+            tabs={[
+              { value: "details", label: td('tabs.details'), icon: Building2 },
+              { value: "inventory", label: td('tabs.inventory'), icon: Layers3 },
+              { value: "documents", label: td('tabs.documents'), icon: FileText },
+              { value: "sales", label: td('tabs.sales'), icon: TrendingUp },
+              { value: "activity", label: td('tabs.activity'), icon: History },
+            ]}
+          />
         </section>
 
         <TabsContent value="details" className="space-y-5">
-          <div className="grid gap-px overflow-hidden rounded-[24px] border border-zinc-200/70 bg-zinc-200/70 dark:border-white/10 dark:bg-white/10 sm:grid-cols-2 xl:grid-cols-4">
-            <ProjectSignal label={t('detail.labels.units')} value={project.units} icon={Layers3} tone="blue" />
-            <ProjectSignal label={td('metrics.live')} value={liveUnitCount} icon={FolderOpen} tone="zinc" />
-            <ProjectSignal label={td('metrics.available')} value={availableUnits} icon={Landmark} tone="emerald" />
-            <ProjectSignal label={td('metrics.ready')} value={`${launchReadiness}%`} icon={Gauge} tone="amber" />
-          </div>
-
           <section className="grid gap-6 text-start xl:grid-cols-[minmax(0,1fr)_420px]">
             <div className="min-w-0">
-              <ResourceMediaBrowser
-                organizationId={workspaceOrganizationId}
-                resourceType="project"
-                resourceId={project.id}
-                mode="gallery"
-                title={td('gallery.title')}
-                description={td('gallery.description')}
-                addLabel={td('gallery.add')}
-                emptyTitle={td('gallery.emptyTitle')}
-                emptyDescription={td('gallery.emptyDesc')}
-                uploadTitle={td('gallery.uploadTitle')}
-                uploadDescription={td('gallery.uploadDesc')}
-                uploadPick={td('gallery.uploadPick')}
-                unsupported={t('form.galleryUnsupported')}
-                openLabel={td('actions.view')}
-                coverLabel={td('gallery.cover')}
-                deleteLabel={td('actions.delete')}
-                statusQueued={td('uploadStatus.queued')}
-                statusUploading={td('uploadStatus.uploading')}
-                statusUploaded={td('uploadStatus.uploaded')}
-                statusFailed={td('uploadStatus.failed')}
-                removeLabel={td('actions.delete')}
-                retryLabel={td('uploadStatus.retry')}
-                imageLimit={t('form.galleryImageLimit')}
-                previewLimit={5}
-              />
+              <AppSection tone="muted" contentClassName="min-w-0">
+                <ResourceMediaBrowser
+                  organizationId={workspaceOrganizationId}
+                  resourceType="project"
+                  resourceId={project.id}
+                  mode="gallery"
+                  title={td('gallery.title')}
+                  description={td('gallery.description')}
+                  addLabel={td('gallery.add')}
+                  emptyTitle={td('gallery.emptyTitle')}
+                  emptyDescription={td('gallery.emptyDesc')}
+                  uploadTitle={td('gallery.uploadTitle')}
+                  uploadDescription={td('gallery.uploadDesc')}
+                  uploadPick={td('gallery.uploadPick')}
+                  unsupported={t('form.galleryUnsupported')}
+                  openLabel={td('actions.view')}
+                  coverLabel={td('gallery.cover')}
+                  deleteLabel={td('actions.delete')}
+                  statusQueued={td('uploadStatus.queued')}
+                  statusUploading={td('uploadStatus.uploading')}
+                  statusUploaded={td('uploadStatus.uploaded')}
+                  statusFailed={td('uploadStatus.failed')}
+                  removeLabel={td('actions.delete')}
+                  retryLabel={td('uploadStatus.retry')}
+                  imageLimit={t('form.galleryImageLimit')}
+                  previewLimit={5}
+                />
+              </AppSection>
             </div>
 
             <div className="grid content-start gap-5">
-              <section className="rounded-[24px] border border-zinc-200/70 bg-white p-5 dark:border-white/10 dark:bg-[#090909]">
+              <AppSection>
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('registry.title')}</p>
@@ -451,40 +458,36 @@ export function ProjectDetailScreen({ id }: { id: string }) {
                     [td('rega.title'), project.regaExpiresAt ? td('rega.expires', { date: project.regaExpiresAt }) : td('empty.value')],
                   ]} />
                 </div>
-              </section>
+              </AppSection>
 
-              <section className="rounded-[24px] border border-zinc-200/70 bg-white p-5 dark:border-white/10 dark:bg-[#090909]">
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('documents.title')}</p>
-                <RegistryRows className="mt-4" rows={[
+              <AppSection title={td('documents.title')}>
+                <RegistryRows rows={[
                   [td('documents.count'), String(documentAssets.length)],
                   [td('documents.latest'), documentAssets[0]?.name ?? td('documents.none')],
                 ]} />
-              </section>
+              </AppSection>
             </div>
           </section>
         </TabsContent>
 
         <TabsContent value="inventory" className="space-y-6">
-          <section className="space-y-4">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <h2 className="text-base font-black text-zinc-950 dark:text-white">{td('inventory.title')}</h2>
-                <p className="mt-1 text-xs font-semibold text-zinc-500">{td('inventory.subtitle')}</p>
-              </div>
+          <AppSection
+            title={td('inventory.title')}
+            description={td('inventory.subtitle')}
+            actions={(
               <div className="flex items-center gap-2">
-                <div className="inline-flex h-9 items-center overflow-hidden rounded-lg border border-zinc-200 dark:border-white/10">
-                  <button type="button" onClick={() => setInventoryView("cards")} className={cn("flex h-full w-9 items-center justify-center", inventoryView === "cards" ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950" : "text-zinc-400 hover:text-zinc-950 dark:hover:text-white")} aria-label={td('inventory.cards')}>
-                    <LayoutGrid className="h-3.5 w-3.5" />
-                  </button>
-                  <button type="button" onClick={() => setInventoryView("table")} className={cn("flex h-full w-9 items-center justify-center", inventoryView === "table" ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950" : "text-zinc-400 hover:text-zinc-950 dark:hover:text-white")} aria-label={td('inventory.table')}>
-                    <List className="h-3.5 w-3.5" />
-                  </button>
-                </div>
+                <Button type="button" variant={inventoryView === "cards" ? "default" : "outline"} size="icon" onClick={() => setInventoryView("cards")} className="h-9 w-9 rounded-xl" aria-label={td('inventory.cards')}>
+                  <LayoutGrid className="h-3.5 w-3.5" />
+                </Button>
+                <Button type="button" variant={inventoryView === "table" ? "default" : "outline"} size="icon" onClick={() => setInventoryView("table")} className="h-9 w-9 rounded-xl" aria-label={td('inventory.table')}>
+                  <List className="h-3.5 w-3.5" />
+                </Button>
                 <Link href="/properties/create">
                   <AppPrimaryButton><Plus className="me-2 h-3.5 w-3.5" />{td('inventory.addUnit')}</AppPrimaryButton>
                 </Link>
               </div>
-            </div>
+            )}
+          >
             {units.length === 0 ? (
               <EmptyWorkspace icon={Layers3} title={td('inventory.emptyTitle')} description={td('inventory.emptyDesc')} />
             ) : inventoryView === "table" ? (
@@ -494,60 +497,61 @@ export function ProjectDetailScreen({ id }: { id: string }) {
                 {units.map((unit) => <ProjectUnitCard key={unit.id} unit={unit} />)}
               </div>
             )}
-          </section>
+          </AppSection>
         </TabsContent>
 
         <TabsContent value="documents" className="space-y-6">
-          <ResourceMediaBrowser
-            organizationId={workspaceOrganizationId}
-            resourceType="project"
-            resourceId={project.id}
-            mode="documents"
-            title={td('documents.title')}
-            description={td('documents.subtitle')}
-            addLabel={td('documents.upload')}
-            emptyTitle={td('documents.emptyTitle')}
-            emptyDescription={td('documents.emptyDesc')}
-            uploadTitle={td('documents.uploadModalTitle')}
-            uploadDescription={td('documents.uploadModalDesc')}
-            uploadPick={t('form.documentsPick')}
-            unsupported={t('form.documentsUnsupported')}
-            openLabel={td('actions.view')}
-            coverLabel={td('gallery.cover')}
-            deleteLabel={td('actions.delete')}
-            statusQueued={td('uploadStatus.queued')}
-            statusUploading={td('uploadStatus.uploading')}
-            statusUploaded={td('uploadStatus.uploaded')}
-            statusFailed={td('uploadStatus.failed')}
-            removeLabel={td('actions.delete')}
-            retryLabel={td('uploadStatus.retry')}
-          />
+          <AppSection tone="muted" contentClassName="min-w-0">
+            <ResourceMediaBrowser
+              organizationId={workspaceOrganizationId}
+              resourceType="project"
+              resourceId={project.id}
+              mode="documents"
+              title={td('documents.title')}
+              description={td('documents.subtitle')}
+              addLabel={td('documents.upload')}
+              emptyTitle={td('documents.emptyTitle')}
+              emptyDescription={td('documents.emptyDesc')}
+              uploadTitle={td('documents.uploadModalTitle')}
+              uploadDescription={td('documents.uploadModalDesc')}
+              uploadPick={t('form.documentsPick')}
+              unsupported={t('form.documentsUnsupported')}
+              openLabel={td('actions.view')}
+              coverLabel={td('gallery.cover')}
+              deleteLabel={td('actions.delete')}
+              statusQueued={td('uploadStatus.queued')}
+              statusUploading={td('uploadStatus.uploading')}
+              statusUploaded={td('uploadStatus.uploaded')}
+              statusFailed={td('uploadStatus.failed')}
+              removeLabel={td('actions.delete')}
+              retryLabel={td('uploadStatus.retry')}
+            />
+          </AppSection>
         </TabsContent>
 
         <TabsContent value="sales" className="space-y-5">
-          <section className="border-y border-zinc-200/70 py-5 text-start dark:border-white/10">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('sales.title')}</p>
-                <h2 className="mt-2 text-xl font-black text-zinc-950 dark:text-white">{td('sales.pipelineTitle')}</h2>
-              </div>
+          <AppSection
+            title={td('sales.title')}
+            description={td('sales.pipelineTitle')}
+            actions={(
               <Link href="/properties/create" className="inline-flex h-9 items-center rounded-lg bg-zinc-950 px-3 text-[10px] font-black uppercase tracking-widest text-white dark:bg-white dark:text-zinc-950">
                 <Plus className="me-2 h-3.5 w-3.5" />
                 {td('inventory.addUnit')}
               </Link>
-            </div>
-
-            <div className="mt-5 grid gap-px overflow-hidden border-y border-zinc-200/70 bg-zinc-200/70 dark:border-white/10 dark:bg-white/10 sm:grid-cols-2 xl:grid-cols-4">
-              {salesStats.map((stat) => (
-                <ProjectSignal key={String(stat.label)} label={stat.label} value={stat.value} icon={stat.icon} tone={stat.label === td('sales.metrics.availableUnits') ? "emerald" : stat.label === td('sales.metrics.reservedUnits') ? "blue" : "zinc"} />
-              ))}
-            </div>
-          </section>
+            )}
+          >
+            <AppStatsGrid className="rounded-[20px]" stats={salesStats.map((stat) => ({
+              label: String(stat.label),
+              value: stat.value,
+              icon: stat.icon,
+              iconClassName: stat.iconClassName,
+            }))} />
+          </AppSection>
 
           {units.length === 0 ? (
             <EmptyWorkspace icon={BarChart3} title={td('sales.emptyTitle')} description={td('sales.emptyDesc')} />
           ) : (
-            <section className="grid gap-8 text-start lg:grid-cols-[minmax(0,1fr)_300px]">
+            <AppSection contentClassName="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
               <div className="space-y-4">
                 <div className="flex items-center justify-between gap-4">
                   <h2 className="text-base font-black text-zinc-950 dark:text-white">{td('sales.pipelineTitle')}</h2>
@@ -564,7 +568,7 @@ export function ProjectDetailScreen({ id }: { id: string }) {
                   ))}
                 </div>
               </div>
-              <aside className="border-y border-zinc-200/70 py-4 dark:border-white/10 lg:border-s lg:border-y-0 lg:py-0 lg:ps-5">
+              <aside className="border-t border-zinc-100 pt-5 dark:border-white/5 lg:border-s lg:border-t-0 lg:ps-5 lg:pt-0">
                 <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('sales.nextTitle')}</p>
                 <p className="mt-3 text-sm font-semibold leading-6 text-zinc-500 dark:text-zinc-400">{td('sales.nextDesc')}</p>
                 <div className="mt-5 grid grid-cols-2 gap-px overflow-hidden bg-zinc-200/70 dark:bg-white/10">
@@ -572,12 +576,14 @@ export function ProjectDetailScreen({ id }: { id: string }) {
                   <CompactFact label={td('sales.status.pending')} value={pendingUnits} />
                 </div>
               </aside>
-            </section>
+            </AppSection>
           )}
         </TabsContent>
 
         <TabsContent value="activity" className="space-y-6">
-          <EmptyWorkspace icon={History} title={td('activity.emptyTitle')} description={td('activity.emptyDesc')} />
+          <AppSection tone="muted">
+            <EmptyWorkspace icon={History} title={td('activity.emptyTitle')} description={td('activity.emptyDesc')} />
+          </AppSection>
         </TabsContent>
       </Tabs>
 
@@ -606,6 +612,15 @@ export function ProjectDetailScreen({ id }: { id: string }) {
   );
 }
 
+function ProjectMetaPill({ icon: Icon, children }: { icon: typeof Building2; children: ReactNode }) {
+  return (
+    <span className="inline-flex h-8 min-w-0 max-w-full items-center gap-2 rounded-full bg-zinc-100 px-3 text-xs font-bold text-zinc-600 dark:bg-white/[0.06] dark:text-zinc-300">
+      <Icon className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+      <span className="truncate">{children}</span>
+    </span>
+  );
+}
+
 function ProjectUnitCard({ unit }: { unit: { id: string; title: string; reference: string; type: string; status: string; price: string; area: string; bedrooms?: number | string; bathrooms?: number | string } }) {
   return (
     <Link href={`/properties/${unit.reference || unit.id}`} className="block border border-zinc-200/70 bg-zinc-50/50 p-4 text-start transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/[0.025] dark:hover:bg-white/[0.04]">
@@ -623,37 +638,6 @@ function ProjectUnitCard({ unit }: { unit: { id: string; title: string; referenc
         <span className="text-end">{[unit.bedrooms, unit.bathrooms].filter((value) => typeof value === "number").join(" / ")}</span>
       </div>
     </Link>
-  );
-}
-
-function ProjectSignal({
-  label,
-  value,
-  icon: Icon,
-  tone,
-}: {
-  label: ReactNode;
-  value: ReactNode;
-  icon: typeof Building2;
-  tone: "emerald" | "blue" | "amber" | "zinc";
-}) {
-  const toneClassName = {
-    emerald: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-300",
-    blue: "bg-blue-500/10 text-blue-600 dark:text-blue-300",
-    amber: "bg-amber-500/10 text-amber-600 dark:text-amber-300",
-    zinc: "bg-zinc-500/10 text-zinc-500 dark:text-zinc-300",
-  }[tone];
-
-  return (
-    <div className="bg-white p-4 dark:bg-[#080808]">
-      <div className="flex items-start justify-between gap-3">
-        <span className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-lg", toneClassName)}>
-          <Icon className="h-3.5 w-3.5" />
-        </span>
-        <span className="min-w-0 truncate text-[9px] font-black uppercase tracking-widest text-zinc-400">{label}</span>
-      </div>
-      <p className="mt-5 truncate text-end text-2xl font-black uppercase tracking-tight text-zinc-950 dark:text-white">{value}</p>
-    </div>
   );
 }
 

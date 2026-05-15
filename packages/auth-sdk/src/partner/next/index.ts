@@ -3,9 +3,9 @@ import {
   createQentrahPartnerAuthorizationRedirect,
   DEFAULT_QENTRAH_PARTNER_ERROR_PATH,
   DEFAULT_QENTRAH_PARTNER_SUCCESS_PATH,
-} from "../core";
-import { isQentrahPartnerAuthError } from "../errors";
-import type { QentrahPartnerAuthConfig } from "../types";
+} from "../core.js";
+import { isQentrahPartnerAuthError } from "../errors.js";
+import type { QentrahPartnerAuthConfig } from "../types.js";
 
 function redirectUrl(request: Request, target: string, error?: string) {
   const url = new URL(target, request.url);

@@ -26,12 +26,10 @@ import {
   Handshake,
   MapPin,
   ListPlus,
-  Minus,
   Building2,
   ClipboardList,
   Loader2,
   Search,
-  SlidersHorizontal,
   AlignLeft,
   Mail,
   DollarSign,
@@ -77,17 +75,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 
 type StatusPillTone = ComponentProps<typeof StatusPill>["tone"];
 type BusinessScheduleType = "visit" | "call" | "meeting" | "follow-up";
-type ScheduleRelation = "client" | "unit" | "other";
 type PickerKind = "client" | "unit" | "task";
 
 const businessTypeOptions: Array<{
@@ -1146,10 +1139,10 @@ function BusinessScheduleDialog({
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => nextOpen ? onOpenChange(true) : closeDrawer()}>
-      <DialogContent showCloseButton={false} className="z-[100] max-w-4xl w-[94vw] data-[side=right]:w-[min(94vw,980px)] p-0 overflow-hidden bg-white dark:bg-[#0A0A0A] border-zinc-100 dark:border-white/5 rounded-[32px] shadow-2xl flex flex-col max-h-[90vh]">
-        <div className="flex items-center justify-between p-5 border-b border-zinc-100 dark:border-white/5">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
+      <DialogContent showCloseButton={false} className="z-[100] flex max-h-[88vh] w-[94vw] max-w-3xl flex-col overflow-hidden rounded-[32px] border-zinc-100 bg-white p-0 shadow-2xl dark:border-white/5 dark:bg-[#0A0A0A]">
+        <div className="flex items-start justify-between gap-4 border-b border-zinc-100 p-5 dark:border-white/5">
+          <div className="min-w-0">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
               <StatusPill
                 label={
                   businessTypeOptions.some((option) => option.value === form.type)
@@ -1163,7 +1156,7 @@ function BusinessScheduleDialog({
                 tone={eventTone(form.status || "draft")}
               />
             </div>
-            <DialogTitle className="text-2xl font-black uppercase tracking-tight text-zinc-900 dark:text-white mt-1">
+            <DialogTitle className="mt-1 text-2xl font-black leading-tight tracking-tight text-zinc-900 dark:text-white">
               {mode === "create" ? t("scheduleBusiness") : t("editSchedule")}
             </DialogTitle>
           </div>
@@ -1178,11 +1171,11 @@ function BusinessScheduleDialog({
         <div className="flex-1 overflow-y-auto p-5">
           <FormErrorSummary errors={fieldErrors} />
           
-          <div className="grid gap-6">
-            <section className="space-y-4">
+          <div className="grid gap-4">
+            <section className="space-y-4 rounded-[24px] border border-zinc-100 bg-zinc-50/35 p-4 dark:border-white/5 dark:bg-white/[0.02]">
               <ScheduleSectionTitle icon={<CalendarDays className="h-4 w-4" />} title={t("form.basics")} />
               
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <TextInput
                   label={t("form.dateLabel")}
                   name="date"
@@ -1205,7 +1198,7 @@ function BusinessScheduleDialog({
                 <p id="calendar-business-type-label" className="mb-2 text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-300">
                   {t("form.typeLabel")}
                 </p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2" role="radiogroup" aria-labelledby="calendar-business-type-label">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-5" role="radiogroup" aria-labelledby="calendar-business-type-label">
                   {[...businessTypeOptions, { value: "other", icon: ListPlus }].map((option) => {
                     const Icon = option.icon;
                     // For "other", we check if the type is not in the primary businessTypeOptions
@@ -1222,17 +1215,17 @@ function BusinessScheduleDialog({
                         aria-checked={active}
                         onClick={() => {
                           if (isOtherOption) updateField("type", "client-visit");
-                          else updateField("type", option.value as any);
+                          else updateField("type", option.value as CalendarEventFormValues["type"]);
                         }}
                         className={cn(
-                          "relative flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl border p-2 text-[10px] font-black uppercase tracking-widest transition-colors focus:outline-none",
+                          "relative flex h-12 items-center justify-center gap-2 rounded-2xl border px-3 text-[10px] font-black uppercase tracking-widest transition-colors focus:outline-none",
                           active
                             ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900"
                             : "border-zinc-200 bg-zinc-50/80 text-zinc-600 hover:border-zinc-300 hover:text-zinc-950 dark:border-white/15 dark:bg-white/[0.04] dark:text-zinc-200 dark:hover:border-white/25 dark:hover:text-white",
                         )}
                       >
                         {active && <CheckCircle2 className="absolute end-2 top-2 h-3 w-3" aria-hidden="true" />}
-                        <Icon className="h-4 w-4" aria-hidden="true" />
+                        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
                         {isOtherOption ? t("types.custom") : t(`types.${option.value}`)}
                       </button>
                     );
@@ -1242,14 +1235,14 @@ function BusinessScheduleDialog({
 
               {/* If "other" type is selected, show custom type selector */}
               {!businessTypeOptions.some(opt => opt.value === form.type) && (
-                <div className="grid gap-2 sm:grid-cols-4 bg-zinc-50 dark:bg-white/[0.02] p-3 rounded-2xl border border-zinc-100 dark:border-white/5">
+                <div className="grid gap-2 rounded-2xl border border-zinc-100 bg-white p-2 dark:border-white/5 dark:bg-white/[0.02] sm:grid-cols-3">
                   {customEventTypeValues.filter(t => !businessTypeOptions.some(opt => opt.value === t)).map((type) => (
                     <button
                       key={type}
                       type="button"
                       onClick={() => updateField("type", type)}
                       className={cn(
-                        "rounded-xl border px-3 py-2 text-[10px] font-black uppercase tracking-widest transition",
+                        "h-9 rounded-xl border px-3 text-[10px] font-black uppercase tracking-widest transition",
                         form.type === type
                           ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900"
                           : "border-zinc-200 text-zinc-500 hover:text-zinc-900 dark:border-white/10 dark:text-zinc-300 dark:hover:text-white",
@@ -1269,7 +1262,7 @@ function BusinessScheduleDialog({
                 error={fieldErrors.title}
               />
               
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_240px]">
                 <TextInput
                   label={t("form.ownerLabel")}
                   name="owner"
@@ -1302,7 +1295,7 @@ function BusinessScheduleDialog({
               </div>
             </section>
 
-            <section className="mt-8">
+            <section>
               <ContextActionCard ariaLabel={t("form.showAdvancedDetails")}>
                 <PropertyRow icon={<User className="h-4 w-4" />} label={t("form.clientLabel")}>
                   <TicketPickerButton
@@ -1359,7 +1352,7 @@ function BusinessScheduleDialog({
           </div>
         </div>
 
-        <div className="p-5 border-t border-zinc-100 dark:border-white/5 flex items-center justify-end gap-3 bg-zinc-50/50 dark:bg-white/[0.02]">
+        <div className="flex items-center justify-end gap-3 border-t border-zinc-100 bg-zinc-50/50 p-5 dark:border-white/5 dark:bg-white/[0.02]">
           <Button
             type="button"
             variant="outline"
@@ -1419,7 +1412,7 @@ function ContextActionCard({ ariaLabel, children }: { ariaLabel: string; childre
   return (
     <div
       aria-label={ariaLabel}
-      className="rounded-[32px] border border-zinc-100 bg-zinc-50/30 p-5 dark:border-white/5 dark:bg-white/[0.01]"
+      className="rounded-[24px] border border-zinc-100 bg-zinc-50/35 p-4 dark:border-white/5 dark:bg-white/[0.02]"
     >
       {children}
     </div>
@@ -1428,9 +1421,9 @@ function ContextActionCard({ ariaLabel, children }: { ariaLabel: string; childre
 
 function PropertyRow({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4 py-4 border-b border-zinc-100 dark:border-white/5 last:border-0">
-      <div className="flex w-40 shrink-0 items-center gap-3 text-zinc-500 dark:text-zinc-400 sm:mt-1.5">
-        <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-zinc-50 dark:bg-white/5 text-zinc-500 dark:text-zinc-300">
+    <div className="grid gap-2 border-b border-zinc-100 py-3 last:border-0 dark:border-white/5 sm:grid-cols-[160px_minmax(0,1fr)] sm:items-center">
+      <div className="flex items-center gap-3 text-zinc-500 dark:text-zinc-400">
+        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-zinc-500 dark:bg-white/5 dark:text-zinc-300">
           {icon}
         </span>
         <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
@@ -1475,7 +1468,7 @@ function TicketPickerButton({ label, value, icon, onClick, onClear }: { label: s
     >
       <span className="flex-shrink-0 text-zinc-400 transition-colors group-hover:text-zinc-600 dark:group-hover:text-zinc-300">{icon}</span>
       <span className="flex-1 truncate text-[10px] font-black uppercase tracking-widest text-zinc-500 transition-colors group-hover:text-zinc-700 dark:group-hover:text-zinc-300">
-        Select {label}
+        {label}
       </span>
       <Plus className="ml-auto h-3.5 w-3.5 text-zinc-400 transition-colors group-hover:text-zinc-600 dark:group-hover:text-zinc-300" />
     </button>

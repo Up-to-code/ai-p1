@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery as useReactQuery } from "@tanstack/react-query";
 import { Bath, Bed, Building, CheckCircle2, ChevronLeft, ChevronRight, Download, Edit, Eye, FileText, FolderOpen, Home, ImageIcon, Mail, MapPin, Phone, Plus, Ruler, Search, Star, Trash2, Unlink, UploadCloud, UserPlus, Users, Video, type LucideIcon } from "lucide-react";
 import {
+  AppSection,
   AppTabsList,
   AppDataTable,
   AppPageHeader,
@@ -111,6 +112,125 @@ function UnitTile({ unit, onDelete }: { unit: PropertyUnit; onDelete: (unit: Pro
           </div>
         </div>
       </div>
+    </article>
+  );
+}
+
+function PropertyInfoTile({ icon: Icon, label, value }: { icon: LucideIcon; label: ReactNode; value: ReactNode }) {
+  return (
+    <div className="min-w-0 rounded-2xl bg-zinc-50 p-4 dark:bg-white/[0.03]">
+      <span className="flex items-center gap-2 text-[11px] font-bold text-zinc-400">
+        <Icon className="h-3.5 w-3.5 shrink-0" />
+        <span className="truncate">{label}</span>
+      </span>
+      <p className="mt-3 truncate text-sm font-black text-zinc-900 dark:text-white">{value}</p>
+    </div>
+  );
+}
+
+function PropertyLinkedClientCard({
+  link,
+  client,
+  onOpen,
+  onEdit,
+  onUnlink,
+  disabled,
+}: {
+  link: {
+    id: string;
+    clientId: string;
+    status: (typeof unitLinkStatuses)[number];
+    notes?: string | null;
+  };
+  client?: {
+    id: string;
+    name: string;
+    contact: string;
+    phone: string;
+    type: string;
+  } | null;
+  onOpen: () => void;
+  onEdit: () => void;
+  onUnlink: () => void;
+  disabled?: boolean;
+}) {
+  const t = useTranslations('Properties');
+  const initial = client?.name.trim().charAt(0).toUpperCase() ?? "?";
+
+  return (
+    <article className="rounded-[24px] border border-zinc-100 bg-white p-4 text-start transition-colors hover:border-zinc-300 dark:border-white/5 dark:bg-[#0A0A0A]">
+      <div className="flex items-start gap-3">
+        <button
+          type="button"
+          onClick={onOpen}
+          disabled={!client}
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-950 text-sm font-black uppercase text-white transition-colors enabled:hover:bg-zinc-800 disabled:cursor-default dark:bg-white dark:text-zinc-950 dark:enabled:hover:bg-zinc-200"
+        >
+          {initial}
+        </button>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusPill label={t(`detail.linkedClients.statuses.${link.status}`)} tone={linkStatusTone(link.status)} />
+            <span className="rounded-full bg-zinc-50 px-2.5 py-1 text-[10px] font-black text-zinc-500 dark:bg-white/[0.04] dark:text-zinc-400">
+              {client ? client.type : link.clientId}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={onOpen}
+            disabled={!client}
+            className="mt-3 block max-w-full truncate text-start text-sm font-black text-zinc-950 enabled:hover:underline disabled:cursor-default dark:text-white"
+          >
+            {client ? client.name : t('detail.linkedClients.unavailable')}
+          </button>
+        </div>
+        <div className="flex shrink-0 items-center gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label={t('detail.linkedClients.quickEdit')}
+            disabled={disabled}
+            onClick={onEdit}
+            className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-white/[0.05] dark:hover:text-white"
+          >
+            <Edit className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label={t('detail.linkedClients.unlink')}
+            disabled={disabled}
+            onClick={onUnlink}
+            className="h-8 w-8 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/25"
+          >
+            <Unlink className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+
+      {client && (
+        <div className="mt-4 grid gap-2">
+          <button
+            type="button"
+            onClick={onOpen}
+            className="flex min-w-0 items-center gap-2 rounded-2xl bg-zinc-50 px-3 py-2.5 text-start text-xs font-bold text-zinc-600 transition-colors hover:bg-zinc-100 dark:bg-white/[0.03] dark:text-zinc-300 dark:hover:bg-white/[0.06]"
+          >
+            <Mail className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+            <span className="truncate">{client.contact}</span>
+          </button>
+          <button
+            type="button"
+            onClick={onOpen}
+            className="flex min-w-0 items-center gap-2 rounded-2xl bg-zinc-50 px-3 py-2.5 text-start text-xs font-bold text-zinc-600 transition-colors hover:bg-zinc-100 dark:bg-white/[0.03] dark:text-zinc-300 dark:hover:bg-white/[0.06]"
+          >
+            <Phone className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+            <span className="truncate">{client.phone}</span>
+          </button>
+        </div>
+      )}
+      {link.notes && <p className="mt-3 line-clamp-2 border-t border-zinc-100 pt-3 text-xs font-semibold leading-5 text-zinc-500 dark:border-white/5">{link.notes}</p>}
     </article>
   );
 }
@@ -380,8 +500,8 @@ export function PropertyDetailScreen({ id }: { id: string }) {
           </div>
         </section>
         <TabsContent value="overview" className="space-y-6">
-          <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-            <div className="space-y-6">
+          <div className="space-y-5">
+            <AppSection contentClassName="space-y-5">
               <PropertyGalleryPreview
                 assets={previewGallery}
                 hiddenCount={hiddenGalleryCount}
@@ -389,14 +509,18 @@ export function PropertyDetailScreen({ id }: { id: string }) {
                 onOpen={openMediaViewer}
                 onAdd={() => setIsMediaUploadOpen(true)}
               />
-              <PropertyOptionStrip options={optionItems} />
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {optionItems.map(({ label, value, icon }) => (
+                  <PropertyInfoTile key={label} icon={icon} label={label} value={value} />
+                ))}
+              </div>
               <section className="border-t border-zinc-200/70 pt-5 text-start dark:border-white/10" data-property-description-section>
                 <p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">{t('form.descLabel')}</p>
                 <p className="mt-2 max-w-4xl text-sm font-semibold leading-7 text-zinc-700 dark:text-zinc-300">{unit.description}</p>
               </section>
-            </div>
+            </AppSection>
             <PropertyLegalSummary unit={unit} documents={latestDocuments} documentCount={documentAssets.length} />
-          </section>
+          </div>
         </TabsContent>
 
         <TabsContent value="media" className="space-y-4" data-property-media-tab>
@@ -430,34 +554,27 @@ export function PropertyDetailScreen({ id }: { id: string }) {
         </TabsContent>
 
         <TabsContent value="clients" className="space-y-4">
-          <section className="text-start">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div>
-                <p className="text-[11px] font-bold text-zinc-500">{t('detail.linkedClients.subtitle')}</p>
-                <h2 className="mt-1 text-lg font-black text-zinc-950 dark:text-white">{t('detail.linkedClients.title')}</h2>
-              </div>
+          <AppSection
+            title={t('detail.linkedClients.title')}
+            description={t('detail.linkedClients.subtitle')}
+            actions={(
               <Button type="button" onClick={() => setIsClientLinkOpen(true)} className="h-9 rounded-xl px-3 text-xs font-bold">
                 <UserPlus className="me-2 h-3.5 w-3.5" />
                 {t('detail.linkedClients.linkClient')}
               </Button>
-            </div>
+            )}
+          >
 
             {linkOperation.error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-bold text-red-600 dark:border-red-950/50 dark:bg-red-950/20">{linkOperation.error}</p>}
 
             {propertyClientLinksQuery === undefined ? (
-              <div className="mt-4 overflow-hidden border-y border-zinc-200/70 dark:border-white/10" data-property-linked-clients-loading>
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <div key={index} className="grid grid-cols-[120px_minmax(0,1fr)_140px_140px_44px] items-center gap-3 border-b border-zinc-200/70 px-3 py-3 last:border-b-0 dark:border-white/10">
-                    <div className="h-5 animate-pulse rounded-full bg-zinc-200 dark:bg-white/10" />
-                    <div className="h-4 animate-pulse rounded-full bg-zinc-200 dark:bg-white/10" />
-                    <div className="h-4 animate-pulse rounded-full bg-zinc-200 dark:bg-white/10" />
-                    <div className="h-4 animate-pulse rounded-full bg-zinc-200 dark:bg-white/10" />
-                    <div className="h-8 animate-pulse rounded-xl bg-zinc-200 dark:bg-white/10" />
-                  </div>
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" data-property-linked-clients-loading>
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className="h-44 animate-pulse rounded-[24px] bg-zinc-100 dark:bg-white/[0.04]" />
                 ))}
               </div>
             ) : propertyClientLinks.length === 0 ? (
-              <div className="mt-4 border-y border-dashed border-zinc-300/80 py-8 text-center dark:border-white/15">
+              <div className="rounded-[24px] border border-dashed border-zinc-300/80 py-8 text-center dark:border-white/15">
                 <Users className="mx-auto h-8 w-8 text-zinc-300" />
                 <p className="mt-3 text-sm font-black text-zinc-900 dark:text-white">{t('detail.linkedClients.emptyTitle')}</p>
                 <p className="mt-1 text-xs font-semibold text-zinc-400">{t('detail.linkedClients.emptyDesc')}</p>
@@ -467,158 +584,31 @@ export function PropertyDetailScreen({ id }: { id: string }) {
                 </Button>
               </div>
             ) : (
-              <div className="mt-4" data-property-linked-clients-table>
-                <div className="hidden overflow-hidden border-y border-zinc-200/70 dark:border-white/10 md:block">
-                  <table className="w-full table-fixed text-start">
-                    <thead className="bg-zinc-100/70 text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:bg-white/[0.035]">
-                      <tr>
-                        <th className="w-32 px-3 py-3 text-start">{t('form.statusLabel')}</th>
-                        <th className="px-3 py-3 text-start">{t('detail.linkedClients.title')}</th>
-                        <th className="w-44 px-3 py-3 text-start">{t('detail.labels.type')}</th>
-                        <th className="w-52 px-3 py-3 text-start">{t('detail.linkedClients.notes')}</th>
-                        <th className="w-24 px-3 py-3 text-end" aria-label={t('detail.linkedClients.unlink')} />
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-200/70 dark:divide-white/10">
-                      {propertyClientLinks.map(({ link, client }) => (
-                        <tr
-                          key={link.id}
-                          className={cn("transition hover:bg-zinc-100/60 dark:hover:bg-white/[0.025]", client && "cursor-pointer")}
-                          onClick={() => {
-                            if (client) router.push(`/clients/${client.id}`);
-                          }}
-                        >
-                          <td className="px-3 py-3"><StatusPill label={t(`detail.linkedClients.statuses.${link.status}`)} tone="info" /></td>
-                          <td className="min-w-0 px-3 py-3">
-                            {client ? (
-                              <Link href={`/clients/${client.id}`} className="block truncate text-sm font-black text-zinc-950 hover:underline dark:text-white">{client.name}</Link>
-                            ) : (
-                              <p className="truncate text-sm font-black text-zinc-400">{t('detail.linkedClients.unavailable')}</p>
-                            )}
-                            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-bold text-zinc-500">
-                              {client && <span className="flex min-w-0 items-center gap-1"><Mail className="h-3 w-3 shrink-0" /><span className="truncate">{client.contact}</span></span>}
-                              {client && <span className="flex min-w-0 items-center gap-1"><Phone className="h-3 w-3 shrink-0" /><span className="truncate">{client.phone}</span></span>}
-                            </div>
-                          </td>
-                          <td className="px-3 py-3 text-xs font-bold text-zinc-500">{client ? client.type : link.clientId}</td>
-                          <td className="px-3 py-3 text-xs font-semibold text-zinc-500"><span className="line-clamp-2">{link.notes || "—"}</span></td>
-                          <td className="px-3 py-3 text-end">
-                            <div className="flex items-center justify-end gap-1">
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                aria-label="Quick edit client link"
-                                disabled={linkOperation.isRunning}
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  setClientLinkEdit({
-                                    clientId: String(link.clientId),
-                                    clientName: client?.name ?? t('detail.linkedClients.unavailable'),
-                                    status: link.status,
-                                    notes: link.notes ?? "",
-                                  });
-                                }}
-                                className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-white/[0.05] dark:hover:text-white"
-                              >
-                                <Edit className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                aria-label={t('detail.linkedClients.unlink')}
-                                disabled={linkOperation.isRunning}
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  void linkOperation.run(() => {
-                                  if (!workspaceOrganizationId) throw new Error("Select an organization first.");
-                                  return unlinkClientUnitRequest(workspaceOrganizationId, link.clientId, unit.id);
-                                }, { successMessage: t('detail.linkedClients.unlinked') });
-                                }}
-                                className="h-8 w-8 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/25"
-                              >
-                                <Unlink className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="grid gap-2 md:hidden">
-                  {propertyClientLinks.map(({ link, client }) => (
-                    <article
-                      key={link.id}
-                      className={cn("border-b border-zinc-200/70 py-3 last:border-b-0 dark:border-white/10", client && "cursor-pointer")}
-                      onClick={() => {
-                        if (client) router.push(`/clients/${client.id}`);
-                      }}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <StatusPill label={t(`detail.linkedClients.statuses.${link.status}`)} tone="info" />
-                          {client ? (
-                            <Link href={`/clients/${client.id}`} className="mt-2 block truncate text-sm font-black text-zinc-950 dark:text-white">{client.name}</Link>
-                          ) : (
-                            <p className="mt-2 truncate text-sm font-black text-zinc-400">{t('detail.linkedClients.unavailable')}</p>
-                          )}
-                          <p className="mt-1 truncate text-xs font-bold text-zinc-500">{client ? client.type : link.clientId}</p>
-                        </div>
-                        <div className="flex shrink-0 items-center gap-1">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            aria-label="Quick edit client link"
-                            disabled={linkOperation.isRunning}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              setClientLinkEdit({
-                                clientId: String(link.clientId),
-                                clientName: client?.name ?? t('detail.linkedClients.unavailable'),
-                                status: link.status,
-                                notes: link.notes ?? "",
-                              });
-                            }}
-                            className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-white/[0.05] dark:hover:text-white"
-                          >
-                            <Edit className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            aria-label={t('detail.linkedClients.unlink')}
-                            disabled={linkOperation.isRunning}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              void linkOperation.run(() => {
-                              if (!workspaceOrganizationId) throw new Error("Select an organization first.");
-                              return unlinkClientUnitRequest(workspaceOrganizationId, link.clientId, unit.id);
-                            }, { successMessage: t('detail.linkedClients.unlinked') });
-                            }}
-                            className="h-8 w-8 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/25"
-                          >
-                            <Unlink className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-                      {client && (
-                        <div className="mt-3 space-y-1 text-xs font-bold text-zinc-500">
-                          <p className="flex min-w-0 items-center gap-2"><Mail className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{client.contact}</span></p>
-                          <p className="flex min-w-0 items-center gap-2"><Phone className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{client.phone}</span></p>
-                        </div>
-                      )}
-                      {link.notes && <p className="mt-3 line-clamp-2 text-xs font-semibold text-zinc-500">{link.notes}</p>}
-                    </article>
-                  ))}
-                </div>
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" data-property-linked-clients-table>
+                {propertyClientLinks.map(({ link, client }) => (
+                  <PropertyLinkedClientCard
+                    key={link.id}
+                    link={{ ...link, clientId: String(link.clientId) }}
+                    client={client}
+                    disabled={linkOperation.isRunning}
+                    onOpen={() => {
+                      if (client) router.push(`/clients/${client.id}`);
+                    }}
+                    onEdit={() => setClientLinkEdit({
+                      clientId: String(link.clientId),
+                      clientName: client?.name ?? t('detail.linkedClients.unavailable'),
+                      status: link.status,
+                      notes: link.notes ?? "",
+                    })}
+                    onUnlink={() => void linkOperation.run(() => {
+                      if (!workspaceOrganizationId) throw new Error("Select an organization first.");
+                      return unlinkClientUnitRequest(workspaceOrganizationId, link.clientId, unit.id);
+                    }, { successMessage: t('detail.linkedClients.unlinked') })}
+                  />
+                ))}
               </div>
             )}
-          </section>
+          </AppSection>
         </TabsContent>
       </Tabs>
 
@@ -747,7 +737,7 @@ export function PropertyDetailScreen({ id }: { id: string }) {
       }}>
         <DialogContent className="max-w-xl rounded-2xl border-zinc-200 bg-zinc-50 p-6 text-zinc-900 dark:border-white/10 dark:bg-[#0A0A0A] dark:text-white">
           <DialogHeader className="pe-10 text-start pb-5">
-            <DialogTitle className="text-lg font-black">Quick edit client link</DialogTitle>
+            <DialogTitle className="text-lg font-black">{t('detail.linkedClients.quickEdit')}</DialogTitle>
             <DialogDescription className="mt-2 max-w-lg text-xs font-semibold leading-6 text-zinc-500">
               {clientLinkEdit?.clientName}
             </DialogDescription>
@@ -998,26 +988,6 @@ function PropertyGalleryPreview({
   );
 }
 
-function PropertyOptionStrip({
-  options,
-}: {
-  options: { label: string; value: ReactNode; icon: LucideIcon }[];
-}) {
-  return (
-    <section className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4" data-property-option-chips>
-      {options.map(({ label, value, icon: Icon }) => (
-        <div key={label} className="flex min-h-14 items-center gap-3 rounded-lg border border-zinc-200/70 bg-zinc-50/60 px-3 py-2 text-start dark:border-white/10 dark:bg-white/[0.025]">
-          <Icon className="h-4 w-4 shrink-0 text-zinc-500" />
-          <span className="min-w-0">
-            <span className="block text-[10px] font-bold text-zinc-500">{label}</span>
-            <span className="block truncate text-sm font-black text-zinc-950 dark:text-white">{value}</span>
-          </span>
-        </div>
-      ))}
-    </section>
-  );
-}
-
 function PropertyLegalSummary({
   unit,
   documents,
@@ -1027,31 +997,33 @@ function PropertyLegalSummary({
   documents: PropertyMediaAsset[];
   documentCount: number;
 }) {
+  const t = useTranslations('Properties');
+
   return (
     <section className="self-start rounded-xl border border-zinc-200/70 bg-zinc-50/70 text-start dark:border-white/10 dark:bg-white/[0.025]" data-property-legal-summary>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200/70 p-4 dark:border-white/10">
         <div>
-          <p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Legal and documents</p>
+          <p className="text-[11px] font-black uppercase tracking-widest text-zinc-500">{t('detail.legal.title')}</p>
           <h2 className="mt-1 text-lg font-black text-zinc-950 dark:text-white">{unit.reference}</h2>
         </div>
-        <StatusPill label={unit.status} tone={statusTone(unit.status)} />
+        <StatusPill label={t(`toolbar.filters.${unit.status}`)} tone={statusTone(unit.status)} />
       </div>
       <div className="overflow-hidden p-4">
         <table className="w-full text-[11px]">
           <thead className="font-black uppercase tracking-widest text-zinc-400">
             <tr className="border-b border-zinc-200/70 dark:border-white/10">
-              <th className="pb-2 text-start">Field</th>
-              <th className="pb-2 text-start">Value</th>
+              <th className="pb-2 text-start">{t('detail.legal.field')}</th>
+              <th className="pb-2 text-start">{t('detail.legal.value')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200/70 font-semibold text-zinc-600 dark:divide-white/10 dark:text-zinc-300">
-            <tr><td className="py-2 pe-3 text-zinc-400">Reference</td><td className="py-2 font-black text-zinc-900 dark:text-white">{unit.reference}</td></tr>
-            <tr><td className="py-2 pe-3 text-zinc-400">Status</td><td className="py-2">{unit.status}</td></tr>
-            <tr><td className="py-2 pe-3 text-zinc-400">Documents</td><td className="py-2">{documentCount}</td></tr>
+            <tr><td className="py-2 pe-3 text-zinc-400">{t('detail.legal.reference')}</td><td className="py-2 font-black text-zinc-900 dark:text-white">{unit.reference}</td></tr>
+            <tr><td className="py-2 pe-3 text-zinc-400">{t('detail.legal.status')}</td><td className="py-2">{t(`toolbar.filters.${unit.status}`)}</td></tr>
+            <tr><td className="py-2 pe-3 text-zinc-400">{t('detail.legal.documents')}</td><td className="py-2">{documentCount}</td></tr>
             {documents.length === 0 ? (
-              <tr><td className="py-2 pe-3 text-zinc-400">Latest</td><td className="py-2">No legal documents uploaded yet.</td></tr>
+              <tr><td className="py-2 pe-3 text-zinc-400">{t('detail.legal.latest')}</td><td className="py-2">{t('detail.legal.empty')}</td></tr>
             ) : documents.map((document, index) => (
-              <tr key={document._id}><td className="py-2 pe-3 text-zinc-400">Latest {index + 1}</td><td className="py-2">{document.name}</td></tr>
+              <tr key={document._id}><td className="py-2 pe-3 text-zinc-400">{t('detail.legal.latestNumber', { number: index + 1 })}</td><td className="py-2">{document.name}</td></tr>
             ))}
           </tbody>
         </table>

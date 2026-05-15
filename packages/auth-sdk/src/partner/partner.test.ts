@@ -7,6 +7,11 @@ import { createQentrahWebhookHandler, verifyQentrahWebhook } from "./webhooks";
 
 const encoder = new TextEncoder();
 
+function unsignedJwt(claims: Record<string, unknown>) {
+  const encode = (value: unknown) => btoa(JSON.stringify(value)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/u, "");
+  return `${encode({ alg: "none", typ: "JWT" })}.${encode(claims)}.`;
+}
+
 async function webhookSignature(secret: string, timestamp: number, body: string) {
   const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(`${timestamp}.${body}`));
@@ -129,6 +134,43 @@ describe("@qentrah/auth-sdk partner oauth handlers", () => {
     expect(pending).toBeNull();
     const [, init] = fetcher.mock.calls[0]!;
     expect(String(init?.body)).toContain("resource=https%3A%2F%2Fapp.qentrah.com%2Fapi%2Fv1%2Fpartner");
+  });
+
+  it("uses the access token organization claim when the callback query omits organization_id", async () => {
+    let pending: QentrahPartnerPendingAuthorization | null = {
+      state: "state_123",
+      codeVerifier: "verifier",
+      redirectUri: "https://partner.example.com/api/qentrah/callback",
+      scopes: ["organization:read"],
+      createdAtMs: Date.now(),
+    };
+    const saveTokens = vi.fn();
+    const fetcher = vi.fn(async () => Response.json({
+      access_token: unsignedJwt({ organization_id: "org_from_token" }),
+      token_type: "Bearer",
+      expires_in: 3600,
+    }));
+    const handlers = createQentrahPartnerAuthHandlers({
+      workspaceBaseUrl: "https://app.qentrah.com",
+      clientId: "partners_client_123",
+      redirectUri: "https://partner.example.com/api/qentrah/callback",
+      scopes: ["organization:read"],
+      sessionStore: {
+        savePendingAuthorization: vi.fn(),
+        loadPendingAuthorization: () => pending,
+        clearPendingAuthorization: () => {
+          pending = null;
+        },
+      },
+      tokenStore: { saveTokens },
+      afterSuccessRedirect: "/connected",
+      fetcher,
+    });
+
+    const response = await handlers.callback(new Request("https://partner.example.com/api/qentrah/callback?code=code_123&state=state_123"));
+    expect(response.headers.get("location")).toBe("https://partner.example.com/connected");
+    expect(saveTokens).toHaveBeenCalledWith(expect.objectContaining({ organizationId: "org_from_token" }));
+    expect(pending).toBeNull();
   });
 
   it("redirects callback errors for invalid state and denied consent", async () => {

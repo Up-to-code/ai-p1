@@ -1,4 +1,4 @@
-import { normalizeQentrahBaseUrl } from "../core";
+import { normalizeQentrahBaseUrl } from "../core.js";
 
 export type QentrahPartnerResource = "organization" | "client" | "property" | "project" | "calendar" | "task" | "media";
 export type QentrahPartnerAction = "read" | "create" | "update" | "delete";

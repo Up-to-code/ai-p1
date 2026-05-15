@@ -1,4 +1,4 @@
-import { DEFAULT_QENTRAH_PARTNER_START_PATH } from "../core";
+import { DEFAULT_QENTRAH_PARTNER_START_PATH } from "../core.js";
 
 export type MountQentrahAuthorizeButtonOptions = {
   buttonId: string;

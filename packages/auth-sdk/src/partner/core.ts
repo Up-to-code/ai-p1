@@ -1,5 +1,5 @@
-import { QentrahPartnerAuthError } from "./errors";
-import type { QentrahPartnerAuthConfig, QentrahPartnerTokenSet } from "./types";
+import { QentrahPartnerAuthError } from "./errors.js";
+import type { QentrahPartnerAuthConfig, QentrahPartnerTokenSet } from "./types.js";
 
 export const DEFAULT_QENTRAH_PARTNER_START_PATH = "/api/qentrah/oauth/start";
 export const DEFAULT_QENTRAH_PARTNER_SUCCESS_PATH = "/?qentrah=connected";
@@ -112,6 +112,25 @@ function mapTokenResponse(payload: TokenResponse): QentrahPartnerTokenSet {
   };
 }
 
+function base64UrlDecode(value: string): string {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+  return atob(padded);
+}
+
+function organizationIdFromAccessToken(accessToken: string): string | null {
+  const [, payload] = accessToken.split(".");
+  if (!payload) return null;
+
+  try {
+    const claims = JSON.parse(base64UrlDecode(payload)) as Record<string, unknown>;
+    const value = claims.organization_id ?? claims.organizationId ?? claims.org_id;
+    return typeof value === "string" && value.trim() ? value.trim() : null;
+  } catch {
+    return null;
+  }
+}
+
 async function postTokenRequest(workspaceBaseUrl: string, body: URLSearchParams, fetcher: typeof fetch) {
   const response = await fetcher(qentrahPartnerTokenEndpoint(workspaceBaseUrl), {
     method: "POST",
@@ -175,10 +194,8 @@ export async function completeQentrahPartnerAuthorization(request: Request, conf
   }
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
-  const organizationId = url.searchParams.get("organization_id");
   if (!code) throw new QentrahPartnerAuthError("TOKEN_EXCHANGE_FAILED", "Missing Qentrah authorization code.");
   if (!state) throw new QentrahPartnerAuthError("INVALID_STATE", "Missing Qentrah authorization state.");
-  if (!organizationId) throw new QentrahPartnerAuthError("ORGANIZATION_AUTHORIZATION_MISSING", "Qentrah did not return an organization authorization.");
 
   const pending = await config.sessionStore.loadPendingAuthorization({ request, state });
   if (!pending || pending.state !== state) throw new QentrahPartnerAuthError("INVALID_STATE", "Qentrah authorization state did not match.");
@@ -192,6 +209,8 @@ export async function completeQentrahPartnerAuthorization(request: Request, conf
     codeVerifier: pending.codeVerifier,
     fetcher: config.fetcher,
   });
+  const organizationId = url.searchParams.get("organization_id") ?? organizationIdFromAccessToken(tokenSet.accessToken);
+  if (!organizationId) throw new QentrahPartnerAuthError("ORGANIZATION_AUTHORIZATION_MISSING", "Qentrah did not return an organization authorization.");
   await config.tokenStore.saveTokens({ request, organizationId, tokenSet, scopes: pending.scopes });
   await config.sessionStore.clearPendingAuthorization({ request, state });
   return { organizationId, tokenSet, scopes: pending.scopes };
