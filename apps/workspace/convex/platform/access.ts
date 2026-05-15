@@ -17,7 +17,7 @@ export const canUsePlatformAdminAction = query({
   args: {},
   returns: v.object({ allowed: v.boolean() }),
   handler: async (ctx) => {
-    await assertPlatformAdmin(ctx);
-    return { allowed: true };
+    const user = await authComponent.getAuthUser(ctx);
+    return { allowed: isPlatformAdminEmail(user.email) };
   },
 });

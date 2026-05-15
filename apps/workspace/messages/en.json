@@ -1141,6 +1141,7 @@
       "regaAuthorizationNoLabel": "REGA authorization",
       "regaAuthorizationNoPlaceholder": "Authorization number",
       "regaExpiresAtLabel": "REGA expiry",
+      "regaExpiresAtPlaceholder": "Pick expiry date",
       "planNumberLabel": "Plan number",
       "planNumberPlaceholder": "Plan / block",
       "plotNumberLabel": "Plot number",
@@ -1151,6 +1152,18 @@
       "detailsTitle": "Classification and summary",
       "detailsDesc": "Set the project category, offering mix, status, and short working description.",
       "offeringMixLabel": "Offering mix",
+      "pricingSectionTitle": "Pricing",
+      "pricingSectionHelp": "Use this section to separate the public average price from the detailed internal price list.",
+      "averagePriceLabel": "Average price",
+      "averagePriceHelp": "The main price shown when the project needs one clear market-facing value.",
+      "averagePricePlaceholder": "EGP 7,350,000",
+      "projectPricesLabel": "Prices inside this project",
+      "projectPricesHelp": "Add one row per unit type, release, phase, or custom price point inside the project.",
+      "projectPriceLabelPlaceholder": "Unit mix or release",
+      "projectPriceValuePlaceholder": "EGP 5.8M",
+      "addProjectPrice": "Add price",
+      "removeProjectPrice": "Remove price",
+      "regaExpiresAtHelp": "The expiry date for the project authorization or listing license.",
       "previewTitle": "Project preview",
       "previewCity": "City",
       "previewName": "Project name",
@@ -1309,16 +1322,31 @@
       "subtitle": "Create a complete operational unit record backed by the workspace database.",
       "nameLabel": "Unit Name",
       "projectLabel": "Project",
+      "projectHelp": "Choose the project that owns this unit so inventory, clients, and schedules stay connected.",
+      "projectSearchLabel": "Search projects…",
+      "projectPickerPlaceholder": "Select project",
+      "projectPickerEmpty": "No projects are available.",
+      "projectPickerNoResults": "No projects match your search.",
+      "projectPickerStandalone": "No project, standalone unit",
+      "projectPickerLoading": "Loading projects…",
+      "projectPickerError": "Projects could not be loaded.",
+      "standaloneProject": "Standalone unit",
       "cityLabel": "City",
       "areaLabel": "Area",
+      "areaHelp": "Use the saleable or operational unit area shown to the team and clients.",
       "priceLabel": "Price",
+      "priceHelp": "The asking price for this unit. It appears in sales and client-facing workflows.",
       "bedsLabel": "Bedrooms",
       "bathsLabel": "Bathrooms",
       "imageLabel": "Image URL",
       "typeLabel": "Unit Type",
+      "typeHelp": "Classifies the unit for inventory filters, matching, and client comparisons.",
       "purposeLabel": "Purpose",
+      "purposeHelp": "Marks whether this unit is offered for sale or rent.",
       "statusLabel": "Status",
+      "statusHelp": "Controls availability across inventory, project detail, and client workflows.",
       "visibilityLabel": "External visibility",
+      "visibilityHelp": "Private records stay internal. Public records can be used by external surfaces when allowed.",
       "visibilityPrivate": "Private",
       "visibilityPublic": "Public",
       "descLabel": "Description",
@@ -1376,6 +1404,9 @@
     "purposes": {
       "sale": "Sale",
       "rent": "Rent"
+    },
+    "gallery": {
+      "cover": "Cover"
     }
   },
   "ProjectDetails": {
@@ -1889,10 +1920,11 @@
       "description": "Create one powerful link for Claude, GPT, or another agent. External reads expose only records and files marked public.",
       "newButton": "New agent link",
       "existingTitle": "Existing links",
-      "existingDescription": "Pause, revoke, or make a new secret link. The full link is never shown again after creation.",
+      "existingDescription": "Pause, edit, or move links into drafts. Draft links stop working and stay available for review.",
       "stats": {
         "active": "Active links",
         "calls": "Total calls",
+        "drafts": "Draft links",
         "access": "Access",
         "canCreate": "Can create",
         "canView": "Can view",
@@ -1908,6 +1940,7 @@
       "modal": {
         "readyTitle": "Agent link ready",
         "newTitle": "New agent link",
+        "editTitle": "Edit agent link",
         "oneTimeWarning": "This link is shown once. Treat it like a password and paste it into your agent as the MCP server URL.",
         "canDoTitle": "What this agent can do",
         "canDoDescription": "The agent cannot work outside these permissions. Revoke this link or make a new one to change the allowed work.",
@@ -1915,7 +1948,8 @@
         "startWith": "Start with",
         "instructions": "What should this agent know?",
         "deleteConfirmation": "I understand this link can remove selected records, and I want to allow that work.",
-        "make": "Make agent link"
+        "make": "Make agent link",
+        "save": "Save agent link"
       },
       "defaults": {
         "instructions": "Help the team manage clients, apartments, tasks, and calendar work inside this organization."
@@ -1953,12 +1987,14 @@
       "status": {
         "active": "Active",
         "paused": "Paused",
+        "draft": "Draft",
         "revoked": "Revoked"
       },
       "labels": {
         "keyEnding": "ends {last4}",
         "used": "Used {count} times",
         "created": "Created {date}",
+        "createdBy": "Created by {email}",
         "lastUsed": "Last used {date}",
         "noWork": "No work selected"
       },
@@ -1969,6 +2005,10 @@
         "resume": "Resume",
         "rotate": "Make new link",
         "revoke": "Revoke",
+        "moveToDraft": "Move to draft",
+        "edit": "Edit",
+        "showDrafts": "Show drafts ({count})",
+        "hideDrafts": "Hide drafts",
         "cancel": "Cancel"
       },
       "toasts": {
@@ -1976,9 +2016,9 @@
         "readyDescription": "The link was copied. It is shown here once.",
         "failedTitle": "Agent link failed",
         "updatedTitle": "Agent link updated",
-        "updatedDescription": "The link status changed.",
-        "revokedTitle": "Agent link revoked",
-        "revokedDescription": "That link can no longer be used.",
+        "updatedDescription": "The link changed.",
+        "revokedTitle": "Agent link moved to drafts",
+        "revokedDescription": "That link no longer works and is visible from drafts.",
         "rotatedTitle": "New link ready",
         "rotatedDescription": "The new link was copied. The old one stopped working.",
         "copiedTitle": "Copied",

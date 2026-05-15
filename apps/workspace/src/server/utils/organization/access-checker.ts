@@ -89,7 +89,7 @@ export async function getOrganizationCapabilities(organizationId: string) {
     }),
   );
   const isPlatformAdmin = await fetchAuthQuery(api.platform.access.canUsePlatformAdminAction, {})
-    .then(() => true)
+    .then((result) => result.allowed)
     .catch(() => false);
 
   return {

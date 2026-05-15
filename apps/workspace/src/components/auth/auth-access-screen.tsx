@@ -45,7 +45,7 @@ export function AuthAccessScreen({ mode, isPending, onGoogleSignIn }: AuthAccess
               <BrandMark className="h-5.5 w-5.5" priority />
             </span>
             <span className="text-lg font-black tracking-tight text-foreground">
-              {isAr ? "قنطرة" : "qentrah"}
+              {isAr ? "كانترا" : "qentrah"}
             </span>
           </Link>
           <Link
@@ -65,7 +65,7 @@ export function AuthAccessScreen({ mode, isPending, onGoogleSignIn }: AuthAccess
                   <BrandMark className="h-5.5 w-5.5" priority />
                 </span>
                 <span className="text-2xl font-black tracking-tight text-foreground">
-                  {isAr ? "قنطرة" : "qentrah"}
+                  {isAr ? "كانترا" : "qentrah"}
                 </span>
               </div>
 

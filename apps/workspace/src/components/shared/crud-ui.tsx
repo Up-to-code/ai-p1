@@ -509,7 +509,7 @@ export function ErrorState({
 export function FormErrorSummary({ errors }: { errors: Record<string, string | undefined> }) {
   const t = useTranslations('Common');
   const messages = Object.values(errors).filter(Boolean);
-  if (messages.length <= 1) return null;
+  if (messages.length === 0) return null;
 
   return (
     <div className="rounded-2xl border border-red-100 bg-red-50/60 p-4 text-start dark:border-red-900/30 dark:bg-red-950/10" role="alert">

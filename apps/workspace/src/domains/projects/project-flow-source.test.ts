@@ -13,11 +13,11 @@ describe("project flow source", () => {
   const source = readSource("src/domains/projects/components/projects-screens.tsx");
 
   it("uses the project command detail header and tab spacing pattern", () => {
-    expect(source).toContain("<Tabs defaultValue=\"details\" className=\"space-y-6\"");
-    expect(source).toContain("grid min-h-[360px] overflow-hidden rounded-[28px]");
+    expect(source).toContain("<Tabs defaultValue=\"details\" className=\"space-y-8\"");
+    expect(source).toContain("relative min-h-[360px] overflow-hidden rounded-[24px]");
     expect(source).toContain("MiniMovement label={td('sales.status.available')}");
     expect(source).toContain("<AppTabsList");
-    expect(source).toContain("<div className=\"mt-6\">");
+    expect(source).toContain("className=\"gap-8\"");
     expect(source).not.toContain("<TabsList");
     expect(source).not.toContain("<TabsTrigger");
   });
@@ -26,7 +26,7 @@ describe("project flow source", () => {
     for (const value of ['value: "details"', 'value: "inventory"', 'value: "documents"', 'value: "sales"', 'value: "activity"']) {
       expect(source).toContain(value);
     }
-    expect(source).toContain("ProjectSignal label={t('detail.labels.units')}");
+    expect(source).toContain("{ label: String(t('detail.labels.units')), value: project.units");
     expect(source).toContain("ReadinessBar label={td('metrics.launchReadiness')}");
     expect(source).toContain("ResourceMediaBrowser");
     expect(source).not.toContain("REGA-8829-01");
@@ -44,5 +44,14 @@ describe("project flow source", () => {
     expect(source).toContain("regaAuthorizationNo");
     expect(source).toContain("allowedKinds={[\"document\"]}");
     expect(source).toContain("previewDocuments");
+    expect(source).toContain("ProjectPricingSection");
+    expect(source).toContain("ProjectDatePicker");
+  });
+
+  it("shows selected pending images in the side preview", () => {
+    expect(source).toContain("useFirstImagePreviewUrl");
+    expect(source).toContain("pendingCoverPreviewUrl");
+    expect(source).toContain('unoptimized={previewImageUrl.startsWith("blob:")}');
+    expect(source).toContain("existing?.coverImageUrl");
   });
 });

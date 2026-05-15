@@ -59,7 +59,7 @@ export default function ChooseOrgPage() {
   const organizationsQuery = authClient.useListOrganizations();
   const organizations = (organizationsQuery.data ?? []) as BetterAuthOrganization[];
   const backLabel = isAr ? "العودة للرئيسية" : "Back to Home";
-  const brandLabel = isAr ? "قنطرة" : "qentrah";
+  const brandLabel = isAr ? "كانترا" : "qentrah";
   const hasOrganizations = organizations.length > 0;
 
   async function setActiveOrganization(organizationId: string) {

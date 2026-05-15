@@ -6,7 +6,7 @@ const nonNegativeIntegerText = (label: string) => z.string().trim().regex(/^\d+$
 export const propertySchema = z.object({
   title: requiredText("Unit name"),
   projectId: z.string().trim().optional(),
-  project: requiredText("Project"),
+  project: z.string().trim().optional().default(""),
   city: requiredText("City"),
   type: requiredText("Unit type"),
   status: z.enum(["available", "sold", "reserved", "pending", "draft"]),
@@ -16,13 +16,13 @@ export const propertySchema = z.object({
   area: requiredText("Area"),
   bedrooms: nonNegativeIntegerText("Bedrooms"),
   bathrooms: nonNegativeIntegerText("Bathrooms"),
-  description: requiredText("Description", 10),
+  description: requiredText("Description"),
 });
 
 export interface PropertyFormValues {
   title: string;
   projectId?: string;
-  project: string;
+  project?: string;
   city: string;
   type: string;
   status: "available" | "sold" | "reserved" | "pending" | "draft";

@@ -93,7 +93,7 @@ export function HeroBrandNetworkVisual() {
       >
         <Image
           src="/vectors/landing/qentrah_landing_hero_brand_v2.svg"
-          alt="شبكة قنطرة"
+          alt="شبكة كانترا"
           width={680}
           height={500}
           className="h-auto w-full"
@@ -210,7 +210,7 @@ export function AiIntelligenceVisual() {
   return (
     <MotionVector
       src="/vectors/landing/qentrah_landing_ai_intelligence_v3.svg"
-      alt="ذكاء قنطرة"
+      alt="ذكاء كانترا"
       overlay={
         <ConnectionOverlay
           viewBoxWidth={520}

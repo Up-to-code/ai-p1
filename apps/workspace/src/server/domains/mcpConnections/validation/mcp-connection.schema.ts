@@ -16,7 +16,7 @@ export const updateMcpConnectionSchema = z.object({
   name: z.string().trim().min(1).optional(),
   instructions: z.string().trim().optional().transform((value) => value || undefined),
   permissions: z.array(mcpPermissionSchema).min(1).optional(),
-  status: z.enum(["active", "paused"]).optional(),
+  status: z.enum(["active", "paused", "draft"]).optional(),
   expiresAt: z.union([z.coerce.number(), z.null()]).optional(),
 });
 

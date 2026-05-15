@@ -1,10 +1,10 @@
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
+import { components } from "../_generated/api";
 import { apiKeys } from "../apiKeys";
 import { authComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
-import { assertPlatformAdmin } from "../platform/access";
 import {
   createMcpConnectionInputValidator,
   mcpActionValidator,
@@ -20,6 +20,49 @@ import {
 const MAX_TOOL_CALLS_PER_MINUTE = 120;
 const MAX_CONNECTION_LIST_ITEMS = 500;
 const MINUTE_MS = 60 * 1000;
+
+type BetterAuthMember = {
+  organizationId: string;
+  userId: string;
+  role: string;
+};
+
+type BetterAuthOrganizationRole = {
+  organizationId: string;
+  role: string;
+  permission: string;
+};
+
+const defaultMcpRolePermissions = {
+  owner: {
+    organization: ["read", "update", "delete"],
+    client: ["create", "read", "update", "delete"],
+    task: ["create", "read", "update", "delete"],
+    project: ["create", "read", "update", "delete"],
+    property: ["create", "read", "update", "delete"],
+    calendar: ["create", "read", "update", "delete"],
+    media: ["create", "read", "update", "delete"],
+  },
+  admin: {
+    organization: ["read"],
+    client: ["create", "read", "update", "delete"],
+    task: ["create", "read", "update", "delete"],
+    project: ["create", "read", "update", "delete"],
+    property: ["create", "read", "update", "delete"],
+    calendar: ["create", "read", "update", "delete"],
+    media: ["create", "read", "update", "delete"],
+  },
+  member: {
+    organization: ["read"],
+    client: ["read"],
+    task: ["read"],
+    project: ["read"],
+    property: ["read"],
+    calendar: ["read"],
+    media: ["read"],
+  },
+} satisfies Record<"owner" | "admin" | "member", Partial<Record<McpResource, McpAction[]>>>;
+const mcpRolePermissions: Record<string, Partial<Record<McpResource, McpAction[]>>> = defaultMcpRolePermissions;
 
 function presentConnection(connection: Doc<"organizationMcpConnections">) {
   return {
@@ -60,6 +103,88 @@ function hasPermission(
   );
 }
 
+function roleList(role: string) {
+  return role.split(",").map((item) => item.trim()).filter(Boolean);
+}
+
+function parseCustomPermission(value: string) {
+  try {
+    const parsed = JSON.parse(value) as Partial<Record<McpResource, McpAction[]>>;
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+async function findOrganizationMember(
+  ctx: Parameters<typeof assertOrganizationResourcePermission>[0],
+  organizationId: string,
+  userId: string,
+) {
+  return await ctx.runQuery(components.betterAuth.adapter.findOne, {
+    model: "member",
+    where: [
+      { field: "organizationId", value: organizationId },
+      { field: "userId", value: userId },
+    ],
+  }) as BetterAuthMember | null;
+}
+
+async function listOrganizationRoles(
+  ctx: Parameters<typeof assertOrganizationResourcePermission>[0],
+  organizationId: string,
+) {
+  return await ctx.runQuery(components.betterAuth.adapter.findMany, {
+    model: "organizationRole",
+    paginationOpts: { cursor: null, numItems: 100 },
+    where: [{ field: "organizationId", value: organizationId }],
+  }) as BetterAuthOrganizationRole[];
+}
+
+async function canUserUseMcpAction(
+  ctx: Parameters<typeof assertOrganizationResourcePermission>[0],
+  organizationId: string,
+  userId: string,
+  resource: McpResource,
+  action: McpAction,
+) {
+  const member = await findOrganizationMember(ctx, organizationId, userId);
+  if (!member) return false;
+
+  const customRoles = await listOrganizationRoles(ctx, organizationId);
+  const customPermissionByRole = new Map(
+    customRoles.map((role) => [role.role, parseCustomPermission(role.permission)]),
+  );
+
+  return roleList(member.role).some((roleName) => {
+    const defaultPermission = mcpRolePermissions[roleName];
+    const customPermission = customPermissionByRole.get(roleName);
+    const actions = defaultPermission?.[resource] ?? customPermission?.[resource] ?? [];
+    return actions.includes(action);
+  });
+}
+
+async function filterLivePermissions(
+  ctx: Parameters<typeof assertOrganizationResourcePermission>[0],
+  organizationId: string,
+  userId: string,
+  permissions: McpPermission[],
+) {
+  const filtered: McpPermission[] = [];
+
+  for (const permission of permissions) {
+    const actions: McpAction[] = [];
+    for (const action of permission.actions) {
+      if (await canUserUseMcpAction(ctx, organizationId, userId, permission.resource, action)) {
+        actions.push(action);
+      }
+    }
+    if (actions.length > 0) filtered.push({ resource: permission.resource, actions });
+  }
+
+  return filtered;
+}
+
 async function assertDelegatedPermissions(
   ctx: Parameters<typeof assertOrganizationResourcePermission>[0],
   organizationId: string,
@@ -72,25 +197,62 @@ async function assertDelegatedPermissions(
   }
 }
 
-async function assertApiKeyPermission(
+async function canUseApiKeyPermission(
   ctx: Parameters<typeof assertOrganizationResourcePermission>[0],
   organizationId: string,
   action: "create" | "read" | "update" | "delete",
 ) {
-  await assertOrganizationResourcePermission(ctx, organizationId, "apiKey", action);
+  try {
+    await assertOrganizationResourcePermission(ctx, organizationId, "apiKey", action);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function assertOrganizationMember(
+  ctx: Parameters<typeof assertOrganizationResourcePermission>[0],
+  organizationId: string,
+) {
+  await assertOrganizationResourcePermission(ctx, organizationId, "organization", "read");
+}
+
+async function canManageMcpConnections(
+  ctx: Parameters<typeof assertOrganizationResourcePermission>[0],
+  organizationId: string,
+) {
+  return (
+    await canUseApiKeyPermission(ctx, organizationId, "create") ||
+    await canUseApiKeyPermission(ctx, organizationId, "update") ||
+    await canUseApiKeyPermission(ctx, organizationId, "delete")
+  );
+}
+
+async function assertCanUseConnection(
+  ctx: Parameters<typeof assertOrganizationResourcePermission>[0],
+  organizationId: string,
+  connection: Doc<"organizationMcpConnections">,
+) {
+  const user = await authComponent.getAuthUser(ctx);
+  if (connection.createdByUserId === user._id) return user;
+  if (await canManageMcpConnections(ctx, organizationId)) return user;
+  throw new Error("Agent link was not found.");
 }
 
 export const list = query({
   args: { organizationId: v.string() },
   returns: v.array(mcpConnectionValidator),
   handler: async (ctx, args) => {
-    await assertApiKeyPermission(ctx, args.organizationId, "read");
+    const user = await authComponent.getAuthUser(ctx);
+    await assertOrganizationMember(ctx, args.organizationId);
+    const canManage = await canManageMcpConnections(ctx, args.organizationId);
     const connections = await ctx.db
       .query("organizationMcpConnections")
       .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
       .take(MAX_CONNECTION_LIST_ITEMS);
 
     return connections
+      .filter((connection) => canManage || connection.createdByUserId === user._id)
       .sort((a, b) => b.updatedAt - a.updatedAt)
       .map(presentConnection);
   },
@@ -101,8 +263,7 @@ export const createFromHono = mutation({
   returns: v.object({ connection: mcpConnectionValidator, secret: v.string() }),
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    await assertPlatformAdmin(ctx);
-    await assertApiKeyPermission(ctx, args.organizationId, "create");
+    await assertOrganizationMember(ctx, args.organizationId);
     await assertDelegatedPermissions(ctx, args.organizationId, args.input.permissions);
     const now = Date.now();
     const key = await apiKeys.create(ctx, {
@@ -155,13 +316,11 @@ export const updateFromHono = mutation({
   },
   returns: mcpConnectionValidator,
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
-    await assertPlatformAdmin(ctx);
-    await assertApiKeyPermission(ctx, args.organizationId, "update");
     const existing = await ctx.db.get(args.connectionId);
     if (!existing || existing.organizationId !== args.organizationId || existing.status === "revoked") {
       throw new Error("Agent link was not found.");
     }
+    const user = await assertCanUseConnection(ctx, args.organizationId, existing);
 
     const now = Date.now();
     if (args.input.permissions) {
@@ -205,32 +364,24 @@ export const revokeFromHono = mutation({
   args: { organizationId: v.string(), connectionId: v.id("organizationMcpConnections") },
   returns: v.object({ revoked: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
-    await assertPlatformAdmin(ctx);
-    await assertApiKeyPermission(ctx, args.organizationId, "delete");
     const existing = await ctx.db.get(args.connectionId);
     if (!existing || existing.organizationId !== args.organizationId) {
       throw new Error("Agent link was not found.");
     }
+    const user = await assertCanUseConnection(ctx, args.organizationId, existing);
 
     const now = Date.now();
-    await apiKeys.invalidate(ctx, {
-      keyId: existing.keyId,
-      reason: "revoked from organization settings",
-      metadata: { organizationId: args.organizationId, connectionId: args.connectionId },
-    });
     await ctx.db.patch(args.connectionId, {
-      status: "revoked",
-      revokedAt: now,
+      status: "draft",
       updatedAt: now,
     });
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
       actorUserId: user._id,
       actorType: "user",
-      action: "mcpConnection.revoke",
+      action: "mcpConnection.draft",
       target: args.connectionId,
-      summary: `Revoked agent link ${existing.name}.`,
+      summary: `Moved agent link ${existing.name} to drafts.`,
       createdAt: now,
     });
 
@@ -242,13 +393,11 @@ export const rotateFromHono = mutation({
   args: { organizationId: v.string(), connectionId: v.id("organizationMcpConnections") },
   returns: v.object({ connection: mcpConnectionValidator, secret: v.string() }),
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
-    await assertPlatformAdmin(ctx);
-    await assertApiKeyPermission(ctx, args.organizationId, "create");
     const existing = await ctx.db.get(args.connectionId);
     if (!existing || existing.organizationId !== args.organizationId || existing.status === "revoked") {
       throw new Error("Agent link was not found.");
     }
+    const user = await assertCanUseConnection(ctx, args.organizationId, existing);
 
     const rotated = await apiKeys.refresh(ctx, {
       keyId: existing.keyId,
@@ -314,7 +463,8 @@ export const validateConnection = query({
     if (connection.expiresAt && connection.expiresAt <= Date.now()) {
       return { ok: false, reason: "expired" };
     }
-    if (args.resource && args.action && !hasPermission(connection.permissions, args.resource, args.action)) {
+    const livePermissions = await filterLivePermissions(ctx, connection.organizationId, connection.createdByUserId, connection.permissions);
+    if (args.resource && args.action && !hasPermission(livePermissions, args.resource, args.action)) {
       return { ok: false, reason: "permission_denied" };
     }
 
@@ -325,7 +475,7 @@ export const validateConnection = query({
       keyId: connection.keyId,
       name: connection.name,
       instructions: connection.instructions,
-      permissions: connection.permissions,
+      permissions: livePermissions,
     };
   },
 });
