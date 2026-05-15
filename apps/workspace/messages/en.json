@@ -48,6 +48,26 @@
     "upcoming": {
       "title": "Upcoming Work"
     },
+    "normal": {
+      "newProperties": "New properties",
+      "latestClients": "Latest clients",
+      "upcomingMeeting": "Upcoming meeting",
+      "viewAll": "View all",
+      "noProperties": "No properties yet",
+      "noClients": "No clients yet",
+      "noMeetings": "No meetings scheduled",
+      "property": {
+        "area": "Area",
+        "layout": "Layout",
+        "beds": "{count} Beds"
+      },
+      "clientsTable": {
+        "client": "Client",
+        "source": "Source",
+        "stage": "Stage",
+        "comingFrom": "Coming from"
+      }
+    },
     "simple": {
       "syncStatus": "Sync Status",
       "recentProjects": "Recent Projects",

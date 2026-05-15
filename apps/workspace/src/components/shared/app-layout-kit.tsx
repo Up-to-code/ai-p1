@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { LucideIcon } from "lucide-react";
-import { ChevronDown, Filter, LayoutGrid, List } from "lucide-react";
+import { Check, ChevronDown, Filter, LayoutGrid, List } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -56,6 +57,7 @@ interface AppToolbarProps {
   filters?: AppToolbarFilter[];
   activeFilter?: string;
   onFilterChange?: (value: string) => void;
+  filterLabel?: React.ReactNode;
   view?: "grid" | "list";
   onViewChange?: (value: "grid" | "list") => void;
   sortLabel?: React.ReactNode;
@@ -196,6 +198,7 @@ export function AppToolbar({
   filters,
   activeFilter,
   onFilterChange,
+  filterLabel,
   view,
   onViewChange,
   sortLabel,
@@ -205,26 +208,13 @@ export function AppToolbar({
   return (
     <div className={cn("flex flex-col gap-4 border-b border-zinc-100 pb-4 dark:border-white/5 md:flex-row md:items-center md:justify-between", className)}>
       <div className="flex min-w-0 items-center gap-4">
-        {filters && (
-          <div className="scrollbar-none flex min-w-0 items-center gap-6 overflow-x-auto">
-            {filters.map((filter) => {
-              const isActive = activeFilter === filter.value;
-              return (
-                <button
-                  key={filter.value}
-                  type="button"
-                  onClick={() => onFilterChange?.(filter.value)}
-                  className={cn(
-                    "relative h-6 shrink-0 whitespace-nowrap pb-2 text-[10px] font-black uppercase tracking-[0.2em] transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-zinc-900 after:opacity-0 data-[active=true]:after:opacity-100 dark:after:bg-white",
-                    isActive ? "text-zinc-900 dark:text-white" : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
-                  )}
-                  data-active={isActive}
-                >
-                  {filter.label}
-                </button>
-              );
-            })}
-          </div>
+        {filters && activeFilter && onFilterChange && (
+          <AppFilterDropdown
+            filters={filters}
+            activeFilter={activeFilter}
+            onFilterChange={onFilterChange}
+            label={filterLabel}
+          />
         )}
       </div>
 
@@ -260,6 +250,99 @@ export function AppToolbar({
         )}
         {trailing}
       </div>
+    </div>
+  );
+}
+
+function AppFilterDropdown({
+  filters,
+  activeFilter,
+  onFilterChange,
+  label,
+}: {
+  filters: AppToolbarFilter[];
+  activeFilter: string;
+  onFilterChange: (value: string) => void;
+  label?: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const activeOption = useMemo(
+    () => filters.find((filter) => filter.value === activeFilter) ?? filters[0],
+    [activeFilter, filters],
+  );
+
+  useEffect(() => {
+    if (!open) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    }
+
+    window.addEventListener("pointerdown", handlePointerDown);
+    return () => window.removeEventListener("pointerdown", handlePointerDown);
+  }, [open]);
+
+  return (
+    <div ref={rootRef} className="relative z-20 min-w-[190px]">
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") setOpen(false);
+          if (event.key === "ArrowDown") {
+            event.preventDefault();
+            setOpen(true);
+          }
+        }}
+        className="flex h-10 w-full items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white px-3 text-start text-[10px] font-black uppercase tracking-[0.16em] text-zinc-900 shadow-none transition hover:border-[#0B5CFF]/35 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0B5CFF]/10 dark:border-white/10 dark:bg-white/[0.03] dark:text-white"
+      >
+        <span className="min-w-0">
+          {label ? <span className="block truncate text-[8px] text-zinc-400">{label}</span> : null}
+          <span className="block truncate">{activeOption?.label}</span>
+        </span>
+        <ChevronDown className={cn("h-3.5 w-3.5 shrink-0 text-zinc-400 transition-transform", open && "rotate-180")} />
+      </button>
+
+      {open ? (
+        <div
+          role="listbox"
+          aria-label={typeof label === "string" ? label : "Filter"}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") setOpen(false);
+          }}
+          className="absolute start-0 top-12 w-full min-w-[220px] overflow-hidden rounded-2xl border border-zinc-200 bg-white p-1 shadow-lg shadow-zinc-950/5 dark:border-white/10 dark:bg-[#101010]"
+        >
+          {filters.map((filter) => {
+            const isActive = filter.value === activeFilter;
+            const Icon = filter.icon;
+            return (
+              <button
+                key={filter.value}
+                type="button"
+                role="option"
+                aria-selected={isActive}
+                onClick={() => {
+                  onFilterChange(filter.value);
+                  setOpen(false);
+                }}
+                className={cn(
+                  "flex h-10 w-full items-center gap-3 rounded-xl px-3 text-start text-[10px] font-black uppercase tracking-[0.14em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B5CFF]/20",
+                  isActive
+                    ? "bg-[#0B5CFF] text-white"
+                    : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-white/[0.05] dark:hover:text-white",
+                )}
+              >
+                {Icon ? <Icon className="h-3.5 w-3.5 shrink-0" /> : null}
+                <span className="min-w-0 flex-1 truncate">{filter.label}</span>
+                {isActive ? <Check className="h-3.5 w-3.5 shrink-0" /> : null}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
     </div>
   );
 }

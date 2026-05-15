@@ -15,6 +15,7 @@ export const brandIdentity = {
         root: "qentrah.com",
         workspace: "app.qentrah.com",
         partners: "partners.qentrah.com",
+        admin: "admin.qentrah.com",
         email: "hello@qentrah.com",
     },
     colors: {

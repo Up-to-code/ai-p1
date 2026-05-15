@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { brandIdentity, brandProductName } from "@qentrah/brand-identity";
+import { brandDomainUrl, brandIdentity, brandLabel, brandProductName } from "@qentrah/brand-identity";
 import { Geist, Geist_Mono, Cairo } from "next/font/google";
 import "../globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -48,8 +48,60 @@ const themeInitScript = `
 `;
 
 export const metadata: Metadata = {
-  title: brandProductName("platform", "en"),
-  description: "Saudi Arabia Central Real Estate Data Workspace",
+  metadataBase: new URL(brandDomainUrl("workspace")),
+  applicationName: brandProductName("workspace", "en"),
+  title: {
+    default: brandProductName("platform", "en"),
+    template: `%s | ${brandProductName("workspace", "en")}`,
+  },
+  description: "Saudi Arabia central real estate workspace for projects, clients, units, and partner authorization.",
+  keywords: [
+    "Qentrah",
+    "real estate workspace",
+    "Saudi real estate",
+    "property CRM",
+    "partner authorization",
+  ],
+  authors: [{ name: brandLabel("en") }],
+  creator: brandLabel("en"),
+  publisher: brandLabel("en"),
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/app-icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/app-icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    shortcut: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    other: [{ rel: "mask-icon", url: "/mask-icon.svg", color: "#011B5A" }],
+  },
+  appleWebApp: {
+    capable: true,
+    title: brandProductName("workspace", "en"),
+    statusBarStyle: "default",
+  },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: brandProductName("workspace", "en"),
+    title: brandProductName("platform", "en"),
+    description: "Manage Qentrah real estate operations, client workflows, units, and partner access.",
+    images: [
+      {
+        url: "/app-icon-512.png",
+        width: 512,
+        height: 512,
+        alt: `${brandLabel("en")} Workspace icon`,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: brandProductName("platform", "en"),
+    description: "Qentrah workspace for real estate operations and partner authorization.",
+    images: ["/app-icon-512.png"],
+  },
 };
 
 export default async function RootLayout({

@@ -48,6 +48,26 @@
     "upcoming": {
       "title": "العمل القادم"
     },
+    "normal": {
+      "newProperties": "عقارات جديدة",
+      "latestClients": "أحدث العملاء",
+      "upcomingMeeting": "الموعد القادم",
+      "viewAll": "عرض الكل",
+      "noProperties": "لا توجد عقارات بعد",
+      "noClients": "لا يوجد عملاء بعد",
+      "noMeetings": "لا توجد مواعيد مجدولة",
+      "property": {
+        "area": "المساحة",
+        "layout": "التخطيط",
+        "beds": "{count} غرف"
+      },
+      "clientsTable": {
+        "client": "العميل",
+        "source": "المصدر",
+        "stage": "المرحلة",
+        "comingFrom": "قادماً من"
+      }
+    },
     "simple": {
       "syncStatus": "حالة المزامنة",
       "recentProjects": "المشاريع الأخيرة",

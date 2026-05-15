@@ -116,15 +116,11 @@ function debugFor(key: readonly unknown[], url: string): QueryDebugMetadata {
   };
 }
 
-export function organizationScopeFromUrl(url: string) {
-  return url.match(/\/organizations\/([^/]+)/)?.[1] ?? "";
-}
-
 export function placeholderForSameOrganization<TData>(url: string) {
   return ((previousData, previousQuery) => {
     const previousUrl = previousQuery?.queryKey?.at(-1);
     if (typeof previousUrl !== "string") return undefined;
-    return organizationScopeFromUrl(previousUrl) === organizationScopeFromUrl(url) ? previousData : undefined;
+    return previousUrl === url ? previousData : undefined;
   }) satisfies PlaceholderDataFunction<TData, Error, TData, readonly unknown[]>;
 }
 

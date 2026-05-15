@@ -18,6 +18,7 @@ export declare const brandIdentity: {
         readonly root: "qentrah.com";
         readonly workspace: "app.qentrah.com";
         readonly partners: "partners.qentrah.com";
+        readonly admin: "admin.qentrah.com";
         readonly email: "hello@qentrah.com";
     };
     readonly colors: {

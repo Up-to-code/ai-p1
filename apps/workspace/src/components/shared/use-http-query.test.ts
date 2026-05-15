@@ -77,17 +77,17 @@ describe("use-http-query helpers", () => {
     expect(fetcher).toHaveBeenCalledWith("/api/cancel", expect.objectContaining({ signal: expect.any(AbortSignal) }));
   });
 
-  it("keeps previous HTTP data only inside the same organization scope", () => {
+  it("does not keep previous HTTP data when query params change", () => {
     const previousData = { page: ["old"] };
     const placeholder = placeholderForSameOrganization<typeof previousData>(
       "/api/v1/organizations/org_2/read/projects?search=a",
     );
 
     expect(placeholder(previousData, {
-      queryKey: ["/api/v1/organizations/org_2/read/projects?search="],
+      queryKey: ["/api/v1/organizations/org_2/read/projects?search=a"],
     } as never)).toBe(previousData);
     expect(placeholder(previousData, {
-      queryKey: ["/api/v1/organizations/org_1/read/projects?search="],
+      queryKey: ["/api/v1/organizations/org_2/read/projects?search="],
     } as never)).toBeUndefined();
   });
 });

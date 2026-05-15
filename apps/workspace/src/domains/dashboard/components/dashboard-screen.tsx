@@ -2,10 +2,9 @@
 
 import Image from "next/image";
 import { useEffect, useMemo } from "react";
-import { ArrowRight, Bath, BedDouble, Building2, CalendarClock, Eye, Ruler, UsersRound } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { ArrowRight, Building2, CalendarClock } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { AppPageHeader, AppPageShell, AppSection, AppDataTable, AppThumbnailCell } from "@/components/shared";
+import { AppPageHeader, AppPageShell, AppSection, AppDataTable } from "@/components/shared";
 import { HttpQueryState, WorkspaceQueryState, StatusPill } from "@/components/shared/crud-ui";
 import { DashboardChat } from "@/components/dashboard/dashboard-chat";
 import { Link } from "@/i18n/routing";
@@ -126,24 +125,24 @@ export function DashboardScreen() {
           <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
             <div className="space-y-6">
               <NewPropertiesCard
-                emptyLabel="No properties yet"
+                emptyLabel={t("normal.noProperties")}
                 loading={isWorkspaceReady && propertiesQuery.queryStatus === "loading"}
                 properties={latestProperties}
-                title="New properties"
-                viewAllLabel="View all"
+                title={t("normal.newProperties")}
+                viewAllLabel={t("normal.viewAll")}
               />
               <LatestClientsTable
                 clients={latestClients}
-                emptyLabel={t("today.openClients")}
+                emptyLabel={t("normal.noClients")}
                 loading={isWorkspaceReady && clientsQuery.queryStatus === "loading"}
-                title="Latest clients"
+                title={t("normal.latestClients")}
               />
             </div>
             <UpcomingMeetingsCard
               events={desk.todayEvents.length > 0 ? desk.todayEvents : desk.upcomingEvents}
-              emptyLabel={t("today.openClients")}
-              title="Upcoming meeting"
-              viewAllLabel="view all"
+              emptyLabel={t("normal.noMeetings")}
+              title={t("normal.upcomingMeeting")}
+              viewAllLabel={t("normal.viewAll")}
             />
           </div>
         )}
@@ -163,6 +162,9 @@ export function DashboardScreen() {
     </div>
   );
 }
+
+const dashboardActionLinkClassName =
+  "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold text-[#0B5CFF] transition hover:bg-[#0B5CFF]/5 hover:text-[#084AD6] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0B5CFF]/10 dark:text-blue-300 dark:hover:bg-blue-400/10 dark:hover:text-blue-200";
 
 function ModePanel({ active, children }: { active: boolean; children: React.ReactNode }) {
   return (
@@ -196,7 +198,7 @@ function UpcomingMeetingsCard({
       title={title}
       className="xl:sticky xl:top-6"
       actions={
-        <Link href="/calendar" className="inline-flex shrink-0 items-center gap-1 text-[10px] font-bold text-emerald-500 transition hover:text-emerald-600">
+        <Link href="/calendar" className={dashboardActionLinkClassName}>
           {viewAllLabel}
           <ArrowRight className="h-3 w-3 rtl:rotate-180" />
         </Link>
@@ -246,7 +248,7 @@ function NewPropertiesCard({
     <AppSection 
       title={title}
       actions={
-        <Link href="/properties" className="inline-flex shrink-0 items-center gap-1 text-[10px] font-bold text-emerald-500 transition hover:text-emerald-600">
+        <Link href="/properties" className={dashboardActionLinkClassName}>
           {viewAllLabel}
           <ArrowRight className="h-3 w-3 rtl:rotate-180" />
         </Link>
@@ -272,6 +274,9 @@ function NewPropertiesCard({
 }
 
 function DashboardPropertyTile({ property }: { property: PropertyUnit }) {
+  const t = useTranslations("Dashboard");
+  const tp = useTranslations("Properties");
+
   return (
     <article className="group overflow-hidden rounded-[24px] border border-zinc-100 bg-white transition-colors hover:border-zinc-300 dark:border-white/5 dark:bg-[#0A0A0A]">
       <Link href={`/properties/${property.id}`} className="relative block h-40 w-full overflow-hidden bg-zinc-100 text-start focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:bg-white/5">
@@ -289,17 +294,17 @@ function DashboardPropertyTile({ property }: { property: PropertyUnit }) {
       </Link>
       <div className="space-y-4 p-4">
         <div className="flex items-center justify-between">
-          <StatusPill label={property.status} tone={statusTone(property.status)} />
+          <StatusPill label={tp(`toolbar.filters.${property.status}`)} tone={statusTone(property.status)} />
           <span className="text-[9px] font-black uppercase tracking-widest text-zinc-300">{property.reference}</span>
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div className="rounded-xl bg-zinc-50 p-3 dark:bg-white/[0.02]">
-            <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Area</p>
+            <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{t("normal.property.area")}</p>
             <p className="mt-1 text-sm font-black text-zinc-900 dark:text-white">{property.area || "—"}</p>
           </div>
           <div className="rounded-xl bg-zinc-50 p-3 dark:bg-white/[0.02]">
-            <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Layout</p>
-            <p className="mt-1 text-sm font-black text-zinc-900 dark:text-white">{property.bedrooms} Beds</p>
+            <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{t("normal.property.layout")}</p>
+            <p className="mt-1 text-sm font-black text-zinc-900 dark:text-white">{t("normal.property.beds", { count: property.bedrooms })}</p>
           </div>
         </div>
         <div className="flex items-center justify-between border-t border-zinc-100 pt-4 dark:border-white/5">
@@ -328,12 +333,16 @@ function LatestClientsTable({
   loading: boolean;
   title: string;
 }) {
+  const t = useTranslations("Dashboard");
+  const common = useTranslations("Common");
+  const tc = useTranslations("Clients");
+
   return (
     <AppSection
       title={title}
       actions={
-        <Link href="/clients" className="inline-flex shrink-0 items-center gap-1 text-[10px] font-bold text-emerald-500 transition hover:text-emerald-600">
-          view all
+        <Link href="/clients" className={dashboardActionLinkClassName}>
+          {t("normal.viewAll")}
           <ArrowRight className="h-3 w-3 rtl:rotate-180" />
         </Link>
       }
@@ -343,7 +352,7 @@ function LatestClientsTable({
         columns={[
           {
             key: "client",
-            header: "client",
+            header: t("normal.clientsTable.client"),
             render: (client) => (
               <Link href={`/clients/${client.id}`} className="flex min-w-0 items-center gap-3">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-bold uppercase text-zinc-600 dark:bg-white/10 dark:text-zinc-300">
@@ -358,21 +367,21 @@ function LatestClientsTable({
           },
           {
             key: "type",
-            header: "source",
-            render: (client) => <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">{client.type}</span>,
+            header: t("normal.clientsTable.source"),
+            render: (client) => <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">{tc(`types.${client.type}`)}</span>,
           },
           {
             key: "pipelineStage",
-            header: "stage",
+            header: t("normal.clientsTable.stage"),
             render: (client) => (
               <span className="rounded-full bg-zinc-50 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest text-zinc-500 dark:bg-white/[0.04] dark:text-zinc-400">
-                {client.pipelineStage}
+                {tc(`stages.${client.pipelineStage}`)}
               </span>
             ),
           },
           {
             key: "comingFrom",
-            header: "coming from",
+            header: t("normal.clientsTable.comingFrom"),
             render: (client) => (
               <p className="max-w-[220px] truncate text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
                 {client.propertyInterest || client.nextAction}
@@ -382,7 +391,7 @@ function LatestClientsTable({
         ]}
         data={loading ? [] : clients}
         getRowKey={(client) => client.id}
-        emptyMessage={loading ? "Loading..." : emptyLabel}
+        emptyMessage={loading ? common("loading") : emptyLabel}
         className="border-0 shadow-none dark:bg-transparent"
       />
     </AppSection>

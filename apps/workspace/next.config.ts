@@ -6,6 +6,11 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin();
 const appRoot = path.resolve();
 const monorepoRoot = path.resolve(appRoot, "../..");
+const uploadSentrySourceMaps =
+  process.env.SENTRY_UPLOAD_SOURCE_MAPS === "true"
+  && Boolean(process.env.SENTRY_ORG)
+  && Boolean(process.env.SENTRY_PROJECT)
+  && Boolean(process.env.SENTRY_AUTH_TOKEN);
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: monorepoRoot,
@@ -38,11 +43,20 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(withNextIntl(nextConfig), {
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-  authToken: process.env.SENTRY_AUTH_TOKEN,
+const nextIntlConfig = withNextIntl(nextConfig);
+
+export default uploadSentrySourceMaps ? withSentryConfig(nextIntlConfig, {
+  org: uploadSentrySourceMaps ? process.env.SENTRY_ORG : undefined,
+  project: uploadSentrySourceMaps ? process.env.SENTRY_PROJECT : undefined,
+  authToken: uploadSentrySourceMaps ? process.env.SENTRY_AUTH_TOKEN : undefined,
   widenClientFileUpload: true,
+  release: {
+    create: uploadSentrySourceMaps,
+  },
+  sourcemaps: {
+    disable: !uploadSentrySourceMaps,
+  },
   tunnelRoute: "/monitoring",
+  telemetry: false,
   silent: !process.env.CI,
-});
+}) : nextIntlConfig;
