@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,6 +21,7 @@ import { StatusPill } from "@/components/shared/crud-ui";
 import { updateOrganizationProfileSchema, type UpdateOrganizationProfileValues } from "../validation/organization.schema";
 import { useUpdateOrganizationProfileMutation } from "../api/use-update-profile";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   cancelOrganizationInviteLink,
   cancelOrganizationInvitation,
@@ -336,9 +337,9 @@ export function OrganizationScreen() {
   const canUpdateMembers = capabilities?.canUpdateMembers ?? false;
   const canRemoveMembers = capabilities?.canRemoveMembers ?? false;
   const canManageRoles = Boolean(capabilities?.canCreateRoles || capabilities?.canUpdateRoles || capabilities?.canDeleteRoles);
-  const canReadAgentLinks = capabilities?.canReadApiKeys ?? false;
-  const canCreateAgentLinks = Boolean(capabilities?.canCreateApiKeys && capabilities?.isPlatformAdmin);
-  const canDeleteAgentLinks = Boolean(capabilities?.canDeleteApiKeys && capabilities?.isPlatformAdmin);
+  const canReadAgentLinks = capabilities?.canReadOrganization ?? false;
+  const canCreateAgentLinks = capabilities?.canReadOrganization ?? false;
+  const canDeleteAgentLinks = capabilities?.canReadOrganization ?? false;
   const canReadApiKeys = capabilities?.canReadApiKeys ?? false;
   const canCreateApiKeys = capabilities?.canCreateApiKeys ?? false;
   const canUpdateApiKeys = capabilities?.canUpdateApiKeys ?? false;
@@ -414,27 +415,34 @@ export function OrganizationScreen() {
     onError: (error) => toast({ title: t("toasts.actionFailed"), description: error.message, type: "error" }),
   });
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<UpdateOrganizationProfileValues>({
+  const organizationFormValues = useMemo<UpdateOrganizationProfileValues>(() => ({
+    name: account.organization.name,
+    legalName: account.organization.legalName ?? "",
+    type: account.organization.type ?? "",
+    email: account.organization.email ?? "",
+    phone: account.organization.phone ?? "",
+    website: account.organization.website ?? "",
+    address: account.organization.address ?? "",
+  }), [
+    account.organization.address,
+    account.organization.email,
+    account.organization.legalName,
+    account.organization.name,
+    account.organization.phone,
+    account.organization.type,
+    account.organization.website,
+  ]);
+
+  const { register, handleSubmit, reset, formState: { dirtyFields, errors, isSubmitting } } = useForm<UpdateOrganizationProfileValues>({
     resolver: zodResolver(updateOrganizationProfileSchema),
-    defaultValues: {
-      name: account.organization.name,
-      legalName: account.organization.legalName ?? "",
-      type: account.organization.type ?? "",
-      email: account.organization.email ?? "",
-      phone: account.organization.phone ?? "",
-      website: account.organization.website ?? "",
-      address: account.organization.address ?? "",
-    },
-    values: {
-      name: account.organization.name,
-      legalName: account.organization.legalName ?? "",
-      type: account.organization.type ?? "",
-      email: account.organization.email ?? "",
-      phone: account.organization.phone ?? "",
-      website: account.organization.website ?? "",
-      address: account.organization.address ?? "",
-    },
+    defaultValues: organizationFormValues,
   });
+
+  void dirtyFields;
+
+  useEffect(() => {
+    reset(organizationFormValues, { keepDirtyValues: true });
+  }, [organizationFormValues, reset]);
 
   const saveOrg = handleSubmit(async (data) => {
     if (!organizationId) {
@@ -444,7 +452,16 @@ export function OrganizationScreen() {
 
     try {
       await authOrgMutation.mutateAsync(data.name);
-      await updateProfile.mutateAsync(data);
+      const profile = await updateProfile.mutateAsync(data);
+      reset({
+        name: profile.name,
+        legalName: profile.legalName,
+        type: profile.type,
+        email: profile.email,
+        phone: profile.phone,
+        website: profile.website,
+        address: profile.address,
+      });
       toast({ title: t("toasts.profileSavedTitle"), description: t("toasts.profileSavedDesc"), type: "success" });
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : t("toasts.profileSaveFailed");
@@ -760,6 +777,7 @@ export function OrganizationScreen() {
             canCreate={canCreateAgentLinks}
             canDelete={canDeleteAgentLinks}
             grantablePermissions={grantableAgentPermissions(capabilities)}
+            members={members}
           />
         )}
 
@@ -831,9 +849,22 @@ export function OrganizationScreen() {
                       <Label htmlFor="inviteRole" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("invites.roleLabel")}</Label>
                       <HelpCircle className="h-3.5 w-3.5 text-zinc-400" aria-label={t("invites.roleHint")} />
                     </div>
-                    <select id="inviteRole" value={inviteRole} onChange={(event) => setInviteRole(event.target.value)} className="h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm font-bold dark:border-white/10 dark:bg-[#111]">
-                      {availableRoles.map((role) => <option key={role} value={role}>{formatRoleName(role, defaultRoleLabels)}</option>)}
-                    </select>
+                    <Select value={inviteRole} onValueChange={(value) => value && setInviteRole(value)}>
+                      <SelectTrigger
+                        id="inviteRole"
+                        aria-label={t("invites.roleLabel")}
+                        className="h-11 rounded-xl border-zinc-200 bg-white text-sm font-bold dark:border-white/10 dark:bg-[#111]"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent align="start">
+                        {availableRoles.map((role) => (
+                          <SelectItem key={role} value={role}>
+                            {formatRoleName(role, defaultRoleLabels)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <p className="text-xs leading-5 text-zinc-500 dark:text-zinc-400">{t("invites.roleHint")}</p>
                   </div>
                   {inviteMode === "link" ? (
@@ -1088,17 +1119,20 @@ function AgentLinksPanel({
   canCreate,
   canDelete,
   grantablePermissions,
+  members,
 }: {
   organizationId: string;
   canRead: boolean;
   canCreate: boolean;
   canDelete: boolean;
   grantablePermissions: McpConnectionPermission[];
+  members: OrganizationMember[];
 }) {
   const t = useTranslations("Organization.agentLinks");
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingConnection, setEditingConnection] = useState<OrganizationMcpConnection | null>(null);
   const [agentName, setAgentName] = useState(() => t("presets.client"));
   const [instructions, setInstructions] = useState(() => t("defaults.instructions"));
   const [presetId, setPresetId] = useState<AgentPresetId | "custom">("client");
@@ -1106,7 +1140,9 @@ function AgentLinksPanel({
   const [allowDelete, setAllowDelete] = useState(false);
   const [oneTimeLink, setOneTimeLink] = useState("");
   const [oneTimePermissions, setOneTimePermissions] = useState<McpConnectionPermission[]>([]);
+  const [showDrafts, setShowDrafts] = useState(false);
   const selectedGrantablePermissions = clampPermissionsToGrantable(permissions, grantablePermissions);
+  const memberByUserId = new Map(members.map((member) => [member.userId, member]));
 
   const query = useQuery({
     queryKey: ["organization-mcp-connections", organizationId],
@@ -1131,9 +1167,13 @@ function AgentLinksPanel({
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ connection, status }: { connection: OrganizationMcpConnection; status: "active" | "paused" }) =>
-      updateOrganizationMcpConnection(organizationId, connection.id, { status }),
+    mutationFn: ({ connection, input }: {
+      connection: OrganizationMcpConnection;
+      input: Parameters<typeof updateOrganizationMcpConnection>[2];
+    }) => updateOrganizationMcpConnection(organizationId, connection.id, input),
     onSuccess: () => {
+      setEditingConnection(null);
+      setDialogOpen(false);
       queryClient.invalidateQueries({ queryKey: ["organization-mcp-connections", organizationId] });
       toast({ title: t("toasts.updatedTitle"), description: t("toasts.updatedDescription"), type: "success" });
     },
@@ -1173,11 +1213,24 @@ function AgentLinksPanel({
 
   function openNewAgentLinkDialog() {
     const defaultPreset = agentPresets[0];
+    setEditingConnection(null);
     setPresetId(defaultPreset.id);
     setPermissions(clampPermissionsToGrantable(clonePermissions(defaultPreset.permissions), grantablePermissions));
     setAgentName(t(`presets.${defaultPreset.id}`));
     setInstructions(t("defaults.instructions"));
     setAllowDelete(false);
+    setOneTimeLink("");
+    setOneTimePermissions([]);
+    setDialogOpen(true);
+  }
+
+  function openEditAgentLinkDialog(connection: OrganizationMcpConnection) {
+    setEditingConnection(connection);
+    setPresetId("custom");
+    setPermissions(clampPermissionsToGrantable(clonePermissions(connection.permissions), grantablePermissions));
+    setAgentName(connection.name);
+    setInstructions(connection.instructions ?? "");
+    setAllowDelete(hasDeletePermission(connection.permissions));
     setOneTimeLink("");
     setOneTimePermissions([]);
     setDialogOpen(true);
@@ -1205,11 +1258,114 @@ function AgentLinksPanel({
 
   const requiresDeleteConfirmation = hasDeletePermission(selectedGrantablePermissions);
   const canSubmit = canCreate && agentName.trim() && selectedGrantablePermissions.length > 0 && (!requiresDeleteConfirmation || allowDelete);
+  const isEditing = Boolean(editingConnection);
   const connections = query.data ?? [];
+  const workingConnections = connections.filter((connection) => connection.status !== "draft" && connection.status !== "revoked");
+  const draftConnections = connections.filter((connection) => connection.status === "draft");
+  const visibleConnections = showDrafts ? [...workingConnections, ...draftConnections] : workingConnections;
   const oneTimePermissionSummary = permissionSummary(oneTimePermissions, {
     resource: (resource) => t(`resources.${resource}`),
     action: (action) => t(`actions.${action}`),
   });
+  const connectionCard = (connection: OrganizationMcpConnection) => {
+    const creator = memberByUserId.get(connection.createdByUserId);
+    const creatorName = creator ? memberName(creator) : connection.createdByUserId;
+    const creatorEmail = creator ? memberEmail(creator) : connection.createdByUserId;
+    const creatorImage = creator?.user?.image;
+    const isDraft = connection.status === "draft";
+
+    return (
+      <div key={connection.id} className={cn("rounded-[24px] border border-zinc-200 bg-white p-4 dark:border-white/[0.06] dark:bg-[#111]", isDraft && "border-sky-200 bg-sky-50/60 dark:border-sky-400/25 dark:bg-sky-950/20")}>
+        <div className="flex h-full flex-col gap-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusPill label={t(`status.${connection.status}`)} tone={connection.status === "active" ? "success" : connection.status === "paused" || isDraft ? "warning" : "neutral"} />
+                <span className="rounded-full bg-zinc-100 px-2.5 py-1 font-mono text-[10px] font-bold text-zinc-500 dark:bg-white/5">{t("labels.keyEnding", { last4: connection.keyLast4 })}</span>
+              </div>
+              <p className="mt-3 truncate text-base font-black text-zinc-900 dark:text-white">{connection.name}</p>
+            </div>
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-500 dark:bg-white/5">
+              <Bot className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2 rounded-2xl bg-zinc-50 px-3 py-2 dark:bg-white/[0.03]">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-zinc-200 text-[10px] font-black text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+              {creatorImage ? (
+                <span
+                  aria-label={creatorName}
+                  role="img"
+                  className="h-full w-full bg-cover bg-center"
+                  style={{ backgroundImage: `url(${creatorImage})` }}
+                />
+              ) : getInitials(creatorName)}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-xs font-black text-zinc-900 dark:text-white">{creatorName}</p>
+              <p className="truncate text-[10px] font-bold text-zinc-400">{t("labels.createdBy", { email: creatorEmail })}</p>
+            </div>
+          </div>
+          <p className="line-clamp-3 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+            {permissionSummary(connection.permissions, {
+              resource: (resource) => t(`resources.${resource}`),
+              action: (action) => t(`actions.${action}`),
+            }) || t("labels.noWork")}
+          </p>
+          <div className="grid gap-2 rounded-2xl bg-zinc-50 p-3 text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:bg-white/[0.03] sm:grid-cols-3">
+            <span>{t("labels.used", { count: connection.usageCount })}</span>
+            <span>{t("labels.created", { date: formatDate(connection.createdAt) })}</span>
+            <span>{connection.lastUsedAt ? t("labels.lastUsed", { date: formatDate(connection.lastUsedAt) }) : t("labels.noWork")}</span>
+          </div>
+          <div className="mt-auto flex flex-wrap gap-2 border-t border-zinc-100 pt-3 dark:border-white/[0.06]">
+            {connection.status !== "revoked" && (
+              <Button
+                variant="outline"
+                disabled={!canCreate || updateMutation.isPending}
+                onClick={() => updateMutation.mutate({ connection, input: { status: connection.status === "active" ? "paused" : "active" } })}
+                className="rounded-xl text-[10px] font-black uppercase tracking-widest"
+              >
+                <PauseCircle className="me-2 h-3.5 w-3.5" />
+                {connection.status === "active" ? t("buttons.pause") : t("buttons.resume")}
+              </Button>
+            )}
+            {connection.status !== "revoked" && (
+              <Button
+                variant="outline"
+                disabled={!canCreate || updateMutation.isPending}
+                onClick={() => openEditAgentLinkDialog(connection)}
+                className="rounded-xl text-[10px] font-black uppercase tracking-widest"
+              >
+                <Save className="me-2 h-3.5 w-3.5" />
+                {t("buttons.edit")}
+              </Button>
+            )}
+            {connection.status !== "revoked" && !isDraft && (
+              <Button
+                variant="outline"
+                disabled={!canCreate || rotateMutation.isPending}
+                onClick={() => rotateMutation.mutate(connection)}
+                className="rounded-xl text-[10px] font-black uppercase tracking-widest"
+              >
+                <RefreshCcw className="me-2 h-3.5 w-3.5" />
+                {t("buttons.rotate")}
+              </Button>
+            )}
+            {connection.status !== "revoked" && !isDraft && (
+              <Button
+                variant="outline"
+                disabled={!canDelete || revokeMutation.isPending}
+                onClick={() => revokeMutation.mutate(connection)}
+                className="rounded-xl border-sky-200 text-[10px] font-black uppercase tracking-widest text-sky-700 hover:bg-sky-50 dark:border-sky-400/30 dark:text-sky-300 dark:hover:bg-sky-950/30"
+              >
+                <Trash2 className="me-2 h-3.5 w-3.5" />
+                {t("buttons.moveToDraft")}
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-8">
@@ -1228,9 +1384,9 @@ function AgentLinksPanel({
         )}
       >
         <div className="grid gap-3 md:grid-cols-3">
-          <OrgDataCard icon={KeyRound} label={t("stats.active")} value={connections.filter((item) => item.status === "active").length.toString()} />
+          <OrgDataCard icon={KeyRound} label={t("stats.active")} value={workingConnections.filter((item) => item.status === "active").length.toString()} />
           <OrgDataCard icon={Bot} label={t("stats.calls")} value={connections.reduce((sum, item) => sum + item.usageCount, 0).toString()} />
-          <OrgDataCard icon={ShieldCheck} label={t("stats.access")} value={canCreate ? t("stats.canCreate") : canRead ? t("stats.canView") : t("stats.blocked")} />
+          <OrgDataCard icon={ShieldCheck} label={t("stats.drafts")} value={draftConnections.length.toString()} />
         </div>
       </Section>
 
@@ -1238,82 +1394,33 @@ function AgentLinksPanel({
         <div className="grid gap-3 xl:grid-cols-2">
           {!canRead && <EmptyState title={t("empty.noAccessTitle")} description={t("empty.noAccessDescription")} />}
           {canRead && query.isLoading && <LoadingRow label={t("empty.loading")} />}
-          {canRead && !query.isLoading && connections.length === 0 && <EmptyState title={t("empty.noLinksTitle")} description={t("empty.noLinksDescription")} />}
-          {connections.map((connection) => (
-            <div key={connection.id} className="rounded-[24px] border border-zinc-200 bg-white p-4 dark:border-white/[0.06] dark:bg-[#111]">
-              <div className="flex h-full flex-col gap-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <StatusPill label={t(`status.${connection.status}`)} tone={connection.status === "active" ? "success" : connection.status === "paused" ? "warning" : "neutral"} />
-                      <span className="rounded-full bg-zinc-100 px-2.5 py-1 font-mono text-[10px] font-bold text-zinc-500 dark:bg-white/5">{t("labels.keyEnding", { last4: connection.keyLast4 })}</span>
-                    </div>
-                    <p className="mt-3 truncate text-base font-black text-zinc-900 dark:text-white">{connection.name}</p>
-                  </div>
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-500 dark:bg-white/5">
-                    <Bot className="h-4 w-4" />
-                  </div>
-                </div>
-                <p className="line-clamp-3 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-                    {permissionSummary(connection.permissions, {
-                      resource: (resource) => t(`resources.${resource}`),
-                      action: (action) => t(`actions.${action}`),
-                    }) || t("labels.noWork")}
-                </p>
-                <div className="grid gap-2 rounded-2xl bg-zinc-50 p-3 text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:bg-white/[0.03] sm:grid-cols-3">
-                  <span>{t("labels.used", { count: connection.usageCount })}</span>
-                  <span>{t("labels.created", { date: formatDate(connection.createdAt) })}</span>
-                  <span>{connection.lastUsedAt ? t("labels.lastUsed", { date: formatDate(connection.lastUsedAt) }) : t("labels.noWork")}</span>
-                </div>
-                <div className="mt-auto flex flex-wrap gap-2 border-t border-zinc-100 pt-3 dark:border-white/[0.06]">
-                  {connection.status !== "revoked" && (
-                    <Button
-                      variant="outline"
-                      disabled={!canCreate || updateMutation.isPending}
-                      onClick={() => updateMutation.mutate({ connection, status: connection.status === "active" ? "paused" : "active" })}
-                      className="rounded-xl text-[10px] font-black uppercase tracking-widest"
-                    >
-                      <PauseCircle className="me-2 h-3.5 w-3.5" />
-                      {connection.status === "active" ? t("buttons.pause") : t("buttons.resume")}
-                    </Button>
-                  )}
-                  {connection.status !== "revoked" && (
-                    <Button
-                      variant="outline"
-                      disabled={!canCreate || rotateMutation.isPending}
-                      onClick={() => rotateMutation.mutate(connection)}
-                      className="rounded-xl text-[10px] font-black uppercase tracking-widest"
-                    >
-                      <RefreshCcw className="me-2 h-3.5 w-3.5" />
-                      {t("buttons.rotate")}
-                    </Button>
-                  )}
-                  {connection.status !== "revoked" && (
-                    <Button
-                      variant="outline"
-                      disabled={!canDelete || revokeMutation.isPending}
-                      onClick={() => revokeMutation.mutate(connection)}
-                      className="rounded-xl border-red-200 text-[10px] font-black uppercase tracking-widest text-red-600 hover:bg-red-50"
-                    >
-                      <Trash2 className="me-2 h-3.5 w-3.5" />
-                      {t("buttons.revoke")}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+          {canRead && !query.isLoading && visibleConnections.length === 0 && <EmptyState title={t("empty.noLinksTitle")} description={t("empty.noLinksDescription")} />}
+          {visibleConnections.map(connectionCard)}
         </div>
+        {canRead && draftConnections.length > 0 && (
+          <div className="mt-4 flex justify-center">
+            <Button
+              variant="outline"
+              onClick={() => setShowDrafts((current) => !current)}
+              className="rounded-full px-5 text-[10px] font-black uppercase tracking-widest"
+            >
+              {showDrafts ? t("buttons.hideDrafts") : t("buttons.showDrafts", { count: draftConnections.length })}
+            </Button>
+          </div>
+        )}
       </Section>
 
       <Dialog open={dialogOpen} onOpenChange={(open) => {
         setDialogOpen(open);
-        if (!open) setOneTimeLink("");
+        if (!open) {
+          setEditingConnection(null);
+          setOneTimeLink("");
+        }
       }}>
         <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto rounded-2xl p-6">
           <DialogHeader className="pe-8 text-start">
             <DialogTitle className="text-lg font-black text-zinc-900 dark:text-white">
-              {oneTimeLink ? t("modal.readyTitle") : t("modal.newTitle")}
+              {oneTimeLink ? t("modal.readyTitle") : isEditing ? t("modal.editTitle") : t("modal.newTitle")}
             </DialogTitle>
           </DialogHeader>
 
@@ -1433,12 +1540,25 @@ function AgentLinksPanel({
               <DialogFooter className="justify-start">
                 <Button variant="ghost" onClick={() => setDialogOpen(false)}>{t("buttons.cancel")}</Button>
                 <Button
-                  disabled={!canSubmit || createMutation.isPending}
-                  onClick={() => createMutation.mutate()}
+                  disabled={!canSubmit || createMutation.isPending || updateMutation.isPending}
+                  onClick={() => {
+                    if (editingConnection) {
+                      updateMutation.mutate({
+                        connection: editingConnection,
+                        input: {
+                          name: agentName,
+                          instructions,
+                          permissions: selectedGrantablePermissions,
+                        },
+                      });
+                      return;
+                    }
+                    createMutation.mutate();
+                  }}
                   className="bg-zinc-900 text-white hover:bg-black"
                 >
-                  {createMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <KeyRound className="me-2 h-4 w-4" />}
-                  {t("modal.make")}
+                  {createMutation.isPending || updateMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <KeyRound className="me-2 h-4 w-4" />}
+                  {isEditing ? t("modal.save") : t("modal.make")}
                 </Button>
               </DialogFooter>
             </div>

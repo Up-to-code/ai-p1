@@ -1,7 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
 import { authComponent, createAuth } from "../../auth";
-import { assertPlatformAdmin } from "../../platform/access";
 import { assertOrganizationResourcePermission } from "../profile/access";
 import { findInviteLinkByTokenHash, toPublicInviteLink } from "./data";
 import {
@@ -26,6 +25,11 @@ type AddMemberErrorResult = {
   } | null;
 };
 
+function isAlreadyMemberError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.toLowerCase().includes("already a member");
+}
+
 export const createInviteLinkFromHono = mutation({
   args: {
     organizationId: v.string(),
@@ -34,7 +38,6 @@ export const createInviteLinkFromHono = mutation({
   returns: organizationInviteLinkValidator,
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    await assertPlatformAdmin(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "member", "create");
 
     const existing = await findInviteLinkByTokenHash(ctx, args.input.tokenHash);
@@ -95,17 +98,27 @@ export const acceptInviteLinkFromHono = mutation({
     const { auth } = await authComponent.getAuth(createAuth, ctx);
     const organizationApi = auth.api as unknown as AddMemberApi;
 
-    const addMemberResult = await organizationApi.addMember({
-      body: {
-        userId: user._id,
-        organizationId: inviteLink.organizationId,
-        role: inviteLink.role,
-      },
-    });
-    const addMemberError = (addMemberResult as AddMemberErrorResult | null)?.error;
+    try {
+      const addMemberResult = await organizationApi.addMember({
+        body: {
+          userId: user._id,
+          organizationId: inviteLink.organizationId,
+          role: inviteLink.role,
+        },
+      });
+      const addMemberError = (addMemberResult as AddMemberErrorResult | null)?.error;
 
-    if (addMemberError) {
-      throw new Error(addMemberError.message ?? addMemberError.code ?? "Invite link could not add member.");
+      if (addMemberError) {
+        if (isAlreadyMemberError(addMemberError.message ?? addMemberError.code)) {
+          return toPublicInviteLink(inviteLink);
+        }
+        throw new Error(addMemberError.message ?? addMemberError.code ?? "Invite link could not add member.");
+      }
+    } catch (error) {
+      if (isAlreadyMemberError(error)) {
+        return toPublicInviteLink(inviteLink);
+      }
+      throw error;
     }
 
     await ctx.db.patch(inviteLink._id, {
@@ -142,7 +155,6 @@ export const cancelInviteLinkFromHono = mutation({
   returns: organizationInviteLinkValidator,
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    await assertPlatformAdmin(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "member", "create");
     const inviteLink = await ctx.db.get(args.inviteLinkId);
     const now = Date.now();

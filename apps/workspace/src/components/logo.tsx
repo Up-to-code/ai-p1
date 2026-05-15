@@ -34,7 +34,7 @@ export const Logo = () => {
         <BrandMark className="h-5 w-5" priority />
       </div>
       <span className="text-[17px] font-black tracking-tight text-zinc-950 dark:text-white">
-        {isAr ? "قنطرة" : "qentrah"}
+        {isAr ? "كانترا" : "qentrah"}
       </span>
     </Link>
   );

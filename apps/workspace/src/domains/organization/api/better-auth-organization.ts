@@ -39,6 +39,16 @@ export type OrganizationInvitation = {
   createdAt: Date | string;
 };
 
+export type OrganizationInvitationAcceptance = {
+  organizationId?: string;
+  invitation?: {
+    organizationId?: string;
+  };
+  member?: {
+    organizationId?: string;
+  };
+};
+
 export type OrganizationInviteLink = {
   id: string;
   organizationId: string;
@@ -96,7 +106,7 @@ export type OrganizationMcpConnection = {
   name: string;
   instructions?: string;
   permissions: McpConnectionPermission[];
-  status: "active" | "paused" | "revoked";
+  status: "active" | "paused" | "draft" | "revoked";
   createdByUserId: string;
   createdAt: number;
   updatedAt: number;
@@ -330,12 +340,12 @@ export function deleteOrganizationRole(organizationId: string, roleId: string) {
 }
 
 export function acceptOrganizationInvitation(invitationId: string) {
-  return requestOrganizationAction<{ invitation: unknown }>(
+  return requestOrganizationAction<OrganizationInvitationAcceptance>(
     "/api/v1/organizations/invitations/accept",
     "POST",
     { invitationId },
     "Invitation could not be accepted.",
-  ).then((result) => result.invitation);
+  );
 }
 
 async function readJsonResponse<T>(response: Response, fallback: string): Promise<T> {
@@ -515,5 +525,5 @@ export async function acceptOrganizationInviteLink(token: string) {
   return readJsonResponse<{ inviteLink: OrganizationInviteLink }>(
     response,
     "Invite link could not be accepted.",
-  );
+  ).then((result) => result.inviteLink);
 }

@@ -1,12 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2, Loader2, LogIn, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
+import { requireOrganizationResult, type AuthResult } from "@/domains/auth/organization-selection";
+import { writeAuthHandoff } from "@/domains/auth";
 import { acceptOrganizationInvitation, acceptOrganizationInviteLink } from "../api/better-auth-organization";
+import type { OrganizationInvitationAcceptance, OrganizationInviteLink } from "../api/better-auth-organization";
+
+type BetterAuthOrganization = { id?: string | null };
+type AcceptInviteAuthClient = typeof authClient & {
+  organization: {
+    setActive: (input: { organizationId: string }) => Promise<AuthResult<BetterAuthOrganization | null>>;
+  };
+};
+
+const organizationApi = authClient as AcceptInviteAuthClient;
+
+function getAcceptedOrganizationId(result: OrganizationInviteLink | OrganizationInvitationAcceptance) {
+  return (
+    ("organizationId" in result ? result.organizationId : undefined) ??
+    ("invitation" in result ? result.invitation?.organizationId : undefined) ??
+    ("member" in result ? result.member?.organizationId : undefined)
+  );
+}
 
 export function AcceptInviteScreen() {
   const t = useTranslations("Organization.acceptInvite");
@@ -18,11 +38,13 @@ export function AcceptInviteScreen() {
   const inviteToken = searchParams.get("inviteToken");
   const [status, setStatus] = useState<"idle" | "accepting" | "accepted" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
+  const hasStartedAccepting = useRef(false);
 
   useEffect(() => {
-    if ((!invitationId && !inviteToken) || session.isPending || !session.data?.user || status !== "idle") return;
+    if ((!invitationId && !inviteToken) || session.isPending || !session.data?.user || hasStartedAccepting.current) return;
 
     let cancelled = false;
+    hasStartedAccepting.current = true;
     const accept = async () => {
       await Promise.resolve();
       if (cancelled) return;
@@ -32,12 +54,25 @@ export function AcceptInviteScreen() {
         ? acceptOrganizationInviteLink(inviteToken)
         : acceptOrganizationInvitation(invitationId as string);
 
-      operation.then(() => {
+      operation.then(async (result) => {
+        if (cancelled) return;
+        const organizationId = getAcceptedOrganizationId(result);
+
+        if (organizationId) {
+          requireOrganizationResult(
+            await organizationApi.organization.setActive({ organizationId }),
+            t("errorDesc"),
+            organizationId,
+          );
+          writeAuthHandoff(organizationId);
+        }
+
         if (cancelled) return;
         setStatus("accepted");
-        setTimeout(() => router.replace(`/${locale}/dashboard`), 1000);
+        setTimeout(() => window.location.replace(`/${locale}/dashboard`), 1000);
       }).catch((caught) => {
         if (cancelled) return;
+        hasStartedAccepting.current = false;
         setStatus("error");
         setError(caught instanceof Error ? caught.message : t("errorDesc"));
       });
@@ -48,7 +83,7 @@ export function AcceptInviteScreen() {
     return () => {
       cancelled = true;
     };
-  }, [invitationId, inviteToken, locale, router, session.data?.user, session.isPending, status, t]);
+  }, [invitationId, inviteToken, locale, session.data?.user, session.isPending, t]);
 
   const isSignedOut = !session.isPending && !session.data?.user;
   const isMissingInvite = !invitationId && !inviteToken;

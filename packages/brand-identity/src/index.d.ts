@@ -4,11 +4,11 @@ export type BrandRoute = "auth" | "api" | "reviewCallback" | "oauthStart" | "oau
 export declare const brandIdentity: {
     readonly name: {
         readonly en: "Qentrah";
-        readonly ar: "قنطرة";
+        readonly ar: "كانترا";
     };
     readonly legalName: {
         readonly en: "Qentrah Technology Co.";
-        readonly ar: "شركة قنطرة التقنية";
+        readonly ar: "شركة كانترا التقنية";
     };
     readonly slug: "qentrah";
     readonly packageScope: "@qentrah";
@@ -71,7 +71,7 @@ export declare const brandIdentity: {
         readonly oauthLogout: "api/auth/qentrah/logout";
     };
 };
-export declare function brandLabel(locale?: BrandLocale): "Qentrah" | "قنطرة";
+export declare function brandLabel(locale?: BrandLocale): "Qentrah" | "كانترا";
 export declare function brandProductName(product: BrandProduct, locale?: BrandLocale): string;
 export declare function brandEnvName(key: string): string;
 export declare function brandRouteSlug(route: BrandRoute): "qentrah" | "auth/qentrah" | "qentrah-review-callback" | "api/auth/qentrah/start" | "api/auth/qentrah/callback" | "api/auth/qentrah/logout";

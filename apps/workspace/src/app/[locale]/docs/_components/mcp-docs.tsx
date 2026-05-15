@@ -91,7 +91,7 @@ export const docsTopics: DocsTopic[] = [
     },
     description: {
       en: "Connect ChatGPT, Claude, Grok, Codex, Cursor, or your own agent to one Qentrah organization without giving anyone a dashboard login.",
-      ar: "اربط ChatGPT أو Claude أو Grok أو Codex أو Cursor أو وكيلك الخاص بمؤسسة واحدة في قنطرة بدون إعطاء أي شخص دخولاً للوحة التحكم.",
+      ar: "اربط ChatGPT أو Claude أو Grok أو Codex أو Cursor أو وكيلك الخاص بمؤسسة واحدة في كانترا بدون إعطاء أي شخص دخولاً للوحة التحكم.",
     },
   },
   {
@@ -115,7 +115,7 @@ export const docsTopics: DocsTopic[] = [
     },
     description: {
       en: "The link is the address the agent uses to ask Qentrah for approved tools and approved data.",
-      ar: "هذا الرابط هو العنوان الذي يستخدمه الوكيل لطلب الأدوات والبيانات المسموحة فقط من قنطرة.",
+      ar: "هذا الرابط هو العنوان الذي يستخدمه الوكيل لطلب الأدوات والبيانات المسموحة فقط من كانترا.",
     },
   },
   {
@@ -151,7 +151,7 @@ export const docsTopics: DocsTopic[] = [
     },
     description: {
       en: "Use the same Qentrah organization link with popular AI agents or with your own internal assistant.",
-      ar: "استخدم نفس رابط مؤسسة قنطرة مع الوكلاء المشهورين أو مع مساعدك الداخلي الخاص.",
+      ar: "استخدم نفس رابط مؤسسة كانترا مع الوكلاء المشهورين أو مع مساعدك الداخلي الخاص.",
     },
   },
   {
@@ -331,7 +331,7 @@ const copyByLocale: Record<Locale, DocsCopy> = {
       "البيانات الخاصة تبقى مخفية",
     ],
     overviewBody: [
-      "MCP هي لغة الربط. تسمح للوكيل الذكي أن يطلب من قنطرة أدوات محددة، مثل قراءة سجلات العملاء العامة، فحص العقارات المتاحة، أو إنشاء مهمة.",
+      "MCP هي لغة الربط. تسمح للوكيل الذكي أن يطلب من كانترا أدوات محددة، مثل قراءة سجلات العملاء العامة، فحص العقارات المتاحة، أو إنشاء مهمة.",
       "النقطة المهمة أن الوكيل لا يحصل على حساب كامل في لوحة التحكم. يحصل فقط على رابط خاص بالمؤسسة، ويرى فقط الأدوات التي سمح بها المسؤول.",
       "كل شركة تحتفظ بفقاعة بيانات منفصلة. رابط الشركة الأولى يفتح أدوات الشركة الأولى المسموحة. رابط الشركة الثانية يفتح أدوات الشركة الثانية المسموحة. لا يتم خلط البيانات.",
     ],
@@ -347,7 +347,7 @@ const copyByLocale: Record<Locale, DocsCopy> = {
     steps: [
       { title: "اختر المؤسسة", description: "حدد مساحة عمل الشركة التي يسمح للوكيل بمساعدتها. هذا يفصل بيانات كل شركة عن الأخرى." },
       { title: "أنشئ رابط وكيل", description: "اكتب اسماً مفهوماً مثل مساعد مبيعات ChatGPT أو مراجعة مورد Claude حتى يعرف الجميع سبب وجوده." },
-      { title: "حدد الصلاحيات", description: "ابدأ بالقراءة فقط. شغل الإنشاء أو التحديث فقط عندما يحتاج الوكيل للكتابة داخل قنطرة." },
+      { title: "حدد الصلاحيات", description: "ابدأ بالقراءة فقط. شغل الإنشاء أو التحديث فقط عندما يحتاج الوكيل للكتابة داخل كانترا." },
       { title: "انسخ رابط MCP", description: "الصق الرابط الناتج داخل ChatGPT أو Claude أو Grok أو Codex أو Cursor أو وكيلك المخصص كرابط خادم MCP." },
       { title: "اختبر وأدر الرابط", description: "اسأل الوكيل عما يستطيع فعله. إذا كان هناك شيء غير صحيح، أوقف الرابط أو دوّره أو ألغِه من الإعدادات." },
     ],
@@ -363,13 +363,13 @@ const copyByLocale: Record<Locale, DocsCopy> = {
       { resource: "الوسائط", bestFor: "قراءة الملفات المعتمدة أو إرفاق مستندات عبر روابط", actions: "قراءة، إنشاء" },
     ],
     examplesDescription:
-      "يمكن للوكلاء المختلفين استخدام رابط قنطرة، لكن الأفضل إنشاء روابط منفصلة عندما يختلف الغرض. مساعد المبيعات ومساعد المورد والأتمتة الداخلية لا يجب أن يتشاركوا مفتاحاً واسعاً واحداً.",
+      "يمكن للوكلاء المختلفين استخدام رابط كانترا، لكن الأفضل إنشاء روابط منفصلة عندما يختلف الغرض. مساعد المبيعات ومساعد المورد والأتمتة الداخلية لا يجب أن يتشاركوا مفتاحاً واسعاً واحداً.",
     examples: [
       { name: "ChatGPT", description: "مناسب لعضو فريق غير تقني يسأل أسئلة أو يكتب متابعات أو يلخص السجلات المسموحة.", code: codeSamples.chatgpt },
       { name: "Claude", description: "مناسب لمراجعة الملاحظات الطويلة وتسليمات الموردين والسياسات وسياق العملاء المفصل.", code: codeSamples.claude },
-      { name: "Grok / xAI", description: "مناسب لسير عمل سحابي مخصص يحتاج نفس أدوات قنطرة المسموحة.", code: codeSamples.grok },
+      { name: "Grok / xAI", description: "مناسب لسير عمل سحابي مخصص يحتاج نفس أدوات كانترا المسموحة.", code: codeSamples.grok },
       { name: "Codex أو Cursor أو وكلاء IDE", description: "مناسب للفرق التقنية التي تبني أتمتة حول بيانات المؤسسة.", code: codeSamples.ide },
-      { name: "OpenAI API", description: "مناسب عندما يستدعي منتجك OpenAI ويربط قنطرة كخادم MCP بعيد.", code: codeSamples.openai },
+      { name: "OpenAI API", description: "مناسب عندما يستدعي منتجك OpenAI ويربط كانترا كخادم MCP بعيد.", code: codeSamples.openai },
     ],
     securityDescription: "قبل ربط أي وكيل، اتفقوا على ما يسمح له بلمسه ومن يملك الرابط.",
     securityItems: [
@@ -631,7 +631,7 @@ function EndpointVisual({ isArabic }: { isArabic: boolean }) {
           {textFor(
             isArabic,
             "The agent knocks on this link whenever it needs approved Qentrah tools.",
-            "الوكيل يستخدم هذا الرابط كلما احتاج أدوات قنطرة المسموحة.",
+            "الوكيل يستخدم هذا الرابط كلما احتاج أدوات كانترا المسموحة.",
           )}
         </TopicCard>
         <div className={subtlePanelClassName}>
@@ -730,7 +730,7 @@ function AgentCloudVisual({ isArabic }: { isArabic: boolean }) {
           {textFor(
             isArabic,
             "Create a separate Qentrah link for each agent or job, so you can pause one workflow without breaking the rest.",
-            "أنشئ رابط قنطرة منفصلاً لكل وكيل أو وظيفة، حتى تستطيع إيقاف سير عمل واحد بدون تعطيل البقية.",
+            "أنشئ رابط كانترا منفصلاً لكل وكيل أو وظيفة، حتى تستطيع إيقاف سير عمل واحد بدون تعطيل البقية.",
           )}
         </TopicCard>
       </div>
