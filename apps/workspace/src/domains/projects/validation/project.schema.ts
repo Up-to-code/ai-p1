@@ -2,6 +2,11 @@ import { z } from "zod";
 import { requiredText } from "@/validation/common.schema";
 
 const nonNegativeIntegerText = (label: string) => z.string().trim().regex(/^\d+$/, `${label} must be a number.`);
+const projectPriceItemSchema = z.object({
+  id: z.string(),
+  label: z.string().trim(),
+  price: z.string().trim(),
+});
 export const projectCategories = ["Residential", "Commercial", "Mixed Use"] as const;
 export const projectOfferingTypes = ["Apartment", "Studio", "Villa", "Townhouse", "Penthouse", "Compound", "Office", "Retail"] as const;
 
@@ -15,13 +20,15 @@ export const projectSchema = z.object({
   status: z.enum(["draft", "pending", "approved", "rejected"]),
   visibility: z.enum(["private", "public"]).optional(),
   units: nonNegativeIntegerText("Units"),
-  priceRange: requiredText("Price range"),
+  averagePrice: requiredText("Average price"),
+  projectPrices: z.array(projectPriceItemSchema).optional().default([]),
+  priceRange: z.string().trim().optional(),
   regaAuthorizationNo: z.string().trim().optional(),
   regaExpiresAt: z.string().trim().optional(),
   planNumber: z.string().trim().optional(),
   plotNumber: z.string().trim().optional(),
   postalIdentity: z.string().trim().optional(),
-  description: requiredText("Description", 10),
+  description: requiredText("Description"),
 });
 
 export interface ProjectFormValues {
@@ -34,7 +41,9 @@ export interface ProjectFormValues {
   status: "draft" | "pending" | "approved" | "rejected";
   visibility?: "private" | "public";
   units: string;
-  priceRange: string;
+  averagePrice: string;
+  projectPrices: Array<{ id: string; label: string; price: string }>;
+  priceRange?: string;
   regaAuthorizationNo?: string;
   regaExpiresAt?: string;
   planNumber?: string;
