@@ -14,3 +14,8 @@
 - `npm --workspace @qentrah/admin-review run typecheck` - passed 2026-05-16
 - `npm run typecheck --workspaces --if-present` - passed 2026-05-16
 - `git diff --check` - passed 2026-05-16
+- `npm --workspace @qentrah/convex-adapters test` - passed 2026-05-16 Vercel build fix
+- `npm --workspace @qentrah/convex-adapters run typecheck` - passed 2026-05-16 Vercel build fix
+- `npm --workspace @qentrah/workspace run typecheck` - passed 2026-05-16 Vercel build fix
+- `npm --workspace @qentrah/workspace run build` - passed 2026-05-16 Vercel build fix
+- `cd apps/workspace && npx convex deploy --yes` - passed 2026-05-16, deployed to `https://stoic-monitor-13.convex.cloud`

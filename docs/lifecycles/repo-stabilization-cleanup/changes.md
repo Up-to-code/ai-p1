@@ -12,3 +12,5 @@
 - Restored `@qentrah/convex-adapters` package exports to built `dist` artifacts while keeping its typecheck script.
 - Regenerated `package-lock.json` after manifest cleanup.
 - Re-ran focused tests, app typechecks, full workspace typecheck sweep, and `git diff --check`.
+- Fixed the Vercel production build failure by adding the missing Workspace source alias for `@qentrah/platform-core/convex-api`.
+- Deployed Workspace Convex functions to the production deployment `stoic-monitor-13`.

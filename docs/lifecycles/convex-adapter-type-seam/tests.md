@@ -3,6 +3,7 @@
 Required checks when this lifecycle changes:
 - `npm --workspace @qentrah/convex-adapters test` - passed 2026-05-16 architecture deepening pass.
 - `npm --workspace @qentrah/convex-adapters run typecheck` - passed 2026-05-16 architecture deepening pass.
+- `npm --workspace @qentrah/workspace run build` - passed 2026-05-16 after adding the `@qentrah/platform-core/convex-api` source alias for Vercel/Turbopack.
 - Focused Workspace tests for any converted caller.
 
 Missing coverage:
