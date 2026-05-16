@@ -8,7 +8,7 @@ const env = Object.create(null);
 for (const line of text.split(/\r?\n/u)) {
   const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)=(.*)$/u);
   if (!match) continue;
-  env[match[1]] = match[2].trim();
+  env[match[1]] = stripCopiedEnvQuotes(match[2]);
 }
 
 const required = [
@@ -29,6 +29,9 @@ const required = [
   "PARTNERS_REVIEW_CALLBACK_TOKEN",
   "PARTNER_WEBHOOK_SECRET_ENCRYPTION_KEY",
   "ORGANIZATION_DATA_ENCRYPTION_KEY",
+  "UPLOADTHING_TOKEN",
+  "UPLOADTHING_SECRET",
+  "UPLOADTHING_APP_ID",
 ];
 
 const expected = {
@@ -46,6 +49,18 @@ const expected = {
 
 const placeholder = /^<.*>$/u;
 const failures = [];
+
+function stripCopiedEnvQuotes(value) {
+  const trimmed = value.trim();
+  if (trimmed.length < 2) return trimmed;
+
+  const quote = trimmed[0];
+  if ((quote === "'" || quote === '"') && trimmed.at(-1) === quote) {
+    return trimmed.slice(1, -1).trim();
+  }
+
+  return trimmed;
+}
 
 const strongSecretKeys = [
   "BETTER_AUTH_SECRET",
@@ -69,6 +84,28 @@ function looksRandomSecret(value) {
   return uniqueCharacterCount(trimmed) >= 12;
 }
 
+function parseUploadThingToken(value) {
+  try {
+    const decoded = JSON.parse(Buffer.from(value, "base64").toString("utf8"));
+    if (
+      !decoded ||
+      typeof decoded !== "object" ||
+      typeof decoded.apiKey !== "string" ||
+      !decoded.apiKey.startsWith("sk_") ||
+      typeof decoded.appId !== "string" ||
+      decoded.appId.length === 0 ||
+      !Array.isArray(decoded.regions) ||
+      decoded.regions.length === 0 ||
+      !decoded.regions.every((region) => typeof region === "string" && region.length > 0)
+    ) {
+      return null;
+    }
+    return decoded;
+  } catch {
+    return null;
+  }
+}
+
 for (const key of required) {
   if (!env[key]) failures.push(`${key} is missing`);
   else if (placeholder.test(env[key])) failures.push(`${key} still has a placeholder`);
@@ -87,6 +124,20 @@ for (const [key, value] of Object.entries(expected)) {
 for (const [key, value] of Object.entries(env)) {
   if (/^https?:\/\/localhost|^http:\/\/127\.0\.0\.1/u.test(value)) {
     failures.push(`${key} still points at local development`);
+  }
+}
+
+if (env.UPLOADTHING_TOKEN) {
+  const uploadThingToken = parseUploadThingToken(env.UPLOADTHING_TOKEN);
+  if (!uploadThingToken) {
+    failures.push("UPLOADTHING_TOKEN must be a base64 JSON token with apiKey, appId, and regions.");
+  } else {
+    if (env.UPLOADTHING_APP_ID && env.UPLOADTHING_APP_ID !== uploadThingToken.appId) {
+      failures.push("UPLOADTHING_APP_ID must match the appId inside UPLOADTHING_TOKEN.");
+    }
+    if (env.UPLOADTHING_SECRET && env.UPLOADTHING_SECRET !== uploadThingToken.apiKey) {
+      failures.push("UPLOADTHING_SECRET must match the apiKey inside UPLOADTHING_TOKEN.");
+    }
   }
 }
 

@@ -100,6 +100,8 @@ Common Workspace variables:
 | `SENTRY_AUTH_TOKEN` | Secret | Sentry source map upload token |
 | `NEXT_PUBLIC_QENTRAH_PERF_DEBUG` | Browser | Optional performance debug flag |
 
+UploadThing v7 requires `UPLOADTHING_TOKEN` to be a base64 encoded JSON object with `apiKey`, `appId`, and a non-empty `regions` array. In Vercel, paste the token value without `.env` quote characters. `UPLOADTHING_SECRET` must match the decoded `apiKey`, and `UPLOADTHING_APP_ID` must match the decoded `appId`.
+
 ## Partners Variables
 
 Production baseline:
