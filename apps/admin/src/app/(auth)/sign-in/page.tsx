@@ -29,7 +29,7 @@ export default async function AdminSignInPage({
         </header>
 
         <section className="flex flex-1 items-center justify-center py-10 sm:py-12">
-          <div className="w-full max-w-[460px] rounded-[24px] border border-zinc-100 bg-white p-6 shadow-none dark:border-white/10 dark:bg-white/[0.03] sm:p-7">
+          <div className="w-full max-w-[460px]">
             <div className="mb-7 flex items-center gap-3">
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white">
                 <KeyRound className="h-5 w-5" />

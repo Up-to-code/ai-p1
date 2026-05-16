@@ -44,8 +44,17 @@ export async function handleGetOrganizationCapabilities(c: Context) {
   const params = organizationIdOrResponse(c);
   if ("response" in params) return params.response;
 
+  const startedAt = Date.now();
   try {
     const capabilities = await getCapabilities(params.organizationId);
+    const elapsedMs = Date.now() - startedAt;
+    if (process.env.NODE_ENV !== "production" && elapsedMs > 750) {
+      console.warn("[organization-capabilities] Slow capability load", {
+        route: "GET /api/v1/organizations/:organizationId/capabilities",
+        organizationId: params.organizationId,
+        elapsedMs,
+      });
+    }
     return c.json({ capabilities });
   } catch (error) {
     return handleActionError(c, error);

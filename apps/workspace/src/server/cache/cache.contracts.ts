@@ -1,11 +1,13 @@
-export type CacheScope = "global" | "per-user" | "per-organization" | "per-team" | "per-checker";
-export type CacheDecision = "hit" | "miss" | "skip" | "revalidate" | "bypass";
+import type { CacheKeyParts } from "@qentrah/platform-core/effect-api";
 
-export interface CacheKeyParts {
-  readonly scope: CacheScope;
-  readonly namespace: string;
-  readonly parts: readonly string[];
-}
+export type {
+  CacheKeyParts,
+  CachePolicy,
+  CacheScope,
+  CacheService,
+} from "@qentrah/platform-core/effect-api";
+
+export type CacheDecision = "hit" | "miss" | "skip" | "revalidate" | "bypass";
 
 export interface PerUserCacheKey extends CacheKeyParts {
   readonly scope: "per-user";

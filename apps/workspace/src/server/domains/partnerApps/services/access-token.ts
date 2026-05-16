@@ -1,18 +1,19 @@
 import type { Context } from "hono";
 import { verifyAccessToken } from "better-auth/oauth2";
 import { api } from "@convex/_generated/api";
-import { convexHttp } from "@/server/convex/http-client";
+import { convexCalls } from "@/server/convex/http-client";
 import { partnerAppsRuntimeConfig } from "@/packages/config";
 import type {
   PartnerPermissionAction,
   PartnerPermissionResource,
-} from "@/packages/partner-apps/scopes";
+} from "@qentrah/partner-auth-core";
+import { parsePartnerAccessClaims } from "@qentrah/partner-auth-core";
 
 export type PartnerAccessContext = {
   type?: "oauth";
   token: string;
   organizationId: string;
-  oauthClientId: string;
+  partnersClientId: string;
   partnerAppId: string;
   connectionId: string;
   scopes: string[];
@@ -52,11 +53,7 @@ function bearerToken(c: Context) {
   return match[1].trim();
 }
 
-function stringClaim(value: unknown) {
-  return typeof value === "string" && value.trim() ? value.trim() : undefined;
-}
-
-export async function requirePartnerAccess(
+export async function authorizePartnerResourceRequest(
   c: Context,
   organizationId: string,
   resource: PartnerPermissionResource,
@@ -72,27 +69,40 @@ export async function requirePartnerAccess(
     scopes: [`${resource}:${action}`],
   });
 
-  const tokenOrganizationId = stringClaim(jwt.organization_id);
-  if (!tokenOrganizationId || tokenOrganizationId !== organizationId) {
+  let claims;
+  try {
+    claims = parsePartnerAccessClaims(jwt as Record<string, unknown>);
+  } catch (error) {
+    throw new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Invalid partner token claims." }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  if (claims.organizationId !== organizationId) {
     throw new Response(JSON.stringify({ error: "Token organization does not match this route." }), {
       status: 403,
       headers: { "Content-Type": "application/json" },
     });
   }
 
-  const oauthClientId = stringClaim(jwt.azp) ?? stringClaim(jwt.client_id);
-  if (!oauthClientId) {
-    throw new Response(JSON.stringify({ error: "Token client is missing." }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  const scopes = stringClaim(jwt.scope)?.split(/\s+/).filter(Boolean) ?? [];
-  const validation = await convexHttp.query(api.partnerApps.apps.validateAccess, {
+  const validation = await convexCalls.query<{
+    organizationId: string;
+    partnersClientId: string;
+    scopes: string[];
+    resource: PartnerPermissionResource;
+    action: PartnerPermissionAction;
+  }, {
+    ok: boolean;
+    reason?: string;
+    partnerAppId?: string;
+    connectionId?: string;
+    scopes?: string[];
+    appName?: string;
+  }>(api.partnerApps.apps.validateAccess, {
     organizationId,
-    oauthClientId,
-    scopes,
+    partnersClientId: claims.partnersClientId,
+    scopes: claims.partnerScopes,
     resource,
     action,
   });
@@ -108,13 +118,15 @@ export async function requirePartnerAccess(
     type: "oauth",
     token,
     organizationId,
-    oauthClientId,
+    partnersClientId: claims.partnersClientId,
     partnerAppId: validation.partnerAppId,
     connectionId: validation.connectionId,
-    scopes: validation.scopes ?? scopes,
+    scopes: validation.scopes ?? claims.partnerScopes,
     appName: validation.appName,
   };
 }
+
+export const requirePartnerAccess = authorizePartnerResourceRequest;
 
 export function partnerAccessError(error: unknown) {
   if (error instanceof Response) return error;

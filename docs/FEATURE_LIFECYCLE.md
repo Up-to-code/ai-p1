@@ -103,7 +103,7 @@ Before release:
 After release:
 
 - watch logs for auth, callback, token exchange, and API failures
-- confirm review callbacks and OAuth redirects resolve to deployed origins
+- confirm OAuth redirects and cross-app runtime sync routes resolve to deployed origins
 - record follow-up work in the owning app or docs
 
 ## 7. Deprecate Carefully

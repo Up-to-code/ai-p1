@@ -2,36 +2,30 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   adminServiceTokenFromEnv,
   assertAdminServiceToken,
-  assertTrustedAdminOrigin,
-  partnersReviewCallbackTokenFromEnv,
-  reviewAdminPartnerApp,
-  syncOAuthClientForPartnerApp,
-  upsertPartnerAppRegistration,
+  syncOAuthClientRuntime,
+  upsertOAuthRuntimeProjection,
 } from "./admin-partner-apps";
-import { convexHttp } from "@/server/convex/http-client";
+import { convexCalls } from "@/server/convex/http-client";
 
 vi.mock("@/server/convex/http-client", () => ({
-  convexHttp: {
+  convexCalls: {
     action: vi.fn(),
     mutation: vi.fn(),
     query: vi.fn(),
   },
 }));
 
-const convexActionMock = vi.mocked(convexHttp.action);
-const convexMutationMock = vi.mocked(convexHttp.mutation);
+const convexActionMock = vi.mocked(convexCalls.action);
 
 describe("Workspace partner app service tokens", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.WORKSPACE_ADMIN_SERVICE_TOKEN = "workspace-secret";
-    process.env.PARTNERS_REVIEW_CALLBACK_TOKEN = "callback-secret";
   });
 
   it("uses only the Workspace admin token for inbound admin API access", () => {
     expect(adminServiceTokenFromEnv({
       WORKSPACE_ADMIN_SERVICE_TOKEN: " workspace-secret ",
-      PARTNERS_REVIEW_CALLBACK_TOKEN: "callback-secret",
     })).toBe("workspace-secret");
   });
 
@@ -40,34 +34,19 @@ describe("Workspace partner app service tokens", () => {
 
     expect(() => assertAdminServiceToken(headers, {
       WORKSPACE_ADMIN_SERVICE_TOKEN: undefined,
-      PARTNERS_REVIEW_CALLBACK_TOKEN: "callback-secret",
     })).toThrow("Invalid Workspace admin service token.");
   });
 
   it("accepts bearer and explicit header admin tokens", () => {
     expect(() => assertAdminServiceToken(
       new Headers({ authorization: "Bearer workspace-secret" }),
-      { WORKSPACE_ADMIN_SERVICE_TOKEN: "workspace-secret", PARTNERS_REVIEW_CALLBACK_TOKEN: undefined },
+      { WORKSPACE_ADMIN_SERVICE_TOKEN: "workspace-secret" },
     )).not.toThrow();
 
     expect(() => assertAdminServiceToken(
       new Headers({ "x-workspace-admin-service-token": "workspace-secret" }),
-      { WORKSPACE_ADMIN_SERVICE_TOKEN: "workspace-secret", PARTNERS_REVIEW_CALLBACK_TOKEN: undefined },
+      { WORKSPACE_ADMIN_SERVICE_TOKEN: "workspace-secret" },
     )).not.toThrow();
-  });
-
-  it("uses a separate callback token when Workspace notifies Partners", () => {
-    expect(partnersReviewCallbackTokenFromEnv({
-      WORKSPACE_ADMIN_SERVICE_TOKEN: "workspace-secret",
-      PARTNERS_REVIEW_CALLBACK_TOKEN: " callback-secret ",
-    })).toBe("callback-secret");
-  });
-
-  it("does not fall back to the Workspace admin token for review callbacks", () => {
-    expect(partnersReviewCallbackTokenFromEnv({
-      WORKSPACE_ADMIN_SERVICE_TOKEN: "workspace-secret",
-      PARTNERS_REVIEW_CALLBACK_TOKEN: undefined,
-    })).toBe("");
   });
 
   it("rejects same-prefix or length-mismatched admin token attempts", () => {
@@ -82,36 +61,10 @@ describe("Workspace partner app service tokens", () => {
     )).toThrow("Invalid Workspace admin service token.");
   });
 
-  it("accepts only configured admin origins for browser-facing admin calls", () => {
-    expect(() => assertTrustedAdminOrigin(
-      new Headers({ "x-qentrah-admin-origin": "https://admin.qentrah.com" }),
-      { NODE_ENV: "production", ADMIN_SITE_URL: "https://admin.qentrah.com" },
-    )).not.toThrow();
-
-    expect(() => assertTrustedAdminOrigin(
-      new Headers({ "x-qentrah-admin-origin": "https://evil.example.com" }),
-      { NODE_ENV: "production", ADMIN_SITE_URL: "https://admin.qentrah.com" },
-    )).toThrow("Invalid Workspace admin request origin.");
-  });
-
-  it("upserts the Better Auth OAuth client after Partners registration sync", async () => {
-    convexMutationMock.mockResolvedValueOnce({
-      id: "workspace_app_1",
-      partnersAppId: "partners_app_1",
-      partnersClientId: "partners_client_demo",
-      oauthClientId: "partners_client_demo",
-      name: "Qentrah OAuth Demo",
-      description: "Demo",
-      redirectUris: ["http://localhost:3004/api/auth/qentrah/callback"],
-      allowedScopes: ["organization:read", "client:read"],
-      clientType: "public",
-      status: "pending",
-      createdAt: 1,
-      updatedAt: 1,
-    });
+  it("upserts the Better Auth OAuth client after Partners runtime sync", async () => {
     convexActionMock.mockResolvedValueOnce({ clientId: "partners_client_demo", created: true });
 
-    await upsertPartnerAppRegistration({
+    await expect(syncOAuthClientRuntime({
       partnersAppId: "partners_app_1",
       partnersClientId: "partners_client_demo",
       name: "Qentrah OAuth Demo",
@@ -121,66 +74,36 @@ describe("Workspace partner app service tokens", () => {
       redirectUris: ["http://localhost:3004/api/auth/qentrah/callback"],
       allowedScopes: ["organization:read", "client:read"],
       clientType: "public",
+      status: "approved",
+    })).resolves.toMatchObject({
+      partnersAppId: "partners_app_1",
+      clientId: "partners_client_demo",
+      status: "approved",
     });
 
     expect(convexActionMock).toHaveBeenCalledWith(expect.anything(), {
       input: expect.objectContaining({
-        workspacePartnerAppId: "workspace_app_1",
+        workspacePartnerAppId: "partners_app_1",
         clientId: "partners_client_demo",
-        status: "pending",
+        status: "approved",
         redirectUris: ["http://localhost:3004/api/auth/qentrah/callback"],
       }),
     });
   });
 
-  it("syncs approved OAuth client metadata before notifying Partners", async () => {
-    convexMutationMock.mockResolvedValueOnce({
-      id: "workspace_app_1",
-      partnersAppId: "partners_app_1",
-      partnersClientId: "partners_client_demo",
-      oauthClientId: "partners_client_demo",
-      callbackUrl: "http://localhost:3002/api/qentrah-review-callback",
-      name: "Qentrah OAuth Demo",
-      description: "Demo",
-      redirectUris: ["http://localhost:3004/api/auth/qentrah/callback"],
-      allowedScopes: ["organization:read", "client:read"],
-      clientType: "public",
-      status: "approved",
-      createdAt: 1,
-      updatedAt: 2,
-    });
-    convexActionMock.mockResolvedValueOnce({ clientId: "partners_client_demo", created: false });
-    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response(null, { status: 204 }));
-
-    await reviewAdminPartnerApp("workspace_app_1", { status: "approved", reviewNotes: "Approved" });
-
-    expect(convexActionMock).toHaveBeenCalledWith(expect.anything(), {
-      input: expect.objectContaining({
-        clientId: "partners_client_demo",
-        status: "approved",
-      }),
-    });
-    expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3002/api/qentrah-review-callback",
-      expect.objectContaining({ method: "POST" }),
-    );
-    fetchMock.mockRestore();
-  });
-
   it("maps partner app records to OAuth client sync input", async () => {
     convexActionMock.mockResolvedValueOnce({ clientId: "client_1", created: false });
 
-    await syncOAuthClientForPartnerApp({
-      id: "workspace_app_1",
-      oauthClientId: "client_1",
+    await upsertOAuthRuntimeProjection({
+      partnersAppId: "partners_app_1",
+      partnersClientId: "client_1",
       name: "PDF Creator",
+      publisherName: "PDF Co",
       description: "Demo",
       redirectUris: ["http://localhost:3004/api/auth/qentrah/callback"],
       allowedScopes: ["client:update"],
       clientType: "public",
       status: "approved",
-      createdAt: 1,
-      updatedAt: 2,
     });
 
     expect(convexActionMock).toHaveBeenCalledWith(expect.anything(), {

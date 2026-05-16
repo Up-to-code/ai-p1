@@ -7,8 +7,13 @@ import {
   resolveBridgeSecret,
   safeResponseJson,
 } from "@qentrah/web-foundation/api";
+import {
+  appendPartnerAuthRateLimitHeaders,
+  checkPartnerAuthRateLimit,
+  partnerAuthJson,
+  partnerAuthRateLimitedResponse,
+} from "../partner-auth-rate-limit";
 import { validatePartnerSignupInput } from "@/lib/partner-signup";
-import { checkRateLimit, getClientRateLimitKey } from "@/rate-limits/memory";
 import { assertPartnersProductionEnv } from "@/security/production-env";
 import { buildTrustedSignupHeaders } from "@/trust/auth-request";
 
@@ -56,15 +61,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const clientKey = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "local";
-    const rateLimit = checkRateLimit(getClientRateLimitKey("partner-signup", `${clientKey}:${parsed.value.email}`), {
-      limit: 5,
-      windowMs: 15 * 60 * 1000,
-    });
-    if (!rateLimit.ok) {
-      return NextResponse.json(
+    const rateLimit = checkPartnerAuthRateLimit("partner-signup", request, parsed.value.email);
+    if (!rateLimit.allowed) {
+      return partnerAuthRateLimitedResponse(
+        rateLimit,
         { error: "PARTNER_SIGNUP_RATE_LIMITED", message: "Too many signup attempts. Try again shortly." },
-        { status: 429 },
       );
     }
 
@@ -88,27 +89,30 @@ export async function POST(request: NextRequest) {
 
     if (!authResponse.ok) {
       if (accountAlreadyExists) {
-        return NextResponse.json(
+        return partnerAuthJson(
           {
             error: "PARTNER_ACCOUNT_EXISTS",
             message: "An account with this email already exists. Sign in with the password used when the account was created.",
             redirectTo: "/signin?returnTo=%2Fdashboard",
           },
           { status: 409 },
+          rateLimit,
         );
       }
 
-      return NextResponse.json(
+      return partnerAuthJson(
         {
           error: "PARTNER_SIGNUP_AUTH_FAILED",
           message: getJsonMessage(authPayload, "Could not create or sign in the partner programmer account."),
         },
         { status: authResponse.status },
+        rateLimit,
       );
     }
 
     const response = NextResponse.json({ ok: true, redirectTo: "/dashboard" });
     copySetCookieHeaders(authResponse, response);
+    appendPartnerAuthRateLimitHeaders(response, rateLimit);
     return response;
   } catch (error) {
     return NextResponse.json(

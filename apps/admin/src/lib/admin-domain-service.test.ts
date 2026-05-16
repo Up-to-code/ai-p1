@@ -54,6 +54,59 @@ vi.mock("./admin-convex", () => ({
   })),
 }));
 
+vi.mock("./partners", () => ({
+  partnersAdminConfigured: vi.fn(() => true),
+  listPartnerAppsFromPartners: vi.fn(async (domain: string) => ({
+    domain,
+    rows: [{
+      id: "app_1",
+      title: "Reviewed app",
+      subtitle: "Partner",
+      status: "pending",
+      href: "/apps/app_1",
+      updatedAt: 1_000,
+      fields: [{ label: "OAuth client", value: "client_1" }],
+    }],
+    total: 1,
+    page: 1,
+    pageSize: 50,
+    isDone: true,
+    continueCursor: "",
+    facets: [],
+    warnings: [],
+  })),
+  getPartnerAppDetailFromPartners: vi.fn(async (domain: string, id: string) => ({
+    domain,
+    record: {
+      id,
+      title: "Reviewed app",
+      subtitle: "Partner",
+      status: "pending",
+      href: `/apps/${id}`,
+      updatedAt: 1_000,
+      fields: [{ label: "OAuth client", value: "client_1" }],
+    },
+    related: [],
+    sections: [],
+    notifications: [],
+    auditTimeline: [{ id: "audit_1", actor: "partners", action: "inspect", summary: "loaded", createdAt: 1_000 }],
+    availableActions: [],
+  })),
+  reviewPartnerAppThroughPartners: vi.fn(async (input: { appId: string; status: string }) => ({
+    record: {
+      id: input.appId,
+      title: "Reviewed app",
+      subtitle: "Partner",
+      status: input.status,
+      href: `/apps/${input.appId}`,
+      updatedAt: 2_000,
+      fields: [],
+    },
+    auditId: "partners:app_1",
+    nextState: input.status,
+  })),
+}));
+
 const platformIdentity = {
   userId: "admin_1",
   email: "admin@qentrah.local",

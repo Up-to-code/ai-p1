@@ -1,11 +1,9 @@
 import type { Context } from "hono";
-import { validateJsonBody } from "@/server/utils/request/json-body";
-import { actionErrorJson } from "@/server/utils/response/action-error";
+import { Effect } from "effect";
+import { parseJsonBody, routePromise, runEffectRoute } from "@/server/effect/route";
 import {
   authorizePartnerConnectionSchema,
-  createPartnerAppSchema,
   createPartnerWebhookEndpointSchema,
-  reviewPartnerAppSchema,
   updatePartnerConnectionSchema,
 } from "../validation/partner-app.schema";
 import {
@@ -13,84 +11,62 @@ import {
   createPartnerWebhookEndpoint,
   listPartnerApps,
   listPartnerConnections,
-  reviewPartnerApp,
   revokePartnerConnection,
-  submitPartnerApp,
   updatePartnerConnection,
 } from "../services/partner-apps";
 
-function handleError(c: Context, error: unknown) {
-  return actionErrorJson(c, error, "Partner app action failed.");
-}
-
-export async function handleCreatePartnerApp(c: Context) {
-  const parsed = await validateJsonBody(c, createPartnerAppSchema, "Invalid partner app payload.");
-  if (!parsed.ok) return parsed.response;
-
-  try {
-    return c.json(await submitPartnerApp(c, parsed.data), 201);
-  } catch (error) {
-    return handleError(c, error);
-  }
-}
+const fallbackError = "Partner app action failed.";
 
 export async function handleListPartnerApps(c: Context) {
-  try {
-    return c.json({ apps: await listPartnerApps() });
-  } catch (error) {
-    return handleError(c, error);
-  }
-}
-
-export async function handleReviewPartnerApp(c: Context) {
-  const appId = c.req.param("appId");
-  if (!appId) return c.json({ error: "Partner app id is required." }, 400);
-  const parsed = await validateJsonBody(c, reviewPartnerAppSchema, "Invalid partner app review payload.");
-  if (!parsed.ok) return parsed.response;
-
-  try {
-    return c.json({ app: await reviewPartnerApp(c, appId, parsed.data) });
-  } catch (error) {
-    return handleError(c, error);
-  }
+  return runEffectRoute(
+    c,
+    routePromise(() => listPartnerApps(), fallbackError).pipe(Effect.map((apps) => ({ apps }))),
+    { fallbackError },
+  );
 }
 
 export async function handleAuthorizePartnerConnection(c: Context) {
   const organizationId = c.req.param("organizationId");
   if (!organizationId) return c.json({ error: "Organization id is required." }, 400);
-  const parsed = await validateJsonBody(c, authorizePartnerConnectionSchema, "Invalid partner authorization payload.");
-  if (!parsed.ok) return parsed.response;
 
-  try {
-    return c.json({ connection: await authorizePartnerConnection(organizationId, parsed.data) });
-  } catch (error) {
-    return handleError(c, error);
-  }
+  return runEffectRoute(
+    c,
+    Effect.gen(function* () {
+      const input = yield* parseJsonBody(c, authorizePartnerConnectionSchema, "Invalid partner authorization payload.");
+      const connection = yield* routePromise(() => authorizePartnerConnection(organizationId, input), fallbackError);
+      return { connection };
+    }),
+    { fallbackError },
+  );
 }
 
 export async function handleListPartnerConnections(c: Context) {
   const organizationId = c.req.param("organizationId");
   if (!organizationId) return c.json({ error: "Organization id is required." }, 400);
 
-  try {
-    return c.json({ connections: await listPartnerConnections(organizationId) });
-  } catch (error) {
-    return handleError(c, error);
-  }
+  return runEffectRoute(
+    c,
+    routePromise(() => listPartnerConnections(organizationId), fallbackError).pipe(
+      Effect.map((connections) => ({ connections })),
+    ),
+    { fallbackError },
+  );
 }
 
 export async function handleUpdatePartnerConnection(c: Context) {
   const organizationId = c.req.param("organizationId");
   const connectionId = c.req.param("connectionId");
   if (!organizationId || !connectionId) return c.json({ error: "Organization and connection ids are required." }, 400);
-  const parsed = await validateJsonBody(c, updatePartnerConnectionSchema, "Invalid partner connection payload.");
-  if (!parsed.ok) return parsed.response;
 
-  try {
-    return c.json({ connection: await updatePartnerConnection(organizationId, connectionId, parsed.data) });
-  } catch (error) {
-    return handleError(c, error);
-  }
+  return runEffectRoute(
+    c,
+    Effect.gen(function* () {
+      const input = yield* parseJsonBody(c, updatePartnerConnectionSchema, "Invalid partner connection payload.");
+      const connection = yield* routePromise(() => updatePartnerConnection(organizationId, connectionId, input), fallbackError);
+      return { connection };
+    }),
+    { fallbackError },
+  );
 }
 
 export async function handleRevokePartnerConnection(c: Context) {
@@ -98,22 +74,24 @@ export async function handleRevokePartnerConnection(c: Context) {
   const connectionId = c.req.param("connectionId");
   if (!organizationId || !connectionId) return c.json({ error: "Organization and connection ids are required." }, 400);
 
-  try {
-    return c.json(await revokePartnerConnection(organizationId, connectionId));
-  } catch (error) {
-    return handleError(c, error);
-  }
+  return runEffectRoute(
+    c,
+    routePromise(() => revokePartnerConnection(organizationId, connectionId), fallbackError),
+    { fallbackError },
+  );
 }
 
 export async function handleCreatePartnerWebhookEndpoint(c: Context) {
   const organizationId = c.req.param("organizationId");
   if (!organizationId) return c.json({ error: "Organization id is required." }, 400);
-  const parsed = await validateJsonBody(c, createPartnerWebhookEndpointSchema, "Invalid partner webhook payload.");
-  if (!parsed.ok) return parsed.response;
 
-  try {
-    return c.json({ endpoint: await createPartnerWebhookEndpoint(organizationId, parsed.data) }, 201);
-  } catch (error) {
-    return handleError(c, error);
-  }
+  return runEffectRoute(
+    c,
+    Effect.gen(function* () {
+      const input = yield* parseJsonBody(c, createPartnerWebhookEndpointSchema, "Invalid partner webhook payload.");
+      const endpoint = yield* routePromise(() => createPartnerWebhookEndpoint(organizationId, input), fallbackError);
+      return { endpoint };
+    }),
+    { fallbackError, status: 201 },
+  );
 }

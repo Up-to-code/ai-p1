@@ -1,6 +1,6 @@
 export type BrandLocale = "en" | "ar";
 export type BrandProduct = "workspace" | "partners" | "admin" | "demo" | "marketing" | "platform";
-export type BrandRoute = "auth" | "api" | "reviewCallback" | "oauthStart" | "oauthCallback" | "oauthLogout";
+export type BrandRoute = "auth" | "api" | "oauthStart" | "oauthCallback" | "oauthLogout";
 
 export const brandIdentity = {
   name: {
@@ -48,7 +48,6 @@ export const brandIdentity = {
   routes: {
     auth: "auth/qentrah",
     api: "qentrah",
-    reviewCallback: "qentrah-review-callback",
     oauthStart: "api/auth/qentrah/start",
     oauthCallback: "api/auth/qentrah/callback",
     oauthLogout: "api/auth/qentrah/logout",

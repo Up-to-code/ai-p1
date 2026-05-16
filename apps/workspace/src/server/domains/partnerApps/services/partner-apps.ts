@@ -1,132 +1,93 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/better-auth/server";
-import { callBetterAuth } from "@/server/domains/organization/services/better-auth-proxy";
-import type { Context } from "hono";
 import type {
-  AuthorizePartnerConnectionPayload,
-  CreatePartnerAppPayload,
   CreatePartnerWebhookEndpointPayload,
-  ReviewPartnerAppPayload,
+  AuthorizePartnerConnectionPayload,
   UpdatePartnerConnectionPayload,
 } from "../validation/partner-app.schema";
+import { listPublishedPartnerApps, verifyPartnerAuthorization } from "./partners-platform";
 
-type OAuthClientResponse = {
-  client_id: string;
-  client_secret?: string;
-  scope?: string;
-};
-
-function scopeString(scopes: string[]) {
-  return Array.from(new Set(scopes)).join(" ");
-}
-
-function oauthClientScopes(scopes: string[]) {
-  return scopeString(["openid", "profile", "email", "offline_access", ...scopes]);
-}
-
-export async function submitPartnerApp(c: Context, input: CreatePartnerAppPayload) {
-  const client = await callBetterAuth<OAuthClientResponse>(
-    c,
-    "/oauth2/create-client",
-    {
-      body: {
-        client_name: input.name,
-        client_uri: input.homepageUrl,
-        logo_uri: input.logoUrl,
-        redirect_uris: input.redirectUris,
-        scope: oauthClientScopes(input.scopes),
-        token_endpoint_auth_method: "client_secret_basic",
-        grant_types: ["authorization_code", "refresh_token"],
-        response_types: ["code"],
-        type: "web",
-      },
-      fallback: "OAuth client could not be created.",
-    },
-  );
-
-  const app = await fetchAuthMutation(api.partnerApps.apps.createFromHono, {
-    input: {
-      oauthClientId: client.client_id,
-      name: input.name,
-      description: input.description,
-      homepageUrl: input.homepageUrl,
-      logoUrl: input.logoUrl,
-      redirectUris: input.redirectUris,
-      allowedScopes: input.scopes,
-    },
-  });
-
+function toPartnerCatalogApp(app: Awaited<ReturnType<typeof listPublishedPartnerApps>>[number]) {
   return {
-    app,
-    oauthClient: {
-      clientId: client.client_id,
-      clientSecret: client.client_secret,
-    },
+    id: app.id,
+    partnersClientId: app.clientId,
+    name: app.name,
+    publisherName: app.publisherName,
+    description: app.description,
+    homepageUrl: app.homepageUrl ?? undefined,
+    logoUrl: app.logoUrl ?? app.iconUrl ?? undefined,
+    allowedScopes: app.allowedScopes,
+    redirectUris: app.redirectUris,
+    status: "approved" as const,
+    updatedAt: app.updatedAt,
   };
 }
 
-export function listPartnerApps() {
-  return fetchAuthQuery(api.partnerApps.apps.listForCurrentUser, {});
+export async function listPartnerApps() {
+  return (await listPublishedPartnerApps()).map(toPartnerCatalogApp);
 }
 
-export async function reviewPartnerApp(
-  c: Context,
-  appId: string,
-  input: ReviewPartnerAppPayload,
-) {
-  const app = await fetchAuthMutation(api.partnerApps.apps.reviewFromHono, {
-    appId: appId as Id<"partnerApps">,
-    input,
-  });
-  const status = input.status === "approved" ? "approved" : input.status;
-
-  await callBetterAuth(
-    c,
-    "/admin/oauth2/update-client",
-    {
-      method: "PATCH",
-      body: {
-        client_id: app.oauthClientId,
-        update: {
-          scope: oauthClientScopes(app.allowedScopes),
-          metadata: {
-            partnerAppId: app.id,
-            partnerAppStatus: status,
-          },
-        },
-      },
-      fallback: "OAuth client review metadata could not be updated.",
-    },
-  );
-
-  return app;
-}
-
-export function authorizePartnerConnection(
+export async function authorizePartnerConnection(
   organizationId: string,
   input: AuthorizePartnerConnectionPayload,
 ) {
+  const verification = await verifyPartnerAuthorization({
+    partnersAppId: input.partnersAppId,
+    partnersClientId: input.partnersClientId,
+    redirectUri: input.redirectUri,
+    scopes: input.scopes,
+  });
+  if (!verification.allowed || !verification.app) {
+    throw new Error(verification.reason ?? "Partner app authorization was denied.");
+  }
   return fetchAuthMutation(api.partnerApps.apps.authorizeConnectionFromHono, {
     organizationId,
-    oauthClientId: input.oauthClientId,
+    partnersAppId: verification.app.id,
+    partnersClientId: verification.app.clientId,
     scopes: input.scopes,
+    verifiedAt: Date.now(),
   });
 }
 
-export function listPartnerConnections(organizationId: string) {
-  return fetchAuthQuery(api.partnerApps.apps.listConnections, { organizationId });
+export async function listPartnerConnections(organizationId: string) {
+  const [connections, apps] = await Promise.all([
+    fetchAuthQuery(api.partnerApps.apps.listConnections, { organizationId }) as Promise<Array<Record<string, unknown>>>,
+    listPublishedPartnerApps().catch(() => []),
+  ]);
+  const appById = new Map(apps.map((app) => [app.id, toPartnerCatalogApp(app)]));
+  return connections.map((connection) => ({
+    ...connection,
+    partnerApp: appById.get(String(connection.partnersAppId)) ?? null,
+  }));
 }
 
-export function updatePartnerConnection(
+export async function updatePartnerConnection(
   organizationId: string,
   connectionId: string,
   input: UpdatePartnerConnectionPayload,
 ) {
+  if (input.status === "active") {
+    const current = await fetchAuthQuery(api.partnerApps.apps.listConnections, { organizationId }) as Array<{
+      id: string;
+      partnersAppId: string;
+      partnersClientId: string;
+      scopes: string[];
+    }>;
+    const connection = current.find((item) => item.id === connectionId);
+    if (!connection) throw new Error("Partner connection was not found.");
+    const verification = await verifyPartnerAuthorization({
+      partnersAppId: connection.partnersAppId,
+      partnersClientId: connection.partnersClientId,
+      scopes: connection.scopes,
+    });
+    if (!verification.allowed) throw new Error(verification.reason ?? "Partner app authorization was denied.");
+  }
   return fetchAuthMutation(api.partnerApps.apps.updateConnectionFromHono, {
     organizationId,
     connectionId: connectionId as Id<"organizationPartnerConnections">,
     input,
+    verifiedAt: input.status === "active" ? Date.now() : undefined,
   });
 }
 
@@ -143,7 +104,7 @@ export function createPartnerWebhookEndpoint(
 ) {
   return fetchAuthMutation(api.partnerApps.webhooks.createEndpointFromHono, {
     organizationId,
-    partnerAppId: input.partnerAppId as Id<"partnerApps">,
+    partnerAppId: input.partnerAppId,
     input: {
       url: input.url,
       events: input.events,

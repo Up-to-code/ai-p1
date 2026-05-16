@@ -14,8 +14,11 @@ import {
 } from "./admin-session";
 
 const domainIds = new Set(adminSections.map((section) => section.id));
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_MAX_ATTEMPTS = 5;
+const failedLoginAttempts = new Map<string, { count: number; resetAt: number }>();
 
-function jsonError(message: string, status: 400 | 401 | 403 | 404 | 500) {
+function jsonError(message: string, status: 400 | 401 | 403 | 404 | 429 | 500) {
   return { error: message, status };
 }
 
@@ -26,6 +29,31 @@ async function requireIdentity(c: Context) {
 
 function validDomain(value: string): value is AdminDomainId {
   return domainIds.has(value as AdminDomainId);
+}
+
+function loginAttemptKey(c: Context, email: string) {
+  const forwarded = c.req.header("x-forwarded-for")?.split(",")[0]?.trim();
+  const ip = forwarded || c.req.header("x-real-ip") || "unknown";
+  return `${ip}:${email.trim().toLowerCase()}`;
+}
+
+function isLoginRateLimited(key: string, now = Date.now()) {
+  const attempt = failedLoginAttempts.get(key);
+  if (!attempt || attempt.resetAt <= now) return false;
+  return attempt.count >= LOGIN_MAX_ATTEMPTS;
+}
+
+function recordFailedLogin(key: string, now = Date.now()) {
+  const attempt = failedLoginAttempts.get(key);
+  if (!attempt || attempt.resetAt <= now) {
+    failedLoginAttempts.set(key, { count: 1, resetAt: now + LOGIN_WINDOW_MS });
+    return;
+  }
+  failedLoginAttempts.set(key, { ...attempt, count: attempt.count + 1 });
+}
+
+function clearFailedLogin(key: string) {
+  failedLoginAttempts.delete(key);
 }
 
 export function createAdminHonoApp() {
@@ -53,9 +81,18 @@ export function createAdminHonoApp() {
     const password = body?.password ?? "";
     if (!email || !password) return c.json(jsonError("Email and password are required.", 400), 400);
 
-    const identity = verifyAdminCredential(email, password);
-    if (!identity) return c.json(jsonError("Invalid admin credentials or role.", 401), 401);
+    const attemptKey = loginAttemptKey(c, email);
+    if (isLoginRateLimited(attemptKey)) {
+      return c.json(jsonError("Too many admin login attempts. Try again later.", 429), 429);
+    }
 
+    const identity = verifyAdminCredential(email, password);
+    if (!identity) {
+      recordFailedLogin(attemptKey);
+      return c.json(jsonError("Invalid admin credentials or role.", 401), 401);
+    }
+
+    clearFailedLogin(attemptKey);
     setCookie(c, ADMIN_SESSION_COOKIE, await signAdminSession(identity), adminSessionCookieOptions());
     return c.json({ authenticated: true, identity });
   });

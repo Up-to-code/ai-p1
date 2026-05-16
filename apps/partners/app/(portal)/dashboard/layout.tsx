@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import type { ReactNode } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { getToken } from "@/lib/auth-server";
@@ -8,7 +9,8 @@ export default async function DashboardLayoutWrapper({ children }: { children: R
   const token = await getToken().catch(() => null);
 
   if (!token) {
-    redirect("/signin?returnTo=/dashboard");
+    const currentPath = (await headers()).get("x-qentrah-current-path") || "/dashboard";
+    redirect(`/signin?returnTo=${encodeURIComponent(currentPath)}`);
   }
 
   const account = await partnerAccountRepository.getCurrent(token).catch(() => null);

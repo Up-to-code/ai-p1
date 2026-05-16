@@ -4,6 +4,9 @@ const fromRoot = (path) => fileURLToPath(new URL(path, import.meta.url));
 
 export const workspaceAliases = [
   { find: "@qentrah/brand-identity", replacement: fromRoot("./packages/brand-identity/src/index.ts") },
+  { find: "@qentrah/convex-adapters", replacement: fromRoot("./packages/convex-adapters/src/index.ts") },
+  { find: "@qentrah/partner-auth-core", replacement: fromRoot("./packages/partner-auth-core/src/index.ts") },
+  { find: "@qentrah/partner-workspace-sync", replacement: fromRoot("./packages/partner-workspace-sync/src/index.ts") },
   { find: "@qentrah/auth/client", replacement: fromRoot("./packages/auth/src/client/index.ts") },
   { find: "@qentrah/auth/react", replacement: fromRoot("./packages/auth/src/react/index.ts") },
   { find: "@qentrah/auth/resource-server", replacement: fromRoot("./packages/auth/src/resource-server/index.ts") },
@@ -14,6 +17,7 @@ export const workspaceAliases = [
   { find: "@qentrah/platform-core/auth-next", replacement: fromRoot("./packages/platform-core/src/auth-next.ts") },
   { find: "@qentrah/platform-core/classnames", replacement: fromRoot("./packages/platform-core/src/classnames.ts") },
   { find: "@qentrah/platform-core/convex-api", replacement: fromRoot("./packages/platform-core/src/convex-api.ts") },
+  { find: "@qentrah/platform-core/effect-api", replacement: fromRoot("./packages/platform-core/src/effect-api.ts") },
   { find: "@qentrah/platform-core/errors", replacement: fromRoot("./packages/platform-core/src/errors.ts") },
   { find: "@qentrah/platform-core/locale", replacement: fromRoot("./packages/platform-core/src/locale.ts") },
   { find: "@qentrah/platform-core/session", replacement: fromRoot("./packages/platform-core/src/session.ts") },

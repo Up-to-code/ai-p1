@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { verifyAccessToken } from "better-auth/oauth2";
-import { convexHttp } from "@/server/convex/http-client";
-import { partnerAccessError, partnerIssuerCandidates, partnerJwksUrl, requirePartnerAccess } from "./access-token";
+import { convexCalls } from "@/server/convex/http-client";
+import { authorizePartnerResourceRequest, partnerAccessError, partnerIssuerCandidates, partnerJwksUrl } from "./access-token";
 
 vi.mock("better-auth/oauth2", () => ({
   verifyAccessToken: vi.fn(),
@@ -26,19 +26,19 @@ vi.mock("@/packages/config", () => ({
 }));
 
 vi.mock("@/server/convex/http-client", () => ({
-  convexHttp: {
+  convexCalls: {
     query: vi.fn(),
   },
 }));
 
 const verifyAccessTokenMock = vi.mocked(verifyAccessToken);
-const convexQueryMock = vi.mocked(convexHttp.query);
+const convexQueryMock = vi.mocked(convexCalls.query);
 
 function appForAccessTests() {
   const app = new Hono();
   app.get("/organizations/:organizationId/clients", async (c) => {
     try {
-      const access = await requirePartnerAccess(c, c.req.param("organizationId"), "client", "read");
+      const access = await authorizePartnerResourceRequest(c, c.req.param("organizationId"), "client", "read");
       return c.json(access);
     } catch (error) {
       return partnerAccessError(error);
@@ -99,11 +99,47 @@ describe("partner bearer access", () => {
     expect(convexQueryMock).not.toHaveBeenCalled();
   });
 
+  it("rejects legacy organization claim aliases", async () => {
+    verifyAccessTokenMock.mockResolvedValueOnce({
+      organizationId: "org_1",
+      azp: "oauth_client_1",
+      scope: "client:read",
+    });
+
+    const response = await appForAccessTests().request("/organizations/org_1/clients", {
+      headers: { Authorization: "Bearer partner-token" },
+    });
+
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toEqual({
+      error: "Legacy organization claim aliases are not supported.",
+    });
+    expect(convexQueryMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects tokens without an OAuth client id", async () => {
+    verifyAccessTokenMock.mockResolvedValueOnce({
+      organization_id: "org_1",
+      scope: "client:read",
+    });
+
+    const response = await appForAccessTests().request("/organizations/org_1/clients", {
+      headers: { Authorization: "Bearer partner-token" },
+    });
+
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toEqual({
+      error: "Token client is missing.",
+    });
+    expect(convexQueryMock).not.toHaveBeenCalled();
+  });
+
   it("validates the token against the Convex partner connection authority", async () => {
     verifyAccessTokenMock.mockResolvedValueOnce({
       organization_id: "org_1",
       azp: "oauth_client_1",
-      scope: "client:read",
+      scope: "openid profile client:read",
+      partner_scopes: ["client:read"],
     });
     convexQueryMock.mockResolvedValueOnce({
       ok: true,
@@ -121,7 +157,7 @@ describe("partner bearer access", () => {
     await expect(response.json()).resolves.toMatchObject({
       token: "partner-token",
       organizationId: "org_1",
-      oauthClientId: "oauth_client_1",
+      partnersClientId: "oauth_client_1",
       partnerAppId: "partner_app_1",
       connectionId: "connection_1",
       scopes: ["client:read"],
@@ -135,7 +171,7 @@ describe("partner bearer access", () => {
     }));
     expect(convexQueryMock).toHaveBeenCalledWith("partnerApps.apps.validateAccess", {
       organizationId: "org_1",
-      oauthClientId: "oauth_client_1",
+      partnersClientId: "oauth_client_1",
       scopes: ["client:read"],
       resource: "client",
       action: "read",

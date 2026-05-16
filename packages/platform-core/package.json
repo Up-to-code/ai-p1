@@ -29,6 +29,10 @@
       "types": "./dist/convex-api.d.ts",
       "import": "./dist/convex-api.js"
     },
+    "./effect-api": {
+      "types": "./dist/effect-api.d.ts",
+      "import": "./dist/effect-api.js"
+    },
     "./errors": {
       "types": "./dist/errors.d.ts",
       "import": "./dist/errors.js"
@@ -49,6 +53,7 @@
   "dependencies": {
     "@convex-dev/better-auth": "^0.11.4",
     "clsx": "^2.1.1",
+    "effect": "^3.21.2",
     "tailwind-merge": "^3.5.0"
   },
   "peerDependencies": {

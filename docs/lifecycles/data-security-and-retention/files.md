@@ -1,0 +1,22 @@
+# Files
+
+- `apps/workspace/convex/schema.ts`: table contracts for business records, partner payloads, agent memory, keys, audit, and lifecycle metadata.
+- `apps/workspace/convex/security/organizationData.ts`: AES-GCM helpers for organization-scoped payload/content encryption and safe redacted previews.
+- `apps/workspace/convex/security/clientPii.ts`: shared client PII encryption/reveal helpers used by Workspace, partner API, organization API key, MCP, and webhook client writes.
+- `apps/workspace/convex/security/backfill.ts`: cursor-driven, resumable backfill jobs for legacy plaintext rows, payload encryption, agent memory encryption, and soft-delete flags. Uses internal actions for encryption and internal mutations for persistence.
+- `apps/workspace/convex/security/backfillTargets.ts`: Backfill Target Adapter registry for target metadata, id normalization, already-protected checks, and encryption/redaction patch creation.
+- `apps/workspace/convex/partnerApps/webhooks.ts`: creates webhook endpoints, accepts inbound events, stores payloads, queues outbound deliveries, signs and delivers callbacks.
+- `apps/workspace/convex/partnerApps/resources.ts`: partner resource read/write bridge; must use a narrow Convex bridge token.
+- `apps/workspace/convex/organizationApiKeys.ts`: organization API key bridge; must use a narrow Convex bridge token.
+- `apps/workspace/convex/agents/write.ts`: stores agent messages, run steps, tool previews, summaries, and memory facts.
+- `apps/workspace/convex/agents/read.ts`: returns agent context and must understand encrypted/redacted storage.
+- `apps/workspace/convex/clients/read.ts`: hot CRM query path affected by soft delete and PII exposure.
+- `apps/workspace/convex/clients/write.ts`: user-driven client writes now encrypt PII and return revealed values through server-side decrypt.
+- `apps/workspace/convex/mcp/tools.ts`: MCP client create/update/delete path now shares the same PII and soft-delete behavior.
+- `apps/workspace/convex/projects/read.ts`: hot project query path affected by soft delete and stats scans.
+- `apps/workspace/convex/properties/read.ts`: hot property query path affected by soft delete, reference lookup, and stats scans.
+- `apps/workspace/scripts/check-production-env.mjs`: production environment guard for random secrets and boundary-specific tokens.
+- `apps/admin/src/lib/admin-convex.ts`: Admin-to-Convex service-token adapter; must not fall back to broader Workspace token.
+- `apps/admin/src/lib/admin-domain-service.ts`: admin UI configuration messaging and redaction.
+- `apps/admin/scripts/generate-admin-env.mjs`: local Admin env bootstrap; must keep Admin Convex and Workspace admin tokens separate.
+- `docs/ENVIRONMENT.md`: operator-facing secret contract.

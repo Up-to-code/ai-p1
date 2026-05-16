@@ -80,10 +80,11 @@ Common Workspace variables include:
 - `NEXT_PUBLIC_CONVEX_SITE_URL`
 - `CONVEX_SITE_URL`
 - `PARTNER_APPS_ENABLED`
+- `PARTNERS_API_BASE_URL`
+- `PARTNERS_PLATFORM_SERVICE_TOKEN`
 - `PARTNER_OAUTH_ISSUER`
 - `PARTNER_OAUTH_AUDIENCE`
 - `WORKSPACE_ADMIN_SERVICE_TOKEN`
-- `PARTNERS_REVIEW_CALLBACK_TOKEN`
 - `OPENROUTER_API_KEY`
 - `UPLOADTHING_TOKEN`
 - `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`
@@ -114,6 +115,30 @@ npm --workspace @qentrah/workspace run typecheck
 npm --workspace @qentrah/workspace test
 npm --workspace @qentrah/workspace run test:e2e
 ```
+
+## Testing
+
+Workspace unit and source-guard tests run with Vitest:
+
+```bash
+npm --workspace @qentrah/workspace test
+```
+
+Browser flows run with Playwright:
+
+```bash
+npm --workspace @qentrah/workspace run test:e2e
+```
+
+For a focused smoke check across the main authenticated product flows, run:
+
+```bash
+npm --workspace @qentrah/workspace run test:e2e -- e2e/workspace-all-flows.spec.ts
+```
+
+The all-flow smoke spec signs in a fresh owner, creates representative
+workspace data, and opens dashboard, projects, properties, clients, calendar,
+activity, integrations, and organization settings for a ready organization.
 
 ## Documentation
 

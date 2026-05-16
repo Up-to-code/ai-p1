@@ -1,14 +1,11 @@
 import { brandEnvName, brandProductName, readBrandEnv } from "@qentrah/brand-identity";
+import {
+  buildOAuthRuntimeProjectionInput,
+  normalizeOAuthRuntimeScopes,
+  oauthRuntimeProjectionResponseSchema,
+} from "@qentrah/partner-workspace-sync";
 
 import type { PartnerAppSummary } from "@/server/partnerApps";
-
-type WorkspaceRegistrationResponse = {
-  app: {
-    id: string;
-    oauthClientId: string;
-    status: "pending" | "approved" | "rejected" | "suspended";
-  };
-};
 
 function normalizeBaseUrl(value?: string) {
   const trimmed = value?.trim().replace(/\/+$/u, "");
@@ -20,67 +17,44 @@ export function qentrahWorkspaceConfig(env: Record<string, string | undefined> =
   return {
     baseUrl: normalizeBaseUrl(readBrandEnv("WORKSPACE_API_URL", env) ?? readBrandEnv("PLATFORM_API_URL", env)),
     serviceToken: readBrandEnv("PLATFORM_SERVICE_TOKEN", env) ?? readBrandEnv("WORKSPACE_SERVICE_TOKEN", env) ?? "",
-    callbackBaseUrl: normalizeBaseUrl(env.SITE_URL ?? env.NEXT_PUBLIC_PARTNERS_AUTH_URL ?? "http://localhost:3002"),
   };
 }
 
-const legacyScopeMap: Record<string, string | null> = {
-  "clients:read_own": "client:read",
-  "properties:read_own": "property:read",
-  "organization:read_own": "organization:read",
-  openid: null,
-  profile: null,
-  email: null,
-  offline_access: null,
-};
-
 export function normalizeWorkspaceScopes(scopes: string[]) {
-  return Array.from(
-    new Set(
-      scopes
-        .map((scope) => (Object.hasOwn(legacyScopeMap, scope) ? legacyScopeMap[scope] : scope))
-        .filter((scope): scope is string => Boolean(scope)),
-    ),
-  );
+  return normalizeOAuthRuntimeScopes(scopes);
 }
 
-export async function submitPartnerAppRegistration(app: PartnerAppSummary) {
+export async function syncOAuthClientRuntimeProjection(app: PartnerAppSummary) {
   const config = qentrahWorkspaceConfig();
   if (!config.baseUrl || !config.serviceToken) {
-    throw new Error(`Set ${brandEnvName("WORKSPACE_API_URL")} and ${brandEnvName("PLATFORM_SERVICE_TOKEN")} to sync app review submissions.`);
+    throw new Error(`Set ${brandEnvName("WORKSPACE_API_URL")} and ${brandEnvName("PLATFORM_SERVICE_TOKEN")} to sync OAuth client runtime state.`);
   }
 
-  const allowedScopes = normalizeWorkspaceScopes(app.allowedScopes);
-  if (allowedScopes.length === 0) {
+  const projection = buildOAuthRuntimeProjectionInput({
+    ...app,
+    description: `${app.publisherName} partner app submitted from ${brandProductName("partners", "en")}.`,
+  });
+  if (projection.allowedScopes.length === 0) {
     throw new Error("Select at least one Workspace partner API scope before syncing this app.");
   }
 
-  const response = await fetch(`${config.baseUrl}/api/v1/admin/partner-app-registrations`, {
+  const response = await fetch(`${config.baseUrl}/api/v1/admin/oauth-client-runtime-sync`, {
     method: "POST",
     headers: {
       authorization: `Bearer ${config.serviceToken}`,
       "content-type": "application/json",
     },
-    body: JSON.stringify({
-      partnersAppId: app.id,
-      partnersClientId: app.clientId,
-      name: app.name,
-      publisherName: app.publisherName,
-      description: `${app.publisherName} partner app submitted from ${brandProductName("partners", "en")}.`,
-      homepageUrl: app.homepageUrl ?? undefined,
-      logoUrl: app.logoUrl ?? app.iconUrl ?? undefined,
-      redirectUris: app.redirectUris,
-      allowedScopes,
-      clientType: app.clientType,
-      callbackUrl: `${config.callbackBaseUrl}/api/qentrah-review-callback`,
-    }),
+    body: JSON.stringify(projection),
   });
 
-  const payload = await response.json().catch(() => null) as WorkspaceRegistrationResponse | { error?: string } | null;
-  if (!response.ok || !payload || !("app" in payload)) {
-    const errorMessage = payload && "error" in payload ? payload.error : undefined;
-    throw new Error(errorMessage || "Workspace registration sync failed.");
+  const payload = await response.json().catch(() => null);
+  const parsed = oauthRuntimeProjectionResponseSchema.safeParse(payload);
+  if (!response.ok || !parsed.success) {
+    const errorMessage = payload && typeof payload === "object" && "error" in payload && typeof payload.error === "string"
+      ? payload.error
+      : undefined;
+    throw new Error(errorMessage || "Workspace OAuth runtime sync failed.");
   }
 
-  return payload.app;
+  return parsed.data.runtime;
 }

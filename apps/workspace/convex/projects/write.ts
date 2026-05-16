@@ -11,8 +11,9 @@ function projectReference(now: number) {
 }
 
 function presentProject(project: Doc<"projects">) {
+  const { deletedAt: _deletedAt, isDeleted: _isDeleted, ...safeProject } = project;
   return {
-    ...project,
+    ...safeProject,
     id: project._id,
     visibility: project.visibility ?? "private",
     coverImageUrl: undefined,
@@ -38,6 +39,7 @@ export const createFromHono = mutation({
       visibility: args.input.visibility ?? "private",
       reference: projectReference(now),
       syncState: args.input.status === "approved" ? "synced" : "draft",
+      isDeleted: false,
       createdByUserId: user._id,
       createdAt: now,
       updatedAt: now,
@@ -115,7 +117,7 @@ export const deleteFromHono = mutation({
     }
 
     const now = Date.now();
-    await ctx.db.patch(args.projectId, { deletedAt: now, updatedAt: now });
+    await ctx.db.patch(args.projectId, { deletedAt: now, isDeleted: true, updatedAt: now });
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
       actorUserId: user._id,

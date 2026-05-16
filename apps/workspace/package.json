@@ -21,6 +21,10 @@
   },
   "dependencies": {
     "@qentrah/brand-identity": "0.1.0",
+    "@qentrah/convex-adapters": "0.1.0",
+    "@qentrah/partner-auth-core": "0.1.0",
+    "@qentrah/partner-workspace-sync": "0.1.0",
+    "@qentrah/platform-core": "0.1.0",
     "@base-ui/react": "^1.4.1",
     "@better-auth/oauth-provider": "^1.6.9",
     "@convex-dev/better-auth": "^0.12.2",

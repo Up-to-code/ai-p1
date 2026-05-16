@@ -1,7 +1,6 @@
 "use client";
 
 import type { ButtonHTMLAttributes } from "react";
-import { useAuth } from "@qentrah/auth-sdk/react";
 
 export function SecureSignOutButton({
   redirectTo = "/signin",
@@ -11,7 +10,6 @@ export function SecureSignOutButton({
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   redirectTo?: string;
 }) {
-  const auth = useAuth();
   return (
     <button
       {...props}
@@ -19,7 +17,7 @@ export function SecureSignOutButton({
       onClick={(event) => {
         props.onClick?.(event);
         if (!event.defaultPrevented) {
-          auth.signOut(redirectTo);
+          window.location.assign(redirectTo);
         }
       }}
     >

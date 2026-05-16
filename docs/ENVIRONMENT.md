@@ -42,10 +42,11 @@ Production domain defaults:
 | Variable | Used by | Required when | Purpose |
 | --- | --- | --- | --- |
 | `QENTRAH_WORKSPACE_API_URL` | Partners, Demo Partner App | Calling Workspace APIs or OAuth | Canonical Workspace origin |
-| `WORKSPACE_API_BASE_URL` | Admin Review | Reviewing partner apps | Workspace origin for admin service APIs |
-| `WORKSPACE_ADMIN_SERVICE_TOKEN` | Admin Review, Workspace | Reviewing partner apps | Shared service token for Workspace admin APIs |
-| `QENTRAH_PLATFORM_SERVICE_TOKEN` | Partners, Workspace | Submitting apps from Partners to Workspace | Shared service token for platform registration APIs |
-| `PARTNERS_REVIEW_CALLBACK_TOKEN` | Workspace, Partners | Review callback delivery | Authenticates Workspace callback requests to Partners |
+| `PARTNERS_API_BASE_URL` | Admin Review, Workspace | Reviewing and reading published partner apps | Partners origin for admin/platform service APIs |
+| `PARTNERS_ADMIN_SERVICE_TOKEN` | Admin Review, Partners | Reviewing partner apps | Service token for Partners admin APIs |
+| `PARTNERS_PLATFORM_SERVICE_TOKEN` | Partners, Workspace | Published catalog reads and authorization verification | Service token for Partners platform APIs |
+| `WORKSPACE_ADMIN_SERVICE_TOKEN` | Admin Review, Workspace | Workspace operational data and OAuth projection | Service token accepted by Workspace admin APIs |
+| `ADMIN_CONVEX_SERVICE_TOKEN` | Admin Review, Workspace Convex | Direct Admin-to-Convex reads/actions | Dedicated service token for Convex admin functions; do not reuse Workspace admin token |
 | `QENTRAH_CLIENT_ID` | Demo Partner App, partner products | OAuth integration | Public OAuth client ID issued after partner app approval |
 | `QENTRAH_CLIENT_SECRET` | Confidential partner products | Confidential OAuth clients | Secret used only by server-side token exchange |
 | `PARTNER_APP_URL` | Demo Partner App, partner products | OAuth callback construction | Partner app public origin |
@@ -81,7 +82,10 @@ Common Workspace variables:
 | `PARTNER_APPS_ENABLED` | Server | Enables or disables partner app features |
 | `PARTNER_OAUTH_ISSUER` | Server | OAuth issuer override |
 | `PARTNER_OAUTH_AUDIENCE` | Server | Partner API audience override |
+| `WORKSPACE_CONVEX_BRIDGE_SECRET` | Secret | Server-only token for Hono-to-Convex partner/API resource calls |
+| `ADMIN_CONVEX_SERVICE_TOKEN` | Secret | Dedicated token accepted by Workspace Convex admin functions |
 | `PARTNER_WEBHOOK_SECRET_ENCRYPTION_KEY` | Secret | Encrypts partner webhook secrets |
+| `ORGANIZATION_DATA_ENCRYPTION_KEY` | Secret | Master key for organization-scoped user/business data encryption |
 | `OPENROUTER_API_KEY` | Secret | AI model calls |
 | `OPENROUTER_MODEL` | Server | AI model ID |
 | `OPENROUTER_APP_NAME` | Server | AI attribution name |
@@ -118,16 +122,19 @@ Common Partners variables:
 | `NEXT_PUBLIC_CONVEX_SITE_URL` | Browser | Partners Convex site URL |
 | `BETTER_AUTH_SECRET` | Secret | Partners auth signing secret |
 | `PARTNER_SIGNUP_BRIDGE_SECRET` | Secret | Secures sign-up bridge route |
-| `QENTRAH_PLATFORM_SERVICE_TOKEN` | Secret | Submits apps to Workspace |
-| `PARTNERS_REVIEW_CALLBACK_TOKEN` | Secret | Validates Workspace review callback |
+| `PARTNERS_PLATFORM_SERVICE_TOKEN` | Secret | Allows Workspace to read/verify published apps |
+| `PARTNERS_ADMIN_SERVICE_TOKEN` | Secret | Allows Admin Review to review partner apps |
 | `QENTRAH_WORKSPACE_API_URL` | Server/browser as needed | Workspace origin for integrations |
 
 ## Admin Review Variables
 
 | Variable | Exposure | Purpose |
 | --- | --- | --- |
-| `WORKSPACE_API_BASE_URL` | Server | Workspace origin for service API calls |
+| `PARTNERS_API_BASE_URL` | Server | Partners origin for review service API calls |
+| `PARTNERS_ADMIN_SERVICE_TOKEN` | Secret | Service token accepted by Partners |
+| `WORKSPACE_API_BASE_URL` | Server | Optional Workspace origin for operational data |
 | `WORKSPACE_ADMIN_SERVICE_TOKEN` | Secret | Service token accepted by Workspace |
+| `ADMIN_CONVEX_SERVICE_TOKEN` | Secret | Dedicated token used for Admin Review direct Convex access |
 
 ## Demo Partner App Variables
 

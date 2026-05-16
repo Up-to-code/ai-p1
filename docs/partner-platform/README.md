@@ -8,12 +8,12 @@ The product model is organization-level OAuth. A workspace user does not authori
 
 | App | Local port | Responsibility | Source of truth |
 | --- | --- | --- | --- |
-| Workspace | `http://localhost:3000` | OAuth server, partner app approval state, catalog, organization consent, partner resource APIs | Approved apps, OAuth clients, organization partner connections |
-| Partners | `http://localhost:3002` | Developer portal, drafts, app setup, submission history | Developer drafts and submission state |
-| Admin | `http://localhost:3003` | Internal review UI for pending partner app submissions | Review action UI, backed by Workspace APIs |
+| Workspace | `http://localhost:3000` | OAuth server, organization consent, runtime OAuth projection, partner resource APIs | Organization partner authorizations and minimal OAuth enforcement data |
+| Partners | `http://localhost:3002` | Developer portal, drafts, app setup, review state, published app catalog, platform APIs | Partner apps, redirect URIs, scopes, status, review history |
+| Admin | `http://localhost:3003` | Internal review UI for pending partner app submissions | Review action UI, backed by Partners APIs |
 | Demo partner app | `http://localhost:3004` | Standalone partner implementation example | Partner-side OAuth/session/token storage example |
 
-Workspace owns production authorization. Partners owns developer drafts. Admin is a review surface over Workspace service APIs. Partner apps only access workspace data through Workspace Hono APIs.
+Partners owns app truth. Workspace owns organization authorization and resource enforcement. Admin is a review surface over Partners service APIs. Partner apps only access workspace data through Workspace Hono APIs.
 
 ## Business Flow
 
@@ -23,17 +23,14 @@ sequenceDiagram
   participant Partners as Partners
   participant Admin as Admin
   participant Workspace as Workspace
-  participant Workspace as Workspace admin
   participant App as Partner app
 
   Dev->>Partners: Create app draft
   Dev->>Partners: Submit for review
-  Partners->>Workspace: POST /api/v1/admin/partner-app-registrations
-  Workspace->>Workspace: Upsert pending partner app and OAuth client metadata
-  Admin->>Workspace: Review pending submission
-  Admin->>Workspace: PATCH /api/v1/admin/partner-apps/:appId/review
-  Workspace->>Partners: POST /api/qentrah-review-callback
-  Workspace->>Workspace: Publish approved app in integrations catalog
+  Admin->>Partners: Review pending submission
+  Admin->>Partners: PATCH /api/admin/partner-apps/:appId/review
+  Partners->>Workspace: Publish minimal OAuth runtime projection
+  Workspace->>Partners: Fetch approved catalog
   Workspace->>Workspace: Open approved app details
   Workspace-->>Workspace: Visit Partner
   Workspace->>App: Open partner product
@@ -58,17 +55,17 @@ The developer creates an app in Partners with:
 - Requested scopes. V1 supports read scopes and safe client write scopes.
 - Optional logo, icon, and webhook settings.
 
-Partners stores draft state locally. Drafts do not appear in Workspace.
+Partners stores draft, submission, review, redirect URI, scope, and published catalog state. Drafts and pending submissions do not appear in Workspace.
 
-On submit, Partners sends a versioned registration payload to Workspace. Workspace upserts the partner app as `pending` and syncs OAuth client metadata. Approval changes the Workspace partner app to `approved` and publishes it to the catalog.
+On approval, Partners publishes only the minimal OAuth runtime projection to Workspace so OAuth can enforce client metadata. Workspace does not store the app catalog or review record.
 
 ## Admin Review
 
-Admin calls Workspace with a service token:
+Admin calls Partners with a service token:
 
 ```txt
-GET   /api/v1/admin/partner-apps
-PATCH /api/v1/admin/partner-apps/:appId/review
+GET   /api/admin/partner-apps
+PATCH /api/admin/partner-apps/:appId/review
 ```
 
 Review statuses:
@@ -77,19 +74,17 @@ Review statuses:
 - `rejected`: app remains unavailable to workspace users.
 - `suspended`: existing catalog/authorization access should be blocked.
 
-When Admin approves, Workspace syncs the OAuth client and calls Partners:
+When Admin approves, Partners marks the developer app `active` and publishes the OAuth runtime projection to Workspace:
 
 ```txt
-POST /api/qentrah-review-callback
+POST /api/v1/admin/oauth-client-runtime-sync
 ```
-
-Partners then marks the developer app `active`.
 
 ## Workspace Integrations
 
 Workspace Integrations has two production paths:
 
-- Catalog: approved partner apps only.
+- Catalog: approved partner apps fetched from Partners.
 - Connected: organization partner connections with status.
 
 Demo-only Zustand integration state must stay out of the production catalog path.
@@ -144,7 +139,7 @@ Workspace handles:
 - Sign-in if the user is not authenticated.
 - Organization selection if no active organization is selected.
 - Permission checks for `oauthApp:authorize`.
-- Scope checks against the app approval record.
+- Scope checks against Partners verification.
 - Consent and organization partner connection creation.
 
 Connection defaults:
@@ -159,12 +154,14 @@ Connection defaults:
 Workspace stores organization partner connections with:
 
 - `organizationId`
-- Workspace partner app ID
-- OAuth client ID
+- Partners app ID
+- Partners client ID
 - `authorizedByUserId`
+- `authorizedMemberId`
 - approved `scopes`
 - `status`
 - `expiresAt`
+- `lastVerifiedAt`
 
 ## Partner Resource APIs
 
@@ -189,7 +186,7 @@ Every resource request is checked for:
 - JWT signature via `/api/auth/convex/jwks`.
 - Issuer and audience.
 - Token organization matches the route organization.
-- OAuth client belongs to an approved app.
+- OAuth client belongs to a Partners-published app.
 - Organization partner connection exists, is active, and is not expired.
 - Requested token scopes match connection scopes.
 - Resource/action scope is present.
@@ -200,7 +197,7 @@ Common errors:
 | --- | --- |
 | `missing_bearer` | No bearer token was sent. |
 | `wrong_organization` | Token organization does not match the URL organization. |
-| `app_not_approved` | OAuth client is not tied to an approved app. |
+| `app_not_published` | OAuth client is not tied to a published Partners app. |
 | `connection_not_found` | Workspace has not authorized this app. |
 | `connection_expired` | Authorization lifetime ended; user must reconnect. |
 | `scope_denied` | Token/connection does not include the required scope. |
@@ -211,14 +208,15 @@ Partners:
 
 ```bash
 QENTRAH_WORKSPACE_API_URL=http://localhost:3000
-QENTRAH_PLATFORM_SERVICE_TOKEN=shared-service-token
+PARTNERS_PLATFORM_SERVICE_TOKEN=shared-service-token
+PARTNERS_ADMIN_SERVICE_TOKEN=admin-service-token
 ```
 
 Admin:
 
 ```bash
-WORKSPACE_API_BASE_URL=http://localhost:3000
-WORKSPACE_ADMIN_SERVICE_TOKEN=shared-service-token
+PARTNERS_API_BASE_URL=http://localhost:3002
+PARTNERS_ADMIN_SERVICE_TOKEN=admin-service-token
 ```
 
 Workspace:
@@ -228,7 +226,8 @@ SITE_URL=http://localhost:3000
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 PARTNER_APPS_ENABLED=true
 WORKSPACE_ADMIN_SERVICE_TOKEN=shared-service-token
-PARTNERS_REVIEW_CALLBACK_TOKEN=shared-service-token
+PARTNERS_API_BASE_URL=http://localhost:3002
+PARTNERS_PLATFORM_SERVICE_TOKEN=shared-service-token
 ```
 
 Optional Workspace overrides:

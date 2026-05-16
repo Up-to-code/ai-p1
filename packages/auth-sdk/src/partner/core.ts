@@ -1,5 +1,10 @@
 import { QentrahPartnerAuthError } from "./errors.js";
-import type { QentrahPartnerAuthConfig, QentrahPartnerTokenSet } from "./types.js";
+import type {
+  QentrahPartnerAppAuthority,
+  QentrahPartnerAuthConfig,
+  QentrahPartnerEnv,
+  QentrahPartnerTokenSet,
+} from "./types.js";
 
 export const DEFAULT_QENTRAH_PARTNER_START_PATH = "/api/qentrah/oauth/start";
 export const DEFAULT_QENTRAH_PARTNER_SUCCESS_PATH = "/?qentrah=connected";
@@ -56,6 +61,39 @@ export function qentrahPartnerResourceAudience(workspaceBaseUrl: string) {
 
 export function qentrahPartnerTokenEndpoint(workspaceBaseUrl: string) {
   return new URL("/oauth/token", normalizeQentrahBaseUrl(workspaceBaseUrl)).toString();
+}
+
+export function createQentrahPartnerAppAuthority(input: QentrahPartnerAppAuthority): QentrahPartnerAppAuthority {
+  const workspaceBaseUrl = normalizeQentrahBaseUrl(input.workspaceBaseUrl);
+  const partnersClientId = input.partnersClientId.trim();
+  const redirectUri = input.redirectUri.trim();
+  const scopes = input.scopes.map((scope) => scope.trim()).filter(Boolean);
+  if (!partnersClientId) throw new QentrahPartnerAuthError("CONFIGURATION_ERROR", "Qentrah partnersClientId is required.");
+  if (!redirectUri) throw new QentrahPartnerAuthError("CONFIGURATION_ERROR", "Qentrah redirectUri is required.");
+  if (scopes.length === 0) throw new QentrahPartnerAuthError("CONFIGURATION_ERROR", "At least one Qentrah scope is required.");
+  return {
+    ...input,
+    partnersClientId,
+    workspaceBaseUrl,
+    redirectUri,
+    scopes,
+  };
+}
+
+export function qentrahPartnerScopesFromEnv(value: string | undefined) {
+  return (value ?? "")
+    .split(/[,\s]+/u)
+    .map((scope) => scope.trim())
+    .filter(Boolean);
+}
+
+export function qentrahPartnerAuthorityFromEnv(env: QentrahPartnerEnv): QentrahPartnerAppAuthority {
+  return createQentrahPartnerAppAuthority({
+    workspaceBaseUrl: env.QENTRAH_WORKSPACE_BASE_URL ?? "",
+    partnersClientId: env.QENTRAH_PARTNER_CLIENT_ID ?? "",
+    redirectUri: env.QENTRAH_PARTNER_REDIRECT_URI ?? "",
+    scopes: qentrahPartnerScopesFromEnv(env.QENTRAH_PARTNER_SCOPES),
+  });
 }
 
 export function buildQentrahPartnerAuthorizeUrl(input: {
@@ -124,7 +162,7 @@ function organizationIdFromAccessToken(accessToken: string): string | null {
 
   try {
     const claims = JSON.parse(base64UrlDecode(payload)) as Record<string, unknown>;
-    const value = claims.organization_id ?? claims.organizationId ?? claims.org_id;
+    const value = claims.organization_id;
     return typeof value === "string" && value.trim() ? value.trim() : null;
   } catch {
     return null;

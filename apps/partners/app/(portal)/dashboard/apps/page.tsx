@@ -4,6 +4,24 @@ import { Plus, Boxes } from "lucide-react";
 import { StatusBadge } from "@/components/brand/StatusBadge";
 import { getToken } from "@/lib/auth-server";
 import { partnerAppsRepository } from "@/server/partnerApps";
+import type { PartnerAppSummary } from "@/server/partnerApps";
+
+function nextStepFor(app: PartnerAppSummary) {
+  if (app.status === "draft") return "Finish setup, then submit for review.";
+  if (app.workspaceSyncStatus === "failed") return "OAuth runtime sync failed. Admin approval will retry it.";
+  if (app.status === "pending_review") return "Submitted. Admin review happens in Partners.";
+  if (app.status === "active") return "Approved and available for Workspace authorization.";
+  if (app.status === "rejected") return "Review changes are required before resubmission.";
+  if (app.status === "suspended") return "Suspended. Workspace authorization is blocked.";
+  return "Review lifecycle state is updating.";
+}
+
+function syncLabel(app: PartnerAppSummary) {
+  if (app.workspaceSyncStatus === "synced") return "OAuth runtime synced";
+  if (app.workspaceSyncStatus === "failed") return "Runtime sync failed";
+  if (app.workspaceSyncStatus === "pending") return "Runtime sync pending";
+  return "Runtime not synced";
+}
 
 export default async function AppsPage() {
   const token = await getToken();
@@ -37,7 +55,7 @@ export default async function AppsPage() {
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
-          {apps.map((app: any) => (
+          {apps.map((app: PartnerAppSummary) => (
             <div key={app.id} className="rounded-[15px] border border-border bg-card p-6 transition-colors hover:border-primary/50">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -47,6 +65,10 @@ export default async function AppsPage() {
                 <StatusBadge status={app.status} />
               </div>
               <p className="mt-3 text-sm text-muted-foreground">{app.publisherName}</p>
+              <div className="mt-4 rounded-[7px] border border-border bg-background px-3 py-2">
+                <p className="text-xs font-semibold text-foreground">{syncLabel(app)}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{nextStepFor(app)}</p>
+              </div>
               <div className="mt-4 flex flex-wrap gap-2">
                 {app.allowedScopes.slice(0, 4).map((scope: string) => (
                   <span key={scope} className="rounded-full border border-border bg-background px-2.5 py-1 font-mono text-xs text-muted-foreground">

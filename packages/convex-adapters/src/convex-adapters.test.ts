@@ -10,6 +10,7 @@ import { fetchAction, fetchMutation, fetchQuery } from "convex/nextjs";
 import { createUnsafeApiRecord, getApiRefs } from "./api";
 import {
   actionRef,
+  createConvexHttpCalls,
   createRepositoryRefs,
   createTokenForwardingFetchers,
   mutationRef,
@@ -73,5 +74,18 @@ describe("@qentrah/convex-adapters", () => {
     expect(fetchQuery).toHaveBeenCalledWith("public-query", { q: "search" });
     expect(fetchMutation).toHaveBeenCalledWith("public-mutation", { q: "write" });
     expect(fetchMutation).toHaveBeenCalledWith("void-mutation", { id: "delete-me" }, { token: "token-2" });
+  });
+
+  it("creates typed Convex HTTP call adapters", async () => {
+    const client = {
+      query: vi.fn(async (_ref: never, _args: never) => ({ total: 1 })),
+      mutation: vi.fn(async (_ref: never, _args: never) => ({ ok: true })),
+      action: vi.fn(async (_ref: never, _args: never) => ({ created: true })),
+    };
+    const calls = createConvexHttpCalls(client);
+
+    await expect(calls.query<{ limit: number }, { total: number }>("query-ref", { limit: 1 })).resolves.toEqual({ total: 1 });
+    await expect(calls.mutation<{ id: string }, { ok: boolean }>("mutation-ref", { id: "1" })).resolves.toEqual({ ok: true });
+    await expect(calls.action<{ id: string }, { created: boolean }>("action-ref", { id: "1" })).resolves.toEqual({ created: true });
   });
 });

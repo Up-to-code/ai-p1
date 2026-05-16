@@ -3,8 +3,12 @@
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { ReactNode } from "react";
 import { useState, type FormEvent } from "react";
+import { Alert } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import {
   PARTNER_COUNTRY_OPTIONS,
   validatePartnerSignupInput,
@@ -100,18 +104,17 @@ export default function PartnerProgrammerSignupForm({ redirectTo }: { redirectTo
     <form className="space-y-5" onSubmit={handleSubmit} data-testid="partner-programmer-signup-form">
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Your name" htmlFor="partner-signup-name">
-          <input
+          <Input
             id="partner-signup-name"
             name="name"
             autoComplete="name"
             required
             value={name}
             onChange={(event) => setName(event.target.value)}
-            className="h-11 w-full rounded-[7px] border border-input bg-background px-3 text-sm text-foreground caret-primary outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15"
           />
         </Field>
         <Field label="Email" htmlFor="partner-signup-email">
-          <input
+          <Input
             id="partner-signup-email"
             name="email"
             type="email"
@@ -119,7 +122,6 @@ export default function PartnerProgrammerSignupForm({ redirectTo }: { redirectTo
             required
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="h-11 w-full rounded-[7px] border border-input bg-background px-3 text-sm text-foreground caret-primary outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15"
           />
         </Field>
       </div>
@@ -127,7 +129,7 @@ export default function PartnerProgrammerSignupForm({ redirectTo }: { redirectTo
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Password" htmlFor="partner-signup-password">
           <div className="relative">
-            <input
+            <Input
               id="partner-signup-password"
               name="password"
               type={showPassword ? "text" : "password"}
@@ -136,7 +138,7 @@ export default function PartnerProgrammerSignupForm({ redirectTo }: { redirectTo
               required
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="h-11 w-full rounded-[7px] border border-input bg-background px-3 pr-11 text-sm text-foreground caret-primary outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15"
+              className="pr-11"
             />
             <button
               type="button"
@@ -150,7 +152,7 @@ export default function PartnerProgrammerSignupForm({ redirectTo }: { redirectTo
         </Field>
         <Field label="Confirm password" htmlFor="partner-signup-confirm-password">
           <div className="relative">
-            <input
+            <Input
               id="partner-signup-confirm-password"
               name="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
@@ -159,7 +161,7 @@ export default function PartnerProgrammerSignupForm({ redirectTo }: { redirectTo
               required
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
-              className="h-11 w-full rounded-[7px] border border-input bg-background px-3 pr-11 text-sm text-foreground caret-primary outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15"
+              className="pr-11"
             />
             <button
               type="button"
@@ -174,73 +176,54 @@ export default function PartnerProgrammerSignupForm({ redirectTo }: { redirectTo
       </div>
 
       <Field label="Programmer organization" htmlFor="partner-signup-organization-name">
-        <input
+        <Input
           id="partner-signup-organization-name"
           name="organizationName"
           autoComplete="organization"
           required
           value={organizationName}
           onChange={(event) => setOrganizationName(event.target.value)}
-          className="h-11 w-full rounded-[7px] border border-input bg-background px-3 text-sm text-foreground caret-primary outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15"
         />
       </Field>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Country" htmlFor="partner-signup-country-code">
-          <select
+          <Select
             id="partner-signup-country-code"
             name="countryCode"
             value={countryCode}
             onChange={(event) => setCountryCode(event.target.value)}
-            className="h-11 w-full rounded-[7px] border border-input bg-background px-3 text-sm text-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15"
           >
             {PARTNER_COUNTRY_OPTIONS.map((country) => (
               <option key={country.code} value={country.code}>
                 {country.label}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
       </div>
 
       {errorMessage ? (
-        <div className="space-y-2" role="alert">
-          <p className="text-sm font-medium text-destructive">{errorMessage}</p>
+        <Alert variant="danger">
+          <p>{errorMessage}</p>
           {accountExists ? (
             <Link
               href={`/signin?returnTo=${encodeURIComponent(redirectTo)}`}
-              className="inline-flex text-sm font-semibold text-primary underline underline-offset-4"
+              className="mt-2 inline-flex text-sm font-semibold text-primary underline underline-offset-4"
             >
               Sign in to continue setup
             </Link>
           ) : null}
-        </div>
+        </Alert>
       ) : null}
 
-      <button
+      <Button
         type="submit"
         disabled={pending}
-        className="h-11 w-full rounded-[7px] bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-[#6b90e6] disabled:cursor-not-allowed disabled:opacity-50"
+        className="h-11 w-full"
       >
         {pending ? "Creating account..." : "Create developer account"}
-      </button>
+      </Button>
     </form>
-  );
-}
-
-function Field({
-  label,
-  htmlFor,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  children: ReactNode;
-}) {
-  return (
-    <label className="block space-y-2 text-sm font-medium text-foreground" htmlFor={htmlFor}>
-      <span className="text-[13px] font-semibold">{label}</span>
-      {children}
-    </label>
   );
 }

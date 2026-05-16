@@ -5,6 +5,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
 import { listResourceMedia, selectCoverUrl } from "../media/data";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
+import { revealClientPii } from "../security/clientPii";
 import { propertyUnitValidator } from "../properties/validators";
 import { clientTypeValidator, clientUnitLinkValidator, clientValidator } from "./validators";
 
@@ -68,8 +69,10 @@ async function nextClientWork(ctx: QueryCtx, organizationId: string, client: Doc
 
 async function presentClient(ctx: QueryCtx, client: Doc<"clients">) {
   const next = await nextClientWork(ctx, client.organizationId, client);
+  const { deletedAt: _deletedAt, isDeleted: _isDeleted, encryptedContact: _encryptedContact, encryptedPhone: _encryptedPhone, encryptedNationality: _encryptedNationality, encryptedBudget: _encryptedBudget, piiEncryptedAt: _piiEncryptedAt, ...safeClient } = client;
   return {
-    ...client,
+    ...safeClient,
+    ...await revealClientPii(client),
     id: client._id,
     visibility: client.visibility ?? "private",
     nextAction: next.action,
@@ -81,9 +84,11 @@ async function presentClient(ctx: QueryCtx, client: Doc<"clients">) {
   };
 }
 
-function presentClientListItem(client: Doc<"clients">) {
+async function presentClientListItem(client: Doc<"clients">) {
+  const { deletedAt: _deletedAt, isDeleted: _isDeleted, encryptedContact: _encryptedContact, encryptedPhone: _encryptedPhone, encryptedNationality: _encryptedNationality, encryptedBudget: _encryptedBudget, piiEncryptedAt: _piiEncryptedAt, ...safeClient } = client;
   return {
-    ...client,
+    ...safeClient,
+    ...await revealClientPii(client),
     id: client._id,
     visibility: client.visibility ?? "private",
     nextActionDate: "This week",
@@ -118,7 +123,7 @@ export const list = query({
       .filter((client) => !client.deletedAt)
       .sort((a, b) => b.updatedAt - a.updatedAt);
 
-    return active.map(presentClientListItem);
+    return Promise.all(active.map(presentClientListItem));
   },
 });
 
@@ -139,14 +144,16 @@ export const listPaged = query({
         .withIndex("by_organization_updated", (q) => q.eq("organizationId", args.organizationId))
         .order("desc")
         .take(MAX_SEARCH_SCAN_ITEMS);
-      const matches = clients
+      const presented = await Promise.all(clients
         .filter((client) => !client.deletedAt)
         .filter((client) => !args.type || client.type === args.type)
+        .map(presentClientListItem));
+      const matches = presented
         .filter((client) => !search || [client.name, client.contact, client.propertyInterest, client.budget].some((value) => value.toLowerCase().includes(search)))
         .slice(0, 100);
 
       return {
-        page: matches.map(presentClientListItem),
+        page: matches,
         isDone: true,
         continueCursor: "",
       };
@@ -165,9 +172,9 @@ export const listPaged = query({
 
     return {
       ...page,
-      page: page.page
+      page: await Promise.all(page.page
         .filter((client) => !client.deletedAt)
-        .map(presentClientListItem),
+        .map(presentClientListItem)),
     };
   },
 });
@@ -229,9 +236,9 @@ export const options = query({
       .order("desc")
       .take(limit);
 
-    return clients
+    return Promise.all(clients
       .filter((client) => !client.deletedAt)
-      .map((client) => ({ id: client._id, name: client.name }));
+      .map(async (client) => ({ id: client._id, name: client.name })));
   },
 });
 

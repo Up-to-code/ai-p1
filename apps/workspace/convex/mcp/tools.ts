@@ -3,6 +3,7 @@ import { action, internalMutation, internalQuery } from "../_generated/server";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { protectClientPii, revealClientPii } from "../security/clientPii";
 
 type Input = Record<string, unknown>;
 type ToolPermission = {
@@ -532,9 +533,12 @@ export const writeTool = internalMutation({
     const actorId = actor(args.connectionId);
 
     if (args.tool === "clients_create") {
+      const client = clientInput(input);
       const id = await ctx.db.insert("clients", {
         organizationId: args.organizationId,
-        ...clientInput(input),
+        ...client,
+        ...await protectClientPii(args.organizationId, client),
+        isDeleted: false,
         createdByUserId: actorId,
         createdAt: now,
         updatedAt: now,
@@ -546,7 +550,9 @@ export const writeTool = internalMutation({
     if (args.tool === "clients_update") {
       const clientId = requiredString(input, "clientId") as Id<"clients">;
       const existing = assertActiveOrganization(await ctx.db.get(clientId), args.organizationId, "Client");
-      await ctx.db.patch(clientId, { ...clientInput({ ...existing, ...input }), updatedAt: now });
+      const revealed = await revealClientPii(existing);
+      const client = clientInput({ ...existing, ...revealed, ...input });
+      await ctx.db.patch(clientId, { ...client, ...await protectClientPii(args.organizationId, client), updatedAt: now });
       await audit(ctx, args.organizationId, args.connectionId, "client.update", clientId, `Updated client ${requiredString(input, "name") || existing.name}.`);
       return present((await ctx.db.get(clientId))!);
     }
@@ -554,7 +560,7 @@ export const writeTool = internalMutation({
     if (args.tool === "clients_delete") {
       const clientId = requiredString(input, "clientId") as Id<"clients">;
       const existing = assertActiveOrganization(await ctx.db.get(clientId), args.organizationId, "Client");
-      await ctx.db.patch(clientId, { deletedAt: now, updatedAt: now });
+      await ctx.db.patch(clientId, { deletedAt: now, isDeleted: true, updatedAt: now });
       await audit(ctx, args.organizationId, args.connectionId, "client.delete", clientId, `Deleted client ${existing.name}.`);
       return { removed: true };
     }

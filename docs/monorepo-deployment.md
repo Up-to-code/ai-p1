@@ -71,12 +71,12 @@ Demo redirect URI:
 https://demo.<root-domain>/api/auth/qentrah/callback
 ```
 
-Partners submits app registrations to Workspace using `QENTRAH_WORKSPACE_API_URL` and `QENTRAH_PLATFORM_SERVICE_TOKEN`. Admin reviews through Workspace using `WORKSPACE_API_BASE_URL` and `WORKSPACE_ADMIN_SERVICE_TOKEN`. The demo app starts OAuth against Workspace with `QENTRAH_WORKSPACE_API_URL`, `QENTRAH_CLIENT_ID`, and `PARTNER_APP_URL`.
+Admin reviews partner apps through Partners using `PARTNERS_API_BASE_URL` and `PARTNERS_ADMIN_SERVICE_TOKEN`. Partners publishes only the minimal OAuth runtime projection to Workspace using `QENTRAH_WORKSPACE_API_URL` and `PARTNERS_PLATFORM_SERVICE_TOKEN`. Workspace reads approved catalog data from Partners and stores only organization authorization state. The demo app starts OAuth against Workspace with `QENTRAH_WORKSPACE_API_URL`, `QENTRAH_CLIENT_ID`, and `PARTNER_APP_URL`.
 
 ## Boundaries
 
-- Workspace is the source of truth for approved partner apps, OAuth clients, organization consent, and partner resource APIs.
-- Partners is the source of truth for developer drafts, submissions, and developer-facing setup state.
-- Admin is a review console over Workspace service APIs.
+- Partners is the source of truth for partner apps, review status, redirect URIs, scopes, and published catalog data.
+- Workspace is the source of truth for OAuth enforcement projection, organization consent, organization partner authorizations, and partner resource APIs.
+- Admin is a review console over Partners service APIs.
 - Demo partner app is a standalone reference implementation that calls Workspace Hono APIs only.
 - Shared packages under `packages/*` may be imported by apps, but apps must not import another app's Convex generated internals.

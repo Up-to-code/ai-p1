@@ -5,6 +5,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { apiKeys } from "./apiKeys";
 import { authComponent } from "./auth";
 import { assertOrganizationResourcePermission } from "./organizations/profile/access";
+import { protectClientPii, revealClientPii } from "./security/clientPii";
 
 const API_KEY_PREFIX = "qentrah_org_";
 const QUOTA_LIMIT = 1_000;
@@ -60,6 +61,26 @@ type ApiKeyResource = "organization" | "client" | "property" | "project" | "cale
 type ApiKeyAction = "read" | "create" | "update" | "delete";
 type ApiKeyPermission = { resource: ApiKeyResource; actions: ApiKeyAction[] };
 type Input = Record<string, unknown>;
+
+function configuredServerToken() {
+  return process.env.WORKSPACE_CONVEX_BRIDGE_SECRET ?? "";
+}
+
+function timingSafeEqual(left: string, right: string) {
+  const maxLength = Math.max(left.length, right.length);
+  let diff = left.length ^ right.length;
+  for (let index = 0; index < maxLength; index += 1) {
+    diff |= (left.charCodeAt(index) || 0) ^ (right.charCodeAt(index) || 0);
+  }
+  return diff === 0;
+}
+
+function assertServerToken(token: string) {
+  const configured = configuredServerToken();
+  if (configured.length < 32 || !timingSafeEqual(token, configured)) {
+    throw new Error("Invalid server function token.");
+  }
+}
 
 function presentKey(key: Doc<"organizationApiKeys">) {
   const now = Date.now();
@@ -411,6 +432,7 @@ export const validateAndReserve = mutation({
 
 export const readResource = query({
   args: {
+    serverToken: v.string(),
     organizationId: v.string(),
     resource: apiKeyResourceValidator,
     action: apiKeyActionValidator,
@@ -418,6 +440,7 @@ export const readResource = query({
   },
   returns: v.any(),
   handler: async (ctx, args) => {
+    assertServerToken(args.serverToken);
     if (args.action !== "read") throw new Error("Read endpoint requires read action.");
     const input = objectInput(args.input);
 
@@ -501,6 +524,7 @@ export const readResource = query({
 
 export const writeResource = mutation({
   args: {
+    serverToken: v.string(),
     organizationId: v.string(),
     apiKeyId: v.id("organizationApiKeys"),
     resource: apiKeyResourceValidator,
@@ -509,24 +533,30 @@ export const writeResource = mutation({
   },
   returns: v.any(),
   handler: async (ctx, args) => {
+    assertServerToken(args.serverToken);
     const input = objectInput(args.input);
     const now = Date.now();
     if (args.resource !== "client") throw new Error("API key writes currently support clients only.");
 
     if (args.action === "create") {
+      const pii = {
+        contact: requiredString(input, "contact", optionalString(input, "name") ?? "API client"),
+        phone: requiredString(input, "phone", ""),
+        nationality: requiredString(input, "nationality", ""),
+        budget: requiredString(input, "budget", ""),
+      };
       const id = await ctx.db.insert("clients", {
         organizationId: args.organizationId,
         name: requiredString(input, "name", "API client"),
         type: (optionalString(input, "type") ?? "Buyer") as "Buyer" | "Tenant" | "Investor" | "Broker",
-        contact: requiredString(input, "contact", optionalString(input, "name") ?? "API client"),
-        phone: requiredString(input, "phone", ""),
+        ...pii,
         age: optionalNumber(input, "age") ?? 0,
-        nationality: requiredString(input, "nationality", ""),
         generation: requiredString(input, "generation", ""),
-        budget: requiredString(input, "budget", ""),
+        ...await protectClientPii(args.organizationId, pii),
         propertyInterest: requiredString(input, "propertyInterest", ""),
         status: (optionalString(input, "status") ?? "active") as "active" | "inactive",
         visibility: "private",
+        isDeleted: false,
         pipelineStage: (optionalString(input, "pipelineStage") ?? "new") as "new" | "qualified" | "viewing" | "negotiation" | "closed",
         ...(optionalNumber(input, "pipelineOrder") !== undefined ? { pipelineOrder: optionalNumber(input, "pipelineOrder")! } : {}),
         priority: (optionalString(input, "priority") ?? "normal") as "normal" | "high" | "urgent",
@@ -556,7 +586,16 @@ export const writeResource = mutation({
     }
 
     if (args.action === "update") {
-      await ctx.db.patch(clientId, { ...clientPatch(input), updatedAt: now });
+      const revealed = await revealClientPii(existing);
+      const piiPatch = ["contact", "phone", "nationality", "budget"].some((key) => optionalString(input, key))
+        ? await protectClientPii(args.organizationId, {
+          contact: optionalString(input, "contact") ?? revealed.contact,
+          phone: optionalString(input, "phone") ?? revealed.phone,
+          nationality: optionalString(input, "nationality") ?? revealed.nationality,
+          budget: optionalString(input, "budget") ?? revealed.budget,
+        })
+        : {};
+      await ctx.db.patch(clientId, { ...clientPatch(input), ...piiPatch, updatedAt: now });
       await ctx.db.insert("organizationAuditEvents", {
         organizationId: args.organizationId,
         actorUserId: `apiKey:${args.apiKeyId}`,
@@ -571,7 +610,7 @@ export const writeResource = mutation({
     }
 
     if (args.action === "delete") {
-      await ctx.db.patch(clientId, { deletedAt: now, updatedAt: now });
+      await ctx.db.patch(clientId, { deletedAt: now, isDeleted: true, updatedAt: now });
       await ctx.db.insert("organizationAuditEvents", {
         organizationId: args.organizationId,
         actorUserId: `apiKey:${args.apiKeyId}`,

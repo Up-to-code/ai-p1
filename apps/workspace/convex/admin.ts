@@ -45,7 +45,7 @@ type AdminListArgs = {
 };
 
 function configuredAdminToken() {
-  return process.env.ADMIN_CONVEX_SERVICE_TOKEN ?? process.env.WORKSPACE_ADMIN_SERVICE_TOKEN ?? "";
+  return process.env.ADMIN_CONVEX_SERVICE_TOKEN ?? "";
 }
 
 function timingSafeEqual(a: string, b: string) {
@@ -106,26 +106,6 @@ function updatedAt(record: { updatedAt?: number; createdAt?: number; startedAt?:
 
 function field(label: string, value: unknown, secret = false) {
   return { label, value: typeof value === "string" ? value : JSON.stringify(value), secret };
-}
-
-function appSummary(app: Doc<"partnerApps">) {
-  return {
-    id: app._id,
-    title: app.name,
-    subtitle: app.publisherName ?? app.oauthClientId,
-    status: app.status,
-    href: `/apps/${app._id}`,
-    updatedAt: app.updatedAt,
-    fields: [
-      field("Logo", app.logoUrl ?? ""),
-      field("Homepage", app.homepageUrl ?? ""),
-      field("OAuth client", app.oauthClientId),
-      field("Publisher", app.publisherName ?? "unknown"),
-      field("Scopes", app.allowedScopes.length),
-      field("Redirect URIs", app.redirectUris.length),
-      field("Partner reply", app.partnerReviewReply ? "configured" : "not set"),
-    ],
-  };
 }
 
 function organizationSummary(org: Doc<"organizations">) {
@@ -199,13 +179,14 @@ function mcpSummary(connection: Doc<"organizationMcpConnections">) {
 function partnerConnectionSummary(connection: Doc<"organizationPartnerConnections">) {
   return {
     id: connection._id,
-    title: connection.oauthClientId,
+    title: connection.partnersClientId,
     subtitle: connection.organizationId,
     status: statusFor(connection.status),
     href: `/partner-connections/${connection._id}`,
     updatedAt: connection.updatedAt,
     fields: [
       field("Scopes", connection.scopes.length),
+      field("Partner app", connection.partnersAppId),
       field("Authorized by", connection.authorizedByUserId),
       field("Expires", connection.expiresAt ? new Date(connection.expiresAt).toISOString() : "not set"),
     ],
@@ -375,7 +356,7 @@ async function organizationDashboard(ctx: QueryCtx, org: Doc<"organizations">) {
       id: `${record._id}:partner-connection`,
       tone: record.status === "revoked" ? "danger" : "warning",
       title: "Partner connection needs attention",
-      description: `${record.oauthClientId} is ${record.status}.`,
+      description: `${record.partnersClientId} is ${record.status}.`,
       href: `/partner-connections/${record._id}`,
       createdAt: record.updatedAt,
     })),
@@ -454,26 +435,6 @@ async function withPage<T>(
   };
 }
 
-async function listPartnerApps(ctx: QueryCtx, args: AdminListArgs) {
-  const status = typeof args.filters?.status === "string" ? args.filters.status : undefined;
-  const paginationOpts = boundedPaginationOpts(args.paginationOpts);
-  const pagePromise = status && ["pending", "approved", "rejected", "suspended"].includes(status)
-    ? ctx.db.query("partnerApps")
-      .withIndex("by_status_updated", (q) => q.eq("status", status as "pending" | "approved" | "rejected" | "suspended"))
-      .order("desc")
-      .paginate(paginationOpts)
-    : ctx.db.query("partnerApps").withIndex("by_updated").order("desc").paginate(paginationOpts);
-
-  return withPage(pagePromise, appSummary, args.search, (app) => [
-    app.name,
-    app.publisherName,
-    app.oauthClientId,
-    app.partnersAppId,
-    app.partnersClientId,
-    app.status,
-  ]);
-}
-
 async function listWorkspaceData(ctx: QueryCtx, args: AdminListArgs) {
   const family = typeof args.filters?.family === "string" ? args.filters.family : "projects";
   const paginationOpts = boundedPaginationOpts(args.paginationOpts);
@@ -514,10 +475,15 @@ export const listDomain = query({
       return withPage(ctx.db.query("userProfiles").withIndex("by_updated").order("desc").paginate(paginationOpts), userSummary, args.search, (profile) => [profile.userId]);
     }
     if (args.domain === "apps" || args.domain === "oauth-clients") {
-      return listPartnerApps(ctx, args);
+      return {
+        rows: [],
+        isDone: true,
+        continueCursor: "",
+        warnings: ["Workspace no longer stores partner app catalog records. Use Partners as the source of truth."],
+      };
     }
     if (args.domain === "partner-connections") {
-      return withPage(ctx.db.query("organizationPartnerConnections").withIndex("by_status_updated").order("desc").paginate(paginationOpts), partnerConnectionSummary, args.search, (record) => [record.oauthClientId, record.organizationId, record.status]);
+      return withPage(ctx.db.query("organizationPartnerConnections").withIndex("by_status_updated").order("desc").paginate(paginationOpts), partnerConnectionSummary, args.search, (record) => [record.partnersClientId, record.partnersAppId, record.organizationId, record.status]);
     }
     if (args.domain === "api-keys") {
       return withPage(ctx.db.query("organizationApiKeys").withIndex("by_status_updated").order("desc").paginate(paginationOpts), apiKeySummary, args.search, (record) => [record.name, record.organizationId, record.keyId, record.status]);
@@ -541,7 +507,7 @@ export const listDomain = query({
 async function findRecord(ctx: QueryCtx, domain: AdminDomain, id: string) {
   if (domain === "organizations") return ctx.db.get(ctx.db.normalizeId("organizations", id) as Id<"organizations">);
   if (domain === "users") return ctx.db.get(ctx.db.normalizeId("userProfiles", id) as Id<"userProfiles">);
-  if (domain === "apps" || domain === "oauth-clients") return ctx.db.get(ctx.db.normalizeId("partnerApps", id) as Id<"partnerApps">);
+  if (domain === "apps" || domain === "oauth-clients") return null;
   if (domain === "partner-connections") return ctx.db.get(ctx.db.normalizeId("organizationPartnerConnections", id) as Id<"organizationPartnerConnections">);
   if (domain === "api-keys") return ctx.db.get(ctx.db.normalizeId("organizationApiKeys", id) as Id<"organizationApiKeys">);
   if (domain === "mcp-connections") return ctx.db.get(ctx.db.normalizeId("organizationMcpConnections", id) as Id<"organizationMcpConnections">);
@@ -566,7 +532,6 @@ async function findRecord(ctx: QueryCtx, domain: AdminDomain, id: string) {
 function summarizeRecord(domain: AdminDomain, record: NonNullable<Awaited<ReturnType<typeof findRecord>>>) {
   if (domain === "organizations") return organizationSummary(record as Doc<"organizations">);
   if (domain === "users") return userSummary(record as Doc<"userProfiles">);
-  if (domain === "apps" || domain === "oauth-clients") return appSummary(record as Doc<"partnerApps">);
   if (domain === "partner-connections") return partnerConnectionSummary(record as Doc<"organizationPartnerConnections">);
   if (domain === "api-keys") return apiKeySummary(record as Doc<"organizationApiKeys">);
   if (domain === "mcp-connections") return mcpSummary(record as Doc<"organizationMcpConnections">);
@@ -612,16 +577,7 @@ export const getDomainRecord = query({
       : null;
     return {
       record: summarizeRecord(args.domain, record),
-      raw: args.domain === "apps" || args.domain === "oauth-clients"
-        ? {
-          redirectUris: (record as Doc<"partnerApps">).redirectUris,
-          allowedScopes: (record as Doc<"partnerApps">).allowedScopes,
-          description: (record as Doc<"partnerApps">).description,
-          callbackUrl: (record as Doc<"partnerApps">).callbackUrl ?? null,
-          partnerReviewReply: (record as Doc<"partnerApps">).partnerReviewReply ?? null,
-          internalReviewNotes: (record as Doc<"partnerApps">).internalReviewNotes ?? null,
-        }
-        : organizationRaw
+      raw: organizationRaw
           ? organizationRaw
         : null,
       auditTimeline: auditEventsForRecord(record, args.actorEmail ?? "admin"),
@@ -663,36 +619,8 @@ export const runDomainAction = mutation({
     const now = Date.now();
 
     if (args.domain === "apps" || args.domain === "oauth-clients") {
-      const appId = ctx.db.normalizeId("partnerApps", args.id);
-      if (!appId) throw new Error("Partner app was not found.");
-      const app = await ctx.db.get(appId);
-      if (!app) throw new Error("Partner app was not found.");
-
-      const patch: Partial<Doc<"partnerApps">> = { updatedAt: now };
-      if (["approved", "rejected", "suspended"].includes(args.actionId)) {
-        patch.status = args.actionId as "approved" | "rejected" | "suspended";
-        patch.reviewNotes = args.reason;
-        patch.partnerReviewReply = args.partnerReply ?? args.reason;
-        patch.reviewedByUserId = args.actorEmail;
-        patch.reviewedAt = now;
-      } else if (args.actionId === "reply" || args.actionId === "request_changes") {
-        patch.partnerReviewReply = args.partnerReply ?? args.reason;
-        patch.reviewNotes = args.reason;
-      } else if (args.actionId === "internal_note") {
-        patch.internalReviewNotes = args.internalNote ?? args.reason;
-      } else {
-        throw new Error("Unsupported partner app action.");
-      }
-
-      await ctx.db.patch(appId, patch);
-      const auditId = await writeAudit(ctx, {
-        actorEmail: args.actorEmail,
-        action: `admin.partner_app.${args.actionId}`,
-        target: appId,
-        summary: args.reason ?? args.partnerReply ?? "Partner app admin action recorded.",
-      });
-      const next = await ctx.db.get(appId);
-      return { record: appSummary(next!), auditId, nextState: next!.status };
+      void now;
+      throw new Error("Workspace no longer reviews partner apps. Use Partners as the source of truth.");
     }
 
     const statusPatch = args.actionId === "revoke"

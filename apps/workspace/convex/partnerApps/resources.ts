@@ -4,8 +4,29 @@ import { internal } from "../_generated/api";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
 import { partnerActionValidator, partnerResourceValidator } from "./validators";
+import { protectClientPii, revealClientPii } from "../security/clientPii";
 
 type Input = Record<string, unknown>;
+
+function configuredServerToken() {
+  return process.env.WORKSPACE_CONVEX_BRIDGE_SECRET ?? "";
+}
+
+function timingSafeEqual(left: string, right: string) {
+  const maxLength = Math.max(left.length, right.length);
+  let diff = left.length ^ right.length;
+  for (let index = 0; index < maxLength; index += 1) {
+    diff |= (left.charCodeAt(index) || 0) ^ (right.charCodeAt(index) || 0);
+  }
+  return diff === 0;
+}
+
+function assertServerToken(token: string) {
+  const configured = configuredServerToken();
+  if (configured.length < 32 || !timingSafeEqual(token, configured)) {
+    throw new Error("Invalid server function token.");
+  }
+}
 
 function objectInput(value: unknown): Input {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -44,7 +65,7 @@ function limitFromInput(input: Input) {
 async function audit(
   ctx: MutationCtx,
   organizationId: string,
-  partnerAppId: Id<"partnerApps">,
+  partnerAppId: string,
   action: string,
   target: string,
   summary: string,
@@ -118,6 +139,7 @@ async function listTable(
 
 export const read = query({
   args: {
+    serverToken: v.string(),
     organizationId: v.string(),
     resource: partnerResourceValidator,
     action: partnerActionValidator,
@@ -125,6 +147,7 @@ export const read = query({
   },
   returns: v.any(),
   handler: async (ctx, args) => {
+    assertServerToken(args.serverToken);
     if (args.action !== "read") throw new Error("Read endpoint requires read action.");
     const input = objectInput(args.input);
 
@@ -208,14 +231,16 @@ export const read = query({
 
 export const write = mutation({
   args: {
+    serverToken: v.string(),
     organizationId: v.string(),
-    partnerAppId: v.id("partnerApps"),
+    partnerAppId: v.string(),
     resource: partnerResourceValidator,
     action: partnerActionValidator,
     input: v.optional(v.any()),
   },
   returns: v.any(),
   handler: async (ctx, args) => {
+    assertServerToken(args.serverToken);
     const input = objectInput(args.input);
     const now = Date.now();
 
@@ -224,19 +249,24 @@ export const write = mutation({
     }
 
     if (args.action === "create") {
+      const pii = {
+        contact: requiredString(input, "contact", optionalString(input, "name") ?? "Partner client"),
+        phone: requiredString(input, "phone", ""),
+        nationality: requiredString(input, "nationality", ""),
+        budget: requiredString(input, "budget", ""),
+      };
       const id = await ctx.db.insert("clients", {
         organizationId: args.organizationId,
         name: requiredString(input, "name", "Partner client"),
         type: (optionalString(input, "type") ?? "Buyer") as "Buyer" | "Tenant" | "Investor" | "Broker",
-        contact: requiredString(input, "contact", optionalString(input, "name") ?? "Partner client"),
-        phone: requiredString(input, "phone", ""),
+        ...pii,
         age: optionalNumber(input, "age") ?? 0,
-        nationality: requiredString(input, "nationality", ""),
         generation: requiredString(input, "generation", ""),
-        budget: requiredString(input, "budget", ""),
+        ...await protectClientPii(args.organizationId, pii),
         propertyInterest: requiredString(input, "propertyInterest", ""),
         status: (optionalString(input, "status") ?? "active") as "active" | "inactive",
         visibility: "private",
+        isDeleted: false,
         pipelineStage: (optionalString(input, "pipelineStage") ?? "new") as "new" | "qualified" | "viewing" | "negotiation" | "closed",
         ...(optionalNumber(input, "pipelineOrder") !== undefined ? { pipelineOrder: optionalNumber(input, "pipelineOrder")! } : {}),
         priority: (optionalString(input, "priority") ?? "normal") as "normal" | "high" | "urgent",
@@ -259,7 +289,16 @@ export const write = mutation({
     }
 
     if (args.action === "update") {
-      await ctx.db.patch(clientId, { ...clientPatch(input), updatedAt: now });
+      const revealed = await revealClientPii(existing);
+      const piiPatch = ["contact", "phone", "nationality", "budget"].some((key) => optionalString(input, key))
+        ? await protectClientPii(args.organizationId, {
+          contact: optionalString(input, "contact") ?? revealed.contact,
+          phone: optionalString(input, "phone") ?? revealed.phone,
+          nationality: optionalString(input, "nationality") ?? revealed.nationality,
+          budget: optionalString(input, "budget") ?? revealed.budget,
+        })
+        : {};
+      await ctx.db.patch(clientId, { ...clientPatch(input), ...piiPatch, updatedAt: now });
       await audit(ctx, args.organizationId, args.partnerAppId, "partner.client.update", clientId, "Updated client from partner API.");
       const client = present((await ctx.db.get(clientId))!);
       await enqueueOutbound(ctx, args.organizationId, "client.updated", clientId, client, now);
@@ -267,7 +306,7 @@ export const write = mutation({
     }
 
     if (args.action === "delete") {
-      await ctx.db.patch(clientId, { deletedAt: now, updatedAt: now });
+      await ctx.db.patch(clientId, { deletedAt: now, isDeleted: true, updatedAt: now });
       await audit(ctx, args.organizationId, args.partnerAppId, "partner.client.delete", clientId, "Deleted client from partner API.");
       await enqueueOutbound(ctx, args.organizationId, "client.deleted", clientId, {
         id: clientId,

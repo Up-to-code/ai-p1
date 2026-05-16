@@ -15,6 +15,16 @@ export type RepositoryResult<TValue> = RepositorySuccessResult<TValue> | Reposit
 export type ConvexFetchOptions = {
   token?: string;
 };
+export type ConvexHttpClientLike = {
+  query: (ref: any, args: any) => Promise<unknown>;
+  mutation: (ref: any, args: any) => Promise<unknown>;
+  action: (ref: any, args: any) => Promise<unknown>;
+};
+export type ConvexHttpCalls = {
+  query: <TArgs, TResult>(ref: unknown, args: TArgs) => Promise<TResult>;
+  mutation: <TArgs, TResult>(ref: unknown, args: TArgs) => Promise<TResult>;
+  action: <TArgs, TResult>(ref: unknown, args: TArgs) => Promise<TResult>;
+};
 
 export function withOptionalOrigin<T extends Record<string, unknown>>(
   payload: T,
@@ -43,6 +53,17 @@ export function createRepositoryRefs<TRefs extends Record<string, unknown>>(
   path: string,
 ): TRefs {
   return getApiRefs<TRefs>(apiUnsafe, path);
+}
+
+export function createConvexHttpCalls(client: ConvexHttpClientLike): ConvexHttpCalls {
+  return {
+    query: <TArgs, TResult>(ref: unknown, args: TArgs) =>
+      client.query(ref as never, args as never) as Promise<TResult>,
+    mutation: <TArgs, TResult>(ref: unknown, args: TArgs) =>
+      client.mutation(ref as never, args as never) as Promise<TResult>,
+    action: <TArgs, TResult>(ref: unknown, args: TArgs) =>
+      client.action(ref as never, args as never) as Promise<TResult>,
+  };
 }
 
 export async function fetchQueryWithToken<TResult>(

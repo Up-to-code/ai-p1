@@ -1,12 +1,9 @@
 import { describe, expect, it } from "vitest";
-import {
-  adminReviewPartnerAppSchema,
-  partnerAppRegistrationSchema,
-} from "./admin-partner-app.schema";
+import { oauthClientRuntimeSyncSchema } from "./admin-partner-app.schema";
 
 describe("admin partner app schemas", () => {
-  it("accepts a Partners registration payload", () => {
-    const parsed = partnerAppRegistrationSchema.parse({
+  it("accepts a Partners OAuth runtime sync payload", () => {
+    const parsed = oauthClientRuntimeSyncSchema.parse({
       partnersAppId: "app_1",
       partnersClientId: "partners_client_1",
       name: "Partner CRM",
@@ -16,16 +13,10 @@ describe("admin partner app schemas", () => {
       redirectUris: ["https://partner.example.com/oauth/callback"],
       allowedScopes: ["client:read"],
       clientType: "confidential",
-      callbackUrl: "https://partners.example.com/api/qentrah-review-callback",
+      status: "approved",
     });
 
     expect(parsed.partnersAppId).toBe("app_1");
   });
 
-  it("normalizes empty review notes", () => {
-    expect(adminReviewPartnerAppSchema.parse({ status: "approved", reviewNotes: " " })).toEqual({
-      status: "approved",
-      reviewNotes: undefined,
-    });
-  });
 });

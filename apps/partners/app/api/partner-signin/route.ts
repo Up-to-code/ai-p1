@@ -5,7 +5,12 @@ import {
   readJsonBody,
   safeResponseJson,
 } from "@qentrah/web-foundation/api";
-import { checkRateLimit, getClientRateLimitKey } from "@/rate-limits/memory";
+import {
+  appendPartnerAuthRateLimitHeaders,
+  checkPartnerAuthRateLimit,
+  partnerAuthJson,
+  partnerAuthRateLimitedResponse,
+} from "../partner-auth-rate-limit";
 import { assertPartnersProductionEnv } from "@/security/production-env";
 import { buildSameOriginAuthHeaders } from "@/trust/auth-request";
 
@@ -35,15 +40,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const clientKey = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "local";
-    const rateLimit = checkRateLimit(getClientRateLimitKey("partner-signin", `${clientKey}:${email}`), {
-      limit: 10,
-      windowMs: 10 * 60 * 1000,
-    });
-    if (!rateLimit.ok) {
-      return NextResponse.json(
+    const rateLimit = checkPartnerAuthRateLimit("partner-signin", request, email);
+    if (!rateLimit.allowed) {
+      return partnerAuthRateLimitedResponse(
+        rateLimit,
         { error: "PARTNER_SIGNIN_RATE_LIMITED", message: "Too many sign in attempts. Try again shortly." },
-        { status: 429 },
       );
     }
 
@@ -55,17 +56,19 @@ export async function POST(request: NextRequest) {
     const authPayload = await safeResponseJson(authResponse, {});
 
     if (!authResponse.ok) {
-      return NextResponse.json(
+      return partnerAuthJson(
         {
           error: "PARTNER_SIGNIN_FAILED",
           message: getJsonMessage(authPayload, "Could not sign in. Check the email and password."),
         },
         { status: authResponse.status },
+        rateLimit,
       );
     }
 
     const response = NextResponse.json({ ok: true });
     copySetCookieHeaders(authResponse, response);
+    appendPartnerAuthRateLimitHeaders(response, rateLimit);
     return response;
   } catch (error) {
     return NextResponse.json(

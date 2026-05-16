@@ -5,7 +5,6 @@ import { getToken } from "@/lib/auth-server";
 import { parsePartnerAppFormData } from "@/lib/schemas/partner-app";
 import { partnerProfileFormSchema, programmerOrganizationFormSchema } from "@/validation/account";
 import { partnerAccountRepository } from "@/server/partnerAccount";
-import { submitPartnerAppRegistration } from "@/server/qentrahWorkspace";
 import { partnerAppsRepository } from "@/server/partnerApps";
 import { sandboxRepository } from "@/server/sandbox";
 
@@ -43,23 +42,6 @@ function revalidatePortal() {
   revalidatePath("/dashboard/apps");
   revalidatePath("/dashboard/status");
   revalidatePath("/dashboard/account");
-}
-
-async function recordWorkspaceSyncResultBestEffort(
-  token: string,
-  input: {
-    appId: string;
-    ok: boolean;
-    workspacePartnerAppId?: string;
-    workspaceOauthClientId?: string;
-    error?: string;
-  },
-) {
-  try {
-    await partnerAppsRepository.recordWorkspaceSyncResult(token, input);
-  } catch (error) {
-    console.warn("Partner app Workspace sync result could not be recorded.", error);
-  }
 }
 
 export async function updatePartnerProfileAction(
@@ -154,35 +136,6 @@ export async function submitPartnerAppForReviewAction(formData: FormData) {
   const token = await requirePartnerToken();
   const appId = requiredString(formData, "appId");
   await partnerAppsRepository.submitForReview(token, appId);
-  await syncPartnerAppToWorkspace(token, appId);
-  revalidatePortal();
-  revalidatePath(`/dashboard/apps/${appId}`);
-}
-
-async function syncPartnerAppToWorkspace(token: string, appId: string) {
-  try {
-    const app = await partnerAppsRepository.getById(token, appId);
-    if (!app) throw new Error("Submitted partner app could not be reloaded.");
-    const workspaceApp = await submitPartnerAppRegistration(app);
-    await recordWorkspaceSyncResultBestEffort(token, {
-      appId,
-      ok: true,
-      workspacePartnerAppId: workspaceApp.id,
-      workspaceOauthClientId: workspaceApp.oauthClientId,
-    });
-  } catch (error) {
-    await recordWorkspaceSyncResultBestEffort(token, {
-      appId,
-      ok: false,
-      error: error instanceof Error ? error.message : "Workspace registration sync failed.",
-    });
-  }
-}
-
-export async function syncPartnerAppToWorkspaceAction(formData: FormData) {
-  const token = await requirePartnerToken();
-  const appId = requiredString(formData, "appId");
-  await syncPartnerAppToWorkspace(token, appId);
   revalidatePortal();
   revalidatePath(`/dashboard/apps/${appId}`);
 }

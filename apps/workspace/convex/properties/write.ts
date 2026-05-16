@@ -12,8 +12,9 @@ function unitReference(now: number) {
 }
 
 function presentProperty(property: Doc<"propertyUnits">) {
+  const { deletedAt: _deletedAt, isDeleted: _isDeleted, ...safeProperty } = property;
   return {
-    ...property,
+    ...safeProperty,
     id: property._id,
     visibility: property.visibility ?? "private",
     coverImageUrl: undefined,
@@ -52,6 +53,7 @@ export const createFromHono = mutation({
       ...args.input,
       visibility: args.input.visibility ?? "private",
       reference: unitReference(now),
+      isDeleted: false,
       createdByUserId: user._id,
       createdAt: now,
       updatedAt: now,
@@ -129,7 +131,7 @@ export const deleteFromHono = mutation({
     }
 
     const now = Date.now();
-    await ctx.db.patch(args.propertyId, { deletedAt: now, updatedAt: now });
+    await ctx.db.patch(args.propertyId, { deletedAt: now, isDeleted: true, updatedAt: now });
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
       actorUserId: user._id,

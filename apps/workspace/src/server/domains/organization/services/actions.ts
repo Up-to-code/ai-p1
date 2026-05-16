@@ -2,7 +2,6 @@ import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
 import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/better-auth/server";
 import { assertCanUseOrganizationResource, getOrganizationCapabilities } from "@/server/utils/organization/access-checker";
-import { requirePlatformAdmin } from "@/server/utils/organization/platform-admin";
 import type { OrganizationPermissionStatement } from "@/packages/authz";
 import { OrganizationActionError } from "../errors/action-error";
 import {
@@ -95,7 +94,6 @@ export async function updateOrganizationIdentity(
   organizationId: string,
   input: OrganizationIdentityUpdateInput,
 ) {
-  await requirePlatformAdmin(c);
   await requireOrganizationAction(organizationId, "organization", "update");
 
   const organization = await callBetterAuth(c, "/organization/update", {
@@ -119,7 +117,6 @@ export async function createOrganizationEmailInvitation(
   organizationId: string,
   input: CreateOrganizationInvitationInput,
 ) {
-  await requirePlatformAdmin(c);
   await requireOrganizationAction(organizationId, "member", "create");
   await assertCanAssignRole(c, organizationId, input.role);
 
@@ -142,7 +139,6 @@ export async function cancelOrganizationEmailInvitation(
   organizationId: string,
   invitationId: string,
 ) {
-  await requirePlatformAdmin(c);
   await requireOrganizationAction(organizationId, "member", "create");
 
   const invitation = await callBetterAuth(c, "/organization/cancel-invitation", {
@@ -165,7 +161,6 @@ export async function updateOrganizationMemberRole(
   memberId: string,
   input: UpdateOrganizationMemberRoleInput,
 ) {
-  await requirePlatformAdmin(c);
   await requireOrganizationAction(organizationId, "member", "update");
   const [members, roles] = await Promise.all([
     listMembers(c, organizationId),
@@ -199,7 +194,6 @@ export async function removeOrganizationMember(
   memberIdOrEmail: string,
 ) {
   const session = await getBetterAuthSession(c);
-  await requirePlatformAdmin(c);
   await requireOrganizationAction(organizationId, "member", "delete");
   const members = await listMembers(c, organizationId);
 
@@ -228,7 +222,6 @@ export async function createOrganizationWorkRole(
   organizationId: string,
   input: CreateOrganizationRoleInput,
 ) {
-  await requirePlatformAdmin(c);
   await requireOrganizationAction(organizationId, "role", "create");
   const role = normalizeOrganizationRoleName(input.role);
   if (!role) {
@@ -262,7 +255,6 @@ export async function updateOrganizationWorkRole(
   roleId: string,
   input: UpdateOrganizationRoleInput,
 ) {
-  await requirePlatformAdmin(c);
   await requireOrganizationAction(organizationId, "role", "update");
   const currentRole = (await listRoles(c, organizationId)).find((role) => role.id === roleId);
   if (!currentRole) {
@@ -305,7 +297,6 @@ export async function deleteOrganizationWorkRole(
   organizationId: string,
   roleId: string,
 ) {
-  await requirePlatformAdmin(c);
   await requireOrganizationAction(organizationId, "role", "delete");
   const [members, invitations, roles] = await Promise.all([
     listMembers(c, organizationId),

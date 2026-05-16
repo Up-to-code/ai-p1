@@ -20,6 +20,12 @@ import {
   listAdminDomainFromConvex,
   runAdminDomainActionInConvex,
 } from "./admin-convex";
+import {
+  getPartnerAppDetailFromPartners,
+  listPartnerAppsFromPartners,
+  partnersAdminConfigured,
+  reviewPartnerAppThroughPartners,
+} from "./partners";
 
 const platformActions: AdminAction[] = [
   { id: "pause", label: "Pause", tone: "neutral", requiresReason: true, roles: ["platform_admin"] },
@@ -50,7 +56,7 @@ function securityRows(): AdminRecordSummary[] {
     ]),
     row("security", "convex-admin-service", "Admin Convex service", adminConvexConfigured() ? "Connected server-side" : "Missing Convex admin env", adminConvexConfigured() ? "active" : "danger", [
       { label: "CONVEX_URL", value: process.env.CONVEX_URL ?? process.env.NEXT_PUBLIC_CONVEX_URL ?? "not configured", secret: true },
-      { label: "Service token", value: redactSecret(process.env.ADMIN_CONVEX_SERVICE_TOKEN ?? process.env.WORKSPACE_ADMIN_SERVICE_TOKEN), secret: true },
+      { label: "Service token", value: redactSecret(process.env.ADMIN_CONVEX_SERVICE_TOKEN), secret: true },
       { label: "Browser exposure", value: "Never sent to client" },
     ]),
     row("security", "platform-admin-source", "Platform admin source", "Read-only operator-controlled env/DB", "active", [
@@ -121,8 +127,12 @@ export async function listAdminDomain(domain: AdminDomainId, request: AdminListR
     };
   }
 
+  if ((domain === "apps" || domain === "oauth-clients") && partnersAdminConfigured()) {
+    return listPartnerAppsFromPartners(domain, request);
+  }
+
   if (!adminConvexConfigured()) {
-    return unavailableList(domain, "Admin Convex real-data adapter is not configured. Set CONVEX_URL and ADMIN_CONVEX_SERVICE_TOKEN or WORKSPACE_ADMIN_SERVICE_TOKEN.");
+    return unavailableList(domain, "Admin Convex real-data adapter is not configured. Set CONVEX_URL and ADMIN_CONVEX_SERVICE_TOKEN.");
   }
 
   try {
@@ -147,6 +157,15 @@ export async function getAdminDomainDetail(domain: AdminDomainId, id: string, id
     };
   }
 
+  if ((domain === "apps" || domain === "oauth-clients") && partnersAdminConfigured()) {
+    const detail = await getPartnerAppDetailFromPartners(domain, id, identity);
+    if (!detail) return null;
+    return {
+      ...detail,
+      availableActions: actionsForIdentity(actionsForDomain(domain), identity?.roles ?? []),
+    };
+  }
+
   if (!adminConvexConfigured()) return null;
   const detail = await getAdminDomainDetailFromConvex(domain, id, identity);
   if (!detail) return null;
@@ -163,6 +182,19 @@ export async function runAdminDomainAction(domain: AdminDomainId, request: Admin
   const action = actionsForDomain(domain).find((candidate) => candidate.id === request.actionId);
   if (!action) throw new Error("This domain is read-only until a reversible Workspace control exists.");
   if (action.requiresReason && !request.reason?.trim()) throw new Error("A reason is required for this action.");
+
+  if ((domain === "apps" || domain === "oauth-clients") && ["approved", "rejected", "suspended"].includes(request.actionId)) {
+    if (!partnersAdminConfigured()) {
+      throw new Error("Partners admin API is not configured. Set PARTNERS_API_BASE_URL and PARTNERS_ADMIN_SERVICE_TOKEN.");
+    }
+    return reviewPartnerAppThroughPartners({
+      appId: request.targetId,
+      status: request.actionId as "approved" | "rejected" | "suspended",
+      reviewNotes: request.reason,
+      identity,
+    });
+  }
+
   if (!adminConvexConfigured()) throw new Error("Admin Convex real-data adapter is not configured.");
 
   try {

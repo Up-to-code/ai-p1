@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { RequireAuth, RequireEntitlement, useAuth } from "@qentrah/auth-sdk/react";
+import { useAuth, useAuthorization } from "@qentrah/auth/react";
 
 export function AuthStateGate({
   children,
@@ -15,9 +15,9 @@ export function AuthStateGate({
   error?: ReactNode;
 }) {
   const auth = useAuth();
-  if (auth.status === "loading") return <>{loading}</>;
-  if (auth.status === "error") return <>{error}</>;
-  if (auth.status !== "authenticated") return <>{unauthenticated}</>;
+  if (auth.context === undefined) return <>{loading}</>;
+  if (auth.context === null) return <>{unauthenticated}</>;
+  if (!auth.context) return <>{error}</>;
   return <>{children}</>;
 }
 
@@ -30,11 +30,21 @@ export function EntitlementGate({
   children: ReactNode;
   fallback?: ReactNode;
 }) {
+  const authorization = useAuthorization();
+  if (!authorization.hasEntitlement(entitlement)) return <>{fallback}</>;
   return (
-    <RequireEntitlement entitlement={entitlement} fallback={fallback}>
-      {children}
-    </RequireEntitlement>
+    <>{children}</>
   );
 }
 
-export { RequireAuth };
+export function RequireAuth({
+  children,
+  fallback = null,
+}: {
+  children: ReactNode;
+  fallback?: ReactNode;
+}) {
+  const auth = useAuth();
+  if (!auth.context) return <>{fallback}</>;
+  return <>{children}</>;
+}

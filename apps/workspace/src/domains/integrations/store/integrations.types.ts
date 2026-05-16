@@ -12,7 +12,7 @@ export interface Integration {
 
 export interface PartnerCatalogApp {
   id: string;
-  oauthClientId: string;
+  partnersClientId: string;
   name: string;
   publisherName?: string;
   description: string;
@@ -29,8 +29,8 @@ export type PartnerConnectionStatus = "active" | "paused" | "revoked" | "expired
 export interface PartnerConnection {
   id: string;
   organizationId: string;
-  partnerAppId: string;
-  oauthClientId: string;
+  partnersAppId: string;
+  partnersClientId: string;
   status: "active" | "paused" | "revoked";
   effectiveStatus?: PartnerConnectionStatus;
   scopes: string[];

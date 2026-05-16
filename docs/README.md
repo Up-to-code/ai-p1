@@ -26,9 +26,9 @@ partner platform docs.
 - [Workspace](../apps/workspace/README.md): main product, OAuth provider,
   resource APIs, Convex, and app routes.
 - [Partners](../apps/partners/README.md): developer portal, app registration,
-  docs, sandbox, and review callbacks.
+  docs, sandbox, review state, and platform APIs.
 - [Admin Review](../apps/admin/README.md): internal review console over
-  Workspace service APIs.
+  Partners service APIs.
 - [Demo Partner App](../apps/demo-partner-app/README.md): deployable OAuth
   reference implementation.
 - [Marketing](../apps/marketing/README.md): public marketing site.

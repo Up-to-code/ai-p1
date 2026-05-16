@@ -337,8 +337,8 @@ export function OrganizationScreen() {
   const canRemoveMembers = capabilities?.canRemoveMembers ?? false;
   const canManageRoles = Boolean(capabilities?.canCreateRoles || capabilities?.canUpdateRoles || capabilities?.canDeleteRoles);
   const canReadAgentLinks = capabilities?.canReadApiKeys ?? false;
-  const canCreateAgentLinks = Boolean(capabilities?.canCreateApiKeys && capabilities?.isPlatformAdmin);
-  const canDeleteAgentLinks = Boolean(capabilities?.canDeleteApiKeys && capabilities?.isPlatformAdmin);
+  const canCreateAgentLinks = capabilities?.canCreateApiKeys ?? false;
+  const canDeleteAgentLinks = capabilities?.canDeleteApiKeys ?? false;
   const canReadApiKeys = capabilities?.canReadApiKeys ?? false;
   const canCreateApiKeys = capabilities?.canCreateApiKeys ?? false;
   const canUpdateApiKeys = capabilities?.canUpdateApiKeys ?? false;
@@ -1491,6 +1491,15 @@ function apiKeyPermissionSummary(
     .join(" • ");
 }
 
+function organizationApiBaseUrl(organizationId: string) {
+  const origin = typeof window === "undefined" ? "" : window.location.origin;
+  return `${origin}/api/v1/partner/organizations/${encodeURIComponent(organizationId)}`;
+}
+
+function organizationApiStarterRequest(apiBaseUrl: string, apiKey: string) {
+  return `curl -H "Authorization: Bearer ${apiKey}" "${apiBaseUrl}/me"`;
+}
+
 function grantableApiKeyPermissions(capabilities?: OrganizationCapabilities): OrganizationApiKeyPermission[] {
   if (!capabilities) return [];
   const actions = {
@@ -1658,6 +1667,8 @@ function ApiKeysPanel({
     resource: (resource) => t(`resources.${resource}`),
     action: (action) => t(`actions.${action}`),
   });
+  const oneTimeApiBaseUrl = organizationApiBaseUrl(organizationId);
+  const oneTimeStarterRequest = organizationApiStarterRequest(oneTimeApiBaseUrl, oneTimeKey);
 
   return (
     <div className="space-y-8">
@@ -1767,7 +1778,24 @@ function ApiKeysPanel({
                 <p className="text-sm font-black text-zinc-900 dark:text-white">{t("modal.canDoTitle")}</p>
                 <p className="mt-1 text-xs leading-6 text-zinc-600 dark:text-zinc-300">{oneTimePermissionSummary}</p>
               </div>
-              <Input readOnly dir="ltr" value={oneTimeKey} className="h-12 rounded-xl font-mono text-xs" />
+              <div className="space-y-2">
+                <Label htmlFor="apiKeyBaseUrl" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.apiUrl")}</Label>
+                <Input id="apiKeyBaseUrl" readOnly dir="ltr" value={oneTimeApiBaseUrl} className="h-12 rounded-xl font-mono text-xs" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="apiKeyExampleRequest" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.exampleRequest")}</Label>
+                <textarea
+                  id="apiKeyExampleRequest"
+                  readOnly
+                  dir="ltr"
+                  value={oneTimeStarterRequest}
+                  className="min-h-24 w-full resize-none rounded-xl border border-zinc-200 bg-white px-3 py-3 font-mono text-xs leading-5 text-zinc-900 shadow-sm outline-none dark:border-white/10 dark:bg-[#111] dark:text-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="apiKeySecret" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.secret")}</Label>
+                <Input id="apiKeySecret" readOnly dir="ltr" value={oneTimeKey} className="h-12 rounded-xl font-mono text-xs" />
+              </div>
               <DialogFooter className="justify-start">
                 <Button onClick={copyOneTimeKey} className="bg-zinc-900 text-white hover:bg-black">
                   <Copy className="me-2 h-4 w-4" />

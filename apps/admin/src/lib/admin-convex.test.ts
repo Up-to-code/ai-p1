@@ -57,7 +57,7 @@ describe("admin Convex real-data adapter", () => {
     process.env.CONVEX_URL = "https://convex.test";
     delete process.env.ADMIN_CONVEX_SERVICE_TOKEN;
     delete process.env.WORKSPACE_ADMIN_SERVICE_TOKEN;
-    await expect(listAdminDomainFromConvex("apps")).rejects.toThrow("SERVICE_TOKEN");
+    await expect(listAdminDomainFromConvex("apps")).rejects.toThrow("ADMIN_CONVEX_SERVICE_TOKEN");
   });
 
   it("passes partner-visible replies through action mutations", async () => {

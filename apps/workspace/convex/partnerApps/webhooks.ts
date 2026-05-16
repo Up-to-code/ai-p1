@@ -9,6 +9,12 @@ import {
   inboundWebhookInputValidator,
   webhookEndpointInputValidator,
 } from "./validators";
+import {
+  encryptedPlaceholder,
+  protectOrganizationJson,
+  revealOrganizationJson,
+} from "../security/organizationData";
+import { protectClientPii, revealClientPii } from "../security/clientPii";
 
 const RETRY_DELAYS_MS = [
   0,
@@ -37,6 +43,35 @@ function optionalNumber(input: Input, key: string) {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
 
+function isPrivateIpv4(hostname: string) {
+  const parts = hostname.split(".").map((part) => Number(part));
+  if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) return false;
+  const [a, b] = parts;
+  return a === 0 ||
+    a === 10 ||
+    a === 127 ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168);
+}
+
+function assertSafeWebhookUrl(value: string) {
+  const url = new URL(value);
+  const hostname = url.hostname.toLowerCase().replace(/^\[/u, "").replace(/\]$/u, "");
+  const privateHost = hostname === "localhost" ||
+    hostname.endsWith(".localhost") ||
+    hostname === "metadata.google.internal" ||
+    isPrivateIpv4(hostname) ||
+    hostname === "::1" ||
+    hostname.startsWith("fc") ||
+    hostname.startsWith("fd") ||
+    hostname.startsWith("fe80:");
+
+  if (url.protocol !== "https:" || url.username || url.password || privateHost) {
+    throw new Error("Webhook URL must be HTTPS and cannot target local or private network hosts.");
+  }
+}
+
 function bytesToHex(bytes: Uint8Array) {
   return Array.from(bytes)
     .map((byte) => byte.toString(16).padStart(2, "0"))
@@ -50,6 +85,26 @@ function hexToBytes(hex: string) {
     bytes[index / 2] = Number.parseInt(hex.slice(index, index + 2), 16);
   }
   return bytes;
+}
+
+function configuredServerToken() {
+  return process.env.WORKSPACE_CONVEX_BRIDGE_SECRET ?? "";
+}
+
+function timingSafeEqual(left: string, right: string) {
+  const maxLength = Math.max(left.length, right.length);
+  let diff = left.length ^ right.length;
+  for (let index = 0; index < maxLength; index += 1) {
+    diff |= (left.charCodeAt(index) || 0) ^ (right.charCodeAt(index) || 0);
+  }
+  return diff === 0;
+}
+
+function assertServerToken(token: string) {
+  const configured = configuredServerToken();
+  if (configured.length < 32 || !timingSafeEqual(token, configured)) {
+    throw new Error("Invalid server function token.");
+  }
 }
 
 async function webhookSecretEncryptionKey() {
@@ -67,7 +122,7 @@ async function webhookSecretEncryptionKey() {
 
 async function protectWebhookSecret(secret: string) {
   const key = await webhookSecretEncryptionKey();
-  if (!key) return `plain:${secret}`;
+  if (!key) throw new Error("Webhook secret encryption key is required.");
 
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const ciphertext = await crypto.subtle.encrypt(
@@ -147,7 +202,7 @@ function clientFields(input: Input) {
 
 export const createEndpointFromHono = mutation({
   args: {
-    partnerAppId: v.id("partnerApps"),
+    partnerAppId: v.string(),
     organizationId: v.string(),
     input: webhookEndpointInputValidator,
   },
@@ -155,9 +210,7 @@ export const createEndpointFromHono = mutation({
   handler: async (ctx, args) => {
     await authComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "oauthApp", "update");
-
-    const app = await ctx.db.get(args.partnerAppId);
-    if (!app || app.status !== "approved") throw new Error("Partner app is not approved.");
+    assertSafeWebhookUrl(args.input.url);
 
     const now = Date.now();
     const endpointId = await ctx.db.insert("partnerWebhookEndpoints", {
@@ -177,12 +230,14 @@ export const createEndpointFromHono = mutation({
 
 export const acceptInboundFromHono = mutation({
   args: {
+    serverToken: v.string(),
     organizationId: v.string(),
-    partnerAppId: v.id("partnerApps"),
+    partnerAppId: v.string(),
     input: inboundWebhookInputValidator,
   },
   returns: v.any(),
   handler: async (ctx, args) => {
+    assertServerToken(args.serverToken);
     const byEventId = await ctx.db
       .query("partnerInboundEvents")
       .withIndex("by_partner_event", (q) =>
@@ -202,6 +257,7 @@ export const acceptInboundFromHono = mutation({
     }
 
     const now = Date.now();
+    const expiresAt = now + 90 * 24 * 60 * 60 * 1000;
     const eventRecordId = await ctx.db.insert("partnerInboundEvents", {
       organizationId: args.organizationId,
       partnerAppId: args.partnerAppId,
@@ -209,8 +265,11 @@ export const acceptInboundFromHono = mutation({
       idempotencyKey: args.input.idempotencyKey,
       eventType: args.input.eventType,
       occurredAt: args.input.occurredAt,
-      payload: args.input.data,
+      payload: encryptedPlaceholder(),
+      encryptedPayload: await protectOrganizationJson(args.organizationId, "partner-inbound-event", args.input.data),
+      payloadRedacted: true,
       status: "accepted",
+      expiresAt,
       createdAt: now,
     });
 
@@ -233,15 +292,21 @@ export const acceptInboundFromHono = mutation({
           const clientId = existingRef.resourceId as Id<"clients">;
           const existingClient = await ctx.db.get(clientId);
           if (existingClient?.organizationId === args.organizationId && !existingClient.deletedAt) {
+            const revealed = await revealClientPii(existingClient);
+            const fields = clientFields({ ...existingClient, ...revealed, ...client });
             await ctx.db.patch(clientId, {
-              ...clientFields({ ...existingClient, ...client }),
+              ...fields,
+              ...await protectClientPii(args.organizationId, fields),
               updatedAt: now,
             });
           }
         } else {
+          const fields = clientFields(client);
           const clientId = await ctx.db.insert("clients", {
             organizationId: args.organizationId,
-            ...clientFields(client),
+            ...fields,
+            ...await protectClientPii(args.organizationId, fields),
+            isDeleted: false,
             createdByUserId: `partner:${args.partnerAppId}`,
             createdAt: now,
             updatedAt: now,
@@ -290,7 +355,7 @@ export const enqueueOutbound = internalMutation({
     const activePartnerAppIds = new Set(
       connections
         .filter((connection) => connection.status === "active")
-        .map((connection) => connection.partnerAppId),
+        .map((connection) => connection.partnersAppId),
     );
     const endpoints = await ctx.db
       .query("partnerWebhookEndpoints")
@@ -314,10 +379,13 @@ export const enqueueOutbound = internalMutation({
         organizationId: args.organizationId,
         eventId: args.eventId,
         eventType: args.eventType,
-        payload: args.payload,
+        payload: encryptedPlaceholder(),
+        encryptedPayload: await protectOrganizationJson(args.organizationId, "partner-webhook-delivery", args.payload),
+        payloadRedacted: true,
         status: "pending",
         attemptCount: 0,
         nextAttemptAt: now,
+        expiresAt: now + 90 * 24 * 60 * 60 * 1000,
         createdAt: now,
         updatedAt: now,
       });
@@ -405,12 +473,15 @@ export const deliver = action({
     }
 
     const timestamp = Date.now();
+    const payload = target.delivery.encryptedPayload
+      ? await revealOrganizationJson(target.delivery.organizationId, "partner-webhook-delivery", target.delivery.encryptedPayload, target.delivery.payload ?? null)
+      : target.delivery.payload;
     const body = JSON.stringify({
       id: target.delivery.eventId,
       type: target.delivery.eventType,
       organizationId: target.delivery.organizationId,
       createdAt: target.delivery.createdAt,
-      data: target.delivery.payload,
+      data: payload,
     });
     const signingSecret = await revealWebhookSecret(target.endpoint.signingSecret);
     const signature = await buildWebhookSignature(signingSecret, timestamp, body);
@@ -418,6 +489,7 @@ export const deliver = action({
     try {
       const response: Response = await fetch(target.endpoint.url, {
         method: "POST",
+        redirect: "manual",
         headers: {
           "Content-Type": "application/json",
           "Qentrah-Event-Id": target.delivery.eventId,

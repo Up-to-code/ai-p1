@@ -8,7 +8,14 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Link } from "@/i18n/routing";
 import { useIntegrationsStore } from "@/domains/integrations";
 import { useAccountContext } from "@/domains/auth";
-import type { PartnerCatalogApp, PartnerConnection, PartnerConnectionStatus } from "../store/integrations.types";
+import type { PartnerCatalogApp, PartnerConnection } from "../store/integrations.types";
+import {
+  activePartnerConnectionCount,
+  buildPartnerCatalogCards,
+  buildPartnerConnectionCard,
+  findPartnerIntegrationDetail,
+  type PartnerCatalogCardModel,
+} from "../store/integrations.view-model";
 import { DetailNotFoundState, StatusPill } from "@/components/shared/crud-ui";
 import { useTranslations } from "next-intl";
 
@@ -65,18 +72,26 @@ export function IntegrationsScreen() {
     };
   }, [organizationId]);
 
-  const connectionByAppId = new Map(connections.map((connection) => [connection.partnerAppId, connection]));
-  const activeConnections = connections.filter((connection) => (connection.effectiveStatus ?? connection.status) === "active");
+  const catalogCards = buildPartnerCatalogCards(apps, connections);
+  const activeConnections = activePartnerConnectionCount(connections);
+  const refreshConnections = () => {
+    if (!organizationId) return;
+    setIsConnectionsLoading(true);
+    fetch(`/api/v1/organizations/${encodeURIComponent(organizationId)}/partner-connections`)
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Partner connections could not be loaded.")))
+      .then((payload: { connections?: PartnerConnection[] }) => setConnections(payload.connections ?? []))
+      .catch(() => setConnections([]))
+      .finally(() => setIsConnectionsLoading(false));
+  };
 
   return (
     <AppPageShell maxWidth="full">
       <AppPageHeader 
         eyebrow={t('catalog_eyebrow')} 
         title={t('title') + "."} 
-        actions={<AppPrimaryButton><Plug className="me-2 h-3.5 w-3.5" />{t('add')}</AppPrimaryButton>} 
       />
       <AppStatsGrid stats={[
-        { label: t('stats.connected'), value: activeConnections.length, icon: Plug },
+        { label: t('stats.connected'), value: activeConnections, icon: Plug },
         { label: t('stats.pending'), value: apps.length, dotClassName: "bg-amber-500" },
         { label: t('stats.events'), value: "Live", icon: Webhook },
         { label: t('stats.velocity'), value: "OAuth", icon: Zap },
@@ -88,10 +103,15 @@ export function IntegrationsScreen() {
           { value: "webhooks", label: t('tabs.webhooks') }
         ]} />
         <TabsContent value="catalog">
-          <PartnerCatalogGrid apps={apps} isLoading={isLoading} connectionByAppId={connectionByAppId} />
+          <PartnerCatalogGrid cards={catalogCards} isLoading={isLoading} />
         </TabsContent>
         <TabsContent value="connected">
-          <PartnerConnectionsGrid connections={connections} isLoading={isConnectionsLoading} />
+          <PartnerConnectionsGrid
+            connections={connections}
+            isLoading={isConnectionsLoading}
+            organizationId={organizationId ?? undefined}
+            onConnectionChanged={refreshConnections}
+          />
         </TabsContent>
         <TabsContent value="webhooks">
           <AppSection 
@@ -108,13 +128,11 @@ export function IntegrationsScreen() {
 }
 
 function PartnerCatalogGrid({
-  apps,
+  cards,
   isLoading,
-  connectionByAppId,
 }: {
-  apps: PartnerCatalogApp[];
+  cards: PartnerCatalogCardModel[];
   isLoading: boolean;
-  connectionByAppId: Map<string, PartnerConnection>;
 }) {
   if (isLoading) {
     return (
@@ -124,7 +142,7 @@ function PartnerCatalogGrid({
     );
   }
 
-  if (apps.length === 0) {
+  if (cards.length === 0) {
     return (
       <AppSection className="flex min-h-64 flex-col items-center justify-center gap-3 text-center">
         <Plug className="h-8 w-8 text-zinc-300" />
@@ -135,27 +153,15 @@ function PartnerCatalogGrid({
 
   return (
     <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-      {apps.map((app) => (
-        <PartnerAppCard key={app.id} app={app} connection={connectionByAppId.get(app.id)} />
+      {cards.map((card) => (
+        <PartnerAppCard key={card.app.id} card={card} />
       ))}
     </div>
   );
 }
 
-function statusTone(status?: PartnerConnectionStatus | "available") {
-  if (status === "active") return "success";
-  if (status === "expired" || status === "paused") return "warning";
-  if (status === "revoked") return "danger";
-  return "neutral";
-}
-
-function partnerVisitHref(app: PartnerCatalogApp) {
-  return app.homepageUrl || null;
-}
-
-function PartnerAppCard({ app, connection }: { app: PartnerCatalogApp; connection?: PartnerConnection }) {
-  const effectiveStatus = connection ? (connection.effectiveStatus ?? connection.status) : "available";
-  const visitHref = partnerVisitHref(app);
+function PartnerAppCard({ card }: { card: PartnerCatalogCardModel }) {
+  const { app, effectiveStatus, statusTone, visitHref, scopeCount } = card;
 
   return (
     <AppSection className="flex min-h-[320px] flex-col justify-between rounded-2xl p-8" tone="muted">
@@ -164,7 +170,7 @@ function PartnerAppCard({ app, connection }: { app: PartnerCatalogApp; connectio
           <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-white dark:bg-black/20">
             <Code2 className="h-7 w-7 text-zinc-900 dark:text-white" />
           </div>
-          <StatusPill label={effectiveStatus} tone={statusTone(effectiveStatus)} />
+          <StatusPill label={effectiveStatus} tone={statusTone} />
         </div>
         <div>
           <Link href={`/integrations/${app.id}`} className="rounded-xl focus-visible:ring-2 focus-visible:ring-zinc-900/15">
@@ -182,7 +188,7 @@ function PartnerAppCard({ app, connection }: { app: PartnerCatalogApp; connectio
       </div>
       <div className="mt-8 flex items-center justify-between border-t border-zinc-100 pt-6 dark:border-white/5">
         <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
-          {app.allowedScopes.length} scopes
+          {scopeCount} scopes
         </span>
         {visitHref ? (
           <a
@@ -203,7 +209,120 @@ function PartnerAppCard({ app, connection }: { app: PartnerCatalogApp; connectio
   );
 }
 
-function PartnerConnectionsGrid({ connections, isLoading }: { connections: PartnerConnection[]; isLoading: boolean }) {
+async function updatePartnerConnection(organizationId: string, connection: PartnerConnection, status: "active" | "paused") {
+  const response = await fetch(`/api/v1/organizations/${encodeURIComponent(organizationId)}/partner-connections/${encodeURIComponent(connection.id)}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+  if (!response.ok) throw new Error("Partner connection could not be updated.");
+}
+
+async function revokePartnerConnection(organizationId: string, connection: PartnerConnection) {
+  const response = await fetch(`/api/v1/organizations/${encodeURIComponent(organizationId)}/partner-connections/${encodeURIComponent(connection.id)}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) throw new Error("Partner connection could not be revoked.");
+}
+
+function PartnerConnectionCard({
+  connection,
+  organizationId,
+  onConnectionChanged,
+}: {
+  connection: PartnerConnection;
+  organizationId?: string;
+  onConnectionChanged: () => void;
+}) {
+  const [isMutating, setIsMutating] = useState(false);
+  const model = buildPartnerConnectionCard(connection);
+  if (!model) return null;
+  const {
+    connection: connectedConnection,
+    effectiveStatus,
+    statusTone,
+    canPauseOrResume,
+    pauseOrResumeAction,
+    canRevoke,
+  } = model;
+
+  async function run(action: "pause" | "resume" | "revoke") {
+    if (!organizationId) return;
+    setIsMutating(true);
+    try {
+      if (action === "revoke") await revokePartnerConnection(organizationId, connection);
+      else await updatePartnerConnection(organizationId, connection, action === "pause" ? "paused" : "active");
+      onConnectionChanged();
+    } finally {
+      setIsMutating(false);
+    }
+  }
+
+  return (
+    <AppSection className="flex min-h-[340px] flex-col justify-between rounded-2xl p-8" tone="muted">
+      <div className="space-y-6">
+        <div className="flex items-start justify-between">
+          <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-white dark:bg-black/20">
+            <Code2 className="h-7 w-7 text-zinc-900 dark:text-white" />
+          </div>
+          <StatusPill label={effectiveStatus} tone={statusTone} />
+        </div>
+        <div>
+          <Link href={`/integrations/${connectedConnection.partnerApp.id}`} className="rounded-xl focus-visible:ring-2 focus-visible:ring-zinc-900/15">
+            <h3 className="text-xl font-black uppercase tracking-tight text-zinc-900 dark:text-white">{connectedConnection.partnerApp.name}</h3>
+          </Link>
+          <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-zinc-400">{connectedConnection.partnerApp.publisherName ?? "Partner App"}</p>
+        </div>
+        <dl className="grid gap-3 text-xs font-bold text-zinc-500">
+          <div className="flex justify-between gap-4">
+            <dt>Scopes</dt>
+            <dd className="font-mono">{connection.scopes.length}</dd>
+          </div>
+          <div className="flex justify-between gap-4">
+            <dt>Expires</dt>
+            <dd>{connection.expiresAt ? new Date(connection.expiresAt).toLocaleDateString() : "No expiry"}</dd>
+          </div>
+        </dl>
+      </div>
+      <div className="mt-8 grid gap-2 border-t border-zinc-100 pt-6 dark:border-white/5 sm:grid-cols-2">
+        {canRevoke ? (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isMutating || !organizationId || !canPauseOrResume}
+            onClick={() => run(pauseOrResumeAction)}
+            className="rounded-lg text-[10px] font-black uppercase tracking-widest"
+          >
+            {pauseOrResumeAction === "pause" ? "Pause" : "Resume"}
+          </Button>
+        ) : null}
+        {canRevoke ? (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isMutating || !organizationId}
+            onClick={() => run("revoke")}
+            className="rounded-lg text-[10px] font-black uppercase tracking-widest"
+          >
+            Revoke
+          </Button>
+        ) : null}
+      </div>
+    </AppSection>
+  );
+}
+
+function PartnerConnectionsGrid({
+  connections,
+  isLoading,
+  organizationId,
+  onConnectionChanged,
+}: {
+  connections: PartnerConnection[];
+  isLoading: boolean;
+  organizationId?: string;
+  onConnectionChanged: () => void;
+}) {
   if (isLoading) {
     return (
       <AppSection className="flex min-h-64 items-center justify-center text-sm font-black uppercase tracking-widest text-zinc-400">
@@ -224,9 +343,12 @@ function PartnerConnectionsGrid({ connections, isLoading }: { connections: Partn
   return (
     <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
       {connections.map((connection) => (
-        connection.partnerApp ? (
-          <PartnerAppCard key={connection.id} app={connection.partnerApp} connection={connection} />
-        ) : null
+        <PartnerConnectionCard
+          key={connection.id}
+          connection={connection}
+          organizationId={organizationId}
+          onConnectionChanged={onConnectionChanged}
+        />
       ))}
     </div>
   );
@@ -234,7 +356,10 @@ function PartnerConnectionsGrid({ connections, isLoading }: { connections: Partn
 
 export function IntegrationDetailScreen({ id }: { id: string }) {
   const t = useTranslations('Integrations');
+  const account = useAccountContext();
+  const organizationId = account.workspace.organizationId;
   const [apps, setApps] = useState<PartnerCatalogApp[]>([]);
+  const [connections, setConnections] = useState<PartnerConnection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -255,7 +380,27 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
     };
   }, []);
 
-  const app = apps.find((item) => item.id === id);
+  useEffect(() => {
+    if (!organizationId) {
+      setConnections([]);
+      return;
+    }
+
+    let active = true;
+    fetch(`/api/v1/organizations/${encodeURIComponent(organizationId)}/partner-connections`)
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Partner connections could not be loaded.")))
+      .then((payload: { connections?: PartnerConnection[] }) => {
+        if (active) setConnections(payload.connections ?? []);
+      })
+      .catch(() => {
+        if (active) setConnections([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [organizationId]);
+
+  const { app, connection } = findPartnerIntegrationDetail(id, apps, connections);
 
   if (isLoading) {
     return (
@@ -302,9 +447,9 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
         }
       />
       <AppStatsGrid stats={[
-        { label: t('detail.stats.status'), value: app.status, icon: Plug },
+        { label: t('detail.stats.status'), value: connection ? (connection.effectiveStatus ?? connection.status) : app.status, icon: Plug },
         { label: t('detail.stats.volume'), value: `${app.allowedScopes.length} scopes`, icon: Webhook },
-        { label: t('detail.stats.category'), value: "14 day auth", icon: Code2 },
+        { label: t('detail.stats.category'), value: connection?.expiresAt ? new Date(connection.expiresAt).toLocaleDateString() : "14 day auth", icon: Code2 },
         { label: t('detail.stats.health'), value: t('detail.stats.online'), icon: Zap },
       ]} />
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
@@ -323,11 +468,12 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
         <AppSection title={t('detail.payload')} description={t('detail.payloadDesc')}>
           <dl className="grid gap-4">
             {[
-              [t('detail.fields.id'), app.oauthClientId],
+              [t('detail.fields.id'), app.partnersClientId],
               [t('detail.fields.name'), app.name],
               [t('detail.fields.status'), app.status],
               ["Partner URL", app.homepageUrl ?? "Not provided"],
-              ["Authorization expiry", "14 days"],
+              ["Connection", connection ? (connection.effectiveStatus ?? connection.status) : "Not connected"],
+              ["Authorization expiry", connection?.expiresAt ? new Date(connection.expiresAt).toLocaleString() : "14 days after consent"],
               [t('detail.fields.events'), app.redirectUris[0] ?? "No redirect URI"],
             ].map(([label, value]) => (
               <div key={label} className="rounded-2xl border border-zinc-100 p-4 dark:border-white/5">
@@ -337,6 +483,17 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
             ))}
           </dl>
         </AppSection>
+        {connection ? (
+          <AppSection title="Granted scopes" description="Organization-level access currently granted to this partner app.">
+            <div className="mt-6 flex flex-wrap gap-2">
+              {connection.scopes.map((scope) => (
+                <span key={scope} className="rounded-xl border border-zinc-100 px-3 py-2 font-mono text-xs font-bold text-zinc-600 dark:border-white/5 dark:text-zinc-300">
+                  {scope}
+                </span>
+              ))}
+            </div>
+          </AppSection>
+        ) : null}
       </div>
     </AppPageShell>
   );

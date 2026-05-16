@@ -43,12 +43,11 @@ nextEnv = setEnvValue(nextEnv, "PLATFORM_ADMIN_EMAILS", "admin@qentrah.local");
 
 const convexUrl = readEnvValue(workspaceEnv, "CONVEX_URL") ?? readEnvValue(workspaceEnv, "NEXT_PUBLIC_CONVEX_URL");
 const publicConvexUrl = readEnvValue(workspaceEnv, "NEXT_PUBLIC_CONVEX_URL") ?? convexUrl;
-const serviceToken = readEnvValue(workspaceEnv, "ADMIN_CONVEX_SERVICE_TOKEN") ?? readEnvValue(workspaceEnv, "WORKSPACE_ADMIN_SERVICE_TOKEN");
+const serviceToken = readEnvValue(workspaceEnv, "ADMIN_CONVEX_SERVICE_TOKEN");
 if (convexUrl) nextEnv = setEnvValue(nextEnv, "CONVEX_URL", convexUrl);
 if (publicConvexUrl) nextEnv = setEnvValue(nextEnv, "NEXT_PUBLIC_CONVEX_URL", publicConvexUrl);
 if (serviceToken) {
   nextEnv = setEnvValue(nextEnv, "ADMIN_CONVEX_SERVICE_TOKEN", serviceToken);
-  nextEnv = setEnvValue(nextEnv, "WORKSPACE_ADMIN_SERVICE_TOKEN", serviceToken);
 }
 
 writeFileSync(envPath, `${nextEnv.trimEnd()}\n`);
@@ -58,4 +57,4 @@ console.log(`Email: admin@qentrah.local`);
 console.log(`Password: ${password}`);
 console.log("Only the SHA-256 password hash was written to apps/admin/.env.local.");
 console.log(convexUrl ? "Copied Workspace Convex URL into Admin env." : "Workspace Convex URL was not found.");
-console.log(serviceToken ? "Copied Workspace admin service token into Admin env." : "Workspace admin service token was not found.");
+console.log(serviceToken ? "Copied Admin Convex service token into Admin env." : "Admin Convex service token was not found.");

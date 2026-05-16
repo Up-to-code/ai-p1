@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { PartnerAppSummary } from "./partnerApps";
-import { qentrahWorkspaceConfig, normalizeWorkspaceScopes, submitPartnerAppRegistration } from "./qentrahWorkspace";
+import { qentrahWorkspaceConfig, normalizeWorkspaceScopes, syncOAuthClientRuntimeProjection } from "./qentrahWorkspace";
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -12,11 +12,9 @@ describe("Qentrah Workspace registration config", () => {
     expect(qentrahWorkspaceConfig({
       QENTRAH_WORKSPACE_API_URL: "localhost:3000/",
       QENTRAH_PLATFORM_SERVICE_TOKEN: " platform-secret ",
-      SITE_URL: "http://localhost:3002/",
     })).toEqual({
       baseUrl: "https://localhost:3000",
       serviceToken: "platform-secret",
-      callbackBaseUrl: "http://localhost:3002",
     });
   });
 
@@ -48,20 +46,19 @@ describe("Qentrah Workspace registration config", () => {
     ])).toEqual(["client:read", "property:read", "organization:read"]);
   });
 
-  it("submits created partner apps to the Workspace registration endpoint for review", async () => {
+  it("syncs approved partner apps to the Workspace OAuth runtime endpoint", async () => {
     vi.stubEnv("QENTRAH_WORKSPACE_API_URL", "https://app.qentrah.com/");
     vi.stubEnv("QENTRAH_PLATFORM_SERVICE_TOKEN", "service-token");
-    vi.stubEnv("SITE_URL", "https://partners.qentrah.com/");
     const fetchMock = vi.fn(async (_url: string | URL | Request, _init?: RequestInit) => Response.json({
-      app: {
-        id: "workspace_app_123",
-        oauthClientId: "workspace_oauth_123",
-        status: "pending",
+      runtime: {
+        partnersAppId: "partners_app_123",
+        clientId: "partners_client_123",
+        status: "approved",
       },
     }));
     vi.stubGlobal("fetch", fetchMock);
 
-    const result = await submitPartnerAppRegistration({
+    const result = await syncOAuthClientRuntimeProjection({
       id: "partners_app_123",
       clientId: "partners_client_123",
       name: "Launch Desk",
@@ -70,7 +67,7 @@ describe("Qentrah Workspace registration config", () => {
       iconUrl: "https://partner.example.com/icon.png",
       logoUrl: null,
       clientType: "confidential",
-      status: "pending_review",
+      status: "active",
       workspacePartnerAppId: null,
       workspaceOauthClientId: null,
       workspaceSyncStatus: "pending",
@@ -86,12 +83,12 @@ describe("Qentrah Workspace registration config", () => {
     } satisfies PartnerAppSummary);
 
     expect(result).toEqual({
-      id: "workspace_app_123",
-      oauthClientId: "workspace_oauth_123",
-      status: "pending",
+      partnersAppId: "partners_app_123",
+      clientId: "partners_client_123",
+      status: "approved",
     });
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://app.qentrah.com/api/v1/admin/partner-app-registrations",
+      "https://app.qentrah.com/api/v1/admin/oauth-client-runtime-sync",
       expect.objectContaining({
         method: "POST",
         headers: {
@@ -112,7 +109,7 @@ describe("Qentrah Workspace registration config", () => {
       redirectUris: ["https://partner.example.com/oauth/callback"],
       allowedScopes: ["organization:read", "client:read", "property:read"],
       clientType: "confidential",
-      callbackUrl: "https://partners.qentrah.com/api/qentrah-review-callback",
+      status: "approved",
     });
   });
 });

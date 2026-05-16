@@ -56,6 +56,9 @@
       "@qentrah/platform-core/classnames": [
         "../../packages/platform-core/src/classnames.ts"
       ],
+      "@qentrah/platform-core/effect-api": [
+        "../../packages/platform-core/src/effect-api.ts"
+      ],
       "@qentrah/platform-core/errors": [
         "../../packages/platform-core/src/errors.ts"
       ],
@@ -64,6 +67,9 @@
       ],
       "@qentrah/platform-core/session": [
         "../../packages/platform-core/src/session.ts"
+      ],
+      "@qentrah/partner-workspace-sync": [
+        "../../packages/partner-workspace-sync/src/index.ts"
       ],
       "@qentrah/auth": [
         "../../packages/auth/src/index.ts"

@@ -15,6 +15,7 @@
   "dependencies": {
     "@qentrah/brand-identity": "0.1.0",
     "@qentrah/auth": "0.1.0",
+    "@qentrah/partner-workspace-sync": "0.1.0",
     "@qentrah/platform-core": "0.1.0",
     "@qentrah/ui": "0.1.0",
     "@qentrah/web-foundation": "0.1.0",

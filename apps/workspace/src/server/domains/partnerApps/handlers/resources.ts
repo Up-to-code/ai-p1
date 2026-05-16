@@ -2,10 +2,10 @@ import type { Context } from "hono";
 import type {
   PartnerPermissionAction,
   PartnerPermissionResource,
-} from "@/packages/partner-apps/scopes";
+} from "@qentrah/partner-auth-core";
 import { validateJsonBody } from "@/server/utils/request/json-body";
 import { inboundWebhookSchema } from "../validation/partner-app.schema";
-import { partnerAccessError, requirePartnerAccess } from "../services/access-token";
+import { authorizePartnerResourceRequest, partnerAccessError } from "../services/access-token";
 import {
   isOrganizationApiKeyToken,
   organizationApiKeyAccessError,
@@ -49,7 +49,7 @@ async function requireAccess(
   if (isOrganizationApiKeyToken(token)) {
     return requireOrganizationApiKeyAccess(c, organizationId, resource, action);
   }
-  return requirePartnerAccess(c, organizationId, resource, action);
+  return authorizePartnerResourceRequest(c, organizationId, resource, action);
 }
 
 function accessError(error: unknown) {

@@ -407,8 +407,8 @@ function PartnerAppDetail({ detail, locale }: { detail: AdminDetailResponse; loc
         <Panel>
           <h2 className="text-lg font-black">{text(locale, "Review evidence", "بيانات المراجعة")}</h2>
           <div className="mt-5 grid gap-px overflow-hidden rounded-2xl border border-zinc-100 bg-zinc-100 dark:border-white/5 dark:bg-white/5 sm:grid-cols-2">
-            {detail.record.fields.filter((field) => !["Logo", "Homepage"].includes(field.label)).map((field) => (
-              <SafeField key={field.label} field={field} locale={locale} />
+            {detail.record.fields.filter((field) => !["Logo", "Homepage"].includes(field.label)).map((field, index) => (
+              <SafeField key={`${field.label}:${index}:${field.value}`} field={field} locale={locale} />
             ))}
           </div>
         </Panel>
@@ -809,12 +809,12 @@ export function AdminActionPanel({ domain, recordId, actions, locale }: { domain
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ actionId: action.id, targetId: recordId, reason }),
       });
-      const payload = await response.json().catch(() => null) as { error?: string; auditId?: string } | null;
+      const payload = await response.json().catch(() => null) as { error?: string; auditId?: string; nextState?: string } | null;
       if (!response.ok) {
         setMessage(payload?.error ?? text(locale, "Action failed.", "فشل الإجراء."));
         return;
       }
-      setMessage(text(locale, "Action recorded and audited.", "تم تسجيل الإجراء وتدقيقه."));
+      setMessage(payload?.nextState ?? text(locale, "Action recorded and audited.", "تم تسجيل الإجراء وتدقيقه."));
       router.refresh();
     });
   }

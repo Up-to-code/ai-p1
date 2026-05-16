@@ -13,8 +13,9 @@ const MAX_STATS_SCAN_ITEMS = 2_000;
 
 async function presentProperty(ctx: QueryCtx, property: Doc<"propertyUnits">) {
   const media = await listResourceMedia(ctx, property.organizationId, "property", property._id);
+  const { deletedAt: _deletedAt, isDeleted: _isDeleted, ...safeProperty } = property;
   return {
-    ...property,
+    ...safeProperty,
     id: property._id,
     visibility: property.visibility ?? "private",
     coverImageUrl: selectCoverUrl(media),
@@ -23,8 +24,9 @@ async function presentProperty(ctx: QueryCtx, property: Doc<"propertyUnits">) {
 
 async function presentPropertyListItem(ctx: QueryCtx, property: Doc<"propertyUnits">) {
   const media = await listResourceMedia(ctx, property.organizationId, "property", property._id);
+  const { deletedAt: _deletedAt, isDeleted: _isDeleted, ...safeProperty } = property;
   return {
-    ...property,
+    ...safeProperty,
     id: property._id,
     visibility: property.visibility ?? "private",
     coverImageUrl: selectCoverUrl(media),

@@ -1,6 +1,6 @@
 export type BrandLocale = "en" | "ar";
 export type BrandProduct = "workspace" | "partners" | "admin" | "demo" | "marketing" | "platform";
-export type BrandRoute = "auth" | "api" | "reviewCallback" | "oauthStart" | "oauthCallback" | "oauthLogout";
+export type BrandRoute = "auth" | "api" | "oauthStart" | "oauthCallback" | "oauthLogout";
 export declare const brandIdentity: {
     readonly name: {
         readonly en: "Qentrah";
@@ -65,7 +65,6 @@ export declare const brandIdentity: {
     readonly routes: {
         readonly auth: "auth/qentrah";
         readonly api: "qentrah";
-        readonly reviewCallback: "qentrah-review-callback";
         readonly oauthStart: "api/auth/qentrah/start";
         readonly oauthCallback: "api/auth/qentrah/callback";
         readonly oauthLogout: "api/auth/qentrah/logout";
@@ -74,7 +73,7 @@ export declare const brandIdentity: {
 export declare function brandLabel(locale?: BrandLocale): "Qentrah" | "قنطرة";
 export declare function brandProductName(product: BrandProduct, locale?: BrandLocale): string;
 export declare function brandEnvName(key: string): string;
-export declare function brandRouteSlug(route: BrandRoute): "qentrah" | "auth/qentrah" | "qentrah-review-callback" | "api/auth/qentrah/start" | "api/auth/qentrah/callback" | "api/auth/qentrah/logout";
+export declare function brandRouteSlug(route: BrandRoute): "qentrah" | "auth/qentrah" | "api/auth/qentrah/start" | "api/auth/qentrah/callback" | "api/auth/qentrah/logout";
 export declare function brandRoutePath(route: BrandRoute): string;
 export declare function brandDomainUrl(domain: keyof typeof brandIdentity.domains): string;
 export declare function readBrandEnv(key: string, env?: Record<string, string | undefined>, fallback?: string): string | undefined;

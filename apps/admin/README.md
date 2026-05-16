@@ -2,8 +2,9 @@
 
 Admin Review is the internal Next.js console for platform security,
 authorization, partner app review, and operational control surfaces. It owns
-the Admin entry session, while Workspace remains the source of truth for
-Workspace data and review mutations.
+the Admin entry session. Partners is the source of truth for partner app review
+state; Workspace remains the source of truth for Workspace data and
+organization authorization state.
 
 ## Local Development
 
@@ -26,7 +27,7 @@ Default local URL: `http://localhost:3003`.
 - Provide a Workspace-style Admin shell in Arabic and English.
 - Authenticate Admin directly through env-controlled Admin credentials.
 - Resolve Admin roles from operator-controlled env or DB-backed allowlists.
-- List and review partner app submissions through Workspace admin APIs.
+- List and review partner app submissions through Partners admin APIs.
 - Keep Admin promotion outside every UI path.
 
 ## Important Routes And Files
@@ -40,7 +41,7 @@ Default local URL: `http://localhost:3003`.
 | `src/app/(console)/layout.tsx` | Protected Admin console shell |
 | `src/lib/admin-session.ts` | Signed HttpOnly Admin session cookie |
 | `src/lib/admin-roles.ts` | Env-controlled Admin role model |
-| `src/lib/workspace.ts` | Workspace admin service API client |
+| `src/lib/partners.ts` | Partners admin service API client |
 
 ## Environment
 
@@ -54,8 +55,11 @@ Default local URL: `http://localhost:3003`.
 | `PLATFORM_SECURITY_REVIEWER_EMAILS` | Optional | Read-only security reviewer emails. |
 | `PLATFORM_SUPPORT_OPERATOR_EMAILS` | Optional | Read-only support operator emails. |
 | `PLATFORM_AUDIT_VIEWER_EMAILS` | Optional | Read-only audit viewer emails. |
-| `WORKSPACE_API_BASE_URL` | Yes | Workspace origin, for example `http://localhost:3000`. |
-| `WORKSPACE_ADMIN_SERVICE_TOKEN` | Yes for live Workspace data | Service token accepted by Workspace admin APIs. Browser never receives it. |
+| `PARTNERS_API_BASE_URL` | Yes for partner app review | Partners origin, for example `http://localhost:3002`. |
+| `PARTNERS_ADMIN_SERVICE_TOKEN` | Yes for partner app review | Service token accepted by Partners admin APIs. Browser never receives it. |
+| `WORKSPACE_API_BASE_URL` | Optional runtime projection bridge | Workspace origin, for example `http://localhost:3000`. |
+| `WORKSPACE_ADMIN_SERVICE_TOKEN` | Runtime projection bridge | Service token accepted by Workspace admin APIs. Browser never receives it. |
+| `ADMIN_CONVEX_SERVICE_TOKEN` | Convex real-data mode | Dedicated token accepted by Workspace Convex admin functions. Do not reuse `WORKSPACE_ADMIN_SERVICE_TOKEN`. |
 
 Generate a password hash with:
 

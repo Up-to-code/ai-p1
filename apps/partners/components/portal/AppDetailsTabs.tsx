@@ -271,7 +271,7 @@ export function AppDetailsTabs({
                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
                   <InfoBlock label="Client type" value={app.clientType === "public" ? "Public PKCE" : "Confidential"} />
                   <InfoBlock label="Lifetime" value={`${app.authorizationExpiresAfterDays} days`} />
-                  <InfoBlock label="Workspace sync" value={app.workspaceSyncStatus ?? "not_synced"} />
+                  <InfoBlock label="OAuth runtime" value={app.workspaceSyncStatus ?? "not_synced"} />
                 </div>
               </div>
 

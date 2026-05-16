@@ -1,20 +1,28 @@
 import { api } from "@convex/_generated/api";
-import type { Id } from "@convex/_generated/dataModel";
-import { convexHttp } from "@/server/convex/http-client";
+import { convexCalls } from "@/server/convex/http-client";
 import type {
   PartnerPermissionAction,
   PartnerPermissionResource,
-} from "@/packages/partner-apps/scopes";
+} from "@qentrah/partner-auth-core";
 import type { InboundWebhookPayload } from "../validation/partner-app.schema";
 import type { PartnerAccessContext } from "./access-token";
 import type { OrganizationApiKeyAccessContext } from "./organization-api-key-access";
+
+function convexBridgeSecret() {
+  const secret = process.env.WORKSPACE_CONVEX_BRIDGE_SECRET?.trim() ?? "";
+  if (secret.length < 32) {
+    throw new Error("WORKSPACE_CONVEX_BRIDGE_SECRET must be configured for partner resource access.");
+  }
+  return secret;
+}
 
 export function readPartnerResource(
   organizationId: string,
   resource: PartnerPermissionResource,
   input?: unknown,
 ) {
-  return convexHttp.query(api.partnerApps.resources.read, {
+  return convexCalls.query<Record<string, unknown>, unknown>(api.partnerApps.resources.read, {
+    serverToken: convexBridgeSecret(),
     organizationId,
     resource,
     action: "read",
@@ -28,9 +36,10 @@ export function writePartnerResource(
   action: Exclude<PartnerPermissionAction, "read">,
   input?: unknown,
 ) {
-  return convexHttp.mutation(api.partnerApps.resources.write, {
+  return convexCalls.mutation<Record<string, unknown>, unknown>(api.partnerApps.resources.write, {
+    serverToken: convexBridgeSecret(),
     organizationId: access.organizationId,
-    partnerAppId: access.partnerAppId as Id<"partnerApps">,
+    partnerAppId: access.partnerAppId,
     resource,
     action,
     input,
@@ -42,7 +51,8 @@ export function readOrganizationApiKeyResource(
   resource: PartnerPermissionResource,
   input?: unknown,
 ) {
-  return convexHttp.query(api.organizationApiKeys.readResource, {
+  return convexCalls.query<Record<string, unknown>, unknown>(api.organizationApiKeys.readResource, {
+    serverToken: convexBridgeSecret(),
     organizationId,
     resource,
     action: "read",
@@ -56,7 +66,8 @@ export function writeOrganizationApiKeyResource(
   action: Exclude<PartnerPermissionAction, "read">,
   input?: unknown,
 ) {
-  return convexHttp.mutation(api.organizationApiKeys.writeResource, {
+  return convexCalls.mutation<Record<string, unknown>, unknown>(api.organizationApiKeys.writeResource, {
+    serverToken: convexBridgeSecret(),
     organizationId: access.organizationId,
     apiKeyId: access.apiKeyId,
     resource,
@@ -69,9 +80,10 @@ export function acceptInboundWebhook(
   access: PartnerAccessContext,
   input: InboundWebhookPayload & { idempotencyKey?: string },
 ) {
-  return convexHttp.mutation(api.partnerApps.webhooks.acceptInboundFromHono, {
+  return convexCalls.mutation<Record<string, unknown>, unknown>(api.partnerApps.webhooks.acceptInboundFromHono, {
+    serverToken: convexBridgeSecret(),
     organizationId: access.organizationId,
-    partnerAppId: access.partnerAppId as Id<"partnerApps">,
+    partnerAppId: access.partnerAppId,
     input,
   });
 }

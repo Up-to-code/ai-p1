@@ -47,6 +47,7 @@ import type * as organizations_profile_read from "../organizations/profile/read.
 import type * as organizations_profile_validators from "../organizations/profile/validators.js";
 import type * as organizations_profile_write from "../organizations/profile/write.js";
 import type * as partnerApps_apps from "../partnerApps/apps.js";
+import type * as partnerApps_migrations from "../partnerApps/migrations.js";
 import type * as partnerApps_oauthClients from "../partnerApps/oauthClients.js";
 import type * as partnerApps_resources from "../partnerApps/resources.js";
 import type * as partnerApps_validators from "../partnerApps/validators.js";
@@ -58,6 +59,10 @@ import type * as projects_write from "../projects/write.js";
 import type * as properties_read from "../properties/read.js";
 import type * as properties_validators from "../properties/validators.js";
 import type * as properties_write from "../properties/write.js";
+import type * as security_backfill from "../security/backfill.js";
+import type * as security_backfillTargets from "../security/backfillTargets.js";
+import type * as security_clientPii from "../security/clientPii.js";
+import type * as security_organizationData from "../security/organizationData.js";
 import type * as userProfiles_data from "../userProfiles/data.js";
 import type * as userProfiles_read from "../userProfiles/read.js";
 import type * as userProfiles_validators from "../userProfiles/validators.js";
@@ -109,6 +114,7 @@ declare const fullApi: ApiFromModules<{
   "organizations/profile/validators": typeof organizations_profile_validators;
   "organizations/profile/write": typeof organizations_profile_write;
   "partnerApps/apps": typeof partnerApps_apps;
+  "partnerApps/migrations": typeof partnerApps_migrations;
   "partnerApps/oauthClients": typeof partnerApps_oauthClients;
   "partnerApps/resources": typeof partnerApps_resources;
   "partnerApps/validators": typeof partnerApps_validators;
@@ -120,6 +126,10 @@ declare const fullApi: ApiFromModules<{
   "properties/read": typeof properties_read;
   "properties/validators": typeof properties_validators;
   "properties/write": typeof properties_write;
+  "security/backfill": typeof security_backfill;
+  "security/backfillTargets": typeof security_backfillTargets;
+  "security/clientPii": typeof security_clientPii;
+  "security/organizationData": typeof security_organizationData;
   "userProfiles/data": typeof userProfiles_data;
   "userProfiles/read": typeof userProfiles_read;
   "userProfiles/validators": typeof userProfiles_validators;

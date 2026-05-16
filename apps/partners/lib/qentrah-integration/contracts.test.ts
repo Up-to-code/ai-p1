@@ -2,14 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   buildIntegrationHeaders,
   parseQentrahIntegrationPayload,
-  partnerAppRegistrationSyncSchema,
+  partnerOAuthRuntimeSyncSchema,
   workspaceAuthorizationStatusSchema,
 } from "./contracts";
 
 describe("Qentrah integration contracts", () => {
-  it("accepts partner app registration sync payloads", () => {
-    const payload = partnerAppRegistrationSyncSchema.parse({
-      contract: "partner.app_registration_sync.v1",
+  it("accepts OAuth runtime sync payloads", () => {
+    const payload = partnerOAuthRuntimeSyncSchema.parse({
+      contract: "partner.oauth_runtime_sync.v1",
       idempotencyKey: "sync-123456",
       partnerAppId: "app_123",
       clientId: "partners_client_123",
@@ -24,7 +24,7 @@ describe("Qentrah integration contracts", () => {
       occurredAt: 1_776_000_000_000,
     });
 
-    expect(parseQentrahIntegrationPayload(payload).contract).toBe("partner.app_registration_sync.v1");
+    expect(parseQentrahIntegrationPayload(payload).contract).toBe("partner.oauth_runtime_sync.v1");
     expect(Object.keys(payload).sort()).toEqual([
       "allowedScopes",
       "clientId",
@@ -42,10 +42,10 @@ describe("Qentrah integration contracts", () => {
     ].sort());
   });
 
-  it("rejects partner-owned lifecycle metadata in Qentrah app sync payloads", () => {
+  it("rejects partner-owned lifecycle metadata in OAuth runtime sync payloads", () => {
     expect(() =>
-      partnerAppRegistrationSyncSchema.parse({
-        contract: "partner.app_registration_sync.v1",
+      partnerOAuthRuntimeSyncSchema.parse({
+        contract: "partner.oauth_runtime_sync.v1",
         idempotencyKey: "sync-123456",
         partnerAppId: "app_123",
         clientId: "partners_client_123",

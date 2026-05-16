@@ -15,23 +15,25 @@ Partner product
 Partner developer
   -> Partners portal
   -> Partners app registration and submission
-  -> Workspace admin partner app registration APIs
   -> Admin Review console
+  -> Partners platform APIs
+  -> Workspace OAuth runtime projection
 ```
 
 ## Runtime Apps
 
-Workspace is the product and platform authority. It owns organizations, members,
-roles, OAuth consent, partner OAuth clients, partner resource APIs, upload
-integration, AI runtime configuration, and the customer-facing app shell.
+Workspace is the product runtime authority. It owns organizations, members,
+roles, OAuth consent, the OAuth enforcement projection, organization partner
+connections, partner resource APIs, upload integration, AI runtime
+configuration, and the customer-facing app shell.
 
 Partners is the developer portal. It owns partner developer accounts, app
-drafts, submission flow, docs, sandbox OAuth endpoints, and the review callback
-that mirrors Workspace decisions back into the portal.
+drafts, app metadata, redirect URIs, allowed scopes, review status, published
+catalog state, platform APIs, docs, and sandbox OAuth endpoints.
 
 Admin Review is an internal console. It reads pending partner app submissions
-from Workspace service APIs and writes review decisions back to Workspace using
-a service token.
+from Partners admin APIs and writes review decisions back to Partners using a
+service token. It does not own canonical review data.
 
 Demo Partner App is a standalone reference partner. It proves the public
 integration contract: start OAuth with PKCE, exchange the authorization code on
@@ -45,10 +47,10 @@ depend on private Workspace or Partners runtime data.
 | Data | Owner | Notes |
 | --- | --- | --- |
 | Organizations, members, roles | Workspace | Used by product, auth, permissions, consent |
-| Partner OAuth clients and consent | Workspace | Source of truth for authorization and resource APIs |
+| Partner OAuth runtime projection and consent | Workspace | Minimal OAuth enforcement data plus organization connection state |
 | Partner developer accounts | Partners | Independent developer identity and organization records |
-| Partner app drafts and submissions | Partners | Mirrored to Workspace during review submission |
-| Review decisions | Workspace | Admin Review writes decisions through Workspace APIs |
+| Partner app drafts, submissions, catalog, redirect URIs, scopes | Partners | Canonical app source of truth |
+| Review decisions | Partners | Admin Review writes decisions through Partners APIs |
 | Demo OAuth session | Demo Partner App | Encrypted HttpOnly cookie only; not durable production storage |
 | Public content | Marketing | Static/public app content |
 
@@ -64,9 +66,9 @@ sequenceDiagram
 
   Dev->>Partners: Create app draft
   Dev->>Partners: Submit for review
-  Partners->>Workspace: Register app through admin service API
-  Admin->>Workspace: Approve, reject, or suspend
-  Workspace->>Partners: Send review callback
+  Admin->>Partners: Approve, reject, or suspend
+  Partners->>Workspace: Publish minimal OAuth runtime projection
+  Workspace->>Partners: Fetch approved catalog / verify authorization
   Partners->>Partners: Update portal app status
   Product->>Workspace: OAuth authorize request with PKCE
   Workspace->>Product: Redirect with authorization code

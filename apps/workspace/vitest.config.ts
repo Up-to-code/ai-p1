@@ -1,5 +1,6 @@
 import path from "node:path";
 import { defineConfig } from "vitest/config";
+import { workspaceAliases } from "../../vitest.workspace-aliases.mjs";
 
 export default defineConfig({
   test: {
@@ -8,9 +9,10 @@ export default defineConfig({
     include: ["src/**/*.test.ts", "convex/**/*.test.ts"],
   },
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "src"),
-      "@convex": path.resolve(__dirname, "convex"),
-    },
+    alias: [
+      ...workspaceAliases,
+      { find: "@", replacement: path.resolve(__dirname, "src") },
+      { find: "@convex", replacement: path.resolve(__dirname, "convex") },
+    ],
   },
 });

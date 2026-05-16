@@ -1,13 +1,14 @@
 # Qentrah Partners App
 
 Partners is the developer portal for people building Qentrah partner integrations.
-It owns partner developer identity, app drafts, submission flow, review callback
-state, partner-facing documentation, and the sandbox OAuth experience.
+It owns partner developer identity, app drafts, submission flow, review state,
+published app catalog, partner-facing documentation, and the sandbox OAuth
+experience.
 
-Workspace remains the source of truth for workspace permissions, consent,
-approved OAuth clients, and Workspace-side partner resource APIs. Partners
-communicates with Workspace through explicit integration contracts and service
-tokens, not through generated Workspace backend imports.
+Partners is the source of truth for partner apps, redirect URIs, scopes, review
+status, and published catalog data. Workspace remains the source of truth for
+workspace permissions, organization consent, organization partner
+authorizations, and Workspace-side partner resource APIs.
 
 ## Local Development
 
@@ -31,7 +32,7 @@ next available port if `3002` is busy.
 - Partner developer sign-up and sign-in.
 - Developer account and programmer organization profile.
 - App draft creation, editing, scopes, redirect URIs, and submission.
-- Review callback handling from Workspace.
+- Admin review APIs and platform APIs used by Workspace.
 - Partner docs powered by MDX/Fumadocs.
 - Sandbox OAuth endpoints for docs and local exploration.
 - Partner integration contracts under `lib/qentrah-integration`.
@@ -44,7 +45,9 @@ next available port if `3002` is busy.
 | `app/(auth)` | Partner sign-in and sign-up |
 | `app/(portal)/dashboard` | Authenticated portal shell, account, apps, status |
 | `app/docs/[[...slug]]/page.tsx` | Partner docs route |
-| `app/api/qentrah-review-callback/route.ts` | Workspace review callback endpoint |
+| `app/api/admin/partner-apps` | Admin Review service API for app review |
+| `app/api/platform/published-apps` | Workspace service API for published app catalog |
+| `app/api/platform/verify-authorization` | Workspace service API for authorization verification |
 | `app/api/partner-signup/route.ts` | Protected sign-up bridge |
 | `app/api/partner-signin/route.ts` | Protected sign-in bridge |
 | `app/sandbox/oauth` | Sandbox OAuth authorize/token endpoints |
@@ -64,9 +67,9 @@ Common variables:
 - `DATABASE_URL`
 - `BETTER_AUTH_SECRET`
 - `PARTNER_SIGNUP_BRIDGE_SECRET`
-- `QENTRAH_PLATFORM_SERVICE_TOKEN`
+- `PARTNERS_PLATFORM_SERVICE_TOKEN`
+- `PARTNERS_ADMIN_SERVICE_TOKEN`
 - `QENTRAH_WORKSPACE_SERVICE_TOKEN`
-- `PARTNERS_REVIEW_CALLBACK_TOKEN`
 - `QENTRAH_WORKSPACE_API_URL`
 
 See:
@@ -98,10 +101,10 @@ npm --workspace @qentrah/partners run build
 
 1. Partner developer signs up in Partners.
 2. Developer creates an app draft with redirect URIs and requested scopes.
-3. Partners submits the app to Workspace using `QENTRAH_PLATFORM_SERVICE_TOKEN`.
-4. Admin Review approves, rejects, or suspends the app through Workspace.
-5. Workspace calls `app/api/qentrah-review-callback/route.ts`.
-6. Partners updates portal status and exposes the approved client information.
+3. Admin Review reads pending submissions from Partners.
+4. Admin Review approves, rejects, or suspends the app through Partners.
+5. Partners publishes approved OAuth runtime metadata to Workspace.
+6. Workspace fetches published catalog data from Partners and stores only organization authorization records.
 
 ## Scripts
 

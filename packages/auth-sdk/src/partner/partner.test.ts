@@ -4,6 +4,7 @@ import { createQentrahPartnerAuthHandlers } from "./next";
 import type { QentrahPartnerPendingAuthorization } from "./types";
 import { createQentrahServiceAppClient } from "./service-app";
 import { createQentrahWebhookHandler, verifyQentrahWebhook } from "./webhooks";
+import { qentrahPartnerAuthorityFromEnv } from "./core";
 
 const encoder = new TextEncoder();
 
@@ -69,6 +70,19 @@ describe("@qentrah/auth-sdk partner browser", () => {
 });
 
 describe("@qentrah/auth-sdk partner oauth handlers", () => {
+  it("builds public partner authority config from environment variables", () => {
+    expect(qentrahPartnerAuthorityFromEnv({
+      QENTRAH_WORKSPACE_BASE_URL: "app.qentrah.com/",
+      QENTRAH_PARTNER_CLIENT_ID: " partners_client_123 ",
+      QENTRAH_PARTNER_REDIRECT_URI: "https://partner.example.com/api/qentrah/callback",
+      QENTRAH_PARTNER_SCOPES: "organization:read,client:read",
+    })).toMatchObject({
+      workspaceBaseUrl: "https://app.qentrah.com",
+      partnersClientId: "partners_client_123",
+      scopes: ["organization:read", "client:read"],
+    });
+  });
+
   it("starts OAuth, stores pending authorization, and redirects to Qentrah authorize", async () => {
     let pending: QentrahPartnerPendingAuthorization | null = null;
     const handlers = createQentrahPartnerAuthHandlers({

@@ -1,11 +1,5 @@
 import { v } from "convex/values";
-
-export const partnerAppStatusValidator = v.union(
-  v.literal("pending"),
-  v.literal("approved"),
-  v.literal("rejected"),
-  v.literal("suspended"),
-);
+import { partnerPermissionActions, partnerPermissionResources } from "@qentrah/partner-auth-core";
 
 export const partnerConnectionStatusValidator = v.union(
   v.literal("active"),
@@ -33,43 +27,16 @@ export const partnerInboundEventStatusValidator = v.union(
 );
 
 export const partnerResourceValidator = v.union(
-  v.literal("organization"),
-  v.literal("client"),
-  v.literal("property"),
-  v.literal("project"),
-  v.literal("calendar"),
-  v.literal("task"),
-  v.literal("media"),
+  ...partnerPermissionResources.map((resource) => v.literal(resource)),
 );
 
 export const partnerActionValidator = v.union(
-  v.literal("read"),
-  v.literal("create"),
-  v.literal("update"),
-  v.literal("delete"),
+  ...partnerPermissionActions.map((action) => v.literal(action)),
 );
 
-export const partnerAppInputValidator = v.object({
-  oauthClientId: v.string(),
-  name: v.string(),
-  description: v.string(),
-  homepageUrl: v.optional(v.string()),
-  logoUrl: v.optional(v.string()),
-  redirectUris: v.array(v.string()),
-  allowedScopes: v.array(v.string()),
-});
-
-export const partnerReviewInputValidator = v.object({
-  status: v.union(
-    v.literal("approved"),
-    v.literal("rejected"),
-    v.literal("suspended"),
-  ),
-  reviewNotes: v.optional(v.string()),
-});
-
 export const partnerConnectionInputValidator = v.object({
-  oauthClientId: v.string(),
+  partnersAppId: v.string(),
+  partnersClientId: v.string(),
   scopes: v.array(v.string()),
 });
 

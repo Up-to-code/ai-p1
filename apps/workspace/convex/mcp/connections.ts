@@ -4,7 +4,6 @@ import type { Doc } from "../_generated/dataModel";
 import { apiKeys } from "../apiKeys";
 import { authComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
-import { assertPlatformAdmin } from "../platform/access";
 import {
   createMcpConnectionInputValidator,
   mcpActionValidator,
@@ -101,7 +100,6 @@ export const createFromHono = mutation({
   returns: v.object({ connection: mcpConnectionValidator, secret: v.string() }),
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    await assertPlatformAdmin(ctx);
     await assertApiKeyPermission(ctx, args.organizationId, "create");
     await assertDelegatedPermissions(ctx, args.organizationId, args.input.permissions);
     const now = Date.now();
@@ -156,7 +154,6 @@ export const updateFromHono = mutation({
   returns: mcpConnectionValidator,
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    await assertPlatformAdmin(ctx);
     await assertApiKeyPermission(ctx, args.organizationId, "update");
     const existing = await ctx.db.get(args.connectionId);
     if (!existing || existing.organizationId !== args.organizationId || existing.status === "revoked") {
@@ -206,7 +203,6 @@ export const revokeFromHono = mutation({
   returns: v.object({ revoked: v.boolean() }),
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    await assertPlatformAdmin(ctx);
     await assertApiKeyPermission(ctx, args.organizationId, "delete");
     const existing = await ctx.db.get(args.connectionId);
     if (!existing || existing.organizationId !== args.organizationId) {
@@ -243,7 +239,6 @@ export const rotateFromHono = mutation({
   returns: v.object({ connection: mcpConnectionValidator, secret: v.string() }),
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    await assertPlatformAdmin(ctx);
     await assertApiKeyPermission(ctx, args.organizationId, "create");
     const existing = await ctx.db.get(args.connectionId);
     if (!existing || existing.organizationId !== args.organizationId || existing.status === "revoked") {

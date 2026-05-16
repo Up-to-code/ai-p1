@@ -202,7 +202,9 @@ Core env variables:
 | `PARTNER_APPS_ENABLED` | Optional | Vercel/Convex | Enables partner app OAuth/resource behavior; defaults true. | Set `false` only to disable partner app features. |
 | `PARTNER_OAUTH_ISSUER` | Optional | Vercel/Convex | OAuth issuer override; defaults to Workspace URL. | Workspace URL. |
 | `PARTNER_OAUTH_AUDIENCE` | Optional | Vercel/Convex | Partner API audience; defaults to `${SITE_URL}/api/v1/partner`. | Workspace URL. |
+| `WORKSPACE_CONVEX_BRIDGE_SECRET` | Required for partner/API resource calls | Vercel/Convex | Server-only token used by Workspace Hono routes when calling protected Convex resource functions. | Generate and store as secret. |
 | `PARTNER_WEBHOOK_SECRET_ENCRYPTION_KEY` | Needed for encrypted partner webhooks | Convex/server | Encrypts stored partner webhook secrets. | Generate and store as secret. |
+| `ORGANIZATION_DATA_ENCRYPTION_KEY` | Needed for organization data encryption | Convex/server | Master key for organization-scoped user/business data encryption. | Generate and store as secret. |
 | `WORKSPACE_ADMIN_SERVICE_TOKEN` | Required for Admin Review | Vercel/Convex | Service token accepted by Workspace admin APIs. | Generate a shared internal secret. |
 | `PARTNERS_REVIEW_CALLBACK_TOKEN` | Required for callback security | Vercel/Convex and Partners | Token Workspace uses when notifying Partners of review decisions. | Generate a shared internal secret. |
 | `OPENROUTER_API_KEY` | Required for live AI agent responses | Vercel/Convex/server | Calls OpenRouter through the AI SDK provider. | OpenRouter dashboard. |

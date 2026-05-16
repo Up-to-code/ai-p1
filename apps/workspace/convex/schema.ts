@@ -30,6 +30,41 @@ export default defineSchema({
   })
     .index("by_organization_id", ["organizationId"])
     .index("by_created", ["createdAt"]),
+  dataSecurityBackfillJobs: defineTable({
+    target: v.union(
+      v.literal("clientsDeletedFlag"),
+      v.literal("projectsDeletedFlag"),
+      v.literal("propertiesDeletedFlag"),
+      v.literal("clientPii"),
+      v.literal("webhookDeliveries"),
+      v.literal("inboundEvents"),
+      v.literal("agentMessages"),
+      v.literal("agentMemorySummaries"),
+      v.literal("agentMemoryFacts"),
+    ),
+    status: v.union(v.literal("queued"), v.literal("running"), v.literal("completed"), v.literal("failed"), v.literal("paused")),
+    cursor: v.union(v.string(), v.null()),
+    batchSize: v.number(),
+    processedCount: v.number(),
+    patchedCount: v.number(),
+    failedCount: v.number(),
+    lastError: v.optional(v.string()),
+    startedBy: v.string(),
+    startedAt: v.number(),
+    updatedAt: v.number(),
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_status_updated", ["status", "updatedAt"])
+    .index("by_target_status", ["target", "status"]),
+  dataSecurityBackfillFailures: defineTable({
+    jobId: v.id("dataSecurityBackfillJobs"),
+    target: v.string(),
+    sourceId: v.string(),
+    error: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_job", ["jobId", "createdAt"])
+    .index("by_target_created", ["target", "createdAt"]),
   organizationMcpConnections: defineTable({
     organizationId: v.string(),
     publicId: v.string(),
@@ -105,58 +140,26 @@ export default defineSchema({
     .index("by_organization_id", ["organizationId"])
     .index("by_key_id", ["keyId"])
     .index("by_status_updated", ["status", "updatedAt"]),
-  partnerApps: defineTable({
-    ownerUserId: v.string(),
-    partnersAppId: v.optional(v.string()),
-    partnersClientId: v.optional(v.string()),
-    publisherName: v.optional(v.string()),
-    oauthClientId: v.string(),
-    clientType: v.optional(v.union(v.literal("public"), v.literal("confidential"))),
-    callbackUrl: v.optional(v.string()),
-    name: v.string(),
-    description: v.string(),
-    homepageUrl: v.optional(v.string()),
-    logoUrl: v.optional(v.string()),
-    redirectUris: v.array(v.string()),
-    allowedScopes: v.array(v.string()),
-    status: v.union(
-      v.literal("pending"),
-      v.literal("approved"),
-      v.literal("rejected"),
-      v.literal("suspended"),
-    ),
-    reviewNotes: v.optional(v.string()),
-    partnerReviewReply: v.optional(v.string()),
-    internalReviewNotes: v.optional(v.string()),
-    reviewedByUserId: v.optional(v.string()),
-    reviewedAt: v.optional(v.number()),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-  })
-    .index("by_owner_user_id", ["ownerUserId"])
-    .index("by_partners_app_id", ["partnersAppId"])
-    .index("by_oauth_client_id", ["oauthClientId"])
-    .index("by_status", ["status"])
-    .index("by_updated", ["updatedAt"])
-    .index("by_status_updated", ["status", "updatedAt"]),
   organizationPartnerConnections: defineTable({
     organizationId: v.string(),
-    partnerAppId: v.id("partnerApps"),
-    oauthClientId: v.string(),
+    partnersAppId: v.string(),
+    partnersClientId: v.string(),
     status: v.union(v.literal("active"), v.literal("paused"), v.literal("revoked")),
     scopes: v.array(v.string()),
     authorizedByUserId: v.string(),
+    authorizedMemberId: v.optional(v.string()),
     expiresAt: v.optional(v.number()),
+    lastVerifiedAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
     revokedAt: v.optional(v.number()),
   })
     .index("by_organization_id", ["organizationId"])
-    .index("by_organization_app", ["organizationId", "partnerAppId"])
-    .index("by_oauth_client_organization", ["oauthClientId", "organizationId"])
+    .index("by_organization_app", ["organizationId", "partnersAppId"])
+    .index("by_client_organization", ["partnersClientId", "organizationId"])
     .index("by_status_updated", ["status", "updatedAt"]),
   partnerWebhookEndpoints: defineTable({
-    partnerAppId: v.id("partnerApps"),
+    partnerAppId: v.string(),
     organizationId: v.optional(v.string()),
     url: v.string(),
     signingSecret: v.string(),
@@ -172,17 +175,20 @@ export default defineSchema({
     .index("by_status_updated", ["status", "updatedAt"]),
   partnerWebhookDeliveries: defineTable({
     endpointId: v.id("partnerWebhookEndpoints"),
-    partnerAppId: v.id("partnerApps"),
+    partnerAppId: v.string(),
     organizationId: v.string(),
     eventId: v.string(),
     eventType: v.string(),
-    payload: v.any(),
+    payload: v.optional(v.any()),
+    encryptedPayload: v.optional(v.string()),
+    payloadRedacted: v.optional(v.boolean()),
     status: v.union(v.literal("pending"), v.literal("delivering"), v.literal("succeeded"), v.literal("failed")),
     attemptCount: v.number(),
     nextAttemptAt: v.optional(v.number()),
     lastAttemptAt: v.optional(v.number()),
     lastStatus: v.optional(v.number()),
     lastError: v.optional(v.string()),
+    expiresAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -192,14 +198,17 @@ export default defineSchema({
     .index("by_status_updated", ["status", "updatedAt"]),
   partnerInboundEvents: defineTable({
     organizationId: v.string(),
-    partnerAppId: v.id("partnerApps"),
+    partnerAppId: v.string(),
     eventId: v.string(),
     idempotencyKey: v.optional(v.string()),
     eventType: v.string(),
     occurredAt: v.number(),
-    payload: v.any(),
+    payload: v.optional(v.any()),
+    encryptedPayload: v.optional(v.string()),
+    payloadRedacted: v.optional(v.boolean()),
     status: v.union(v.literal("accepted"), v.literal("duplicate"), v.literal("failed")),
     error: v.optional(v.string()),
+    expiresAt: v.optional(v.number()),
     createdAt: v.number(),
   })
     .index("by_organization_id", ["organizationId"])
@@ -208,7 +217,7 @@ export default defineSchema({
     .index("by_status_created", ["status", "createdAt"]),
   partnerExternalRefs: defineTable({
     organizationId: v.string(),
-    partnerAppId: v.id("partnerApps"),
+    partnerAppId: v.string(),
     resourceType: v.union(
       v.literal("client"),
       v.literal("property"),
@@ -241,6 +250,8 @@ export default defineSchema({
     threadId: v.id("agentThreads"),
     role: v.union(v.literal("user"), v.literal("assistant"), v.literal("system"), v.literal("tool")),
     content: v.string(),
+    encryptedContent: v.optional(v.string()),
+    contentRedacted: v.optional(v.boolean()),
     runId: v.optional(v.id("agentRuns")),
     createdAt: v.number(),
   })
@@ -286,6 +297,8 @@ export default defineSchema({
     status: v.union(v.literal("allowed"), v.literal("blocked"), v.literal("failed")),
     inputPreview: v.optional(v.string()),
     outputPreview: v.optional(v.string()),
+    encryptedInputPreview: v.optional(v.string()),
+    encryptedOutputPreview: v.optional(v.string()),
     error: v.optional(v.string()),
     createdAt: v.number(),
     completedAt: v.optional(v.number()),
@@ -296,6 +309,8 @@ export default defineSchema({
     organizationId: v.string(),
     threadId: v.id("agentThreads"),
     summary: v.string(),
+    encryptedSummary: v.optional(v.string()),
+    summaryRedacted: v.optional(v.boolean()),
     messageCount: v.number(),
     updatedAt: v.number(),
   })
@@ -305,6 +320,8 @@ export default defineSchema({
     organizationId: v.string(),
     threadId: v.optional(v.id("agentThreads")),
     fact: v.string(),
+    encryptedFact: v.optional(v.string()),
+    factRedacted: v.optional(v.boolean()),
     sourceMessageId: v.optional(v.id("agentMessages")),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -350,6 +367,8 @@ export default defineSchema({
     syncState: v.union(v.literal("draft"), v.literal("blocked"), v.literal("synced")),
     units: v.number(),
     priceRange: v.string(),
+    averagePrice: v.optional(v.union(v.number(), v.string())),
+    projectPrices: v.optional(v.array(v.any())),
     regaAuthorizationNo: v.optional(v.string()),
     regaExpiresAt: v.optional(v.string()),
     planNumber: v.optional(v.string()),
@@ -360,9 +379,12 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
     deletedAt: v.optional(v.number()),
+    isDeleted: v.optional(v.boolean()),
   })
     .index("by_organization_id", ["organizationId"])
     .index("by_organization_status", ["organizationId", "status"])
+    .index("by_organization_deleted_updated", ["organizationId", "isDeleted", "updatedAt"])
+    .index("by_organization_deleted_status_updated", ["organizationId", "isDeleted", "status", "updatedAt"])
     .index("by_organization_updated", ["organizationId", "updatedAt"])
     .index("by_updated", ["updatedAt"]),
   propertyUnits: defineTable({
@@ -385,9 +407,12 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
     deletedAt: v.optional(v.number()),
+    isDeleted: v.optional(v.boolean()),
   })
     .index("by_organization_id", ["organizationId"])
     .index("by_organization_status", ["organizationId", "status"])
+    .index("by_organization_deleted_updated", ["organizationId", "isDeleted", "updatedAt"])
+    .index("by_organization_deleted_status_updated", ["organizationId", "isDeleted", "status", "updatedAt"])
     .index("by_organization_updated", ["organizationId", "updatedAt"])
     .index("by_project_id", ["projectId"])
     .index("by_updated", ["updatedAt"]),
@@ -401,6 +426,11 @@ export default defineSchema({
     nationality: v.string(),
     generation: v.string(),
     budget: v.string(),
+    encryptedContact: v.optional(v.string()),
+    encryptedPhone: v.optional(v.string()),
+    encryptedNationality: v.optional(v.string()),
+    encryptedBudget: v.optional(v.string()),
+    piiEncryptedAt: v.optional(v.number()),
     propertyInterest: v.string(),
     status: v.union(v.literal("active"), v.literal("inactive")),
     visibility: v.optional(v.union(v.literal("private"), v.literal("public"))),
@@ -419,10 +449,13 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
     deletedAt: v.optional(v.number()),
+    isDeleted: v.optional(v.boolean()),
   })
     .index("by_organization_id", ["organizationId"])
     .index("by_organization_type", ["organizationId", "type"])
     .index("by_organization_stage", ["organizationId", "pipelineStage"])
+    .index("by_organization_deleted_updated", ["organizationId", "isDeleted", "updatedAt"])
+    .index("by_organization_deleted_type_updated", ["organizationId", "isDeleted", "type", "updatedAt"])
     .index("by_organization_updated", ["organizationId", "updatedAt"])
     .index("by_updated", ["updatedAt"]),
   clientUnitLinks: defineTable({

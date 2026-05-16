@@ -2,34 +2,47 @@
 
 Public Qentrah partner SDK for connecting a partner app to a customer's Qentrah workspace.
 
-This package is intentionally partner-only. It contains browser authorization helpers, backend OAuth handlers, webhook verification, and service-app API helpers. It does not expose Qentrah internal platform auth, private app logic, or workspace internals.
+This package contains browser authorization helpers, OAuth route helpers, webhook verification, and partner API helpers.
 
-## Install
+## What's New In 0.2.0
 
-```bash
-npm install @qentrah/auth-sdk
-```
+- Adds helpers for reading partner OAuth configuration from environment variables.
+- Documents the current partner app setup flow.
+- Updates examples to use the latest partner scope names.
+- Keeps OAuth, token storage, and webhook handling server-side.
+- Publishes only the partner-facing SDK entrypoints.
 
 ## What This SDK Does
 
-The SDK gives partners a small, safe integration surface:
+The SDK gives partners a small integration surface:
 
 - Mount an "Authorize with Qentrah" button in browser code.
-- Start OAuth from your backend.
+- Start OAuth from your app route.
 - Generate and validate PKCE and state.
-- Exchange authorization codes on the backend only.
+- Exchange authorization codes on the server only.
 - Save access and refresh tokens through your own storage callback.
 - Refresh access tokens when needed.
 - Verify Qentrah webhooks with HMAC SHA-256.
 - Dispatch typed webhook events like `client.created`, `client.updated`, and `client.deleted`.
 - Call partner/service-app APIs with typed read, write, and webhook-send helpers.
 
+## Partner App Setup
+
+Create your app in the Qentrah Partners portal, then configure your integration with:
+
+- the issued OAuth client id
+- the exact redirect URI used by your app
+- the approved scopes
+- the workspace base URL
+
+Use this SDK for OAuth, webhook verification, token refresh, and partner API calls.
+
 ## Security Model
 
-This SDK keeps sensitive material out of browser JavaScript.
+Keep sensitive material out of browser JavaScript.
 
-- Browser code only redirects users to your backend start route.
-- Authorization code exchange happens on your backend.
+- Browser code only redirects users to your app start route.
+- Authorization code exchange happens on the server.
 - Access tokens, refresh tokens, authorization codes, client secrets, and webhook signing secrets must stay server-side.
 - OAuth uses authorization code + PKCE.
 - Callback `state` is validated against your stored pending authorization.
@@ -41,6 +54,7 @@ This SDK keeps sensitive material out of browser JavaScript.
 ```ts
 import {
   buildQentrahPartnerAuthorizeUrl,
+  qentrahPartnerAuthorityFromEnv,
   exchangeQentrahPartnerAuthorizationCode,
   refreshQentrahPartnerAccessToken,
 } from "@qentrah/auth-sdk/partner";
@@ -119,135 +133,6 @@ Copy `qentrah-auth.js` from the package into your public assets during your buil
 </script>
 ```
 
-### No-Build HTTPS Script URL
-
-If you do not use npm, TypeScript, a bundler, or a build step, you can load the browser bundle directly from an npm CDN.
-
-Use a pinned version:
-
-```html
-<button id="qentrah-authorize">Authorize with Qentrah</button>
-
-<script src="https://cdn.jsdelivr.net/npm/@qentrah/auth-sdk@0.1.5/dist/qentrah-auth.js"></script>
-<script>
-  window.QentrahAuth.mountAuthorizeButton({
-    buttonId: "qentrah-authorize",
-    startUrl: "/api/qentrah/oauth/start",
-    label: "Authorize with Qentrah"
-  });
-</script>
-```
-
-Alternative CDN:
-
-```html
-<script src="https://unpkg.com/@qentrah/auth-sdk@0.1.5/dist/qentrah-auth.js"></script>
-```
-
-Do not use an unpinned URL like `@latest` in production. Pinning the version makes the loaded JavaScript predictable and easier to review.
-
-Important: this script still only starts the authorization redirect. You still need backend routes for `/api/qentrah/oauth/start` and `/api/qentrah/oauth/callback`. Never put `clientSecret`, access tokens, refresh tokens, authorization codes, or webhook secrets in the HTML page.
-
-### How to Put `qentrah-auth.js` in Your Public Folder
-
-The browser bundle is shipped inside the npm package at:
-
-```txt
-node_modules/@qentrah/auth-sdk/dist/qentrah-auth.js
-```
-
-Your app should copy that file into a public/static folder that your framework serves directly.
-
-For Next.js:
-
-```bash
-mkdir -p public/vendor/qentrah
-cp node_modules/@qentrah/auth-sdk/dist/qentrah-auth.js public/vendor/qentrah/qentrah-auth.js
-```
-
-Then load:
-
-```html
-<script src="/vendor/qentrah/qentrah-auth.js"></script>
-```
-
-For Vite:
-
-```bash
-mkdir -p public/vendor/qentrah
-cp node_modules/@qentrah/auth-sdk/dist/qentrah-auth.js public/vendor/qentrah/qentrah-auth.js
-```
-
-Then load:
-
-```html
-<script src="/vendor/qentrah/qentrah-auth.js"></script>
-```
-
-For Express:
-
-```bash
-mkdir -p public/vendor/qentrah
-cp node_modules/@qentrah/auth-sdk/dist/qentrah-auth.js public/vendor/qentrah/qentrah-auth.js
-```
-
-```js
-app.use(express.static("public"));
-```
-
-Then load:
-
-```html
-<script src="/vendor/qentrah/qentrah-auth.js"></script>
-```
-
-You can automate this in `package.json`:
-
-```json
-{
-  "scripts": {
-    "postinstall": "mkdir -p public/vendor/qentrah && cp node_modules/@qentrah/auth-sdk/dist/qentrah-auth.js public/vendor/qentrah/qentrah-auth.js"
-  }
-}
-```
-
-If your platform serves static assets from a CDN, upload the same file there and use the CDN URL:
-
-```html
-<script src="https://cdn.your-app.com/vendor/qentrah/qentrah-auth.js"></script>
-```
-
-### Safer Script Loading
-
-Prefer a same-origin URL like `/vendor/qentrah/qentrah-auth.js` when possible. Same-origin static files are easier to protect with your normal deployment, review, and cache rules.
-
-If you load the script from a CDN, pin the package version and use Subresource Integrity when your CDN gives you a stable file:
-
-```html
-<script
-  src="https://cdn.your-app.com/vendor/qentrah/qentrah-auth.js"
-  integrity="sha384-REPLACE_WITH_YOUR_HASH"
-  crossorigin="anonymous"
-></script>
-```
-
-Generate an SRI hash after copying the file:
-
-```bash
-openssl dgst -sha384 -binary public/vendor/qentrah/qentrah-auth.js | openssl base64 -A
-```
-
-Then prefix it with `sha384-` in the `integrity` attribute.
-
-Recommended Content Security Policy:
-
-```txt
-script-src 'self' https://cdn.your-app.com;
-connect-src 'self' https://app.qentrah.com;
-```
-
-Do not put `clientSecret`, access tokens, refresh tokens, webhook secrets, or authorization codes in the browser. The browser bundle only starts the redirect to your backend route.
-
 ## Next.js OAuth Routes
 
 Create two route handlers:
@@ -270,7 +155,7 @@ export const qentrahAuth = createQentrahPartnerAuthHandlers({
   clientId: process.env.QENTRAH_PARTNER_CLIENT_ID!,
   clientSecret: process.env.QENTRAH_PARTNER_CLIENT_SECRET,
   redirectUri: process.env.QENTRAH_PARTNER_REDIRECT_URI!,
-  scopes: ["clients:read", "clients:write"],
+  scopes: ["organization:read", "client:read"],
 
   sessionStore: {
     async savePendingAuthorization({ pending }) {
@@ -286,7 +171,7 @@ export const qentrahAuth = createQentrahPartnerAuthHandlers({
 
   tokenStore: {
     async saveTokens({ organizationId, tokenSet, scopes }) {
-      // Save to your database or secrets store.
+      // Save to your secure token store.
       // Never send these tokens to the browser.
       console.log("Connected Qentrah organization", organizationId, scopes, tokenSet.expiresAt);
     },
@@ -294,6 +179,19 @@ export const qentrahAuth = createQentrahPartnerAuthHandlers({
 
   afterSuccessRedirect: "/settings/integrations/qentrah?connected=1",
   afterErrorRedirect: "/settings/integrations/qentrah?error=1",
+});
+```
+
+You can also normalize the public partner authority variables first:
+
+```ts
+import { qentrahPartnerAuthorityFromEnv } from "@qentrah/auth-sdk/partner";
+
+const authority = qentrahPartnerAuthorityFromEnv({
+  QENTRAH_WORKSPACE_BASE_URL: process.env.QENTRAH_WORKSPACE_BASE_URL,
+  QENTRAH_PARTNER_CLIENT_ID: process.env.QENTRAH_PARTNER_CLIENT_ID,
+  QENTRAH_PARTNER_REDIRECT_URI: process.env.QENTRAH_PARTNER_REDIRECT_URI,
+  QENTRAH_PARTNER_SCOPES: process.env.QENTRAH_PARTNER_SCOPES,
 });
 ```
 
@@ -315,7 +213,7 @@ import { qentrahAuth } from "../config";
 export const GET = qentrahAuth.GET.callback;
 ```
 
-The in-memory `Map` is only for local development and examples. In production, use durable session storage, encrypted cookies, Redis, or your database.
+The in-memory `Map` is only for local development and examples. In production, use durable session storage that matches your app security requirements.
 
 ## OAuth Config
 
@@ -341,7 +239,7 @@ type QentrahPartnerAuthConfig = {
 
 ## Refresh Tokens
 
-Use the refresh helper from backend code:
+Use the refresh helper from server code:
 
 ```ts
 import { refreshQentrahPartnerAccessToken } from "@qentrah/auth-sdk/partner";
@@ -409,7 +307,7 @@ Do not call `request.json()` before verification. The SDK needs the raw body fro
 
 ## Service-App Client
 
-Use this from backend code when your app has a saved service access token:
+Use this from server code when your app has a saved access token:
 
 ```ts
 import { createQentrahServiceAppClient } from "@qentrah/auth-sdk/partner/service-app";
@@ -453,9 +351,10 @@ Recommended production variables:
 
 ```bash
 QENTRAH_WORKSPACE_BASE_URL=https://app.qentrah.com
-QENTRAH_PARTNER_CLIENT_ID=your_client_id
+QENTRAH_PARTNER_CLIENT_ID=partners_client_...
 QENTRAH_PARTNER_CLIENT_SECRET=your_client_secret_if_confidential
 QENTRAH_PARTNER_REDIRECT_URI=https://your-app.com/api/qentrah/oauth/callback
+QENTRAH_PARTNER_SCOPES=organization:read client:read
 QENTRAH_WEBHOOK_SIGNING_SECRET=whsec_...
 ```
 
@@ -465,6 +364,8 @@ For local development:
 QENTRAH_WORKSPACE_BASE_URL=http://localhost:3000
 QENTRAH_PARTNER_REDIRECT_URI=http://localhost:4000/api/qentrah/oauth/callback
 ```
+
+`QENTRAH_PARTNER_CLIENT_ID`, redirect URIs, scopes, and webhook secrets come from the Partners portal.
 
 For Vercel, configure the same variables in Production, Preview, and Development as needed. Webhook routes should use:
 
@@ -497,12 +398,6 @@ try {
   }
 }
 ```
-
-## Public vs Internal Boundary
-
-This package is for external partner integrations only.
-
-It does not publish or document internal Qentrah platform auth packages. Partners should not import internal workspace code, internal authorization logic, or platform secrets. The supported public contract is the partner SDK exports listed above.
 
 ## License
 

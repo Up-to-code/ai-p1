@@ -6,6 +6,34 @@ export type QentrahPartnerTokenSet = {
   scope?: string;
 };
 
+export type QentrahPartnerAppLifecycleStatus =
+  | "draft"
+  | "pending_review"
+  | "active"
+  | "rejected"
+  | "suspended";
+
+export type QentrahPartnerAppAuthority = {
+  /**
+   * Partner app id from the Partners portal. This is the canonical app id.
+   */
+  partnersAppId?: string;
+  /**
+   * OAuth client id issued in the Partners portal after app creation.
+   */
+  partnersClientId: string;
+  /**
+   * Workspace origin used only for OAuth and resource API runtime calls.
+   */
+  workspaceBaseUrl: string;
+  /**
+   * Redirect URI registered on the Partners app.
+   */
+  redirectUri: string;
+  scopes: string[];
+  status?: QentrahPartnerAppLifecycleStatus;
+};
+
 export type QentrahPartnerPendingAuthorization = {
   state: string;
   codeVerifier: string;
@@ -49,4 +77,13 @@ export type QentrahPartnerAuthConfig = {
   afterSuccessRedirect?: string;
   afterErrorRedirect?: string;
   fetcher?: typeof fetch;
+};
+
+export type QentrahPartnerEnv = {
+  QENTRAH_WORKSPACE_BASE_URL?: string;
+  QENTRAH_PARTNER_CLIENT_ID?: string;
+  QENTRAH_PARTNER_CLIENT_SECRET?: string;
+  QENTRAH_PARTNER_REDIRECT_URI?: string;
+  QENTRAH_PARTNER_SCOPES?: string;
+  QENTRAH_WEBHOOK_SIGNING_SECRET?: string;
 };

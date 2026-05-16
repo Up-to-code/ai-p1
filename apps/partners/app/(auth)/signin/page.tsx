@@ -35,7 +35,7 @@ export default async function SignInPage({
       </div>
 
       <div className="flex items-center justify-center px-4 py-12 sm:px-6">
-        <div className="w-full max-w-sm rounded-[22px] border border-border bg-card p-6 text-card-foreground shadow-[0_24px_80px_rgba(7,26,52,0.08)] dark:shadow-[0_24px_80px_rgba(0,0,0,0.34)] sm:p-8">
+        <div className="w-full max-w-sm">
           <div className="lg:hidden">
             <PartnerLogo />
           </div>

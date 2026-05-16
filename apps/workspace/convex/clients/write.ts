@@ -6,15 +6,18 @@ import type { MutationCtx } from "../_generated/server";
 import { authComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { assertPlatformAdmin } from "../platform/access";
+import { protectClientPii, revealClientPii } from "../security/clientPii";
 import { clientInputValidator, clientUnitLinkInputValidator, clientUnitLinkValidator, clientValidator } from "./validators";
 
 function isoDate(timestamp: number) {
   return new Date(timestamp).toISOString().slice(0, 10);
 }
 
-function presentClient(client: Doc<"clients">) {
+async function presentClient(client: Doc<"clients">) {
+  const { deletedAt: _deletedAt, isDeleted: _isDeleted, encryptedContact: _encryptedContact, encryptedPhone: _encryptedPhone, encryptedNationality: _encryptedNationality, encryptedBudget: _encryptedBudget, piiEncryptedAt: _piiEncryptedAt, ...safeClient } = client;
   return {
-    ...client,
+    ...safeClient,
+    ...await revealClientPii(client),
     id: client._id,
     visibility: client.visibility ?? "private",
     nextActionDate: "This week",
@@ -77,7 +80,9 @@ export const createFromHono = mutation({
     const id = await ctx.db.insert("clients", {
       organizationId: args.organizationId,
       ...args.input,
+      ...await protectClientPii(args.organizationId, args.input),
       visibility: args.input.visibility ?? "private",
+      isDeleted: false,
       createdByUserId: user._id,
       createdAt: now,
       updatedAt: now,
@@ -94,8 +99,9 @@ export const createFromHono = mutation({
 
     const client = await ctx.db.get(id);
     if (!client) throw new Error("Client could not be created.");
-    await enqueueClientWebhook(ctx, args.organizationId, "client.created", id, presentClient(client), now);
-    return presentClient(client);
+    const presented = await presentClient(client);
+    await enqueueClientWebhook(ctx, args.organizationId, "client.created", id, presented, now);
+    return presented;
   },
 });
 
@@ -117,6 +123,7 @@ export const updateFromHono = mutation({
     const now = Date.now();
     await ctx.db.patch(args.clientId, {
       ...args.input,
+      ...await protectClientPii(args.organizationId, args.input),
       visibility: nextVisibility,
       updatedAt: now,
     });
@@ -132,8 +139,9 @@ export const updateFromHono = mutation({
 
     const client = await ctx.db.get(args.clientId);
     if (!client) throw new Error("Client was not found.");
-    await enqueueClientWebhook(ctx, args.organizationId, "client.updated", args.clientId, presentClient(client), now);
-    return presentClient(client);
+    const presented = await presentClient(client);
+    await enqueueClientWebhook(ctx, args.organizationId, "client.updated", args.clientId, presented, now);
+    return presented;
   },
 });
 
@@ -148,7 +156,7 @@ export const deleteFromHono = mutation({
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "delete");
     const existing = await assertClient(ctx, args.organizationId, args.clientId);
     const now = Date.now();
-    await ctx.db.patch(args.clientId, { deletedAt: now, updatedAt: now });
+    await ctx.db.patch(args.clientId, { deletedAt: now, isDeleted: true, updatedAt: now });
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
       actorUserId: user._id,

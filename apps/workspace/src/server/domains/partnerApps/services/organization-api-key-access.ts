@@ -1,11 +1,11 @@
 import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { convexHttp } from "@/server/convex/http-client";
+import { convexCalls } from "@/server/convex/http-client";
 import type {
   PartnerPermissionAction,
   PartnerPermissionResource,
-} from "@/packages/partner-apps/scopes";
+} from "@qentrah/partner-auth-core";
 
 export type OrganizationApiKeyAccessContext = {
   type: "apiKey";
@@ -47,7 +47,19 @@ export async function requireOrganizationApiKeyAccess(
     });
   }
 
-  const validation = await convexHttp.mutation(api.organizationApiKeys.validateAndReserve, {
+  const validation = await convexCalls.mutation<{
+    organizationId: string;
+    secret: string;
+    resource: PartnerPermissionResource;
+    action: PartnerPermissionAction;
+  }, {
+    ok: boolean;
+    reason?: string;
+    apiKeyId?: Id<"organizationApiKeys">;
+    keyId?: string;
+    name?: string;
+    permissions?: Array<{ resource: PartnerPermissionResource; actions: PartnerPermissionAction[] }>;
+  }>(api.organizationApiKeys.validateAndReserve, {
     organizationId,
     secret: token,
     resource: toApiKeyResource(resource),

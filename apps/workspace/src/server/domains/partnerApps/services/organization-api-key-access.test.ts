@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { convexHttp } from "@/server/convex/http-client";
+import { convexCalls } from "@/server/convex/http-client";
 import {
   isOrganizationApiKeyToken,
   organizationApiKeyAccessError,
@@ -16,12 +16,12 @@ vi.mock("@convex/_generated/api", () => ({
 }));
 
 vi.mock("@/server/convex/http-client", () => ({
-  convexHttp: {
+  convexCalls: {
     mutation: vi.fn(),
   },
 }));
 
-const convexMutationMock = vi.mocked(convexHttp.mutation);
+const convexMutationMock = vi.mocked(convexCalls.mutation);
 
 function appForApiKeyTests() {
   const app = new Hono();

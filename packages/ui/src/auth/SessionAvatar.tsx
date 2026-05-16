@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@qentrah/auth-sdk/react";
+import { useAuth } from "@qentrah/auth/react";
 
 function initialsFromName(name?: string | null, email?: string | null) {
   const source = name?.trim() || email?.trim() || "A";

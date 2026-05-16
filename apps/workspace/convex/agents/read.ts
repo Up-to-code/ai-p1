@@ -2,13 +2,21 @@ import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { agentMessageValidator, agentThreadValidator } from "./validators";
+import { revealOrganizationText } from "../security/organizationData";
 
 function presentThread<T extends { _id: string }>(thread: T) {
   return { ...thread, id: thread._id };
 }
 
-function presentMessage<T extends { _id: string }>(message: T) {
-  return { ...message, id: message._id };
+async function presentMessage<T extends { _id: string; organizationId: string; encryptedContent?: string; content: string }>(message: T) {
+  const { encryptedContent: _encryptedContent, contentRedacted: _contentRedacted, ...safeMessage } = message as T & {
+    contentRedacted?: boolean;
+  };
+  return {
+    ...safeMessage,
+    id: message._id,
+    content: await revealOrganizationText(message.organizationId, "agent-message", _encryptedContent, message.content),
+  };
 }
 
 export const listThreads = query({
@@ -51,7 +59,7 @@ export const listMessages = query({
       .order("desc")
       .take(limit);
 
-    return messages.reverse().map(presentMessage);
+    return Promise.all(messages.reverse().map(presentMessage));
   },
 });
 
@@ -100,9 +108,13 @@ export const getThreadContext = query({
     ]);
 
     return {
-      messages: messages.reverse().map(presentMessage),
-      summary: summary?.summary,
-      facts: facts.map((fact) => fact.fact),
+      messages: await Promise.all(messages.reverse().map(presentMessage)),
+      summary: summary
+        ? await revealOrganizationText(summary.organizationId, "agent-memory-summary", summary.encryptedSummary, summary.summary)
+        : undefined,
+      facts: await Promise.all(facts.map((fact) =>
+        revealOrganizationText(fact.organizationId, "agent-memory-fact", fact.encryptedFact, fact.fact),
+      )),
     };
   },
 });

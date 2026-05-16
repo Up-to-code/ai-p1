@@ -10,6 +10,11 @@ import {
   agentThreadValidator,
   agentToolStatusValidator,
 } from "./validators";
+import {
+  encryptedPlaceholder,
+  protectOrganizationText,
+  redactSensitiveText,
+} from "../security/organizationData";
 
 function present<T extends { _id: string }>(doc: T) {
   return { ...doc, id: doc._id };
@@ -67,7 +72,9 @@ export const startRunFromHono = mutation({
       organizationId: args.organizationId,
       threadId,
       role: "user",
-      content: args.message,
+      content: redactSensitiveText(args.message),
+      encryptedContent: await protectOrganizationText(args.organizationId, "agent-message", args.message),
+      contentRedacted: true,
       runId,
       createdAt: now,
     });
@@ -131,8 +138,18 @@ export const recordToolCallFromHono = mutation({
       throw new Error("Agent run was not found.");
     }
     const now = Date.now();
+    const encryptedInputPreview = args.inputPreview
+      ? await protectOrganizationText(args.organizationId, "agent-tool-input", args.inputPreview)
+      : undefined;
+    const encryptedOutputPreview = args.outputPreview
+      ? await protectOrganizationText(args.organizationId, "agent-tool-output", args.outputPreview)
+      : undefined;
     await ctx.db.insert("agentToolCalls", {
       ...args,
+      inputPreview: args.inputPreview ? redactSensitiveText(args.inputPreview) : undefined,
+      outputPreview: args.outputPreview ? redactSensitiveText(args.outputPreview) : undefined,
+      encryptedInputPreview,
+      encryptedOutputPreview,
       createdAt: now,
       completedAt: now,
     });
@@ -164,7 +181,9 @@ export const finishRunFromHono = mutation({
       organizationId: args.organizationId,
       threadId: args.threadId,
       role: "assistant",
-      content: args.assistantMessage,
+      content: redactSensitiveText(args.assistantMessage),
+      encryptedContent: await protectOrganizationText(args.organizationId, "agent-message", args.assistantMessage),
+      contentRedacted: true,
       runId: args.runId,
       createdAt: now,
     });
@@ -193,7 +212,9 @@ export const finishRunFromHono = mutation({
         .first();
       if (existing) {
         await ctx.db.patch(existing._id, {
-          summary: args.summary,
+          summary: encryptedPlaceholder(),
+          encryptedSummary: await protectOrganizationText(args.organizationId, "agent-memory-summary", args.summary),
+          summaryRedacted: true,
           messageCount: existing.messageCount + 2,
           updatedAt: now,
         });
@@ -201,7 +222,9 @@ export const finishRunFromHono = mutation({
         await ctx.db.insert("agentMemorySummaries", {
           organizationId: args.organizationId,
           threadId: args.threadId,
-          summary: args.summary,
+          summary: encryptedPlaceholder(),
+          encryptedSummary: await protectOrganizationText(args.organizationId, "agent-memory-summary", args.summary),
+          summaryRedacted: true,
           messageCount: 2,
           updatedAt: now,
         });
@@ -214,7 +237,9 @@ export const finishRunFromHono = mutation({
       await ctx.db.insert("agentMemoryFacts", {
         organizationId: args.organizationId,
         threadId: args.threadId,
-        fact: trimmed,
+        fact: redactSensitiveText(trimmed),
+        encryptedFact: await protectOrganizationText(args.organizationId, "agent-memory-fact", trimmed),
+        factRedacted: true,
         sourceMessageId: assistantMessageId,
         createdAt: now,
         updatedAt: now,

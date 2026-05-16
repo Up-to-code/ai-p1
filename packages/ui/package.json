@@ -58,13 +58,13 @@
     }
   },
   "scripts": {
-    "prebuild": "npm --workspace @qentrah/brand-identity run build && npm --workspace @qentrah/platform-core run build && npm --workspace @qentrah/auth-sdk run build",
+    "prebuild": "npm --workspace @qentrah/brand-identity run build && npm --workspace @qentrah/platform-core run build && npm --workspace @qentrah/auth run build",
     "build": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
-    "@qentrah/auth-sdk": "0.1.7",
+    "@qentrah/auth": "0.1.0",
     "@qentrah/brand-identity": "0.1.0",
     "@qentrah/platform-core": "0.1.0",
     "class-variance-authority": "^0.7.1",

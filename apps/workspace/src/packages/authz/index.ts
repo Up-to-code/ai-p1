@@ -1,4 +1,11 @@
 export {
+  evaluateOrganizationCapabilities,
+  organizationCapabilityChecks,
+  type DynamicOrganizationRole,
+  type OrganizationCapabilities,
+  type OrganizationCapabilityKey,
+} from "./capabilities";
+export {
   organizationAccessControl,
   organizationAdminRole,
   organizationMemberRole,

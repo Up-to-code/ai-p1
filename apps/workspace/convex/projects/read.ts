@@ -13,8 +13,9 @@ const MAX_STATS_SCAN_ITEMS = 2_000;
 
 async function presentProject(ctx: QueryCtx, project: Doc<"projects">) {
   const media = await listResourceMedia(ctx, project.organizationId, "project", project._id);
+  const { deletedAt: _deletedAt, isDeleted: _isDeleted, ...safeProject } = project;
   return {
-    ...project,
+    ...safeProject,
     id: project._id,
     visibility: project.visibility ?? "private",
     coverImageUrl: selectCoverUrl(media),
@@ -23,8 +24,9 @@ async function presentProject(ctx: QueryCtx, project: Doc<"projects">) {
 
 async function presentProjectListItem(ctx: QueryCtx, project: Doc<"projects">) {
   const media = await listResourceMedia(ctx, project.organizationId, "project", project._id);
+  const { deletedAt: _deletedAt, isDeleted: _isDeleted, ...safeProject } = project;
   return {
-    ...project,
+    ...safeProject,
     id: project._id,
     visibility: project.visibility ?? "private",
     coverImageUrl: selectCoverUrl(media),

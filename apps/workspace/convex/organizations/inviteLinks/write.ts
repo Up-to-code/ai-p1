@@ -1,7 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
 import { authComponent, createAuth } from "../../auth";
-import { assertPlatformAdmin } from "../../platform/access";
 import { assertOrganizationResourcePermission } from "../profile/access";
 import { findInviteLinkByTokenHash, toPublicInviteLink } from "./data";
 import {
@@ -34,7 +33,6 @@ export const createInviteLinkFromHono = mutation({
   returns: organizationInviteLinkValidator,
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    await assertPlatformAdmin(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "member", "create");
 
     const existing = await findInviteLinkByTokenHash(ctx, args.input.tokenHash);
@@ -142,7 +140,6 @@ export const cancelInviteLinkFromHono = mutation({
   returns: organizationInviteLinkValidator,
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    await assertPlatformAdmin(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "member", "create");
     const inviteLink = await ctx.db.get(args.inviteLinkId);
     const now = Date.now();

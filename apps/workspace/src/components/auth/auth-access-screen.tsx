@@ -59,7 +59,7 @@ export function AuthAccessScreen({ mode, isPending, onGoogleSignIn }: AuthAccess
 
         <section className="flex flex-1 items-center justify-center py-10 sm:py-12">
           <div className="w-full max-w-[430px]">
-            <div className="rounded-[24px] border border-border bg-surface p-6 text-start sm:p-7">
+            <div className="text-start">
               <div className="mb-7 flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl border border-border bg-background">
                   <BrandMark className="h-5.5 w-5.5" priority />

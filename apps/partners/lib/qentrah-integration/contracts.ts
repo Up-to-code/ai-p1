@@ -1,7 +1,7 @@
 import { z } from "zod/v4";
 
 export const qentrahIntegrationContractNames = [
-  "partner.app_registration_sync.v1",
+  "partner.oauth_runtime_sync.v1",
   "workspace.capability_discovery.v1",
   "workspace.authorization_status.v1",
   "partner.event_delivery.v1",
@@ -9,8 +9,8 @@ export const qentrahIntegrationContractNames = [
 
 export type QentrahIntegrationContractName = (typeof qentrahIntegrationContractNames)[number];
 
-export const partnerAppRegistrationSyncSchema = z.object({
-  contract: z.literal("partner.app_registration_sync.v1"),
+export const partnerOAuthRuntimeSyncSchema = z.object({
+  contract: z.literal("partner.oauth_runtime_sync.v1"),
   idempotencyKey: z.string().min(8),
   partnerAppId: z.string().min(1),
   clientId: z.string().min(1),
@@ -55,13 +55,13 @@ export const partnerEventDeliverySchema = z.object({
 });
 
 export const qentrahIntegrationPayloadSchema = z.discriminatedUnion("contract", [
-  partnerAppRegistrationSyncSchema,
+  partnerOAuthRuntimeSyncSchema,
   workspaceCapabilityDiscoverySchema,
   workspaceAuthorizationStatusSchema,
   partnerEventDeliverySchema,
 ]);
 
-export type PartnerAppRegistrationSync = z.output<typeof partnerAppRegistrationSyncSchema>;
+export type PartnerOAuthRuntimeSync = z.output<typeof partnerOAuthRuntimeSyncSchema>;
 export type WorkspaceCapabilityDiscovery = z.output<typeof workspaceCapabilityDiscoverySchema>;
 export type WorkspaceAuthorizationStatus = z.output<typeof workspaceAuthorizationStatusSchema>;
 export type PartnerEventDelivery = z.output<typeof partnerEventDeliverySchema>;

@@ -21,11 +21,14 @@ const required = [
   "NEXT_PUBLIC_CONVEX_SITE_URL",
   "CONVEX_SITE_URL",
   "BETTER_AUTH_SECRET",
+  "ADMIN_CONVEX_SERVICE_TOKEN",
   "GOOGLE_CLIENT_ID",
   "GOOGLE_CLIENT_SECRET",
   "WORKSPACE_ADMIN_SERVICE_TOKEN",
+  "WORKSPACE_CONVEX_BRIDGE_SECRET",
   "PARTNERS_REVIEW_CALLBACK_TOKEN",
   "PARTNER_WEBHOOK_SECRET_ENCRYPTION_KEY",
+  "ORGANIZATION_DATA_ENCRYPTION_KEY",
 ];
 
 const expected = {
@@ -44,9 +47,37 @@ const expected = {
 const placeholder = /^<.*>$/u;
 const failures = [];
 
+const strongSecretKeys = [
+  "BETTER_AUTH_SECRET",
+  "ADMIN_CONVEX_SERVICE_TOKEN",
+  "WORKSPACE_ADMIN_SERVICE_TOKEN",
+  "WORKSPACE_CONVEX_BRIDGE_SECRET",
+  "PARTNERS_REVIEW_CALLBACK_TOKEN",
+  "PARTNER_WEBHOOK_SECRET_ENCRYPTION_KEY",
+  "ORGANIZATION_DATA_ENCRYPTION_KEY",
+];
+
+function uniqueCharacterCount(value) {
+  return new Set(value).size;
+}
+
+function looksRandomSecret(value) {
+  const trimmed = value.trim();
+  if (trimmed.length < 32) return false;
+  if (/^(.)\1+$/u.test(trimmed)) return false;
+  if (/password|secret|changeme|replace|example|qentrah|test|local/iu.test(trimmed)) return false;
+  return uniqueCharacterCount(trimmed) >= 12;
+}
+
 for (const key of required) {
   if (!env[key]) failures.push(`${key} is missing`);
   else if (placeholder.test(env[key])) failures.push(`${key} still has a placeholder`);
+}
+
+for (const key of strongSecretKeys) {
+  if (env[key] && !looksRandomSecret(env[key])) {
+    failures.push(`${key} must be a random secret with at least 32 characters.`);
+  }
 }
 
 for (const [key, value] of Object.entries(expected)) {

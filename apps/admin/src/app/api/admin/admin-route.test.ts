@@ -46,4 +46,28 @@ describe("admin Hono facade", () => {
     });
     expect(response.status).toBe(400);
   });
+
+  it("rate limits repeated failed admin login attempts", async () => {
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const response = await adminHonoApp.request("/api/admin/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email: "admin@qentrah.local", password: "wrong-password" }),
+        headers: {
+          "content-type": "application/json",
+          "x-forwarded-for": "203.0.113.10",
+        },
+      });
+      expect(response.status).toBe(401);
+    }
+
+    const limited = await adminHonoApp.request("/api/admin/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email: "admin@qentrah.local", password }),
+      headers: {
+        "content-type": "application/json",
+        "x-forwarded-for": "203.0.113.10",
+      },
+    });
+    expect(limited.status).toBe(429);
+  });
 });

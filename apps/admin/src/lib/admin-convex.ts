@@ -31,7 +31,6 @@ type ConvexDetailResponse = {
     redirectUris?: string[];
     allowedScopes?: string[];
     description?: string;
-    callbackUrl?: string | null;
     partnerReviewReply?: string | null;
     internalReviewNotes?: string | null;
     organizationSections?: AdminDetailSection[];
@@ -45,17 +44,17 @@ function convexUrl(env: Record<string, string | undefined> = process.env) {
 }
 
 export function adminConvexConfigured(env: Record<string, string | undefined> = process.env) {
-  return Boolean(convexUrl(env) && (env.ADMIN_CONVEX_SERVICE_TOKEN ?? env.WORKSPACE_ADMIN_SERVICE_TOKEN));
+  return Boolean(convexUrl(env) && env.ADMIN_CONVEX_SERVICE_TOKEN);
 }
 
 function adminServiceToken(env: Record<string, string | undefined> = process.env) {
-  return env.ADMIN_CONVEX_SERVICE_TOKEN ?? env.WORKSPACE_ADMIN_SERVICE_TOKEN ?? "";
+  return env.ADMIN_CONVEX_SERVICE_TOKEN ?? "";
 }
 
 function client(env: Record<string, string | undefined> = process.env) {
   const url = convexUrl(env);
   if (!url) throw new Error("CONVEX_URL or NEXT_PUBLIC_CONVEX_URL is required for Admin real-data mode.");
-  if (!adminServiceToken(env)) throw new Error("ADMIN_CONVEX_SERVICE_TOKEN or WORKSPACE_ADMIN_SERVICE_TOKEN is required for Admin real-data mode.");
+  if (!adminServiceToken(env)) throw new Error("ADMIN_CONVEX_SERVICE_TOKEN is required for Admin real-data mode.");
   return new ConvexHttpClient(url);
 }
 
@@ -110,7 +109,6 @@ export async function getAdminDomainDetailFromConvex(domain: AdminDomainId, id: 
   const extraFields = response.raw
     ? [
       response.raw.description ? { label: "Description", value: response.raw.description } : null,
-      response.raw.callbackUrl ? { label: "Callback URL", value: response.raw.callbackUrl } : null,
       response.raw.allowedScopes ? { label: "Allowed scopes", value: response.raw.allowedScopes.join(", ") } : null,
       response.raw.redirectUris ? { label: "Redirect URIs", value: response.raw.redirectUris.join(", ") } : null,
       response.raw.partnerReviewReply ? { label: "Partner-visible reply", value: response.raw.partnerReviewReply } : null,

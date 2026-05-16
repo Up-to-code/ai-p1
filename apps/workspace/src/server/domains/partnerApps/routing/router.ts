@@ -2,9 +2,7 @@ import { Hono } from "hono";
 import type { Context, Next } from "hono";
 import { partnerAppsRuntimeConfig } from "@/packages/config";
 import {
-  handleCreatePartnerApp,
   handleListPartnerApps,
-  handleReviewPartnerApp,
 } from "../handlers/partner-apps";
 import {
   handlePartnerClientWrite,
@@ -29,9 +27,7 @@ async function requirePartnerAppsEnabled(c: Context, next: Next) {
 partnerAppsRouter.use("*", requirePartnerAppsEnabled);
 partnerResourceRouter.use("*", requirePartnerAppsEnabled);
 
-partnerAppsRouter.post("/", handleCreatePartnerApp);
 partnerAppsRouter.get("/", handleListPartnerApps);
-partnerAppsRouter.patch("/:appId/review", handleReviewPartnerApp);
 
 partnerResourceRouter.get("/organizations/:organizationId/me", handlePartnerMe);
 partnerResourceRouter.get("/organizations/:organizationId/clients", (c) => handlePartnerReadCollection(c, "client"));

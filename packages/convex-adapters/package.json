@@ -28,7 +28,8 @@
   "scripts": {
     "prebuild": "npm --workspace @qentrah/platform-core run build",
     "build": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@qentrah/platform-core": "0.1.0"

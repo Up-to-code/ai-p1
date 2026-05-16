@@ -1,13 +1,12 @@
 import { v } from "convex/values";
 import { action } from "../_generated/server";
 import { components } from "../_generated/api";
-import { normalizeScopes } from "../../src/packages/partner-apps/scopes";
-import { partnerAppStatusValidator } from "./validators";
+import { normalizePartnerScopes } from "@qentrah/partner-auth-core";
 
 const baseOAuthScopes = ["openid", "profile", "email", "offline_access"] as const;
 
 function oauthClientScopes(scopes: string[]) {
-  return Array.from(new Set([...baseOAuthScopes, ...normalizeScopes(scopes)]));
+  return Array.from(new Set([...baseOAuthScopes, ...normalizePartnerScopes(scopes)]));
 }
 
 function oauthMetadata(workspacePartnerAppId: string, status: string) {
@@ -26,7 +25,11 @@ const oauthClientSyncInputValidator = v.object({
   logoUrl: v.optional(v.string()),
   redirectUris: v.array(v.string()),
   allowedScopes: v.array(v.string()),
-  status: partnerAppStatusValidator,
+  status: v.union(
+    v.literal("approved"),
+    v.literal("rejected"),
+    v.literal("suspended"),
+  ),
 });
 
 export const upsertFromPartnersService = action({
@@ -49,7 +52,7 @@ export const upsertFromPartnersService = action({
       public: publicClient,
       type: publicClient ? "spa" : "web",
       requirePKCE: true,
-      disabled: input.status === "suspended",
+      disabled: input.status !== "approved",
       metadata: oauthMetadata(input.workspacePartnerAppId, input.status),
       updatedAt: now,
     };

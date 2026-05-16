@@ -10,10 +10,14 @@ import {
 import { getAuthRuntimeConfig } from "../src/packages/config/auth";
 import { partnerAppsRuntimeConfig } from "../src/packages/config/partner-apps";
 import {
-  partnerAppScopes,
-  partnerDefaultScopes,
+  partnerAdvertisedMetadata,
+  partnerClientRegistrationAllowedScopes,
+  partnerClientRegistrationDefaultScopes,
+  partnerOAuthClaims,
+  partnerOAuthScopes,
+  partnerScopeExpirations,
   scopeToPermission,
-} from "../src/packages/partner-apps/scopes";
+} from "@qentrah/partner-auth-core";
 import authConfig from "./auth.config";
 import { components } from "./_generated/api";
 import type { DataModel } from "./_generated/dataModel";
@@ -49,13 +53,7 @@ export const createAuthOptions = (
   mode: "runtime" | "schema",
 ) => {
   const authRuntimeConfig = getAuthRuntimeConfig(mode);
-  const oauthScopes = [
-    "openid",
-    "profile",
-    "email",
-    "offline_access",
-    ...partnerAppScopes,
-  ];
+  const oauthScopes = [...partnerOAuthScopes];
   const hasPartnerScope = (scopes: readonly string[]) =>
     scopes.some((scope) => Boolean(scopeToPermission(scope)));
 
@@ -82,41 +80,17 @@ export const createAuthOptions = (
         loginPage: "/en/sign-in",
         consentPage: "/oauth/consent",
         scopes: [...oauthScopes],
-        advertisedMetadata: { scopes_supported: [...oauthScopes] },
+        advertisedMetadata: partnerAdvertisedMetadata(),
         validAudiences: [
           authRuntimeConfig.siteUrl,
           partnerAppsRuntimeConfig.oauthAudience,
         ].filter(Boolean),
-        clientRegistrationDefaultScopes: [
-          "openid",
-          "profile",
-          "email",
-          ...partnerDefaultScopes,
-        ],
-        clientRegistrationAllowedScopes: oauthScopes,
+        clientRegistrationDefaultScopes: partnerClientRegistrationDefaultScopes(),
+        clientRegistrationAllowedScopes: partnerClientRegistrationAllowedScopes(),
         allowDynamicClientRegistration: false,
         accessTokenExpiresIn: 60 * 60,
         refreshTokenExpiresIn: 30 * 24 * 60 * 60,
-        scopeExpirations: {
-          "client:create": "15m",
-          "client:update": "15m",
-          "client:delete": "5m",
-          "property:create": "15m",
-          "property:update": "15m",
-          "property:delete": "5m",
-          "project:create": "15m",
-          "project:update": "15m",
-          "project:delete": "5m",
-          "calendar:create": "15m",
-          "calendar:update": "15m",
-          "calendar:delete": "5m",
-          "task:create": "15m",
-          "task:update": "15m",
-          "task:delete": "5m",
-          "media:create": "15m",
-          "media:update": "15m",
-          "media:delete": "5m",
-        },
+        scopeExpirations: partnerScopeExpirations,
         clientPrivileges: ({ user }) => {
           if (!user?.email) return undefined;
           return authRuntimeConfig.platformAdminEmails.includes(
@@ -143,13 +117,13 @@ export const createAuthOptions = (
             throw new Error("Partner app is not approved.");
           }
           return {
-            organization_id: referenceId,
-            partner_scopes: partnerScopes,
+            [partnerOAuthClaims.organizationId]: referenceId,
+            [partnerOAuthClaims.partnerScopes]: partnerScopes,
           };
         },
         customTokenResponseFields: ({ verificationValue }) => {
           if (!verificationValue?.referenceId) return {};
-          return { organization_id: verificationValue.referenceId };
+          return { [partnerOAuthClaims.organizationId]: verificationValue.referenceId };
         },
         prefix: {
           clientSecret: "qentrah_oac_",
