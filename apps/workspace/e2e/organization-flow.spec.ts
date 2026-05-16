@@ -1,4 +1,4 @@
-import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Browser, type Page } from "@playwright/test";
 
 const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${process.env.PORT ?? 3000}`;
 
@@ -37,11 +37,40 @@ async function createOrganization(request: APIRequestContext, name: string) {
   return organizationId as string;
 }
 
+async function createInviteLink(request: APIRequestContext, organizationId: string) {
+  const payload = await authPost<{ inviteUrl: string; inviteLink: { organizationId: string; status: string } }>(
+    request,
+    `/api/v1/organizations/${organizationId}/invite-links`,
+    { role: "member", locale: "en" },
+  );
+  expect(payload.inviteUrl).toContain("inviteToken=");
+  expect(payload.inviteLink.organizationId).toBe(organizationId);
+  expect(payload.inviteLink.status).toBe("pending");
+  return payload.inviteUrl;
+}
+
+function inviteTokenFromUrl(inviteUrl: string) {
+  const parsed = new URL(inviteUrl);
+  const token = parsed.searchParams.get("inviteToken");
+  expect(token).toBeTruthy();
+  return token as string;
+}
+
 async function prepareOwner(page: Page) {
   const email = uniqueEmail("owner");
   await signUp(page.request, email);
   const organizationId = await createOrganization(page.request, `E2E Org ${Date.now()}`);
   return { email, organizationId };
+}
+
+async function prepareRecipient(browser: Browser) {
+  const context = await browser.newContext({ baseURL });
+  const page = await context.newPage();
+  const email = uniqueEmail("recipient");
+  await signUp(page.request, email);
+  const requestState = await page.request.storageState();
+  await page.context().addCookies(requestState.cookies);
+  return { context, page, email };
 }
 
 test.describe("organization business flow", () => {
@@ -92,6 +121,85 @@ test.describe("organization business flow", () => {
       },
     );
     expect([401, 403]).toContain(unauthenticated.status());
+  });
+
+  test("recipient accepts generated invite link and lands in the joined workspace", async ({ browser, page }) => {
+    const { organizationId } = await prepareOwner(page);
+    const inviteUrl = await createInviteLink(page.request, organizationId);
+    const recipient = await prepareRecipient(browser);
+
+    await recipient.page.goto(inviteUrl);
+    await expect(recipient.page.getByText("Invite accepted")).toBeVisible();
+    await expect(recipient.page).toHaveURL(/\/en\/dashboard/, { timeout: 10_000 });
+    await expect(recipient.page.getByText("Choose how to continue")).toHaveCount(0);
+
+    const dashboardResponse = await recipient.page.request.get(
+      `/api/v1/organizations/${organizationId}/read/dashboard`,
+    );
+    expect(dashboardResponse.ok()).toBeTruthy();
+
+    await recipient.context.close();
+  });
+
+  test("signed-out invitee is asked to sign in and keeps the invite callback", async ({ browser, page }) => {
+    const { organizationId } = await prepareOwner(page);
+    const inviteUrl = await createInviteLink(page.request, organizationId);
+    const signedOut = await browser.newContext({ baseURL });
+    const signedOutPage = await signedOut.newPage();
+    const inviteToken = inviteTokenFromUrl(inviteUrl);
+
+    await signedOutPage.goto(inviteUrl);
+    await expect(signedOutPage.getByText("Sign in to continue")).toBeVisible();
+    await signedOutPage.getByRole("button", { name: /sign in/i }).click();
+    await expect(signedOutPage).toHaveURL((url) => {
+      return (
+        url.pathname === "/en/sign-in" &&
+        url.searchParams.get("callbackURL") === `/en/accept-invite?inviteToken=${inviteToken}`
+      );
+    });
+    const callbackURL = new URL(signedOutPage.url()).searchParams.get("callbackURL");
+    expect(callbackURL).toBe(`/en/accept-invite?inviteToken=${inviteToken}`);
+
+    await signUp(signedOutPage.request, uniqueEmail("signedout-recipient"));
+    const requestState = await signedOutPage.request.storageState();
+    await signedOutPage.context().addCookies(requestState.cookies);
+    await signedOutPage.goto(callbackURL!);
+    await expect(signedOutPage.getByText("Invite accepted")).toBeVisible();
+    await expect(signedOutPage).toHaveURL(/\/en\/dashboard/, { timeout: 10_000 });
+
+    await signedOut.close();
+  });
+
+  test("existing member can open invite link without getting stuck on an error", async ({ page }) => {
+    const { organizationId } = await prepareOwner(page);
+    const inviteUrl = await createInviteLink(page.request, organizationId);
+
+    await page.goto(inviteUrl);
+    await expect(page.getByText("Invite accepted")).toBeVisible();
+    await expect(page).toHaveURL(/\/en\/dashboard/, { timeout: 10_000 });
+
+    const dashboardResponse = await page.request.get(
+      `/api/v1/organizations/${organizationId}/read/dashboard`,
+    );
+    expect(dashboardResponse.ok()).toBeTruthy();
+  });
+
+  test("invite link cannot be reused by another new member after acceptance", async ({ browser, page }) => {
+    const { organizationId } = await prepareOwner(page);
+    const inviteUrl = await createInviteLink(page.request, organizationId);
+    const firstRecipient = await prepareRecipient(browser);
+
+    await firstRecipient.page.goto(inviteUrl);
+    await expect(firstRecipient.page.getByText("Invite accepted")).toBeVisible();
+    await expect(firstRecipient.page).toHaveURL(/\/en\/dashboard/, { timeout: 10_000 });
+    await firstRecipient.context.close();
+
+    const secondRecipient = await prepareRecipient(browser);
+    await secondRecipient.page.goto(inviteUrl);
+    await expect(secondRecipient.page.getByText("Invite failed")).toBeVisible();
+    await expect(secondRecipient.page.getByText("Invite link is no longer active.")).toBeVisible();
+    await expect(secondRecipient.page).toHaveURL(/\/en\/accept-invite\?inviteToken=/);
+    await secondRecipient.context.close();
   });
 
   test("Arabic and dark mode render organization settings without missing copy", async ({ page }) => {

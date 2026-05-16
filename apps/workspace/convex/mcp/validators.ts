@@ -33,7 +33,7 @@ export const updateMcpConnectionInputValidator = v.object({
   name: v.optional(v.string()),
   instructions: v.optional(v.string()),
   permissions: v.optional(v.array(mcpPermissionValidator)),
-  status: v.optional(v.union(v.literal("active"), v.literal("paused"))),
+  status: v.optional(v.union(v.literal("active"), v.literal("paused"), v.literal("draft"))),
   expiresAt: v.optional(v.union(v.number(), v.null())),
 });
 
@@ -48,7 +48,7 @@ export const mcpConnectionValidator = v.object({
   name: v.string(),
   instructions: v.optional(v.string()),
   permissions: v.array(mcpPermissionValidator),
-  status: v.union(v.literal("active"), v.literal("paused"), v.literal("revoked")),
+  status: v.union(v.literal("active"), v.literal("paused"), v.literal("draft"), v.literal("revoked")),
   createdByUserId: v.string(),
   createdAt: v.number(),
   updatedAt: v.number(),

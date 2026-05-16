@@ -11,7 +11,7 @@ export default function Integrations() {
       </h2>
       <p className="mt-6 text-center text-zinc-500 dark:text-zinc-400 text-lg sm:text-xl max-w-3xl mx-auto">
         {isAr 
-          ? "اربط قنطرة مع أدواتك المفضلة ومنصات التسويق العقاري لتبسيط سير العمل ومزامنة البيانات بشكل فوري."
+          ? "اربط كانترا مع أدواتك المفضلة ومنصات التسويق العقاري لتبسيط سير العمل ومزامنة البيانات بشكل فوري."
           : "Connect Qentrah with your favorite tools and real estate marketing platforms to streamline workflows and sync data instantly."}
       </p>
       <div className="mt-16 grid grid-cols-1 gap-6 sm:mt-24 sm:grid-cols-2 lg:grid-cols-3">

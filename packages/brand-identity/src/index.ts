@@ -5,11 +5,11 @@ export type BrandRoute = "auth" | "api" | "oauthStart" | "oauthCallback" | "oaut
 export const brandIdentity = {
   name: {
     en: "Qentrah",
-    ar: "قنطرة",
+    ar: "كانترا",
   },
   legalName: {
     en: "Qentrah Technology Co.",
-    ar: "شركة قنطرة التقنية",
+    ar: "شركة كانترا التقنية",
   },
   slug: "qentrah",
   packageScope: "@qentrah",

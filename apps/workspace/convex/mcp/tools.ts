@@ -850,6 +850,19 @@ function projectStatus(input: Input) {
 }
 
 function projectInput(input: Input) {
+  const projectPrices = Array.isArray(input.projectPrices)
+    ? input.projectPrices
+        .filter((item): item is Record<string, unknown> => item !== null && typeof item === "object")
+        .map((item, index) => ({
+          id: optionalString(item, "id") ?? `price-${index + 1}`,
+          label: optionalString(item, "label") ?? "",
+          price: optionalString(item, "price") ?? "",
+        }))
+    : undefined;
+  const averagePrice = optionalString(input, "averagePrice") ?? optionalString(input, "priceRange") ?? "";
+  const projectPriceDisplay = projectPrices?.map((item) => item.price).filter(Boolean).join(" - ");
+  const priceRange = projectPriceDisplay || averagePrice;
+
   return {
     name: requiredString(input, "name"),
     developer: requiredString(input, "developer"),
@@ -859,7 +872,9 @@ function projectInput(input: Input) {
     unitTypes: Array.isArray(input.unitTypes) ? input.unitTypes.filter((value) => typeof value === "string") : undefined,
     status: projectStatus(input),
     units: optionalNumber(input, "units") ?? 0,
-    priceRange: optionalString(input, "priceRange") ?? "",
+    averagePrice,
+    projectPrices,
+    priceRange,
     regaAuthorizationNo: optionalString(input, "regaAuthorizationNo"),
     regaExpiresAt: optionalString(input, "regaExpiresAt"),
     planNumber: optionalString(input, "planNumber"),

@@ -12,9 +12,9 @@ import {
 describe("@qentrah/brand-identity", () => {
   it("exposes localized brand and product names", () => {
     expect(brandLabel("en")).toBe("Qentrah");
-    expect(brandLabel("ar")).toBe("قنطرة");
+    expect(brandLabel("ar")).toBe("كانترا");
     expect(brandProductName("workspace", "en")).toBe("Qentrah Workspace");
-    expect(brandProductName("workspace", "ar")).toBe("مساحة العمل قنطرة");
+    expect(brandProductName("workspace", "ar")).toBe("مساحة العمل كانترا");
   });
 
   it("derives env names and route paths", () => {

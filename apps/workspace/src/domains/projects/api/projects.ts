@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
-import { useDebouncedValue, useHttpIndexedPagedQuery, useHttpPagedQuery, useHttpQuery } from "@/components/shared/use-http-query";
+import { useDebouncedValue, useHttpIndexedPagedQuery, useHttpPagedQuery, useHttpQuery, useHttpQueryResult } from "@/components/shared/use-http-query";
 import type { ProjectStatus } from "../store/projects.types";
 import type { Project } from "../store/projects.types";
 import type { ProjectFormValues } from "../validation/project.schema";
@@ -51,6 +51,14 @@ export function useProjectsIndexQuery(organizationId?: string, options?: { statu
   );
 }
 
+export function useProjectOptionsQueryResult(organizationId?: string, options?: { limit?: number }) {
+  return useHttpQueryResult<{ id: string; name: string }[]>(
+    ["projects-options", organizationId],
+    organizationId ? `/api/v1/organizations/${organizationId}/read/projects/options` : undefined,
+    { limit: options?.limit ?? 200 },
+  );
+}
+
 export function useProjectOptionsQuery(organizationId?: string) {
   return useHttpQuery<{ id: string; name: string }[]>(
     ["projects-options", organizationId],
@@ -73,6 +81,16 @@ export function useProjectQuery(organizationId: string | undefined, projectId: s
 }
 
 export function projectPayloadFromForm(values: ProjectFormValues) {
+  const projectPrices = (values.projectPrices ?? [])
+    .map((item) => ({
+      id: item.id,
+      label: item.label.trim(),
+      price: item.price.trim(),
+    }))
+    .filter((item) => item.label || item.price);
+  const projectPriceDisplay = projectPrices.map((item) => item.price).filter(Boolean).join(" - ");
+  const priceRange = projectPriceDisplay || values.averagePrice.trim();
+
   return {
     name: values.name,
     developer: values.developer,
@@ -83,7 +101,9 @@ export function projectPayloadFromForm(values: ProjectFormValues) {
     status: values.status,
     visibility: values.visibility ?? "private",
     units: Number(values.units || 0),
-    priceRange: values.priceRange,
+    averagePrice: values.averagePrice,
+    projectPrices,
+    priceRange,
     regaAuthorizationNo: values.regaAuthorizationNo || undefined,
     regaExpiresAt: values.regaExpiresAt || undefined,
     planNumber: values.planNumber || undefined,

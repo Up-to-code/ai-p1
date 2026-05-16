@@ -87,7 +87,7 @@ export function propertyPayloadFromForm(values: PropertyFormValues) {
   return {
     title: values.title,
     projectId: values.projectId || undefined,
-    project: values.project,
+    project: values.project?.trim() || "Standalone unit",
     city: values.city,
     type: values.type,
     status: values.status,
