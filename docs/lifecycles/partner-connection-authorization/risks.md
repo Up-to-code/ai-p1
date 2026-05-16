@@ -10,3 +10,5 @@
 - The runtime projection endpoint now expects an explicit approved/rejected/suspended status. Partners/Admin callers must use the shared projection builder instead of hand-writing payloads.
 - Partner API handlers should use `authorizePartnerResourceRequest` rather than parsing bearer tokens or checking grants directly.
 - Integrations UI state should stay in the view-model Module when it is about catalog/grant status or available actions; visual-only changes can remain in the screen.
+- Partners published catalog caching must stay limited to public/published app metadata. Do not cache organization grants, user sessions, admin-only review notes, or unpublished app records with this cache.
+- The current Partners catalog cache is per server process with a short TTL; it reduces local/serverless hot-path database pressure, but it is not a distributed cache or a replacement for fixing exhausted Postgres connection limits.

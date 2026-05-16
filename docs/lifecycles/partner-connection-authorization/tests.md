@@ -38,6 +38,8 @@
 - `npx convex run partnerApps/migrations:previewPartnerConnectionFieldCutover '{"limit":1000}'` - found two migratable records, then passed with `needsMigration: 0` after backfill.
 - `npx convex run partnerApps/migrations:backfillPartnerConnectionCanonicalFields '{"limit":500}'` - patched two records with zero blocked.
 - `npm --workspace @qentrah/workspace test -- convex/partnerApps/migrations.test.ts` - passed 2026-05-16 emergency data compatibility unblock.
+- `npm --workspace @qentrah/partners test -- server/platformApi.test.ts` - passed 2026-05-16 published catalog cache fix.
+- `npm --workspace @qentrah/partners run typecheck` - passed 2026-05-16 published catalog cache fix.
 
 ## Manual Checks
 

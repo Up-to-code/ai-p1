@@ -17,6 +17,9 @@
 - `apps/workspace/src/server/routing/admin/router.ts`: exposes the Workspace admin runtime-sync endpoint used by Partners after review.
 - `apps/partners/server/adminPartnerApps.ts`: Partners admin source of truth for review decisions and publisher app status; publishes minimal OAuth runtime projection to Workspace.
 - `apps/partners/server/partnerApps.ts`: Partners developer-owned app lifecycle repository; no Workspace review callback path.
+- `apps/partners/server/platformApi.ts`: Partners platform catalog/verification repository used by Workspace; owns short-lived published catalog caching before Prisma/Postgres reads.
+- `apps/partners/app/api/platform/published-apps/route.ts`: service-token protected published catalog list endpoint consumed by Workspace.
+- `apps/partners/app/api/platform/published-apps/[appId]/route.ts`: service-token protected single published app endpoint.
 - `apps/partners/server/qentrahWorkspace.ts`: Partners-to-Workspace helper for OAuth runtime projection.
 - `apps/workspace/src/domains/integrations/store/integrations.view-model.ts`: integrations UI view-model Module for catalog/grant merge, effective status, actions, and detail lookup.
 - `apps/workspace/convex/partnerApps/migrations.ts`: pre-cutover migration for old connection field names.
@@ -30,5 +33,6 @@
 - `apps/workspace/src/server/domains/partnerApps/services/admin-partner-apps.test.ts`
 - `apps/workspace/src/server/domains/partnerApps/validation/admin-partner-app.schema.test.ts`
 - `apps/partners/server/qentrahWorkspace.test.ts`
+- `apps/partners/server/platformApi.test.ts`
 - `apps/partners/lib/qentrah-integration/contracts.test.ts`
 - `apps/workspace/src/domains/integrations/store/integrations.view-model.test.ts`

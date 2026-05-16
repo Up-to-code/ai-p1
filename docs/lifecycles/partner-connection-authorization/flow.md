@@ -29,6 +29,8 @@ flowchart TD
    - Partners keeps the HTTP Adapter that signs/sends the projection.
    - Workspace keeps the Better Auth Adapter that applies the projection.
 4. Workspace integrations fetch active apps from Partners platform APIs.
+   - Partners caches published catalog responses briefly because catalog metadata is global/safe and the Workspace UI can request it repeatedly during navigation.
+   - Cache keys include pagination and `updatedSince`, so callers still get distinct pages and incremental refreshes.
 5. Partner starts OAuth authorization against Workspace `/oauth/authorize`.
 6. Better Auth handles authorization-code and PKCE protocol behavior.
 7. Workspace consent verifies app/client/scopes with Partners and records the organization grant for requested resource scopes.

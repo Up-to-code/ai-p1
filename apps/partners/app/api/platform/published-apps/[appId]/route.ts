@@ -16,7 +16,14 @@ export async function GET(request: NextRequest, { params }: Params) {
     const { appId } = await params;
     const app = await platformPartnerAppsRepository.getPublished(appId);
     if (!app) return NextResponse.json({ error: "Partner app is not published." }, { status: 404 });
-    return NextResponse.json({ app: publishedPartnerAppSchema.parse(app) });
+    return NextResponse.json(
+      { app: publishedPartnerAppSchema.parse(app) },
+      {
+        headers: {
+          "Cache-Control": "private, max-age=15, stale-while-revalidate=30",
+        },
+      },
+    );
   } catch (error) {
     return platformError(error);
   }

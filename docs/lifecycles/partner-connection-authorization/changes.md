@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-05-16 Partners Published Catalog Cache
+
+- Added short-lived Partners repository caching for the service-token protected published catalog endpoints used by Workspace integrations.
+- Added cache-control headers for published app list/detail responses.
+- Added tests proving repeated published catalog and published app lookups do not repeatedly hit Prisma for the same cache key.
+- Left verification and source-of-truth ownership unchanged: Partners remains the app catalog/review owner, Workspace remains organization grant owner.
+
 ## 2026-05-16 Architecture Deepening Pass
 
 - Deepened the OAuth runtime projection Module by moving the shared projection contract, status mapping, and runtime scope normalization into `@qentrah/partner-workspace-sync`.

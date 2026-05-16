@@ -17,7 +17,11 @@ export async function GET(request: NextRequest) {
       cursor: url.searchParams.get("cursor") || undefined,
       updatedSince: url.searchParams.get("updatedSince") ? Number(url.searchParams.get("updatedSince")) : undefined,
     });
-    return NextResponse.json(publishedPartnerAppsResponseSchema.parse(payload));
+    return NextResponse.json(publishedPartnerAppsResponseSchema.parse(payload), {
+      headers: {
+        "Cache-Control": "private, max-age=15, stale-while-revalidate=30",
+      },
+    });
   } catch (error) {
     return platformError(error);
   }
