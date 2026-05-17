@@ -9,11 +9,11 @@ export default async function AccountPage() {
   const account = await partnerAccountRepository.getCurrent(token);
 
   return (
-    <div>
-      <div className="mb-8">
+    <div className="space-y-6">
+      <div>
         <p className="text-xs font-bold uppercase text-primary">Account</p>
         <h1 className="mt-2 text-3xl font-bold text-foreground">Developer identity</h1>
-        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
           Manage the developer identity and programmer organization used for app review and production authorization.
         </p>
       </div>

@@ -16,6 +16,7 @@ type TokenResponse = {
   expires_in?: number;
   refresh_token?: string;
   scope?: string;
+  organization_id?: string;
   error?: string;
   error_description?: string;
 };
@@ -147,6 +148,8 @@ function mapTokenResponse(payload: TokenResponse): QentrahPartnerTokenSet {
     expiresIn: payload.expires_in,
     refreshToken: payload.refresh_token,
     scope: payload.scope,
+    organizationId: payload.organization_id,
+    organization_id: payload.organization_id,
   };
 }
 
@@ -247,7 +250,7 @@ export async function completeQentrahPartnerAuthorization(request: Request, conf
     codeVerifier: pending.codeVerifier,
     fetcher: config.fetcher,
   });
-  const organizationId = url.searchParams.get("organization_id") ?? organizationIdFromAccessToken(tokenSet.accessToken);
+  const organizationId = url.searchParams.get("organization_id") ?? tokenSet.organizationId ?? organizationIdFromAccessToken(tokenSet.accessToken);
   if (!organizationId) throw new QentrahPartnerAuthError("ORGANIZATION_AUTHORIZATION_MISSING", "Qentrah did not return an organization authorization.");
   await config.tokenStore.saveTokens({ request, organizationId, tokenSet, scopes: pending.scopes });
   await config.sessionStore.clearPendingAuthorization({ request, state });

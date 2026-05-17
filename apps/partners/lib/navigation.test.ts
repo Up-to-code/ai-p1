@@ -5,7 +5,7 @@ describe("dashboard navigation", () => {
   it("keeps global docs and create actions out of the sidebar", () => {
     const labels = dashboardNav.map((item) => item.label);
 
-    expect(labels).toEqual(["Overview", "Apps", "Status", "Account"]);
+    expect(labels).toEqual(["Overview", "Apps", "Status", "MCP", "Account"]);
     expect(labels).not.toContain("Documentation");
     expect(labels).not.toContain("Create App");
   });

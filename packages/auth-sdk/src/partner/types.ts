@@ -4,6 +4,8 @@ export type QentrahPartnerTokenSet = {
   expiresIn?: number;
   refreshToken?: string;
   scope?: string;
+  organizationId?: string;
+  organization_id?: string;
 };
 
 export type QentrahPartnerAppLifecycleStatus =

@@ -1,15 +1,23 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Boxes, PlusCircle, ArrowRight } from "lucide-react";
+import { AlertTriangle, ArrowRight, Boxes, PlusCircle } from "lucide-react";
+import { StatusBadge } from "@/components/brand/StatusBadge";
+import {
+  clientTypeLabel,
+  nextStepFor,
+  syncLabel,
+  syncTone,
+} from "@/lib/dashboard-lifecycle";
 import { getToken } from "@/lib/auth-server";
-import { partnerAppsRepository } from "@/server/partnerApps";
+import { partnerAppsRepository, type PartnerAppSummary } from "@/server/partnerApps";
 
 export default async function DashboardPage() {
   const token = await getToken();
   if (!token) redirect("/signin?returnTo=/dashboard");
-  let apps: any[] = [];
+
+  let apps: PartnerAppSummary[] = [];
   let authError: string | null = null;
-  
+
   try {
     apps = await partnerAppsRepository.list(token);
   } catch (error: any) {
@@ -20,79 +28,83 @@ export default async function DashboardPage() {
       console.error("Dashboard fetch error:", error);
     }
   }
+
   return (
-    <div>
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-bold uppercase text-primary">Overview</p>
-          <h1 className="mt-2 text-3xl font-bold text-foreground">Partner applications</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Register, review, and monitor OAuth clients for Qentrah workspace access.</p>
+          <h1 className="mt-2 text-3xl font-bold text-foreground">OAuth lifecycle console</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+            Track app readiness, review state, and runtime sync before partners reach Qentrah workspaces.
+          </p>
         </div>
         <Link
           href="/dashboard/apps/new"
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-[7px] bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-[#6b90e6]"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-[6px] bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
         >
           <PlusCircle className="h-4 w-4" />
-          Create a new app
+          Create app
         </Link>
       </div>
 
       {authError ? (
-        <div className="flex min-h-72 flex-col items-center justify-center rounded-[15px] border border-border bg-card p-8 text-center">
-          <Boxes className="h-8 w-8 text-destructive mb-4" />
-          <h3 className="text-lg font-medium text-foreground">Programmer Organization Required</h3>
-          <p className="mt-1 text-sm text-muted-foreground">{authError}</p>
-        </div>
+        <section className="rounded-[6px] border border-destructive/25 bg-destructive/10 p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] border border-destructive/25 bg-muted text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Programmer organization required</h2>
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">{authError}</p>
+            </div>
+          </div>
+        </section>
       ) : apps.length === 0 ? (
-        <div className="flex min-h-72 flex-col items-center justify-center rounded-[15px] border border-border bg-card p-8 text-center">
-          <Boxes className="h-8 w-8 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium text-foreground">No apps found</h3>
-          <p className="mt-1 text-sm text-muted-foreground">Create your first app to get started.</p>
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {apps.map((app, index) => {
-            // Alternate patterns based on index
-            const patterns = ["pattern-waves", "pattern-grid", "pattern-dots"];
-            const pattern = patterns[index % patterns.length];
-            
-            return (
+        <section className="command-panel p-8">
+          <div className="flex max-w-2xl flex-col gap-4 sm:flex-row sm:items-start">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[6px] border border-border bg-muted text-muted-foreground">
+              <Boxes className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Create the first reviewed app</h2>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                Start with redirect URIs, a minimal scope set, and the partner URL. The dashboard will track review and runtime sync once the app exists.
+              </p>
               <Link
-                key={app.id}
-                href={`/dashboard/apps/${app.id}`}
-                className="group flex flex-col overflow-hidden rounded-[15px] border border-border bg-card transition-colors hover:border-primary/50"
+                href="/dashboard/apps/new"
+                className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-[6px] bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
               >
-                <div className={`h-20 w-full bg-primary/10 ${pattern} opacity-70 transition-opacity group-hover:opacity-100`} />
-                <div className="flex flex-col p-5">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold text-lg text-foreground">{app.name}</h3>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {app.clientType === "public" ? "Public App" : "Confidential App"}
-                      </p>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
-                  </div>
-                  
-                  <div className="mt-4 mb-4">
-                    <p className="font-mono text-xs text-foreground font-medium">
-                      {app.clientId ? `${app.clientId.substring(0, 12)}...` : "Pending ID"} <span className="text-muted-foreground font-sans">/ {app.allowedScopes.length} scopes</span>
-                    </p>
-                  </div>
-                  
-                  <div className="mt-auto flex gap-2">
-                    <span className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
-                      {app.status === "active" ? "Active" : "Review"}
-                    </span>
-                    <span className="inline-flex items-center rounded-full border border-border bg-background px-2 py-0.5 text-xs font-semibold text-muted-foreground">
-                      Partner Quota
-                    </span>
-                  </div>
-                </div>
+                <PlusCircle className="h-4 w-4" />
+                Register app
               </Link>
-            );
-          })}
-        </div>
+            </div>
+          </div>
+        </section>
+      ) : (
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {apps.map((app) => (
+            <Link key={app.id} href={`/dashboard/apps/${app.id}`} className="command-panel block p-5 transition-colors hover:border-primary/45 hover:bg-muted/40">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <h2 className="truncate text-base font-semibold text-foreground">{app.name}</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">{app.publisherName}</p>
+                </div>
+                <StatusBadge status={app.status} />
+              </div>
+              <p className="mt-4 break-all font-mono text-xs text-muted-foreground">{app.clientId ?? "client_id pending"}</p>
+              <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold">
+                <span className="rounded-[999px] border border-border bg-muted px-2.5 py-1 text-foreground">{clientTypeLabel(app)}</span>
+                <span className={`rounded-[999px] border border-border bg-muted px-2.5 py-1 ${syncTone(app)}`}>{syncLabel(app)}</span>
+                <span className="rounded-[999px] border border-border bg-muted px-2.5 py-1 text-muted-foreground">{app.allowedScopes.length} scopes</span>
+              </div>
+              <div className="mt-5 flex items-center justify-between gap-3">
+                <p className="line-clamp-2 text-sm leading-5 text-muted-foreground">{nextStepFor(app)}</p>
+                <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
+              </div>
+            </Link>
+          ))}
+        </section>
       )}
     </div>
   );

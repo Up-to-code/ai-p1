@@ -1,19 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateQentrahClient } from "@/lib/workspace-api";
-import { readTokenSession } from "@/lib/session";
+import { deleteQentrahClient, updateQentrahClient } from "@/lib/workspace-api";
+import { errorResponse, requireDemoSession } from "../../route-helpers";
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ clientId: string }> },
 ) {
-  const session = await readTokenSession();
-  if (!session) return NextResponse.json({ error: "missing_bearer" }, { status: 401 });
+  const { session, response } = await requireDemoSession();
+  if (response) return response;
   try {
     const { clientId } = await params;
     return NextResponse.json(await updateQentrahClient(session, clientId, await request.json()));
   } catch (error) {
-    const status = typeof error === "object" && error && "status" in error ? Number(error.status) : 500;
-    const code = typeof error === "object" && error && "code" in error ? String(error.code) : "workspace_api_error";
-    return NextResponse.json({ error: code, message: error instanceof Error ? error.message : code }, { status });
+    return errorResponse(error);
+  }
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ clientId: string }> },
+) {
+  const { session, response } = await requireDemoSession();
+  if (response) return response;
+  try {
+    const { clientId } = await params;
+    return NextResponse.json(await deleteQentrahClient(session, clientId));
+  } catch (error) {
+    return errorResponse(error);
   }
 }

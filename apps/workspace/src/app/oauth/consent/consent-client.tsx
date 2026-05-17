@@ -3,15 +3,14 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import {
+  ArrowLeftRight,
   Building2,
   CheckCircle2,
   Home,
   KeyRound,
-  LockKeyhole,
   RefreshCw,
-  ShieldCheck,
   Users,
-  XCircle,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
@@ -24,6 +23,8 @@ type PartnerCatalogApp = {
   name?: string;
   publisherName?: string;
   partnersClientId?: string;
+  homepageUrl?: string;
+  logoUrl?: string;
 };
 type AuthResult<T> = { data?: T | null; error?: { message?: string; code?: string } | null };
 type OAuthAuthClient = typeof authClient & {
@@ -171,103 +172,97 @@ export function OAuthConsentClient({ locale }: { locale: OAuthLocale }) {
   return (
     <main
       dir={direction}
-      className="flex min-h-screen items-center justify-center bg-[#f4f8fb] px-4 py-8 text-[#0f2633] sm:px-6"
+      className="flex min-h-screen items-center justify-center bg-[#eef2f5] px-4 py-8 text-[#111827] sm:px-6"
     >
-      <section className="w-full max-w-[680px] overflow-hidden rounded-[28px] border border-[#d8e3ea] bg-white shadow-[0_24px_80px_rgba(21,49,68,0.16)]">
-        <div className="border-b border-[#dbe7ee] bg-[#f8fbfd] px-6 py-5 sm:px-8">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white ring-1 ring-[#d7e4ec]">
-                <Image src="/brand-logo-dark-blue.svg" alt="Qentrah" width={94} height={24} className="h-6 w-auto" />
-              </span>
-              <div className="min-w-0">
-                <p className="text-xs font-black uppercase tracking-[0.14em] text-[#557487]">{copy.eyebrow}</p>
-                <p className="truncate text-sm font-bold text-[#18384a]">{copy.poweredBy}</p>
-              </div>
-            </div>
-            <div className="flex shrink-0 items-center gap-2 rounded-full bg-[#eaf3f7] px-3 py-2 text-xs font-black text-[#21475d]">
-              <LockKeyhole className="h-4 w-4" aria-hidden="true" />
-              <span>{copy.secureExchange}</span>
-            </div>
+      <section className="w-full max-w-[470px] overflow-hidden rounded-[14px] border border-[#d9dee6] bg-[#fbfbfc] shadow-none">
+        <div className="relative border-b border-[#e4e7ec] px-5 pb-5 pt-8 sm:px-8">
+          <button
+            type="button"
+            onClick={() => submitConsent(false)}
+            disabled={busy}
+            aria-label={copy.cancel}
+            className="absolute end-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-[8px] border border-transparent text-[#8a94a3] transition hover:border-[#d9dee6] hover:bg-white hover:text-[#111827] disabled:opacity-50"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+
+          <div className="flex items-center justify-center gap-3">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[12px] border border-[#d9dee6] bg-[#111827]">
+              <Image src="/brand-logo-white.svg" alt="Qentrah" width={28} height={28} className="h-7 w-7" priority />
+            </span>
+            <span className="flex h-8 w-8 items-center justify-center text-[#9aa3af]">
+              <ArrowLeftRight className="h-4 w-4" aria-hidden="true" />
+            </span>
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[12px] border border-[#d9dee6] bg-white">
+              {partnerApp?.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={partnerApp.logoUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <KeyRound className="h-6 w-6 text-[#0b5cff]" aria-hidden="true" />
+              )}
+            </span>
+          </div>
+
+          <div className="mx-auto mt-5 max-w-[360px] text-center">
+            <h1 className="text-[22px] font-black leading-7 tracking-normal text-[#111827]">
+              {consentTitle}
+            </h1>
+            <p className="mt-2 text-sm font-medium leading-6 text-[#4b5563]">{consentDescription}</p>
           </div>
         </div>
 
-        <div className="px-6 py-7 sm:px-8 sm:py-8">
-          <div className="flex items-start gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[20px] bg-[#13384d] text-white shadow-[0_16px_36px_rgba(19,56,77,0.28)]">
-              <KeyRound className="h-6 w-6" aria-hidden="true" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-bold text-[#6a8594]">{consentTitle}</p>
-              <h1
-                dir="ltr"
-                className="mt-1 text-3xl font-black leading-tight tracking-normal text-[#0b1f2b] sm:text-4xl"
-              >
-                {appName}
-              </h1>
-              <p className="mt-3 text-base leading-7 text-[#587383]">{consentDescription}</p>
-            </div>
-          </div>
+        <div className="px-5 py-5 sm:px-8">
+          <h2 className="text-sm font-black text-[#111827]">{formatTemplate(copy.permissionIntro, { app: appName, organization: organizationName })}</h2>
 
-          <div className="mt-7 rounded-[22px] border border-[#dce8ef]">
-            <div className="flex items-center justify-between gap-3 border-b border-[#dce8ef] px-5 py-4">
-              <h2 className="text-sm font-black uppercase tracking-[0.14em] text-[#35596d]">{copy.permissionTitle}</h2>
-              <ShieldCheck className="h-5 w-5 text-[#2c7890]" aria-hidden="true" />
-            </div>
-            <div className="divide-y divide-[#e4edf2]">
-              {displayScopes.map((scope) => {
-                const meta = permissionMeta[scope];
-                const Icon = meta?.icon ?? CheckCircle2;
-                return (
-                  <div key={scope} className="flex items-start gap-4 px-5 py-4">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#eef6f9] text-[#23677d]">
-                      <Icon className="h-5 w-5" aria-hidden="true" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-black text-[#153344]">
-                          {meta ? (isArabic ? meta.ar : meta.en) : fallbackScopeLabel(scope)}
-                        </p>
-                        <code className="rounded-full bg-[#f1f5f7] px-2 py-1 text-[11px] font-bold text-[#526c7b]">
-                          {scope}
-                        </code>
-                      </div>
-                      <p className="mt-1 text-sm leading-6 text-[#617987]">
-                        {meta ? (isArabic ? meta.detailAr : meta.detailEn) : scope}
+          <div className="mt-3 space-y-3">
+            {displayScopes.map((scope) => {
+              const meta = permissionMeta[scope];
+              return (
+                <div key={scope} className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#2448b8] text-[#2448b8]">
+                    <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-semibold leading-5 text-[#374151]">
+                        {meta ? (isArabic ? meta.ar : meta.en) : fallbackScopeLabel(scope)}
                       </p>
+                      <code className="rounded-full bg-[#f0f2f5] px-2 py-0.5 text-[10px] font-bold text-[#667085]">
+                        {scope}
+                      </code>
                     </div>
+                    <p className="mt-0.5 text-xs font-medium leading-5 text-[#667085]">
+                      {meta ? (isArabic ? meta.detailAr : meta.detailEn) : scope}
+                    </p>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
           </div>
 
-          <p className="mt-5 flex items-start gap-2 text-sm leading-6 text-[#5f7887]">
-            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#2c7890]" aria-hidden="true" />
-            <span>{copy.trustNote}</span>
-          </p>
+          {error ? <p className="mt-4 rounded-[10px] bg-red-50 p-3 text-sm font-semibold text-red-700">{error}</p> : null}
+        </div>
 
-          <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <div className="flex flex-col-reverse gap-3 border-t border-[#e4e7ec] bg-white px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+          <p className="text-xs font-medium leading-5 text-[#667085]">{copy.trustNote}</p>
+          <div className="flex shrink-0 gap-3">
             <button
               type="button"
               onClick={() => submitConsent(false)}
               disabled={busy}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] border border-[#cbdbe4] px-5 text-sm font-black text-[#17384b] transition hover:bg-[#f3f7fa] disabled:opacity-50"
+              className="inline-flex h-10 items-center justify-center rounded-[8px] border border-[#d0d5dd] bg-white px-4 text-sm font-bold text-[#344054] transition hover:bg-[#f8fafc] disabled:opacity-50"
             >
-              <XCircle className="h-4 w-4" aria-hidden="true" />
-              {copy.deny}
+              {copy.cancel}
             </button>
             <button
               type="button"
               onClick={() => submitConsent(true)}
               disabled={busy || !organization?.id || resourceScopes.length === 0}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-[14px] bg-[#0f3449] px-6 text-sm font-black text-white shadow-[0_14px_30px_rgba(15,52,73,0.28)] transition hover:bg-[#174a62] disabled:opacity-50"
+              className="inline-flex h-10 items-center justify-center rounded-[8px] bg-[#3246bd] px-4 text-sm font-bold text-white transition hover:bg-[#263aa3] disabled:opacity-50"
             >
-              <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-              {copy.authorize}
+              {copy.allowAccess}
             </button>
           </div>
-          {error ? <p className="mt-4 rounded-[16px] bg-red-50 p-3 text-sm font-medium text-red-700">{error}</p> : null}
         </div>
       </section>
     </main>

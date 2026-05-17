@@ -1,7 +1,8 @@
 {
   "name": "@qentrah/auth-sdk",
-  "version": "0.2.0",
-  "description": "Public Qentrah partner authorization SDK for OAuth, webhooks, and service-app API calls.",
+  "version": "0.3.1",
+  "description": "Batteries-included Qentrah partner integration SDK for developers building OAuth, webhooks, resource calls, and consoles.",
+  "license": "UNLICENSED",
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",
@@ -43,6 +44,10 @@
     "./partner/service-app": {
       "types": "./dist/partner/service-app/index.d.ts",
       "import": "./dist/partner/service-app/index.js"
+    },
+    "./partner/harness": {
+      "types": "./dist/partner/harness/index.d.ts",
+      "import": "./dist/partner/harness/index.js"
     },
     "./partner/webhooks": {
       "types": "./dist/partner/webhooks/index.d.ts",

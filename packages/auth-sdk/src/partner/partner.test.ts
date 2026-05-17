@@ -5,6 +5,19 @@ import type { QentrahPartnerPendingAuthorization } from "./types";
 import { createQentrahServiceAppClient } from "./service-app";
 import { createQentrahWebhookHandler, verifyQentrahWebhook } from "./webhooks";
 import { qentrahPartnerAuthorityFromEnv } from "./core";
+import {
+  buildQentrahPartnerOAuthLifecycle,
+  buildQentrahPartnerResourceSearchParams,
+  createQentrahPartnerConsoleService,
+  qentrahMissingScopes,
+  qentrahPartnerRenderRows,
+  qentrahPartnerSectionIds,
+  qentrahScopesNeedReauthorization,
+  qentrahSectionCanRun,
+  qentrahPartnerSections,
+  runQentrahPartnerResourceOperation,
+  sanitizeQentrahPartnerPayload,
+} from "./harness";
 
 const encoder = new TextEncoder();
 
@@ -267,5 +280,138 @@ describe("@qentrah/auth-sdk partner service app", () => {
     expect(String(fetcher.mock.calls[0]?.[0])).toBe("https://app.qentrah.com/api/v1/partner/organizations/org_123/resources/client/read");
     expect(fetcher.mock.calls[1]?.[1]?.headers).toMatchObject({ authorization: "Bearer access-token", "idempotency-key": "idem_123" });
     expect(String(fetcher.mock.calls[2]?.[0])).toBe("https://app.qentrah.com/api/v1/partner/organizations/org_123/webhooks/inbound");
+  });
+
+  it("calls REST-style partner resources and client mutations", async () => {
+    const fetcher = vi.fn(async () => Response.json({ ok: true }));
+    const client = createQentrahServiceAppClient({
+      workspaceBaseUrl: "https://app.qentrah.com",
+      accessToken: "access-token",
+      fetcher,
+    });
+
+    await client.me({ organizationId: "org_123" });
+    await client.listClients({ organizationId: "org_123", options: { limit: 10, search: "Nora", type: "Buyer", indexStart: 24, indexEnd: 27 } });
+    await client.listMedia({ organizationId: "org_123", options: { limit: 25, resourceType: "client", resourceId: "client_1" } });
+    await client.createClient({ organizationId: "org_123", input: { name: "Nora" } });
+    await client.updateClient({ organizationId: "org_123", clientId: "client_1", input: { name: "Nora 2" } });
+    await client.deleteClient({ organizationId: "org_123", clientId: "client_1" });
+
+    expect(String(fetcher.mock.calls[0]?.[0])).toBe("https://app.qentrah.com/api/v1/partner/organizations/org_123/me");
+    expect(String(fetcher.mock.calls[1]?.[0])).toBe("https://app.qentrah.com/api/v1/partner/organizations/org_123/clients?limit=10&search=Nora&type=Buyer&indexStart=24&indexEnd=27");
+    expect(String(fetcher.mock.calls[2]?.[0])).toBe("https://app.qentrah.com/api/v1/partner/organizations/org_123/media?limit=25&resourceType=client&resourceId=client_1");
+    expect(fetcher.mock.calls[3]?.[1]?.method).toBe("POST");
+    expect(fetcher.mock.calls[4]?.[1]?.method).toBe("PATCH");
+    expect(fetcher.mock.calls[5]?.[1]?.method).toBe("DELETE");
+  });
+});
+
+describe("@qentrah/auth-sdk partner harness", () => {
+  it("registers every headless console section", () => {
+    expect(qentrahPartnerSectionIds).toEqual([
+      "overview",
+      "flow",
+      "credentials",
+      "organization",
+      "clients",
+      "properties",
+      "projects",
+      "tasks",
+      "calendar",
+      "media",
+      "webhooks",
+      "results",
+    ]);
+  });
+
+  it("marks client delete unavailable without the delete scope", () => {
+    const clients = qentrahPartnerSections.find((section) => section.id === "clients")!;
+    expect(clients.operations).toEqual(["read", "create", "update", "delete"]);
+    expect(qentrahSectionCanRun(clients, ["client:read", "client:create", "client:update"])).toBe(false);
+    expect(qentrahMissingScopes(clients.requiredScopes, ["client:read", "client:create", "client:update"])).toEqual(["client:delete"]);
+    expect(qentrahScopesNeedReauthorization(["client:read", "client:delete"], ["client:read"])).toBe(true);
+  });
+
+  it("redacts credential-looking values", () => {
+    expect(sanitizeQentrahPartnerPayload({
+      access_token: "raw-access",
+      nested: { authorization: "Bearer abc123", name: "Demo" },
+      text: "mcp_secret_supersecret",
+    })).toEqual({
+      access_token: "[redacted]",
+      nested: { authorization: "[redacted]", name: "Demo" },
+      text: "[redacted]",
+    });
+  });
+
+  it("builds OAuth lifecycle metadata", () => {
+    const lifecycle = buildQentrahPartnerOAuthLifecycle({
+      workspaceBaseUrl: "https://app.qentrah.com",
+      redirectUri: "https://partner.example.com/api/callback",
+      requestedScopes: ["organization:read"],
+    });
+    expect(lifecycle.endpoints.authorize).toBe("https://app.qentrah.com/oauth/authorize");
+    expect(lifecycle.endpoints.resource).toBe("https://app.qentrah.com/api/v1/partner");
+    expect(lifecycle.phases).toHaveLength(5);
+  });
+
+  it("builds filter params and ready-to-render rows", () => {
+    const params = buildQentrahPartnerResourceSearchParams("clients", {
+      limit: 25,
+      search: "Nora",
+      type: "Buyer",
+      indexStart: 2,
+      indexEnd: 2,
+    });
+    expect(params.toString()).toBe("limit=25&search=Nora&type=Buyer&indexStart=2&indexEnd=2");
+    expect(qentrahPartnerRenderRows({
+      data: { data: [{ id: "client_1", name: "A" }, { id: "client_2", name: "B", access_token: "secret" }] },
+      section: { label: "Clients" },
+      indexStart: 2,
+      indexEnd: 2,
+    })).toEqual([{
+      key: "client_2",
+      title: "B",
+      fields: [
+        { key: "id", value: "client_2" },
+        { key: "name", value: "B" },
+        { key: "access_token", value: "[redacted]" },
+      ],
+    }]);
+  });
+
+  it("creates a configured console service after authorization setup", () => {
+    const service = createQentrahPartnerConsoleService({
+      workspaceBaseUrl: "https://app.qentrah.com",
+      redirectUri: "https://partner.example.com/callback",
+      requestedScopes: ["client:read", "client:delete"],
+      grantedScopes: ["client:read"],
+    });
+    expect(service.missingScopes("clients")).toContain("client:delete");
+    expect(service.needsReauthorization()).toBe(true);
+    expect(service.lifecycle().endpoints.resource).toBe("https://app.qentrah.com/api/v1/partner");
+  });
+
+  it("normalizes missing session and successful resource operation results", async () => {
+    await expect(runQentrahPartnerResourceOperation({
+      workspaceBaseUrl: "https://app.qentrah.com",
+      session: null,
+      sectionId: "clients",
+      path: "/api/qentrah/clients",
+    })).resolves.toMatchObject({ ok: false, status: 401, error: "missing_bearer" });
+
+    const fetcher = vi.fn(async () => Response.json({ data: [] }));
+    await expect(runQentrahPartnerResourceOperation({
+      workspaceBaseUrl: "https://app.qentrah.com",
+      session: {
+        access_token: "access-token",
+        organizationId: "org_123",
+        scope: "client:read client:create client:update client:delete",
+      },
+      sectionId: "clients",
+      resource: "client",
+      path: "/api/qentrah/clients",
+      fetcher,
+    })).resolves.toMatchObject({ ok: true, status: 200, responseSummary: "data" });
   });
 });

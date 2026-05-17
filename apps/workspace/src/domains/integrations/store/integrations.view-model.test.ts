@@ -3,6 +3,7 @@ import {
   activePartnerConnectionCount,
   buildPartnerCatalogCards,
   buildPartnerConnectionCard,
+  filterPartnerCatalogCards,
   findPartnerIntegrationDetail,
 } from "./integrations.view-model";
 import type { PartnerCatalogApp, PartnerConnection } from "./integrations.types";
@@ -41,10 +42,42 @@ describe("integrations view model", () => {
         connection,
         effectiveStatus: "active",
         statusTone: "success",
-        visitHref: "https://partner.example.com",
+        connectHref: "/web-apps/partners_app_1",
+        connectState: "manage",
         scopeCount: 2,
       },
     ]);
+  });
+
+  it("marks unavailable app cards when no partner OAuth start URL exists", () => {
+    const appWithoutStartUrl: PartnerCatalogApp = {
+      id: "partners_app_2",
+      partnersClientId: "partners_client_2",
+      name: "No Start App",
+      publisherName: "Partner Co",
+      description: "Missing start URL",
+      allowedScopes: ["client:read"],
+      redirectUris: ["https://partner.example.com/callback"],
+      status: "approved",
+      updatedAt: 1,
+    };
+    expect(buildPartnerCatalogCards([appWithoutStartUrl], [])).toMatchObject([
+      {
+        connectHref: null,
+        connectState: "unavailable",
+      },
+    ]);
+  });
+
+  it("filters catalog cards by query and connection state", () => {
+    const cards = buildPartnerCatalogCards([
+      app,
+      { ...app, id: "partners_app_2", name: "Listings Portal", allowedScopes: ["property:read"] },
+    ], [connection]);
+
+    expect(filterPartnerCatalogCards(cards, "property", "all").map((card) => card.app.id)).toEqual(["partners_app_2"]);
+    expect(filterPartnerCatalogCards(cards, "", "connected").map((card) => card.app.id)).toEqual(["partners_app_1"]);
+    expect(filterPartnerCatalogCards(cards, "", "available").map((card) => card.app.id)).toEqual(["partners_app_2"]);
   });
 
   it("derives connection actions from effective status", () => {

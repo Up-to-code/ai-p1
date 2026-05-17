@@ -11,14 +11,11 @@ function read(relativePath: string) {
 
 function makeNextRequest(path: string, body: Record<string, unknown>) {
   const url = `http://localhost:3002${path}`;
-  return Object.assign(
-    new Request(url, {
-      method: "POST",
-      headers: { "content-type": "application/json", origin: "http://localhost:3002" },
-      body: JSON.stringify(body),
-    }),
-    { nextUrl: new URL(url) },
-  );
+  return new Request(url, {
+    method: "POST",
+    headers: { "content-type": "application/json", origin: "http://localhost:3002" },
+    body: JSON.stringify(body),
+  });
 }
 
 describe("Partners auth boundary", () => {
@@ -52,12 +49,12 @@ describe("Partners auth boundary", () => {
         headers: { "set-cookie": "better-auth.session_token=signin; Path=/; HttpOnly" },
       }),
     );
-    const { POST } = await import("../app/api/partner-signin/route");
+    const { partnersHonoApp } = await import("../server/hono/partners-app");
 
-    const response = await POST(makeNextRequest("/api/partner-signin", {
+    const response = await partnersHonoApp.request(makeNextRequest("/api/partner-signin", {
       email: "ADA@EXAMPLE.COM",
       password: "StrongPassword123",
-    }) as never);
+    }));
 
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true });
@@ -76,16 +73,16 @@ describe("Partners auth boundary", () => {
         headers: { "set-cookie": "better-auth.session_token=signup; Path=/; HttpOnly" },
       }),
     );
-    const { POST } = await import("../app/api/partner-signup/route");
+    const { partnersHonoApp } = await import("../server/hono/partners-app");
 
-    const response = await POST(makeNextRequest("/api/partner-signup", {
+    const response = await partnersHonoApp.request(makeNextRequest("/api/partner-signup", {
       name: "Ada Lovelace",
       email: "ada@example.com",
       password: "StrongPassword123",
       confirmPassword: "StrongPassword123",
       organizationName: "Analytical Engines",
       countryCode: "SA",
-    }) as never);
+    }));
 
     const [, init] = fetchMock.mock.calls[0]!;
     expect(response.status).toBe(200);

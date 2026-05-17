@@ -219,4 +219,17 @@ export const partnerAppsRepository = {
     return { ok: true as const };
   },
 
+  async delete(authSubject: string, appId: string) {
+    const app = await requireOwnedApp(authSubject, appId);
+    await prisma.partnerApp.delete({
+      where: { id: app.id },
+    });
+    await auditPartnerEvent({
+      actorAuthSubject: authSubject,
+      eventType: "partner_app.deleted",
+      payload: { appId: app.id, clientId: app.clientId, status: app.status },
+    });
+    return { ok: true as const };
+  },
+
 };

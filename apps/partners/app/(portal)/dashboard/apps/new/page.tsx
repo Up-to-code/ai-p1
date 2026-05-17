@@ -15,25 +15,25 @@ export default async function NewAppPage() {
   const account = await partnerAccountRepository.getCurrent(token).catch(() => null);
 
   return (
-    <div>
-      <Link href="/dashboard/apps" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8">
+    <div className="space-y-6">
+      <Link href="/dashboard/apps" className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
         <ArrowLeft className="h-4 w-4" />
         Back to Apps
       </Link>
       
-      <div className="mb-8 border-b border-border pb-8">
-        <h1 className="mt-2 text-3xl font-bold text-foreground">
-          Create application
-        </h1>
+      <div>
+        <p className="text-xs font-bold uppercase text-primary">New app</p>
+        <h1 className="mt-2 text-3xl font-bold text-foreground">Create application</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Register credentials, callback URLs, and scopes for review.</p>
       </div>
       
-      <div className="max-w-6xl">
+      <div className="max-w-7xl">
         {account?.organization ? (
           <PartnerAppForm />
         ) : (
-          <div className="flex min-h-72 flex-col items-center justify-center rounded-[15px] border border-border bg-card p-8 text-center">
+          <div className="command-panel flex min-h-72 flex-col items-center justify-center p-8 text-center">
             <Boxes className="mb-4 h-8 w-8 text-destructive" />
-            <h3 className="text-lg font-medium text-foreground">Programmer Organization Required</h3>
+            <h3 className="text-lg font-medium text-foreground">Programmer organization required</h3>
             <p className="mt-1 max-w-xl text-sm text-muted-foreground">
               You must create or join a programmer organization to build partner apps.
             </p>

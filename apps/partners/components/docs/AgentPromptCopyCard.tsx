@@ -92,16 +92,16 @@ export function AgentPromptCopyCard() {
   const Icon = copyState === "copied" ? Check : copyState === "failed" ? X : Clipboard;
 
   return (
-    <div className="not-prose my-6 rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
+    <div className="not-prose command-panel my-6 p-4 text-card-foreground">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="max-w-2xl">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">AI agent starter</p>
+          <p className="text-xs font-bold uppercase text-primary">AI agent starter</p>
           <h2 className="mt-2 text-xl font-semibold tracking-normal text-foreground">Copy a complete implementation brief</h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
             Paste this into your coding agent to build the SDK button, backend routes, token storage, webhooks, env usage, and Workspace API reads.
           </p>
         </div>
-        <Button type="button" onClick={copyPrompt} aria-live="polite" className="h-9 gap-2 self-start">
+        <Button type="button" onClick={copyPrompt} aria-live="polite" className="h-9 gap-2 self-start rounded-[6px] bg-primary text-primary-foreground hover:bg-primary/90">
           <Icon className="h-4 w-4" aria-hidden="true" />
           {label}
         </Button>
@@ -111,7 +111,7 @@ export function AgentPromptCopyCard() {
           Clipboard access was blocked. Select the prompt text below and copy it manually.
         </p>
       ) : null}
-      <details className="mt-4 rounded-md border border-border bg-muted/35">
+      <details className="mt-4 rounded-[6px] border border-border bg-muted/35">
         <summary className="cursor-pointer px-3 py-2 text-sm font-semibold text-foreground">Preview prompt</summary>
         <pre className="max-h-96 overflow-auto whitespace-pre-wrap px-3 pb-3 text-xs leading-5 text-muted-foreground">
           {agentImplementationPrompt}

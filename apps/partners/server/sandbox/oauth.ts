@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { getToken } from "@/lib/auth-server";
+import { getCurrentPartnerSession } from "@/lib/auth-server";
 import { pkceS256, sandboxToken, sha256 } from "./crypto";
 import { formValue, json, oauthError, scopesFrom } from "./http";
 import { sandboxStore } from "./store";
@@ -8,7 +8,7 @@ export const sandboxOAuthApp = new Hono().basePath("/sandbox/oauth");
 
 sandboxOAuthApp.get("/authorize", async (c) => {
   try {
-    const token = await getToken();
+    const token = (await getCurrentPartnerSession(c.req.raw.headers))?.user?.id ?? null;
     const url = new URL(c.req.url);
     const clientId = url.searchParams.get("client_id")?.trim() ?? "";
     const redirectUri = url.searchParams.get("redirect_uri")?.trim() ?? "";

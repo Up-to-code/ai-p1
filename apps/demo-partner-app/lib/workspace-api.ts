@@ -1,3 +1,8 @@
+import {
+  QentrahServiceAppRequestError,
+  createQentrahServiceAppClient,
+  type QentrahPartnerResourceRequestOptions,
+} from "@qentrah/auth-sdk/partner/service-app";
 import { demoConfig } from "./config";
 import type { TokenSession } from "./session";
 
@@ -20,65 +25,91 @@ export class WorkspaceApiError extends Error {
   }
 }
 
-async function parseWorkspaceError(response: Response) {
-  const payload = await response.json().catch(() => null) as { error?: string; message?: string } | null;
-  const code = (payload?.error ?? "workspace_api_error") as WorkspaceApiErrorCode;
-  return new WorkspaceApiError(payload?.message ?? code, code, response.status);
-}
+type CollectionOptions = QentrahPartnerResourceRequestOptions;
 
-async function workspaceFetch<T>(path: string, session: TokenSession, init?: RequestInit, fetcher: typeof fetch = fetch) {
+function requireOrganizationId(session: TokenSession) {
   if (!session.organizationId) throw new WorkspaceApiError("Organization id is missing from this demo session.", "workspace_api_error", 400);
-  const config = demoConfig();
-  const response = await fetcher(new URL(path, config.workspaceBaseUrl), {
-    ...init,
-    headers: {
-      authorization: `Bearer ${session.access_token}`,
-      "content-type": "application/json",
-      ...init?.headers,
-    },
+  return session.organizationId;
+}
+
+function qentrahClient(session: TokenSession, fetcher?: typeof fetch) {
+  return createQentrahServiceAppClient({
+    workspaceBaseUrl: demoConfig().workspaceBaseUrl,
+    accessToken: session.access_token,
+    fetcher,
   });
-  if (!response.ok) throw await parseWorkspaceError(response);
-  return response.json() as Promise<T>;
 }
 
-export function mePath(organizationId: string) {
-  return `/api/v1/partner/organizations/${organizationId}/me`;
-}
-
-export function clientsPath(organizationId: string) {
-  return `/api/v1/partner/organizations/${organizationId}/clients`;
-}
-
-export function clientPath(organizationId: string, clientId: string) {
-  return `/api/v1/partner/organizations/${organizationId}/clients/${clientId}`;
-}
-
-export function propertiesPath(organizationId: string) {
-  return `/api/v1/partner/organizations/${organizationId}/properties`;
+function mapWorkspaceError(error: unknown): never {
+  if (error instanceof QentrahServiceAppRequestError) {
+    throw new WorkspaceApiError(error.message, error.code as WorkspaceApiErrorCode, error.status);
+  }
+  throw error;
 }
 
 export function loadQentrahMe(session: TokenSession, fetcher?: typeof fetch) {
-  return workspaceFetch<Record<string, unknown>>(mePath(session.organizationId ?? ""), session, undefined, fetcher);
+  return qentrahClient(session, fetcher).me({ organizationId: requireOrganizationId(session) }).catch(mapWorkspaceError);
 }
 
-export function loadQentrahClients(session: TokenSession, fetcher?: typeof fetch) {
-  return workspaceFetch<Record<string, unknown>>(clientsPath(session.organizationId ?? ""), session, undefined, fetcher);
+export function loadQentrahClients(session: TokenSession, optionsOrFetcher?: CollectionOptions | typeof fetch, maybeFetcher?: typeof fetch) {
+  const options = typeof optionsOrFetcher === "function" ? {} : optionsOrFetcher;
+  const fetcher = typeof optionsOrFetcher === "function" ? optionsOrFetcher : maybeFetcher;
+  return qentrahClient(session, fetcher).listClients({ organizationId: requireOrganizationId(session), options }).catch(mapWorkspaceError);
 }
 
-export function loadQentrahProperties(session: TokenSession, fetcher?: typeof fetch) {
-  return workspaceFetch<Record<string, unknown>>(propertiesPath(session.organizationId ?? ""), session, undefined, fetcher);
+export function loadQentrahProperties(session: TokenSession, optionsOrFetcher?: CollectionOptions | typeof fetch, maybeFetcher?: typeof fetch) {
+  const options = typeof optionsOrFetcher === "function" ? {} : optionsOrFetcher;
+  const fetcher = typeof optionsOrFetcher === "function" ? optionsOrFetcher : maybeFetcher;
+  return qentrahClient(session, fetcher).listProperties({ organizationId: requireOrganizationId(session), options }).catch(mapWorkspaceError);
 }
 
-export function createQentrahClient(session: TokenSession, input: unknown, fetcher?: typeof fetch) {
-  return workspaceFetch<Record<string, unknown>>(clientsPath(session.organizationId ?? ""), session, {
-    method: "POST",
-    body: JSON.stringify(input),
-  }, fetcher);
+export function loadQentrahProjects(session: TokenSession, optionsOrFetcher?: CollectionOptions | typeof fetch, maybeFetcher?: typeof fetch) {
+  const options = typeof optionsOrFetcher === "function" ? {} : optionsOrFetcher;
+  const fetcher = typeof optionsOrFetcher === "function" ? optionsOrFetcher : maybeFetcher;
+  return qentrahClient(session, fetcher).listProjects({ organizationId: requireOrganizationId(session), options }).catch(mapWorkspaceError);
 }
 
-export function updateQentrahClient(session: TokenSession, clientId: string, input: unknown, fetcher?: typeof fetch) {
-  return workspaceFetch<Record<string, unknown>>(clientPath(session.organizationId ?? "", clientId), session, {
-    method: "PATCH",
-    body: JSON.stringify(input),
-  }, fetcher);
+export function loadQentrahTasks(session: TokenSession, optionsOrFetcher?: CollectionOptions | typeof fetch, maybeFetcher?: typeof fetch) {
+  const options = typeof optionsOrFetcher === "function" ? {} : optionsOrFetcher;
+  const fetcher = typeof optionsOrFetcher === "function" ? optionsOrFetcher : maybeFetcher;
+  return qentrahClient(session, fetcher).listTasks({ organizationId: requireOrganizationId(session), options }).catch(mapWorkspaceError);
+}
+
+export function loadQentrahCalendar(session: TokenSession, optionsOrFetcher?: CollectionOptions | typeof fetch, maybeFetcher?: typeof fetch) {
+  const options = typeof optionsOrFetcher === "function" ? {} : optionsOrFetcher;
+  const fetcher = typeof optionsOrFetcher === "function" ? optionsOrFetcher : maybeFetcher;
+  return qentrahClient(session, fetcher).listCalendar({ organizationId: requireOrganizationId(session), options }).catch(mapWorkspaceError);
+}
+
+export function loadQentrahMedia(session: TokenSession, optionsOrFetcher?: CollectionOptions | typeof fetch, maybeFetcher?: typeof fetch) {
+  const options = typeof optionsOrFetcher === "function" ? {} : optionsOrFetcher;
+  const fetcher = typeof optionsOrFetcher === "function" ? optionsOrFetcher : maybeFetcher;
+  return qentrahClient(session, fetcher).listMedia({ organizationId: requireOrganizationId(session), options }).catch(mapWorkspaceError);
+}
+
+export function createQentrahClient(session: TokenSession, input: Record<string, unknown>, fetcher?: typeof fetch) {
+  return qentrahClient(session, fetcher).createClient({ organizationId: requireOrganizationId(session), input }).catch(mapWorkspaceError);
+}
+
+export function updateQentrahClient(session: TokenSession, clientId: string, input: Record<string, unknown>, fetcher?: typeof fetch) {
+  return qentrahClient(session, fetcher).updateClient({ organizationId: requireOrganizationId(session), clientId, input }).catch(mapWorkspaceError);
+}
+
+export function deleteQentrahClient(session: TokenSession, clientId: string, fetcher?: typeof fetch) {
+  return qentrahClient(session, fetcher).deleteClient({ organizationId: requireOrganizationId(session), clientId }).catch(mapWorkspaceError);
+}
+
+export function sendQentrahWebhook(session: TokenSession, input: {
+  eventType: string;
+  eventId: string;
+  data: unknown;
+  idempotencyKey?: string;
+}, fetcher?: typeof fetch) {
+  return qentrahClient(session, fetcher).sendWebhook({
+    organizationId: requireOrganizationId(session),
+    eventType: input.eventType,
+    eventId: input.eventId,
+    data: input.data,
+    idempotencyKey: input.idempotencyKey,
+  }).catch(mapWorkspaceError);
 }

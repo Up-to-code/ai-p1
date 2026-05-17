@@ -42,12 +42,13 @@ describe("demo config", () => {
       appName: "Qentrah OAuth Demo",
       publisherName: "ZA",
       partnerAppUrl: "http://localhost:3004",
-      clientId: "partners_client_4p2f001r194s5z6e15473f582m331f4z4s0f",
+      clientId: "partners_client_MvdsQoheDgpiYjk5iA9tBGY-",
       redirectUri: "http://localhost:3004/api/auth/qentrah/callback",
     });
     expect(requestedScopes).toEqual([
       "calendar:read",
       "client:create",
+      "client:delete",
       "client:read",
       "client:update",
       "media:read",

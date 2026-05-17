@@ -51,63 +51,63 @@
 
 :root {
   color-scheme: light;
-  --background: #f2f6f9;
-  --foreground: #071a34;
-  --card: #ffffff;
-  --card-foreground: #071a34;
-  --popover: #ffffff;
-  --popover-foreground: #071a34;
-  --primary: #517bdf;
-  --primary-foreground: #fbfdff;
-  --secondary: #e8eef7;
-  --secondary-foreground: #071a34;
-  --muted: #e8eef7;
-  --muted-foreground: #626870;
-  --accent: #e8eef7;
-  --accent-foreground: #071a34;
-  --destructive: oklch(0.6 0.22 25);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: rgba(19, 30, 43, 0.13);
-  --input: #dfe8f3;
-  --ring: #517bdf;
-  --chart-1: oklch(0.6 0.22 25);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --background: #F7F9FC;
+  --foreground: #0E1726;
+  --card: #FFFFFF;
+  --card-foreground: #0E1726;
+  --popover: #FFFFFF;
+  --popover-foreground: #0E1726;
+  --primary: #0B5CFF;
+  --primary-foreground: #FFFFFF;
+  --secondary: #EEF3F9;
+  --secondary-foreground: #0E1726;
+  --muted: #EEF3F9;
+  --muted-foreground: #5F6B7A;
+  --accent: #E7EEF8;
+  --accent-foreground: #0E1726;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #DDE6F0;
+  --input: #DDE6F0;
+  --ring: #0B5CFF;
+  --chart-1: #0B5CFF;
+  --chart-2: #22C55E;
+  --chart-3: #F59E0B;
+  --chart-4: #2D8CFF;
+  --chart-5: #EF4444;
   --radius: 7px;
-  --sidebar: #edf3f8;
-  --sidebar-foreground: #071a34;
-  --sidebar-primary: #517bdf;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e1eaf4;
-  --sidebar-accent-foreground: #071a34;
-  --sidebar-border: rgba(19, 30, 43, 0.12);
-  --sidebar-ring: #517bdf;
-  --workspace-shell: #edf3f8;
-  --workspace-canvas: #f8fbff;
-  --workspace-panel: #ffffff;
-  --workspace-panel-strong: #f5f8fb;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #0E1726;
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: #EEF3F9;
+  --sidebar-accent-foreground: #0E1726;
+  --sidebar-border: #DDE6F0;
+  --sidebar-ring: var(--ring);
+  --workspace-shell: #F7F9FC;
+  --workspace-canvas: #F7F9FC;
+  --workspace-panel: #FFFFFF;
+  --workspace-panel-strong: #F0F5FB;
   --workspace-chrome-header-bg: var(--workspace-panel);
   --workspace-chrome-sidebar-bg: var(--workspace-sidebar);
-  --workspace-elevated: #eef3f9;
-  --workspace-sidebar: #f3f6fb;
-  --workspace-sidebar-strong: #e9eef5;
-  --workspace-border: rgba(19, 30, 43, 0.12);
-  --workspace-grid: rgba(19, 30, 43, 0.07);
-  --workspace-muted: #626870;
-  --workspace-ink: #071a34;
-  --workspace-bubble-self: #517bdf;
-  --workspace-bubble-self-foreground: #eff6ff;
-  --workspace-bubble-self-muted: #bfdbfe;
-  --workspace-bubble-other: #eef3f9;
-  --workspace-bubble-other-foreground: #122033;
-  --workspace-bubble-other-muted: #61748b;
-  --workspace-accent-soft: #e9eff7;
-  --workspace-highlight: #517bdf;
-  --workspace-highlight-soft: color-mix(in srgb, #517bdf 12%, white);
-  --workspace-highlight-strong: color-mix(in srgb, #517bdf 82%, #071a34);
-  --workspace-highlight-border: color-mix(in srgb, #517bdf 26%, transparent);
+  --workspace-elevated: #EAF1F8;
+  --workspace-sidebar: #FFFFFF;
+  --workspace-sidebar-strong: #F0F5FB;
+  --workspace-border: #DDE6F0;
+  --workspace-grid: rgba(14, 23, 38, 0.08);
+  --workspace-muted: #5F6B7A;
+  --workspace-ink: #0E1726;
+  --workspace-bubble-self: var(--primary);
+  --workspace-bubble-self-foreground: var(--primary-foreground);
+  --workspace-bubble-self-muted: #BFDBFE;
+  --workspace-bubble-other: #EEF3F9;
+  --workspace-bubble-other-foreground: var(--foreground);
+  --workspace-bubble-other-muted: var(--muted-foreground);
+  --workspace-accent-soft: #EAF1F8;
+  --workspace-highlight: var(--primary);
+  --workspace-highlight-soft: color-mix(in srgb, #0B5CFF 16%, #111111);
+  --workspace-highlight-strong: #2D8CFF;
+  --workspace-highlight-border: color-mix(in srgb, #0B5CFF 34%, transparent);
 
   /* Fumadocs Theme Overrides */
   --color-fd-primary: var(--primary);
@@ -126,62 +126,62 @@
 
 .dark {
   color-scheme: dark;
-  --background: #090d13;
-  --foreground: #edf2f7;
-  --card: #0d141d;
-  --card-foreground: #edf2f7;
-  --popover: #090d13;
-  --popover-foreground: #edf2f7;
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  --secondary: #121a24;
-  --secondary-foreground: #edf2f7;
-  --muted: #121a24;
-  --muted-foreground: #8da0b4;
-  --accent: #141d29;
-  --accent-foreground: #edf2f7;
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: rgba(255, 255, 255, 0.12);
-  --input: #121a24;
-  --ring: #3b82f6;
-  --chart-1: oklch(0.6 0.22 25);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: #0c1219;
-  --sidebar-foreground: #edf2f7;
-  --sidebar-primary: #3b82f6;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #121a24;
-  --sidebar-accent-foreground: #edf2f7;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #3b82f6;
-  --workspace-shell: #091019;
-  --workspace-canvas: #0b121c;
-  --workspace-panel: #0d141d;
-  --workspace-panel-strong: #101927;
+  --background: oklch(0.105 0.014 82);
+  --foreground: oklch(0.93 0.018 83);
+  --card: oklch(0.145 0.014 82);
+  --card-foreground: oklch(0.93 0.018 83);
+  --popover: oklch(0.13 0.014 82);
+  --popover-foreground: oklch(0.93 0.018 83);
+  --primary: #0B5CFF;
+  --primary-foreground: #FFFFFF;
+  --secondary: oklch(0.19 0.014 82);
+  --secondary-foreground: oklch(0.88 0.018 83);
+  --muted: oklch(0.19 0.014 82);
+  --muted-foreground: oklch(0.68 0.016 83);
+  --accent: oklch(0.22 0.018 82);
+  --accent-foreground: oklch(0.93 0.018 83);
+  --destructive: oklch(0.61 0.18 28);
+  --destructive-foreground: oklch(0.96 0.016 83);
+  --border: oklch(0.255 0.014 82);
+  --input: oklch(0.225 0.014 82);
+  --ring: #0B5CFF;
+  --chart-1: #0B5CFF;
+  --chart-2: oklch(0.68 0.12 150);
+  --chart-3: oklch(0.64 0.13 35);
+  --chart-4: oklch(0.67 0.11 210);
+  --chart-5: oklch(0.72 0.1 300);
+  --sidebar: oklch(0.09 0.012 82);
+  --sidebar-foreground: oklch(0.89 0.018 83);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: oklch(0.18 0.014 82);
+  --sidebar-accent-foreground: oklch(0.93 0.018 83);
+  --sidebar-border: oklch(0.23 0.014 82);
+  --sidebar-ring: var(--ring);
+  --workspace-shell: oklch(0.085 0.012 82);
+  --workspace-canvas: oklch(0.105 0.014 82);
+  --workspace-panel: oklch(0.145 0.014 82);
+  --workspace-panel-strong: oklch(0.18 0.014 82);
   --workspace-chrome-header-bg: var(--workspace-panel);
   --workspace-chrome-sidebar-bg: var(--workspace-sidebar);
-  --workspace-elevated: #121a24;
-  --workspace-sidebar: #0b121b;
-  --workspace-sidebar-strong: #081019;
-  --workspace-border: rgba(255, 255, 255, 0.11);
-  --workspace-grid: rgba(255, 255, 255, 0.08);
-  --workspace-muted: #8da0b4;
-  --workspace-ink: #edf2f7;
-  --workspace-bubble-self: #2563eb;
-  --workspace-bubble-self-foreground: #eff6ff;
-  --workspace-bubble-self-muted: #bfdbfe;
-  --workspace-bubble-other: #121a24;
-  --workspace-bubble-other-foreground: #edf2f7;
-  --workspace-bubble-other-muted: #8da0b4;
-  --workspace-accent-soft: #111b28;
-  --workspace-highlight: #3b82f6;
-  --workspace-highlight-soft: color-mix(in srgb, #3b82f6 16%, #0d141d);
-  --workspace-highlight-strong: color-mix(in srgb, #3b82f6 78%, black);
-  --workspace-highlight-border: color-mix(in srgb, #3b82f6 34%, transparent);
+  --workspace-elevated: oklch(0.2 0.014 82);
+  --workspace-sidebar: oklch(0.09 0.012 82);
+  --workspace-sidebar-strong: oklch(0.07 0.011 82);
+  --workspace-border: oklch(0.255 0.014 82);
+  --workspace-grid: oklch(0.33 0.013 82 / 0.26);
+  --workspace-muted: oklch(0.68 0.016 83);
+  --workspace-ink: oklch(0.93 0.018 83);
+  --workspace-bubble-self: var(--primary);
+  --workspace-bubble-self-foreground: var(--primary-foreground);
+  --workspace-bubble-self-muted: #BFDBFE;
+  --workspace-bubble-other: oklch(0.18 0.014 82);
+  --workspace-bubble-other-foreground: var(--foreground);
+  --workspace-bubble-other-muted: var(--muted-foreground);
+  --workspace-accent-soft: oklch(0.21 0.025 65);
+  --workspace-highlight: var(--primary);
+  --workspace-highlight-soft: color-mix(in srgb, #0B5CFF 16%, #111111);
+  --workspace-highlight-strong: #2D8CFF;
+  --workspace-highlight-border: color-mix(in srgb, #0B5CFF 34%, transparent);
 
   /* Fumadocs Theme Overrides */
   --color-fd-primary: var(--primary);
@@ -213,33 +213,34 @@ body {
     @apply bg-background text-foreground;
     min-height: 100dvh;
     background-image:
-      linear-gradient(to bottom, color-mix(in srgb, var(--workspace-grid) 44%, transparent) 1px, transparent 1px),
-      linear-gradient(to left, color-mix(in srgb, var(--workspace-grid) 26%, transparent) 1px, transparent 1px);
-    background-size: 100% 32px, 32px 100%;
+      radial-gradient(circle at 20% -10%, color-mix(in srgb, #0B5CFF 14%, transparent), transparent 34%),
+      linear-gradient(to bottom, color-mix(in oklch, var(--workspace-grid) 70%, transparent) 1px, transparent 1px),
+      linear-gradient(to left, color-mix(in oklch, var(--workspace-grid) 52%, transparent) 1px, transparent 1px);
+    background-size: auto, 100% 28px, 28px 100%;
     background-attachment: fixed;
   }
-
-  html:not(.dark) .workspace-root-chrome {
-    --workspace-chrome-header-bg: color-mix(in srgb, var(--workspace-sidebar) 72%, white);
-    --workspace-chrome-sidebar-bg: color-mix(in srgb, var(--workspace-sidebar) 82%, var(--workspace-sidebar-strong));
-  }
 }
 
-/* Custom pattern classes for the App Cards */
-.pattern-dots {
-  background-image: radial-gradient(var(--workspace-grid) 1px, transparent 1px);
-  background-size: 16px 16px;
+.command-panel {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card) 96%, var(--background));
 }
 
-.pattern-grid {
-  background-image: linear-gradient(var(--workspace-grid) 1px, transparent 1px), linear-gradient(90deg, var(--workspace-grid) 1px, transparent 1px);
-  background-size: 20px 20px;
+.command-strip {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--muted) 72%, transparent);
 }
 
-.pattern-waves {
-  background-image:
-    repeating-radial-gradient(circle at 0 0, transparent 0, var(--workspace-canvas) 10px),
-    repeating-linear-gradient(var(--workspace-grid), var(--workspace-grid));
+.code-zone-shadow {
+  box-shadow: 0 18px 60px rgba(14, 23, 38, 0.08);
+}
+
+.dark .command-panel {
+  background: color-mix(in oklch, var(--card) 88%, black);
+}
+
+.dark .code-zone-shadow {
+  box-shadow: 0 24px 80px oklch(0.05 0.01 82 / 0.42);
 }
 
 ::selection {

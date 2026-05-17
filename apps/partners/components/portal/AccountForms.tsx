@@ -26,7 +26,7 @@ export function AccountForms({ account }: { account: PartnerAccountView }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-      <section className="rounded-[15px] border border-border bg-card p-6">
+      <section className="command-panel p-6">
         <div className="flex items-center gap-4">
           <GeneratedAvatarView avatar={avatar} className="h-16 w-16 text-lg" />
           <div className="min-w-0">
@@ -51,7 +51,7 @@ export function AccountForms({ account }: { account: PartnerAccountView }) {
         </form>
       </section>
 
-      <section className="rounded-[15px] border border-border bg-card p-6">
+      <section className="command-panel p-6">
         <div>
           <h2 className="text-xl font-semibold text-foreground">Programmer organization</h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -61,7 +61,7 @@ export function AccountForms({ account }: { account: PartnerAccountView }) {
 
         {organization ? (
           <>
-            <div className="mt-5 grid gap-3 rounded-[15px] border border-border bg-background p-4 text-sm sm:grid-cols-2">
+            <div className="mt-5 grid gap-3 rounded-[6px] border border-border bg-muted p-4 text-sm sm:grid-cols-2">
               <div>
                 <div className="text-xs font-semibold uppercase text-muted-foreground">Type</div>
                 <div className="mt-1 font-medium text-foreground">Programmer</div>

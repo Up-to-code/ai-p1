@@ -1,15 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { loadQentrahProperties } from "@/lib/workspace-api";
-import { readTokenSession } from "@/lib/session";
+import { errorResponse, requireDemoSession, resourceFiltersFromRequest } from "../route-helpers";
 
-export async function GET() {
-  const session = await readTokenSession();
-  if (!session) return NextResponse.json({ error: "missing_bearer" }, { status: 401 });
+export async function GET(request: NextRequest) {
+  const { session, response } = await requireDemoSession();
+  if (response) return response;
   try {
-    return NextResponse.json(await loadQentrahProperties(session));
+    return NextResponse.json(await loadQentrahProperties(session, resourceFiltersFromRequest(request)));
   } catch (error) {
-    const status = typeof error === "object" && error && "status" in error ? Number(error.status) : 500;
-    const code = typeof error === "object" && error && "code" in error ? String(error.code) : "workspace_api_error";
-    return NextResponse.json({ error: code, message: error instanceof Error ? error.message : code }, { status });
+    return errorResponse(error);
   }
 }

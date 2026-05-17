@@ -3,9 +3,9 @@ import { cn } from "@qentrah/platform-core/classnames";
 
 const variants = {
   default: "border-border bg-muted text-foreground",
-  success: "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  success: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
   danger: "border-destructive/30 bg-destructive/10 text-destructive",
-  warning: "border-yellow-500/30 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
+  warning: "border-yellow-500/30 bg-yellow-500/10 text-yellow-400",
 };
 
 export function Alert({
@@ -17,5 +17,5 @@ export function Alert({
   variant?: keyof typeof variants;
   className?: string;
 }) {
-  return <div className={cn("rounded-[7px] border p-3 text-sm font-medium leading-6", variants[variant], className)}>{children}</div>;
+  return <div className={cn("rounded-[6px] border p-3 text-[13px] font-medium leading-6", variants[variant], className)}>{children}</div>;
 }

@@ -8,43 +8,34 @@ const plans = [
 
 export default function PricingPage() {
   return (
-    <main>
-      {/* Header */}
-      <section className="border-b border-border bg-white px-4 py-20 sm:px-6">
-        <div className="max-w-4xl mx-auto">
-          <p className="mb-4 text-xs font-bold uppercase text-primary">Pricing</p>
-          <h1 className="text-balance text-[53px] font-bold leading-[1.04] text-foreground">Start building free. Launch after review.</h1>
-          <p className="mt-4 max-w-2xl text-pretty text-lg font-medium leading-8 text-muted-foreground">
-            Partner app access is gated by review, not surprise pricing. Production commercial terms are handled during approval.
-          </p>
+    <main className="px-5 py-14">
+      <div className="mx-auto max-w-5xl">
+        <p className="text-xs font-bold uppercase text-primary">Pricing</p>
+        <h1 className="mt-3 max-w-3xl text-4xl font-bold leading-tight text-foreground">Start building free. Launch after review.</h1>
+        <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground">
+          Partner app access is gated by review, not surprise pricing. Production commercial terms are handled during approval.
+        </p>
+        <div className="mt-8 grid gap-5 md:grid-cols-2">
+          {plans.map((plan) => (
+            <article key={plan.name} className="command-panel p-5">
+              <h2 className="text-xl font-bold text-foreground">{plan.name}</h2>
+              <p className="mt-2 font-mono text-2xl font-bold text-primary">{plan.price}</p>
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">{plan.description}</p>
+              <ul className="mt-6 space-y-3 text-sm font-medium text-foreground">
+                {plan.items.map((item) => (
+                  <li key={item} className="flex items-center gap-3">
+                    <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-primary" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </article>
+          ))}
         </div>
-      </section>
-
-      {/* Plans */}
-      <section className="bg-background px-4 py-16 sm:px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid gap-6 md:grid-cols-2">
-            {plans.map((plan) => (
-              <article key={plan.name} className="rounded-[15px] border border-border bg-card p-8">
-                <h2 className="text-2xl font-bold text-foreground">{plan.name}</h2>
-                <p className="mt-2 text-3xl font-bold text-primary">{plan.price}</p>
-                <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{plan.description}</p>
-                <ul className="mt-6 space-y-3 text-sm font-medium text-foreground">
-                  {plan.items.map((item) => (
-                    <li key={item} className="flex items-center gap-3">
-                      <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            ))}
-          </div>
-          <Link href="/signup" className="mt-10 inline-flex h-12 items-center rounded-[7px] bg-primary px-8 text-sm font-bold text-primary-foreground transition-colors hover:bg-[#6b90e6]">
-            Create developer account
-          </Link>
-        </div>
-      </section>
+        <Link href="/signup" className="mt-8 inline-flex h-11 items-center rounded-[6px] bg-primary px-5 text-[13px] font-bold text-primary-foreground transition-colors hover:bg-primary/90">
+          Create developer account
+        </Link>
+      </div>
     </main>
   );
 }

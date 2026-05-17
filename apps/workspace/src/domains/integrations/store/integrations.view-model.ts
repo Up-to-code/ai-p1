@@ -7,7 +7,8 @@ export type PartnerCatalogCardModel = {
   connection?: PartnerConnection;
   effectiveStatus: PartnerConnectionStatus | "available";
   statusTone: IntegrationStatusTone;
-  visitHref: string | null;
+  connectHref: string | null;
+  connectState: "connect" | "manage" | "unavailable";
   scopeCount: number;
 };
 
@@ -44,9 +45,34 @@ export function buildPartnerCatalogCards(
       connection,
       effectiveStatus,
       statusTone: integrationStatusTone(effectiveStatus),
-      visitHref: app.homepageUrl || null,
+      connectHref: connection ? `/web-apps/${app.id}` : app.homepageUrl || null,
+      connectState: connection ? "manage" : app.homepageUrl ? "connect" : "unavailable",
       scopeCount: app.allowedScopes.length,
     };
+  });
+}
+
+export type PartnerCatalogFilter = "all" | "connected" | "available";
+
+export function filterPartnerCatalogCards(
+  cards: PartnerCatalogCardModel[],
+  query: string,
+  filter: PartnerCatalogFilter,
+) {
+  const normalizedQuery = query.trim().toLowerCase();
+  return cards.filter((card) => {
+    const matchesFilter =
+      filter === "all" ||
+      (filter === "connected" && Boolean(card.connection)) ||
+      (filter === "available" && !card.connection);
+    if (!matchesFilter) return false;
+    if (!normalizedQuery) return true;
+    return [
+      card.app.name,
+      card.app.publisherName,
+      card.app.description,
+      card.app.allowedScopes.join(" "),
+    ].some((value) => value?.toLowerCase().includes(normalizedQuery));
   });
 }
 

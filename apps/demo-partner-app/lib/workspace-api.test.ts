@@ -1,5 +1,17 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { WorkspaceApiError, createQentrahClient, loadQentrahClients, updateQentrahClient } from "./workspace-api";
+import {
+  WorkspaceApiError,
+  createQentrahClient,
+  deleteQentrahClient,
+  loadQentrahCalendar,
+  loadQentrahClients,
+  loadQentrahMedia,
+  loadQentrahProjects,
+  loadQentrahProperties,
+  loadQentrahTasks,
+  sendQentrahWebhook,
+  updateQentrahClient,
+} from "./workspace-api";
 import type { TokenSession } from "./session";
 
 function jsonResponse(payload: unknown, status = 200) {
@@ -29,9 +41,25 @@ describe("Workspace Hono API wrappers", () => {
   it("loads clients through Workspace partner APIs, not Convex", async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse({ data: [{ id: "client_1" }] }));
 
-    await expect(loadQentrahClients(session, fetcher)).resolves.toEqual({ data: [{ id: "client_1" }] });
-    expect(String(fetcher.mock.calls[0][0])).toBe("http://localhost:3000/api/v1/partner/organizations/org_123/clients");
+    await expect(loadQentrahClients(session, { limit: 10, search: "Nora", type: "Buyer", indexStart: 24, indexEnd: 27 }, fetcher)).resolves.toEqual({ data: [{ id: "client_1" }] });
+    expect(String(fetcher.mock.calls[0][0])).toBe("http://localhost:3000/api/v1/partner/organizations/org_123/clients?limit=10&search=Nora&type=Buyer&indexStart=24&indexEnd=27");
     expect(fetcher.mock.calls[0][1]?.headers).toMatchObject({ authorization: "Bearer access" });
+  });
+
+  it("builds read URLs for every resource section", async () => {
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => jsonResponse({ data: [] }));
+
+    await loadQentrahProperties(session, { limit: 25 }, fetcher);
+    await loadQentrahProjects(session, { limit: 25 }, fetcher);
+    await loadQentrahTasks(session, { limit: 25 }, fetcher);
+    await loadQentrahCalendar(session, { limit: 25 }, fetcher);
+    await loadQentrahMedia(session, { limit: 25, resourceType: "client", resourceId: "client_1" }, fetcher);
+
+    expect(String(fetcher.mock.calls[0][0])).toBe("http://localhost:3000/api/v1/partner/organizations/org_123/properties?limit=25");
+    expect(String(fetcher.mock.calls[1][0])).toBe("http://localhost:3000/api/v1/partner/organizations/org_123/projects?limit=25");
+    expect(String(fetcher.mock.calls[2][0])).toBe("http://localhost:3000/api/v1/partner/organizations/org_123/tasks?limit=25");
+    expect(String(fetcher.mock.calls[3][0])).toBe("http://localhost:3000/api/v1/partner/organizations/org_123/calendar?limit=25");
+    expect(String(fetcher.mock.calls[4][0])).toBe("http://localhost:3000/api/v1/partner/organizations/org_123/media?limit=25&resourceType=client&resourceId=client_1");
   });
 
   it("sends safe client create payloads", async () => {
@@ -50,6 +78,30 @@ describe("Workspace Hono API wrappers", () => {
 
     expect(String(fetcher.mock.calls[0][0])).toBe("http://localhost:3000/api/v1/partner/organizations/org_123/clients/client_2");
     expect(fetcher.mock.calls[0][1]?.method).toBe("PATCH");
+  });
+
+  it("sends safe client delete requests", async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse({ data: { deleted: true } }));
+
+    await deleteQentrahClient(session, "client_2", fetcher);
+
+    expect(String(fetcher.mock.calls[0][0])).toBe("http://localhost:3000/api/v1/partner/organizations/org_123/clients/client_2");
+    expect(fetcher.mock.calls[0][1]?.method).toBe("DELETE");
+  });
+
+  it("sends client lifecycle webhooks", async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse({ ok: true }));
+
+    await sendQentrahWebhook(session, {
+      eventType: "client.created",
+      eventId: "evt_1",
+      data: { id: "client_1" },
+      idempotencyKey: "evt_1",
+    }, fetcher);
+
+    expect(String(fetcher.mock.calls[0][0])).toBe("http://localhost:3000/api/v1/partner/organizations/org_123/webhooks/inbound");
+    expect(fetcher.mock.calls[0][1]?.method).toBe("POST");
+    expect(String(fetcher.mock.calls[0][1]?.body)).toContain("client.created");
   });
 
   it("maps Workspace expired connection errors", async () => {

@@ -41,13 +41,13 @@ export default async function AppDetailsPage({
   const sandbox = await sandboxRepository.get(token, app.id).catch(() => null);
 
   return (
-    <div>
-      <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8">
+    <div className="space-y-6">
+      <Link href="/dashboard/apps" className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
         <ArrowLeft className="h-4 w-4" />
         Back to Apps
       </Link>
 
-      <div className="mb-6 rounded-[15px] border border-border bg-card p-6 sm:p-8">
+      <div className="command-panel p-5 sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <StatusBadge status={app.status} />
@@ -57,14 +57,14 @@ export default async function AppDetailsPage({
           </div>
           <div className="flex flex-wrap gap-2">
             {canEditPartnerApp(app.status) ? (
-              <Link href={`/dashboard/apps/${app.id}/settings`} className="inline-flex h-9 items-center justify-center gap-2 rounded-[7px] border border-border px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted">
+              <Link href={`/dashboard/apps/${app.id}/settings`} className="inline-flex h-9 items-center justify-center gap-2 rounded-[6px] border border-border px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted">
                 <Settings className="h-4 w-4" /> Settings
               </Link>
             ) : null}
             {app.status === "draft" || app.status === "rejected" ? (
               <form action={submitPartnerAppForReviewAction}>
                 <input type="hidden" name="appId" value={app.id} />
-                <Button type="submit" className="h-9 gap-2">
+                <Button type="submit" className="h-9 gap-2 rounded-[6px] bg-primary text-primary-foreground hover:bg-primary/90">
                   <Send className="h-4 w-4" /> Submit for review
                 </Button>
               </form>
@@ -74,27 +74,27 @@ export default async function AppDetailsPage({
       </div>
 
       {app.workspaceSyncStatus === "failed" && app.workspaceSyncError ? (
-        <div className="mb-6 rounded-[15px] border border-red-500/30 bg-red-500/10 p-4">
+        <div className="rounded-[6px] border border-red-500/30 bg-red-500/10 p-4">
           <p className="text-sm font-medium text-foreground">OAuth runtime sync failed: {app.workspaceSyncError}</p>
         </div>
       ) : null}
 
-      <div className="mb-6 grid gap-3 md:grid-cols-3">
-        <div className="rounded-[15px] border border-border bg-card p-4">
+      <div className="grid gap-3 md:grid-cols-3">
+        <div className="command-panel p-4">
           <p className="text-xs font-bold uppercase text-muted-foreground">Review state</p>
           <p className="mt-2 text-sm font-semibold text-foreground">{app.status.replace("_", " ")}</p>
         </div>
-        <div className="rounded-[15px] border border-border bg-card p-4">
+        <div className="command-panel p-4">
           <p className="text-xs font-bold uppercase text-muted-foreground">OAuth runtime</p>
           <p className="mt-2 text-sm font-semibold text-foreground">{syncState(app)}</p>
         </div>
-        <div className="rounded-[15px] border border-border bg-card p-4">
+        <div className="command-panel p-4">
           <p className="text-xs font-bold uppercase text-muted-foreground">Runtime app id</p>
           <p className="mt-2 break-all font-mono text-xs text-foreground">{app.workspacePartnerAppId ?? app.id}</p>
         </div>
       </div>
 
-      <div className="mb-6 rounded-[15px] border border-border bg-card p-4">
+      <div className="command-panel p-4">
         <p className="text-sm font-medium text-foreground">{lifecycleGuidance(app)}</p>
         {app.workspaceOauthClientId ? (
           <p className="mt-2 break-all font-mono text-xs text-muted-foreground">oauth_runtime_client_id: {app.workspaceOauthClientId}</p>
@@ -102,7 +102,7 @@ export default async function AppDetailsPage({
       </div>
 
       {app.reviewNotes ? (
-        <div className="mb-6 rounded-[15px] border border-yellow-500/30 bg-yellow-500/10 p-4">
+        <div className="rounded-[6px] border border-yellow-500/30 bg-yellow-500/10 p-4">
           <p className="text-sm font-medium text-foreground">{app.reviewNotes}</p>
         </div>
       ) : null}

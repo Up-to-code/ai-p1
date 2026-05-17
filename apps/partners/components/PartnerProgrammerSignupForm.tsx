@@ -101,7 +101,7 @@ export default function PartnerProgrammerSignupForm({ redirectTo }: { redirectTo
   }
 
   return (
-    <form className="space-y-5" onSubmit={handleSubmit} data-testid="partner-programmer-signup-form">
+    <form className="space-y-4" onSubmit={handleSubmit} data-testid="partner-programmer-signup-form">
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Your name" htmlFor="partner-signup-name">
           <Input
@@ -144,7 +144,7 @@ export default function PartnerProgrammerSignupForm({ redirectTo }: { redirectTo
               type="button"
               aria-label={showPassword ? "Hide password" : "Show password"}
               onClick={() => setShowPassword((value) => !value)}
-              className="absolute right-2 top-1/2 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-[7px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="absolute right-2 top-1/2 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-[6px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
@@ -167,7 +167,7 @@ export default function PartnerProgrammerSignupForm({ redirectTo }: { redirectTo
               type="button"
               aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
               onClick={() => setShowConfirmPassword((value) => !value)}
-              className="absolute right-2 top-1/2 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-[7px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="absolute right-2 top-1/2 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-[6px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
@@ -220,7 +220,7 @@ export default function PartnerProgrammerSignupForm({ redirectTo }: { redirectTo
       <Button
         type="submit"
         disabled={pending}
-        className="h-11 w-full"
+        className="h-10 w-full rounded-[6px] bg-primary text-[13px] font-bold text-primary-foreground hover:bg-primary/90"
       >
         {pending ? "Creating account..." : "Create developer account"}
       </Button>

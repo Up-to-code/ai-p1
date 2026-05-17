@@ -233,6 +233,7 @@ NEXT_PUBLIC_CONVEX_URL=https://<deployment>.convex.cloud
 CONVEX_URL=https://<deployment>.convex.cloud
 NEXT_PUBLIC_CONVEX_SITE_URL=https://<deployment>.convex.site
 CONVEX_SITE_URL=https://<deployment>.convex.site
+WORKSPACE_CONVEX_BRIDGE_SECRET=replace-with-at-least-32-characters
 WORKSPACE_ADMIN_SERVICE_TOKEN=local-workspace-admin-token
 PARTNERS_REVIEW_CALLBACK_TOKEN=local-review-callback-token
 ```
@@ -243,6 +244,7 @@ Convex values to set for Workspace:
 npx convex env set BETTER_AUTH_SECRET "replace-with-at-least-32-characters"
 npx convex env set SITE_URL "http://localhost:3000"
 npx convex env set CONVEX_SITE_URL "https://<deployment>.convex.site"
+npx convex env set WORKSPACE_CONVEX_BRIDGE_SECRET "replace-with-at-least-32-characters"
 npx convex env set WORKSPACE_ADMIN_SERVICE_TOKEN "local-workspace-admin-token"
 npx convex env set PARTNERS_REVIEW_CALLBACK_TOKEN "local-review-callback-token"
 ```

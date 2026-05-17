@@ -71,7 +71,7 @@ const navigationGroups = [
     items: [
       { name: "organization", href: "/settings/organization", icon: Landmark },
       { name: "activity", href: "/activity", icon: HistoryIcon },
-      { name: "integrations", href: "/integrations", icon: Plug },
+      { name: "integrations", href: "/web-apps", icon: Plug },
     ],
   },
 ];

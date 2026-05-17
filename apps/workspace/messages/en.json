@@ -4,7 +4,7 @@
     "projects": "Projects",
     "properties": "Properties",
     "team": "Team",
-    "integrations": "Integrations",
+    "integrations": "Web Apps",
     "activity": "Activity",
     "announcements": "Announcements",
     "settings": "Settings",
@@ -228,7 +228,7 @@
     "clients": "Clients",
     "calendar": "Calendar",
     "organization": "Organization",
-    "integrations": "Integrations",
+    "integrations": "Web Apps",
     "components": "UI Components",
     "activity": "Activity Log",
     "announcements": "Announcements",
@@ -353,7 +353,7 @@
           { "name": "Marketing", "label": "Media" },
           { "name": "Finance", "label": "Revenue" },
           { "name": "Legal", "label": "Approval" },
-          { "name": "Integrations", "label": "Sync" }
+          { "name": "Web apps", "label": "Sync" }
         ]
       },
       "audiences": {
@@ -2195,7 +2195,7 @@
         "calendar": "Calendar",
         "media": "Media and files",
         "visibility": "Public visibility",
-        "integration": "Integrations",
+        "integration": "Web apps",
         "apiKey": "API keys",
         "oauthApp": "Connected apps",
         "role": "Work roles"
@@ -2272,10 +2272,30 @@
     }
   },
   "Integrations": {
-    "title": "Integrations",
-    "subtitle": "Cross-Platform Synchronization Workspace",
-    "catalog_eyebrow": "Integration catalog",
-    "add": "Add Integration",
+    "title": "Web Apps",
+    "subtitle": "Connect reviewed web apps to this workspace",
+    "catalog_eyebrow": "App catalog",
+    "add": "Add Web App",
+    "catalog": {
+      "loading": "Loading web apps",
+      "empty": "No approved web apps yet",
+      "search": "Search web apps",
+      "filter": "Filter",
+      "filters": {
+        "all": "All",
+        "connected": "Connected",
+        "available": "Available"
+      },
+      "noResults": "No web apps match this view",
+      "partnerApp": "Partner app",
+      "scopes": "scopes",
+      "connected": "Connected",
+      "oauthStart": "OAuth start",
+      "connect": "Connect",
+      "manage": "Manage",
+      "missingStart": "Start URL missing",
+      "details": "Details"
+    },
     "tabs": {
       "catalog": "Catalog",
       "connected": "Connected",
@@ -2296,9 +2316,9 @@
       "desc": "Mock delivery monitoring is online."
     },
     "detail": {
-      "notFound": "Integration not found",
-      "notFoundDesc": "This mock integration is not available in the local store.",
-      "back": "Back to integrations",
+      "notFound": "Web app not found",
+      "notFoundDesc": "This web app is not available in the approved catalog.",
+      "back": "Back to web apps",
       "backBtn": "Back",
       "stats": {
         "status": "Status",

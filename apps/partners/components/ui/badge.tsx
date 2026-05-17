@@ -2,11 +2,11 @@ import type { ReactNode } from "react";
 import { cn } from "@qentrah/platform-core/classnames";
 
 const variants = {
-  default: "border-slate-200 bg-white text-slate-700",
-  success: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  warning: "border-amber-200 bg-amber-50 text-amber-800",
-  danger: "border-rose-200 bg-rose-50 text-rose-700",
-  info: "border-blue-200 bg-blue-50 text-blue-700",
+  default: "border-border bg-muted text-muted-foreground",
+  success: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
+  warning: "border-primary/40 bg-primary/12 text-primary",
+  danger: "border-rose-500/30 bg-rose-500/10 text-rose-300",
+  info: "border-sky-500/30 bg-sky-500/10 text-sky-300",
 };
 
 export function Badge({
@@ -19,7 +19,7 @@ export function Badge({
   className?: string;
 }) {
   return (
-    <span className={cn("inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase", variants[variant], className)}>
+    <span className={cn("inline-flex items-center rounded-[6px] border px-2 py-0.5 text-[10px] font-bold uppercase", variants[variant], className)}>
       {children}
     </span>
   );

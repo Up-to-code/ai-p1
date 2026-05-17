@@ -17,16 +17,16 @@ export default async function AppSettingsPage({
   if (!app) notFound();
 
   return (
-    <div>
-      <Link href={`/dashboard/apps/${appId}`} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8">
+    <div className="space-y-6">
+      <Link href={`/dashboard/apps/${appId}`} className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
         <ArrowLeft className="h-4 w-4" />
         Back to {app.name}
       </Link>
       
-      <div className="mb-8 border-b border-border pb-8">
+      <div>
         <p className="text-xs font-bold uppercase text-primary">Partner program</p>
         <h1 className="mt-2 text-3xl font-bold text-foreground">App settings</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Update redirect URIs, publisher metadata, and requested scopes.</p>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Update redirect URIs, publisher metadata, and requested scopes.</p>
       </div>
 
       <div className="max-w-7xl">

@@ -1,6 +1,6 @@
-import { IntegrationDetailScreen } from "@/domains/integrations";
+import { redirect } from "next/navigation";
 
-export default async function IntegrationDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  return <IntegrationDetailScreen id={id} />;
+export default async function IntegrationDetailsPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
+  const { locale, id } = await params;
+  redirect(`/${locale}/web-apps/${id}`);
 }

@@ -3,7 +3,7 @@ import { cn } from "@qentrah/platform-core/classnames";
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
   return (
-    <section className={cn("rounded-[15px] border border-border bg-card", className)}>
+    <section className={cn("command-panel", className)}>
       {children}
     </section>
   );

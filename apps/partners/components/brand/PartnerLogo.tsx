@@ -15,7 +15,7 @@ export function PartnerLogo({ href = "/", inverse = false, compact = false, clas
       href={href}
       className={cn(
         "inline-flex min-w-0 items-center gap-2.5 text-start font-bold text-foreground",
-        inverse && "text-white",
+        inverse && "text-foreground",
         compact ? "text-base" : "text-lg",
         className,
       )}
@@ -23,9 +23,9 @@ export function PartnerLogo({ href = "/", inverse = false, compact = false, clas
     >
       <span
         className={cn(
-          "flex shrink-0 items-center justify-center overflow-hidden rounded-full ring-1",
+          "flex shrink-0 items-center justify-center overflow-hidden rounded-[6px] ring-1",
           compact ? "h-7 w-7" : "h-8 w-8",
-          inverse ? "bg-white/10 ring-white/15" : "bg-white ring-border dark:bg-zinc-950",
+          inverse ? "bg-primary/15 ring-primary/25" : "bg-card ring-border",
         )}
       >
         <Image
@@ -48,7 +48,7 @@ export function PartnerLogo({ href = "/", inverse = false, compact = false, clas
         ) : null}
       </span>
       <span className="min-w-0 leading-none">
-        qentrah <span className={cn("font-medium", inverse ? "text-blue-200" : "text-muted-foreground")}>/ partners</span>
+        qentrah <span className={cn("font-medium", inverse ? "text-primary" : "text-muted-foreground")}>/ partners</span>
       </span>
     </Link>
   );

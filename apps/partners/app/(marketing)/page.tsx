@@ -1,61 +1,27 @@
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Code2, FileCheck, KeyRound, ShieldCheck, UsersRound, Workflow } from "lucide-react";
+import { ArrowRight, CheckCircle2, Code2, FileCheck, KeyRound, ShieldCheck, TerminalSquare, Workflow } from "lucide-react";
 import { codeToHtml } from "shiki";
-import { brandLabel, brandProductName, brandRoutePath } from "@qentrah/brand-identity";
+import { brandLabel, brandRoutePath } from "@qentrah/brand-identity";
 
 const brand = brandLabel("en");
-const workspaceName = brandProductName("workspace", "en");
-const partnersName = brandProductName("partners", "en");
 const oauthCallbackPath = brandRoutePath("oauthCallback");
 
-const heroCode = `import { mountQentrahAuthorizeButton } from "@qentrah/auth-sdk/partner/browser";
-import { createQentrahPartnerAuthHandlers } from "@qentrah/auth-sdk/partner/next";
-
-mountQentrahAuthorizeButton({
-  buttonId: "qentrah-authorize",
-  startUrl: "/api/qentrah/oauth/start",
-  label: "Authorize with Qentrah",
-});
-
-export const qentrahAuth = createQentrahPartnerAuthHandlers({
-  workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL!,
+const heroCode = `const qentrah = createPartnerConsole({
   clientId: "partners_client_...",
   redirectUri: "https://app.example.com${oauthCallbackPath}",
-  scopes: ["organization:read", "client:read", "property:read"],
-  sessionStore,
-  tokenStore,
-});`;
+  scopes: ["organization:read", "client:read"],
+  reviewMode: "production",
+});
 
-const flow = [
-  { title: "Create the OAuth client", description: "Add a partner URL, callback URL, and client type.", icon: KeyRound },
-  { title: "Choose small scopes", description: "Request only the organization data your product needs.", icon: ShieldCheck },
-  { title: "Submit for review", description: `${brand} reviews production readiness before the app goes live.`, icon: FileCheck },
+await qentrah.authorizeWorkspace();`;
+
+const feed = [
+  ["draft.created", "Add callback, scopes, and app URL"],
+  ["review.pending", "Security team checks least-privilege access"],
+  ["runtime.synced", "OAuth client projected into Workspace"],
 ];
 
-const partnerValue = [
-  {
-    title: "Reach operating teams",
-    description: `Put your product in front of real estate teams already managing clients, properties, media, tasks, and follow-up inside ${brand}.`,
-    icon: UsersRound,
-  },
-  {
-    title: "Earn trust before launch",
-    description: "Every production app passes through scoped review, so admins understand exactly what your integration can access.",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Build around real workflows",
-    description: "Connect to organization data through Workspace APIs instead of inventing a separate sync path for every customer.",
-    icon: Workflow,
-  },
-];
-
-const productUseCases = [
-  `Generate signed PDFs from ${brand} client and property records.`,
-  "Sync qualified leads into a broker follow-up workflow.",
-  "Enrich property media, documents, or listing operations.",
-  "Run partner automations after an organization grants consent.",
-];
+const rail = ["Public PKCE or confidential clients", "Scoped organization APIs", "Server-side token handling", "Review notes and lifecycle"];
 
 export default async function LandingPage() {
   const highlightedHeroCode = await codeToHtml(heroCode, {
@@ -65,7 +31,7 @@ export default async function LandingPage() {
       {
         pre(node) {
           node.properties.style = "";
-          node.properties.class = "m-0 min-w-max bg-transparent p-5 text-xs leading-6 md:p-6";
+          node.properties.class = "m-0 min-w-max bg-transparent p-5 text-xs leading-6";
         },
         code(node) {
           node.properties.class = "font-mono";
@@ -75,168 +41,135 @@ export default async function LandingPage() {
   });
 
   return (
-    <main className="bg-background">
-      <section className="relative overflow-hidden border-b border-border px-4 py-12 sm:px-6 lg:py-16">
-        <div className="absolute inset-x-0 top-0 h-32 bg-[linear-gradient(180deg,#fff_0%,rgba(255,255,255,0)_100%)] dark:hidden" />
-        <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[minmax(360px,0.72fr)_minmax(0,1.28fr)] lg:items-center">
-          <div>
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-white px-3 py-1 text-xs font-semibold text-primary dark:bg-card">
-              <Code2 className="size-3.5" />
-              {partnersName}
-            </div>
-            <h1 className="max-w-3xl text-balance text-[44px] font-bold leading-[1.02] text-foreground md:text-[64px]">
-              Build reviewed apps for {brand} workspaces.
-            </h1>
-            <p className="mt-5 max-w-xl text-pretty text-base font-medium leading-7 text-muted-foreground">
-              Register OAuth clients, request scoped organization access, and ship partner integrations through one developer console.
-            </p>
-            <p className="mt-4 max-w-xl text-sm font-medium leading-6 text-muted-foreground">
-              The story is simple: your product keeps its own experience, {brand} handles organization trust, and {workspaceName} becomes the reviewed bridge between them.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link href="/signup" className="inline-flex h-12 items-center justify-center rounded-[7px] bg-primary px-6 text-sm font-bold text-primary-foreground transition-colors hover:bg-[#6b90e6]">
-                Create developer account
-              </Link>
-              <Link href="/docs/oauth-flow" className="inline-flex h-12 items-center justify-center gap-2 rounded-[7px] border border-border bg-white px-6 text-sm font-bold text-foreground transition-colors hover:bg-muted dark:bg-card">
-                OAuth guide
-                <ArrowRight className="size-4" />
-              </Link>
-            </div>
-          </div>
-
-          <div className="overflow-hidden rounded-[15px] border border-[#132238] bg-[#071A34] text-white shadow-[0_32px_100px_rgba(7,26,52,0.18)]">
-            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-              <div className="flex items-center gap-2">
-                <span className="size-3 rounded-full bg-[#ff5f57]" />
-                <span className="size-3 rounded-full bg-[#ffbd2e]" />
-                <span className="size-3 rounded-full bg-[#28c840]" />
-              </div>
-              <span className="text-xs font-semibold text-[#B1BCC7]">authorize-with-qentrah.ts</span>
-            </div>
-            <div
-              className="max-h-[520px] overflow-auto [&_pre]:bg-transparent [&_pre]:font-mono [&_pre]:text-xs [&_pre]:leading-6"
-              dangerouslySetInnerHTML={{ __html: highlightedHeroCode }}
-            />
-          </div>
-        </div>
-      </section>
-
-      <section className="border-b border-border bg-white px-4 py-16 dark:bg-card sm:px-6">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-10 max-w-3xl">
-            <p className="text-xs font-bold uppercase text-primary">Partner value</p>
-            <h2 className="mt-3 text-4xl font-bold text-foreground">A clean path into real estate work, not just another API key.</h2>
-            <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              Partners get a reviewed way to become part of an organization’s daily operating system while users stay in control of data access.
-            </p>
-          </div>
-          <div className="mb-12 grid gap-4 md:grid-cols-3">
-            {partnerValue.map((item) => {
-              const Icon = item.icon;
-              return (
-                <article key={item.title} className="rounded-[15px] border border-border bg-background p-5 dark:bg-background">
-                  <Icon className="size-5 text-primary" />
-                  <h2 className="mt-6 text-lg font-bold text-foreground">{item.title}</h2>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.description}</p>
-                </article>
-              );
-            })}
-          </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            {flow.map((step, index) => {
-              const Icon = step.icon;
-              return (
-                <article key={step.title} className="rounded-[15px] border border-border bg-background p-5 dark:bg-background">
-                  <div className="flex items-center justify-between">
-                    <Icon className="size-5 text-primary" />
-                    <span className="text-xs font-bold text-muted-foreground">0{index + 1}</span>
-                  </div>
-                  <h2 className="mt-8 text-lg font-bold text-foreground">{step.title}</h2>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{step.description}</p>
-                </article>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      <section className="px-4 py-20 sm:px-6">
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
-          <div>
-            <p className="text-xs font-bold uppercase text-primary">Review-ready by design</p>
-            <h2 className="mt-3 text-4xl font-bold text-foreground">The portal keeps setup, permissions, and code in one clean path.</h2>
-            <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              Developers see what {brand} needs for review: callback URLs, client type, exact scopes, and server-side authorization code.
-            </p>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Each app starts as a draft, becomes a reviewed integration, then appears as a trusted authorization option for workspace admins.
-            </p>
-            <div className="mt-6 grid gap-3 text-sm font-semibold text-foreground sm:grid-cols-2">
-              {["Public PKCE or confidential clients", "Scoped organization APIs", "Review status lifecycle", "Server-side token handling"].map((item) => (
-                <div key={item} className="flex items-center gap-2">
-                  <CheckCircle2 className="size-4 text-primary" />
+    <main>
+      <section className="border-b border-border px-5 py-12 lg:py-16">
+        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[244px_minmax(0,1fr)_300px]">
+          <aside className="hidden border-r border-border pr-5 lg:block">
+            <p className="text-[10px] font-bold uppercase text-muted-foreground">Partner OS</p>
+            <div className="mt-5 space-y-2 text-[13px] font-semibold text-muted-foreground">
+              {["My Feed", "OAuth Apps", "Review Queue", "Runtime Sync", "Settings"].map((item, index) => (
+                <div key={item} className={index === 0 ? "rounded-[6px] bg-primary/12 px-3 py-2 text-primary" : "px-3 py-2"}>
                   {item}
                 </div>
               ))}
             </div>
-          </div>
-          <div className="overflow-hidden rounded-[15px] border border-border bg-card">
-            <div className="border-b border-border px-5 py-4">
-              <p className="text-xs font-bold uppercase text-primary">Review checklist</p>
+          </aside>
+
+          <div className="min-w-0">
+            <div className="command-strip flex items-center gap-2 px-3 py-2">
+              <TerminalSquare className="h-4 w-4 text-primary" />
+              <span className="font-mono text-xs text-muted-foreground">/partners/create-reviewed-app</span>
             </div>
-            <div className="divide-y divide-border">
-              {[
-                ["Redirect URI", "HTTPS callback or localhost for development"],
-                ["Scopes", "Start read-only, add write only when necessary"],
-                ["Token storage", "Exchange and refresh tokens on your backend"],
-              ].map(([label, value]) => (
-                <div key={label} className="grid gap-2 p-5 sm:grid-cols-[180px_minmax(0,1fr)]">
-                  <p className="text-sm font-bold text-foreground">{label}</p>
-                  <p className="text-sm leading-6 text-muted-foreground">{value}</p>
-                </div>
-              ))}
+            <div className="mt-5">
+              <p className="text-xs font-bold uppercase text-primary">Qentrah Partners</p>
+              <h1 className="mt-3 max-w-4xl text-balance text-[42px] font-bold leading-[1.02] text-foreground md:text-[68px]">
+                Build reviewed apps for {brand} workspaces.
+              </h1>
+              <p className="mt-5 max-w-2xl text-[15px] font-medium leading-7 text-muted-foreground">
+                Register OAuth clients, request scoped organization access, and move from local test to reviewed production launch inside one dark command deck.
+              </p>
+              <div className="mt-7 flex flex-wrap gap-3">
+                <Link href="/signup" className="inline-flex h-11 items-center justify-center rounded-[6px] bg-primary px-5 text-[13px] font-bold text-primary-foreground transition-colors hover:bg-primary/90">
+                  Create developer account
+                </Link>
+                <Link href="/docs/oauth-flow" className="inline-flex h-11 items-center justify-center gap-2 rounded-[6px] border border-border bg-card px-5 text-[13px] font-bold text-foreground transition-colors hover:bg-muted">
+                  OAuth guide
+                  <ArrowRight className="size-4" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="code-zone-shadow mt-8 overflow-hidden border border-border bg-card">
+              <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                <span className="font-mono text-xs text-muted-foreground">authorize-with-qentrah.ts</span>
+                <span className="rounded-[6px] border border-primary/30 bg-primary/10 px-2 py-1 text-[10px] font-bold uppercase text-primary">review safe</span>
+              </div>
+              <div className="overflow-auto [&_pre]:bg-transparent [&_pre]:font-mono [&_pre]:text-xs" dangerouslySetInnerHTML={{ __html: highlightedHeroCode }} />
             </div>
           </div>
+
+          <aside className="space-y-5">
+            <div className="command-panel p-4">
+              <div className="flex items-center gap-2">
+                <Code2 className="h-4 w-4 text-primary" />
+                <h2 className="text-sm font-bold text-foreground">Command feed</h2>
+              </div>
+              <div className="mt-4 space-y-3">
+                {feed.map(([event, detail]) => (
+                  <div key={event} className="border-b border-border pb-3 last:border-b-0 last:pb-0">
+                    <p className="font-mono text-xs text-primary">{event}</p>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="command-panel p-4">
+              <h2 className="text-sm font-bold text-foreground">Launch checklist</h2>
+              <div className="mt-4 space-y-2">
+                {rail.map((item) => (
+                  <div key={item} className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </aside>
         </div>
       </section>
 
-      <section className="border-t border-border bg-white px-4 py-16 dark:bg-card sm:px-6">
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+      <section className="px-5 py-14">
+        <div className="mx-auto grid max-w-7xl gap-5 md:grid-cols-3">
+          {[
+            [KeyRound, "Create the OAuth client", "Add callback URLs, client type, and the partner app surface."],
+            [ShieldCheck, "Choose small scopes", "Request only the organization data the workflow needs."],
+            [FileCheck, "Submit for review", "Track notes, lifecycle, and runtime sync until launch."],
+          ].map(([Icon, title, description]) => {
+            const Component = Icon as typeof KeyRound;
+            return (
+              <article key={String(title)} className="command-panel p-5">
+                <Component className="h-5 w-5 text-primary" />
+                <h2 className="mt-6 text-lg font-bold text-foreground">{title as string}</h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{description as string}</p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="border-t border-border px-5 py-14">
+        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.8fr_1.2fr]">
           <div>
-            <p className="text-xs font-bold uppercase text-primary">What partners can ship</p>
-            <h2 className="mt-3 text-4xl font-bold text-foreground">Products that sit next to the work, not outside it.</h2>
+            <p className="text-xs font-bold uppercase text-primary">Review-ready by design</p>
+            <h2 className="mt-3 text-3xl font-bold text-foreground">Setup, permissions, and code live in one operating surface.</h2>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              The best partner apps remove manual copying, reporting gaps, and disconnected follow-up between {brand} and specialist tools.
+              Developers see exactly what Qentrah needs for review: callback URLs, client type, exact scopes, and backend token handling.
             </p>
           </div>
-          <div className="overflow-hidden rounded-[15px] border border-border bg-background">
-            {productUseCases.map((item, index) => (
-              <div key={item} className="grid gap-3 border-b border-border p-5 last:border-b-0 sm:grid-cols-[48px_minmax(0,1fr)]">
-                <div className="flex size-10 items-center justify-center rounded-[7px] border border-border bg-white text-sm font-bold text-primary dark:bg-card">
-                  {index + 1}
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-foreground">{item}</p>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Built through reviewed scopes, organization consent, and server-side Workspace API access.
-                  </p>
-                </div>
+          <div className="command-panel divide-y divide-border">
+            {[
+              ["Redirect URI", "HTTPS callback or localhost for development"],
+              ["Scopes", "Start read-only, add write access only when necessary"],
+              ["Token storage", "Exchange and refresh tokens on your backend"],
+              ["Runtime sync", "Approved apps are projected into Workspace authorization"],
+            ].map(([label, value]) => (
+              <div key={label} className="grid gap-2 p-4 sm:grid-cols-[160px_minmax(0,1fr)]">
+                <p className="text-sm font-bold text-foreground">{label}</p>
+                <p className="text-sm leading-6 text-muted-foreground">{value}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="border-t border-border bg-white px-4 py-16 text-center dark:bg-card sm:px-6">
-        <div className="mx-auto max-w-2xl">
-          <h2 className="text-4xl font-bold text-foreground">Start with one callback and three scopes.</h2>
-          <p className="mt-4 text-sm leading-6 text-muted-foreground">
-            Create the draft, test locally, then submit when your authorization flow is ready for review.
-          </p>
-          <Link href="/signup" className="mt-8 inline-flex h-12 items-center justify-center rounded-[7px] bg-primary px-6 text-sm font-bold text-primary-foreground transition-colors hover:bg-[#6b90e6]">
-            Create your first app
-          </Link>
-        </div>
+      <section className="border-t border-border px-5 py-14 text-center">
+        <h2 className="text-3xl font-bold text-foreground">Start with one callback and three scopes.</h2>
+        <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-muted-foreground">
+          Create the draft, test locally, then submit when your authorization flow is ready for review.
+        </p>
+        <Link href="/signup" className="mt-7 inline-flex h-11 items-center justify-center rounded-[6px] bg-primary px-5 text-[13px] font-bold text-primary-foreground transition-colors hover:bg-primary/90">
+          Create your first app
+        </Link>
       </section>
     </main>
   );

@@ -8,6 +8,14 @@ import { exchangeAuthorizationCode } from "@/lib/oauth";
 import { storeTokenSession } from "@/lib/session";
 
 export async function GET(request: NextRequest) {
+  const oauthError = request.nextUrl.searchParams.get("error");
+  if (oauthError) {
+    return NextResponse.json({
+      error: oauthError,
+      error_description: request.nextUrl.searchParams.get("error_description") ?? undefined,
+    }, { status: 400 });
+  }
+
   const code = request.nextUrl.searchParams.get("code");
   const state = request.nextUrl.searchParams.get("state");
   if (!code) return NextResponse.json({ error: "missing_code" }, { status: 400 });

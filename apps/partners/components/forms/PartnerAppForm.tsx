@@ -71,12 +71,12 @@ function StepMarker({ complete, active, icon: Icon }: { complete: boolean; activ
   return (
     <span
       className={cn(
-        "flex size-8 shrink-0 items-center justify-center rounded-[7px] border transition-colors",
+        "flex size-8 shrink-0 items-center justify-center rounded-[6px] border transition-colors",
         active
-          ? "border-[#071A34] bg-[#071A34] text-white dark:border-white dark:bg-white dark:text-zinc-950"
+          ? "border-primary bg-primary text-primary-foreground"
           : complete
             ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600"
-            : "border-border bg-white text-muted-foreground dark:bg-white/[0.03]",
+            : "border-border bg-card text-muted-foreground",
       )}
     >
       {complete ? <Check className="size-4" /> : <Icon className="size-4" />}
@@ -85,7 +85,7 @@ function StepMarker({ complete, active, icon: Icon }: { complete: boolean; activ
 }
 
 function inputClassName() {
-  return "border-border bg-white text-[13px] font-medium focus:border-primary focus:ring-primary/15 dark:border-white/10 dark:bg-white/[0.03] dark:focus:border-white dark:focus:ring-white/10";
+  return "border-input bg-card text-[13px] font-medium focus:border-primary focus:ring-primary/15";
 }
 
 export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSummary; mode?: "create" | "edit" }) {
@@ -146,20 +146,20 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
   }
 
   return (
-    <form onSubmit={form.handleSubmit(submit)} className="overflow-hidden rounded-[15px] border border-border bg-white shadow-[0_18px_70px_rgba(7,26,52,0.06)] dark:border-white/10 dark:bg-card">
+    <form onSubmit={form.handleSubmit(submit)} className="command-panel code-zone-shadow overflow-hidden">
       <input type="hidden" {...form.register("appId")} />
       <input type="hidden" {...form.register("allowedScopes")} />
       <input type="hidden" {...form.register("logoUrl")} />
       <input type="hidden" {...form.register("iconUrl")} />
 
       <div className="grid lg:grid-cols-[248px_minmax(0,1fr)]">
-        <aside className="border-b border-border bg-background p-4 dark:bg-white/[0.02] lg:border-b-0 lg:border-r">
+        <aside className="border-b border-border bg-sidebar p-4 lg:border-b-0 lg:border-r">
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
               <p className="text-xs font-bold uppercase text-primary">{mode === "edit" ? "Edit app" : "New app"}</p>
               <h2 className="mt-1 text-lg font-bold text-foreground">OAuth setup</h2>
             </div>
-            <span className="rounded-full border border-border bg-white px-2 py-1 text-xs font-bold text-muted-foreground dark:bg-white/[0.03]">
+            <span className="rounded-[999px] border border-border bg-card px-2 py-1 text-xs font-bold text-muted-foreground">
               {activeStep + 1}/{steps.length}
             </span>
           </div>
@@ -175,10 +175,10 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
                   type="button"
                   onClick={() => setActiveStep(index)}
                   className={cn(
-                    "flex items-center gap-3 rounded-[7px] border p-2.5 text-start transition-colors",
+                    "flex items-center gap-3 rounded-[6px] border p-2.5 text-start transition-colors",
                     active
-                      ? "border-[#071A34] bg-white dark:border-white dark:bg-white/[0.04]"
-                      : "border-transparent hover:border-border hover:bg-white dark:hover:border-white/10 dark:hover:bg-white/[0.03]",
+                      ? "border-primary/30 bg-primary/10"
+                      : "border-transparent hover:border-border hover:bg-card",
                   )}
                 >
                   <StepMarker active={active} complete={complete} icon={Icon} />
@@ -246,7 +246,7 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
               </div>
               <div className="grid gap-3 xl:grid-cols-3">
                 {checkpoints.groups.map((group) => (
-                  <div key={group.id} className="rounded-[15px] border border-border bg-background p-4 dark:bg-white/[0.02]">
+                  <div key={group.id} className="command-panel p-4">
                     <div className="mb-4">
                       <p className="text-sm font-bold text-foreground">{group.title}</p>
                     </div>
@@ -257,7 +257,7 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
                           <label
                             key={scope.value}
                             className={cn(
-                              "flex min-h-11 cursor-pointer items-center gap-3 rounded-[7px] border bg-white px-3 py-2 text-sm font-semibold transition-colors dark:bg-white/[0.03]",
+                              "flex min-h-10 cursor-pointer items-center gap-3 rounded-[6px] border bg-card px-3 py-2 text-[13px] font-semibold transition-colors",
                               checked ? "border-primary text-foreground" : "border-border text-muted-foreground hover:text-foreground",
                             )}
                           >
@@ -265,7 +265,7 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
                               type="checkbox"
                               checked={checked}
                               onChange={() => checkpoints.toggleScope(scope.value)}
-                              className="size-4 accent-[#071A34]"
+                              className="size-4 accent-[var(--primary)]"
                             />
                             <span>{scope.label}</span>
                           </label>
@@ -303,7 +303,7 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
                   ["Redirect URI", String(values.redirectUris || "Not set")],
                   ["Scopes", checkpoints.resolvedScopes.join(", ") || "No scopes selected"],
                 ] satisfies Array<[string, string]>).map(([label, value]) => (
-                  <div key={label} className="rounded-[7px] border border-border bg-background p-4">
+                  <div key={label} className="rounded-[6px] border border-border bg-muted p-4">
                     <p className="text-[11px] font-bold uppercase text-muted-foreground">{label}</p>
                     <p className="mt-2 break-words text-sm font-semibold leading-6 text-foreground">{value}</p>
                   </div>
@@ -326,7 +326,7 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
         {activeStep === 0 ? (
           <Link
             href={exitHref}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-[7px] border border-border bg-white px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted dark:bg-card"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-[6px] border border-border bg-card px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
           >
             <ArrowLeft className="size-4" />
             Back
@@ -338,12 +338,12 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
           </Button>
         )}
         {activeStep < steps.length - 1 ? (
-          <Button type="button" onClick={goNext} disabled={isPending} className="h-10 gap-2">
+          <Button type="button" onClick={goNext} disabled={isPending} className="h-10 gap-2 rounded-[6px] bg-primary text-primary-foreground hover:bg-primary/90">
             Continue
             <ArrowRight className="size-4" />
           </Button>
         ) : (
-          <Button type="submit" disabled={isPending} className="h-10 gap-2">
+          <Button type="submit" disabled={isPending} className="h-10 gap-2 rounded-[6px] bg-primary text-primary-foreground hover:bg-primary/90">
             <Save className="size-4" />
             {isPending ? "Saving..." : mode === "edit" ? "Save settings" : "Create app"}
           </Button>

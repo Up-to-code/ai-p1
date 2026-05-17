@@ -4,8 +4,8 @@ import { GeneratedAvatarView } from "@/components/portal/GeneratedAvatar";
 import { getDisplayEmail, getDisplayName, getGeneratedAvatar } from "@/utilities/avatar";
 import type { PartnerAccountView } from "@/types/account";
 import Link from "next/link";
-import { dashboardNav } from "@/lib/navigation";
 import { PartnerLogo } from "@/components/brand/PartnerLogo";
+import { MobileDashboardNav } from "./mobile-dashboard-nav";
 
 export function Topbar({ account }: { account: PartnerAccountView | null }) {
   const organizationName = account?.organization?.name ?? "Programmer organization";
@@ -14,28 +14,28 @@ export function Topbar({ account }: { account: PartnerAccountView | null }) {
   const avatar = getGeneratedAvatar(account);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-white/88 px-4 backdrop-blur-md dark:bg-card/90 sm:px-6">
-      <div className="flex h-[69px] items-center justify-between gap-4">
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/92 px-4 backdrop-blur-md sm:px-6">
+      <div className="flex h-14 items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
           <PartnerLogo href="/dashboard" compact className="shrink-0" />
           <span className="hidden text-muted-foreground sm:block">/</span>
-          <Link href="/dashboard/account" className="hidden min-w-0 items-center gap-2 rounded-[7px] border border-border bg-background px-3 py-1.5 hover:bg-muted sm:flex">
+          <Link href="/dashboard/account" className="hidden min-w-0 items-center gap-2 rounded-[6px] border border-border bg-card px-3 py-1.5 transition-colors hover:bg-muted sm:flex">
             <GeneratedAvatarView avatar={avatar} className="h-6 w-6 text-[10px]" />
-            <span className="max-w-[220px] truncate text-foreground">{organizationName}</span>
+            <span className="max-w-[220px] truncate text-sm font-semibold text-foreground">{organizationName}</span>
           </Link>
         </div>
         
         <div className="flex items-center gap-2">
-        <Link href="/dashboard/apps/new" className="hidden h-9 items-center justify-center gap-2 rounded-[7px] bg-primary px-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-[#6b90e6] sm:inline-flex">
+        <Link href="/dashboard/apps/new" className="hidden h-9 items-center justify-center gap-2 rounded-[6px] bg-primary px-3 text-[13px] font-bold text-primary-foreground transition-colors hover:bg-primary/90 sm:inline-flex">
           <Plus className="h-4 w-4" />
           Create app
         </Link>
-        <Link href="/docs" className="inline-flex h-9 items-center justify-center rounded-[7px] px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground">
-          <HelpCircle className="h-4 w-4 mr-2" />
-          Docs
+        <Link href="/docs" aria-label="Docs" className="inline-flex h-9 items-center justify-center gap-2 rounded-[6px] px-3 text-[13px] font-semibold text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground">
+          <HelpCircle className="h-4 w-4" />
+          <span className="hidden sm:inline">Docs</span>
         </Link>
         <ThemeToggle />
-        <Link href="/dashboard/account" className="ml-1 flex items-center gap-2 rounded-full border border-border bg-card px-2 py-1 hover:bg-muted">
+        <Link href="/dashboard/account" className="ml-1 flex items-center gap-2 rounded-[999px] border border-border bg-card px-2 py-1 transition-colors hover:bg-muted">
           <GeneratedAvatarView avatar={avatar} className="h-8 w-8" />
           <span className="hidden max-w-[160px] flex-col text-left sm:flex">
             <span className="truncate text-xs font-semibold text-foreground">{displayName}</span>
@@ -44,13 +44,7 @@ export function Topbar({ account }: { account: PartnerAccountView | null }) {
         </Link>
         </div>
       </div>
-      <nav className="flex gap-1 overflow-x-auto border-t border-border py-2 md:hidden">
-        {dashboardNav.map((item) => (
-          <Link key={item.href} href={item.href} className="shrink-0 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-            {item.label}
-          </Link>
-        ))}
-      </nav>
+      <MobileDashboardNav />
     </header>
   );
 }

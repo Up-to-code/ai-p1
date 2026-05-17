@@ -74,14 +74,14 @@ export function SignInForm({ redirectTo }: { redirectTo: string }) {
             type="button"
             aria-label={showPassword ? "Hide password" : "Show password"}
             onClick={() => setShowPassword((value) => !value)}
-            className="absolute right-2 top-1/2 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-[7px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="absolute right-2 top-1/2 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-[6px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
           </button>
         </div>
       </Field>
       {errorMessage ? <Alert variant="danger">{errorMessage}</Alert> : null}
-      <Button type="submit" disabled={pending} size="lg" className="h-11 w-full">
+      <Button type="submit" disabled={pending} size="lg" className="h-10 w-full rounded-[6px] bg-primary text-[13px] font-bold text-primary-foreground hover:bg-primary/90">
         {pending ? "Signing in..." : "Sign in"}
       </Button>
     </form>

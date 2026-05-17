@@ -78,6 +78,7 @@ model PartnerProfile {
   organizations        ProgrammerOrganization[]
   apps                 PartnerApp[]
   events               PartnerEvent[]
+  mcpConnections       PartnerMcpConnection[]
   sandboxOrganizations SandboxOrganization[]
   sandboxResources     SandboxResource[]
   sandboxOAuthCodes    SandboxOAuthCode[]
@@ -96,6 +97,7 @@ model ProgrammerOrganization {
 
   owner PartnerProfile @relation(fields: [ownerAuthSubject], references: [authSubject], onDelete: Cascade)
   apps  PartnerApp[]
+  mcpConnections PartnerMcpConnection[]
 }
 
 model PartnerApp {
@@ -262,6 +264,51 @@ model PartnerEvent {
   @@index([actorAuthSubject])
   @@index([appId])
   @@index([eventType])
+}
+
+model PartnerMcpConnection {
+  id                    String    @id @default(cuid())
+  partnerAuthSubject    String
+  programmerOrganizationId String
+  publicId              String    @unique
+  secretHash            String
+  keyLast4              String
+  name                  String
+  instructions          String?
+  permissions           Json
+  status                String
+  usageCount            Int       @default(0)
+  lastUsedAt            DateTime?
+  expiresAt             DateTime?
+  revokedAt             DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  partner      PartnerProfile          @relation(fields: [partnerAuthSubject], references: [authSubject], onDelete: Cascade)
+  organization ProgrammerOrganization  @relation(fields: [programmerOrganizationId], references: [id], onDelete: Cascade)
+  requestLogs  PartnerMcpRequestLog[]
+
+  @@index([partnerAuthSubject])
+  @@index([programmerOrganizationId])
+  @@index([status])
+}
+
+model PartnerMcpRequestLog {
+  id           String   @id @default(cuid())
+  connectionId String?
+  publicId     String?
+  method       String
+  status       Int
+  latencyMs    Int
+  toolName     String?
+  error        String?
+  createdAt    DateTime @default(now())
+
+  connection PartnerMcpConnection? @relation(fields: [connectionId], references: [id], onDelete: SetNull)
+
+  @@index([connectionId])
+  @@index([publicId])
+  @@index([toolName])
 }
 
 model QentrahWorkspaceLink {
