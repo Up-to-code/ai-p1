@@ -1,0 +1,10 @@
+appId: com.zayon.mobile
+name: Bootstrap guest
+---
+- runFlow: "bootstrap-auth.yaml"
+- tapOn:
+    id: auth.continue_anonymous
+- extendedWaitUntil:
+    visible:
+      id: app.open_menu
+    timeout: 20000

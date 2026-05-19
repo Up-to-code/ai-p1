@@ -1,0 +1,7 @@
+appId: com.zayon.mobile
+name: Guest mode smoke
+tags:
+  - smoke
+  - auth
+---
+- runFlow: "shared/bootstrap-guest.yaml"

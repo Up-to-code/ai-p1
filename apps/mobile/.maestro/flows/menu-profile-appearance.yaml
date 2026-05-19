@@ -1,0 +1,50 @@
+appId: com.zayon.mobile
+name: Menu profile appearance
+tags:
+  - smoke
+  - navigation
+  - preferences
+---
+- runFlow: "shared/bootstrap-guest.yaml"
+- tapOn:
+    id: app.open_menu
+- tapOn:
+    id: menu.profile
+- extendedWaitUntil:
+    visible:
+      id: profile.appearance
+    timeout: 20000
+- tapOn:
+    id: profile.appearance
+- extendedWaitUntil:
+    visible: "Appearance"
+    timeout: 20000
+- tapOn:
+    id: appearance.option.light
+- assertVisible:
+    id: appearance.selected.light
+- assertVisible: "System is currently using light mode."
+- tapOn:
+    id: appearance.option.dark
+- assertVisible:
+    id: appearance.selected.dark
+- assertVisible: "System is currently using dark mode."
+- tapOn:
+    id: appearance.option.system
+- assertVisible:
+    id: appearance.selected.system
+- assertVisible: "System is currently using dark mode."
+- tapOn: "Go back"
+- assertVisible:
+    id: profile.appearance
+- tapOn: "Go back"
+- extendedWaitUntil:
+    visible:
+      id: menu.close
+    timeout: 20000
+- tapOn:
+    id: menu.close
+- extendedWaitUntil:
+    visible:
+      id: app.open_menu
+    timeout: 20000

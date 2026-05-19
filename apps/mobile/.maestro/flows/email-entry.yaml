@@ -1,0 +1,21 @@
+appId: com.zayon.mobile
+name: Email entry smoke
+tags:
+  - smoke
+  - auth
+---
+- runFlow: "shared/bootstrap-auth.yaml"
+- tapOn:
+    id: auth.continue_email
+- extendedWaitUntil:
+    visible: "Check your identity"
+    timeout: 20000
+- tapOn:
+    id: auth.email
+- inputText: "qa@zayon.ai"
+- scroll
+- tapOn:
+    id: auth.email_continue
+- extendedWaitUntil:
+    visible: "Secure identity"
+    timeout: 20000

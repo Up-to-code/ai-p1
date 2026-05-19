@@ -1,0 +1,43 @@
+appId: com.zayon.mobile
+name: Compare and pricing
+tags:
+  - signed-in
+  - compare
+---
+- runFlow: "shared/bootstrap-signed-in.yaml"
+- runFlow: "shared/search-property.yaml"
+- tapOn:
+    id: property.card.prop-dubai-marina-01
+- extendedWaitUntil:
+    visible: "Save property"
+    timeout: 20000
+- tapOn: "Compare property"
+- tapOn: "Go back"
+- tapOn:
+    id: property.card.prop-business-bay-02
+- extendedWaitUntil:
+    visible: "Save property"
+    timeout: 20000
+- tapOn: "Compare property"
+- tapOn: "Go back"
+- tapOn:
+    id: app.open_menu
+- tapOn:
+    id: menu.compare
+- extendedWaitUntil:
+    visible:
+      id: compare.table
+    timeout: 20000
+- assertVisible: "Price"
+- assertVisible: "Location"
+- assertVisible: "Area"
+- assertVisible: "Beds"
+- assertVisible: "Yield"
+- scroll
+- tapOn:
+    id: compare.save.prop-dubai-marina-01.idle
+- assertVisible:
+    id: compare.save.prop-dubai-marina-01.saved
+- tapOn:
+    id: compare.remove.prop-dubai-marina-01
+- assertNotVisible: "Marina glass residence with sunset terrace"

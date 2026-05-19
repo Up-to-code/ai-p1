@@ -1,0 +1,28 @@
+appId: com.zayon.mobile
+name: Search seeded market context
+---
+- tapOn:
+    id: app.open_menu
+- extendedWaitUntil:
+    visible:
+      id: menu.profile
+    timeout: 20000
+- tapOn:
+    id: chat.new_thread
+- extendedWaitUntil:
+    visible:
+      id: chat.composer
+    timeout: 20000
+- tapOn:
+    id: chat.composer
+- inputText: "Compare pricing and market context for the top waterfront options"
+- tapOn:
+    id: chat.send
+- extendedWaitUntil:
+    visible:
+      id: chat.result.sources
+    timeout: 20000
+- extendedWaitUntil:
+    visible:
+      id: property.card.prop-dubai-marina-01
+    timeout: 20000

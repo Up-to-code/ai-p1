@@ -1,0 +1,42 @@
+appId: com.zayon.mobile
+name: Property save and detail
+tags:
+  - signed-in
+  - property
+---
+- runFlow: "shared/bootstrap-signed-in.yaml"
+- runFlow: "shared/search-property.yaml"
+- tapOn:
+    id: property.card.prop-dubai-marina-01
+- extendedWaitUntil:
+    visible: "Contact agent"
+    timeout: 20000
+- tapOn: "Save property"
+- tapOn: "Go back"
+- tapOn:
+    id: app.open_menu
+- tapOn:
+    id: menu.saved
+- extendedWaitUntil:
+    visible:
+      id: saved.list
+    timeout: 20000
+- assertVisible:
+    id: property.card.prop-dubai-marina-01
+- tapOn:
+    id: property.card.prop-dubai-marina-01
+- extendedWaitUntil:
+    visible: "Contact agent"
+    timeout: 20000
+- scroll
+- extendedWaitUntil:
+    visible: "About this property"
+    timeout: 20000
+- assertVisible: "Contact agent"
+- extendedWaitUntil:
+    visible: "Market Insights"
+    timeout: 20000
+- scroll
+- extendedWaitUntil:
+    visible: "Listing Agent"
+    timeout: 20000

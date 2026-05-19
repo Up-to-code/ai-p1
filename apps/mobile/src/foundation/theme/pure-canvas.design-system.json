@@ -1,0 +1,377 @@
+{
+  "_type": "pure-canvas-design-system",
+  "version": "1.0.0",
+  "name": "Pure Canvas",
+  "description": "Institutional-grade, reduction-first design system for ZaneAI mobile",
+
+  "principles": {
+    "noShadows": {
+      "rule": "Zero elevation, zero shadowOpacity, no exceptions",
+      "banned": ["shadowColor", "shadowOpacity", "shadowRadius", "shadowOffset", "elevation"]
+    },
+    "transparentContainers": {
+      "rule": "All cards, groups, and option tiles use transparent backgrounds with 1px divider borders",
+      "backgroundColor": "transparent",
+      "borderWidth": 1,
+      "borderColor": "divider"
+    },
+    "typographyIsTheUI": {
+      "rule": "Manrope 800 ExtraBold carries visual weight — not color fills or background tints",
+      "primaryWeight": "Manrope_800ExtraBold"
+    },
+    "monochromeSelection": {
+      "rule": "Selected states use textPrimary for borders and fills — never the accent red",
+      "selectedBorderColor": "textPrimary",
+      "selectedBorderWidth": 2,
+      "selectedFillColor": "textPrimary"
+    },
+    "accentIsSurgical": {
+      "rule": "Accent #DA3F45 appears only on brand-critical touchpoints",
+      "allowedUsages": [
+        "CTA buttons",
+        "Brand dot indicator",
+        "AI-related setting icons",
+        "Search action button"
+      ]
+    }
+  },
+
+  "colors": {
+    "light": {
+      "background": "#FFFFFF",
+      "backgroundSoft": "#FAFAFA",
+      "surface": "#F4F4F5",
+      "surfaceRaised": "#F4F4F5",
+      "divider": "rgba(0,0,0,0.08)",
+      "border": "rgba(0,0,0,0.05)",
+      "textPrimary": "#000000",
+      "textSecondary": "#52525B",
+      "textMuted": "#A1A1AA",
+      "accent": "#DA3F45",
+      "success": "#16A34A"
+    },
+    "dark": {
+      "background": "#000000",
+      "backgroundSoft": "#0A0A0A",
+      "surface": "#121212",
+      "surfaceRaised": "#1A1A1A",
+      "divider": "rgba(255,255,255,0.08)",
+      "border": "rgba(255,255,255,0.10)",
+      "textPrimary": "#FFFFFF",
+      "textSecondary": "#A3A3A3",
+      "textMuted": "#737373",
+      "accent": "#DA3F45",
+      "success": "#22C55E"
+    },
+    "invariant": {
+      "accent": "#DA3F45",
+      "brandDot": "#DA3F45"
+    },
+    "deprecatedTokens": {
+      "surface": "Do not use for new component backgrounds — use transparent",
+      "surfaceRaised": "Do not use for icon boxes — use transparent + border"
+    }
+  },
+
+  "typography": {
+    "fontFamilies": {
+      "ltr": {
+        "medium": "Manrope_500Medium",
+        "semiBold": "Manrope_600SemiBold",
+        "bold": "Manrope_700Bold",
+        "extraBold": "Manrope_800ExtraBold"
+      },
+      "rtl": {
+        "regular": "Cairo_400Regular",
+        "semiBold": "Cairo_600SemiBold",
+        "bold": "Cairo_700Bold"
+      }
+    },
+    "scale": {
+      "display": {
+        "fontSize": 30,
+        "lineHeight": 36,
+        "fontFamily": "Manrope_700Bold",
+        "rtlFontFamily": "Cairo_700Bold"
+      },
+      "title": {
+        "fontSize": 20,
+        "lineHeight": 26,
+        "fontFamily": "Manrope_600SemiBold",
+        "rtlFontFamily": "Cairo_700Bold"
+      },
+      "body": {
+        "fontSize": 15,
+        "lineHeight": 22,
+        "fontFamily": "Manrope_500Medium",
+        "rtlFontFamily": "Cairo_400Regular"
+      },
+      "label": {
+        "fontSize": 13,
+        "lineHeight": 18,
+        "fontFamily": "Manrope_600SemiBold",
+        "rtlFontFamily": "Cairo_600SemiBold"
+      },
+      "caption": {
+        "fontSize": 12,
+        "lineHeight": 16,
+        "fontFamily": "Manrope_500Medium",
+        "rtlFontFamily": "Cairo_400Regular"
+      }
+    },
+    "overrides": {
+      "sectionEyebrow": {
+        "fontSize": 10,
+        "fontFamily": "Manrope_800ExtraBold",
+        "letterSpacing": 2,
+        "textTransform": "uppercase"
+      },
+      "menuItemLabel": {
+        "fontFamily": "Manrope_800ExtraBold"
+      },
+      "optionCardTitle": {
+        "fontWeight": "800",
+        "fontFamily": "Manrope_800ExtraBold"
+      },
+      "headerTitle": {
+        "fontSize": 18,
+        "fontFamily": "Manrope_800ExtraBold"
+      },
+      "heroTitle": {
+        "fontSize": 30,
+        "fontFamily": "Manrope_800ExtraBold"
+      },
+      "userName": {
+        "fontSize": 20,
+        "fontFamily": "Manrope_800ExtraBold"
+      }
+    },
+    "tones": {
+      "primary": "textPrimary",
+      "secondary": "textSecondary",
+      "muted": "textMuted",
+      "accent": "accent"
+    }
+  },
+
+  "spacing": {
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 20,
+    "xxl": 24,
+    "xxxl": 32
+  },
+
+  "radii": {
+    "sm": 12,
+    "md": 18,
+    "lg": 24,
+    "pill": 999
+  },
+
+  "components": {
+    "settingsOptionCard": {
+      "layout": "row",
+      "rtlLayout": "row-reverse",
+      "backgroundColor": "transparent",
+      "borderWidth": 1,
+      "borderColor": "divider",
+      "borderRadius": "lg",
+      "padding": "lg",
+      "selected": {
+        "borderWidth": 2,
+        "borderColor": "textPrimary",
+        "backgroundColor": "transparent"
+      },
+      "iconBox": {
+        "width": 48,
+        "height": 48,
+        "borderRadius": 16,
+        "backgroundColor": "transparent",
+        "borderWidth": 1,
+        "borderColor": "divider",
+        "iconColor": "textPrimary"
+      },
+      "checkCircle": {
+        "width": 24,
+        "height": 24,
+        "borderRadius": 12,
+        "borderWidth": 1,
+        "borderColor": "divider",
+        "selected": {
+          "backgroundColor": "textPrimary",
+          "borderColor": "textPrimary",
+          "checkColor": "background"
+        }
+      }
+    },
+    "menuGroupCard": {
+      "backgroundColor": "transparent",
+      "borderRadius": 24,
+      "borderWidth": 1,
+      "borderColor": "divider",
+      "itemIconBox": {
+        "width": 36,
+        "height": 36,
+        "borderRadius": 18,
+        "backgroundColor": "transparent",
+        "borderWidth": 1,
+        "borderColor": "divider"
+      },
+      "divider": {
+        "height": 1,
+        "color": "divider",
+        "marginHorizontal": 16
+      },
+      "sectionLabel": {
+        "fontSize": 10,
+        "fontFamily": "Manrope_800ExtraBold",
+        "textTransform": "uppercase",
+        "letterSpacing": 2
+      }
+    },
+    "profileHero": {
+      "layout": "row",
+      "rtlLayout": "row-reverse",
+      "avatar": {
+        "width": 64,
+        "height": 64,
+        "borderRadius": 32,
+        "backgroundColor": "transparent",
+        "borderWidth": 1,
+        "borderColor": "divider"
+      },
+      "name": {
+        "fontSize": 20,
+        "fontFamily": "Manrope_800ExtraBold",
+        "textAlign": "left",
+        "rtlTextAlign": "right"
+      }
+    },
+    "propertyCard": {
+      "heartIcon": "top-right absolute",
+      "priceAlignment": "flex-start",
+      "specAlignment": "flex-start",
+      "badges": "none — removed"
+    },
+    "floatingHeader": {
+      "backgroundColor": "background + E6 opacity",
+      "borderBottomWidth": 1,
+      "borderBottomColor": "divider",
+      "circleButton": {
+        "width": 40,
+        "height": 40,
+        "borderRadius": 20,
+        "backgroundColor": "surface",
+        "borderWidth": 1,
+        "borderColor": "divider"
+      }
+    },
+    "filterChip": {
+      "paddingHorizontal": 16,
+      "paddingVertical": 8,
+      "borderRadius": 20,
+      "backgroundColor": "surface",
+      "borderWidth": 1,
+      "borderColor": "divider",
+      "active": {
+        "backgroundColor": "accent",
+        "borderColor": "accent",
+        "textColor": "background"
+      }
+    },
+    "signOutButton": {
+      "backgroundColor": "transparent",
+      "borderWidth": 1,
+      "borderColor": "divider",
+      "borderRadius": 16,
+      "requiresConfirmation": true
+    }
+  },
+
+  "appearance": {
+    "modes": ["system", "light", "dark"],
+    "defaultMode": "system",
+    "resolution": "if mode === light|dark → use mode; else → follow useColorScheme()",
+    "statusBar": {
+      "dark": "light",
+      "light": "dark"
+    },
+    "systemBackground": "Set via expo-system-ui to match colors.background"
+  },
+
+  "animation": {
+    "listEntry": {
+      "type": "FadeInDown",
+      "delay": "index * 100",
+      "duration": 400
+    },
+    "heroEntry": {
+      "type": "FadeInUp",
+      "spring": true
+    },
+    "sectionEntry": {
+      "type": "FadeIn",
+      "duration": 300
+    },
+    "scrollHeader": {
+      "threshold": 44,
+      "backgroundOpacity": "E6",
+      "edgeFade": {
+        "startOpacity": 0.58,
+        "midOpacity": 0.18
+      }
+    }
+  },
+
+  "rtl": {
+    "detection": "Auto-detected via isArabic() on text content",
+    "layoutPattern": "isRTL ? 'row-reverse' : 'row'",
+    "textAlignPattern": "isRTL ? 'right' : 'left'",
+    "alignItemsPattern": "isRTL ? 'flex-end' : 'flex-start'",
+    "iconMirroring": "mirrorIcon(isRTL) — flips ArrowLeft, ChevronRight horizontally",
+    "filterScroll": "flexDirection follows isRTL",
+    "fontSwap": "Automatic Manrope → Cairo swap via <Text> primitive"
+  },
+
+  "antiPatterns": [
+    {
+      "pattern": "backgroundColor: colors.surface on cards",
+      "replacement": "backgroundColor: 'transparent'"
+    },
+    {
+      "pattern": "backgroundColor: colors.surfaceRaised on icon boxes",
+      "replacement": "backgroundColor: 'transparent' + borderWidth: 1"
+    },
+    {
+      "pattern": "shadowColor, shadowOpacity, elevation",
+      "replacement": "Remove entirely"
+    },
+    {
+      "pattern": "borderColor: colors.accent for selection",
+      "replacement": "borderColor: colors.textPrimary"
+    },
+    {
+      "pattern": "backgroundColor: colors.accent for checkmarks",
+      "replacement": "backgroundColor: colors.textPrimary"
+    },
+    {
+      "pattern": "backgroundColor: `${colors.accent}14` tint fills",
+      "replacement": "No fill — border-only selection"
+    },
+    {
+      "pattern": "Centered stacked profile hero",
+      "replacement": "Horizontal row with RTL awareness"
+    },
+    {
+      "pattern": "fontWeight: '700' without fontFamily",
+      "replacement": "fontFamily: 'Manrope_800ExtraBold'"
+    },
+    {
+      "pattern": "Banner images / hero cards in settings",
+      "replacement": "Remove — use text hierarchy"
+    }
+  ]
+}

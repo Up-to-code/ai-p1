@@ -1,0 +1,36 @@
+appId: com.zayon.mobile
+name: Auth sign-in QA
+tags:
+  - signed-in
+  - auth
+---
+- runFlow: "shared/bootstrap-auth.yaml"
+- tapOn:
+    id: auth.continue_email
+- extendedWaitUntil:
+    visible: "Check your identity"
+    timeout: 20000
+- tapOn:
+    id: auth.email
+- inputText: "qa@zayon.ai"
+- tapOn:
+    id: auth.email_continue
+- extendedWaitUntil:
+    visible: "Secure identity"
+    timeout: 20000
+- tapOn:
+    id: auth.password
+- inputText: "qa-password"
+- tapOn:
+    id: auth.sign_in
+- extendedWaitUntil:
+    visible:
+      id: app.open_menu
+    timeout: 20000
+- tapOn:
+    id: app.open_menu
+- tapOn:
+    id: menu.profile
+- extendedWaitUntil:
+    visible: "qa@zayon.ai"
+    timeout: 20000

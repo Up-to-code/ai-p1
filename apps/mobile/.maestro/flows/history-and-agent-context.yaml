@@ -1,0 +1,23 @@
+appId: com.zayon.mobile
+name: History and agent context
+tags:
+  - signed-in
+  - history
+---
+- runFlow: "shared/bootstrap-signed-in.yaml"
+- runFlow: "shared/search-market-context.yaml"
+- tapOn:
+    id: app.open_menu
+- tapOn: "See All Research Archive"
+- extendedWaitUntil:
+    visible:
+      id: history.thread.e2e-thread-1
+    timeout: 20000
+- tapOn:
+    id: history.thread.e2e-thread-1
+- extendedWaitUntil:
+    visible:
+      id: chat.result.sources
+    timeout: 20000
+- assertVisible:
+    id: chat.result.bundle

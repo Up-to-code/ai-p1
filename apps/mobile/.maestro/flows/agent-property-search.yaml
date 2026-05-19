@@ -1,0 +1,38 @@
+appId: com.zayon.mobile
+name: Agent property search
+tags:
+  - signed-in
+  - agent
+---
+- runFlow: "shared/bootstrap-signed-in.yaml"
+- tapOn:
+    id: app.open_menu
+- extendedWaitUntil:
+    visible:
+      id: menu.profile
+    timeout: 20000
+- tapOn:
+    id: chat.new_thread
+- extendedWaitUntil:
+    visible:
+      id: chat.composer
+    timeout: 20000
+- tapOn:
+    id: chat.composer
+- inputText: "Find me premium waterfront properties with strong rental moat"
+- tapOn:
+    id: chat.send
+- extendedWaitUntil:
+    visible: "Searching available properties..."
+    timeout: 20000
+- extendedWaitUntil:
+    visible:
+      id: chat.result.bundle
+    timeout: 20000
+- extendedWaitUntil:
+    visible:
+      id: property.card.prop-dubai-marina-01
+    timeout: 20000
+- assertVisible: "See More Properties"
+- assertVisible:
+    id: property.card.prop-business-bay-02

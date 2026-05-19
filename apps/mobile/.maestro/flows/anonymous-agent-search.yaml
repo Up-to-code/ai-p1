@@ -1,0 +1,8 @@
+appId: com.zayon.mobile
+name: Anonymous agent search
+tags:
+  - anonymous
+  - agent
+---
+- runFlow: "shared/bootstrap-guest.yaml"
+- runFlow: "shared/search-property.yaml"

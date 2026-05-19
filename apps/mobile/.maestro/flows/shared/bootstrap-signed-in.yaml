@@ -1,0 +1,15 @@
+appId: com.zayon.mobile
+name: Bootstrap signed-in QA
+---
+- runFlow: "bootstrap-auth.yaml"
+- openLink: "zayon://e2e/login-qa"
+- extendedWaitUntil:
+    visible:
+      id: app.open_menu
+    timeout: 20000
+- openLink: "zayon://e2e/reset-user-state"
+- openLink: "zayon://e2e/reset-thread-state"
+- extendedWaitUntil:
+    visible:
+      id: app.open_menu
+    timeout: 20000

@@ -1,0 +1,31 @@
+appId: com.zayon.mobile
+name: Menu collections empty states
+tags:
+  - smoke
+  - navigation
+  - collections
+---
+- runFlow: "shared/bootstrap-guest.yaml"
+- tapOn:
+    id: app.open_menu
+- tapOn:
+    id: menu.saved
+- extendedWaitUntil:
+    visible: "No favorites yet"
+    timeout: 20000
+- tapOn: "Go back"
+- extendedWaitUntil:
+    visible:
+      id: menu.compare
+    timeout: 20000
+- tapOn:
+    id: menu.compare
+- extendedWaitUntil:
+    visible: "Compare tray is empty"
+    timeout: 20000
+- tapOn:
+    id: app.open_menu
+- extendedWaitUntil:
+    visible:
+      id: menu.profile
+    timeout: 20000

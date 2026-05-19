@@ -1,0 +1,9 @@
+appId: com.zayon.mobile
+name: Bootstrap auth
+---
+- openLink: "zayon://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
+- openLink: "zayon://e2e/reset-auth"
+- extendedWaitUntil:
+    visible:
+      id: auth.continue_email
+    timeout: 20000
