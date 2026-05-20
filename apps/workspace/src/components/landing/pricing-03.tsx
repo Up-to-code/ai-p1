@@ -1,6 +1,7 @@
 "use client";
 
 import NumberFlow from "@number-flow/react";
+import Image from "next/image";
 import { ArrowRight, CircleCheck } from "lucide-react";
 
 import { LandingButton, PublicSection } from "@/components/landing/public-landing-kit";
@@ -159,8 +160,14 @@ export function Pricing03({ locale }: { locale: string }) {
                       <>
                         <NumberFlow
                           className="text-4xl font-bold tracking-tight md:text-5xl"
-                          suffix=" SAR"
                           value={plan.price}
+                        />
+                        <Image
+                          alt={copy.perMonth}
+                          className="mb-1 h-7 w-7 dark:invert md:h-9 md:w-9"
+                          height={36}
+                          src="/saudi-riyal-symbol.svg"
+                          width={36}
                         />
                         <span className="pb-1 text-sm font-semibold text-zinc-500 dark:text-zinc-400">
                           {copy.perMonth}
