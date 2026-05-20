@@ -7,12 +7,12 @@ export default function Integrations() {
   return (
     <section id="resources" className="mx-auto flex max-w-7xl flex-col px-6 py-24 sm:py-32">
       <h2 className="text-center font-bold text-4xl tracking-tight sm:text-6xl text-zinc-950 dark:text-white">
-        {isAr ? "متكامل مع منظومتك العقارية." : "Integrated with your ecosystem."}
+        {isAr ? "سلاسل وأتمتة مع أدواتك اليومية." : "Chains and automations for your daily tools."}
       </h2>
       <p className="mt-6 text-center text-zinc-500 dark:text-zinc-400 text-lg sm:text-xl max-w-3xl mx-auto">
         {isAr 
-          ? "اربط كانترا مع أدواتك المفضلة ومنصات التسويق العقاري لتبسيط سير العمل ومزامنة البيانات بشكل فوري."
-          : "Connect Qentrah with your favorite tools and real estate marketing platforms to streamline workflows and sync data instantly."}
+          ? "اربط واتساب وتيليجرام وn8n وزابيير وغيرها لتشغيل المتابعات، إرسال التنبيهات، ومزامنة البيانات تلقائياً."
+          : "Connect WhatsApp, Telegram, n8n, Zapier, and more to run follow-ups, send alerts, and sync data automatically."}
       </p>
       <div className="mt-16 grid grid-cols-1 gap-6 sm:mt-24 sm:grid-cols-2 lg:grid-cols-3">
         {(isAr ? integrationsAr : integrationsEn).map((integration) => (
@@ -56,66 +56,66 @@ export default function Integrations() {
 
 const integrationsEn = [
   {
-    title: "ROSHN",
-    description: "National real estate developer in Saudi Arabia.",
-    url: "https://www.roshn.sa/",
+    title: "WhatsApp",
+    description: "Send lead updates, viewing reminders, and client follow-ups from automated chains.",
+    url: "https://www.whatsapp.com/",
   },
   {
-    title: "NEOM",
-    description: "The land of the future, where innovation meets sustainability.",
-    url: "https://www.neom.com/",
+    title: "Telegram",
+    description: "Route instant team alerts, bot messages, and operational approvals.",
+    url: "https://telegram.org/",
   },
   {
-    title: "Bayut",
-    description: "Leading real estate portal in the region.",
-    url: "https://www.bayut.sa/",
-  },
-  {
-    title: "Property Finder",
-    description: "Search for properties for sale and rent.",
-    url: "https://www.propertyfinder.sa/",
-  },
-  {
-    title: "Slack",
-    description: "Real-time team communication and inventory alerts.",
-    url: "https://slack.com",
+    title: "n8n",
+    description: "Build custom automation chains between Qentrah, CRMs, sheets, and internal tools.",
+    url: "https://n8n.io/",
   },
   {
     title: "Zapier",
-    description: "Automate your lead workflows and sync with CRM.",
+    description: "Trigger no-code automations for new leads, tasks, contacts, and pipeline updates.",
     url: "https://zapier.com",
+  },
+  {
+    title: "Slack",
+    description: "Push deal activity, inventory changes, and task alerts into team channels.",
+    url: "https://slack.com",
+  },
+  {
+    title: "Webhooks",
+    description: "Connect any private system with secure event-based automation endpoints.",
+    url: "https://webhook.site/",
   },
 ];
 
 const integrationsAr = [
   {
-    title: "روشن",
-    description: "المطور العقاري الوطني الرائد في المملكة العربية السعودية.",
-    url: "https://www.roshn.sa/",
+    title: "واتساب",
+    description: "إرسال تحديثات العملاء، تذكيرات المعاينات، والمتابعات من سلاسل تلقائية.",
+    url: "https://www.whatsapp.com/",
   },
   {
-    title: "نيوم",
-    description: "أرض المستقبل، حيث يلتقي الابتكار بالاستدامة.",
-    url: "https://www.neom.com/",
+    title: "تيليجرام",
+    description: "تنبيهات فورية للفريق، رسائل بوت، وموافقات تشغيلية داخل المحادثات.",
+    url: "https://telegram.org/",
   },
   {
-    title: "بيوت",
-    description: "البوابة العقارية الرائدة في المنطقة.",
-    url: "https://www.bayut.sa/",
-  },
-  {
-    title: "بروبرتي فايندر",
-    description: "البحث عن عقارات للبيع وللإيجار بسهولة.",
-    url: "https://www.propertyfinder.sa/",
-  },
-  {
-    title: "سلاك",
-    description: "تواصل فوري للفريق وتنبيهات المخزون المباشرة.",
-    url: "https://slack.com",
+    title: "n8n",
+    description: "بناء سلاسل أتمتة مخصصة بين كانترا وCRM والجداول والأدوات الداخلية.",
+    url: "https://n8n.io/",
   },
   {
     title: "زابيير",
-    description: "أتمتة سير عمل العملاء والمزامنة مع نظام CRM.",
+    description: "تشغيل أتمتة بدون كود للعملاء الجدد والمهام وجهات الاتصال وتحديثات المسار.",
     url: "https://zapier.com",
+  },
+  {
+    title: "سلاك",
+    description: "إرسال نشاط الصفقات وتغييرات المخزون وتنبيهات المهام إلى قنوات الفريق.",
+    url: "https://slack.com",
+  },
+  {
+    title: "Webhooks",
+    description: "ربط أي نظام خاص بنقاط أتمتة آمنة تعتمد على الأحداث.",
+    url: "https://webhook.site/",
   },
 ];
