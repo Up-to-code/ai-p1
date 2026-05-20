@@ -8,6 +8,9 @@
   ],
   "scripts": {
     "dev:workspace": "npm --workspace @qentrah/workspace run dev",
+    "dev:workspace:desktop": "npm --workspace @qentrah/workspace run desktop:dev",
+    "build:workspace:desktop": "npm --workspace @qentrah/workspace run desktop:pack",
+    "dist:workspace:desktop": "npm --workspace @qentrah/workspace run desktop:dist",
     "dev:partners": "npm --workspace @qentrah/partners run dev",
     "dev:admin": "npm --workspace @qentrah/admin-review run dev",
     "dev:demo": "npm --workspace @qentrah/demo-partner-app run dev",

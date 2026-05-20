@@ -66,6 +66,12 @@ export function OAuthSelectOrganizationClient({ locale }: { locale: OAuthLocale 
             <div className="rounded-[12px] border border-[#e4e7ec] bg-white p-5 text-center">
               <KeyRound className="mx-auto h-6 w-6 text-[#98a2b3]" aria-hidden="true" />
               <p className="mt-3 text-sm font-semibold leading-6 text-[#667085]">{copy.noOrganizations}</p>
+              <a
+                href={`/${locale}/choose-org`}
+                className="mt-4 inline-flex h-10 items-center justify-center rounded-[10px] bg-[#111827] px-4 text-sm font-bold text-white transition hover:bg-[#1f2937]"
+              >
+                {copy.chooseTitle}
+              </a>
             </div>
           ) : null}
           <div className="space-y-2">

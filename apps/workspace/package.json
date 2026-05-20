@@ -1,10 +1,18 @@
 {
   "name": "@qentrah/workspace",
   "version": "0.1.0",
+  "description": "Qentrah Workspace desktop app for real estate operations and partner authorization.",
+  "author": "Qentrah",
   "private": true,
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "concurrently -k -n next,convex -c cyan,magenta \"next dev\" \"convex dev\"",
     "dev:stack": "concurrently -k -n next,convex -c cyan,magenta \"next dev\" \"convex dev\"",
+    "desktop:dev": "concurrently -k -n next,convex,electron -c cyan,magenta,blue \"next dev\" \"convex dev\" \"electron .\"",
+    "desktop:assets": "node scripts/prepare-desktop-assets.mjs",
+    "desktop:build:web": "node scripts/build-desktop-web.mjs",
+    "desktop:pack": "npm run desktop:assets && npm run desktop:build:web && electron-builder --dir",
+    "desktop:dist": "npm run desktop:assets && npm run desktop:build:web && electron-builder --mac dmg",
     "dev:stop": "node scripts/dev-stop.mjs",
     "dev:next": "next dev",
     "dev:hono": "next dev",
@@ -20,11 +28,6 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@qentrah/brand-identity": "0.1.0",
-    "@qentrah/convex-adapters": "0.1.0",
-    "@qentrah/partner-auth-core": "0.1.0",
-    "@qentrah/partner-workspace-sync": "0.1.0",
-    "@qentrah/platform-core": "0.1.0",
     "@base-ui/react": "^1.4.1",
     "@better-auth/oauth-provider": "^1.6.9",
     "@convex-dev/better-auth": "^0.12.2",
@@ -32,6 +35,11 @@
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@number-flow/react": "^0.6.0",
     "@openrouter/ai-sdk-provider": "^2.9.0",
+    "@qentrah/brand-identity": "0.1.0",
+    "@qentrah/convex-adapters": "0.1.0",
+    "@qentrah/partner-auth-core": "0.1.0",
+    "@qentrah/partner-workspace-sync": "0.1.0",
+    "@qentrah/platform-core": "0.1.0",
     "@radix-ui/react-visually-hidden": "^1.2.4",
     "@sentry/nextjs": "^10.52.0",
     "@sentry/profiling-node": "^10.52.0",
@@ -71,6 +79,73 @@
     "zod": "^4.4.3",
     "zustand": "^5.0.13"
   },
+  "build": {
+    "appId": "com.qentrah.workspace",
+    "productName": "Qentrah Workspace",
+    "copyright": "Copyright © Qentrah",
+    "directories": {
+      "output": "dist/desktop"
+    },
+    "afterPack": "scripts/electron-after-pack.cjs",
+    "files": [
+      "electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": ".next/standalone",
+        "to": "standalone",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": ".next/static",
+        "to": "standalone/apps/workspace/.next/static"
+      },
+      {
+        "from": "public",
+        "to": "standalone/apps/workspace/public"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.business",
+      "icon": "build/icon.icns",
+      "target": "dmg",
+      "identity": null
+    },
+    "dmg": {
+      "title": "Install",
+      "background": "build/dmg-background.png",
+      "icon": "build/icon.icns",
+      "window": {
+        "width": 660,
+        "height": 400
+      },
+      "contents": [
+        {
+          "x": 118,
+          "y": 172,
+          "type": "file"
+        },
+        {
+          "x": 544,
+          "y": 172,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "win": {
+      "icon": "build/icon.png",
+      "target": "nsis"
+    },
+    "linux": {
+      "icon": "build/icon.png",
+      "target": "AppImage",
+      "category": "Office"
+    }
+  },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
@@ -78,6 +153,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "concurrently": "^9.2.1",
+    "electron": "42.1.0",
+    "electron-builder": "^26.8.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",

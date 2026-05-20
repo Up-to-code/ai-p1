@@ -1,0 +1,14 @@
+"use client";
+
+import { useEffect } from "react";
+
+import { getDirection, type Locale } from "@/lib/content";
+
+export function LocaleDocumentAttributes({ locale }: { locale: Locale }) {
+  useEffect(() => {
+    document.documentElement.lang = locale;
+    document.documentElement.dir = getDirection(locale);
+  }, [locale]);
+
+  return null;
+}

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   ArrowRight,
@@ -15,9 +14,8 @@ import {
   Sparkles,
   Workflow,
 } from "lucide-react";
-import { brandLabel } from "@qentrah/brand-identity";
 
-import { getContent, type Locale } from "@/lib/content";
+import { getContent, productUrls, type Locale } from "@/lib/content";
 
 type HomeCopy = ReturnType<typeof getContent>;
 type Product = HomeCopy["products"][number];
@@ -209,14 +207,14 @@ function TrustNetwork({ copy }: { copy: HomeCopy }) {
         <div className="grid gap-10 lg:grid-cols-[0.75fr_1.25fr] lg:items-start">
           <SectionHeader eyebrow={copy.home.trustEyebrow} title={copy.home.trustTitle} description={copy.home.trustDescription} />
           <div className="overflow-hidden rounded-[30px] border border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.04]">
-            {copy.trust.map((item, index) => (
-              <div className="grid gap-4 border-b border-zinc-200 p-5 last:border-b-0 dark:border-white/10 sm:grid-cols-[48px_1fr]" key={item}>
+            {copy.trust.map((item) => (
+              <div className="grid gap-4 border-b border-zinc-200 p-5 last:border-b-0 dark:border-white/10 sm:grid-cols-[48px_1fr]" key={item.label}>
                 <div className="flex size-11 items-center justify-center rounded-2xl bg-blue-600 text-white">
                   <ShieldCheck className="size-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold leading-6 text-zinc-950 dark:text-white">{item}</p>
-                  <p className="mt-1 text-xs font-medium leading-6 text-zinc-500 dark:text-zinc-400">{index < 2 ? "Operator approval stays explicit before data moves." : "Every integration path is scoped, reviewed, and reversible."}</p>
+                  <p className="text-sm font-bold leading-6 text-zinc-950 dark:text-white">{item.label}</p>
+                  <p className="mt-1 text-xs font-medium leading-6 text-zinc-500 dark:text-zinc-400">{item.description}</p>
                 </div>
               </div>
             ))}
@@ -235,12 +233,12 @@ function FutureLayer({ copy }: { copy: HomeCopy }) {
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.28em] text-blue-600 dark:text-blue-300">{copy.home.futureEyebrow}</p>
             <h2 className="mt-5 text-4xl font-bold leading-[1.02] tracking-tight text-zinc-950 dark:text-white md:text-5xl rtl:leading-[1.16]">
-              Visual AI agents for the real estate operating layer.
+              {copy.home.futureTitle}
             </h2>
           </div>
           <div>
             <p className="text-base font-medium leading-8 text-zinc-600 dark:text-zinc-400">
-              {`We are shaping ${brandLabel("en")} so teams can open Workspace, connect trusted integrations, and build the AI-assisted real estate workflows their organizations need.`}
+              {copy.home.futureDescription}
             </p>
             <div className="mt-7 grid gap-3 sm:grid-cols-3">
               {copy.future.map((item) => (
@@ -272,6 +270,9 @@ function FinalCta({ copy, isAr }: { copy: HomeCopy; isAr: boolean }) {
             </ActionLink>
             <ActionLink href={copy.products[1].href} isAr={isAr} variant="secondary">
               {copy.home.secondaryCta}
+            </ActionLink>
+            <ActionLink href={productUrls.contact} isAr={isAr} variant="secondary">
+              {copy.home.contactCta}
             </ActionLink>
           </div>
         </div>

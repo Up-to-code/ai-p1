@@ -37,6 +37,12 @@ export default async function NewAppPage() {
             <p className="mt-1 max-w-xl text-sm text-muted-foreground">
               You must create or join a programmer organization to build partner apps.
             </p>
+            <Link
+              href="/dashboard/account"
+              className="mt-5 inline-flex h-10 items-center justify-center rounded-[6px] bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              Open account setup
+            </Link>
           </div>
         )}
       </div>

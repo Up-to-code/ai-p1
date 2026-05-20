@@ -317,6 +317,14 @@ export function PartnerAppForm({ app, mode = "create" }: { app?: PartnerAppSumma
               <p>{state.message}</p>
               {state.clientId ? <p className="mt-2 break-all font-mono text-xs">Client ID: {state.clientId}</p> : null}
               {state.clientSecret ? <p className="mt-2 break-all font-mono text-xs">Client secret: {state.clientSecret}</p> : null}
+              {state.ok && state.appId ? (
+                <Link
+                  href={`/dashboard/apps/${state.appId}`}
+                  className="mt-4 inline-flex h-9 items-center justify-center rounded-[6px] bg-primary px-3 text-xs font-bold text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  Open app details
+                </Link>
+              ) : null}
             </Alert>
           ) : null}
         </main>

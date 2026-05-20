@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { Context, Next } from "hono";
 import { partnerAppsRuntimeConfig } from "@/packages/config";
+import { oauthDebug } from "../services/oauth-debug";
 import {
   handleListPartnerApps,
 } from "../handlers/partner-apps";
@@ -18,6 +19,9 @@ export const partnerResourceRouter = new Hono();
 
 async function requirePartnerAppsEnabled(c: Context, next: Next) {
   if (!partnerAppsRuntimeConfig.enabled) {
+    oauthDebug("workspace.partner_apps.disabled", {
+      path: new URL(c.req.url).pathname,
+    });
     return c.json({ error: "Partner apps are disabled." }, 404);
   }
 

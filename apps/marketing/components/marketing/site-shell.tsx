@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowUpRight, Menu, X } from "lucide-react";
-import { brandDomainUrl, brandLabel } from "@qentrah/brand-identity";
+import { brandLabel } from "@qentrah/brand-identity";
 
-import { getAlternateLocale, type Locale } from "@/lib/content";
+import { getAlternateLocale, productUrls, type Locale } from "@/lib/content";
 
-const workspaceUrl = process.env.NEXT_PUBLIC_WORKSPACE_URL ?? brandDomainUrl("workspace");
+const workspaceUrl = productUrls.workspace;
+const partnersUrl = productUrls.partners;
 
 type NavCopy = {
   brand: string;
@@ -15,6 +16,7 @@ type NavCopy = {
   privacy: string;
   terms: string;
   workspace: string;
+  partners: string;
   language: string;
 };
 
@@ -56,6 +58,13 @@ export function SiteHeader({ locale, nav }: { locale: Locale; nav: NavCopy }) {
             <span className="hidden sm:inline">{nav.workspace}</span>
             <ArrowUpRight className="size-3.5" />
           </a>
+          <a
+            className="hidden h-9 items-center justify-center gap-1.5 rounded-full border border-zinc-200 px-4 text-sm font-semibold text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950 lg:inline-flex dark:border-white/10 dark:text-zinc-200 dark:hover:bg-white/10 dark:hover:text-white"
+            href={partnersUrl}
+          >
+            {nav.partners}
+            <ArrowUpRight className="size-3.5" />
+          </a>
           <button
             type="button"
             aria-expanded={isMenuOpen}
@@ -86,6 +95,13 @@ export function SiteHeader({ locale, nav }: { locale: Locale; nav: NavCopy }) {
             >
               {nav.workspace}
             </a>
+            <a
+              href={partnersUrl}
+              className="rounded-2xl border border-zinc-200 px-4 py-3 transition hover:bg-zinc-100 dark:border-white/10 dark:hover:bg-white/10"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              {nav.partners}
+            </a>
             <Link
               href={`/${alternateLocale}`}
               className="rounded-2xl px-4 py-3 text-zinc-500 transition hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-white/10"
@@ -114,7 +130,7 @@ export function SiteFooter({ locale, nav }: { locale: Locale; nav: NavCopy }) {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-            <Link href={`/${locale}`}>{nav.products}</Link>
+            <Link href={`/${locale}#products`}>{nav.products}</Link>
             <Link href={`/${locale}/privacy`}>{nav.privacy}</Link>
             <Link href={`/${locale}/terms`}>{nav.terms}</Link>
           </div>

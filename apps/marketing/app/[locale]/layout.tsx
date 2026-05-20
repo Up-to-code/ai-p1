@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { LocaleDocumentAttributes } from "@/components/marketing/locale-document-attributes";
 import { SiteFooter, SiteHeader } from "@/components/marketing/site-shell";
 import { getContent, getDirection, isLocale, type Locale } from "@/lib/content";
 
@@ -26,6 +27,7 @@ export default async function LocaleLayout({
 
   return (
     <div dir={getDirection(locale)} lang={locale}>
+      <LocaleDocumentAttributes locale={locale} />
       <SiteHeader locale={locale} nav={copy.nav} />
       {children}
       <SiteFooter locale={locale} nav={copy.nav} />

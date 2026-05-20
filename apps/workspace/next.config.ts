@@ -11,8 +11,10 @@ const uploadSentrySourceMaps =
   && Boolean(process.env.SENTRY_ORG)
   && Boolean(process.env.SENTRY_PROJECT)
   && Boolean(process.env.SENTRY_AUTH_TOKEN);
+const buildStandaloneServer = process.env.NEXT_OUTPUT_STANDALONE === "true";
 
 const nextConfig: NextConfig = {
+  ...(buildStandaloneServer ? { output: "standalone" } : {}),
   outputFileTracingRoot: monorepoRoot,
   turbopack: {
     root: monorepoRoot,

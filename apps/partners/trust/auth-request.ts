@@ -1,7 +1,10 @@
-import type { NextRequest } from "next/server";
 import { buildAuthBridgeHeaders } from "@qentrah/web-foundation/api";
 
-export function getPartnersAuthOrigin(request: NextRequest) {
+type AuthRequestContext = Pick<Request, "headers" | "url"> & {
+  nextUrl: Pick<URL, "origin">;
+};
+
+export function getPartnersAuthOrigin(request: AuthRequestContext) {
   return process.env.NEXT_PUBLIC_PARTNERS_AUTH_URL?.trim()
     || process.env.BETTER_AUTH_URL?.trim()
     || request.headers.get("origin")
@@ -10,7 +13,7 @@ export function getPartnersAuthOrigin(request: NextRequest) {
     || "http://localhost:3002";
 }
 
-export function buildSameOriginAuthHeaders(request: NextRequest): HeadersInit {
+export function buildSameOriginAuthHeaders(request: AuthRequestContext): HeadersInit {
   const origin = getPartnersAuthOrigin(request);
   return {
     "content-type": "application/json",
@@ -25,7 +28,7 @@ export function buildTrustedSignupHeaders({
   bridgeHeader,
   bridgeSecret,
 }: {
-  request: NextRequest;
+  request: AuthRequestContext;
   bridgeHeader: string;
   bridgeSecret: string;
 }) {

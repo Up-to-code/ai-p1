@@ -14,6 +14,8 @@ partner platform docs.
   ownership, Convex usage, and integration shape.
 - [Apps and packages](./APPS.md): catalog of apps, packages, routes, and
   ownership.
+- [Product knowledge base](./PRODUCT_KNOWLEDGE_BASE.md): founder-level product
+  framing, integration flow, messaging, and pitch deck narrative.
 - [Environment variables](./ENVIRONMENT.md): canonical env reference and source
   links for external credentials.
 - [Feature lifecycle](./FEATURE_LIFECYCLE.md): how to add, ship, operate, and

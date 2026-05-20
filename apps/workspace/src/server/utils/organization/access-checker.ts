@@ -21,9 +21,13 @@ type OrganizationResource =
 export async function assertCanUpdateOrganizationProfile(
   organizationId: string,
 ) {
-  await fetchAuthQuery(api.organizations.profile.access.canUpdateProfile, {
+  const allowed = await fetchAuthQuery(api.organizations.profile.access.canUpdateProfile, {
     organizationId,
-  });
+  }).then((result) => result.allowed);
+
+  if (!allowed) {
+    throw new Error("You do not have permission to update this organization profile.");
+  }
 }
 
 export async function assertCanUseOrganizationResource(
@@ -31,11 +35,15 @@ export async function assertCanUseOrganizationResource(
   resource: OrganizationResource,
   action: string,
 ) {
-  await fetchAuthQuery(api.organizations.profile.access.canUseResourceAction, {
+  const allowed = await fetchAuthQuery(api.organizations.profile.access.canUseResourceAction, {
     organizationId,
     resource,
     action,
-  });
+  }).then((result) => result.allowed);
+
+  if (!allowed) {
+    throw new Error(`You do not have permission to ${action} this organization ${resource}.`);
+  }
 }
 
 export async function getOrganizationCapabilities(organizationId: string) {

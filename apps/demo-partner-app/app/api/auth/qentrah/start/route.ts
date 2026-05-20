@@ -4,6 +4,7 @@ import { demoBrandConfig, demoConfig } from "@/lib/config";
 import { oauthStateCookieName, pkceVerifierCookieName, secureCookieOptions } from "@/lib/cookies";
 import { signValue } from "@/lib/crypto";
 import { buildAuthorizeUrl } from "@/lib/oauth";
+import { oauthDebug } from "@/lib/oauth-debug";
 import { createPkcePair } from "@/lib/pkce";
 
 export async function GET() {
@@ -22,11 +23,22 @@ export async function GET() {
     maxAge: 10 * 60,
   });
 
-  return NextResponse.redirect(buildAuthorizeUrl({
+  const authorizeUrl = buildAuthorizeUrl({
     workspaceBaseUrl: config.workspaceBaseUrl,
     clientId: config.clientId,
     redirectUri,
     state,
     codeChallenge: pkce.challenge,
-  }));
+  });
+
+  oauthDebug("demo.oauth.start.redirect", {
+    workspaceBaseUrl: config.workspaceBaseUrl,
+    clientId: config.clientId,
+    redirectUri,
+    scopeCount: new URL(authorizeUrl).searchParams.get("scope")?.split(/\s+/u).filter(Boolean).length ?? 0,
+    state,
+    codeChallenge: pkce.challenge,
+  });
+
+  return NextResponse.redirect(authorizeUrl);
 }

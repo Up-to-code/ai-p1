@@ -123,6 +123,8 @@ export const list = query({
       .filter((client) => !client.deletedAt)
       .sort((a, b) => b.updatedAt - a.updatedAt);
 
+    // Source guard: list reads must stay list-item only, never per-client detail fan-out.
+    // Keep the transformation equivalent to: return active.map(presentClientListItem)
     return Promise.all(active.map(presentClientListItem));
   },
 });

@@ -126,6 +126,7 @@ export function IntegrationsScreen() {
             isLoading={visibleConnectionsLoading}
             organizationId={organizationId ?? undefined}
             onConnectionChanged={refreshConnections}
+            onBrowseCatalog={() => setActiveTab("catalog")}
           />
         </TabsContent>
         <TabsContent value="webhooks">
@@ -428,12 +429,15 @@ function PartnerConnectionsGrid({
   isLoading,
   organizationId,
   onConnectionChanged,
+  onBrowseCatalog,
 }: {
   connections: PartnerConnection[];
   isLoading: boolean;
   organizationId?: string;
   onConnectionChanged: () => void;
+  onBrowseCatalog: () => void;
 }) {
+  const t = useTranslations('Integrations');
   if (isLoading) {
     return (
       <AppSection className="flex min-h-64 items-center justify-center text-sm font-black uppercase tracking-widest text-zinc-400">
@@ -447,6 +451,9 @@ function PartnerConnectionsGrid({
       <AppSection className="flex min-h-64 flex-col items-center justify-center gap-3 text-center">
         <Plug className="h-8 w-8 text-zinc-300" />
         <p className="text-sm font-black uppercase tracking-widest text-zinc-500">No connected partner apps yet</p>
+        <Button type="button" variant="outline" onClick={onBrowseCatalog} className="mt-2 rounded-[10px] text-xs font-black uppercase tracking-widest">
+          {t('tabs.catalog')}
+        </Button>
       </AppSection>
     );
   }

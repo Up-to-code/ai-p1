@@ -202,8 +202,8 @@ export function resolveAssistantSurfaceCopy(presentation?: Pick<ThreadPresentati
   return surfaceCopy[locale];
 }
 
-export function extractTurnPropertyIds(turn: Pick<AssistantTurn, "blocks">) {
-  return turn.blocks.flatMap((block) =>
+export function extractTurnPropertyIds(turn: Partial<Pick<AssistantTurn, "blocks">>) {
+  return (turn.blocks ?? []).flatMap((block) =>
     block.type === "property_list" || block.type === "comparison" ? block.propertyIds : [],
   );
 }

@@ -12,8 +12,9 @@ export function getDirection(locale: Locale) {
 }
 
 export const productUrls = {
-  workspace: process.env.NEXT_PUBLIC_WORKSPACE_URL ?? brandDomainUrl("workspace"),
-  partners: process.env.NEXT_PUBLIC_PARTNERS_URL ?? brandDomainUrl("partners")
+  workspace: process.env.NEXT_PUBLIC_WORKSPACE_URL?.trim() || brandDomainUrl("workspace"),
+  partners: process.env.NEXT_PUBLIC_PARTNERS_URL?.trim() || brandDomainUrl("partners"),
+  contact: `mailto:${brandIdentity.domains.email}`
 };
 
 const brandEn = brandLabel("en");
@@ -101,11 +102,26 @@ export const content = {
       }
     ] as const,
     trust: [
-      "OAuth authorization code with PKCE",
-      "Organization-level consent",
-      "Scoped partner APIs",
-      "Approved app lifecycle",
-      "No direct database access"
+      {
+        label: "OAuth authorization code with PKCE",
+        description: "Operator approval stays explicit before data moves."
+      },
+      {
+        label: "Organization-level consent",
+        description: "Operator approval stays explicit before data moves."
+      },
+      {
+        label: "Scoped partner APIs",
+        description: "Every integration path is scoped, reviewed, and reversible."
+      },
+      {
+        label: "Approved app lifecycle",
+        description: "Every integration path is scoped, reviewed, and reversible."
+      },
+      {
+        label: "No direct database access",
+        description: "Every integration path is scoped, reviewed, and reversible."
+      }
     ] as const,
     future: [
       "More workspace workflows",
@@ -233,11 +249,26 @@ export const content = {
       }
     ] as const,
     trust: [
-      "OAuth مع PKCE",
-      "موافقة على مستوى المؤسسة",
-      "واجهات API محددة الصلاحيات",
-      "دورة حياة للتطبيقات المعتمدة",
-      "بدون وصول مباشر لقاعدة البيانات"
+      {
+        label: "OAuth مع PKCE",
+        description: "تبقى موافقة المشغل واضحة قبل انتقال البيانات."
+      },
+      {
+        label: "موافقة على مستوى المؤسسة",
+        description: "تبقى موافقة المشغل واضحة قبل انتقال البيانات."
+      },
+      {
+        label: "واجهات API محددة الصلاحيات",
+        description: "كل مسار تكامل محدد الصلاحيات، ومراجع، وقابل للإلغاء."
+      },
+      {
+        label: "دورة حياة للتطبيقات المعتمدة",
+        description: "كل مسار تكامل محدد الصلاحيات، ومراجع، وقابل للإلغاء."
+      },
+      {
+        label: "بدون وصول مباشر لقاعدة البيانات",
+        description: "كل مسار تكامل محدد الصلاحيات، ومراجع، وقابل للإلغاء."
+      }
     ] as const,
     future: [
       "تدفقات عمل أكثر داخل مساحة العمل",

@@ -136,9 +136,14 @@ export const canUpdateProfile = query({
   args: { organizationId: v.string() },
   returns: v.object({ allowed: v.boolean() }),
   handler: async (ctx, args) => {
-    await assertOrganizationPermission(ctx, args.organizationId, "update");
-
-    return { allowed: true };
+    return {
+      allowed: await canUseOrganizationResourceAction(
+        ctx,
+        args.organizationId,
+        "organization",
+        "update",
+      ),
+    };
   },
 });
 
@@ -165,14 +170,14 @@ export const canUseResourceAction = query({
   },
   returns: v.object({ allowed: v.boolean() }),
   handler: async (ctx, args) => {
-    await assertOrganizationResourcePermission(
-      ctx,
-      args.organizationId,
-      args.resource,
-      args.action,
-    );
-
-    return { allowed: true };
+    return {
+      allowed: await canUseOrganizationResourceAction(
+        ctx,
+        args.organizationId,
+        args.resource,
+        args.action,
+      ),
+    };
   },
 });
 
@@ -204,7 +209,7 @@ export const getCapabilities = query({
     const invalidDynamicRoles: string[] = [];
     const capabilities = evaluateOrganizationCapabilities({
       memberRole: member?.role,
-      dynamicRoles: dynamicRolesPage.page.flatMap((role) =>
+      dynamicRoles: dynamicRolesPage.page.flatMap((role: BetterAuthDynamicRoleRef) =>
         role.role && role.permission
           ? [{ role: role.role, permission: role.permission }]
           : [],

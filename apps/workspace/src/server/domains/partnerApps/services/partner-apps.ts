@@ -7,6 +7,7 @@ import type {
   UpdatePartnerConnectionPayload,
 } from "../validation/partner-app.schema";
 import { listPublishedPartnerApps, verifyPartnerAuthorization } from "./partners-platform";
+import { oauthDebug } from "./oauth-debug";
 
 function toPartnerCatalogApp(app: Awaited<ReturnType<typeof listPublishedPartnerApps>>[number]) {
   return {
@@ -25,13 +26,25 @@ function toPartnerCatalogApp(app: Awaited<ReturnType<typeof listPublishedPartner
 }
 
 export async function listPartnerApps() {
-  return (await listPublishedPartnerApps()).map(toPartnerCatalogApp);
+  oauthDebug("workspace.partner_apps.catalog.list.start");
+  const apps = (await listPublishedPartnerApps()).map(toPartnerCatalogApp);
+  oauthDebug("workspace.partner_apps.catalog.list.success", {
+    appCount: apps.length,
+  });
+  return apps;
 }
 
 export async function authorizePartnerConnection(
   organizationId: string,
   input: AuthorizePartnerConnectionPayload,
 ) {
+  oauthDebug("workspace.oauth.connection.verify.start", {
+    organizationId,
+    partnersAppId: input.partnersAppId,
+    partnersClientId: input.partnersClientId,
+    redirectUri: input.redirectUri,
+    scopeCount: input.scopes.length,
+  });
   const verification = await verifyPartnerAuthorization({
     partnersAppId: input.partnersAppId,
     partnersClientId: input.partnersClientId,
@@ -39,27 +52,52 @@ export async function authorizePartnerConnection(
     scopes: input.scopes,
   });
   if (!verification.allowed || !verification.app) {
+    oauthDebug("workspace.oauth.connection.verify.denied", {
+      organizationId,
+      partnersAppId: input.partnersAppId,
+      partnersClientId: input.partnersClientId,
+      reason: verification.reason,
+    });
     throw new Error(verification.reason ?? "Partner app authorization was denied.");
   }
-  return fetchAuthMutation(api.partnerApps.apps.authorizeConnectionFromHono, {
+  oauthDebug("workspace.oauth.connection.authorize.start", {
+    organizationId,
+    partnersAppId: verification.app.id,
+    partnersClientId: verification.app.clientId,
+    scopeCount: input.scopes.length,
+  });
+  const connection = await fetchAuthMutation(api.partnerApps.apps.authorizeConnectionFromHono, {
     organizationId,
     partnersAppId: verification.app.id,
     partnersClientId: verification.app.clientId,
     scopes: input.scopes,
     verifiedAt: Date.now(),
   });
+  oauthDebug("workspace.oauth.connection.authorize.success", {
+    organizationId,
+    partnersAppId: verification.app.id,
+    partnersClientId: verification.app.clientId,
+  });
+  return connection;
 }
 
 export async function listPartnerConnections(organizationId: string) {
+  oauthDebug("workspace.partner_apps.connections.list.start", { organizationId });
   const [connections, apps] = await Promise.all([
     fetchAuthQuery(api.partnerApps.apps.listConnections, { organizationId }) as Promise<Array<Record<string, unknown>>>,
     listPublishedPartnerApps().catch(() => []),
   ]);
   const appById = new Map(apps.map((app) => [app.id, toPartnerCatalogApp(app)]));
-  return connections.map((connection) => ({
+  const hydratedConnections = connections.map((connection) => ({
     ...connection,
     partnerApp: appById.get(String(connection.partnersAppId)) ?? null,
   }));
+  oauthDebug("workspace.partner_apps.connections.list.success", {
+    organizationId,
+    connectionCount: hydratedConnections.length,
+    catalogAppCount: apps.length,
+  });
+  return hydratedConnections;
 }
 
 export async function updatePartnerConnection(
@@ -67,6 +105,11 @@ export async function updatePartnerConnection(
   connectionId: string,
   input: UpdatePartnerConnectionPayload,
 ) {
+  oauthDebug("workspace.partner_apps.connection.update.start", {
+    organizationId,
+    connectionId,
+    status: input.status,
+  });
   if (input.status === "active") {
     const current = await fetchAuthQuery(api.partnerApps.apps.listConnections, { organizationId }) as Array<{
       id: string;
@@ -75,34 +118,76 @@ export async function updatePartnerConnection(
       scopes: string[];
     }>;
     const connection = current.find((item) => item.id === connectionId);
-    if (!connection) throw new Error("Partner connection was not found.");
+    if (!connection) {
+      oauthDebug("workspace.partner_apps.connection.update.not_found", {
+        organizationId,
+        connectionId,
+      });
+      throw new Error("Partner connection was not found.");
+    }
+    oauthDebug("workspace.partner_apps.connection.reverify.start", {
+      organizationId,
+      connectionId,
+      partnersAppId: connection.partnersAppId,
+      partnersClientId: connection.partnersClientId,
+      scopeCount: connection.scopes.length,
+    });
     const verification = await verifyPartnerAuthorization({
       partnersAppId: connection.partnersAppId,
       partnersClientId: connection.partnersClientId,
       scopes: connection.scopes,
     });
-    if (!verification.allowed) throw new Error(verification.reason ?? "Partner app authorization was denied.");
+    if (!verification.allowed) {
+      oauthDebug("workspace.partner_apps.connection.reverify.denied", {
+        organizationId,
+        connectionId,
+        partnersAppId: connection.partnersAppId,
+        partnersClientId: connection.partnersClientId,
+        reason: verification.reason,
+      });
+      throw new Error(verification.reason ?? "Partner app authorization was denied.");
+    }
   }
-  return fetchAuthMutation(api.partnerApps.apps.updateConnectionFromHono, {
+  const connection = await fetchAuthMutation(api.partnerApps.apps.updateConnectionFromHono, {
     organizationId,
     connectionId: connectionId as Id<"organizationPartnerConnections">,
     input,
     verifiedAt: input.status === "active" ? Date.now() : undefined,
   });
+  oauthDebug("workspace.partner_apps.connection.update.success", {
+    organizationId,
+    connectionId,
+    status: input.status,
+  });
+  return connection;
 }
 
-export function revokePartnerConnection(organizationId: string, connectionId: string) {
-  return fetchAuthMutation(api.partnerApps.apps.revokeConnectionFromHono, {
+export async function revokePartnerConnection(organizationId: string, connectionId: string) {
+  oauthDebug("workspace.partner_apps.connection.revoke.start", {
+    organizationId,
+    connectionId,
+  });
+  const result = await fetchAuthMutation(api.partnerApps.apps.revokeConnectionFromHono, {
     organizationId,
     connectionId: connectionId as Id<"organizationPartnerConnections">,
   });
+  oauthDebug("workspace.partner_apps.connection.revoke.success", {
+    organizationId,
+    connectionId,
+  });
+  return result;
 }
 
-export function createPartnerWebhookEndpoint(
+export async function createPartnerWebhookEndpoint(
   organizationId: string,
   input: CreatePartnerWebhookEndpointPayload,
 ) {
-  return fetchAuthMutation(api.partnerApps.webhooks.createEndpointFromHono, {
+  oauthDebug("workspace.partner_apps.webhook_endpoint.create.start", {
+    organizationId,
+    partnerAppId: input.partnerAppId,
+    eventCount: input.events.length,
+  });
+  const endpoint = await fetchAuthMutation(api.partnerApps.webhooks.createEndpointFromHono, {
     organizationId,
     partnerAppId: input.partnerAppId,
     input: {
@@ -111,4 +196,9 @@ export function createPartnerWebhookEndpoint(
       organizationId,
     },
   });
+  oauthDebug("workspace.partner_apps.webhook_endpoint.create.success", {
+    organizationId,
+    partnerAppId: input.partnerAppId,
+  });
+  return endpoint;
 }

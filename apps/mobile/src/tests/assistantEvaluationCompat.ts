@@ -3,8 +3,8 @@ import type { AssistantRoute } from "@/conversation/assistantProtocol";
 export function routePrompt(prompt: string): { route: AssistantRoute } {
   const text = prompt.toLowerCase();
   if (/contract|legal|clause|قانون|عقد/.test(text)) return { route: "legal" };
-  if (/mortgage|financ|تمويل/.test(text)) return { route: "funding" };
   if (/villa and explain financing|find a villa and explain/.test(text)) return { route: "mixed" };
+  if (/mortgage|financ|تمويل/.test(text)) return { route: "funding" };
   if (/find|apartment|rental|property|villa|show me more|الأرخص|الميزانية|دورلي|شقة/.test(text)) {
     return { route: "property" };
   }
@@ -39,6 +39,7 @@ export function isShortAreaComparisonFragment(prompt: string) {
 
 export function buildMemoryContextPlan(args: { prompt: string; route: AssistantRoute }) {
   const text = args.prompt.toLowerCase();
+  const direct = /^hi\b|hello|hey|مرحبا|أهلا/.test(text);
   const propertyHistory = /second one|الأرخص|more like|غير الميزانية/.test(text);
   const preference = /usual|المعتاد/.test(text);
   const freshSearch = args.route === "property" && !propertyHistory && !preference;
@@ -49,9 +50,11 @@ export function buildMemoryContextPlan(args: { prompt: string; route: AssistantR
       ? "preference_assisted_search"
       : propertyHistory
         ? "property_history"
-        : freshSearch
-          ? "fresh_search"
-          : "context_lookup",
+        : direct
+          ? "direct"
+          : freshSearch
+            ? "fresh_search"
+            : "context_lookup",
     searchPolicy: propertyHistory && !/غير الميزانية/.test(text) ? "reuse" : freshSearch || preference || /غير الميزانية/.test(text) ? "rerun" : "none",
     sources: preference
       ? ["buyer_preferences"]

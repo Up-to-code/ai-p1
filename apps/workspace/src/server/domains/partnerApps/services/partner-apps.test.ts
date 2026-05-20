@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "@convex/_generated/api";
 import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/better-auth/server";
 import { authorizePartnerConnection, listPartnerConnections, updatePartnerConnection } from "./partner-apps";
@@ -37,6 +37,11 @@ const listPublishedPartnerAppsMock = vi.mocked(listPublishedPartnerApps);
 describe("partner app organization authorization service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
   });
 
   it("stores only requested and verified user-approved scopes", async () => {
@@ -124,5 +129,32 @@ describe("partner app organization authorization service", () => {
       partnersClientId: "partners_client_1",
       scopes: ["client:read"],
     });
+  });
+
+  it("emits opt-in debug records for connection updates", async () => {
+    const info = vi.spyOn(console, "info").mockImplementation(() => undefined);
+    vi.stubEnv("QENTRAH_OAUTH_DEBUG", "1");
+    fetchAuthMutationMock.mockResolvedValueOnce({ id: "connection_1" });
+
+    await updatePartnerConnection("org_1", "connection_1", { status: "paused" });
+
+    expect(info).toHaveBeenCalledWith(
+      "[qentrah:oauth:workspace]",
+      JSON.stringify({
+        event: "workspace.partner_apps.connection.update.start",
+        organizationId: "org_1",
+        connectionId: "connection_1",
+        status: "paused",
+      }),
+    );
+    expect(info).toHaveBeenCalledWith(
+      "[qentrah:oauth:workspace]",
+      JSON.stringify({
+        event: "workspace.partner_apps.connection.update.success",
+        organizationId: "org_1",
+        connectionId: "connection_1",
+        status: "paused",
+      }),
+    );
   });
 });

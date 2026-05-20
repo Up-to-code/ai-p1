@@ -3,6 +3,7 @@ import { timingSafeEqual } from "node:crypto";
 import { convexCalls } from "@/server/convex/http-client";
 import type { OAuthClientRuntimeSyncPayload } from "../validation/admin-partner-app.schema";
 import { listPublishedPartnerApps } from "./partners-platform";
+import { oauthDebug } from "./oauth-debug";
 
 const refs = {
   upsertOAuthClientFromPartnersService: makeFunctionReference<
@@ -46,7 +47,19 @@ export function assertAdminServiceToken(headers: Headers, env: ServiceTokenEnv =
 }
 
 export async function syncOAuthClientRuntime(input: OAuthClientRuntimeSyncPayload) {
+  oauthDebug("workspace.oauth.runtime_sync.start", {
+    partnersAppId: input.partnersAppId,
+    partnersClientId: input.partnersClientId,
+    status: input.status,
+    redirectUriCount: input.redirectUris.length,
+    scopeCount: input.allowedScopes.length,
+  });
   await upsertOAuthRuntimeProjection(input);
+  oauthDebug("workspace.oauth.runtime_sync.success", {
+    partnersAppId: input.partnersAppId,
+    partnersClientId: input.partnersClientId,
+    status: input.status,
+  });
   return {
     partnersAppId: input.partnersAppId,
     clientId: input.partnersClientId,
@@ -75,6 +88,12 @@ export async function listApprovedPartnerApps() {
 }
 
 export function upsertOAuthRuntimeProjection(input: OAuthClientRuntimeSyncPayload) {
+  oauthDebug("workspace.oauth.runtime_projection.upsert", {
+    partnersAppId: input.partnersAppId,
+    partnersClientId: input.partnersClientId,
+    clientType: input.clientType,
+    status: input.status,
+  });
   return convexCalls.action<{ input: OAuthClientSyncInput }, { clientId: string; created: boolean }>(refs.upsertOAuthClientFromPartnersService, {
     input: {
       workspacePartnerAppId: input.partnersAppId,

@@ -24,6 +24,15 @@ import { partnerMcpConnectionInputSchema, partnerMcpConnectionUpdateSchema } fro
 import { jsonError, originFromContext, parseJson } from "./http";
 
 const LOCAL_PARTNER_SIGNUP_BRIDGE_SECRET = "local-qentrah-partner-signup-bridge-secret";
+
+function authRequestContext(request: Request) {
+  return {
+    headers: request.headers,
+    nextUrl: new URL(request.url),
+    url: request.url,
+  };
+}
+
 function isLocalDevelopmentEnv() {
   return process.env.NODE_ENV === "development" && process.env.VERCEL_ENV !== "production";
 }
@@ -47,11 +56,10 @@ function readString(value: unknown) {
 
 async function callBetterAuthSignup(request: Request, path: "sign-up" | "sign-in", body: Record<string, unknown>) {
   const bridge = readBridgeSecret();
-  const nextRequest = Object.assign(request, { nextUrl: new URL(request.url) });
   return fetch(new URL(`/api/auth/${path}/email`, request.url), {
     method: "POST",
     headers: buildTrustedSignupHeaders({
-      request: nextRequest as never,
+      request: authRequestContext(request),
       bridgeHeader: bridge.header,
       bridgeSecret: bridge.value,
     }),
@@ -60,10 +68,9 @@ async function callBetterAuthSignup(request: Request, path: "sign-up" | "sign-in
 }
 
 async function callBetterAuthSignIn(request: Request, body: Record<string, unknown>) {
-  const nextRequest = Object.assign(request, { nextUrl: new URL(request.url) });
   return fetch(new URL("/api/auth/sign-in/email", request.url), {
     method: "POST",
-    headers: buildSameOriginAuthHeaders(nextRequest as never),
+    headers: buildSameOriginAuthHeaders(authRequestContext(request)),
     body: JSON.stringify(body),
   });
 }

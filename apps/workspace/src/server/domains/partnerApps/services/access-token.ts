@@ -8,6 +8,7 @@ import type {
   PartnerPermissionResource,
 } from "@qentrah/partner-auth-core";
 import { parsePartnerAccessClaims } from "@qentrah/partner-auth-core";
+import { oauthDebug } from "./oauth-debug";
 
 export type PartnerAccessContext = {
   type?: "oauth";
@@ -60,6 +61,12 @@ export async function authorizePartnerResourceRequest(
   action: PartnerPermissionAction,
 ): Promise<PartnerAccessContext> {
   const token = bearerToken(c);
+  oauthDebug("workspace.partner_resource.verify.start", {
+    organizationId,
+    resource,
+    action,
+    token,
+  });
   const jwt = await verifyAccessToken(token, {
     jwksUrl: partnerJwksUrl(),
     verifyOptions: {
@@ -80,6 +87,11 @@ export async function authorizePartnerResourceRequest(
   }
 
   if (claims.organizationId !== organizationId) {
+    oauthDebug("workspace.partner_resource.verify.organization_mismatch", {
+      routeOrganizationId: organizationId,
+      tokenOrganizationId: claims.organizationId,
+      partnersClientId: claims.partnersClientId,
+    });
     throw new Response(JSON.stringify({ error: "Token organization does not match this route." }), {
       status: 403,
       headers: { "Content-Type": "application/json" },
@@ -108,11 +120,28 @@ export async function authorizePartnerResourceRequest(
   });
 
   if (!validation.ok || !validation.partnerAppId || !validation.connectionId) {
+    oauthDebug("workspace.partner_resource.validate.denied", {
+      organizationId,
+      partnersClientId: claims.partnersClientId,
+      resource,
+      action,
+      reason: validation.reason,
+    });
     throw new Response(JSON.stringify({ error: validation.reason ?? "Partner access denied." }), {
       status: validation.reason === "scope_denied" ? 403 : 401,
       headers: { "Content-Type": "application/json" },
     });
   }
+
+  oauthDebug("workspace.partner_resource.validate.success", {
+    organizationId,
+    partnersClientId: claims.partnersClientId,
+    partnerAppId: validation.partnerAppId,
+    connectionId: validation.connectionId,
+    resource,
+    action,
+    scopeCount: (validation.scopes ?? claims.partnerScopes).length,
+  });
 
   return {
     type: "oauth",

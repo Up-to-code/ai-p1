@@ -7,6 +7,7 @@ import { Field } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { GeneratedAvatarView } from "@/components/portal/GeneratedAvatar";
 import {
+  createProgrammerOrganizationAction,
   updatePartnerProfileAction,
   updateProgrammerOrganizationAction,
   type AccountActionState,
@@ -22,6 +23,7 @@ export function AccountForms({ account }: { account: PartnerAccountView }) {
   const { displayName, displayEmail, avatar } = useAccount(account);
   const { organization } = useOrganization(account);
   const [profileState, profileAction, profilePending] = useActionState(updatePartnerProfileAction, initialState);
+  const [createOrgState, createOrgAction, createOrgPending] = useActionState(createProgrammerOrganizationAction, initialState);
   const [orgState, orgAction, orgPending] = useActionState(updateProgrammerOrganizationAction, initialState);
 
   return (
@@ -96,9 +98,22 @@ export function AccountForms({ account }: { account: PartnerAccountView }) {
             </form>
           </>
         ) : (
-          <Alert variant="danger" className="mt-5">
-            Programmer organization is not ready yet. Sign out and sign back in, or create the organization from signup.
-          </Alert>
+          <form action={createOrgAction} className="mt-6 grid gap-4 sm:grid-cols-[minmax(0,1fr)_120px]">
+            <Field label="Organization name">
+              <Input name="name" defaultValue="Partner programmer organization" minLength={2} maxLength={120} required />
+            </Field>
+            <Field label="Country">
+              <Input name="countryCode" defaultValue="SA" minLength={2} maxLength={2} required />
+            </Field>
+            <div className="sm:col-span-2">
+              {createOrgState.message ? (
+                <Alert variant={createOrgState.ok ? "success" : "danger"} className="mb-4">{createOrgState.message}</Alert>
+              ) : null}
+              <Button type="submit" disabled={createOrgPending}>
+                {createOrgPending ? "Creating..." : "Create organization"}
+              </Button>
+            </div>
+          </form>
         )}
       </section>
     </div>

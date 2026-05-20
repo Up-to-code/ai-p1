@@ -212,12 +212,14 @@ body {
   body {
     @apply bg-background text-foreground;
     min-height: 100dvh;
+  }
+
+  .hero-grid-bg {
     background-image:
       radial-gradient(circle at 20% -10%, color-mix(in srgb, #0B5CFF 14%, transparent), transparent 34%),
       linear-gradient(to bottom, color-mix(in oklch, var(--workspace-grid) 70%, transparent) 1px, transparent 1px),
       linear-gradient(to left, color-mix(in oklch, var(--workspace-grid) 52%, transparent) 1px, transparent 1px);
     background-size: auto, 100% 28px, 28px 100%;
-    background-attachment: fixed;
   }
 }
 

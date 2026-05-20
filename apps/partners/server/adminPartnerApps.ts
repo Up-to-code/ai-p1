@@ -7,6 +7,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { normalizeRedirectUris, normalizeScopes } from "@/server/partnerAppPolicies";
 import { qentrahWorkspaceConfig } from "@/server/qentrahWorkspace";
+import { oauthDebug } from "@/server/oauth-debug";
 
 type AdminEnv = Record<string, string | undefined>;
 
@@ -121,6 +122,11 @@ export const adminPartnerAppsRepository = {
   },
 
   async review(appId: string, input: PartnerReviewRequest, reviewer: string) {
+    oauthDebug("partners.app.review.start", {
+      appId,
+      status: input.status,
+      reviewer,
+    });
     const app = await prisma.partnerApp.findUnique({ where: { id: appId } });
     if (!app) throw new Error("Partner app not found.");
     const nextStatus = input.status === "approved" ? "active" : input.status;
@@ -155,13 +161,26 @@ export const adminPartnerAppsRepository = {
     });
     const record = toAdminRecord(updated);
     await publishWorkspaceRuntimeBestEffort(record, input.status);
+    oauthDebug("partners.app.review.success", {
+      appId: record.id,
+      clientId: record.clientId,
+      status: input.status,
+    });
     return record;
   },
 };
 
 async function publishWorkspaceRuntimeBestEffort(app: AdminPartnerAppRecord, status: PartnerReviewRequest["status"]) {
   const config = qentrahWorkspaceConfig();
-  if (!config.baseUrl || !config.serviceToken) return;
+  if (!config.baseUrl || !config.serviceToken) {
+    oauthDebug("partners.oauth.runtime_publish.skipped", {
+      appId: app.id,
+      clientId: app.clientId,
+      hasBaseUrl: Boolean(config.baseUrl),
+      hasServiceToken: Boolean(config.serviceToken),
+    });
+    return;
+  }
 
   try {
     const projection = buildOAuthRuntimeProjectionInput({
@@ -178,6 +197,13 @@ async function publishWorkspaceRuntimeBestEffort(app: AdminPartnerAppRecord, sta
       clientType: app.clientType,
       status,
     });
+    oauthDebug("partners.oauth.runtime_publish.start", {
+      appId: app.id,
+      clientId: app.clientId,
+      status,
+      redirectUriCount: app.redirectUris.length,
+      scopeCount: app.allowedScopes.length,
+    });
     await fetch(`${config.baseUrl}/api/v1/admin/oauth-client-runtime-sync`, {
       method: "POST",
       headers: {
@@ -186,7 +212,18 @@ async function publishWorkspaceRuntimeBestEffort(app: AdminPartnerAppRecord, sta
       },
       body: JSON.stringify(projection),
     });
+    oauthDebug("partners.oauth.runtime_publish.success", {
+      appId: app.id,
+      clientId: app.clientId,
+      status,
+    });
   } catch (error) {
+    oauthDebug("partners.oauth.runtime_publish.error", {
+      appId: app.id,
+      clientId: app.clientId,
+      status,
+      error: error instanceof Error ? error.message : "unknown",
+    });
     console.warn("Workspace OAuth runtime projection publish failed.", error);
   }
 }

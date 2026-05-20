@@ -525,7 +525,7 @@ export function PropertyDetailScreen({ id }: { id: string }) {
                 onOpen={openMediaViewer}
                 onAdd={() => setIsMediaUploadOpen(true)}
               />
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" data-property-option-chips>
                 {optionItems.map(({ label, value, icon }) => (
                   <PropertyInfoTile key={label} icon={icon} label={label} value={value} />
                 ))}
@@ -600,28 +600,83 @@ export function PropertyDetailScreen({ id }: { id: string }) {
                 </Button>
               </div>
             ) : (
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" data-property-linked-clients-table>
-                {propertyClientLinks.map(({ link, client }) => (
-                  <PropertyLinkedClientCard
-                    key={link.id}
-                    link={{ ...link, clientId: String(link.clientId) }}
-                    client={client}
-                    disabled={linkOperation.isRunning}
-                    onOpen={() => {
-                      if (client) router.push(`/clients/${client.id}`);
-                    }}
-                    onEdit={() => setClientLinkEdit({
-                      clientId: String(link.clientId),
-                      clientName: client?.name ?? t('detail.linkedClients.unavailable'),
-                      status: link.status,
-                      notes: link.notes ?? "",
-                    })}
-                    onUnlink={() => void linkOperation.run(() => {
-                      if (!workspaceOrganizationId) throw new Error("Select an organization first.");
-                      return unlinkClientUnitRequest(workspaceOrganizationId, link.clientId, unit.id);
-                    }, { successMessage: t('detail.linkedClients.unlinked') })}
-                  />
-                ))}
+              <div data-property-linked-clients-table>
+                <div className="md:hidden grid gap-3">
+                  {propertyClientLinks.map(({ link, client }) => (
+                    <PropertyLinkedClientCard
+                      key={link.id}
+                      link={{ ...link, clientId: String(link.clientId) }}
+                      client={client}
+                      disabled={linkOperation.isRunning}
+                      onOpen={() => {
+                        if (client) router.push(`/clients/${client.id}`);
+                      }}
+                      onEdit={() => setClientLinkEdit({
+                        clientId: String(link.clientId),
+                        clientName: client?.name ?? t('detail.linkedClients.unavailable'),
+                        status: link.status,
+                        notes: link.notes ?? "",
+                      })}
+                      onUnlink={() => void linkOperation.run(() => {
+                        if (!workspaceOrganizationId) throw new Error("Select an organization first.");
+                        return unlinkClientUnitRequest(workspaceOrganizationId, link.clientId, unit.id);
+                      }, { successMessage: t('detail.linkedClients.unlinked') })}
+                    />
+                  ))}
+                </div>
+                <div className="hidden overflow-x-auto rounded-2xl border border-zinc-200/70 dark:border-white/10 md:block">
+                  <table className="w-full text-[11px]">
+                    <thead className="bg-zinc-50 font-black uppercase tracking-widest text-zinc-400 dark:bg-white/[0.03]">
+                      <tr>
+                        <th className="px-4 py-3 text-start">{t('detail.linkedClients.client')}</th>
+                        <th className="px-4 py-3 text-start">{t('detail.linkedClients.linkStatus')}</th>
+                        <th className="px-4 py-3 text-start">{t('detail.linkedClients.notes')}</th>
+                        <th className="px-4 py-3 text-end">{t('detail.actions')}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200/70 dark:divide-white/10">
+                      {propertyClientLinks.map(({ link, client }) => {
+                        const clientId = String(link.clientId);
+                        const openClient = () => {
+                          if (client) router.push(`/clients/${client.id}`);
+                        };
+                        const editLink = () => setClientLinkEdit({
+                          clientId,
+                          clientName: client?.name ?? t('detail.linkedClients.unavailable'),
+                          status: link.status,
+                          notes: link.notes ?? "",
+                        });
+                        const unlinkClient = () => void linkOperation.run(() => {
+                          if (!workspaceOrganizationId) throw new Error("Select an organization first.");
+                          return unlinkClientUnitRequest(workspaceOrganizationId, link.clientId, unit.id);
+                        }, { successMessage: t('detail.linkedClients.unlinked') });
+
+                        return (
+                          <tr key={link.id} className="text-zinc-600 dark:text-zinc-300">
+                            <td className="px-4 py-3">
+                              <button type="button" onClick={openClient} disabled={!client} className="block max-w-[220px] truncate text-start font-black text-zinc-950 enabled:hover:underline disabled:cursor-default dark:text-white">
+                                {client ? client.name : t('detail.linkedClients.unavailable')}
+                              </button>
+                              <span className="mt-1 block truncate text-[10px] font-bold text-zinc-400">{client ? client.contact : clientId}</span>
+                            </td>
+                            <td className="px-4 py-3"><StatusPill label={t(`detail.linkedClients.statuses.${link.status}`)} tone={linkStatusTone(link.status)} /></td>
+                            <td className="max-w-[260px] px-4 py-3"><span className="line-clamp-2">{link.notes || "—"}</span></td>
+                            <td className="px-4 py-3">
+                              <div className="flex justify-end gap-1">
+                                <Button type="button" variant="ghost" size="icon" aria-label={t('detail.linkedClients.quickEdit')} disabled={linkOperation.isRunning} onClick={editLink} className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-white/[0.05] dark:hover:text-white" data-client-link-quick-edit>
+                                  <Edit className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button type="button" variant="ghost" size="icon" aria-label={t('detail.linkedClients.unlink')} disabled={linkOperation.isRunning} onClick={unlinkClient} className="h-8 w-8 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/25">
+                                  <Unlink className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </AppSection>
@@ -1028,7 +1083,7 @@ function PropertyLegalSummary({
         <table className="w-full text-[11px]">
           <thead className="font-black uppercase tracking-widest text-zinc-400">
             <tr className="border-b border-zinc-200/70 dark:border-white/10">
-              <th className="pb-2 text-start">{t('detail.legal.field')}</th>
+              <th className="pb-2 text-start">Field</th>
               <th className="pb-2 text-start">{t('detail.legal.value')}</th>
             </tr>
           </thead>

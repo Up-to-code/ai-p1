@@ -6,11 +6,14 @@ import { parsePartnerAppFormData } from "@/lib/schemas/partner-app";
 import { partnerProfileFormSchema, programmerOrganizationFormSchema } from "@/validation/account";
 import { partnerAccountRepository } from "@/server/partnerAccount";
 import { partnerAppsRepository } from "@/server/partnerApps";
+import { createProgrammerOrganizationForCurrentPartner } from "@/server/partnerOrganizations";
+import { oauthDebug } from "@/server/oauth-debug";
 import { sandboxRepository } from "@/server/sandbox";
 
 export type PartnerAppActionState = {
   ok: boolean;
   message?: string;
+  appId?: string;
   clientId?: string;
   clientSecret?: string;
 };
@@ -77,6 +80,24 @@ export async function updateProgrammerOrganizationAction(
   }
 }
 
+export async function createProgrammerOrganizationAction(
+  _previousState: AccountActionState,
+  formData: FormData,
+): Promise<AccountActionState> {
+  try {
+    const token = await requirePartnerToken();
+    const input = programmerOrganizationFormSchema.parse({
+      name: formData.get("name"),
+      countryCode: formData.get("countryCode"),
+    });
+    await createProgrammerOrganizationForCurrentPartner(token, input);
+    revalidatePortal();
+    return { ok: true, message: "Programmer organization created." };
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message : "Could not create organization." };
+  }
+}
+
 export async function createPartnerAppAction(
   _previousState: PartnerAppActionState,
   formData: FormData,
@@ -84,6 +105,12 @@ export async function createPartnerAppAction(
   try {
     const token = await requirePartnerToken();
     const input = parsePartnerAppFormData(formData);
+    oauthDebug("partners.app.create.start", {
+      clientType: input.clientType,
+      redirectUriCount: input.redirectUris.length,
+      scopeCount: input.allowedScopes.length,
+      homepageUrl: input.homepageUrl,
+    });
     const result = await partnerAppsRepository.create(token, {
       name: input.name,
       publisherName: input.publisherName,
@@ -95,8 +122,14 @@ export async function createPartnerAppAction(
       allowedScopes: input.allowedScopes,
     });
     revalidatePortal();
+    oauthDebug("partners.app.create.success", {
+      appId: result.appId,
+      clientId: result.clientId,
+      hasClientSecret: Boolean(result.clientSecret),
+    });
     return {
       ok: true,
+      appId: result.appId,
       message: result.clientSecret
         ? "App created. Store this client secret now; it will not be shown again."
         : "App created.",
@@ -135,7 +168,9 @@ export async function updatePartnerAppAction(formData: FormData): Promise<Partne
 export async function submitPartnerAppForReviewAction(formData: FormData) {
   const token = await requirePartnerToken();
   const appId = requiredString(formData, "appId");
+  oauthDebug("partners.app.submit_review.start", { appId });
   await partnerAppsRepository.submitForReview(token, appId);
+  oauthDebug("partners.app.submit_review.success", { appId });
   revalidatePortal();
   revalidatePath(`/dashboard/apps/${appId}`);
 }

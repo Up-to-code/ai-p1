@@ -1139,7 +1139,7 @@ function BusinessScheduleDialog({
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => nextOpen ? onOpenChange(true) : closeDrawer()}>
-      <DialogContent showCloseButton={false} className="z-[100] flex max-h-[88vh] w-[94vw] max-w-3xl flex-col overflow-hidden rounded-[32px] border-zinc-100 bg-white p-0 shadow-2xl dark:border-white/5 dark:bg-[#0A0A0A]">
+      <DialogContent showCloseButton={false} className="z-[100] flex max-h-[88vh] w-[94vw] max-w-3xl flex-col overflow-hidden rounded-[32px] border-zinc-100 bg-white p-0 shadow-2xl data-[side=right]:w-[min(94vw,980px)] dark:border-white/5 dark:bg-[#0A0A0A]">
         <div className="flex items-start justify-between gap-4 border-b border-zinc-100 p-5 dark:border-white/5">
           <div className="min-w-0">
             <div className="mb-2 flex flex-wrap items-center gap-2">
