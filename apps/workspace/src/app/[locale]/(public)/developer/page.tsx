@@ -1,74 +1,75 @@
 "use client";
 
-import { Building2, FileCheck2, ShieldCheck, TrendingUp, Wifi } from "lucide-react";
+import { Building2, CheckCircle2, FileCheck2, ShieldCheck, Wifi } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { CtaBand, FeatureGrid, ImageStatsPanel, MetricCard, PublicHero, PublicSection, SectionHeader } from "@/components/landing/public-page-shell";
+import { Link } from "@/i18n/routing";
 
-type DeveloperWorkflow = {
+type WorkflowItem = {
   title: string;
   description: string;
 };
 
 export default function DeveloperPage() {
   const t = useTranslations("Landing.developer");
-  const workflow = t.raw("workflow.items") as DeveloperWorkflow[];
+  const workflow = t.raw("workflow.items") as WorkflowItem[];
+  const points = [
+    { icon: Building2, title: t("signals.inventory.value"), description: t("signals.inventory.helper") },
+    { icon: FileCheck2, title: t("signals.approvals.value"), description: t("signals.approvals.helper") },
+    { icon: Wifi, title: t("signals.sync.value"), description: t("signals.sync.helper") },
+  ];
 
   return (
-    <>
-      <PublicHero
-        eyebrow={t("hero.eyebrow")}
-        title={t("hero.title")}
-        description={t("hero.description")}
-        actions={[
-          { href: "/dashboard", label: t("hero.primary") },
-          { href: "/contact", label: t("hero.secondary"), variant: "secondary" },
-        ]}
-      >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <MetricCard label={t("signals.inventory.label")} value={t("signals.inventory.value")} helper={t("signals.inventory.helper")} icon={Building2} tone="blue" />
-          <MetricCard label={t("signals.approvals.label")} value={t("signals.approvals.value")} helper={t("signals.approvals.helper")} icon={FileCheck2} tone="amber" />
-          <MetricCard label={t("signals.sync.label")} value={t("signals.sync.value")} helper={t("signals.sync.helper")} icon={Wifi} tone="green" />
-          <MetricCard label={t("signals.market.label")} value={t("signals.market.value")} helper={t("signals.market.helper")} icon={TrendingUp} tone="zinc" />
+    <main className="bg-white px-6 py-28 dark:bg-zinc-950 md:py-32">
+      <section className="mx-auto max-w-5xl">
+        <div className="max-w-3xl">
+          <p className="text-[10px] font-black uppercase tracking-[0.24em] text-blue-700 dark:text-blue-300">
+            {t("hero.eyebrow")}
+          </p>
+          <h1 className="mt-4 text-4xl font-bold tracking-tight text-zinc-950 dark:text-white md:text-6xl rtl:leading-[1.12]">
+            {t("hero.title")}
+          </h1>
+          <p className="mt-5 max-w-2xl text-base font-medium leading-8 text-zinc-600 dark:text-zinc-400">
+            {t("hero.description")}
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link className="inline-flex h-12 items-center justify-center rounded-full bg-zinc-950 px-7 text-xs font-black uppercase tracking-[0.14em] text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950" href="/dashboard">
+              {t("hero.primary")}
+            </Link>
+            <Link className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-200 px-7 text-xs font-black uppercase tracking-[0.14em] text-zinc-950 hover:bg-zinc-50 dark:border-white/10 dark:text-white dark:hover:bg-white/[0.04]" href="/contact">
+              {t("hero.secondary")}
+            </Link>
+          </div>
         </div>
-      </PublicHero>
 
-      <PublicSection muted>
-        <ImageStatsPanel
-          eyebrow={t("panel.eyebrow")}
-          title={t("panel.title")}
-          description={t("panel.description")}
-          image="/images/projects/waterfront.png"
-          stats={[
-            { label: t("panel.stats.projects.label"), value: t("panel.stats.projects.value") },
-            { label: t("panel.stats.units.label"), value: t("panel.stats.units.value") },
-            { label: t("panel.stats.health.label"), value: t("panel.stats.health.value") },
-          ]}
-        />
-      </PublicSection>
-
-      <PublicSection>
-        <div className="space-y-10">
-          <SectionHeader eyebrow={t("workflow.eyebrow")} title={t("workflow.title")} description={t("workflow.description")} />
-          <FeatureGrid
-            items={[
-              { ...workflow[0], icon: Building2 },
-              { ...workflow[1], icon: ShieldCheck },
-              { ...workflow[2], icon: Wifi },
-            ]}
-          />
+        <div className="mt-12 grid gap-4 md:grid-cols-3">
+          {points.map(({ icon: Icon, title, description }) => (
+            <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-5 dark:border-white/10 dark:bg-white/[0.04]" key={title}>
+              <Icon className="h-5 w-5 text-blue-700 dark:text-blue-300" />
+              <h2 className="mt-5 text-xl font-bold text-zinc-950 dark:text-white">{title}</h2>
+              <p className="mt-2 text-sm font-medium leading-7 text-zinc-600 dark:text-zinc-400">{description}</p>
+            </div>
+          ))}
         </div>
-      </PublicSection>
 
-      <PublicSection className="pt-0">
-        <CtaBand
-          eyebrow={t("cta.eyebrow")}
-          title={t("cta.title")}
-          description={t("cta.description")}
-          primaryLabel={t("cta.primary")}
-          secondaryLabel={t("cta.secondary")}
-        />
-      </PublicSection>
-    </>
+        <div className="mt-6 rounded-3xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/[0.04] md:p-6">
+          <div className="flex items-center gap-3">
+            <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            <h2 className="text-2xl font-bold tracking-tight text-zinc-950 dark:text-white">{t("workflow.title")}</h2>
+          </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {workflow.map((item) => (
+              <div className="flex gap-3" key={item.title}>
+                <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                <div>
+                  <h3 className="text-sm font-black text-zinc-950 dark:text-white">{item.title}</h3>
+                  <p className="mt-1 text-sm font-medium leading-6 text-zinc-600 dark:text-zinc-400">{item.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }

@@ -274,10 +274,12 @@ export function CtaBand({
 }
 
 export function LegalArticle({
+  eyebrow = "Policy",
   title,
   updated,
   children,
 }: {
+  eyebrow?: string;
   title: string;
   updated: string;
   children: ReactNode;
@@ -285,7 +287,7 @@ export function LegalArticle({
   return (
     <PublicSection className="pt-28 md:pt-32">
       <div className="mx-auto max-w-4xl">
-        <SectionKicker>Policy</SectionKicker>
+        <SectionKicker>{eyebrow}</SectionKicker>
         <h1 className="mt-5 text-5xl font-black tracking-tight text-zinc-950 dark:text-white md:text-7xl">{title}</h1>
         <p className="mt-5 text-sm font-bold uppercase tracking-[0.18em] text-zinc-400">{updated}</p>
         <article className="mt-12 rounded-[2rem] border border-zinc-200 bg-white p-6 shadow-[0_24px_90px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.04] md:p-10">
