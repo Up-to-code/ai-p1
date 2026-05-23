@@ -19,7 +19,8 @@ import {
   Loader2,
   Plus,
   Search,
-  ShieldCheck
+  ShieldCheck,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -70,6 +71,7 @@ const navigationGroups = [
     label: "administration",
     items: [
       { name: "organization", href: "/settings/organization", icon: Landmark },
+      { name: "billing", href: "/billing", icon: CreditCard },
       { name: "activity", href: "/activity", icon: HistoryIcon },
       { name: "integrations", href: "/web-apps", icon: Plug },
     ],

@@ -228,6 +228,7 @@
     "clients": "Clients",
     "calendar": "Calendar",
     "organization": "Organization",
+    "billing": "Billing",
     "integrations": "Web Apps",
     "components": "UI Components",
     "activity": "Activity Log",

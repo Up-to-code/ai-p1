@@ -113,7 +113,7 @@ export const copy = {
     },
   },
   ar: {
-    brand: "قنطرة",
+    brand: "كانترا",
     admin: "الإدارة",
     platform: "المنصة",
     platformSecurity: "أمان المنصة",
@@ -121,7 +121,7 @@ export const copy = {
     noBrowserSecrets: "لا أسرار في المتصفح",
     trustBoundary: "حدود الثقة",
     overview: {
-      eyebrow: "إدارة منصة قنطرة",
+      eyebrow: "إدارة منصة كانترا",
       title: "مركز التحكم الأمني",
       description:
         "تحكم داخلي كامل في تفويض مساحة العمل، ووصول الشركاء، ورموز الخدمة، وأدلة التدقيق، والبيانات التشغيلية. تعيين مدير المنصة يبقى خارج الواجهة.",

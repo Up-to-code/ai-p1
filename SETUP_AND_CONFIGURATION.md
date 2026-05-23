@@ -214,6 +214,12 @@ Core env variables:
 | `UPLOADTHING_SECRET` | Required when using UploadThing without token | Vercel | UploadThing API secret. | UploadThing dashboard. |
 | `UPLOADTHING_APP_ID` | Required when using UploadThing without token | Vercel | UploadThing app ID. | UploadThing dashboard. |
 | `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Optional | Vercel/local | Enables location picker/preview map UI. | Mapbox access token page. |
+| `TAMARA_API_BASE_URL` | Required for production billing | Vercel | Tamara API origin. Use `https://api.tamara.co` in production. | Tamara merchant integration setup. |
+| `TAMARA_API_TOKEN` | Required for billing | Vercel secret | Tamara merchant bearer token for checkout, authorise, capture, and order lookup. | Tamara Partners Portal API Tokens. |
+| `TAMARA_NOTIFICATION_TOKEN` | Required for webhooks | Vercel secret | Verifies Tamara webhook JWT signatures. | Tamara merchant integration setup. |
+| `TAMARA_PUBLIC_KEY` | Required for billing setup | Vercel | Tamara merchant public key. | Tamara merchant integration setup. |
+| `TAMARA_WEBHOOK_URL` | Required for webhooks | Vercel | Public webhook endpoint: `https://app.qentrah.com/api/v1/billing/tamara/webhook`. | Workspace production domain. |
+| `TAMARA_CAPTURE_MODE` | Required for billing | Vercel | Capture policy for the digital monthly plan. Set `immediate`. | Qentrah billing policy. |
 | `NEXT_PUBLIC_SENTRY_DSN` | Optional | Vercel | Client Sentry DSN. | Sentry project settings. |
 | `SENTRY_DSN` | Optional | Vercel | Server/edge Sentry DSN. | Sentry project settings. |
 | `SENTRY_ORG` | Optional build upload | Vercel | Sentry source map upload org. | Sentry settings. |

@@ -32,6 +32,12 @@ const required = [
   "UPLOADTHING_TOKEN",
   "UPLOADTHING_SECRET",
   "UPLOADTHING_APP_ID",
+  "TAMARA_API_BASE_URL",
+  "TAMARA_API_TOKEN",
+  "TAMARA_NOTIFICATION_TOKEN",
+  "TAMARA_PUBLIC_KEY",
+  "TAMARA_WEBHOOK_URL",
+  "TAMARA_CAPTURE_MODE",
 ];
 
 const expected = {
@@ -45,6 +51,9 @@ const expected = {
   CONVEX_SITE_URL: "https://stoic-monitor-13.convex.site",
   PARTNER_OAUTH_ISSUER: "https://app.qentrah.com",
   PARTNER_OAUTH_AUDIENCE: "https://app.qentrah.com/api/v1/partner",
+  TAMARA_API_BASE_URL: "https://api.tamara.co",
+  TAMARA_WEBHOOK_URL: "https://app.qentrah.com/api/v1/billing/tamara/webhook",
+  TAMARA_CAPTURE_MODE: "immediate",
 };
 
 const placeholder = /^<.*>$/u;

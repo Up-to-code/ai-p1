@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -13,53 +12,43 @@ const CTA = () => {
   const isAr = locale === "ar";
 
   return (
-    <section className="px-0 py-20 sm:px-6 md:py-28">
-      <div className="relative mx-auto w-full overflow-hidden border-y border-zinc-200 bg-zinc-950 shadow-2xl shadow-zinc-950/10 dark:border-white/10 sm:w-[90vw] sm:max-w-[1440px] sm:rounded-3xl sm:border">
-        <Image
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 object-cover opacity-70"
-          fill
-          priority={false}
-          sizes="(max-width: 640px) 100vw, 90vw"
-          src="/vectors/landing/cta_signal_texture.svg"
-        />
-
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(11,92,255,0.38),transparent_34%),linear-gradient(90deg,rgba(0,0,0,0.96),rgba(0,0,0,0.68)_54%,rgba(0,0,0,0.48))] rtl:bg-[radial-gradient(circle_at_82%_18%,rgba(11,92,255,0.38),transparent_34%),linear-gradient(270deg,rgba(0,0,0,0.96),rgba(0,0,0,0.68)_54%,rgba(0,0,0,0.48))]" />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/35 to-transparent" />
-
-        <div className="relative isolate px-6 py-14 sm:px-10 md:px-14 md:py-16">
-          <p className="mb-5 text-[10px] font-black uppercase tracking-[0.34em] text-blue-200">
+    <section className="px-6 py-20 md:py-32 bg-white dark:bg-[#0A0A0A] border-t border-zinc-200 dark:border-white/10">
+      <div className="mx-auto max-w-5xl text-center flex flex-col items-center">
+        <div className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-50 dark:bg-blue-500/10 px-4 py-1.5 mb-8 transition-colors hover:bg-blue-100 dark:hover:bg-blue-500/20 cursor-default">
+          <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+          <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
             {t("eyebrow")}
-          </p>
-          <h2
-            className={cn(
-              "max-w-3xl text-4xl font-bold text-white sm:text-5xl md:text-6xl",
-              isAr ? "leading-[1.18]" : "leading-[0.95] tracking-tight",
-            )}
-          >
-            {t("title")}
-          </h2>
-          <p className="mt-5 max-w-xl text-base leading-relaxed text-white/75 md:text-lg">
-            {t("description")}
-          </p>
+          </span>
+        </div>
 
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-            <Link
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-7 text-sm font-bold text-zinc-950 ring-4 ring-white/20 transition hover:bg-zinc-200"
-              href="/dashboard"
-            >
-              {t("primary")}
-              <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-            </Link>
-            <Link
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/15 bg-white/10 px-7 text-sm font-bold text-white transition hover:bg-white/15"
-              href="/contact"
-            >
-              {t("secondary")}
-              <ArrowUpRight className="h-4 w-4 rtl:-rotate-90" />
-            </Link>
-          </div>
+        <h2
+          className={cn(
+            "max-w-3xl text-4xl font-bold text-zinc-950 dark:text-white sm:text-5xl md:text-[4rem]",
+            isAr ? "leading-[1.2]" : "leading-[1.05] tracking-tight",
+          )}
+        >
+          {t("title")}
+        </h2>
+
+        <p className="mt-8 max-w-2xl text-base font-medium leading-relaxed text-zinc-500 dark:text-zinc-400 md:text-lg">
+          {t("description")}
+        </p>
+
+        <div className="mt-12 flex flex-col gap-4 sm:flex-row justify-center w-full sm:w-auto">
+          <Link
+            className="group inline-flex h-14 items-center justify-center gap-3 rounded-[14px] bg-blue-600 px-8 text-sm font-bold text-white transition-all duration-300 hover:bg-blue-700 hover:shadow-[0_0_20px_rgba(11,92,255,0.3)] active:scale-95"
+            href="/dashboard"
+          >
+            {t("primary")}
+            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
+          </Link>
+          <Link
+            className="group inline-flex h-14 items-center justify-center gap-3 rounded-[14px] border border-zinc-200 bg-white px-8 text-sm font-bold text-zinc-700 transition-all duration-300 hover:bg-zinc-50 hover:border-zinc-300 active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10 dark:hover:border-white/20"
+            href="/contact"
+          >
+            {t("secondary")}
+            <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 rtl:-rotate-90 rtl:group-hover:-translate-x-0.5 rtl:group-hover:-translate-y-0.5" />
+          </Link>
         </div>
       </div>
     </section>

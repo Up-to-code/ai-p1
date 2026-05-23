@@ -23,21 +23,21 @@ export function Faq02() {
   return (
     <PublicSection
       id="faq"
-      className="bg-white dark:bg-zinc-950"
-      contentClassName="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-start"
+      className="bg-white dark:bg-[#0A0A0A]"
+      contentClassName="grid gap-16 lg:grid-cols-[1fr_1.5fr] lg:items-start"
     >
       <Reveal>
-        <div className="max-w-xl space-y-5">
+        <div className="max-w-xl space-y-6">
           <div className="flex items-center gap-3">
             <span className="h-px w-8 bg-blue-500/25 dark:bg-blue-500/45" />
-            <span className="text-[10px] font-black uppercase tracking-[0.35em] text-blue-600 dark:text-blue-300">
+            <span className="text-[10px] font-black uppercase tracking-[0.35em] text-blue-600 dark:text-blue-400">
               {t("eyebrow")}
             </span>
           </div>
-          <h2 className="text-4xl font-bold tracking-tight text-zinc-950 dark:text-white md:text-6xl rtl:leading-[1.2]">
+          <h2 className="text-3xl font-bold tracking-tight text-zinc-950 dark:text-white md:text-5xl rtl:leading-[1.25]">
             {t("title")}
           </h2>
-          <p className="text-base leading-relaxed text-zinc-500 dark:text-zinc-400 md:text-lg">
+          <p className="text-base font-medium leading-relaxed text-zinc-500 dark:text-zinc-400 md:text-lg">
             {t("description")}
           </p>
         </div>
@@ -46,16 +46,20 @@ export function Faq02() {
       <Reveal delay={0.12}>
         <Accordion
           defaultValue={["item-0"]}
-          className="rounded-[2rem] border border-zinc-200 bg-zinc-50/70 px-6 shadow-sm dark:border-white/10 dark:bg-white/[0.04] md:px-8"
+          className="w-full"
         >
           {items.map((item, index) => (
             <AccordionItem
               key={item.question}
               value={`item-${index}`}
-              className="last:border-b-0"
+              className="border-b border-zinc-200 dark:border-white/10 px-2 transition-colors duration-300 hover:bg-zinc-50/50 dark:hover:bg-white/[0.02]"
             >
-              <AccordionTrigger>{item.question}</AccordionTrigger>
-              <AccordionContent>{item.answer}</AccordionContent>
+              <AccordionTrigger className="text-start py-6 text-base md:text-lg font-semibold text-zinc-900 dark:text-zinc-100 transition-all duration-300 hover:text-blue-600 dark:hover:text-blue-400 hover:no-underline">
+                {item.question}
+              </AccordionTrigger>
+              <AccordionContent className="text-sm md:text-base font-medium text-zinc-500 dark:text-zinc-400 leading-relaxed pb-6">
+                {item.answer}
+              </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>

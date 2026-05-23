@@ -92,6 +92,12 @@ Common Workspace variables:
 | `UPLOADTHING_TOKEN` | Secret | UploadThing encoded token |
 | `UPLOADTHING_SECRET` | Secret | UploadThing API secret |
 | `UPLOADTHING_APP_ID` | Server | UploadThing app ID |
+| `TAMARA_API_BASE_URL` | Server | Tamara API origin; production value is `https://api.tamara.co` |
+| `TAMARA_API_TOKEN` | Secret | Tamara merchant API token used for checkout, authorise, capture, and order lookup |
+| `TAMARA_NOTIFICATION_TOKEN` | Secret | Tamara notification token used to verify webhook JWT signatures |
+| `TAMARA_PUBLIC_KEY` | Server | Tamara merchant public key; set manually with the merchant integration credentials |
+| `TAMARA_WEBHOOK_URL` | Server | Public Tamara webhook endpoint, usually `https://app.qentrah.com/api/v1/billing/tamara/webhook` |
+| `TAMARA_CAPTURE_MODE` | Server | Tamara capture behavior; use `immediate` for the digital monthly workspace plan |
 | `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Browser | Map UI token |
 | `NEXT_PUBLIC_SENTRY_DSN` | Browser | Client Sentry DSN |
 | `SENTRY_DSN` | Server | Server Sentry DSN |
