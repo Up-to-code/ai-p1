@@ -6,9 +6,9 @@
   "private": true,
   "main": "electron/main.cjs",
   "scripts": {
-    "dev": "concurrently -k -n next,convex -c cyan,magenta \"next dev\" \"convex dev\"",
-    "dev:stack": "concurrently -k -n next,convex -c cyan,magenta \"next dev\" \"convex dev\"",
-    "desktop:dev": "concurrently -k -n next,convex,electron -c cyan,magenta,blue \"next dev\" \"convex dev\" \"electron .\"",
+    "dev": "concurrently -n next,convex -c cyan,magenta \"next dev\" \"convex dev\"",
+    "dev:stack": "concurrently -n next,convex -c cyan,magenta \"next dev\" \"convex dev\"",
+    "desktop:dev": "concurrently -n next,convex,electron -c cyan,magenta,blue \"next dev\" \"convex dev\" \"electron .\"",
     "desktop:assets": "node scripts/prepare-desktop-assets.mjs",
     "desktop:build:web": "node scripts/build-desktop-web.mjs",
     "desktop:pack": "npm run desktop:assets && npm run desktop:build:web && electron-builder --dir",

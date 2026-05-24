@@ -23,7 +23,6 @@ import {
   CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useTranslations, useLocale } from 'next-intl';
@@ -228,42 +227,29 @@ export function Sidebar() {
               const itemName = t(item.name);
 
               return (
-                <Tooltip key={item.name}>
-                  <TooltipTrigger
-                    render={
-                      <Link
-                        href={itemHref}
-                        className={cn(
-                          "flex h-10 items-center rounded-xl px-3 transition-all duration-200 group relative",
-                          isActive
-                            ? (isDarkMode ? "bg-white/10 text-white" : "bg-zinc-100 text-zinc-900")
-                            : (isDarkMode ? "text-zinc-500 hover:text-white hover:bg-white/5" : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"),
-                          isCollapsed && "justify-center px-0 mx-auto w-10"
-                        )}
-                      >
-                        <item.icon className={cn(
-                          "h-[18px] w-[18px] transition-all",
-                          isActive ? (isDarkMode ? "text-white" : "text-zinc-900") : "group-hover:text-zinc-900 dark:group-hover:text-white"
-                        )} />
-                        {!isCollapsed && (
-                          <span className={cn(
-                            "ms-4 text-[13px] transition-all flex-1 font-bold tracking-tight"
-                          )}>
-                            {itemName}
-                          </span>
-                        )}
-                      </Link>
-                    }
-                  />
-                  {isCollapsed && (
-                    <TooltipContent side={isRtl ? "left" : "right"} className={cn(
-                      "text-white border-white/10",
-                      isDarkMode ? "bg-zinc-900" : "bg-zinc-950 shadow-none"
-                    )}>
-                      {itemName}
-                    </TooltipContent>
+                <Link
+                  key={item.name}
+                  href={itemHref}
+                  aria-label={isCollapsed ? itemName : undefined}
+                  title={isCollapsed ? itemName : undefined}
+                  className={cn(
+                    "group relative flex h-10 items-center rounded-xl px-3 transition-all duration-200",
+                    isActive
+                      ? (isDarkMode ? "bg-white/10 text-white" : "bg-zinc-100 text-zinc-900")
+                      : (isDarkMode ? "text-zinc-500 hover:bg-white/5 hover:text-white" : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"),
+                    isCollapsed && "mx-auto w-10 justify-center px-0"
                   )}
-                </Tooltip>
+                >
+                  <item.icon className={cn(
+                    "h-[18px] w-[18px] transition-all",
+                    isActive ? (isDarkMode ? "text-white" : "text-zinc-900") : "group-hover:text-zinc-900 dark:group-hover:text-white"
+                  )} />
+                  {!isCollapsed && (
+                    <span className="ms-4 flex-1 text-[13px] font-bold tracking-tight transition-all">
+                      {itemName}
+                    </span>
+                  )}
+                </Link>
               );
             })}
           </div>
@@ -410,130 +396,114 @@ export function Sidebar() {
             </div>
           )}
 
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <div
-                  className={cn(
-                    "block rounded-2xl transition-all",
-                    isCollapsed && "mx-auto flex h-10 w-10 items-center justify-center rounded-full"
-                  )}
-                >
-                  {!isCollapsed && (
-                    <Link
-                      href="/settings/organization"
-                      className={cn(
-                        "mb-2 block rounded-2xl border p-3 transition-all",
-                        isDarkMode ? "border-white/10 bg-zinc-900/40 hover:bg-white/5" : "border-zinc-200 bg-white hover:bg-zinc-50"
-                      )}
-                    >
-                      <div className="flex items-start gap-2.5">
-                        <div className={cn(
-                          "flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl text-[10px] font-black uppercase",
-                          isDarkMode ? "bg-white/10 text-white" : "bg-zinc-100 text-zinc-900"
-                        )}>
-                          {account.organization.logo ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={account.organization.logo}
-                              alt={organizationDisplayName}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            account.organization.initials || <Building2 className="h-4 w-4" />
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p
-                            className={cn(
-                              "truncate text-[13px] font-black tracking-tight",
-                              isDarkMode ? "text-white" : "text-zinc-900"
-                            )}
-                            title={organizationDisplayName}
-                          >
-                            {organizationDisplayName}
-                          </p>
-                          <div className="mt-1 flex items-center gap-1.5">
-                            <ShieldCheck className="h-3 w-3 shrink-0 text-emerald-500" />
-                            <span
-                              className={cn(
-                                "truncate text-[10px] font-bold uppercase tracking-wider",
-                                isDarkMode ? "text-zinc-500" : "text-zinc-400"
-                              )}
-                              title={locale === "ar" ? "إعدادات المؤسسة" : "Organization settings"}
-                            >
-                              {locale === "ar" ? "إعدادات المؤسسة" : "Organization settings"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  )}
-
-                  <Link
-                    href="/profile/settings"
-                    className={cn(
-                      "group flex items-center gap-3 rounded-2xl transition-all",
-                      isDarkMode ? "hover:bg-white/5" : "hover:bg-zinc-50",
-                      isCollapsed ? "justify-center" : "px-1.5 py-1.5"
-                    )}
-                  >
-                    <IdentityAvatar
-                      image={account.user.image}
-                      initials={account.user.initials}
-                      name={account.user.name}
-                      isDarkMode={isDarkMode}
-                    />
-                    {!isCollapsed && (
-                      <>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <p className={cn(
-                              "max-w-[9.5rem] truncate text-sm font-black leading-tight",
-                              isDarkMode ? "text-white" : "text-zinc-900"
-                            )} title={account.user.name}>
-                              {account.user.name}
-                            </p>
-                            <span className={cn(
-                              "hidden max-w-[6.5rem] shrink-0 truncate rounded-full px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider sm:inline-flex",
-                              isDarkMode ? "bg-white/10 text-zinc-400" : "bg-zinc-100 text-zinc-500"
-                            )} title={organizationDisplayName}>
-                              {locale === "ar" ? "فريق" : "Team"}
-                            </span>
-                          </div>
-                          <div className="mt-1 flex min-w-0 items-center gap-1.5">
-                            <Mail className={cn(
-                              "h-3 w-3 shrink-0",
-                              isDarkMode ? "text-zinc-600" : "text-zinc-400"
-                            )} />
-                            <p className={cn(
-                              "max-w-[14rem] truncate text-[11px] font-semibold",
-                              isDarkMode ? "text-zinc-500" : "text-zinc-500"
-                            )} title={account.user.email}>
-                              {account.user.email}
-                            </p>
-                          </div>
-                        </div>
-                        <MoreHorizontal className="me-1 h-4 w-4 shrink-0 text-zinc-400 transition-colors group-hover:text-zinc-900 dark:group-hover:text-white" />
-                      </>
-                    )}
-                  </Link>
-                </div>
-              }
-            />
-            {isCollapsed && (
-              <TooltipContent side={isRtl ? "left" : "right"} className={cn(
-                "max-w-56 text-white border-white/10",
-                isDarkMode ? "bg-zinc-900" : "bg-zinc-950 shadow-none"
-              )}>
-                <div className="space-y-1">
-                  <p className="truncate text-xs font-bold">{account.user.name}</p>
-                  <p className="truncate text-[11px] text-zinc-400">{account.user.email}</p>
-                  <p className="truncate text-[10px] uppercase tracking-wider text-zinc-500">{organizationDisplayName}</p>
-                </div>
-              </TooltipContent>
+          <div
+            className={cn(
+              "block rounded-2xl transition-all",
+              isCollapsed && "mx-auto flex h-10 w-10 items-center justify-center rounded-full"
             )}
-          </Tooltip>
+          >
+            {!isCollapsed && (
+              <Link
+                href="/settings/organization"
+                className={cn(
+                  "mb-2 block rounded-2xl border p-3 transition-all",
+                  isDarkMode ? "border-white/10 bg-zinc-900/40 hover:bg-white/5" : "border-zinc-200 bg-white hover:bg-zinc-50"
+                )}
+              >
+                <div className="flex items-start gap-2.5">
+                  <div className={cn(
+                    "flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl text-[10px] font-black uppercase",
+                    isDarkMode ? "bg-white/10 text-white" : "bg-zinc-100 text-zinc-900"
+                  )}>
+                    {account.organization.logo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={account.organization.logo}
+                        alt={organizationDisplayName}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      account.organization.initials || <Building2 className="h-4 w-4" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={cn(
+                        "truncate text-[13px] font-black tracking-tight",
+                        isDarkMode ? "text-white" : "text-zinc-900"
+                      )}
+                      title={organizationDisplayName}
+                    >
+                      {organizationDisplayName}
+                    </p>
+                    <div className="mt-1 flex items-center gap-1.5">
+                      <ShieldCheck className="h-3 w-3 shrink-0 text-emerald-500" />
+                      <span
+                        className={cn(
+                          "truncate text-[10px] font-bold uppercase tracking-wider",
+                          isDarkMode ? "text-zinc-500" : "text-zinc-400"
+                        )}
+                        title={locale === "ar" ? "إعدادات المؤسسة" : "Organization settings"}
+                      >
+                        {locale === "ar" ? "إعدادات المؤسسة" : "Organization settings"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            )}
+
+            <Link
+              href="/profile/settings"
+              aria-label={isCollapsed ? account.user.name : undefined}
+              title={isCollapsed ? account.user.name : undefined}
+              className={cn(
+                "group flex items-center gap-3 rounded-2xl transition-all",
+                isDarkMode ? "hover:bg-white/5" : "hover:bg-zinc-50",
+                isCollapsed ? "justify-center" : "px-1.5 py-1.5"
+              )}
+            >
+              <IdentityAvatar
+                image={account.user.image}
+                initials={account.user.initials}
+                name={account.user.name}
+                isDarkMode={isDarkMode}
+              />
+              {!isCollapsed && (
+                <>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <p className={cn(
+                        "max-w-[9.5rem] truncate text-sm font-black leading-tight",
+                        isDarkMode ? "text-white" : "text-zinc-900"
+                      )} title={account.user.name}>
+                        {account.user.name}
+                      </p>
+                      <span className={cn(
+                        "hidden max-w-[6.5rem] shrink-0 truncate rounded-full px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider sm:inline-flex",
+                        isDarkMode ? "bg-white/10 text-zinc-400" : "bg-zinc-100 text-zinc-500"
+                      )} title={organizationDisplayName}>
+                        {locale === "ar" ? "فريق" : "Team"}
+                      </span>
+                    </div>
+                    <div className="mt-1 flex min-w-0 items-center gap-1.5">
+                      <Mail className={cn(
+                        "h-3 w-3 shrink-0",
+                        isDarkMode ? "text-zinc-600" : "text-zinc-400"
+                      )} />
+                      <p className={cn(
+                        "max-w-[14rem] truncate text-[11px] font-semibold",
+                        isDarkMode ? "text-zinc-500" : "text-zinc-500"
+                      )} title={account.user.email}>
+                        {account.user.email}
+                      </p>
+                    </div>
+                  </div>
+                  <MoreHorizontal className="me-1 h-4 w-4 shrink-0 text-zinc-400 transition-colors group-hover:text-zinc-900 dark:group-hover:text-white" />
+                </>
+              )}
+            </Link>
+          </div>
         </div>
       </div>
       <Dialog open={threadHistoryOpen} onOpenChange={setThreadHistoryOpen}>

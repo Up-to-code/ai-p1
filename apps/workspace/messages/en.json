@@ -50,10 +50,12 @@
     },
     "normal": {
       "newProperties": "New properties",
+      "newProjects": "New projects",
       "latestClients": "Latest clients",
       "upcomingMeeting": "Upcoming meeting",
       "viewAll": "View all",
       "noProperties": "No properties yet",
+      "noProjects": "No projects yet",
       "noClients": "No clients yet",
       "noMeetings": "No meetings scheduled",
       "property": {
@@ -941,6 +943,9 @@
     "connecting": "Connecting...",
     "createAccount": "Create an Account",
     "createAccountDesc": "Join the central synchronization engine for Saudi real estate.",
+    "visualEyebrow": "Market truth, partner motion, workspace action",
+    "visualTitle": "One operating desk for the real estate day.",
+    "visualDescription": "Qentrah keeps the work close to the signal: inventory, clients, approvals, and the next move.",
     "encrypted": "End-to-end encrypted",
     "clearTerms": "Clear legal terms",
     "agreementPrefix": "By continuing, you agree to our",

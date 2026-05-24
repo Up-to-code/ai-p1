@@ -1,11 +1,11 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { brandLabel } from "@qentrah/brand-identity";
-import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/better-auth/server";
+import { fetchAuthMutation } from "@/server/auth/better-auth/server";
 import { agentRuntimeConfig } from "@/server/config/agent-runtime";
 import { evaluateAgentRequestRisk } from "../policies/risk-policy";
-import { allReadAgentPermissions, allowedAgentTools, type AgentToolDefinition } from "../tools/catalog";
 import { hasOpenRouterConfig, streamOpenRouterText } from "./openrouter";
+import { buildAgentToolSet, type AgentToolResult } from "./tool-adapter";
 
 type AgentStreamEvent =
   | { type: "meta"; threadId: string; runId: string }
@@ -19,15 +19,11 @@ type AgentRunIds = {
   runId: Id<"agentRuns">;
 };
 
-type RetrievedContext = {
-  tool: AgentToolDefinition;
-  status: "allowed" | "blocked" | "failed";
-  output?: unknown;
-  error?: string;
-};
+type AgentResponseLanguage = "ar" | "en" | "auto";
 
 const encoder = new TextEncoder();
-const CHAT_CONTEXT_TIMEOUT_MS = 1_500;
+const arabicCharacterPattern = /[\u0600-\u06FF]/g;
+const latinCharacterPattern = /[A-Za-z]/g;
 
 function encodeEvent(event: AgentStreamEvent) {
   return encoder.encode(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`);
@@ -36,59 +32,6 @@ function encodeEvent(event: AgentStreamEvent) {
 function compact(value: unknown, maxLength = 1200) {
   const text = typeof value === "string" ? value : JSON.stringify(value);
   return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
-}
-
-async function withTimeoutFallback<T>(promise: Promise<T>, fallback: T, timeoutMs: number): Promise<T> {
-  let timeout: ReturnType<typeof setTimeout> | undefined;
-  const guarded = promise.catch(() => fallback);
-  const timed = new Promise<T>((resolve) => {
-    timeout = setTimeout(() => resolve(fallback), timeoutMs);
-  });
-  const result = await Promise.race([guarded, timed]);
-  if (timeout) clearTimeout(timeout);
-  return result;
-}
-
-function detectSearchTerm(message: string) {
-  const quoted = message.match(/["']([^"']{2,80})["']/)?.[1];
-  if (quoted) return quoted;
-
-  const afterClient = message.match(/\b(?:client|lead|customer)\s+([a-zA-Z0-9\u0600-\u06FF -]{2,40})/i)?.[1];
-  return afterClient?.trim();
-}
-
-function wantsAny(message: string, words: string[]) {
-  const lower = message.toLowerCase();
-  return words.some((word) => lower.includes(word));
-}
-
-function selectContextTools(message: string) {
-  const tools = allowedAgentTools(allReadAgentPermissions());
-  const selected = new Map<string, AgentToolDefinition>();
-  const add = (name: string) => {
-    const tool = tools.find((item) => item.name === name);
-    if (tool) selected.set(tool.name, tool);
-  };
-
-  add("organization_context");
-  if (wantsAny(message, ["client", "lead", "customer", "buyer", "tenant", "investor", "broker"])) {
-    add("clients_search");
-  }
-  if (wantsAny(message, ["calendar", "meeting", "schedule", "appointment", "viewing", "visit", "time"])) {
-    add("calendar_range");
-    add("clients_search");
-  }
-  if (wantsAny(message, ["property", "apartment", "unit", "inventory", "villa"])) {
-    add("properties_search");
-  }
-  if (wantsAny(message, ["project", "developer", "launch"])) {
-    add("projects_search");
-  }
-  if (wantsAny(message, ["task", "follow up", "todo", "to-do"])) {
-    add("tasks_list");
-  }
-
-  return Array.from(selected.values());
 }
 
 async function recordStep(ids: AgentRunIds, organizationId: string, phase: "retrieve" | "plan" | "policy" | "execute" | "summarize", status: "started" | "completed" | "blocked" | "failed", summary: string) {
@@ -102,7 +45,7 @@ async function recordStep(ids: AgentRunIds, organizationId: string, phase: "retr
   }).catch(() => undefined);
 }
 
-async function recordTool(ids: AgentRunIds, organizationId: string, result: RetrievedContext) {
+async function recordTool(ids: AgentRunIds, organizationId: string, result: AgentToolResult) {
   await fetchAuthMutation(api.agents.write.recordToolCallFromHono, {
     organizationId,
     threadId: ids.threadId,
@@ -111,108 +54,73 @@ async function recordTool(ids: AgentRunIds, organizationId: string, result: Retr
     resource: result.tool.resource,
     action: result.tool.action,
     status: result.status,
+    inputPreview: result.input ? compact(result.input, 900) : undefined,
     outputPreview: result.output ? compact(result.output, 900) : undefined,
     error: result.error,
   }).catch(() => undefined);
 }
 
-async function runContextTool(organizationId: string, tool: AgentToolDefinition, message: string): Promise<RetrievedContext> {
-  try {
-    if (tool.name === "organization_context") {
-      return {
-        tool,
-        status: "allowed",
-        output: await fetchAuthQuery(api.organizations.profile.read.getProfile, { organizationId }),
-      };
-    }
+export function detectAgentResponseLanguage(message: string): AgentResponseLanguage {
+  const arabicCount = message.match(arabicCharacterPattern)?.length ?? 0;
+  const latinCount = message.match(latinCharacterPattern)?.length ?? 0;
 
-    if (tool.name === "clients_search") {
-      return {
-        tool,
-        status: "allowed",
-        output: await fetchAuthQuery(api.clients.read.listPaged, {
-          organizationId,
-          paginationOpts: { numItems: 8, cursor: null },
-          search: detectSearchTerm(message),
-        }),
-      };
-    }
-
-    if (tool.name === "properties_search") {
-      return {
-        tool,
-        status: "allowed",
-        output: await fetchAuthQuery(api.properties.read.listPaged, {
-          organizationId,
-          paginationOpts: { numItems: 8, cursor: null },
-        }),
-      };
-    }
-
-    if (tool.name === "projects_search") {
-      return {
-        tool,
-        status: "allowed",
-        output: await fetchAuthQuery(api.projects.read.listPaged, {
-          organizationId,
-          paginationOpts: { numItems: 8, cursor: null },
-        }),
-      };
-    }
-
-    if (tool.name === "calendar_range") {
-      const now = Date.now();
-      return {
-        tool,
-        status: "allowed",
-        output: await fetchAuthQuery(api.calendar.read.listRange, {
-          organizationId,
-          startAt: now - 24 * 60 * 60 * 1000,
-          endAt: now + 30 * 24 * 60 * 60 * 1000,
-        }),
-      };
-    }
-
-    if (tool.name === "tasks_list") {
-      return {
-        tool,
-        status: "allowed",
-        output: await fetchAuthQuery(api.clientTasks.read.list, { organizationId }),
-      };
-    }
-
-    return { tool, status: "blocked", error: "Tool is not available to the in-app agent yet." };
-  } catch (error) {
-    return {
-      tool,
-      status: "failed",
-      error: error instanceof Error ? error.message : "Tool failed.",
-    };
-  }
+  if (arabicCount >= 3 && arabicCount >= latinCount * 0.45) return "ar";
+  if (latinCount >= 3 && latinCount > arabicCount) return "en";
+  return "auto";
 }
 
-async function retrieveContext(ids: AgentRunIds, organizationId: string, message: string, write: (event: AgentStreamEvent) => Promise<void>) {
-  const tools = selectContextTools(message);
-
-  await recordStep(ids, organizationId, "retrieve", "started", "Selecting permission-checked workspace context.");
-  for (const tool of tools) {
-    await write({ type: "status", message: tool.title });
+function responseLanguageInstruction(language: AgentResponseLanguage) {
+  if (language === "ar") {
+    return [
+      "The latest user request is Arabic. Answer in clean Arabic prose and avoid mixed English unless the exact stored value must stay unchanged.",
+      "Use Arabic brand wording in Arabic responses.",
+      "Translate known business labels and enum/status values in Arabic answers, including Broker=وسيط, Closed=مغلق, High=عالية, Active=نشط.",
+      "Preserve exact stored values that should not be translated: person names, project/property titles, emails, phone numbers, IDs, dates, URLs, references, prices, and copied legal or record text.",
+      "If a value is ambiguous, preserve the original value exactly instead of guessing a translation.",
+      "When answering in Arabic, translate Markdown table headers and field labels into Arabic.",
+    ].join(" ");
   }
-  const results = await Promise.all(
-    tools.map((tool) => runContextTool(organizationId, tool, message)),
-  );
-  await Promise.allSettled(results.map((result) => recordTool(ids, organizationId, result)));
-  await recordStep(ids, organizationId, "retrieve", "completed", `Retrieved ${results.length} context item(s).`);
 
-  return results;
-}
+  if (language === "en") {
+    return [
+      "The latest user request is English. Answer in clean English.",
+      "Preserve exact stored names, project/property titles, emails, phone numbers, IDs, dates, URLs, references, prices, and copied legal or record text.",
+    ].join(" ");
+  }
 
-function buildSystemPrompt() {
-  const brand = brandLabel("en");
   return [
-    `You are ${brand}'s organization agent for a real estate workspace.`,
-    "You can help with clients, properties, projects, calendar, tasks, and media context.",
-    "Never claim to have changed data unless the tool context explicitly says an action succeeded.",
+    "Follow the dominant language of the latest user request, or the language of the direct instruction when the message is mixed.",
+    "If answering in Arabic, use clean Arabic prose, translate known business labels/statuses, and preserve exact stored names, phones, emails, IDs, dates, URLs, references, prices, and titles.",
+    "If a value is ambiguous, preserve it exactly instead of guessing a translation.",
+  ].join(" ");
+}
+
+function modelLanguageLine(language: AgentResponseLanguage) {
+  if (language === "ar") {
+    return "Response language: Arabic. Use Arabic prose and Arabic table labels. Translate known labels/statuses such as Broker=وسيط, Closed=مغلق, High=عالية, Active=نشط. Preserve exact stored names, phones, emails, IDs, dates, URLs, references, prices, and titles.";
+  }
+
+  if (language === "en") {
+    return "Response language: English. Preserve exact stored names, phones, emails, IDs, dates, URLs, references, prices, and titles.";
+  }
+
+  return "Response language: follow the user's dominant language. If mixed, use the language of the direct instruction. Preserve exact stored values.";
+}
+
+function buildSystemPrompt(language: AgentResponseLanguage) {
+  const brand = brandLabel(language === "ar" ? "ar" : "en");
+  return [
+    language === "ar"
+      ? `أنت وكيل مؤسسة ${brand} لمساحة عمل عقارية.`
+      : `You are ${brand}'s organization agent for a real estate workspace.`,
+    "You can help with clients, properties, projects, calendar, tasks, and media.",
+    responseLanguageInstruction(language),
+    "Workspace tools are available, but optional. Use a tool only when the user needs current workspace data or clearly asks you to change workspace data.",
+    "Do not call tools just because the user mentions a domain word like client, task, project, or calendar. Domain words are hints, not commands.",
+    "If the answer can be given from the user's message and general operational guidance, answer directly without tools.",
+    "Use conversation_memory only when the user refers to prior context, says remember, or asks to continue the same thread.",
+    "For create, update, delete, schedule, attach, or complete actions, call the matching tool only when all required fields are known. If fields are missing, ask for them.",
+    "Never claim to have changed data unless a tool result explicitly says the action succeeded.",
     "Dangerous organization settings are blocked: removing members, editing organization identity/name, and editing legal documents.",
     "When a blocked action is requested, explain the boundary briefly and point the user to manual organization settings.",
     "Use concise, operational language. Do not expose internal tool names unless useful for debugging.",
@@ -223,26 +131,12 @@ function buildSystemPrompt() {
 
 function buildModelPrompt(input: {
   message: string;
-  history: Array<{ role: string; content: string }>;
-  summary?: string;
-  facts: string[];
-  context: RetrievedContext[];
+  responseLanguage: AgentResponseLanguage;
 }) {
-  const history = input.history
-    .slice(-12)
-    .map((message) => `${message.role}: ${message.content}`)
-    .join("\n");
-  const context = input.context
-    .map((item) => `${item.tool.title} (${item.status}): ${item.error ?? compact(item.output)}`)
-    .join("\n\n");
-
   return [
-    input.summary ? `Thread summary:\n${input.summary}` : "",
-    input.facts.length > 0 ? `Remembered facts:\n${input.facts.map((fact) => `- ${fact}`).join("\n")}` : "",
-    history ? `Recent conversation:\n${history}` : "",
-    context ? `Workspace context:\n${context}` : "",
+    modelLanguageLine(input.responseLanguage),
     `User request:\n${input.message}`,
-    "Respond with the next useful answer in clean Markdown. If scheduling or writing data needs missing exact fields, ask for those fields instead of pretending.",
+    "Respond with the next useful answer in clean Markdown. Use tools only if they are needed for this exact request.",
   ].filter(Boolean).join("\n\n");
 }
 
@@ -329,25 +223,7 @@ export function createAgentChatStream(input: {
           controller.close();
           return;
         }
-        await recordStep(runIds, input.organizationId, "policy", "completed", "Request passed agent risk policy.");
-
-        const [threadContext, context] = await Promise.all([
-          withTimeoutFallback(
-            fetchAuthQuery(api.agents.read.getThreadContext, {
-              organizationId: input.organizationId,
-              threadId: runIds.threadId,
-              limit: 16,
-            }),
-            { messages: [], summary: undefined, facts: [] },
-            CHAT_CONTEXT_TIMEOUT_MS,
-          ),
-          withTimeoutFallback(
-            retrieveContext(runIds, input.organizationId, input.message, write),
-            [],
-            CHAT_CONTEXT_TIMEOUT_MS,
-          ),
-        ]);
-        await recordStep(runIds, input.organizationId, "plan", "completed", "Built model prompt from recent memory and workspace context.");
+        void recordStep(runIds, input.organizationId, "policy", "completed", "Request passed agent risk policy.");
 
         if (!hasOpenRouterConfig()) {
           const fallback = "AI mode is connected, but OpenRouter is not configured yet. Add OPENROUTER_API_KEY on the server so I can stream model responses. The agent safety, memory, and Convex context path are already active.";
@@ -358,21 +234,26 @@ export function createAgentChatStream(input: {
           return;
         }
 
+        await write({ type: "status", message: "Preparing tools" });
+        const tools = await buildAgentToolSet({
+          organizationId: input.organizationId,
+          threadId: runIds.threadId,
+          onStatus: (message) => write({ type: "status", message }),
+          onToolResult: (result) => recordTool(runIds, input.organizationId, result),
+        });
+        void recordStep(runIds, input.organizationId, "plan", "completed", `Exposed ${Object.keys(tools).length} model-selected tool(s).`);
+
         await write({ type: "status", message: "Streaming answer" });
-        await recordStep(runIds, input.organizationId, "summarize", "started", "Streaming model response.");
+        void recordStep(runIds, input.organizationId, "summarize", "started", "Streaming model response.");
+        const responseLanguage = detectAgentResponseLanguage(input.message);
 
         const result = streamOpenRouterText({
-          system: buildSystemPrompt(),
+          system: buildSystemPrompt(responseLanguage),
           prompt: buildModelPrompt({
             message: input.message,
-            history: threadContext.messages.map((message) => ({
-              role: message.role,
-              content: message.content,
-            })),
-            summary: threadContext.summary,
-            facts: threadContext.facts,
-            context,
+            responseLanguage,
           }),
+          tools,
           abortSignal: input.abortSignal,
         });
 

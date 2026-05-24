@@ -109,50 +109,97 @@ function statusTone(status: ProjectStatus) {
 
 function ProjectTile({ project, onDelete }: { project: Project; onDelete: (project: Project) => void }) {
   const t = useTranslations('Projects');
+  const image = project.coverImageUrl || project.image;
+
   return (
     <article className="group overflow-hidden rounded-[24px] border border-zinc-100 bg-white transition-colors hover:border-zinc-300 dark:border-white/5 dark:bg-[#0A0A0A]">
-      <Link href={`/projects/${project.id}`} className="relative block h-44 w-full overflow-hidden bg-zinc-100 text-start focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:bg-white/5">
-        {project.coverImageUrl ? (
-          <Image src={project.coverImageUrl} alt={project.name} fill sizes="(max-width: 768px) 100vw, 360px" className="object-cover opacity-80 grayscale transition-transform duration-700 group-hover:scale-105 group-hover:grayscale-0" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-300 dark:bg-white/5 dark:text-white/20">
-            <Building2 className="h-8 w-8" />
+      <div className="grid min-h-[236px] lg:grid-cols-[minmax(260px,0.8fr)_minmax(0,1fr)]">
+        <Link href={`/projects/${project.id}`} className="relative block min-h-[220px] overflow-hidden bg-zinc-100 text-start focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:bg-white/5">
+          {image ? (
+            <Image src={image} alt={project.name} fill sizes="(max-width: 1024px) 100vw, 480px" className="object-cover opacity-85 grayscale transition duration-700 group-hover:scale-[1.03] group-hover:opacity-100 group-hover:grayscale-0" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-300 dark:bg-white/5 dark:text-white/20">
+              <Building2 className="h-8 w-8" />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
+          <div className="pointer-events-none absolute -end-16 -top-16 h-40 w-40 rounded-full bg-[#0B5CFF]/25 opacity-30 blur-3xl transition-opacity group-hover:opacity-80" />
+          <div className="absolute inset-x-0 bottom-0 p-5">
+            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-white/55">{project.reference}</p>
+            <h3 className="mt-2 line-clamp-2 text-lg font-black leading-tight text-white">{project.name}</h3>
+            <p className="mt-2 flex min-w-0 items-center gap-1.5 text-[10px] font-bold text-white/65">
+              <MapPin className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{project.city || project.area || "—"}</span>
+            </p>
           </div>
-        )}
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-          <h3 className="truncate text-sm font-black uppercase tracking-tight text-white">{project.name}</h3>
-          <p className="mt-1 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-white/60">
-            <MapPin className="h-3 w-3" />
-            {project.city}
-          </p>
-        </div>
-      </Link>
-      <div className="space-y-4 p-4">
-        <div className="flex items-center justify-between gap-3">
-          <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
-          <span className="text-[9px] font-black uppercase tracking-widest text-zinc-300">{project.reference}</span>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-xl bg-zinc-50 p-3 dark:bg-white/[0.02]">
-            <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{t('card.units')}</p>
-            <p className="mt-1 text-sm font-black text-zinc-900 dark:text-white">{project.units}</p>
+        </Link>
+
+        <div className="flex min-w-0 flex-col justify-between p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
+              <p className="mt-4 line-clamp-2 text-sm font-black text-zinc-950 dark:text-white">{project.developer || project.type}</p>
+              <p className="mt-1 truncate text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-400">{t(`types.${project.type}`)}</p>
+            </div>
+            <div className="flex shrink-0 items-center gap-1">
+              <Link href={`/projects/${project.id}/edit`} aria-label={`Edit ${project.name}`} className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-400 transition hover:bg-zinc-50 hover:text-zinc-950 focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:hover:bg-white/[0.06] dark:hover:text-white">
+                <Edit className="h-3.5 w-3.5" />
+              </Link>
+              <button type="button" aria-label={`Delete ${project.name}`} onClick={() => onDelete(project)} className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-400 transition hover:bg-red-50 hover:text-red-500 focus-visible:ring-2 focus-visible:ring-red-500/20 dark:hover:bg-red-500/10">
+                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
+            </div>
           </div>
-          <div className="rounded-xl bg-zinc-50 p-3 dark:bg-white/[0.02]">
-            <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{t('card.value')}</p>
-            <p className="mt-1 truncate text-sm font-black text-zinc-900 dark:text-white">{project.priceRange}</p>
+
+          <div className="mt-6 grid grid-cols-2 border-t border-zinc-100 pt-4 dark:border-white/5">
+            <div className="min-w-0 pe-4">
+              <p className="text-[9px] font-black uppercase tracking-[0.14em] text-zinc-400">{t('card.value')}</p>
+              <p className="mt-2 truncate text-base font-black text-zinc-950 dark:text-white">{project.priceRange}</p>
+            </div>
+            <div className="min-w-0 border-s border-zinc-100 ps-4 dark:border-white/5">
+              <p className="text-[9px] font-black uppercase tracking-[0.14em] text-zinc-400">{t('card.units')}</p>
+              <p className="mt-2 text-base font-black text-zinc-950 dark:text-white">{project.units}</p>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center justify-between border-t border-zinc-100 pt-4 dark:border-white/5">
-          <Link href={`/projects/${project.id}/edit`} className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl px-4 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:bg-zinc-50 hover:text-zinc-900 focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:hover:bg-white/5 dark:hover:text-white">
-            <Edit className="h-3.5 w-3.5" />
-            {t('card.edit')}
-          </Link>
-          <button type="button" aria-label={`Delete ${project.name}`} onClick={() => onDelete(project)} className="text-zinc-300 transition-colors hover:text-red-500 focus-visible:ring-2 focus-visible:ring-red-500/20">
-            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-          </button>
         </div>
       </div>
     </article>
+  );
+}
+
+function ProjectPortfolioStrip({
+  stats,
+}: {
+  stats?: { total?: number; approved?: number; pending?: number; draft?: number };
+}) {
+  const t = useTranslations("Projects");
+  const items = [
+    { label: t("stats.size"), value: stats?.total ?? "...", icon: FolderOpen },
+    { label: t("stats.approved"), value: stats?.approved ?? "...", dotClassName: "bg-emerald-500" },
+    { label: t("stats.review"), value: stats?.pending ?? "...", dotClassName: "bg-amber-500" },
+    { label: t("stats.drafts"), value: stats?.draft ?? "...", icon: Copy },
+  ];
+
+  return (
+    <section className="grid overflow-hidden rounded-[22px] border border-zinc-100 bg-zinc-100 gap-px dark:border-white/5 dark:bg-white/5 sm:grid-cols-2 xl:grid-cols-4">
+      {items.map((item) => {
+        const Icon = item.icon;
+
+        return (
+          <div key={item.label} className="flex min-h-20 items-center justify-between gap-4 bg-white px-5 py-4 dark:bg-[#0A0A0A]">
+            <div className="min-w-0">
+              <p className="truncate text-[9px] font-black uppercase tracking-[0.16em] text-zinc-400">{item.label}</p>
+              <p className="mt-2 text-2xl font-black uppercase tracking-tight text-zinc-950 dark:text-white">{item.value}</p>
+            </div>
+            {Icon ? (
+              <Icon className="h-4 w-4 shrink-0 text-zinc-300 dark:text-zinc-600" />
+            ) : (
+              <span className={cn("h-2 w-2 shrink-0 rounded-full", item.dotClassName)} />
+            )}
+          </div>
+        );
+      })}
+    </section>
   );
 }
 
@@ -222,18 +269,13 @@ export function ProjectsWorkspace() {
   ];
 
   return (
-    <AppPageShell>
+    <AppPageShell maxWidth="full" contentClassName="space-y-8">
       <AppPageHeader
         eyebrow={t('eyebrow')}
         title={t('title') + "."}
         actions={<Link href="/projects/create"><AppPrimaryButton><Plus className="me-2 h-3.5 w-3.5" />{t('add')}</AppPrimaryButton></Link>}
       />
-      <AppStatsGrid stats={[
-        { label: t('stats.size'), value: stats?.total ?? "...", icon: FolderOpen },
-        { label: t('stats.approved'), value: stats?.approved ?? "...", dotClassName: "bg-emerald-500" },
-        { label: t('stats.review'), value: stats?.pending ?? "...", dotClassName: "bg-amber-500" },
-        { label: t('stats.drafts'), value: stats?.draft ?? "...", icon: Copy },
-      ]} />
+      <ProjectPortfolioStrip stats={stats} />
       <AppToolbar
         filters={[
           { value: "all", label: t('toolbar.filters.all') },
@@ -255,7 +297,7 @@ export function ProjectsWorkspace() {
       ) : isQueryBlocked ? (
         <HttpQueryState query={projectsQuery} variant={view === "grid" ? "grid" : "table"} />
       ) : view === "grid" ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
           {filteredProjects.map((project) => <ProjectTile key={project.id} project={project} onDelete={setDeleting} />)}
         </div>
       ) : (

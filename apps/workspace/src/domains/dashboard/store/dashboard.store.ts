@@ -4,11 +4,15 @@ export type WorkspaceMode = 'ws' | 'ai';
 
 interface WorkspaceState {
   mode: WorkspaceMode;
+  activeAiThreadId?: string;
+  setActiveAiThreadId: (threadId?: string) => void;
   setMode: (mode: WorkspaceMode) => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({
   mode: 'ws',
+  activeAiThreadId: undefined,
+  setActiveAiThreadId: (threadId) => set({ activeAiThreadId: threadId }),
   setMode: (mode) => set({ mode }),
 }));
 

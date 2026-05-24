@@ -15,6 +15,7 @@ describe("workspace dashboard localization", () => {
 
     for (const hardcodedLabel of [
       '"New properties"',
+      '"New projects"',
       '"Latest clients"',
       '"Upcoming meeting"',
       '"View all"',
@@ -27,8 +28,7 @@ describe("workspace dashboard localization", () => {
       expect(source).not.toContain(hardcodedLabel);
     }
 
-    expect(source).toContain('t("normal.newProperties")');
-    expect(source).toContain('t("normal.clientsTable.comingFrom")');
+    expect(source).toContain('t("normal.newProjects")');
     expect(source).toContain('tc(`stages.${client.pipelineStage}`)');
     expect(source).toContain('text-[#0B5CFF]');
   });

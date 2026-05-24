@@ -50,10 +50,12 @@
     },
     "normal": {
       "newProperties": "عقارات جديدة",
+      "newProjects": "مشاريع جديدة",
       "latestClients": "أحدث العملاء",
       "upcomingMeeting": "الموعد القادم",
       "viewAll": "عرض الكل",
       "noProperties": "لا توجد عقارات بعد",
+      "noProjects": "لا توجد مشاريع بعد",
       "noClients": "لا يوجد عملاء بعد",
       "noMeetings": "لا توجد مواعيد مجدولة",
       "property": {
@@ -941,6 +943,9 @@
     "connecting": "جاري الاتصال...",
     "createAccount": "إنشاء حساب جديد",
     "createAccountDesc": "انضم إلى محرك المزامنة المركزي للعقارات السعودية.",
+    "visualEyebrow": "حقيقة السوق، حركة الشركاء، وإجراء مساحة العمل",
+    "visualTitle": "مكتب تشغيل واحد ليوم العقار.",
+    "visualDescription": "تحافظ كانترا على قرب العمل من الإشارة: المخزون والعملاء والاعتمادات والخطوة التالية.",
     "encrypted": "تشفير تام",
     "clearTerms": "شروط قانونية واضحة",
     "agreementPrefix": "بمتابعتك، فإنك توافق على",

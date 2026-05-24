@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useForm, useWatch, type FieldErrors, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery as useReactQuery } from "@tanstack/react-query";
-import { Bath, Bed, Building, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleHelp, Download, Edit, Eye, FileText, FolderOpen, Home, ImageIcon, Loader2, Mail, MapPin, Phone, Plus, Ruler, Search, Star, Trash2, Unlink, UploadCloud, UserPlus, Users, Video, type LucideIcon } from "lucide-react";
+import { Bath, Bed, Building, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleHelp, Download, Edit, Eye, FileText, FolderOpen, Home, ImageIcon, Loader2, Mail, MapPin, MoreHorizontal, Phone, Plus, Ruler, Search, Star, Trash2, Unlink, UploadCloud, UserPlus, Users, Video, type LucideIcon } from "lucide-react";
 import {
   AppSection,
   AppTabsList,
@@ -13,7 +13,6 @@ import {
   AppPageHeader,
   AppPageShell,
   AppPrimaryButton,
-  AppStatsGrid,
   AppThumbnailCell,
   AppToolbar,
   InfiniteScrollSentinel,
@@ -88,46 +87,64 @@ function formatFileSize(size: number) {
   return `${(size / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function UnitTile({ unit, onDelete }: { unit: PropertyUnit; onDelete: (unit: PropertyUnit) => void }) {
+function UnitTile({ unit }: { unit: PropertyUnit }) {
   const t = useTranslations('Properties');
+  const image = unit.coverImageUrl || unit.image;
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
-    <article className="group overflow-hidden rounded-[24px] border border-zinc-100 bg-white transition-colors hover:border-zinc-300 dark:border-white/5 dark:bg-[#0A0A0A]">
-      <Link href={`/properties/${unit.id}`} className="relative block h-40 w-full overflow-hidden bg-zinc-100 text-start focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:bg-white/5">
-        {unit.coverImageUrl ? (
-          <Image src={unit.coverImageUrl} alt={unit.title} fill sizes="(max-width: 768px) 100vw, 360px" className="object-cover opacity-80 grayscale transition-transform duration-700 group-hover:scale-105 group-hover:grayscale-0" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-300 dark:bg-white/5 dark:text-white/20">
-            <Home className="h-8 w-8" />
-          </div>
-        )}
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-          <h3 className="truncate text-sm font-black uppercase tracking-tight text-white">{unit.title}</h3>
-          <p className="mt-1 text-[9px] font-black uppercase tracking-widest text-white/60">{unit.project}</p>
+    <article className="group relative min-h-[300px] overflow-hidden rounded-[22px] border border-zinc-100 bg-zinc-950 text-white transition-colors hover:border-zinc-300 dark:border-white/5">
+      {image ? (
+        <Image src={image} alt={unit.title} fill sizes="(max-width: 768px) 100vw, 520px" className="object-cover opacity-82 grayscale transition duration-700 group-hover:scale-[1.03] group-hover:opacity-100 group-hover:grayscale-0" />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center bg-zinc-900 text-white/20">
+          <Home className="h-10 w-10" />
         </div>
-      </Link>
-      <div className="space-y-4 p-4">
-        <div className="flex items-center justify-between">
-          <StatusPill label={t(`toolbar.filters.${unit.status}`)} tone={statusTone(unit.status)} />
-          <span className="text-[9px] font-black uppercase tracking-widest text-zinc-300">{unit.reference}</span>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-xl bg-zinc-50 p-3 dark:bg-white/[0.02]">
-            <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{t('card.area')}</p>
-            <p className="mt-1 text-sm font-black text-zinc-900 dark:text-white">{unit.area}</p>
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/28 to-black/8" />
+      <div className="pointer-events-none absolute -end-14 -top-14 h-36 w-36 rounded-full bg-[#0B5CFF]/25 opacity-25 blur-3xl transition-opacity group-hover:opacity-70" />
+
+      <div className="absolute left-3 top-3 z-20">
+        <button
+          type="button"
+          aria-label={`Actions for ${unit.title}`}
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((current) => !current)}
+          onBlur={(event) => {
+            if (!event.currentTarget.parentElement?.contains(event.relatedTarget as Node | null)) {
+              setMenuOpen(false);
+            }
+          }}
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white shadow-lg shadow-black/20 backdrop-blur-md transition hover:bg-white/18 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+        >
+          <MoreHorizontal className="h-4 w-4" />
+        </button>
+        {menuOpen ? (
+          <div className="absolute left-0 top-12 w-36 overflow-hidden rounded-2xl border border-white/12 bg-zinc-950/85 p-1 text-white shadow-xl shadow-black/30 backdrop-blur-xl">
+            <Link href={`/properties/${unit.id}/edit`} className="flex h-10 items-center gap-2 rounded-xl px-3 text-xs font-black transition hover:bg-white/10">
+              <Edit className="h-3.5 w-3.5" />
+              {t('detail.edit')}
+            </Link>
           </div>
-          <div className="rounded-xl bg-zinc-50 p-3 dark:bg-white/[0.02]">
-            <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{t('card.layout')}</p>
-            <p className="mt-1 text-sm font-black text-zinc-900 dark:text-white">{unit.bedrooms}{t('card.beds')} / {unit.bathrooms}{t('card.baths')}</p>
-          </div>
-        </div>
-        <div className="flex items-center justify-between border-t border-zinc-100 pt-4 dark:border-white/5">
-          <p className="text-sm font-black uppercase text-zinc-900 dark:text-white">{formatSAR(unit.price)}</p>
-          <div className="flex items-center gap-2">
-            <Link href={`/properties/${unit.id}/edit`} aria-label={`Edit ${unit.title}`} className="inline-flex h-7 w-7 items-center justify-center rounded-xl text-zinc-400 hover:bg-zinc-50 hover:text-zinc-900 focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:hover:bg-white/5 dark:hover:text-white"><Edit className="h-3.5 w-3.5" aria-hidden="true" /></Link>
-            <button type="button" aria-label={`Delete ${unit.title}`} onClick={() => onDelete(unit)} className="text-zinc-300 transition-colors hover:text-red-500 focus-visible:ring-2 focus-visible:ring-red-500/20"><Trash2 className="h-3.5 w-3.5" aria-hidden="true" /></button>
-          </div>
-        </div>
+        ) : null}
       </div>
+
+      <Link href={`/properties/${unit.id}`} className="absolute inset-0 z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50" aria-label={unit.title} />
+
+      <div className="pointer-events-none absolute right-3 top-3 z-20 flex items-center justify-end">
+        <StatusPill label={t(`toolbar.filters.${unit.status}`)} tone={statusTone(unit.status)} />
+      </div>
+
+      <div className="pointer-events-none absolute inset-x-4 bottom-4 z-10 transition duration-300 group-hover:translate-y-1 group-focus-within:translate-y-1">
+        <h3 className="line-clamp-2 max-w-[92%] text-start text-base font-black leading-tight text-white">{unit.title}</h3>
+        <p className="mt-2 flex max-w-[92%] items-center gap-1.5 text-start text-[11px] font-bold text-white/68">
+          <MapPin className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">{unit.city}</span>
+        </p>
+        <p className="mt-3 truncate text-start text-sm font-black text-white">{formatSAR(unit.price)}</p>
+
+      </div>
+
     </article>
   );
 }
@@ -251,6 +268,42 @@ function PropertyLinkedClientCard({
   );
 }
 
+function PropertyInventoryStrip({
+  stats,
+}: {
+  stats?: { total?: number; available?: number; pending?: number; draft?: number };
+}) {
+  const t = useTranslations("Properties");
+  const items = [
+    { label: t("stats.size"), value: stats?.total ?? "...", icon: FolderOpen },
+    { label: t("stats.available"), value: stats?.available ?? "...", dotClassName: "bg-emerald-500" },
+    { label: t("stats.pending"), value: stats?.pending ?? "...", dotClassName: "bg-amber-500" },
+    { label: t("stats.drafts"), value: stats?.draft ?? "...", icon: Home },
+  ];
+
+  return (
+    <section className="grid overflow-hidden rounded-[22px] border border-zinc-100 bg-zinc-100 gap-px dark:border-white/5 dark:bg-white/5 sm:grid-cols-2 xl:grid-cols-4">
+      {items.map((item) => {
+        const Icon = item.icon;
+
+        return (
+          <div key={item.label} className="flex min-h-20 items-center justify-between gap-4 bg-white px-5 py-4 dark:bg-[#0A0A0A]">
+            <div className="min-w-0">
+              <p className="truncate text-[9px] font-black uppercase tracking-[0.16em] text-zinc-400">{item.label}</p>
+              <p className="mt-2 text-2xl font-black uppercase tracking-tight text-zinc-950 dark:text-white">{item.value}</p>
+            </div>
+            {Icon ? (
+              <Icon className="h-4 w-4 shrink-0 text-zinc-300 dark:text-zinc-600" />
+            ) : (
+              <span className={cn("h-2 w-2 shrink-0 rounded-full", item.dotClassName)} />
+            )}
+          </div>
+        );
+      })}
+    </section>
+  );
+}
+
 export function PropertiesWorkspace() {
   const t = useTranslations('Properties');
   const account = useAccountContext();
@@ -298,14 +351,9 @@ export function PropertiesWorkspace() {
   ];
 
   return (
-    <AppPageShell>
+    <AppPageShell maxWidth="full" contentClassName="space-y-8">
       <AppPageHeader eyebrow={t('eyebrow')} title={t('title') + "."} actions={<Link href="/properties/create"><AppPrimaryButton><Plus className="me-2 h-3.5 w-3.5" />{t('add')}</AppPrimaryButton></Link>} />
-      <AppStatsGrid stats={[
-        { label: t('stats.size'), value: stats?.total ?? "...", icon: FolderOpen },
-        { label: t('stats.available'), value: stats?.available ?? "...", dotClassName: "bg-emerald-500" },
-        { label: t('stats.pending'), value: stats?.pending ?? "...", dotClassName: "bg-amber-500" },
-        { label: t('stats.drafts'), value: stats?.draft ?? "...", icon: Home },
-      ]} />
+      <PropertyInventoryStrip stats={stats} />
       <AppToolbar
         filters={[
           { value: "all", label: t('toolbar.filters.all') },
@@ -327,8 +375,8 @@ export function PropertiesWorkspace() {
       ) : isQueryBlocked ? (
         <HttpQueryState query={unitsQuery} variant={view === "grid" ? "grid" : "table"} />
       ) : view === "grid" ? (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredUnits.map((unit) => <UnitTile key={unit.id} unit={unit} onDelete={setDeleting} />)}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
+          {filteredUnits.map((unit) => <UnitTile key={unit.id} unit={unit} />)}
         </div>
       ) : (
         <AppDataTable columns={columns} data={filteredUnits} getRowKey={(unit) => unit.id} />

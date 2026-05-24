@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/better-auth/server";
 import { hasOpenRouterConfig, streamOpenRouterText } from "./openrouter";
-import { createAgentChatStream } from "./orchestrator";
+import { createAgentChatStream, detectAgentResponseLanguage } from "./orchestrator";
 
 vi.mock("@/server/config/agent-runtime", () => ({
   agentRuntimeConfig: {
@@ -20,6 +20,47 @@ vi.mock("./openrouter", () => ({
 }));
 
 const encoder = new TextEncoder();
+const capabilities = {
+  canReadOrganization: true,
+  canUpdateOrganization: false,
+  canInviteMembers: false,
+  canUpdateMembers: false,
+  canRemoveMembers: false,
+  canReadRoles: false,
+  canCreateRoles: false,
+  canUpdateRoles: false,
+  canDeleteRoles: false,
+  canReadProjects: true,
+  canCreateProjects: true,
+  canUpdateProjects: true,
+  canDeleteProjects: false,
+  canReadProperties: true,
+  canCreateProperties: true,
+  canUpdateProperties: true,
+  canDeleteProperties: false,
+  canReadClients: true,
+  canCreateClients: true,
+  canUpdateClients: true,
+  canDeleteClients: false,
+  canReadTasks: true,
+  canCreateTasks: true,
+  canUpdateTasks: true,
+  canDeleteTasks: false,
+  canReadMedia: true,
+  canCreateMedia: true,
+  canUpdateMedia: true,
+  canDeleteMedia: false,
+  canReadApiKeys: false,
+  canCreateApiKeys: false,
+  canUpdateApiKeys: false,
+  canDeleteApiKeys: false,
+  canReadCalendarEvents: true,
+  canCreateCalendarEvents: true,
+  canUpdateCalendarEvents: true,
+  canDeleteCalendarEvents: false,
+  isPlatformAdmin: false,
+  canManageVisibility: false,
+};
 
 async function* chunks(values: string[]) {
   for (const value of values) {
@@ -76,13 +117,18 @@ describe("agent orchestrator stream", () => {
       return null;
     });
     vi.mocked(fetchAuthQuery).mockResolvedValue({
-      messages: [],
-      facts: [],
+      ...capabilities,
     });
     vi.mocked(hasOpenRouterConfig).mockReturnValue(false);
     vi.mocked(streamOpenRouterText).mockReturnValue({
       textStream: chunks([]),
     } as never);
+  });
+
+  it("detects the response language from the latest user message", () => {
+    expect(detectAgentResponseLanguage("ابحث عن العميل Salma Samir")).toBe("ar");
+    expect(detectAgentResponseLanguage("find client Ahmed")).toBe("en");
+    expect(detectAgentResponseLanguage("12345")).toBe("auto");
   });
 
   it("blocks dangerous organization requests and persists a blocked run", async () => {
@@ -104,7 +150,7 @@ describe("agent orchestrator stream", () => {
     expect(streamOpenRouterText).not.toHaveBeenCalled();
   });
 
-  it("streams the no-key fallback and persists a completed run", async () => {
+  it("streams the no-key fallback and persists a completed run without preparing tools", async () => {
     const events = await readEvents(
       createAgentChatStream({
         organizationId: "org_1",
@@ -119,46 +165,272 @@ describe("agent orchestrator stream", () => {
         assistantMessage: expect.stringContaining("OpenRouter is not configured"),
       },
     ]);
-    expect(fetchAuthQuery).toHaveBeenCalled();
+    expect(fetchAuthQuery).not.toHaveBeenCalled();
     expect(streamOpenRouterText).not.toHaveBeenCalled();
   });
 
-  it("streams model chunks, records context, and persists memory facts", async () => {
+  it("exposes tools without calling memory or workspace data for simple standalone chat", async () => {
     vi.mocked(hasOpenRouterConfig).mockReturnValue(true);
-    vi.mocked(fetchAuthQuery).mockResolvedValue({
-      messages: [{ role: "user", content: "old context" }],
-      summary: "Prior thread summary",
-      facts: ["Ahmed prefers morning viewings"],
-    });
     vi.mocked(streamOpenRouterText).mockReturnValue({
-      textStream: chunks(["First ", "second."]),
+      textStream: chunks(["Hello."]),
     } as never);
 
     const events = await readEvents(
       createAgentChatStream({
         organizationId: "org_1",
-        message: "remember client Ahmed prefers morning then find client Ahmed",
+        message: "hello",
       }),
     );
 
-    expect(events.filter((event) => event.type === "text").map((event) => event.text)).toEqual(["First ", "second."]);
-    expect(streamOpenRouterText).toHaveBeenCalledWith(expect.objectContaining({
-      prompt: expect.stringContaining("Prior thread summary"),
-      system: expect.stringContaining("Dangerous organization settings are blocked"),
+    expect(events.filter((event) => event.type === "text").map((event) => event.text)).toEqual(["Hello."]);
+    expect(fetchAuthQuery).toHaveBeenCalledTimes(1);
+    const openRouterInput = vi.mocked(streamOpenRouterText).mock.calls.at(-1)?.[0];
+    expect(openRouterInput?.prompt).not.toContain("Workspace context:");
+    expect(openRouterInput?.prompt).toContain("Response language: English");
+    expect(openRouterInput?.system).toContain("Answer in clean English");
+    expect(openRouterInput?.tools).toEqual(expect.objectContaining({
+      clients_list: expect.any(Object),
+      conversation_memory: expect.any(Object),
     }));
-    expect(finishMutationPayloads()).toMatchObject([
-      {
-        status: "completed",
-        assistantMessage: "First second.",
-        memoryFacts: [expect.stringContaining("client Ahmed prefers morning")],
-      },
-    ]);
+  });
+
+  it("instructs the model to answer Arabic requests in Arabic without translating exact stored data", async () => {
+    vi.mocked(hasOpenRouterConfig).mockReturnValue(true);
+    vi.mocked(streamOpenRouterText).mockReturnValue({
+      textStream: chunks(["تم."]),
+    } as never);
+
+    await readEvents(
+      createAgentChatStream({
+        organizationId: "org_1",
+        message: "ابحث عن العميل Salma Samir ورقمه +201073000499",
+      }),
+    );
+
+    const openRouterInput = vi.mocked(streamOpenRouterText).mock.calls.at(-1)?.[0];
+    expect(openRouterInput?.prompt).toContain("Response language: Arabic");
+    expect(openRouterInput?.prompt).toContain("Preserve exact stored names, phones, emails, IDs, dates, URLs, references, prices, and titles");
+    expect(openRouterInput?.system).toContain("أنت وكيل مؤسسة كانترا");
+    expect(openRouterInput?.system).toContain("Broker=وسيط");
+    expect(openRouterInput?.system).toContain("Closed=مغلق");
+    expect(openRouterInput?.system).toContain("High=عالية");
+    expect(openRouterInput?.system).toContain("Active=نشط");
+    expect(openRouterInput?.system).toContain("emails, phone numbers, IDs, dates, URLs, references, prices");
+  });
+
+  it("does not force a tool call just because a domain word appears", async () => {
+    vi.mocked(hasOpenRouterConfig).mockReturnValue(true);
+    vi.mocked(streamOpenRouterText).mockReturnValue({
+      textStream: chunks(["Which Ahmed do you mean?"]),
+    } as never);
+
+    const events = await readEvents(
+      createAgentChatStream({
+        organizationId: "org_1",
+        message: "client Ahmed",
+      }),
+    );
+
+    expect(events.filter((event) => event.type === "text").map((event) => event.text)).toEqual(["Which Ahmed do you mean?"]);
+    expect(
+      vi.mocked(fetchAuthQuery).mock.calls.some((call) => Boolean((call[1] as { paginationOpts?: unknown }).paginationOpts)),
+    ).toBe(false);
+  });
+
+  it("runs a model-selected tool and logs the tool result", async () => {
+    vi.mocked(hasOpenRouterConfig).mockReturnValue(true);
+    vi.mocked(fetchAuthQuery).mockImplementation(async (...callArgs) => {
+      const payload = callArgs[1] as Record<string, unknown>;
+      if ("paginationOpts" in payload) {
+        return { page: [{ id: "client_1", name: "Ahmed" }], isDone: true, continueCursor: "" };
+      }
+      return capabilities;
+    });
+    vi.mocked(streamOpenRouterText).mockImplementation((input) => ({
+      textStream: (async function* () {
+        const result = await input.tools?.clients_list.execute?.({ search: "Ahmed", limit: 5 }, {} as never);
+        yield `Found ${(result as { data?: { page?: unknown[] } }).data?.page?.length ?? 0} client.`;
+      })(),
+    }) as never);
+
+    const events = await readEvents(
+      createAgentChatStream({
+        organizationId: "org_1",
+        message: "find client Ahmed",
+      }),
+    );
+
+    expect(events.filter((event) => event.type === "text").map((event) => event.text)).toEqual(["Found 1 client."]);
     expect(
       vi
         .mocked(fetchAuthMutation)
         .mock.calls
-        .some((call) => (call[1] as Record<string, unknown>).tool === "clients_search"),
+        .some((call) => (call[1] as Record<string, unknown>).tool === "clients_list"),
     ).toBe(true);
+  });
+
+  it("strips presented database fields before running update tools", async () => {
+    vi.mocked(hasOpenRouterConfig).mockReturnValue(true);
+    const presentedClient = {
+      _id: "client_1",
+      _creationTime: 1778414255329,
+      id: "client_1",
+      organizationId: "org_1",
+      createdAt: 1778414255329,
+      updatedAt: 1778414255329,
+      added: "2026-05-10",
+      lastContact: "2026-05-10",
+      syncState: "draft",
+      name: "Salma Samir 500",
+      type: "Broker",
+      contact: "etjah.seed.500@example.com",
+      phone: "2010111222333",
+      age: 47,
+      nationality: "Saudi",
+      generation: "Millennial",
+      budget: "EGP 10,650,000 - 14,100,000",
+      propertyInterest: "4 bedroom primary home in Maadi",
+      status: "active",
+      visibility: "private",
+      pipelineStage: "closed",
+      priority: "high",
+      nextAction: "Follow up after call",
+    };
+    vi.mocked(fetchAuthQuery).mockImplementation(async (...callArgs) => {
+      const payload = callArgs[1] as Record<string, unknown>;
+      if ("clientId" in payload) return presentedClient;
+      return capabilities;
+    });
+    vi.mocked(streamOpenRouterText).mockImplementation((input) => ({
+      textStream: (async function* () {
+        const result = await input.tools?.clients_update.execute?.({
+          ...presentedClient,
+          clientId: "client_1",
+          phone: "2010111222333",
+        }, {} as never);
+        yield (result as { ok: boolean }).ok ? "Updated." : "Failed.";
+      })(),
+    }) as never);
+
+    const events = await readEvents(
+      createAgentChatStream({
+        organizationId: "org_1",
+        message: "edit phone number for Salma",
+      }),
+    );
+
+    expect(events.filter((event) => event.type === "text").map((event) => event.text)).toEqual(["Updated."]);
+    const updatePayload = vi
+      .mocked(fetchAuthMutation)
+      .mock.calls
+      .map((call) => call[1] as Record<string, unknown>)
+      .find((payload) => payload.clientId === "client_1" && "input" in payload);
+    expect(updatePayload?.input).toMatchObject({
+      name: "Salma Samir 500",
+      phone: "2010111222333",
+      type: "Broker",
+      pipelineStage: "closed",
+      priority: "high",
+      status: "active",
+    });
+    expect(updatePayload?.input).not.toHaveProperty("_creationTime");
+    expect(updatePayload?.input).not.toHaveProperty("_id");
+    expect(updatePayload?.input).not.toHaveProperty("organizationId");
+    expect(updatePayload?.input).not.toHaveProperty("syncState");
+  });
+
+  it("returns a failed tool result for writes with missing required fields", async () => {
+    vi.mocked(hasOpenRouterConfig).mockReturnValue(true);
+    vi.mocked(fetchAuthMutation).mockImplementation(async (...callArgs) => {
+      const payload = callArgs[1] as Record<string, unknown>;
+      if ("message" in payload && "model" in payload) {
+        return {
+          thread: { _id: "thread_1" },
+          run: { _id: "run_1" },
+          userMessageId: "message_user",
+        };
+      }
+      if ("input" in payload && (payload.input as { phone?: string }).phone === undefined) {
+        throw new Error("phone is required.");
+      }
+      return null;
+    });
+    vi.mocked(streamOpenRouterText).mockImplementation((input) => ({
+      textStream: (async function* () {
+        const result = await input.tools?.clients_create.execute?.({ name: "Ahmed" }, {} as never);
+        yield (result as { ok: boolean; error?: string }).ok ? "Created." : `Need more info: ${(result as { error?: string }).error}`;
+      })(),
+    }) as never);
+
+    const events = await readEvents(
+      createAgentChatStream({
+        organizationId: "org_1",
+        message: "create client Ahmed",
+      }),
+    );
+
+    expect(events.filter((event) => event.type === "text").map((event) => event.text).join("")).toContain("Need more info");
+    expect(
+      vi
+        .mocked(fetchAuthMutation)
+        .mock.calls
+        .some((call) => (call[1] as Record<string, unknown>).tool === "clients_create" && (call[1] as Record<string, unknown>).status === "failed"),
+    ).toBe(true);
+  });
+
+  it("does not expose tools blocked by current permissions", async () => {
+    vi.mocked(hasOpenRouterConfig).mockReturnValue(true);
+    vi.mocked(fetchAuthQuery).mockResolvedValue({
+      ...capabilities,
+      canCreateClients: false,
+      canUpdateClients: false,
+      canDeleteClients: false,
+    });
+    vi.mocked(streamOpenRouterText).mockReturnValue({
+      textStream: chunks(["No write access."]),
+    } as never);
+
+    await readEvents(
+      createAgentChatStream({
+        organizationId: "org_1",
+        message: "delete client Ahmed",
+      }),
+    );
+
+    expect(streamOpenRouterText).toHaveBeenCalledWith(expect.objectContaining({
+      tools: expect.not.objectContaining({
+        clients_create: expect.any(Object),
+        clients_update: expect.any(Object),
+        clients_delete: expect.any(Object),
+      }),
+    }));
+  });
+
+  it("persists memory facts without automatically reading memory", async () => {
+    vi.mocked(hasOpenRouterConfig).mockReturnValue(true);
+    vi.mocked(streamOpenRouterText).mockReturnValue({
+      textStream: chunks(["Remembered."]),
+    } as never);
+
+    const events = await readEvents(
+      createAgentChatStream({
+        organizationId: "org_1",
+        message: "remember client Ahmed prefers morning",
+      }),
+    );
+
+    expect(events.filter((event) => event.type === "text").map((event) => event.text)).toEqual(["Remembered."]);
+    expect(streamOpenRouterText).toHaveBeenCalledWith(expect.objectContaining({
+      prompt: expect.not.stringContaining("Recent conversation:"),
+      system: expect.stringContaining("conversation_memory"),
+    }));
+    expect(finishMutationPayloads()).toMatchObject([
+      {
+        status: "completed",
+        assistantMessage: "Remembered.",
+        memoryFacts: [expect.stringContaining("client Ahmed prefers morning")],
+      },
+    ]);
   });
 
   it("emits an error event when startup fails", async () => {

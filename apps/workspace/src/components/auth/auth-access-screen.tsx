@@ -3,14 +3,16 @@
 import { ArrowRight, ChevronLeft } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
-import { Link } from "@/i18n/routing";
 import { BrandMark } from "@/components/logo";
+import { Link } from "@/i18n/routing";
 
 type AuthAccessScreenProps = {
   mode: "sign-in" | "sign-up";
   isPending: boolean;
   onGoogleSignIn: () => void;
 };
+
+const authVideoUrl = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/agentic-hero-9yW3wnTNMfn2U6lsVhTTZSJFEvAoSj.mp4";
 
 function GoogleMark() {
   return (
@@ -23,11 +25,46 @@ function GoogleMark() {
   );
 }
 
+function LegalAgreement({ isAr }: { isAr: boolean }) {
+  const t = useTranslations("signin");
+
+  return (
+    <p className="mt-5 text-center text-xs leading-6 text-text-secondary">
+      {isAr ? (
+        <>
+          {t("agreementPrefix")}{" "}
+          <Link href="/terms" className="font-semibold text-primary underline-offset-2 hover:underline">
+            {t("agreementTerms")}
+          </Link>
+          {" و"}
+          <Link href="/privacy" className="font-semibold text-primary underline-offset-2 hover:underline">
+            {t("agreementPrivacy")}
+          </Link>{" "}
+          {t("agreementSuffix")}
+        </>
+      ) : (
+        <>
+          {t("agreementPrefix")}{" "}
+          <Link href="/terms" className="font-semibold text-primary underline-offset-2 hover:underline">
+            {t("agreementTerms")}
+          </Link>{" "}
+          {t("agreementAnd")}{" "}
+          <Link href="/privacy" className="font-semibold text-primary underline-offset-2 hover:underline">
+            {t("agreementPrivacy")}
+          </Link>
+          {t("agreementSuffix")}
+        </>
+      )}
+    </p>
+  );
+}
+
 export function AuthAccessScreen({ mode, isPending, onGoogleSignIn }: AuthAccessScreenProps) {
   const t = useTranslations("signin");
   const locale = useLocale();
   const isAr = locale === "ar";
   const isSignUp = mode === "sign-up";
+  const brandLabel = isAr ? "كانترا" : "qentrah";
   const googleLabel = isAr ? (
     <span dir="rtl">
       الدخول عبر <bdi dir="ltr">Google</bdi>
@@ -37,89 +74,124 @@ export function AuthAccessScreen({ mode, isPending, onGoogleSignIn }: AuthAccess
   );
 
   return (
-    <main className="auth-viewport bg-background px-4 py-5 text-foreground sm:px-6">
-      <div className="auth-viewport-frame mx-auto flex max-w-7xl flex-col">
+    <main className="min-h-svh overflow-x-hidden bg-[oklch(97.5%_0.006_255)] text-foreground lg:grid lg:min-h-screen lg:grid-cols-2">
+      <section className={`flex min-h-svh flex-col px-4 py-5 sm:px-8 lg:min-h-screen lg:px-12 lg:py-8 ${isAr ? "lg:[grid-column:2]" : "lg:[grid-column:1]"}`}>
         <div className="flex items-center justify-between gap-4">
           <Link href="/" className="group flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-border bg-surface text-foreground transition group-hover:bg-muted">
               <BrandMark className="h-5.5 w-5.5" priority />
             </span>
             <span className="text-lg font-black tracking-tight text-foreground">
-              {isAr ? "كانترا" : "qentrah"}
+              {brandLabel}
             </span>
           </Link>
           <Link
             href="/"
-            className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-surface px-4 text-[10px] font-black uppercase tracking-[0.12em] text-text-secondary transition hover:bg-muted hover:text-foreground"
+            className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-surface px-4 text-[10px] font-black uppercase tracking-[0.08em] text-text-secondary transition hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
             {t("backToHome")}
           </Link>
         </div>
 
-        <section className="flex flex-1 items-center justify-center py-10 sm:py-12">
-          <div className="w-full max-w-[430px]">
-            <div className="text-start">
-              <div className="mb-7 flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl border border-border bg-background">
-                  <BrandMark className="h-5.5 w-5.5" priority />
-                </span>
-                <span className="text-2xl font-black tracking-tight text-foreground">
-                  {isAr ? "كانترا" : "qentrah"}
-                </span>
-              </div>
-
-              <div className="space-y-2.5">
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                  {isSignUp ? t("createAccount") : t("title")}
-                </h1>
-                <p className="text-sm leading-6 text-text-secondary">
-                  {isSignUp ? t("createAccountDesc") : t("description")}
-                </p>
-              </div>
-
-              <button
-                className="mt-7 flex h-11 w-full items-center justify-center gap-3 rounded-2xl bg-zinc-950 px-5 text-sm font-bold text-white transition hover:bg-zinc-800 active:scale-[0.99] disabled:pointer-events-none disabled:opacity-55 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
-                disabled={isPending}
-                onClick={onGoogleSignIn}
-                type="button"
-              >
-                <GoogleMark />
-                <span>{isPending ? t("connecting") : googleLabel}</span>
-                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-              </button>
+        <div className="flex flex-1 items-center justify-center py-10">
+          <div className="w-full max-w-[min(420px,calc(100vw-2rem))] min-w-0 text-start">
+            <div className="mb-8 flex items-center gap-3 lg:hidden">
+              <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-border bg-background">
+                <BrandMark className="h-6 w-6" priority />
+              </span>
+              <span className="text-2xl font-black tracking-tight text-foreground">
+                {brandLabel}
+              </span>
             </div>
 
-            <p className="mt-5 text-center text-xs leading-6 text-text-secondary">
-              {isAr ? (
-                <>
-                  {t("agreementPrefix")}{" "}
-                  <Link href="/terms" className="font-semibold text-primary underline-offset-2 hover:underline">
-                    {t("agreementTerms")}
-                  </Link>
-                  {" و"}
-                  <Link href="/privacy" className="font-semibold text-primary underline-offset-2 hover:underline">
-                    {t("agreementPrivacy")}
-                  </Link>{" "}
-                  {t("agreementSuffix")}
-                </>
-              ) : (
-                <>
-                  {t("agreementPrefix")}{" "}
-                  <Link href="/terms" className="font-semibold text-primary underline-offset-2 hover:underline">
-                    {t("agreementTerms")}
-                  </Link>{" "}
-                  {t("agreementAnd")}{" "}
-                  <Link href="/privacy" className="font-semibold text-primary underline-offset-2 hover:underline">
-                    {t("agreementPrivacy")}
-                  </Link>
-                  {t("agreementSuffix")}
-                </>
-              )}
+            <div className="space-y-3">
+              <h1 className="text-[32px] font-semibold leading-tight tracking-0 text-foreground sm:text-4xl rtl:leading-[1.25]">
+                {isSignUp ? t("createAccount") : t("title")}
+              </h1>
+              <p className="max-w-sm text-sm font-medium leading-6 text-text-secondary">
+                {isSignUp ? t("createAccountDesc") : t("description")}
+              </p>
+            </div>
+
+            <button
+              className="mt-8 flex h-12 w-full items-center justify-center gap-3 rounded-2xl bg-[oklch(13%_0.024_255)] px-5 text-sm font-bold text-[oklch(98%_0.006_255)] transition hover:bg-[oklch(20%_0.03_255)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.99] disabled:pointer-events-none disabled:opacity-55 dark:bg-[oklch(96%_0.006_255)] dark:text-[oklch(13%_0.024_255)] dark:hover:bg-[oklch(90%_0.008_255)]"
+              disabled={isPending}
+              onClick={onGoogleSignIn}
+              type="button"
+            >
+              <GoogleMark />
+              <span className="min-w-0 truncate">{isPending ? t("connecting") : googleLabel}</span>
+              <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+            </button>
+
+            <LegalAgreement isAr={isAr} />
+          </div>
+        </div>
+      </section>
+
+      <section className={`relative hidden min-h-screen overflow-hidden bg-[#f5f4f0] text-[#111111] lg:block ${isAr ? "lg:[grid-column:1] lg:[grid-row:1]" : "lg:[grid-column:2] lg:[grid-row:1]"}`}>
+        <video
+          aria-hidden="true"
+          autoPlay
+          className="absolute inset-0 h-full w-full scale-105 object-cover"
+          loop
+          muted
+          playsInline
+          src={authVideoUrl}
+        />
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0"
+          style={{
+            height: "68%",
+            background:
+              "linear-gradient(to top, #f5f4f0 0%, #f5f4f0 18%, rgba(245,244,240,0.86) 36%, rgba(245,244,240,0.5) 56%, rgba(245,244,240,0.15) 76%, transparent 100%)",
+          }}
+        />
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0"
+          style={{
+            height: "28%",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            maskImage: "linear-gradient(to top, black 0%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to top, black 0%, transparent 100%)",
+          }}
+        />
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0"
+          style={{
+            height: "48%",
+            backdropFilter: "blur(4px)",
+            WebkitBackdropFilter: "blur(4px)",
+            maskImage: "linear-gradient(to top, black 0%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to top, black 0%, transparent 100%)",
+          }}
+        />
+
+        <div className="relative z-10 flex min-h-screen flex-col justify-between p-10">
+          <Link href="/" className="group flex w-fit items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-[#111111]/10 bg-[#f5f4f0]/75 text-[#111111] backdrop-blur-xl transition group-hover:bg-[#f5f4f0]">
+              <BrandMark className="h-5.5 w-5.5" priority />
+            </span>
+            <span className="text-base font-black tracking-tight">
+              {brandLabel}
+            </span>
+          </Link>
+
+          <div className="max-w-xl pb-6">
+            <p className="mb-5 max-w-sm text-[10px] font-black uppercase leading-5 tracking-[0.08em] text-[#0b5cff]">
+              {t("visualEyebrow")}
+            </p>
+            <h2 className="max-w-[14ch] text-5xl font-light leading-none tracking-0 xl:text-6xl rtl:leading-[1.16]">
+              {t("visualTitle")}
+            </h2>
+            <p className="mt-6 max-w-md text-base font-medium leading-8 text-[#111111]/62">
+              {t("visualDescription")}
             </p>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </main>
   );
 }

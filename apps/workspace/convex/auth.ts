@@ -91,6 +91,7 @@ export const createAuthOptions = (
         accessTokenExpiresIn: 60 * 60,
         refreshTokenExpiresIn: 30 * 24 * 60 * 60,
         scopeExpirations: partnerScopeExpirations,
+        silenceWarnings: { oauthAuthServerConfig: true },
         clientPrivileges: ({ user }) => {
           if (!user?.email) return undefined;
           return authRuntimeConfig.platformAdminEmails.includes(
