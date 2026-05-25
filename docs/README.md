@@ -12,10 +12,17 @@ partner platform docs.
   environment, token, local development, deployment, and troubleshooting guide.
 - [Architecture](./ARCHITECTURE.md): system boundaries, auth flows, data
   ownership, Convex usage, and integration shape.
+- [All-in-one repo flow chart](./ALL_IN_ONE_REPO_FLOW_CHART.md): one
+  consolidated Mermaid chart covering the full repo.
+- [Repo flow chart](./REPO_FLOW_CHART.md): deep Mermaid charts for the full
+  monorepo runtime, app ownership, package layers, and cross-app flows.
 - [Apps and packages](./APPS.md): catalog of apps, packages, routes, and
   ownership.
 - [Product knowledge base](./PRODUCT_KNOWLEDGE_BASE.md): founder-level product
   framing, integration flow, messaging, and pitch deck narrative.
+- [Product feature source of truth](./PRODUCT_FEATURE_SOURCE_OF_TRUTH.md):
+  deep non-technical product reference for enterprise buyers, brokers, real
+  estate developers, software partners, and AI/automation builders.
 - [Environment variables](./ENVIRONMENT.md): canonical env reference and source
   links for external credentials.
 - [Feature lifecycle](./FEATURE_LIFECYCLE.md): how to add, ship, operate, and
