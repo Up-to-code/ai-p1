@@ -12,10 +12,6 @@
       "@/*": [
         "./src/*"
       ],
-      "@convex/*": [
-        "./src/persistence/convex/*",
-        "../../convex/*"
-      ],
       "@zayon/assistant-protocol": [
         "./src/conversation/assistantProtocol.ts"
       ]

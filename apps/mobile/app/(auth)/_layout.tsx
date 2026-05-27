@@ -1,4 +1,4 @@
-import { Redirect, Stack } from "expo-router";
+import { Redirect, Stack, useSegments } from "expo-router";
 
 import { useAuthSession } from "@/auth/useAuthSession";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
@@ -9,12 +9,15 @@ export default function AuthLayout() {
   const hydrationComplete = useAppStore((state) => state.hydrationComplete);
   const { canAccessApp, isReady } = useAuthSession();
   const { colors } = useTheme();
+  const segments = useSegments();
+  const authRoute = segments[1];
+  const canStayInAuth = authRoute === "choose-workspace" || authRoute === "accept-invite";
 
   if (!hydrationComplete || !isReady) {
     return <AppBootScreen />;
   }
 
-  if (canAccessApp) {
+  if (canAccessApp && !canStayInAuth) {
     return <Redirect href="/(app)" />;
   }
 
@@ -29,10 +32,8 @@ export default function AuthLayout() {
       }}
     >
       <Stack.Screen name="index" />
-      <Stack.Screen name="email-options" />
-      <Stack.Screen name="login" />
-      <Stack.Screen name="register" />
-      <Stack.Screen name="forgot-password" />
+      <Stack.Screen name="choose-workspace" />
+      <Stack.Screen name="accept-invite" />
     </Stack>
   );
 }

@@ -190,41 +190,7 @@ test("language tag helpers keep arabic latin-script threads LTR without curated 
   assert.equal(resolveUiLocaleFromLanguageTag("ar"), "ar");
 });
 
-test("Qentrah renders UI when the response contains property cards or search actions", () => {
-  const turn = makeBaseTurn({
-    route: "property",
-    motion: { preset: "property" },
-    blocks: [
-      {
-        type: "property_list",
-        id: "property-list",
-        title: "Best matches",
-        propertyIds: ["property-1", "property-2"],
-      },
-      {
-        type: "actions",
-        id: "actions",
-        actionIds: ["open-search"],
-      },
-    ],
-    actions: [
-      {
-        id: "open-search",
-        title: "Open search",
-        name: "open_search",
-        payload: {
-          query: "apartments near GEM max 5000 EGP",
-          maxPrice: 5000,
-          budgetMode: "max",
-        },
-      },
-    ],
-  });
-
-  assert.equal(shouldRenderAssistantTurnUi(turn), true);
-});
-
-test("Qentrah does not render UI for generic continue-thread actions", () => {
+test("Qentrah renders UI for Workspace action chips", () => {
   const turn = makeBaseTurn({
     blocks: [
       {
@@ -239,10 +205,28 @@ test("Qentrah does not render UI for generic continue-thread actions", () => {
         title: "Continue",
         name: "continue_thread",
         payload: {
-          prompt: "Tell me more.",
+          prompt: "Help me finish this workspace task.",
         },
       },
     ],
+  });
+
+  assert.equal(shouldRenderAssistantTurnUi(turn), true);
+});
+
+test("Qentrah does not render UI for property cards alone", () => {
+  const turn = makeBaseTurn({
+    route: "property",
+    motion: { preset: "property" },
+    blocks: [
+      {
+        type: "property_list",
+        id: "property-list",
+        title: "Best matches",
+        propertyIds: ["property-1", "property-2"],
+      },
+    ],
+    actions: [],
   });
 
   assert.equal(shouldRenderAssistantTurnUi(turn), false);
@@ -335,10 +319,10 @@ const memoryCases: MemoryCase[] = [
     expectedSources: [],
   },
   {
-    name: "specific property ask renders UI",
+    name: "specific property ask stays text-only on mobile",
     prompt: "Find apartments near the Grand Egyptian Museum for tonight, max 5000 EGP.",
     expectedRoute: "property",
-    expectsUi: true,
+    expectsUi: false,
     expectedMemoryKind: "fresh_search",
     expectedSearchPolicy: "rerun",
     expectedSources: [],
@@ -374,7 +358,7 @@ const memoryCases: MemoryCase[] = [
     name: "history reference routes to property memory flow",
     prompt: "Show me more like the second one.",
     expectedRoute: "property",
-    expectsUi: true,
+    expectsUi: false,
     expectedMemoryKind: "property_history",
     expectedSearchPolicy: "reuse",
     expectedSources: ["property_searches"],
@@ -383,7 +367,7 @@ const memoryCases: MemoryCase[] = [
     name: "Arabic cheapest reference reuses property history",
     prompt: "الأرخص فيهم؟",
     expectedRoute: "property",
-    expectsUi: true,
+    expectsUi: false,
     expectedMemoryKind: "property_history",
     expectedSearchPolicy: "reuse",
     expectedSources: ["property_searches"],
@@ -392,7 +376,7 @@ const memoryCases: MemoryCase[] = [
     name: "changed budget reruns search",
     prompt: "غير الميزانية لـ 7000",
     expectedRoute: "property",
-    expectsUi: true,
+    expectsUi: false,
     expectedMemoryKind: "property_history",
     expectedSearchPolicy: "rerun",
     expectedSources: ["property_searches"],
@@ -401,7 +385,7 @@ const memoryCases: MemoryCase[] = [
     name: "usual preference search loads buyer preferences",
     prompt: "دورلي على حاجة زي المعتاد بتاعي",
     expectedRoute: "property",
-    expectsUi: true,
+    expectsUi: false,
     expectedMemoryKind: "preference_assisted_search",
     expectedSearchPolicy: "rerun",
     expectedSources: ["buyer_preferences"],

@@ -1,11 +1,11 @@
-appId: com.zayon.mobile
+appId: com.qentrah.mobile
 name: Menu collections empty states
 tags:
   - smoke
   - navigation
   - collections
 ---
-- runFlow: "shared/bootstrap-guest.yaml"
+- runFlow: "shared/bootstrap-signed-in.yaml"
 - tapOn:
     id: app.open_menu
 - tapOn:
@@ -16,12 +16,7 @@ tags:
 - tapOn: "Go back"
 - extendedWaitUntil:
     visible:
-      id: menu.compare
-    timeout: 20000
-- tapOn:
-    id: menu.compare
-- extendedWaitUntil:
-    visible: "Compare tray is empty"
+      id: app.open_menu
     timeout: 20000
 - tapOn:
     id: app.open_menu

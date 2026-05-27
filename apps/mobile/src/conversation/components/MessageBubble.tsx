@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from "react-native";
+import { Linking, Pressable, StyleSheet, View } from "react-native";
 import React, { useEffect, useMemo, useRef } from "react";
 import Animated, {
   useAnimatedStyle,
@@ -11,7 +11,7 @@ import Animated, {
 } from "react-native-reanimated";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
-import { Copy, Pencil } from "lucide-react-native";
+import { Check, Copy, Pencil, X } from "lucide-react-native";
 
 import { Text } from "@/foundation/primitives/Text";
 import { MarkdownText } from "@/foundation/primitives/MarkdownText";
@@ -36,6 +36,8 @@ type MessageBubbleProps = {
   actionsVisible?: boolean;
   onShowActions?: (messageId: string) => void;
   onDismissActions?: () => void;
+  onApproveConfirmation?: (confirmationId: string) => void | Promise<void>;
+  onCancelConfirmation?: (confirmationId: string) => void | Promise<void>;
   threadPresentation?: ThreadPresentation | null;
 };
 
@@ -97,6 +99,54 @@ function InlineMessageActions({
   );
 }
 
+function ConfirmationCard({
+  confirmation,
+  onApprove,
+  onCancel,
+}: {
+  confirmation: NonNullable<ConversationMessage["turnMeta"]>["confirmation"];
+  onApprove?: (confirmationId: string) => void | Promise<void>;
+  onCancel?: (confirmationId: string) => void | Promise<void>;
+}) {
+  const { colors, resolvedColorScheme } = useTheme();
+  const styles = useMemo(() => createStyles(colors, resolvedColorScheme), [colors, resolvedColorScheme]);
+  if (!confirmation) return null;
+  const pending = !confirmation.status || confirmation.status === "pending";
+
+  return (
+    <View style={styles.confirmationCard}>
+      <Text style={styles.confirmationTitle}>{confirmation.summary}</Text>
+      {confirmation.inputPreview ? (
+        <Text tone="muted" style={styles.confirmationPreview} numberOfLines={3}>
+          {confirmation.inputPreview}
+        </Text>
+      ) : null}
+      {pending ? (
+        <View style={styles.confirmationActions}>
+          <Pressable
+            onPress={() => onApprove?.(confirmation.confirmationId)}
+            style={({ pressed }) => [styles.confirmButton, pressed && styles.confirmButtonPressed]}
+          >
+            <Check size={16} color="#FFFFFF" />
+            <Text style={styles.confirmButtonText}>Approve</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => onCancel?.(confirmation.confirmationId)}
+            style={({ pressed }) => [styles.cancelButton, pressed && styles.cancelButtonPressed]}
+          >
+            <X size={16} color={colors.textPrimary} />
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </Pressable>
+        </View>
+      ) : (
+        <Text tone="muted" style={styles.confirmationStatus}>
+          {confirmation.status}
+        </Text>
+      )}
+    </View>
+  );
+}
+
 function FadeWord({ word, delay }: { word: string; delay: number }) {
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(8);
@@ -145,39 +195,34 @@ function StreamingText({
   isStreaming: boolean;
   style: any;
 }) {
-  const settledIndexRef = useRef(0);
-  const prevTextRef = useRef("");
-
-  // Split into words, preserving spaces
-  const words = text.split(/(\s+)/);
-
-  // When text updates during streaming, figure out what's new
-  const prevWords = prevTextRef.current.split(/(\s+)/);
-  const settledCount = settledIndexRef.current;
-
-  // Once streaming ends, mark everything as settled
-  useEffect(() => {
-    if (!isStreaming) {
-      settledIndexRef.current = words.length;
-    }
-  }, [isStreaming, words.length]);
-
-  // Update prev text ref after render
-  useEffect(() => {
-    prevTextRef.current = text;
-    if (isStreaming) {
-      // Only settle words from prev render, not the new ones
-      settledIndexRef.current = prevWords.length;
-    }
-  }, [text, isStreaming, prevWords.length]);
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors, colors.background === "#000000" ? "dark" : "light"), [colors]);
 
   if (!isStreaming) {
-    // Completed — render with full markdown support (paragraphs, lists, etc)
     return <MarkdownText text={text} tone="secondary" style={style} />;
   }
 
-  // Pre-parse the entire text to identify styled segments
-  // This ensures spans like __charming bookstore__ are treated as one unit for styling
+  return <StreamingMarkdownText text={text} style={style} styles={styles} />;
+}
+
+function StreamingInlineMarkdown({
+  text,
+  style,
+}: {
+  text: string;
+  style: any;
+}) {
+  const settledIndexRef = useRef(0);
+  const prevTextRef = useRef("");
+
+  const prevWords = prevTextRef.current.split(/(\s+)/);
+  const settledCount = settledIndexRef.current;
+
+  useEffect(() => {
+    prevTextRef.current = text;
+    settledIndexRef.current = prevWords.length;
+  }, [text, prevWords.length]);
+
   const parsedFullText = parseInlineMarkdown(text);
 
   return (
@@ -214,6 +259,122 @@ function StreamingText({
   );
 }
 
+function StreamingMarkdownText({
+  text,
+  style,
+  styles,
+}: {
+  text: string;
+  style: any;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  const lines = text.split("\n");
+  let inCodeBlock = false;
+  let codeBlockLanguage = "";
+  let codeBlockLines: string[] = [];
+  const blocks: React.ReactNode[] = [];
+
+  const flushCodeBlock = (key: string) => {
+    if (!codeBlockLines.length && !codeBlockLanguage) return;
+    blocks.push(
+      <View key={key} style={styles.streamingCodeBlock}>
+        {codeBlockLanguage ? (
+          <Text style={styles.streamingCodeLanguage}>{codeBlockLanguage}</Text>
+        ) : null}
+        <Text selectable={true} style={styles.streamingCodeText}>
+          {codeBlockLines.join("\n")}
+        </Text>
+      </View>
+    );
+    codeBlockLines = [];
+    codeBlockLanguage = "";
+  };
+
+  lines.forEach((line, index) => {
+    const trimmed = line.trim();
+    const fence = trimmed.match(/^```(\w*)/);
+    if (fence) {
+      if (inCodeBlock) {
+        flushCodeBlock(`code-${index}`);
+        inCodeBlock = false;
+      } else {
+        inCodeBlock = true;
+        codeBlockLanguage = fence[1] || "";
+        codeBlockLines = [];
+      }
+      return;
+    }
+
+    if (inCodeBlock) {
+      codeBlockLines.push(line);
+      return;
+    }
+
+    if (!trimmed) {
+      blocks.push(<View key={`space-${index}`} style={styles.streamingSpacer} />);
+      return;
+    }
+
+    const headerMatch = trimmed.match(/^(#{1,3})\s+(.+)$/);
+    if (headerMatch) {
+      const level = headerMatch[1].length;
+      blocks.push(
+        <StreamingInlineMarkdown
+          key={`heading-${index}`}
+          text={headerMatch[2]}
+          style={[
+            style,
+            level === 1 ? styles.streamingH1 : level === 2 ? styles.streamingH2 : styles.streamingH3,
+            isArabic(headerMatch[2]) && { textAlign: "right", writingDirection: "rtl" },
+          ]}
+        />
+      );
+      return;
+    }
+
+    const listMatch = trimmed.match(/^(\d+\.|[-*•])\s+(.+)$/);
+    if (listMatch) {
+      blocks.push(
+        <View
+          key={`list-${index}`}
+          style={[styles.streamingListItem, isArabic(listMatch[2]) && { flexDirection: "row-reverse" }]}
+        >
+          <Text tone="secondary" style={styles.streamingBullet}>
+            {listMatch[1].match(/^\d+\./) ? listMatch[1] : "•"}
+          </Text>
+          <StreamingInlineMarkdown
+            text={listMatch[2]}
+            style={[
+              style,
+              styles.streamingListText,
+              isArabic(listMatch[2]) && { textAlign: "right", writingDirection: "rtl" },
+            ]}
+          />
+        </View>
+      );
+      return;
+    }
+
+    blocks.push(
+      <StreamingInlineMarkdown
+        key={`paragraph-${index}`}
+        text={line}
+        style={[
+          style,
+          styles.streamingParagraph,
+          isArabic(line) && { textAlign: "right", writingDirection: "rtl" },
+        ]}
+      />
+    );
+  });
+
+  if (inCodeBlock) {
+    flushCodeBlock("code-open");
+  }
+
+  return <View style={styles.streamingMarkdown}>{blocks}</View>;
+}
+
 /**
  * Simplified inline markdown parser for streaming text only.
  */
@@ -245,9 +406,14 @@ function parseInlineMarkdown(text: string) {
     // Link: [text](url) - Styled only during streaming
     const linkMatch = part.match(/^\[(.*?)\]\((.*?)\)$/);
     if (linkMatch) {
+      const [, label, url] = linkMatch;
       return (
-        <Text key={i} style={{ color: "#007AFF", textDecorationLine: "underline", fontFamily: "Manrope_600SemiBold" }}>
-          {linkMatch[1]}
+        <Text
+          key={i}
+          style={{ color: "#007AFF", textDecorationLine: "underline", fontFamily: "Manrope_600SemiBold" }}
+          onPress={() => Linking.openURL(url).catch(() => {})}
+        >
+          {label}
         </Text>
       );
     }
@@ -270,6 +436,8 @@ export function MessageBubble({
   actionsVisible = false,
   onShowActions,
   onDismissActions,
+  onApproveConfirmation,
+  onCancelConfirmation,
   threadPresentation,
 }: MessageBubbleProps) {
   const { colors, resolvedColorScheme } = useTheme();
@@ -403,6 +571,13 @@ export function MessageBubble({
               onCopy={copyMessage}
             />
           ) : null}
+          {message.turnMeta?.confirmation ? (
+            <ConfirmationCard
+              confirmation={message.turnMeta.confirmation}
+              onApprove={onApproveConfirmation}
+              onCancel={onCancelConfirmation}
+            />
+          ) : null}
         </View>
       ) : null}
     </Animated.View>
@@ -478,6 +653,145 @@ const createStyles = (colors: any, colorScheme: "light" | "dark") => {
   },
   assistantText: {
     lineHeight: 24,
+  },
+  confirmationCard: {
+    width: "100%",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.divider,
+    backgroundColor: colors.surface,
+    padding: theme.spacing.md,
+    gap: theme.spacing.sm,
+  },
+  confirmationTitle: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    lineHeight: 20,
+    fontFamily: "Manrope_700Bold",
+  },
+  confirmationPreview: {
+    fontSize: 12,
+    lineHeight: 18,
+    fontFamily: "Manrope_500Medium",
+  },
+  confirmationActions: {
+    flexDirection: "row",
+    gap: theme.spacing.sm,
+    paddingTop: theme.spacing.xs,
+  },
+  confirmButton: {
+    minHeight: 36,
+    borderRadius: 10,
+    paddingHorizontal: theme.spacing.md,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing.xs,
+    backgroundColor: colors.accent,
+  },
+  confirmButtonPressed: {
+    opacity: 0.82,
+  },
+  confirmButtonText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    lineHeight: 18,
+    fontFamily: "Manrope_700Bold",
+  },
+  cancelButton: {
+    minHeight: 36,
+    borderRadius: 10,
+    paddingHorizontal: theme.spacing.md,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing.xs,
+    borderWidth: 1,
+    borderColor: colors.divider,
+    backgroundColor: colors.background,
+  },
+  cancelButtonPressed: {
+    opacity: 0.78,
+  },
+  cancelButtonText: {
+    color: colors.textPrimary,
+    fontSize: 13,
+    lineHeight: 18,
+    fontFamily: "Manrope_700Bold",
+  },
+  confirmationStatus: {
+    fontSize: 12,
+    lineHeight: 17,
+    textTransform: "capitalize",
+  },
+  streamingMarkdown: {
+    width: "100%",
+    gap: 6,
+  },
+  streamingParagraph: {
+    lineHeight: 24,
+  },
+  streamingSpacer: {
+    height: 6,
+  },
+  streamingListItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    paddingLeft: 8,
+    marginTop: 2,
+  },
+  streamingBullet: {
+    minWidth: 18,
+    lineHeight: 24,
+    fontFamily: "Manrope_700Bold",
+  },
+  streamingListText: {
+    flex: 1,
+    lineHeight: 24,
+  },
+  streamingH1: {
+    fontSize: 21,
+    lineHeight: 28,
+    fontFamily: "Manrope_800ExtraBold",
+    color: colors.textPrimary,
+    marginTop: 8,
+  },
+  streamingH2: {
+    fontSize: 19,
+    lineHeight: 26,
+    fontFamily: "Manrope_800ExtraBold",
+    color: colors.textPrimary,
+    marginTop: 6,
+  },
+  streamingH3: {
+    fontSize: 17,
+    lineHeight: 24,
+    fontFamily: "Manrope_700Bold",
+    color: colors.textPrimary,
+    marginTop: 4,
+  },
+  streamingCodeBlock: {
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginVertical: 4,
+  },
+  streamingCodeLanguage: {
+    fontSize: 11,
+    fontFamily: "Manrope_700Bold",
+    color: colors.textMuted,
+    marginBottom: 6,
+    textTransform: "uppercase",
+  },
+  streamingCodeText: {
+    fontSize: 13,
+    lineHeight: 20,
+    fontFamily: "Courier",
+    color: colors.textPrimary,
   },
   actionsBar: {
     alignSelf: "flex-start",

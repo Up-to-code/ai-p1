@@ -1,7 +1,6 @@
 import { Text as RNText, StyleSheet, type TextProps as RNTextProps, type TextStyle } from "react-native";
 import React, { Children, isValidElement, useMemo, type ReactNode } from "react";
 
-import { useAppLocalization } from "@/foundation/localization";
 import { theme } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { isArabic } from "@/foundation/utils/rtl";
@@ -18,11 +17,10 @@ type TextProps = RNTextProps & {
 export const Text = React.forwardRef<RNText, TextProps>(
   ({ style, variant = "body", tone = "primary", selectable, children, ...props }, ref) => {
     const { colors } = useTheme();
-    const { isRTL } = useAppLocalization();
     const styles = useMemo(() => createStyles(colors), [colors]);
 
     const arabic = useMemo(() => isArabic(extractTextContent(children)), [children]);
-    const shouldUseArabicTypography = isRTL || arabic;
+    const shouldUseArabicTypography = arabic;
     const flattenedStyle = useMemo(() => StyleSheet.flatten(style) as TextStyle | undefined, [style]);
 
     const arabicStyle = useMemo(() => {

@@ -1,4 +1,5 @@
 import type { Context } from "hono";
+import { getMobileRequestContext } from "@/server/middleware/mobile-request-context";
 import { validateJsonBody } from "@/server/utils/request/json-body";
 import { agentChatSchema } from "../validation/chat.schema";
 import { createAgentChatStream } from "../services/orchestrator";
@@ -14,9 +15,11 @@ export async function handleAgentChat(c: Context) {
 
   return new Response(
     createAgentChatStream({
+      honoContext: c,
       organizationId,
       threadId: parsed.data.threadId,
       message: parsed.data.message,
+      requestContext: getMobileRequestContext(c),
       abortSignal: c.req.raw.signal,
     }),
     {

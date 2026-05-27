@@ -21,6 +21,8 @@ type ConversationFeedProps = {
   onTurnAction: (action: ConversationTurnAction, message: ConversationMessage) => void | Promise<void>;
   onSuggestionPress?: (suggestion: string) => void;
   onEditMessage?: (message: ConversationMessage) => void;
+  onApproveConfirmation?: (confirmationId: string) => void | Promise<void>;
+  onCancelConfirmation?: (confirmationId: string) => void | Promise<void>;
   threadPresentation?: ThreadPresentation | null;
 };
 
@@ -58,6 +60,8 @@ export function ConversationFeed({
   onTurnAction,
   onSuggestionPress,
   onEditMessage,
+  onApproveConfirmation,
+  onCancelConfirmation,
   threadPresentation,
 }: ConversationFeedProps) {
   const { colors } = useTheme();
@@ -204,6 +208,8 @@ export function ConversationFeed({
                 actionsVisible={activeActionMessageId === item.id}
                 onShowActions={(messageId) => setActiveActionMessageId(messageId)}
                 onDismissActions={() => setActiveActionMessageId(null)}
+                onApproveConfirmation={onApproveConfirmation}
+                onCancelConfirmation={onCancelConfirmation}
                 threadPresentation={threadPresentation}
               />
 

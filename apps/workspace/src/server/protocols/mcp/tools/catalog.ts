@@ -3,6 +3,8 @@ import { evaluateAgentToolRisk } from "@/server/domains/agents/policies/risk-pol
 
 export type McpPermissionResource =
   | "organization"
+  | "member"
+  | "role"
   | "client"
   | "property"
   | "project"
@@ -41,6 +43,84 @@ export const mcpToolCatalog: McpToolDefinition[] = [
     description: "Get this agent link's organization context and allowed work.",
     resource: "organization",
     action: "read",
+  },
+  {
+    name: "organization_update_identity",
+    title: "Update organization identity",
+    description: "Update the organization's Better Auth identity fields.",
+    resource: "organization",
+    action: "update",
+  },
+  {
+    name: "organization_update_profile",
+    title: "Update organization profile",
+    description: "Update the organization's workspace profile fields.",
+    resource: "organization",
+    action: "update",
+  },
+  {
+    name: "members_update_role",
+    title: "Update member role",
+    description: "Change an organization member's work role.",
+    resource: "member",
+    action: "update",
+    inputSchema: { memberId: id, role: id },
+  },
+  {
+    name: "members_remove",
+    title: "Remove member",
+    description: "Remove an organization member.",
+    resource: "member",
+    action: "delete",
+    inputSchema: { memberIdOrEmail: id },
+    destructive: true,
+  },
+  {
+    name: "invitations_create",
+    title: "Invite member",
+    description: "Create an organization email invitation.",
+    resource: "member",
+    action: "create",
+    inputSchema: { email: z.string().email(), role: id },
+  },
+  {
+    name: "invitations_cancel",
+    title: "Cancel invitation",
+    description: "Cancel an organization email invitation.",
+    resource: "member",
+    action: "create",
+    inputSchema: { invitationId: id },
+  },
+  {
+    name: "roles_list",
+    title: "List work roles",
+    description: "List organization work roles.",
+    resource: "role",
+    action: "read",
+  },
+  {
+    name: "roles_create",
+    title: "Create work role",
+    description: "Create an organization work role.",
+    resource: "role",
+    action: "create",
+  },
+  {
+    name: "roles_update",
+    title: "Update work role",
+    description: "Update an organization work role.",
+    resource: "role",
+    action: "update",
+    inputSchema: { roleId: id },
+  },
+  {
+    name: "roles_delete",
+    title: "Delete work role",
+    description: "Delete an organization work role.",
+    resource: "role",
+    action: "delete",
+    inputSchema: { roleId: id },
+    destructive: true,
   },
   {
     name: "clients_list",
@@ -320,7 +400,7 @@ export function canUseMcpTool(
   tool: Pick<McpToolDefinition, "resource" | "action">,
 ) {
   const risk = evaluateAgentToolRisk(tool);
-  if (!risk.allowed) return false;
+  if (risk.state === "blocked") return false;
 
   return permissions.some((permission) =>
     permission.resource === tool.resource && permission.actions.includes(tool.action),

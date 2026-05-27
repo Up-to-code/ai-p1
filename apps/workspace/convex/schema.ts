@@ -355,7 +355,12 @@ export default defineSchema({
     tool: v.string(),
     resource: v.string(),
     action: v.string(),
-    status: v.union(v.literal("allowed"), v.literal("blocked"), v.literal("failed")),
+    status: v.union(
+      v.literal("allowed"),
+      v.literal("blocked"),
+      v.literal("requires_confirmation"),
+      v.literal("failed"),
+    ),
     inputPreview: v.optional(v.string()),
     outputPreview: v.optional(v.string()),
     encryptedInputPreview: v.optional(v.string()),
@@ -366,6 +371,40 @@ export default defineSchema({
   })
     .index("by_run", ["organizationId", "runId", "createdAt"])
     .index("by_status_created", ["status", "createdAt"]),
+  agentConfirmations: defineTable({
+    organizationId: v.string(),
+    threadId: v.id("agentThreads"),
+    runId: v.id("agentRuns"),
+    createdByUserId: v.string(),
+    tool: v.string(),
+    resource: v.string(),
+    action: v.string(),
+    summary: v.string(),
+    inputPreview: v.optional(v.string()),
+    input: v.string(),
+    encryptedInput: v.optional(v.string()),
+    inputRedacted: v.optional(v.boolean()),
+    requestContext: v.optional(v.any()),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("approved"),
+      v.literal("canceled"),
+      v.literal("expired"),
+      v.literal("executed"),
+      v.literal("failed"),
+    ),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    approvedAt: v.optional(v.number()),
+    canceledAt: v.optional(v.number()),
+    executedAt: v.optional(v.number()),
+    failedAt: v.optional(v.number()),
+    error: v.optional(v.string()),
+  })
+    .index("by_organization_status_expires", ["organizationId", "status", "expiresAt"])
+    .index("by_run", ["organizationId", "runId", "createdAt"])
+    .index("by_user_status", ["createdByUserId", "status", "updatedAt"]),
   agentMemorySummaries: defineTable({
     organizationId: v.string(),
     threadId: v.id("agentThreads"),

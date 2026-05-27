@@ -1,11 +1,11 @@
-appId: com.zayon.mobile
+appId: com.qentrah.mobile
 name: Menu profile appearance
 tags:
   - smoke
   - navigation
   - preferences
 ---
-- runFlow: "shared/bootstrap-guest.yaml"
+- runFlow: "shared/bootstrap-signed-in.yaml"
 - tapOn:
     id: app.open_menu
 - tapOn:
@@ -14,6 +14,12 @@ tags:
     visible:
       id: profile.appearance
     timeout: 20000
+- assertVisible:
+    id: profile.active_workspace
+- assertVisible:
+    id: profile.switch_workspace
+- assertVisible:
+    id: profile.create_invite_link
 - tapOn:
     id: profile.appearance
 - extendedWaitUntil:
@@ -23,17 +29,17 @@ tags:
     id: appearance.option.light
 - assertVisible:
     id: appearance.selected.light
-- assertVisible: "System is currently using light mode."
+- assertVisible: "Light"
 - tapOn:
     id: appearance.option.dark
 - assertVisible:
     id: appearance.selected.dark
-- assertVisible: "System is currently using dark mode."
+- assertVisible: "Dark"
 - tapOn:
     id: appearance.option.system
 - assertVisible:
     id: appearance.selected.system
-- assertVisible: "System is currently using dark mode."
+- assertVisible: "System"
 - tapOn: "Go back"
 - assertVisible:
     id: profile.appearance

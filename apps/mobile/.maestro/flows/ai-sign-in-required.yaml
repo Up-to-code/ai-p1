@@ -1,0 +1,15 @@
+appId: com.qentrah.mobile
+name: AI sign-in required
+tags:
+  - auth
+  - agent
+---
+- runFlow: "shared/bootstrap-auth.yaml"
+- assertVisible:
+    id: auth.continue_google
+- assertVisible:
+    id: auth.continue_apple
+- assertNotVisible:
+    id: auth.continue_email
+- assertNotVisible:
+    id: auth.continue_anonymous

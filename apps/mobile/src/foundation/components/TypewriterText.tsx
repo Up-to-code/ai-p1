@@ -10,8 +10,8 @@ import Animated, {
 import * as Haptics from "expo-haptics";
 
 import { Text } from "@/foundation/primitives/Text";
-import { theme } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
+import { useAppLocalization } from "@/foundation/localization";
 
 interface TypewriterTextProps {
   phrases: string[];
@@ -29,10 +29,12 @@ export function TypewriterText({
   color,
 }: TypewriterTextProps) {
   const { colors } = useTheme();
+  const { isRTL } = useAppLocalization();
   const [displayText, setDisplayText] = useState("");
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const cursorOpacity = useSharedValue(1);
+  const phrasesKey = phrases.join("\n");
 
   // Blinking cursor animation
   useEffect(() => {
@@ -84,6 +86,12 @@ export function TypewriterText({
     return () => clearTimeout(timer);
   }, [displayText, isDeleting, handleTyping]);
 
+  useEffect(() => {
+    setDisplayText("");
+    setPhraseIndex(0);
+    setIsDeleting(false);
+  }, [phrasesKey]);
+
   const cursorStyle = useAnimatedStyle(() => ({
     opacity: cursorOpacity.value,
   }));
@@ -92,30 +100,59 @@ export function TypewriterText({
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.text, { color: resolvedColor }]}>
+      <View style={styles.textRow}>
+        {isRTL ? (
+          <Animated.View
+            style={[styles.cursor, styles.cursorRtl, { backgroundColor: resolvedColor }, cursorStyle]}
+          />
+        ) : null}
+        <Text
+          style={[
+            styles.text,
+            { color: resolvedColor },
+            isRTL && styles.rtlText,
+          ]}
+        >
         {displayText}
-        <Animated.View style={[styles.cursor, { backgroundColor: resolvedColor }, cursorStyle]} />
-      </Text>
+        </Text>
+        {!isRTL ? (
+          <Animated.View style={[styles.cursor, { backgroundColor: resolvedColor }, cursorStyle]} />
+        ) : null}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    height: 32,
+    minHeight: 54,
     justifyContent: "center",
     alignItems: "center",
+    maxWidth: 310,
+  },
+  textRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    maxWidth: 310,
   },
   text: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "600",
-    letterSpacing: 0.5,
+    letterSpacing: 0,
+    lineHeight: 25,
     textAlign: "center",
+  },
+  rtlText: {
+    writingDirection: "rtl",
   },
   cursor: {
     width: 2,
     height: 20,
-    marginLeft: 2,
-    transform: [{ translateY: 4 }],
+    marginLeft: 3,
+  },
+  cursorRtl: {
+    marginLeft: 0,
+    marginRight: 3,
   },
 });

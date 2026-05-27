@@ -16,7 +16,6 @@ export type MobileDictionary = {
     language: string;
     appearance: string;
     profile: string;
-    guest: string;
     loading: string;
     propertyUnavailableTitle: string;
     propertyUnavailableBody: string;
@@ -74,6 +73,12 @@ export type MobileDictionary = {
     appearanceSubtitle: string;
     appearanceHeroTitle: string;
     appearanceHeroBody: string;
+    appearanceSystemTitle: string;
+    appearanceSystemDescription: string;
+    appearanceLightTitle: string;
+    appearanceLightDescription: string;
+    appearanceDarkTitle: string;
+    appearanceDarkDescription: string;
   };
   menu: {
     title: string;
@@ -84,11 +89,9 @@ export type MobileDictionary = {
     fullHistory: string;
     savedProperties: string;
     favoriteChats: string;
-    compareTray: string;
     userSettings: string;
     errorScreens: string;
     syncResearchArchive: string;
-    anonymousSession: string;
   };
   profile: {
     account: string;
@@ -165,20 +168,6 @@ export type MobileDictionary = {
     noResultsTitle: string;
     noResultsBody: string;
   };
-  compare: {
-    title: string;
-    subtitle: string;
-    emptyTitle: string;
-    emptyBody: string;
-    price: string;
-    location: string;
-    beds: string;
-    area: string;
-    syncingTitle: string;
-    syncingBody: string;
-    signInRequiredTitle: string;
-    signInRequiredBody: string;
-  };
   theories: {
     title: string;
     searchPlaceholder: string;
@@ -187,14 +176,17 @@ export type MobileDictionary = {
     openThreadBody: string;
   };
   auth: {
+    wordmark: string;
+    landingPhrases: string[];
+    legalNotice: string;
+    termsOfService: string;
+    privacyPolicy: string;
+    copyright: string;
     signInUnavailableTitle: string;
     signInUnavailableBody: string;
-    guestUnavailableTitle: string;
-    guestUnavailableBody: string;
     continueWithApple: string;
     continueWithGoogle: string;
     continueWithEmail: string;
-    continueAsGuest: string;
     emailOptionsTitle: string;
     emailOptionsHeroTitle: string;
     emailOptionsHeroBody: string;
@@ -237,6 +229,47 @@ export type MobileDictionary = {
     passwordPlaceholder: string;
     namePlaceholder: string;
     passwordMinPlaceholder: string;
+  };
+  workspaceAccess: {
+    eyebrow: string;
+    title: string;
+    body: string;
+    loading: string;
+    errorTitle: string;
+    errorBody: string;
+    untitledWorkspace: string;
+    joinTitle: string;
+    joinBody: string;
+    joinButton: string;
+    invitePlaceholder: string;
+    inviteRequired: string;
+    createTitle: string;
+    createBody: string;
+    createButton: string;
+    namePlaceholder: string;
+    nameRequired: string;
+    typeBroker: string;
+    typeDeveloper: string;
+    inviteEyebrow: string;
+    signInInviteTitle: string;
+    signInInviteBody: string;
+    acceptingTitle: string;
+    acceptingBody: string;
+    acceptedTitle: string;
+    acceptedBody: string;
+    acceptErrorTitle: string;
+    acceptErrorBody: string;
+    invitationUnsupported: string;
+    chooseWorkspaceButton: string;
+    organizationSettingsTitle: string;
+    organizationSettingsBody: string;
+    activeWorkspace: string;
+    createInviteLink: string;
+    inviteLinkCreated: string;
+    inviteLinkCopied: string;
+    switchWorkspace: string;
+    continueWorkspace: string;
+    useAnotherAccount: string;
   };
   onboarding: {
     locationsTitle: string;
@@ -284,7 +317,6 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       language: "Language",
       appearance: "Appearance",
       profile: "Profile",
-      guest: "Guest",
       loading: "Loading",
       propertyUnavailableTitle: "Property unavailable",
       propertyUnavailableBody: "This property could not be loaded or is no longer available.",
@@ -342,6 +374,12 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       appearanceSubtitle: "System is currently using {mode} mode.",
       appearanceHeroTitle: "Choose your viewing mode",
       appearanceHeroBody: "Apply changes instantly across the app or stay synced with your device setting.",
+      appearanceSystemTitle: "System",
+      appearanceSystemDescription: "Follow your phone's current appearance.",
+      appearanceLightTitle: "Light",
+      appearanceLightDescription: "Bright surfaces with clear daytime contrast.",
+      appearanceDarkTitle: "Dark",
+      appearanceDarkDescription: "Low-glare surfaces for night use.",
     },
     menu: {
       title: "Menu",
@@ -352,11 +390,9 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       fullHistory: "View full history",
       savedProperties: "Saved properties",
       favoriteChats: "Favorite chats",
-      compareTray: "Compare tray",
       userSettings: "User settings",
       errorScreens: "Error screens",
       syncResearchArchive: "Log in to sync your research archive",
-      anonymousSession: "Anonymous session",
     },
     profile: {
       account: "Account",
@@ -433,20 +469,6 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       noResultsTitle: "No properties found",
       noResultsBody: "Try a different search or filter to see more homes.",
     },
-    compare: {
-      title: "Comparison",
-      subtitle: "Side-by-side breakdown of your selected choices.",
-      emptyTitle: "Compare tray is empty",
-      emptyBody: "Tap the scale icon on any property card to add it for side-by-side analysis.",
-      price: "Price",
-      location: "Location",
-      beds: "Beds",
-      area: "Area",
-      syncingTitle: "Syncing saved status",
-      syncingBody: "Your compare tray is ready. Saved-state badges are still updating.",
-      signInRequiredTitle: "Sign in required",
-      signInRequiredBody: "Sign in to save properties.",
-    },
     theories: {
       title: "Archive",
       searchPlaceholder: "Search conversations...",
@@ -455,36 +477,43 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       openThreadBody: "Open this thread to continue the research.",
     },
     auth: {
+      wordmark: "QENTRAH",
+      landingPhrases: [
+        "Your agency runs from chat.",
+        "Search, follow up, and close from your phone.",
+        "Smarter real estate work, no desk required.",
+      ],
+      legalNotice: "By continuing, you agree to",
+      termsOfService: "Terms",
+      privacyPolicy: "Privacy Policy",
+      copyright: "© 2026 Qentrah",
       signInUnavailableTitle: "Sign in unavailable",
       signInUnavailableBody: "Unable to start sign in.",
-      guestUnavailableTitle: "Guest mode unavailable",
-      guestUnavailableBody: "Unable to start guest mode right now.",
       continueWithApple: "Continue with Apple",
       continueWithGoogle: "Continue with Google",
       continueWithEmail: "Continue with Email",
-      continueAsGuest: "Or continue as guest",
       emailOptionsTitle: "Account access",
-      emailOptionsHeroTitle: "Welcome back",
-      emailOptionsHeroBody: "Securely sign in to your Qentrah account or create a new one to get started.",
-      logIn: "Log in",
-      createAccount: "Create an account",
-      loginHeader: "Security core",
-      loginTitle: "Secure identity",
-      loginBodyUpgrade: "Sign in to keep your research synced to your account.",
-      loginBodyDefault: "Sign in with your email and password.",
-      establishSecurity: "Establish security",
+      emailOptionsHeroTitle: "Use email",
+      emailOptionsHeroBody: "Sign in or create an account with a secure email password.",
+      logIn: "Sign in",
+      createAccount: "Create account",
+      loginHeader: "Sign in",
+      loginTitle: "Welcome back",
+      loginBodyUpgrade: "Continue to your workspace and AI conversations.",
+      loginBodyDefault: "Enter your email and password.",
+      establishSecurity: "Sign in",
       signingIn: "Signing in...",
       forgotPassword: "Forgot password?",
       missingDetailsTitle: "Missing details",
       loginMissingDetailsBody: "Enter your email and password to continue.",
       signInFailedTitle: "Sign in failed",
       tryAgain: "Try again",
-      registerHeader: "Provisioning",
-      registerTitle: "Cloud identity",
-      registerBodyUpgrade: "Create an account to sync your AI research history.",
-      registerBodyDefault: "Create your Qentrah account for seamless synchronization.",
-      initializeEnvironment: "Initialize environment",
-      initializing: "Initializing...",
+      registerHeader: "Create account",
+      registerTitle: "Create your account",
+      registerBodyUpgrade: "Start with your account, then create or join a workspace.",
+      registerBodyDefault: "Start with your account, then create or join a workspace.",
+      initializeEnvironment: "Create account",
+      initializing: "Creating...",
       registerFailedTitle: "Registration failed",
       registerMissingDetailsBody: "Name, email, and password are all required.",
       forgotHeader: "Recovery",
@@ -505,6 +534,47 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       passwordPlaceholder: "Your password",
       namePlaceholder: "Ahmed Mansour",
       passwordMinPlaceholder: "At least 8 characters",
+    },
+    workspaceAccess: {
+      eyebrow: "Workspace",
+      title: "Workspace",
+      body: "Choose, create, or join.",
+      loading: "Loading",
+      errorTitle: "Workspace unavailable",
+      errorBody: "Unable to update workspace access.",
+      untitledWorkspace: "Untitled workspace",
+      joinTitle: "Join invite",
+      joinBody: "Paste a link or code.",
+      joinButton: "Join",
+      invitePlaceholder: "Invite link or code",
+      inviteRequired: "Paste an invite link or code to continue.",
+      createTitle: "Create",
+      createBody: "Start a workspace.",
+      createButton: "Create",
+      namePlaceholder: "Workspace name",
+      nameRequired: "Enter a workspace name.",
+      typeBroker: "Broker",
+      typeDeveloper: "Developer",
+      inviteEyebrow: "Organization invite",
+      signInInviteTitle: "Sign in",
+      signInInviteBody: "Then the invite opens here.",
+      acceptingTitle: "Joining",
+      acceptingBody: "Accepting invite.",
+      acceptedTitle: "Joined",
+      acceptedBody: "Opening Qentrah.",
+      acceptErrorTitle: "Invite unavailable",
+      acceptErrorBody: "Unable to accept this invite.",
+      invitationUnsupported: "Open the full invite link or paste an invite token.",
+      chooseWorkspaceButton: "Choose",
+      organizationSettingsTitle: "Organization",
+      organizationSettingsBody: "Manage workspace access and invites.",
+      activeWorkspace: "Active workspace",
+      createInviteLink: "Invite link",
+      inviteLinkCreated: "Invite ready",
+      inviteLinkCopied: "Link copied.",
+      switchWorkspace: "Switch",
+      continueWorkspace: "Continue",
+      useAnotherAccount: "Use another account",
     },
     onboarding: {
       locationsTitle: "Personalize",
@@ -549,7 +619,6 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       language: "اللغة",
       appearance: "المظهر",
       profile: "الملف الشخصي",
-      guest: "زائر",
       loading: "جارٍ التحميل",
       propertyUnavailableTitle: "العقار غير متاح",
       propertyUnavailableBody: "تعذّر تحميل هذا العقار أو لم يعد متاحًا.",
@@ -607,6 +676,12 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       appearanceSubtitle: "النظام يستخدم الآن وضع {mode}.",
       appearanceHeroTitle: "اختر نمط العرض",
       appearanceHeroBody: "طبّق التغيير فورًا في التطبيق أو اتركه متزامنًا مع إعدادات جهازك.",
+      appearanceSystemTitle: "النظام",
+      appearanceSystemDescription: "اتبع مظهر الهاتف تلقائيًا.",
+      appearanceLightTitle: "الفاتح",
+      appearanceLightDescription: "أسطح واضحة وتباين مناسب للنهار.",
+      appearanceDarkTitle: "الداكن",
+      appearanceDarkDescription: "أسطح منخفضة الوهج للاستخدام ليلًا.",
     },
     menu: {
       title: "القائمة",
@@ -617,11 +692,9 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       fullHistory: "عرض السجل الكامل",
       savedProperties: "العقارات المحفوظة",
       favoriteChats: "المحادثات المفضلة",
-      compareTray: "لوحة المقارنة",
       userSettings: "إعدادات المستخدم",
       errorScreens: "شاشات الأخطاء",
       syncResearchArchive: "سجل الدخول لمزامنة أرشيف البحث",
-      anonymousSession: "جلسة مجهولة",
     },
     profile: {
       account: "الحساب",
@@ -698,20 +771,6 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       noResultsTitle: "لم نجد عقارات",
       noResultsBody: "جرّب بحثًا أو فلترًا مختلفًا لرؤية خيارات أكثر.",
     },
-    compare: {
-      title: "المقارنة",
-      subtitle: "مقارنة جنبًا إلى جنب لاختياراتك المحددة.",
-      emptyTitle: "لوحة المقارنة فارغة",
-      emptyBody: "اضغط على أيقونة الميزان في أي بطاقة عقار لإضافته إلى المقارنة.",
-      price: "السعر",
-      location: "الموقع",
-      beds: "غرف النوم",
-      area: "المساحة",
-      syncingTitle: "جارٍ تحديث حالة الحفظ",
-      syncingBody: "لوحة المقارنة جاهزة، وما زالت شارات الحفظ تتحدث.",
-      signInRequiredTitle: "تسجيل الدخول مطلوب",
-      signInRequiredBody: "سجل الدخول لحفظ العقارات.",
-    },
     theories: {
       title: "الأرشيف",
       searchPlaceholder: "ابحث في المحادثات...",
@@ -720,36 +779,43 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       openThreadBody: "افتح هذه المحادثة لمتابعة البحث.",
     },
     auth: {
+      wordmark: "كانترا",
+      landingPhrases: [
+        "كل شغلك العقاري في محادثة واحدة.",
+        "ابحث وتابع عملاءك من هاتفك.",
+        "كانترا تقرّب القرار وتختصر الطريق.",
+      ],
+      legalNotice: "بالمتابعة، توافق على",
+      termsOfService: "الشروط",
+      privacyPolicy: "سياسة الخصوصية",
+      copyright: "© 2026 Qentrah",
       signInUnavailableTitle: "تسجيل الدخول غير متاح",
       signInUnavailableBody: "تعذر بدء تسجيل الدخول.",
-      guestUnavailableTitle: "وضع الزائر غير متاح",
-      guestUnavailableBody: "تعذر بدء وضع الزائر الآن.",
       continueWithApple: "المتابعة باستخدام Apple",
       continueWithGoogle: "المتابعة باستخدام Google",
       continueWithEmail: "المتابعة بالبريد الإلكتروني",
-      continueAsGuest: "أو المتابعة كزائر",
       emailOptionsTitle: "الوصول إلى الحساب",
-      emailOptionsHeroTitle: "أهلًا بعودتك",
-      emailOptionsHeroBody: "سجّل الدخول بأمان إلى حساب Qentrah أو أنشئ حسابًا جديدًا للبدء.",
+      emailOptionsHeroTitle: "استخدم البريد الإلكتروني",
+      emailOptionsHeroBody: "سجّل الدخول أو أنشئ حسابًا بكلمة مرور آمنة.",
       logIn: "تسجيل الدخول",
       createAccount: "إنشاء حساب",
-      loginHeader: "نواة الأمان",
-      loginTitle: "هوية آمنة",
-      loginBodyUpgrade: "سجّل الدخول لمزامنة بحثك داخل حسابك.",
-      loginBodyDefault: "سجّل الدخول باستخدام البريد الإلكتروني وكلمة المرور.",
-      establishSecurity: "تأكيد الأمان",
+      loginHeader: "تسجيل الدخول",
+      loginTitle: "أهلًا بعودتك",
+      loginBodyUpgrade: "تابع إلى مساحة العمل ومحادثات الذكاء الاصطناعي.",
+      loginBodyDefault: "أدخل بريدك الإلكتروني وكلمة المرور.",
+      establishSecurity: "تسجيل الدخول",
       signingIn: "جارٍ تسجيل الدخول...",
       forgotPassword: "هل نسيت كلمة المرور؟",
       missingDetailsTitle: "بيانات ناقصة",
       loginMissingDetailsBody: "أدخل بريدك الإلكتروني وكلمة المرور للمتابعة.",
       signInFailedTitle: "فشل تسجيل الدخول",
       tryAgain: "حاول مرة أخرى",
-      registerHeader: "التهيئة",
-      registerTitle: "هوية سحابية",
-      registerBodyUpgrade: "أنشئ حسابًا لمزامنة سجل بحث الذكاء الاصطناعي.",
-      registerBodyDefault: "أنشئ حساب Qentrah لمزامنة سلسة.",
-      initializeEnvironment: "بدء التهيئة",
-      initializing: "جارٍ التهيئة...",
+      registerHeader: "إنشاء حساب",
+      registerTitle: "أنشئ حسابك",
+      registerBodyUpgrade: "ابدأ بحسابك، ثم أنشئ مساحة عمل أو انضم إليها.",
+      registerBodyDefault: "ابدأ بحسابك، ثم أنشئ مساحة عمل أو انضم إليها.",
+      initializeEnvironment: "إنشاء الحساب",
+      initializing: "جارٍ الإنشاء...",
       registerFailedTitle: "فشل إنشاء الحساب",
       registerMissingDetailsBody: "الاسم والبريد الإلكتروني وكلمة المرور كلها مطلوبة.",
       forgotHeader: "الاستعادة",
@@ -770,6 +836,47 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       passwordPlaceholder: "كلمة المرور",
       namePlaceholder: "أحمد منصور",
       passwordMinPlaceholder: "8 أحرف على الأقل",
+    },
+    workspaceAccess: {
+      eyebrow: "المساحة",
+      title: "مساحة العمل",
+      body: "اختر أو أنشئ أو انضم",
+      loading: "جارٍ التحميل",
+      errorTitle: "المساحة غير متاحة",
+      errorBody: "تعذر تحديث الوصول إلى المساحة.",
+      untitledWorkspace: "مساحة بدون اسم",
+      joinTitle: "انضم بدعوة",
+      joinBody: "الصق رابطًا أو رمزًا",
+      joinButton: "انضم",
+      invitePlaceholder: "رابط الدعوة أو الرمز",
+      inviteRequired: "الصق رابط الدعوة أو الرمز للمتابعة.",
+      createTitle: "إنشاء",
+      createBody: "ابدأ مساحة عمل",
+      createButton: "إنشاء",
+      namePlaceholder: "اسم مساحة العمل",
+      nameRequired: "أدخل اسم مساحة العمل.",
+      typeBroker: "وسيط",
+      typeDeveloper: "مطوّر",
+      inviteEyebrow: "دعوة منظمة",
+      signInInviteTitle: "سجّل الدخول",
+      signInInviteBody: "بعدها تفتح الدعوة هنا",
+      acceptingTitle: "جارٍ الانضمام",
+      acceptingBody: "نقبل الدعوة",
+      acceptedTitle: "تم الانضمام",
+      acceptedBody: "نفتح Qentrah",
+      acceptErrorTitle: "الدعوة غير متاحة",
+      acceptErrorBody: "تعذر قبول هذه الدعوة.",
+      invitationUnsupported: "افتح رابط الدعوة كاملًا أو الصق رمز الدعوة.",
+      chooseWorkspaceButton: "اختيار",
+      organizationSettingsTitle: "المنظمة",
+      organizationSettingsBody: "إدارة الوصول للمساحة والدعوات.",
+      activeWorkspace: "المساحة الحالية",
+      createInviteLink: "رابط دعوة",
+      inviteLinkCreated: "الرابط جاهز",
+      inviteLinkCopied: "تم نسخ الرابط",
+      switchWorkspace: "تبديل",
+      continueWorkspace: "متابعة",
+      useAnotherAccount: "استخدام حساب آخر",
     },
     onboarding: {
       locationsTitle: "خصّص تجربتك",
@@ -814,7 +921,6 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       language: "Langue",
       appearance: "Apparence",
       profile: "Profil",
-      guest: "Invité",
       loading: "Chargement",
       propertyUnavailableTitle: "Bien indisponible",
       propertyUnavailableBody: "Ce bien n’a pas pu être chargé ou n’est plus disponible.",
@@ -872,6 +978,12 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       appearanceSubtitle: "Le système utilise actuellement le mode {mode}.",
       appearanceHeroTitle: "Choisissez votre mode d’affichage",
       appearanceHeroBody: "Appliquez les changements instantanément ou restez synchronisé avec votre appareil.",
+      appearanceSystemTitle: "Système",
+      appearanceSystemDescription: "Suit automatiquement l’apparence du téléphone.",
+      appearanceLightTitle: "Clair",
+      appearanceLightDescription: "Surfaces lumineuses et contraste net.",
+      appearanceDarkTitle: "Sombre",
+      appearanceDarkDescription: "Surfaces moins lumineuses pour le soir.",
     },
     menu: {
       title: "Menu",
@@ -882,11 +994,9 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       fullHistory: "Voir tout l’historique",
       savedProperties: "Biens enregistrés",
       favoriteChats: "Chats favoris",
-      compareTray: "Plateau de comparaison",
       userSettings: "Paramètres utilisateur",
       errorScreens: "Écrans d’erreur",
       syncResearchArchive: "Connectez-vous pour synchroniser vos recherches",
-      anonymousSession: "Session anonyme",
     },
     profile: {
       account: "Compte",
@@ -963,20 +1073,6 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       noResultsTitle: "Aucun bien trouvé",
       noResultsBody: "Essayez une autre recherche ou un autre filtre.",
     },
-    compare: {
-      title: "Comparaison",
-      subtitle: "Analyse côte à côte de vos choix sélectionnés.",
-      emptyTitle: "Le plateau de comparaison est vide",
-      emptyBody: "Touchez l’icône balance sur une carte bien pour l’ajouter à la comparaison.",
-      price: "Prix",
-      location: "Emplacement",
-      beds: "Chambres",
-      area: "Surface",
-      syncingTitle: "Synchronisation des favoris",
-      syncingBody: "Votre plateau est prêt, les badges de sauvegarde se mettent encore à jour.",
-      signInRequiredTitle: "Connexion requise",
-      signInRequiredBody: "Connectez-vous pour enregistrer des biens.",
-    },
     theories: {
       title: "Archive",
       searchPlaceholder: "Rechercher des conversations...",
@@ -985,36 +1081,43 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       openThreadBody: "Ouvrez ce fil pour poursuivre la recherche.",
     },
     auth: {
+      wordmark: "QENTRAH",
+      landingPhrases: [
+        "Votre agence travaille depuis le chat.",
+        "Cherchez, suivez et avancez depuis votre téléphone.",
+        "Un immobilier plus intelligent, sans bureau.",
+      ],
+      legalNotice: "En continuant, vous acceptez les",
+      termsOfService: "Conditions",
+      privacyPolicy: "Politique de confidentialité",
+      copyright: "© 2026 Qentrah",
       signInUnavailableTitle: "Connexion indisponible",
       signInUnavailableBody: "Impossible de démarrer la connexion.",
-      guestUnavailableTitle: "Mode invité indisponible",
-      guestUnavailableBody: "Impossible de démarrer le mode invité pour le moment.",
       continueWithApple: "Continuer avec Apple",
       continueWithGoogle: "Continuer avec Google",
       continueWithEmail: "Continuer avec l’e-mail",
-      continueAsGuest: "Ou continuer comme invité",
       emailOptionsTitle: "Accès au compte",
-      emailOptionsHeroTitle: "Bon retour",
-      emailOptionsHeroBody: "Connectez-vous en toute sécurité à votre compte Qentrah ou créez-en un nouveau.",
+      emailOptionsHeroTitle: "Utiliser l’e-mail",
+      emailOptionsHeroBody: "Connectez-vous ou créez un compte avec un mot de passe sécurisé.",
       logIn: "Connexion",
       createAccount: "Créer un compte",
-      loginHeader: "Noyau sécurité",
-      loginTitle: "Identité sécurisée",
-      loginBodyUpgrade: "Connectez-vous pour synchroniser vos recherches.",
-      loginBodyDefault: "Connectez-vous avec votre e-mail et mot de passe.",
-      establishSecurity: "Établir la sécurité",
+      loginHeader: "Connexion",
+      loginTitle: "Bon retour",
+      loginBodyUpgrade: "Continuez vers votre espace et vos conversations IA.",
+      loginBodyDefault: "Entrez votre e-mail et mot de passe.",
+      establishSecurity: "Se connecter",
       signingIn: "Connexion...",
       forgotPassword: "Mot de passe oublié ?",
       missingDetailsTitle: "Informations manquantes",
       loginMissingDetailsBody: "Saisissez votre e-mail et mot de passe pour continuer.",
       signInFailedTitle: "Échec de connexion",
       tryAgain: "Réessayer",
-      registerHeader: "Provisioning",
-      registerTitle: "Identité cloud",
-      registerBodyUpgrade: "Créez un compte pour synchroniser votre historique de recherche IA.",
-      registerBodyDefault: "Créez votre compte Qentrah pour une synchronisation fluide.",
-      initializeEnvironment: "Initialiser l’environnement",
-      initializing: "Initialisation...",
+      registerHeader: "Créer un compte",
+      registerTitle: "Créez votre compte",
+      registerBodyUpgrade: "Commencez par votre compte, puis créez ou rejoignez un espace.",
+      registerBodyDefault: "Commencez par votre compte, puis créez ou rejoignez un espace.",
+      initializeEnvironment: "Créer le compte",
+      initializing: "Création...",
       registerFailedTitle: "Échec de création du compte",
       registerMissingDetailsBody: "Le nom, l’e-mail et le mot de passe sont obligatoires.",
       forgotHeader: "Récupération",
@@ -1035,6 +1138,47 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       passwordPlaceholder: "Votre mot de passe",
       namePlaceholder: "Ahmed Mansour",
       passwordMinPlaceholder: "Au moins 8 caractères",
+    },
+    workspaceAccess: {
+      eyebrow: "Espace",
+      title: "Espace",
+      body: "Choisir, créer ou rejoindre.",
+      loading: "Chargement",
+      errorTitle: "Espace indisponible",
+      errorBody: "Impossible de mettre à jour l’accès.",
+      untitledWorkspace: "Espace sans nom",
+      joinTitle: "Rejoindre",
+      joinBody: "Collez un lien ou un code.",
+      joinButton: "Rejoindre",
+      invitePlaceholder: "Lien ou code d’invitation",
+      inviteRequired: "Collez un lien ou un code pour continuer.",
+      createTitle: "Créer",
+      createBody: "Démarrer un espace.",
+      createButton: "Créer",
+      namePlaceholder: "Nom de l’espace",
+      nameRequired: "Entrez le nom de l’espace.",
+      typeBroker: "Courtier",
+      typeDeveloper: "Promoteur",
+      inviteEyebrow: "Invitation organisation",
+      signInInviteTitle: "Connectez-vous",
+      signInInviteBody: "L’invitation s’ouvrira ici.",
+      acceptingTitle: "Connexion",
+      acceptingBody: "Acceptation de l’invitation.",
+      acceptedTitle: "Rejoint",
+      acceptedBody: "Ouverture de Qentrah.",
+      acceptErrorTitle: "Invitation indisponible",
+      acceptErrorBody: "Impossible d’accepter cette invitation.",
+      invitationUnsupported: "Ouvrez le lien complet ou collez un jeton d’invitation.",
+      chooseWorkspaceButton: "Choisir",
+      organizationSettingsTitle: "Organisation",
+      organizationSettingsBody: "Gérez l’accès et les invitations.",
+      activeWorkspace: "Espace actif",
+      createInviteLink: "Lien d’invitation",
+      inviteLinkCreated: "Lien prêt",
+      inviteLinkCopied: "Lien copié.",
+      switchWorkspace: "Changer",
+      continueWorkspace: "Continuer",
+      useAnotherAccount: "Utiliser un autre compte",
     },
     onboarding: {
       locationsTitle: "Personnaliser",

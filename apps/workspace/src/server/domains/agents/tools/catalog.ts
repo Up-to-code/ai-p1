@@ -114,7 +114,7 @@ export function canUseAgentTool(
     action: tool.action,
     tool: tool.name,
   });
-  if (!risk.allowed) return false;
+  if (risk.state === "blocked") return false;
 
   return permissions.some(
     (permission) =>

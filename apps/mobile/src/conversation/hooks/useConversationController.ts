@@ -1,14 +1,11 @@
-import { startTransition, useEffect, useMemo, useRef } from "react";
-import { useMutation } from "convex/react";
+import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 
 import type { AssistantAction } from "@/conversation/assistantProtocol";
+import { assistantTurnSchema, extractTurnPropertyIds, extractTurnSources } from "@/conversation/assistantProtocol";
 import { getLocalizedRuntimeMessage, resolveThreadPresentationState } from "@/conversation/lib/assistantPresentation";
-import {
-  shouldResolveCompletedRunWithoutAssistant,
-} from "@/conversation/lib/pendingRun";
-import { getPendingRunTimeoutSnapshot } from "@/conversation/lib/runProgress";
 import { useAuthSession } from "@/auth/useAuthSession";
+import { useWorkspaceIdentity } from "@/auth/useWorkspaceIdentity";
 import {
   canQueryConversationThread,
   resolveActiveConversationThreadId,
@@ -19,28 +16,24 @@ import {
   createE2EThread,
 } from "@/e2e/store";
 import { track } from "@/persistence/analytics/track";
-import { api } from "@/persistence/convex/api";
+import {
+  approveAgentConfirmation,
+  cancelAgentConfirmation,
+  sendAgentChatRequest,
+} from "@/persistence/api/conversationApi";
 import {
   useAgentRuntimeHealth,
   useRunStageFeed,
-  useRunStatus,
   useThreadPresentation,
   useThreadMessages,
   useThreadsState,
-} from "@/persistence/convex/useConversationData";
+} from "@/persistence/api/conversationData";
 import { useAppStore } from "@/store";
 import type { ConversationMessage } from "@/types/domain";
 
-function isThreadNotFoundError(error: unknown) {
-  return error instanceof Error && /Thread not found/i.test(error.message);
-}
-
-function isLiveRunStatus(status: string | null | undefined) {
-  return status === "queued" || status === "running";
-}
-
 export function useConversationController() {
   const { canUpgrade, isAuthenticated } = useAuthSession();
+  const workspace = useWorkspaceIdentity();
   const router = useRouter();
   const sessionId = useAppStore((state) => state.sessionId);
   const draftText = useAppStore((state) => state.draftText);
@@ -62,19 +55,17 @@ export function useConversationController() {
   const clearDraft = useAppStore((state) => state.clearDraft);
   const setDraftText = useAppStore((state) => state.setDraftText);
   const completionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const [streamingAssistant, setStreamingAssistant] = useState<ConversationMessage | null>(null);
+  const [messagesRefreshKey, setMessagesRefreshKey] = useState(0);
 
   const {
     threads,
     isLoaded: threadsLoaded,
     serverThreads,
     serverLoaded,
+    refreshThreads,
   } = useThreadsState();
-  const startThreadMutation = useMutation(api.agent.public.startThread.startThread);
-  const sendUserMessageMutation = useMutation(api.agent.public.sendUserMessage.sendUserMessage);
-  const editUserMessageMutation = useMutation(api.agent.public.editUserMessage.editUserMessage);
-  const stopRunMutation = useMutation(api.agent.public.stopRun.stopRun);
-  const toggleSavedListingMutation = useMutation(api.listings.toggleSavedListing);
-  const createBuyerIntentMutation = useMutation(api.buyer.createBuyerIntent);
   const runtimeHealth = useAgentRuntimeHealth();
   const resolvedThreadId = resolveActiveConversationThreadId({
     activeThreadId,
@@ -88,7 +79,40 @@ export function useConversationController() {
     threads: serverThreads,
     threadsLoaded: serverLoaded,
   });
-  const messages = useThreadMessages(activeThreadId, pendingPrompt, canQueryActiveThread);
+  const serverMessages = useThreadMessages(activeThreadId, null, canQueryActiveThread, messagesRefreshKey);
+  const messages = useMemo(() => {
+    const rows = [...serverMessages];
+    if (pendingPrompt) {
+      const hasOptimisticUser = rows.some((message) => message.role === "user" && message.text === pendingPrompt);
+      if (!hasOptimisticUser) {
+        rows.push({
+          id: "optimistic-user",
+          sessionId: activeThreadId ?? "threadless",
+          role: "user",
+          kind: "text",
+          text: pendingPrompt,
+          streamState: "complete",
+          relatedPropertyIds: [],
+          createdAt: pendingStartedAt ? pendingStartedAt - 1 : Date.now() - 1,
+          runId: undefined,
+          sourceMetadata: [],
+        });
+      }
+    }
+    if (streamingAssistant && streamingAssistant.sessionId === (activeThreadId ?? "threadless")) {
+      const alreadyPersisted = rows.some((message) =>
+        message.role === "assistant"
+        && (
+          (streamingAssistant.runId && message.runId === streamingAssistant.runId)
+          || (message.text && message.text === streamingAssistant.text)
+        ),
+      );
+      if (!alreadyPersisted) {
+        rows.push(streamingAssistant);
+      }
+    }
+    return rows.sort((left, right) => left.createdAt - right.createdAt);
+  }, [activeThreadId, pendingPrompt, pendingStartedAt, serverMessages, streamingAssistant]);
   const threadPresentation = useThreadPresentation(activeThreadId);
   const resolvedPresentation = resolveThreadPresentationState(threadPresentation);
   const surfaceCopy = resolvedPresentation.surfaceCopy;
@@ -98,46 +122,6 @@ export function useConversationController() {
     activeRunId,
     runtimeHealth.capabilities?.stageFeed ?? true,
   );
-  const runStatus = useRunStatus(
-    runThreadId,
-    activeRunId,
-    runtimeHealth.capabilities?.runStatus ?? true,
-  );
-  const hasCompletedAssistant = useMemo(() => messages.some(
-    (message) =>
-      message.role === "assistant"
-      && message.id !== "pending-assistant"
-      && (!pendingStartedAt || message.createdAt >= pendingStartedAt),
-  ), [messages, pendingStartedAt]);
-  const lastAssistantMessageAt = useMemo(() => {
-    const assistantMessages = messages
-      .filter(
-        (message) =>
-          message.role === "assistant"
-          && message.id !== "pending-assistant"
-          && (!pendingStartedAt || message.createdAt >= pendingStartedAt),
-      )
-      .map((message) => message.createdAt);
-
-    return assistantMessages.length > 0 ? Math.max(...assistantMessages) : null;
-  }, [messages, pendingStartedAt]);
-  const lastStageAt = useMemo(() => (
-    runStageFeed.length > 0 ? runStageFeed[runStageFeed.length - 1]?.timestamp ?? null : null
-  ), [runStageFeed]);
-  const pendingTimeout = useMemo(() => getPendingRunTimeoutSnapshot({
-    pendingStartedAt,
-    runStatusUpdatedAt: runStatus?.updatedAt,
-    lastStageAt,
-    lastAssistantMessageAt,
-    workerLastHeartbeatAt: runtimeHealth.worker?.available ? runtimeHealth.worker.lastHeartbeatAt ?? null : null,
-  }), [
-    lastAssistantMessageAt,
-    lastStageAt,
-    pendingStartedAt,
-    runStatus?.updatedAt,
-    runtimeHealth.worker?.available,
-    runtimeHealth.worker?.lastHeartbeatAt,
-  ]);
 
   useEffect(() => {
     if (!threadsLoaded || isCreatingThread || resolvedThreadId === activeThreadId) {
@@ -151,167 +135,19 @@ export function useConversationController() {
     if (completionTimeoutRef.current) {
       clearTimeout(completionTimeoutRef.current);
     }
+    abortControllerRef.current?.abort();
   }, []);
 
   useEffect(() => {
-    if (!hasCompletedAssistant || (!pendingPrompt && !runFailureMessage)) {
-      return;
+    if (!e2eQaMode && workspace.status === "signed_out") {
+      router.push("/(auth)");
     }
-
-    if (pendingPrompt) {
-      track("ai_response_stream_end", {
-        sessionId,
-        threadId: activeThreadId ?? undefined,
-        route: currentRoute,
-        stopped: false,
-        source: "assistant",
-      });
-      setPendingPrompt(null);
-      setActiveRunId(null);
+    if (!e2eQaMode && workspace.status === "needs_workspace") {
+      router.push("/(auth)/choose-workspace" as never);
     }
-    setRunFailureMessage(null);
-  }, [activeThreadId, currentRoute, hasCompletedAssistant, pendingPrompt, runFailureMessage, sessionId, setActiveRunId, setPendingPrompt, setRunFailureMessage]);
-
-  useEffect(() => {
-    if (!pendingPrompt || !runStatus) {
-      return;
-    }
-
-    if (runStatus.status === "failed" || runStatus.status === "cancelled") {
-      track("ai_response_stream_end", {
-        sessionId,
-        threadId: activeThreadId ?? undefined,
-        route: currentRoute,
-        stopped: runStatus.status === "cancelled",
-        source: "assistant",
-      });
-      setPendingPrompt(null);
-      setActiveRunId(null);
-      setRunFailureMessage(
-        runStatus.diagnostics[0]
-          ?? (runStatus.status === "cancelled" ? surfaceCopy.runFailedTitle : surfaceCopy.runFailedTitle),
-      );
-      return;
-    }
-
-    if (shouldResolveCompletedRunWithoutAssistant(pendingPrompt, hasCompletedAssistant, runStatus.status)) {
-      track("ai_response_stream_end", {
-        sessionId,
-        threadId: activeThreadId ?? undefined,
-        route: currentRoute,
-        stopped: false,
-        source: "assistant",
-      });
-      setPendingPrompt(null);
-      setActiveRunId(null);
-      setRunFailureMessage(surfaceCopy.runtimeCompletedWithoutResponse);
-      return;
-    }
-
-    if (runStatus.status === "completed" && hasCompletedAssistant) {
-      setRunFailureMessage(null);
-    }
-  }, [activeThreadId, currentRoute, hasCompletedAssistant, pendingPrompt, runStatus, sessionId, setActiveRunId, setPendingPrompt, setRunFailureMessage, surfaceCopy]);
-
-  useEffect(() => {
-    if (!pendingPrompt || !pendingStartedAt) {
-      return;
-    }
-
-    if (hasCompletedAssistant || (runStatus && !isLiveRunStatus(runStatus.status))) {
-      return;
-    }
-
-    const endStreamAsTimedOut = () => {
-      const timeoutState = getPendingRunTimeoutSnapshot({
-        pendingStartedAt,
-        runStatusUpdatedAt: runStatus?.updatedAt,
-        lastStageAt,
-        lastAssistantMessageAt,
-        workerLastHeartbeatAt: runtimeHealth.worker?.available ? runtimeHealth.worker.lastHeartbeatAt ?? null : null,
-        now: Date.now(),
-      });
-      if (!timeoutState.hasTimedOut) {
-        return;
-      }
-
-      const timeoutMessage = runtimeHealth.worker?.available === false
-        ? getLocalizedRuntimeMessage(runtimeHealth, surfaceCopy)
-        : surfaceCopy.runtimeAssistantTimeout;
-      track("ai_response_stream_end", {
-        sessionId,
-        threadId: activeThreadId ?? undefined,
-        route: currentRoute,
-        stopped: false,
-        source: "assistant",
-      });
-      setPendingPrompt(null);
-      setActiveRunId(null);
-      setRunFailureMessage(timeoutMessage ?? surfaceCopy.runtimeAssistantTimeout);
-    };
-
-    if (pendingTimeout.hasTimedOut) {
-      endStreamAsTimedOut();
-      return;
-    }
-
-    if (pendingTimeout.msUntilTimeout == null) {
-      return;
-    }
-
-    const timer = setTimeout(endStreamAsTimedOut, pendingTimeout.msUntilTimeout);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [
-    activeThreadId,
-    currentRoute,
-    hasCompletedAssistant,
-    lastAssistantMessageAt,
-    lastStageAt,
-    pendingPrompt,
-    pendingStartedAt,
-    pendingTimeout.hasTimedOut,
-    pendingTimeout.msUntilTimeout,
-    runStatus?.status,
-    runStatus?.updatedAt,
-    runStatus?.workflowId,
-    runtimeHealth.message,
-    runtimeHealth.status,
-    runtimeHealth.featureVersion,
-    runtimeHealth.worker?.available,
-    runtimeHealth.worker?.lastHeartbeatAt,
-    sessionId,
-    setActiveRunId,
-    setPendingPrompt,
-    setRunFailureMessage,
-  ]);
+  }, [e2eQaMode, router, workspace.status]);
 
   const isStreaming = Boolean(pendingPrompt);
-
-  const ensureActiveThread = async () => {
-    if (!isAuthenticated) return null;
-    if (canQueryActiveThread && activeThreadId) return activeThreadId;
-    if (!serverLoaded && activeThreadId) {
-      return null;
-    }
-    const latestServerThreadId = serverThreads[0]?._id ?? null;
-    if (latestServerThreadId) {
-      setActiveThreadId(latestServerThreadId);
-      return latestServerThreadId;
-    }
-
-    if (e2eQaMode) {
-      const threadId = createE2EThread();
-      setActiveThreadId(threadId);
-      return threadId;
-    }
-
-    const threadId = await startThreadMutation({});
-    setActiveThreadId(threadId);
-    return threadId;
-  };
 
   const sendPrompt = async (overrideText?: string) => {
     const prompt = (overrideText ?? draftText).trim();
@@ -321,6 +157,7 @@ export function useConversationController() {
 
     if (!isAuthenticated) {
       setRunFailureMessage(surfaceCopy.runtimeSignInRequired);
+      router.push("/(auth)");
       return;
     }
 
@@ -330,9 +167,9 @@ export function useConversationController() {
     }
 
     const isEditing = Boolean(editingMessage);
-    const threadId = isEditing ? editingMessage?.threadId ?? null : await ensureActiveThread();
-    if (!threadId) {
-      setRunFailureMessage(surfaceCopy.runtimeThreadSync);
+    const threadId = isEditing ? editingMessage?.threadId ?? null : canQueryActiveThread ? activeThreadId : null;
+    if (!workspace.organizationId && !e2eQaMode) {
+      router.push("/(auth)/choose-workspace" as never);
       return;
     }
 
@@ -345,72 +182,204 @@ export function useConversationController() {
       }
       setPendingPrompt(prompt, startedAt);
       setActiveRunId(null);
+      setStreamingAssistant({
+        id: "streaming-assistant",
+        sessionId: threadId ?? "threadless",
+        role: "assistant",
+        kind: "text",
+        text: "Thinking through your request...",
+        streamState: "streaming",
+        relatedPropertyIds: [],
+        createdAt: startedAt + 1,
+        runId: undefined,
+        sourceMetadata: [],
+      });
     });
 
-    track("ai_prompt_sent", { sessionId, threadId, route: currentRoute, prompt, source: "assistant" });
-    track("ai_response_stream_start", { sessionId, threadId, route: currentRoute, source: "assistant" });
+    track("ai_prompt_sent", { sessionId, threadId: threadId ?? undefined, route: currentRoute, prompt, source: "assistant" });
+    track("ai_response_stream_start", { sessionId, threadId: threadId ?? undefined, route: currentRoute, source: "assistant" });
 
     if (e2eQaMode) {
-      const runId = appendE2EUserPrompt(threadId, prompt, startedAt);
+      const e2eThreadId = threadId ?? createE2EThread();
+      setActiveThreadId(e2eThreadId);
+      const runId = appendE2EUserPrompt(e2eThreadId, prompt, startedAt);
       setActiveRunId(runId);
 
       completionTimeoutRef.current = setTimeout(() => {
-        completeE2EPrompt(threadId, prompt, startedAt, runId);
+        completeE2EPrompt(e2eThreadId, prompt, startedAt, runId);
+        setStreamingAssistant(null);
         completionTimeoutRef.current = null;
       }, 300);
 
       return;
     }
 
+    const abortController = new AbortController();
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = abortController;
+    let streamThreadId = threadId;
+    let streamRunId: string | null = null;
+    let receivedText = false;
+
     try {
-      const result = isEditing && editingMessage
-        ? await editUserMessageMutation({
-          threadId,
-          messageId: editingMessage.messageId,
-          prompt,
-        })
-        : await sendUserMessageMutation({ threadId, prompt });
-      if (result.threadId && result.threadId !== threadId) {
-        setActiveThreadId(result.threadId);
-      }
-      setActiveRunId(String(result.runId));
+      await sendAgentChatRequest({
+        organizationId: workspace.organizationId!,
+        threadId,
+        message: prompt,
+        signal: abortController.signal,
+        onEvent: (event) => {
+          if (event.type === "meta") {
+            streamThreadId = event.threadId;
+            streamRunId = event.runId;
+            setActiveThreadId(event.threadId);
+            setActiveRunId(event.runId);
+            setStreamingAssistant((message) => message ? {
+              ...message,
+              sessionId: event.threadId,
+              runId: event.runId,
+              turnMeta: { ...message.turnMeta, runId: event.runId },
+            } : message);
+            return;
+          }
+
+          if (event.type === "status") {
+            setStreamingAssistant((message) => {
+              if (!message || receivedText) return message;
+              return { ...message, text: event.message || message.text };
+            });
+            return;
+          }
+
+          if (event.type === "text") {
+            receivedText = true;
+            setStreamingAssistant((message) => {
+              const base = message ?? {
+                id: "streaming-assistant",
+                sessionId: streamThreadId ?? "threadless",
+                role: "assistant" as const,
+                kind: "text" as const,
+                text: "",
+                streamState: "streaming" as const,
+                relatedPropertyIds: [],
+                createdAt: startedAt + 1,
+                runId: streamRunId ?? undefined,
+                sourceMetadata: [],
+              };
+              return {
+                ...base,
+                text: (base.text === "Thinking through your request..." ? "" : base.text) + event.text,
+                streamState: "streaming",
+              };
+            });
+            return;
+          }
+
+          if (event.type === "ag_ui") {
+            const parsed = assistantTurnSchema.safeParse(event.turn as never);
+            if (!parsed.success) return;
+            const uiTurn = parsed.data;
+            setStreamingAssistant((message) => message ? {
+              ...message,
+              kind: "assistant_turn",
+              text: uiTurn.assistantText ?? message.text,
+              relatedPropertyIds: extractTurnPropertyIds(uiTurn),
+              sourceMetadata: extractTurnSources(uiTurn),
+              uiTurn,
+              turnMeta: {
+                ...message.turnMeta,
+                runId: streamRunId ?? message.runId,
+                sources: extractTurnSources(uiTurn),
+              },
+            } : message);
+            return;
+          }
+
+          if (event.type === "confirmation_required") {
+            setStreamingAssistant((message) => message ? {
+              ...message,
+              text: message.text === "Thinking through your request..."
+                ? "This action needs your confirmation before I can run it."
+                : message.text,
+              turnMeta: {
+                ...message.turnMeta,
+                runId: streamRunId ?? message.runId,
+                confirmation: {
+                  confirmationId: event.confirmationId,
+                  summary: event.summary,
+                  resource: event.resource,
+                  action: event.action,
+                  inputPreview: event.inputPreview,
+                  expiresAt: event.expiresAt,
+                  status: "pending",
+                },
+              },
+            } : message);
+            return;
+          }
+
+          if (event.type === "error") {
+            setRunFailureMessage(event.error);
+            setPendingPrompt(null);
+            setActiveRunId(null);
+            setStreamingAssistant((message) => message ? {
+              ...message,
+              streamState: "complete",
+              turnMeta: {
+                ...message.turnMeta,
+                diagnostics: [event.error],
+              },
+            } : message);
+            return;
+          }
+
+          if (event.type === "done") {
+            streamThreadId = event.threadId;
+            setActiveThreadId(event.threadId);
+            setPendingPrompt(null);
+            setActiveRunId(null);
+            setRunFailureMessage(null);
+            setStreamingAssistant((message) => message ? {
+              ...message,
+              sessionId: event.threadId,
+              streamState: "complete",
+            } : message);
+            setMessagesRefreshKey((value) => value + 1);
+            refreshThreads?.();
+            track("ai_response_stream_end", {
+              sessionId,
+              threadId: event.threadId,
+              route: currentRoute,
+              stopped: false,
+              source: "assistant",
+            });
+          }
+        },
+      });
+      setPendingPrompt(null);
+      setActiveRunId(null);
+      setMessagesRefreshKey((value) => value + 1);
+      refreshThreads?.();
     } catch (error) {
+      if (abortController.signal.aborted) {
+        setStreamingAssistant((message) => message ? { ...message, streamState: "stopped" } : message);
+        setPendingPrompt(null);
+        setActiveRunId(null);
+        setRunFailureMessage(null);
+        return;
+      }
+
       if (isEditing && editingMessage) {
         beginEditingMessage(editingMessage);
         setDraftText(prompt);
       }
-      if (!isEditing && isThreadNotFoundError(error)) {
-        try {
-          const replacementThreadId = await startThreadMutation({});
-          setActiveThreadId(replacementThreadId);
-          track("ai_prompt_sent", {
-            sessionId,
-            threadId: replacementThreadId,
-            route: currentRoute,
-            prompt,
-            source: "assistant",
-          });
-          track("ai_response_stream_start", {
-            sessionId,
-            threadId: replacementThreadId,
-            route: currentRoute,
-            source: "assistant",
-          });
-          const retry = await sendUserMessageMutation({ threadId: replacementThreadId, prompt });
-          if (retry.threadId && retry.threadId !== replacementThreadId) {
-            setActiveThreadId(retry.threadId);
-          }
-          setActiveRunId(String(retry.runId));
-          return;
-        } catch (retryError) {
-          setPendingPrompt(null);
-          setRunFailureMessage(retryError instanceof Error ? retryError.message : surfaceCopy.runFailedTitle);
-          return;
-        }
-      }
-
       setPendingPrompt(null);
+      setActiveRunId(null);
+      setStreamingAssistant((message) => message ? { ...message, streamState: "complete" } : message);
       setRunFailureMessage(error instanceof Error ? error.message : surfaceCopy.runFailedTitle);
+    } finally {
+      if (abortControllerRef.current === abortController) {
+        abortControllerRef.current = null;
+      }
     }
   };
 
@@ -447,6 +416,7 @@ export function useConversationController() {
     if (e2eQaMode) {
       setPendingPrompt(null);
       setActiveRunId(null);
+      setStreamingAssistant(null);
       setRunFailureMessage(null);
       track("ai_response_stream_end", {
         sessionId,
@@ -458,18 +428,15 @@ export function useConversationController() {
       return;
     }
 
-    if (!activeThreadId || !activeRunId) {
-      setPendingPrompt(null);
-      return;
-    }
-
-    await stopRunMutation({ runId: activeRunId as never, threadId: activeThreadId });
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
     setPendingPrompt(null);
     setActiveRunId(null);
+    setStreamingAssistant((message) => message ? { ...message, streamState: "stopped" } : null);
     setRunFailureMessage(null);
     track("ai_response_stream_end", {
       sessionId,
-      threadId: activeThreadId,
+      threadId: activeThreadId ?? undefined,
       route: currentRoute,
       stopped: true,
       source: "assistant",
@@ -488,82 +455,6 @@ export function useConversationController() {
       propertyId: "propertyId" in action.payload ? action.payload.propertyId : undefined,
     };
 
-    if (action.name === "save_property") {
-      if (isAuthenticated) {
-        await toggleSavedListingMutation({ listingId: action.payload.propertyId });
-      } else {
-        router.push("/(auth)");
-      }
-      track("property_save", basePayload);
-      return;
-    }
-
-    if (action.name === "compare_property") {
-      if (action.payload.propertyId) {
-        await sendPrompt(`Compare this property in chat: ${action.payload.propertyId}`);
-      }
-      track("property_compare", basePayload);
-      return;
-    }
-
-    if (action.name === "open_property") {
-      setDraftText(`Tell me more about property ${action.payload.propertyId}.`);
-      track("property_click", basePayload);
-      return;
-    }
-
-    if (action.name === "contact_agent") {
-      if (!isAuthenticated) {
-        track("contact_agent", { ...basePayload, authRequired: true });
-        router.push("/(auth)");
-        return;
-      }
-      if (action.payload.propertyId) {
-        await createBuyerIntentMutation({
-          listingId: action.payload.propertyId,
-          intentType: "contact",
-          source: "assistant",
-          threadId: activeThreadId ?? undefined,
-          prompt: action.payload.prompt,
-        });
-      }
-      track("contact_agent", basePayload);
-      if (action.payload.prompt) {
-        await sendPrompt(action.payload.prompt);
-        return;
-      }
-      if (action.payload.propertyId) {
-        setDraftText(`I want to contact the advisor for ${action.payload.propertyId}.`);
-      }
-      return;
-    }
-
-    if (action.name === "schedule_visit") {
-      if (!isAuthenticated) {
-        track("schedule_visit", { ...basePayload, authRequired: true });
-        router.push("/(auth)");
-        return;
-      }
-      if (action.payload.propertyId) {
-        await createBuyerIntentMutation({
-          listingId: action.payload.propertyId,
-          intentType: "schedule_visit",
-          source: "assistant",
-          threadId: activeThreadId ?? undefined,
-          prompt: action.payload.prompt,
-        });
-      }
-      track("schedule_visit", basePayload);
-      if (action.payload.prompt) {
-        await sendPrompt(action.payload.prompt);
-        return;
-      }
-      if (action.payload.propertyId) {
-        setDraftText(`I want to schedule a visit for ${action.payload.propertyId}.`);
-      }
-      return;
-    }
-
     if (action.name === "open_search") {
       const searchPrompt = [
         action.payload.query,
@@ -575,14 +466,56 @@ export function useConversationController() {
       
       track("ai_suggestion_clicked", basePayload);
       
-      await sendPrompt(searchPrompt || "Search for matching properties in chat.");
+      await sendPrompt(searchPrompt || "Continue this request in chat.");
       return;
     }
 
     if (action.name === "continue_thread") {
       track("ai_suggestion_clicked", basePayload);
       await sendPrompt(action.payload.prompt);
+      return;
     }
+
+    if (typeof action.payload?.prompt === "string" && action.payload.prompt.trim()) {
+      track("ai_suggestion_clicked", basePayload);
+      await sendPrompt(action.payload.prompt);
+    }
+  };
+
+  const approveConfirmation = async (confirmationId: string) => {
+    if (!workspace.organizationId) return;
+    await approveAgentConfirmation(workspace.organizationId, confirmationId);
+    setStreamingAssistant((message) => message ? {
+      ...message,
+      turnMeta: message.turnMeta?.confirmation?.confirmationId === confirmationId
+        ? {
+            ...message.turnMeta,
+            confirmation: {
+              ...message.turnMeta.confirmation,
+              status: "executed",
+            },
+          }
+        : message.turnMeta,
+    } : message);
+    setMessagesRefreshKey((value) => value + 1);
+    refreshThreads?.();
+  };
+
+  const cancelConfirmation = async (confirmationId: string) => {
+    if (!workspace.organizationId) return;
+    await cancelAgentConfirmation(workspace.organizationId, confirmationId);
+    setStreamingAssistant((message) => message ? {
+      ...message,
+      turnMeta: message.turnMeta?.confirmation?.confirmationId === confirmationId
+        ? {
+            ...message.turnMeta,
+            confirmation: {
+              ...message.turnMeta.confirmation,
+              status: "canceled",
+            },
+          }
+        : message.turnMeta,
+    } : message);
   };
 
   return {
@@ -601,6 +534,8 @@ export function useConversationController() {
     threads,
     runStageFeed,
     handleTurnAction,
+    approveConfirmation,
+    cancelConfirmation,
     openUpgrade: () => router.push("/(auth)"),
     clearRunFailureMessage: () => setRunFailureMessage(null),
   };

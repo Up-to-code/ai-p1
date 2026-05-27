@@ -1,6 +1,6 @@
 import { StyleSheet, View, Pressable } from "react-native";
 import { useRouter } from "expo-router";
-import { Heart, Menu, UserCircle } from "lucide-react-native";
+import { Menu, UserCircle } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ConversationViewport } from "@/conversation/components/ConversationViewport";
@@ -11,7 +11,7 @@ import { useTheme } from "@/foundation/theme/ThemeProvider";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { colors, resolvedColorScheme } = useTheme();
+  const { colors } = useTheme();
   const { t } = useAppLocalization();
   const insets = useSafeAreaInsets();
 
@@ -32,6 +32,7 @@ export default function HomeScreen() {
         ]}
       >
         <Pressable
+          testID="app.open_menu"
           style={[styles.navBtn, { backgroundColor: colors.surfaceRaised }]}
           onPress={() => router.navigate("/(app)/menu")}
           accessibilityLabel={t.menu.title}
@@ -49,17 +50,6 @@ export default function HomeScreen() {
         </Pressable>
 
         <View style={styles.rightActions}>
-          <Pressable
-            style={[styles.navBtn, { backgroundColor: colors.surfaceRaised }]}
-            onPress={() => router.navigate("/(app)/saved")}
-            accessibilityLabel={t.saved.title}
-          >
-            <Heart
-              size={17}
-              color={colors.accent}
-              fill={resolvedColorScheme === "dark" ? colors.accent : "transparent"}
-            />
-          </Pressable>
           <Pressable
             style={[styles.navBtn, { backgroundColor: colors.surfaceRaised }]}
             onPress={() => router.navigate("/(app)/profile")}

@@ -12,15 +12,13 @@ import { mirrorIcon } from "@/foundation/utils/layoutDirection";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import type { AppearanceMode } from "@/store/slices/preferenceSlice";
 
-const OPTIONS: Array<{
+const OPTION_META: Array<{
   value: AppearanceMode;
-  title: string;
-  description: string;
   icon: "system" | "light" | "dark";
 }> = [
-  { value: "system", title: "System", description: "Follow your phone's current appearance automatically.", icon: "system" },
-  { value: "light", title: "Light", description: "Bright surfaces and clear contrast for daytime browsing.", icon: "light" },
-  { value: "dark", title: "Dark", description: "Low-glare surfaces for immersive browsing and night use.", icon: "dark" },
+  { value: "system", icon: "system" },
+  { value: "light", icon: "light" },
+  { value: "dark", icon: "dark" },
 ];
 
 export default function AppearanceScreen() {
@@ -29,6 +27,26 @@ export default function AppearanceScreen() {
   const { colors, appearanceMode, resolvedColorScheme, setAppearanceMode } = useTheme();
   const { t, isRTL } = useAppLocalization();
   const styles = useMemo(() => createStyles(colors, isRTL), [colors, isRTL]);
+  const resolvedModeLabel = resolvedColorScheme === "dark"
+    ? t.appSettings.appearanceDarkTitle
+    : t.appSettings.appearanceLightTitle;
+  const options = [
+    {
+      ...OPTION_META[0],
+      title: t.appSettings.appearanceSystemTitle,
+      description: t.appSettings.appearanceSystemDescription,
+    },
+    {
+      ...OPTION_META[1],
+      title: t.appSettings.appearanceLightTitle,
+      description: t.appSettings.appearanceLightDescription,
+    },
+    {
+      ...OPTION_META[2],
+      title: t.appSettings.appearanceDarkTitle,
+      description: t.appSettings.appearanceDarkDescription,
+    },
+  ];
 
   return (
     <Screen style={styles.screen}>
@@ -39,7 +57,7 @@ export default function AppearanceScreen() {
         <View style={styles.headerText}>
           <Text variant="title" style={styles.headerTitle}>{t.appSettings.appearanceTitle}</Text>
           <Text variant="caption" tone="muted">
-            {formatWebCopy(t.appSettings.appearanceSubtitle, { mode: resolvedColorScheme })}
+            {formatWebCopy(t.appSettings.appearanceSubtitle, { mode: resolvedModeLabel })}
           </Text>
         </View>
       </View>
@@ -54,7 +72,7 @@ export default function AppearanceScreen() {
         </View>
 
         <View style={styles.optionGroup}>
-          {OPTIONS.map((option) => {
+          {options.map((option) => {
             const selected = option.value === appearanceMode;
             return (
               <Pressable

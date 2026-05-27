@@ -31,11 +31,9 @@ export default function AppLayout() {
     >
       <Stack.Screen name="index" />
       <Stack.Screen name="menu" />
-      <Stack.Screen name="saved" />
       <Stack.Screen name="profile" />
       <Stack.Screen name="appearance" />
       <Stack.Screen name="language" />
-      <Stack.Screen name="theories" />
     </Stack>
   );
 }

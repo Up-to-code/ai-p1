@@ -1,24 +1,15 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import type { ExpoConfig } from "expo/config";
+const {
+  getMobileEnvironmentIssues,
+  resolveMobileEnvironmentConfig,
+} = require("./src/runtime/mobileEnvironment.js") as typeof import("./src/runtime/mobileEnvironment");
 
 const workspaceRoot = path.resolve(__dirname, "../..");
 const appRoot = __dirname;
 const brandName = "Qentrah";
 const brandPrimary = "#0B5CFF";
-
-function normalizeUrlEnvValue(value: string | undefined) {
-  if (!value) {
-    return value;
-  }
-
-  const trimmed = value.trim();
-  if (/^=+https?:\/\//.test(trimmed)) {
-    return trimmed.replace(/^=+/, "");
-  }
-
-  return trimmed;
-}
 
 function loadEnvFile(filePath: string) {
   if (!existsSync(filePath)) {
@@ -47,15 +38,12 @@ loadEnvFile(path.join(appRoot, ".env"));
 loadEnvFile(path.join(workspaceRoot, ".env.local"));
 loadEnvFile(path.join(workspaceRoot, ".env"));
 
-const convexUrl = normalizeUrlEnvValue(
-  process.env.EXPO_PUBLIC_CONVEX_URL ?? process.env.CONVEX_URL ?? "",
-) ?? "";
-const authUrl = normalizeUrlEnvValue(
-  process.env.EXPO_PUBLIC_AUTH_URL
-    ?? process.env.EXPO_PUBLIC_CONVEX_SITE_URL
-    ?? process.env.CONVEX_SITE_URL
-    ?? "",
-) ?? "";
+const mobileEnvironment = resolveMobileEnvironmentConfig(process.env);
+const environmentIssues = getMobileEnvironmentIssues(mobileEnvironment);
+if (environmentIssues.length > 0) {
+  throw new Error(`Invalid mobile environment configuration:\n- ${environmentIssues.join("\n- ")}`);
+}
+
 const config: ExpoConfig = {
   name: brandName,
   slug: "qentrah-mobile",
@@ -80,9 +68,39 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: false,
     bundleIdentifier: "com.qentrah.mobile",
+    associatedDomains: ["applinks:app.qentrah.com"],
   },
   android: {
     package: "com.qentrah.mobile",
+    intentFilters: [
+      {
+        action: "VIEW",
+        autoVerify: true,
+        data: [
+          {
+            scheme: "https",
+            host: "app.qentrah.com",
+            pathPrefix: "/accept-invite",
+          },
+          {
+            scheme: "https",
+            host: "app.qentrah.com",
+            pathPrefix: "/en/accept-invite",
+          },
+          {
+            scheme: "https",
+            host: "app.qentrah.com",
+            pathPrefix: "/ar/accept-invite",
+          },
+          {
+            scheme: "https",
+            host: "app.qentrah.com",
+            pathPrefix: "/fr/accept-invite",
+          },
+        ],
+        category: ["BROWSABLE", "DEFAULT"],
+      },
+    ],
     adaptiveIcon: {
       foregroundImage: "./assets/brand/qentrah-adaptive-icon.png",
       backgroundColor: brandPrimary,
@@ -94,7 +112,6 @@ const config: ExpoConfig = {
   plugins: [
     "expo-font",
     "expo-router",
-    "@rnmapbox/maps",
     [
       "expo-speech-recognition",
       {
@@ -104,8 +121,9 @@ const config: ExpoConfig = {
     ],
   ],
   extra: {
-    convexUrl,
-    authUrl,
+    authUrl: mobileEnvironment.authUrl,
+    workspaceApiUrl: mobileEnvironment.workspaceApiUrl,
+    mobileEnvironment: mobileEnvironment.environment,
     brand: {
       name: brandName,
       tagline: "The intelligent center of real estate.",

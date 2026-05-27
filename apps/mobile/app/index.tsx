@@ -1,16 +1,22 @@
 import { Redirect } from "expo-router";
 
 import { useAuthSession } from "@/auth/useAuthSession";
+import { useWorkspaceIdentity } from "@/auth/useWorkspaceIdentity";
 import { AppBootScreen } from "@/shell/components/AppBootScreen";
 import { useAppStore } from "@/store";
 
 export default function IndexScreen() {
   const hydrationComplete = useAppStore((state) => state.hydrationComplete);
   const { canAccessApp, isReady } = useAuthSession();
+  const workspace = useWorkspaceIdentity();
 
-  if (!hydrationComplete || !isReady) {
+  if (!hydrationComplete || !isReady || (canAccessApp && workspace.status === "loading")) {
     return <AppBootScreen />;
   }
 
-  return <Redirect href={canAccessApp ? "/(app)" : "/(auth)"} />;
+  if (!canAccessApp) {
+    return <Redirect href="/(auth)" />;
+  }
+
+  return <Redirect href={workspace.status === "ready" ? "/(app)" : "/(auth)/choose-workspace"} />;
 }

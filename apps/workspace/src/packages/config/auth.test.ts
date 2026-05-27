@@ -34,7 +34,7 @@ describe("auth runtime config", () => {
     const { getAuthRuntimeConfig } = await loadAuthConfig({
       BETTER_AUTH_SECRET: "x".repeat(32),
       SITE_URL: "http://localhost:3000",
-      BETTER_AUTH_TRUSTED_ORIGINS: "w-ai.online, https://admin.w-ai.online ",
+      BETTER_AUTH_TRUSTED_ORIGINS: "w-ai.online, https://admin.w-ai.online, qentrah://auth-callback ",
       TRUSTED_ORIGINS: "partners.w-ai.online",
     });
 
@@ -42,6 +42,7 @@ describe("auth runtime config", () => {
       expect.arrayContaining([
         "https://w-ai.online",
         "https://admin.w-ai.online",
+        "qentrah://auth-callback",
         "https://partners.w-ai.online",
       ]),
     );
@@ -68,6 +69,9 @@ describe("auth runtime config", () => {
       "https://admin.qentrah.com",
       "http://localhost:3000",
       "http://localhost:3003",
+      "qentrah://",
+      "qentrah://auth-callback",
+      "qentrah:///auth-callback",
     ]));
   });
 });

@@ -10,7 +10,7 @@ import { useConversationController } from "@/conversation/hooks/useConversationC
 import { getLocalizedRuntimeMessage, resolveThreadPresentationState } from "@/conversation/lib/assistantPresentation";
 import { useKeyboardDock } from "@/conversation/hooks/useKeyboardDock";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
-import { useThreadPresentation } from "@/persistence/convex/useConversationData";
+import { useThreadPresentation } from "@/persistence/api/conversationData";
 import { useAppStore } from "@/store";
 
 export function ConversationViewport() {
@@ -26,6 +26,8 @@ export function ConversationViewport() {
     clearRunFailureMessage,
     editingMessage,
     handleTurnAction,
+    approveConfirmation,
+    cancelConfirmation,
     isStreaming,
     messages,
     openUpgrade,
@@ -80,6 +82,8 @@ export function ConversationViewport() {
           onTurnAction={handleTurnAction}
           onSuggestionPress={sendPrompt}
           onEditMessage={startEditingMessage}
+          onApproveConfirmation={approveConfirmation}
+          onCancelConfirmation={cancelConfirmation}
           threadPresentation={threadPresentation}
         />
       </View>

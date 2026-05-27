@@ -131,23 +131,88 @@ describe("agent orchestrator stream", () => {
     expect(detectAgentResponseLanguage("12345")).toBe("auto");
   });
 
-  it("blocks dangerous organization requests and persists a blocked run", async () => {
+  it("blocks unavailable legal document requests and persists a blocked run", async () => {
     const events = await readEvents(
       createAgentChatStream({
         organizationId: "org_1",
-        message: "please delete this team member",
+        message: "please edit the legal registration document",
       }),
     );
 
     expect(events.map((event) => event.type)).toEqual(["meta", "status", "text", "done"]);
-    expect(events.find((event) => event.type === "text")?.text).toContain("cannot delete");
+    expect(events.find((event) => event.type === "text")?.text).toContain("not available");
     expect(finishMutationPayloads()).toMatchObject([
       {
         status: "blocked",
-        assistantMessage: expect.stringContaining("cannot delete"),
+        assistantMessage: expect.stringContaining("not available"),
       },
     ]);
     expect(streamOpenRouterText).not.toHaveBeenCalled();
+  });
+
+  it("emits confirmation events for high-risk model-selected tools without executing them", async () => {
+    vi.mocked(hasOpenRouterConfig).mockReturnValue(true);
+    vi.mocked(fetchAuthQuery).mockResolvedValue({
+      ...capabilities,
+      canRemoveMembers: true,
+    });
+    vi.mocked(fetchAuthMutation).mockImplementation(async (...callArgs) => {
+      const payload = callArgs[1] as Record<string, unknown>;
+      if ("message" in payload && "model" in payload) {
+        return {
+          thread: { _id: "thread_1" },
+          run: { _id: "run_1" },
+          userMessageId: "message_user",
+        };
+      }
+      if ("tool" in payload && payload.tool === "members_remove") {
+        return {
+          _id: "confirmation_1",
+          id: "confirmation_1",
+          organizationId: "org_1",
+          threadId: "thread_1",
+          runId: "run_1",
+          createdByUserId: "user_1",
+          tool: "members_remove",
+          resource: "member",
+          action: "delete",
+          summary: "Remove member",
+          inputPreview: "{\"memberIdOrEmail\":\"target@example.com\"}",
+          status: "pending",
+          expiresAt: 123,
+          createdAt: 1,
+          updatedAt: 1,
+        };
+      }
+      return null;
+    });
+    vi.mocked(streamOpenRouterText).mockImplementation((input) => ({
+      textStream: (async function* () {
+        const result = await input.tools?.members_remove.execute?.({ memberIdOrEmail: "target@example.com" }, {} as never);
+        yield (result as { confirmationRequired?: boolean }).confirmationRequired ? "Please confirm." : "Removed.";
+      })(),
+    }) as never);
+
+    const events = await readEvents(
+      createAgentChatStream({
+        organizationId: "org_1",
+        message: "remove member target@example.com",
+      }),
+    );
+
+    expect(events).toContainEqual(expect.objectContaining({
+      type: "confirmation_required",
+      confirmationId: "confirmation_1",
+      resource: "member",
+      action: "delete",
+    }));
+    expect(events.filter((event) => event.type === "text").map((event) => event.text)).toEqual(["Please confirm."]);
+    expect(
+      vi.mocked(fetchAuthMutation).mock.calls.some((call) =>
+        (call[1] as Record<string, unknown>).tool === "members_remove"
+        && (call[1] as Record<string, unknown>).status === "requires_confirmation",
+      ),
+    ).toBe(true);
   });
 
   it("streams the no-key fallback and persists a completed run without preparing tools", async () => {

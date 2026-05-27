@@ -1,13 +1,13 @@
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
+import { organizationClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 import { expoClient } from "@better-auth/expo/client";
-import { convexClient, crossDomainClient } from "@convex-dev/better-auth/client/plugins";
 
-import { getAuthUrl, getConvexUrl } from "@/runtime/expoRuntime";
+import { getAuthUrl, getWorkspaceApiUrl } from "@/runtime/expoRuntime";
 
-export const FALLBACK_CONVEX_URL = "https://placeholder.convex.invalid";
+export const FALLBACK_AUTH_URL = "https://placeholder.workspace.invalid";
 
 function getAuthScheme() {
   return typeof Constants.expoConfig?.scheme === "string"
@@ -16,19 +16,23 @@ function getAuthScheme() {
 }
 
 function getAuthBaseUrl() {
-  return getAuthUrl() || FALLBACK_CONVEX_URL;
+  return getAuthUrl() || getWorkspaceApiUrl() || FALLBACK_AUTH_URL;
 }
 
 export function isAuthConfigured() {
-  return Boolean(getConvexUrl() && getAuthUrl());
+  return isWorkspaceAuthConfigured();
+}
+
+export function isWorkspaceAuthConfigured() {
+  return Boolean(getAuthUrl() || getWorkspaceApiUrl());
 }
 
 export const authClient: any = createAuthClient({
   baseURL: getAuthBaseUrl(),
   plugins: [
-    convexClient(),
+    organizationClient(),
     ...(Platform.OS === "web"
-      ? [crossDomainClient()]
+      ? []
       : [
           expoClient({
             scheme: getAuthScheme(),

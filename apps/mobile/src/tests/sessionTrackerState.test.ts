@@ -20,6 +20,6 @@ test("session tracker suppresses repeated screen_view events until the route cha
 
   assert.equal(shouldTrackScreenView("session-1", "/"), true);
   assert.equal(shouldTrackScreenView("session-1", "/"), false);
-  assert.equal(shouldTrackScreenView("session-1", "/saved"), true);
+  assert.equal(shouldTrackScreenView("session-1", "/profile"), true);
   assert.equal(shouldTrackScreenView("session-1", "/"), true);
 });

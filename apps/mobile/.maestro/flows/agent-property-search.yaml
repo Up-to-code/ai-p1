@@ -1,4 +1,4 @@
-appId: com.zayon.mobile
+appId: com.qentrah.mobile
 name: Agent property search
 tags:
   - signed-in
@@ -33,6 +33,7 @@ tags:
     visible:
       id: property.card.prop-dubai-marina-01
     timeout: 20000
-- assertVisible: "See More Properties"
+- assertVisible:
+    id: chat.result.see_more
 - assertVisible:
     id: property.card.prop-business-bay-02

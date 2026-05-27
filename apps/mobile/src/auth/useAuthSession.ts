@@ -1,13 +1,25 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { authClient, isAuthConfigured } from "@/auth/authClient";
 import { useAppStore } from "@/store";
 
 export function useAuthSession() {
   const session = authClient.useSession();
+  const [sessionTimedOut, setSessionTimedOut] = useState(false);
   const e2eForceAuthScreen = useAppStore((state) => state.e2eForceAuthScreen);
   const e2eQaMode = useAppStore((state) => state.e2eQaMode);
   const e2eQaUser = useAppStore((state) => state.e2eQaUser);
+  const configured = isAuthConfigured();
+
+  useEffect(() => {
+    if (!configured || !session.isPending) {
+      setSessionTimedOut(false);
+      return;
+    }
+
+    const timeout = setTimeout(() => setSessionTimedOut(true), 8000);
+    return () => clearTimeout(timeout);
+  }, [configured, session.isPending]);
 
   return useMemo(
     () => {
@@ -17,7 +29,6 @@ export function useAuthSession() {
           isReady: true,
           isAuthenticated: true,
           isAnonymous: false,
-          isGuest: false,
           canAccessApp: true,
           canUseAi: true,
           canUpgrade: false,
@@ -25,24 +36,24 @@ export function useAuthSession() {
         };
       }
 
-      const configured = isAuthConfigured();
-      const user = session.data?.user ?? null;
+      const rawUser = session.data?.user ?? null;
       const isAnonymous = false;
-      const hasSession = configured ? Boolean(session.data?.session) : true;
+      const rawHasSession = configured ? Boolean(session.data?.session) : false;
+      const hasSession = e2eForceAuthScreen ? false : rawHasSession;
       const canAccessApp = hasSession;
+      const user = hasSession ? rawUser : null;
 
       return {
         ...session,
-        isReady: !configured || !session.isPending,
+        isReady: !configured || !session.isPending || sessionTimedOut,
         isAuthenticated: hasSession,
         isAnonymous,
-        isGuest: false,
-        canAccessApp: e2eForceAuthScreen ? hasSession : canAccessApp,
+        canAccessApp,
         canUseAi: hasSession,
         canUpgrade: false,
         user,
       };
     },
-    [e2eForceAuthScreen, e2eQaMode, e2eQaUser, session],
+    [configured, e2eForceAuthScreen, e2eQaMode, e2eQaUser, session, sessionTimedOut],
   );
 }

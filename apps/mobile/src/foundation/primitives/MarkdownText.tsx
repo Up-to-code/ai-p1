@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
   },
   hashtag: {
     color: "#0B5CFF",
-    fontFamily: "Manrope:700Bold",
+    fontFamily: "Manrope_700Bold",
   },
   inlineBadge: {
     color: "#0B5CFF",

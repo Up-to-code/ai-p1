@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { mobileRequestContextMiddleware } from "@/server/middleware/mobile-request-context";
 import {
   handleAcceptOrganizationInviteLink,
   handleCancelOrganizationInviteLink,
@@ -94,6 +95,14 @@ import {
 } from "@/server/domains/mcpConnections/handlers/mcp-connections";
 import { handleAgentChat } from "@/server/domains/agents/handlers/chat";
 import {
+  handleApproveAgentConfirmation,
+  handleCancelAgentConfirmation,
+} from "@/server/domains/agents/handlers/confirmations";
+import {
+  handleListAgentMessages,
+  handleListAgentThreads,
+} from "@/server/domains/agents/handlers/read";
+import {
   handleAuthorizePartnerConnection,
   handleCreatePartnerWebhookEndpoint,
   handleListPartnerConnections,
@@ -107,6 +116,8 @@ import {
 } from "@/server/domains/billing/handlers/billing";
 
 export const organizationRouter = new Hono();
+
+organizationRouter.use("/:organizationId/*", mobileRequestContextMiddleware);
 
 organizationRouter.post(
   "/invite-links/accept",
@@ -370,6 +381,26 @@ organizationRouter.post(
 organizationRouter.post(
   "/:organizationId/agents/chat",
   handleAgentChat,
+);
+
+organizationRouter.post(
+  "/:organizationId/agents/confirmations/:confirmationId/approve",
+  handleApproveAgentConfirmation,
+);
+
+organizationRouter.post(
+  "/:organizationId/agents/confirmations/:confirmationId/cancel",
+  handleCancelAgentConfirmation,
+);
+
+organizationRouter.get(
+  "/:organizationId/agents/threads",
+  handleListAgentThreads,
+);
+
+organizationRouter.get(
+  "/:organizationId/agents/threads/:threadId/messages",
+  handleListAgentMessages,
 );
 
 organizationRouter.get(

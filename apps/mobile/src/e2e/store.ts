@@ -16,20 +16,8 @@ export function resetE2EAuthState() {
   useAppStore.setState({
     e2eQaMode: false,
     e2eQaUser: null,
-    e2eSavedPropertyIds: [],
     e2eThreads: [],
     e2eForceAuthScreen: true,
-    guestMode: false,
-    guestMirrorThreads: [],
-    guestMirrorSavedPropertyIds: [],
-    guestMirrorComparePropertyIds: [],
-    guestMirrorActiveThreadId: null,
-    authEmailDraft: "",
-    authPasswordDraft: "",
-    authNameDraft: "",
-    comparePropertyIds: [],
-    dismissedPropertyIds: [],
-    selectedPropertyId: null,
     activeThreadId: null,
     activeRunId: null,
     pendingPrompt: null,
@@ -42,21 +30,12 @@ export function loginE2EQaUser() {
     e2eQaMode: true,
     e2eQaUser: E2E_QA_USER,
     e2eForceAuthScreen: false,
-    guestMode: false,
-    authEmailDraft: "",
-    authPasswordDraft: "",
-    authNameDraft: "",
   });
 }
 
 export function resetE2EUserState() {
   useAppStore.setState({
-    e2eSavedPropertyIds: [],
-    comparePropertyIds: [],
-    dismissedPropertyIds: [],
-    selectedPropertyId: null,
-    guestMirrorSavedPropertyIds: [],
-    guestMirrorComparePropertyIds: [],
+    favoriteThreadIds: [],
   });
 }
 
@@ -67,8 +46,6 @@ export function resetE2EThreadState() {
     activeRunId: null,
     pendingPrompt: null,
     pendingStartedAt: null,
-    guestMirrorThreads: [],
-    guestMirrorActiveThreadId: null,
   });
 }
 
@@ -88,14 +65,6 @@ export function createE2EThread() {
   }));
 
   return threadId;
-}
-
-export function toggleE2ESavedProperty(propertyId: string) {
-  useAppStore.setState((state) => ({
-    e2eSavedPropertyIds: state.e2eSavedPropertyIds.includes(propertyId)
-      ? state.e2eSavedPropertyIds.filter((id) => id !== propertyId)
-      : [...state.e2eSavedPropertyIds, propertyId],
-  }));
 }
 
 export function appendE2EUserPrompt(threadId: string, prompt: string, createdAt: number) {

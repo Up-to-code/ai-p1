@@ -1,5 +1,6 @@
 import { createClient, type GenericCtx } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
+import { expo } from "@better-auth/expo";
 import { oauthProvider } from "@better-auth/oauth-provider";
 import { betterAuth, type BetterAuthOptions } from "better-auth/minimal";
 import { jwt, organization } from "better-auth/plugins";
@@ -56,6 +57,21 @@ export const createAuthOptions = (
   const oauthScopes = [...partnerOAuthScopes];
   const hasPartnerScope = (scopes: readonly string[]) =>
     scopes.some((scope) => Boolean(scopeToPermission(scope)));
+  const socialProviders: BetterAuthOptions["socialProviders"] = {
+    google: {
+      clientId: authRuntimeConfig.googleClientId,
+      clientSecret: authRuntimeConfig.googleClientSecret,
+    },
+  };
+
+  if (authRuntimeConfig.appleClientId) {
+    socialProviders.apple = {
+      clientId: authRuntimeConfig.appleClientId,
+      ...(authRuntimeConfig.appleAppBundleIdentifier
+        ? { appBundleIdentifier: authRuntimeConfig.appleAppBundleIdentifier }
+        : {}),
+    };
+  }
 
   return {
     appName: "Qentrah Workspace",
@@ -67,15 +83,11 @@ export const createAuthOptions = (
       enabled: true,
       requireEmailVerification: false,
     },
-    socialProviders: {
-      google: {
-        clientId: authRuntimeConfig.googleClientId,
-        clientSecret: authRuntimeConfig.googleClientSecret,
-      },
-    },
+    socialProviders,
     plugins: [
       jwt({ jwks: { keyPairConfig: { alg: "RS256" } } }),
       convex({ authConfig, jwksRotateOnTokenGenerationError: true }),
+      expo(),
       oauthProvider({
         loginPage: "/en/sign-in",
         consentPage: "/oauth/consent",

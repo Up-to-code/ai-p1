@@ -1,5 +1,5 @@
-import { Fragment, useMemo, type ReactNode } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useMemo, type ReactNode } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { Sparkles } from "lucide-react-native";
 
@@ -16,7 +16,6 @@ import { PromptChips, type PromptChipData } from "./PromptChips";
 
 type AssistantTurnRendererProps = {
   turn: AssistantTurn;
-  renderPropertyPreview?: (propertyId: string) => ReactNode;
   onAction?: (action: AssistantAction, turn: AssistantTurn) => void | Promise<void>;
   onSuggestionPress?: (suggestion: string) => void;
 };
@@ -47,29 +46,6 @@ function Section({
         ) : null}
         {children}
       </View>
-    </View>
-  );
-}
-
-function PropertyFallback({ propertyId }: { propertyId: string }) {
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
-
-  return (
-    <View style={styles.propertyFallback}>
-      <Text style={styles.propertyFallbackText}>{propertyId}</Text>
-    </View>
-  );
-}
-
-function renderProperties(propertyIds: string[], renderPropertyPreview?: (propertyId: string) => ReactNode) {
-  return (
-    <View style={rendererStyles.verticalPropertyList}>
-      {propertyIds.map((propertyId) => (
-        <Fragment key={propertyId}>
-          {renderPropertyPreview ? renderPropertyPreview(propertyId) : <PropertyFallback propertyId={propertyId} />}
-        </Fragment>
-      ))}
     </View>
   );
 }
@@ -118,14 +94,12 @@ function RenderBlock({
   block,
   turn,
   isAr,
-  renderPropertyPreview,
   onAction,
   onSuggestionPress,
 }: {
   block: AssistantBlock;
   turn: AssistantTurn;
   isAr: boolean;
-  renderPropertyPreview?: AssistantTurnRendererProps["renderPropertyPreview"];
   onAction?: AssistantTurnRendererProps["onAction"];
   onSuggestionPress?: AssistantTurnRendererProps["onSuggestionPress"];
 }) {
@@ -143,35 +117,20 @@ function RenderBlock({
     case "property_list":
       return (
         <Section tone={turn.motion.preset} isAr={isAr} cardless>
-
-
-          <View style={styles.compactPropertyList}>
-            {block.propertyIds.slice(0, 3).map((id) => (
-              <Fragment key={id}>
-                {renderPropertyPreview ? renderPropertyPreview(id) : <PropertyFallback propertyId={id} />}
-              </Fragment>
-            ))}
-          </View>
-
-          <Pressable 
-            style={[styles.seeAllBtn, isAr && { alignItems: "flex-end" }]}
-            onPress={() => onAction?.({
-              id: `see-all-${block.id}`,
-              name: "open_search",
-              title: "See more results",
-              payload: { query: block.searchQuery || block.querySummary }
-            }, turn)}
-          >
-            <Text style={styles.seeAllBtnText}>{isAr ? "عرض المزيد من النتائج →" : "See more results →"}</Text>
-          </Pressable>
-
+          {block.title || block.querySummary || block.searchQuery ? (
+            <MarkdownText
+              text={[block.title, block.querySummary ?? block.searchQuery].filter(Boolean).join("\n\n")}
+              tone="secondary"
+              style={styles.bodyText}
+              onBadgePress={onSuggestionPress}
+            />
+          ) : null}
           {renderBlockSuggestions(block, onSuggestionPress, false, isAr)}
         </Section>
       );
     case "comparison":
       return (
         <Section title={block.title} tone={turn.motion.preset} isAr={isAr} cardless>
-          {renderProperties(block.propertyIds, renderPropertyPreview)}
           <View style={styles.bulletsWrap}>
             {block.points.map((point) => {
               const isPtAr = isArabic(point);
@@ -185,17 +144,6 @@ function RenderBlock({
               );
             })}
           </View>
-          <Pressable 
-            style={[styles.seeAllBtn, isAr && { alignItems: "flex-end" }]}
-            onPress={() => onAction?.({
-              id: `see-more-${block.id}`,
-              name: "open_search",
-              title: "See more results",
-              payload: {}
-            }, turn)}
-          >
-            <Text style={styles.seeAllBtnText}>{isAr ? "عرض المزيد من النتائج →" : "See more results →"}</Text>
-          </Pressable>
           {renderBlockSuggestions(block, onSuggestionPress, false, isAr)}
         </Section>
       );
@@ -289,7 +237,6 @@ function RenderBlock({
 
 export function AssistantTurnRenderer({
   turn,
-  renderPropertyPreview,
   onAction,
   onSuggestionPress,
 }: AssistantTurnRendererProps) {
@@ -321,18 +268,26 @@ export function AssistantTurnRenderer({
 
   return (
     <View style={styles.container}>
-      {turn.blocks.map((block) => (
-        <View key={block.id}>
-          <RenderBlock
-            block={block}
-            turn={turn}
-            isAr={isAr}
-            renderPropertyPreview={renderPropertyPreview}
-            onAction={onAction}
-            onSuggestionPress={onSuggestionPress}
-          />
-        </View>
-      ))}
+      {turn.blocks.map((block) => {
+        const blockTestID =
+          block.type === "property_list" || block.type === "comparison"
+            ? "chat.result.bundle"
+            : block.type === "sources"
+              ? "chat.result.sources"
+              : undefined;
+
+        return (
+          <View key={block.id} testID={blockTestID}>
+            <RenderBlock
+              block={block}
+              turn={turn}
+              isAr={isAr}
+              onAction={onAction}
+              onSuggestionPress={onSuggestionPress}
+            />
+          </View>
+        );
+      })}
 
       <View style={styles.actionsContainer}>
         <MessageActions text={fullText} isArabic={isAr} />
@@ -387,18 +342,6 @@ const rendererStyles = StyleSheet.create({
   },
   followupSuggestionContent: {
     paddingHorizontal: theme.spacing.xl,
-  },
-  propertyRail: {
-    marginHorizontal: -theme.spacing.xl,
-  },
-  propertyRailContent: {
-    gap: theme.spacing.md,
-    paddingHorizontal: theme.spacing.xl,
-    paddingBottom: theme.spacing.xs,
-  },
-  verticalPropertyList: {
-    gap: 0,
-    marginHorizontal: 8,
   },
 });
 
@@ -523,20 +466,6 @@ const createStyles = (colors: any) => {
       paddingHorizontal: 0, // Chips handle their own padding in the ScrollView, but container might need normalization
       marginTop: 2,
     },
-    propertyFallback: {
-      minWidth: 160,
-      borderRadius: 18,
-      backgroundColor: colors.backgroundSoft,
-      paddingHorizontal: theme.spacing.md,
-      paddingVertical: theme.spacing.lg,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    propertyFallbackText: {
-      fontSize: 13,
-      fontFamily: "Manrope_600SemiBold",
-      color: colors.textPrimary,
-    },
     actionsContainer: {
       paddingHorizontal: theme.spacing.xl,
       paddingTop: 2,
@@ -577,20 +506,6 @@ const createStyles = (colors: any) => {
       borderColor: colors.border,
     },
     viewSuggestionsBtnText: {
-      fontSize: 12,
-      fontFamily: "Manrope_700Bold",
-      color: "#0B5CFF",
-    },
-    compactPropertyList: {
-      gap: 0,
-      marginHorizontal: 0,
-    },
-    seeAllBtn: {
-      marginTop: theme.spacing.md,
-      marginHorizontal: theme.spacing.xl,
-      alignItems: "flex-start",
-    },
-    seeAllBtnText: {
       fontSize: 12,
       fontFamily: "Manrope_700Bold",
       color: "#0B5CFF",

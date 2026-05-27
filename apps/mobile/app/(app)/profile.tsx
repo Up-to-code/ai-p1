@@ -1,12 +1,14 @@
 import { ScrollView, StyleSheet, View, Pressable, Image, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useMemo } from "react";
+import * as Clipboard from "expo-clipboard";
 import {
   ArrowLeft,
+  BriefcaseBusiness,
   ChevronRight,
   Languages,
+  Link,
   LogOut,
-  Shield,
   SunMoon,
 } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,10 +17,9 @@ import Animated, { FadeInUp } from "react-native-reanimated";
 import { Screen } from "@/foundation/primitives/Screen";
 import { Text } from "@/foundation/primitives/Text";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
-import { authClient } from "@/auth/authClient";
 import { useAuthSession } from "@/auth/useAuthSession";
-import { resetE2EAuthState } from "@/e2e/store";
-import { useAppStore } from "@/store";
+import { useWorkspaceAccess } from "@/auth/useWorkspaceAccess";
+import { signOutForAccountSwitch } from "@/auth/signOut";
 import { useAppLocalization } from "@/foundation/localization";
 import { formatLanguagePreferenceLabel } from "@/foundation/localization/languageSettings";
 import { mirrorIcon } from "@/foundation/utils/layoutDirection";
@@ -26,12 +27,11 @@ import { mirrorIcon } from "@/foundation/utils/layoutDirection";
 export default function ProfileScreen() {
   const router = useRouter();
   const { colors } = useTheme();
-  const { t, isRTL, localePreference } = useAppLocalization();
+  const { t, isRTL, locale, localePreference } = useAppLocalization();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors, isRTL), [colors, isRTL]);
-  const { user, isAuthenticated } = useAuthSession();
-  const e2eQaMode = useAppStore((state) => state.e2eQaMode);
-  const resetConversationState = useAppStore((state) => state.resetConversationState);
+  const { user } = useAuthSession();
+  const workspace = useWorkspaceAccess();
 
   const handleLogout = () => {
     Alert.alert(
@@ -43,15 +43,7 @@ export default function ProfileScreen() {
           text: t.profile.signOut,
           style: "destructive",
           onPress: () => {
-            resetConversationState();
-            if (e2eQaMode) {
-              resetE2EAuthState();
-              router.replace("/(auth)");
-              return;
-            }
-            if (isAuthenticated) {
-              void authClient.signOut();
-            }
+            void signOutForAccountSwitch();
             router.replace("/(auth)");
           },
         },
@@ -67,6 +59,33 @@ export default function ProfileScreen() {
     .join("")
     .slice(0, 2);
   const languageSummary = formatLanguagePreferenceLabel(t, localePreference);
+  const activeWorkspaceName = workspace.activeOrganization?.name
+    ?? workspace.activeOrganization?.slug
+    ?? t.workspaceAccess.untitledWorkspace;
+
+  const handleCreateInviteLink = async () => {
+    if (!workspace.organizationId) {
+      router.push("/(auth)/choose-workspace" as never);
+      return;
+    }
+
+    try {
+      const invite = await workspace.createInviteLink({
+        organizationId: workspace.organizationId,
+        role: "member",
+        locale,
+      });
+      if (invite.inviteUrl) {
+        await Clipboard.setStringAsync(invite.inviteUrl);
+      }
+      Alert.alert(t.workspaceAccess.inviteLinkCreated, t.workspaceAccess.inviteLinkCopied);
+    } catch (error) {
+      Alert.alert(
+        t.workspaceAccess.errorTitle,
+        error instanceof Error ? error.message : t.workspaceAccess.errorBody,
+      );
+    }
+  };
 
   const menuGroups: {
     label: string;
@@ -78,6 +97,30 @@ export default function ProfileScreen() {
       onPress?: () => void;
     }[];
   }[] = [
+    {
+      label: t.workspaceAccess.organizationSettingsTitle,
+      items: [
+        {
+          id: "active_workspace",
+          label: t.workspaceAccess.activeWorkspace,
+          description: activeWorkspaceName,
+          icon: <BriefcaseBusiness size={18} color={colors.textPrimary} />,
+          onPress: () => router.push("/(auth)/choose-workspace" as never),
+        },
+        {
+          id: "switch_workspace",
+          label: t.workspaceAccess.switchWorkspace,
+          icon: <ChevronRight size={18} color={colors.textPrimary} style={mirrorIcon(isRTL)} />,
+          onPress: () => router.push("/(auth)/choose-workspace" as never),
+        },
+        {
+          id: "create_invite_link",
+          label: t.workspaceAccess.createInviteLink,
+          icon: <Link size={18} color={colors.textPrimary} />,
+          onPress: () => void handleCreateInviteLink(),
+        },
+      ],
+    },
     {
       label: t.profile.account,
       items: [
@@ -94,12 +137,6 @@ export default function ProfileScreen() {
           icon: <SunMoon size={18} color={colors.textPrimary} />,
           onPress: () => router.push("/(app)/appearance" as never),
         },
-      ],
-    },
-    {
-      label: t.profile.security,
-      items: [
-        { id: "security", label: t.profile.loginSecurity, icon: <Shield size={18} color={colors.textPrimary} /> },
       ],
     },
   ];
@@ -142,7 +179,7 @@ export default function ProfileScreen() {
               <View style={styles.groupCard}>
                 {group.items.map((item, idx) => (
                   <View key={item.id}>
-                    <Pressable style={styles.item} onPress={() => item.onPress?.()}>
+                    <Pressable testID={`profile.${item.id}`} style={styles.item} onPress={() => item.onPress?.()}>
                       <View style={styles.itemMain}>
                         <View style={styles.itemIconBox}>
                           {item.icon}
@@ -247,7 +284,7 @@ const createStyles = (colors: any, isRTL: boolean) => StyleSheet.create({
   },
   groupCard: {
     backgroundColor: colors.surface,
-    borderRadius: 24,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.divider,
     overflow: "hidden",
@@ -268,7 +305,7 @@ const createStyles = (colors: any, isRTL: boolean) => StyleSheet.create({
   itemIconBox: {
     width: 34,
     height: 34,
-    borderRadius: 17,
+    borderRadius: 10,
     backgroundColor: colors.surfaceRaised,
     alignItems: "center",
     justifyContent: "center",

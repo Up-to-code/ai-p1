@@ -1,9 +1,8 @@
-import { Alert, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Redirect, useRouter } from "expo-router";
-import { useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 
-import { Mail } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "@/foundation/primitives/Text";
@@ -11,39 +10,64 @@ import { Button } from "@/foundation/primitives/Button";
 import { theme } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { useAuthSession } from "@/auth/useAuthSession";
-import { authClient } from "@/auth/authClient";
+import { authClient, isWorkspaceAuthConfigured } from "@/auth/authClient";
 import { AppleIcon, GoogleIcon } from "@/foundation/components/BrandIcons";
 import { TypewriterText } from "@/foundation/components/TypewriterText";
 import { useAppLocalization } from "@/foundation/localization";
+import { markAuthSessionActive } from "@/auth/signOut";
+import {
+  mobileSocialProviders,
+  signInWithWorkspaceSocialProvider,
+  type MobileSocialProvider,
+} from "@/auth/socialAuth";
 
 export default function AuthScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
-  const { t } = useAppLocalization();
+  const { t, isRTL, locale } = useAppLocalization();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const landingPhrases = useMemo(() => t.auth.landingPhrases, [t.auth.landingPhrases]);
   const { canAccessApp, isReady } = useAuthSession();
+  const signInInFlightRef = useRef(false);
+  const [signingProvider, setSigningProvider] = useState<MobileSocialProvider | null>(null);
 
   if (isReady && canAccessApp) {
     return <Redirect href="/(app)" />;
   }
 
-  const handleSocialSignIn = async (provider: "google" | "apple") => {
+  const handleSocialSignIn = async (provider: MobileSocialProvider) => {
+    if (signInInFlightRef.current) {
+      return;
+    }
+
+    signInInFlightRef.current = true;
+    setSigningProvider(provider);
+
     try {
-      const { error } = await (authClient as any).signIn.social({
-        provider,
-        callbackURL: "/auth-callback",
-      });
-      if (error) {
-        throw new Error(error.message ?? `${provider} sign in is not configured for this environment.`);
+      if (!isWorkspaceAuthConfigured()) {
+        throw new Error(t.auth.signInUnavailableBody);
       }
-      await authClient.getSession();
-      router.replace("/(app)");
+      await signInWithWorkspaceSocialProvider(authClient, provider);
+      markAuthSessionActive();
+      router.replace("/");
     } catch (error) {
       Alert.alert(
         t.auth.signInUnavailableTitle,
         error instanceof Error ? error.message : t.auth.signInUnavailableBody,
       );
+    } finally {
+      signInInFlightRef.current = false;
+      setSigningProvider(null);
+    }
+  };
+
+  const openLegalLink = async (path: "terms" | "privacy") => {
+    const url = `https://app.qentrah.com/${path}`;
+    try {
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert(t.auth.signInUnavailableTitle, t.auth.signInUnavailableBody);
     }
   };
 
@@ -59,17 +83,11 @@ export default function AuthScreen() {
       >
         <Animated.View entering={FadeInUp.delay(120).springify()} style={styles.heroWrap}>
           <Text variant="display" style={[styles.wordmark, { color: colors.textPrimary }]}>
-            QENTRAH
+            {t.auth.wordmark}
           </Text>
 
           <View style={styles.typewriterWrap}>
-            <TypewriterText
-              phrases={[
-                "Qentrah AI is ready.",
-                "Your real estate history stays private.",
-                "Sign in to continue.",
-              ]}
-            />
+            <TypewriterText key={locale} phrases={landingPhrases} />
           </View>
         </Animated.View>
 
@@ -78,43 +96,71 @@ export default function AuthScreen() {
           style={styles.actionsWrap}
         >
           <View style={styles.buttonStack}>
-            <Button
-              testID="auth.continue_apple"
-              variant="primary"
-              leading={<AppleIcon size={18} color={colors.background} />}
-              label={t.auth.continueWithApple}
-              onPress={() => void handleSocialSignIn("apple")}
-              style={[styles.primaryBtn, { backgroundColor: colors.textPrimary }]}
-              textStyle={{ color: colors.background }}
-            />
+            {mobileSocialProviders.map((provider, index) => {
+              const isPrimary = index === 0;
+              const isSigningIn = signingProvider !== null;
+              return (
+                <Button
+                  key={provider}
+                  testID={`auth.continue_${provider}`}
+                  variant={isPrimary ? "primary" : "secondary"}
+                  leading={
+                    provider === "apple"
+                      ? <AppleIcon size={18} color={isPrimary ? colors.background : colors.textPrimary} />
+                      : <GoogleIcon size={20} />
+                  }
+                  label={provider === "apple" ? t.auth.continueWithApple : t.auth.continueWithGoogle}
+                  disabled={isSigningIn}
+                  onPress={() => void handleSocialSignIn(provider)}
+                  style={[
+                    isPrimary ? styles.primaryBtn : styles.secondaryBtn,
+                    isSigningIn && styles.disabledBtn,
+                    isPrimary
+                      ? { backgroundColor: colors.textPrimary }
+                      : { backgroundColor: colors.surface, borderColor: colors.divider },
+                  ]}
+                  textStyle={{ color: isPrimary ? colors.background : colors.textPrimary }}
+                />
+              );
+            })}
+          </View>
 
-            <Button
-              testID="auth.continue_google"
-              variant="secondary"
-              leading={<GoogleIcon size={20} />}
-              label={t.auth.continueWithGoogle}
-              onPress={() => void handleSocialSignIn("google")}
-              style={[
-                styles.secondaryBtn,
-                { backgroundColor: colors.surface, borderColor: colors.divider },
-              ]}
-              textStyle={{ color: colors.textPrimary }}
-            />
+          <View style={styles.legalWrap}>
+            <Text
+              variant="caption"
+              tone="muted"
+              style={[styles.legalNotice, isRTL && styles.rtlText]}
+            >
+              {t.auth.legalNotice}
+            </Text>
 
-            <Button
-              testID="auth.continue_email"
-              variant="secondary"
-              leading={<Mail size={20} color={colors.textPrimary} />}
-              label={t.auth.continueWithEmail}
-              onPress={() => {
-                router.push("/(auth)/email-options");
-              }}
-              style={[
-                styles.secondaryBtn,
-                { backgroundColor: colors.surface, borderColor: colors.divider },
-              ]}
-              textStyle={{ color: colors.textPrimary }}
-            />
+            <View style={[styles.legalLinks, isRTL && styles.rtlRow]}>
+              <Pressable
+                accessibilityRole="link"
+                onPress={() => void openLegalLink("terms")}
+                hitSlop={8}
+              >
+                <Text variant="caption" tone="secondary" style={styles.legalLink}>
+                  {t.auth.termsOfService}
+                </Text>
+              </Pressable>
+              <Text variant="caption" tone="muted" style={styles.legalDot}>
+                ·
+              </Text>
+              <Pressable
+                accessibilityRole="link"
+                onPress={() => void openLegalLink("privacy")}
+                hitSlop={8}
+              >
+                <Text variant="caption" tone="secondary" style={styles.legalLink}>
+                  {t.auth.privacyPolicy}
+                </Text>
+              </Pressable>
+            </View>
+
+            <Text variant="caption" tone="muted" style={styles.copyright}>
+              {t.auth.copyright}
+            </Text>
           </View>
         </Animated.View>
       </ScrollView>
@@ -138,14 +184,13 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   wordmark: {
     fontSize: 42,
-    fontFamily: "Manrope_800ExtraBold",
-    letterSpacing: 2,
+    letterSpacing: 0,
     lineHeight: 52,
     textAlign: "center",
     color: colors.textPrimary,
   },
   typewriterWrap: {
-    minHeight: 40,
+    minHeight: 58,
     justifyContent: "center",
     opacity: 0.7,
   },
@@ -155,6 +200,38 @@ const createStyles = (colors: any) => StyleSheet.create({
   buttonStack: {
     gap: 12,
   },
+  legalWrap: {
+    alignItems: "center",
+    gap: 6,
+    marginTop: 24,
+  },
+  legalNotice: {
+    textAlign: "center",
+  },
+  legalLinks: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
+    justifyContent: "center",
+  },
+  rtlRow: {
+    flexDirection: "row-reverse",
+  },
+  legalLink: {
+    color: colors.textSecondary,
+    textDecorationLine: "underline",
+    textAlign: "center",
+  },
+  legalDot: {
+    color: colors.textMuted,
+  },
+  copyright: {
+    textAlign: "center",
+  },
+  rtlText: {
+    textAlign: "center",
+    writingDirection: "rtl",
+  },
   primaryBtn: {
     minHeight: 58,
     borderRadius: 29,
@@ -163,5 +240,8 @@ const createStyles = (colors: any) => StyleSheet.create({
     minHeight: 58,
     borderRadius: 29,
     borderWidth: 1,
+  },
+  disabledBtn: {
+    opacity: 0.55,
   },
 });

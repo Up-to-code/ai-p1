@@ -1,6 +1,5 @@
 import type { AssistantTurn } from "@/conversation/assistantProtocol";
 import type { ConversationMessage } from "@/types/domain";
-import { createPropertyCards } from "@/tests/factories/propertyFactory";
 
 export type E2ESource = NonNullable<ConversationMessage["sourceMetadata"]>[number];
 
@@ -25,7 +24,6 @@ export const E2E_QA_USER: E2EFixtureUser = {
 };
 export const E2E_QA_PASSWORD = "qa-password";
 
-const SEARCH_PROPERTIES = createPropertyCards();
 const FUNDING_SOURCES: E2ESource[] = [
   {
     title: "Sample funding note",
@@ -95,21 +93,25 @@ export function resolveE2EPromptScenario(prompt: string): PromptScenario {
   }
 
   return {
-    title: "Premium waterfront search",
-    summary: "Generated a high-conviction shortlist of premium waterfront homes.",
-    assistantText: "I found premium waterfront options that balance livability, rental moat, and market confidence.",
+    title: "Workspace action plan",
+    summary: "Answered with a focused workspace plan.",
+    assistantText: "I mapped the next workspace steps and what I need to do them.",
     turn: {
       version: "assistant_turn.v1",
-      route: "property",
+      route: "advisor",
       status: "completed",
-      assistantText: "I found premium waterfront options that balance livability, rental moat, and market confidence.",
+      assistantText: "I mapped the next workspace steps and what I need to do them.",
       blocks: [
         {
-          type: "property_list",
-          id: "property-list",
-          title: "Top matches",
-          propertyIds: SEARCH_PROPERTIES.map((property) => property.id),
-          querySummary: "Premium waterfront homes",
+          type: "advisor_note",
+          id: "workspace-plan",
+          title: "Workspace plan",
+          body: "I can help with organization setup, invites, account questions, and workspace actions from chat.",
+          bullets: [
+            "Tell me the organization action you want.",
+            "I will ask for confirmation before sensitive changes.",
+            "Invite and access flows stay tied to Workspace authorization.",
+          ],
         },
         {
           type: "sources",
@@ -120,25 +122,25 @@ export function resolveE2EPromptScenario(prompt: string): PromptScenario {
       ],
       actions: [
         {
-          id: `open-${SEARCH_PROPERTIES[0].id}`,
-          title: "Open property",
-          name: "open_property",
-          payload: { propertyId: SEARCH_PROPERTIES[0].id },
+          id: "continue-workspace",
+          title: "Continue",
+          name: "continue_thread",
+          payload: { prompt: "Help me continue this workspace task." },
         },
       ],
       agent: {
-        primaryAgent: "property",
-        participatingAgents: ["orchestrator", "property", "summary"],
+        primaryAgent: "advisor",
+        participatingAgents: ["orchestrator", "advisor", "summary"],
         handoffs: [],
         confidence: 0.85,
       },
       motion: {
-        preset: "property",
+        preset: "assistant",
         emphasis: "medium",
       },
       analytics: {
         source: "assistant",
-        route: "property",
+        route: "advisor",
       },
     },
   };

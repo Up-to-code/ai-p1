@@ -1,4 +1,4 @@
-appId: com.zayon.mobile
+appId: com.qentrah.mobile
 name: History and agent context
 tags:
   - signed-in
@@ -8,7 +8,8 @@ tags:
 - runFlow: "shared/search-market-context.yaml"
 - tapOn:
     id: app.open_menu
-- tapOn: "See All Research Archive"
+- tapOn:
+    id: menu.full_history
 - extendedWaitUntil:
     visible:
       id: history.thread.e2e-thread-1

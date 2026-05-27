@@ -74,6 +74,8 @@ Common Workspace variables:
 | `TRUSTED_ORIGINS` | Server | Additional trusted origins |
 | `GOOGLE_CLIENT_ID` | Server | Google sign-in client ID |
 | `GOOGLE_CLIENT_SECRET` | Secret | Google sign-in secret |
+| `APPLE_CLIENT_ID` | Server | Optional Apple sign-in client ID or bundle identifier |
+| `APPLE_APP_BUNDLE_IDENTIFIER` | Server | Optional native Apple bundle identifier for mobile sign-in |
 | `PLATFORM_ADMIN_EMAILS` | Server | Platform admin allowlist |
 | `NEXT_PUBLIC_CONVEX_URL` | Browser | Convex client URL |
 | `CONVEX_URL` | Server | Convex deployment URL |
@@ -143,6 +145,57 @@ Common Partners variables:
 | `WORKSPACE_API_BASE_URL` | Server | Optional Workspace origin for operational data |
 | `WORKSPACE_ADMIN_SERVICE_TOKEN` | Secret | Service token accepted by Workspace |
 | `ADMIN_CONVEX_SERVICE_TOKEN` | Secret | Dedicated token used for Admin Review direct Convex access |
+
+## Mobile Variables
+
+Production baseline:
+
+```bash
+QENTRAH_MOBILE_ENV=production
+EXPO_PUBLIC_PRODUCTION_WORKSPACE_API_URL=https://app.qentrah.com
+EXPO_PUBLIC_PRODUCTION_AUTH_URL=https://app.qentrah.com
+EXPO_PUBLIC_PRODUCTION_CONVEX_URL=<production Convex URL>
+```
+
+Development baseline for simulator usage:
+
+```bash
+QENTRAH_MOBILE_ENV=development
+EXPO_PUBLIC_DEV_WORKSPACE_API_URL=http://localhost:3000
+EXPO_PUBLIC_DEV_AUTH_URL=http://localhost:3000
+```
+
+Development baseline for a physical device:
+
+```bash
+QENTRAH_MOBILE_ENV=development
+EXPO_PUBLIC_DEV_WORKSPACE_API_URL=http://<your-lan-ip>:3000
+EXPO_PUBLIC_DEV_AUTH_URL=http://<your-lan-ip>:3000
+```
+
+| Variable | Exposure | Purpose |
+| --- | --- | --- |
+| `QENTRAH_MOBILE_ENV` | Build-time | Selects `development` local API behavior or `production` release behavior |
+| `EXPO_PUBLIC_WORKSPACE_API_URL` | Mobile client | Workspace API origin for `/api/v1` calls from Expo |
+| `EXPO_PUBLIC_AUTH_URL` | Mobile client | Better Auth origin for sign-in/session APIs |
+| `EXPO_PUBLIC_CONVEX_URL` | Mobile client | Convex client URL |
+| `EXPO_PUBLIC_CONVEX_SITE_URL` | Mobile client | Optional Convex site URL fallback for auth bridges |
+| `EXPO_PUBLIC_DEV_WORKSPACE_API_URL` | Mobile client | Development-only Workspace API origin; use a LAN IP for physical devices |
+| `EXPO_PUBLIC_DEV_AUTH_URL` | Mobile client | Development-only auth origin; usually matches the local Workspace origin |
+| `EXPO_PUBLIC_DEV_CONVEX_URL` | Mobile client | Development-only Convex client URL override |
+| `EXPO_PUBLIC_PRODUCTION_WORKSPACE_API_URL` | Mobile client | Production release Workspace API origin; defaults to `https://app.qentrah.com` |
+| `EXPO_PUBLIC_PRODUCTION_AUTH_URL` | Mobile client | Production release auth origin; defaults to the production Workspace origin |
+| `EXPO_PUBLIC_PRODUCTION_CONVEX_URL` | Mobile client | Production release Convex client URL |
+| `EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN` | Mobile client | Mapbox public token for mobile map surfaces |
+
+Mobile values are public once bundled into the app. Do not add service tokens,
+client secrets, refresh tokens, or OAuth access tokens with an `EXPO_PUBLIC_`
+prefix.
+
+The mobile app resolves URLs by build intent, not by whether the build happens
+on a developer laptop. `QENTRAH_MOBILE_ENV=development` uses development/local
+API overrides. `QENTRAH_MOBILE_ENV=production` is for App Store/TestFlight style
+release builds and rejects local Workspace/auth URLs.
 
 ## Demo Partner App Variables
 

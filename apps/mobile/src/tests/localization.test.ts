@@ -59,3 +59,23 @@ test("formatLanguagePreferenceLabel keeps locale autonyms for explicit language 
     "Français",
   );
 });
+
+test("appearance mode labels are localized for settings", () => {
+  assert.equal(getMobileDictionary("ar").appSettings.appearanceLightTitle, "الفاتح");
+  assert.equal(getMobileDictionary("fr").appSettings.appearanceDarkTitle, "Sombre");
+  assert.equal(getMobileDictionary("en").appSettings.appearanceSystemTitle, "System");
+});
+
+test("auth landing copy is localized for first-launch phone language", () => {
+  assert.equal(getMobileDictionary("ar").auth.wordmark, "كانترا");
+  assert.equal(getMobileDictionary("en").auth.wordmark, "QENTRAH");
+  assert.deepEqual(getMobileDictionary("en").auth.landingPhrases, [
+    "Your agency runs from chat.",
+    "Search, follow up, and close from your phone.",
+    "Smarter real estate work, no desk required.",
+  ]);
+  assert.equal(getMobileDictionary("ar").auth.landingPhrases[0], "كل شغلك العقاري في محادثة واحدة.");
+  assert.equal(getMobileDictionary("fr").auth.landingPhrases[2], "Un immobilier plus intelligent, sans bureau.");
+  assert.equal(getMobileDictionary("ar").auth.privacyPolicy, "سياسة الخصوصية");
+  assert.equal(getMobileDictionary("fr").auth.termsOfService, "Conditions");
+});

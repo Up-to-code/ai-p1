@@ -1,8 +1,10 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import type { ToolSet } from "ai";
+import type { Context } from "hono";
 import { z } from "zod";
 import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/better-auth/server";
+import type { MobileRequestContext } from "@/server/middleware/mobile-request-context";
 import {
   allowedMcpTools,
   mcpToolCatalog,
@@ -11,20 +13,47 @@ import {
   type McpPermissionResource,
   type McpToolDefinition,
 } from "@/server/protocols/mcp/tools/catalog";
+import { evaluateAgentToolRisk } from "../policies/risk-policy";
+import {
+  cancelOrganizationEmailInvitation,
+  createOrganizationEmailInvitation,
+  createOrganizationWorkRole,
+  deleteOrganizationWorkRole,
+  listOrganizationWorkRoles,
+  removeOrganizationMember,
+  updateOrganizationIdentity,
+  updateOrganizationMemberRole,
+  updateOrganizationWorkRole,
+} from "@/server/domains/organization/services/actions";
+import { updateOrganizationProfile } from "@/server/domains/organization/services/update-profile";
 
 type AgentToolResult = {
   tool: McpToolDefinition;
-  status: "allowed" | "blocked" | "failed";
+  status: "allowed" | "blocked" | "failed" | "requires_confirmation";
   input?: unknown;
   output?: unknown;
   error?: string;
+  confirmationId?: string;
 };
 
 type AgentToolRuntime = {
+  honoContext?: Context;
   organizationId: string;
   threadId: Id<"agentThreads">;
+  runId: Id<"agentRuns">;
+  requestContext?: MobileRequestContext;
   onStatus?: (message: string) => Promise<void>;
   onToolResult?: (result: AgentToolResult) => Promise<void>;
+  onConfirmationRequired?: (confirmation: AgentToolConfirmation) => Promise<void>;
+};
+
+type AgentToolConfirmation = {
+  confirmationId: string;
+  summary: string;
+  resource: string;
+  action: string;
+  inputPreview?: string;
+  expiresAt: number;
 };
 
 type OrganizationCapabilities = Awaited<ReturnType<typeof fetchAuthQuery<typeof api.organizations.profile.access.getCapabilities>>>;
@@ -37,6 +66,42 @@ const listSchema = z.object({
   cursor: z.string().nullable().optional(),
 }).passthrough();
 const visibilitySchema = z.enum(["private", "public"]).optional();
+const organizationIdentityInputSchema = z.object({
+  name: z.string().trim().min(1).max(120).optional(),
+  slug: z.string().trim().min(1).max(120).optional(),
+  logo: z.string().trim().max(500).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+}).passthrough();
+const organizationProfileInputSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  legalName: z.string().trim().max(180),
+  type: z.string().trim().max(80),
+  email: z.string().trim().email().or(z.literal("")),
+  phone: z.string().trim().max(40),
+  website: z.string().trim().max(120),
+  address: z.string().trim().max(240),
+}).passthrough();
+const invitationInputSchema = z.object({
+  email: z.string().trim().email(),
+  role: z.string().trim().min(1).max(80),
+}).passthrough();
+const memberRoleInputSchema = z.object({
+  memberId: stringId,
+  role: z.string().trim().min(1).max(80),
+}).passthrough();
+const memberRemoveInputSchema = z.object({
+  memberIdOrEmail: stringId,
+}).passthrough();
+const rolePermissionSchema = z.record(z.string(), z.array(z.string().trim().min(1)).max(20));
+const roleCreateInputSchema = z.object({
+  role: z.string().trim().min(1).max(80),
+  permission: rolePermissionSchema,
+}).passthrough();
+const roleUpdateInputSchema = z.object({
+  roleId: stringId,
+  roleName: z.string().trim().min(1).max(80).optional(),
+  permission: rolePermissionSchema.optional(),
+}).passthrough();
 const clientInputSchema = z.object({
   name: z.string().min(1),
   type: z.enum(["Buyer", "Tenant", "Investor", "Broker"]),
@@ -124,6 +189,16 @@ function cleanInput<T extends z.ZodRawShape>(schema: z.ZodObject<T>, value: unkn
 
 const toolInputSchemas: Record<string, z.ZodTypeAny> = {
   organization_info: z.object({}).passthrough(),
+  organization_update_identity: organizationIdentityInputSchema,
+  organization_update_profile: organizationProfileInputSchema,
+  members_update_role: memberRoleInputSchema,
+  members_remove: memberRemoveInputSchema,
+  invitations_create: invitationInputSchema,
+  invitations_cancel: z.object({ invitationId: stringId }).passthrough(),
+  roles_list: z.object({}).passthrough(),
+  roles_create: roleCreateInputSchema,
+  roles_update: roleUpdateInputSchema,
+  roles_delete: z.object({ roleId: stringId }).passthrough(),
   clients_list: listSchema,
   clients_get: z.object({ clientId: stringId }).passthrough(),
   clients_create: clientInputSchema,
@@ -186,6 +261,11 @@ function compact(value: unknown, maxItems = 50) {
   return value;
 }
 
+function compactPreview(value: unknown, maxLength = 900) {
+  const text = typeof value === "string" ? value : JSON.stringify(value);
+  return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+}
+
 function limit(input: { limit?: number }) {
   return Math.max(1, Math.min(input.limit ?? 25, 50));
 }
@@ -225,7 +305,22 @@ function mediaKind(input: { kind?: "image" | "document" | "video"; mimeType?: st
 
 function permissionsFromCapabilities(capabilities: OrganizationCapabilities): McpPermission[] {
   const actions = {
-    organization: capabilities.canReadOrganization ? ["read"] : [],
+    organization: [
+      capabilities.canReadOrganization && "read",
+      capabilities.canUpdateOrganization && "update",
+    ],
+    member: [
+      capabilities.canReadOrganization && "read",
+      capabilities.canInviteMembers && "create",
+      capabilities.canUpdateMembers && "update",
+      capabilities.canRemoveMembers && "delete",
+    ],
+    role: [
+      capabilities.canReadRoles && "read",
+      capabilities.canCreateRoles && "create",
+      capabilities.canUpdateRoles && "update",
+      capabilities.canDeleteRoles && "delete",
+    ],
     client: [
       capabilities.canReadClients && "read",
       capabilities.canCreateClients && "create",
@@ -280,6 +375,44 @@ async function readMemory(runtime: AgentToolRuntime) {
   });
 }
 
+function requireHonoContext(runtime: AgentToolRuntime) {
+  if (!runtime.honoContext) {
+    throw new Error("This organization action requires a Hono request context.");
+  }
+  return runtime.honoContext;
+}
+
+function confirmationSummary(tool: McpToolDefinition, input: unknown) {
+  return `${tool.title}: ${compactPreview(input, 220)}`;
+}
+
+async function createToolConfirmation(runtime: AgentToolRuntime, tool: McpToolDefinition, input: unknown) {
+  const expiresAt = Date.now() + 5 * 60 * 1000;
+  const inputPreview = compactPreview(input, 500);
+  const confirmation = await fetchAuthMutation(api.agents.confirmations.createFromHono, {
+    organizationId: runtime.organizationId,
+    threadId: runtime.threadId,
+    runId: runtime.runId,
+    tool: tool.name,
+    resource: tool.resource,
+    action: tool.action,
+    summary: confirmationSummary(tool, input),
+    inputPreview,
+    input,
+    requestContext: runtime.requestContext,
+    expiresAt,
+  });
+
+  return {
+    confirmationId: confirmation.id,
+    summary: confirmation.summary,
+    resource: confirmation.resource,
+    action: confirmation.action,
+    inputPreview: confirmation.inputPreview,
+    expiresAt: confirmation.expiresAt,
+  };
+}
+
 async function executeWorkspaceTool(runtime: AgentToolRuntime, tool: McpToolDefinition, rawInput: unknown) {
   const input = (rawInput && typeof rawInput === "object" ? rawInput : {}) as Record<string, unknown>;
   const organizationId = runtime.organizationId;
@@ -287,6 +420,60 @@ async function executeWorkspaceTool(runtime: AgentToolRuntime, tool: McpToolDefi
   switch (tool.name) {
     case "organization_info":
       return fetchAuthQuery(api.organizations.profile.read.getProfile, { organizationId });
+    case "organization_update_identity":
+      return updateOrganizationIdentity(
+        requireHonoContext(runtime),
+        organizationId,
+        cleanInput(organizationIdentityInputSchema, input),
+      );
+    case "organization_update_profile":
+      return updateOrganizationProfile(
+        organizationId,
+        cleanInput(organizationProfileInputSchema, input),
+      );
+    case "members_update_role": {
+      const parsed = cleanInput(memberRoleInputSchema, input);
+      return updateOrganizationMemberRole(requireHonoContext(runtime), organizationId, parsed.memberId, {
+        role: parsed.role,
+      });
+    }
+    case "members_remove": {
+      const parsed = cleanInput(memberRemoveInputSchema, input);
+      return removeOrganizationMember(requireHonoContext(runtime), organizationId, parsed.memberIdOrEmail);
+    }
+    case "invitations_create":
+      return createOrganizationEmailInvitation(
+        requireHonoContext(runtime),
+        organizationId,
+        cleanInput(invitationInputSchema, input),
+      );
+    case "invitations_cancel":
+      return cancelOrganizationEmailInvitation(
+        requireHonoContext(runtime),
+        organizationId,
+        String(input.invitationId),
+      );
+    case "roles_list":
+      return listOrganizationWorkRoles(requireHonoContext(runtime), organizationId);
+    case "roles_create":
+      return createOrganizationWorkRole(
+        requireHonoContext(runtime),
+        organizationId,
+        cleanInput(roleCreateInputSchema, input) as never,
+      );
+    case "roles_update": {
+      const parsed = cleanInput(roleUpdateInputSchema, input);
+      return updateOrganizationWorkRole(requireHonoContext(runtime), organizationId, parsed.roleId, {
+        roleName: parsed.roleName,
+        permission: parsed.permission as never,
+      });
+    }
+    case "roles_delete":
+      return deleteOrganizationWorkRole(
+        requireHonoContext(runtime),
+        organizationId,
+        String(input.roleId),
+      );
     case "clients_list":
       return fetchAuthQuery(api.clients.read.listPaged, {
         organizationId,
@@ -494,6 +681,61 @@ async function executeWorkspaceTool(runtime: AgentToolRuntime, tool: McpToolDefi
 }
 
 async function runLoggedTool(runtime: AgentToolRuntime, tool: McpToolDefinition, input: unknown) {
+  await runtime.onStatus?.(tool.title);
+  const risk = evaluateAgentToolRisk(tool);
+  if (risk.state === "blocked") {
+    const message = risk.reason ?? "This agent action is not available.";
+    const result = { tool, status: "blocked" as const, input, error: message };
+    await runtime.onToolResult?.(result);
+    return { ok: false, tool: tool.name, error: message };
+  }
+
+  if (risk.state === "requires_confirmation") {
+    try {
+      const confirmation = await createToolConfirmation(runtime, tool, input);
+      const result = {
+        tool,
+        status: "requires_confirmation" as const,
+        input,
+        confirmationId: confirmation.confirmationId,
+        output: confirmation,
+      };
+      await runtime.onToolResult?.(result);
+      await runtime.onConfirmationRequired?.(confirmation);
+      return {
+        ok: false,
+        tool: tool.name,
+        confirmationRequired: true,
+        confirmation,
+        message: "This action requires explicit confirmation before it can run.",
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Confirmation could not be created.";
+      const result = { tool, status: "failed" as const, input, error: message };
+      await runtime.onToolResult?.(result);
+      return { ok: false, tool: tool.name, error: message };
+    }
+  }
+
+  try {
+    const output = await executeWorkspaceTool(runtime, tool, input);
+    const result = { tool, status: "allowed" as const, input, output };
+    await runtime.onToolResult?.(result);
+    return { ok: true, tool: tool.name, data: output };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Tool failed.";
+    const result = { tool, status: "failed" as const, input, error: message };
+    await runtime.onToolResult?.(result);
+    return { ok: false, tool: tool.name, error: message };
+  }
+}
+
+export async function executeConfirmedAgentTool(runtime: AgentToolRuntime, toolName: string, input: unknown) {
+  const tool = mcpToolCatalog.find((item) => item.name === toolName);
+  if (!tool) {
+    throw new Error("Agent confirmation tool was not found.");
+  }
+
   await runtime.onStatus?.(tool.title);
   try {
     const output = await executeWorkspaceTool(runtime, tool, input);

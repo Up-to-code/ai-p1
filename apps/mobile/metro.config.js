@@ -7,7 +7,6 @@ const workspaceRoot = path.resolve(projectRoot, "../..");
 const projectNodeModules = path.resolve(projectRoot, "node_modules");
 const workspaceNodeModules = path.resolve(workspaceRoot, "node_modules");
 const packagesRoot = path.resolve(workspaceRoot, "packages");
-const convexRoot = path.resolve(workspaceRoot, "convex");
 const bunStoreRoot = path.resolve(workspaceRoot, "node_modules/.bun");
 const bunPackageCache = new Map();
 
@@ -91,7 +90,7 @@ function resolveSingletonPath(moduleName) {
 
 config.watchFolders = [
   ...new Set(
-    [...(config.watchFolders ?? []), packagesRoot, convexRoot].filter((folder) =>
+    [...(config.watchFolders ?? []), packagesRoot].filter((folder) =>
       fs.existsSync(folder)
     ),
   ),
@@ -99,7 +98,6 @@ config.watchFolders = [
 config.resolver.alias = {
   ...(config.resolver.alias ?? {}),
   "@": path.resolve(projectRoot, "src"),
-  "@convex": path.resolve(workspaceRoot, "convex"),
   "@zayon/assistant-protocol": path.resolve(workspaceRoot, "packages/zayon-assistant-protocol/src/index.ts"),
   react: resolveSingletonPath("react"),
   "react/jsx-runtime": resolveSingletonPath("react/jsx-runtime"),
@@ -126,9 +124,7 @@ const strictSingletons = [
   "react/jsx-runtime",
   "react/jsx-dev-runtime",
   "react-dom",
-  "react-native",
-  "convex",
-  "convex/react"
+  "react-native"
 ];
 
 config.resolver.resolveRequest = (context, moduleName, platform) => {

@@ -1,8 +1,10 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { brandLabel } from "@qentrah/brand-identity";
+import type { Context } from "hono";
 import { fetchAuthMutation } from "@/server/auth/better-auth/server";
 import { agentRuntimeConfig } from "@/server/config/agent-runtime";
+import type { MobileRequestContext } from "@/server/middleware/mobile-request-context";
 import { evaluateAgentRequestRisk } from "../policies/risk-policy";
 import { hasOpenRouterConfig, streamOpenRouterText } from "./openrouter";
 import { buildAgentToolSet, type AgentToolResult } from "./tool-adapter";
@@ -11,6 +13,15 @@ type AgentStreamEvent =
   | { type: "meta"; threadId: string; runId: string }
   | { type: "status"; message: string }
   | { type: "text"; text: string }
+  | {
+      type: "confirmation_required";
+      confirmationId: string;
+      summary: string;
+      resource: string;
+      action: string;
+      inputPreview?: string;
+      expiresAt: number;
+    }
   | { type: "done"; threadId: string }
   | { type: "error"; error: string };
 
@@ -121,8 +132,9 @@ function buildSystemPrompt(language: AgentResponseLanguage) {
     "Use conversation_memory only when the user refers to prior context, says remember, or asks to continue the same thread.",
     "For create, update, delete, schedule, attach, or complete actions, call the matching tool only when all required fields are known. If fields are missing, ask for them.",
     "Never claim to have changed data unless a tool result explicitly says the action succeeded.",
-    "Dangerous organization settings are blocked: removing members, editing organization identity/name, and editing legal documents.",
-    "When a blocked action is requested, explain the boundary briefly and point the user to manual organization settings.",
+    "High-risk organization actions require explicit confirmation before execution: removing members and editing organization identity/name.",
+    "When a high-risk tool asks for confirmation, tell the user to review the confirmation card in the mobile app. Do not claim it ran yet.",
+    "Legal document edits are not available to organization agents yet.",
     "Use concise, operational language. Do not expose internal tool names unless useful for debugging.",
     "Format every answer as clean GitHub-flavored Markdown. Use headings, bullet or numbered lists, tables, and fenced code blocks when they improve clarity.",
     "Do not use raw HTML. Keep prose natural and concise.",
@@ -168,9 +180,11 @@ async function finishRun(input: {
 }
 
 export function createAgentChatStream(input: {
+  honoContext?: Context;
   organizationId: string;
   threadId?: string;
   message: string;
+  requestContext?: MobileRequestContext;
   abortSignal?: AbortSignal;
 }) {
   let ids: AgentRunIds | undefined;
@@ -214,7 +228,7 @@ export function createAgentChatStream(input: {
         await write({ type: "meta", threadId: runIds.threadId, runId: runIds.runId });
         await write({ type: "status", message: "Checking safety policy" });
         const risk = evaluateAgentRequestRisk(input.message);
-        if (!risk.allowed) {
+        if (risk.state === "blocked") {
           const response = risk.reason ?? "That organization action is blocked for agents.";
           await recordStep(runIds, input.organizationId, "policy", "blocked", response);
           await write({ type: "text", text: response });
@@ -223,7 +237,15 @@ export function createAgentChatStream(input: {
           controller.close();
           return;
         }
-        void recordStep(runIds, input.organizationId, "policy", "completed", "Request passed agent risk policy.");
+        void recordStep(
+          runIds,
+          input.organizationId,
+          "policy",
+          "completed",
+          risk.state === "requires_confirmation"
+            ? "Request may require explicit confirmation before execution."
+            : "Request passed agent risk policy.",
+        );
 
         if (!hasOpenRouterConfig()) {
           const fallback = "AI mode is connected, but OpenRouter is not configured yet. Add OPENROUTER_API_KEY on the server so I can stream model responses. The agent safety, memory, and Convex context path are already active.";
@@ -236,10 +258,17 @@ export function createAgentChatStream(input: {
 
         await write({ type: "status", message: "Preparing tools" });
         const tools = await buildAgentToolSet({
+          honoContext: input.honoContext,
           organizationId: input.organizationId,
           threadId: runIds.threadId,
+          runId: runIds.runId,
+          requestContext: input.requestContext,
           onStatus: (message) => write({ type: "status", message }),
           onToolResult: (result) => recordTool(runIds, input.organizationId, result),
+          onConfirmationRequired: (confirmation) => write({
+            type: "confirmation_required",
+            ...confirmation,
+          }),
         });
         void recordStep(runIds, input.organizationId, "plan", "completed", `Exposed ${Object.keys(tools).length} model-selected tool(s).`);
 

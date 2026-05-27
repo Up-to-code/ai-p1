@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import { MOBILE_STORE_VERSION, migratePersistedAppStore } from "../store/persistence";
 
-test("store migration drops legacy persisted guest mode", () => {
+test("store migration drops retired anonymous conversation state", () => {
   const migrated = migratePersistedAppStore(
     {
       guestMode: true,

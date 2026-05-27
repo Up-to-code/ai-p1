@@ -12,7 +12,7 @@ function normalizeUrl(value: string) {
     return "";
   }
 
-  return trimmed.startsWith("http") ? trimmed : `https://${trimmed}`;
+  return /^[a-z][a-z\d+\-.]*:/iu.test(trimmed) ? trimmed : `https://${trimmed}`;
 }
 
 function readUrl(key: string, fallback: string) {
@@ -55,6 +55,9 @@ const trustedOrigins = Array.from(
       "http://localhost:3000",
       "http://localhost:3003",
       "http://localhost:3001",
+      "qentrah://",
+      "qentrah://auth-callback",
+      "qentrah:///auth-callback",
       ...configuredTrustedOrigins,
     ].filter(Boolean),
   ),
@@ -96,6 +99,8 @@ export function getAuthRuntimeConfig(mode: AuthConfigMode) {
     verbose: envReader.read("BETTER_AUTH_VERBOSE", "false") === "true",
     googleClientId: envReader.read("GOOGLE_CLIENT_ID", ""),
     googleClientSecret: envReader.read("GOOGLE_CLIENT_SECRET", ""),
+    appleClientId: envReader.read("APPLE_CLIENT_ID", ""),
+    appleAppBundleIdentifier: envReader.read("APPLE_APP_BUNDLE_IDENTIFIER", ""),
     platformAdminEmails,
   };
 }

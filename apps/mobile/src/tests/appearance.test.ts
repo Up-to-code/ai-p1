@@ -18,14 +18,12 @@ test("appearance mode defaults to system", () => {
   assert.equal(store.getState().localePreference, "system");
 });
 
-test("appearance mode can be updated independently from preference profile", () => {
+test("appearance mode can be updated", () => {
   const store = createPreferenceTestStore();
-  const before = store.getState().preferenceProfile;
 
   store.getState().setAppearanceMode("light");
 
   assert.equal(store.getState().appearanceMode, "light");
-  assert.deepEqual(store.getState().preferenceProfile, before);
 });
 
 test("locale preference can be updated independently from appearance mode", () => {
