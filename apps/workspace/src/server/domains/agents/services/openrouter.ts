@@ -15,7 +15,9 @@ export function streamOpenRouterText(input: {
   prompt: string;
   tools?: ToolSet;
   abortSignal?: AbortSignal;
+  model?: string;
 }) {
+  const model = input.model ?? agentRuntimeConfig.openRouterModel;
   const openrouter = createOpenRouter({
     apiKey: agentRuntimeConfig.openRouterApiKey,
     appName: agentRuntimeConfig.appName,
@@ -24,7 +26,7 @@ export function streamOpenRouterText(input: {
   });
 
   return streamText({
-    model: openrouter(agentRuntimeConfig.openRouterModel),
+    model: openrouter(model),
     system: input.system,
     prompt: input.prompt,
     tools: input.tools,
@@ -37,7 +39,7 @@ export function streamOpenRouterText(input: {
         provider: {
           sort: "throughput",
         },
-        ...(supportsAutomaticPromptCache(agentRuntimeConfig.openRouterModel)
+        ...(supportsAutomaticPromptCache(model)
           ? { cache_control: { type: "ephemeral" as const, ttl: "5m" as const } }
           : {}),
       },

@@ -6,7 +6,9 @@ import { createAgentChatStream, detectAgentResponseLanguage } from "./orchestrat
 vi.mock("@/server/config/agent-runtime", () => ({
   agentRuntimeConfig: {
     openRouterModel: "test/model",
+    openRouterFallbackModels: ["fallback/model"],
   },
+  getOpenRouterModelCandidates: (primaryModel: string, fallbackModels: string[]) => [primaryModel, ...fallbackModels],
 }));
 
 vi.mock("@/server/auth/better-auth/server", () => ({
@@ -71,6 +73,10 @@ async function* chunks(values: string[]) {
 async function* failingChunks() {
   yield "partial";
   throw new Error("model failed");
+}
+
+async function* failingBeforeText(message = "Server Error [Request ID: test-request]") {
+  throw new Error(message);
 }
 
 async function readEvents(stream: ReadableStream<Uint8Array>) {
@@ -531,6 +537,72 @@ describe("agent orchestrator stream", () => {
         status: "failed",
         assistantMessage: "model failed",
         error: "model failed",
+      },
+    ]);
+  });
+
+  it("retries with a fallback model when the primary model fails before streaming text", async () => {
+    vi.mocked(hasOpenRouterConfig).mockReturnValue(true);
+    vi.mocked(streamOpenRouterText)
+      .mockReturnValueOnce({
+        textStream: failingBeforeText(),
+      } as never)
+      .mockReturnValueOnce({
+        textStream: chunks(["Recovered."]),
+      } as never);
+
+    const events = await readEvents(
+      createAgentChatStream({
+        organizationId: "org_1",
+        message: "find client Ahmed",
+      }),
+    );
+
+    expect(events.filter((event) => event.type === "status").map((event) => event.message)).toContain(
+      "Primary AI model is unavailable. Retrying with a fallback model.",
+    );
+    expect(events.filter((event) => event.type === "text").map((event) => event.text)).toEqual(["Recovered."]);
+    expect(streamOpenRouterText).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      model: "test/model",
+    }));
+    expect(streamOpenRouterText).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      model: "fallback/model",
+    }));
+    expect(finishMutationPayloads()).toMatchObject([
+      {
+        status: "completed",
+        assistantMessage: "Recovered.",
+      },
+    ]);
+  });
+
+  it("returns a friendly provider message after all retryable model candidates fail before text", async () => {
+    vi.mocked(hasOpenRouterConfig).mockReturnValue(true);
+    vi.mocked(streamOpenRouterText)
+      .mockReturnValueOnce({
+        textStream: failingBeforeText("model not found"),
+      } as never)
+      .mockReturnValueOnce({
+        textStream: failingBeforeText("Server Error [Request ID: fallback-request]"),
+      } as never);
+
+    const events = await readEvents(
+      createAgentChatStream({
+        organizationId: "org_1",
+        message: "hello",
+      }),
+    );
+
+    expect(events.at(-1)).toEqual({ type: "done", threadId: "thread_1" });
+    expect(events.filter((event) => event.type === "error")).toEqual([]);
+    expect(events.filter((event) => event.type === "text").map((event) => event.text).join("")).toContain(
+      "temporarily unavailable",
+    );
+    expect(finishMutationPayloads()).toMatchObject([
+      {
+        status: "failed",
+        assistantMessage: expect.stringContaining("temporarily unavailable"),
+        error: "Server Error [Request ID: fallback-request]",
       },
     ]);
   });
