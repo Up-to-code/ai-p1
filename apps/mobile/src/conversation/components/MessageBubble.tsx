@@ -15,14 +15,12 @@ import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { useAppStore } from "@/store";
 import {
   getLocalizedStageMessage,
-  resolveAssistantBrandActivity,
   resolveAssistantDirection,
   resolveThreadPresentationState,
 } from "@/conversation/lib/assistantPresentation";
 import {
   detectAssistantMessageDirection,
   detectTextBlockDirection,
-  resolveAssistantBrandMarkerVisibility,
   resolveMessagePhysicalSide,
   resolveUserBubbleDirection,
 } from "@/conversation/lib/messageDirection";
@@ -392,23 +390,9 @@ export function MessageBubble({
         fallbackText: message.text,
       })
     : detectAssistantMessageDirection(message.text);
-  const shouldRenderBrandMarker = resolveAssistantBrandMarkerVisibility({
-    role: message.role,
-    streamState: message.streamState,
-    isPending,
-  });
   const localizedStageText = latestStageEvent
     ? getLocalizedStageMessage(latestStageEvent, resolvedThreadPresentation.surfaceCopy)
     : null;
-  const brandActivity = resolveAssistantBrandActivity({
-    threadPresentation: resolvedThreadPresentation,
-    route: latestStageEvent?.route,
-    stageSpecialist: latestStageEvent?.specialist,
-    phase: latestStageEvent?.phase,
-    stageStatus: latestStageEvent?.status,
-    turn: message.uiTurn ?? null,
-    streamState: message.streamState,
-  });
   const copyMessage = () => {
     onDismissActions?.();
     void Clipboard.setStringAsync(message.text);
@@ -476,10 +460,6 @@ export function MessageBubble({
       entering={FadeIn.duration(250)}
       style={[styles.row, styles.assistantRow, assistantSide === "left" ? styles.rowLeft : styles.rowRight]}
     >
-      {shouldRenderBrandMarker ? (
-        <View style={styles.brandingWrap} />
-      ) : null}
-
       {localizedStageText && isPending && (
         <View style={styles.statusLine}>
           <View style={styles.statusDot} />
