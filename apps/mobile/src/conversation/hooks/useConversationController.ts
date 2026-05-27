@@ -26,6 +26,7 @@ import {
   cancelAgentConfirmation,
   sendAgentChatRequest,
 } from "@/persistence/api/conversationApi";
+import { uploadAgentMessageAttachments } from "@/persistence/api/agentAttachments";
 import {
   useAgentRuntimeHealth,
   useRunStageFeed,
@@ -34,7 +35,7 @@ import {
   useThreadsState,
 } from "@/persistence/api/conversationData";
 import { useAppStore } from "@/store";
-import type { ConversationMessage } from "@/types/domain";
+import type { ConversationMessage, PendingAgentAttachment, UploadedAgentAttachment } from "@/types/domain";
 
 const LEGACY_PENDING_ASSISTANT_TEXT = "Thinking through your request...";
 
@@ -64,7 +65,13 @@ export function useConversationController() {
   const completionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const previousOrganizationIdRef = useRef<string | null>(null);
+  const lastFailedPromptRef = useRef<{
+    text: string;
+    threadId: string | null;
+    attachments?: PendingAgentAttachment[];
+  } | null>(null);
   const [streamingAssistant, setStreamingAssistant] = useState<ConversationMessage | null>(null);
+  const [pendingUserAttachments, setPendingUserAttachments] = useState<UploadedAgentAttachment[]>([]);
   const [messagesRefreshKey, setMessagesRefreshKey] = useState(0);
 
   const {
@@ -101,6 +108,7 @@ export function useConversationController() {
           text: pendingPrompt,
           streamState: "complete",
           relatedPropertyIds: [],
+          attachments: pendingUserAttachments,
           createdAt: pendingStartedAt ? pendingStartedAt - 1 : Date.now() - 1,
           runId: undefined,
           sourceMetadata: [],
@@ -120,7 +128,7 @@ export function useConversationController() {
       }
     }
     return rows.sort((left, right) => left.createdAt - right.createdAt);
-  }, [activeThreadId, pendingPrompt, pendingStartedAt, serverMessages, streamingAssistant]);
+  }, [activeThreadId, pendingPrompt, pendingStartedAt, pendingUserAttachments, serverMessages, streamingAssistant]);
   const threadPresentation = useThreadPresentation(activeThreadId);
   const resolvedPresentation = resolveThreadPresentationState(threadPresentation);
   const surfaceCopy = resolvedPresentation.surfaceCopy;
@@ -155,6 +163,7 @@ export function useConversationController() {
       setActiveThreadId(null);
       setActiveRunId(null);
       setPendingPrompt(null);
+      setPendingUserAttachments([]);
       setStreamingAssistant(null);
       setMessagesRefreshKey((value) => value + 1);
       refreshThreads?.();
@@ -172,9 +181,9 @@ export function useConversationController() {
 
   const isStreaming = Boolean(pendingPrompt);
 
-  const sendPrompt = async (overrideText?: string) => {
-    const prompt = (overrideText ?? draftText).trim();
-    if (!prompt) {
+  const sendPrompt = async (overrideText?: string, attachments: PendingAgentAttachment[] = []) => {
+    const prompt = (overrideText ?? draftText).trim() || (attachments.length ? "Please review the attached files." : "");
+    if (!prompt && attachments.length === 0) {
       return;
     }
 
@@ -216,6 +225,35 @@ export function useConversationController() {
 
     const startedAt = Date.now();
     const pendingAssistantText = surfaceCopy.pendingAssistantText;
+    let uploadedAttachments: UploadedAgentAttachment[] = [];
+
+    if (attachments.length > 0) {
+      try {
+        logAgentDebug("upload.start", {
+          organizationId: workspace.organizationId,
+          threadId,
+          count: attachments.length,
+          names: attachments.map((attachment) => attachment.name),
+        });
+        uploadedAttachments = await uploadAgentMessageAttachments(workspace.organizationId!, attachments);
+        logAgentDebug("upload.complete", {
+          organizationId: workspace.organizationId,
+          threadId,
+          count: uploadedAttachments.length,
+          names: uploadedAttachments.map((attachment) => attachment.name),
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Attachment upload failed.";
+        logAgentDebug("upload.failed", {
+          organizationId: workspace.organizationId,
+          threadId,
+          error: message,
+        }, "error");
+        setRunFailureMessage(message);
+        throw error;
+      }
+    }
+
     startTransition(() => {
       setRunFailureMessage(null);
       clearDraft();
@@ -223,6 +261,7 @@ export function useConversationController() {
         cancelEditingMessage();
       }
       setPendingPrompt(prompt, startedAt);
+      setPendingUserAttachments(uploadedAttachments);
       setActiveRunId(null);
       setStreamingAssistant({
         id: "streaming-assistant",
@@ -258,6 +297,7 @@ export function useConversationController() {
       completionTimeoutRef.current = setTimeout(() => {
         completeE2EPrompt(e2eThreadId, prompt, startedAt, runId);
         setStreamingAssistant(null);
+        setPendingUserAttachments([]);
         completionTimeoutRef.current = null;
       }, 300);
 
@@ -276,6 +316,7 @@ export function useConversationController() {
         organizationId: workspace.organizationId!,
         threadId,
         message: prompt,
+        attachments: uploadedAttachments,
         signal: abortController.signal,
         onEvent: (event) => {
           logAgentSseEvent(event, {
@@ -383,7 +424,13 @@ export function useConversationController() {
               normalizedError,
             }, "error");
             setRunFailureMessage(normalizedError);
+            lastFailedPromptRef.current = {
+              text: prompt,
+              threadId,
+              attachments,
+            };
             setPendingPrompt(null);
+            setPendingUserAttachments([]);
             setActiveRunId(null);
             setStreamingAssistant((message) => message ? {
               ...message,
@@ -406,6 +453,7 @@ export function useConversationController() {
             });
             setActiveThreadId(event.threadId);
             setPendingPrompt(null);
+            setPendingUserAttachments([]);
             setActiveRunId(null);
             setRunFailureMessage(null);
             setStreamingAssistant((message) => message ? {
@@ -413,7 +461,6 @@ export function useConversationController() {
               sessionId: event.threadId,
               streamState: "complete",
             } : message);
-            setMessagesRefreshKey((value) => value + 1);
             refreshThreads?.();
             track("ai_response_stream_end", {
               sessionId,
@@ -426,8 +473,8 @@ export function useConversationController() {
         },
       });
       setPendingPrompt(null);
+      setPendingUserAttachments([]);
       setActiveRunId(null);
-      setMessagesRefreshKey((value) => value + 1);
       refreshThreads?.();
     } catch (error) {
       if (abortController.signal.aborted) {
@@ -438,6 +485,7 @@ export function useConversationController() {
         }, "warn");
         setStreamingAssistant((message) => message ? { ...message, streamState: "stopped" } : message);
         setPendingPrompt(null);
+        setPendingUserAttachments([]);
         setActiveRunId(null);
         setRunFailureMessage(null);
         return;
@@ -448,6 +496,7 @@ export function useConversationController() {
         setDraftText(prompt);
       }
       setPendingPrompt(null);
+      setPendingUserAttachments([]);
       setActiveRunId(null);
       setStreamingAssistant((message) => message ? { ...message, streamState: "complete" } : message);
       const errorMessage = error instanceof Error ? error.message : surfaceCopy.runFailedTitle;
@@ -462,6 +511,11 @@ export function useConversationController() {
         runtimeStatus: runtimeHealth.status,
       }, "error");
       setRunFailureMessage(normalizedError);
+      lastFailedPromptRef.current = {
+        text: prompt,
+        threadId,
+        attachments,
+      };
     } finally {
       if (abortControllerRef.current === abortController) {
         abortControllerRef.current = null;
@@ -488,9 +542,18 @@ export function useConversationController() {
     setDraftText(originalText);
   };
 
+  const retryLastPrompt = async () => {
+    const retry = lastFailedPromptRef.current;
+    if (!retry) return;
+    setRunFailureMessage(null);
+    if (retry.threadId) setActiveThreadId(retry.threadId);
+    await sendPrompt(retry.text, retry.attachments ?? []);
+  };
+
   const stop = async () => {
     if (!isAuthenticated) {
       setPendingPrompt(null);
+      setPendingUserAttachments([]);
       return;
     }
 
@@ -501,6 +564,7 @@ export function useConversationController() {
 
     if (e2eQaMode) {
       setPendingPrompt(null);
+      setPendingUserAttachments([]);
       setActiveRunId(null);
       setStreamingAssistant(null);
       setRunFailureMessage(null);
@@ -517,6 +581,7 @@ export function useConversationController() {
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
     setPendingPrompt(null);
+    setPendingUserAttachments([]);
     setActiveRunId(null);
     setStreamingAssistant((message) => message ? { ...message, streamState: "stopped" } : null);
     setRunFailureMessage(null);
@@ -613,6 +678,7 @@ export function useConversationController() {
     isStreaming,
     runFailureMessage,
     sendPrompt,
+    retryLastPrompt,
     startEditingMessage,
     cancelComposerEdit,
     editingMessage,

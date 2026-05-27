@@ -42,6 +42,7 @@ function toConversationMessage(message: AgentMessage, fallbackThreadId: string |
       }
       return [];
     }) : [],
+    attachments: message.attachments,
     createdAt: message.createdAt ?? message._creationTime,
     runId: message.runId ? String(message.runId) : undefined,
     sourceMetadata: uiTurn ? extractTurnSources(uiTurn) : [],

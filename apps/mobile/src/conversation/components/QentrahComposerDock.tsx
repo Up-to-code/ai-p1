@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Keyboard,
@@ -11,7 +11,7 @@ import {
   type LayoutChangeEvent,
 } from "react-native";
 import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut, FadeOutDown, LinearTransition } from "react-native-reanimated";
-import { ArrowUp, Mic, Square } from "lucide-react-native";
+import { ArrowUp, FileText, Image as ImageIcon, Mic, Paperclip, Square, X } from "lucide-react-native";
 import { useSafeAreaInsets, type EdgeInsets } from "react-native-safe-area-context";
 
 import { EdgeFade } from "@/conversation/components/EdgeFade";
@@ -27,9 +27,14 @@ import { useVoiceComposer } from "@/voice/hooks/useVoiceComposer";
 import { RecordingVisualizer } from "@/voice/components/RecordingVisualizer";
 import type { AssistantDirection, AssistantSurfaceCopy, AssistantUiLocale } from "@/conversation/assistantProtocol";
 import { isRtlDirection } from "@/conversation/lib/assistantPresentation";
+import {
+  pickAgentDocumentAttachments,
+  pickAgentMediaAttachments,
+} from "@/persistence/api/agentAttachments";
+import type { PendingAgentAttachment } from "@/types/domain";
 
 type QentrahComposerDockProps = {
-  onSend: (text: string) => void;
+  onSend: (text: string, attachments?: PendingAgentAttachment[]) => void | Promise<void>;
   onStop: () => void;
   isStreaming: boolean;
   disabled?: boolean;
@@ -98,6 +103,8 @@ export function QentrahComposerDock({
     voiceState === "transcribing";
   const isVoicePending = voiceState === "requesting_permission";
   const hasText = draftText.trim().length > 0;
+  const [pendingAttachments, setPendingAttachments] = useState<PendingAgentAttachment[]>([]);
+  const canSubmit = hasText || pendingAttachments.length > 0;
 
   useEffect(() => {
     const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
@@ -141,18 +148,23 @@ export function QentrahComposerDock({
     setComposerDockHeight(event.nativeEvent.layout.height);
   };
 
-  const submitDraft = () => {
+  const submitDraft = async () => {
     const value = draftText.trim();
-    if (!value || disabled) return;
+    if ((!value && pendingAttachments.length === 0) || disabled) return;
     resetComposerState();
-    onSend(value);
-    setDraftText("");
+    try {
+      await onSend(value, pendingAttachments);
+      setPendingAttachments([]);
+      setDraftText("");
+    } catch {
+      // The controller owns the visible error banner; keep draft and attachments for retry.
+    }
   };
 
   const handleSend = () => {
     Keyboard.dismiss();
     setComposerFocused(false);
-    submitDraft();
+    void submitDraft();
   };
 
   const handleDockSendPress = () => {
@@ -178,6 +190,37 @@ export function QentrahComposerDock({
       return;
     }
     void start();
+  };
+
+  const appendAttachments = (attachments: PendingAgentAttachment[]) => {
+    if (attachments.length === 0) return;
+    setPendingAttachments((current) => [...current, ...attachments].slice(0, 24));
+  };
+
+  const pickMedia = async () => {
+    if (disabled || isStreaming) return;
+    try {
+      appendAttachments(await pickAgentMediaAttachments());
+    } catch (error) {
+      Alert.alert(surfaceCopy.aiUnavailableTitle, error instanceof Error ? error.message : "Unable to select media.");
+    }
+  };
+
+  const pickDocuments = async () => {
+    if (disabled || isStreaming) return;
+    try {
+      appendAttachments(await pickAgentDocumentAttachments());
+    } catch (error) {
+      Alert.alert(surfaceCopy.aiUnavailableTitle, error instanceof Error ? error.message : "Unable to select files.");
+    }
+  };
+
+  const showAttachmentPicker = () => {
+    Alert.alert("Attach files", "Choose what to send with this message.", [
+      { text: "Photos or videos", onPress: () => void pickMedia() },
+      { text: "Documents", onPress: () => void pickDocuments() },
+      { text: "Cancel", style: "cancel" },
+    ]);
   };
 
   return (
@@ -243,6 +286,32 @@ export function QentrahComposerDock({
             inputExpanded ? styles.unifiedBarExpanded : styles.unifiedBarCompact,
           ]}
         >
+          {pendingAttachments.length > 0 ? (
+            <View style={[styles.attachmentTray, isRtl ? styles.attachmentTrayRtl : null]}>
+              {pendingAttachments.map((attachment) => {
+                const Icon = attachment.kind === "image" || attachment.kind === "video" ? ImageIcon : FileText;
+                return (
+                  <View key={attachment.id} style={[styles.attachmentChip, isRtl ? styles.attachmentChipRtl : null]}>
+                    <Icon size={15} color={colors.textPrimary} />
+                    <View style={styles.attachmentTextWrap}>
+                      <Text style={styles.attachmentName} numberOfLines={1}>{attachment.name}</Text>
+                      <Text style={styles.attachmentMeta} numberOfLines={1}>
+                        {attachment.size ? `${(attachment.size / 1024 / 1024).toFixed(1)} MB` : attachment.mimeType}
+                      </Text>
+                    </View>
+                    <Pressable
+                      hitSlop={10}
+                      onPress={() => setPendingAttachments((current) => current.filter((item) => item.id !== attachment.id))}
+                      style={({ pressed }) => [styles.removeAttachment, pressed ? styles.actionPressed : null]}
+                    >
+                      <X size={13} color={colors.textMuted} />
+                    </Pressable>
+                  </View>
+                );
+              })}
+            </View>
+          ) : null}
+
           <View style={[styles.inputField, inputExpanded ? styles.inputFieldExpanded : null]}>
             {isRecording ? (
               <View style={styles.visualizerWrap}>
@@ -306,6 +375,19 @@ export function QentrahComposerDock({
           <View style={styles.actionRow}>
             <View style={styles.utilityActions}>
               <Pressable
+                disabled={disabled || isStreaming}
+                onPress={showAttachmentPicker}
+                accessibilityLabel="Attach files"
+                style={({ pressed }) => [
+                  styles.utilityButton,
+                  pressed ? styles.actionPressed : null,
+                  disabled || isStreaming ? styles.actionDisabled : null,
+                ]}
+              >
+                <Paperclip size={16} color={colors.textSecondary} />
+              </Pressable>
+
+              <Pressable
                 disabled={isVoicePending || disabled || isStreaming}
                 onPress={handleVoicePress}
                 accessibilityLabel={isRecording ? "Stop recording" : "Voice input"}
@@ -326,20 +408,20 @@ export function QentrahComposerDock({
 
             <Pressable
               testID="chat.send"
-              disabled={isStreaming ? false : disabled || !hasText}
+              disabled={isStreaming ? false : disabled || !canSubmit}
               onPress={isStreaming ? onStop : handleDockSendPress}
               accessibilityLabel={isStreaming ? "Stop response" : surfaceCopy.composerPlaceholder}
               style={({ pressed }) => [
                 styles.actionButton,
-                hasText || isStreaming ? styles.actionActive : styles.actionInactive,
+                canSubmit || isStreaming ? styles.actionActive : styles.actionInactive,
                 pressed ? styles.actionPressed : null,
-                !isStreaming && (disabled || !hasText) ? styles.actionDisabled : null,
+                !isStreaming && (disabled || !canSubmit) ? styles.actionDisabled : null,
               ]}
             >
               {isStreaming ? (
                 <Square size={15} color="#FFFFFF" fill="#FFFFFF" />
               ) : (
-                <ArrowUp size={19} color={hasText ? "#FFFFFF" : colors.textMuted} strokeWidth={2.5} />
+                <ArrowUp size={19} color={canSubmit ? "#FFFFFF" : colors.textMuted} strokeWidth={2.5} />
               )}
             </Pressable>
           </View>
@@ -457,6 +539,55 @@ const createStyles = (colors: AppColors, insets: EdgeInsets, isRtl: boolean) => 
   },
   unifiedBarExpanded: {
     alignItems: "stretch",
+  },
+  attachmentTray: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    paddingHorizontal: theme.spacing.md,
+    paddingTop: theme.spacing.md,
+    paddingBottom: 2,
+  },
+  attachmentTrayRtl: {
+    flexDirection: "row-reverse",
+  },
+  attachmentChip: {
+    maxWidth: "100%",
+    minHeight: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.divider,
+  },
+  attachmentChipRtl: {
+    flexDirection: "row-reverse",
+  },
+  attachmentTextWrap: {
+    maxWidth: 180,
+    flexShrink: 1,
+  },
+  attachmentName: {
+    color: colors.textPrimary,
+    fontFamily: "Manrope_700Bold",
+    fontSize: 11,
+  },
+  attachmentMeta: {
+    color: colors.textMuted,
+    fontFamily: "Manrope_500Medium",
+    fontSize: 10,
+    marginTop: 2,
+  },
+  removeAttachment: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
   },
   inputField: {
     position: "relative",

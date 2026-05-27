@@ -1,13 +1,8 @@
 import { Linking, Pressable, StyleSheet, View } from "react-native";
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useMemo } from "react";
 import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-  withDelay,
   FadeIn,
   FadeInDown,
-  Easing,
 } from "react-native-reanimated";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
@@ -17,15 +12,20 @@ import { Text } from "@/foundation/primitives/Text";
 import { MarkdownText } from "@/foundation/primitives/MarkdownText";
 import { theme } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
-import { isArabic } from "@/foundation/utils/rtl";
-import { AssistantBrandMark } from "@/conversation/components/AssistantBrandMark";
+import { useAppStore } from "@/store";
 import {
   getLocalizedStageMessage,
-  isRtlDirection,
   resolveAssistantBrandActivity,
   resolveAssistantDirection,
   resolveThreadPresentationState,
 } from "@/conversation/lib/assistantPresentation";
+import {
+  detectAssistantMessageDirection,
+  detectTextBlockDirection,
+  resolveAssistantBrandMarkerVisibility,
+  resolveMessagePhysicalSide,
+  resolveUserBubbleDirection,
+} from "@/conversation/lib/messageDirection";
 import type { ThreadPresentation } from "@/conversation/assistantProtocol";
 import type { ConversationMessage, ConversationRunStage } from "@/types/domain";
 
@@ -147,39 +147,6 @@ function ConfirmationCard({
   );
 }
 
-function FadeWord({ word, delay }: { word: string; delay: number }) {
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(8);
-
-  useEffect(() => {
-    opacity.value = withDelay(
-      delay,
-      withTiming(1, {
-        duration: 350,
-        easing: Easing.out(Easing.cubic),
-      }),
-    );
-    translateY.value = withDelay(
-      delay,
-      withTiming(0, {
-        duration: 350,
-        easing: Easing.out(Easing.cubic),
-      }),
-    );
-  }, [delay, opacity, translateY]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ translateY: translateY.value }],
-  }));
-
-  return (
-    <Animated.Text style={animatedStyle}>
-      {word}
-    </Animated.Text>
-  );
-}
-
 const PENDING_PLACEHOLDER = "Thinking through your request\u2026";
 const LEGACY_PENDING_PLACEHOLDER = "Thinking through your request...";
 
@@ -213,49 +180,11 @@ function StreamingInlineMarkdown({
   text: string;
   style: any;
 }) {
-  const settledIndexRef = useRef(0);
-  const prevTextRef = useRef("");
-
-  const prevWords = prevTextRef.current.split(/(\s+)/);
-  const settledCount = settledIndexRef.current;
-
-  useEffect(() => {
-    prevTextRef.current = text;
-    settledIndexRef.current = prevWords.length;
-  }, [text, prevWords.length]);
-
   const parsedFullText = parseInlineMarkdown(text);
 
   return (
     <Text tone="secondary" selectable={true} style={style}>
-      {parsedFullText.map((part, i) => {
-        if (typeof part === "string") {
-          // Plain text segments — handle the streaming transition
-          const segmentWords = part.split(/(\s+)/);
-          return segmentWords.map((word, wordIdx) => {
-            const absoluteWordIdx = i * 1000 + wordIdx; // Unique stable key
-            if (absoluteWordIdx < settledCount) {
-              return word;
-            }
-            return (
-              <FadeWord
-                key={absoluteWordIdx}
-                word={word}
-                delay={wordIdx * 25}
-              />
-            );
-          });
-        }
-        
-        // Styled segment (Text component) — reveal immediately with styling
-        if (React.isValidElement(part)) {
-          return React.cloneElement(part as React.ReactElement<any>, {
-            key: i,
-          });
-        }
-        
-        return part;
-      })}
+      {parsedFullText}
     </Text>
   );
 }
@@ -326,7 +255,7 @@ function StreamingMarkdownText({
           style={[
             style,
             level === 1 ? styles.streamingH1 : level === 2 ? styles.streamingH2 : styles.streamingH3,
-            isArabic(headerMatch[2]) && { textAlign: "right", writingDirection: "rtl" },
+            detectTextBlockDirection(headerMatch[2]) === "rtl" && styles.rtlText,
           ]}
         />
       );
@@ -335,12 +264,13 @@ function StreamingMarkdownText({
 
     const listMatch = trimmed.match(/^(\d+\.|[-*•])\s+(.+)$/);
     if (listMatch) {
+      const isBlockRtl = detectTextBlockDirection(listMatch[2]) === "rtl";
       blocks.push(
         <View
           key={`list-${index}`}
-          style={[styles.streamingListItem, isArabic(listMatch[2]) && { flexDirection: "row-reverse" }]}
+          style={[styles.streamingListItem, isBlockRtl && styles.streamingListItemRtl]}
         >
-          <Text tone="secondary" style={styles.streamingBullet}>
+          <Text tone="secondary" style={[styles.streamingBullet, isBlockRtl && styles.rtlText]}>
             {listMatch[1].match(/^\d+\./) ? listMatch[1] : "•"}
           </Text>
           <StreamingInlineMarkdown
@@ -348,7 +278,7 @@ function StreamingMarkdownText({
             style={[
               style,
               styles.streamingListText,
-              isArabic(listMatch[2]) && { textAlign: "right", writingDirection: "rtl" },
+              isBlockRtl && styles.rtlText,
             ]}
           />
         </View>
@@ -363,7 +293,7 @@ function StreamingMarkdownText({
         style={[
           style,
           styles.streamingParagraph,
-          isArabic(line) && { textAlign: "right", writingDirection: "rtl" },
+          detectTextBlockDirection(line) === "rtl" && styles.rtlText,
         ]}
       />
     );
@@ -443,6 +373,7 @@ export function MessageBubble({
 }: MessageBubbleProps) {
   const { colors, resolvedColorScheme } = useTheme();
   const styles = useMemo(() => createStyles(colors, resolvedColorScheme), [colors, resolvedColorScheme]);
+  const localePreference = useAppStore((state) => state.localePreference);
   const isUser = message.role === "user";
   const isStreaming = message.streamState === "streaming";
   const resolvedThreadPresentation = resolveThreadPresentationState(threadPresentation);
@@ -454,12 +385,18 @@ export function MessageBubble({
       || message.text === LEGACY_PENDING_PLACEHOLDER
       || message.text === pendingAssistantText
     );
-  const assistantDirection = resolveAssistantDirection({
-    turnPresentation: message.uiTurn?.presentation,
-    threadPresentation: resolvedThreadPresentation,
-    fallbackText: message.text,
+  const assistantDirection = isPending
+    ? resolveAssistantDirection({
+        turnPresentation: message.uiTurn?.presentation,
+        threadPresentation: resolvedThreadPresentation,
+        fallbackText: message.text,
+      })
+    : detectAssistantMessageDirection(message.text);
+  const shouldRenderBrandMarker = resolveAssistantBrandMarkerVisibility({
+    role: message.role,
+    streamState: message.streamState,
+    isPending,
   });
-  const isAssistantRtl = isRtlDirection(assistantDirection);
   const localizedStageText = latestStageEvent
     ? getLocalizedStageMessage(latestStageEvent, resolvedThreadPresentation.surfaceCopy)
     : null;
@@ -490,14 +427,15 @@ export function MessageBubble({
   };
 
   if (isUser) {
-    const isAr = isArabic(message.text);
-    const userDirection = isAr ? "rtl" : "ltr";
+    const userDirection = resolveUserBubbleDirection(localePreference, resolvedThreadPresentation);
+    const isUserRtl = userDirection === "rtl";
+    const userSide = resolveMessagePhysicalSide("user");
     return (
       <Animated.View
         entering={FadeIn.duration(200)}
-        style={[styles.row, styles.userRow, { marginTop: 32 }]}
+        style={[styles.row, styles.userRow, userSide === "right" ? styles.rowRight : styles.rowLeft, { marginTop: 32 }]}
       >
-        <View style={[styles.messageStack, styles.userStack]}>
+        <View style={[styles.messageStack, styles.userStack, styles.stackRight]}>
           <Pressable
             onLongPress={showActions}
             delayLongPress={360}
@@ -509,7 +447,7 @@ export function MessageBubble({
                 selectable={true}
                 style={[
                   styles.userText,
-                  isAr && { textAlign: "right", writingDirection: "rtl" },
+                  isUserRtl && { textAlign: "right", writingDirection: "rtl" },
                 ]}
               >
                 {message.text}
@@ -521,7 +459,7 @@ export function MessageBubble({
               align="end"
               canEdit={Boolean(onEditMessage)}
               direction={userDirection}
-              uiLocale={isAr ? "ar" : resolvedThreadPresentation.uiLocale}
+              uiLocale={isUserRtl ? "ar" : resolvedThreadPresentation.uiLocale}
               onCopy={copyMessage}
               onEdit={editMessage}
             />
@@ -531,21 +469,19 @@ export function MessageBubble({
     );
   }
 
+  const assistantSide = resolveMessagePhysicalSide("assistant");
+
   return (
-    <Animated.View entering={FadeIn.duration(250)} style={[styles.row, styles.assistantRow, isAssistantRtl && { alignItems: "flex-end" }]}>
-      <View style={[styles.brandingWrap, isAssistantRtl && { alignItems: "flex-end" }]}>
-        <AssistantBrandMark
-          direction={assistantDirection}
-          label={brandActivity.label}
-          animate={brandActivity.logoMotion}
-          textMotion={brandActivity.textMotion}
-          emphasis={brandActivity.emphasis}
-          size={14}
-        />
-      </View>
+    <Animated.View
+      entering={FadeIn.duration(250)}
+      style={[styles.row, styles.assistantRow, assistantSide === "left" ? styles.rowLeft : styles.rowRight]}
+    >
+      {shouldRenderBrandMarker ? (
+        <View style={styles.brandingWrap} />
+      ) : null}
 
       {localizedStageText && isPending && (
-        <View style={[styles.statusLine, isAssistantRtl && { flexDirection: "row-reverse" }]}>
+        <View style={styles.statusLine}>
           <View style={styles.statusDot} />
           <Text style={styles.statusText}>
             {localizedStageText}
@@ -553,8 +489,7 @@ export function MessageBubble({
         </View>
       )}
 
-      {!isPending ? (
-        <View style={[styles.messageStack, styles.assistantStack, isAssistantRtl && styles.assistantStackRtl]}>
+      <View style={[styles.messageStack, styles.assistantStack, styles.stackLeft]}>
           <Pressable
             onLongPress={showActions}
             delayLongPress={360}
@@ -565,13 +500,12 @@ export function MessageBubble({
               isStreaming={isStreaming}
               style={[
                 styles.assistantText,
-                isAssistantRtl && { textAlign: "right", writingDirection: "rtl" },
               ]}
             />
           </Pressable>
           {actionsVisible ? (
             <InlineMessageActions
-              align={isAssistantRtl ? "end" : "start"}
+              align="start"
               canEdit={false}
               direction={assistantDirection}
               uiLocale={message.uiTurn?.presentation?.uiLocale ?? resolvedThreadPresentation.uiLocale}
@@ -586,7 +520,6 @@ export function MessageBubble({
             />
           ) : null}
         </View>
-      ) : null}
     </Animated.View>
   );
 }
@@ -602,6 +535,12 @@ const createStyles = (colors: any, colorScheme: "light" | "dark") => {
     paddingHorizontal: theme.spacing.lg,
     marginBottom: theme.spacing.lg, 
   },
+  rowLeft: {
+    alignItems: "flex-start",
+  },
+  rowRight: {
+    alignItems: "flex-end",
+  },
   userRow: {
     alignItems: "flex-end",
   },
@@ -616,8 +555,15 @@ const createStyles = (colors: any, colorScheme: "light" | "dark") => {
     width: "92%",
     alignItems: "flex-start",
   },
-  assistantStackRtl: {
-    alignItems: "flex-end",
+  stackLeft: {
+    alignSelf: "flex-start",
+    marginLeft: 0,
+    marginRight: "auto",
+  },
+  stackRight: {
+    alignSelf: "flex-end",
+    marginLeft: "auto",
+    marginRight: 0,
   },
   assistantRow: {
     alignItems: "flex-start",
@@ -660,6 +606,8 @@ const createStyles = (colors: any, colorScheme: "light" | "dark") => {
   },
   assistantText: {
     lineHeight: 24,
+    textAlign: "left",
+    writingDirection: "ltr",
   },
   confirmationCard: {
     width: "100%",
@@ -747,6 +695,15 @@ const createStyles = (colors: any, colorScheme: "light" | "dark") => {
     gap: 8,
     paddingLeft: 8,
     marginTop: 2,
+  },
+  streamingListItemRtl: {
+    flexDirection: "row-reverse",
+    paddingLeft: 0,
+    paddingRight: 8,
+  },
+  rtlText: {
+    textAlign: "right",
+    writingDirection: "rtl",
   },
   streamingBullet: {
     minWidth: 18,

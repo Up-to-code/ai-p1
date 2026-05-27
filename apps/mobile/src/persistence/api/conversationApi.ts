@@ -1,4 +1,5 @@
 import { workspaceApiFetch } from "@/persistence/api/workspaceApiClient";
+import type { UploadedAgentAttachment } from "@/types/domain";
 
 export type AgentChatEvent =
   | { type: "meta"; threadId: string; runId: string }
@@ -37,6 +38,7 @@ export type AgentMessage = {
   threadId?: string;
   role: "user" | "assistant" | "system" | "tool";
   content: string;
+  attachments?: UploadedAgentAttachment[];
   runId?: string;
   createdAt?: number;
   agUiTurn?: unknown;
@@ -95,6 +97,7 @@ export async function sendAgentChatRequest(input: {
   organizationId: string;
   threadId?: string | null;
   message: string;
+  attachments?: UploadedAgentAttachment[];
   signal?: AbortSignal;
   onEvent: (event: AgentChatEvent) => void;
 }) {
@@ -107,6 +110,7 @@ export async function sendAgentChatRequest(input: {
       body: JSON.stringify({
         message: input.message,
         threadId: input.threadId ?? undefined,
+        attachments: input.attachments?.length ? input.attachments : undefined,
       }),
     },
   );

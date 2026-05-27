@@ -19,6 +19,26 @@ export type ConversationKind =
 export type StreamState = "idle" | "streaming" | "complete" | "stopped";
 export type VoiceMode = "idle" | "requesting_permission" | "listening" | "transcribing" | "failed";
 
+export type AgentAttachmentKind = "image" | "video" | "document";
+
+export type PendingAgentAttachment = {
+  id: string;
+  uri: string;
+  name: string;
+  mimeType: string;
+  size?: number;
+  kind: AgentAttachmentKind;
+};
+
+export type UploadedAgentAttachment = {
+  key: string;
+  url: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  kind: AgentAttachmentKind;
+};
+
 export type ConversationTurnMeta = {
   runId?: string;
   workflowId?: string;
@@ -43,6 +63,7 @@ export type ConversationMessage = {
   text: string;
   streamState: StreamState;
   relatedPropertyIds: string[];
+  attachments?: UploadedAgentAttachment[];
   createdAt: number;
   runId?: string;
   sourceMetadata?: { title: string; url: string; snippet: string }[];

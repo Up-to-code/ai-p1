@@ -19,6 +19,7 @@ export async function handleAgentChat(c: Context) {
       organizationId,
       threadId: parsed.data.threadId,
       message: parsed.data.message,
+      attachments: parsed.data.attachments,
       requestContext: getMobileRequestContext(c),
       abortSignal: c.req.raw.signal,
     }),

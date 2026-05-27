@@ -1,0 +1,63 @@
+import type { MetadataRoute } from "next";
+import { brandDomainUrl } from "@qentrah/brand-identity";
+
+const siteUrl = brandDomainUrl("workspace");
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: {
+      userAgent: "*",
+      allow: ["/en", "/ar", "/en/docs", "/ar/docs", "/googlef317dacd4eec99f4.html"],
+      disallow: [
+        "/admin",
+        "/api",
+        "/auth",
+        "/dashboard",
+        "/metrics",
+        "/monitoring",
+        "/oauth",
+        "/onboarding",
+        "/en/activity",
+        "/en/accept-invite",
+        "/en/billing",
+        "/en/calendar",
+        "/en/clients",
+        "/en/choose-org",
+        "/en/dashboard",
+        "/en/integrations",
+        "/en/organization",
+        "/en/projects",
+        "/en/properties",
+        "/en/sign-in",
+        "/en/sign-up",
+        "/en/team",
+        "/en/web-apps",
+        "/en/onboarding",
+        "/ar/activity",
+        "/ar/accept-invite",
+        "/ar/billing",
+        "/ar/calendar",
+        "/ar/clients",
+        "/ar/choose-org",
+        "/ar/dashboard",
+        "/ar/integrations",
+        "/ar/organization",
+        "/ar/projects",
+        "/ar/properties",
+        "/ar/sign-in",
+        "/ar/sign-up",
+        "/ar/team",
+        "/ar/web-apps",
+        "/ar/onboarding",
+        "/en/privacy",
+        "/ar/privacy",
+        "/en/terms",
+        "/ar/terms",
+        "/en/legal",
+        "/ar/legal",
+      ],
+    },
+    sitemap: `${siteUrl}/sitemap.xml`,
+    host: siteUrl,
+  };
+}

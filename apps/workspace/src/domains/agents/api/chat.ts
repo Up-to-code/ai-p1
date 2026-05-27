@@ -10,8 +10,26 @@ export type AgentChatEvent =
   | { type: "status"; message: string }
   | { type: "text"; text: string }
   | { type: "ag_ui"; turn: AgUiConversationTurn }
+  | {
+      type: "confirmation_required";
+      confirmationId: string;
+      summary: string;
+      resource: string;
+      action: string;
+      inputPreview?: string;
+      expiresAt: number;
+    }
   | { type: "done"; threadId: string }
   | { type: "error"; error: string };
+
+export type AgentChatAttachment = {
+  key: string;
+  url: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  kind: "image" | "video" | "document";
+};
 
 export type AgentChatMessage = {
   id: string;
@@ -55,6 +73,7 @@ export async function sendAgentChatRequest(input: {
   organizationId: string;
   threadId?: string;
   message: string;
+  attachments?: AgentChatAttachment[];
   onEvent: (event: AgentChatEvent) => void;
 }) {
   const response = await fetch(`/api/v1/organizations/${input.organizationId}/agents/chat`, {
@@ -63,6 +82,7 @@ export async function sendAgentChatRequest(input: {
     body: JSON.stringify({
       message: input.message,
       threadId: input.threadId,
+      attachments: input.attachments?.length ? input.attachments : undefined,
     }),
   });
 

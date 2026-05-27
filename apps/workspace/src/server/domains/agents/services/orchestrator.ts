@@ -32,6 +32,15 @@ type AgentRunIds = {
 
 type AgentResponseLanguage = "ar" | "en" | "auto";
 
+type AgentChatAttachment = {
+  key: string;
+  url: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  kind: "image" | "video" | "document";
+};
+
 const encoder = new TextEncoder();
 const arabicCharacterPattern = /[\u0600-\u06FF]/g;
 const latinCharacterPattern = /[A-Za-z]/g;
@@ -43,6 +52,15 @@ function encodeEvent(event: AgentStreamEvent) {
 function compact(value: unknown, maxLength = 1200) {
   const text = typeof value === "string" ? value : JSON.stringify(value);
   return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+}
+
+function formatAttachmentContext(attachments: AgentChatAttachment[] | undefined) {
+  if (!attachments?.length) return "";
+
+  return `\n\nAttached files for this request:\n${attachments.map((attachment, index) => {
+    const sizeMb = attachment.size > 0 ? `, ${(attachment.size / 1024 / 1024).toFixed(2)} MB` : "";
+    return `${index + 1}. ${attachment.name} (${attachment.kind}, ${attachment.mimeType}${sizeMb})\n   URL: ${attachment.url}`;
+  }).join("\n")}`;
 }
 
 async function recordStep(ids: AgentRunIds, organizationId: string, phase: "retrieve" | "plan" | "policy" | "execute" | "summarize", status: "started" | "completed" | "blocked" | "failed", summary: string) {
@@ -311,11 +329,13 @@ export function createAgentChatStream(input: {
   organizationId: string;
   threadId?: string;
   message: string;
+  attachments?: AgentChatAttachment[];
   requestContext?: MobileRequestContext;
   abortSignal?: AbortSignal;
 }) {
   let ids: AgentRunIds | undefined;
   let runSettled = false;
+  const messageWithAttachments = `${input.message}${formatAttachmentContext(input.attachments)}`;
 
   const settleRun = async (
     status: "completed" | "failed" | "blocked",
@@ -344,7 +364,7 @@ export function createAgentChatStream(input: {
         const started = await startRunWithRetry({
           organizationId: input.organizationId,
           threadId: input.threadId,
-          message: input.message,
+          message: messageWithAttachments,
           model: agentRuntimeConfig.openRouterModel,
           language: responseLanguage,
           write,
@@ -413,7 +433,7 @@ export function createAgentChatStream(input: {
         void recordStep(runIds, input.organizationId, "summarize", "started", "Streaming model response.");
         const system = buildSystemPrompt(responseLanguage);
         const prompt = buildModelPrompt({
-          message: input.message,
+          message: messageWithAttachments,
           responseLanguage,
         });
         const modelCandidates = getOpenRouterModelCandidates(

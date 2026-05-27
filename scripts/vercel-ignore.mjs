@@ -24,6 +24,7 @@ function usage() {
   console.error([
     "Usage:",
     "  node scripts/vercel-ignore.mjs --workspace @qentrah/workspace",
+    "  node scripts/vercel-ignore.mjs --workspace @qentrah/workspace --base HEAD~1 --head HEAD --dry-run",
     "",
     "Exit code 0 skips the Vercel build. Exit code 1 allows the build.",
   ].join("\n"));
@@ -34,12 +35,26 @@ function readJson(path) {
 }
 
 function parseArgs(argv) {
-  const args = { workspaceName: "" };
+  const args = { workspaceName: "", base: "", head: "HEAD", dryRun: false };
   for (let index = 0; index < argv.length; index += 1) {
     const value = argv[index];
     if (value === "--workspace" || value === "-w") {
       args.workspaceName = argv[index + 1] ?? "";
       index += 1;
+      continue;
+    }
+    if (value === "--base") {
+      args.base = argv[index + 1] ?? "";
+      index += 1;
+      continue;
+    }
+    if (value === "--head") {
+      args.head = argv[index + 1] ?? "HEAD";
+      index += 1;
+      continue;
+    }
+    if (value === "--dry-run") {
+      args.dryRun = true;
       continue;
     }
     if (value === "--help" || value === "-h") {
@@ -113,7 +128,14 @@ function currentHead() {
   return result.status === 0 ? result.stdout.trim() : "";
 }
 
-function baseSha() {
+function resolveCommit(ref) {
+  const result = git(["rev-parse", "--verify", `${ref}^{commit}`]);
+  return result.status === 0 ? result.stdout.trim() : "";
+}
+
+function baseSha(explicitBase = "", head = "HEAD") {
+  if (explicitBase) return resolveCommit(explicitBase);
+  const headSha = resolveCommit(head) || currentHead();
   const candidates = [
     process.env.VERCEL_GIT_PREVIOUS_SHA,
     process.env.VERCEL_GIT_COMMIT_REF ? `origin/${process.env.VERCEL_GIT_COMMIT_REF}` : "",
@@ -124,17 +146,17 @@ function baseSha() {
     const result = git(["rev-parse", "--verify", `${candidate}^{commit}`]);
     if (result.status === 0) {
       const sha = result.stdout.trim();
-      if (sha && sha !== currentHead()) return sha;
+      if (sha && sha !== headSha) return sha;
     }
   }
 
   return "";
 }
 
-function changedFiles(base) {
+function changedFiles(base, head = "HEAD") {
   const diffArgs = base
-    ? ["diff", "--name-only", `${base}...HEAD`]
-    : ["diff", "--name-only", "HEAD^", "HEAD"];
+    ? ["diff", "--name-only", `${base}...${head}`]
+    : ["diff", "--name-only", "HEAD^", head];
   const result = git(diffArgs);
   if (result.status !== 0) return null;
   return result.stdout.split(/\r?\n/u).filter(Boolean);
@@ -150,7 +172,7 @@ function matchesWatchedPath(file, watchedPath) {
   return normalizedFile === normalizedWatched || normalizedFile.startsWith(`${normalizedWatched}/`);
 }
 
-const { workspaceName } = parseArgs(process.argv.slice(2));
+const { workspaceName, base: explicitBase, head, dryRun } = parseArgs(process.argv.slice(2));
 if (!workspaceName || !packageByName.has(workspaceName)) {
   usage();
   process.exit(1);
@@ -162,16 +184,16 @@ const watchedPaths = Array.from(new Set([
   ...packageRecords.flatMap((record) => [record.dir, record.packageFile]),
 ])).filter((path) => existsSync(resolve(repoRoot, path)));
 
-const base = baseSha();
+const base = baseSha(explicitBase, head);
 if (!base) {
   console.log(`[vercel-ignore] ${workspaceName}: no comparable base commit found, building.`);
-  process.exit(1);
+  process.exit(dryRun ? 0 : 1);
 }
 
-const files = changedFiles(base);
+const files = changedFiles(base, head);
 if (!files) {
   console.log(`[vercel-ignore] ${workspaceName}: could not read changed files, building.`);
-  process.exit(1);
+  process.exit(dryRun ? 0 : 1);
 }
 
 const relevantFiles = files.filter((file) =>
@@ -190,4 +212,4 @@ for (const file of relevantFiles.slice(0, 30)) {
 if (relevantFiles.length > 30) {
   console.log(`...and ${relevantFiles.length - 30} more`);
 }
-process.exit(1);
+process.exit(dryRun ? 0 : 1);

@@ -99,6 +99,52 @@ test("mobile agent chat request streams workspace API events", async () => {
   ]);
 });
 
+test("mobile agent chat request includes uploaded attachment metadata", async () => {
+  process.env.EXPO_PUBLIC_WORKSPACE_API_URL = "https://app.qentrah.com";
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async (_url, init) => {
+    assert.equal(
+      init?.body,
+      JSON.stringify({
+        message: "review",
+        attachments: [
+          {
+            key: "file_1",
+            url: "https://utfs.io/f/file_1",
+            name: "contract.pdf",
+            mimeType: "application/pdf",
+            size: 1024,
+            kind: "document",
+          },
+        ],
+      }),
+    );
+    return new Response('event: done\ndata: {"type":"done","threadId":"thread_1"}\n\n');
+  }) as typeof fetch;
+
+  try {
+    await sendAgentChatRequest({
+      organizationId: "org_1",
+      message: "review",
+      attachments: [
+        {
+          key: "file_1",
+          url: "https://utfs.io/f/file_1",
+          name: "contract.pdf",
+          mimeType: "application/pdf",
+          size: 1024,
+          kind: "document",
+        },
+      ],
+      onEvent: () => undefined,
+    });
+  } finally {
+    globalThis.fetch = originalFetch;
+    delete process.env.EXPO_PUBLIC_WORKSPACE_API_URL;
+  }
+});
+
+
 test("mobile agent chat request parses buffered SSE when native fetch has no readable body", async () => {
   process.env.EXPO_PUBLIC_WORKSPACE_API_URL = "https://app.qentrah.com";
   const events: AgentChatEvent[] = [];

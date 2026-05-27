@@ -12,9 +12,11 @@ import AgUiTurnRenderer from "@/components/ui/ag-ui/ag-ui-turn-renderer";
 import type { AgUiConversationTurn } from "@/components/ui/ag-ui/types";
 import { Markdown } from "@/components/ui/markdown";
 import { Skeleton } from "@/components/ui/skeleton";
+import { uploadFiles } from "@/lib/uploadthing";
 import { markAppPerformance } from "@/lib/utils/performance";
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer-motion";
 import { useWorkspaceStore } from "@/domains/dashboard/store/dashboard.store";
+import type { AgentChatAttachment } from "@/domains/agents";
 
 interface Message {
   id?: string;
@@ -32,6 +34,35 @@ function contentDirection(text: string): ContentDirection {
   if (arabicCount >= 3 && arabicCount >= latinCount * 0.35) return "rtl";
   if (latinCount >= 3 && latinCount > arabicCount) return "ltr";
   return "auto";
+}
+
+function inferAttachmentKind(mimeType: string): AgentChatAttachment["kind"] {
+  if (mimeType.startsWith("image/")) return "image";
+  if (mimeType.startsWith("video/")) return "video";
+  return "document";
+}
+
+async function uploadAgentAttachments(organizationId: string, files: File[] = []) {
+  if (files.length === 0) return [];
+
+  const uploaded = await uploadFiles("agentMessageAttachment", {
+    files,
+    input: { organizationId },
+  });
+
+  return uploaded.map((file, index): AgentChatAttachment => {
+    const fallback = files[index];
+    const serverData = file.serverData;
+    const mimeType = serverData?.mimeType || file.type || fallback?.type || "application/octet-stream";
+    return {
+      key: serverData?.key || file.key,
+      url: serverData?.url || file.url || file.ufsUrl,
+      name: serverData?.name || file.name || fallback?.name || "attachment",
+      mimeType,
+      size: serverData?.size || file.size || fallback?.size || 0,
+      kind: inferAttachmentKind(mimeType),
+    };
+  });
 }
 
 export function DashboardChat({ organizationId }: { organizationId?: string }) {
@@ -180,8 +211,8 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
     setActiveAiThreadId(threadId);
   };
 
-  const handleSend = async (text: string) => {
-    if (!text.trim() || !organizationId) return;
+  const handleSend = async (text: string, files: File[] = []) => {
+    if ((!text.trim() && files.length === 0) || !organizationId) return;
     
     liveAutoScrollRef.current = true;
     shouldAutoScrollAfterSendRef.current = true;
@@ -189,24 +220,27 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
     setStatusMessage(undefined);
     setIsSending(true);
     const transientKey = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const messageText = text.trim() || "Please review the attached files.";
     setTransientConversation({
       organizationId,
       threadId: activeThreadId,
       messages: [
         ...messages,
-        { id: `local-user-${transientKey}`, role: "user", content: text },
+        { id: `local-user-${transientKey}`, role: "user", content: messageText },
         { id: `local-assistant-${transientKey}`, role: "assistant", content: "" },
       ],
     });
     markAppPerformance("ai-chat:send", { organizationId, hasThread: Boolean(activeThreadId) });
 
     try {
+      const attachments = await uploadAgentAttachments(organizationId, files);
       let sawStatus = false;
       let sawToken = false;
       await sendAgentChatRequest({
         organizationId,
         threadId: activeThreadId,
-        message: text,
+        message: messageText,
+        attachments,
         onEvent: (event) => {
           if (event.type === "meta") {
             setOptimisticThread({ organizationId, threadId: event.threadId });
@@ -250,6 +284,9 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
             });
           }
           if (event.type === "error") setErrorMessage(event.error);
+          if (event.type === "confirmation_required") {
+            setStatusMessage(event.summary);
+          }
           if (event.type === "done") {
             setStatusMessage(undefined);
           }
@@ -257,6 +294,7 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
       });
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Agent request failed.");
+      throw error;
     } finally {
       setIsSending(false);
     }

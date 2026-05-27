@@ -42,6 +42,25 @@ async function requireOrganizationMediaAccess(
   };
 }
 
+async function requireAgentMessageAttachmentAccess(
+  req: Request,
+  input: z.infer<typeof organizationUploadInputSchema>,
+) {
+  await requireSignedInUser(req);
+
+  try {
+    await assertCanUseOrganizationResource(input.organizationId, "organization", "read");
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "You are not allowed to upload files to this agent thread.";
+    throw new UploadThingError(message);
+  }
+
+  return {
+    organizationId: input.organizationId,
+    resource: "agentMessage",
+  };
+}
+
 export const uploadRouter = {
   profilePicture: f({
     image: {
@@ -146,6 +165,49 @@ export const uploadRouter = {
   })
     .input(organizationUploadInputSchema)
     .middleware(({ req, input }) => requireOrganizationMediaAccess(req, input, "client"))
+    .onUploadComplete(({ file, metadata }) => ({
+      key: file.key,
+      name: file.name,
+      size: file.size,
+      mimeType: file.type,
+      url: file.url,
+      organizationId: metadata.organizationId,
+      resource: metadata.resource,
+    })),
+  agentMessageAttachment: f({
+    image: {
+      maxFileCount: 10,
+      maxFileSize: "8MB",
+      contentDisposition: "inline",
+    },
+    video: {
+      maxFileCount: 4,
+      maxFileSize: "128MB",
+      contentDisposition: "inline",
+    },
+    pdf: {
+      maxFileCount: 10,
+      maxFileSize: "32MB",
+      contentDisposition: "inline",
+    },
+    text: {
+      maxFileCount: 10,
+      maxFileSize: "16MB",
+      contentDisposition: "inline",
+    },
+    "application/msword": {
+      maxFileCount: 10,
+      maxFileSize: "16MB",
+      contentDisposition: "inline",
+    },
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {
+      maxFileCount: 10,
+      maxFileSize: "16MB",
+      contentDisposition: "inline",
+    },
+  })
+    .input(organizationUploadInputSchema)
+    .middleware(({ req, input }) => requireAgentMessageAttachmentAccess(req, input))
     .onUploadComplete(({ file, metadata }) => ({
       key: file.key,
       name: file.name,

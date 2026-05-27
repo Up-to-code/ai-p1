@@ -73,6 +73,69 @@ describe("agent chat api client", () => {
     ]);
   });
 
+  it("parses confirmation-required events", () => {
+    const events: AgentChatEvent[] = [];
+    parseAgentSseChunk(
+      'event: confirmation_required\ndata: {"type":"confirmation_required","confirmationId":"confirm_1","summary":"Remove member","resource":"member","action":"delete","inputPreview":"Remove user@example.com","expiresAt":123}\n\n',
+      (event) => events.push(event),
+    );
+
+    expect(events).toEqual([
+      {
+        type: "confirmation_required",
+        confirmationId: "confirm_1",
+        summary: "Remove member",
+        resource: "member",
+        action: "delete",
+        inputPreview: "Remove user@example.com",
+        expiresAt: 123,
+      },
+    ]);
+  });
+
+  it("sends uploaded attachment metadata with chat requests", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () =>
+      new Response(
+        streamFrom(['event: done\ndata: {"type":"done","threadId":"thread_1"}\n\n']),
+        { status: 200 },
+      ),
+    ));
+
+    await sendAgentChatRequest({
+      organizationId: "org_1",
+      message: "read this",
+      attachments: [
+        {
+          key: "chat/file.pdf",
+          url: "https://utfs.io/f/file.pdf",
+          name: "file.pdf",
+          mimeType: "application/pdf",
+          kind: "document",
+          size: 1024,
+        },
+      ],
+      onEvent: vi.fn(),
+    });
+
+    expect(fetch).toHaveBeenCalledWith("/api/v1/organizations/org_1/agents/chat", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        message: "read this",
+        attachments: [
+          {
+            key: "chat/file.pdf",
+            url: "https://utfs.io/f/file.pdf",
+            name: "file.pdf",
+            mimeType: "application/pdf",
+            kind: "document",
+            size: 1024,
+          },
+        ],
+      }),
+    });
+  });
+
   it("reports invalid JSON events without losing the rest buffer", () => {
     const events: AgentChatEvent[] = [];
     const rest = parseAgentSseChunk(

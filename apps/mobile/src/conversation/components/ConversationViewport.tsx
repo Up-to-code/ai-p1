@@ -34,6 +34,7 @@ export function ConversationViewport() {
     runFailureMessage,
     runStageFeed,
     runtimeHealth,
+    retryLastPrompt,
     sendPrompt,
     startEditingMessage,
     stop,
@@ -70,6 +71,8 @@ export function ConversationViewport() {
                 title={resolvedPresentation.surfaceCopy.runFailedTitle}
                 body={runFailureMessage}
                 tone="warning"
+                actionLabel={resolvedPresentation.uiLocale === "ar" ? "إعادة المحاولة" : "Retry"}
+                onAction={retryLastPrompt}
                 onDismiss={clearRunFailureMessage}
                 direction={resolvedPresentation.direction}
               />

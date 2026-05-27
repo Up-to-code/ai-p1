@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { StyleSheet, View, Linking, Pressable } from "react-native";
 import { Text } from "@/foundation/primitives/Text";
 import { CodeCard } from "@/foundation/primitives/CodeCard";
-import { isArabic } from "@/foundation/utils/rtl";
+import { detectTextBlockDirection } from "@/conversation/lib/messageDirection";
 
 type MarkdownTextProps = {
   text: string;
@@ -53,7 +53,7 @@ export function MarkdownText({ text, style, tone = "secondary", onBadgePress }: 
       // Standard line processing
       const isListItem = line.trim().match(/^(\d+\.|•|-)\s/);
       const headerMatch = line.trim().match(/^(#{2,3})\s(.*)/);
-      const isAr = isArabic(line);
+      const isRtl = detectTextBlockDirection(line) === "rtl";
       const renderedLine = parseInlineMarkdown(line, lineIdx, onBadgePress);
 
       if (headerMatch) {
@@ -64,7 +64,12 @@ export function MarkdownText({ text, style, tone = "secondary", onBadgePress }: 
             key={lineIdx}
             tone="primary"
             selectable={true}
-            style={[styles.baseText, level === 2 ? styles.h2 : styles.h3, isAr && { textAlign: "right" }, style]}
+            style={[
+              styles.baseText,
+              level === 2 ? styles.h2 : styles.h3,
+              style,
+              isRtl && { textAlign: "right", writingDirection: "rtl" },
+            ]}
           >
             {parseInlineMarkdown(content, lineIdx)}
           </Text>
@@ -74,9 +79,9 @@ export function MarkdownText({ text, style, tone = "secondary", onBadgePress }: 
 
       if (isListItem) {
         elements.push(
-          <View key={lineIdx} style={[styles.listItem, isAr && { flexDirection: "row-reverse" }]}>
-            <Text tone={tone} style={[styles.bulletPoint, isAr && { textAlign: "right", writingDirection: "rtl" }]}>•</Text>
-            <Text tone={tone} selectable={true} style={[styles.baseText, { flex: 1 }, isAr && { textAlign: "right", writingDirection: "rtl" }, style]}>
+          <View key={lineIdx} style={[styles.listItem, isRtl && styles.listItemRtl]}>
+            <Text tone={tone} style={[styles.bulletPoint, isRtl && styles.rtlText]}>•</Text>
+            <Text tone={tone} selectable={true} style={[styles.baseText, { flex: 1 }, style, isRtl && styles.rtlText]}>
               {renderedLine}
             </Text>
           </View>
@@ -93,7 +98,7 @@ export function MarkdownText({ text, style, tone = "secondary", onBadgePress }: 
             styles.baseText, 
             style, 
             lineIdx < lines.length - 1 && styles.paragraph, 
-            isAr && { textAlign: "right", writingDirection: "rtl" }
+            isRtl && styles.rtlText,
           ]}
         >
           {renderedLine}
@@ -126,7 +131,7 @@ function parseInlineMarkdown(line: string, lineKey: number, onBadgePress?: (quer
         <Text 
           key={key}
           onPress={() => onBadgePress?.(query)}
-          style={[styles.inlineBadge, isArabic(label) && { writingDirection: "rtl" }]}
+          style={[styles.inlineBadge, detectTextBlockDirection(label) === "rtl" && { writingDirection: "rtl" }]}
         >
           {label}
         </Text>
@@ -204,6 +209,15 @@ const styles = StyleSheet.create({
     paddingLeft: 8,
     marginBottom: 12,
     gap: 8,
+  },
+  listItemRtl: {
+    flexDirection: "row-reverse",
+    paddingLeft: 0,
+    paddingRight: 8,
+  },
+  rtlText: {
+    textAlign: "right",
+    writingDirection: "rtl",
   },
   bulletPoint: {
     fontSize: 16,

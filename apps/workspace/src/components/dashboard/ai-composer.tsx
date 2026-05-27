@@ -11,7 +11,7 @@ import { AiAttachmentChips, type PendingAttachment } from "./ai-attachment-chips
 type AiComposerProps = {
   value: string;
   onChange: (val: string) => void;
-  onSend: (message: string, attachments?: File[]) => void;
+  onSend: (message: string, attachments?: File[]) => void | Promise<void>;
   isSending?: boolean;
   layout?: "landing" | "thread";
   placeholder?: string;
@@ -68,20 +68,34 @@ export default function AiComposer({
     if (!trimmedText && pendingAttachments.length === 0) return;
     if (isSending) return;
 
-    onSend(trimmedText, pendingAttachments.map(a => a.file));
-    
-    // Clear state
-    onChange("");
-    setPendingAttachments((prev) => {
-        prev.forEach(a => a.previewUrl && URL.revokeObjectURL(a.previewUrl));
+    const files = pendingAttachments.map((attachment) => attachment.file);
+
+    setPendingAttachments((prev) =>
+      prev.map((attachment) => ({ ...attachment, status: "uploading" as const, error: undefined })),
+    );
+
+    try {
+      await onSend(trimmedText, files);
+
+      onChange("");
+      setPendingAttachments((prev) => {
+        prev.forEach((attachment) => {
+          if (attachment.previewUrl) URL.revokeObjectURL(attachment.previewUrl);
+        });
         return [];
-    });
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : t("sendFailed");
+      setPendingAttachments((prev) =>
+        prev.map((attachment) => ({ ...attachment, status: "error" as const, error: message })),
+      );
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit();
+      void handleSubmit();
     }
   };
 
@@ -201,7 +215,7 @@ export default function AiComposer({
                 </div>
               )}
               <button
-                onClick={handleSubmit}
+                onClick={() => void handleSubmit()}
                 disabled={isSending || !isTyping}
                 aria-label={t("placeholderDefault")}
                 className={cn(

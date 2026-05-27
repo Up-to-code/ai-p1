@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { StyleSheet, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { ArrowDown } from "lucide-react-native";
+import { FlashList, type FlashListRef, type ListRenderItemInfo } from "@shopify/flash-list";
 
 import { AssistantTurnAdapter } from "@/conversation/adapters/AssistantTurnAdapter";
 import type { ThreadPresentation } from "@/conversation/assistantProtocol";
@@ -54,6 +55,58 @@ function ScrollToLatestButton({
   );
 }
 
+const ConversationMessageRow = React.memo(function ConversationMessageRow({
+  item,
+  latestStageEvent,
+  activeActionMessageId,
+  onEditMessage,
+  onShowActions,
+  onDismissActions,
+  onApproveConfirmation,
+  onCancelConfirmation,
+  onTurnAction,
+  onSuggestionPress,
+  threadPresentation,
+}: {
+  item: ConversationMessage;
+  latestStageEvent?: ConversationRunStage;
+  activeActionMessageId: string | null;
+  onEditMessage?: (message: ConversationMessage) => void;
+  onShowActions: (messageId: string) => void;
+  onDismissActions: () => void;
+  onApproveConfirmation?: (confirmationId: string) => void | Promise<void>;
+  onCancelConfirmation?: (confirmationId: string) => void | Promise<void>;
+  onTurnAction: (action: ConversationTurnAction, message: ConversationMessage) => void | Promise<void>;
+  onSuggestionPress?: (suggestion: string) => void;
+  threadPresentation?: ThreadPresentation | null;
+}) {
+  return (
+    <View>
+      <MessageBubble
+        message={item}
+        latestStageEvent={latestStageEvent}
+        onEditMessage={onEditMessage}
+        actionsVisible={activeActionMessageId === item.id}
+        onShowActions={onShowActions}
+        onDismissActions={onDismissActions}
+        onApproveConfirmation={onApproveConfirmation}
+        onCancelConfirmation={onCancelConfirmation}
+        threadPresentation={threadPresentation}
+      />
+
+      {item.uiTurn ? (
+        <Animated.View entering={FadeInDown.duration(300)}>
+          <AssistantTurnAdapter
+            message={item}
+            onAction={onTurnAction}
+            onSuggestionPress={onSuggestionPress}
+          />
+        </Animated.View>
+      ) : null}
+    </View>
+  );
+});
+
 export function ConversationFeed({
   messages,
   runStageFeed,
@@ -67,7 +120,7 @@ export function ConversationFeed({
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors, insets), [colors, insets]);
-  const scrollViewRef = useRef<ScrollView | null>(null);
+  const listRef = useRef<FlashListRef<ConversationMessage> | null>(null);
   const shouldAutoScrollRef = useRef(true);
   const prevMessageCountRef = useRef(messages.length);
   const messageAddedFrameRef = useRef<number | null>(null);
@@ -89,7 +142,7 @@ export function ConversationFeed({
   );
 
   const scrollToLatest = () => {
-    scrollViewRef.current?.scrollToEnd({ animated: true });
+    listRef.current?.scrollToEnd({ animated: true });
   };
 
   const syncScrollState = (offsetY: number, viewportHeight: number, contentHeight: number) => {
@@ -153,6 +206,41 @@ export function ConversationFeed({
     latestAssistantMessage?.relatedPropertyIds.length,
   ]);
 
+  const keyExtractor = useCallback((item: ConversationMessage) => item.id, []);
+  const renderItem = useCallback(({ item }: ListRenderItemInfo<ConversationMessage>) => {
+    const isPending = item.id === "pending-assistant" || item.id === "streaming-assistant";
+    const latestStageEvent = isPending
+      ? [...runStageFeed]
+          .reverse()
+          .find((event) => Boolean(event.route || event.specialist))
+      : undefined;
+
+    return (
+      <ConversationMessageRow
+        item={item}
+        latestStageEvent={latestStageEvent}
+        activeActionMessageId={activeActionMessageId}
+        onEditMessage={onEditMessage}
+        onShowActions={setActiveActionMessageId}
+        onDismissActions={() => setActiveActionMessageId(null)}
+        onApproveConfirmation={onApproveConfirmation}
+        onCancelConfirmation={onCancelConfirmation}
+        onTurnAction={onTurnAction}
+        onSuggestionPress={onSuggestionPress}
+        threadPresentation={threadPresentation}
+      />
+    );
+  }, [
+    activeActionMessageId,
+    onApproveConfirmation,
+    onCancelConfirmation,
+    onEditMessage,
+    onSuggestionPress,
+    onTurnAction,
+    runStageFeed,
+    threadPresentation,
+  ]);
+
   // Show welcome screen for empty/new threads
   const hasUserMessages = messages.some((m) => m.role === "user");
 
@@ -166,8 +254,11 @@ export function ConversationFeed({
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        ref={scrollViewRef}
+      <FlashList
+        ref={listRef}
+        data={messages}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
         contentContainerStyle={styles.content}
         onLayout={(event) => {
           const height = event.nativeEvent.layout.height;
@@ -189,43 +280,8 @@ export function ConversationFeed({
           });
         }}
         scrollEventThrottle={16}
-      >
-        <View style={{ height: insets.top + 40 }} />
-        {messages.map((item) => {
-          const isPending = item.id === "pending-assistant";
-          const latestStageEvent = isPending
-            ? [...runStageFeed]
-                .reverse()
-                .find((event) => Boolean(event.route || event.specialist))
-            : undefined;
-
-          return (
-            <View key={item.id}>
-              <MessageBubble 
-                message={item} 
-                latestStageEvent={latestStageEvent} 
-                onEditMessage={onEditMessage}
-                actionsVisible={activeActionMessageId === item.id}
-                onShowActions={(messageId) => setActiveActionMessageId(messageId)}
-                onDismissActions={() => setActiveActionMessageId(null)}
-                onApproveConfirmation={onApproveConfirmation}
-                onCancelConfirmation={onCancelConfirmation}
-                threadPresentation={threadPresentation}
-              />
-
-              {item.uiTurn ? (
-                <Animated.View entering={FadeInDown.duration(300)}>
-                  <AssistantTurnAdapter
-                    message={item}
-                    onAction={onTurnAction}
-                    onSuggestionPress={onSuggestionPress}
-                  />
-                </Animated.View>
-              ) : null}
-            </View>
-          );
-        })}
-      </ScrollView>
+        ListHeaderComponent={<View style={{ height: insets.top + 40 }} />}
+      />
 
       <ScrollToLatestButton
         contentFillsViewport={contentFillsViewport}
