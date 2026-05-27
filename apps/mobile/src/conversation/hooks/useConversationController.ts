@@ -4,6 +4,11 @@ import { useRouter } from "expo-router";
 import type { AssistantAction } from "@/conversation/assistantProtocol";
 import { assistantTurnSchema, extractTurnPropertyIds, extractTurnSources } from "@/conversation/assistantProtocol";
 import { getLocalizedRuntimeMessage, resolveThreadPresentationState } from "@/conversation/lib/assistantPresentation";
+import {
+  logAgentDebug,
+  logAgentSseEvent,
+  normalizeAgentFailureMessage,
+} from "@/conversation/lib/agentDebug";
 import { useAuthSession } from "@/auth/useAuthSession";
 import { useWorkspaceIdentity } from "@/auth/useWorkspaceIdentity";
 import {
@@ -174,12 +179,25 @@ export function useConversationController() {
     }
 
     if (!isAuthenticated) {
+      logAgentDebug("send.blocked", {
+        reason: "signed_out",
+        route: currentRoute,
+        workspaceStatus: workspace.status,
+      }, "warn");
       setRunFailureMessage(surfaceCopy.runtimeSignInRequired);
       router.push("/(auth)");
       return;
     }
 
     if (runtimeHealth.status !== "ready") {
+      logAgentDebug("send.blocked", {
+        reason: "runtime_not_ready",
+        route: currentRoute,
+        runtimeStatus: runtimeHealth.status,
+        runtimeMessage: runtimeHealth.message,
+        llmConfigured: runtimeHealth.llm?.configured,
+        workerAvailable: runtimeHealth.worker?.available,
+      }, "warn");
       setRunFailureMessage(getLocalizedRuntimeMessage(runtimeHealth, surfaceCopy) ?? surfaceCopy.runtimeChecking);
       return;
     }
@@ -187,6 +205,11 @@ export function useConversationController() {
     const isEditing = Boolean(editingMessage);
     const threadId = isEditing ? editingMessage?.threadId ?? null : canQueryActiveThread ? activeThreadId : null;
     if (!workspace.organizationId && !e2eQaMode) {
+      logAgentDebug("send.blocked", {
+        reason: "missing_organization",
+        route: currentRoute,
+        workspaceStatus: workspace.status,
+      }, "warn");
       router.push("/(auth)/choose-workspace" as never);
       return;
     }
@@ -217,6 +240,14 @@ export function useConversationController() {
 
     track("ai_prompt_sent", { sessionId, threadId: threadId ?? undefined, route: currentRoute, prompt, source: "assistant" });
     track("ai_response_stream_start", { sessionId, threadId: threadId ?? undefined, route: currentRoute, source: "assistant" });
+    logAgentDebug("send.start", {
+      organizationId: workspace.organizationId,
+      threadId,
+      route: currentRoute,
+      runtimeStatus: runtimeHealth.status,
+      prompt,
+      isEditing,
+    });
 
     if (e2eQaMode) {
       const e2eThreadId = threadId ?? createE2EThread();
@@ -247,6 +278,12 @@ export function useConversationController() {
         message: prompt,
         signal: abortController.signal,
         onEvent: (event) => {
+          logAgentSseEvent(event, {
+            organizationId: workspace.organizationId,
+            threadId: streamThreadId,
+            runId: streamRunId,
+          });
+
           if (event.type === "meta") {
             streamThreadId = event.threadId;
             streamRunId = event.runId;
@@ -337,7 +374,15 @@ export function useConversationController() {
           }
 
           if (event.type === "error") {
-            setRunFailureMessage(event.error);
+            const normalizedError = normalizeAgentFailureMessage(event.error, surfaceCopy);
+            logAgentDebug("send.stream_error", {
+              organizationId: workspace.organizationId,
+              threadId: streamThreadId,
+              runId: streamRunId,
+              rawError: event.error,
+              normalizedError,
+            }, "error");
+            setRunFailureMessage(normalizedError);
             setPendingPrompt(null);
             setActiveRunId(null);
             setStreamingAssistant((message) => message ? {
@@ -353,6 +398,12 @@ export function useConversationController() {
 
           if (event.type === "done") {
             streamThreadId = event.threadId;
+            logAgentDebug("send.done", {
+              organizationId: workspace.organizationId,
+              threadId: event.threadId,
+              runId: streamRunId,
+              receivedText,
+            });
             setActiveThreadId(event.threadId);
             setPendingPrompt(null);
             setActiveRunId(null);
@@ -380,6 +431,11 @@ export function useConversationController() {
       refreshThreads?.();
     } catch (error) {
       if (abortController.signal.aborted) {
+        logAgentDebug("send.aborted", {
+          organizationId: workspace.organizationId,
+          threadId: streamThreadId,
+          runId: streamRunId,
+        }, "warn");
         setStreamingAssistant((message) => message ? { ...message, streamState: "stopped" } : message);
         setPendingPrompt(null);
         setActiveRunId(null);
@@ -395,11 +451,17 @@ export function useConversationController() {
       setActiveRunId(null);
       setStreamingAssistant((message) => message ? { ...message, streamState: "complete" } : message);
       const errorMessage = error instanceof Error ? error.message : surfaceCopy.runFailedTitle;
-      setRunFailureMessage(
-        /^Agent request failed\.?$/i.test(errorMessage)
-          ? surfaceCopy.aiUnavailableBody
-          : errorMessage,
-      );
+      const normalizedError = normalizeAgentFailureMessage(errorMessage, surfaceCopy);
+      logAgentDebug("send.failed", {
+        organizationId: workspace.organizationId,
+        threadId: streamThreadId,
+        runId: streamRunId,
+        rawError: errorMessage,
+        normalizedError,
+        workspaceStatus: workspace.status,
+        runtimeStatus: runtimeHealth.status,
+      }, "error");
+      setRunFailureMessage(normalizedError);
     } finally {
       if (abortControllerRef.current === abortController) {
         abortControllerRef.current = null;

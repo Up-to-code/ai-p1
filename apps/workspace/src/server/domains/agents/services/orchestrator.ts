@@ -158,6 +158,14 @@ function memoryFactsFrom(message: string) {
   return fact ? [fact] : [];
 }
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function extractRequestId(message: string) {
+  return message.match(/Request ID:\s*([A-Za-z0-9_-]+)/i)?.[1] ?? null;
+}
+
 function isRetryableModelError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error ?? "");
   const status = (error as { status?: unknown; statusCode?: unknown; code?: unknown } | null)?.status
@@ -173,6 +181,28 @@ function isRetryableModelError(error: unknown) {
   }
 
   return /(server error|request id|overloaded|temporar(?:y|ily)|timeout|timed out|rate limit|429|5\d\d|model.*(?:not found|invalid|unsupported|retired|shut\s*down|unavailable)|no endpoints?|provider.*unavailable)/i.test(message);
+}
+
+function startupFailureMessage(error: unknown, language: AgentResponseLanguage = "en") {
+  const raw = error instanceof Error ? error.message : String(error ?? "Agent request failed.");
+  const requestId = extractRequestId(raw);
+
+  if (/no session|unauthenticated|permission|forbidden|not found|agent thread/i.test(raw)) {
+    return raw;
+  }
+
+  if (/(server error|request id|timeout|timed out|temporar(?:y|ily)|5\d\d)/i.test(raw)) {
+    if (language === "ar") {
+      return requestId
+        ? `تعذر بدء تشغيل المساعد في Workspace الآن. أعد المحاولة بعد قليل. Request ID: ${requestId}`
+        : "تعذر بدء تشغيل المساعد في Workspace الآن. أعد المحاولة بعد قليل.";
+    }
+    return requestId
+      ? `Workspace could not start this AI run right now. Please retry in a moment. Request ID: ${requestId}`
+      : "Workspace could not start this AI run right now. Please retry in a moment.";
+  }
+
+  return raw;
 }
 
 function providerFailureMessage(error: unknown, language: AgentResponseLanguage = "en") {
@@ -228,6 +258,54 @@ async function finishRun(input: {
   }).catch(() => undefined);
 }
 
+async function startRunWithRetry(input: {
+  organizationId: string;
+  threadId?: string;
+  message: string;
+  model: string;
+  language: AgentResponseLanguage;
+  write: (event: AgentStreamEvent) => Promise<void>;
+}) {
+  const maxAttempts = 2;
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    try {
+      return await fetchAuthMutation(api.agents.write.startRunFromHono, {
+        organizationId: input.organizationId,
+        threadId: input.threadId as Id<"agentThreads"> | undefined,
+        message: input.message,
+        model: input.model,
+      });
+    } catch (error) {
+      lastError = error;
+      const raw = error instanceof Error ? error.message : String(error);
+      const retryable = isRetryableModelError(error) && attempt < maxAttempts - 1;
+
+      console.warn("workspace.agent.start_run.failed", {
+        organizationId: input.organizationId,
+        threadId: input.threadId,
+        model: input.model,
+        attempt: attempt + 1,
+        retrying: retryable,
+        error: raw,
+      });
+
+      if (!retryable) break;
+
+      await input.write({
+        type: "status",
+        message: input.language === "ar"
+          ? "تعذر بدء المحادثة مؤقتًا. أعيد المحاولة الآن."
+          : "Workspace could not start the conversation. Retrying now.",
+      });
+      await sleep(250);
+    }
+  }
+
+  throw new Error(startupFailureMessage(lastError, input.language));
+}
+
 export function createAgentChatStream(input: {
   honoContext?: Context;
   organizationId: string;
@@ -262,11 +340,14 @@ export function createAgentChatStream(input: {
       const write = async (event: AgentStreamEvent) => controller.enqueue(encodeEvent(event));
 
       try {
-        const started = await fetchAuthMutation(api.agents.write.startRunFromHono, {
+        const responseLanguage = detectAgentResponseLanguage(input.message);
+        const started = await startRunWithRetry({
           organizationId: input.organizationId,
-          threadId: input.threadId as Id<"agentThreads"> | undefined,
+          threadId: input.threadId,
           message: input.message,
           model: agentRuntimeConfig.openRouterModel,
+          language: responseLanguage,
+          write,
         });
         const runIds: AgentRunIds = {
           threadId: started.thread._id,
@@ -330,7 +411,6 @@ export function createAgentChatStream(input: {
 
         await write({ type: "status", message: "Streaming answer" });
         void recordStep(runIds, input.organizationId, "summarize", "started", "Streaming model response.");
-        const responseLanguage = detectAgentResponseLanguage(input.message);
         const system = buildSystemPrompt(responseLanguage);
         const prompt = buildModelPrompt({
           message: input.message,

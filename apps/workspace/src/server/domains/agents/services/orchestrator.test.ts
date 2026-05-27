@@ -518,6 +518,53 @@ describe("agent orchestrator stream", () => {
     expect(encoder.encode("ok").byteLength).toBe(2);
   });
 
+  it("retries transient startup persistence errors before streaming the model", async () => {
+    vi.mocked(hasOpenRouterConfig).mockReturnValue(true);
+    vi.mocked(fetchAuthMutation)
+      .mockRejectedValueOnce(new Error("[Request ID: startup-1] Server Error"))
+      .mockResolvedValueOnce({
+        thread: { _id: "thread_1" },
+        run: { _id: "run_1" },
+        userMessageId: "message_user",
+      })
+      .mockResolvedValue(null);
+    vi.mocked(streamOpenRouterText).mockReturnValue({
+      textStream: chunks(["Recovered startup."]),
+    } as never);
+
+    const events = await readEvents(
+      createAgentChatStream({
+        organizationId: "org_1",
+        message: "hello",
+      }),
+    );
+
+    expect(events.filter((event) => event.type === "status").map((event) => event.message)).toContain(
+      "Workspace could not start the conversation. Retrying now.",
+    );
+    expect(events.filter((event) => event.type === "text").map((event) => event.text)).toEqual([
+      "Recovered startup.",
+    ]);
+    expect(streamOpenRouterText).toHaveBeenCalledTimes(1);
+  });
+
+  it("normalizes startup server errors when the run cannot be created", async () => {
+    vi.mocked(fetchAuthMutation).mockRejectedValue(new Error("[Request ID: startup-2] Server Error"));
+
+    const events = await readEvents(
+      createAgentChatStream({
+        organizationId: "org_1",
+        message: "hello",
+      }),
+    );
+
+    expect(events.at(-1)).toEqual({
+      type: "error",
+      error: "Workspace could not start this AI run right now. Please retry in a moment. Request ID: startup-2",
+    });
+    expect(streamOpenRouterText).not.toHaveBeenCalled();
+  });
+
   it("persists a failed run when model streaming fails after startup", async () => {
     vi.mocked(hasOpenRouterConfig).mockReturnValue(true);
     vi.mocked(streamOpenRouterText).mockReturnValue({
