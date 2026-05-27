@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { authClient } from "@/auth/authClient";
 import { useAuthSession } from "@/auth/useAuthSession";
+import { mergeWorkspaceOrganizations } from "@/auth/workspaceAccess";
 
 type BetterAuthOrganization = {
   id: string;
@@ -38,11 +39,12 @@ export function useWorkspaceIdentity() {
     | { setActive?: (input: { organizationId: string }) => Promise<unknown> }
     | undefined;
 
+  const active = activeOrganization?.data as BetterAuthOrganization | null | undefined;
   const organizations = useMemo(
-    () => ((organizationsQuery?.data ?? []) as BetterAuthOrganization[]),
-    [organizationsQuery?.data],
+    () => mergeWorkspaceOrganizations((organizationsQuery?.data ?? []) as BetterAuthOrganization[], active),
+    [active, organizationsQuery?.data],
   );
-  const organizationId = (activeOrganization?.data as BetterAuthOrganization | null | undefined)?.id ?? null;
+  const organizationId = active?.id ?? null;
   const isPending = Boolean(activeOrganization?.isPending || organizationsQuery?.isPending);
   const queryError = activeOrganization?.error ?? organizationsQuery?.error ?? null;
 

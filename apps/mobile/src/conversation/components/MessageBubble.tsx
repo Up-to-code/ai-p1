@@ -181,6 +181,7 @@ function FadeWord({ word, delay }: { word: string; delay: number }) {
 }
 
 const PENDING_PLACEHOLDER = "Thinking through your request\u2026";
+const LEGACY_PENDING_PLACEHOLDER = "Thinking through your request...";
 
 /**
  * Gemini-style streaming text: new words materialize smoothly
@@ -444,9 +445,15 @@ export function MessageBubble({
   const styles = useMemo(() => createStyles(colors, resolvedColorScheme), [colors, resolvedColorScheme]);
   const isUser = message.role === "user";
   const isStreaming = message.streamState === "streaming";
-  const isPending =
-    isStreaming && (message.id === "pending-assistant" || message.text === PENDING_PLACEHOLDER);
   const resolvedThreadPresentation = resolveThreadPresentationState(threadPresentation);
+  const pendingAssistantText = resolvedThreadPresentation.surfaceCopy.pendingAssistantText;
+  const isPending =
+    isStreaming && (
+      message.id === "pending-assistant"
+      || message.text === PENDING_PLACEHOLDER
+      || message.text === LEGACY_PENDING_PLACEHOLDER
+      || message.text === pendingAssistantText
+    );
   const assistantDirection = resolveAssistantDirection({
     turnPresentation: message.uiTurn?.presentation,
     threadPresentation: resolvedThreadPresentation,

@@ -1,14 +1,13 @@
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useMemo } from "react";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Check, Languages, Smartphone } from "lucide-react-native";
+import { Check, ChevronLeft, ChevronRight, Languages, Smartphone } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Screen } from "@/foundation/primitives/Screen";
 import { Text } from "@/foundation/primitives/Text";
 import { useAppLocalization } from "@/foundation/localization";
 import { buildLanguageOptions } from "@/foundation/localization/languageSettings";
-import { mirrorIcon } from "@/foundation/utils/layoutDirection";
 import { theme } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 
@@ -19,12 +18,13 @@ export default function LanguageScreen() {
   const { t, localePreference, setLocalePreference, isRTL } = useAppLocalization();
   const styles = useMemo(() => createStyles(colors, isRTL), [colors, isRTL]);
   const options = useMemo(() => buildLanguageOptions(t), [t]);
+  const BackIcon = isRTL ? ChevronRight : ChevronLeft;
 
   return (
     <Screen style={styles.screen}>
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <Pressable accessibilityLabel={t.common.back} style={styles.headerBtn} onPress={() => router.back()}>
-          <ArrowLeft size={20} color={colors.textPrimary} style={mirrorIcon(isRTL)} />
+          <BackIcon size={24} color={colors.textPrimary} strokeWidth={2.6} />
         </Pressable>
         <View style={styles.headerText}>
           <Text variant="title" style={styles.headerTitle}>{t.appSettings.languageTitle}</Text>
@@ -91,15 +91,15 @@ const createStyles = (colors: any, isRTL: boolean) =>
       alignItems: "center",
       gap: theme.spacing.md,
       paddingHorizontal: theme.spacing.lg,
-      paddingBottom: theme.spacing.md,
+      paddingBottom: theme.spacing.sm,
       borderBottomWidth: 1,
       borderBottomColor: colors.divider,
-      backgroundColor: `${colors.background}F2`,
+      backgroundColor: colors.background,
     },
     headerBtn: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
       backgroundColor: colors.surface,
       justifyContent: "center",
       alignItems: "center",

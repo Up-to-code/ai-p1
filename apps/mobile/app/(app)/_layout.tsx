@@ -1,4 +1,5 @@
 import { Redirect, Stack } from "expo-router";
+import { useMemo } from "react";
 
 import { useAuthSession } from "@/auth/useAuthSession";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
@@ -9,6 +10,17 @@ export default function AppLayout() {
   const hydrationComplete = useAppStore((state) => state.hydrationComplete);
   const { canAccessApp, isReady } = useAuthSession();
   const { colors } = useTheme();
+  const screenOptions = useMemo(
+    () => ({
+      headerShown: false,
+      contentStyle: {
+        backgroundColor: colors.background,
+      },
+      animation: "fade" as const,
+      animationDuration: 120,
+    }),
+    [colors.background],
+  );
 
   if (!hydrationComplete || !isReady) {
     return <AppBootScreen />;
@@ -20,14 +32,7 @@ export default function AppLayout() {
 
   return (
     <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: {
-          backgroundColor: colors.background,
-        },
-        animation: "fade",
-        animationDuration: 120,
-      }}
+      screenOptions={screenOptions}
     >
       <Stack.Screen name="index" />
       <Stack.Screen name="menu" />

@@ -2,9 +2,13 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { shouldRenderAssistantTurnUi } from "@/conversation/lib/assistantTurnUiPolicy";
-import { resolveAssistantBrandActivity } from "@/conversation/lib/assistantPresentation";
+import {
+  resolveAssistantBrandActivity,
+  resolveAssistantDirection,
+} from "@/conversation/lib/assistantPresentation";
 import type { AssistantTurn } from "@/conversation/assistantProtocol";
 import {
+  getCuratedAssistantSurfaceCopy,
   resolveDirectionFromLanguageTag,
   resolveUiLocaleFromLanguageTag,
 } from "@/conversation/assistantProtocol";
@@ -188,6 +192,30 @@ test("language tag helpers keep arabic latin-script threads LTR without curated 
   assert.equal(resolveUiLocaleFromLanguageTag("ar-Latn"), null);
   assert.equal(resolveDirectionFromLanguageTag("ar"), "rtl");
   assert.equal(resolveUiLocaleFromLanguageTag("ar"), "ar");
+});
+
+test("assistant message direction follows message text before thread locale", () => {
+  assert.equal(
+    resolveAssistantDirection({
+      threadPresentation: { direction: "rtl" },
+      fallbackText: "Calendar: Schedule meetings and deadlines.",
+    }),
+    "ltr",
+  );
+  assert.equal(
+    resolveAssistantDirection({
+      threadPresentation: { direction: "ltr" },
+      fallbackText: "رتب مهام الفريق",
+    }),
+    "rtl",
+  );
+});
+
+test("Arabic assistant surface copy avoids mixed-direction composer labels", () => {
+  const copy = getCuratedAssistantSurfaceCopy("ar");
+
+  assert.equal(copy.composerPlaceholder, "اسأل كانترا");
+  assert.equal(copy.pendingAssistantText, "يفكر في طلبك...");
 });
 
 test("Qentrah renders UI for Workspace action chips", () => {

@@ -105,4 +105,18 @@ describe("agent read handlers", () => {
       query: {},
     }))).rejects.toThrow("Unauthorized");
   });
+
+  it("surfaces cross-organization message access denial from Convex auth", async () => {
+    vi.mocked(fetchAuthQuery).mockRejectedValueOnce(new Error("Unauthorized"));
+
+    await expect(handleListAgentMessages(fakeContext({
+      params: { organizationId: "org_forbidden", threadId: "thread_from_other_org" },
+      query: {},
+    }))).rejects.toThrow("Unauthorized");
+    expect(fetchAuthQuery).toHaveBeenCalledWith(expect.anything(), {
+      organizationId: "org_forbidden",
+      threadId: "thread_from_other_org",
+      limit: 80,
+    });
+  });
 });

@@ -303,6 +303,15 @@ export function createAgentChatStream(input: {
         const message = input.abortSignal?.aborted
           ? "Agent request was canceled."
           : error instanceof Error ? error.message : "Agent request failed.";
+        if (!input.abortSignal?.aborted) {
+          console.error("workspace.agent.stream.failed", {
+            organizationId: input.organizationId,
+            threadId: ids?.threadId,
+            runId: ids?.runId,
+            model: agentRuntimeConfig.openRouterModel,
+            error: message,
+          });
+        }
         await settleRun("failed", message, { summary: input.message, error: message }).catch(() => undefined);
         await write({ type: "error", error: message }).catch(() => undefined);
         controller.close();

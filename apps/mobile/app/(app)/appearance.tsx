@@ -1,14 +1,13 @@
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { useMemo } from "react";
 import { useRouter } from "expo-router";
-import { ArrowLeft, Check, Monitor, MoonStar, SunMedium } from "lucide-react-native";
+import { ChevronLeft, ChevronRight, Monitor, MoonStar, SunMedium } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { formatWebCopy, useAppLocalization } from "@/foundation/localization";
+import { useAppLocalization } from "@/foundation/localization";
 import { Screen } from "@/foundation/primitives/Screen";
 import { Text } from "@/foundation/primitives/Text";
 import { theme } from "@/foundation/theme/tokens";
-import { mirrorIcon } from "@/foundation/utils/layoutDirection";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import type { AppearanceMode } from "@/store/slices/preferenceSlice";
 
@@ -24,12 +23,10 @@ const OPTION_META: Array<{
 export default function AppearanceScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { colors, appearanceMode, resolvedColorScheme, setAppearanceMode } = useTheme();
+  const { colors, appearanceMode, setAppearanceMode } = useTheme();
   const { t, isRTL } = useAppLocalization();
   const styles = useMemo(() => createStyles(colors, isRTL), [colors, isRTL]);
-  const resolvedModeLabel = resolvedColorScheme === "dark"
-    ? t.appSettings.appearanceDarkTitle
-    : t.appSettings.appearanceLightTitle;
+  const BackIcon = isRTL ? ChevronRight : ChevronLeft;
   const options = [
     {
       ...OPTION_META[0],
@@ -52,25 +49,12 @@ export default function AppearanceScreen() {
     <Screen style={styles.screen}>
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <Pressable accessibilityLabel={t.common.back} style={styles.headerBtn} onPress={() => router.back()}>
-          <ArrowLeft size={20} color={colors.textPrimary} style={mirrorIcon(isRTL)} />
+          <BackIcon size={24} color={colors.textPrimary} strokeWidth={2.6} />
         </Pressable>
-        <View style={styles.headerText}>
-          <Text variant="title" style={styles.headerTitle}>{t.appSettings.appearanceTitle}</Text>
-          <Text variant="caption" tone="muted">
-            {formatWebCopy(t.appSettings.appearanceSubtitle, { mode: resolvedModeLabel })}
-          </Text>
-        </View>
+        <Text variant="title" style={styles.headerTitle}>{t.appSettings.appearanceTitle}</Text>
       </View>
 
-      <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + theme.spacing.xl }]}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.hero}>
-          <Text variant="display" style={styles.heroTitle}>{t.appSettings.appearanceHeroTitle}</Text>
-          <Text tone="secondary" style={styles.heroCopy}>{t.appSettings.appearanceHeroBody}</Text>
-        </View>
-
+      <View style={[styles.content, { paddingBottom: insets.bottom + theme.spacing.xl }]}>
         <View style={styles.optionGroup}>
           {options.map((option) => {
             const selected = option.value === appearanceMode;
@@ -78,27 +62,23 @@ export default function AppearanceScreen() {
               <Pressable
                 key={option.value}
                 testID={`appearance.option.${option.value}`}
-                style={[styles.optionCard, selected && styles.optionCardSelected]}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                style={[styles.optionSegment, selected && styles.optionSegmentSelected]}
                 onPress={() => setAppearanceMode(option.value)}
               >
-                <View style={[styles.optionIcon, selected && styles.optionIconSelected]}>
-                  <OptionIcon mode={option.icon} color={colors.textPrimary} />
-                </View>
-                <View style={styles.optionText}>
-                  <Text variant="body" style={styles.optionTitle}>{option.title}</Text>
-                  <Text variant="caption" tone="secondary">{option.description}</Text>
-                </View>
-                <View
+                <OptionIcon mode={option.icon} color={selected ? colors.background : colors.textPrimary} />
+                <Text
                   testID={selected ? `appearance.selected.${option.value}` : undefined}
-                  style={[styles.checkWrap, selected && styles.checkWrapSelected]}
+                  style={[styles.optionTitle, selected && styles.optionTitleSelected]}
                 >
-                  {selected ? <Check size={16} color={colors.background} /> : null}
-                </View>
+                  {option.title}
+                </Text>
               </Pressable>
             );
           })}
         </View>
-      </ScrollView>
+      </View>
     </Screen>
   );
 }
@@ -126,25 +106,20 @@ const createStyles = (colors: any, isRTL: boolean) =>
       alignItems: "center",
       gap: theme.spacing.md,
       paddingHorizontal: theme.spacing.lg,
-      paddingBottom: theme.spacing.md,
+      paddingBottom: theme.spacing.sm,
       borderBottomWidth: 1,
       borderBottomColor: colors.divider,
-      backgroundColor: `${colors.background}F2`,
+      backgroundColor: colors.background,
     },
     headerBtn: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
       backgroundColor: colors.surface,
       justifyContent: "center",
       alignItems: "center",
       borderWidth: 1,
       borderColor: colors.divider,
-    },
-    headerText: {
-      flex: 1,
-      gap: 2,
-      alignItems: isRTL ? "flex-end" : "flex-start",
     },
     headerTitle: {
       fontSize: 18,
@@ -152,71 +127,36 @@ const createStyles = (colors: any, isRTL: boolean) =>
     },
     content: {
       paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.xl,
-      gap: theme.spacing.xl,
-    },
-    hero: {
-      gap: theme.spacing.sm,
-      alignItems: isRTL ? "flex-end" : "flex-start",
-    },
-    heroTitle: {
-      fontSize: 30,
-      fontFamily: "Manrope_800ExtraBold",
-    },
-    heroCopy: {
-      lineHeight: 22,
+      paddingTop: theme.spacing.lg,
     },
     optionGroup: {
-      gap: theme.spacing.md,
+      flexDirection: isRTL ? "row-reverse" : "row",
+      gap: theme.spacing.xs,
+      borderRadius: 22,
+      borderWidth: 1,
+      borderColor: colors.divider,
+      backgroundColor: colors.surface,
+      padding: 4,
     },
-    optionCard: {
+    optionSegment: {
+      flex: 1,
+      minHeight: 44,
+      borderRadius: 18,
       flexDirection: isRTL ? "row-reverse" : "row",
       alignItems: "center",
-      gap: theme.spacing.md,
-      backgroundColor: "transparent",
-      borderRadius: theme.radii.lg,
-      borderWidth: 1,
-      borderColor: colors.divider,
-      padding: theme.spacing.lg,
-    },
-    optionCardSelected: {
-      borderColor: colors.textPrimary,
-      borderWidth: 2,
-      padding: theme.spacing.lg - 1,
-    },
-    optionIcon: {
-      width: 48,
-      height: 48,
-      borderRadius: 16,
       justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: "transparent",
-      borderWidth: 1,
-      borderColor: colors.divider,
+      gap: theme.spacing.xs,
     },
-    optionIconSelected: {
-      borderColor: colors.textPrimary,
-    },
-    optionText: {
-      flex: 1,
-      gap: 2,
-      alignItems: isRTL ? "flex-end" : "flex-start",
+    optionSegmentSelected: {
+      backgroundColor: colors.textPrimary,
     },
     optionTitle: {
-      fontWeight: "800",
+      color: colors.textPrimary,
+      fontSize: 12,
+      lineHeight: 16,
       fontFamily: "Manrope_800ExtraBold",
     },
-    checkWrap: {
-      width: 24,
-      height: 24,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: colors.divider,
-    },
-    checkWrapSelected: {
-      backgroundColor: colors.textPrimary,
-      borderColor: colors.textPrimary,
-      justifyContent: "center",
-      alignItems: "center",
+    optionTitleSelected: {
+      color: colors.background,
     },
   });

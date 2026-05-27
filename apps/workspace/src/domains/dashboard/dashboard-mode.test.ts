@@ -57,6 +57,8 @@ describe("dashboard mode routing", () => {
     expect(markdown).toContain("TableCellComponent");
     expect(sidebar).toContain('workspaceModeHref("ws")');
     expect(sidebar).toContain('workspaceModeHref("ai", thread.id)');
+    expect(sidebar).toContain("useAgentThreadsQuery(workspaceOrganizationId");
+    expect(sidebar).toContain("enabled: Boolean(workspaceOrganizationId)");
     expect(dashboard).toContain('parseWorkspaceMode(searchParams.get("mode"))');
     expect(dashboardChat).toContain('params.set("mode", "ai")');
   });

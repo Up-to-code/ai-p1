@@ -37,3 +37,11 @@ test("mobile source stays behind the Workspace API boundary", () => {
 
   assert.deepEqual(matches, []);
 });
+
+test("workspace chooser does not expose manual invite entry UI", () => {
+  const source = readFileSync(path.resolve(appRoot, "(auth)/choose-workspace.tsx"), "utf8");
+
+  assert.equal(source.includes("workspace.join"), false);
+  assert.equal(source.includes("invite_input"), false);
+  assert.equal(source.includes("parseInviteInput"), false);
+});

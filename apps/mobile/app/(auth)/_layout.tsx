@@ -1,4 +1,5 @@
 import { Redirect, Stack, useSegments } from "expo-router";
+import { useMemo } from "react";
 
 import { useAuthSession } from "@/auth/useAuthSession";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
@@ -12,6 +13,16 @@ export default function AuthLayout() {
   const segments = useSegments();
   const authRoute = segments[1];
   const canStayInAuth = authRoute === "choose-workspace" || authRoute === "accept-invite";
+  const screenOptions = useMemo(
+    () => ({
+      headerShown: false,
+      contentStyle: {
+        backgroundColor: colors.background,
+      },
+      animation: "none" as const,
+    }),
+    [colors.background],
+  );
 
   if (!hydrationComplete || !isReady) {
     return <AppBootScreen />;
@@ -23,13 +34,7 @@ export default function AuthLayout() {
 
   return (
     <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: {
-          backgroundColor: colors.background,
-        },
-        animation: "none",
-      }}
+      screenOptions={screenOptions}
     >
       <Stack.Screen name="index" />
       <Stack.Screen name="choose-workspace" />

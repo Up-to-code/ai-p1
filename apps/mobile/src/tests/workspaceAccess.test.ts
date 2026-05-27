@@ -5,10 +5,13 @@ import {
   createAndSelectWorkspaceOrganization,
   createWorkspaceInviteLink,
   getAcceptedWorkspaceOrganizationId,
+  mergeWorkspaceOrganizations,
   parseInviteInput,
   requireWorkspaceOrganization,
   selectWorkspaceOrganization,
+  shouldResetThreadForOrganizationSwitch,
   slugifyWorkspaceName,
+  workspaceOrganizationLabel,
 } from "@/auth/workspaceAccess";
 
 test("workspace organization selection activates before returning", async () => {
@@ -42,6 +45,41 @@ test("workspace organization creation creates, selects, and returns the new orga
 
   assert.equal(organization.id, "org_new");
   assert.deepEqual(calls, ["create:qentrah-brokerage:broker", "setActive:org_new"]);
+});
+
+test("workspace organization list includes active organization without duplicates", () => {
+  assert.deepEqual(
+    mergeWorkspaceOrganizations(
+      [
+        { id: "org_1", name: "Qentrah" },
+        { id: "org_2", slug: "team-two" },
+      ],
+      { id: "org_active", name: "Active" },
+    ).map((organization) => organization.id),
+    ["org_active", "org_1", "org_2"],
+  );
+
+  assert.deepEqual(
+    mergeWorkspaceOrganizations(
+      [
+        { id: "org_1", name: "Qentrah" },
+        { id: "org_2", slug: "team-two" },
+      ],
+      { id: "org_1", name: "Qentrah" },
+    ).map((organization) => organization.id),
+    ["org_1", "org_2"],
+  );
+});
+
+test("workspace organization display and thread reset helpers are deterministic", () => {
+  assert.equal(workspaceOrganizationLabel({ id: "org_1", name: " Qentrah " }), "Qentrah");
+  assert.equal(workspaceOrganizationLabel({ id: "org_2", slug: "team-two" }), "team-two");
+  assert.equal(workspaceOrganizationLabel({ id: "org_3" }), "org_3");
+  assert.equal(workspaceOrganizationLabel(null, "No workspace"), "No workspace");
+
+  assert.equal(shouldResetThreadForOrganizationSwitch("org_1", "org_2"), true);
+  assert.equal(shouldResetThreadForOrganizationSwitch("org_1", "org_1"), false);
+  assert.equal(shouldResetThreadForOrganizationSwitch(null, "org_1"), false);
 });
 
 test("workspace organization helpers reject missing or mismatched results", () => {

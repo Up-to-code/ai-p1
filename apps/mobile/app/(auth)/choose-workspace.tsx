@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
-import { ArrowRight, Building2, CheckCircle2, Link2, Loader2, LogOut, Plus, Users } from "lucide-react-native";
+import { ArrowRight, Building2, CheckCircle2, Loader2, LogOut, Plus } from "lucide-react-native";
 
 import { Button } from "@/foundation/primitives/Button";
 import { Text } from "@/foundation/primitives/Text";
@@ -9,12 +9,13 @@ import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { theme } from "@/foundation/theme/tokens";
 import { useAppLocalization } from "@/foundation/localization";
 import { WorkspaceAccessRow, WorkspaceAccessSurface } from "@/auth/components/WorkspaceAccessSurface";
-import { parseInviteInput } from "@/auth/workspaceAccess";
+import { shouldResetThreadForOrganizationSwitch } from "@/auth/workspaceAccess";
 import { useWorkspaceAccess } from "@/auth/useWorkspaceAccess";
 import { mirrorIcon } from "@/foundation/utils/layoutDirection";
 import { signOutForAccountSwitch } from "@/auth/signOut";
+import { useAppStore } from "@/store";
 
-type Choice = "join" | "create" | null;
+type Choice = "create" | null;
 
 export default function ChooseWorkspaceScreen() {
   const router = useRouter();
@@ -23,16 +24,19 @@ export default function ChooseWorkspaceScreen() {
   const workspace = useWorkspaceAccess();
   const styles = useMemo(() => createStyles(colors, isRTL), [colors, isRTL]);
   const [choice, setChoice] = useState<Choice>(null);
-  const [inviteValue, setInviteValue] = useState("");
   const [organizationName, setOrganizationName] = useState("");
   const [organizationType, setOrganizationType] = useState<"broker" | "developer">("broker");
   const [busyId, setBusyId] = useState("");
-  const [busyAction, setBusyAction] = useState<"create" | "join" | "">("");
+  const [busyAction, setBusyAction] = useState<"create" | "">("");
+  const resetConversationState = useAppStore((state) => state.resetConversationState);
 
   const selectOrganization = async (organizationId: string) => {
     setBusyId(organizationId);
     try {
       await workspace.selectOrganization(organizationId);
+      if (shouldResetThreadForOrganizationSwitch(workspace.organizationId, organizationId)) {
+        resetConversationState();
+      }
       router.replace("/(app)");
     } catch (error) {
       Alert.alert(t.workspaceAccess.errorTitle, error instanceof Error ? error.message : t.workspaceAccess.errorBody);
@@ -51,23 +55,13 @@ export default function ChooseWorkspaceScreen() {
     setBusyAction("create");
     try {
       await workspace.createOrganization({ name, type: organizationType });
+      resetConversationState();
       router.replace("/(app)");
     } catch (error) {
       Alert.alert(t.workspaceAccess.errorTitle, error instanceof Error ? error.message : t.workspaceAccess.errorBody);
     } finally {
       setBusyAction("");
     }
-  };
-
-  const joinInvite = () => {
-    const invite = parseInviteInput(inviteValue);
-    if (!invite) {
-      Alert.alert(t.workspaceAccess.errorTitle, t.workspaceAccess.inviteRequired);
-      return;
-    }
-    setBusyAction("join");
-    router.push(`/(auth)/accept-invite?${invite.kind}=${encodeURIComponent(invite.value)}`);
-    setBusyAction("");
   };
 
   const useAnotherAccount = async () => {
@@ -125,41 +119,6 @@ export default function ChooseWorkspaceScreen() {
           onPress={() => void selectOrganization(organization.id)}
         />
       ))}
-
-      <WorkspaceAccessRow
-        testID="workspace.join"
-        icon={<Users size={20} color={colors.textPrimary} />}
-        title={t.workspaceAccess.joinTitle}
-        body={t.workspaceAccess.joinBody}
-        selected={choice === "join"}
-        onPress={() => setChoice(choice === "join" ? null : "join")}
-      />
-      {choice === "join" ? (
-        <View style={styles.inlinePanel}>
-          <View style={styles.field}>
-            <Link2 size={18} color={colors.textMuted} />
-            <TextInput
-              testID="workspace.invite_input"
-              value={inviteValue}
-              onChangeText={setInviteValue}
-              placeholder={t.workspaceAccess.invitePlaceholder}
-              placeholderTextColor={colors.textMuted}
-              selectionColor={colors.accent}
-              autoCapitalize="none"
-              autoCorrect={false}
-              style={[styles.input, isRTL && styles.inputRtl]}
-              textAlign={isRTL ? "right" : "left"}
-            />
-          </View>
-          <Button
-            testID="workspace.join_submit"
-            label={busyAction === "join" ? t.common.loading : t.workspaceAccess.joinButton}
-            trailing={<ArrowRight size={16} color="#FFFFFF" style={mirrorIcon(isRTL)} />}
-            onPress={joinInvite}
-            disabled={busyAction === "join"}
-          />
-        </View>
-      ) : null}
 
       <WorkspaceAccessRow
         testID="workspace.create"

@@ -14,6 +14,8 @@ import { createE2EThread } from "@/e2e/store";
 import { useThreads } from "@/persistence/api/conversationData";
 import { useAppStore } from "@/store";
 import { useAuthSession } from "@/auth/useAuthSession";
+import { useWorkspaceAccess } from "@/auth/useWorkspaceAccess";
+import { workspaceOrganizationLabel } from "@/auth/workspaceAccess";
 
 export default function MenuScreen() {
   const router = useRouter();
@@ -28,6 +30,7 @@ export default function MenuScreen() {
   const toggleFavoriteThread = useAppStore((state) => state.toggleFavoriteThread);
   const threads = useThreads();
   const { user } = useAuthSession();
+  const workspace = useWorkspaceAccess();
 
   const handleNewThread = async () => {
     beginThreadCreation();
@@ -43,6 +46,10 @@ export default function MenuScreen() {
 
   const displayName = user?.name ?? user?.email ?? "Qentrah user";
   const avatarUrl = user?.image ?? null;
+  const activeWorkspaceName = workspaceOrganizationLabel(
+    workspace.activeOrganization,
+    t.workspaceAccess.untitledWorkspace,
+  );
   const initials = displayName
     .split(" ")
     .map((part: string) => part[0]?.toUpperCase() ?? "")
@@ -81,7 +88,7 @@ export default function MenuScreen() {
             )}
             <View style={styles.profileMeta}>
               <Text variant="title" style={styles.profileName}>{displayName}</Text>
-              <Text variant="caption" tone="muted">Qentrah AI</Text>
+              <Text variant="caption" tone="muted">{activeWorkspaceName}</Text>
             </View>
             <ChevronRight size={18} color={colors.textMuted} style={mirrorIcon(isRTL)} />
           </Pressable>
@@ -167,11 +174,11 @@ const createStyles = (colors: any, isRTL: boolean) => StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "rgba(255,255,255,0.05)",
+    backgroundColor: colors.surface,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
+    borderColor: colors.divider,
   },
   scrollContent: {
     paddingHorizontal: 16,

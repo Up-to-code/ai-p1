@@ -99,6 +99,35 @@ test("mobile agent chat request streams workspace API events", async () => {
   ]);
 });
 
+test("mobile agent chat request parses buffered SSE when native fetch has no readable body", async () => {
+  process.env.EXPO_PUBLIC_WORKSPACE_API_URL = "https://app.qentrah.com";
+  const events: AgentChatEvent[] = [];
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async () => ({
+    ok: true,
+    body: null,
+    text: async () =>
+      'event: text\ndata: {"type":"text","text":"Buffered"}\n\n'
+      + 'event: done\ndata: {"type":"done","threadId":"thread_1"}\n\n',
+  })) as unknown as typeof fetch;
+
+  try {
+    await sendAgentChatRequest({
+      organizationId: "org_1",
+      message: "hello",
+      onEvent: (event) => events.push(event),
+    });
+  } finally {
+    globalThis.fetch = originalFetch;
+    delete process.env.EXPO_PUBLIC_WORKSPACE_API_URL;
+  }
+
+  assert.deepEqual(events, [
+    { type: "text", text: "Buffered" },
+    { type: "done", threadId: "thread_1" },
+  ]);
+});
+
 test("mobile agent confirmation helpers call workspace API endpoints", async () => {
   process.env.EXPO_PUBLIC_WORKSPACE_API_URL = "https://app.qentrah.com";
   const originalFetch = globalThis.fetch;

@@ -158,6 +158,7 @@ export function useThreadsState() {
 
     let cancelled = false;
     setLoaded(false);
+    setThreads([]);
     listAgentThreads(workspace.organizationId, 50)
       .then((rows) => {
         if (!cancelled) {

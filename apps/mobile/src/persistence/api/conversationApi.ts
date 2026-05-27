@@ -111,9 +111,17 @@ export async function sendAgentChatRequest(input: {
     },
   );
 
-  if (!response.ok || !response.body) {
+  if (!response.ok) {
     await readJson(response, "Agent request failed.");
     throw new Error("Agent request failed.");
+  }
+
+  if (!response.body) {
+    const bufferedStream = await response.text();
+    if (bufferedStream.trim()) {
+      parseAgentSseChunk(`${bufferedStream}\n\n`, input.onEvent);
+    }
+    return;
   }
 
   const reader = response.body.getReader();

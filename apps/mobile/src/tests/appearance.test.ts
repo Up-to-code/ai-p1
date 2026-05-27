@@ -22,8 +22,13 @@ test("appearance mode can be updated", () => {
   const store = createPreferenceTestStore();
 
   store.getState().setAppearanceMode("light");
-
   assert.equal(store.getState().appearanceMode, "light");
+
+  store.getState().setAppearanceMode("dark");
+  assert.equal(store.getState().appearanceMode, "dark");
+
+  store.getState().setAppearanceMode("system");
+  assert.equal(store.getState().appearanceMode, "system");
 });
 
 test("locale preference can be updated independently from appearance mode", () => {

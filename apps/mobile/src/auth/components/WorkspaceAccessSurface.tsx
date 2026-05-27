@@ -1,6 +1,6 @@
 import { Pressable, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import { useMemo, type ReactNode } from "react";
-import { ArrowLeft, ChevronRight } from "lucide-react-native";
+import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "@/foundation/primitives/Text";
@@ -46,6 +46,7 @@ export function WorkspaceAccessSurface({
   const { colors } = useTheme();
   const { isRTL, t } = useAppLocalization();
   const styles = useMemo(() => createStyles(colors, isRTL), [colors, isRTL]);
+  const BackIcon = isRTL ? ChevronRight : ChevronLeft;
 
   return (
     <View style={styles.screen}>
@@ -53,7 +54,7 @@ export function WorkspaceAccessSurface({
         bounces={false}
         contentContainerStyle={[
           styles.content,
-          { paddingTop: insets.top + theme.spacing.xl, paddingBottom: insets.bottom + theme.spacing.xxl },
+          { paddingTop: insets.top + theme.spacing.md, paddingBottom: insets.bottom + theme.spacing.xxl },
           contentStyle,
         ]}
         keyboardShouldPersistTaps="handled"
@@ -63,12 +64,11 @@ export function WorkspaceAccessSurface({
           <View style={styles.topBar}>
             {onBack ? (
               <Pressable accessibilityLabel={t.common.back} onPress={onBack} style={styles.backButton}>
-                <ArrowLeft size={19} color={colors.textPrimary} style={mirrorIcon(isRTL)} />
+                <BackIcon size={24} color={colors.textPrimary} strokeWidth={2.6} />
               </Pressable>
             ) : (
               <View style={styles.brandDot} />
             )}
-            <Text style={styles.brandText}>qentrah</Text>
           </View>
         ) : null}
 
@@ -133,10 +133,10 @@ const createStyles = (colors: any, isRTL: boolean) => StyleSheet.create({
     paddingHorizontal: theme.spacing.xl,
   },
   topBar: {
-    minHeight: 44,
+    minHeight: 40,
     flexDirection: isRTL ? "row-reverse" : "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
   },
   backButton: {
     width: 40,
@@ -154,15 +154,8 @@ const createStyles = (colors: any, isRTL: boolean) => StyleSheet.create({
     borderRadius: 5,
     backgroundColor: colors.accent,
   },
-  brandText: {
-    color: colors.textPrimary,
-    fontSize: 15,
-    lineHeight: 20,
-    fontFamily: "Manrope_800ExtraBold",
-    letterSpacing: 0,
-  },
   hero: {
-    paddingTop: theme.spacing.xxl,
+    paddingTop: theme.spacing.xl,
     paddingBottom: theme.spacing.xl,
     gap: theme.spacing.xs,
     alignItems: isRTL ? "flex-end" : "flex-start",

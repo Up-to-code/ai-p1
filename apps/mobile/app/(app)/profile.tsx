@@ -3,12 +3,13 @@ import { useRouter } from "expo-router";
 import { useMemo } from "react";
 import * as Clipboard from "expo-clipboard";
 import {
-  ArrowLeft,
   BriefcaseBusiness,
+  ChevronLeft,
   ChevronRight,
   Languages,
   Link,
   LogOut,
+  RefreshCw,
   SunMoon,
 } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -23,6 +24,7 @@ import { signOutForAccountSwitch } from "@/auth/signOut";
 import { useAppLocalization } from "@/foundation/localization";
 import { formatLanguagePreferenceLabel } from "@/foundation/localization/languageSettings";
 import { mirrorIcon } from "@/foundation/utils/layoutDirection";
+import { workspaceOrganizationLabel } from "@/auth/workspaceAccess";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -32,6 +34,7 @@ export default function ProfileScreen() {
   const styles = useMemo(() => createStyles(colors, isRTL), [colors, isRTL]);
   const { user } = useAuthSession();
   const workspace = useWorkspaceAccess();
+  const BackIcon = isRTL ? ChevronRight : ChevronLeft;
 
   const handleLogout = () => {
     Alert.alert(
@@ -59,9 +62,10 @@ export default function ProfileScreen() {
     .join("")
     .slice(0, 2);
   const languageSummary = formatLanguagePreferenceLabel(t, localePreference);
-  const activeWorkspaceName = workspace.activeOrganization?.name
-    ?? workspace.activeOrganization?.slug
-    ?? t.workspaceAccess.untitledWorkspace;
+  const activeWorkspaceName = workspaceOrganizationLabel(
+    workspace.activeOrganization,
+    t.workspaceAccess.untitledWorkspace,
+  );
 
   const handleCreateInviteLink = async () => {
     if (!workspace.organizationId) {
@@ -110,7 +114,7 @@ export default function ProfileScreen() {
         {
           id: "switch_workspace",
           label: t.workspaceAccess.switchWorkspace,
-          icon: <ChevronRight size={18} color={colors.textPrimary} style={mirrorIcon(isRTL)} />,
+          icon: <RefreshCw size={18} color={colors.textPrimary} />,
           onPress: () => router.push("/(auth)/choose-workspace" as never),
         },
         {
@@ -143,9 +147,9 @@ export default function ProfileScreen() {
 
   return (
     <Screen safe={false}>
-      <View style={[styles.header, { top: insets.top + 10 }]}>
+      <View style={[styles.header, { top: insets.top + 6 }]}>
         <Pressable accessibilityLabel={t.common.back} style={styles.backBtn} onPress={() => router.back()}>
-          <ArrowLeft size={24} color={colors.textPrimary} style={mirrorIcon(isRTL)} />
+          <BackIcon size={24} color={colors.textPrimary} strokeWidth={2.6} />
         </Pressable>
       </View>
 
@@ -168,7 +172,7 @@ export default function ProfileScreen() {
           </View>
           <View style={styles.heroText}>
             <Text variant="display" style={styles.userName}>{displayName}</Text>
-            <Text variant="caption" tone="muted">Qentrah AI</Text>
+            <Text variant="caption" style={styles.workspaceName}>{activeWorkspaceName}</Text>
           </View>
         </Animated.View>
 
@@ -221,14 +225,14 @@ const createStyles = (colors: any, isRTL: boolean) => StyleSheet.create({
     zIndex: 100,
   },
   backBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(255,255,255,0.05)",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
+    borderColor: colors.divider,
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -263,6 +267,11 @@ const createStyles = (colors: any, isRTL: boolean) => StyleSheet.create({
   heroText: {
     alignItems: "center",
     gap: 4,
+  },
+  workspaceName: {
+    color: colors.textSecondary,
+    fontWeight: "800",
+    textAlign: "center",
   },
   userName: {
     color: colors.textPrimary,
@@ -336,8 +345,13 @@ const createStyles = (colors: any, isRTL: boolean) => StyleSheet.create({
     flexDirection: isRTL ? "row-reverse" : "row",
     gap: 10,
     alignItems: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 20,
+    minHeight: 42,
+    borderRadius: 21,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: colors.divider,
+    backgroundColor: colors.surface,
   },
   signOutText: {
     color: colors.textPrimary,

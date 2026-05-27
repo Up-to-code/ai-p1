@@ -57,6 +57,33 @@ export function workspaceAuthError(error: AuthError, fallback: string) {
   return error.message ?? error.code ?? fallback;
 }
 
+export function workspaceOrganizationLabel(
+  organization: WorkspaceOrganization | null | undefined,
+  fallback = "Untitled workspace",
+) {
+  return organization?.name?.trim() || organization?.slug?.trim() || organization?.id || fallback;
+}
+
+export function mergeWorkspaceOrganizations(
+  organizations: WorkspaceOrganization[],
+  activeOrganization?: WorkspaceOrganization | null,
+) {
+  const seen = new Set<string>();
+  const rows = [activeOrganization, ...organizations].filter((organization): organization is WorkspaceOrganization =>
+    Boolean(organization?.id),
+  );
+
+  return rows.filter((organization) => {
+    if (seen.has(organization.id)) return false;
+    seen.add(organization.id);
+    return true;
+  });
+}
+
+export function shouldResetThreadForOrganizationSwitch(currentOrganizationId: string | null | undefined, nextOrganizationId: string) {
+  return Boolean(currentOrganizationId && currentOrganizationId !== nextOrganizationId);
+}
+
 export function requireWorkspaceOrganization<TOrganization extends WorkspaceOrganization>(
   result: AuthResult<TOrganization | null>,
   fallback: string,

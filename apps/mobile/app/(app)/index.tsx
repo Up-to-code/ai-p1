@@ -33,7 +33,7 @@ export default function HomeScreen() {
       >
         <Pressable
           testID="app.open_menu"
-          style={[styles.navBtn, { backgroundColor: colors.surfaceRaised }]}
+          style={[styles.navBtn, { backgroundColor: colors.surface, borderColor: colors.divider }]}
           onPress={() => router.navigate("/(app)/menu")}
           accessibilityLabel={t.menu.title}
         >
@@ -41,7 +41,7 @@ export default function HomeScreen() {
         </Pressable>
 
         <Pressable
-          style={[styles.brandPill, { backgroundColor: colors.surfaceRaised, borderColor: colors.divider }]}
+          style={[styles.brandPill, { backgroundColor: colors.background, borderColor: colors.divider }]}
           onPress={() => router.navigate("/(app)")}
           accessibilityLabel="Qentrah AI"
         >
@@ -51,7 +51,7 @@ export default function HomeScreen() {
 
         <View style={styles.rightActions}>
           <Pressable
-            style={[styles.navBtn, { backgroundColor: colors.surfaceRaised }]}
+            style={[styles.navBtn, { backgroundColor: colors.surface, borderColor: colors.divider }]}
             onPress={() => router.navigate("/(app)/profile")}
             accessibilityLabel={t.common.profile}
           >
@@ -81,11 +81,12 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   navBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 1,
   },
   rightActions: {
     flexDirection: "row",

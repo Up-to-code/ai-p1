@@ -6,6 +6,7 @@ import {
   acceptWorkspaceInviteLink,
   createAndSelectWorkspaceOrganization,
   createWorkspaceInviteLink,
+  mergeWorkspaceOrganizations,
   selectWorkspaceOrganization,
   type AuthResult,
   type WorkspaceOrganization,
@@ -28,11 +29,10 @@ export function useWorkspaceAccess() {
 
   const active = activeOrganization?.data as WorkspaceOrganization | null | undefined;
   const organizations = useMemo(() => {
-    const rows = [...((organizationsQuery?.data ?? []) as WorkspaceOrganization[])];
-    if (active?.id && !rows.some((organization) => organization.id === active.id)) {
-      rows.unshift(active);
-    }
-    return rows;
+    return mergeWorkspaceOrganizations(
+      (organizationsQuery?.data ?? []) as WorkspaceOrganization[],
+      active,
+    );
   }, [active, organizationsQuery?.data]);
   const isPending = Boolean(activeOrganization?.isPending || organizationsQuery?.isPending);
 

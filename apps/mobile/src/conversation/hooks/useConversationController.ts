@@ -31,6 +31,8 @@ import {
 import { useAppStore } from "@/store";
 import type { ConversationMessage } from "@/types/domain";
 
+const LEGACY_PENDING_ASSISTANT_TEXT = "Thinking through your request...";
+
 export function useConversationController() {
   const { canUpgrade, isAuthenticated } = useAuthSession();
   const workspace = useWorkspaceIdentity();
@@ -56,6 +58,7 @@ export function useConversationController() {
   const setDraftText = useAppStore((state) => state.setDraftText);
   const completionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const previousOrganizationIdRef = useRef<string | null>(null);
   const [streamingAssistant, setStreamingAssistant] = useState<ConversationMessage | null>(null);
   const [messagesRefreshKey, setMessagesRefreshKey] = useState(0);
 
@@ -139,6 +142,21 @@ export function useConversationController() {
   }, []);
 
   useEffect(() => {
+    const previousOrganizationId = previousOrganizationIdRef.current;
+    const nextOrganizationId = workspace.organizationId ?? null;
+    previousOrganizationIdRef.current = nextOrganizationId;
+
+    if (previousOrganizationId && previousOrganizationId !== nextOrganizationId) {
+      setActiveThreadId(null);
+      setActiveRunId(null);
+      setPendingPrompt(null);
+      setStreamingAssistant(null);
+      setMessagesRefreshKey((value) => value + 1);
+      refreshThreads?.();
+    }
+  }, [refreshThreads, setActiveRunId, setActiveThreadId, setPendingPrompt, workspace.organizationId]);
+
+  useEffect(() => {
     if (!e2eQaMode && workspace.status === "signed_out") {
       router.push("/(auth)");
     }
@@ -174,6 +192,7 @@ export function useConversationController() {
     }
 
     const startedAt = Date.now();
+    const pendingAssistantText = surfaceCopy.pendingAssistantText;
     startTransition(() => {
       setRunFailureMessage(null);
       clearDraft();
@@ -187,7 +206,7 @@ export function useConversationController() {
         sessionId: threadId ?? "threadless",
         role: "assistant",
         kind: "text",
-        text: "Thinking through your request...",
+        text: pendingAssistantText,
         streamState: "streaming",
         relatedPropertyIds: [],
         createdAt: startedAt + 1,
@@ -267,7 +286,7 @@ export function useConversationController() {
               };
               return {
                 ...base,
-                text: (base.text === "Thinking through your request..." ? "" : base.text) + event.text,
+                text: (base.text === LEGACY_PENDING_ASSISTANT_TEXT || base.text === pendingAssistantText ? "" : base.text) + event.text,
                 streamState: "streaming",
               };
             });
@@ -297,7 +316,7 @@ export function useConversationController() {
           if (event.type === "confirmation_required") {
             setStreamingAssistant((message) => message ? {
               ...message,
-              text: message.text === "Thinking through your request..."
+              text: message.text === LEGACY_PENDING_ASSISTANT_TEXT || message.text === pendingAssistantText
                 ? "This action needs your confirmation before I can run it."
                 : message.text,
               turnMeta: {
@@ -375,7 +394,12 @@ export function useConversationController() {
       setPendingPrompt(null);
       setActiveRunId(null);
       setStreamingAssistant((message) => message ? { ...message, streamState: "complete" } : message);
-      setRunFailureMessage(error instanceof Error ? error.message : surfaceCopy.runFailedTitle);
+      const errorMessage = error instanceof Error ? error.message : surfaceCopy.runFailedTitle;
+      setRunFailureMessage(
+        /^Agent request failed\.?$/i.test(errorMessage)
+          ? surfaceCopy.aiUnavailableBody
+          : errorMessage,
+      );
     } finally {
       if (abortControllerRef.current === abortController) {
         abortControllerRef.current = null;

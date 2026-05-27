@@ -19,6 +19,7 @@ export type AssistantSurfaceCopy = {
   stagePersistDone: string;
   stageFallback: string;
   runtimeChecking: string;
+  pendingAssistantText: string;
   aiUnavailableBody: string;
   runFailedTitle: string;
   composerPlaceholder: string;
@@ -126,9 +127,10 @@ const surfaceCopy: Record<AssistantUiLocale, AssistantSurfaceCopy> = {
     stagePersistDone: "حفظ السياق",
     stageFallback: "يعمل",
     runtimeChecking: "يتحقق من الاتصال",
+    pendingAssistantText: "يفكر في طلبك...",
     aiUnavailableBody: "المساعد غير متاح الآن.",
     runFailedTitle: "تعذر تشغيل المساعد",
-    composerPlaceholder: "اسأل كانترا عن العقارات",
+    composerPlaceholder: "اسأل كانترا",
   },
   en: {
     routeAdvisor: "Advisor",
@@ -146,9 +148,10 @@ const surfaceCopy: Record<AssistantUiLocale, AssistantSurfaceCopy> = {
     stagePersistDone: "Context saved",
     stageFallback: "Working",
     runtimeChecking: "Checking connection",
+    pendingAssistantText: "Thinking through your request...",
     aiUnavailableBody: "The assistant is unavailable right now.",
     runFailedTitle: "Assistant run failed",
-    composerPlaceholder: "Ask Qentrah about real estate",
+    composerPlaceholder: "Ask Qentrah AI",
   },
   fr: {
     routeAdvisor: "Conseil",
@@ -166,6 +169,7 @@ const surfaceCopy: Record<AssistantUiLocale, AssistantSurfaceCopy> = {
     stagePersistDone: "Contexte sauvegardé",
     stageFallback: "En cours",
     runtimeChecking: "Vérification de la connexion",
+    pendingAssistantText: "Je réfléchis à votre demande...",
     aiUnavailableBody: "L’assistant n’est pas disponible pour le moment.",
     runFailedTitle: "Échec de l’assistant",
     composerPlaceholder: "Demandez à Qentrah",

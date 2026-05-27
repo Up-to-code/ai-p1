@@ -70,12 +70,16 @@ export function resolveAssistantDirection(args: {
     return args.turnPresentation.direction;
   }
 
+  const text = args.fallbackText?.trim() ?? "";
+  if (text) {
+    return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(text) ? "rtl" : "ltr";
+  }
+
   if (args.threadPresentation?.direction) {
     return args.threadPresentation.direction;
   }
 
-  const text = args.fallbackText?.trim() ?? "";
-  return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(text) ? "rtl" : "ltr";
+  return "ltr";
 }
 
 export function isRtlDirection(direction: AssistantDirection) {

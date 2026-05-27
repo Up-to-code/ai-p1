@@ -2,144 +2,108 @@ import type { PromptChipData } from "@/conversation/components/PromptChips";
 
 type PromptLocale = "ar" | "en" | "fr";
 
-type PlacePrompt = {
+type WorkspacePrompt = {
   id: string;
   name: string;
   tag: string;
   query: string;
 };
 
-const PLACE_PROMPTS: Record<PromptLocale, PlacePrompt[]> = {
+const WORKSPACE_PROMPTS: Record<PromptLocale, WorkspacePrompt[]> = {
   ar: [
     {
-      id: "new_cairo",
-      name: "القاهرة الجديدة",
-      tag: "فيلات وكومباوند",
-      query: "ورّيني عقارات في القاهرة الجديدة، خصوصًا الفيلات والكومباوندات",
+      id: "project_plan",
+      name: "خطة مشروع",
+      tag: "تنظيم وتنفيذ",
+      query: "حوّل هذه الفكرة إلى خطة مشروع واضحة مع مهام وخطوات متابعة",
     },
     {
-      id: "sheikh_zayed",
-      name: "الشيخ زايد",
-      tag: "كمبوندات مغلقة",
-      query: "دورلي على شقق داخل كمبوندات مغلقة في الشيخ زايد",
+      id: "team_update",
+      name: "تحديث فريق",
+      tag: "ملخص وإجراءات",
+      query: "لخص آخر تطورات مساحة العمل وحدد أهم الإجراءات التالية",
     },
     {
-      id: "maadi",
-      name: "المعادي",
-      tag: "هادية وقريبة",
-      query: "إيه أفضل الفيلات والبيوت المعروضة للبيع في المعادي؟",
+      id: "calendar",
+      name: "تقويم",
+      tag: "مواعيد واجتماعات",
+      query: "ساعدني في ترتيب اجتماع ومتابعة الموعد داخل مساحة العمل",
     },
     {
-      id: "new_capital",
-      name: "العاصمة الجديدة",
-      tag: "استثمار وعائد",
-      query: "ورّيني فرص استثمارية قوية في العاصمة الإدارية الجديدة",
+      id: "tasks",
+      name: "مهام",
+      tag: "أولويات",
+      query: "استخرج قائمة مهام مرتبة بالأولوية من هذه المحادثة",
     },
     {
-      id: "north_coast",
-      name: "الساحل الشمالي",
-      tag: "شاطئ ومصيف",
-      query: "دورلي على شاليهات وفيلات مميزة في الساحل الشمالي",
-    },
-    {
-      id: "october",
-      name: "6 أكتوبر",
-      tag: "عائلي وسعره معقول",
-      query: "ورّيني شقق وكمبوندات مناسبة للعائلات في 6 أكتوبر",
-    },
-    {
-      id: "deep_search",
-      name: "بحث سوق عميق",
-      tag: "تحليل وبيانات",
-      query: "اعمل بحث سوق عميق عن العقارات الفاخرة ذات أفضل عائد استثماري في شرق القاهرة",
+      id: "invite_member",
+      name: "دعوة عضو",
+      tag: "منظمة وأمان",
+      query: "ساعدني في دعوة عضو جديد لمساحة العمل مع الصلاحيات المناسبة",
     },
   ],
   en: [
     {
-      id: "new_cairo",
-      name: "New Cairo",
-      tag: "Villas & Compounds",
-      query: "Show me properties in New Cairo — villas and compounds",
+      id: "project_plan",
+      name: "Project plan",
+      tag: "Tasks and follow-up",
+      query: "Turn this idea into a clear workspace project plan with tasks and next steps",
     },
     {
-      id: "sheikh_zayed",
-      name: "Sheikh Zayed",
-      tag: "Gated Communities",
-      query: "Find gated compound apartments in Sheikh Zayed City",
+      id: "team_update",
+      name: "Team update",
+      tag: "Summary and actions",
+      query: "Summarize the latest workspace activity and identify the next actions",
     },
     {
-      id: "maadi",
-      name: "Maadi",
-      tag: "Leafy Suburb · Nile Views",
-      query: "What are the best villas and houses for sale in Maadi?",
+      id: "calendar",
+      name: "Calendar",
+      tag: "Meetings",
+      query: "Help me schedule a meeting and track the follow-up inside the workspace",
     },
     {
-      id: "new_capital",
-      name: "New Capital",
-      tag: "Rising City · Best ROI",
-      query: "Show investment opportunities in the New Administrative Capital",
+      id: "tasks",
+      name: "Tasks",
+      tag: "Priorities",
+      query: "Extract a prioritized task list from this conversation",
     },
     {
-      id: "north_coast",
-      name: "North Coast",
-      tag: "Sahel · Beachfront",
-      query: "Find beach chalets and villas on Egypt's North Coast",
-    },
-    {
-      id: "october",
-      name: "6th October",
-      tag: "Affordable · Family",
-      query: "Show family apartments and compounds in 6th October City",
-    },
-    {
-      id: "deep_search",
-      name: "Deep Market Search",
-      tag: "Analysis · Data",
-      query: "Perform a deep market search for luxury properties with the best ROI in East Cairo",
+      id: "invite_member",
+      name: "Invite member",
+      tag: "Organization",
+      query: "Help me invite a new member to the workspace with the right permissions",
     },
   ],
   fr: [
     {
-      id: "new_cairo",
-      name: "Nouveau Caire",
-      tag: "Villas et compounds",
-      query: "Montre-moi des biens au Nouveau Caire, surtout des villas et des compounds",
+      id: "project_plan",
+      name: "Plan projet",
+      tag: "Taches et suivi",
+      query: "Transforme cette idee en plan de projet clair avec des taches et prochaines etapes",
     },
     {
-      id: "sheikh_zayed",
-      name: "Sheikh Zayed",
-      tag: "Résidences sécurisées",
-      query: "Trouve des appartements en résidence fermée à Sheikh Zayed",
+      id: "team_update",
+      name: "Point equipe",
+      tag: "Resume et actions",
+      query: "Resume l'activite recente de l'espace de travail et identifie les prochaines actions",
     },
     {
-      id: "maadi",
-      name: "Maadi",
-      tag: "Calme et verdoyant",
-      query: "Quelles sont les meilleures villas et maisons à vendre à Maadi ?",
+      id: "calendar",
+      name: "Calendrier",
+      tag: "Reunions",
+      query: "Aide-moi a planifier une reunion et le suivi dans l'espace de travail",
     },
     {
-      id: "new_capital",
-      name: "Nouvelle Capitale",
-      tag: "Croissance et rendement",
-      query: "Montre-moi les meilleures opportunités d’investissement dans la Nouvelle Capitale Administrative",
+      id: "tasks",
+      name: "Taches",
+      tag: "Priorites",
+      query: "Extrais une liste de taches prioritaires depuis cette conversation",
     },
     {
-      id: "north_coast",
-      name: "North Coast",
-      tag: "Plage et été",
-      query: "Trouve des chalets et villas en bord de mer sur la côte nord de l’Égypte",
-    },
-    {
-      id: "october",
-      name: "6 Octobre",
-      tag: "Familial et accessible",
-      query: "Montre-moi des appartements et compounds familiaux à 6 Octobre",
-    },
-    {
-      id: "deep_search",
-      name: "Recherche de marché",
-      tag: "Analyse et données",
-      query: "Fais une recherche de marché approfondie sur les biens de luxe avec le meilleur rendement dans l’est du Caire",
+      id: "invite_member",
+      name: "Inviter",
+      tag: "Organisation",
+      query: "Aide-moi a inviter un nouveau membre avec les bonnes permissions",
     },
   ],
 };
@@ -150,17 +114,11 @@ export const EDITING_COPY: Record<PromptLocale, { label: string; cancel: string 
   fr: { label: "Modification du message", cancel: "Annuler" },
 };
 
-export const EXPANDED_COPY: Record<PromptLocale, { title: string; done: string; placeholder: string }> = {
-  ar: { title: "اكتب براحتك", done: "تم", placeholder: "اكتب سؤالك أو تفاصيل طلبك..." },
-  en: { title: "Write in detail", done: "Done", placeholder: "Write your question or details..." },
-  fr: { title: "Écrire en détail", done: "Terminé", placeholder: "Écris ta question ou les détails..." },
-};
-
-export function getPreparedPlacePrompts(
+export function getPreparedWorkspacePrompts(
   locale: PromptLocale,
   setDraftText: (value: string) => void,
 ): PromptChipData[] {
-  return PLACE_PROMPTS[locale].map((prompt) => ({
+  return WORKSPACE_PROMPTS[locale].map((prompt) => ({
     id: prompt.id,
     label: prompt.name,
     tag: prompt.tag,

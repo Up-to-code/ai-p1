@@ -26,8 +26,8 @@ export function ConversationStatusBanner({
   onDismiss,
   direction = "ltr",
 }: ConversationStatusBannerProps) {
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, resolvedColorScheme } = useTheme();
+  const styles = useMemo(() => createStyles(colors, resolvedColorScheme), [colors, resolvedColorScheme]);
 
   const Icon = useMemo(() => {
     switch (tone) {
@@ -84,7 +84,10 @@ export function ConversationStatusBanner({
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: any, colorScheme: "light" | "dark") => {
+  const isDark = colorScheme === "dark";
+
+  return StyleSheet.create({
   container: {
     marginHorizontal: theme.spacing.lg,
     marginTop: theme.spacing.sm,
@@ -102,12 +105,12 @@ const createStyles = (colors: any) => StyleSheet.create({
     elevation: 4,
   },
   warning: {
-    backgroundColor: "#FFF6E8",
-    borderColor: "#F59E0B33",
+    backgroundColor: isDark ? "#1F1608" : "#FFF6E8",
+    borderColor: isDark ? "#F59E0B66" : "#F59E0B33",
   },
   error: {
-    backgroundColor: "#FEF2F2",
-    borderColor: "#FCA5A5",
+    backgroundColor: isDark ? "#260D0D" : "#FEF2F2",
+    borderColor: isDark ? "#EF444466" : "#FCA5A5",
   },
   headerRow: {
     flexDirection: "row",
@@ -159,3 +162,4 @@ const createStyles = (colors: any) => StyleSheet.create({
     padding: 4,
   },
 });
+};
