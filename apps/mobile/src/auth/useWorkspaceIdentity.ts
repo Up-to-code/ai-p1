@@ -16,6 +16,18 @@ type WorkspaceIdentityStatus =
   | "needs_workspace"
   | "error";
 
+function getAuthErrorCode(error: unknown) {
+  if (!error || typeof error !== "object") return "";
+  const record = error as { code?: unknown; status?: unknown; message?: unknown };
+  return [record.code, record.status, record.message]
+    .map((value) => typeof value === "string" ? value : typeof value === "number" ? String(value) : "")
+    .join(" ");
+}
+
+function isUnauthorizedAuthError(error: unknown) {
+  return /\b(401|UNAUTHORIZED|Unauthorized)\b/i.test(getAuthErrorCode(error));
+}
+
 export function useWorkspaceIdentity() {
   const { isAuthenticated, isReady } = useAuthSession();
   const [activationError, setActivationError] = useState<string | null>(null);
@@ -65,6 +77,7 @@ export function useWorkspaceIdentity() {
   const status = useMemo<WorkspaceIdentityStatus>(() => {
     if (!isReady) return "loading";
     if (!isAuthenticated) return "signed_out";
+    if (isUnauthorizedAuthError(queryError)) return "signed_out";
     if (queryError) return "error";
     if (activationError) return "error";
     if (organizationId) return "ready";
