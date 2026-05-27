@@ -71,8 +71,8 @@ testing a public client.
 
 See:
 
-- [Environment variables](../../docs/ENVIRONMENT.md)
-- [Setup and configuration](../../SETUP_AND_CONFIGURATION.md)
+- [Environment variables](../../docs/operations/environment.md)
+- [Setup and configuration](../../docs/operations/setup-and-configuration.md)
 - [Partner implementation guide](../../docs/partner-platform/partner-implementation-guide.md)
 
 ## Partners Registration

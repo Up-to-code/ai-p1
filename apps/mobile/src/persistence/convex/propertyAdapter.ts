@@ -69,8 +69,8 @@ export function toPropertyCardVM(property: ListingPropertyRow): PropertyCardVM {
     amenities: property.amenities ?? [],
     broker: property.broker ?? {
       id: `broker-${id}`,
-      name: "ZaneAI Advisor",
-      agency: "ZaneAI",
+      name: "Qentrah Advisor",
+      agency: "Qentrah",
       avatarUrl: property.heroUrl,
       rating: 4.8,
       activeListingsCount: 0,

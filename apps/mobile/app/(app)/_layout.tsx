@@ -10,18 +10,12 @@ export default function AppLayout() {
   const { canAccessApp, isReady } = useAuthSession();
   const { colors } = useTheme();
 
-  const onboardingComplete = useAppStore((state) => state.onboardingComplete);
-
   if (!hydrationComplete || !isReady) {
     return <AppBootScreen />;
   }
 
   if (!canAccessApp) {
     return <Redirect href="/(auth)" />;
-  }
-
-  if (!onboardingComplete) {
-    return <Redirect href="/(onboarding)" />;
   }
 
   return (
@@ -41,14 +35,7 @@ export default function AppLayout() {
       <Stack.Screen name="profile" />
       <Stack.Screen name="appearance" />
       <Stack.Screen name="language" />
-      <Stack.Screen name="compare" />
-      <Stack.Screen name="listing" />
-      <Stack.Screen name="listing-map" />
-      <Stack.Screen name="listing-filters" />
-      <Stack.Screen name="errors/index" />
-      <Stack.Screen name="errors/[kind]" />
-      <Stack.Screen name="property/[id]" />
-      <Stack.Screen name="broker/[id]" />
+      <Stack.Screen name="theories" />
     </Stack>
   );
 }

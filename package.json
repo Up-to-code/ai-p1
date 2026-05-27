@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev:workspace": "npm --workspace @qentrah/workspace run dev",
+    "dev:ws": "npm --workspace @qentrah/workspace run dev",
     "dev:workspace:desktop": "npm --workspace @qentrah/workspace run desktop:dev",
     "build:workspace:desktop": "npm --workspace @qentrah/workspace run desktop:pack",
     "dist:workspace:desktop": "npm --workspace @qentrah/workspace run desktop:dist",

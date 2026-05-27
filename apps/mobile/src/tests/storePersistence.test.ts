@@ -15,7 +15,8 @@ test("store migration drops legacy persisted guest mode", () => {
   ) as Record<string, unknown>;
 
   assert.equal("guestMode" in migrated, false);
-  assert.equal(migrated.onboardingComplete, true);
+  assert.equal("onboardingComplete" in migrated, false);
+  assert.deepEqual(migrated.favoriteThreadIds, []);
   assert.equal("activeThreadId" in migrated, false);
   assert.equal("guestMirrorActiveThreadId" in migrated, false);
 });
@@ -33,18 +34,17 @@ test("store migration clears persisted thread selection from version 2", () => {
     2,
   ) as Record<string, unknown>;
 
-  assert.equal(migrated.onboardingComplete, true);
-  assert.deepEqual(migrated.guestMirrorThreads, [
-    { _id: "thread-1", _creationTime: 100, title: "Thread 1", summary: null, messages: [] },
-  ]);
+  assert.equal("onboardingComplete" in migrated, false);
+  assert.equal("guestMirrorThreads" in migrated, false);
+  assert.deepEqual(migrated.favoriteThreadIds, []);
   assert.equal("activeThreadId" in migrated, false);
   assert.equal("guestMirrorActiveThreadId" in migrated, false);
 });
 
 test("store migration leaves current persisted state unchanged", () => {
   const state = {
-    onboardingComplete: true,
     localePreference: "system",
+    favoriteThreadIds: ["thread-1"],
   };
 
   assert.equal(migratePersistedAppStore(state, MOBILE_STORE_VERSION), state);
@@ -53,10 +53,12 @@ test("store migration leaves current persisted state unchanged", () => {
 test("store migration backfills locale preference for older state", () => {
   const migrated = migratePersistedAppStore(
     {
-      onboardingComplete: true,
+      activeThreadId: "thread-1",
     },
     3,
   ) as Record<string, unknown>;
 
   assert.equal(migrated.localePreference, "system");
+  assert.deepEqual(migrated.favoriteThreadIds, []);
+  assert.equal(migrated.activeThreadId, "thread-1");
 });

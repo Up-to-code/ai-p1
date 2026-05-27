@@ -1,41 +1,39 @@
 import { ScrollView, StyleSheet, View, Pressable, TextInput } from "react-native";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import { Search, ArrowLeft } from "lucide-react-native";
+import { ArrowLeft, ChevronRight, Search, Star } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
-import { EmptyPropertiesState } from "@/decision/components/EmptyPropertiesState";
-import { PropertyCard } from "@/decision/components/PropertyCard";
-import { PropertySkeletonList } from "@/decision/components/PropertySkeleton";
 import { useAppLocalization } from "@/foundation/localization";
 import { Screen } from "@/foundation/primitives/Screen";
 import { Text } from "@/foundation/primitives/Text";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { mirrorIcon } from "@/foundation/utils/layoutDirection";
-import { useSavedPropertiesState } from "@/persistence/convex/usePropertyData";
-import type { PropertyCardVM } from "@/types/domain";
+import { useThreads } from "@/persistence/convex/useConversationData";
+import { useAppStore } from "@/store";
 
 export default function SavedScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
-  const { t, isRTL } = useAppLocalization();
+  const { t, formatDate, isRTL } = useAppLocalization();
   const styles = useMemo(() => createStyles(colors, isRTL), [colors, isRTL]);
   const [searchQuery, setSearchQuery] = useState("");
+  const threads = useThreads();
+  const favoriteThreadIds = useAppStore((state) => state.favoriteThreadIds);
+  const toggleFavoriteThread = useAppStore((state) => state.toggleFavoriteThread);
+  const setActiveThreadId = useAppStore((state) => state.setActiveThreadId);
 
-  const { items: savedRows, isLoading } = useSavedPropertiesState();
-  const savedListings = savedRows
-    .map((item: { property: PropertyCardVM | null }) => item.property)
-    .filter((property: PropertyCardVM | null): property is PropertyCardVM => property !== null);
-
-  const filteredProperties = useMemo(() => {
+  const filteredThreads = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    if (!query) return savedListings;
-    return savedListings.filter((property: PropertyCardVM) =>
-      `${property.title} ${property.locationLabel}`.toLowerCase().includes(query),
-    );
-  }, [savedListings, searchQuery]);
+    return threads
+      .filter((thread: any) => favoriteThreadIds.includes(thread._id))
+      .filter((thread: any) => {
+        if (!query) return true;
+        return `${thread.title ?? t.theories.untitled} ${thread.summary ?? ""}`.toLowerCase().includes(query);
+      });
+  }, [favoriteThreadIds, searchQuery, threads, t.theories.untitled]);
 
   return (
     <Screen safe={false}>
@@ -70,22 +68,54 @@ export default function SavedScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {isLoading ? (
-          <PropertySkeletonList count={3} compact />
-        ) : filteredProperties.length === 0 ? (
-          <EmptyPropertiesState
-            title={searchQuery.trim().length > 0 ? t.saved.noMatchesTitle : t.saved.emptyTitle}
-            body={searchQuery.trim().length > 0 ? t.saved.noMatchesBody : t.saved.emptyBody}
-          />
+        {filteredThreads.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Star size={28} color={colors.textMuted} />
+            <Text variant="title" style={styles.emptyTitle}>
+              {searchQuery.trim().length > 0 ? t.saved.noMatchesTitle : t.saved.emptyTitle}
+            </Text>
+            <Text tone="secondary" style={styles.emptyBody}>
+              {searchQuery.trim().length > 0 ? t.saved.noMatchesBody : t.saved.emptyBody}
+            </Text>
+          </View>
         ) : (
-          <View style={styles.list}>
-            {filteredProperties.map((p: PropertyCardVM, i: number) => (
-              <Animated.View
-                key={p.id}
-                entering={FadeInDown.delay(i * 100).springify()}
-                style={styles.cardItem}
-              >
-                <PropertyCard property={p} style={styles.propertyCard} />
+          <View style={styles.groupCard}>
+            {filteredThreads.map((thread: any, index: number) => (
+              <Animated.View key={thread._id} entering={FadeInDown.delay(index * 60).springify()}>
+                <Pressable
+                  testID={`favorites.thread.${thread._id}`}
+                  style={styles.threadItem}
+                  onPress={() => {
+                    setActiveThreadId(thread._id);
+                    router.replace("/(app)");
+                  }}
+                >
+                  <View style={styles.threadMain}>
+                    <Pressable
+                      accessibilityLabel={t.saved.removeFavorite}
+                      onPress={() => toggleFavoriteThread(thread._id)}
+                      hitSlop={8}
+                      style={styles.favoriteButton}
+                    >
+                      <Star size={18} color={colors.accent} fill={colors.accent} />
+                    </Pressable>
+                    <View style={styles.threadContent}>
+                      <Text variant="body" style={styles.threadTitle} numberOfLines={1}>
+                        {thread.title ?? t.theories.untitled}
+                      </Text>
+                      <Text variant="caption" style={styles.threadPreview} numberOfLines={1}>
+                        {thread.summary ?? t.theories.openThreadBody}
+                      </Text>
+                    </View>
+                    <View style={styles.threadMeta}>
+                      <Text variant="caption" style={styles.threadTime}>
+                        {formatDate(thread._creationTime)}
+                      </Text>
+                      <ChevronRight size={14} color={colors.textMuted} style={mirrorIcon(isRTL)} />
+                    </View>
+                  </View>
+                </Pressable>
+                {index < filteredThreads.length - 1 && <View style={styles.divider} />}
               </Animated.View>
             ))}
           </View>
@@ -155,15 +185,77 @@ const createStyles = (colors: any, isRTL: boolean) => StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 16,
   },
-  list: {
-    gap: 24,
+  groupCard: {
     marginTop: 20,
+    backgroundColor: colors.surface,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: colors.divider,
+    overflow: "hidden",
   },
-  cardItem: {
-    width: "100%",
+  threadItem: {
+    paddingVertical: 18,
+    paddingHorizontal: 18,
   },
-  propertyCard: {
-    marginHorizontal: 0,
-    marginBottom: 0,
+  threadMain: {
+    flexDirection: isRTL ? "row-reverse" : "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  favoriteButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.surfaceRaised,
+  },
+  threadContent: {
+    flex: 1,
+    gap: 2,
+    alignItems: isRTL ? "flex-end" : "flex-start",
+  },
+  threadTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: colors.textPrimary,
+    letterSpacing: -0.4,
+    textAlign: isRTL ? "right" : "left",
+  },
+  threadPreview: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    opacity: 0.7,
+    textAlign: isRTL ? "right" : "left",
+  },
+  threadMeta: {
+    flexDirection: isRTL ? "row-reverse" : "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  threadTime: {
+    fontSize: 11,
+    color: colors.textMuted,
+    fontFamily: "Manrope_700Bold",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.divider,
+    marginHorizontal: 16,
+  },
+  emptyState: {
+    minHeight: 360,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 32,
+    gap: 10,
+  },
+  emptyTitle: {
+    color: colors.textPrimary,
+    textAlign: "center",
+  },
+  emptyBody: {
+    textAlign: "center",
+    maxWidth: 280,
   },
 });

@@ -254,7 +254,7 @@ function parseInlineMarkdown(text: string) {
     // Hashtag: #word
     if (part.startsWith("#") && part.length > 1 && !part.includes(" ")) {
       return (
-        <Text key={i} style={{ color: "#6366f1", fontFamily: "Manrope_700Bold" }}>
+        <Text key={i} style={{ color: "#0B5CFF", fontFamily: "Manrope_700Bold" }}>
           {part}
         </Text>
       );

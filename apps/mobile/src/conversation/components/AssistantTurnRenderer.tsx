@@ -579,7 +579,7 @@ const createStyles = (colors: any) => {
     viewSuggestionsBtnText: {
       fontSize: 12,
       fontFamily: "Manrope_700Bold",
-      color: "#DA3F45",
+      color: "#0B5CFF",
     },
     compactPropertyList: {
       gap: 0,
@@ -593,7 +593,7 @@ const createStyles = (colors: any) => {
     seeAllBtnText: {
       fontSize: 12,
       fontFamily: "Manrope_700Bold",
-      color: "#DA3F45",
+      color: "#0B5CFF",
     },
   });
 };

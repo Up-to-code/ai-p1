@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useForm, useWatch, type FieldErrors, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery as useReactQuery } from "@tanstack/react-query";
-import { BarChart3, Building2, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, CircleHelp, Copy, Edit, FileText, FolderOpen, Gauge, History, ImageIcon, Landmark, Layers3, LayoutGrid, List, Loader2, MapPin, Plus, Share2, Trash2, TrendingUp } from "lucide-react";
+import { BarChart3, Building2, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, CircleHelp, Copy, Edit, FileText, FolderOpen, History, ImageIcon, Landmark, Layers3, LayoutGrid, List, Loader2, MapPin, MoreHorizontal, Plus, Trash2, TrendingUp } from "lucide-react";
 import {
   AppDataTable,
   AppPageHeader,
@@ -110,58 +110,107 @@ function statusTone(status: ProjectStatus) {
 function ProjectTile({ project, onDelete }: { project: Project; onDelete: (project: Project) => void }) {
   const t = useTranslations('Projects');
   const image = project.coverImageUrl || project.image;
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <article className="group overflow-hidden rounded-[24px] border border-zinc-100 bg-white transition-colors hover:border-zinc-300 dark:border-white/5 dark:bg-[#0A0A0A]">
-      <div className="grid min-h-[236px] lg:grid-cols-[minmax(260px,0.8fr)_minmax(0,1fr)]">
-        <Link href={`/projects/${project.id}`} className="relative block min-h-[220px] overflow-hidden bg-zinc-100 text-start focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:bg-white/5">
+    <article className="group relative w-full max-w-[360px] overflow-hidden rounded-[22px] border border-zinc-100 bg-white transition-colors hover:border-zinc-300 dark:border-white/5 dark:bg-[#0A0A0A] sm:w-[min(100%,360px)]">
+      <Link
+        href={`/projects/${project.id}`}
+        className="block focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-zinc-900/10 dark:focus-visible:ring-white/10"
+      >
+        <div className="relative aspect-[1.05] min-h-[280px] overflow-hidden bg-zinc-100 text-start dark:bg-white/5">
           {image ? (
-            <Image src={image} alt={project.name} fill sizes="(max-width: 1024px) 100vw, 480px" className="object-cover opacity-85 grayscale transition duration-700 group-hover:scale-[1.03] group-hover:opacity-100 group-hover:grayscale-0" />
+            <Image
+              src={image}
+              alt={project.name}
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover opacity-85 grayscale transition duration-500 group-hover:scale-[1.025] group-hover:opacity-100 group-hover:grayscale-0"
+            />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-300 dark:bg-white/5 dark:text-white/20">
               <Building2 className="h-8 w-8" />
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
-          <div className="pointer-events-none absolute -end-16 -top-16 h-40 w-40 rounded-full bg-[#0B5CFF]/25 opacity-30 blur-3xl transition-opacity group-hover:opacity-80" />
-          <div className="absolute inset-x-0 bottom-0 p-5">
-            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-white/55">{project.reference}</p>
-            <h3 className="mt-2 line-clamp-2 text-lg font-black leading-tight text-white">{project.name}</h3>
-            <p className="mt-2 flex min-w-0 items-center gap-1.5 text-[10px] font-bold text-white/65">
-              <MapPin className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{project.city || project.area || "—"}</span>
-            </p>
-          </div>
-        </Link>
-
-        <div className="flex min-w-0 flex-col justify-between p-5">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
-              <p className="mt-4 line-clamp-2 text-sm font-black text-zinc-950 dark:text-white">{project.developer || project.type}</p>
-              <p className="mt-1 truncate text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-400">{t(`types.${project.type}`)}</p>
-            </div>
-            <div className="flex shrink-0 items-center gap-1">
-              <Link href={`/projects/${project.id}/edit`} aria-label={`Edit ${project.name}`} className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-400 transition hover:bg-zinc-50 hover:text-zinc-950 focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:hover:bg-white/[0.06] dark:hover:text-white">
-                <Edit className="h-3.5 w-3.5" />
-              </Link>
-              <button type="button" aria-label={`Delete ${project.name}`} onClick={() => onDelete(project)} className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-400 transition hover:bg-red-50 hover:text-red-500 focus-visible:ring-2 focus-visible:ring-red-500/20 dark:hover:bg-red-500/10">
-                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-              </button>
-            </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/75 via-zinc-950/18 to-transparent transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 md:opacity-65" />
+          <div className="pointer-events-none absolute -end-14 -top-14 h-36 w-36 rounded-full bg-[#0B5CFF]/25 opacity-35 blur-3xl transition-opacity duration-300 group-hover:opacity-90 group-focus-visible:opacity-90" />
+          <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-[#8AB2FF]/80 to-transparent opacity-40 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100" />
+          <div className="absolute right-4 top-4">
+            <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
           </div>
 
-          <div className="mt-6 grid grid-cols-2 border-t border-zinc-100 pt-4 dark:border-white/5">
-            <div className="min-w-0 pe-4">
-              <p className="text-[9px] font-black uppercase tracking-[0.14em] text-zinc-400">{t('card.value')}</p>
-              <p className="mt-2 truncate text-base font-black text-zinc-950 dark:text-white">{project.priceRange}</p>
+          <div className="absolute inset-x-0 bottom-0 p-4">
+            <div className="flex min-w-0 items-end justify-between gap-4 transition duration-300 group-hover:-translate-y-8 group-focus-visible:-translate-y-8">
+              <div className="min-w-0">
+                <p className="text-[9px] font-black uppercase tracking-[0.14em] text-white/50">{project.reference}</p>
+                <h3 className="mt-2 line-clamp-2 text-lg font-black leading-tight text-white">{project.name}</h3>
+                <p className="mt-2 flex min-w-0 items-center gap-1.5 text-[10px] font-bold text-white/65">
+                  <MapPin className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{project.city || project.area || "—"}</span>
+                </p>
+              </div>
+              <div className="shrink-0 text-end">
+                <p className="text-[9px] font-black uppercase tracking-[0.14em] text-white/50">{t("card.value")}</p>
+                <p className="mt-1 max-w-36 truncate text-sm font-black text-white">{project.priceRange}</p>
+              </div>
             </div>
-            <div className="min-w-0 border-s border-zinc-100 ps-4 dark:border-white/5">
-              <p className="text-[9px] font-black uppercase tracking-[0.14em] text-zinc-400">{t('card.units')}</p>
-              <p className="mt-2 text-base font-black text-zinc-950 dark:text-white">{project.units}</p>
+
+            <div className="mt-4 flex translate-y-3 items-center justify-between border-t border-white/10 pt-3 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
+              <div className="flex min-w-0 items-center gap-2 text-[10px] font-bold text-white/60">
+                <Landmark className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{project.developer || t(`types.${project.type}`)}</span>
+              </div>
+              <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.12em] text-white/75">
+                {project.units} {t("card.units")}
+              </span>
             </div>
           </div>
         </div>
+      </Link>
+
+      <div className="absolute left-4 top-4 z-20" dir="ltr">
+        <button
+          type="button"
+          aria-expanded={menuOpen}
+          aria-label={t("card.actions")}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setMenuOpen((value) => !value);
+          }}
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-zinc-950/35 text-white shadow-none backdrop-blur-md transition hover:bg-zinc-950/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+        >
+          <MoreHorizontal className="h-4 w-4" />
+        </button>
+
+        {menuOpen && (
+          <div className="mt-2 w-36 overflow-hidden rounded-2xl border border-white/15 bg-zinc-950/70 p-1 text-white shadow-none backdrop-blur-xl" dir="rtl">
+            <Link
+              href={`/projects/${project.id}/edit`}
+              className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold transition hover:bg-white/10"
+              onClick={(event) => {
+                event.stopPropagation();
+                setMenuOpen(false);
+              }}
+            >
+              <Edit className="h-3.5 w-3.5" />
+              {t("card.edit")}
+            </Link>
+            <button
+              type="button"
+              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-start text-xs font-bold text-red-200 transition hover:bg-red-500/15 hover:text-red-100"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                setMenuOpen(false);
+                onDelete(project);
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              {t("card.delete")}
+            </button>
+          </div>
+        )}
       </div>
     </article>
   );
@@ -272,7 +321,8 @@ export function ProjectsWorkspace() {
     <AppPageShell maxWidth="full" contentClassName="space-y-8">
       <AppPageHeader
         eyebrow={t('eyebrow')}
-        title={t('title') + "."}
+        subtitle={t('subtitle')}
+        title={t('title')}
         actions={<Link href="/projects/create"><AppPrimaryButton><Plus className="me-2 h-3.5 w-3.5" />{t('add')}</AppPrimaryButton></Link>}
       />
       <ProjectPortfolioStrip stats={stats} />
@@ -297,7 +347,7 @@ export function ProjectsWorkspace() {
       ) : isQueryBlocked ? (
         <HttpQueryState query={projectsQuery} variant={view === "grid" ? "grid" : "table"} />
       ) : view === "grid" ? (
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <div className="flex flex-wrap gap-4">
           {filteredProjects.map((project) => <ProjectTile key={project.id} project={project} onDelete={setDeleting} />)}
         </div>
       ) : (
@@ -368,7 +418,6 @@ export function ProjectDetailScreen({ id }: { id: string }) {
   const soldUnits = units.filter((unit) => String(unit.status).toLowerCase() === "sold").length;
   const pendingUnits = units.filter((unit) => String(unit.status).toLowerCase() === "pending").length;
   const liveUnitCount = units.length;
-  const launchReadiness = project?.status === "approved" ? 92 : project?.status === "pending" ? 68 : project?.status === "rejected" ? 32 : 48;
   const salesStats = useMemo(() => [
     { label: td('sales.metrics.totalUnits'), value: liveUnitCount, icon: Layers3 },
     { label: td('sales.metrics.availableUnits'), value: availableUnits, icon: Landmark, iconClassName: "text-emerald-500" },
@@ -400,29 +449,41 @@ export function ProjectDetailScreen({ id }: { id: string }) {
     return <AppPageShell><DetailNotFoundState title={t('detail.notFound')} description={t('detail.notFoundDesc')} backHref="/projects" backLabel={t('detail.back')} /></AppPageShell>;
   }
 
+  const locationLabel = [project.city, project.area].filter(Boolean).join(" · ");
+  const optionalCoreDetailRows: Array<[ReactNode, ReactNode | null | undefined | ""]> = [
+    [t('detail.labels.type'), t(`types.${project.type}`)],
+    [t('detail.labels.developer'), project.developer],
+    [t('detail.labels.city'), project.city],
+    [t('detail.labels.area'), project.area],
+    [td('rega.authNo'), project.regaAuthorizationNo],
+    [td('registry.planNo'), project.planNumber],
+    [td('registry.plotNo'), project.plotNumber],
+    ...(documentAssets.length > 0 ? [[td('documents.count'), String(documentAssets.length)] as [ReactNode, ReactNode]] : []),
+  ];
+  const coreDetailRows = optionalCoreDetailRows.filter((row): row is [ReactNode, ReactNode] => Boolean(row[1]));
+
   return (
-    <AppPageShell contentClassName="space-y-8 pb-14">
-      <Tabs defaultValue="details" className="space-y-8">
+    <AppPageShell contentClassName="space-y-6 pb-14">
+      <Tabs defaultValue="overview" className="space-y-6">
         <section className="space-y-5 text-start">
-          <div className="flex flex-col gap-4 border-b border-zinc-100 pb-6 dark:border-white/5 xl:flex-row xl:items-start xl:justify-between">
-            <div className="min-w-0 max-w-4xl">
-              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{project.developer}</p>
-              <h1 className="mt-2 text-3xl font-black leading-tight text-zinc-950 dark:text-white md:text-5xl">{project.name}</h1>
+          <div className="grid gap-5 border-b border-zinc-100 pb-6 dark:border-white/5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
+            <div className="min-w-0 max-w-5xl">
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
+                {locationLabel && <ProjectMetaPill icon={MapPin}>{locationLabel}</ProjectMetaPill>}
+                {project.developer && <ProjectMetaPill icon={Building2}>{project.developer}</ProjectMetaPill>}
+              </div>
+              <h1 className="mt-4 text-3xl font-black leading-tight text-zinc-950 dark:text-white md:text-5xl">{project.name}</h1>
               <p className="mt-3 max-w-3xl text-sm font-semibold leading-7 text-zinc-600 dark:text-zinc-300">{project.description}</p>
               <div className="mt-4 flex flex-wrap items-center gap-2">
-                <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
                 <ProjectMetaPill icon={Copy}>{project.reference}</ProjectMetaPill>
-                <ProjectMetaPill icon={MapPin}>{project.city}</ProjectMetaPill>
-                <ProjectMetaPill icon={Building2}>{t(`types.${project.type}`)}</ProjectMetaPill>
                 <ProjectMetaPill icon={Layers3}>{project.units} {t('card.units')}</ProjectMetaPill>
-                <ProjectMetaPill icon={Landmark}>{project.priceRange}</ProjectMetaPill>
+                {project.priceRange && <ProjectMetaPill icon={Landmark}>{project.priceRange}</ProjectMetaPill>}
+                {project.regaAuthorizationNo && <ProjectMetaPill icon={FileText}>{project.regaAuthorizationNo}</ProjectMetaPill>}
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 xl:justify-end">
-              <Button variant="outline" size="icon-lg" aria-label={td('share')} className="rounded-xl border-zinc-200 dark:border-white/10">
-                <Share2 className="h-4 w-4" />
-              </Button>
               <Link href={`/projects/${project.id}/edit`}>
                 <AppPrimaryButton>
                   <Edit className="me-2 h-3.5 w-3.5" />
@@ -436,64 +497,10 @@ export function ProjectDetailScreen({ id }: { id: string }) {
             </div>
           </div>
 
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-            <div className="relative min-h-[360px] overflow-hidden rounded-[24px] border border-zinc-100 bg-zinc-100 dark:border-white/5 dark:bg-white/[0.04]">
-              {project.coverImageUrl ? (
-                <Image src={project.coverImageUrl} alt={project.name} fill sizes="(max-width: 1280px) 100vw, 900px" className="object-cover" priority />
-              ) : (
-                <div className="flex h-full min-h-[360px] items-center justify-center bg-zinc-200 text-zinc-400 dark:bg-white/[0.05] dark:text-white/25">
-                  <Building2 className="h-12 w-12" />
-                </div>
-              )}
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-zinc-950/85 to-transparent p-5 text-white">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex h-8 items-center rounded-full bg-white px-3 text-xs font-black text-zinc-950">{project.priceRange}</span>
-                  <span className="inline-flex h-8 items-center rounded-full bg-white/15 px-3 text-xs font-black text-white">{project.units} {t('card.units')}</span>
-                  <span className="inline-flex h-8 items-center rounded-full bg-emerald-500/20 px-3 text-xs font-black text-emerald-100">{td('metrics.ready')} {launchReadiness}%</span>
-                </div>
-              </div>
-            </div>
-
-            <aside className="rounded-[24px] border border-zinc-100 bg-white p-6 dark:border-white/5 dark:bg-[#0A0A0A]">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('metrics.launchReadiness')}</p>
-                  <p className="mt-2 text-4xl font-black text-zinc-950 dark:text-white">{launchReadiness}%</p>
-                </div>
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-300">
-                  <Gauge className="h-4 w-4" />
-                </span>
-              </div>
-              <div className="mt-5 space-y-4">
-                <ReadinessBar label={td('metrics.inventoryCoverage')} value={inventoryCoverage} />
-                <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-zinc-200/70 dark:bg-white/10">
-                  <CompactFact label={td('metrics.live')} value={liveUnitCount} />
-                  <CompactFact label={td('metrics.available')} value={availableUnits} />
-                </div>
-                <div className="space-y-3 border-t border-zinc-100 pt-4 dark:border-white/5">
-                  <MiniMovement label={td('sales.status.available')} value={availableUnits} total={Math.max(liveUnitCount, 1)} className="bg-emerald-500" />
-                  <MiniMovement label={td('sales.status.reserved')} value={reservedUnits} total={Math.max(liveUnitCount, 1)} className="bg-blue-500" />
-                  <MiniMovement label={td('sales.status.sold')} value={soldUnits} total={Math.max(liveUnitCount, 1)} className="bg-zinc-400" />
-                </div>
-                <div className="flex flex-wrap gap-2 border-t border-zinc-100 pt-4 dark:border-white/5">
-                  <ProjectMetaPill icon={MapPin}>{project.area}</ProjectMetaPill>
-                  <ProjectMetaPill icon={FileText}>{project.regaAuthorizationNo || td('empty.value')}</ProjectMetaPill>
-                </div>
-              </div>
-            </aside>
-          </div>
-
-          <AppStatsGrid stats={[
-            { label: String(t('detail.labels.units')), value: project.units, icon: Layers3, iconClassName: "text-blue-500" },
-            { label: String(td('metrics.live')), value: liveUnitCount, icon: FolderOpen },
-            { label: String(td('metrics.available')), value: availableUnits, icon: Landmark, iconClassName: "text-emerald-500" },
-            { label: String(td('metrics.ready')), value: `${launchReadiness}%`, icon: Gauge, iconClassName: "text-amber-500" },
-          ]} />
-
           <AppTabsList
             className="gap-8"
             tabs={[
-              { value: "details", label: td('tabs.details'), icon: Building2 },
+              { value: "overview", label: td('tabs.overview'), icon: LayoutGrid },
               { value: "inventory", label: td('tabs.inventory'), icon: Layers3 },
               { value: "documents", label: td('tabs.documents'), icon: FileText },
               { value: "sales", label: td('tabs.sales'), icon: TrendingUp },
@@ -502,70 +509,59 @@ export function ProjectDetailScreen({ id }: { id: string }) {
           />
         </section>
 
-        <TabsContent value="details" className="space-y-5">
-          <section className="grid gap-6 text-start xl:grid-cols-[minmax(0,1fr)_420px]">
-            <div className="min-w-0">
-              <AppSection tone="muted" contentClassName="min-w-0">
-                <ResourceMediaBrowser
-                  organizationId={workspaceOrganizationId}
-                  resourceType="project"
-                  resourceId={project.id}
-                  mode="gallery"
-                  title={td('gallery.title')}
-                  description={td('gallery.description')}
-                  addLabel={td('gallery.add')}
-                  emptyTitle={td('gallery.emptyTitle')}
-                  emptyDescription={td('gallery.emptyDesc')}
-                  uploadTitle={td('gallery.uploadTitle')}
-                  uploadDescription={td('gallery.uploadDesc')}
-                  uploadPick={td('gallery.uploadPick')}
-                  unsupported={t('form.galleryUnsupported')}
-                  openLabel={td('actions.view')}
-                  coverLabel={td('gallery.cover')}
-                  deleteLabel={td('actions.delete')}
-                  statusQueued={td('uploadStatus.queued')}
-                  statusUploading={td('uploadStatus.uploading')}
-                  statusUploaded={td('uploadStatus.uploaded')}
-                  statusFailed={td('uploadStatus.failed')}
-                  removeLabel={td('actions.delete')}
-                  retryLabel={td('uploadStatus.retry')}
-                  imageLimit={t('form.galleryImageLimit')}
-                  previewLimit={5}
-                />
-              </AppSection>
-            </div>
+        <TabsContent value="overview" className="space-y-6">
+          <section className="grid gap-6 text-start xl:grid-cols-[minmax(0,1fr)_380px]">
+            <AppSection
+              tone="muted"
+              title={td('overview.mediaTitle')}
+              description={td('overview.mediaDesc')}
+              contentClassName="min-w-0"
+            >
+              <ResourceMediaBrowser
+                organizationId={workspaceOrganizationId}
+                resourceType="project"
+                resourceId={project.id}
+                mode="gallery"
+                title={td('gallery.title')}
+                description={td('gallery.description')}
+                addLabel={td('gallery.add')}
+                emptyTitle={td('gallery.emptyTitle')}
+                emptyDescription={td('gallery.emptyDesc')}
+                uploadTitle={td('gallery.uploadTitle')}
+                uploadDescription={td('gallery.uploadDesc')}
+                uploadPick={td('gallery.uploadPick')}
+                unsupported={t('form.galleryUnsupported')}
+                openLabel={td('actions.view')}
+                coverLabel={td('gallery.cover')}
+                deleteLabel={td('actions.delete')}
+                statusQueued={td('uploadStatus.queued')}
+                statusUploading={td('uploadStatus.uploading')}
+                statusUploaded={td('uploadStatus.uploaded')}
+                statusFailed={td('uploadStatus.failed')}
+                removeLabel={td('actions.delete')}
+                retryLabel={td('uploadStatus.retry')}
+                imageLimit={t('form.galleryImageLimit')}
+                previewLimit={5}
+              />
+            </AppSection>
 
             <div className="grid content-start gap-5">
-              <AppSection>
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('registry.title')}</p>
-                    <h2 className="mt-1 text-lg font-black text-zinc-950 dark:text-white">{project.reference}</h2>
-                  </div>
-                  <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
+              <AppSection title={td('overview.unitsTitle')} description={td('overview.unitsDesc')}>
+                <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-zinc-200/70 dark:bg-white/10">
+                  <CompactFact label={t('detail.labels.units')} value={project.units} />
+                  <CompactFact label={td('metrics.live')} value={liveUnitCount} />
+                  <CompactFact label={td('metrics.available')} value={availableUnits} />
+                  <CompactFact label={td('sales.status.reserved')} value={reservedUnits} />
                 </div>
-                <div className="mt-5 space-y-5">
-                  <ReadinessBar label={td('metrics.launchReadiness')} value={launchReadiness} />
+                <div className="mt-5 space-y-4 border-t border-zinc-100 pt-5 dark:border-white/5">
                   <ReadinessBar label={td('metrics.inventoryCoverage')} value={inventoryCoverage} />
-                  <RegistryRows rows={[
-                    [t('detail.labels.type'), t(`types.${project.type}`)],
-                    [t('detail.labels.developer'), project.developer],
-                    [t('detail.labels.city'), project.city],
-                    [t('detail.labels.area'), project.area],
-                    [td('rega.authNo'), project.regaAuthorizationNo || td('empty.value')],
-                    [td('registry.planNo'), project.planNumber || td('empty.value')],
-                    [td('registry.plotNo'), project.plotNumber || td('empty.value')],
-                    [td('registry.postalIdentity'), project.postalIdentity || td('empty.value')],
-                    [td('rega.title'), project.regaExpiresAt ? td('rega.expires', { date: project.regaExpiresAt }) : td('empty.value')],
-                  ]} />
+                  <MiniMovement label={td('sales.status.available')} value={availableUnits} total={Math.max(liveUnitCount, 1)} className="bg-emerald-500" />
+                  <MiniMovement label={td('sales.status.sold')} value={soldUnits} total={Math.max(liveUnitCount, 1)} className="bg-zinc-400" />
                 </div>
               </AppSection>
 
-              <AppSection title={td('documents.title')}>
-                <RegistryRows rows={[
-                  [td('documents.count'), String(documentAssets.length)],
-                  [td('documents.latest'), documentAssets[0]?.name ?? td('documents.none')],
-                ]} />
+              <AppSection title={td('overview.registryTitle')}>
+                <RegistryRows rows={coreDetailRows} />
               </AppSection>
             </div>
           </section>

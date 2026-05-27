@@ -35,8 +35,8 @@ test("toPropertyCardVM falls back to ai summary, empty amenities, default broker
   });
   assert.deepEqual(vm.broker, {
     id: "broker-prop-marina-01",
-    name: "ZaneAI Advisor",
-    agency: "ZaneAI",
+    name: "Qentrah Advisor",
+    agency: "Qentrah",
     avatarUrl: property.heroUrl,
     rating: 4.8,
     activeListingsCount: 0,
@@ -64,7 +64,7 @@ test("toPropertyCardVM preserves enriched optional property fields when present"
     broker: {
       id: "broker-42",
       name: "Salma Adel",
-      agency: "ZaneAI Prime",
+      agency: "Qentrah Prime",
       avatarUrl: "https://example.com/broker.jpg",
       rating: 4.9,
       activeListingsCount: 12,

@@ -7,14 +7,14 @@ import { useAppStore } from "@/store";
 
 export default function AuthLayout() {
   const hydrationComplete = useAppStore((state) => state.hydrationComplete);
-  const { canAccessApp, canUpgrade, isReady } = useAuthSession();
+  const { canAccessApp, isReady } = useAuthSession();
   const { colors } = useTheme();
 
   if (!hydrationComplete || !isReady) {
     return <AppBootScreen />;
   }
 
-  if (canAccessApp && !canUpgrade) {
+  if (canAccessApp) {
     return <Redirect href="/(app)" />;
   }
 

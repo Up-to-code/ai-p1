@@ -228,8 +228,8 @@ export const PropertyCard = memo(function PropertyCard({
             >
               <Heart
                 size={16}
-                color={isSaved ? "#DA3F45" : "#FFFFFF"}
-                fill={isSaved ? "#DA3F45" : "transparent"}
+                color={isSaved ? "#0B5CFF" : "#FFFFFF"}
+                fill={isSaved ? "#0B5CFF" : "transparent"}
               />
             </Pressable>
             {isTopMatch && (
@@ -250,7 +250,7 @@ export const PropertyCard = memo(function PropertyCard({
             style={[styles.chatActionBtn, styles.chatActionCall]}
           >
             <Text style={[styles.chatActionText, styles.chatActionCallText]}>{t.propertyCard.call}</Text>
-            <Phone size={18} color="#DA3F45" />
+            <Phone size={18} color="#0B5CFF" />
           </Pressable>
 
           <Pressable
@@ -476,7 +476,7 @@ const createStyles = (
     chatBadgePillText: {
       fontSize: 10,
       fontFamily: "Manrope_800ExtraBold",
-      color: "#DA3F45",
+      color: "#0B5CFF",
     },
     chatImageBadge: {
       position: "absolute",
@@ -494,7 +494,7 @@ const createStyles = (
       width: 4,
       height: 4,
       borderRadius: 2,
-      backgroundColor: "#DA3F45",
+      backgroundColor: "#0B5CFF",
     },
     chatImageHeartBtn: {
       position: "absolute",
@@ -611,7 +611,7 @@ const createStyles = (
       fontFamily: "Manrope_800ExtraBold",
     },
     chatActionCallText: {
-      color: "#DA3F45",
+      color: "#0B5CFF",
     },
     chatActionWhatsappText: {
       color: "#25D366",

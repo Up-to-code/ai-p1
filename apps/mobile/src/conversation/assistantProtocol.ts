@@ -128,7 +128,7 @@ const surfaceCopy: Record<AssistantUiLocale, AssistantSurfaceCopy> = {
     runtimeChecking: "يتحقق من الاتصال",
     aiUnavailableBody: "المساعد غير متاح الآن.",
     runFailedTitle: "تعذر تشغيل المساعد",
-    composerPlaceholder: "اسأل Zane عن العقارات",
+    composerPlaceholder: "اسأل كانترا عن العقارات",
   },
   en: {
     routeAdvisor: "Advisor",
@@ -148,7 +148,7 @@ const surfaceCopy: Record<AssistantUiLocale, AssistantSurfaceCopy> = {
     runtimeChecking: "Checking connection",
     aiUnavailableBody: "The assistant is unavailable right now.",
     runFailedTitle: "Assistant run failed",
-    composerPlaceholder: "Ask Zane about real estate",
+    composerPlaceholder: "Ask Qentrah about real estate",
   },
   fr: {
     routeAdvisor: "Conseil",
@@ -168,7 +168,7 @@ const surfaceCopy: Record<AssistantUiLocale, AssistantSurfaceCopy> = {
     runtimeChecking: "Vérification de la connexion",
     aiUnavailableBody: "L’assistant n’est pas disponible pour le moment.",
     runFailedTitle: "Échec de l’assistant",
-    composerPlaceholder: "Demandez à Zane",
+    composerPlaceholder: "Demandez à Qentrah",
   },
 };
 

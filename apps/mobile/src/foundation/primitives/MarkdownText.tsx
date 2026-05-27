@@ -227,11 +227,11 @@ const styles = StyleSheet.create({
     fontFamily: "Manrope_600SemiBold",
   },
   hashtag: {
-    color: "#6366f1",
+    color: "#0B5CFF",
     fontFamily: "Manrope:700Bold",
   },
   inlineBadge: {
-    color: "#DA3F45", // Accent color
+    color: "#0B5CFF",
     textDecorationLine: "underline",
     fontSize: 14,
     fontFamily: "Manrope_700Bold",

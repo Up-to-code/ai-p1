@@ -74,7 +74,7 @@ export function AuthAccessScreen({ mode, isPending, onGoogleSignIn }: AuthAccess
   );
 
   return (
-    <main className="min-h-svh overflow-x-hidden bg-[oklch(97.5%_0.006_255)] text-foreground lg:grid lg:min-h-screen lg:grid-cols-2">
+    <main className="min-h-svh overflow-x-hidden bg-[oklch(97.5%_0.006_255)] text-foreground dark:bg-[oklch(8.5%_0.012_255)] lg:grid lg:min-h-screen lg:grid-cols-2">
       <section className={`flex min-h-svh flex-col px-4 py-5 sm:px-8 lg:min-h-screen lg:px-12 lg:py-8 ${isAr ? "lg:[grid-column:2]" : "lg:[grid-column:1]"}`}>
         <div className="flex items-center justify-between gap-4">
           <Link href="/" className="group flex items-center gap-3">
@@ -130,11 +130,13 @@ export function AuthAccessScreen({ mode, isPending, onGoogleSignIn }: AuthAccess
         </div>
       </section>
 
-      <section className={`relative hidden min-h-screen overflow-hidden bg-[#f5f4f0] text-[#111111] lg:block ${isAr ? "lg:[grid-column:1] lg:[grid-row:1]" : "lg:[grid-column:2] lg:[grid-row:1]"}`}>
+      <section
+        className={`relative hidden min-h-screen overflow-hidden bg-[var(--auth-visual-base)] text-[var(--auth-visual-text)] [--auth-visual-base:#f5f4f0] [--auth-visual-copy:rgba(17,17,17,0.62)] [--auth-visual-logo-bg:rgba(245,244,240,0.75)] [--auth-visual-logo-border:rgba(17,17,17,0.1)] [--auth-visual-text:#111111] dark:[--auth-visual-base:oklch(9.5%_0.014_255)] dark:[--auth-visual-copy:oklch(78%_0.014_255)] dark:[--auth-visual-logo-bg:oklch(14%_0.016_255_/_0.76)] dark:[--auth-visual-logo-border:rgba(255,255,255,0.12)] dark:[--auth-visual-text:oklch(96%_0.008_255)] lg:block ${isAr ? "lg:[grid-column:1] lg:[grid-row:1]" : "lg:[grid-column:2] lg:[grid-row:1]"}`}
+      >
         <video
           aria-hidden="true"
           autoPlay
-          className="absolute inset-0 h-full w-full scale-105 object-cover"
+          className="absolute inset-0 h-full w-full scale-105 object-cover transition-opacity dark:opacity-45"
           loop
           muted
           playsInline
@@ -145,7 +147,7 @@ export function AuthAccessScreen({ mode, isPending, onGoogleSignIn }: AuthAccess
           style={{
             height: "68%",
             background:
-              "linear-gradient(to top, #f5f4f0 0%, #f5f4f0 18%, rgba(245,244,240,0.86) 36%, rgba(245,244,240,0.5) 56%, rgba(245,244,240,0.15) 76%, transparent 100%)",
+              "linear-gradient(to top, var(--auth-visual-base) 0%, var(--auth-visual-base) 18%, color-mix(in srgb, var(--auth-visual-base) 86%, transparent) 36%, color-mix(in srgb, var(--auth-visual-base) 50%, transparent) 56%, color-mix(in srgb, var(--auth-visual-base) 15%, transparent) 76%, transparent 100%)",
           }}
         />
         <div
@@ -171,7 +173,7 @@ export function AuthAccessScreen({ mode, isPending, onGoogleSignIn }: AuthAccess
 
         <div className="relative z-10 flex min-h-screen flex-col justify-between p-10">
           <Link href="/" className="group flex w-fit items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-[#111111]/10 bg-[#f5f4f0]/75 text-[#111111] backdrop-blur-xl transition group-hover:bg-[#f5f4f0]">
+            <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-[var(--auth-visual-logo-border)] bg-[var(--auth-visual-logo-bg)] text-[var(--auth-visual-text)] backdrop-blur-xl transition group-hover:bg-[var(--auth-visual-base)]">
               <BrandMark className="h-5.5 w-5.5" priority />
             </span>
             <span className="text-base font-black tracking-tight">
@@ -180,13 +182,15 @@ export function AuthAccessScreen({ mode, isPending, onGoogleSignIn }: AuthAccess
           </Link>
 
           <div className="max-w-xl pb-6">
-            <p className="mb-5 max-w-sm text-[10px] font-black uppercase leading-5 tracking-[0.08em] text-[#0b5cff]">
-              {t("visualEyebrow")}
-            </p>
+            {t("visualEyebrow") ? (
+              <p className="mb-5 max-w-sm text-[10px] font-black uppercase leading-5 tracking-[0.08em] text-[#0b5cff]">
+                {t("visualEyebrow")}
+              </p>
+            ) : null}
             <h2 className="max-w-[14ch] text-5xl font-light leading-none tracking-0 xl:text-6xl rtl:leading-[1.16]">
               {t("visualTitle")}
             </h2>
-            <p className="mt-6 max-w-md text-base font-medium leading-8 text-[#111111]/62">
+            <p className="mt-6 max-w-md text-base font-medium leading-8 text-[var(--auth-visual-copy)]">
               {t("visualDescription")}
             </p>
           </div>

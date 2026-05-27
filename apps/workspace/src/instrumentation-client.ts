@@ -1,8 +1,9 @@
 import * as Sentry from "@sentry/nextjs";
 
 const tracesSampleRate = process.env.NODE_ENV === "development" ? 1.0 : 0.1;
+const enableBrowserProfiling = process.env.NODE_ENV === "production";
 const profileSessionSampleRate =
-  process.env.NODE_ENV === "production" ? 0.1 : 1.0;
+  enableBrowserProfiling ? 0.1 : 0;
 const replaysSessionSampleRate =
   process.env.NODE_ENV === "development" ? 1.0 : 0.1;
 
@@ -21,7 +22,7 @@ Sentry.init({
       maskAllInputs: true,
       blockAllMedia: true,
     }),
-    Sentry.browserProfilingIntegration(),
+    ...(enableBrowserProfiling ? [Sentry.browserProfilingIntegration()] : []),
     Sentry.consoleLoggingIntegration({ levels: ["warn", "error"] }),
   ],
 });

@@ -25,7 +25,6 @@ export default function InstitutionalLanding() {
       <Navbar />
 
       <main className="flex-1">
-        {/* 1. HERO SECTION */}
         <AnimatedHomeHero
           eyebrow={t("hero.eyebrow")}
           title={t("hero.title")}
@@ -35,31 +34,22 @@ export default function InstitutionalLanding() {
           isAr={isAr}
         />
 
-        {/* 2. SOCIAL PROOF */}
         <LogoCloud />
 
-        {/* 3. PROBLEM EXPOSITION */}
         <ProblemSection locale={locale} />
 
-        {/* 5. APPS & PARTNER PLATFORM */}
         <AppsPlatform locale={locale} />
 
-        {/* 6. VISUAL SHOWCASE */}
         <WebsiteTemplatesShowcase locale={locale} />
 
-        {/* 6. BUILDER COMPATIBILITY */}
         <WebsiteBuilderConnect locale={locale} />
 
-        {/* 7. AI AGENTS & ADVANCED AUTOMATION */}
         <McpAgentsShowcase locale={locale} />
 
-        {/* 8. SUBSCRIPTION PRICING */}
         <Pricing03 locale={locale} />
 
-        {/* 9. FRICTION HANDLING */}
         <Faq02 />
 
-        {/* 10. CLOSING CALL TO ACTION */}
         <CTA />
       </main>
 

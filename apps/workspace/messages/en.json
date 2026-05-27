@@ -31,9 +31,9 @@
     "Invite teammates who should help manage listings, approvals, and integrations___": "Invite teammates who should help manage listings, approvals, and integrations."
   },
   "Dashboard": {
-    "title": "Today Desk",
-    "subtitle": "Client calendar, inventory readiness, and project movement for the work that matters today.",
-    "eyebrow": "Real estate operating desk",
+    "title": "Follow-up dashboard",
+    "subtitle": "A quick view of today’s appointments, project updates, and client movement that needs attention.",
+    "eyebrow": "Today overview",
     "welcome": "Welcome back",
     "stats": {
       "clients": "Clients",
@@ -50,9 +50,9 @@
     },
     "normal": {
       "newProperties": "New properties",
-      "newProjects": "New projects",
-      "latestClients": "Latest clients",
-      "upcomingMeeting": "Upcoming meeting",
+      "newProjects": "Project updates",
+      "latestClients": "Latest client updates",
+      "upcomingMeeting": "Today’s appointments",
       "viewAll": "View all",
       "noProperties": "No properties yet",
       "noProjects": "No projects yet",
@@ -223,7 +223,7 @@
       "operations": "Operations",
       "administration": "Administration"
     },
-    "dashboard": "WS",
+    "dashboard": "Dashboard",
     "projects": "Projects",
     "properties": "Properties",
     "units": "Units",
@@ -994,7 +994,7 @@
     }
   },
   "Workspace": {
-    "modeWs": "WS",
+    "modeWs": "Dashboard",
     "modeAi": "AI",
     "systemOverview": "System Overview",
     "syncEfficiency": "The synchronization engine is running at 99.2% efficiency.",
@@ -1002,7 +1002,15 @@
     "quickTools": "Quick Tools",
     "findData": "Find data",
     "newProject": "New Project",
-    "searchAnything": "Search anything..."
+    "searchAnything": "Search anything...",
+    "searchShortcut": "⌘K",
+    "searchTitle": "Workspace search",
+    "searchNavigation": "Navigation",
+    "searchProjects": "Projects",
+    "searchUnits": "Units",
+    "searchClients": "Clients",
+    "searchNoResults": "No matching records found.",
+    "searchError": "Some results could not load. Navigation is still available."
   },
   "Statuses": {
     "draft": "Draft",
@@ -1019,8 +1027,9 @@
     "reserved": "Reserved"
   },
   "Projects": {
-    "eyebrow": "Portfolio command center",
+    "eyebrow": "Projects overview",
     "title": "Projects",
+    "subtitle": "Track project status, value, units, and recent records through clear manageable cards.",
     "add": "Add Project",
     "stats": {
       "size": "Portfolio Size",
@@ -1042,7 +1051,9 @@
     "card": {
       "units": "Units",
       "value": "Value",
-      "edit": "Edit"
+      "edit": "Edit",
+      "delete": "Delete",
+      "actions": "Project actions"
     },
     "empty": {
       "title": "No projects found",
@@ -1050,7 +1061,7 @@
     },
     "delete": {
       "title": "Delete project?",
-      "desc": "This removes {name} from the mock store."
+      "desc": "This deletes {name} from the workspace. This action cannot be undone."
     },
     "detail": {
       "loadingTitle": "Loading project",
@@ -1420,11 +1431,19 @@
     "edit": "Edit Asset",
     "share": "Share",
     "tabs": {
+      "overview": "Overview",
       "details": "Details",
       "inventory": "Inventory",
       "documents": "Documents",
       "activity": "Activity",
       "sales": "Sales"
+    },
+    "overview": {
+      "mediaTitle": "Media and units",
+      "mediaDesc": "Everything the team needs to understand the project visually and operationally in one place.",
+      "unitsTitle": "Unit summary",
+      "unitsDesc": "Inventory and readiness state without repeated cards or distraction.",
+      "registryTitle": "Core details"
     },
     "gallery": {
       "label": "Primary Asset Visual",
@@ -2637,6 +2656,7 @@
     "editSchedule": "Edit Schedule",
     "business": "Business",
     "today": "Today",
+    "more": "more",
     "month": "Month",
     "week": "Week",
     "day": "Day",
@@ -2667,13 +2687,15 @@
     },
     "delete": {
       "title": "Delete event?",
-      "desc": "This removes {name} from the mock calendar."
+      "desc": "This removes {name} from the calendar."
     },
     "form": {
       "title": "Add Event",
       "drawerDescription": "Create one schedule, link useful work context, and add custom components when the event needs its own structure.",
       "simpleDrawerDescription": "Set the time, choose what this relates to, and save. Advanced details stay out of the way until needed.",
       "basics": "Schedule",
+      "scheduledTime": "Scheduled time",
+      "scheduleName": "Schedule name",
       "context": "Business context",
       "relatedTo": "Related to",
       "customFields": "Custom components",
@@ -2712,6 +2734,9 @@
       "noPickerResults": "No matching results.",
       "closePicker": "Done",
       "locationLabel": "Location",
+      "pickLocation": "Pick location",
+      "mapSearch": "Search location",
+      "confirmLocation": "Use location",
       "notesLabel": "Notes",
       "none": "None",
       "dateLabel": "Date",
@@ -2991,16 +3016,16 @@
     }
   },
   "ChooseOrg": {
-    "title": "Welcome to qentrah Workspace",
-    "subtitle": "How would you like to get started?",
-    "joinTitle": "I was invited to an organization",
-    "joinDesc": "Enter an invite code or use a shared link to join an existing workspace.",
+    "title": "Continue into qentrah",
+    "subtitle": "Choose a workspace, join by invite, or create a new organization.",
+    "joinTitle": "I have an invite",
+    "joinDesc": "Paste an invite link or code to join an existing workspace.",
     "joinCodeLabel": "Invite Code or Link",
     "joinCodePlaceholder": "e.g. INV-8X3K9",
     "joinBtn": "Join Workspace",
     "joinHelp": "Ask your organization admin for an invite code, or check your email for an invitation link.",
-    "createTitle": "Create a new organization",
-    "createDesc": "Register your company and complete the setup wizard to start synchronizing data.",
+    "createTitle": "Create organization",
+    "createDesc": "Start a new workspace and finish the basic setup.",
     "createNameLabel": "Organization Name",
     "createNamePlaceholder": "e.g. Acme Real Estate",
     "createTypeLabel": "Organization Type",

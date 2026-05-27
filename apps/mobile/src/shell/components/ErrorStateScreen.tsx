@@ -39,7 +39,7 @@ export function ErrorStateScreen({
   title,
   body,
   technicalNote,
-  signal = "ZaneAI is holding the workspace steady.",
+  signal = "Qentrah is holding the workspace steady.",
   Icon = AlertTriangle,
   actions,
 }: ErrorStateScreenProps) {

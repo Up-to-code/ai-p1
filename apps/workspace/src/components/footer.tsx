@@ -21,7 +21,6 @@ const footerGroups = [
     links: [
       { href: "/dashboard", label: "dashboard" },
       { href: "/contact", label: "contact" },
-      { href: "/team-public", label: "team" },
     ],
   },
   {

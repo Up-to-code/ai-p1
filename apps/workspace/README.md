@@ -67,8 +67,8 @@ Do not edit generated folders by hand, including `.next` and
 
 See the canonical repo reference:
 
-- [Setup and configuration](../../SETUP_AND_CONFIGURATION.md)
-- [Environment variables](../../docs/ENVIRONMENT.md)
+- [Setup and configuration](../../docs/operations/setup-and-configuration.md)
+- [Environment variables](../../docs/operations/environment.md)
 
 Common Workspace variables include:
 
@@ -143,8 +143,8 @@ activity, integrations, and organization settings for a ready organization.
 ## Documentation
 
 - [Root README](../../README.md)
-- [Repo architecture](../../docs/ARCHITECTURE.md)
-- [Apps and packages](../../docs/APPS.md)
+- [Repo architecture](../../docs/architecture/system-architecture.md)
+- [Apps and packages](../../docs/architecture/apps-and-packages.md)
 - [Workspace docs index](./docs/README.md)
 - [Workspace server README](./src/server/README.md)
 - [Workspace Convex README](./convex/README.md)

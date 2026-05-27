@@ -28,7 +28,7 @@ test("session slice updates auth drafts and clears them without resetting other 
   store.getState().setGuestMode(true);
   store.getState().setAuthEmailDraft("user@example.com");
   store.getState().setAuthPasswordDraft("super-secret");
-  store.getState().setAuthNameDraft("ZaneAI User");
+  store.getState().setAuthNameDraft("Qentrah User");
   store.getState().clearAuthDrafts();
 
   const state = store.getState();

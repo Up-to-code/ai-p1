@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { createStore } from "zustand/vanilla";
 
 import { createConversationSlice, type ConversationSlice } from "../store/slices/conversationSlice";
+import { createFavoriteThreadsSlice, type FavoriteThreadsSlice } from "../store/slices/favoriteThreadsSlice";
 import { createGuestMirrorSlice, type GuestMirrorSlice } from "../store/slices/guestMirrorSlice";
 import { createPropertySlice, type PropertySlice } from "../store/slices/propertySlice";
 
@@ -15,6 +16,12 @@ function createPropertyTestStore() {
 function createGuestMirrorTestStore() {
   return createStore<GuestMirrorSlice>()((set, get, store) =>
     createGuestMirrorSlice(set, get, store),
+  );
+}
+
+function createFavoriteThreadsTestStore() {
+  return createStore<FavoriteThreadsSlice>()((set, get, store) =>
+    createFavoriteThreadsSlice(set, get, store),
   );
 }
 
@@ -44,6 +51,16 @@ test("property slice dismisses properties locally", () => {
   store.getState().dismissProperty("prop-business-bay-02");
 
   assert.deepEqual(store.getState().dismissedPropertyIds, ["prop-business-bay-02"]);
+});
+
+test("favorite threads slice toggles and dedupes thread ids", () => {
+  const store = createFavoriteThreadsTestStore();
+
+  store.getState().setFavoriteThreadIds(["thread-1", "thread-1"]);
+  store.getState().toggleFavoriteThread("thread-2");
+  store.getState().toggleFavoriteThread("thread-1");
+
+  assert.deepEqual(store.getState().favoriteThreadIds, ["thread-2"]);
 });
 
 test("guest mirror summary sync is a no-op when thread summaries have not changed", () => {

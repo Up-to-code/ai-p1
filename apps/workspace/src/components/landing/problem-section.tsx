@@ -46,36 +46,36 @@ const copy = {
   },
   ar: {
     painPoints: {
-      eyebrow: "نقاط الألم",
-      title: "العمل العقاري لا يجب أن يكون صعباً.",
-      description: "العمليات اليدوية، البيانات المشتتة، وبطء التنفيذ يكلف الشركات الكثير. حان الوقت للتغيير والتخلص من فوضى التشغيل.",
+      eyebrow: "التحديات التشغيلية",
+      title: "التشغيل العقاري لا ينبغي أن يُدار بالتعقيد",
+      description: "تعدد الأدوات، وتشتت البيانات، وبطء الإجراءات يرفع التكلفة ويضعف الكفاءة. مع كانترا، تتحول العمليات إلى لمسة ذكية واحدة تُسرّع القرار وترفع جودة الأداء.",
       items: [
         {
           title: "تشتت البيانات",
-          desc: "الأسعار والتفاصيل تعيش في محادثات واتساب، جداول إكسل، وأنظمة قديمة غير متزامنة، مما يؤدي إلى أخطاء يدوية واختلافات مستمرة في تسعير الوحدات."
+          desc: "تتوزع البيانات والعملاء والطلبات بين المحادثات والجداول والأنظمة المختلفة، مما يضعف وضوح القرار ويزيد احتمالية الأخطاء في التسعير والمتابعة."
         },
         {
-          title: "بطء في التنفيذ",
-          desc: "العقود والاتفاقيات تنتظر التوقيع اليدوي، وتأكيد الأسعار يستغرق أياماً من المحادثات المكررة والإيميلات المعلقة والمتابعات الهاتفية المستمرة."
+          title: "دورة بيع أطول من اللازم",
+          desc: "تأخر الموافقات، وتعدد المراسلات، والاعتماد اليدوي للاتفاقيات يحوّل كل فرصة بيعية إلى مسار بطيء يستهلك الوقت ويضعف سرعة الإغلاق."
         },
         {
-          title: "فقدان الفرص العقارية",
-          desc: "تنتهي صلاحية طلبات العملاء المؤهلين أو يتجهون لمنافسين أسرع بسبب عدم توفر وصول فوري ومحدث لبيانات الوحدات والمخزون لدى الوسيط."
+          title: "فرص جاهزة تضيع",
+          desc: "تتأخر الاستجابة للعميل المؤهل بسبب غياب البيانات المحدثة عن الوحدات والمخزون؛ فتضعف فرصة الإغلاق ويتجه العميل لمنافس أسرع."
         }
       ]
     },
     fix: {
       eyebrow: "الحل مع كانترا",
-      title: "مع كانترا.. ينتهي كابوس التشغيل",
-      description: "منصة موحدة ومزامنة لحظية ومؤتمتة تضع فريقك وعملائك وشركائك على صفحة واحدة وبثقة مطلقة وسرعة تشغيلية فائقة.",
+      title: "مع كانترا.. تتحول الفوضى الى تشغيل ذكي",
+      description: "منصة موحدة تضع المشاريع، العملاء، الوسطاء والبيانات في مساحة واحدة؛ لتسريع البيع، توحيد القرار، ورفع كفاءة التشغيل من أول تواصل حتى إغلاق الصفقة.",
       items: [
         {
           title: "المصدر الوحيد للحقيقة",
           desc: "جميع بيانات الوحدات والعملاء متزامنة لحظياً وبشكل موحد. خطأ في النقل المزدوج يساوي صفراً، والأسعار مقفلة ومحدثة باستمرار للجميع."
         },
         {
-          title: "سير عمل خلال ثوانٍ",
-          desc: "الذكاء الاصطناعي يتحقق من تفاصيل الوحدات فورياً ويرسل الاتفاقيات للعملاء عبر الواتساب مباشرة لتوقيعها إلكترونياً خلال ثوانٍ معدودة."
+          title: "إجراءات أسرع… وبيع أكثر انضباطًا",
+          desc: "من تأهيل العميل إلى متابعة الطلب وإرسال العروض، تتحول الخطوات المتفرقة إلى مسار واضح يقلل التأخير ويرفع سرعة الإغلاق."
         },
         {
           title: "الاستجابة الفورية لكل عميل",
@@ -93,11 +93,8 @@ export function ProblemSection({ locale }: { locale: string }) {
 
   return (
     <div className="w-full">
-
-      {/* PART A: THE PAIN POINTS (Typographic Narrative - Toned Muted) */}
       <PublicSection id="solutions" tone="muted" className="border-y border-zinc-200/50 dark:border-white/[0.04]">
         <div className="space-y-16">
-          {/* Section Header */}
           <Reveal>
             <div className="max-w-4xl space-y-5">
               <div className="flex items-center gap-3">
@@ -113,7 +110,6 @@ export function ProblemSection({ locale }: { locale: string }) {
             </div>
           </Reveal>
 
-          {/* Typographic Text Grid */}
           <div className="grid gap-x-12 gap-y-10 md:grid-cols-3 border-t border-zinc-200/50 dark:border-white/[0.04] pt-12">
             {pLabels.items.map((item, i) => (
               <Reveal key={i} delay={i * 0.1}>
@@ -132,10 +128,8 @@ export function ProblemSection({ locale }: { locale: string }) {
         </div>
       </PublicSection>
 
-      {/* PART B: THE RESOLUTION (Typographic Narrative - Toned Default) */}
       <PublicSection id="the-fix" tone="default">
         <div className="space-y-16">
-          {/* Section Header */}
           <Reveal>
             <div className="max-w-4xl space-y-5">
               <div className="flex items-center gap-3">
@@ -151,7 +145,6 @@ export function ProblemSection({ locale }: { locale: string }) {
             </div>
           </Reveal>
 
-          {/* Typographic Text Grid */}
           <div className="grid gap-x-12 gap-y-10 md:grid-cols-3 border-t border-zinc-200/50 dark:border-white/[0.04] pt-12">
             {fLabels.items.map((item, i) => (
               <Reveal key={i} delay={i * 0.1}>

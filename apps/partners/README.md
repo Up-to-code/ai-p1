@@ -74,8 +74,8 @@ Common variables:
 
 See:
 
-- [Environment variables](../../docs/ENVIRONMENT.md)
-- [Setup and configuration](../../SETUP_AND_CONFIGURATION.md)
+- [Environment variables](../../docs/operations/environment.md)
+- [Setup and configuration](../../docs/operations/setup-and-configuration.md)
 
 ## Docs System
 
@@ -129,8 +129,8 @@ npm --workspace @qentrah/partners run build
 ## Related Documentation
 
 - [Root README](../../README.md)
-- [Architecture](../../docs/ARCHITECTURE.md)
-- [Apps and packages](../../docs/APPS.md)
+- [Architecture](../../docs/architecture/system-architecture.md)
+- [Apps and packages](../../docs/architecture/apps-and-packages.md)
 - [Partner platform flow](../../docs/partner-platform/README.md)
 - [Partner implementation guide](../../docs/partner-platform/partner-implementation-guide.md)
 - [AI agent implementation prompt](./content/docs/ai-agent-implementation.mdx)

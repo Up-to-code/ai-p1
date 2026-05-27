@@ -19,4 +19,4 @@
 - `apps/admin/src/lib/admin-convex.ts`: Admin-to-Convex service-token adapter; must not fall back to broader Workspace token.
 - `apps/admin/src/lib/admin-domain-service.ts`: admin UI configuration messaging and redaction.
 - `apps/admin/scripts/generate-admin-env.mjs`: local Admin env bootstrap; must keep Admin Convex and Workspace admin tokens separate.
-- `docs/ENVIRONMENT.md`: operator-facing secret contract.
+- `docs/operations/environment.md`: operator-facing secret contract.

@@ -11,6 +11,6 @@ Use this vocabulary in architecture reviews and RFCs.
 - **Leverage**: what callers gain from a deep Module.
 - **Locality**: what maintainers gain when behavior, bugs, and knowledge are concentrated.
 
-Qentrah-specific reviews should combine this language with `CONTEXT.md`, `docs/adr/`, and `docs/lifecycles/`.
+Qentrah-specific reviews should combine this language with `CONTEXT.md`, `docs/decisions/`, and `docs/lifecycles/`.
 
 The project-local skill source is `.agents/skills/improve-codebase-architecture/`.

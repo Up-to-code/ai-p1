@@ -1,10 +1,10 @@
 {
-  "name": "@zane-ai/mobile",
+  "name": "@qentrah/mobile",
   "version": "0.1.0",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
-    "start": "expo start --clear",
+    "start": "expo start --clear --max-workers 1",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "agent:worker": "tsx ../../scripts/agent-worker.ts",
@@ -24,6 +24,7 @@
     "@expo-google-fonts/manrope": "^0.4.1",
     "@expo/metro-runtime": "~6.1.2",
     "@google/genai": "^1.48.0",
+    "@qentrah/brand-identity": "0.1.0",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@rnmapbox/maps": "^10.3.0",
     "class-variance-authority": "^0.7.1",

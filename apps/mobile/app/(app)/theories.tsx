@@ -1,9 +1,8 @@
 import { StyleSheet, View, Pressable, ScrollView, TextInput } from "react-native";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import { ArrowLeft, Search, ChevronRight } from "lucide-react-native";
+import { ArrowLeft, Search, ChevronRight, Star } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Animated, { FadeInUp } from "react-native-reanimated";
 
 import { useAppLocalization } from "@/foundation/localization";
 import { Screen } from "@/foundation/primitives/Screen";
@@ -22,6 +21,8 @@ export default function TheoriesScreen() {
   const styles = useMemo(() => createStyles(colors, isRTL), [colors, isRTL]);
   const threads = useThreads();
   const setActiveThreadId = useAppStore((state) => state.setActiveThreadId);
+  const favoriteThreadIds = useAppStore((state) => state.favoriteThreadIds);
+  const toggleFavoriteThread = useAppStore((state) => state.toggleFavoriteThread);
 
   const filteredTheories = threads.filter((thread: any) =>
     (thread.title ?? t.theories.untitled).toLowerCase().includes(searchQuery.toLowerCase()),
@@ -73,6 +74,22 @@ export default function TheoriesScreen() {
                   }}
                 >
                   <View style={styles.theoryMain}>
+                    <Pressable
+                      accessibilityLabel={
+                        favoriteThreadIds.includes(thread._id)
+                          ? t.saved.removeFavorite
+                          : t.common.save
+                      }
+                      onPress={() => toggleFavoriteThread(thread._id)}
+                      hitSlop={8}
+                      style={styles.favoriteButton}
+                    >
+                      <Star
+                        size={17}
+                        color={favoriteThreadIds.includes(thread._id) ? colors.accent : colors.textMuted}
+                        fill={favoriteThreadIds.includes(thread._id) ? colors.accent : "transparent"}
+                      />
+                    </Pressable>
                     <View style={styles.theoryContent}>
                       <Text variant="body" style={styles.theoryTitle}>{thread.title ?? t.theories.untitled}</Text>
                       <Text variant="caption" style={styles.theoryPreview} numberOfLines={1}>
@@ -182,12 +199,19 @@ const createStyles = (colors: any, isRTL: boolean) => StyleSheet.create({
   },
   theoryMain: {
     flexDirection: isRTL ? "row-reverse" : "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    gap: 12,
+  },
+  favoriteButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.surfaceRaised,
   },
   theoryContent: {
     flex: 1,
-    marginHorizontal: 12,
     gap: 2,
     alignItems: isRTL ? "flex-end" : "flex-start",
   },

@@ -8,12 +8,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        "zane-ai-dark": "#000000",
-        "zane-ai-soft-dark": "#0A0A0A",
-        "zane-ai-red": "#EC2D35",
-        "zane-ai-card": "#121212",
-        "zane-ai-secondary": "#A3A3A3",
-        "zane-ai-muted": "#737373",
+        "qentrah-dark": "#000000",
+        "qentrah-soft-dark": "#0A0A0A",
+        "qentrah-blue": "#0B5CFF",
+        "qentrah-card": "#121212",
+        "qentrah-secondary": "#A3A3A3",
+        "qentrah-muted": "#737373",
       },
       borderColor: {
         divider: "rgba(255,255,255,0.06)",

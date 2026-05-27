@@ -150,7 +150,7 @@ const planCopy = {
       monthly: "شهري",
       annual: "سنوي",
     },
-    popular: "السعودية",
+    popular: "باقة مرنة",
     perMonth: "شهرياً",
     perYear: "سنوياً",
     customPrice: "مخصص",
@@ -173,11 +173,10 @@ const planCopy = {
     plans: [
       {
         id: "saudi_monthly",
-        name: "السعودية",
-        country: "المملكة العربية السعودية",
+        name: "باقة مرنة",
         price: 499,
         period: "month",
-        description: "للفرق العقارية في السعودية التي تدير العقارات والعملاء والتقويم والأتمتة وقنوات البيع من مساحة واحدة.",
+        description: "اختر الباقة التي تناسب حجم فريقك وطريقة تشغيلك، وابدأ بإدارة المشاريع، الوحدات، العملاء، والفرص من مساحة واحدة.",
         buttonText: "ابدأ الإعداد",
         href: "/billing?plan=saudi_monthly",
         isPopular: true,
@@ -195,9 +194,9 @@ const planCopy = {
       },
       {
         id: "custom",
-        name: "مخصص",
+        name: "باقة مخصصة",
         price: "custom",
-        description: "للفرق الأكبر التي تريد كانترا مصممة حول التشغيل والموقع والوكلاء وسير العمل الخاص.",
+        description: "للمطورين والفرق التي تحتاج حلولًا مصممة حسب التشغيل، الموقع، الوكلاء، وسير العمل الخاص.",
         buttonText: "تحدث مع كانترا",
         href: "/contact",
         features: [
@@ -216,11 +215,10 @@ const planCopy = {
     annualPlans: [
       {
         id: "saudi_yearly",
-        name: "السعر السنوي",
-        country: "المملكة العربية السعودية",
+        name: "باقة مرنة",
         price: 5988,
         period: "year",
-        description: "فترة عمل سنوية واحدة للفرق التي تدير العقارات والعملاء والأتمتة والوكلاء والقنوات المتصلة.",
+        description: "اختر الباقة التي تناسب حجم فريقك وطريقة تشغيلك، وابدأ بإدارة المشاريع، الوحدات، العملاء، والفرص من مساحة واحدة.",
         buttonText: "ابدأ الإعداد السنوي",
         href: "/billing?plan=saudi_yearly",
         isPopular: true,
@@ -238,9 +236,9 @@ const planCopy = {
       },
       {
         id: "custom",
-        name: "مخصص",
+        name: "باقة مخصصة",
         price: "custom",
-        description: "للفرق الأكبر التي تريد كانترا مصممة حول التشغيل والموقع والوكلاء وسير العمل الخاص.",
+        description: "للمطورين والفرق التي تحتاج حلولًا مصممة حسب التشغيل، الموقع، الوكلاء، وسير العمل الخاص.",
         buttonText: "تحدث مع كانترا",
         href: "/contact",
         features: [

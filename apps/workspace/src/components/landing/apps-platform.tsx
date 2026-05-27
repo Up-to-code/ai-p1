@@ -1,14 +1,13 @@
 "use client";
 
 import { ArrowRight, Boxes, Cpu, Handshake } from "lucide-react";
+import Image from "next/image";
 import { PublicSection } from "@/components/landing/public-landing-kit";
 import { Reveal } from "@/components/landing/cinematic-motion";
 import { Link } from "@/i18n/routing";
 import { Marquee } from "@/components/ui/marquee";
-import { cn } from "@/lib/utils";
 import { BrandMark } from "@/components/logo";
 
-/* ─── Copy ─── */
 const copy = {
   en: {
     eyebrow: "Apps",
@@ -58,36 +57,36 @@ const copy = {
   },
   ar: {
     eyebrow: "التطبيقات",
-    title: "أدواتك، متصلة بمساحة عملك.",
+    title: "أدواتك تعمل من مساحة واحدة",
     description:
-      "ثبّت تطبيقات جاهزة من الكتالوج، أو دع فريقك يبني حلولاً مخصصة تقرأ وتكتب بيانات مساحة عملك بأمان.",
+      "اربط تطبيقاتك المفضلة بكانترا، أو ابنِ تكاملات مخصصة لاحتياجك التشغيلي؛ لتعمل بياناتك وعملياتك ضمن منظومة واحدة أكثر أمانًا وكفاءة.",
 
     paths: [
       {
         heading: "تطبيقات جاهزة",
-        body: "ثبّت تطبيقات معتمدة تتصل بمساحة عملك. كل تطبيق يصل فقط لما تسمح به، لفترة محدودة، ويمكنك قطع الاتصال في أي وقت.",
+        body: "فعّل تكاملات معتمدة تربط كانترا بأدواتك اليومية. كل تطبيق يعمل وفق صلاحيات واضحة، ويمكنك إدارته أو إيقافه في أي وقت.",
         cta: "تصفّح التطبيقات",
         href: "/dashboard",
       },
       {
         heading: "ابنِ تطبيقك",
-        body: "عندك احتياج خاص؟ سجّل تطبيقك الخاص، اربطه ببيانات مساحة عملك، وشغّله بشكل خاص لمنظمتك.",
+        body: "صمّم تكاملًا خاصًا يناسب طريقة عمل فريقك، واربطه ببيانات مساحة العمل لتشغيل عملياتك وفق احتياجك.",
         cta: "ابدأ البناء",
         href: "/partners",
       },
       {
         heading: "برنامج الشركاء",
-        body: "ابنِ منتجاً على كانترا وانشره لكل المنظمات. تقديم واحد، مراجعة واحدة، متاح للجميع.",
+        body: "انضم إلى منظومة كانترا واطرح حلولك للمطورين والشركات العقارية عبر تطبيقات قابلة للتفعيل داخل مساحة العمل.",
         cta: "انضم كشريك",
         href: "/partners",
       },
     ],
 
     works: {
-      eyebrow: "يعمل مع",
-      title: "الأدوات التي يستخدمها فريقك بالفعل.",
+      eyebrow: "منظومة متصلة",
+      title: "كل أدواتك تعمل داخل تدفق واحد",
       description:
-        "اربط Claude وChatGPT وCodex وCursor وغيرها مباشرة ببيانات مساحة عملك. مساعدك الذكي يبحث في الوحدات، يكتب الرسائل، ويحجز المعاينات — بدون ما تغيّر صفحة.",
+        "من الذكاء الاصطناعي إلى الواتساب وأدوات الأتمتة، تضع كانترا تطبيقاتك في مسار تشغيلي موحد؛ لتسريع الإنجاز، تقليل التنقل بين الأدوات، ورفع كفاءة الفريق.",
       tools: [
         { name: "ChatGPT", url: "https://chatgpt.com" },
         { name: "Claude", url: "https://claude.ai" },
@@ -104,14 +103,15 @@ const copy = {
   },
 };
 
-/* ─── Helpers ─── */
 function ToolPill({ tool }: { tool: { name: string; url: string } }) {
   return (
     <span className="flex h-12 items-center gap-3 rounded-full border border-zinc-200/80 bg-white px-4 text-sm font-bold text-zinc-700 shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-200 transition-colors duration-200 hover:border-zinc-300 dark:hover:border-white/20">
       <span className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 bg-zinc-50 dark:border-white/10 dark:bg-zinc-950">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           alt=""
+          width={20}
+          height={20}
+          unoptimized
           className="h-5 w-5 rounded"
           src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(tool.url)}&sz=128`}
         />
@@ -121,12 +121,10 @@ function ToolPill({ tool }: { tool: { name: string; url: string } }) {
   );
 }
 
-/* ─── Component ─── */
 export function AppsPlatform({ locale }: { locale: string }) {
   const isAr = locale === "ar";
   const labels = isAr ? copy.ar : copy.en;
 
-  // Split tools list in half dynamically for the marquee rows
   const tools = labels.works.tools;
   const half = Math.ceil(tools.length / 2);
   const toolsRow1 = tools.slice(0, half);
@@ -134,12 +132,8 @@ export function AppsPlatform({ locale }: { locale: string }) {
 
   return (
     <div className="w-full">
-
-      {/* PART A — APPS OVERVIEW */}
       <PublicSection id="apps" tone="default">
         <div className="mx-auto max-w-7xl space-y-16">
-
-          {/* Header */}
           <Reveal>
             <div className="space-y-4 text-start">
               <div className="flex items-center gap-3">
@@ -158,7 +152,6 @@ export function AppsPlatform({ locale }: { locale: string }) {
             </div>
           </Reveal>
 
-          {/* Three paths — horizontal row (grid with 3 columns) */}
           <div className="grid gap-10 md:grid-cols-3 border-t border-zinc-200/50 pt-12 dark:border-white/[0.04]">
             {labels.paths.map((path, i) => {
               const Icon = i === 0 ? Boxes : i === 1 ? Cpu : Handshake;
@@ -193,11 +186,8 @@ export function AppsPlatform({ locale }: { locale: string }) {
         </div>
       </PublicSection>
 
-      {/* PART B — WORKS WITH (tools people know) */}
       <PublicSection tone="muted" className="border-y border-zinc-200/50 dark:border-white/[0.04] overflow-hidden">
         <div className="mx-auto max-w-3xl space-y-10">
-
-          {/* Header */}
           <Reveal>
             <div className="space-y-4">
               <div className="flex items-center gap-3">
@@ -216,11 +206,9 @@ export function AppsPlatform({ locale }: { locale: string }) {
           </Reveal>
         </div>
 
-        {/* Marquee rows — full width, smooth flow */}
         <div className="mx-auto mt-10 max-w-7xl overflow-hidden md:mt-14">
           <div className="flex flex-col gap-4">
             <Reveal delay={0.1}>
-              {/* Row 1 — scrolls one direction */}
               <div className="flex items-center overflow-hidden">
                 <Marquee
                   className="w-full [--duration:28s] [--gap:1rem] [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)]"
@@ -237,7 +225,6 @@ export function AppsPlatform({ locale }: { locale: string }) {
             </Reveal>
 
             <Reveal delay={0.15}>
-              {/* Row 2 — scrolls opposite direction */}
               <div className="flex items-center overflow-hidden">
                 <Marquee
                   className="w-full [--duration:32s] [--gap:1rem] [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)]"

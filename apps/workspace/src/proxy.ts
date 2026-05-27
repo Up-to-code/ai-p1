@@ -41,6 +41,17 @@ export default function proxy(request: NextRequest) {
 }
  
 export const config = {
-  // Match only internationalized pathnames
-  matcher: ['/', '/(ar|en)/:path*']
+  matcher: [
+    "/",
+    "/(ar|en)/:path*",
+    "/about",
+    "/terms",
+    "/privacy",
+    "/legal",
+    "/contact",
+    "/developer",
+    "/broker",
+    "/docs",
+    "/docs/:path*",
+  ],
 };

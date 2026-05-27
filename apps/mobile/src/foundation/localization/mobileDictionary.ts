@@ -83,6 +83,7 @@ export type MobileDictionary = {
     untitledSearch: string;
     fullHistory: string;
     savedProperties: string;
+    favoriteChats: string;
     compareTray: string;
     userSettings: string;
     errorScreens: string;
@@ -109,6 +110,7 @@ export type MobileDictionary = {
     emptyBody: string;
     noMatchesTitle: string;
     noMatchesBody: string;
+    removeFavorite: string;
   };
   listing: {
     searchPlaceholder: string;
@@ -349,6 +351,7 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       untitledSearch: "Untitled search",
       fullHistory: "View full history",
       savedProperties: "Saved properties",
+      favoriteChats: "Favorite chats",
       compareTray: "Compare tray",
       userSettings: "User settings",
       errorScreens: "Error screens",
@@ -370,11 +373,12 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
     },
     saved: {
       title: "Favorites",
-      searchPlaceholder: "Search collection...",
+      searchPlaceholder: "Search favorite chats...",
       emptyTitle: "No favorites yet",
-      emptyBody: "Save properties from the heart button and they will appear here.",
+      emptyBody: "Star important AI conversations to keep them close.",
       noMatchesTitle: "No matching favorites",
-      noMatchesBody: "Try a different keyword to search your saved homes.",
+      noMatchesBody: "Try a different keyword to search your favorite chats.",
+      removeFavorite: "Remove chat from favorites",
     },
     listing: {
       searchPlaceholder: "Search areas...",
@@ -461,12 +465,12 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       continueAsGuest: "Or continue as guest",
       emailOptionsTitle: "Account access",
       emailOptionsHeroTitle: "Welcome back",
-      emailOptionsHeroBody: "Securely sign in to your ZaneAI account or create a new one to get started.",
+      emailOptionsHeroBody: "Securely sign in to your Qentrah account or create a new one to get started.",
       logIn: "Log in",
       createAccount: "Create an account",
       loginHeader: "Security core",
       loginTitle: "Secure identity",
-      loginBodyUpgrade: "Sign in to keep your anonymous research and sync it into your account.",
+      loginBodyUpgrade: "Sign in to keep your research synced to your account.",
       loginBodyDefault: "Sign in with your email and password.",
       establishSecurity: "Establish security",
       signingIn: "Signing in...",
@@ -477,8 +481,8 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       tryAgain: "Try again",
       registerHeader: "Provisioning",
       registerTitle: "Cloud identity",
-      registerBodyUpgrade: "Create an account. Anonymous chats and saved properties move with you.",
-      registerBodyDefault: "Create your ZaneAI account for seamless synchronization.",
+      registerBodyUpgrade: "Create an account to sync your AI research history.",
+      registerBodyDefault: "Create your Qentrah account for seamless synchronization.",
       initializeEnvironment: "Initialize environment",
       initializing: "Initializing...",
       registerFailedTitle: "Registration failed",
@@ -612,6 +616,7 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       untitledSearch: "بحث بدون عنوان",
       fullHistory: "عرض السجل الكامل",
       savedProperties: "العقارات المحفوظة",
+      favoriteChats: "المحادثات المفضلة",
       compareTray: "لوحة المقارنة",
       userSettings: "إعدادات المستخدم",
       errorScreens: "شاشات الأخطاء",
@@ -633,11 +638,12 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
     },
     saved: {
       title: "المفضلة",
-      searchPlaceholder: "ابحث داخل المحفوظات...",
+      searchPlaceholder: "ابحث داخل المحادثات المفضلة...",
       emptyTitle: "لا توجد مفضلة بعد",
-      emptyBody: "احفظ العقارات من زر القلب وستظهر هنا.",
+      emptyBody: "ميّز محادثات الذكاء الاصطناعي المهمة بنجمة لتبقى قريبة.",
       noMatchesTitle: "لا توجد نتائج مطابقة",
-      noMatchesBody: "جرّب كلمة مختلفة للبحث داخل العقارات المحفوظة.",
+      noMatchesBody: "جرّب كلمة مختلفة للبحث داخل محادثاتك المفضلة.",
+      removeFavorite: "إزالة المحادثة من المفضلة",
     },
     listing: {
       searchPlaceholder: "ابحث عن المناطق...",
@@ -724,12 +730,12 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       continueAsGuest: "أو المتابعة كزائر",
       emailOptionsTitle: "الوصول إلى الحساب",
       emailOptionsHeroTitle: "أهلًا بعودتك",
-      emailOptionsHeroBody: "سجّل الدخول بأمان إلى حساب ZaneAI أو أنشئ حسابًا جديدًا للبدء.",
+      emailOptionsHeroBody: "سجّل الدخول بأمان إلى حساب Qentrah أو أنشئ حسابًا جديدًا للبدء.",
       logIn: "تسجيل الدخول",
       createAccount: "إنشاء حساب",
       loginHeader: "نواة الأمان",
       loginTitle: "هوية آمنة",
-      loginBodyUpgrade: "سجّل الدخول للحفاظ على بحثك المجهول ومزامنته داخل حسابك.",
+      loginBodyUpgrade: "سجّل الدخول لمزامنة بحثك داخل حسابك.",
       loginBodyDefault: "سجّل الدخول باستخدام البريد الإلكتروني وكلمة المرور.",
       establishSecurity: "تأكيد الأمان",
       signingIn: "جارٍ تسجيل الدخول...",
@@ -740,8 +746,8 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       tryAgain: "حاول مرة أخرى",
       registerHeader: "التهيئة",
       registerTitle: "هوية سحابية",
-      registerBodyUpgrade: "أنشئ حسابًا. ستنتقل المحادثات المجهولة والعقارات المحفوظة معك.",
-      registerBodyDefault: "أنشئ حساب ZaneAI لمزامنة سلسة.",
+      registerBodyUpgrade: "أنشئ حسابًا لمزامنة سجل بحث الذكاء الاصطناعي.",
+      registerBodyDefault: "أنشئ حساب Qentrah لمزامنة سلسة.",
       initializeEnvironment: "بدء التهيئة",
       initializing: "جارٍ التهيئة...",
       registerFailedTitle: "فشل إنشاء الحساب",
@@ -875,6 +881,7 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       untitledSearch: "Recherche sans titre",
       fullHistory: "Voir tout l’historique",
       savedProperties: "Biens enregistrés",
+      favoriteChats: "Chats favoris",
       compareTray: "Plateau de comparaison",
       userSettings: "Paramètres utilisateur",
       errorScreens: "Écrans d’erreur",
@@ -896,11 +903,12 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
     },
     saved: {
       title: "Favoris",
-      searchPlaceholder: "Rechercher dans la collection...",
+      searchPlaceholder: "Rechercher dans les chats favoris...",
       emptyTitle: "Aucun favori pour l’instant",
-      emptyBody: "Enregistrez des biens via le bouton cœur et ils apparaîtront ici.",
+      emptyBody: "Ajoutez une étoile aux conversations IA importantes pour les retrouver vite.",
       noMatchesTitle: "Aucun favori correspondant",
-      noMatchesBody: "Essayez un autre mot-clé pour vos biens enregistrés.",
+      noMatchesBody: "Essayez un autre mot-clé pour vos chats favoris.",
+      removeFavorite: "Retirer le chat des favoris",
     },
     listing: {
       searchPlaceholder: "Rechercher des zones...",
@@ -987,12 +995,12 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       continueAsGuest: "Ou continuer comme invité",
       emailOptionsTitle: "Accès au compte",
       emailOptionsHeroTitle: "Bon retour",
-      emailOptionsHeroBody: "Connectez-vous en toute sécurité à votre compte ZaneAI ou créez-en un nouveau.",
+      emailOptionsHeroBody: "Connectez-vous en toute sécurité à votre compte Qentrah ou créez-en un nouveau.",
       logIn: "Connexion",
       createAccount: "Créer un compte",
       loginHeader: "Noyau sécurité",
       loginTitle: "Identité sécurisée",
-      loginBodyUpgrade: "Connectez-vous pour conserver vos recherches anonymes et les synchroniser.",
+      loginBodyUpgrade: "Connectez-vous pour synchroniser vos recherches.",
       loginBodyDefault: "Connectez-vous avec votre e-mail et mot de passe.",
       establishSecurity: "Établir la sécurité",
       signingIn: "Connexion...",
@@ -1003,8 +1011,8 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       tryAgain: "Réessayer",
       registerHeader: "Provisioning",
       registerTitle: "Identité cloud",
-      registerBodyUpgrade: "Créez un compte. Vos recherches anonymes et favoris vous suivent.",
-      registerBodyDefault: "Créez votre compte ZaneAI pour une synchronisation fluide.",
+      registerBodyUpgrade: "Créez un compte pour synchroniser votre historique de recherche IA.",
+      registerBodyDefault: "Créez votre compte Qentrah pour une synchronisation fluide.",
       initializeEnvironment: "Initialiser l’environnement",
       initializing: "Initialisation...",
       registerFailedTitle: "Échec de création du compte",

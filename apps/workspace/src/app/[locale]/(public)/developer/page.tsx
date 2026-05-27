@@ -14,9 +14,9 @@ export default function DeveloperPage() {
   const t = useTranslations("Landing.developer");
   const workflow = t.raw("workflow.items") as WorkflowItem[];
   const points = [
-    { icon: Building2, title: t("signals.inventory.value"), description: t("signals.inventory.helper") },
-    { icon: FileCheck2, title: t("signals.approvals.value"), description: t("signals.approvals.helper") },
     { icon: Wifi, title: t("signals.sync.value"), description: t("signals.sync.helper") },
+    { icon: FileCheck2, title: t("signals.approvals.value"), description: t("signals.approvals.helper") },
+    { icon: Building2, title: t("signals.inventory.value"), description: t("signals.inventory.helper") },
   ];
 
   return (

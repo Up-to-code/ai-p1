@@ -34,8 +34,8 @@ This folder does not own broad system-wide specification text. If content crosse
 
 ## Related Domains
 
-- [Guidelines](../index.md)
-- [Guidelines](../../guidelines/index.md)
+- [Workspace Documentation](../README.md)
+- [Documentation Standards](../../../../docs/engineering/documentation-standards.md)
 
 ## Maintenance Rules
 

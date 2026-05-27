@@ -1,6 +1,7 @@
 "use client";
 
 import { PlugZap } from "lucide-react";
+import Image from "next/image";
 import { Marquee } from "@/components/ui/marquee";
 
 type ToolBrand = {
@@ -35,9 +36,9 @@ const copy = {
     description: "Use Claude, v0, Replit, Bolt, or your current website. Share your workspace ID and API key, and your listings, leads, and forms sync.",
   },
   ar: {
-    eyebrow: "منشئات المواقع",
-    title: "ابنِ في أي مكان. اربط بكانترا.",
-    description: "استخدم Claude أو v0 أو Replit أو Bolt أو موقعك الحالي. أرسل معرف مساحة العمل ومفتاح API، وتتزامن العقارات والعملاء والنماذج.",
+    eyebrow: "منشئ المواقع",
+    title: "ابنِ واجهتك بأي أداة، واربطها بكانترا",
+    description: "استخدم أدوات بناء المواقع التي تفضلها، واربطها بمساحة عملك في كانترا عبر واجهات API؛ لتعرض المشاريع، الوحدات، الأسعار، والعملاء من مصدر واحد ومحدّث دائمًا.",
   },
 };
 
@@ -45,9 +46,11 @@ function ToolPill({ tool }: { tool: ToolBrand }) {
   return (
     <span className="flex h-12 items-center gap-3 rounded-full border border-zinc-200/80 bg-white px-4 text-sm font-bold text-zinc-700 shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-200">
       <span className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 bg-zinc-50 dark:border-white/10 dark:bg-zinc-950">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           alt=""
+          width={20}
+          height={20}
+          unoptimized
           className="h-5 w-5"
           src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(tool.url)}&sz=128`}
         />
@@ -63,7 +66,6 @@ export function WebsiteBuilderConnect({ locale }: { locale: string }) {
 
   return (
     <section className="w-full overflow-hidden border-y border-zinc-200/70 bg-white px-6 py-16 dark:border-white/[0.08] dark:bg-[#080808] md:py-24">
-      {/* Title block — constrained to max-w-7xl like other sections */}
       <div className="mx-auto max-w-7xl">
         <div className="flex max-w-4xl flex-col items-start space-y-5 text-start">
           <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-blue-700 dark:text-blue-300">
@@ -79,10 +81,8 @@ export function WebsiteBuilderConnect({ locale }: { locale: string }) {
         </div>
       </div>
 
-      {/* Marquee rows — full width, contained by the section's overflow-hidden */}
       <div className="mx-auto mt-10 max-w-7xl overflow-hidden md:mt-14">
         <div className="flex flex-col gap-4">
-          {/* Row 1 — scrolls one direction */}
           <div className="flex items-center overflow-hidden">
             <Marquee
               className="w-full [--duration:38s] [--gap:1rem] [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)]"
@@ -97,7 +97,6 @@ export function WebsiteBuilderConnect({ locale }: { locale: string }) {
             </Marquee>
           </div>
 
-          {/* Row 2 — website builders only */}
           <div className="flex items-center overflow-hidden">
             <Marquee
               className="w-full [--duration:42s] [--gap:1rem] [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)]"

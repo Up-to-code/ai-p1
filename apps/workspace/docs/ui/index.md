@@ -13,10 +13,12 @@ This folder does not own backend authorization, Convex schema, synchronization p
 | File | Purpose |
 | --- | --- |
 | [Interface](interface.md) | Defines the complete Qentrah UI interface, tokenized design system, onboarding flow, sidebar layout, major pages, components, states, and synchronization UX. |
+| [Public Auth Surface](public-auth-surface.md) | Defines sign-in, sign-up, organization selection, RTL split layout, and public auth surface UI rules. |
 
 ## Read Order
 
 1. [Interface](interface.md)
+2. [Public Auth Surface](public-auth-surface.md)
 
 ## Related Domains
 

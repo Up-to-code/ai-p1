@@ -1,6 +1,7 @@
 "use client";
 
 import { useReducedMotion } from "framer-motion";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 type AgentItem = {
@@ -78,9 +79,9 @@ const copy = {
       "Keep the tools your team already knows. Qentrah connects them to your live workspace so projects, units, clients, and calendars stay in sync.",
   },
   ar: {
-    title: "الأدوات التي يستخدمها فريقك، متصلة.",
+    title: "أدوات فريقك، متصلة بمنظومة واحدة",
     description:
-      "احتفظ بالأدوات التي يعرفها فريقك. كانترا تربطها بمساحة العمل لتبقى المشاريع والوحدات والعملاء والتقويم متزامنة.",
+      "اربط الأدوات التي يعتمد عليها فريقك بكانترا، واجعل المشاريع، الوحدات، العملاء، والمهام تعمل ضمن تدفق واحد يختصر الوقت ويرفع كفاءة التشغيل.",
   },
 };
 
@@ -90,9 +91,11 @@ function AgentCard({ agent, isAr }: { agent: AgentItem; isAr: boolean }) {
   return (
     <div className="flex items-center gap-3.5 rounded-2xl border border-zinc-200/60 bg-white p-4 shadow-sm dark:border-white/[0.06] dark:bg-zinc-950/40 hover:border-zinc-300 dark:hover:border-white/10 transition duration-300 w-full">
       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-zinc-50 dark:border-white/10 dark:bg-zinc-900">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           alt=""
+          width={20}
+          height={20}
+          unoptimized
           className="h-5 w-5 rounded"
           src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(agent.url)}&sz=128`}
         />
@@ -110,15 +113,12 @@ export function McpAgentsShowcase({ locale }: { locale: string }) {
   const labels = isAr ? copy.ar : copy.en;
   const reduceMotion = useReducedMotion();
 
-  // Quadruple the array for a seamless endless scrolling loops
   const scrollingAgents = [...agentsList, ...agentsList, ...agentsList, ...agentsList];
 
   return (
     <section className="w-full overflow-hidden border-y border-zinc-200/70 bg-white px-6 py-16 dark:border-white/[0.08] dark:bg-[#080808] md:py-24">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center" dir={isAr ? "rtl" : "ltr"}>
-
-          {/* Side A: Clean Minimal Content */}
           <div className="flex flex-col space-y-6 text-start rtl:text-right ltr:text-left max-w-xl mx-auto lg:mx-0">
             <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-zinc-950 dark:text-white md:text-4xl lg:text-5xl rtl:leading-[1.25]">
               {labels.title}
@@ -128,7 +128,6 @@ export function McpAgentsShowcase({ locale }: { locale: string }) {
             </p>
           </div>
 
-          {/* Side B: Vertical Infinite Scroll Marquee (Upward Scrolling, Bounded & Faded) */}
           <div className="w-full flex justify-center">
             <div className="relative h-[380px] w-full max-w-[350px] overflow-hidden rounded-3xl border border-zinc-200/50 bg-zinc-50/20 dark:border-white/[0.05] dark:bg-white/[0.01] p-4 [mask-image:linear-gradient(to_bottom,transparent,black_12%,black_88%,transparent)]">
               <div
@@ -151,7 +150,6 @@ export function McpAgentsShowcase({ locale }: { locale: string }) {
         </div>
       </div>
 
-      {/* Hardware-accelerated Vertical Upward Keyframe Scroll */}
       <style>{`
         @keyframes mcp-vertical-marquee {
           0% {

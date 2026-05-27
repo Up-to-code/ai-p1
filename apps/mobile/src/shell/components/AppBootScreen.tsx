@@ -49,7 +49,7 @@ export function AppBootScreen() {
       <Animated.View entering={FadeIn.duration(1500)} style={styles.container}>
         <View style={styles.content}>
           <Animated.Text style={[styles.brandName, animatedTextStyle]}>
-            ZANE AI
+            QENTRAH
           </Animated.Text>
         </View>
       </Animated.View>

@@ -114,6 +114,7 @@ export function DashboardScreen() {
       <AppPageShell contentClassName="space-y-6">
         <AppPageHeader
           eyebrow={t("eyebrow")}
+          subtitle={t("subtitle")}
           title={t("title")}
         />
 

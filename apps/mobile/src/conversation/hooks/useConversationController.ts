@@ -40,7 +40,7 @@ function isLiveRunStatus(status: string | null | undefined) {
 }
 
 export function useConversationController() {
-  const { canUpgrade, isGuest, isAuthenticated } = useAuthSession();
+  const { canUpgrade, isAuthenticated } = useAuthSession();
   const router = useRouter();
   const sessionId = useAppStore((state) => state.sessionId);
   const draftText = useAppStore((state) => state.draftText);
@@ -61,9 +61,6 @@ export function useConversationController() {
   const setRunFailureMessage = useAppStore((state) => state.setRunFailureMessage);
   const clearDraft = useAppStore((state) => state.clearDraft);
   const setDraftText = useAppStore((state) => state.setDraftText);
-  const toggleCompareProperty = useAppStore((state) => state.toggleCompareProperty);
-  const toggleGuestMirrorSavedProperty = useAppStore((state) => state.toggleGuestMirrorSavedProperty);
-  const setSelectedPropertyId = useAppStore((state) => state.setSelectedPropertyId);
   const completionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const {
@@ -323,11 +320,7 @@ export function useConversationController() {
     }
 
     if (!isAuthenticated) {
-      setRunFailureMessage(
-        isGuest
-          ? surfaceCopy.runtimeRestoringGuest
-          : surfaceCopy.runtimeSignInRequired,
-      );
+      setRunFailureMessage(surfaceCopy.runtimeSignInRequired);
       return;
     }
 
@@ -498,23 +491,24 @@ export function useConversationController() {
     if (action.name === "save_property") {
       if (isAuthenticated) {
         await toggleSavedListingMutation({ listingId: action.payload.propertyId });
-      } else if (isGuest) {
-        toggleGuestMirrorSavedProperty(action.payload.propertyId);
+      } else {
+        router.push("/(auth)");
       }
       track("property_save", basePayload);
       return;
     }
 
     if (action.name === "compare_property") {
-      toggleCompareProperty(action.payload.propertyId);
+      if (action.payload.propertyId) {
+        await sendPrompt(`Compare this property in chat: ${action.payload.propertyId}`);
+      }
       track("property_compare", basePayload);
       return;
     }
 
     if (action.name === "open_property") {
-      setSelectedPropertyId(action.payload.propertyId);
+      setDraftText(`Tell me more about property ${action.payload.propertyId}.`);
       track("property_click", basePayload);
-      router.push(`/(app)/property/${action.payload.propertyId}`);
       return;
     }
 
@@ -538,13 +532,8 @@ export function useConversationController() {
         await sendPrompt(action.payload.prompt);
         return;
       }
-      if (action.payload.brokerId) {
-        router.push(`/(app)/broker/${action.payload.brokerId}`);
-        return;
-      }
       if (action.payload.propertyId) {
-        setSelectedPropertyId(action.payload.propertyId);
-        router.push(`/(app)/property/${action.payload.propertyId}`);
+        setDraftText(`I want to contact the advisor for ${action.payload.propertyId}.`);
       }
       return;
     }
@@ -586,11 +575,7 @@ export function useConversationController() {
       
       track("ai_suggestion_clicked", basePayload);
       
-      if (searchPrompt) {
-        router.push(`/(app)/listing?filter=${encodeURIComponent(searchPrompt)}`);
-      } else {
-        router.push(`/(app)/listing`);
-      }
+      await sendPrompt(searchPrompt || "Search for matching properties in chat.");
       return;
     }
 
@@ -603,7 +588,7 @@ export function useConversationController() {
   return {
     activeThreadId,
     canUpgrade,
-    isAnonymous: isGuest,
+    isAnonymous: false,
     runtimeHealth,
     messages,
     isStreaming,

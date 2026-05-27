@@ -22,8 +22,8 @@ export function createPropertyCard(overrides: Partial<PropertyCardVM> = {}): Pro
     amenities: overrides.amenities ?? [],
     broker: overrides.broker ?? {
       id: `broker-${id}`,
-      name: "ZaneAI Advisor",
-      agency: "ZaneAI",
+      name: "Qentrah Advisor",
+      agency: "Qentrah",
       avatarUrl: heroUrl,
       rating: 4.8,
       activeListingsCount: 4,

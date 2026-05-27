@@ -10,6 +10,13 @@ function readSource(path: string) {
   return readFileSync(resolve(root, path), "utf8");
 }
 
+function readMessages(locale: "ar" | "en") {
+  return JSON.parse(readFileSync(resolve(root, `messages/${locale}.json`), "utf8")) as {
+    Sidebar: { dashboard: string };
+    Workspace: { modeWs: string };
+  };
+}
+
 describe("dashboard mode routing", () => {
   it("encodes normal and AI mode into dashboard URLs", () => {
     expect(parseWorkspaceMode(null)).toBe("ws");
@@ -52,5 +59,19 @@ describe("dashboard mode routing", () => {
     expect(sidebar).toContain('workspaceModeHref("ai", thread.id)');
     expect(dashboard).toContain('parseWorkspaceMode(searchParams.get("mode"))');
     expect(dashboardChat).toContain('params.set("mode", "ai")');
+  });
+
+  it("keeps internal ws routing while avoiding visible WS labels", () => {
+    const topbar = readSource("src/components/layout/topbar.tsx");
+    const ar = readMessages("ar");
+    const en = readMessages("en");
+
+    expect(en.Sidebar.dashboard).toBe("Dashboard");
+    expect(en.Workspace.modeWs).toBe("Dashboard");
+    expect(ar.Sidebar.dashboard).toBe("لوحة التحكم");
+    expect(ar.Workspace.modeWs).toBe("لوحة التحكم");
+    expect(topbar).toContain('tWorkspace("modeWs")');
+    expect(topbar).not.toContain('"Work"');
+    expect(topbar).not.toContain('"العمل"');
   });
 });

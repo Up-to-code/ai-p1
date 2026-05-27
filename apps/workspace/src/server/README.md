@@ -28,5 +28,14 @@ Only stable backend entrypoints should be exported from this tree. Domains expor
 - Keep validation, types, interfaces, and policies scoped to their domain or subdomain.
 - Do not mix domain ownership.
 
+## Source-Near README Policy
+- Nested README files in this tree are ownership markers, not broad documentation.
+- Keep a nested README only when it preserves an intentional future boundary,
+  explains public exports, or names local security/data rules.
+- Put repeated backend-wide rules here instead of copying them into every
+  subfolder.
+- Remove or consolidate placeholder READMEs once real source files make the
+  folder boundary obvious and the folder no longer needs a tracked placeholder.
+
 ## Future Implementation Notes
 When implementation begins, add route registration through `routing/`, then delegate to domain handlers, services, validators, policies, and audit contracts.

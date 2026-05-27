@@ -100,7 +100,7 @@ packages/
 ```
 
 For a single visual map of the whole repo, use the
-[all-in-one repo flow chart](./docs/ALL_IN_ONE_REPO_FLOW_CHART.md).
+[all-in-one repo flow chart](./docs/architecture/all-in-one-repo-flow-chart.md).
 
 ## Core Flows
 
@@ -155,19 +155,19 @@ under `apps/mobile/src/store`, conversation and voice logic under
 
 ## Documentation Map
 
-- [Setup and configuration](./SETUP_AND_CONFIGURATION.md): deep local,
+- [Setup and configuration](./docs/operations/setup-and-configuration.md): deep local,
   production, environment, token, and troubleshooting guide.
 - [Documentation index](./docs/README.md): repo-level documentation catalog.
-- [Architecture](./docs/ARCHITECTURE.md): system boundaries, flows, data
+- [Architecture](./docs/architecture/system-architecture.md): system boundaries, flows, data
   ownership, and integration shape.
-- [All-in-one repo flow chart](./docs/ALL_IN_ONE_REPO_FLOW_CHART.md): single
+- [All-in-one repo flow chart](./docs/architecture/all-in-one-repo-flow-chart.md): single
   Mermaid map of apps, data stores, shared packages, and cross-app flows.
-- [Apps and packages](./docs/APPS.md): what each app and shared package is for.
-- [Environment variables](./docs/ENVIRONMENT.md): canonical environment
+- [Apps and packages](./docs/architecture/apps-and-packages.md): what each app and shared package is for.
+- [Environment variables](./docs/operations/environment.md): canonical environment
   variable reference and external links.
-- [Feature lifecycle](./docs/FEATURE_LIFECYCLE.md): how features move from idea
+- [Feature lifecycle](./docs/engineering/feature-lifecycle.md): how features move from idea
   to implementation, release, maintenance, and deprecation.
-- [Agent guide](./docs/AGENT_GUIDE.md): guidance for AI agents and developers
+- [Agent guide](./docs/engineering/agent-guide.md): guidance for AI agents and developers
   editing this repo safely.
 - [Partner platform docs](./docs/partner-platform/README.md): partner platform
   flow and implementation guide.

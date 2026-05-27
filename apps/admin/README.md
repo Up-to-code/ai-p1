@@ -72,8 +72,8 @@ commit the service token value.
 
 See:
 
-- [Environment variables](../../docs/ENVIRONMENT.md)
-- [Setup and configuration](../../SETUP_AND_CONFIGURATION.md)
+- [Environment variables](../../docs/operations/environment.md)
+- [Setup and configuration](../../docs/operations/setup-and-configuration.md)
 
 ## Scripts
 
@@ -95,6 +95,6 @@ npm --workspace @qentrah/admin-review test
 ## Related Documentation
 
 - [Root README](../../README.md)
-- [Architecture](../../docs/ARCHITECTURE.md)
-- [Apps and packages](../../docs/APPS.md)
-- [Feature lifecycle](../../docs/FEATURE_LIFECYCLE.md)
+- [Architecture](../../docs/architecture/system-architecture.md)
+- [Apps and packages](../../docs/architecture/apps-and-packages.md)
+- [Feature lifecycle](../../docs/engineering/feature-lifecycle.md)

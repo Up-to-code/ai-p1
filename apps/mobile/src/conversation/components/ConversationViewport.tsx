@@ -5,21 +5,19 @@ import { useMemo } from "react";
 import { ConversationFeed } from "@/conversation/components/ConversationFeed";
 import { ConversationStatusBanner } from "@/conversation/components/ConversationStatusBanner";
 import { EdgeFade } from "@/conversation/components/EdgeFade";
-import { ZaneAiComposerDock } from "@/conversation/components/ZaneAiComposerDock";
+import { QentrahComposerDock } from "@/conversation/components/QentrahComposerDock";
 import { useConversationController } from "@/conversation/hooks/useConversationController";
 import { getLocalizedRuntimeMessage, resolveThreadPresentationState } from "@/conversation/lib/assistantPresentation";
 import { useKeyboardDock } from "@/conversation/hooks/useKeyboardDock";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { useThreadPresentation } from "@/persistence/convex/useConversationData";
 import { useAppStore } from "@/store";
-import { NormalModeView } from "@/shell/components/NormalModeView";
 
 export function ConversationViewport() {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const composerDockHeight = useAppStore((state) => state.composerDockHeight);
   const keyboardHeight = useAppStore((state) => state.keyboardHeight);
-  const operativeMode = useAppStore((state) => state.operativeMode);
 
   const {
     activeThreadId,
@@ -51,81 +49,67 @@ export function ConversationViewport() {
     ? getLocalizedRuntimeMessage(runtimeHealth, resolvedPresentation.surfaceCopy)
     : undefined;
 
-  const isAiMode = operativeMode === "ai";
-
   return (
     <View style={styles.container}>
-      <View style={[styles.feedWrap, { paddingBottom: isAiMode ? listBottomPadding : 0 }]}>
-        {isAiMode ? (
-          <>
-            {(runtimeUnavailable || runFailureMessage) ? (
-              <View style={[styles.bannerStack, { paddingTop: insets.top + 64 }]}>
-                {runtimeUnavailable ? (
-                  <ConversationStatusBanner
-                    title={resolvedPresentation.surfaceCopy.aiUnavailableTitle}
-                    body={composerDisabledReason ?? resolvedPresentation.surfaceCopy.aiUnavailableBody}
-                    tone="error"
-                    direction={resolvedPresentation.direction}
-                  />
-                ) : null}
-
-                {runFailureMessage ? (
-                  <ConversationStatusBanner
-                    title={resolvedPresentation.surfaceCopy.runFailedTitle}
-                    body={runFailureMessage}
-                    tone="warning"
-                    onDismiss={clearRunFailureMessage}
-                    direction={resolvedPresentation.direction}
-                  />
-                ) : null}
-              </View>
+      <View style={[styles.feedWrap, { paddingBottom: listBottomPadding }]}>
+        {(runtimeUnavailable || runFailureMessage) ? (
+          <View style={[styles.bannerStack, { paddingTop: insets.top + 64 }]}>
+            {runtimeUnavailable ? (
+              <ConversationStatusBanner
+                title={resolvedPresentation.surfaceCopy.aiUnavailableTitle}
+                body={composerDisabledReason ?? resolvedPresentation.surfaceCopy.aiUnavailableBody}
+                tone="error"
+                direction={resolvedPresentation.direction}
+              />
             ) : null}
-            <ConversationFeed
-              messages={messages}
-              runStageFeed={runStageFeed}
-              onTurnAction={handleTurnAction}
-              onSuggestionPress={sendPrompt}
-              onEditMessage={startEditingMessage}
-              threadPresentation={threadPresentation}
-            />
-          </>
-        ) : (
-          <NormalModeView />
-        )}
+
+            {runFailureMessage ? (
+              <ConversationStatusBanner
+                title={resolvedPresentation.surfaceCopy.runFailedTitle}
+                body={runFailureMessage}
+                tone="warning"
+                onDismiss={clearRunFailureMessage}
+                direction={resolvedPresentation.direction}
+              />
+            ) : null}
+          </View>
+        ) : null}
+        <ConversationFeed
+          messages={messages}
+          runStageFeed={runStageFeed}
+          onTurnAction={handleTurnAction}
+          onSuggestionPress={sendPrompt}
+          onEditMessage={startEditingMessage}
+          threadPresentation={threadPresentation}
+        />
       </View>
 
-      {isAiMode ? (
-        <View pointerEvents="none" style={[styles.headerFade, { height: insets.top + 92 }]}>
-          <EdgeFade color={colors.background} placement="top" startOpacity={0.98} midOpacity={0.52} />
-        </View>
-      ) : null}
+      <View pointerEvents="none" style={[styles.headerFade, { height: insets.top + 92 }]}>
+        <EdgeFade color={colors.background} placement="top" startOpacity={0.98} midOpacity={0.52} />
+      </View>
 
-      {isAiMode ? (
-        <View pointerEvents="none" style={[styles.composerFade, { bottom: dockBottomOffset }]}>
-          <EdgeFade color={colors.background} placement="bottom" startOpacity={0.96} midOpacity={0.48} />
-        </View>
-      ) : null}
+      <View pointerEvents="none" style={[styles.composerFade, { bottom: dockBottomOffset }]}>
+        <EdgeFade color={colors.background} placement="bottom" startOpacity={0.96} midOpacity={0.48} />
+      </View>
       
-      {isAiMode && (
-        <View pointerEvents="box-none" style={[styles.dockWrap, { bottom: dockBottomOffset }]}>
-          <ZaneAiComposerDock
-            onSend={sendPrompt}
-            onStop={stop}
-            isStreaming={isStreaming}
-            disabled={runtimeUnavailable}
-            disabledReason={composerDisabledReason}
-            canUpgrade={canUpgrade}
-            onUpgrade={openUpgrade}
-            keyboardVisible={keyboardVisible}
-            messageCount={messages.length}
-            surfaceCopy={resolvedPresentation.surfaceCopy}
-            direction={resolvedPresentation.direction}
-            uiLocale={resolvedPresentation.uiLocale}
-            isEditing={Boolean(editingMessage)}
-            onCancelEdit={cancelComposerEdit}
-          />
-        </View>
-      )}
+      <View pointerEvents="box-none" style={[styles.dockWrap, { bottom: dockBottomOffset }]}>
+        <QentrahComposerDock
+          onSend={sendPrompt}
+          onStop={stop}
+          isStreaming={isStreaming}
+          disabled={runtimeUnavailable}
+          disabledReason={composerDisabledReason}
+          canUpgrade={canUpgrade}
+          onUpgrade={openUpgrade}
+          keyboardVisible={keyboardVisible}
+          messageCount={messages.length}
+          surfaceCopy={resolvedPresentation.surfaceCopy}
+          direction={resolvedPresentation.direction}
+          uiLocale={resolvedPresentation.uiLocale}
+          isEditing={Boolean(editingMessage)}
+          onCancelEdit={cancelComposerEdit}
+        />
+      </View>
     </View>
   );
 }

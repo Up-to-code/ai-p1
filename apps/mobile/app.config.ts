@@ -4,6 +4,8 @@ import type { ExpoConfig } from "expo/config";
 
 const workspaceRoot = path.resolve(__dirname, "../..");
 const appRoot = __dirname;
+const brandName = "Qentrah";
+const brandPrimary = "#0B5CFF";
 
 function normalizeUrlEnvValue(value: string | undefined) {
   if (!value) {
@@ -54,23 +56,22 @@ const authUrl = normalizeUrlEnvValue(
     ?? process.env.CONVEX_SITE_URL
     ?? "",
 ) ?? "";
-
 const config: ExpoConfig = {
-  name: "ZaneAI",
-  slug: "zane-ai-mobile",
-  scheme: "zane-ai",
+  name: brandName,
+  slug: "qentrah-mobile",
+  scheme: "qentrah",
   version: "0.1.0",
   orientation: "portrait",
   userInterfaceStyle: "automatic",
-  icon: "./assets/brand/zaneai-mobile-icon.png",
+  icon: "./assets/brand/qentrah-mobile-icon.png",
   splash: {
-    image: "./assets/brand/zaneai-splash-icon.png",
+    image: "./assets/brand/qentrah-splash-icon.png",
     resizeMode: "contain",
-    backgroundColor: "#EC2D35",
+    backgroundColor: brandPrimary,
     dark: {
-      image: "./assets/brand/zaneai-splash-icon.png",
+      image: "./assets/brand/qentrah-splash-icon.png",
       resizeMode: "contain",
-      backgroundColor: "#EC2D35",
+      backgroundColor: brandPrimary,
     },
   },
   experiments: {
@@ -78,17 +79,17 @@ const config: ExpoConfig = {
   },
   ios: {
     supportsTablet: false,
-    bundleIdentifier: "com.zaneai.mobile",
+    bundleIdentifier: "com.qentrah.mobile",
   },
   android: {
-    package: "com.zaneai.mobile",
+    package: "com.qentrah.mobile",
     adaptiveIcon: {
-      foregroundImage: "./assets/brand/zaneai-adaptive-icon.png",
-      backgroundColor: "#EC2D35",
+      foregroundImage: "./assets/brand/qentrah-adaptive-icon.png",
+      backgroundColor: brandPrimary,
     },
   },
   web: {
-    favicon: "./assets/brand/favicon.png",
+    favicon: "./assets/brand/qentrah-favicon.png",
   },
   plugins: [
     "expo-font",
@@ -97,8 +98,8 @@ const config: ExpoConfig = {
     [
       "expo-speech-recognition",
       {
-        microphonePermission: "Allow ZaneAI to use the microphone for voice search and guided prompts.",
-        speechRecognitionPermission: "Allow ZaneAI to transcribe your speech into real estate prompts.",
+        microphonePermission: `Allow ${brandName} to use the microphone for AI prompts.`,
+        speechRecognitionPermission: `Allow ${brandName} to transcribe your speech into AI prompts.`,
       },
     ],
   ],
@@ -106,7 +107,7 @@ const config: ExpoConfig = {
     convexUrl,
     authUrl,
     brand: {
-      name: "ZaneAI",
+      name: brandName,
       tagline: "The intelligent center of real estate.",
     },
   },

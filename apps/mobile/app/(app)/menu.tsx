@@ -1,15 +1,13 @@
-import { StyleSheet, View, Pressable, ScrollView, Alert, Image } from "react-native";
+import { StyleSheet, View, Pressable, ScrollView, Image, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useMemo } from "react";
 import {
-  AlertTriangle,
   ArrowRight,
-  Search,
-  Settings,
-  Bookmark,
-  Scale,
-  Plus,
   ChevronRight,
+  Clock,
+  Plus,
+  Settings,
+  Star,
   X,
 } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -37,25 +35,17 @@ export default function MenuScreen() {
   const beginThreadCreation = useAppStore((state) => state.beginThreadCreation);
   const cancelThreadCreation = useAppStore((state) => state.cancelThreadCreation);
   const e2eQaMode = useAppStore((state) => state.e2eQaMode);
+  const favoriteThreadIds = useAppStore((state) => state.favoriteThreadIds);
+  const toggleFavoriteThread = useAppStore((state) => state.toggleFavoriteThread);
   const threads = useThreads();
   const startThread = useMutation(api.agent.public.startThread.startThread);
-  const { canUpgrade, isAuthenticated, isGuest, user } = useAuthSession();
+  const { isAuthenticated, user } = useAuthSession();
   const workspaceState = useQuery(
     api.partnerWorkspace.getWorkspaceState,
     isAuthenticated ? {} : "skip",
   );
 
   const handleNewThread = async () => {
-    if (!isAuthenticated) {
-      Alert.alert(
-        isGuest ? t.menu.anonymousSession : t.compare.signInRequiredTitle,
-        isGuest
-          ? t.auth.guestUnavailableBody
-          : "Sign in to create and sync conversation threads.",
-      );
-      router.navigate("/(app)");
-      return;
-    }
     beginThreadCreation();
     if (e2eQaMode) {
       const threadId = createE2EThread();
@@ -76,12 +66,8 @@ export default function MenuScreen() {
     }
   };
 
-  const displayName = isGuest
-    ? t.menu.anonymousSession
-    : workspaceState?.user?.name ?? user?.name ?? workspaceState?.user?.email ?? user?.email ?? "Ahmed Mansour";
-  const avatarUrl = !isGuest
-    ? workspaceState?.user?.image ?? user?.image ?? null
-    : null;
+  const displayName = workspaceState?.user?.name ?? user?.name ?? workspaceState?.user?.email ?? user?.email ?? "Qentrah user";
+  const avatarUrl = workspaceState?.user?.image ?? user?.image ?? null;
   const initials = displayName
     .split(" ")
     .map((part: string) => part[0]?.toUpperCase() ?? "")
@@ -113,21 +99,16 @@ export default function MenuScreen() {
               <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
             ) : (
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{initials || "Z"}</Text>
+                <Text style={styles.avatarText}>{initials || "Q"}</Text>
               </View>
             )}
             <View style={styles.profileMeta}>
               <Text variant="title" style={styles.profileName}>{displayName}</Text>
+              <Text variant="caption" tone="muted">Qentrah AI</Text>
             </View>
             <ChevronRight size={18} color={colors.textMuted} style={mirrorIcon(isRTL)} />
           </Pressable>
         </Animated.View>
-
-        {isGuest && canUpgrade && (
-          <Pressable style={styles.authLink} onPress={() => router.push("/(auth)")}>
-            <Text style={styles.authLinkText}>{t.menu.syncResearchArchive}</Text>
-          </Pressable>
-        )}
 
         <View style={styles.menuGroups}>
           <View style={styles.groupWrapper}>
@@ -143,26 +124,43 @@ export default function MenuScreen() {
 
               <View style={styles.divider} />
 
-              {threads.slice(0, 3).map((thread: any, idx: number) => (
-                <View key={thread._id}>
-                  <Pressable
-                    style={styles.listItem}
-                    onPress={() => {
-                      setActiveThreadId(thread._id);
-                      router.navigate("/(app)");
-                    }}
-                  >
-                    <View style={styles.itemIconBox}>
-                      <Search size={18} color={colors.textPrimary} />
+              {threads.slice(0, 3).map((thread: any, idx: number) => {
+                const isFavorite = favoriteThreadIds.includes(thread._id);
+                return (
+                  <View key={thread._id}>
+                    <View style={styles.threadRow}>
+                      <Pressable
+                        style={styles.threadPress}
+                        onPress={() => {
+                          setActiveThreadId(thread._id);
+                          router.navigate("/(app)");
+                        }}
+                      >
+                        <View style={styles.itemIconBox}>
+                          <Clock size={18} color={colors.textPrimary} />
+                        </View>
+                        <Text variant="body" style={styles.itemLabel} numberOfLines={1}>
+                          {thread.title ?? t.menu.untitledSearch}
+                        </Text>
+                        <ChevronRight size={14} color={colors.textMuted} style={mirrorIcon(isRTL)} />
+                      </Pressable>
+                      <Pressable
+                        accessibilityLabel={isFavorite ? t.saved.removeFavorite : t.common.save}
+                        onPress={() => toggleFavoriteThread(thread._id)}
+                        hitSlop={8}
+                        style={styles.starButton}
+                      >
+                        <Star
+                          size={17}
+                          color={isFavorite ? colors.accent : colors.textMuted}
+                          fill={isFavorite ? colors.accent : "transparent"}
+                        />
+                      </Pressable>
                     </View>
-                    <Text variant="body" style={styles.itemLabel} numberOfLines={1}>
-                      {thread.title ?? t.menu.untitledSearch}
-                    </Text>
-                    <ChevronRight size={14} color={colors.textMuted} style={mirrorIcon(isRTL)} />
-                  </Pressable>
-                  {idx < 2 && <View style={styles.divider} />}
-                </View>
-              ))}
+                    {idx < 2 && <View style={styles.divider} />}
+                  </View>
+                );
+              })}
 
               <Pressable
                 style={styles.seeAll}
@@ -178,16 +176,8 @@ export default function MenuScreen() {
             <Text variant="caption" tone="muted" style={styles.groupLabel}>{t.menu.workspaceTools}</Text>
             <View style={styles.groupCard}>
               <Pressable style={styles.listItem} onPress={() => router.navigate("/(app)/saved")}>
-                <View style={styles.itemIconBox}><Bookmark size={18} color={colors.textPrimary} /></View>
-                <Text variant="body" style={styles.itemLabel}>{t.menu.savedProperties}</Text>
-                <ChevronRight size={14} color={colors.textMuted} style={mirrorIcon(isRTL)} />
-              </Pressable>
-
-              <View style={styles.divider} />
-
-              <Pressable style={styles.listItem} onPress={() => router.navigate("/(app)/compare")}>
-                <View style={styles.itemIconBox}><Scale size={18} color={colors.textPrimary} /></View>
-                <Text variant="body" style={styles.itemLabel}>{t.menu.compareTray}</Text>
+                <View style={styles.itemIconBox}><Star size={18} color={colors.textPrimary} /></View>
+                <Text variant="body" style={styles.itemLabel}>{t.menu.favoriteChats}</Text>
                 <ChevronRight size={14} color={colors.textMuted} style={mirrorIcon(isRTL)} />
               </Pressable>
 
@@ -196,14 +186,6 @@ export default function MenuScreen() {
               <Pressable style={styles.listItem} onPress={() => router.navigate("/(app)/profile")}>
                 <View style={styles.itemIconBox}><Settings size={18} color={colors.textPrimary} /></View>
                 <Text variant="body" style={styles.itemLabel}>{t.menu.userSettings}</Text>
-                <ChevronRight size={14} color={colors.textMuted} style={mirrorIcon(isRTL)} />
-              </Pressable>
-
-              <View style={styles.divider} />
-
-              <Pressable style={styles.listItem} onPress={() => router.navigate("/(app)/errors")}>
-                <View style={styles.itemIconBox}><AlertTriangle size={18} color={colors.textPrimary} /></View>
-                <Text variant="body" style={styles.itemLabel}>{t.menu.errorScreens}</Text>
                 <ChevronRight size={14} color={colors.textMuted} style={mirrorIcon(isRTL)} />
               </Pressable>
             </View>
@@ -251,35 +233,27 @@ const createStyles = (colors: any, isRTL: boolean) => StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: colors.divider,
-    position: "relative",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+  },
+  avatarImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
   },
   avatarText: {
-    fontSize: 22,
-    fontWeight: "900",
     color: colors.textPrimary,
-    lineHeight: 28,
-    letterSpacing: -0.5,
-    textAlign: "center",
-    includeFontPadding: false,
+    fontSize: 20,
+    fontWeight: "800",
   },
   profileMeta: {
     flex: 1,
+    gap: 2,
     alignItems: isRTL ? "flex-end" : "flex-start",
   },
   profileName: {
-    textAlign: isRTL ? "right" : "left",
-  },
-  authLink: {
-    marginBottom: 20,
-  },
-  authLinkText: {
-    color: colors.accent,
-    textAlign: isRTL ? "right" : "left",
+    color: colors.textPrimary,
+    fontSize: 24,
+    fontWeight: "800",
+    letterSpacing: -0.8,
   },
   menuGroups: {
     gap: 24,
@@ -288,9 +262,9 @@ const createStyles = (colors: any, isRTL: boolean) => StyleSheet.create({
     gap: 10,
   },
   groupLabel: {
+    paddingHorizontal: 4,
     textTransform: "uppercase",
-    letterSpacing: 2,
-    fontSize: 10,
+    letterSpacing: 0.8,
   },
   groupCard: {
     backgroundColor: colors.surface,
@@ -302,26 +276,50 @@ const createStyles = (colors: any, isRTL: boolean) => StyleSheet.create({
   listItem: {
     flexDirection: isRTL ? "row-reverse" : "row",
     alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 18,
     paddingVertical: 16,
+    paddingHorizontal: 18,
+    gap: 14,
   },
-  itemIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  threadRow: {
+    flexDirection: isRTL ? "row-reverse" : "row",
+    alignItems: "center",
+    paddingRight: isRTL ? 0 : 12,
+    paddingLeft: isRTL ? 12 : 0,
+  },
+  threadPress: {
+    flex: 1,
+    flexDirection: isRTL ? "row-reverse" : "row",
+    alignItems: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    gap: 14,
+  },
+  starButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.surfaceRaised,
   },
+  itemIconBox: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: colors.surfaceRaised,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   itemLabel: {
     flex: 1,
+    color: colors.textPrimary,
+    fontWeight: "800",
     textAlign: isRTL ? "right" : "left",
   },
   divider: {
     height: 1,
     backgroundColor: colors.divider,
-    marginHorizontal: 18,
+    marginHorizontal: 16,
   },
   seeAll: {
     flexDirection: isRTL ? "row-reverse" : "row",
@@ -331,13 +329,8 @@ const createStyles = (colors: any, isRTL: boolean) => StyleSheet.create({
     paddingVertical: 14,
   },
   seeAllText: {
-    color: colors.textMuted,
-  },
-  avatarImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    borderWidth: 1,
-    borderColor: colors.divider,
+    color: colors.textSecondary,
+    fontSize: 13,
+    fontWeight: "800",
   },
 });

@@ -1,5 +1,17 @@
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 
-export default function LocaleNotFoundCatchAll() {
-  notFound();
+import NotFound from "../not-found";
+
+export default async function LocaleNotFoundCatchAll({
+  params,
+}: {
+  params: Promise<{ locale: string; "not-found": string[] }>;
+}) {
+  const { locale, "not-found": segments } = await params;
+
+  if (segments.join("/") === "team-public") {
+    redirect(`/${locale}/about`);
+  }
+
+  return <NotFound />;
 }

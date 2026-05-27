@@ -1,7 +1,6 @@
 const fs = require("fs");
 const path = require("path");
 const { getDefaultConfig } = require("expo/metro-config");
-const { withNativeWind } = require("nativewind/metro");
 
 const projectRoot = __dirname;
 const workspaceRoot = path.resolve(projectRoot, "../..");
@@ -90,7 +89,13 @@ function resolveSingletonPath(moduleName) {
   });
 }
 
-config.watchFolders = [...new Set([...(config.watchFolders ?? []), packagesRoot, convexRoot])];
+config.watchFolders = [
+  ...new Set(
+    [...(config.watchFolders ?? []), packagesRoot, convexRoot].filter((folder) =>
+      fs.existsSync(folder)
+    ),
+  ),
+];
 config.resolver.alias = {
   ...(config.resolver.alias ?? {}),
   "@": path.resolve(projectRoot, "src"),
@@ -137,6 +142,4 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   return context.resolveRequest(context, moduleName, platform);
 };
 
-module.exports = withNativeWind(config, {
-  input: "./global.css",
-});
+module.exports = config;

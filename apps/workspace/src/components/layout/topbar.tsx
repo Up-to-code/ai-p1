@@ -1,8 +1,9 @@
 "use client";
 
-import { Bell, Bot, LayoutDashboard, Moon, Search, Sun } from "lucide-react";
+import { Bell, Bot, LayoutDashboard, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProfileMenu } from "@/components/layout/profile-menu";
+import { WorkspaceGlobalSearch } from "@/components/layout/workspace-global-search";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { BrandMark } from "@/components/logo";
 import { cn } from "@/lib/utils";
@@ -48,17 +49,13 @@ export function Topbar() {
     )}>
 
       <div className="flex flex-1 items-center gap-6">
-        {mode === "ai" ? (
+        {mode === "ai" && (
           <div className="flex items-center gap-2 text-zinc-950 dark:text-white">
             <BrandMark className="h-6 w-6" priority />
             <span className="hidden text-sm font-black md:inline-block">qentrah</span>
           </div>
-        ) : (
-          <button className="group flex items-center gap-2 rounded-lg px-3 py-1.5 text-zinc-400 transition-all hover:bg-zinc-50 dark:hover:bg-white/5">
-            <Search className="h-4 w-4 group-hover:text-zinc-900 dark:group-hover:text-white" />
-            <span className="hidden text-sm font-medium group-hover:text-zinc-900 dark:group-hover:text-white md:inline-block">{tWorkspace('searchAnything')}</span>
-          </button>
         )}
+        <WorkspaceGlobalSearch />
       </div>
 
       <div className="flex items-center gap-2">
@@ -80,7 +77,7 @@ export function Topbar() {
                 transition={{ type: "spring", stiffness: 420, damping: 30 }}
               >
                 <LayoutDashboard className="h-3.5 w-3.5" />
-                {locale === "ar" ? "العمل" : "Work"}
+                {tWorkspace("modeWs")}
               </motion.span>
             </button>
             <button

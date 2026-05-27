@@ -1,72 +1,57 @@
 # Qentrah Documentation
 
-This directory is the repo-level documentation index. It links the root setup
-guide, app-specific READMEs, architecture notes, feature lifecycle guidance, and
-partner platform docs.
+This directory is the repo-level documentation index. It is organized for a
+multi-app product, many contributing teams, and enterprise data ownership.
 
 ## Start Here
 
 - [Root README](../README.md): project overview, quick start, app map, and
   validation commands.
-- [Setup and configuration](../SETUP_AND_CONFIGURATION.md): complete
-  environment, token, local development, deployment, and troubleshooting guide.
-- [Architecture](./ARCHITECTURE.md): system boundaries, auth flows, data
-  ownership, Convex usage, and integration shape.
-- [All-in-one repo flow chart](./ALL_IN_ONE_REPO_FLOW_CHART.md): one
-  consolidated Mermaid chart covering the full repo.
-- [Repo flow chart](./REPO_FLOW_CHART.md): deep Mermaid charts for the full
-  monorepo runtime, app ownership, package layers, and cross-app flows.
-- [Apps and packages](./APPS.md): catalog of apps, packages, routes, and
-  ownership.
-- [Product knowledge base](./PRODUCT_KNOWLEDGE_BASE.md): founder-level product
-  framing, integration flow, messaging, and pitch deck narrative.
-- [Product feature source of truth](./PRODUCT_FEATURE_SOURCE_OF_TRUTH.md):
-  deep non-technical product reference for enterprise buyers, brokers, real
-  estate developers, software partners, and AI/automation builders.
-- [Environment variables](./ENVIRONMENT.md): canonical env reference and source
-  links for external credentials.
-- [Feature lifecycle](./FEATURE_LIFECYCLE.md): how to add, ship, operate, and
-  deprecate features.
-- [Agent guide](./AGENT_GUIDE.md): practical repo navigation and edit guidance
-  for AI agents and human maintainers.
+- [Setup and configuration](./operations/setup-and-configuration.md): local
+  development, deployment, environment, tokens, and troubleshooting.
+- [System architecture](./architecture/system-architecture.md): app ownership,
+  auth flows, data ownership, Convex usage, and integration shape.
+- [Apps and packages](./architecture/apps-and-packages.md): deployable apps,
+  shared packages, route areas, and placement rules.
+- [Feature lifecycle](./engineering/feature-lifecycle.md): how to plan,
+  implement, validate, document, release, and deprecate features.
+- [Agent guide](./engineering/agent-guide.md): safe navigation and edit
+  guidance for AI agents and human maintainers.
 
-## App Documentation
+## Documentation Areas
+
+| Area | Purpose |
+| --- | --- |
+| [Product](./product/README.md) | Product framing, design direction, feature source of truth, and knowledge base. |
+| [Architecture](./architecture/README.md) | Runtime ownership, repo maps, data scale, shared package layers, and cross-app flows. |
+| [Operations](./operations/README.md) | Setup, environment variables, deployment, and production operating notes. |
+| [Engineering](./engineering/README.md) | Feature lifecycle, documentation standards, team ownership, and agent guidance. |
+| [Decisions](./decisions/README.md) | Accepted architecture decisions without numeric filename prefixes. |
+| [Partner Platform](./partner-platform/README.md) | Partner platform flow and implementation guidance. |
+| [Lifecycles](./lifecycles/) | Dependency maps for connected workflows. |
+
+## App And Package Docs
 
 - [Workspace](../apps/workspace/README.md): main product, OAuth provider,
   resource APIs, Convex, and app routes.
+- [Workspace internal docs](../apps/workspace/docs/README.md): detailed
+  Workspace architecture, auth, compliance, SDK, synchronization, security, and
+  visibility docs.
 - [Partners](../apps/partners/README.md): developer portal, app registration,
   docs, sandbox, review state, and platform APIs.
+- [Partner docs app](../apps/partners/content/docs/index.mdx): MDX source for
+  the public developer documentation.
 - [Admin Review](../apps/admin/README.md): internal review console over
   Partners service APIs.
 - [Demo Partner App](../apps/demo-partner-app/README.md): deployable OAuth
   reference implementation.
 - [Marketing](../apps/marketing/README.md): public marketing site.
 
-## Partner Platform
-
-- [Partner Platform Flow](./partner-platform/README.md): internal flow, app
-  responsibilities, service configuration, OAuth, catalog, and acceptance
-  checklist.
-- [Partner Implementation Guide](./partner-platform/partner-implementation-guide.md):
-  partner-facing setup with TypeScript, JavaScript, Next.js, and Node.js
-  examples.
-- [Partner docs app](../apps/partners/content/docs/index.mdx): MDX source for
-  the public developer documentation.
-- [AI agent implementation prompt](../apps/partners/content/docs/ai-agent-implementation.mdx):
-  one-click prompt for building a partner integration.
-
-## Deployment And Operations
-
-- [Monorepo Deployment](./monorepo-deployment.md): root workspace commands,
-  Vercel root directories, domains, and app boundaries.
-- [Workspace internal docs](../apps/workspace/docs/README.md): detailed
-  Workspace architecture, auth, compliance, SDK, synchronization, security, and
-  visibility docs.
-
 ## Documentation Maintenance
 
-- Keep repo-level docs focused on orientation, ownership, setup, and cross-app
-  flows.
+- Keep root docs navigational; place detailed material in the owning area.
+- Use lowercase kebab-case for topical Markdown filenames.
+- Keep `README.md`, `AGENTS.md`, and `CLAUDE.md` as conventional entry points.
 - Put deep Workspace domain details under `apps/workspace/docs`.
 - Put partner-facing docs under `apps/partners/content/docs`.
 - Do not commit real secrets, production tokens, or copied credential values.

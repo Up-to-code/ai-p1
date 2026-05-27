@@ -2,7 +2,6 @@ import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import { createAuthClient } from "better-auth/react";
-import { anonymousClient } from "better-auth/client/plugins";
 import { expoClient } from "@better-auth/expo/client";
 import { convexClient, crossDomainClient } from "@convex-dev/better-auth/client/plugins";
 
@@ -13,7 +12,7 @@ export const FALLBACK_CONVEX_URL = "https://placeholder.convex.invalid";
 function getAuthScheme() {
   return typeof Constants.expoConfig?.scheme === "string"
     ? Constants.expoConfig.scheme
-    : "zane-ai";
+    : "qentrah";
 }
 
 function getAuthBaseUrl() {
@@ -27,7 +26,6 @@ export function isAuthConfigured() {
 export const authClient: any = createAuthClient({
   baseURL: getAuthBaseUrl(),
   plugins: [
-    anonymousClient(),
     convexClient(),
     ...(Platform.OS === "web"
       ? [crossDomainClient()]
@@ -40,15 +38,3 @@ export const authClient: any = createAuthClient({
         ]),
   ],
 } as any);
-
-export async function signInAnonymously() {
-  const result = await authClient.signIn.anonymous();
-  await authClient.getSession();
-  return result;
-}
-
-export async function deleteAnonymousAccount() {
-  const result = await authClient.deleteAnonymousUser();
-  await authClient.getSession();
-  return result;
-}

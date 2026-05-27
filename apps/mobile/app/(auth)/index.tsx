@@ -1,9 +1,9 @@
-import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, View } from "react-native";
 import { Redirect, useRouter } from "expo-router";
 import { useMemo } from "react";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 
-import { Mail, X } from "lucide-react-native";
+import { Mail } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "@/foundation/primitives/Text";
@@ -11,10 +11,9 @@ import { Button } from "@/foundation/primitives/Button";
 import { theme } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { useAuthSession } from "@/auth/useAuthSession";
-import { authClient, signInAnonymously } from "@/auth/authClient";
+import { authClient } from "@/auth/authClient";
 import { AppleIcon, GoogleIcon } from "@/foundation/components/BrandIcons";
 import { TypewriterText } from "@/foundation/components/TypewriterText";
-import { useAppStore } from "@/store";
 import { useAppLocalization } from "@/foundation/localization";
 
 export default function AuthScreen() {
@@ -23,10 +22,9 @@ export default function AuthScreen() {
   const { colors } = useTheme();
   const { t } = useAppLocalization();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const { canAccessApp, canUpgrade, isReady } = useAuthSession();
-  const setGuestMode = useAppStore((state) => state.setGuestMode);
+  const { canAccessApp, isReady } = useAuthSession();
 
-  if (isReady && canAccessApp && !canUpgrade) {
+  if (isReady && canAccessApp) {
     return <Redirect href="/(app)" />;
   }
 
@@ -49,41 +47,8 @@ export default function AuthScreen() {
     }
   };
 
-  const handleAnonymousContinue = async () => {
-    try {
-      await signInAnonymously();
-      setGuestMode(true);
-      router.replace("/(app)");
-    } catch (error) {
-      setGuestMode(false);
-      Alert.alert(
-        t.auth.guestUnavailableTitle,
-        error instanceof Error ? error.message : t.auth.guestUnavailableBody,
-      );
-    }
-  };
-
-  const handleDismiss = async () => {
-    if (canAccessApp) {
-      router.replace("/(app)");
-      return;
-    }
-
-    await handleAnonymousContinue();
-  };
-
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { top: insets.top + 10 }]}>
-        <Pressable
-          accessibilityLabel={t.common.close}
-          onPress={() => void handleDismiss()}
-          style={styles.closeBtn}
-        >
-          <X size={24} color={colors.textPrimary} />
-        </Pressable>
-      </View>
-
       <ScrollView
         bounces={false}
         contentContainerStyle={[
@@ -94,15 +59,15 @@ export default function AuthScreen() {
       >
         <Animated.View entering={FadeInUp.delay(120).springify()} style={styles.heroWrap}>
           <Text variant="display" style={[styles.wordmark, { color: colors.textPrimary }]}>
-            ZANE-AI
+            QENTRAH
           </Text>
 
           <View style={styles.typewriterWrap}>
             <TypewriterText
               phrases={[
-                "ZaneAI searching...",
-                "Comparing properties.",
-                "And more in the app.",
+                "Qentrah AI is ready.",
+                "Your real estate history stays private.",
+                "Sign in to continue.",
               ]}
             />
           </View>
@@ -150,18 +115,6 @@ export default function AuthScreen() {
               ]}
               textStyle={{ color: colors.textPrimary }}
             />
-
-            {!canUpgrade && (
-              <Pressable
-                testID="auth.continue_anonymous"
-                onPress={() => void handleAnonymousContinue()}
-                style={styles.guestAction}
-              >
-                <Text variant="caption" tone="muted">
-                  {t.auth.continueAsGuest}
-                </Text>
-              </Pressable>
-            )}
           </View>
         </Animated.View>
       </ScrollView>
@@ -196,19 +149,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     justifyContent: "center",
     opacity: 0.7,
   },
-  header: {
-    position: "absolute",
-    right: 24,
-    zIndex: 100,
-  },
-  closeBtn: {
-    width: 36,
-    height: 36,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 18,
-    backgroundColor: "rgba(255,255,255,0.05)",
-  },
   actionsWrap: {
     marginBottom: 40,
   },
@@ -223,10 +163,5 @@ const createStyles = (colors: any) => StyleSheet.create({
     minHeight: 58,
     borderRadius: 29,
     borderWidth: 1,
-  },
-  guestAction: {
-    alignItems: "center",
-    marginTop: 16,
-    paddingVertical: 10,
   },
 });

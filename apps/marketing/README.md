@@ -42,8 +42,8 @@ Default local URL: `http://localhost:3005`.
 ## Environment
 
 No required private integration token is documented for this app at the repo
-level. Add new variables to [Environment variables](../../docs/ENVIRONMENT.md)
-and [Setup and configuration](../../SETUP_AND_CONFIGURATION.md) when the app
+level. Add new variables to [Environment variables](../../docs/operations/environment.md)
+and [Setup and configuration](../../docs/operations/setup-and-configuration.md) when the app
 gains runtime integrations.
 
 ## Scripts
@@ -64,5 +64,5 @@ npm --workspace @qentrah/marketing run typecheck
 ## Related Documentation
 
 - [Root README](../../README.md)
-- [Apps and packages](../../docs/APPS.md)
-- [Feature lifecycle](../../docs/FEATURE_LIFECYCLE.md)
+- [Apps and packages](../../docs/architecture/apps-and-packages.md)
+- [Feature lifecycle](../../docs/engineering/feature-lifecycle.md)

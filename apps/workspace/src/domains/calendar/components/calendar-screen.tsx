@@ -10,6 +10,12 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Button as AriaButton } from "react-aria-components";
+import { LocationPicker } from "@qentrah/location-map/react";
+import {
+  formatLocationLabel,
+  type LocationValue,
+} from "@qentrah/location-map";
 import {
   CalendarDays,
   ChevronLeft,
@@ -22,10 +28,7 @@ import {
   X,
   Eye,
   Phone,
-  MessageCircle,
-  Handshake,
   MapPin,
-  ListPlus,
   Building2,
   ClipboardList,
   Loader2,
@@ -74,24 +77,26 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 type StatusPillTone = ComponentProps<typeof StatusPill>["tone"];
-type BusinessScheduleType = "visit" | "call" | "meeting" | "follow-up";
 type PickerKind = "client" | "unit" | "task";
-
-const businessTypeOptions: Array<{
-  value: BusinessScheduleType;
-  icon: typeof Eye;
-}> = [
-  { value: "visit", icon: Eye },
-  { value: "call", icon: Phone },
-  { value: "meeting", icon: Handshake },
-  { value: "follow-up", icon: MessageCircle },
-];
+type CalendarView = "month" | "week" | "day";
 
 const customEventTypeValues: CalendarEventFormValues["type"][] = [
   "visit",
@@ -141,6 +146,39 @@ function getWeekDays(date: Date): Date[] {
 function toIso(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
+function addDays(date: Date, days: number) {
+  const next = new Date(date);
+  next.setDate(date.getDate() + days);
+  return next;
+}
+function formatTimeLabel(value: string) {
+  const [hourValue, minuteValue] = value.split(":").map(Number);
+  const date = new Date();
+  date.setHours(hourValue, minuteValue, 0, 0);
+  return date.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+function serializeLocation(location: LocationValue) {
+  const parts = [
+    formatLocationLabel(location),
+    typeof location.latitude === "number" && typeof location.longitude === "number"
+      ? `${location.latitude.toFixed(6)},${location.longitude.toFixed(6)}`
+      : null,
+  ].filter(Boolean);
+  return parts.join(" | ");
+}
+function locationValueFromString(value?: string): LocationValue | null {
+  if (!value?.trim()) return null;
+  const [label, coordinates] = value.split("|").map((part) => part.trim());
+  const [latitude, longitude] = coordinates?.split(",").map(Number) ?? [];
+  return {
+    label: label || value,
+    latitude: Number.isFinite(latitude) ? latitude : undefined,
+    longitude: Number.isFinite(longitude) ? longitude : undefined,
+  };
+}
 function generateTimeSlots() {
   const s: string[] = [];
   for (let h = 8; h <= 20; h++)
@@ -158,7 +196,7 @@ function endOfDay(date: Date) {
   d.setHours(23, 59, 59, 999);
   return d.getTime();
 }
-function visibleRange(date: Date, view: "month" | "week" | "day") {
+function visibleRange(date: Date, view: CalendarView) {
   if (view === "day")
     return { startAt: startOfDay(date), endAt: endOfDay(date) };
   const days = view === "week" ? getWeekDays(date) : getDaysInMonth(date);
@@ -166,6 +204,13 @@ function visibleRange(date: Date, view: "month" | "week" | "day") {
     startAt: startOfDay(days[0]),
     endAt: endOfDay(days[days.length - 1]),
   };
+}
+function isInSlot(eventTime: string, slotTime: string) {
+  const [eh, em] = eventTime.split(":").map(Number);
+  const [sh, sm] = slotTime.split(":").map(Number);
+  const eventMin = eh * 60 + em;
+  const slotMin = sh * 60 + sm;
+  return eventMin >= slotMin && eventMin < slotMin + 30;
 }
 
 function eventTone(status: CalendarEvent["status"]): StatusPillTone {
@@ -245,12 +290,6 @@ export function CalendarScreen() {
     errorMessage: "Event delete failed.",
   });
 
-  const isoCurrent = toIso(currentDate);
-  const dayEvents = useMemo(
-    () => events.filter((e) => e.date === isoCurrent),
-    [events, isoCurrent],
-  );
-
   const eventsByDate = useMemo(() => {
     const map: Record<string, CalendarEvent[]> = {};
     events.forEach((e) => {
@@ -261,14 +300,6 @@ export function CalendarScreen() {
   }, [events]);
 
   const eventsForDate = (d: Date) => eventsByDate[toIso(d)] || [];
-
-  const isInSlot = (eventTime: string, slotTime: string) => {
-    const [eh, em] = eventTime.split(":").map(Number);
-    const [sh, sm] = slotTime.split(":").map(Number);
-    const eventMin = eh * 60 + em;
-    const slotMin = sh * 60 + sm;
-    return eventMin >= slotMin && eventMin < slotMin + 30;
-  };
 
   const navigate = (dir: 1 | -1) => {
     const d = new Date(currentDate);
@@ -350,226 +381,31 @@ export function CalendarScreen() {
         <HttpQueryState query={eventsQuery} variant="calendar" />
       ) : (
         <>
-          {/* Calendar Card */}
-          <div className="rounded-[24px] border border-zinc-100 bg-white overflow-hidden dark:border-white/5 dark:bg-[#0A0A0A]">
-            {/* Switcher */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between p-5 border-b border-zinc-100 dark:border-white/5">
-              <div className="flex items-center gap-3">
-                <h2 className="text-lg font-black uppercase tracking-tight text-zinc-900 dark:text-white">
-                  {headerLabel()}
-                </h2>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => navigate(-1)}
-                    className="p-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-all rtl:rotate-180"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => setCurrentDate(new Date())}
-                    className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest bg-zinc-900 text-white rounded-xl hover:bg-black dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 transition-all"
-                  >
-                    {t("today")}
-                  </button>
-                  <button
-                    onClick={() => navigate(1)}
-                    className="p-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-all rtl:rotate-180"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-              <div className="flex gap-1 bg-zinc-50 p-1 rounded-xl dark:bg-white/5">
-                {(["month", "week", "day"] as const).map((v) => (
-                  <button
-                    key={v}
-                    onClick={() => setView(v)}
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
-                      view === v
-                        ? "bg-white text-zinc-900 dark:bg-zinc-800 dark:text-white"
-                        : "text-zinc-400 hover:text-zinc-900 dark:hover:text-white",
-                    )}
-                  >
-                    {t(v)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* ── Month View ── */}
-            {view === "month" && (
-              <>
-                <div className="grid grid-cols-7 border-b border-zinc-100 dark:border-white/5">
-                  {weekDayLabels.map((d) => (
-                    <div
-                      key={d}
-                      className="p-3 text-center text-[9px] font-black uppercase tracking-widest text-zinc-400"
-                    >
-                      {d}
-                    </div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-7">
-                  {getDaysInMonth(currentDate).map((date, i) => {
-                    const dayEvents = eventsForDate(date);
-                    const isCurrent =
-                      date.getMonth() === currentDate.getMonth();
-                    const isToday = toIso(date) === toIso(new Date());
-                    return (
-                      <div
-                        key={i}
-                        onClick={() => {
-                          setDrawerDate(date);
-                        }}
-                        className={cn(
-                          "min-h-[110px] border-b border-e border-zinc-50 p-2 cursor-pointer transition-all hover:bg-zinc-50/50 dark:border-white/[0.03] dark:hover:bg-white/[0.02]",
-                          !isCurrent && "opacity-30",
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-black",
-                            isToday
-                              ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
-                              : "text-zinc-600 dark:text-zinc-400",
-                          )}
-                        >
-                          {date.getDate()}
-                        </span>
-                        <div className="mt-1 space-y-1">
-                          {dayEvents.slice(0, 3).map((ev) => (
-                            <div
-                              key={ev.id}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedEvent(ev);
-                              }}
-                              className={cn(
-                                "truncate rounded-lg border px-1.5 py-0.5 text-[10px] font-bold cursor-pointer",
-                                typeBg(ev.type),
-                              )}
-                            >
-                              {ev.time} {ev.title}
-                            </div>
-                          ))}
-                          {dayEvents.length > 3 && (
-                            <div className="text-[9px] font-black uppercase tracking-widest text-zinc-400 text-center">
-                              +{dayEvents.length - 3} more
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-
-            {/* ── Week View ── */}
-            {view === "week" && (
-              <div className="grid grid-cols-7 divide-x rtl:divide-x-reverse divide-zinc-50 dark:divide-white/[0.03]">
-                {getWeekDays(currentDate).map((date, i) => {
-                  const dayEvents = eventsForDate(date);
-                  const isToday = toIso(date) === toIso(new Date());
-                  return (
-                    <div key={i} className="min-h-[500px]">
-                      <div
-                        className={cn(
-                          "text-center p-3 border-b border-zinc-50 dark:border-white/[0.03]",
-                          isToday &&
-                            "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900",
-                        )}
-                      >
-                        <div className="text-[10px] font-black uppercase tracking-widest">
-                          {weekDayLabels[date.getDay()]}
-                        </div>
-                        <div className="text-lg font-black mt-0.5">
-                          {date.getDate()}
-                        </div>
-                      </div>
-                      <div className="p-2 space-y-2">
-                        {dayEvents.map((ev) => (
-                          <div
-                            key={ev.id}
-                            onClick={() => setSelectedEvent(ev)}
-                            className={cn(
-                              "p-2.5 rounded-xl border cursor-pointer transition-all hover:scale-[1.02]",
-                              typeBg(ev.type),
-                            )}
-                          >
-                            <p className="text-[10px] font-black uppercase tracking-widest">
-                              {ev.time}
-                            </p>
-                            <p className="text-xs font-bold mt-1 truncate">
-                              {ev.title}
-                            </p>
-                            <p className="text-[10px] mt-1 opacity-60 truncate">
-                              {ev.owner}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* ── Day View ── */}
-            {view === "day" && (
-              <div className="p-6 max-w-3xl mx-auto">
-                <div className="space-y-1">
-                  {generateTimeSlots().map((time) => {
-                    const slotEvents = dayEvents.filter((e) =>
-                      isInSlot(e.time, time),
-                    );
-                    return (
-                      <div key={time} className="flex gap-6 group">
-                        <div className="w-20 shrink-0 text-end rtl:text-start pt-3 text-[10px] font-black uppercase tracking-widest text-zinc-300 group-hover:text-zinc-500 transition-colors">
-                          {time}
-                        </div>
-                        <div
-                          className={cn(
-                            "flex-1 border-t border-zinc-50 dark:border-white/[0.03] min-h-[40px]",
-                            slotEvents.length > 0 && "py-2 space-y-2",
-                          )}
-                        >
-                          {slotEvents.map((ev) => (
-                            <div
-                              key={ev.id}
-                              onClick={() => setSelectedEvent(ev)}
-                              className="flex items-center justify-between p-3 rounded-xl border border-zinc-100 bg-white hover:border-zinc-300 cursor-pointer transition-all dark:border-white/5 dark:bg-zinc-900 dark:hover:border-white/10"
-                            >
-                              <div>
-                                <p className="text-sm font-black uppercase text-zinc-900 dark:text-white">
-                                  {ev.title}
-                                </p>
-                                <div className="flex items-center gap-3 mt-1">
-                                  <span className="flex items-center gap-1 text-[10px] font-bold text-zinc-400">
-                                    <User className="h-3 w-3" />
-                                    {ev.owner}
-                                  </span>
-                                  <span className="flex items-center gap-1 text-[10px] font-bold text-zinc-400">
-                                    <Clock className="h-3 w-3" />
-                                    {ev.time}
-                                  </span>
-                                </div>
-                              </div>
-                              <StatusPill
-                                label={t(`statuses.${ev.status}`)}
-                                tone={eventTone(ev.status)}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
+          <UntitledCalendarSurface
+            currentDate={currentDate}
+            eventsForDate={eventsForDate}
+            headerLabel={headerLabel()}
+            locale={locale}
+            onDateClick={setDrawerDate}
+            onEventClick={setSelectedEvent}
+            onNavigate={navigate}
+            onToday={() => setCurrentDate(new Date())}
+            onViewChange={setView}
+            moreLabel={t("more")}
+            statusLabels={{
+              confirmed: t("statuses.confirmed"),
+              draft: t("statuses.draft"),
+              pending: t("statuses.pending"),
+            }}
+            todayLabel={t("today")}
+            view={view}
+            viewLabels={{
+              day: t("day"),
+              month: t("month"),
+              week: t("week"),
+            }}
+            weekDayLabels={weekDayLabels}
+          />
 
           {/* ── Day Dialog ── */}
           {drawerDate && (
@@ -667,6 +503,400 @@ export function CalendarScreen() {
   );
 }
 
+function UntitledCalendarSurface({
+  currentDate,
+  eventsForDate,
+  headerLabel,
+  locale,
+  onDateClick,
+  onEventClick,
+  onNavigate,
+  onToday,
+  onViewChange,
+  moreLabel,
+  statusLabels,
+  todayLabel,
+  view,
+  viewLabels,
+  weekDayLabels,
+}: {
+  currentDate: Date;
+  eventsForDate: (date: Date) => CalendarEvent[];
+  headerLabel: string;
+  locale: string;
+  onDateClick: (date: Date) => void;
+  onEventClick: (event: CalendarEvent) => void;
+  onNavigate: (direction: 1 | -1) => void;
+  onToday: () => void;
+  onViewChange: (view: CalendarView) => void;
+  moreLabel: string;
+  statusLabels: Record<CalendarEvent["status"], string>;
+  todayLabel: string;
+  view: CalendarView;
+  viewLabels: Record<CalendarView, string>;
+  weekDayLabels: string[];
+}) {
+  const selectedDayEvents = eventsForDate(currentDate);
+  const selectedDayLabel = currentDate.toLocaleDateString(locale, {
+    day: "numeric",
+    month: "short",
+  });
+
+  return (
+    <section className="overflow-hidden rounded-[24px] border border-zinc-200/80 bg-white text-zinc-950 dark:border-white/10 dark:bg-[#0A0A0A] dark:text-white">
+      <div className="flex flex-col gap-5 border-b border-zinc-100 p-4 dark:border-white/5 lg:flex-row lg:items-center lg:justify-between lg:p-5">
+        <div className="flex min-w-0 items-center gap-4">
+          <div className="hidden h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl border border-zinc-200 bg-zinc-50 text-center dark:border-white/10 dark:bg-white/[0.03] sm:flex">
+            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
+              {currentDate.toLocaleDateString(locale, { month: "short" })}
+            </span>
+            <span className="text-xl font-black leading-none text-zinc-950 dark:text-white">
+              {currentDate.getDate()}
+            </span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
+              {viewLabels[view]}
+            </p>
+            <h2 className="truncate text-lg font-black uppercase tracking-normal text-zinc-950 dark:text-white">
+              {headerLabel}
+            </h2>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:justify-end">
+          <div className="inline-flex w-fit items-center gap-1 rounded-xl border border-zinc-200 bg-zinc-50 p-1 dark:border-white/10 dark:bg-white/[0.03]">
+            <AriaButton
+              aria-label="Previous calendar period"
+              onPress={() => onNavigate(-1)}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-white hover:text-zinc-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:bg-white/10 dark:hover:text-white rtl:rotate-180"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </AriaButton>
+            <AriaButton
+              onPress={onToday}
+              className="h-8 rounded-lg bg-zinc-950 px-3 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+            >
+              {todayLabel}
+            </AriaButton>
+            <AriaButton
+              aria-label="Next calendar period"
+              onPress={() => onNavigate(1)}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-white hover:text-zinc-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:bg-white/10 dark:hover:text-white rtl:rotate-180"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </AriaButton>
+          </div>
+
+          <div className="grid w-full grid-cols-3 gap-1 rounded-xl border border-zinc-200 bg-zinc-50 p-1 dark:border-white/10 dark:bg-white/[0.03] sm:w-auto">
+            {(["month", "week", "day"] as const).map((nextView) => (
+              <AriaButton
+                key={nextView}
+                onPress={() => onViewChange(nextView)}
+                className={cn(
+                  "h-8 rounded-lg px-3 text-[10px] font-black uppercase tracking-widest transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+                  view === nextView
+                    ? "bg-white text-zinc-950 shadow-sm dark:bg-zinc-800 dark:text-white"
+                    : "text-zinc-500 hover:text-zinc-950 dark:hover:text-white",
+                )}
+              >
+                {viewLabels[nextView]}
+              </AriaButton>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {view === "month" && (
+        <CalendarMonthView
+          currentDate={currentDate}
+          eventsForDate={eventsForDate}
+          moreLabel={moreLabel}
+          onDateClick={onDateClick}
+          onEventClick={onEventClick}
+          weekDayLabels={weekDayLabels}
+        />
+      )}
+
+      {view === "week" && (
+        <CalendarWeekView
+          currentDate={currentDate}
+          eventsForDate={eventsForDate}
+          locale={locale}
+          onDateClick={onDateClick}
+          onEventClick={onEventClick}
+          weekDayLabels={weekDayLabels}
+        />
+      )}
+
+      {view === "day" && (
+        <CalendarDayView
+          dateLabel={selectedDayLabel}
+          events={selectedDayEvents}
+          onEventClick={onEventClick}
+          statusLabels={statusLabels}
+        />
+      )}
+    </section>
+  );
+}
+
+function CalendarMonthView({
+  currentDate,
+  eventsForDate,
+  moreLabel,
+  onDateClick,
+  onEventClick,
+  weekDayLabels,
+}: {
+  currentDate: Date;
+  eventsForDate: (date: Date) => CalendarEvent[];
+  moreLabel: string;
+  onDateClick: (date: Date) => void;
+  onEventClick: (event: CalendarEvent) => void;
+  weekDayLabels: string[];
+}) {
+  const todayIso = toIso(new Date());
+
+  return (
+    <div className="overflow-x-auto">
+      <div className="min-w-[760px]">
+        <div className="grid grid-cols-7 border-b border-zinc-100 dark:border-white/5">
+          {weekDayLabels.map((day) => (
+            <div
+              key={day}
+              className="px-3 py-3 text-center text-[10px] font-black uppercase tracking-widest text-zinc-400"
+            >
+              {day}
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7">
+          {getDaysInMonth(currentDate).map((date) => {
+            const dayEvents = eventsForDate(date);
+            const dateIso = toIso(date);
+            const isCurrentMonth = date.getMonth() === currentDate.getMonth();
+            const isToday = dateIso === todayIso;
+
+            return (
+              <div
+                key={dateIso}
+                className={cn(
+                  "group relative min-h-[132px] border-b border-e border-zinc-100 bg-white p-2 text-start transition hover:bg-zinc-50 dark:border-white/[0.04] dark:bg-[#0A0A0A] dark:hover:bg-white/[0.03]",
+                  !isCurrentMonth && "bg-zinc-50/60 text-zinc-400 dark:bg-white/[0.01] dark:text-zinc-600",
+                )}
+              >
+                <AriaButton
+                  aria-label={`Open schedules for ${dateIso}`}
+                  onPress={() => onDateClick(date)}
+                  className="absolute inset-0 z-0 cursor-pointer rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
+                />
+                <AriaButton
+                  onPress={() => onDateClick(date)}
+                  className={cn(
+                    "relative z-10 inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-black transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+                    isToday
+                      ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950"
+                      : "text-zinc-700 group-hover:bg-zinc-100 dark:text-zinc-300 dark:group-hover:bg-white/10",
+                  )}
+                >
+                  {date.getDate()}
+                </AriaButton>
+                <div className="relative z-10 mt-2 space-y-1.5">
+                  {dayEvents.slice(0, 3).map((event) => (
+                    <CalendarEventChip
+                      event={event}
+                      key={event.id}
+                      onClick={(clickedEvent) => onEventClick(clickedEvent)}
+                      variant="compact"
+                    />
+                  ))}
+                  {dayEvents.length > 3 && (
+                    <AriaButton
+                      onPress={() => onDateClick(date)}
+                      className="w-full rounded-lg border border-dashed border-zinc-200 bg-zinc-100 px-2 py-1 text-center text-[10px] font-black uppercase tracking-widest text-zinc-500 transition hover:border-zinc-300 hover:text-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-400 dark:hover:border-white/20 dark:hover:text-white"
+                    >
+                      +{dayEvents.length - 3} {moreLabel}
+                    </AriaButton>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CalendarWeekView({
+  currentDate,
+  eventsForDate,
+  locale,
+  onDateClick,
+  onEventClick,
+  weekDayLabels,
+}: {
+  currentDate: Date;
+  eventsForDate: (date: Date) => CalendarEvent[];
+  locale: string;
+  onDateClick: (date: Date) => void;
+  onEventClick: (event: CalendarEvent) => void;
+  weekDayLabels: string[];
+}) {
+  const todayIso = toIso(new Date());
+
+  return (
+    <div className="overflow-x-auto">
+      <div className="grid min-w-[860px] grid-cols-7 divide-x divide-zinc-100 rtl:divide-x-reverse dark:divide-white/[0.05]">
+        {getWeekDays(currentDate).map((date) => {
+          const dayEvents = eventsForDate(date);
+          const isToday = toIso(date) === todayIso;
+
+          return (
+            <div key={toIso(date)} className="min-h-[560px] bg-white dark:bg-[#0A0A0A]">
+              <AriaButton
+                onPress={() => onDateClick(date)}
+                className={cn(
+                  "flex w-full items-center justify-between border-b border-zinc-100 px-3 py-3 text-start transition hover:bg-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/[0.05] dark:hover:bg-white/[0.03]",
+                  isToday && "bg-zinc-950 text-white hover:bg-zinc-900 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200",
+                )}
+              >
+                <span>
+                  <span className="block text-[10px] font-black uppercase tracking-widest opacity-70">
+                    {weekDayLabels[date.getDay()]}
+                  </span>
+                  <span className="mt-0.5 block text-lg font-black">
+                    {date.getDate()}
+                  </span>
+                </span>
+                <span className="text-[10px] font-bold opacity-50">
+                  {date.toLocaleDateString(locale, { month: "short" })}
+                </span>
+              </AriaButton>
+              <div className="space-y-2 p-2">
+                {dayEvents.map((event) => (
+                  <CalendarEventChip
+                    event={event}
+                    key={event.id}
+                    onClick={onEventClick}
+                    variant="stacked"
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function CalendarDayView({
+  dateLabel,
+  events,
+  onEventClick,
+  statusLabels,
+}: {
+  dateLabel: string;
+  events: CalendarEvent[];
+  onEventClick: (event: CalendarEvent) => void;
+  statusLabels: Record<CalendarEvent["status"], string>;
+}) {
+  return (
+    <div className="mx-auto max-w-4xl px-4 py-5 sm:px-6">
+      <div className="space-y-1">
+        {generateTimeSlots().map((time) => {
+          const slotEvents = events.filter((event) => isInSlot(event.time, time));
+
+          return (
+            <div key={time} className="group grid grid-cols-[64px_minmax(0,1fr)] gap-4 sm:grid-cols-[88px_minmax(0,1fr)] sm:gap-6">
+              <div className="pt-4 text-end text-[10px] font-black uppercase tracking-widest text-zinc-300 transition group-hover:text-zinc-500 rtl:text-start">
+                {time}
+              </div>
+              <div
+                className={cn(
+                  "min-h-[44px] border-t border-zinc-100 dark:border-white/[0.05]",
+                  slotEvents.length > 0 && "space-y-2 py-2",
+                )}
+              >
+                {slotEvents.map((event) => (
+                  <AriaButton
+                    key={event.id}
+                    onPress={() => onEventClick(event)}
+                    className="flex w-full items-center justify-between gap-4 rounded-2xl border border-zinc-200 bg-white p-3 text-start transition hover:border-zinc-300 hover:bg-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-zinc-900 dark:hover:border-white/20 dark:hover:bg-zinc-800"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-black uppercase tracking-normal text-zinc-950 dark:text-white">
+                        {event.title}
+                      </span>
+                      <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-bold text-zinc-400">
+                        <span className="inline-flex items-center gap-1">
+                          <User className="h-3 w-3" />
+                          {event.owner}
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {dateLabel}, {event.time}
+                        </span>
+                      </span>
+                    </span>
+                    <StatusPill
+                      label={statusLabels[event.status]}
+                      tone={eventTone(event.status)}
+                    />
+                  </AriaButton>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function CalendarEventChip({
+  event,
+  onClick,
+  variant,
+}: {
+  event: CalendarEvent;
+  onClick: (event: CalendarEvent) => void;
+  variant: "compact" | "stacked";
+}) {
+  return (
+    <AriaButton
+      onPress={() => onClick(event)}
+      className={cn(
+        "block w-full rounded-xl border text-start transition hover:brightness-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+        typeBg(event.type),
+        variant === "compact"
+          ? "px-2 py-1 text-[10px] font-bold"
+          : "px-3 py-2.5",
+      )}
+    >
+      {variant === "compact" ? (
+        <span className="block truncate">
+          {event.time} {event.title}
+        </span>
+      ) : (
+        <span className="block min-w-0">
+          <span className="block text-[10px] font-black uppercase tracking-widest opacity-80">
+            {event.time}
+          </span>
+          <span className="mt-1 block truncate text-xs font-bold">
+            {event.title}
+          </span>
+          <span className="mt-1 block truncate text-[10px] font-bold opacity-60">
+            {event.owner}
+          </span>
+        </span>
+      )}
+    </AriaButton>
+  );
+}
+
 /* ── Day Dialog ── */
 function DayDialog({
   date,
@@ -682,6 +912,7 @@ function DayDialog({
   onDelete: (id: string) => void;
 }) {
   const t = useTranslations("Calendar");
+  const locale = useLocale();
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent showCloseButton={false} className="max-w-md p-0 overflow-hidden bg-white dark:bg-[#0A0A0A] border-zinc-100 dark:border-white/5 rounded-[32px] shadow-2xl">
@@ -691,7 +922,7 @@ function DayDialog({
               {t("drawer.title")}
             </p>
             <DialogTitle className="text-lg font-black uppercase tracking-tight text-zinc-900 dark:text-white mt-1">
-              {date.toLocaleDateString("en-US", {
+              {date.toLocaleDateString(locale, {
                 weekday: "long",
                 month: "long",
                 day: "numeric",
@@ -791,6 +1022,7 @@ function EventDetailDialog({
   onEditClick: (event: CalendarEvent) => void;
 }) {
   const t = useTranslations("Calendar");
+  const locale = useLocale();
   const eventDate = new Date(event.date + "T00:00:00");
   const [quickViewEntity, setQuickViewEntity] = useState<{ id: string; type: "client" | "unit" | "task"; title: string } | null>(null);
   const closeEventDialog = () => {
@@ -850,7 +1082,7 @@ function EventDetailDialog({
           
           <PropertyRow icon={<CalendarDays className="h-4 w-4" />} label={t("detail.date")}>
             <p className="text-xs font-black uppercase text-zinc-900 dark:text-white sm:mt-1.5">
-              {eventDate.toLocaleDateString("en-US", {
+              {eventDate.toLocaleDateString(locale, {
                 weekday: "long",
                 month: "long",
                 day: "numeric",
@@ -985,7 +1217,7 @@ function BusinessScheduleDialog({
   tasksLoading: boolean;
 }) {
   const t = useTranslations("Calendar");
-  const today = new Date();
+  const today = useMemo(() => new Date(), []);
   const defaultDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   const defaultValues: CalendarEventFormValues = {
     title: event?.title ?? "",
@@ -1003,6 +1235,7 @@ function BusinessScheduleDialog({
   };
   const [picker, setPicker] = useState<PickerKind | null>(null);
   const [pickerSearch, setPickerSearch] = useState("");
+  const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
   
   const operation = useOperationState({
     errorMessage: mode === "create" ? "Event creation failed." : "Event update failed.",
@@ -1028,6 +1261,16 @@ function BusinessScheduleDialog({
   const selectedUnit = units.find((unit) => unit.id === (form.unitId || form.propertyId));
   const selectedTask = tasks.find((task) => task.id === form.taskId);
   const filteredTasks = tasks.filter((task) => !form.clientId || task.clientId === form.clientId);
+  const dateOptions = useMemo(() => {
+    const values = Array.from({ length: 45 }, (_, index) => toIso(addDays(today, index)));
+    if (form.date && !values.includes(form.date)) values.unshift(form.date);
+    return values;
+  }, [form.date, today]);
+  const timeOptions = useMemo(() => {
+    const values = generateTimeSlots();
+    if (form.time && !values.includes(form.time)) values.unshift(form.time);
+    return values;
+  }, [form.time]);
   
   const pickerConfig = picker
     ? {
@@ -1060,6 +1303,7 @@ function BusinessScheduleDialog({
     reset(defaultValues);
     setPicker(null);
     setPickerSearch("");
+    setIsLocationPickerOpen(false);
     operation.clearError();
   }
 
@@ -1138,27 +1382,20 @@ function BusinessScheduleDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={(nextOpen) => nextOpen ? onOpenChange(true) : closeDrawer()}>
-      <DialogContent showCloseButton={false} className="z-[100] flex max-h-[88vh] w-[94vw] max-w-3xl flex-col overflow-hidden rounded-[32px] border-zinc-100 bg-white p-0 shadow-2xl data-[side=right]:w-[min(94vw,980px)] dark:border-white/5 dark:bg-[#0A0A0A]">
+    <Sheet open={open} onOpenChange={(nextOpen) => nextOpen ? onOpenChange(true) : closeDrawer()}>
+      <SheetContent
+        side="right"
+        showCloseButton={false}
+        className="z-[100] !w-[min(94vw,760px)] !max-w-[760px] gap-0 border-s border-zinc-200 bg-white p-0 text-zinc-950 dark:border-white/10 dark:bg-[#0A0A0A] dark:text-white sm:!max-w-[760px]"
+      >
         <div className="flex items-start justify-between gap-4 border-b border-zinc-100 p-5 dark:border-white/5">
           <div className="min-w-0">
-            <div className="mb-2 flex flex-wrap items-center gap-2">
-              <StatusPill
-                label={
-                  businessTypeOptions.some((option) => option.value === form.type)
-                    ? t("business")
-                    : t("types.custom")
-                }
-                tone="info"
-              />
-              <StatusPill
-                label={t(`statuses.${form.status || "draft"}`)}
-                tone={eventTone(form.status || "draft")}
-              />
-            </div>
-            <DialogTitle className="mt-1 text-2xl font-black leading-tight tracking-tight text-zinc-900 dark:text-white">
+            <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-zinc-400">
+              {t("form.basics")}
+            </p>
+            <SheetTitle className="mt-1 text-2xl font-black leading-tight tracking-tight text-zinc-900 dark:text-white">
               {mode === "create" ? t("scheduleBusiness") : t("editSchedule")}
-            </DialogTitle>
+            </SheetTitle>
           </div>
           <button
             onClick={closeDrawer}
@@ -1171,98 +1408,63 @@ function BusinessScheduleDialog({
         <div className="flex-1 overflow-y-auto p-5">
           <FormErrorSummary errors={fieldErrors} />
           
-          <div className="grid gap-4">
-            <section className="space-y-4 rounded-[24px] border border-zinc-100 bg-zinc-50/35 p-4 dark:border-white/5 dark:bg-white/[0.02]">
-              <ScheduleSectionTitle icon={<CalendarDays className="h-4 w-4" />} title={t("form.basics")} />
-              
-              <div className="grid gap-3 sm:grid-cols-2">
-                <TextInput
-                  label={t("form.dateLabel")}
-                  name="date"
-                  type="date"
-                  value={form.date}
-                  onChange={(value) => updateField("date", value)}
-                  error={fieldErrors.date}
-                />
-                <TextInput
-                  label={t("form.timeLabel")}
-                  name="time"
-                  type="time"
-                  value={form.time}
-                  onChange={(value) => updateField("time", value)}
-                  error={fieldErrors.time}
-                />
-              </div>
-
-              <div>
-                <p id="calendar-business-type-label" className="mb-2 text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-300">
-                  {t("form.typeLabel")}
-                </p>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-5" role="radiogroup" aria-labelledby="calendar-business-type-label">
-                  {[...businessTypeOptions, { value: "other", icon: ListPlus }].map((option) => {
-                    const Icon = option.icon;
-                    // For "other", we check if the type is not in the primary businessTypeOptions
-                    const isOtherOption = option.value === "other";
-                    const active = isOtherOption 
-                      ? !businessTypeOptions.some(opt => opt.value === form.type) 
-                      : form.type === option.value;
-
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        role="radio"
-                        aria-checked={active}
-                        onClick={() => {
-                          if (isOtherOption) updateField("type", "client-visit");
-                          else updateField("type", option.value as CalendarEventFormValues["type"]);
-                        }}
-                        className={cn(
-                          "relative flex h-12 items-center justify-center gap-2 rounded-2xl border px-3 text-[10px] font-black uppercase tracking-widest transition-colors focus:outline-none",
-                          active
-                            ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900"
-                            : "border-zinc-200 bg-zinc-50/80 text-zinc-600 hover:border-zinc-300 hover:text-zinc-950 dark:border-white/15 dark:bg-white/[0.04] dark:text-zinc-200 dark:hover:border-white/25 dark:hover:text-white",
-                        )}
-                      >
-                        {active && <CheckCircle2 className="absolute end-2 top-2 h-3 w-3" aria-hidden="true" />}
-                        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                        {isOtherOption ? t("types.custom") : t(`types.${option.value}`)}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* If "other" type is selected, show custom type selector */}
-              {!businessTypeOptions.some(opt => opt.value === form.type) && (
-                <div className="grid gap-2 rounded-2xl border border-zinc-100 bg-white p-2 dark:border-white/5 dark:bg-white/[0.02] sm:grid-cols-3">
-                  {customEventTypeValues.filter(t => !businessTypeOptions.some(opt => opt.value === t)).map((type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => updateField("type", type)}
-                      className={cn(
-                        "h-9 rounded-xl border px-3 text-[10px] font-black uppercase tracking-widest transition",
-                        form.type === type
-                          ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900"
-                          : "border-zinc-200 text-zinc-500 hover:text-zinc-900 dark:border-white/10 dark:text-zinc-300 dark:hover:text-white",
-                      )}
-                    >
-                      {t(`types.${type}`)}
-                    </button>
-                  ))}
-                </div>
-              )}
+          <div className="grid gap-6">
+            <section className="space-y-4">
+              <ScheduleSectionTitle icon={<CalendarDays className="h-4 w-4" />} title={t("form.scheduledTime")} />
 
               <TextInput
-                label={t("form.titleOptionalLabel")}
+                label={t("form.scheduleName")}
                 name="title"
                 value={form.title}
                 onChange={(value) => updateField("title", value)}
                 error={fieldErrors.title}
               />
-              
-              <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_240px]">
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <ScheduleSelect
+                  label={t("form.dateLabel")}
+                  value={form.date}
+                  onValueChange={(value) => updateField("date", value)}
+                  options={dateOptions.map((value) => ({
+                    label: new Date(`${value}T00:00:00`).toLocaleDateString(undefined, {
+                      day: "numeric",
+                      month: "short",
+                      weekday: "short",
+                      year: "numeric",
+                    }),
+                    value,
+                  }))}
+                />
+                <ScheduleSelect
+                  label={t("form.timeLabel")}
+                  value={form.time}
+                  onValueChange={(value) => updateField("time", value)}
+                  options={timeOptions.map((value) => ({
+                    label: formatTimeLabel(value),
+                    value,
+                  }))}
+                />
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                <ScheduleSelect
+                  label={t("form.typeLabel")}
+                  value={form.type}
+                  onValueChange={(value) => updateField("type", value as CalendarEventFormValues["type"])}
+                  options={customEventTypeValues.map((type) => ({
+                    label: t(`types.${type}`),
+                    value: type,
+                  }))}
+                />
+                <ScheduleSelect
+                  label={t("table.status")}
+                  value={form.status}
+                  onValueChange={(value) => updateField("status", value as CalendarEventFormValues["status"])}
+                  options={(["confirmed", "pending", "draft"] as const).map((status) => ({
+                    label: t(`statuses.${status}`),
+                    value: status,
+                  }))}
+                />
                 <TextInput
                   label={t("form.ownerLabel")}
                   name="owner"
@@ -1270,32 +1472,10 @@ function BusinessScheduleDialog({
                   onChange={(value) => updateField("owner", value)}
                   error={fieldErrors.owner}
                 />
-                <div>
-                  <p className="mb-2 text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-300">
-                    {t("table.status")}
-                  </p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(["confirmed", "pending", "draft"] as const).map((status) => (
-                      <button
-                        key={status}
-                        type="button"
-                        onClick={() => updateField("status", status)}
-                        className={cn(
-                          "rounded-xl border h-[42px] px-2 text-[10px] font-black uppercase tracking-widest transition",
-                          form.status === status
-                            ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900"
-                            : "border-zinc-200 text-zinc-500 hover:text-zinc-900 dark:border-white/10 dark:text-zinc-300 dark:hover:text-white",
-                        )}
-                      >
-                        {t(`statuses.${status}`)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
               </div>
             </section>
 
-            <section>
+            <section className="border-t border-zinc-100 pt-5 dark:border-white/5">
               <ContextActionCard ariaLabel={t("form.showAdvancedDetails")}>
                 <PropertyRow icon={<User className="h-4 w-4" />} label={t("form.clientLabel")}>
                   <TicketPickerButton
@@ -1328,15 +1508,13 @@ function BusinessScheduleDialog({
                 </PropertyRow>
 
                 <PropertyRow icon={<MapPin className="h-4 w-4" />} label={t("form.locationLabel")}>
-                  <div className="max-w-md">
-                    <TextInput
-                      label=""
-                      name="location"
-                      value={form.location ?? ""}
-                      onChange={(value) => updateField("location", value)}
-                      error={fieldErrors.location}
-                    />
-                  </div>
+                  <TicketPickerButton
+                    label={t("form.pickLocation")}
+                    value={form.location}
+                    icon={<MapPin className="h-4 w-4" />}
+                    onClick={() => setIsLocationPickerOpen(true)}
+                    onClear={form.location ? () => updateField("location", "") : undefined}
+                  />
                 </PropertyRow>
 
                 <PropertyRow icon={<AlignLeft className="h-4 w-4" />} label={t("form.notesLabel")}>
@@ -1352,7 +1530,7 @@ function BusinessScheduleDialog({
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 border-t border-zinc-100 bg-zinc-50/50 p-5 dark:border-white/5 dark:bg-white/[0.02]">
+        <div className="sticky bottom-0 flex items-center justify-end gap-3 border-t border-zinc-100 bg-zinc-50/95 p-5 backdrop-blur dark:border-white/5 dark:bg-[#0A0A0A]/95">
           <Button
             type="button"
             variant="outline"
@@ -1365,6 +1543,21 @@ function BusinessScheduleDialog({
             {mode === "create" ? t("form.createBtn") : t("form.saveBtn")}
           </AppPrimaryButton>
         </div>
+
+        {isLocationPickerOpen && (
+          <LocationPickerModal
+            closeLabel={t("form.closePicker")}
+            confirmLabel={t("form.confirmLocation")}
+            currentLocation={form.location ?? ""}
+            onClose={() => setIsLocationPickerOpen(false)}
+            onSelect={(location) => {
+              updateField("location", location);
+              setIsLocationPickerOpen(false);
+            }}
+            searchLabel={t("form.mapSearch")}
+            title={t("form.pickLocation")}
+          />
+        )}
 
         {picker && pickerConfig && (
           <ContextPickerOverlay
@@ -1384,8 +1577,8 @@ function BusinessScheduleDialog({
             onClose={() => setPicker(null)}
           />
         )}
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -1408,11 +1601,43 @@ function ScheduleSectionTitle({
   );
 }
 
+function ScheduleSelect({
+  label,
+  onValueChange,
+  options,
+  value,
+}: {
+  label: string;
+  onValueChange: (value: string) => void;
+  options: Array<{ label: string; value: string }>;
+  value?: string;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-300">
+        {label}
+      </span>
+      <Select value={value} onValueChange={(nextValue) => nextValue && onValueChange(nextValue)}>
+        <SelectTrigger className="h-12 rounded-2xl border-zinc-200 bg-zinc-50 px-4 text-xs font-black shadow-none transition focus:border-zinc-300 focus:bg-white dark:border-white/10 dark:bg-white/[0.04] dark:focus:border-white/20 dark:focus:bg-white/[0.07]">
+          <SelectValue placeholder={label} />
+        </SelectTrigger>
+        <SelectContent align="start" className="rounded-2xl border-zinc-200 dark:border-white/10">
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value} className="rounded-xl px-3 py-2.5 text-xs font-bold">
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </label>
+  );
+}
+
 function ContextActionCard({ ariaLabel, children }: { ariaLabel: string; children: ReactNode }) {
   return (
     <div
       aria-label={ariaLabel}
-      className="rounded-[24px] border border-zinc-100 bg-zinc-50/35 p-4 dark:border-white/5 dark:bg-white/[0.02]"
+      className="divide-y divide-zinc-100 dark:divide-white/5"
     >
       {children}
     </div>
@@ -1421,9 +1646,9 @@ function ContextActionCard({ ariaLabel, children }: { ariaLabel: string; childre
 
 function PropertyRow({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
   return (
-    <div className="grid gap-2 border-b border-zinc-100 py-3 last:border-0 dark:border-white/5 sm:grid-cols-[160px_minmax(0,1fr)] sm:items-center">
+    <div className="grid gap-2 py-3 sm:grid-cols-[160px_minmax(0,1fr)] sm:items-center">
       <div className="flex items-center gap-3 text-zinc-500 dark:text-zinc-400">
-        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-zinc-500 dark:bg-white/5 dark:text-zinc-300">
+        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-zinc-50 text-zinc-500 dark:bg-white/5 dark:text-zinc-300">
           {icon}
         </span>
         <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
@@ -1772,6 +1997,75 @@ function UnitQuickView({ propertyId, onClose }: { propertyId: string; onClose: (
   );
 }
 
+function LocationPickerModal({
+  closeLabel,
+  confirmLabel,
+  currentLocation,
+  onClose,
+  onSelect,
+  searchLabel,
+  title,
+}: {
+  closeLabel: string;
+  confirmLabel: string;
+  currentLocation: string;
+  onClose: () => void;
+  onSelect: (location: string) => void;
+  searchLabel: string;
+  title: string;
+}) {
+  const [selectedLocation, setSelectedLocation] = useState<LocationValue | null>(() =>
+    locationValueFromString(currentLocation),
+  );
+
+  return (
+    <div className="fixed inset-0 z-[320] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={title}>
+      <div className="flex max-h-[88vh] w-[min(94vw,720px)] flex-col overflow-hidden rounded-[28px] border border-zinc-200 bg-white text-zinc-950 dark:border-white/10 dark:bg-[#0A0A0A] dark:text-white">
+        <div className="flex min-h-0 flex-col">
+          <div className="flex items-start justify-between gap-4 border-b border-zinc-100 p-5 dark:border-white/10">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{searchLabel}</p>
+              <h3 className="mt-2 text-xl font-black tracking-tight text-zinc-900 dark:text-white">{title}</h3>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={closeLabel}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 text-zinc-500 transition hover:bg-zinc-50 hover:text-zinc-900 dark:border-white/10 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white"
+            >
+              <X className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
+          <div className="min-h-0 overflow-y-auto p-4 [--workspace-border:#27272a] [--workspace-elevated:#18181b] [--workspace-muted:#a1a1aa] [--workspace-panel:#111113]">
+            <LocationPicker
+              value={selectedLocation}
+              onChange={setSelectedLocation}
+              label={title}
+              placeholder={searchLabel}
+            />
+          </div>
+          <div className="mt-auto flex items-center justify-end gap-2 border-t border-zinc-100 p-4 dark:border-white/10">
+            <Button type="button" variant="outline" onClick={onClose} className="h-10 rounded-xl px-4 text-[10px] font-black uppercase tracking-widest">
+              {closeLabel}
+            </Button>
+            <Button
+              type="button"
+              disabled={!selectedLocation}
+              onClick={() => {
+                if (!selectedLocation) return;
+                onSelect(serializeLocation(selectedLocation));
+              }}
+              className="h-10 rounded-xl px-4 text-[10px] font-black uppercase tracking-widest disabled:opacity-50"
+            >
+              {confirmLabel}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ContextPickerOverlay({
   title,
   searchLabel,
@@ -1809,7 +2103,7 @@ function ContextPickerOverlay({
     : options;
 
   return (
-    <div className="absolute inset-0 z-[101] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={title}>
+    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={title}>
       <div className="flex max-h-[82vh] w-full max-w-2xl flex-col overflow-hidden rounded-[28px] border border-zinc-200 bg-white shadow-none dark:border-white/10 dark:bg-[#0A0A0A]">
         <div className="flex items-start justify-between gap-4 border-b border-zinc-100 p-5 dark:border-white/10">
           <div>

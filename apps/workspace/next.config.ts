@@ -12,6 +12,7 @@ const uploadSentrySourceMaps =
   && Boolean(process.env.SENTRY_PROJECT)
   && Boolean(process.env.SENTRY_AUTH_TOKEN);
 const buildStandaloneServer = process.env.NEXT_OUTPUT_STANDALONE === "true";
+const enableBrowserProfiling = process.env.NODE_ENV === "production";
 
 const nextConfig: NextConfig = {
   ...(buildStandaloneServer ? { output: "standalone" } : {}),
@@ -19,14 +20,18 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: monorepoRoot,
   },
-  async headers() {
-    return [
-      {
-        source: "/(.*)",
-        headers: [{ key: "Document-Policy", value: "js-profiling" }],
-      },
-    ];
-  },
+  ...(enableBrowserProfiling
+    ? {
+        async headers() {
+          return [
+            {
+              source: "/(.*)",
+              headers: [{ key: "Document-Policy", value: "js-profiling" }],
+            },
+          ];
+        },
+      }
+    : {}),
   images: {
     remotePatterns: [
       {
