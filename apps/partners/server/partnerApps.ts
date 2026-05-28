@@ -6,86 +6,15 @@ import {
   normalizeRedirectUris,
   normalizeScopes,
 } from "@/server/partnerAppPolicies";
+import {
+  toPartnerAppSummary,
+  type PartnerAppClientType,
+  type PartnerAppStatus,
+  type PartnerAppSummary,
+} from "@/server/partnerAppCatalog";
 import { auditPartnerEvent, ensurePartnerProfile, randomToken } from "@/server/partnerRuntime";
 
-export type PartnerAppStatus = "draft" | "pending_review" | "active" | "rejected" | "suspended";
-export type PartnerAppClientType = "public" | "confidential";
-
-export type PartnerAppSummary = {
-  id: string;
-  clientId: string;
-  name: string;
-  publisherName: string;
-  homepageUrl?: string | null;
-  iconUrl?: string | null;
-  logoUrl?: string | null;
-  clientType: PartnerAppClientType;
-  status: PartnerAppStatus;
-  workspacePartnerAppId?: string | null;
-  workspaceOauthClientId?: string | null;
-  workspaceSyncStatus?: "not_synced" | "pending" | "synced" | "failed" | null;
-  workspaceSyncError?: string | null;
-  redirectUris: string[];
-  allowedScopes: string[];
-  authorizationExpiresAfterDays: number;
-  reviewNotes?: string | null;
-  submittedAt?: number | null;
-  reviewedAt?: number | null;
-  createdAt: number;
-  updatedAt: number;
-};
-
-function toMillis(value: Date | null | undefined) {
-  return value ? value.getTime() : null;
-}
-
-function toPartnerAppSummary(app: {
-  id: string;
-  clientId: string;
-  name: string;
-  publisherName: string;
-  homepageUrl: string | null;
-  iconUrl: string | null;
-  logoUrl: string | null;
-  clientType: string;
-  status: string;
-  workspacePartnerAppId: string | null;
-  workspaceOauthClientId: string | null;
-  workspaceSyncStatus: string | null;
-  workspaceSyncError: string | null;
-  redirectUris: string[];
-  allowedScopes: string[];
-  authorizationExpiresAfterDays: number;
-  reviewNotes: string | null;
-  submittedAt: Date | null;
-  reviewedAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-}): PartnerAppSummary {
-  return {
-    id: app.id,
-    clientId: app.clientId,
-    name: app.name,
-    publisherName: app.publisherName,
-    homepageUrl: app.homepageUrl,
-    iconUrl: app.iconUrl ?? app.logoUrl,
-    logoUrl: app.logoUrl,
-    clientType: app.clientType as PartnerAppClientType,
-    status: app.status as PartnerAppStatus,
-    workspacePartnerAppId: app.workspacePartnerAppId,
-    workspaceOauthClientId: app.workspaceOauthClientId,
-    workspaceSyncStatus: app.workspaceSyncStatus as PartnerAppSummary["workspaceSyncStatus"],
-    workspaceSyncError: app.workspaceSyncError,
-    redirectUris: app.redirectUris,
-    allowedScopes: app.allowedScopes,
-    authorizationExpiresAfterDays: app.authorizationExpiresAfterDays,
-    reviewNotes: app.reviewNotes,
-    submittedAt: toMillis(app.submittedAt),
-    reviewedAt: toMillis(app.reviewedAt),
-    createdAt: app.createdAt.getTime(),
-    updatedAt: app.updatedAt.getTime(),
-  };
-}
+export type { PartnerAppClientType, PartnerAppStatus, PartnerAppSummary };
 
 async function requireOwnedApp(authSubject: string, appId: string) {
   const app = await prisma.partnerApp.findFirst({

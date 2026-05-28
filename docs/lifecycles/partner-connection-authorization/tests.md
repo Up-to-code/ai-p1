@@ -40,6 +40,15 @@
 - `npm --workspace @qentrah/workspace test -- convex/partnerApps/migrations.test.ts` - passed 2026-05-16 emergency data compatibility unblock.
 - `npm --workspace @qentrah/partners test -- server/platformApi.test.ts` - passed 2026-05-16 published catalog cache fix.
 - `npm --workspace @qentrah/partners run typecheck` - passed 2026-05-16 published catalog cache fix.
+- `npm --workspace @qentrah/partners test -- server/adminPartnerApps.test.ts server/qentrahWorkspace.test.ts` - passed 2026-05-28 Partners OAuth runtime sync status depth.
+- `npm --workspace @qentrah/partners run typecheck` - passed 2026-05-28 Partners OAuth runtime sync status depth.
+- `npm --workspace @qentrah/partners test` - passed 2026-05-28 Partners OAuth runtime sync status depth.
+- `npm --workspace @qentrah/partners test -- server/serviceTokens.test.ts server/platformApi.test.ts` - passed 2026-05-28 Partners service token gate depth.
+- `npm --workspace @qentrah/partners run typecheck` - passed 2026-05-28 Partners service token gate depth.
+- `npm --workspace @qentrah/partners test` - passed 2026-05-28 Partners service token gate depth.
+- `npm --workspace @qentrah/partners test -- server/partnerAppCatalog.test.ts server/adminPartnerApps.test.ts server/platformApi.test.ts` - passed 2026-05-28 Partners app catalog projection depth.
+- `npm --workspace @qentrah/partners run typecheck` - passed 2026-05-28 Partners app catalog projection depth.
+- `npm --workspace @qentrah/partners test` - passed 2026-05-28 Partners app catalog projection depth.
 
 ## Manual Checks
 

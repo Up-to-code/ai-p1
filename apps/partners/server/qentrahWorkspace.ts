@@ -2,10 +2,26 @@ import { brandEnvName, brandProductName, readBrandEnv } from "@qentrah/brand-ide
 import {
   buildOAuthRuntimeProjectionInput,
   normalizeOAuthRuntimeScopes,
+  type OAuthRuntimeProjectionStatus,
   oauthRuntimeProjectionResponseSchema,
 } from "@qentrah/partner-workspace-sync";
 
 import type { PartnerAppSummary } from "@/server/partnerApps";
+
+export type OAuthRuntimeProjectionSource = {
+  id: string;
+  clientId: string;
+  name: string;
+  publisherName: string;
+  description?: string | null;
+  homepageUrl?: string | null;
+  iconUrl?: string | null;
+  logoUrl?: string | null;
+  clientType: "public" | "confidential";
+  redirectUris: string[];
+  allowedScopes: string[];
+  status: string;
+};
 
 function normalizeBaseUrl(value?: string) {
   const trimmed = value?.trim().replace(/\/+$/u, "");
@@ -24,7 +40,10 @@ export function normalizeWorkspaceScopes(scopes: string[]) {
   return normalizeOAuthRuntimeScopes(scopes);
 }
 
-export async function syncOAuthClientRuntimeProjection(app: PartnerAppSummary) {
+export async function syncOAuthClientRuntimeProjection(
+  app: OAuthRuntimeProjectionSource | PartnerAppSummary,
+  options: { status?: OAuthRuntimeProjectionStatus } = {},
+) {
   const config = qentrahWorkspaceConfig();
   if (!config.baseUrl || !config.serviceToken) {
     throw new Error(`Set ${brandEnvName("WORKSPACE_API_URL")} and ${brandEnvName("PLATFORM_SERVICE_TOKEN")} to sync OAuth client runtime state.`);
@@ -33,6 +52,7 @@ export async function syncOAuthClientRuntimeProjection(app: PartnerAppSummary) {
   const projection = buildOAuthRuntimeProjectionInput({
     ...app,
     description: `${app.publisherName} partner app submitted from ${brandProductName("partners", "en")}.`,
+    status: options.status ?? app.status,
   });
   if (projection.allowedScopes.length === 0) {
     throw new Error("Select at least one Workspace partner API scope before syncing this app.");

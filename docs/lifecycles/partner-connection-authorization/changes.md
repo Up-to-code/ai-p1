@@ -1,5 +1,57 @@
 # Changes
 
+## 2026-05-28 Partners App Catalog Projection Depth
+
+- Added a Partners app catalog projection Module for portal summaries, Admin Review records, and published catalog records.
+- Concentrated Partner app status mapping, client type projection, icon/logo fallback, date conversion, description defaults, and redirect/scope normalization in one Module.
+- Kept Partners as the app catalog source of truth while reducing projection knowledge in developer, admin, and platform repositories.
+
+## 2026-05-28 Partners Service Token Gate Depth
+
+- Added a Partners service-token gate Module for Admin Review and Workspace platform catalog route authentication.
+- Preserved existing bearer token, legacy admin/platform header, and platform token environment compatibility.
+- Kept Admin Review and platform catalog route ownership unchanged while removing duplicated token parsing from the repository Modules.
+
+## 2026-05-28 Partners OAuth Runtime Sync Status Depth
+
+- Deepened the Partners-to-Workspace OAuth runtime projection Module so Admin Review uses the same validated Workspace publisher as other runtime-sync callers.
+- Changed Admin Review to persist `workspaceSyncStatus: "pending"` during the review mutation, then update to `"synced"` only after Workspace accepts the projection response.
+- Persisted `"failed"` plus the publish error when Workspace runtime projection publishing fails, instead of reporting a synced runtime before response validation.
+- Kept Partners as the app catalog/review source of truth and Workspace as the OAuth runtime projection owner.
+
+## 2026-05-28 Integrations View-Model Expiry Depth
+
+- Deepened the Integrations view-model Module with connection expiry label projection used by catalog/detail screens.
+- Preserved Partner connection status, fallback labels, app detail routes, and catalog behavior while removing date formatting from the screen.
+
+## 2026-05-28 Workspace Integrations Runtime Depth
+
+- Added a client-side integrations runtime Module so Workspace web-app screens no longer own partner catalog and organization connection HTTP details inline.
+- Routed partner-connection organization route construction through the shared organization request Module.
+- Routed OAuth consent partner app catalog lookup through the same Integrations runtime Module.
+- Preserved public `/api/v1/integrations/partner-apps` and organization partner-connection route usage, response fallbacks, mutation methods, and visible UI behavior.
+- Added focused tests for catalog/connection route construction, empty payload fallback, mutation methods, encoding, shared filter options, and existing error messages.
+- Routed OAuth consent grant creation through the same integrations runtime Module while preserving requested resource scope storage and Better Auth consent ownership.
+
+## 2026-05-28 Partners Hono Runtime Depth
+
+- Added a Partners Hono runtime Module for service-token route execution and list/query parsing across admin and platform catalog routes.
+- Kept Partners public/admin/platform route URLs, service-token semantics, response shapes, and source-of-truth ownership unchanged.
+
+## 2026-05-28 Webhook Delivery Deepening
+
+- Kept `partnerApps.webhooks` Convex function names stable while moving webhook URL safety, signing-secret crypto, inbound persistence, outbound enqueueing, delivery target lookup, and retry state into internal Modules.
+- Preserved inbound idempotency, encrypted payload storage, client upsert audit behavior, outbound partner delivery enqueueing, HMAC signing, and retry timing.
+- Added focused Partner webhook Module tests for endpoint URL rejection, signature generation, endpoint presentation, inbound duplicate detection, and retry scheduling.
+
+## 2026-05-28 Partner Resource Access Deepening
+
+- Added a Hono-facing `partner-resource-access` Module so partner API handlers use one access Interface for OAuth bearer tokens and organization API keys.
+- Kept public partner resource routes, response shapes, and OAuth/API-key error behavior stable while removing token-kind branching from handlers.
+- Added `convex/partnerResourceGateway.ts` as the shared resource gateway behind stable `partnerApps.resources` and `organizationApiKeys` Convex wrappers.
+- Concentrated bridge-token assertion, resource read shape, client write patching, actor-specific audit, and partner-only outbound webhook enqueueing in the shared gateway.
+- Added focused tests for OAuth/API-key access, handler dependency shape, bridge-token rejection, read limits, soft-delete filtering, and actor-specific client writes.
+
 ## 2026-05-16 Partners Published Catalog Cache
 
 - Added short-lived Partners repository caching for the service-token protected published catalog endpoints used by Workspace integrations.

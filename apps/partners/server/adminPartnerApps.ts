@@ -1,91 +1,22 @@
-import { timingSafeEqual } from "node:crypto";
+import type { Prisma } from "@prisma/client";
 import {
-  buildOAuthRuntimeProjectionInput,
+  type OAuthRuntimeProjectionStatus,
   type PartnerReviewRequest,
-  type PublishedPartnerApp,
 } from "@qentrah/partner-workspace-sync";
 import { prisma } from "@/lib/prisma";
-import { normalizeRedirectUris, normalizeScopes } from "@/server/partnerAppPolicies";
-import { qentrahWorkspaceConfig } from "@/server/qentrahWorkspace";
+import {
+  toAdminPartnerAppRecord,
+  type AdminPartnerAppRecord,
+} from "@/server/partnerAppCatalog";
+import { syncOAuthClientRuntimeProjection } from "@/server/qentrahWorkspace";
 import { oauthDebug } from "@/server/oauth-debug";
+export { assertPartnersAdminServiceToken, partnersAdminServiceTokenFromEnv } from "@/server/serviceTokens";
+export type { AdminPartnerAppRecord };
 
-type AdminEnv = Record<string, string | undefined>;
-
-export type AdminPartnerAppRecord = Omit<PublishedPartnerApp, "status"> & {
-  status: "pending" | "approved" | "rejected" | "suspended";
-  reviewNotes?: string | null;
-  submittedAt?: number | null;
-  reviewedAt?: number | null;
-  createdAt: number;
-};
-
-export function partnersAdminServiceTokenFromEnv(env: AdminEnv = process.env) {
-  return env.PARTNERS_ADMIN_SERVICE_TOKEN?.trim() || "";
-}
-
-function timingSafeTokenEqual(supplied: string, expected: string) {
-  const suppliedBuffer = Buffer.from(supplied);
-  const expectedBuffer = Buffer.from(expected);
-  if (suppliedBuffer.length !== expectedBuffer.length) return false;
-  return timingSafeEqual(suppliedBuffer, expectedBuffer);
-}
-
-export function assertPartnersAdminServiceToken(headers: Headers, env: AdminEnv = process.env) {
-  const expected = partnersAdminServiceTokenFromEnv(env);
-  const authorization = headers.get("authorization");
-  const supplied = authorization?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim() ||
-    headers.get("x-qentrah-admin-token")?.trim() ||
-    "";
-  if (!expected || !supplied || !timingSafeTokenEqual(supplied, expected)) {
-    throw new Error("Invalid Partners admin service token.");
-  }
-}
-
-function adminStatus(status: string): AdminPartnerAppRecord["status"] {
-  if (status === "active") return "approved";
-  if (status === "pending_review") return "pending";
+function runtimeProjectionStatus(status: PartnerReviewRequest["status"]): OAuthRuntimeProjectionStatus {
+  if (status === "approved") return "approved";
   if (status === "suspended") return "suspended";
-  if (status === "rejected") return "rejected";
-  return "pending";
-}
-
-function toAdminRecord(app: {
-  id: string;
-  clientId: string;
-  name: string;
-  publisherName: string;
-  homepageUrl?: string | null;
-  iconUrl?: string | null;
-  logoUrl?: string | null;
-  clientType: string;
-  redirectUris: string[];
-  allowedScopes: string[];
-  status: string;
-  reviewNotes?: string | null;
-  submittedAt?: Date | null;
-  reviewedAt?: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-}): AdminPartnerAppRecord {
-  return {
-    id: app.id,
-    clientId: app.clientId,
-    name: app.name,
-    publisherName: app.publisherName,
-    description: `${app.publisherName} partner app submitted from Partners.`,
-    homepageUrl: app.homepageUrl,
-    iconUrl: app.iconUrl,
-    logoUrl: app.logoUrl,
-    clientType: app.clientType === "confidential" ? "confidential" : "public",
-    redirectUris: normalizeRedirectUris(app.redirectUris),
-    allowedScopes: normalizeScopes(app.allowedScopes),
-    status: adminStatus(app.status),
-    reviewNotes: app.reviewNotes,
-    submittedAt: app.submittedAt?.getTime() ?? null,
-    reviewedAt: app.reviewedAt?.getTime() ?? null,
-    createdAt: app.createdAt.getTime(),
-    updatedAt: app.updatedAt.getTime(),
-  };
+  return "rejected";
 }
 
 export const adminPartnerAppsRepository = {
@@ -110,7 +41,7 @@ export const adminPartnerAppsRepository = {
     });
     const page = apps.slice(0, take);
     return {
-      apps: page.map(toAdminRecord),
+      apps: page.map(toAdminPartnerAppRecord),
       nextCursor: apps.length > take ? apps[take]?.id : undefined,
       isDone: apps.length <= take,
     };
@@ -118,7 +49,7 @@ export const adminPartnerAppsRepository = {
 
   async get(appId: string) {
     const app = await prisma.partnerApp.findUnique({ where: { id: appId } });
-    return app ? toAdminRecord(app) : null;
+    return app ? toAdminPartnerAppRecord(app) : null;
   },
 
   async review(appId: string, input: PartnerReviewRequest, reviewer: string) {
@@ -130,14 +61,14 @@ export const adminPartnerAppsRepository = {
     const app = await prisma.partnerApp.findUnique({ where: { id: appId } });
     if (!app) throw new Error("Partner app not found.");
     const nextStatus = input.status === "approved" ? "active" : input.status;
-    const updated = await prisma.$transaction(async (tx) => {
+    const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const record = await tx.partnerApp.update({
         where: { id: app.id },
         data: {
           status: nextStatus,
           reviewNotes: input.reviewNotes,
           reviewedAt: new Date(),
-          workspaceSyncStatus: nextStatus === "active" ? "synced" : "not_synced",
+          workspaceSyncStatus: "pending",
           workspaceSyncError: null,
         },
       });
@@ -159,31 +90,36 @@ export const adminPartnerAppsRepository = {
       });
       return record;
     });
-    const record = toAdminRecord(updated);
-    await publishWorkspaceRuntimeBestEffort(record, input.status);
-    oauthDebug("partners.app.review.success", {
-      appId: record.id,
-      clientId: record.clientId,
-      status: input.status,
+    const record = toAdminPartnerAppRecord(updated);
+    const runtimeSync = await publishWorkspaceRuntimeBestEffort(record, input.status);
+    const synced = await prisma.partnerApp.update({
+      where: { id: record.id },
+      data: {
+        workspaceSyncStatus: runtimeSync.ok ? "synced" : "failed",
+        workspaceSyncError: runtimeSync.ok ? null : runtimeSync.error,
+      },
     });
-    return record;
+    const syncedRecord = toAdminPartnerAppRecord(synced);
+    oauthDebug("partners.app.review.success", {
+      appId: syncedRecord.id,
+      clientId: syncedRecord.clientId,
+      status: input.status,
+      workspaceSyncStatus: syncedRecord.workspaceSyncStatus,
+    });
+    return syncedRecord;
   },
 };
 
 async function publishWorkspaceRuntimeBestEffort(app: AdminPartnerAppRecord, status: PartnerReviewRequest["status"]) {
-  const config = qentrahWorkspaceConfig();
-  if (!config.baseUrl || !config.serviceToken) {
-    oauthDebug("partners.oauth.runtime_publish.skipped", {
+  try {
+    oauthDebug("partners.oauth.runtime_publish.start", {
       appId: app.id,
       clientId: app.clientId,
-      hasBaseUrl: Boolean(config.baseUrl),
-      hasServiceToken: Boolean(config.serviceToken),
+      status,
+      redirectUriCount: app.redirectUris.length,
+      scopeCount: app.allowedScopes.length,
     });
-    return;
-  }
-
-  try {
-    const projection = buildOAuthRuntimeProjectionInput({
+    await syncOAuthClientRuntimeProjection({
       id: app.id,
       clientId: app.clientId,
       name: app.name,
@@ -196,34 +132,22 @@ async function publishWorkspaceRuntimeBestEffort(app: AdminPartnerAppRecord, sta
       allowedScopes: app.allowedScopes,
       clientType: app.clientType,
       status,
-    });
-    oauthDebug("partners.oauth.runtime_publish.start", {
-      appId: app.id,
-      clientId: app.clientId,
-      status,
-      redirectUriCount: app.redirectUris.length,
-      scopeCount: app.allowedScopes.length,
-    });
-    await fetch(`${config.baseUrl}/api/v1/admin/oauth-client-runtime-sync`, {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${config.serviceToken}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(projection),
-    });
+    }, { status: runtimeProjectionStatus(status) });
     oauthDebug("partners.oauth.runtime_publish.success", {
       appId: app.id,
       clientId: app.clientId,
       status,
     });
+    return { ok: true as const };
   } catch (error) {
+    const message = error instanceof Error ? error.message : "unknown";
     oauthDebug("partners.oauth.runtime_publish.error", {
       appId: app.id,
       clientId: app.clientId,
       status,
-      error: error instanceof Error ? error.message : "unknown",
+      error: message,
     });
     console.warn("Workspace OAuth runtime projection publish failed.", error);
+    return { ok: false as const, error: message };
   }
 }

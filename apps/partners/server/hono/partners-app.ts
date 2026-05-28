@@ -14,14 +14,16 @@ import { validatePartnerOrganizationInput, validatePartnerSignupInput, type Part
 import { assertPartnersProductionEnv } from "@/security/production-env";
 import { buildSameOriginAuthHeaders, buildTrustedSignupHeaders } from "@/trust/auth-request";
 import { appendPartnerAuthRateLimitHeaders, checkPartnerAuthRateLimit, partnerAuthJson, partnerAuthRateLimitedResponse } from "@/app/api/partner-auth-rate-limit";
-import { adminPartnerAppsRepository, assertPartnersAdminServiceToken } from "@/server/adminPartnerApps";
+import { adminPartnerAppsRepository } from "@/server/adminPartnerApps";
 import { createProgrammerOrganizationForCurrentPartner, ensureCurrentPartnerProfile, isExistingPartnerOrganizationError } from "@/server/partnerOrganizations";
-import { assertPlatformServiceToken, platformPartnerAppsRepository } from "@/server/platformApi";
+import { platformPartnerAppsRepository } from "@/server/platformApi";
+import { assertPartnersAdminServiceToken, assertPlatformServiceToken } from "@/server/serviceTokens";
 import { sandboxPartnerApiApp, sandboxOAuthApp } from "@/server/sandbox/app";
 import { partnerMcpConnectionsRepository } from "@/server/mcp/connections";
 import { handleMcpMethodNotAllowed, handlePartnerMcp } from "@/server/mcp/transport";
 import { partnerMcpConnectionInputSchema, partnerMcpConnectionUpdateSchema } from "@/server/mcp/permissions";
 import { jsonError, originFromContext, parseJson } from "./http";
+import { partnerListRequest, publishedCatalogRequest, runPartnerRuntime } from "./partner-runtime";
 
 const LOCAL_PARTNER_SIGNUP_BRIDGE_SECRET = "local-qentrah-partner-signup-bridge-secret";
 
@@ -179,71 +181,51 @@ partnersHonoApp.post("/api/partner-organization", async (c) => {
 });
 
 partnersHonoApp.get("/api/admin/partner-apps", async (c) => {
-  try {
+  return runPartnerRuntime(c, "Partners admin API failed.", async () => {
     assertPartnersAdminServiceToken(c.req.raw.headers);
-    return c.json(await adminPartnerAppsRepository.list({
-      limit: Number(c.req.query("limit") || "100"),
-      cursor: c.req.query("cursor") || undefined,
-      search: c.req.query("search") || undefined,
-    }));
-  } catch (error) {
-    return jsonError(c, error, "Partners admin API failed.");
-  }
+    return c.json(await adminPartnerAppsRepository.list(partnerListRequest(c)));
+  });
 });
 
 partnersHonoApp.get("/api/admin/partner-apps/:appId", async (c) => {
-  try {
+  return runPartnerRuntime(c, "Partners admin API failed.", async () => {
     assertPartnersAdminServiceToken(c.req.raw.headers);
     const app = await adminPartnerAppsRepository.get(c.req.param("appId"));
     if (!app) return c.json({ error: "Partner app not found." }, 404);
     return c.json({ app });
-  } catch (error) {
-    return jsonError(c, error, "Partners admin API failed.");
-  }
+  });
 });
 
 partnersHonoApp.patch("/api/admin/partner-apps/:appId/review", async (c) => {
-  try {
+  return runPartnerRuntime(c, "Partners admin API failed.", async () => {
     assertPartnersAdminServiceToken(c.req.raw.headers);
     const reviewer = c.req.header("x-qentrah-admin-actor")?.trim() || "admin";
     const input = partnerReviewRequestSchema.parse(await c.req.json());
     return c.json({ app: await adminPartnerAppsRepository.review(c.req.param("appId"), input, reviewer) });
-  } catch (error) {
-    return jsonError(c, error, "Partners admin API failed.");
-  }
+  });
 });
 
 partnersHonoApp.get("/api/platform/published-apps", async (c) => {
-  try {
+  return runPartnerRuntime(c, "Partner catalog unavailable.", async () => {
     assertPlatformServiceToken(c.req.raw.headers);
-    return c.json(await platformPartnerAppsRepository.listPublished({
-      limit: Number(c.req.query("limit") || "100"),
-      cursor: c.req.query("cursor") || undefined,
-      updatedSince: c.req.query("updatedSince") ? Number(c.req.query("updatedSince")) : undefined,
-    }));
-  } catch (error) {
-    return jsonError(c, error, "Partner catalog unavailable.");
-  }
+    return c.json(await platformPartnerAppsRepository.listPublished(publishedCatalogRequest(c)));
+  });
 });
 
 partnersHonoApp.get("/api/platform/published-apps/:appId", async (c) => {
-  try {
+  return runPartnerRuntime(c, "Partner catalog unavailable.", async () => {
     assertPlatformServiceToken(c.req.raw.headers);
     const app = await platformPartnerAppsRepository.getPublished(c.req.param("appId"));
     if (!app) return c.json({ error: "Partner app not found." }, 404);
     return c.json({ app });
-  } catch (error) {
-    return jsonError(c, error, "Partner catalog unavailable.");
-  }
+  });
 });
 
 partnersHonoApp.post("/api/platform/verify-authorization", async (c) => {
-  try {
+  return runPartnerRuntime(c, "Partner authorization verification failed.", async () => {
     assertPlatformServiceToken(c.req.raw.headers);
     return c.json(await platformPartnerAppsRepository.verifyAuthorization(await c.req.json()));
-  } catch (error) {
-    return jsonError(c, error, "Partner authorization verification failed.");
-  }
+  });
 });
 
 partnersHonoApp.get("/api/search", async (c) => {
