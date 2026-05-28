@@ -12,6 +12,7 @@ import Animated, {
 
 import { Screen } from "@/foundation/primitives/Screen";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
+import type { AppColors } from "@/foundation/theme/tokens";
 
 export function AppBootScreen() {
   const { colors } = useTheme();
@@ -57,7 +58,7 @@ export function AppBootScreen() {
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: AppColors) => StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",

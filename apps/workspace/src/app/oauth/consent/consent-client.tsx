@@ -16,6 +16,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { getOAuthCopy } from "../oauth-copy";
 import type { OAuthLocale } from "../oauth-locale";
+import { createPartnerConnectionGrant, fetchPartnerCatalogApps } from "@/domains/integrations/integrations-runtime";
 
 type BetterAuthOrganization = { id: string; name: string };
 type PartnerCatalogApp = {
@@ -95,10 +96,9 @@ function fallbackScopeLabel(scope: string) {
 }
 
 async function fetchPartnerApp(clientId: string) {
-  const response = await fetch("/api/v1/integrations/partner-apps", { cache: "no-store" });
-  if (!response.ok) return null;
-  const payload = await response.json().catch(() => null) as { apps?: PartnerCatalogApp[] } | null;
-  return payload?.apps?.find((app) => app.partnersClientId === clientId) ?? null;
+  return fetchPartnerCatalogApps()
+    .then((apps) => apps.find((app) => app.partnersClientId === clientId) ?? null)
+    .catch(() => null);
 }
 
 export function OAuthConsentClient({ locale }: { locale: OAuthLocale }) {
@@ -141,17 +141,11 @@ export function OAuthConsentClient({ locale }: { locale: OAuthLocale }) {
     try {
       if (accept && organization?.id) {
         if (!partnerApp?.id || !partnerApp.partnersClientId) throw new Error(copy.connectionError);
-        const response = await fetch(`/api/v1/organizations/${encodeURIComponent(organization.id)}/partner-connections`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            partnersAppId: partnerApp.id,
-            partnersClientId: partnerApp.partnersClientId,
-            scopes: resourceScopes,
-          }),
+        await createPartnerConnectionGrant(organization.id, {
+          partnersAppId: partnerApp.id,
+          partnersClientId: partnerApp.partnersClientId,
+          scopes: resourceScopes,
         });
-        const payload = await response.json().catch(() => null) as { error?: string } | null;
-        if (!response.ok) throw new Error(payload?.error ?? copy.connectionError);
       }
 
       const result = await oauthClient.oauth2.consent({

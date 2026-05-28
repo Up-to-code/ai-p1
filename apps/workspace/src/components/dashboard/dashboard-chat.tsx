@@ -9,61 +9,18 @@ import { useTranslations } from "next-intl";
 import { ArrowDown, Building2, CalendarClock, CheckCircle2, Search } from "lucide-react";
 import { sendAgentChatRequest, useAgentMessagesQuery, useAgentThreadsQuery } from "@/domains/agents";
 import AgUiTurnRenderer from "@/components/ui/ag-ui/ag-ui-turn-renderer";
-import type { AgUiConversationTurn } from "@/components/ui/ag-ui/types";
 import { Markdown } from "@/components/ui/markdown";
 import { Skeleton } from "@/components/ui/skeleton";
-import { uploadFiles } from "@/lib/uploadthing";
 import { markAppPerformance } from "@/lib/utils/performance";
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer-motion";
 import { useWorkspaceStore } from "@/domains/dashboard/store/dashboard.store";
-import type { AgentChatAttachment } from "@/domains/agents";
-
-interface Message {
-  id?: string;
-  role: "user" | "assistant";
-  content: string;
-  agUiTurn?: AgUiConversationTurn;
-}
-
-type ContentDirection = "rtl" | "ltr" | "auto";
-
-function contentDirection(text: string): ContentDirection {
-  const arabicCount = text.match(/[\u0600-\u06FF]/g)?.length ?? 0;
-  const latinCount = text.match(/[A-Za-z]/g)?.length ?? 0;
-
-  if (arabicCount >= 3 && arabicCount >= latinCount * 0.35) return "rtl";
-  if (latinCount >= 3 && latinCount > arabicCount) return "ltr";
-  return "auto";
-}
-
-function inferAttachmentKind(mimeType: string): AgentChatAttachment["kind"] {
-  if (mimeType.startsWith("image/")) return "image";
-  if (mimeType.startsWith("video/")) return "video";
-  return "document";
-}
-
-async function uploadAgentAttachments(organizationId: string, files: File[] = []) {
-  if (files.length === 0) return [];
-
-  const uploaded = await uploadFiles("agentMessageAttachment", {
-    files,
-    input: { organizationId },
-  });
-
-  return uploaded.map((file, index): AgentChatAttachment => {
-    const fallback = files[index];
-    const serverData = file.serverData;
-    const mimeType = serverData?.mimeType || file.type || fallback?.type || "application/octet-stream";
-    return {
-      key: serverData?.key || file.key,
-      url: serverData?.url || file.url || file.ufsUrl,
-      name: serverData?.name || file.name || fallback?.name || "attachment",
-      mimeType,
-      size: serverData?.size || file.size || fallback?.size || 0,
-      kind: inferAttachmentKind(mimeType),
-    };
-  });
-}
+import {
+  agentThreadUrl,
+  contentDirection,
+  uploadAgentAttachments,
+  visibleAgentConversationMessages,
+  type TransientAgentConversation,
+} from "@/domains/agents/conversation-runtime";
 
 export function DashboardChat({ organizationId }: { organizationId?: string }) {
   const searchParams = useSearchParams();
@@ -78,7 +35,7 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
   const [transientConversation, setTransientConversation] = useState<{
     organizationId?: string;
     threadId?: string;
-    messages: Message[];
+    messages: TransientAgentConversation["messages"];
   }>({ messages: [] });
   const [inputValue, setInputValue] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -101,35 +58,13 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
   const t = useTranslations('Assistant');
   const activeThreadId = selectedThreadId ?? requestedThreadId;
 
-  const messages = useMemo(() => {
-    const visibleTransientMessages =
-      transientConversation.organizationId === organizationId &&
-      transientConversation.threadId === activeThreadId
-        ? transientConversation.messages
-        : [];
-    const durable = (persistedMessages ?? [])
-      .filter((message) => message.role === "user" || message.role === "assistant")
-      .map((message) => ({
-        id: message.id,
-        role: message.role as "user" | "assistant",
-        content: message.content,
-        agUiTurn: message.agUiTurn,
-      }));
-
-    if (visibleTransientMessages.length === 0) return durable;
-    if (isSending) return visibleTransientMessages;
-    if (durable.length < visibleTransientMessages.length) return visibleTransientMessages;
-    const latestTransientMessage = visibleTransientMessages.at(-1);
-    const latestDurableMessage = durable.at(-1);
-    const durableHasLatestMessage =
-      latestTransientMessage &&
-      latestDurableMessage &&
-      latestDurableMessage.role === latestTransientMessage.role &&
-      latestDurableMessage.content === latestTransientMessage.content &&
-      (!latestTransientMessage.agUiTurn || Boolean(latestDurableMessage.agUiTurn));
-    if (!durableHasLatestMessage) return visibleTransientMessages;
-    return durable;
-  }, [activeThreadId, isSending, organizationId, persistedMessages, transientConversation]);
+  const messages = useMemo(() => visibleAgentConversationMessages({
+    organizationId,
+    activeThreadId,
+    isSending,
+    persistedMessages,
+    transientConversation,
+  }), [activeThreadId, isSending, organizationId, persistedMessages, transientConversation]);
   const hasVisibleTransientMessages =
     transientConversation.organizationId === organizationId &&
     transientConversation.threadId === activeThreadId &&
@@ -167,11 +102,7 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
   useEffect(() => {
     if (!requestedThreadId || !threads || selectedThreadId) return;
     if (isSending || hasVisibleTransientMessages) return;
-    const params = new URLSearchParams(window.location.search);
-    params.set("mode", "ai");
-    params.delete("threadId");
-    const query = params.toString();
-    window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+    window.history.replaceState(null, "", agentThreadUrl(window.location.pathname, window.location.search));
   }, [hasVisibleTransientMessages, isSending, requestedThreadId, selectedThreadId, threads]);
 
   useEffect(() => {
@@ -204,10 +135,7 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
   };
 
   const replaceThreadUrl = (threadId: string) => {
-    const params = new URLSearchParams(window.location.search);
-    params.set("mode", "ai");
-    params.set("threadId", threadId);
-    window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
+    window.history.replaceState(null, "", agentThreadUrl(window.location.pathname, window.location.search, threadId));
     setActiveAiThreadId(threadId);
   };
 

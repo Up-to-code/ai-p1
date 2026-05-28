@@ -25,9 +25,11 @@ function fakeContext(input: {
 
 describe("agent read handlers", () => {
   it("lists authenticated workspace threads", async () => {
-    vi.mocked(fetchAuthQuery).mockResolvedValueOnce([
-      { _id: "thread_1", id: "thread_1", _creationTime: 1, title: "Thread" },
-    ] as never);
+    vi.mocked(fetchAuthQuery).mockResolvedValueOnce({
+      threads: [{ _id: "thread_1", id: "thread_1", _creationTime: 1, title: "Thread" }],
+      isDone: false,
+      continueCursor: "next",
+    } as never);
 
     const response = await handleListAgentThreads(fakeContext({
       params: { organizationId: "org_1" },
@@ -41,6 +43,7 @@ describe("agent read handlers", () => {
     expect(fetchAuthQuery).toHaveBeenCalledWith(expect.anything(), {
       organizationId: "org_1",
       limit: 50,
+      cursor: null,
     });
   });
 

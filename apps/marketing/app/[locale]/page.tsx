@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { MarketingHomeJsonLd } from "@/components/marketing/seo-json-ld";
 import { HomePage } from "@/components/marketing/home-page";
 import { isLocale, type Locale } from "@/lib/content";
 
@@ -10,5 +11,12 @@ export default async function LocaleHomePage({ params }: { params: Promise<{ loc
     notFound();
   }
 
-  return <HomePage locale={localeParam as Locale} />;
+  const locale = localeParam as Locale;
+
+  return (
+    <>
+      <MarketingHomeJsonLd locale={locale} />
+      <HomePage locale={locale} />
+    </>
+  );
 }

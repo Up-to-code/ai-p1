@@ -86,6 +86,26 @@ export function assertAssignableRole(role: string, roles: OrganizationRoleForPol
   }
 }
 
+function ownerMemberCount(members: OrganizationMemberForPolicy[]) {
+  return members.filter((member) => hasOwnerRole(member.role)).length;
+}
+
+export function assertOrganizationRetainsOwnerAfterMemberChange(
+  input: {
+    currentRole: string;
+    nextRole?: string;
+    members: OrganizationMemberForPolicy[];
+  },
+) {
+  if (
+    hasOwnerRole(input.currentRole) &&
+    (!input.nextRole || !hasOwnerRole(input.nextRole)) &&
+    ownerMemberCount(input.members) <= 1
+  ) {
+    throw new OrganizationActionError("The organization must keep at least one owner.", 400);
+  }
+}
+
 export function assertCanRemoveMember(
   input: {
     currentUserId: string;
@@ -108,9 +128,7 @@ export function assertCanRemoveMember(
     throw new OrganizationActionError("You cannot remove yourself from the organization.", 400);
   }
 
-  if (hasOwnerRole(target.role) && input.members.filter((member) => hasOwnerRole(member.role)).length <= 1) {
-    throw new OrganizationActionError("The organization must keep at least one owner.", 400);
-  }
+  assertOrganizationRetainsOwnerAfterMemberChange({ currentRole: target.role, members: input.members });
 }
 
 export function assertCanChangeMemberRole(
@@ -128,13 +146,11 @@ export function assertCanChangeMemberRole(
     throw new OrganizationActionError("Member was not found.", 404);
   }
 
-  if (
-    hasOwnerRole(target.role) &&
-    !hasOwnerRole(input.nextRole) &&
-    input.members.filter((member) => hasOwnerRole(member.role)).length <= 1
-  ) {
-    throw new OrganizationActionError("The organization must keep at least one owner.", 400);
-  }
+  assertOrganizationRetainsOwnerAfterMemberChange({
+    currentRole: target.role,
+    nextRole: input.nextRole,
+    members: input.members,
+  });
 }
 
 export function assertCanDeleteRole(

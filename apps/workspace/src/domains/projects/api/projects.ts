@@ -1,9 +1,14 @@
 "use client";
 
-import { useMemo } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
-import { useDebouncedValue, useHttpIndexedPagedQuery, useHttpPagedQuery, useHttpQuery, useHttpQueryResult } from "@/components/shared/use-http-query";
+import {
+  useWorkspaceIndexedResource,
+  useWorkspacePagedResource,
+  useWorkspaceResource,
+  useWorkspaceResourceResult,
+  workspaceMutation,
+} from "@/domains/resources/workspace-resource-request";
 import type { ProjectStatus } from "../store/projects.types";
 import type { Project } from "../store/projects.types";
 import type { ProjectFormValues } from "../validation/project.schema";
@@ -23,60 +28,56 @@ export function useProjectsQuery(organizationId?: string) {
 }
 
 export function useProjectsPagedQuery(organizationId?: string, options?: { status?: ProjectStatus; search?: string }) {
-  const status = options?.status;
-  const search = options?.search?.trim();
-  const debouncedSearch = useDebouncedValue(search, 250);
-  const params = useMemo(() => ({ status, search: debouncedSearch }), [debouncedSearch, status]);
-
-  return useHttpPagedQuery(
+  return useWorkspacePagedResource(
     ["projects-paged", organizationId],
-    organizationId ? `/api/v1/organizations/${organizationId}/read/projects` : undefined,
-    params,
+    organizationId,
+    "projects",
+    { status: options?.status, search: options?.search },
     PROJECTS_PAGE_SIZE,
   );
 }
 
 export function useProjectsIndexQuery(organizationId?: string, options?: { status?: ProjectStatus; search?: string }) {
-  const status = options?.status;
-  const search = options?.search?.trim();
-  const debouncedSearch = useDebouncedValue(search, 250);
-  const params = useMemo(() => ({ status, search: debouncedSearch }), [debouncedSearch, status]);
-
-  return useHttpIndexedPagedQuery<Project, ProjectStats>(
+  return useWorkspaceIndexedResource<Project, ProjectStats>(
     ["projects-index", organizationId],
-    organizationId ? `/api/v1/organizations/${organizationId}/read/projects/index` : undefined,
-    organizationId ? `/api/v1/organizations/${organizationId}/read/projects` : undefined,
-    params,
+    organizationId,
+    "projects/index",
+    "projects",
+    { status: options?.status, search: options?.search },
     PROJECTS_PAGE_SIZE,
   );
 }
 
 export function useProjectOptionsQueryResult(organizationId?: string, options?: { limit?: number }) {
-  return useHttpQueryResult<{ id: string; name: string }[]>(
+  return useWorkspaceResourceResult<{ id: string; name: string }[]>(
     ["projects-options", organizationId],
-    organizationId ? `/api/v1/organizations/${organizationId}/read/projects/options` : undefined,
+    organizationId,
+    "projects/options",
     { limit: options?.limit ?? 200 },
   );
 }
 
 export function useProjectOptionsQuery(organizationId?: string) {
-  return useHttpQuery<{ id: string; name: string }[]>(
+  return useWorkspaceResource<{ id: string; name: string }[]>(
     ["projects-options", organizationId],
-    organizationId ? `/api/v1/organizations/${organizationId}/read/projects/options` : undefined,
+    organizationId,
+    "projects/options",
   );
 }
 
 export function useProjectStatsQuery(organizationId?: string) {
-  return useHttpQuery<ProjectStats>(
+  return useWorkspaceResource<ProjectStats>(
     ["projects-stats", organizationId],
-    organizationId ? `/api/v1/organizations/${organizationId}/read/projects/stats` : undefined,
+    organizationId,
+    "projects/stats",
   );
 }
 
 export function useProjectQuery(organizationId: string | undefined, projectId: string) {
-  return useHttpQuery<Project | null>(
+  return useWorkspaceResource<Project | null>(
     ["project", organizationId, projectId],
-    organizationId && projectId ? `/api/v1/organizations/${organizationId}/read/projects/${projectId}` : undefined,
+    organizationId && projectId ? organizationId : undefined,
+    `projects/${projectId}`,
   );
 }
 
@@ -113,35 +114,25 @@ export function projectPayloadFromForm(values: ProjectFormValues) {
   };
 }
 
-async function jsonOrThrow(response: Response) {
-  const payload = await response.json();
-  if (!response.ok) {
-    throw new Error(payload.error ?? "Project request failed.");
-  }
-  return payload;
-}
-
 export async function createProjectRequest(organizationId: string, values: ProjectFormValues) {
-  const response = await fetch(`/api/v1/organizations/${organizationId}/projects`, {
+  return workspaceMutation<{ project: { id: string } }>(organizationId, "projects", {
     method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(projectPayloadFromForm(values)),
+    body: projectPayloadFromForm(values),
+    fallbackMessage: "Project request failed.",
   });
-  return jsonOrThrow(response) as Promise<{ project: { id: string } }>;
 }
 
 export async function updateProjectRequest(organizationId: string, projectId: string, values: ProjectFormValues) {
-  const response = await fetch(`/api/v1/organizations/${organizationId}/projects/${projectId}`, {
+  return workspaceMutation<{ project: { id: string } }>(organizationId, `projects/${projectId}`, {
     method: "PATCH",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(projectPayloadFromForm(values)),
+    body: projectPayloadFromForm(values),
+    fallbackMessage: "Project request failed.",
   });
-  return jsonOrThrow(response) as Promise<{ project: { id: string } }>;
 }
 
 export async function deleteProjectRequest(organizationId: string, projectId: string) {
-  const response = await fetch(`/api/v1/organizations/${organizationId}/projects/${projectId}`, {
+  return workspaceMutation(organizationId, `projects/${projectId}`, {
     method: "DELETE",
+    fallbackMessage: "Project request failed.",
   });
-  return jsonOrThrow(response);
 }

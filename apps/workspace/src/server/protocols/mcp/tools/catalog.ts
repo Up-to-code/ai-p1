@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { evaluateAgentToolRisk } from "@/server/domains/agents/policies/risk-policy";
+import { getRegistryTool, type McpAdapter } from "./registry-core";
 
 export type McpPermissionResource =
   | "organization"
@@ -36,7 +37,7 @@ const listLimit = z.number().int().min(1).max(50).optional();
 const listSearch = z.string().trim().max(160).optional();
 const listCursor = z.string().nullable().optional();
 
-export const mcpToolCatalog: McpToolDefinition[] = [
+export const agentToolCatalog: McpToolDefinition[] = [
   {
     name: "organization_info",
     title: "Organization info",
@@ -395,22 +396,37 @@ export const mcpToolCatalog: McpToolDefinition[] = [
   },
 ];
 
+export const mcpToolCatalog = agentToolCatalog.filter((tool) =>
+  getRegistryTool(tool.name)?.adapters.includes("mcp"),
+);
+
 export function canUseMcpTool(
   permissions: McpPermission[],
   tool: Pick<McpToolDefinition, "resource" | "action">,
+  options: { allowConfirmationTools?: boolean } = {},
 ) {
   const risk = evaluateAgentToolRisk(tool);
   if (risk.state === "blocked") return false;
+  if (risk.state === "requires_confirmation" && !options.allowConfirmationTools) return false;
 
   return permissions.some((permission) =>
     permission.resource === tool.resource && permission.actions.includes(tool.action),
   );
 }
 
-export function allowedMcpTools(permissions: McpPermission[]) {
-  return mcpToolCatalog.filter((tool) => canUseMcpTool(permissions, tool));
+export function allowedMcpTools(
+  permissions: McpPermission[],
+  options: { adapter?: McpAdapter } = {},
+) {
+  const catalog = options.adapter === "agent" ? agentToolCatalog : mcpToolCatalog;
+  return catalog.filter((tool) =>
+    canUseMcpTool(permissions, tool, {
+      allowConfirmationTools: options.adapter === "agent",
+    }),
+  );
 }
 
-export function getMcpToolDefinition(name: string) {
-  return mcpToolCatalog.find((tool) => tool.name === name);
+export function getMcpToolDefinition(name: string, options: { adapter?: McpAdapter } = {}) {
+  const catalog = options.adapter === "agent" ? agentToolCatalog : mcpToolCatalog;
+  return catalog.find((tool) => tool.name === name);
 }

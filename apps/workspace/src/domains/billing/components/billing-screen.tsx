@@ -11,22 +11,7 @@ import { useToast } from "@/components/ui/toast";
 import { useAccountContext } from "@/domains/auth";
 import { BILLING_PLANS, createTamaraCheckoutRequest, useBillingOverview } from "../api/billing";
 import type { BillingPlanId } from "../api/billing";
-
-function formatDate(value?: number, locale = "en") {
-  if (!value) return "Not active yet";
-  return new Intl.DateTimeFormat(locale === "ar" ? "ar-SA" : "en-US", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(value));
-}
-
-function subscriptionTone(status?: string) {
-  if (status === "active") return "success" as const;
-  if (status === "pending") return "warning" as const;
-  if (status === "past_due") return "danger" as const;
-  return "neutral" as const;
-}
+import { billingDateLabel, billingPriceLabel, billingScreenCopy, subscriptionTone } from "../billing-view-model";
 
 export function BillingScreen() {
   const locale = useLocale() as "en" | "ar";
@@ -40,54 +25,14 @@ export function BillingScreen() {
   const requestedPlanId: BillingPlanId = searchParams.get("plan") === "saudi_yearly" ? "saudi_yearly" : "saudi_monthly";
   const selectedPlan = requestedPlanId === "saudi_yearly" ? BILLING_PLANS.saudi_yearly : overview?.plan ?? BILLING_PLANS.saudi_monthly;
   const isYearly = selectedPlan.id === "saudi_yearly";
-  const copy = isAr
-    ? {
-        eyebrow: "الفوترة",
-        title: "اشتراك كانترا",
-        subtitle: isYearly ? "ادفع السنة عبر تمارا بنظام اشتر الآن وادفع لاحقاً. يتم التفعيل بعد تأكيد تمارا." : "الخطة الشهرية لا تستخدم تمارا. أكمل الإعداد الشهري من مساحة العمل.",
-        plan: "خطة السعودية",
-        monthly: "شهرياً",
-        yearly: "سنوياً",
-        activeUntil: "نشط حتى",
-        status: "الحالة",
-        latest: "آخر دفعة",
-        pay: isYearly ? "اشتر الآن وادفع لاحقاً مع تمارا" : "متابعة الإعداد",
-        starting: "جاري إنشاء الدفع...",
-        secure: isYearly ? "يتم الدفع في صفحة تمارا الآمنة، ثم تعود إلى كانترا بعد الانتهاء." : "تمارا متاحة فقط لخيار الدفع السنوي بنظام اشتر الآن وادفع لاحقاً.",
-        included: isYearly
-          ? ["مساحة المشاريع والوحدات والعملاء", "دفع سنوي عبر تمارا", "مرحلة إعداد مجانية", "دعم الأدوار الأساسية"]
-          : ["مساحة المشاريع والوحدات والعملاء", "مرحلة إعداد مجانية", "دعم الأدوار الأساسية", "تجديد يدوي كل 30 يوم"],
-      }
-    : {
-        eyebrow: "Billing",
-        title: "Qentrah subscription",
-        subtitle: isYearly ? "Pay the year with Tamara buy now, pay later. Your subscription activates after Tamara confirms payment." : "The monthly plan does not use Tamara. Continue setup from your workspace.",
-        plan: "Saudi Arabia plan",
-        monthly: "per month",
-        yearly: "per year",
-        activeUntil: "Active until",
-        status: "Status",
-        latest: "Latest payment",
-        pay: isYearly ? "Buy now, pay later with Tamara" : "Continue setup",
-        starting: "Creating checkout...",
-        secure: isYearly ? "Payment happens on Tamara's secure checkout, then you return to Qentrah when it is complete." : "Tamara is available only for the annual buy-now-pay-later option.",
-        included: isYearly
-          ? ["Project, unit, and client workspace", "Annual payment through Tamara", "Free setup phase included", "Core organization roles"]
-          : ["Project, unit, and client workspace", "Free setup phase included", "Core organization roles", "Manual renewal every 30 days"],
-      };
+  const copy = billingScreenCopy(locale, isYearly);
 
   const statusLabel = overview?.subscription?.status ?? "inactive";
   const latestPaymentLabel = overview?.latestPayment
     ? `${overview.latestPayment.status} · ${overview.latestPayment.orderReferenceId}`
     : "No payment yet";
 
-  const price = useMemo(() => {
-    return new Intl.NumberFormat(locale === "ar" ? "ar-SA" : "en-US", {
-      style: "currency",
-      currency: selectedPlan.currency,
-      maximumFractionDigits: 0,
-    }).format(selectedPlan.amount);
-  }, [locale, selectedPlan.amount, selectedPlan.currency]);
+  const price = useMemo(() => billingPriceLabel(selectedPlan, locale), [locale, selectedPlan]);
 
   async function startCheckout() {
     if (!organizationId || isStartingCheckout) return;
@@ -157,7 +102,7 @@ export function BillingScreen() {
               <div className="flex flex-col justify-between bg-zinc-50 p-6 dark:bg-white/[0.02]">
                 <div className="space-y-5">
                   <Metric label={copy.status} value={statusLabel} />
-                  <Metric label={copy.activeUntil} value={formatDate(overview.subscription?.currentPeriodEndAt, locale)} />
+                  <Metric label={copy.activeUntil} value={billingDateLabel(overview.subscription?.currentPeriodEndAt, locale)} />
                   <Metric label={copy.latest} value={latestPaymentLabel} />
                 </div>
                 <Button

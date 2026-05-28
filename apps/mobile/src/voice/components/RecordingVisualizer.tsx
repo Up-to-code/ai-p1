@@ -10,6 +10,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { useTheme } from "@/foundation/theme/ThemeProvider";
+import type { AppColors } from "@/foundation/theme/tokens";
 
 const BAR_COUNT = 32;
 const MIN_BAR_HEIGHT = 7;
@@ -122,7 +123,7 @@ export function RecordingVisualizer({
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: AppColors) => StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",

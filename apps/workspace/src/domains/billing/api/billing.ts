@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  organizationApiPath,
+  requestOrganizationAction,
+} from "@/domains/organization/api/organization-request";
 
 export type BillingPlanId = "saudi_monthly" | "saudi_yearly";
 
@@ -65,12 +69,6 @@ export const BILLING_PLANS: Record<BillingPlanId, BillingPlan> = {
   saudi_yearly: SAUDI_YEARLY_PLAN,
 };
 
-async function jsonOrThrow(response: Response) {
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(payload.error ?? "Billing request failed.");
-  return payload;
-}
-
 export function useBillingOverview(organizationId?: string | null) {
   const [overview, setOverview] = useState<BillingOverview | undefined>();
 
@@ -83,22 +81,11 @@ export function useBillingOverview(organizationId?: string | null) {
     const billingOrganizationId = organizationId;
     async function loadOverview() {
       try {
-        const response = await fetch(`/api/v1/organizations/${encodeURIComponent(billingOrganizationId)}/billing/subscription`);
-        const payload = await jsonOrThrow(response) as BillingOverview;
+        const payload = await getBillingOverviewRequest(billingOrganizationId);
         if (isCurrent) setOverview(payload);
       } catch {
         if (isCurrent) {
-          setOverview({
-            plan: SAUDI_MONTHLY_PLAN,
-            subscription: {
-              organizationId: billingOrganizationId,
-              planId: "saudi_monthly",
-              status: "inactive",
-              createdAt: Date.now(),
-              updatedAt: Date.now(),
-            },
-            latestPayment: null,
-          });
+          setOverview(fallbackBillingOverview(billingOrganizationId));
         }
       }
     }
@@ -112,23 +99,50 @@ export function useBillingOverview(organizationId?: string | null) {
   return organizationId ? overview : undefined;
 }
 
+export function fallbackBillingOverview(organizationId: string): BillingOverview {
+  return {
+    plan: SAUDI_MONTHLY_PLAN,
+    subscription: {
+      organizationId,
+      planId: "saudi_monthly",
+      status: "inactive",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    },
+    latestPayment: null,
+  };
+}
+
+export function getBillingOverviewRequest(organizationId: string) {
+  return requestOrganizationAction<BillingOverview>(
+    organizationApiPath(organizationId, "billing", "subscription"),
+    "GET",
+    undefined,
+    "Billing request failed.",
+  );
+}
+
 export async function createTamaraCheckoutRequest(input: {
   organizationId: string;
   locale: "en" | "ar";
   planId?: BillingPlanId;
 }) {
-  const response = await fetch(`/api/v1/organizations/${encodeURIComponent(input.organizationId)}/billing/tamara/checkout`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ planId: input.planId ?? "saudi_monthly", locale: input.locale }),
-  });
-  return jsonOrThrow(response) as Promise<{ checkoutUrl: string; orderId: string; status: string }>;
+  return requestOrganizationAction<{ checkoutUrl: string; orderId: string; status: string }>(
+    organizationApiPath(input.organizationId, "billing", "tamara", "checkout"),
+    "POST",
+    { planId: input.planId ?? "saudi_monthly", locale: input.locale },
+    "Billing request failed.",
+  );
 }
 
 export async function getTamaraOrderStatusRequest(input: {
   organizationId: string;
   orderId: string;
 }) {
-  const response = await fetch(`/api/v1/organizations/${encodeURIComponent(input.organizationId)}/billing/tamara/orders/${encodeURIComponent(input.orderId)}`);
-  return jsonOrThrow(response) as Promise<{ payment: TamaraPayment | null; tamaraError: string | null }>;
+  return requestOrganizationAction<{ payment: TamaraPayment | null; tamaraError: string | null }>(
+    organizationApiPath(input.organizationId, "billing", "tamara", "orders", input.orderId),
+    "GET",
+    undefined,
+    "Billing request failed.",
+  );
 }

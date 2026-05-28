@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
+import { activeDueWorkspaceRows, activeWorkspaceRows, boundedWorkspaceReadLimit } from "../workspace/readSurface";
 import { clientTaskValidator } from "./validators";
 
 const MAX_LIST_TASKS = 500;
@@ -24,10 +25,7 @@ export const list = query({
           .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
           .take(MAX_LIST_TASKS);
 
-    return tasks
-      .filter((task) => !task.deletedAt)
-      .sort((a, b) => (a.dueAt ?? Number.MAX_SAFE_INTEGER) - (b.dueAt ?? Number.MAX_SAFE_INTEGER))
-      .map(presentTask);
+    return activeDueWorkspaceRows(tasks).map(presentTask);
   },
 });
 
@@ -36,14 +34,12 @@ export const options = query({
   returns: v.array(v.object({ id: v.string(), title: v.string(), clientId: v.id("clients") })),
   handler: async (ctx, args) => {
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
-    const limit = Math.max(1, Math.min(args.limit ?? 100, 200));
+    const limit = boundedWorkspaceReadLimit(args.limit, 100, 200);
     const tasks = await ctx.db
       .query("clientTasks")
       .withIndex("by_due", (q) => q.eq("organizationId", args.organizationId))
       .take(limit);
 
-    return tasks
-      .filter((task) => !task.deletedAt)
-      .map((task) => ({ id: task._id, title: task.title, clientId: task.clientId }));
+    return activeWorkspaceRows(tasks).map((task) => ({ id: task._id, title: task.title, clientId: task.clientId }));
   },
 });

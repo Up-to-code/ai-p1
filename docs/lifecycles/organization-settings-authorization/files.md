@@ -1,6 +1,9 @@
 # Files
 
 - `apps/workspace/src/domains/organization/components/organization-screens.tsx`: UI for organization settings tabs and capability-driven buttons.
+- `apps/workspace/src/domains/organization/settings-view-model.ts`: Organization settings view-model Module for tab names, role templates, permission work areas, Agent/API key permission projections and toggle commands, role permission toggles, role labels, member/date formatting helpers, settings counts, Agent link buckets, and API key stats.
+- `apps/workspace/src/domains/organization/organization-logo-view-model.ts`: Organization logo view-model Module for crop output size, cover layout, and crop position clamping.
+- `apps/workspace/src/domains/organization/api/organization-request.ts`: browser organization request Module for route segment encoding, JSON request construction, and error fallback behavior.
 - `apps/workspace/src/server/domains/organization/services/actions.ts`: Hono service orchestration for identity, email invitations, members, and work roles.
 - `apps/workspace/src/server/domains/organization/services/update-profile.ts`: organization profile write bridge to Convex.
 - `apps/workspace/src/server/domains/organization/services/invite-links.ts`: invite-link create/cancel/accept bridge to Convex.

@@ -11,17 +11,23 @@ function readSource(path: string) {
 
 describe("client pipeline screen source", () => {
   const source = readSource("src/domains/clients/components/clients-screens.tsx");
+  const viewModelSource = readSource("src/domains/clients/client-view-model.ts");
   const apiSource = readSource("src/domains/clients/api/clients.ts");
 
   it("renders only active journey stages in the pipeline", () => {
-    expect(source).toContain('const activePipelineStages = ["new", "qualified", "viewing", "negotiation"] as const');
+    expect(viewModelSource).toContain('activePipelineStages = ["new", "qualified", "viewing", "negotiation"] as const');
+    expect(viewModelSource).toContain("activeJourneyClients");
+    expect(source).toContain("activePipelineStages");
     expect(source).toContain("activePipelineStages.map((stage)");
-    expect(source).toContain("client.pipelineStage === \"closed\"");
+    expect(source).toContain("activeJourneyClientRows(searchedClients)");
   });
 
   it("keeps closed clients reachable from the normal table filter", () => {
-    expect(source).toContain('const clientStageFilters = ["all", "active", "closed"] as const');
-    expect(source).toContain("stageFilter === \"closed\"");
+    expect(viewModelSource).toContain('clientStageFilters = ["all", "active", "closed"] as const');
+    expect(viewModelSource).toContain("clientsForStageFilter");
+    expect(viewModelSource).toContain("client.pipelineStage === \"closed\"");
+    expect(source).toContain("clientStageFilters");
+    expect(source).toContain("clientsForStageFilter(searchedClients, stageFilter)");
     expect(source).toContain('t(`stageFilters.${stage}`)');
   });
 
@@ -31,7 +37,7 @@ describe("client pipeline screen source", () => {
     expect(apiSource).toContain("nextPipelineOrder(variables.stageClients, variables.client.id, variables.targetIndex)");
     expect(apiSource).toContain("pipelineStage: variables.stage");
     expect(apiSource).toContain("pipelineOrder,");
-    expect(apiSource).toContain("updateClientRequest(organizationId, client.id, clientFormValues(client, stage, pipelineOrder))");
+    expect(apiSource).toContain("updateClientRequest(organizationId, client.id, clientFormValuesForPipeline(client, stage, pipelineOrder))");
   });
 
   it("uses TanStack Query optimistic cache rollback for failed moves", () => {

@@ -9,15 +9,21 @@
  */
 
 import type * as admin from "../admin.js";
+import type * as admin_domainAdapters from "../admin/domainAdapters.js";
+import type * as admin_listSurface from "../admin/listSurface.js";
+import type * as admin_organizationDashboard from "../admin/organizationDashboard.js";
 import type * as agents_confirmations from "../agents/confirmations.js";
 import type * as agents_read from "../agents/read.js";
+import type * as agents_readSurface from "../agents/readSurface.js";
 import type * as agents_validators from "../agents/validators.js";
 import type * as agents_write from "../agents/write.js";
 import type * as apiKeys from "../apiKeys.js";
 import type * as auth from "../auth.js";
 import type * as billing_data from "../billing/data.js";
 import type * as billing_read from "../billing/read.js";
+import type * as billing_readSurface from "../billing/readSurface.js";
 import type * as billing_validators from "../billing/validators.js";
+import type * as billing_webhookProcessing from "../billing/webhookProcessing.js";
 import type * as billing_write from "../billing/write.js";
 import type * as calendar_read from "../calendar/read.js";
 import type * as calendar_validators from "../calendar/validators.js";
@@ -30,13 +36,22 @@ import type * as clients_validators from "../clients/validators.js";
 import type * as clients_write from "../clients/write.js";
 import type * as dashboard_read from "../dashboard/read.js";
 import type * as http from "../http.js";
+import type * as mcp_connectionLifecycle from "../mcp/connectionLifecycle.js";
+import type * as mcp_connectionPermissions from "../mcp/connectionPermissions.js";
 import type * as mcp_connections from "../mcp/connections.js";
+import type * as mcp_readSurface from "../mcp/readSurface.js";
+import type * as mcp_toolCall from "../mcp/toolCall.js";
+import type * as mcp_toolInputs from "../mcp/toolInputs.js";
+import type * as mcp_toolRegistry from "../mcp/toolRegistry.js";
 import type * as mcp_tools from "../mcp/tools.js";
 import type * as mcp_validators from "../mcp/validators.js";
+import type * as media_attachment from "../media/attachment.js";
 import type * as media_data from "../media/data.js";
 import type * as media_read from "../media/read.js";
+import type * as media_resourcePolicy from "../media/resourcePolicy.js";
 import type * as media_validators from "../media/validators.js";
 import type * as media_write from "../media/write.js";
+import type * as organizationApiKeyLifecycle from "../organizationApiKeyLifecycle.js";
 import type * as organizationApiKeys from "../organizationApiKeys.js";
 import type * as organizations_audit_data from "../organizations/audit/data.js";
 import type * as organizations_audit_read from "../organizations/audit/read.js";
@@ -56,7 +71,11 @@ import type * as partnerApps_migrations from "../partnerApps/migrations.js";
 import type * as partnerApps_oauthClients from "../partnerApps/oauthClients.js";
 import type * as partnerApps_resources from "../partnerApps/resources.js";
 import type * as partnerApps_validators from "../partnerApps/validators.js";
+import type * as partnerApps_webhookDelivery from "../partnerApps/webhookDelivery.js";
+import type * as partnerApps_webhookSecrets from "../partnerApps/webhookSecrets.js";
+import type * as partnerApps_webhookUrlSafety from "../partnerApps/webhookUrlSafety.js";
 import type * as partnerApps_webhooks from "../partnerApps/webhooks.js";
+import type * as partnerResourceGateway from "../partnerResourceGateway.js";
 import type * as platform_access from "../platform/access.js";
 import type * as projects_read from "../projects/read.js";
 import type * as projects_validators from "../projects/validators.js";
@@ -68,10 +87,15 @@ import type * as security_backfill from "../security/backfill.js";
 import type * as security_backfillTargets from "../security/backfillTargets.js";
 import type * as security_clientPii from "../security/clientPii.js";
 import type * as security_organizationData from "../security/organizationData.js";
+import type * as serviceTokens from "../serviceTokens.js";
 import type * as userProfiles_data from "../userProfiles/data.js";
 import type * as userProfiles_read from "../userProfiles/read.js";
 import type * as userProfiles_validators from "../userProfiles/validators.js";
 import type * as userProfiles_write from "../userProfiles/write.js";
+import type * as workspace_businessData from "../workspace/businessData.js";
+import type * as workspace_dashboardOverview from "../workspace/dashboardOverview.js";
+import type * as workspace_readStats from "../workspace/readStats.js";
+import type * as workspace_readSurface from "../workspace/readSurface.js";
 
 import type {
   ApiFromModules,
@@ -81,15 +105,21 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
+  "admin/domainAdapters": typeof admin_domainAdapters;
+  "admin/listSurface": typeof admin_listSurface;
+  "admin/organizationDashboard": typeof admin_organizationDashboard;
   "agents/confirmations": typeof agents_confirmations;
   "agents/read": typeof agents_read;
+  "agents/readSurface": typeof agents_readSurface;
   "agents/validators": typeof agents_validators;
   "agents/write": typeof agents_write;
   apiKeys: typeof apiKeys;
   auth: typeof auth;
   "billing/data": typeof billing_data;
   "billing/read": typeof billing_read;
+  "billing/readSurface": typeof billing_readSurface;
   "billing/validators": typeof billing_validators;
+  "billing/webhookProcessing": typeof billing_webhookProcessing;
   "billing/write": typeof billing_write;
   "calendar/read": typeof calendar_read;
   "calendar/validators": typeof calendar_validators;
@@ -102,13 +132,22 @@ declare const fullApi: ApiFromModules<{
   "clients/write": typeof clients_write;
   "dashboard/read": typeof dashboard_read;
   http: typeof http;
+  "mcp/connectionLifecycle": typeof mcp_connectionLifecycle;
+  "mcp/connectionPermissions": typeof mcp_connectionPermissions;
   "mcp/connections": typeof mcp_connections;
+  "mcp/readSurface": typeof mcp_readSurface;
+  "mcp/toolCall": typeof mcp_toolCall;
+  "mcp/toolInputs": typeof mcp_toolInputs;
+  "mcp/toolRegistry": typeof mcp_toolRegistry;
   "mcp/tools": typeof mcp_tools;
   "mcp/validators": typeof mcp_validators;
+  "media/attachment": typeof media_attachment;
   "media/data": typeof media_data;
   "media/read": typeof media_read;
+  "media/resourcePolicy": typeof media_resourcePolicy;
   "media/validators": typeof media_validators;
   "media/write": typeof media_write;
+  organizationApiKeyLifecycle: typeof organizationApiKeyLifecycle;
   organizationApiKeys: typeof organizationApiKeys;
   "organizations/audit/data": typeof organizations_audit_data;
   "organizations/audit/read": typeof organizations_audit_read;
@@ -128,7 +167,11 @@ declare const fullApi: ApiFromModules<{
   "partnerApps/oauthClients": typeof partnerApps_oauthClients;
   "partnerApps/resources": typeof partnerApps_resources;
   "partnerApps/validators": typeof partnerApps_validators;
+  "partnerApps/webhookDelivery": typeof partnerApps_webhookDelivery;
+  "partnerApps/webhookSecrets": typeof partnerApps_webhookSecrets;
+  "partnerApps/webhookUrlSafety": typeof partnerApps_webhookUrlSafety;
   "partnerApps/webhooks": typeof partnerApps_webhooks;
+  partnerResourceGateway: typeof partnerResourceGateway;
   "platform/access": typeof platform_access;
   "projects/read": typeof projects_read;
   "projects/validators": typeof projects_validators;
@@ -140,10 +183,15 @@ declare const fullApi: ApiFromModules<{
   "security/backfillTargets": typeof security_backfillTargets;
   "security/clientPii": typeof security_clientPii;
   "security/organizationData": typeof security_organizationData;
+  serviceTokens: typeof serviceTokens;
   "userProfiles/data": typeof userProfiles_data;
   "userProfiles/read": typeof userProfiles_read;
   "userProfiles/validators": typeof userProfiles_validators;
   "userProfiles/write": typeof userProfiles_write;
+  "workspace/businessData": typeof workspace_businessData;
+  "workspace/dashboardOverview": typeof workspace_dashboardOverview;
+  "workspace/readStats": typeof workspace_readStats;
+  "workspace/readSurface": typeof workspace_readSurface;
 }>;
 
 /**

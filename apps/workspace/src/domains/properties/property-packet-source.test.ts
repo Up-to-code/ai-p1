@@ -15,7 +15,7 @@ describe("property frontend packet to database source", () => {
 
     expect(source).toContain("projectId: values.projectId || undefined");
     expect(source).toContain('project: values.project?.trim() || "Standalone unit"');
-    expect(source).toContain("body: JSON.stringify(propertyPayloadFromForm(values))");
+    expect(source).toContain("body: propertyPayloadFromForm(values)");
   });
 
   it("allows and forwards project fields through the backend payload", () => {

@@ -11,11 +11,14 @@ import {
   type SpeechRecognitionResult,
   type SpeechRecognitionVolumeChange,
 } from "@/voice/adapters/expoSpeechAdapter";
-
-function normalizeAudioLevel(value: number) {
-  const clamped = Math.min(Math.max(value, -2), 10);
-  return (clamped + 2) / 12;
-}
+import {
+  normalizeVoiceAudioLevel,
+  VOICE_PERMISSION_DENIED_MESSAGE,
+  VOICE_RECOGNITION_UNAVAILABLE_MESSAGE,
+  VOICE_RUNTIME_UNAVAILABLE_MESSAGE,
+  voiceStateFromResult,
+  voiceTranscriptFromResult,
+} from "@/voice/lib/voiceComposerState";
 
 export function useVoiceComposer() {
   const sessionId = useAppStore((state) => state.sessionId);
@@ -37,10 +40,10 @@ export function useVoiceComposer() {
   });
 
   useSpeechRecognitionEvent("result", (event: SpeechRecognitionResult) => {
-    const transcript = event.results?.[0]?.transcript ?? "";
+    const transcript = voiceTranscriptFromResult(event);
     setTranscript(transcript);
     setDraftText(transcript);
-    setVoiceState(event.isFinal ? "idle" : "transcribing");
+    setVoiceState(voiceStateFromResult(event));
 
     if (event.isFinal) {
       track("voice_input_completed", { sessionId, transcript });
@@ -59,7 +62,7 @@ export function useVoiceComposer() {
   });
 
   useSpeechRecognitionEvent("volumechange", (event: SpeechRecognitionVolumeChange) => {
-    setAudioLevel(normalizeAudioLevel(event.value));
+    setAudioLevel(normalizeVoiceAudioLevel(event.value));
   });
 
   const start = async () => {
@@ -70,7 +73,7 @@ export function useVoiceComposer() {
     if (!isSpeechRecognitionRuntimeAvailable()) {
       setPermission("denied");
       setVoiceState("failed");
-      setVoiceError("Voice input needs a development build. Expo Go will use text only.");
+      setVoiceError(VOICE_RUNTIME_UNAVAILABLE_MESSAGE);
       return;
     }
 
@@ -79,7 +82,7 @@ export function useVoiceComposer() {
     if (!permission.granted) {
       setPermission("denied");
       setVoiceState("failed");
-      setVoiceError("Microphone permission denied.");
+      setVoiceError(VOICE_PERMISSION_DENIED_MESSAGE);
       return;
     }
 
@@ -87,7 +90,7 @@ export function useVoiceComposer() {
 
     if (!speechRecognitionAvailable()) {
       setVoiceState("failed");
-      setVoiceError("Speech recognition unavailable on this device.");
+      setVoiceError(VOICE_RECOGNITION_UNAVAILABLE_MESSAGE);
       return;
     }
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { WorkspaceDocsJsonLd } from "@/components/seo-json-ld";
 import { getDocsMetadata, McpDocsPage } from "./_components/mcp-docs";
 
 export async function generateMetadata({
@@ -17,5 +18,10 @@ export default async function DocsIndexPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  return <McpDocsPage locale={locale} topicSlug="overview" />;
+  return (
+    <>
+      <WorkspaceDocsJsonLd locale={locale} />
+      <McpDocsPage locale={locale} topicSlug="overview" />
+    </>
+  );
 }

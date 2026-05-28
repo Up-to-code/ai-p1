@@ -4,10 +4,36 @@ import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { uploadFiles } from "@/lib/uploadthing";
 import type { Id } from "@convex/_generated/dataModel";
+import {
+  organizationApiPath,
+  requestOrganizationAction,
+} from "@/domains/organization/api/organization-request";
 
 export type MediaKind = "image" | "video" | "document";
 export type MediaResourceType = "project" | "property" | "client" | "calendarEvent" | "task";
 export type MediaShareVisibility = "private" | "public";
+export type MediaAsset = {
+  _id: Id<"mediaAssets">;
+  _creationTime: number;
+  organizationId: string;
+  key: string;
+  url: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  kind: MediaKind;
+  resourceType: MediaResourceType;
+  resourceId: string;
+  folderId?: Id<"mediaFolders">;
+  shareVisibility?: MediaShareVisibility;
+  publicEnabledAt?: number;
+  publicDisabledAt?: number;
+  sortOrder: number;
+  isCover: boolean;
+  createdByUserId: string;
+  createdAt: number;
+  updatedAt: number;
+};
 
 export function inferMediaKind(mimeType: string): MediaKind {
   if (mimeType.startsWith("image/")) return "image";
@@ -37,14 +63,6 @@ export function useResourceMediaFoldersQuery(
   );
 }
 
-async function jsonOrThrow(response: Response) {
-  const payload = await response.json();
-  if (!response.ok) {
-    throw new Error(payload.error ?? "Media request failed.");
-  }
-  return payload;
-}
-
 export async function attachUploadedMedia(params: {
   organizationId: string;
   resourceType: MediaResourceType;
@@ -64,10 +82,10 @@ export async function attachUploadedMedia(params: {
   const url = params.upload.url;
   if (!url) throw new Error("Uploaded file did not return a URL.");
 
-  const response = await fetch(`/api/v1/organizations/${params.organizationId}/media/attach`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
+  return requestOrganizationAction<MediaAsset>(
+    organizationApiPath(params.organizationId, "media", "attach"),
+    "POST",
+    {
       key: params.upload.key,
       url,
       name: params.upload.name,
@@ -78,9 +96,9 @@ export async function attachUploadedMedia(params: {
       resourceId: params.resourceId,
       folderId: params.folderId,
       isCover: params.isCover,
-    }),
-  });
-  return jsonOrThrow(response);
+    },
+    "Media request failed.",
+  );
 }
 
 export async function uploadAndAttachMedia(params: {
@@ -113,19 +131,21 @@ export async function uploadAndAttachMedia(params: {
 }
 
 export async function setMediaCoverRequest(organizationId: string, mediaId: string) {
-  const response = await fetch(`/api/v1/organizations/${organizationId}/media/${mediaId}`, {
-    method: "PATCH",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ isCover: true }),
-  });
-  return jsonOrThrow(response);
+  return requestOrganizationAction<MediaAsset>(
+    organizationApiPath(organizationId, "media", mediaId),
+    "PATCH",
+    { isCover: true },
+    "Media request failed.",
+  );
 }
 
 export async function deleteMediaRequest(organizationId: string, mediaId: string) {
-  const response = await fetch(`/api/v1/organizations/${organizationId}/media/${mediaId}`, {
-    method: "DELETE",
-  });
-  return jsonOrThrow(response);
+  return requestOrganizationAction(
+    organizationApiPath(organizationId, "media", mediaId),
+    "DELETE",
+    undefined,
+    "Media request failed.",
+  );
 }
 
 export async function setMediaShareVisibilityRequest(
@@ -133,12 +153,12 @@ export async function setMediaShareVisibilityRequest(
   mediaId: string,
   shareVisibility: MediaShareVisibility,
 ) {
-  const response = await fetch(`/api/v1/organizations/${organizationId}/media/${mediaId}`, {
-    method: "PATCH",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ shareVisibility }),
-  });
-  return jsonOrThrow(response);
+  return requestOrganizationAction<MediaAsset>(
+    organizationApiPath(organizationId, "media", mediaId),
+    "PATCH",
+    { shareVisibility },
+    "Media request failed.",
+  );
 }
 
 export async function createMediaFolderRequest(params: {
@@ -147,23 +167,25 @@ export async function createMediaFolderRequest(params: {
   resourceId: string;
   name: string;
 }) {
-  const response = await fetch(`/api/v1/organizations/${params.organizationId}/media/folders`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
+  return requestOrganizationAction(
+    organizationApiPath(params.organizationId, "media", "folders"),
+    "POST",
+    {
       resourceType: params.resourceType,
       resourceId: params.resourceId,
       name: params.name,
-    }),
-  });
-  return jsonOrThrow(response);
+    },
+    "Media request failed.",
+  );
 }
 
 export async function deleteMediaFolderRequest(organizationId: string, folderId: string) {
-  const response = await fetch(`/api/v1/organizations/${organizationId}/media/folders/${folderId}`, {
-    method: "DELETE",
-  });
-  return jsonOrThrow(response);
+  return requestOrganizationAction(
+    organizationApiPath(organizationId, "media", "folders", folderId),
+    "DELETE",
+    undefined,
+    "Media request failed.",
+  );
 }
 
 export type MediaAssetId = Id<"mediaAssets">;

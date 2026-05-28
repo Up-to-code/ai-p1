@@ -10,19 +10,10 @@ import { Link } from "@/i18n/routing";
 import { useAccountContext } from "@/domains/auth";
 import { getTamaraOrderStatusRequest, useBillingOverview } from "../api/billing";
 import type { TamaraPayment } from "../api/billing";
+import { tamaraReturnCopy, tamaraReturnText, tamaraReturnTone, type TamaraReturnStatus } from "../billing-view-model";
 
-type ReturnStatus = "success" | "cancel" | "failure";
-
-function toneFor(status: ReturnStatus, paymentStatus?: string) {
-  if (status === "success" && paymentStatus === "captured") return "success" as const;
-  if (status === "success") return "warning" as const;
-  if (status === "cancel") return "neutral" as const;
-  return "danger" as const;
-}
-
-export function TamaraReturnScreen({ status }: { status: ReturnStatus }) {
+export function TamaraReturnScreen({ status }: { status: TamaraReturnStatus }) {
   const locale = useLocale();
-  const isAr = locale === "ar";
   const searchParams = useSearchParams();
   const account = useAccountContext();
   const organizationId = account.workspace.status === "ready" ? account.workspace.organizationId : null;
@@ -56,41 +47,9 @@ export function TamaraReturnScreen({ status }: { status: ReturnStatus }) {
     };
   }, [isCaptured, orderId, organizationId]);
 
-  const copy = isAr
-    ? {
-        eyebrow: "تمارا",
-        successTitle: isCaptured ? "تم تفعيل الاشتراك" : "نؤكد الدفع",
-        cancelTitle: "تم إلغاء الدفع",
-        failureTitle: "تعذر إكمال الدفع",
-        successDesc: isCaptured
-          ? "تم تأكيد دفعتك وتفعيل فترة الاشتراك الشهرية."
-          : "وصلت عودة تمارا. سيتم تحديث الاشتراك تلقائياً بعد وصول تأكيد الدفع من تمارا.",
-        cancelDesc: "لم يتم تفعيل الاشتراك. يمكنك إعادة المحاولة عندما تكون جاهزاً.",
-        failureDesc: "لم يتم تفعيل الاشتراك. تحقق من تفاصيل الدفع أو حاول مرة أخرى.",
-        dashboard: "فتح لوحة التحكم",
-        retry: "إعادة المحاولة",
-        reference: "مرجع الدفع",
-        payment: "حالة الدفع",
-      }
-    : {
-        eyebrow: "Tamara",
-        successTitle: isCaptured ? "Subscription activated" : "Confirming payment",
-        cancelTitle: "Payment canceled",
-        failureTitle: "Payment was not completed",
-        successDesc: isCaptured
-          ? "Your payment was confirmed and the monthly subscription period is active."
-          : "Tamara returned you to Qentrah. The subscription will update automatically when Tamara sends the payment confirmation.",
-        cancelDesc: "The subscription was not activated. You can retry whenever you are ready.",
-        failureDesc: "The subscription was not activated. Check the payment details or try again.",
-        dashboard: "Open dashboard",
-        retry: "Retry payment",
-        reference: "Payment reference",
-        payment: "Payment status",
-      };
-
+  const copy = tamaraReturnCopy(locale, isCaptured);
   const Icon = status === "success" ? (isCaptured ? CheckCircle2 : Clock3) : status === "cancel" ? RotateCcw : XCircle;
-  const title = status === "success" ? copy.successTitle : status === "cancel" ? copy.cancelTitle : copy.failureTitle;
-  const description = status === "success" ? copy.successDesc : status === "cancel" ? copy.cancelDesc : copy.failureDesc;
+  const { title, description } = tamaraReturnText(status, copy);
 
   if (account.workspace.status !== "ready") {
     return (
@@ -106,7 +65,7 @@ export function TamaraReturnScreen({ status }: { status: ReturnStatus }) {
         eyebrow={copy.eyebrow}
         title={title}
         subtitle={description}
-        actions={<StatusPill label={payment?.status ?? (status === "success" ? "pending" : status)} tone={toneFor(status, payment?.status)} />}
+        actions={<StatusPill label={payment?.status ?? (status === "success" ? "pending" : status)} tone={tamaraReturnTone(status, payment?.status)} />}
       />
 
       <AppSection>

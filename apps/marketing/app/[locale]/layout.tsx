@@ -27,24 +27,62 @@ export async function generateMetadata({
   const brand = brandLabel(locale);
   const path = `/${locale}`;
   const image = new URL("/app-icon-512.png", brandDomainUrl("workspace")).toString();
+  const isArabic = locale === "ar";
+  const keywords = isArabic
+    ? [
+        "كانترا",
+        "مساحة عمل عقارية",
+        "CRM عقاري",
+        "إدارة المشاريع العقارية",
+        "إدارة المخزون العقاري",
+        "إدارة العملاء العقاريين",
+        "المطورون العقاريون",
+        "الوسطاء العقاريون",
+        "المعاينات العقارية",
+        "السوق العقاري السعودي",
+        "بيانات عقارية موثوقة",
+      ]
+    : [
+        "Qentrah",
+        "Saudi real estate workspace",
+        "real estate CRM",
+        "property inventory management",
+        "project readiness",
+        "broker coordination",
+        "developer workflow",
+        "client follow-ups",
+        "viewing management",
+        "verified real estate data",
+      ];
 
   return {
-    title: copy.home.title,
-    description: copy.home.description,
+    title: isArabic
+      ? "كانترا | مساحة عمل عقارية CRM للمشاريع والعقارات في السعودية"
+      : copy.home.title,
+    description: isArabic
+      ? "كانترا منصة مساحة عمل عقارية سعودية لإدارة العملاء والمشاريع والعقارات وعمليات CRM وتكاملات الشركاء."
+      : "Qentrah is a Saudi real estate workspace for CRM, properties, projects, daily operations, and partner integrations.",
+    keywords,
     alternates: {
       canonical: path,
       languages: {
-        en: "/en",
+        "ar-SA": "/ar",
         ar: "/ar",
-        "x-default": "/en",
+        "en-SA": "/en",
+        en: "/en",
+        "x-default": "/ar",
       },
     },
     openGraph: {
       type: "website",
       url: path,
       siteName: brand,
-      title: copy.home.title,
-      description: copy.home.description,
+      title: isArabic
+        ? "كانترا | مساحة عمل عقارية CRM للمشاريع والعقارات في السعودية"
+        : copy.home.title,
+      description: isArabic
+        ? "كانترا منصة مساحة عمل عقارية سعودية لإدارة العملاء والمشاريع والعقارات وعمليات CRM وتكاملات الشركاء."
+        : "Qentrah is a Saudi real estate workspace for CRM, properties, projects, daily operations, and partner integrations.",
       locale: locale === "ar" ? "ar_SA" : "en_US",
       alternateLocale: locale === "ar" ? ["en_US"] : ["ar_SA"],
       images: [
@@ -58,8 +96,12 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary",
-      title: copy.home.title,
-      description: copy.home.description,
+      title: isArabic
+        ? "كانترا | مساحة عمل عقارية CRM للمشاريع والعقارات في السعودية"
+        : copy.home.title,
+      description: isArabic
+        ? "كانترا منصة مساحة عمل عقارية سعودية لإدارة العملاء والمشاريع والعقارات وعمليات CRM وتكاملات الشركاء."
+        : "Qentrah is a Saudi real estate workspace for CRM, properties, projects, daily operations, and partner integrations.",
       images: [image],
     },
   };

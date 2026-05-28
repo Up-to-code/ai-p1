@@ -1,17 +1,19 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import {
-  assistantTurnSchema,
-  extractTurnSources,
-  type ThreadPresentation,
-} from "@/conversation/assistantProtocol";
+import type { ThreadPresentation } from "@/conversation/assistantProtocol";
+import { shouldKeepPreviousMessagesOnThreadValidation } from "@/conversation/lib/conversationTimeline";
 import { useWorkspaceIdentity } from "@/auth/useWorkspaceIdentity";
 import {
   listAgentMessages,
+  listAgentThreadsPage,
   listAgentThreads,
-  type AgentMessage,
   type AgentThread,
 } from "@/persistence/api/conversationApi";
+import {
+  agentMessageToConversationMessage,
+  sortAgentThreadsByActivity,
+  sortConversationMessages,
+} from "@/persistence/api/conversationDataMapping";
 import { useAppStore } from "@/store";
 import type {
   AgentRuntimeHealth,
@@ -19,47 +21,6 @@ import type {
   ConversationRunStage,
   ConversationRunStatus,
 } from "@/types/domain";
-
-const DEFAULT_PENDING_ASSISTANT_TEXT = "Thinking through your request...";
-
-function getMessageUiTurn(message: AgentMessage) {
-  const parsed = assistantTurnSchema.safeParse(message.agUiTurn as never);
-  return parsed.success ? parsed.data : undefined;
-}
-
-function toConversationMessage(message: AgentMessage, fallbackThreadId: string | null): ConversationMessage {
-  const uiTurn = getMessageUiTurn(message);
-  return {
-    id: message.id ?? message._id,
-    sessionId: message.threadId ?? fallbackThreadId ?? "threadless",
-    role: message.role === "assistant" ? "assistant" : "user",
-    kind: uiTurn ? "assistant_turn" : "text",
-    text: message.content,
-    streamState: "complete",
-    relatedPropertyIds: uiTurn ? uiTurn.blocks.flatMap((block) => {
-      if (block.type === "property_list" || block.type === "comparison") {
-        return block.propertyIds;
-      }
-      return [];
-    }) : [],
-    attachments: message.attachments,
-    createdAt: message.createdAt ?? message._creationTime,
-    runId: message.runId ? String(message.runId) : undefined,
-    sourceMetadata: uiTurn ? extractTurnSources(uiTurn) : [],
-    uiTurn,
-    turnMeta: {
-      runId: message.runId ? String(message.runId) : undefined,
-      sources: uiTurn ? extractTurnSources(uiTurn) : [],
-    },
-  };
-}
-
-function sortThreads(threads: AgentThread[]) {
-  return [...threads].sort((left, right) =>
-    (right.lastMessageAt ?? right.updatedAt ?? right._creationTime)
-    - (left.lastMessageAt ?? left.updatedAt ?? left._creationTime),
-  );
-}
 
 export function useAgentRuntimeHealth(): AgentRuntimeHealth {
   const e2eQaMode = useAppStore((state) => state.e2eQaMode);
@@ -153,24 +114,25 @@ export function useThreadsState() {
   const e2eThreads = useAppStore((state) => state.e2eThreads);
   const [threads, setThreads] = useState<AgentThread[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const refresh = useCallback(() => {
     if (!workspace.organizationId || e2eQaMode) return;
 
     let cancelled = false;
-    setLoaded(false);
-    setThreads([]);
+    setRefreshing(true);
     listAgentThreads(workspace.organizationId, 50)
       .then((rows) => {
         if (!cancelled) {
-          setThreads(sortThreads(rows));
+          setThreads(sortAgentThreadsByActivity(rows));
           setLoaded(true);
+          setRefreshing(false);
         }
       })
       .catch(() => {
         if (!cancelled) {
-          setThreads([]);
           setLoaded(true);
+          setRefreshing(false);
         }
       });
 
@@ -190,6 +152,7 @@ export function useThreadsState() {
       isLoaded: true,
       serverThreads: e2eThreads,
       serverLoaded: true,
+      serverRefreshing: false,
       refreshThreads: () => undefined,
     };
   }
@@ -200,12 +163,103 @@ export function useThreadsState() {
     isLoaded: isReadyWithoutOrg ? workspace.status !== "loading" : loaded,
     serverThreads: isReadyWithoutOrg ? [] : threads,
     serverLoaded: isReadyWithoutOrg ? workspace.status !== "loading" : loaded,
+    serverRefreshing: isReadyWithoutOrg ? false : refreshing,
     refreshThreads: refresh,
   };
 }
 
-export function useThreads(): any[] {
+export function useThreads(): AgentThread[] {
   return useThreadsState().threads;
+}
+
+export function usePaginatedAgentThreads(pageSize = 10) {
+  const workspace = useWorkspaceIdentity();
+  const e2eQaMode = useAppStore((state) => state.e2eQaMode);
+  const e2eThreads = useAppStore((state) => state.e2eThreads);
+  const [threads, setThreads] = useState<AgentThread[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [isDone, setIsDone] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const requestKeyRef = useRef(0);
+
+  const loadPage = useCallback(async (mode: "replace" | "append") => {
+    if (!workspace.organizationId || e2eQaMode) return;
+    if (mode === "append" && (loadingMore || loading || isDone)) return;
+
+    const requestKey = ++requestKeyRef.current;
+    if (mode === "append") setLoadingMore(true);
+    else setLoading(true);
+    setError(null);
+
+    try {
+      const page = await listAgentThreadsPage(workspace.organizationId, {
+        limit: pageSize,
+        cursor: mode === "append" ? cursor : null,
+      });
+      if (requestKeyRef.current !== requestKey) return;
+      setThreads((current) => sortAgentThreadsByActivity(mode === "append" ? [...current, ...page.threads] : page.threads));
+      setCursor(page.continueCursor);
+      setIsDone(page.isDone);
+    } catch (cause) {
+      if (requestKeyRef.current !== requestKey) return;
+      setError(cause instanceof Error ? cause.message : "Unable to load conversations.");
+    } finally {
+      if (requestKeyRef.current === requestKey) {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    }
+  }, [cursor, e2eQaMode, isDone, loading, loadingMore, pageSize, workspace.organizationId]);
+
+  useEffect(() => {
+    if (e2eQaMode) return;
+    setThreads([]);
+    setCursor(null);
+    setIsDone(true);
+    if (!workspace.organizationId) return;
+
+    const requestKey = ++requestKeyRef.current;
+    setLoading(true);
+    setError(null);
+    listAgentThreadsPage(workspace.organizationId, { limit: pageSize, cursor: null })
+      .then((page) => {
+        if (requestKeyRef.current !== requestKey) return;
+        setThreads(sortAgentThreadsByActivity(page.threads));
+        setCursor(page.continueCursor);
+        setIsDone(page.isDone);
+      })
+      .catch((cause) => {
+        if (requestKeyRef.current !== requestKey) return;
+        setError(cause instanceof Error ? cause.message : "Unable to load conversations.");
+      })
+      .finally(() => {
+        if (requestKeyRef.current === requestKey) setLoading(false);
+      });
+  }, [e2eQaMode, pageSize, workspace.organizationId]);
+
+  if (e2eQaMode) {
+    return {
+      threads: e2eThreads.slice(0, pageSize),
+      isLoading: false,
+      isLoadingMore: false,
+      error: null,
+      hasMore: e2eThreads.length > pageSize,
+      loadMore: () => undefined,
+      refresh: () => undefined,
+    };
+  }
+
+  return {
+    threads,
+    isLoading: loading,
+    isLoadingMore: loadingMore,
+    error,
+    hasMore: !isDone,
+    loadMore: () => loadPage("append"),
+    refresh: () => loadPage("replace"),
+  };
 }
 
 export function useThreadPresentation(_threadId: string | null): ThreadPresentation | null {
@@ -214,7 +268,14 @@ export function useThreadPresentation(_threadId: string | null): ThreadPresentat
 
 export function useThreadMessages(
   threadId: string | null,
-  pendingPrompt?: string | null,
+  enableServerQuery = true,
+  refreshKey = 0,
+) {
+  return useThreadMessagesState(threadId, enableServerQuery, refreshKey).messages;
+}
+
+export function useThreadMessagesState(
+  threadId: string | null,
   enableServerQuery = true,
   refreshKey = 0,
 ) {
@@ -222,24 +283,58 @@ export function useThreadMessages(
   const e2eQaMode = useAppStore((state) => state.e2eQaMode);
   const e2eThreads = useAppStore((state) => state.e2eThreads);
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const previousOrganizationIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (e2eQaMode) return;
+    const previousOrganizationId = previousOrganizationIdRef.current;
+    const nextOrganizationId = workspace.organizationId ?? null;
+    previousOrganizationIdRef.current = nextOrganizationId;
+
     if (!threadId || !workspace.organizationId || !enableServerQuery) {
-      setMessages([]);
+      setLoading(false);
+      setError(null);
+      setMessages((current) =>
+        shouldKeepPreviousMessagesOnThreadValidation({
+          previousMessages: current,
+          nextThreadId: threadId,
+          previousOrganizationId,
+          nextOrganizationId,
+        })
+          ? current
+          : [],
+      );
       return;
     }
 
     let cancelled = false;
+    setLoading(true);
+    setError(null);
     listAgentMessages(workspace.organizationId, threadId, 80)
       .then((rows) => {
         if (!cancelled) {
-          setMessages(rows.map((message) => toConversationMessage(message, threadId)));
+          setMessages(rows.map((message) => agentMessageToConversationMessage(message, threadId)));
+          setLoading(false);
+          setError(null);
         }
       })
-      .catch(() => {
+      .catch((cause) => {
         if (!cancelled) {
-          setMessages([]);
+          const message = cause instanceof Error ? cause.message : "Unable to load messages.";
+          setError(message);
+          setLoading(false);
+          setMessages((current) =>
+            shouldKeepPreviousMessagesOnThreadValidation({
+              previousMessages: current,
+              nextThreadId: threadId,
+              previousOrganizationId,
+              nextOrganizationId,
+            })
+              ? current
+              : [],
+          );
         }
       });
 
@@ -251,45 +346,16 @@ export function useThreadMessages(
   const baseMessages = useMemo(() => {
     if (e2eQaMode) {
       const thread = e2eThreads.find((item) => item._id === threadId);
-      return [...(thread?.messages ?? [])].sort((left, right) => left.createdAt - right.createdAt);
+      return sortConversationMessages(thread?.messages ?? []);
     }
-    return [...messages].sort((left, right) => left.createdAt - right.createdAt);
+    return sortConversationMessages(messages);
   }, [e2eQaMode, e2eThreads, messages, threadId]);
 
-  return useMemo(() => {
-    const rows = [...baseMessages];
-    if (pendingPrompt) {
-      const hasOptimisticUser = rows.some((message) => message.role === "user" && message.text === pendingPrompt);
-      if (!hasOptimisticUser) {
-        rows.push({
-          id: "optimistic-user",
-          sessionId: threadId ?? "threadless",
-          role: "user",
-          kind: "text",
-          text: pendingPrompt,
-          streamState: "complete",
-          relatedPropertyIds: [],
-          createdAt: Date.now() - 1,
-          runId: undefined,
-          sourceMetadata: [],
-        });
-      }
-
-      rows.push({
-        id: "pending-assistant",
-        sessionId: threadId ?? "threadless",
-        role: "assistant",
-        kind: "text",
-        text: DEFAULT_PENDING_ASSISTANT_TEXT,
-        streamState: "streaming",
-        relatedPropertyIds: [],
-        createdAt: Date.now(),
-        runId: undefined,
-        sourceMetadata: [],
-      });
-    }
-    return rows;
-  }, [baseMessages, pendingPrompt, threadId]);
+  return {
+    messages: baseMessages,
+    isLoading: e2eQaMode ? false : loading,
+    error: e2eQaMode ? null : error,
+  };
 }
 
 export function useRunStageFeed(_threadId: string | null, _runId: string | null, _enabled = true): ConversationRunStage[] {

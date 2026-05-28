@@ -3,7 +3,6 @@
 import {
   useMemo,
   useState,
-  type ComponentProps,
   type ReactNode,
 } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -12,10 +11,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button as AriaButton } from "react-aria-components";
 import { LocationPicker } from "@qentrah/location-map/react";
-import {
-  formatLocationLabel,
-  type LocationValue,
-} from "@qentrah/location-map";
+import type { LocationValue } from "@qentrah/location-map";
 import {
   CalendarDays,
   ChevronLeft,
@@ -54,6 +50,35 @@ import {
   type CalendarEventFormValues,
 } from "../validation/calendar.schema";
 import { useAccountContext } from "@/domains/auth";
+import {
+  calendarDateOptions,
+  calendarDayMonthLabel,
+  calendarEventsByDate,
+  calendarEventsForTimeSlot,
+  calendarEventTone,
+  calendarEventTypeClassName,
+  calendarHeaderLabel,
+  calendarIsoOptionLabel,
+  calendarIsoDate,
+  calendarLongDayLabel,
+  calendarLongDayYearLabel,
+  calendarLocationValueFromString,
+  calendarScheduleTitle,
+  calendarShortMonthLabel,
+  calendarTasksForClient,
+  calendarTimeOptions,
+  customEventTypeValues,
+  formatCalendarTimeLabel,
+  generateCalendarTimeSlots,
+  getCalendarMonthDays,
+  getCalendarWeekDays,
+  nextCalendarDate,
+  orderedCalendarEvents,
+  serializeCalendarLocation,
+  visibleCalendarPickerOptions,
+  visibleCalendarRange,
+  type CalendarView,
+} from "@/domains/calendar/calendar-view-model";
 import { useClientOptionsQuery, useClientQuery, useClientUnitLinksQuery } from "@/domains/clients/api/clients";
 import { useClientTaskOptionsQuery } from "@/domains/clients/api/client-tasks";
 import { usePropertyOptionsQuery, usePropertyQuery } from "@/domains/properties/api/properties";
@@ -94,155 +119,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 
-type StatusPillTone = ComponentProps<typeof StatusPill>["tone"];
 type PickerKind = "client" | "unit" | "task";
-type CalendarView = "month" | "week" | "day";
-
-const customEventTypeValues: CalendarEventFormValues["type"][] = [
-  "visit",
-  "call",
-  "meeting",
-  "follow-up",
-  "client-visit",
-  "site-viewing",
-  "appointment",
-  "signing",
-  "handover",
-  "audit",
-  "custom",
-];
-
-/* ── Helpers ── */
-function getDaysInMonth(date: Date): Date[] {
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  const days: Date[] = [];
-  for (let i = firstDay.getDay() - 1; i >= 0; i--) {
-    const d = new Date(firstDay);
-    d.setDate(firstDay.getDate() - i - 1);
-    days.push(d);
-  }
-  for (let day = 1; day <= lastDay.getDate(); day++)
-    days.push(new Date(year, month, day));
-  const lastDow = lastDay.getDay();
-  for (let i = 1; i < 7 - lastDow; i++) {
-    const d = new Date(lastDay);
-    d.setDate(lastDay.getDate() + i);
-    days.push(d);
-  }
-  return days;
-}
-function getWeekDays(date: Date): Date[] {
-  const start = new Date(date);
-  start.setDate(date.getDate() - date.getDay());
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(start);
-    d.setDate(start.getDate() + i);
-    return d;
-  });
-}
-function toIso(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-function addDays(date: Date, days: number) {
-  const next = new Date(date);
-  next.setDate(date.getDate() + days);
-  return next;
-}
-function formatTimeLabel(value: string) {
-  const [hourValue, minuteValue] = value.split(":").map(Number);
-  const date = new Date();
-  date.setHours(hourValue, minuteValue, 0, 0);
-  return date.toLocaleTimeString(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-function serializeLocation(location: LocationValue) {
-  const parts = [
-    formatLocationLabel(location),
-    typeof location.latitude === "number" && typeof location.longitude === "number"
-      ? `${location.latitude.toFixed(6)},${location.longitude.toFixed(6)}`
-      : null,
-  ].filter(Boolean);
-  return parts.join(" | ");
-}
-function locationValueFromString(value?: string): LocationValue | null {
-  if (!value?.trim()) return null;
-  const [label, coordinates] = value.split("|").map((part) => part.trim());
-  const [latitude, longitude] = coordinates?.split(",").map(Number) ?? [];
-  return {
-    label: label || value,
-    latitude: Number.isFinite(latitude) ? latitude : undefined,
-    longitude: Number.isFinite(longitude) ? longitude : undefined,
-  };
-}
-function generateTimeSlots() {
-  const s: string[] = [];
-  for (let h = 8; h <= 20; h++)
-    for (let m = 0; m < 60; m += 30)
-      s.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
-  return s;
-}
-function startOfDay(date: Date) {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d.getTime();
-}
-function endOfDay(date: Date) {
-  const d = new Date(date);
-  d.setHours(23, 59, 59, 999);
-  return d.getTime();
-}
-function visibleRange(date: Date, view: CalendarView) {
-  if (view === "day")
-    return { startAt: startOfDay(date), endAt: endOfDay(date) };
-  const days = view === "week" ? getWeekDays(date) : getDaysInMonth(date);
-  return {
-    startAt: startOfDay(days[0]),
-    endAt: endOfDay(days[days.length - 1]),
-  };
-}
-function isInSlot(eventTime: string, slotTime: string) {
-  const [eh, em] = eventTime.split(":").map(Number);
-  const [sh, sm] = slotTime.split(":").map(Number);
-  const eventMin = eh * 60 + em;
-  const slotMin = sh * 60 + sm;
-  return eventMin >= slotMin && eventMin < slotMin + 30;
-}
-
-function eventTone(status: CalendarEvent["status"]): StatusPillTone {
-  return status === "confirmed"
-    ? "success"
-    : status === "pending"
-      ? "warning"
-      : "neutral";
-}
-function typeBg(type: string) {
-  if (type === "visit")
-    return "bg-cyan-50 border-cyan-200 text-cyan-800 dark:bg-cyan-400/10 dark:border-cyan-400/20 dark:text-cyan-300";
-  if (type === "call")
-    return "bg-fuchsia-50 border-fuchsia-200 text-fuchsia-800 dark:bg-fuchsia-400/10 dark:border-fuchsia-400/20 dark:text-fuchsia-300";
-  if (type === "meeting")
-    return "bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-400/10 dark:border-amber-400/20 dark:text-amber-300";
-  if (type === "client-visit")
-    return "bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300";
-  if (type === "site-viewing")
-    return "bg-indigo-50 border-indigo-200 text-indigo-800 dark:bg-indigo-900/20 dark:border-indigo-800 dark:text-indigo-300";
-  if (type === "appointment")
-    return "bg-violet-50 border-violet-200 text-violet-800 dark:bg-violet-900/20 dark:border-violet-800 dark:text-violet-300";
-  if (type === "signing")
-    return "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-300";
-  if (type === "follow-up")
-    return "bg-sky-50 border-sky-200 text-sky-800 dark:bg-sky-900/20 dark:border-sky-800 dark:text-sky-300";
-  if (type === "handover")
-    return "bg-teal-50 border-teal-200 text-teal-800 dark:bg-teal-900/20 dark:border-teal-800 dark:text-teal-300";
-  if (type === "audit")
-    return "bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-300";
-  return "bg-zinc-50 border-zinc-200 text-zinc-800 dark:bg-zinc-800/40 dark:border-zinc-700 dark:text-zinc-300";
-}
 
 /* ── Main ── */
 export function CalendarScreen() {
@@ -256,7 +133,7 @@ export function CalendarScreen() {
     : undefined;
   const { currentDate, view, setCurrentDate, setView } = useCalendarStore();
   const range = useMemo(
-    () => visibleRange(currentDate, view),
+    () => visibleCalendarRange(currentDate, view),
     [currentDate, view],
   );
   const eventsQuery = useCalendarIndexRangeQueryResult(
@@ -291,41 +168,16 @@ export function CalendarScreen() {
   });
 
   const eventsByDate = useMemo(() => {
-    const map: Record<string, CalendarEvent[]> = {};
-    events.forEach((e) => {
-      if (!map[e.date]) map[e.date] = [];
-      map[e.date].push(e);
-    });
-    return map;
+    return calendarEventsByDate(events);
   }, [events]);
 
-  const eventsForDate = (d: Date) => eventsByDate[toIso(d)] || [];
+  const eventsForDate = (d: Date) => eventsByDate[calendarIsoDate(d)] || [];
 
   const navigate = (dir: 1 | -1) => {
-    const d = new Date(currentDate);
-    if (view === "month") d.setMonth(d.getMonth() + dir);
-    else if (view === "week") d.setDate(d.getDate() + dir * 7);
-    else d.setDate(d.getDate() + dir);
-    setCurrentDate(d);
+    setCurrentDate(nextCalendarDate(currentDate, view, dir));
   };
 
-  const headerLabel = () => {
-    if (view === "month")
-      return currentDate.toLocaleDateString(locale, {
-        month: "long",
-        year: "numeric",
-      });
-    if (view === "week") {
-      const days = getWeekDays(currentDate);
-      return `${days[0].toLocaleDateString(locale, { month: "short", day: "numeric" })} – ${days[6].toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" })}`;
-    }
-    return currentDate.toLocaleDateString(locale, {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
+  const headerLabel = calendarHeaderLabel(currentDate, view, locale);
 
   const weekDayLabels = [
     t("weekDays.sun"),
@@ -384,7 +236,7 @@ export function CalendarScreen() {
           <UntitledCalendarSurface
             currentDate={currentDate}
             eventsForDate={eventsForDate}
-            headerLabel={headerLabel()}
+            headerLabel={headerLabel}
             locale={locale}
             onDateClick={setDrawerDate}
             onEventClick={setSelectedEvent}
@@ -537,10 +389,7 @@ function UntitledCalendarSurface({
   weekDayLabels: string[];
 }) {
   const selectedDayEvents = eventsForDate(currentDate);
-  const selectedDayLabel = currentDate.toLocaleDateString(locale, {
-    day: "numeric",
-    month: "short",
-  });
+  const selectedDayLabel = calendarDayMonthLabel(currentDate, locale);
 
   return (
     <section className="overflow-hidden rounded-[24px] border border-zinc-200/80 bg-white text-zinc-950 dark:border-white/10 dark:bg-[#0A0A0A] dark:text-white">
@@ -548,7 +397,7 @@ function UntitledCalendarSurface({
         <div className="flex min-w-0 items-center gap-4">
           <div className="hidden h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl border border-zinc-200 bg-zinc-50 text-center dark:border-white/10 dark:bg-white/[0.03] sm:flex">
             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
-              {currentDate.toLocaleDateString(locale, { month: "short" })}
+              {calendarShortMonthLabel(currentDate, locale)}
             </span>
             <span className="text-xl font-black leading-none text-zinc-950 dark:text-white">
               {currentDate.getDate()}
@@ -656,7 +505,7 @@ function CalendarMonthView({
   onEventClick: (event: CalendarEvent) => void;
   weekDayLabels: string[];
 }) {
-  const todayIso = toIso(new Date());
+  const todayIso = calendarIsoDate(new Date());
 
   return (
     <div className="overflow-x-auto">
@@ -672,9 +521,9 @@ function CalendarMonthView({
           ))}
         </div>
         <div className="grid grid-cols-7">
-          {getDaysInMonth(currentDate).map((date) => {
+          {getCalendarMonthDays(currentDate).map((date) => {
             const dayEvents = eventsForDate(date);
-            const dateIso = toIso(date);
+            const dateIso = calendarIsoDate(date);
             const isCurrentMonth = date.getMonth() === currentDate.getMonth();
             const isToday = dateIso === todayIso;
 
@@ -744,17 +593,17 @@ function CalendarWeekView({
   onEventClick: (event: CalendarEvent) => void;
   weekDayLabels: string[];
 }) {
-  const todayIso = toIso(new Date());
+  const todayIso = calendarIsoDate(new Date());
 
   return (
     <div className="overflow-x-auto">
       <div className="grid min-w-[860px] grid-cols-7 divide-x divide-zinc-100 rtl:divide-x-reverse dark:divide-white/[0.05]">
-        {getWeekDays(currentDate).map((date) => {
+        {getCalendarWeekDays(currentDate).map((date) => {
           const dayEvents = eventsForDate(date);
-          const isToday = toIso(date) === todayIso;
+          const isToday = calendarIsoDate(date) === todayIso;
 
           return (
-            <div key={toIso(date)} className="min-h-[560px] bg-white dark:bg-[#0A0A0A]">
+            <div key={calendarIsoDate(date)} className="min-h-[560px] bg-white dark:bg-[#0A0A0A]">
               <AriaButton
                 onPress={() => onDateClick(date)}
                 className={cn(
@@ -771,7 +620,7 @@ function CalendarWeekView({
                   </span>
                 </span>
                 <span className="text-[10px] font-bold opacity-50">
-                  {date.toLocaleDateString(locale, { month: "short" })}
+                  {calendarShortMonthLabel(date, locale)}
                 </span>
               </AriaButton>
               <div className="space-y-2 p-2">
@@ -806,8 +655,8 @@ function CalendarDayView({
   return (
     <div className="mx-auto max-w-4xl px-4 py-5 sm:px-6">
       <div className="space-y-1">
-        {generateTimeSlots().map((time) => {
-          const slotEvents = events.filter((event) => isInSlot(event.time, time));
+        {generateCalendarTimeSlots().map((time) => {
+          const slotEvents = calendarEventsForTimeSlot(events, time);
 
           return (
             <div key={time} className="group grid grid-cols-[64px_minmax(0,1fr)] gap-4 sm:grid-cols-[88px_minmax(0,1fr)] sm:gap-6">
@@ -843,7 +692,7 @@ function CalendarDayView({
                     </span>
                     <StatusPill
                       label={statusLabels[event.status]}
-                      tone={eventTone(event.status)}
+                      tone={calendarEventTone(event.status)}
                     />
                   </AriaButton>
                 ))}
@@ -870,7 +719,7 @@ function CalendarEventChip({
       onPress={() => onClick(event)}
       className={cn(
         "block w-full rounded-xl border text-start transition hover:brightness-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-        typeBg(event.type),
+        calendarEventTypeClassName(event.type),
         variant === "compact"
           ? "px-2 py-1 text-[10px] font-bold"
           : "px-3 py-2.5",
@@ -922,11 +771,7 @@ function DayDialog({
               {t("drawer.title")}
             </p>
             <DialogTitle className="text-lg font-black uppercase tracking-tight text-zinc-900 dark:text-white mt-1">
-              {date.toLocaleDateString(locale, {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-              })}
+              {calendarLongDayLabel(date, locale)}
             </DialogTitle>
           </div>
           <button
@@ -947,8 +792,7 @@ function DayDialog({
             </div>
           ) : (
             <div className="space-y-3">
-              {events
-                .sort((a, b) => a.time.localeCompare(b.time))
+              {orderedCalendarEvents(events)
                 .map((ev) => (
                   <div
                     key={ev.id}
@@ -976,14 +820,14 @@ function DayDialog({
                       </div>
                       <StatusPill
                         label={t(`statuses.${ev.status}`)}
-                        tone={eventTone(ev.status)}
+                        tone={calendarEventTone(ev.status)}
                       />
                     </div>
                     <div className="flex items-center gap-2 mt-3 pt-3 border-t border-zinc-50 dark:border-white/5">
                       <span
                         className={cn(
                           "rounded-lg border px-2 py-0.5 text-[9px] font-black uppercase tracking-widest",
-                          typeBg(ev.type),
+                          calendarEventTypeClassName(ev.type),
                         )}
                       >
                         {t(`types.${ev.type}`)}
@@ -1060,12 +904,12 @@ function EventDetailDialog({
           <div className="flex items-center gap-2 mt-3">
             <StatusPill
               label={t(`statuses.${event.status}`)}
-              tone={eventTone(event.status)}
+              tone={calendarEventTone(event.status)}
             />
             <span
               className={cn(
                 "rounded-lg border px-2 py-0.5 text-[9px] font-black uppercase tracking-widest",
-                typeBg(event.type),
+                calendarEventTypeClassName(event.type),
               )}
             >
               {t(`types.${event.type}`)}
@@ -1082,12 +926,7 @@ function EventDetailDialog({
           
           <PropertyRow icon={<CalendarDays className="h-4 w-4" />} label={t("detail.date")}>
             <p className="text-xs font-black uppercase text-zinc-900 dark:text-white sm:mt-1.5">
-              {eventDate.toLocaleDateString(locale, {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              })}
+              {calendarLongDayYearLabel(eventDate, locale)}
             </p>
           </PropertyRow>
           
@@ -1260,16 +1099,12 @@ function BusinessScheduleDialog({
   const selectedClient = clients.find((client) => client.id === form.clientId);
   const selectedUnit = units.find((unit) => unit.id === (form.unitId || form.propertyId));
   const selectedTask = tasks.find((task) => task.id === form.taskId);
-  const filteredTasks = tasks.filter((task) => !form.clientId || task.clientId === form.clientId);
+  const filteredTasks = calendarTasksForClient(tasks, form.clientId);
   const dateOptions = useMemo(() => {
-    const values = Array.from({ length: 45 }, (_, index) => toIso(addDays(today, index)));
-    if (form.date && !values.includes(form.date)) values.unshift(form.date);
-    return values;
+    return calendarDateOptions(today, form.date);
   }, [form.date, today]);
   const timeOptions = useMemo(() => {
-    const values = generateTimeSlots();
-    if (form.time && !values.includes(form.time)) values.unshift(form.time);
-    return values;
+    return calendarTimeOptions(form.time);
   }, [form.time]);
   
   const pickerConfig = picker
@@ -1351,7 +1186,7 @@ function BusinessScheduleDialog({
   function generatedTitle(values: CalendarEventFormValues) {
     const typeLabel = t(`types.${values.type || "visit"}`);
     const context = selectedClient?.name || selectedUnit?.title || values.location?.trim();
-    return context ? `${typeLabel} - ${context}` : typeLabel;
+    return calendarScheduleTitle(typeLabel, context);
   }
 
   const onSubmit = handleSubmit((data) => {
@@ -1426,12 +1261,7 @@ function BusinessScheduleDialog({
                   value={form.date}
                   onValueChange={(value) => updateField("date", value)}
                   options={dateOptions.map((value) => ({
-                    label: new Date(`${value}T00:00:00`).toLocaleDateString(undefined, {
-                      day: "numeric",
-                      month: "short",
-                      weekday: "short",
-                      year: "numeric",
-                    }),
+                    label: calendarIsoOptionLabel(value),
                     value,
                   }))}
                 />
@@ -1440,7 +1270,7 @@ function BusinessScheduleDialog({
                   value={form.time}
                   onValueChange={(value) => updateField("time", value)}
                   options={timeOptions.map((value) => ({
-                    label: formatTimeLabel(value),
+                    label: formatCalendarTimeLabel(value),
                     value,
                   }))}
                 />
@@ -2015,7 +1845,7 @@ function LocationPickerModal({
   title: string;
 }) {
   const [selectedLocation, setSelectedLocation] = useState<LocationValue | null>(() =>
-    locationValueFromString(currentLocation),
+    calendarLocationValueFromString(currentLocation),
   );
 
   return (
@@ -2053,7 +1883,7 @@ function LocationPickerModal({
               disabled={!selectedLocation}
               onClick={() => {
                 if (!selectedLocation) return;
-                onSelect(serializeLocation(selectedLocation));
+                onSelect(serializeCalendarLocation(selectedLocation));
               }}
               className="h-10 rounded-xl px-4 text-[10px] font-black uppercase tracking-widest disabled:opacity-50"
             >
@@ -2097,10 +1927,7 @@ function ContextPickerOverlay({
   onSelect: (id: string) => void;
   onClose: () => void;
 }) {
-  const normalizedSearch = searchValue.trim().toLowerCase();
-  const visibleOptions = normalizedSearch
-    ? options.filter((option) => option.label.toLowerCase().includes(normalizedSearch))
-    : options;
+  const visibleOptions = visibleCalendarPickerOptions(options, searchValue);
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={title}>

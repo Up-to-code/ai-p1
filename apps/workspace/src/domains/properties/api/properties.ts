@@ -1,9 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
-import { useDebouncedValue, useHttpIndexedPagedQuery, useHttpPagedQuery, useHttpQuery } from "@/components/shared/use-http-query";
+import {
+  useWorkspaceIndexedResource,
+  useWorkspacePagedResource,
+  useWorkspaceResource,
+  workspaceMutation,
+} from "@/domains/resources/workspace-resource-request";
 import type { PropertyStatus } from "../store/properties.types";
 import type { PropertyUnit } from "../store/properties.types";
 import type { PropertyFormValues } from "../validation/property.schema";
@@ -27,59 +31,55 @@ export function usePropertiesQuery(organizationId?: string, options: { enabled?:
 }
 
 export function usePropertiesPagedQuery(organizationId?: string, options?: { status?: PropertyStatus; search?: string }) {
-  const status = options?.status;
-  const search = options?.search?.trim();
-  const debouncedSearch = useDebouncedValue(search, 250);
-  const params = useMemo(() => ({ status, search: debouncedSearch }), [debouncedSearch, status]);
-
-  return useHttpPagedQuery(
+  return useWorkspacePagedResource(
     ["properties-paged", organizationId],
-    organizationId ? `/api/v1/organizations/${organizationId}/read/properties` : undefined,
-    params,
+    organizationId,
+    "properties",
+    { status: options?.status, search: options?.search },
     PROPERTIES_PAGE_SIZE,
   );
 }
 
 export function usePropertiesIndexQuery(organizationId?: string, options?: { status?: PropertyStatus; search?: string }) {
-  const status = options?.status;
-  const search = options?.search?.trim();
-  const debouncedSearch = useDebouncedValue(search, 250);
-  const params = useMemo(() => ({ status, search: debouncedSearch }), [debouncedSearch, status]);
-
-  return useHttpIndexedPagedQuery<PropertyUnit, PropertyStats>(
+  return useWorkspaceIndexedResource<PropertyUnit, PropertyStats>(
     ["properties-index", organizationId],
-    organizationId ? `/api/v1/organizations/${organizationId}/read/properties/index` : undefined,
-    organizationId ? `/api/v1/organizations/${organizationId}/read/properties` : undefined,
-    params,
+    organizationId,
+    "properties/index",
+    "properties",
+    { status: options?.status, search: options?.search },
     PROPERTIES_PAGE_SIZE,
   );
 }
 
 export function useProjectPropertiesQuery(organizationId: string | undefined, projectId: string | undefined) {
-  return useHttpQuery<PropertyUnit[]>(
+  return useWorkspaceResource<PropertyUnit[]>(
     ["properties-by-project", organizationId, projectId],
-    organizationId && projectId ? `/api/v1/organizations/${organizationId}/read/properties/by-project/${projectId}` : undefined,
+    organizationId && projectId ? organizationId : undefined,
+    `properties/by-project/${projectId}`,
   );
 }
 
 export function usePropertyStatsQuery(organizationId?: string) {
-  return useHttpQuery<PropertyStats>(
+  return useWorkspaceResource<PropertyStats>(
     ["properties-stats", organizationId],
-    organizationId ? `/api/v1/organizations/${organizationId}/read/properties/stats` : undefined,
+    organizationId,
+    "properties/stats",
   );
 }
 
 export function usePropertyOptionsQuery(organizationId?: string, options: { enabled?: boolean } = {}) {
-  return useHttpQuery<{ id: string; title: string }[]>(
+  return useWorkspaceResource<{ id: string; title: string }[]>(
     ["properties-options", organizationId],
-    organizationId && options.enabled !== false ? `/api/v1/organizations/${organizationId}/read/properties/options` : undefined,
+    organizationId && options.enabled !== false ? organizationId : undefined,
+    "properties/options",
   );
 }
 
 export function usePropertyQuery(organizationId: string | undefined, propertyId: string) {
-  return useHttpQuery<PropertyUnit | null>(
+  return useWorkspaceResource<PropertyUnit | null>(
     ["property", organizationId, propertyId],
-    organizationId && propertyId ? `/api/v1/organizations/${organizationId}/read/properties/${propertyId}` : undefined,
+    organizationId && propertyId ? organizationId : undefined,
+    `properties/${propertyId}`,
   );
 }
 
@@ -101,35 +101,25 @@ export function propertyPayloadFromForm(values: PropertyFormValues) {
   };
 }
 
-async function jsonOrThrow(response: Response) {
-  const payload = await response.json();
-  if (!response.ok) {
-    throw new Error(payload.error ?? "Property request failed.");
-  }
-  return payload;
-}
-
 export async function createPropertyRequest(organizationId: string, values: PropertyFormValues) {
-  const response = await fetch(`/api/v1/organizations/${organizationId}/properties`, {
+  return workspaceMutation<{ property: { id: string } }>(organizationId, "properties", {
     method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(propertyPayloadFromForm(values)),
+    body: propertyPayloadFromForm(values),
+    fallbackMessage: "Property request failed.",
   });
-  return jsonOrThrow(response) as Promise<{ property: { id: string } }>;
 }
 
 export async function updatePropertyRequest(organizationId: string, propertyId: string, values: PropertyFormValues) {
-  const response = await fetch(`/api/v1/organizations/${organizationId}/properties/${propertyId}`, {
+  return workspaceMutation<{ property: { id: string } }>(organizationId, `properties/${propertyId}`, {
     method: "PATCH",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(propertyPayloadFromForm(values)),
+    body: propertyPayloadFromForm(values),
+    fallbackMessage: "Property request failed.",
   });
-  return jsonOrThrow(response) as Promise<{ property: { id: string } }>;
 }
 
 export async function deletePropertyRequest(organizationId: string, propertyId: string) {
-  const response = await fetch(`/api/v1/organizations/${organizationId}/properties/${propertyId}`, {
+  return workspaceMutation(organizationId, `properties/${propertyId}`, {
     method: "DELETE",
+    fallbackMessage: "Property request failed.",
   });
-  return jsonOrThrow(response);
 }

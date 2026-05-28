@@ -5,6 +5,7 @@ import {
   buildPartnerConnectionCard,
   filterPartnerCatalogCards,
   findPartnerIntegrationDetail,
+  partnerConnectionExpiryLabel,
 } from "./integrations.view-model";
 import type { PartnerCatalogApp, PartnerConnection } from "./integrations.types";
 
@@ -101,5 +102,10 @@ describe("integrations view model", () => {
   it("finds detail app and active counts without rendering the screen", () => {
     expect(activePartnerConnectionCount([connection, { ...connection, id: "connection_2", status: "paused" }])).toBe(1);
     expect(findPartnerIntegrationDetail("partners_app_1", [app], [connection])).toEqual({ app, connection });
+  });
+
+  it("formats connection expiry labels with existing fallback behavior", () => {
+    expect(partnerConnectionExpiryLabel(undefined, "No expiry")).toBe("No expiry");
+    expect(partnerConnectionExpiryLabel(Date.parse("2026-05-28T12:00:00.000Z"), "No expiry")).toContain("2026");
   });
 });

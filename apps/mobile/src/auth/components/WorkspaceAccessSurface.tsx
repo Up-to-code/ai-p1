@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "@/foundation/primitives/Text";
-import { theme } from "@/foundation/theme/tokens";
+import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { useAppLocalization } from "@/foundation/localization";
 import { mirrorIcon } from "@/foundation/utils/layoutDirection";
@@ -123,7 +123,7 @@ export function WorkspaceAccessRow({
   );
 }
 
-const createStyles = (colors: any, isRTL: boolean) => StyleSheet.create({
+const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: colors.background,

@@ -26,11 +26,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: `${siteUrl}${path}`,
     lastModified: now,
     changeFrequency: path.includes("/docs") ? "monthly" : "weekly",
-    priority: path === "/en" ? 1 : path === "/ar" ? 0.9 : path.includes("/docs") ? 0.7 : 0.8,
+    priority: path === "/ar" ? 1 : path === "/en" ? 0.9 : path.includes("/docs") ? 0.7 : 0.8,
     alternates: {
       languages: {
-        en: `${siteUrl}${path.replace(/^\/ar/u, "/en")}`,
+        "ar-SA": `${siteUrl}${path.replace(/^\/en/u, "/ar")}`,
         ar: `${siteUrl}${path.replace(/^\/en/u, "/ar")}`,
+        "en-SA": `${siteUrl}${path.replace(/^\/ar/u, "/en")}`,
+        en: `${siteUrl}${path.replace(/^\/ar/u, "/en")}`,
       },
     },
   }));

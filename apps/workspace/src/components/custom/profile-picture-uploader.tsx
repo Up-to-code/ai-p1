@@ -8,7 +8,15 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { uploadFiles } from "@/lib/uploadthing";
-import { authClient } from "@/lib/auth-client";
+import { removeProfileAvatar, saveProfileAvatar } from "./profile-picture-request";
+import {
+  CROP_OUTPUT_SIZE,
+  PROFILE_PICTURE_ACCEPT,
+  clampCropPosition,
+  getCoverLayout,
+  type CropPosition,
+  type ImageSize,
+} from "./profile-picture-view-model";
 
 interface ProfilePictureUploaderProps {
   image: string | null;
@@ -39,16 +47,6 @@ type UploadResult = {
   url?: string;
 };
 
-type CropPosition = {
-  x: number;
-  y: number;
-};
-
-type ImageSize = {
-  width: number;
-  height: number;
-};
-
 type DragState = {
   clientX: number;
   clientY: number;
@@ -56,43 +54,6 @@ type DragState = {
   startY: number;
   pointerScale: number;
 };
-
-const CROP_OUTPUT_SIZE = 512;
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, value));
-}
-
-function getCoverLayout(size: ImageSize, zoom: number, position: CropPosition) {
-  const baseScale = Math.max(CROP_OUTPUT_SIZE / size.width, CROP_OUTPUT_SIZE / size.height);
-  const scale = baseScale * zoom;
-  const renderedWidth = size.width * scale;
-  const renderedHeight = size.height * scale;
-  const minX = Math.min(0, CROP_OUTPUT_SIZE - renderedWidth);
-  const minY = Math.min(0, CROP_OUTPUT_SIZE - renderedHeight);
-  const x = clamp((CROP_OUTPUT_SIZE - renderedWidth) / 2 + position.x, minX, 0);
-  const y = clamp((CROP_OUTPUT_SIZE - renderedHeight) / 2 + position.y, minY, 0);
-
-  return { scale, renderedWidth, renderedHeight, x, y };
-}
-
-function clampCropPosition(size: ImageSize, zoom: number, position: CropPosition) {
-  const baseScale = Math.max(CROP_OUTPUT_SIZE / size.width, CROP_OUTPUT_SIZE / size.height);
-  const scale = baseScale * zoom;
-  const renderedWidth = size.width * scale;
-  const renderedHeight = size.height * scale;
-  const centerX = (CROP_OUTPUT_SIZE - renderedWidth) / 2;
-  const centerY = (CROP_OUTPUT_SIZE - renderedHeight) / 2;
-  const minX = Math.min(0, CROP_OUTPUT_SIZE - renderedWidth) - centerX;
-  const maxX = -centerX;
-  const minY = Math.min(0, CROP_OUTPUT_SIZE - renderedHeight) - centerY;
-  const maxY = -centerY;
-
-  return {
-    x: clamp(position.x, minX, maxX),
-    y: clamp(position.y, minY, maxY),
-  };
-}
 
 async function createCroppedAvatar(file: File, zoom: number, position: CropPosition, labels: ProfilePictureUploaderProps["labels"]) {
   const bitmap = await createImageBitmap(file);
@@ -121,42 +82,6 @@ async function createCroppedAvatar(file: File, zoom: number, position: CropPosit
       resolve(new File([blob], "profile-picture.webp", { type: "image/webp" }));
     }, "image/webp", 0.92);
   });
-}
-
-async function saveAvatar(avatarUrl: string, avatarKey: string | undefined, saveError: string) {
-  const response = await fetch("/api/v1/profile/avatar", {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ avatarUrl, avatarKey }),
-  });
-
-  if (!response.ok) {
-    const payload = await response.json().catch(() => null);
-    throw new Error(payload?.error ?? saveError);
-  }
-
-  const { error } = await authClient.updateUser({ image: avatarUrl });
-  if (error) {
-    throw new Error(error.message ?? saveError);
-  }
-}
-
-async function removeAvatar(saveError: string) {
-  const response = await fetch("/api/v1/profile/avatar", {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({}),
-  });
-
-  if (!response.ok) {
-    const payload = await response.json().catch(() => null);
-    throw new Error(payload?.error ?? saveError);
-  }
-
-  const { error } = await authClient.updateUser({ image: null });
-  if (error) {
-    throw new Error(error.message ?? saveError);
-  }
 }
 
 export function ProfilePictureUploader({
@@ -259,7 +184,7 @@ export function ProfilePictureUploader({
         throw new Error(labels.uploadMissingUrl);
       }
 
-      await saveAvatar(avatarUrl, result.key, labels.saveError);
+      await saveProfileAvatar({ avatarUrl, avatarKey: result.key }, labels.saveError);
       toast({
         title: labels.uploadSavedTitle,
         description: labels.uploadSavedDescription,
@@ -280,7 +205,7 @@ export function ProfilePictureUploader({
     setError(null);
 
     try {
-      await removeAvatar(labels.saveError);
+      await removeProfileAvatar(labels.saveError);
       toast({
         title: labels.removeSavedTitle,
         description: labels.removeSavedDescription,
@@ -348,7 +273,7 @@ export function ProfilePictureUploader({
         <input
           ref={inputRef}
           type="file"
-          accept="image/jpeg,image/png,image/webp"
+          accept={PROFILE_PICTURE_ACCEPT}
           className="hidden"
           onChange={(event) => {
             const selectedFile = event.target.files?.[0];

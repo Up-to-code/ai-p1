@@ -9,9 +9,14 @@ import { useToast } from "@/components/ui/toast";
 import { uploadFiles } from "@/lib/uploadthing";
 import { cn } from "@/lib/utils";
 import { updateAuthOrganization } from "../api/better-auth-organization";
+import {
+  clampLogoCropPosition,
+  organizationLogoCoverLayout,
+  organizationLogoOutputSize,
+  type CropPosition,
+  type ImageSize,
+} from "../organization-logo-view-model";
 
-type CropPosition = { x: number; y: number };
-type ImageSize = { width: number; height: number };
 type DragState = {
   clientX: number;
   clientY: number;
@@ -21,47 +26,14 @@ type DragState = {
 };
 type UploadResult = { key?: string; url?: string };
 
-const OUTPUT_SIZE = 512;
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, value));
-}
-
-function getCoverLayout(size: ImageSize, zoom: number, position: CropPosition) {
-  const baseScale = Math.max(OUTPUT_SIZE / size.width, OUTPUT_SIZE / size.height);
-  const scale = baseScale * zoom;
-  const renderedWidth = size.width * scale;
-  const renderedHeight = size.height * scale;
-  const minX = Math.min(0, OUTPUT_SIZE - renderedWidth);
-  const minY = Math.min(0, OUTPUT_SIZE - renderedHeight);
-  const x = clamp((OUTPUT_SIZE - renderedWidth) / 2 + position.x, minX, 0);
-  const y = clamp((OUTPUT_SIZE - renderedHeight) / 2 + position.y, minY, 0);
-
-  return { scale, renderedWidth, renderedHeight, x, y };
-}
-
-function clampCropPosition(size: ImageSize, zoom: number, position: CropPosition) {
-  const baseScale = Math.max(OUTPUT_SIZE / size.width, OUTPUT_SIZE / size.height);
-  const scale = baseScale * zoom;
-  const renderedWidth = size.width * scale;
-  const renderedHeight = size.height * scale;
-  const centerX = (OUTPUT_SIZE - renderedWidth) / 2;
-  const centerY = (OUTPUT_SIZE - renderedHeight) / 2;
-
-  return {
-    x: clamp(position.x, Math.min(0, OUTPUT_SIZE - renderedWidth) - centerX, -centerX),
-    y: clamp(position.y, Math.min(0, OUTPUT_SIZE - renderedHeight) - centerY, -centerY),
-  };
-}
-
 async function createCroppedLogo(file: File, zoom: number, position: CropPosition) {
   const bitmap = await createImageBitmap(file);
-  const layout = getCoverLayout({ width: bitmap.width, height: bitmap.height }, zoom, position);
+  const layout = organizationLogoCoverLayout({ width: bitmap.width, height: bitmap.height }, zoom, position);
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
 
-  canvas.width = OUTPUT_SIZE;
-  canvas.height = OUTPUT_SIZE;
+  canvas.width = organizationLogoOutputSize;
+  canvas.height = organizationLogoOutputSize;
 
   if (!context) {
     throw new Error("Image crop could not be prepared.");
@@ -69,8 +41,8 @@ async function createCroppedLogo(file: File, zoom: number, position: CropPositio
 
   const sx = -layout.x / layout.scale;
   const sy = -layout.y / layout.scale;
-  const cropSize = OUTPUT_SIZE / layout.scale;
-  context.drawImage(bitmap, sx, sy, cropSize, cropSize, 0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
+  const cropSize = organizationLogoOutputSize / layout.scale;
+  context.drawImage(bitmap, sx, sy, cropSize, cropSize, 0, 0, organizationLogoOutputSize, organizationLogoOutputSize);
 
   return new Promise<File>((resolve, reject) => {
     canvas.toBlob((blob) => {
@@ -124,7 +96,7 @@ export function OrganizationLogoUploader({
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const previewUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
-  const previewLayout = imageSize ? getCoverLayout(imageSize, zoom, cropPosition) : null;
+  const previewLayout = imageSize ? organizationLogoCoverLayout(imageSize, zoom, cropPosition) : null;
 
   function openCropper(nextFile: File) {
     if (!nextFile.type.startsWith("image/")) {
@@ -160,7 +132,7 @@ export function OrganizationLogoUploader({
       clientY: event.clientY,
       startX: cropPosition.x,
       startY: cropPosition.y,
-      pointerScale: OUTPUT_SIZE / rect.width,
+      pointerScale: organizationLogoOutputSize / rect.width,
     };
     setIsPanning(true);
   }
@@ -171,7 +143,7 @@ export function OrganizationLogoUploader({
       x: dragRef.current.startX + (event.clientX - dragRef.current.clientX) * dragRef.current.pointerScale,
       y: dragRef.current.startY + (event.clientY - dragRef.current.clientY) * dragRef.current.pointerScale,
     };
-    setCropPosition(clampCropPosition(imageSize, zoom, nextPosition));
+    setCropPosition(clampLogoCropPosition(imageSize, zoom, nextPosition));
   }
 
   function endPan(event: PointerEvent<HTMLDivElement>) {
@@ -302,10 +274,10 @@ export function OrganizationLogoUploader({
                     }}
                     className="pointer-events-none absolute max-w-none"
                     style={{
-                      left: `${(previewLayout.x / OUTPUT_SIZE) * 100}%`,
-                      top: `${(previewLayout.y / OUTPUT_SIZE) * 100}%`,
-                      width: `${(previewLayout.renderedWidth / OUTPUT_SIZE) * 100}%`,
-                      height: `${(previewLayout.renderedHeight / OUTPUT_SIZE) * 100}%`,
+                      left: `${(previewLayout.x / organizationLogoOutputSize) * 100}%`,
+                      top: `${(previewLayout.y / organizationLogoOutputSize) * 100}%`,
+                      width: `${(previewLayout.renderedWidth / organizationLogoOutputSize) * 100}%`,
+                      height: `${(previewLayout.renderedHeight / organizationLogoOutputSize) * 100}%`,
                     }}
                   />
                 )}
@@ -350,7 +322,7 @@ export function OrganizationLogoUploader({
                   const nextZoom = Number(event.target.value);
                   setZoom(nextZoom);
                   if (imageSize) {
-                    setCropPosition((current) => clampCropPosition(imageSize, nextZoom, current));
+                    setCropPosition((current) => clampLogoCropPosition(imageSize, nextZoom, current));
                   }
                 }}
                 className="w-full accent-zinc-900"

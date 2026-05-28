@@ -3,8 +3,9 @@ import { query } from "../_generated/server";
 import type { QueryCtx } from "../_generated/server";
 import { assertOrganizationPermission } from "../organizations/profile/access";
 import { billingOverviewValidator, tamaraPaymentValidator } from "./validators";
-import { SAUDI_MONTHLY_PLAN, getBillingPlan, presentPayment, presentSubscription } from "./data";
+import { presentPayment } from "./data";
 import type { StoredSubscription, StoredTamaraPayment } from "./data";
+import { billingSubscriptionOverview, latestTamaraPayment } from "./readSurface";
 
 type BillingRecord = StoredSubscription | StoredTamaraPayment;
 
@@ -41,7 +42,7 @@ async function getLatestPayment(ctx: QueryCtx, organizationId: string) {
     .withIndex("by_organization_id", (q) => q.eq("organizationId", organizationId))
     .take(25) as StoredTamaraPayment[];
 
-  return payments.sort((left, right) => right.updatedAt - left.updatedAt)[0] ?? null;
+  return latestTamaraPayment(payments);
 }
 
 export const getSubscriptionOverview = query({
@@ -54,11 +55,7 @@ export const getSubscriptionOverview = query({
       ? await billingDb(ctx).get(subscription.latestPaymentId) as StoredTamaraPayment | null
       : await getLatestPayment(ctx, args.organizationId);
 
-    return {
-      plan: subscription ? getBillingPlan(subscription.planId) : SAUDI_MONTHLY_PLAN,
-      subscription: subscription ? presentSubscription(subscription) : null,
-      latestPayment: latestPayment ? presentPayment(latestPayment) : null,
-    };
+    return billingSubscriptionOverview(subscription, latestPayment);
   },
 });
 

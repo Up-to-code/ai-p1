@@ -12,75 +12,16 @@ import {
   type AppDataTableColumn,
 } from "@/components/shared";
 import { EmptyWorkspace, HttpQueryState, StatusPill, WorkspaceQueryState } from "@/components/shared/crud-ui";
-import { useHttpIndexedPagedQuery } from "@/components/shared/use-http-query";
 import { useAccountContext } from "@/domains/auth";
-
-type AuditCategory =
-  | "organization"
-  | "people"
-  | "roles"
-  | "projects"
-  | "properties"
-  | "clients"
-  | "calendar"
-  | "media"
-  | "invites";
-
-type AuditEvent = {
-  id: string;
-  actorUserId: string;
-  action: string;
-  category: AuditCategory;
-  target: string;
-  summary: string;
-  createdAt: number;
-};
-
-type AuditStats = {
-  total: number;
-  people: number;
-  business: number;
-  latestAt?: number;
-};
-
-function categoryTone(category: AuditCategory): "success" | "warning" | "danger" | "neutral" | "info" {
-  if (category === "projects" || category === "properties") return "success";
-  if (category === "clients" || category === "calendar" || category === "media") return "info";
-  if (category === "invites") return "warning";
-  if (category === "people" || category === "roles") return "danger";
-  return "neutral";
-}
-
-function actionLabel(action: string) {
-  return action
-    .split(".")
-    .filter((part) => part !== "organization")
-    .map((part) => part.replace(/_/g, " "))
-    .join(" ");
-}
-
-function shortActor(value: string) {
-  if (value.length <= 12) return value;
-  return `${value.slice(0, 6)}...${value.slice(-4)}`;
-}
-
-function relativeTime(value: number, locale: string) {
-  const diffSeconds = Math.round((value - Date.now()) / 1000);
-  const absolute = Math.abs(diffSeconds);
-  const units: Array<[Intl.RelativeTimeFormatUnit, number]> = [
-    ["year", 60 * 60 * 24 * 365],
-    ["month", 60 * 60 * 24 * 30],
-    ["day", 60 * 60 * 24],
-    ["hour", 60 * 60],
-    ["minute", 60],
-    ["second", 1],
-  ];
-  const [unit, seconds] = units.find(([, threshold]) => absolute >= threshold) ?? ["second", 1];
-  return new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(
-    Math.round(diffSeconds / seconds),
-    unit,
-  );
-}
+import { useWorkspaceIndexedResource } from "@/domains/resources/workspace-resource-request";
+import {
+  activityActionLabel,
+  activityCategoryTone,
+  activityRelativeTime,
+  shortActivityActor,
+  type AuditEvent,
+  type AuditStats,
+} from "../activity-view-model";
 
 export function ActivityScreen() {
   const t = useTranslations("Activity");
@@ -89,10 +30,11 @@ export function ActivityScreen() {
   const workspaceStatus = account.workspace.status;
   const isWorkspaceReady = workspaceStatus === "ready";
   const workspaceOrganizationId = isWorkspaceReady ? account.workspace.organizationId ?? undefined : undefined;
-  const eventsQuery = useHttpIndexedPagedQuery<AuditEvent, AuditStats>(
+  const eventsQuery = useWorkspaceIndexedResource<AuditEvent, AuditStats>(
     ["activity-index", workspaceOrganizationId],
-    workspaceOrganizationId ? `/api/v1/organizations/${workspaceOrganizationId}/read/activity/index` : undefined,
-    workspaceOrganizationId ? `/api/v1/organizations/${workspaceOrganizationId}/read/activity` : undefined,
+    workspaceOrganizationId,
+    "activity/index",
+    "activity",
     undefined,
     50,
   );
@@ -100,20 +42,20 @@ export function ActivityScreen() {
   const isLoading = isWorkspaceReady && eventsQuery.queryStatus === "loading";
   const isQueryBlocked = isLoading || eventsQuery.queryStatus === "error";
   const events = useMemo(() => eventsQuery.results as AuditEvent[], [eventsQuery.results]);
-  const latest = stats?.latestAt ? relativeTime(stats.latestAt, locale) : t("stats.none");
+  const latest = stats?.latestAt ? activityRelativeTime(stats.latestAt, locale) : t("stats.none");
 
   const columns: AppDataTableColumn<AuditEvent>[] = [
     {
       key: "when",
       header: t("table.when"),
-      render: (event) => relativeTime(event.createdAt, locale),
+      render: (event) => activityRelativeTime(event.createdAt, locale),
     },
     {
       key: "action",
       header: t("table.action"),
       render: (event) => (
         <span className="font-black uppercase tracking-tight text-zinc-900 dark:text-white">
-          {actionLabel(event.action)}
+          {activityActionLabel(event.action)}
         </span>
       ),
     },
@@ -121,7 +63,7 @@ export function ActivityScreen() {
       key: "area",
       header: t("table.area"),
       render: (event) => (
-        <StatusPill label={t(`categories.${event.category}`)} tone={categoryTone(event.category)} />
+        <StatusPill label={t(`categories.${event.category}`)} tone={activityCategoryTone(event.category)} />
       ),
     },
     {
@@ -139,7 +81,7 @@ export function ActivityScreen() {
       align: "end",
       render: (event) => (
         <span className="font-mono text-[10px] font-black uppercase text-zinc-400">
-          {shortActor(event.actorUserId)}
+          {shortActivityActor(event.actorUserId)}
         </span>
       ),
     },

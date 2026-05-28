@@ -23,6 +23,14 @@ import {
   profileSchema,
   type ProfileFormValues,
 } from "../validation/profile.schema";
+import {
+  profileFormValues,
+  profileInitials,
+  profileNotificationEntries,
+  profileRolePresentation,
+  profileTabs,
+  type ProfileTab,
+} from "../profile-view-model";
 import { useOperationState } from "@/lib/utils/operation-state";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -36,50 +44,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-type Tab = "profile" | "notifications" | "security";
-
-// Role → permission keys mapping
-const ROLE_PERM_KEYS: Record<string, string[]> = {
-  "Organization Admin": [
-    "manageMembers",
-    "editOrganization",
-    "viewBilling",
-    "apiAccess",
-    "allProjects",
-  ],
-  "Project Manager": [
-    "createProjects",
-    "assignTasks",
-    "viewReports",
-    "inviteMembers",
-  ],
-  "Project Editor": ["editProjects", "uploadDocuments", "addComments"],
-  Viewer: ["viewProjects", "downloadReports"],
-};
-
-const ROLE_COLOR: Record<string, string> = {
-  "Organization Admin":
-    "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20",
-  "Project Manager":
-    "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-500/20",
-  "Project Editor":
-    "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20",
-  Viewer:
-    "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-white/5 dark:text-zinc-400 dark:border-white/10",
-};
-
-const ROLE_I18N_KEYS: Record<string, string> = {
-  "Organization Admin": "organizationAdmin",
-  "Project Manager": "projectManager",
-  "Project Editor": "projectEditor",
-  Viewer: "viewer",
-};
+const tabIcons = {
+  profile: User,
+  notifications: Bell,
+  security: Lock,
+} satisfies Record<(typeof profileTabs)[number]["icon"], typeof User>;
 
 export function ProfileSettingsScreen() {
   const t = useTranslations("Profile");
   const account = useAccountContext();
   const { profile, updateProfile, updateNotification } = useProfileStore();
-  const [activeTab, setActiveTab] = useState<Tab>("profile");
+  const [activeTab, setActiveTab] = useState<ProfileTab>("profile");
+  const formValues = profileFormValues(account.user, profile);
 
   const {
     register,
@@ -87,22 +63,8 @@ export function ProfileSettingsScreen() {
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
-    defaultValues: {
-      name: account.user.name,
-      email: account.user.email,
-      phone: profile.phone,
-      role: profile.role,
-      language: profile.language,
-      timezone: profile.timezone,
-    },
-    values: {
-      name: account.user.name,
-      email: account.user.email,
-      phone: profile.phone,
-      role: profile.role,
-      language: profile.language,
-      timezone: profile.timezone,
-    },
+    defaultValues: formValues,
+    values: formValues,
   });
 
   const saveOperation = useOperationState({
@@ -118,22 +80,8 @@ export function ProfileSettingsScreen() {
     });
   });
 
-  const initials = account.user.name
-    .split(" ")
-    .slice(0, 2)
-    .map((n: string) => n[0])
-    .join("")
-    .toUpperCase();
-
-  const roleKey = ROLE_I18N_KEYS[profile.role] || "viewer";
-  const roleColor = ROLE_COLOR[profile.role] ?? ROLE_COLOR["Viewer"];
-  const permKeys = ROLE_PERM_KEYS[profile.role] ?? ROLE_PERM_KEYS["Viewer"];
-
-  const tabs: { id: Tab; label: string; icon: typeof User }[] = [
-    { id: "profile", label: t("tabs.profile"), icon: User },
-    { id: "notifications", label: t("tabs.notifications"), icon: Bell },
-    { id: "security", label: t("tabs.security"), icon: Lock },
-  ];
+  const initials = profileInitials(account.user.name);
+  const { roleKey, roleColor, permissionKeys } = profileRolePresentation(profile.role);
 
   return (
     <div className="min-h-screen bg-zinc-50/50 dark:bg-[#0A0A0A]">
@@ -207,7 +155,7 @@ export function ProfileSettingsScreen() {
 
               {/* Permissions strip */}
               <div className="flex flex-wrap gap-1.5 pt-1">
-                {permKeys.map((pk) => (
+                {permissionKeys.map((pk) => (
                   <span
                     key={pk}
                     className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-zinc-100 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.06] text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400"
@@ -242,7 +190,9 @@ export function ProfileSettingsScreen() {
 
           {/* Tabs */}
           <div className="-mb-px mt-8 flex items-center gap-1 overflow-x-auto">
-            {tabs.map((tab) => (
+            {profileTabs.map((tab) => {
+              const TabIcon = tabIcons[tab.icon];
+              return (
               <button
                 key={tab.id}
                 type="button"
@@ -254,10 +204,11 @@ export function ProfileSettingsScreen() {
                     : "border-transparent text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-white/[0.02]",
                 )}
               >
-                <tab.icon className="h-3 w-3" />
-                {tab.label}
+                <TabIcon className="h-3 w-3" />
+                {t(tab.labelKey)}
               </button>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -370,7 +321,7 @@ export function ProfileSettingsScreen() {
                       {t("permissions.title")}
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {permKeys.map((pk) => (
+                      {permissionKeys.map((pk) => (
                         <span
                           key={pk}
                           className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-1 text-[10px] font-bold text-zinc-600 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-zinc-300"
@@ -444,7 +395,7 @@ export function ProfileSettingsScreen() {
               description={t("sections.notifPrefsDesc")}
             >
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {Object.entries(profile.notifications).map(([key, enabled]) => (
+                {profileNotificationEntries(profile).map(([key, enabled]) => (
                   <button
                     key={key}
                     type="button"
@@ -454,7 +405,7 @@ export function ProfileSettingsScreen() {
                       notificationOperation.run(
                         () =>
                           updateNotification(
-                            key as keyof typeof profile.notifications,
+                            key,
                             !enabled,
                           ),
                         {

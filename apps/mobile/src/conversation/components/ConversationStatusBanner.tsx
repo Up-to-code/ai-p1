@@ -4,7 +4,7 @@ import { AlertCircle, AlertTriangle, Info, X } from "lucide-react-native";
 
 import type { AssistantDirection } from "@/conversation/assistantProtocol";
 import { Text } from "@/foundation/primitives/Text";
-import { theme } from "@/foundation/theme/tokens";
+import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 
 type ConversationStatusBannerProps = {
@@ -84,7 +84,7 @@ export function ConversationStatusBanner({
   );
 }
 
-const createStyles = (colors: any, colorScheme: "light" | "dark") => {
+const createStyles = (colors: AppColors, colorScheme: "light" | "dark") => {
   const isDark = colorScheme === "dark";
 
   return StyleSheet.create({

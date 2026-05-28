@@ -4,6 +4,7 @@ import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import type { AgUiConversationTurn } from "@/components/ui/ag-ui/types";
+export { agentChatPath, parseAgentSseChunk, sendAgentChatRequest } from "./agent-chat-request";
 
 export type AgentChatEvent =
   | { type: "meta"; threadId: string; runId: string }
@@ -48,63 +49,6 @@ export type AgentThread = {
   updatedAt: number;
   lastMessageAt: number;
 };
-
-export function parseAgentSseChunk(buffer: string, onEvent: (event: AgentChatEvent) => void) {
-  const events = buffer.split("\n\n");
-  const rest = events.pop() ?? "";
-
-  for (const rawEvent of events) {
-    const dataLine = rawEvent
-      .split("\n")
-      .find((line) => line.startsWith("data: "));
-    if (!dataLine) continue;
-
-    try {
-      onEvent(JSON.parse(dataLine.slice(6)) as AgentChatEvent);
-    } catch {
-      onEvent({ type: "error", error: "Agent stream returned an invalid event." });
-    }
-  }
-
-  return rest;
-}
-
-export async function sendAgentChatRequest(input: {
-  organizationId: string;
-  threadId?: string;
-  message: string;
-  attachments?: AgentChatAttachment[];
-  onEvent: (event: AgentChatEvent) => void;
-}) {
-  const response = await fetch(`/api/v1/organizations/${input.organizationId}/agents/chat`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      message: input.message,
-      threadId: input.threadId,
-      attachments: input.attachments?.length ? input.attachments : undefined,
-    }),
-  });
-
-  if (!response.ok || !response.body) {
-    const payload = await response.json().catch(() => ({}));
-    throw new Error(payload.error ?? "Agent request failed.");
-  }
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    buffer = parseAgentSseChunk(buffer + decoder.decode(value, { stream: true }), input.onEvent);
-  }
-
-  if (buffer.trim()) {
-    parseAgentSseChunk(`${buffer}\n\n`, input.onEvent);
-  }
-}
 
 export function useAgentMessagesQuery(organizationId?: string, threadId?: string, options: { enabled?: boolean } = {}) {
   return useQuery(

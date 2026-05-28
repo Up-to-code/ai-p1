@@ -1,6 +1,6 @@
-import { StyleSheet, View } from "react-native";
+import { Keyboard, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 import { ConversationFeed } from "@/conversation/components/ConversationFeed";
 import { ConversationStatusBanner } from "@/conversation/components/ConversationStatusBanner";
@@ -10,6 +10,7 @@ import { useConversationController } from "@/conversation/hooks/useConversationC
 import { getLocalizedRuntimeMessage, resolveThreadPresentationState } from "@/conversation/lib/assistantPresentation";
 import { useKeyboardDock } from "@/conversation/hooks/useKeyboardDock";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
+import type { AppColors } from "@/foundation/theme/tokens";
 import { useThreadPresentation } from "@/persistence/api/conversationData";
 import { useAppStore } from "@/store";
 
@@ -18,6 +19,7 @@ export function ConversationViewport() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const composerDockHeight = useAppStore((state) => state.composerDockHeight);
   const keyboardHeight = useAppStore((state) => state.keyboardHeight);
+  const setComposerFocused = useAppStore((state) => state.setComposerFocused);
 
   const {
     activeThreadId,
@@ -26,14 +28,18 @@ export function ConversationViewport() {
     clearRunFailureMessage,
     editingMessage,
     handleTurnAction,
+    hasTransientTurn,
     approveConfirmation,
     cancelConfirmation,
+    isThreadLoading,
     isStreaming,
     messages,
     openUpgrade,
     runFailureMessage,
     runStageFeed,
     runtimeHealth,
+    threadLoadError,
+    retryThreadLoad,
     retryLastPrompt,
     sendPrompt,
     startEditingMessage,
@@ -42,7 +48,7 @@ export function ConversationViewport() {
   const threadPresentation = useThreadPresentation(activeThreadId ?? null);
   const resolvedPresentation = resolveThreadPresentationState(threadPresentation);
   const insets = useSafeAreaInsets();
-  const { dockBottomOffset, listBottomPadding, keyboardVisible } = useKeyboardDock({
+  const { dockBottomOffset, listBottomPadding, scrollButtonBottomOffset, keyboardVisible } = useKeyboardDock({
     bottomInset: insets.bottom,
     dockHeight: composerDockHeight,
     keyboardHeight,
@@ -51,10 +57,14 @@ export function ConversationViewport() {
   const composerDisabledReason = runtimeUnavailable
     ? getLocalizedRuntimeMessage(runtimeHealth, resolvedPresentation.surfaceCopy)
     : undefined;
+  const dismissComposerKeyboard = useCallback(() => {
+    Keyboard.dismiss();
+    setComposerFocused(false);
+  }, [setComposerFocused]);
 
   return (
     <View style={styles.container}>
-      <View style={[styles.feedWrap, { paddingBottom: listBottomPadding }]}>
+      <View style={styles.feedWrap}>
         {(runtimeUnavailable || runFailureMessage) ? (
           <View style={[styles.bannerStack, { paddingTop: insets.top + 64 }]}>
             {runtimeUnavailable ? (
@@ -88,11 +98,20 @@ export function ConversationViewport() {
           onApproveConfirmation={approveConfirmation}
           onCancelConfirmation={cancelConfirmation}
           threadPresentation={threadPresentation}
+          hasTransientTurn={hasTransientTurn}
+          isLoading={isThreadLoading}
+          isStreaming={isStreaming}
+          bottomContentInset={listBottomPadding}
+          scrollButtonBottomOffset={scrollButtonBottomOffset}
+          errorMessage={threadLoadError}
+          onRetryLoad={retryThreadLoad}
+          loadingLabel={resolvedPresentation.surfaceCopy.runtimeChecking}
+          onDismissKeyboard={dismissComposerKeyboard}
         />
       </View>
 
-      <View pointerEvents="none" style={[styles.headerFade, { height: insets.top + 92 }]}>
-        <EdgeFade color={colors.background} placement="top" startOpacity={0.98} midOpacity={0.52} />
+      <View pointerEvents="none" style={[styles.headerFade, { height: insets.top + 96 }]}>
+        <EdgeFade color={colors.background} placement="top" startOpacity={0.82} midOpacity={0.18} />
       </View>
 
       <View pointerEvents="none" style={[styles.composerFade, { bottom: dockBottomOffset }]}>
@@ -121,7 +140,7 @@ export function ConversationViewport() {
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: AppColors) => StyleSheet.create({
   container: {
     flex: 1,
     position: "relative",

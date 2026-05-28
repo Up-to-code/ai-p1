@@ -2,10 +2,12 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { PartnerLogo } from "@/components/brand/PartnerLogo";
 import { ThemeToggle } from "@/components/brand/theme-toggle";
+import { PartnersMarketingJsonLd } from "@/components/seo-json-ld";
 
 export default function MarketingLayout({ children }: { children: ReactNode }) {
   return (
     <>
+      <PartnersMarketingJsonLd />
       <header className="sticky top-0 z-50 flex h-14 w-full items-center justify-between border-b border-border bg-background/92 px-4 backdrop-blur-lg sm:px-6">
         <PartnerLogo />
         <div className="flex items-center gap-2 sm:gap-4">

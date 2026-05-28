@@ -11,7 +11,7 @@ import { Bot, Building2, CalendarDays, Check, CheckCircle2, Copy, FileText, Help
 import { type UseFormRegisterReturn, useForm } from "react-hook-form";
 import { useAccountContext } from "@/domains/auth";
 import { cn } from "@/lib/utils";
-import { organizationPermissionStatement, type OrganizationPermissionStatement } from "@/packages/authz";
+import { organizationPermissionStatement } from "@/packages/authz";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -54,7 +54,6 @@ import {
   type OrganizationApiKeyExpiry,
   type OrganizationApiKeyPermission,
   type OrganizationApiKeyResource,
-  type OrganizationCapabilities,
   type OrganizationMcpConnection,
   type OrganizationInviteLink,
   type OrganizationInvitation,
@@ -62,222 +61,48 @@ import {
   type OrganizationRole,
 } from "../api/better-auth-organization";
 import { OrganizationLogoUploader } from "./organization-logo-uploader";
-
-type Tab = "profile" | "members" | "agentLinks" | "apiKeys" | "invites" | "roles";
-type InviteMode = "link" | "email";
-type PermissionResource = keyof OrganizationPermissionStatement;
-type WorkAction = "read" | "create" | "update" | "delete" | "authorize";
-
-const defaultRoleNames = ["owner", "admin", "member"] as const;
-const workActionColumns: WorkAction[] = ["read", "create", "update", "delete"];
-const advancedActionColumns: WorkAction[] = ["read", "create", "update", "delete", "authorize"];
-
-type WorkArea = {
-  resource: PermissionResource;
-  labelKey: string;
-  helperKey: string;
-  advanced?: boolean;
-};
-
-type WorkRoleTemplate = {
-  id: string;
-  suggestedName: string;
-  labelKey: string;
-  helperKey: string;
-  permission: Partial<Record<PermissionResource, string[]>>;
-};
-
-const workAreas: WorkArea[] = [
-  { resource: "organization", labelKey: "organization", helperKey: "organization" },
-  { resource: "team", labelKey: "team", helperKey: "team" },
-  { resource: "member", labelKey: "member", helperKey: "member" },
-  { resource: "project", labelKey: "project", helperKey: "project" },
-  { resource: "property", labelKey: "property", helperKey: "property" },
-  { resource: "client", labelKey: "client", helperKey: "client" },
-  { resource: "task", labelKey: "task", helperKey: "task" },
-  { resource: "calendar", labelKey: "calendar", helperKey: "calendar" },
-  { resource: "media", labelKey: "media", helperKey: "media" },
-  { resource: "visibility", labelKey: "visibility", helperKey: "visibility" },
-  { resource: "integration", labelKey: "integration", helperKey: "integration" },
-];
-
-const advancedWorkAreas: WorkArea[] = [
-  { resource: "apiKey", labelKey: "apiKey", helperKey: "apiKey", advanced: true },
-  { resource: "oauthApp", labelKey: "oauthApp", helperKey: "oauthApp", advanced: true },
-  { resource: "role", labelKey: "role", helperKey: "role", advanced: true },
-];
-
-const workRoleTemplates: WorkRoleTemplate[] = [
-  {
-    id: "owner",
-    suggestedName: "owner-operator",
-    labelKey: "owner",
-    helperKey: "owner",
-    permission: {
-      organization: ["read", "update", "delete"],
-      team: ["create", "read", "update", "delete"],
-      member: ["create", "read", "update", "delete"],
-      role: ["create", "read", "update", "delete"],
-      client: ["create", "read", "update", "delete"],
-      task: ["create", "read", "update", "delete"],
-      project: ["create", "read", "update", "delete"],
-      property: ["create", "read", "update", "delete"],
-      calendar: ["create", "read", "update", "delete"],
-      media: ["create", "read", "update", "delete"],
-      integration: ["create", "read", "update", "delete"],
-      apiKey: ["create", "read", "update", "delete"],
-      oauthApp: ["create", "read", "update", "delete", "authorize"],
-    },
-  },
-  {
-    id: "operations-manager",
-    suggestedName: "operations-manager",
-    labelKey: "operationsManager",
-    helperKey: "operationsManager",
-    permission: {
-      organization: ["read", "update"],
-      team: ["create", "read", "update"],
-      member: ["create", "read", "update"],
-      client: ["create", "read", "update", "delete"],
-      task: ["create", "read", "update", "delete"],
-      project: ["create", "read", "update", "delete"],
-      property: ["create", "read", "update", "delete"],
-      calendar: ["create", "read", "update", "delete"],
-      media: ["create", "read", "update", "delete"],
-      integration: ["read", "update"],
-    },
-  },
-  {
-    id: "project-manager",
-    suggestedName: "project-manager",
-    labelKey: "projectManager",
-    helperKey: "projectManager",
-    permission: {
-      project: ["create", "read", "update", "delete"],
-      property: ["read", "update"],
-      client: ["read", "update"],
-      task: ["read", "update"],
-      calendar: ["create", "read", "update"],
-      media: ["create", "read", "update"],
-      member: ["read"],
-      team: ["read"],
-    },
-  },
-  {
-    id: "property-manager",
-    suggestedName: "property-manager",
-    labelKey: "propertyManager",
-    helperKey: "propertyManager",
-    permission: {
-      property: ["create", "read", "update", "delete"],
-      project: ["read", "update"],
-      client: ["read", "update"],
-      task: ["read", "update"],
-      calendar: ["create", "read", "update"],
-      media: ["create", "read", "update"],
-      member: ["read"],
-    },
-  },
-  {
-    id: "crm-sales",
-    suggestedName: "crm-sales",
-    labelKey: "crmSales",
-    helperKey: "crmSales",
-    permission: {
-      client: ["create", "read", "update", "delete"],
-      task: ["create", "read", "update", "delete"],
-      property: ["read"],
-      project: ["read"],
-      calendar: ["create", "read", "update"],
-      media: ["create", "read"],
-    },
-  },
-  {
-    id: "calendar-coordinator",
-    suggestedName: "calendar-coordinator",
-    labelKey: "calendarCoordinator",
-    helperKey: "calendarCoordinator",
-    permission: {
-      calendar: ["create", "read", "update", "delete"],
-      client: ["read"],
-      task: ["read", "update"],
-      project: ["read"],
-      property: ["read"],
-      member: ["read"],
-      media: ["read"],
-    },
-  },
-  {
-    id: "viewer",
-    suggestedName: "viewer",
-    labelKey: "viewer",
-    helperKey: "viewer",
-    permission: {
-      organization: ["read"],
-      team: ["read"],
-      member: ["read"],
-      client: ["read"],
-      task: ["read"],
-      project: ["read"],
-      property: ["read"],
-      calendar: ["read"],
-      media: ["read"],
-      integration: ["read"],
-    },
-  },
-];
-
-function getInitials(value: string) {
-  return value
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("") || "AN";
-}
-
-function isOwner(role: string) {
-  return role.split(",").map((part) => part.trim()).includes("owner");
-}
-
-function formatDate(value: Date | string | number) {
-  return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(value));
-}
-
-function normalizeRole(value: string) {
-  return value.trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
-}
-
-function memberName(member: OrganizationMember) {
-  return member.user?.name || member.user?.email || member.userId;
-}
-
-function memberEmail(member: OrganizationMember) {
-  return member.user?.email || member.userId;
-}
-
-function roleOptions(customRoles: OrganizationRole[]) {
-  const custom = customRoles.map((role) => role.role).filter((role) => !defaultRoleNames.includes(role as (typeof defaultRoleNames)[number]));
-  return Array.from(new Set([...defaultRoleNames, ...custom]));
-}
-
-function formatCustomRoleName(role: string) {
-  return role
-    .replace(/[-_]+/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
-
-function formatRoleName(role: string, defaultLabels: Record<(typeof defaultRoleNames)[number], string>) {
-  if (role === "owner" || role === "admin" || role === "member") {
-    return defaultLabels[role];
-  }
-
-  return formatCustomRoleName(role);
-}
-
-function emptyPermission(): Partial<Record<PermissionResource, string[]>> {
-  return {};
-}
+import {
+  advancedActionColumns,
+  advancedWorkAreas,
+  agentConnectionProjection,
+  agentPermissionActions,
+  agentPermissionSummary,
+  apiKeyStats,
+  apiKeyPermissionActions,
+  apiKeyPermissionSummary,
+  clampAgentPermissionsToGrantable,
+  clampApiKeyPermissionsToGrantable,
+  cloneAgentPermissions,
+  cloneApiKeyPermissions,
+  defaultApiKeyPermissions,
+  defaultRoleNames,
+  emptyPermission,
+  formatDate,
+  formatRoleName,
+  grantableAgentPermissions,
+  grantableApiKeyPermissions,
+  getInitials,
+  hasAgentDeletePermission,
+  isOwner,
+  memberEmail,
+  memberName,
+  memberRoleCount,
+  normalizeRole,
+  ownerMemberCount,
+  pendingInvitationCount,
+  roleOptions,
+  toggleAgentPermission,
+  toggleApiKeyPermission,
+  toggleRolePermissionAction,
+  workActionColumns,
+  workAreas,
+  workRoleTemplates,
+  type WorkAction,
+  type WorkArea,
+  type InviteMode,
+  type PermissionResource,
+  type Tab,
+} from "../settings-view-model";
 
 export function OrganizationScreen() {
   const t = useTranslations("Organization");
@@ -329,7 +154,7 @@ export function OrganizationScreen() {
     admin: t("roles.defaultLabels.admin"),
     member: t("roles.defaultLabels.member"),
   };
-  const ownerCount = members.filter((member) => isOwner(member.role)).length;
+  const ownerCount = ownerMemberCount(members);
   const pendingInviteLinks = inviteLinks ?? [];
   const capabilities = capabilitiesQuery.data;
   const canUpdateOrganization = capabilities?.canUpdateOrganization ?? false;
@@ -597,7 +422,7 @@ export function OrganizationScreen() {
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
                   <Mail className="h-3 w-3" />
-                  {(invitationsQuery.data ?? []).filter((invite) => invite.status === "pending").length} {t("stats.pendingInvites")}
+                  {pendingInvitationCount(invitationsQuery.data ?? [])} {t("stats.pendingInvites")}
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
                   <ShieldCheck className="h-3 w-3" />
@@ -1017,102 +842,6 @@ const agentPresets: Array<{ id: AgentPresetId; permissions: McpConnectionPermiss
   },
 ];
 
-function clonePermissions(permissions: McpConnectionPermission[]) {
-  return permissions.map((permission) => ({
-    resource: permission.resource,
-    actions: [...permission.actions],
-  }));
-}
-
-function permissionActions(
-  permissions: McpConnectionPermission[],
-  resource: McpPermissionResource,
-) {
-  return permissions.find((permission) => permission.resource === resource)?.actions ?? [];
-}
-
-function hasDeletePermission(permissions: McpConnectionPermission[]) {
-  return permissions.some((permission) => permission.actions.includes("delete"));
-}
-
-function permissionSummary(
-  permissions: McpConnectionPermission[],
-  labels: {
-    resource: (resource: McpPermissionResource) => string;
-    action: (action: McpPermissionAction) => string;
-  },
-) {
-  return permissions
-    .filter((permission) => permission.resource !== "organization")
-    .map((permission) => `${labels.resource(permission.resource)}: ${permission.actions.map(labels.action).join(", ")}`)
-    .join(" • ");
-}
-
-function grantableAgentPermissions(capabilities?: OrganizationCapabilities): McpConnectionPermission[] {
-  if (!capabilities) return [];
-  const actions = {
-    organization: capabilities.canReadOrganization ? ["read"] : [],
-    client: [
-      capabilities.canReadClients && "read",
-      capabilities.canCreateClients && "create",
-      capabilities.canUpdateClients && "update",
-      capabilities.canDeleteClients && "delete",
-    ],
-    property: [
-      capabilities.canReadProperties && "read",
-      capabilities.canCreateProperties && "create",
-      capabilities.canUpdateProperties && "update",
-      capabilities.canDeleteProperties && "delete",
-    ],
-    project: [
-      capabilities.canReadProjects && "read",
-      capabilities.canCreateProjects && "create",
-      capabilities.canUpdateProjects && "update",
-      capabilities.canDeleteProjects && "delete",
-    ],
-    calendar: [
-      capabilities.canReadCalendarEvents && "read",
-      capabilities.canCreateCalendarEvents && "create",
-      capabilities.canUpdateCalendarEvents && "update",
-      capabilities.canDeleteCalendarEvents && "delete",
-    ],
-    task: [
-      capabilities.canReadTasks && "read",
-      capabilities.canCreateTasks && "create",
-      capabilities.canUpdateTasks && "update",
-      capabilities.canDeleteTasks && "delete",
-    ],
-    media: [
-      capabilities.canReadMedia && "read",
-      capabilities.canCreateMedia && "create",
-      capabilities.canUpdateMedia && "update",
-      capabilities.canDeleteMedia && "delete",
-    ],
-  } satisfies Record<McpPermissionResource, Array<McpPermissionAction | false>>;
-
-  return (Object.keys(actions) as McpPermissionResource[])
-    .map((resource) => {
-      const resourceActions = actions[resource].filter((action) => action !== false) as McpPermissionAction[];
-      return { resource, actions: resourceActions };
-    })
-    .filter((permission) => permission.actions.length > 0);
-}
-
-function clampPermissionsToGrantable(
-  permissions: McpConnectionPermission[],
-  grantable: McpConnectionPermission[],
-) {
-  return permissions
-    .map((permission) => {
-      const allowed = permissionActions(grantable, permission.resource);
-      return {
-        resource: permission.resource,
-        actions: permission.actions.filter((action) => allowed.includes(action)),
-      };
-    })
-    .filter((permission) => permission.actions.length > 0);
-}
-
 function AgentLinksPanel({
   organizationId,
   canRead,
@@ -1136,12 +865,12 @@ function AgentLinksPanel({
   const [agentName, setAgentName] = useState(() => t("presets.client"));
   const [instructions, setInstructions] = useState(() => t("defaults.instructions"));
   const [presetId, setPresetId] = useState<AgentPresetId | "custom">("client");
-  const [permissions, setPermissions] = useState<McpConnectionPermission[]>(clonePermissions(agentPresets[0].permissions));
+  const [permissions, setPermissions] = useState<McpConnectionPermission[]>(cloneAgentPermissions(agentPresets[0].permissions));
   const [allowDelete, setAllowDelete] = useState(false);
   const [oneTimeLink, setOneTimeLink] = useState("");
   const [oneTimePermissions, setOneTimePermissions] = useState<McpConnectionPermission[]>([]);
   const [showDrafts, setShowDrafts] = useState(false);
-  const selectedGrantablePermissions = clampPermissionsToGrantable(permissions, grantablePermissions);
+  const selectedGrantablePermissions = clampAgentPermissionsToGrantable(permissions, grantablePermissions);
   const memberByUserId = new Map(members.map((member) => [member.userId, member]));
 
   const query = useQuery({
@@ -1158,7 +887,7 @@ function AgentLinksPanel({
     }),
     onSuccess: async (result) => {
       setOneTimeLink(result.agentLink);
-      setOneTimePermissions(clonePermissions(selectedGrantablePermissions));
+      setOneTimePermissions(cloneAgentPermissions(selectedGrantablePermissions));
       queryClient.invalidateQueries({ queryKey: ["organization-mcp-connections", organizationId] });
       await navigator.clipboard?.writeText(result.agentLink).catch(() => undefined);
       toast({ title: t("toasts.readyTitle"), description: t("toasts.readyDescription"), type: "success" });
@@ -1193,7 +922,7 @@ function AgentLinksPanel({
     mutationFn: (connection: OrganizationMcpConnection) => rotateOrganizationMcpConnection(organizationId, connection.id),
     onSuccess: async (result) => {
       setOneTimeLink(result.agentLink);
-      setOneTimePermissions(clonePermissions(result.connection.permissions));
+      setOneTimePermissions(cloneAgentPermissions(result.connection.permissions));
       setDialogOpen(true);
       queryClient.invalidateQueries({ queryKey: ["organization-mcp-connections", organizationId] });
       await navigator.clipboard?.writeText(result.agentLink).catch(() => undefined);
@@ -1206,7 +935,7 @@ function AgentLinksPanel({
     setPresetId(id as AgentPresetId | "custom");
     const preset = agentPresets.find((item) => item.id === id);
     if (!preset) return;
-    setPermissions(clampPermissionsToGrantable(clonePermissions(preset.permissions), grantablePermissions));
+    setPermissions(clampAgentPermissionsToGrantable(cloneAgentPermissions(preset.permissions), grantablePermissions));
     setAgentName(t(`presets.${preset.id}`));
     setAllowDelete(false);
   }
@@ -1215,7 +944,7 @@ function AgentLinksPanel({
     const defaultPreset = agentPresets[0];
     setEditingConnection(null);
     setPresetId(defaultPreset.id);
-    setPermissions(clampPermissionsToGrantable(clonePermissions(defaultPreset.permissions), grantablePermissions));
+    setPermissions(clampAgentPermissionsToGrantable(cloneAgentPermissions(defaultPreset.permissions), grantablePermissions));
     setAgentName(t(`presets.${defaultPreset.id}`));
     setInstructions(t("defaults.instructions"));
     setAllowDelete(false);
@@ -1227,27 +956,18 @@ function AgentLinksPanel({
   function openEditAgentLinkDialog(connection: OrganizationMcpConnection) {
     setEditingConnection(connection);
     setPresetId("custom");
-    setPermissions(clampPermissionsToGrantable(clonePermissions(connection.permissions), grantablePermissions));
+    setPermissions(clampAgentPermissionsToGrantable(cloneAgentPermissions(connection.permissions), grantablePermissions));
     setAgentName(connection.name);
     setInstructions(connection.instructions ?? "");
-    setAllowDelete(hasDeletePermission(connection.permissions));
+    setAllowDelete(hasAgentDeletePermission(connection.permissions));
     setOneTimeLink("");
     setOneTimePermissions([]);
     setDialogOpen(true);
   }
 
   function togglePermission(resource: McpPermissionResource, action: McpPermissionAction) {
-    if (!permissionActions(grantablePermissions, resource).includes(action)) return;
     setPresetId("custom");
-    setPermissions((current) => {
-      const existing = current.find((permission) => permission.resource === resource);
-      const nextActions = existing?.actions.includes(action)
-        ? existing.actions.filter((item) => item !== action)
-        : [...(existing?.actions ?? []), action];
-      const without = current.filter((permission) => permission.resource !== resource);
-      if (nextActions.length === 0) return without;
-      return [...without, { resource, actions: nextActions }];
-    });
+    setPermissions((current) => toggleAgentPermission(current, grantablePermissions, resource, action));
   }
 
   async function copyOneTimeLink() {
@@ -1256,14 +976,17 @@ function AgentLinksPanel({
     toast({ title: t("toasts.copiedTitle"), description: t("toasts.copiedDescription"), type: "success" });
   }
 
-  const requiresDeleteConfirmation = hasDeletePermission(selectedGrantablePermissions);
+  const requiresDeleteConfirmation = hasAgentDeletePermission(selectedGrantablePermissions);
   const canSubmit = canCreate && agentName.trim() && selectedGrantablePermissions.length > 0 && (!requiresDeleteConfirmation || allowDelete);
   const isEditing = Boolean(editingConnection);
   const connections = query.data ?? [];
-  const workingConnections = connections.filter((connection) => connection.status !== "draft" && connection.status !== "revoked");
-  const draftConnections = connections.filter((connection) => connection.status === "draft");
-  const visibleConnections = showDrafts ? [...workingConnections, ...draftConnections] : workingConnections;
-  const oneTimePermissionSummary = permissionSummary(oneTimePermissions, {
+  const {
+    workingConnections,
+    draftConnections,
+    visibleConnections,
+    stats: agentStats,
+  } = agentConnectionProjection(connections, showDrafts);
+  const oneTimePermissionSummary = agentPermissionSummary(oneTimePermissions, {
     resource: (resource) => t(`resources.${resource}`),
     action: (action) => t(`actions.${action}`),
   });
@@ -1306,7 +1029,7 @@ function AgentLinksPanel({
             </div>
           </div>
           <p className="line-clamp-3 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-            {permissionSummary(connection.permissions, {
+            {agentPermissionSummary(connection.permissions, {
               resource: (resource) => t(`resources.${resource}`),
               action: (action) => t(`actions.${action}`),
             }) || t("labels.noWork")}
@@ -1384,9 +1107,9 @@ function AgentLinksPanel({
         )}
       >
         <div className="grid gap-3 md:grid-cols-3">
-          <OrgDataCard icon={KeyRound} label={t("stats.active")} value={workingConnections.filter((item) => item.status === "active").length.toString()} />
-          <OrgDataCard icon={Bot} label={t("stats.calls")} value={connections.reduce((sum, item) => sum + item.usageCount, 0).toString()} />
-          <OrgDataCard icon={ShieldCheck} label={t("stats.drafts")} value={draftConnections.length.toString()} />
+          <OrgDataCard icon={KeyRound} label={t("stats.active")} value={agentStats.active.toString()} />
+          <OrgDataCard icon={Bot} label={t("stats.calls")} value={agentStats.calls.toString()} />
+          <OrgDataCard icon={ShieldCheck} label={t("stats.drafts")} value={agentStats.drafts.toString()} />
         </div>
       </Section>
 
@@ -1480,8 +1203,8 @@ function AgentLinksPanel({
               <div className="grid gap-3 md:grid-cols-2">
                 {agentPermissionAreas.map((area) => {
                   const Icon = area.icon;
-                  const activeActions = permissionActions(permissions, area.resource);
-                  const allowedActions = permissionActions(grantablePermissions, area.resource);
+                  const activeActions = agentPermissionActions(permissions, area.resource);
+                  const allowedActions = agentPermissionActions(grantablePermissions, area.resource);
                   return (
                     <div key={area.resource} className="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 dark:border-white/[0.06] dark:bg-white/[0.03]">
                       <div className="flex items-start gap-3">
@@ -1585,32 +1308,6 @@ const apiKeyPermissionAreas: Array<{
 
 const apiKeyExpiryOptions: OrganizationApiKeyExpiry[] = ["5h", "14d", "30d", "never"];
 
-function apiKeyPermissionActions(
-  permissions: OrganizationApiKeyPermission[],
-  resource: OrganizationApiKeyResource,
-) {
-  return permissions.find((permission) => permission.resource === resource)?.actions ?? [];
-}
-
-function cloneApiKeyPermissions(permissions: OrganizationApiKeyPermission[]) {
-  return permissions.map((permission) => ({
-    resource: permission.resource,
-    actions: [...permission.actions],
-  }));
-}
-
-function apiKeyPermissionSummary(
-  permissions: OrganizationApiKeyPermission[],
-  labels: {
-    resource: (resource: OrganizationApiKeyResource) => string;
-    action: (action: OrganizationApiKeyAction) => string;
-  },
-) {
-  return permissions
-    .map((permission) => `${labels.resource(permission.resource)}: ${permission.actions.map(labels.action).join(", ")}`)
-    .join(" • ");
-}
-
 function organizationApiBaseUrl(organizationId: string) {
   const origin = typeof window === "undefined" ? "" : window.location.origin;
   return `${origin}/api/v1/partner/organizations/${encodeURIComponent(organizationId)}`;
@@ -1618,55 +1315,6 @@ function organizationApiBaseUrl(organizationId: string) {
 
 function organizationApiStarterRequest(apiBaseUrl: string, apiKey: string) {
   return `curl -H "Authorization: Bearer ${apiKey}" "${apiBaseUrl}/me"`;
-}
-
-function grantableApiKeyPermissions(capabilities?: OrganizationCapabilities): OrganizationApiKeyPermission[] {
-  if (!capabilities) return [];
-  const actions = {
-    organization: [capabilities.canReadOrganization && "read"],
-    client: [
-      capabilities.canReadClients && "read",
-      capabilities.canCreateClients && "create",
-      capabilities.canUpdateClients && "update",
-      capabilities.canDeleteClients && "delete",
-    ],
-    property: [capabilities.canReadProperties && "read"],
-    project: [capabilities.canReadProjects && "read"],
-    calendar: [capabilities.canReadCalendarEvents && "read"],
-    task: [capabilities.canReadTasks && "read"],
-    media: [capabilities.canReadMedia && "read"],
-  } satisfies Record<OrganizationApiKeyResource, Array<OrganizationApiKeyAction | false>>;
-
-  return (Object.keys(actions) as OrganizationApiKeyResource[])
-    .map((resource) => {
-      const resourceActions = actions[resource].filter((action) => action !== false) as OrganizationApiKeyAction[];
-      return { resource, actions: resourceActions };
-    })
-    .filter((permission) => permission.actions.length > 0);
-}
-
-function defaultApiKeyPermissions(grantable: OrganizationApiKeyPermission[]) {
-  return grantable
-    .map((permission) => ({
-      resource: permission.resource,
-      actions: permission.actions.includes("read") ? ["read" as const] : [],
-    }))
-    .filter((permission) => permission.actions.length > 0);
-}
-
-function clampApiKeyPermissionsToGrantable(
-  permissions: OrganizationApiKeyPermission[],
-  grantable: OrganizationApiKeyPermission[],
-) {
-  return permissions
-    .map((permission) => {
-      const allowed = apiKeyPermissionActions(grantable, permission.resource);
-      return {
-        resource: permission.resource,
-        actions: permission.actions.filter((action) => allowed.includes(action)),
-      };
-    })
-    .filter((permission) => permission.actions.length > 0);
 }
 
 function ApiKeysPanel({
@@ -1763,16 +1411,7 @@ function ApiKeysPanel({
   }
 
   function togglePermission(resource: OrganizationApiKeyResource, action: OrganizationApiKeyAction) {
-    if (!apiKeyPermissionActions(grantablePermissions, resource).includes(action)) return;
-    setPermissions((current) => {
-      const existing = current.find((permission) => permission.resource === resource);
-      const nextActions = existing?.actions.includes(action)
-        ? existing.actions.filter((item) => item !== action)
-        : [...(existing?.actions ?? []), action];
-      const without = current.filter((permission) => permission.resource !== resource);
-      if (nextActions.length === 0) return without;
-      return [...without, { resource, actions: nextActions }];
-    });
+    setPermissions((current) => toggleApiKeyPermission(current, grantablePermissions, resource, action));
   }
 
   async function copyOneTimeKey() {
@@ -1782,6 +1421,7 @@ function ApiKeysPanel({
   }
 
   const keys = query.data ?? [];
+  const stats = apiKeyStats(keys);
   const canSubmit = rotatingKey ? canUpdate : canCreate && keyName.trim() && selectedPermissions.length > 0;
   const oneTimePermissionSummary = apiKeyPermissionSummary(oneTimePermissions, {
     resource: (resource) => t(`resources.${resource}`),
@@ -1807,9 +1447,9 @@ function ApiKeysPanel({
         )}
       >
         <div className="grid gap-3 md:grid-cols-3">
-          <OrgDataCard icon={KeyRound} label={t("stats.active")} value={keys.filter((item) => item.status === "active").length.toString()} />
+          <OrgDataCard icon={KeyRound} label={t("stats.active")} value={stats.active.toString()} />
           <OrgDataCard icon={ShieldCheck} label={t("stats.quota")} value={t("stats.quotaValue")} />
-          <OrgDataCard icon={RefreshCcw} label={t("stats.calls")} value={keys.reduce((sum, item) => sum + item.usageCount, 0).toString()} />
+          <OrgDataCard icon={RefreshCcw} label={t("stats.calls")} value={stats.calls.toString()} />
         </div>
       </Section>
 
@@ -2074,14 +1714,7 @@ export function CustomPermissionsScreen() {
   }
 
   function togglePermission(resource: PermissionResource, action: string) {
-    setRolePermission((current) => {
-      const currentActions = current[resource] ?? [];
-      const nextActions = currentActions.includes(action)
-        ? currentActions.filter((item) => item !== action)
-        : [...currentActions, action];
-
-      return { ...current, [resource]: nextActions };
-    });
+    setRolePermission((current) => toggleRolePermissionAction(current, resource, action));
   }
 
   function applyTemplate(nextTemplateId: string) {
@@ -2231,7 +1864,7 @@ export function CustomPermissionsScreen() {
                   key={role.id}
                   role={role.role}
                   roleLabels={defaultRoleLabels}
-                  memberCount={members.filter((member) => member.role === role.role).length}
+                  memberCount={memberRoleCount(members, role.role)}
                   editDisabled={!canUpdateRoles}
                   deleteDisabled={!canDeleteRoles}
                   onEdit={canUpdateRoles ? () => beginEditRole(role) : undefined}

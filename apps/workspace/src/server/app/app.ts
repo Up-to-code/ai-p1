@@ -4,8 +4,11 @@ import { runWithAuthHeaders } from "@/server/auth/better-auth/server";
 import { v1Router } from "@/server/routing/v1/router";
 import { uploadThingHandler } from "@/server/uploadthing/router";
 import { handleMcpAgent, handleMcpMethodNotAllowed } from "@/server/protocols/mcp/transports/agent-link";
+import { requestSafetyMiddleware } from "@/server/security";
 
 export const app = new Hono().basePath("/api");
+
+app.use("*", requestSafetyMiddleware);
 
 function getRouteMetric(pathname: string) {
   const segments = pathname

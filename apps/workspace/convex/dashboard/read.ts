@@ -1,18 +1,11 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { assertOrganizationPermission } from "../organizations/profile/access";
+import { dashboardOverview } from "../workspace/dashboardOverview";
 
 const MAX_DASHBOARD_DISPLAY_PROJECTS = 3;
 const MAX_DASHBOARD_COUNT_SCAN = 2_000;
 const MAX_DASHBOARD_RANGE_ITEMS = 1_000;
-
-function isoDate(timestamp: number) {
-  return new Date(timestamp).toISOString().slice(0, 10);
-}
-
-function isoTime(timestamp: number) {
-  return new Date(timestamp).toISOString().slice(11, 16);
-}
 
 export const overview = query({
   args: {
@@ -101,61 +94,19 @@ export const overview = query({
         .take(MAX_DASHBOARD_RANGE_ITEMS),
     ]);
 
-    const activeDisplayProjects = displayProjects.filter((project) => !project.deletedAt);
-    const activeProjects = allProjects.filter((project) => !project.deletedAt);
-    const activeApprovedProjects = approvedProjects.filter((project) => !project.deletedAt);
-    const activePendingProjects = pendingProjects.filter((project) => !project.deletedAt);
-    const activeAvailableUnits = availableUnits.filter((unit) => !unit.deletedAt);
-    const activePendingUnits = pendingUnits.filter((unit) => !unit.deletedAt);
-    const activeDraftUnits = draftUnits.filter((unit) => !unit.deletedAt);
-    const activeTasks = tasks.filter((task) => !task.deletedAt && task.status === "open");
-    const activeEvents = events.filter((event) => !event.deletedAt);
-    const blockedProjectIds = new Set([
-      ...activePendingProjects.map((project) => project._id),
-      ...activeProjects.filter((project) => project.syncState === "blocked").map((project) => project._id),
-    ]);
-    const today = new Date();
-    today.setHours(23, 59, 59, 999);
-
-    const weekEvents = await Promise.all(
-      activeEvents
-        .sort((a, b) => a.startAt - b.startAt)
-        .slice(0, 20)
-        .map(async (event) => {
-          const client = event.clientId ? await ctx.db.get(event.clientId) : null;
-          const linkedTask = activeTasks.find((task) => task.calendarEventId === event._id);
-          return {
-            id: event._id,
-            title: event.title,
-            date: isoDate(event.startAt),
-            time: isoTime(event.startAt),
-            owner: event.owner,
-            clientName: client && !client.deletedAt ? client.name : undefined,
-            priority: linkedTask?.priority ?? ("normal" as const),
-            type: event.type,
-          };
-        }),
-    );
-
-    return {
-      counts: {
-        dueToday: activeTasks.filter((task) => task.dueAt && task.dueAt <= today.getTime()).length,
-        availableUnits: activeAvailableUnits.length,
-        reviewUnits: activePendingUnits.length + activeDraftUnits.length,
-        readyProjects: activeApprovedProjects.filter((project) => project.syncState === "synced").length,
-        blockedProjects: blockedProjectIds.size,
-        totalProjects: activeProjects.length,
+    return dashboardOverview(
+      {
+        displayProjects,
+        allProjects,
+        approvedProjects,
+        pendingProjects,
+        availableUnits,
+        pendingUnits,
+        draftUnits,
+        tasks,
+        events,
       },
-      projects: activeDisplayProjects.map((project) => ({
-        id: project._id,
-        name: project.name,
-        reference: project.reference,
-        city: project.city,
-        status: project.status,
-        units: project.units,
-        priceRange: project.priceRange,
-      })),
-      weekEvents,
-    };
+      (clientId) => ctx.db.get(clientId),
+    );
   },
 });

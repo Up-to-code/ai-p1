@@ -3,7 +3,11 @@
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { useHttpQuery } from "@/components/shared/use-http-query";
+import {
+  organizationApiPath,
+  requestOrganizationAction,
+} from "@/domains/organization/api/organization-request";
+import { useWorkspaceResource } from "@/domains/resources/workspace-resource-request";
 
 export type ClientTaskPayload = {
   clientId: string;
@@ -32,41 +36,36 @@ export function useClientTasksQuery(organizationId: string | undefined, clientId
 }
 
 export function useClientTaskOptionsQuery(organizationId?: string, options: { enabled?: boolean } = {}) {
-  return useHttpQuery<ClientTaskOption[]>(
+  return useWorkspaceResource<ClientTaskOption[]>(
     ["client-tasks", "options", organizationId],
-    organizationId && options.enabled !== false ? `/api/v1/organizations/${organizationId}/read/tasks/options` : undefined,
+    options.enabled !== false ? organizationId : undefined,
+    "tasks/options",
   );
 }
 
-async function jsonOrThrow(response: Response) {
-  const payload = await response.json();
-  if (!response.ok) {
-    throw new Error(payload.error ?? "Task request failed.");
-  }
-  return payload;
-}
-
 export async function createClientTaskRequest(organizationId: string, input: ClientTaskPayload) {
-  const response = await fetch(`/api/v1/organizations/${organizationId}/client-tasks`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(input),
-  });
-  return jsonOrThrow(response);
+  return requestOrganizationAction(
+    organizationApiPath(organizationId, "client-tasks"),
+    "POST",
+    input,
+    "Task request failed.",
+  );
 }
 
 export async function updateClientTaskRequest(organizationId: string, taskId: string, input: ClientTaskPayload) {
-  const response = await fetch(`/api/v1/organizations/${organizationId}/client-tasks/${taskId}`, {
-    method: "PATCH",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(input),
-  });
-  return jsonOrThrow(response);
+  return requestOrganizationAction(
+    organizationApiPath(organizationId, "client-tasks", taskId),
+    "PATCH",
+    input,
+    "Task request failed.",
+  );
 }
 
 export async function deleteClientTaskRequest(organizationId: string, taskId: string) {
-  const response = await fetch(`/api/v1/organizations/${organizationId}/client-tasks/${taskId}`, {
-    method: "DELETE",
-  });
-  return jsonOrThrow(response);
+  return requestOrganizationAction(
+    organizationApiPath(organizationId, "client-tasks", taskId),
+    "DELETE",
+    undefined,
+    "Task request failed.",
+  );
 }

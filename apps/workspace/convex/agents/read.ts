@@ -2,22 +2,14 @@ import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { agentMessageValidator, agentThreadValidator } from "./validators";
-import { revealOrganizationText } from "../security/organizationData";
-
-function presentThread<T extends { _id: string }>(thread: T) {
-  return { ...thread, id: thread._id };
-}
-
-async function presentMessage<T extends { _id: string; organizationId: string; encryptedContent?: string; content: string }>(message: T) {
-  const { encryptedContent: _encryptedContent, contentRedacted: _contentRedacted, ...safeMessage } = message as T & {
-    contentRedacted?: boolean;
-  };
-  return {
-    ...safeMessage,
-    id: message._id,
-    content: await revealOrganizationText(message.organizationId, "agent-message", _encryptedContent, message.content),
-  };
-}
+import {
+  boundedAgentReadLimit,
+  chronologicalAgentMessages,
+  presentAgentMessage,
+  presentAgentRecord,
+  presentAgentThreadPage,
+  revealAgentText,
+} from "./readSurface";
 
 export const listThreads = query({
   args: {
@@ -27,14 +19,38 @@ export const listThreads = query({
   returns: v.array(agentThreadValidator),
   handler: async (ctx, args) => {
     await assertOrganizationResourcePermission(ctx, args.organizationId, "organization", "read");
-    const limit = Math.max(1, Math.min(args.limit ?? 20, 50));
+    const limit = boundedAgentReadLimit(args.limit, 20, 50);
     const threads = await ctx.db
       .query("agentThreads")
       .withIndex("by_organization_updated", (q) => q.eq("organizationId", args.organizationId))
       .order("desc")
       .take(limit);
 
-    return threads.map(presentThread);
+    return threads.map(presentAgentRecord);
+  },
+});
+
+export const listThreadsPage = query({
+  args: {
+    organizationId: v.string(),
+    limit: v.optional(v.number()),
+    cursor: v.union(v.string(), v.null()),
+  },
+  returns: v.object({
+    threads: v.array(agentThreadValidator),
+    isDone: v.boolean(),
+    continueCursor: v.string(),
+  }),
+  handler: async (ctx, args) => {
+    await assertOrganizationResourcePermission(ctx, args.organizationId, "organization", "read");
+    const limit = boundedAgentReadLimit(args.limit, 10, 10);
+    const page = await ctx.db
+      .query("agentThreads")
+      .withIndex("by_organization_updated", (q) => q.eq("organizationId", args.organizationId))
+      .order("desc")
+      .paginate({ numItems: limit, cursor: args.cursor });
+
+    return presentAgentThreadPage(page);
   },
 });
 
@@ -50,7 +66,7 @@ export const listMessages = query({
     const thread = await ctx.db.get(args.threadId);
     if (!thread || thread.organizationId !== args.organizationId) return [];
 
-    const limit = Math.max(1, Math.min(args.limit ?? 80, 120));
+    const limit = boundedAgentReadLimit(args.limit, 80, 120);
     const messages = await ctx.db
       .query("agentMessages")
       .withIndex("by_thread", (q) =>
@@ -59,7 +75,7 @@ export const listMessages = query({
       .order("desc")
       .take(limit);
 
-    return Promise.all(messages.reverse().map(presentMessage));
+    return Promise.all(chronologicalAgentMessages(messages).map((message) => presentAgentMessage(message)));
   },
 });
 
@@ -83,7 +99,7 @@ export const getThreadContext = query({
       return { messages: [], facts: [] };
     }
 
-    const limit = Math.max(1, Math.min(args.limit ?? 16, 30));
+    const limit = boundedAgentReadLimit(args.limit, 16, 30);
     const [messages, summary, facts] = await Promise.all([
       ctx.db
         .query("agentMessages")
@@ -108,12 +124,12 @@ export const getThreadContext = query({
     ]);
 
     return {
-      messages: await Promise.all(messages.reverse().map(presentMessage)),
+      messages: await Promise.all(chronologicalAgentMessages(messages).map((message) => presentAgentMessage(message))),
       summary: summary
-        ? await revealOrganizationText(summary.organizationId, "agent-memory-summary", summary.encryptedSummary, summary.summary)
+        ? await revealAgentText(summary.organizationId, "agent-memory-summary", summary.encryptedSummary, summary.summary)
         : undefined,
       facts: await Promise.all(facts.map((fact) =>
-        revealOrganizationText(fact.organizationId, "agent-memory-fact", fact.encryptedFact, fact.fact),
+        revealAgentText(fact.organizationId, "agent-memory-fact", fact.encryptedFact, fact.fact),
       )),
     };
   },

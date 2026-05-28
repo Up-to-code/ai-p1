@@ -4,7 +4,7 @@ import { Sparkles } from "lucide-react-native";
 
 import { Surface } from "@/foundation/primitives/Surface";
 import { Text } from "@/foundation/primitives/Text";
-import { theme } from "@/foundation/theme/tokens";
+import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import type { InsightCard } from "@/types/domain";
 
@@ -44,7 +44,7 @@ export function InsightRail({ insights }: InsightRailProps) {
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: AppColors) => StyleSheet.create({
   container: {
     gap: theme.spacing.md,
     marginBottom: theme.spacing.xl,

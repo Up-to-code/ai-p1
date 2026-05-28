@@ -94,6 +94,10 @@ export function activePartnerConnectionCount(connections: PartnerConnection[]) {
   return connections.filter((connection) => effectivePartnerConnectionStatus(connection) === "active").length;
 }
 
+export function partnerConnectionExpiryLabel(expiresAt: number | undefined, fallback: string) {
+  return expiresAt ? new Date(expiresAt).toLocaleDateString() : fallback;
+}
+
 export function findPartnerIntegrationDetail(
   id: string,
   apps: PartnerCatalogApp[],

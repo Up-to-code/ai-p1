@@ -1,14 +1,14 @@
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useMemo } from "react";
 import { useRouter } from "expo-router";
-import { Check, ChevronLeft, ChevronRight, Languages, Smartphone } from "lucide-react-native";
+import { Check, ChevronLeft, ChevronRight } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Screen } from "@/foundation/primitives/Screen";
 import { Text } from "@/foundation/primitives/Text";
 import { useAppLocalization } from "@/foundation/localization";
 import { buildLanguageOptions } from "@/foundation/localization/languageSettings";
-import { theme } from "@/foundation/theme/tokens";
+import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 
 export default function LanguageScreen() {
@@ -26,23 +26,13 @@ export default function LanguageScreen() {
         <Pressable accessibilityLabel={t.common.back} style={styles.headerBtn} onPress={() => router.back()}>
           <BackIcon size={24} color={colors.textPrimary} strokeWidth={2.6} />
         </Pressable>
-        <View style={styles.headerText}>
-          <Text variant="title" style={styles.headerTitle}>{t.appSettings.languageTitle}</Text>
-          <Text variant="caption" tone="muted">{t.appSettings.languageSubtitle}</Text>
-        </View>
+        <Text variant="title" style={styles.headerTitle}>{t.appSettings.languageTitle}</Text>
       </View>
 
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + theme.spacing.xl }]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.hero}>
-          <Text variant="display" style={styles.heroTitle}>{t.appSettings.languageHeroTitle}</Text>
-          <Text tone="secondary" style={styles.heroCopy}>
-            {t.appSettings.languageHeroBody}
-          </Text>
-        </View>
-
         <View style={styles.optionGroup}>
           {options.map((option) => {
             const selected = option.value === localePreference;
@@ -53,19 +43,9 @@ export default function LanguageScreen() {
                 style={[styles.optionCard, selected && styles.optionCardSelected]}
                 onPress={() => setLocalePreference(option.value)}
               >
-                <View style={[styles.optionIcon, selected && styles.optionIconSelected]}>
-                  {option.icon === "system" ? (
-                    <Smartphone size={18} color={colors.textPrimary} />
-                  ) : (
-                    <Languages size={18} color={colors.textPrimary} />
-                  )}
-                </View>
                 <View style={styles.optionText}>
                   <Text variant="body" style={styles.optionTitle}>
                     {option.title}
-                  </Text>
-                  <Text variant="caption" tone="secondary">
-                    {option.description}
                   </Text>
                 </View>
                 <View style={[styles.checkWrap, selected && styles.checkWrapSelected]}>
@@ -80,7 +60,7 @@ export default function LanguageScreen() {
   );
 }
 
-const createStyles = (colors: any, isRTL: boolean) =>
+const createStyles = (colors: AppColors, isRTL: boolean) =>
   StyleSheet.create({
     screen: {
       flex: 1,
@@ -106,65 +86,36 @@ const createStyles = (colors: any, isRTL: boolean) =>
       borderWidth: 1,
       borderColor: colors.divider,
     },
-    headerText: {
-      flex: 1,
-      gap: 2,
-      alignItems: isRTL ? "flex-end" : "flex-start",
-    },
     headerTitle: {
+      flex: 1,
       fontSize: 18,
       fontFamily: "Manrope_800ExtraBold",
+      textAlign: isRTL ? "right" : "left",
     },
     content: {
       paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.xl,
-      gap: theme.spacing.xl,
-    },
-    hero: {
-      gap: theme.spacing.sm,
-      alignItems: isRTL ? "flex-end" : "flex-start",
-    },
-    heroTitle: {
-      fontSize: 30,
-      fontFamily: "Manrope_800ExtraBold",
-    },
-    heroCopy: {
-      lineHeight: 22,
+      paddingTop: theme.spacing.lg,
     },
     optionGroup: {
-      gap: theme.spacing.md,
+      borderRadius: theme.radii.lg,
+      borderWidth: 1,
+      borderColor: colors.divider,
+      overflow: "hidden",
+      backgroundColor: colors.surface,
     },
     optionCard: {
       flexDirection: isRTL ? "row-reverse" : "row",
       alignItems: "center",
-      gap: theme.spacing.md,
       backgroundColor: "transparent",
-      borderRadius: theme.radii.lg,
-      borderWidth: 1,
-      borderColor: colors.divider,
-      padding: theme.spacing.lg,
+      minHeight: 58,
+      paddingHorizontal: theme.spacing.lg,
+      paddingVertical: theme.spacing.md,
     },
     optionCardSelected: {
-      borderColor: colors.textPrimary,
-      borderWidth: 2,
-      padding: theme.spacing.lg - 1,
-    },
-    optionIcon: {
-      width: 48,
-      height: 48,
-      borderRadius: 16,
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: "transparent",
-      borderWidth: 1,
-      borderColor: colors.divider,
-    },
-    optionIconSelected: {
-      borderColor: colors.textPrimary,
+      backgroundColor: colors.surfaceRaised,
     },
     optionText: {
       flex: 1,
-      gap: 2,
       alignItems: isRTL ? "flex-end" : "flex-start",
     },
     optionTitle: {

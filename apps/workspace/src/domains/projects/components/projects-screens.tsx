@@ -28,7 +28,33 @@ import { Link, useRouter } from "@/i18n/routing";
 import { useAccountContext } from "@/domains/auth";
 import { getOrganizationCapabilities } from "@/domains/organization/api/better-auth-organization";
 import type { Project, ProjectStatus } from "../store/projects.types";
-import { projectCategories, projectOfferingTypes, projectSchema, type ProjectFormValues } from "../validation/project.schema";
+import { projectOfferingTypes, projectSchema, type ProjectFormValues } from "../validation/project.schema";
+import {
+  addProjectPriceRow,
+  calendarDaysForMonth,
+  compactProjectDetailRows,
+  formatIsoDate,
+  matchesProjectSearch,
+  monthFormatter,
+  nextProjectCalendarMonth,
+  parseIsoDate,
+  projectDateDisplayLabel,
+  projectDocumentAssets,
+  projectFilters,
+  projectFormDefaults,
+  projectInventoryMetrics,
+  projectLocationLabel,
+  projectMovementWidth,
+  projectPriceDisplay,
+  projectViews,
+  projectWeekdayLabels,
+  removeProjectPriceRow,
+  statusTone,
+  toggleProjectUnitType,
+  updateProjectPriceRow,
+  useFirstImagePreviewUrl,
+  weekdayFormatter,
+} from "../project-view-model";
 import { createProjectRequest, deleteProjectRequest, PROJECTS_PAGE_SIZE, updateProjectRequest, useProjectQuery, useProjectsIndexQuery } from "../api/projects";
 import { useProjectPropertiesQuery } from "@/domains/properties/api/properties";
 import { ResourceMediaUploader } from "@/domains/media/components/resource-media-uploader";
@@ -39,73 +65,6 @@ import { SearchBox, StatusPill, TextInput, DeleteRecordDialog, DetailNotFoundSta
 import { useUrlListState } from "@/components/shared/use-url-list-state";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-
-const projectFilters = ["all", "approved", "pending", "draft", "rejected"] as const;
-const projectViews = ["grid", "list"] as const;
-const monthFormatter = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" });
-const weekdayFormatter = new Intl.DateTimeFormat("en-US", { weekday: "short" });
-
-function projectPriceId() {
-  return `price-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
-}
-
-function toProjectPriceRows(project?: Project | null): ProjectFormValues["projectPrices"] {
-  if (project?.projectPrices?.length) {
-    return project.projectPrices.map((item) => ({ id: item.id, label: item.label, price: item.price }));
-  }
-  return [{ id: projectPriceId(), label: "", price: "" }];
-}
-
-function projectPriceDisplay(form: Pick<ProjectFormValues, "averagePrice" | "projectPrices" | "priceRange">) {
-  const prices = (form.projectPrices ?? []).map((item) => item.price).filter(Boolean);
-  if (prices.length > 0) return prices.join(" - ");
-  return form.averagePrice || form.priceRange || "850K SAR";
-}
-
-function parseIsoDate(value?: string) {
-  if (!value) return undefined;
-  const [year, month, day] = value.split("-").map(Number);
-  if (!year || !month || !day) return undefined;
-  return new Date(year, month - 1, day);
-}
-
-function useFirstImagePreviewUrl(files: File[]) {
-  const firstImage = useMemo(() => files.find((file) => file.type.startsWith("image/")) ?? null, [files]);
-  const previewUrl = useMemo(() => (firstImage ? URL.createObjectURL(firstImage) : null), [firstImage]);
-
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
-
-  return previewUrl;
-}
-
-function formatIsoDate(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function calendarDaysForMonth(month: Date) {
-  const start = new Date(month.getFullYear(), month.getMonth(), 1);
-  const firstDay = start.getDay();
-  const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
-  const cells: Array<Date | null> = [];
-  for (let index = 0; index < firstDay; index += 1) cells.push(null);
-  for (let day = 1; day <= daysInMonth; day += 1) cells.push(new Date(month.getFullYear(), month.getMonth(), day));
-  while (cells.length % 7 !== 0) cells.push(null);
-  return cells;
-}
-
-function statusTone(status: ProjectStatus) {
-  if (status === "approved") return "success";
-  if (status === "pending") return "warning";
-  if (status === "rejected") return "danger";
-  return "neutral";
-}
 
 function ProjectTile({ project, onDelete }: { project: Project; onDelete: (project: Project) => void }) {
   const t = useTranslations('Projects');
@@ -286,10 +245,7 @@ export function ProjectsWorkspace() {
   const isLoading = isWorkspaceReady && projectsQuery.queryStatus === "loading";
   const isQueryBlocked = isLoading || projectsQuery.queryStatus === "error";
 
-  const filteredProjects = useMemo(() => projects.filter((project) => {
-    const q = search.trim().toLowerCase();
-    return !q || [project.name, project.reference, project.city, project.developer].some((value) => value.toLowerCase().includes(q));
-  }), [projects, search]);
+  const filteredProjects = useMemo(() => projects.filter((project) => matchesProjectSearch(project, search)), [projects, search]);
 
   const columns: AppDataTableColumn<Project>[] = [
     {
@@ -401,7 +357,7 @@ export function ProjectDetailScreen({ id }: { id: string }) {
   const units = useMemo(() => unitsQuery ?? [], [unitsQuery]);
   const mediaQuery = useResourceMediaQuery(workspaceOrganizationId, "project", project?.id);
   const projectMedia = useMemo(() => mediaQuery ?? [], [mediaQuery]);
-  const documentAssets = useMemo(() => projectMedia.filter((asset) => asset.kind === "document"), [projectMedia]);
+  const documentAssets = useMemo(() => projectDocumentAssets(projectMedia), [projectMedia]);
   const [inventoryView, setInventoryView] = useState<"cards" | "table">("cards");
   const unitColumns = useMemo((): AppDataTableColumn<(typeof units)[0]>[] => [
     { key: "reference", header: td('inventory.cols.ref') },
@@ -411,13 +367,16 @@ export function ProjectDetailScreen({ id }: { id: string }) {
     { key: "area", header: td('inventory.cols.area') },
     { key: "updated", header: td('inventory.cols.updated') },
   ], [td]);
-  const plannedUnits = project?.units ?? 0;
-  const inventoryCoverage = plannedUnits > 0 ? Math.min(100, Math.round((units.length / plannedUnits) * 100)) : 0;
-  const availableUnits = units.filter((unit) => String(unit.status).toLowerCase() === "available").length;
-  const reservedUnits = units.filter((unit) => String(unit.status).toLowerCase() === "reserved").length;
-  const soldUnits = units.filter((unit) => String(unit.status).toLowerCase() === "sold").length;
-  const pendingUnits = units.filter((unit) => String(unit.status).toLowerCase() === "pending").length;
-  const liveUnitCount = units.length;
+  const inventoryMetrics = useMemo(() => projectInventoryMetrics(units, project?.units ?? 0), [project?.units, units]);
+  const {
+    plannedUnits,
+    inventoryCoverage,
+    availableUnits,
+    reservedUnits,
+    soldUnits,
+    pendingUnits,
+    liveUnitCount,
+  } = inventoryMetrics;
   const salesStats = useMemo(() => [
     { label: td('sales.metrics.totalUnits'), value: liveUnitCount, icon: Layers3 },
     { label: td('sales.metrics.availableUnits'), value: availableUnits, icon: Landmark, iconClassName: "text-emerald-500" },
@@ -449,7 +408,7 @@ export function ProjectDetailScreen({ id }: { id: string }) {
     return <AppPageShell><DetailNotFoundState title={t('detail.notFound')} description={t('detail.notFoundDesc')} backHref="/projects" backLabel={t('detail.back')} /></AppPageShell>;
   }
 
-  const locationLabel = [project.city, project.area].filter(Boolean).join(" · ");
+  const locationLabel = projectLocationLabel(project);
   const optionalCoreDetailRows: Array<[ReactNode, ReactNode | null | undefined | ""]> = [
     [t('detail.labels.type'), t(`types.${project.type}`)],
     [t('detail.labels.developer'), project.developer],
@@ -460,7 +419,7 @@ export function ProjectDetailScreen({ id }: { id: string }) {
     [td('registry.plotNo'), project.plotNumber],
     ...(documentAssets.length > 0 ? [[td('documents.count'), String(documentAssets.length)] as [ReactNode, ReactNode]] : []),
   ];
-  const coreDetailRows = optionalCoreDetailRows.filter((row): row is [ReactNode, ReactNode] => Boolean(row[1]));
+  const coreDetailRows = compactProjectDetailRows(optionalCoreDetailRows);
 
   return (
     <AppPageShell contentClassName="space-y-6 pb-14">
@@ -555,8 +514,8 @@ export function ProjectDetailScreen({ id }: { id: string }) {
                 </div>
                 <div className="mt-5 space-y-4 border-t border-zinc-100 pt-5 dark:border-white/5">
                   <ReadinessBar label={td('metrics.inventoryCoverage')} value={inventoryCoverage} />
-                  <MiniMovement label={td('sales.status.available')} value={availableUnits} total={Math.max(liveUnitCount, 1)} className="bg-emerald-500" />
-                  <MiniMovement label={td('sales.status.sold')} value={soldUnits} total={Math.max(liveUnitCount, 1)} className="bg-zinc-400" />
+                  <MiniMovement label={td('sales.status.available')} value={availableUnits} total={liveUnitCount} className="bg-emerald-500" />
+                  <MiniMovement label={td('sales.status.sold')} value={soldUnits} total={liveUnitCount} className="bg-zinc-400" />
                 </div>
               </AppSection>
 
@@ -661,7 +620,7 @@ export function ProjectDetailScreen({ id }: { id: string }) {
                     { label: td('sales.status.sold'), value: soldUnits, className: "bg-zinc-400" },
                     { label: td('sales.status.pending'), value: pendingUnits, className: "bg-amber-500" },
                   ].map((row) => (
-                    <SalesMovementRow key={row.label} label={row.label} value={row.value} total={Math.max(liveUnitCount, 1)} className={row.className} />
+                    <SalesMovementRow key={row.label} label={row.label} value={row.value} total={liveUnitCount} className={row.className} />
                   ))}
                 </div>
               </div>
@@ -753,7 +712,7 @@ function ReadinessBar({ label, value }: { label: ReactNode; value: number }) {
 }
 
 function MiniMovement({ label, value, total, className }: { label: ReactNode; value: number; total: number; className: string }) {
-  const width = `${Math.max(value > 0 ? 8 : 0, Math.round((value / total) * 100))}%`;
+  const width = projectMovementWidth(value, total);
   return (
     <div>
       <div className="flex items-center justify-between gap-3">
@@ -792,7 +751,7 @@ function RegistryRows({ rows, className }: { rows: [ReactNode, ReactNode][]; cla
 }
 
 function SalesMovementRow({ label, value, total, className }: { label: ReactNode; value: number; total: number; className: string }) {
-  const width = `${Math.max(value > 0 ? 8 : 0, Math.round((value / total) * 100))}%`;
+  const width = projectMovementWidth(value, total);
 
   return (
     <div className="grid grid-cols-[3rem_minmax(0,1fr)] items-center gap-3">
@@ -831,10 +790,6 @@ export function ProjectFormScreen({ id }: { id?: string }) {
   
   const [step, setStep] = useState(1);
   const totalSteps = 5;
-  const existingType = projectCategories.includes(existing?.type as ProjectFormValues["type"]) ? existing?.type as ProjectFormValues["type"] : "Residential";
-  const existingUnitTypes = (existing?.unitTypes ?? []).filter((type): type is ProjectFormValues["unitTypes"][number] =>
-    projectOfferingTypes.includes(type as ProjectFormValues["unitTypes"][number]),
-  );
   const capabilitiesQuery = useReactQuery({
     queryKey: ["organization-capabilities", workspaceOrganizationId],
     queryFn: () => getOrganizationCapabilities(workspaceOrganizationId!),
@@ -845,26 +800,7 @@ export function ProjectFormScreen({ id }: { id?: string }) {
 
   const { control, handleSubmit, setValue, reset, formState: { errors, isSubmitting } } = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema) as Resolver<ProjectFormValues>,
-    defaultValues: {
-      name: existing?.name ?? "",
-      developer: existing?.developer ?? "",
-      city: existing?.city ?? "",
-      area: existing?.area ?? "",
-      type: existingType,
-      unitTypes: existingUnitTypes,
-      status: existing?.status ?? "draft" as ProjectStatus,
-      visibility: existing?.visibility ?? "private",
-      units: String(existing?.units ?? 0),
-      averagePrice: existing?.averagePrice ?? existing?.priceRange ?? "",
-      projectPrices: toProjectPriceRows(existing),
-      priceRange: existing?.priceRange ?? "",
-      regaAuthorizationNo: existing?.regaAuthorizationNo ?? "",
-      regaExpiresAt: existing?.regaExpiresAt ?? "",
-      planNumber: existing?.planNumber ?? "",
-      plotNumber: existing?.plotNumber ?? "",
-      postalIdentity: existing?.postalIdentity ?? "",
-      description: existing?.description ?? "",
-    },
+    defaultValues: projectFormDefaults(existing),
   });
 
   const form = useWatch({ control }) as ProjectFormValues;
@@ -873,28 +809,7 @@ export function ProjectFormScreen({ id }: { id?: string }) {
 
   useEffect(() => {
     if (!existing) return;
-    reset({
-      name: existing.name ?? "",
-      developer: existing.developer ?? "",
-      city: existing.city ?? "",
-      area: existing.area ?? "",
-      type: projectCategories.includes(existing.type as ProjectFormValues["type"]) ? existing.type as ProjectFormValues["type"] : "Residential",
-      unitTypes: (existing.unitTypes ?? []).filter((type): type is ProjectFormValues["unitTypes"][number] =>
-        projectOfferingTypes.includes(type as ProjectFormValues["unitTypes"][number]),
-      ),
-      status: existing.status ?? "draft",
-      visibility: existing.visibility ?? "private",
-      units: String(existing.units ?? 0),
-      averagePrice: existing.averagePrice ?? existing.priceRange ?? "",
-      projectPrices: toProjectPriceRows(existing),
-      priceRange: existing.priceRange ?? "",
-      regaAuthorizationNo: existing.regaAuthorizationNo ?? "",
-      regaExpiresAt: existing.regaExpiresAt ?? "",
-      planNumber: existing.planNumber ?? "",
-      plotNumber: existing.plotNumber ?? "",
-      postalIdentity: existing.postalIdentity ?? "",
-      description: existing.description ?? "",
-    });
+    reset(projectFormDefaults(existing));
   }, [existing, reset]);
 
   const setField = (key: keyof ProjectFormValues, value: string) => {
@@ -903,26 +818,24 @@ export function ProjectFormScreen({ id }: { id?: string }) {
   };
 
   const toggleUnitType = (value: ProjectFormValues["unitTypes"][number]) => {
-    const current = form.unitTypes ?? [];
-    const next = current.includes(value) ? current.filter((item) => item !== value) : [...current, value];
+    const next = toggleProjectUnitType(form.unitTypes, value);
     setValue("unitTypes", next, { shouldDirty: true, shouldValidate: Boolean(fieldErrors.unitTypes) });
     saveOperation.clearError();
   };
 
   const updateProjectPrice = (rowId: string, key: "label" | "price", value: string) => {
-    const next = (form.projectPrices ?? []).map((item) => item.id === rowId ? { ...item, [key]: value } : item);
+    const next = updateProjectPriceRow(form.projectPrices, rowId, key, value);
     setValue("projectPrices", next, { shouldDirty: true, shouldValidate: Boolean(fieldErrors.projectPrices) });
     saveOperation.clearError();
   };
 
   const addProjectPrice = () => {
-    setValue("projectPrices", [...(form.projectPrices ?? []), { id: projectPriceId(), label: "", price: "" }], { shouldDirty: true });
+    setValue("projectPrices", addProjectPriceRow(form.projectPrices), { shouldDirty: true });
     saveOperation.clearError();
   };
 
   const removeProjectPrice = (rowId: string) => {
-    const next = (form.projectPrices ?? []).filter((item) => item.id !== rowId);
-    setValue("projectPrices", next.length ? next : [{ id: projectPriceId(), label: "", price: "" }], { shouldDirty: true, shouldValidate: Boolean(fieldErrors.projectPrices) });
+    setValue("projectPrices", removeProjectPriceRow(form.projectPrices, rowId), { shouldDirty: true, shouldValidate: Boolean(fieldErrors.projectPrices) });
     saveOperation.clearError();
   };
 
@@ -1399,10 +1312,10 @@ function ProjectDatePicker({
   const [isOpen, setIsOpen] = useState(false);
   const [visibleMonth, setVisibleMonth] = useState(() => selectedDate ?? new Date());
   const days = calendarDaysForMonth(visibleMonth);
-  const displayValue = selectedDate ? selectedDate.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : placeholder;
+  const displayValue = projectDateDisplayLabel(value, placeholder);
 
   const moveMonth = (offset: number) => {
-    setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() + offset, 1));
+    setVisibleMonth((current) => nextProjectCalendarMonth(current, offset));
   };
 
   return (
@@ -1431,8 +1344,8 @@ function ProjectDatePicker({
             </Button>
           </div>
           <div className="grid grid-cols-7 gap-1 text-center">
-            {Array.from({ length: 7 }, (_, index) => new Date(2026, 0, 4 + index)).map((date) => (
-              <span key={date.toISOString()} className="py-1 text-[10px] font-black uppercase text-zinc-400">{weekdayFormatter.format(date)}</span>
+            {projectWeekdayLabels(weekdayFormatter).map((date) => (
+              <span key={date.key} className="py-1 text-[10px] font-black uppercase text-zinc-400">{date.label}</span>
             ))}
             {days.map((day, index) => {
               const iso = day ? formatIsoDate(day) : "";

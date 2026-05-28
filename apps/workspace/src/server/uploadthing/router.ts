@@ -1,222 +1,44 @@
-import { getToken } from "@convex-dev/better-auth/utils";
-import { createRouteHandler, createUploadthing, type FileRouter, UploadThingError } from "uploadthing/server";
-import { z } from "zod";
-import { convexRuntimeConfig } from "@/packages/config";
-import { assertCanUseOrganizationResource } from "@/server/utils/organization/access-checker";
+import { createRouteHandler, createUploadthing, type FileRouter } from "uploadthing/server";
 import { hydrateUploadThingEnvFromToken } from "./config";
+import {
+  agentMessageAttachmentUploadPolicy,
+  imageUploadPolicy,
+  mediaUploadPolicy,
+  organizationUploadInputSchema,
+  requireAgentMessageAttachmentUploadAccess,
+  requireOrganizationMediaUploadAccess,
+  requireSignedInUploadUser,
+  uploadedImage,
+  uploadedResourceMedia,
+} from "./intake";
 
 hydrateUploadThingEnvFromToken();
 
 const f = createUploadthing();
-const organizationUploadInputSchema = z.object({
-  organizationId: z.string().min(1),
-});
-
-async function requireSignedInUser(req: Request) {
-  const token = await getToken(convexRuntimeConfig.siteUrl, new Headers(req.headers));
-
-  if (!token.token) {
-    throw new UploadThingError("You must be signed in to upload a profile picture.");
-  }
-
-  return {};
-}
-
-async function requireOrganizationMediaAccess(
-  req: Request,
-  input: z.infer<typeof organizationUploadInputSchema>,
-  resource: "project" | "property" | "client",
-) {
-  await requireSignedInUser(req);
-
-  try {
-    await assertCanUseOrganizationResource(input.organizationId, resource, "update");
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "You are not allowed to upload media here.";
-    throw new UploadThingError(message);
-  }
-
-  return {
-    organizationId: input.organizationId,
-    resource,
-  };
-}
-
-async function requireAgentMessageAttachmentAccess(
-  req: Request,
-  input: z.infer<typeof organizationUploadInputSchema>,
-) {
-  await requireSignedInUser(req);
-
-  try {
-    await assertCanUseOrganizationResource(input.organizationId, "organization", "read");
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "You are not allowed to upload files to this agent thread.";
-    throw new UploadThingError(message);
-  }
-
-  return {
-    organizationId: input.organizationId,
-    resource: "agentMessage",
-  };
-}
 
 export const uploadRouter = {
-  profilePicture: f({
-    image: {
-      maxFileCount: 1,
-      maxFileSize: "4MB",
-      contentDisposition: "inline",
-    },
-  })
-    .middleware(({ req }) => requireSignedInUser(req))
-    .onUploadComplete(({ file }) => ({
-      key: file.key,
-      name: file.name,
-      size: file.size,
-      url: file.url,
-    })),
-  organizationLogo: f({
-    image: {
-      maxFileCount: 1,
-      maxFileSize: "4MB",
-      contentDisposition: "inline",
-    },
-  })
-    .middleware(({ req }) => requireSignedInUser(req))
-    .onUploadComplete(({ file }) => ({
-      key: file.key,
-      name: file.name,
-      size: file.size,
-      url: file.url,
-    })),
-  projectMedia: f({
-    image: {
-      maxFileCount: 10,
-      maxFileSize: "8MB",
-      contentDisposition: "inline",
-    },
-    video: {
-      maxFileCount: 4,
-      maxFileSize: "128MB",
-      contentDisposition: "inline",
-    },
-    pdf: {
-      maxFileCount: 10,
-      maxFileSize: "32MB",
-      contentDisposition: "inline",
-    },
-  })
+  profilePicture: f(imageUploadPolicy)
+    .middleware(({ req }) => requireSignedInUploadUser(req))
+    .onUploadComplete(({ file }) => uploadedImage(file)),
+  organizationLogo: f(imageUploadPolicy)
+    .middleware(({ req }) => requireSignedInUploadUser(req))
+    .onUploadComplete(({ file }) => uploadedImage(file)),
+  projectMedia: f(mediaUploadPolicy)
     .input(organizationUploadInputSchema)
-    .middleware(({ req, input }) => requireOrganizationMediaAccess(req, input, "project"))
-    .onUploadComplete(({ file, metadata }) => ({
-      key: file.key,
-      name: file.name,
-      size: file.size,
-      mimeType: file.type,
-      url: file.url,
-      organizationId: metadata.organizationId,
-      resource: metadata.resource,
-    })),
-  propertyMedia: f({
-    image: {
-      maxFileCount: 10,
-      maxFileSize: "8MB",
-      contentDisposition: "inline",
-    },
-    video: {
-      maxFileCount: 4,
-      maxFileSize: "128MB",
-      contentDisposition: "inline",
-    },
-    pdf: {
-      maxFileCount: 10,
-      maxFileSize: "32MB",
-      contentDisposition: "inline",
-    },
-  })
+    .middleware(({ req, input }) => requireOrganizationMediaUploadAccess(req, input, "project"))
+    .onUploadComplete(({ file, metadata }) => uploadedResourceMedia(file, metadata)),
+  propertyMedia: f(mediaUploadPolicy)
     .input(organizationUploadInputSchema)
-    .middleware(({ req, input }) => requireOrganizationMediaAccess(req, input, "property"))
-    .onUploadComplete(({ file, metadata }) => ({
-      key: file.key,
-      name: file.name,
-      size: file.size,
-      mimeType: file.type,
-      url: file.url,
-      organizationId: metadata.organizationId,
-      resource: metadata.resource,
-    })),
-  clientMedia: f({
-    image: {
-      maxFileCount: 10,
-      maxFileSize: "8MB",
-      contentDisposition: "inline",
-    },
-    video: {
-      maxFileCount: 4,
-      maxFileSize: "128MB",
-      contentDisposition: "inline",
-    },
-    pdf: {
-      maxFileCount: 10,
-      maxFileSize: "32MB",
-      contentDisposition: "inline",
-    },
-  })
+    .middleware(({ req, input }) => requireOrganizationMediaUploadAccess(req, input, "property"))
+    .onUploadComplete(({ file, metadata }) => uploadedResourceMedia(file, metadata)),
+  clientMedia: f(mediaUploadPolicy)
     .input(organizationUploadInputSchema)
-    .middleware(({ req, input }) => requireOrganizationMediaAccess(req, input, "client"))
-    .onUploadComplete(({ file, metadata }) => ({
-      key: file.key,
-      name: file.name,
-      size: file.size,
-      mimeType: file.type,
-      url: file.url,
-      organizationId: metadata.organizationId,
-      resource: metadata.resource,
-    })),
-  agentMessageAttachment: f({
-    image: {
-      maxFileCount: 10,
-      maxFileSize: "8MB",
-      contentDisposition: "inline",
-    },
-    video: {
-      maxFileCount: 4,
-      maxFileSize: "128MB",
-      contentDisposition: "inline",
-    },
-    pdf: {
-      maxFileCount: 10,
-      maxFileSize: "32MB",
-      contentDisposition: "inline",
-    },
-    text: {
-      maxFileCount: 10,
-      maxFileSize: "16MB",
-      contentDisposition: "inline",
-    },
-    "application/msword": {
-      maxFileCount: 10,
-      maxFileSize: "16MB",
-      contentDisposition: "inline",
-    },
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {
-      maxFileCount: 10,
-      maxFileSize: "16MB",
-      contentDisposition: "inline",
-    },
-  })
+    .middleware(({ req, input }) => requireOrganizationMediaUploadAccess(req, input, "client"))
+    .onUploadComplete(({ file, metadata }) => uploadedResourceMedia(file, metadata)),
+  agentMessageAttachment: f(agentMessageAttachmentUploadPolicy)
     .input(organizationUploadInputSchema)
-    .middleware(({ req, input }) => requireAgentMessageAttachmentAccess(req, input))
-    .onUploadComplete(({ file, metadata }) => ({
-      key: file.key,
-      name: file.name,
-      size: file.size,
-      mimeType: file.type,
-      url: file.url,
-      organizationId: metadata.organizationId,
-      resource: metadata.resource,
-    })),
+    .middleware(({ req, input }) => requireAgentMessageAttachmentUploadAccess(req, input))
+    .onUploadComplete(({ file, metadata }) => uploadedResourceMedia(file, metadata)),
 } satisfies FileRouter;
 
 export type UploadRouter = typeof uploadRouter;

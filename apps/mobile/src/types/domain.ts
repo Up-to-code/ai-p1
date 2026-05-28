@@ -28,6 +28,9 @@ export type PendingAgentAttachment = {
   mimeType: string;
   size?: number;
   kind: AgentAttachmentKind;
+  uploadStatus?: "pending" | "uploading" | "uploaded" | "error";
+  uploadProgress?: number;
+  uploadError?: string;
 };
 
 export type UploadedAgentAttachment = {

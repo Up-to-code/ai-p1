@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   Home,
   LifeBuoy,
+  type LucideIcon,
   RotateCcw,
 } from "lucide-react-native";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
@@ -13,7 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Screen } from "@/foundation/primitives/Screen";
 import { Text } from "@/foundation/primitives/Text";
-import { theme } from "@/foundation/theme/tokens";
+import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 
 export type ErrorStateAction = {
@@ -29,7 +30,7 @@ type ErrorStateScreenProps = {
   body: string;
   technicalNote?: string;
   signal?: string;
-  Icon?: any;
+  Icon?: LucideIcon;
   actions?: ErrorStateAction[];
 };
 
@@ -154,7 +155,7 @@ export function ErrorStateScreen({
   );
 }
 
-const createStyles = (colors: any) =>
+const createStyles = (colors: AppColors) =>
   StyleSheet.create({
     topBar: {
       position: "absolute",

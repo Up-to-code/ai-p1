@@ -19,6 +19,8 @@ export default function robots(): MetadataRoute.Robots {
         "/auth",
         "/oauth",
         "/portal",
+        "/docs/oauth-flow",
+        "/docs/api-usage",
       ],
     },
     sitemap: `${siteUrl}/sitemap.xml`,

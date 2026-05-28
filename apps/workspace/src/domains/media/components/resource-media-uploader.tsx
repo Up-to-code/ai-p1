@@ -16,6 +16,28 @@ import {
   type MediaResourceType,
 } from "../api/media";
 import { useOperationState } from "@/lib/utils/operation-state";
+import {
+  appendUploadQueueItems,
+  createQueueItem,
+  markUploadQueueBatchFailed,
+  markUploadQueueItemFailed,
+  markUploadQueueItemUploaded,
+  markUploadQueueItemUploading,
+  mediaUploadAccept,
+  mergeMediaUploadLabels,
+  queuedUploadItemIds,
+  removePendingMediaFileAt,
+  removeUploadQueueItem,
+  resourceMediaUploadState,
+  selectAcceptedMediaFiles,
+  uploadFileSizeLabel,
+  uploadQueueStatusPresentation,
+  uploadQueueItemsById,
+  userFacingUploadError,
+  type MediaUploadLabels,
+  type UploadQueueItem,
+  type UploadQueueStatus,
+} from "../media-upload-view-model";
 
 type ResourceMediaUploaderProps = {
   organizationId?: string;
@@ -28,87 +50,17 @@ type ResourceMediaUploaderProps = {
   maxImages?: number;
   maxVideos?: number;
   variant?: "default" | "review";
-  labels?: {
-    title?: string;
-    description?: string;
-    hideHeader?: boolean;
-    hideDropDescription?: boolean;
-    pick?: string;
-    queued?: string;
-    upload?: string;
-    setCover?: string;
-    delete?: string;
-    videoLimit?: string;
-    imageLimit?: string;
-    unsupported?: string;
-    statusQueued?: string;
-    statusUploading?: string;
-    statusUploaded?: string;
-    statusFailed?: string;
-    remove?: string;
-    retry?: string;
-    cover?: string;
-  };
+  labels?: Partial<MediaUploadLabels>;
   immediate?: boolean;
   hideExisting?: boolean;
 };
 
-type UploadQueueStatus = "queued" | "uploading" | "uploaded" | "failed";
-
-type UploadQueueItem = {
-  id: string;
-  file: File;
-  kind: MediaKind;
-  previewUrl: string | null;
-  status: UploadQueueStatus;
-  error?: string;
-  asset?: Awaited<ReturnType<typeof uploadAndAttachMedia>>[number];
-};
-
-const defaultLabels = {
-  title: "Media",
-  description: "Add images, videos, and PDFs. The first image becomes the cover.",
-  pick: "Choose files",
-  queued: "Queued files",
-  upload: "Upload media",
-  setCover: "Set cover",
-  delete: "Delete",
-  videoLimit: "Only one overview video can be added here.",
-  imageLimit: "You can upload up to 10 images at a time.",
-  unsupported: "This file type is reserved for the Assets section.",
-  statusQueued: "Queued",
-  statusUploading: "Uploading",
-  statusUploaded: "Uploaded",
-  statusFailed: "Failed",
-  remove: "Remove",
-  retry: "Retry",
-  cover: "Cover",
-};
+type AttachedMediaAsset = Awaited<ReturnType<typeof uploadAndAttachMedia>>[number];
 
 function MediaIcon({ kind }: { kind: string }) {
   if (kind === "image") return <ImageIcon className="h-4 w-4" />;
   if (kind === "video") return <Video className="h-4 w-4" />;
   return <FileText className="h-4 w-4" />;
-}
-
-function userFacingUploadError(error: unknown) {
-  const message = error instanceof Error ? error.message : "Upload failed.";
-  if (/no secret provided/i.test(message) || /uploadthing/i.test(message)) {
-    return "Upload storage is not configured. Check UploadThing environment keys.";
-  }
-  return message;
-}
-
-function createQueueItem(file: File): UploadQueueItem {
-  const kind: MediaKind = file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "document";
-  const previewUrl = kind === "image" || kind === "video" ? URL.createObjectURL(file) : null;
-  return {
-    id: `${file.name}-${file.size}-${file.lastModified}-${crypto.randomUUID()}`,
-    file,
-    kind,
-    previewUrl,
-    status: "queued",
-  };
 }
 
 function useQueuedMediaUpload(params: {
@@ -117,8 +69,8 @@ function useQueuedMediaUpload(params: {
   resourceId?: string;
 }) {
   const { toast } = useToast();
-  const [queue, setQueue] = useState<UploadQueueItem[]>([]);
-  const queueRef = useRef<UploadQueueItem[]>([]);
+  const [queue, setQueue] = useState<UploadQueueItem<AttachedMediaAsset>[]>([]);
+  const queueRef = useRef<UploadQueueItem<AttachedMediaAsset>[]>([]);
 
   useEffect(() => {
     queueRef.current = queue;
@@ -131,18 +83,15 @@ function useQueuedMediaUpload(params: {
   }, []);
 
   const uploadMutation = useMutation({
-    mutationFn: async ({ itemIds, items: providedItems }: { itemIds: string[]; items?: UploadQueueItem[] }) => {
+    mutationFn: async ({ itemIds, items: providedItems }: { itemIds: string[]; items?: UploadQueueItem<AttachedMediaAsset>[] }) => {
       if (!params.organizationId || !params.resourceId) throw new Error("Media destination is not ready.");
-      const items = providedItems ?? queue.filter((item) => itemIds.includes(item.id));
-      const uploaded: { itemId: string; asset: Awaited<ReturnType<typeof uploadAndAttachMedia>>[number] }[] = [];
+      const items = providedItems ?? uploadQueueItemsById(queue, itemIds);
+      const uploaded: { itemId: string; asset: AttachedMediaAsset }[] = [];
       const failed: { itemId: string; error: string }[] = [];
       if (!items.length) return { uploaded, failed };
 
       for (const item of items) {
-        setQueue((current) => current.map((entry) => {
-          if (entry.id === item.id) return { ...entry, status: "uploading", error: undefined };
-          return entry;
-        }));
+        setQueue((current) => markUploadQueueItemUploading(current, item.id));
 
         try {
           const [asset] = await uploadAndAttachMedia({
@@ -153,11 +102,11 @@ function useQueuedMediaUpload(params: {
           });
           if (!asset) throw new Error("Upload did not return a media asset.");
           uploaded.push({ itemId: item.id, asset });
-          setQueue((current) => current.map((entry) => entry.id === item.id ? { ...entry, status: "uploaded", asset } : entry));
+          setQueue((current) => markUploadQueueItemUploaded(current, item.id, asset));
         } catch (error) {
           const message = userFacingUploadError(error);
           failed.push({ itemId: item.id, error: message });
-          setQueue((current) => current.map((entry) => entry.id === item.id ? { ...entry, status: "failed", error: message } : entry));
+          setQueue((current) => markUploadQueueItemFailed(current, item.id, message));
         }
       }
 
@@ -170,20 +119,20 @@ function useQueuedMediaUpload(params: {
     },
     onError: (error, variables) => {
       const message = userFacingUploadError(error);
-      setQueue((current) => current.map((item) => variables.itemIds.includes(item.id) ? { ...item, status: "failed", error: message } : item));
+      setQueue((current) => markUploadQueueBatchFailed(current, variables.itemIds, message));
       toast({ title: "Upload failed.", description: message, type: "error" });
     },
   });
 
   const addToQueue = (files: File[]) => {
-    const next = files.map(createQueueItem);
-    setQueue((current) => [...current, ...next]);
+    const next = files.map(createQueueItem<AttachedMediaAsset>);
+    setQueue((current) => appendUploadQueueItems(current, next));
     return next.map((item) => item.id);
   };
 
   const addAndUpload = (files: File[]) => {
-    const next = files.map(createQueueItem);
-    setQueue((current) => [...current, ...next]);
+    const next = files.map(createQueueItem<AttachedMediaAsset>);
+    setQueue((current) => appendUploadQueueItems(current, next));
     uploadMutation.mutate({ itemIds: next.map((item) => item.id), items: next });
   };
 
@@ -194,11 +143,11 @@ function useQueuedMediaUpload(params: {
       await deleteMediaRequest(params.organizationId, item.asset._id);
     }
     if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
-    setQueue((current) => current.filter((entry) => entry.id !== itemId));
+    setQueue((current) => removeUploadQueueItem(current, itemId));
   };
 
   const uploadQueued = (itemIds?: string[]) => {
-    const ids = itemIds ?? queue.filter((item) => item.status === "queued" || item.status === "failed").map((item) => item.id);
+    const ids = itemIds ?? queuedUploadItemIds(queue);
     if (ids.length > 0) uploadMutation.mutate({ itemIds: ids });
   };
 
@@ -227,23 +176,25 @@ export function ResourceMediaUploader({
   immediate = false,
   hideExisting = false,
 }: ResourceMediaUploaderProps) {
-  const copy = { ...defaultLabels, ...labels };
+  const copy = mergeMediaUploadLabels(labels);
   const media = useResourceMediaQuery(organizationId, resourceType, resourceId);
   const operation = useOperationState({ errorMessage: "Media action failed." });
   const uploadQueue = useQueuedMediaUpload({ organizationId, resourceType, resourceId });
   const [validationError, setValidationError] = useState<string | null>(null);
   const canUpload = Boolean(organizationId && resourceId);
-  const accept = [
-    allowedKinds.includes("image") ? "image/*" : null,
-    allowedKinds.includes("video") ? "video/*" : null,
-    allowedKinds.includes("document") ? "application/pdf" : null,
-  ].filter(Boolean).join(",");
-  const existingVideoCount = media?.filter((asset) => asset.kind === "video").length ?? 0;
-  const visibleMedia = media?.filter((asset) => allowedKinds.includes(asset.kind));
-  const queuedImageCount = immediate
-    ? uploadQueue.queue.filter((item) => item.kind === "image" && item.status !== "uploaded").length
-    : pendingFiles.filter((file) => file.type.startsWith("image/")).length;
-  const pendingVideoCount = pendingFiles.filter((file) => file.type.startsWith("video/")).length;
+  const accept = mediaUploadAccept(allowedKinds);
+  const {
+    visibleMedia,
+    existingVideoCount,
+    queuedImageCount,
+    pendingVideoCount,
+  } = resourceMediaUploadState({
+    media,
+    allowedKinds,
+    immediate,
+    queue: uploadQueue.queue,
+    pendingFiles,
+  });
   const pendingPreviews = useMemo(() => pendingFiles.map(createQueueItem), [pendingFiles]);
 
   useEffect(() => {
@@ -254,28 +205,17 @@ export function ResourceMediaUploader({
 
   async function addFiles(files: FileList | null) {
     setValidationError(null);
-    const accepted: File[] = [];
-    let nextImageCount = queuedImageCount;
-    let nextVideoCount = existingVideoCount + pendingVideoCount;
-
-    for (const file of Array.from(files ?? [])) {
-      const kind: MediaKind = file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "document";
-      if (!allowedKinds.includes(kind)) {
-        setValidationError(copy.unsupported);
-        continue;
-      }
-      if (kind === "image" && typeof maxImages === "number" && nextImageCount >= maxImages) {
-        setValidationError(copy.imageLimit);
-        continue;
-      }
-      if (kind === "video" && typeof maxVideos === "number" && nextVideoCount >= maxVideos) {
-        setValidationError(copy.videoLimit);
-        continue;
-      }
-      if (kind === "image") nextImageCount += 1;
-      if (kind === "video") nextVideoCount += 1;
-      accepted.push(file);
-    }
+    const { accepted, validationError } = selectAcceptedMediaFiles({
+      files: Array.from(files ?? []),
+      allowedKinds,
+      maxImages,
+      maxVideos,
+      queuedImageCount,
+      existingVideoCount,
+      pendingVideoCount,
+      labels: copy,
+    });
+    setValidationError(validationError);
 
     const next = accepted;
     if (!next.length) return;
@@ -393,7 +333,7 @@ export function ResourceMediaUploader({
                       disabled={preview.status === "uploading"}
                       onClick={() => {
                         if (immediate) void uploadQueue.removeFromQueue(preview.id);
-                        else onPendingFilesChange(pendingFiles.filter((_, fileIndex) => fileIndex !== index));
+                        else onPendingFilesChange(removePendingMediaFileAt(pendingFiles, index));
                       }}
                       aria-label={`${copy.remove} ${preview.file.name}`}
                     >
@@ -403,7 +343,7 @@ export function ResourceMediaUploader({
                   <div className="absolute inset-x-2 bottom-2 min-w-0">
                     <UploadQueueBadge status={preview.status} labels={copy} />
                     <p className="mt-1 truncate text-[10px] font-black text-white">{preview.file.name}</p>
-                    <p className="text-[9px] font-bold text-white/65">{Math.max(1, Math.round(preview.file.size / 1024))} KB</p>
+                    <p className="text-[9px] font-bold text-white/65">{uploadFileSizeLabel(preview.file.size)}</p>
                   </div>
                 </div>
                 {preview.error && <p className="line-clamp-2 border-t border-amber-400/20 px-2 py-1.5 text-[10px] font-bold leading-4 text-amber-600 dark:text-amber-300">{preview.error}</p>}
@@ -455,9 +395,9 @@ export function ResourceMediaUploader({
   );
 }
 
-function UploadQueueBadge({ status, labels }: { status: UploadQueueStatus; labels: typeof defaultLabels }) {
+function UploadQueueBadge({ status, labels }: { status: UploadQueueStatus; labels: MediaUploadLabels }) {
   const Icon = status === "uploading" ? Loader2 : status === "uploaded" ? CheckCircle2 : status === "failed" ? XCircle : UploadCloud;
-  const label = status === "uploading" ? labels.statusUploading : status === "uploaded" ? labels.statusUploaded : status === "failed" ? labels.statusFailed : labels.statusQueued;
+  const { label } = uploadQueueStatusPresentation(status, labels);
   return (
     <span className={cn(
       "inline-flex h-5 items-center gap-1 px-1.5 text-[8px] font-black uppercase tracking-widest",

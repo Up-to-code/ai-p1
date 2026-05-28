@@ -156,10 +156,22 @@ export function buildWorkspaceApiUrl(path: string) {
   return baseUrl ? `${baseUrl}${path}` : path;
 }
 
+export function isNativeWorkspaceRuntime() {
+  return isNativeRuntime();
+}
+
+export async function buildWorkspaceApiRequest(path: string, init: RequestInit = {}) {
+  return {
+    url: buildWorkspaceApiUrl(path),
+    init: {
+      ...init,
+      credentials: init.credentials ?? "include",
+      headers: await withMobileRequestHeaders(init.headers),
+    },
+  };
+}
+
 export async function workspaceApiFetch(path: string, init: RequestInit = {}) {
-  return fetch(buildWorkspaceApiUrl(path), {
-    ...init,
-    credentials: init.credentials ?? "include",
-    headers: await withMobileRequestHeaders(init.headers),
-  });
+  const request = await buildWorkspaceApiRequest(path, init);
+  return fetch(request.url, request.init);
 }

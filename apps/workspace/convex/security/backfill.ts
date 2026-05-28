@@ -9,6 +9,7 @@ import {
   normalizeBackfillTargetId,
   readBackfillTargetPage,
 } from "./backfillTargets";
+import { assertAdminConvexServiceToken } from "../serviceTokens";
 
 const DEFAULT_BATCH_SIZE = 25;
 const MAX_BATCH_SIZE = 100;
@@ -42,24 +43,8 @@ const backfillJobValidator = v.object({
   completedAt: v.optional(v.number()),
 });
 
-function configuredAdminToken() {
-  return process.env.ADMIN_CONVEX_SERVICE_TOKEN ?? "";
-}
-
-function timingSafeEqual(left: string, right: string) {
-  const maxLength = Math.max(left.length, right.length);
-  let diff = left.length ^ right.length;
-  for (let index = 0; index < maxLength; index += 1) {
-    diff |= (left.charCodeAt(index) || 0) ^ (right.charCodeAt(index) || 0);
-  }
-  return diff === 0;
-}
-
 function assertAdminToken(token: string) {
-  const configured = configuredAdminToken();
-  if (configured.length < 32 || !timingSafeEqual(token, configured)) {
-    throw new Error("Invalid admin service token.");
-  }
+  assertAdminConvexServiceToken(token, 32);
 }
 
 function batchSize(value: number | undefined) {

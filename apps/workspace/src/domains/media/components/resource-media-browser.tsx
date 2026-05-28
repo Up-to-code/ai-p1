@@ -14,6 +14,12 @@ import {
   type MediaKind,
   type MediaResourceType,
 } from "../api/media";
+import {
+  nextResourceMediaViewerIndex,
+  resourceMediaAllowedKinds,
+  resourceMediaAssets,
+  resourceMediaPreviewWindow,
+} from "../media-browser-view-model";
 import { ResourceMediaUploader } from "./resource-media-uploader";
 
 type ResourceMediaAsset = NonNullable<ReturnType<typeof useResourceMediaQuery>>[number];
@@ -90,19 +96,12 @@ export function ResourceMediaBrowser({
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const operation = useOperationState({ errorMessage: "Media action failed." });
-  const allowedKinds: MediaKind[] = mode === "gallery" ? ["image", "video"] : ["document"];
+  const allowedKinds = useMemo(() => resourceMediaAllowedKinds(mode), [mode]);
   const assets = useMemo(
-    () => (media ?? [])
-      .filter((asset) => allowedKinds.includes(asset.kind))
-      .sort((a, b) => {
-        if (mode !== "gallery") return 0;
-        return Number(b.isCover) - Number(a.isCover);
-      }),
-    [allowedKinds, media],
+    () => resourceMediaAssets(media ?? [], allowedKinds, mode),
+    [allowedKinds, media, mode],
   );
-  const galleryPreviewLimit = mode === "gallery" ? Math.min(previewLimit ?? 5, 5) : previewLimit;
-  const visibleAssets = typeof galleryPreviewLimit === "number" ? assets.slice(0, galleryPreviewLimit) : assets;
-  const overflowCount = typeof galleryPreviewLimit === "number" ? Math.max(0, assets.length - galleryPreviewLimit) : 0;
+  const { visibleAssets, overflowCount } = resourceMediaPreviewWindow(assets, mode, previewLimit);
   const activeAsset = viewerIndex !== null ? assets[viewerIndex] : null;
   const hasAssets = assets.length > 0;
 
@@ -112,8 +111,7 @@ export function ResourceMediaBrowser({
   };
 
   const moveViewer = (direction: -1 | 1) => {
-    if (viewerIndex === null || assets.length === 0) return;
-    setViewerIndex((viewerIndex + direction + assets.length) % assets.length);
+    setViewerIndex((current) => nextResourceMediaViewerIndex(current, assets.length, direction));
   };
 
   return (

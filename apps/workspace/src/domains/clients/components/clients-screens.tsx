@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ComponentProps, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import Image from "next/image";
 import { useQuery as useReactQuery } from "@tanstack/react-query";
 import { ArrowUpRight, CalendarDays, CheckCircle2, Copy, Edit, Mail, Phone, Plus, Search, Trash2, User, UserPlus, Users, History as ActivityIcon, FileText as DocsIcon, LayoutDashboard, Building, type LucideIcon } from "lucide-react";
@@ -39,12 +39,39 @@ import {
   deleteClientTaskRequest,
   updateClientTaskRequest,
   useClientTasksQuery,
+  type ClientTaskPayload,
 } from "@/domains/clients/api/client-tasks";
 import { useCalendarEventsQuery, useUpcomingCalendarEventsQuery } from "@/domains/calendar/api/calendar";
 import { usePropertiesQuery } from "@/domains/properties/api/properties";
 import { getOrganizationCapabilities } from "@/domains/organization/api/better-auth-organization";
 import { ClientDocumentsManager } from "@/domains/media/components/client-documents-manager";
 import type { Client, ClientType } from "../store/clients.types";
+import {
+  activePipelineStages,
+  activeJourneyClients as activeJourneyClientRows,
+  calendarEventsForClients,
+  clientFilters,
+  clientPriorities,
+  clientPipelineStageIndex,
+  clientStageFilters,
+  clientStatuses,
+  clientTaskActivityRows,
+  clientTaskUpdatePayload,
+  clientToFormValues,
+  clientUnitPickerProjection,
+  clientTypes,
+  clientValuesFromFormData,
+  clientViews,
+  clientsForStageFilter,
+  displayedClientsForView,
+  matchesClientSearch,
+  pipelineStages,
+  taskPayloadFromFormData,
+  typeTone,
+  unitLinkStatuses,
+  unitStatusTone,
+  type PipelineStage,
+} from "../client-view-model";
 import { useOperationState } from "@/lib/utils/operation-state";
 import { DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, HttpQueryState, ProgressiveLoadingState, SearchBox, StatusPill, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { useUrlListState } from "@/components/shared/use-url-list-state";
@@ -54,98 +81,7 @@ import { ClientForm } from "./client-form";
 import { ClientSheet } from "./client-sheet";
 import type { PropertyStatus } from "@/domains/properties";
 import type { ClientFormValues } from "../validation/client.schema";
-import type { ClientTaskPayload } from "@/domains/clients/api/client-tasks";
 import { sortPipelineClients } from "@/domains/clients/pipeline-order";
-
-const pipelineStages = ["new", "qualified", "viewing", "negotiation", "closed"] as const;
-const activePipelineStages = ["new", "qualified", "viewing", "negotiation"] as const;
-const clientFilters = ["all", "Buyer", "Tenant", "Investor", "Broker"] as const;
-const clientViews = ["pipeline", "list", "calendar"] as const;
-const clientStageFilters = ["all", "active", "closed"] as const;
-const clientTypes = ["Buyer", "Tenant", "Investor", "Broker"] as const;
-const clientStatuses = ["active", "inactive"] as const;
-const clientPriorities = ["normal", "high", "urgent"] as const;
-const unitLinkStatuses = ["interested", "shortlisted", "viewing", "offer", "rejected"] as const;
-type StatusPillTone = ComponentProps<typeof StatusPill>["tone"];
-type PipelineStage = (typeof pipelineStages)[number];
-
-function unitStatusTone(status: PropertyStatus): StatusPillTone {
-  if (status === "available") return "success";
-  if (status === "pending" || status === "reserved") return "warning";
-  if (status === "sold") return "info";
-  return "neutral";
-}
-
-function typeTone(type: ClientType) {
-  if (type === "Investor") return "success";
-  if (type === "Broker") return "warning";
-  if (type === "Tenant") return "info";
-  return "neutral";
-}
-
-function clientToFormValues(client: Client) {
-  return {
-    name: client.name,
-    type: client.type,
-    contact: client.contact,
-    phone: client.phone,
-    age: String(client.age),
-    nationality: client.nationality,
-    generation: client.generation,
-    budget: client.budget,
-    propertyInterest: client.propertyInterest,
-    status: client.status,
-    visibility: client.visibility ?? "private",
-    pipelineStage: client.pipelineStage,
-    pipelineOrder: client.pipelineOrder,
-    priority: client.priority,
-    nextAction: client.nextAction,
-    issue: client.issue ?? "",
-  };
-}
-
-function formText(formData: FormData, key: string) {
-  return String(formData.get(key) ?? "").trim();
-}
-
-function clientValuesFromFormData(formData: FormData): ClientFormValues {
-  return {
-    name: formText(formData, "name"),
-    type: formText(formData, "type") as ClientFormValues["type"],
-    contact: formText(formData, "contact"),
-    phone: formText(formData, "phone"),
-    age: formText(formData, "age"),
-    nationality: formText(formData, "nationality"),
-    generation: formText(formData, "generation"),
-    budget: formText(formData, "budget"),
-    propertyInterest: formText(formData, "propertyInterest"),
-    status: formText(formData, "status") as ClientFormValues["status"],
-    visibility: (formText(formData, "visibility") || "private") as ClientFormValues["visibility"],
-    pipelineStage: formText(formData, "pipelineStage") as ClientFormValues["pipelineStage"],
-    priority: formText(formData, "priority") as ClientFormValues["priority"],
-    nextAction: formText(formData, "nextAction"),
-    issue: formText(formData, "issue"),
-  };
-}
-
-function dateInputToTimestamp(value: string) {
-  if (!value) return undefined;
-  const timestamp = new Date(`${value}T12:00:00`).getTime();
-  return Number.isFinite(timestamp) ? timestamp : undefined;
-}
-
-function taskPayloadFromFormData(formData: FormData, clientId: string): ClientTaskPayload {
-  return {
-    clientId,
-    title: formText(formData, "title"),
-    status: formText(formData, "status") as ClientTaskPayload["status"],
-    visibility: (formText(formData, "visibility") || "private") as ClientTaskPayload["visibility"],
-    priority: formText(formData, "priority") as ClientTaskPayload["priority"],
-    dueAt: dateInputToTimestamp(formText(formData, "dueAt")),
-    propertyId: formText(formData, "propertyId") || undefined,
-    notes: formText(formData, "notes") || undefined,
-  };
-}
 
 function ClientDetailField({
   label,
@@ -424,30 +360,16 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
   const isLoading = isWorkspaceReady && clientsQuery.queryStatus === "loading";
   const isQueryBlocked = isLoading || clientsQuery.queryStatus === "error";
 
-  const searchedClients = useMemo(() => {
-    return clients.filter((client) => {
-      const q = search.trim().toLowerCase();
-      const matchesSearch = !q || [client.name, client.contact, client.propertyInterest, client.budget].some((value) => value.toLowerCase().includes(q));
-      return matchesSearch;
-    });
-  }, [clients, search]);
+  const searchedClients = useMemo(() => clients.filter((client) => matchesClientSearch(client, search)), [clients, search]);
 
   const activeJourneyClients = useMemo(
-    () => searchedClients.filter((client) => activePipelineStages.includes(client.pipelineStage as typeof activePipelineStages[number])),
+    () => activeJourneyClientRows(searchedClients),
     [searchedClients],
   );
 
-  const tableClients = useMemo(() => {
-    if (stageFilter === "active") {
-      return searchedClients.filter((client) => activePipelineStages.includes(client.pipelineStage as typeof activePipelineStages[number]));
-    }
-    if (stageFilter === "closed") {
-      return searchedClients.filter((client) => client.pipelineStage === "closed");
-    }
-    return searchedClients;
-  }, [searchedClients, stageFilter]);
+  const tableClients = useMemo(() => clientsForStageFilter(searchedClients, stageFilter), [searchedClients, stageFilter]);
 
-  const displayedClients = view === "pipeline" ? activeJourneyClients : view === "list" ? tableClients : searchedClients;
+  const displayedClients = displayedClientsForView(searchedClients, view, stageFilter);
 
   const markClientClosed = (client: Client) => {
     if (!account.organization.id) return;
@@ -673,9 +595,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
 
       {isWorkspaceReady && !isLoading && view === "calendar" && (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          {calendarEvents
-            .filter((event) => !event.clientId || searchedClients.some((client) => client.id === event.clientId))
-            .map((event) => (
+          {calendarEventsForClients(calendarEvents, searchedClients).map((event) => (
             <AppSection key={event.id} title={`${event.date} · ${event.time}`} description={event.owner}>
               <div className="flex items-start justify-between gap-4">
                 <div className="text-start">
@@ -781,19 +701,13 @@ export function ClientDetailScreen({ id }: { id: string }) {
     );
   }
 
-  const currentStageIndex = Math.max(0, pipelineStages.indexOf(client.pipelineStage as typeof pipelineStages[number]));
-  const linkedUnitIds = new Set(linkedUnits.map(({ link }) => link.propertyId));
-  const availableUnits = allUnits.filter((unit) => !linkedUnitIds.has(unit.id));
-  const unitSearchQuery = unitSearch.trim().toLowerCase();
-  const filteredAvailableUnits = availableUnits.filter((unit) => {
-    const matchesStatus = unitStatusFilter === "all" || unit.status === unitStatusFilter;
-    const matchesSearch = unitSearchQuery
-      ? [unit.title, unit.project, unit.price, unit.area, unit.status, unit.reference]
-        .some((value) => String(value ?? "").toLowerCase().includes(unitSearchQuery))
-      : true;
-    return matchesStatus && matchesSearch;
-  });
-  const visibleAvailableUnits = filteredAvailableUnits.slice(0, 36);
+  const currentStageIndex = clientPipelineStageIndex(client.pipelineStage);
+  const { availableUnits, filteredAvailableUnits, visibleAvailableUnits } = clientUnitPickerProjection(
+    allUnits,
+    linkedUnits,
+    unitStatusFilter,
+    unitSearch,
+  );
   const isUnitCatalogLoading = allUnitsQuery === undefined;
   const linkUnit = (propertyId: string) => {
     void linkOperation.run(async () => {
@@ -1229,16 +1143,14 @@ export function ClientDetailScreen({ id }: { id: string }) {
                 </div>
               ) : null}
 
-              {tasks.map((task) => {
-                const linkedUnit = units.find((unit) => unit.id === task.propertyId);
-                const isDone = task.status === "done";
+              {clientTaskActivityRows(tasks, units, locale, t('detail.activity.noDate')).map(({ task, linkedUnit, isDone, statusTone, dueDateLabel }) => {
                 return (
                   <article key={task.id} className="grid gap-4 rounded-[20px] border border-zinc-100 bg-white p-4 dark:border-white/5 dark:bg-[#0A0A0A] md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <StatusPill label={t(`detail.activity.taskStatuses.${task.status}`)} tone={isDone ? "success" : task.status === "canceled" ? "neutral" : "warning"} />
+                        <StatusPill label={t(`detail.activity.taskStatuses.${task.status}`)} tone={statusTone} />
                         <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t(`priorities.${task.priority}`)}</span>
-                        <span className="text-[10px] font-bold text-zinc-400">{task.dueAt ? new Date(task.dueAt).toLocaleDateString(locale) : t('detail.activity.noDate')}</span>
+                        <span className="text-[10px] font-bold text-zinc-400">{dueDateLabel}</span>
                       </div>
                       <p className={cn("mt-2 truncate text-sm font-black text-zinc-950 dark:text-zinc-50", isDone && "text-zinc-400 line-through dark:text-zinc-500")}>
                         {task.title}
@@ -1260,18 +1172,11 @@ export function ClientDetailScreen({ id }: { id: string }) {
                           disabled={taskOperation.isRunning}
                           onChange={(event) => void taskOperation.run(() => {
                             if (!workspaceOrganizationId) throw new Error("Select an organization first.");
-                            return updateClientTaskRequest(workspaceOrganizationId, task.id, {
-                              clientId: client.id,
-                              title: task.title,
-                              status: task.status,
-                              visibility: event.target.value as ClientTaskPayload["visibility"],
-                              priority: task.priority,
-                              dueAt: task.dueAt,
-                              propertyId: task.propertyId,
-                              projectId: task.projectId,
-                              calendarEventId: task.calendarEventId,
-                              notes: task.notes,
-                            });
+                            return updateClientTaskRequest(
+                              workspaceOrganizationId,
+                              task.id,
+                              clientTaskUpdatePayload(task, client.id, { visibility: event.target.value as ClientTaskPayload["visibility"] }),
+                            );
                           }, { successMessage: t("detail.activity.saved") })}
                           className="h-9 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-bold text-zinc-700 outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
                         >
@@ -1286,18 +1191,11 @@ export function ClientDetailScreen({ id }: { id: string }) {
                         disabled={taskOperation.isRunning}
                         onClick={() => void taskOperation.run(() => {
                           if (!workspaceOrganizationId) throw new Error("Select an organization first.");
-                          return updateClientTaskRequest(workspaceOrganizationId, task.id, {
-                            clientId: client.id,
-                            title: task.title,
-                            status: isDone ? "open" : "done",
-                            visibility: task.visibility ?? "private",
-                            priority: task.priority,
-                            dueAt: task.dueAt,
-                            propertyId: task.propertyId,
-                            projectId: task.projectId,
-                            calendarEventId: task.calendarEventId,
-                            notes: task.notes,
-                          });
+                          return updateClientTaskRequest(
+                            workspaceOrganizationId,
+                            task.id,
+                            clientTaskUpdatePayload(task, client.id, { status: isDone ? "open" : "done" }),
+                          );
                         }, { successMessage: t('detail.activity.saved') })}
                         className="h-9 rounded-xl text-xs font-bold"
                       >

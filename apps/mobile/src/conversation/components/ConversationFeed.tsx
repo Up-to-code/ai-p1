@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Keyboard, Pressable, StyleSheet, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { ArrowDown } from "lucide-react-native";
@@ -10,10 +10,13 @@ import type { ThreadPresentation } from "@/conversation/assistantProtocol";
 import { MessageBubble } from "@/conversation/components/MessageBubble";
 import { EmptyThreadWelcome } from "@/conversation/components/EmptyThreadWelcome";
 import { IconButton } from "@/foundation/primitives/IconButton";
-import { theme } from "@/foundation/theme/tokens";
+import { Text } from "@/foundation/primitives/Text";
+import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets, type EdgeInsets } from "react-native-safe-area-context";
 import { findLastIndex } from "@/foundation/utils/findLastIndex";
+import { shouldShowEmptyConversationWelcome } from "@/conversation/lib/conversationTimeline";
+import { logAgentDebug } from "@/conversation/lib/agentDebug";
 import type { ConversationMessage, ConversationRunStage, ConversationTurnAction } from "@/types/domain";
 
 type ConversationFeedProps = {
@@ -25,22 +28,40 @@ type ConversationFeedProps = {
   onApproveConfirmation?: (confirmationId: string) => void | Promise<void>;
   onCancelConfirmation?: (confirmationId: string) => void | Promise<void>;
   threadPresentation?: ThreadPresentation | null;
+  hasTransientTurn?: boolean;
+  isStreaming?: boolean;
+  bottomContentInset?: number;
+  scrollButtonBottomOffset?: number;
+  isLoading?: boolean;
+  loadingLabel?: string;
+  errorMessage?: string | null;
+  onRetryLoad?: () => void;
+  onDismissKeyboard?: () => void;
 };
 
 const AUTO_SCROLL_THRESHOLD = 120;
+const turnAdapterSafeAreaStyle = {
+  width: "100%" as const,
+  paddingHorizontal: theme.spacing.lg,
+};
 
 function ScrollToLatestButton({
+  bottomOffset,
   contentFillsViewport,
   isAtEnd,
   onPress,
 }: {
+  bottomOffset: number;
   contentFillsViewport: boolean;
   isAtEnd: boolean;
   onPress: () => void;
 }) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const styles = useMemo(() => createStyles(colors, insets), [colors, insets]);
+  const styles = useMemo(
+    () => createStyles(colors, insets, bottomOffset, bottomOffset),
+    [bottomOffset, colors, insets],
+  );
 
   if (isAtEnd || !contentFillsViewport) {
     return null;
@@ -51,6 +72,30 @@ function ScrollToLatestButton({
       <IconButton onPress={onPress} style={{ backgroundColor: colors.background }}>
         <ArrowDown size={18} color={colors.textPrimary} />
       </IconButton>
+    </View>
+  );
+}
+
+function ThreadLoadingSkeleton({ label }: { label: string }) {
+  const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
+  const styles = useMemo(
+    () => createStyles(colors, insets, 120, 120),
+    [colors, insets],
+  );
+
+  return (
+    <View style={styles.skeletonWrap}>
+      <View style={styles.skeletonBlockWide} />
+      <View style={styles.skeletonBlockMedium} />
+      <View style={styles.skeletonUserRow}>
+        <View style={styles.skeletonUserBubble} />
+      </View>
+      <View style={styles.skeletonAssistantBlock} />
+      <View style={styles.skeletonAssistantLine} />
+      <Text tone="muted" style={styles.skeletonLabel}>
+        {label}
+      </Text>
     </View>
   );
 }
@@ -95,7 +140,7 @@ const ConversationMessageRow = React.memo(function ConversationMessageRow({
       />
 
       {item.uiTurn ? (
-        <Animated.View entering={FadeInDown.duration(300)}>
+        <Animated.View entering={FadeInDown.duration(300)} style={turnAdapterSafeAreaStyle}>
           <AssistantTurnAdapter
             message={item}
             onAction={onTurnAction}
@@ -116,10 +161,22 @@ export function ConversationFeed({
   onApproveConfirmation,
   onCancelConfirmation,
   threadPresentation,
+  hasTransientTurn = false,
+  isStreaming = false,
+  bottomContentInset = 40,
+  scrollButtonBottomOffset = bottomContentInset,
+  isLoading = false,
+  loadingLabel = "Loading",
+  errorMessage,
+  onRetryLoad,
+  onDismissKeyboard,
 }: ConversationFeedProps) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const styles = useMemo(() => createStyles(colors, insets), [colors, insets]);
+  const styles = useMemo(
+    () => createStyles(colors, insets, bottomContentInset, scrollButtonBottomOffset),
+    [bottomContentInset, colors, insets, scrollButtonBottomOffset],
+  );
   const listRef = useRef<FlashListRef<ConversationMessage> | null>(null);
   const shouldAutoScrollRef = useRef(true);
   const prevMessageCountRef = useRef(messages.length);
@@ -141,7 +198,14 @@ export function ConversationFeed({
     [runStageFeed],
   );
 
-  const scrollToLatest = () => {
+  const scrollToLatest = (reason: "message_added" | "streaming" | "content_size" | "manual") => {
+    logAgentDebug("feed.scroll_to_latest", {
+      reason,
+      messageCount: messages.length,
+      isAtEnd,
+      contentFillsViewport,
+      bottomContentInset,
+    });
     listRef.current?.scrollToEnd({ animated: true });
   };
 
@@ -166,6 +230,14 @@ export function ConversationFeed({
     syncScrollState(contentOffset.y, layoutMeasurement.height, contentSize.height);
   };
 
+  const dismissKeyboard = useCallback(() => {
+    if (onDismissKeyboard) {
+      onDismissKeyboard();
+      return;
+    }
+    Keyboard.dismiss();
+  }, [onDismissKeyboard]);
+
   // Reset auto-scroll when new messages are added (user sends a message)
   useEffect(() => {
     if (messages.length > prevMessageCountRef.current) {
@@ -175,7 +247,7 @@ export function ConversationFeed({
       }
       messageAddedFrameRef.current = requestAnimationFrame(() => {
         messageAddedFrameRef.current = null;
-        scrollToLatest();
+        scrollToLatest("message_added");
       });
     }
     prevMessageCountRef.current = messages.length;
@@ -195,7 +267,7 @@ export function ConversationFeed({
     }
 
     const animationFrame = requestAnimationFrame(() => {
-      scrollToLatest();
+      scrollToLatest("streaming");
     });
 
     return () => cancelAnimationFrame(animationFrame);
@@ -241,10 +313,46 @@ export function ConversationFeed({
     threadPresentation,
   ]);
 
-  // Show welcome screen for empty/new threads
-  const hasUserMessages = messages.some((m) => m.role === "user");
+  const showEmptyWelcome = shouldShowEmptyConversationWelcome({
+    messages,
+    hasTransientTurn,
+    isStreaming,
+  });
 
-  if (!hasUserMessages) {
+  const canShowBlockingState = messages.length === 0 && !hasTransientTurn && !isStreaming;
+
+  if (errorMessage && canShowBlockingState) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.loadingState}>
+          <Text tone="primary" style={styles.errorTitle}>
+            Unable to load this thread.
+          </Text>
+          <Text tone="muted" style={styles.loadingText}>
+            {errorMessage}
+          </Text>
+          {onRetryLoad ? (
+            <Pressable
+              onPress={onRetryLoad}
+              style={({ pressed }) => [styles.retryButton, pressed ? styles.retryButtonPressed : null]}
+            >
+              <Text style={styles.retryText}>Retry</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      </View>
+    );
+  }
+
+  if (isLoading && canShowBlockingState) {
+    return (
+      <View style={styles.container}>
+        <ThreadLoadingSkeleton label={loadingLabel} />
+      </View>
+    );
+  }
+
+  if (showEmptyWelcome) {
     return (
       <View style={styles.container}>
         <EmptyThreadWelcome />
@@ -260,13 +368,21 @@ export function ConversationFeed({
         keyExtractor={keyExtractor}
         renderItem={renderItem}
         contentContainerStyle={styles.content}
+        onTouchStart={dismissKeyboard}
         onLayout={(event) => {
           const height = event.nativeEvent.layout.height;
           viewportHeightRef.current = height;
           syncScrollState(scrollOffsetRef.current, height, contentHeightRef.current);
         }}
         onScroll={updateAutoScrollPreference}
-        onScrollBeginDrag={() => setActiveActionMessageId(null)}
+        onScrollBeginDrag={() => {
+          setActiveActionMessageId(null);
+          dismissKeyboard();
+        }}
+        scrollIndicatorInsets={{
+          right: Math.max(insets.right, theme.spacing.sm),
+          bottom: bottomContentInset,
+        }}
         onContentSizeChange={(_width, height) => {
           contentHeightRef.current = height;
           syncScrollState(scrollOffsetRef.current, viewportHeightRef.current, height);
@@ -276,26 +392,32 @@ export function ConversationFeed({
           }
 
           requestAnimationFrame(() => {
-            scrollToLatest();
+            scrollToLatest("content_size");
           });
         }}
         scrollEventThrottle={16}
-        ListHeaderComponent={<View style={{ height: insets.top + 40 }} />}
+        ListHeaderComponent={<View style={{ height: insets.top + 50 }} />}
       />
 
       <ScrollToLatestButton
+        bottomOffset={bottomContentInset}
         contentFillsViewport={contentFillsViewport}
         isAtEnd={isAtEnd}
         onPress={() => {
           shouldAutoScrollRef.current = true;
-          scrollToLatest();
+          scrollToLatest("manual");
         }}
       />
     </View>
   );
 }
 
-const createStyles = (colors: any, insets: any) => StyleSheet.create({
+const createStyles = (
+  colors: AppColors,
+  insets: EdgeInsets,
+  bottomContentInset: number,
+  scrollButtonBottomOffset: number,
+) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -303,11 +425,99 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
   content: {
     flexGrow: 1,
     paddingTop: theme.spacing.lg,
-    paddingBottom: 40,
+    paddingBottom: Math.max(bottomContentInset + theme.spacing.xxl, 180),
+  },
+  loadingState: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing.sm,
+    paddingTop: theme.spacing.xxxl,
+  },
+  loadingText: {
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: "center",
+  },
+  errorTitle: {
+    fontFamily: "Manrope_700Bold",
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: "center",
+  },
+  retryButton: {
+    minHeight: 38,
+    minWidth: 88,
+    borderRadius: 19,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: theme.spacing.lg,
+    marginTop: theme.spacing.xs,
+    backgroundColor: colors.accent,
+  },
+  retryButtonPressed: {
+    opacity: 0.8,
+  },
+  retryText: {
+    color: "#FFFFFF",
+    fontFamily: "Manrope_700Bold",
+    fontSize: 13,
   },
   scrollButtonWrap: {
     position: "absolute",
     right: theme.spacing.lg,
-    bottom: theme.spacing.md,
+    bottom: Math.max(scrollButtonBottomOffset, insets.bottom + theme.spacing.xxl),
+    zIndex: 12,
+  },
+  skeletonWrap: {
+    flex: 1,
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: insets.top + 92,
+    gap: 18,
+  },
+  skeletonBlockWide: {
+    alignSelf: "stretch",
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.surfaceRaised,
+    opacity: 0.62,
+  },
+  skeletonBlockMedium: {
+    width: "68%",
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.surfaceRaised,
+    opacity: 0.48,
+  },
+  skeletonUserRow: {
+    alignItems: "flex-end",
+    paddingTop: 12,
+  },
+  skeletonUserBubble: {
+    width: 92,
+    height: 52,
+    borderRadius: 26,
+    borderTopRightRadius: 10,
+    backgroundColor: colors.surfaceRaised,
+    opacity: 0.72,
+  },
+  skeletonAssistantBlock: {
+    width: "86%",
+    height: 92,
+    borderRadius: 24,
+    backgroundColor: colors.surfaceRaised,
+    opacity: 0.5,
+  },
+  skeletonAssistantLine: {
+    width: "54%",
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: colors.surfaceRaised,
+    opacity: 0.38,
+  },
+  skeletonLabel: {
+    marginTop: 4,
+    fontSize: 13,
+    lineHeight: 18,
   },
 });

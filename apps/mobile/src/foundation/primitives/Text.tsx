@@ -1,7 +1,7 @@
 import { Text as RNText, StyleSheet, type TextProps as RNTextProps, type TextStyle } from "react-native";
 import React, { Children, isValidElement, useMemo, type ReactNode } from "react";
 
-import { theme } from "@/foundation/theme/tokens";
+import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { isArabic } from "@/foundation/utils/rtl";
 
@@ -70,7 +70,7 @@ function extractTextContent(node: ReactNode): string {
   return Children.toArray(node).map((child) => extractTextContent(child)).join("");
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: AppColors) => StyleSheet.create({
   base: {
     color: colors.textPrimary,
     fontFamily: "Manrope_500Medium",

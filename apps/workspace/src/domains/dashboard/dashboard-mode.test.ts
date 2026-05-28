@@ -34,16 +34,18 @@ describe("dashboard mode routing", () => {
     const sidebar = readSource("src/components/layout/sidebar.tsx");
     const dashboard = readSource("src/domains/dashboard/components/dashboard-screen.tsx");
     const dashboardChat = readSource("src/components/dashboard/dashboard-chat.tsx");
+    const conversationRuntime = readSource("src/domains/agents/conversation-runtime.ts");
     const markdown = readSource("src/components/ui/markdown.tsx");
 
     expect(topbar).toContain("activeAiThreadId");
     expect(topbar).toContain('nextMode === "ai" ? activeAiThreadId : undefined');
     expect(dashboardChat).toContain("setActiveAiThreadId(threadId)");
     expect(dashboardChat).toContain("...messages");
-    expect(dashboardChat).toContain("durable.length < visibleTransientMessages.length");
-    expect(dashboardChat).toContain("function contentDirection");
-    expect(dashboardChat).toContain('return "rtl"');
-    expect(dashboardChat).toContain('return "ltr"');
+    expect(dashboardChat).toContain("visibleAgentConversationMessages");
+    expect(conversationRuntime).toContain("durable.length < visibleTransientMessages.length");
+    expect(conversationRuntime).toContain("function contentDirection");
+    expect(conversationRuntime).toContain('return "rtl"');
+    expect(conversationRuntime).toContain('return "ltr"');
     expect(dashboardChat).toContain('dir={assistantDirection}');
     expect(dashboardChat).toContain('<Markdown dir={assistantDirection ?? "auto"}');
     expect(dashboardChat).toContain("[&_ul]:list-disc");
@@ -60,7 +62,7 @@ describe("dashboard mode routing", () => {
     expect(sidebar).toContain("useAgentThreadsQuery(workspaceOrganizationId");
     expect(sidebar).toContain("enabled: Boolean(workspaceOrganizationId)");
     expect(dashboard).toContain('parseWorkspaceMode(searchParams.get("mode"))');
-    expect(dashboardChat).toContain('params.set("mode", "ai")');
+    expect(conversationRuntime).toContain('params.set("mode", "ai")');
   });
 
   it("keeps internal ws routing while avoiding visible WS labels", () => {

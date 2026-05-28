@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/landing/navbar";
 import Footer from "@/components/footer";
+import { WorkspacePublicJsonLd } from "@/components/seo-json-ld";
 
 export default function PublicLayout({
   children,
@@ -8,6 +9,7 @@ export default function PublicLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground transition-colors duration-500">
+      <WorkspacePublicJsonLd />
       <Navbar />
       <main className="flex-1 pt-16">{children}</main>
       <Footer />

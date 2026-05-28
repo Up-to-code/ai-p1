@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Pressable, type ViewStyle } from "react-native"
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { Text } from "@/foundation/primitives/Text";
-import { theme, radii } from "@/foundation/theme/tokens";
+import { theme, radii, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 
 export type PromptChipData = {
@@ -74,7 +74,7 @@ export function PromptChips({
   );
 }
 
-const createStyles = (colors: any) =>
+const createStyles = (colors: AppColors) =>
   StyleSheet.create({
     container: {
       marginBottom: 8,

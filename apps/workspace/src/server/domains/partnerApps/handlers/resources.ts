@@ -5,21 +5,18 @@ import type {
 } from "@qentrah/partner-auth-core";
 import { validateJsonBody } from "@/server/utils/request/json-body";
 import { inboundWebhookSchema } from "../validation/partner-app.schema";
-import { authorizePartnerResourceRequest, partnerAccessError } from "../services/access-token";
-import {
-  isOrganizationApiKeyToken,
-  organizationApiKeyAccessError,
-  requireOrganizationApiKeyAccess,
-  type OrganizationApiKeyAccessContext,
-} from "../services/organization-api-key-access";
 import {
   acceptInboundWebhook,
-  readOrganizationApiKeyResource,
-  readPartnerResource,
-  writeOrganizationApiKeyResource,
-  writePartnerResource,
 } from "../services/resources";
-import type { PartnerAccessContext } from "../services/access-token";
+import {
+  isPartnerApiKeyAccess,
+  isPartnerOAuthAccess,
+  partnerResourceAccessError,
+  partnerResourceAccessIdentity,
+  readAuthorizedPartnerResource,
+  requirePartnerResourceAccess,
+  writeAuthorizedPartnerResource,
+} from "../services/partner-resource-access";
 
 function queryInput(c: Context) {
   const url = new URL(c.req.url);
@@ -32,51 +29,18 @@ async function optionalJson(c: Context) {
   return JSON.parse(text) as unknown;
 }
 
-async function requireAccess(
-  c: Context,
-  resource: PartnerPermissionResource,
-  action: PartnerPermissionAction,
-) {
-  const organizationId = c.req.param("organizationId");
-  if (!organizationId) {
-    throw new Response(JSON.stringify({ error: "Organization id is required." }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-  const authorization = c.req.header("authorization");
-  const token = authorization?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim() ?? "";
-  if (isOrganizationApiKeyToken(token)) {
-    return requireOrganizationApiKeyAccess(c, organizationId, resource, action);
-  }
-  return authorizePartnerResourceRequest(c, organizationId, resource, action);
-}
-
-function accessError(error: unknown) {
-  if (error instanceof Response) return organizationApiKeyAccessError(error);
-  return partnerAccessError(error);
-}
-
-function isApiKeyAccess(access: PartnerAccessContext | OrganizationApiKeyAccessContext): access is OrganizationApiKeyAccessContext {
-  return access.type === "apiKey";
-}
-
 export async function handlePartnerMe(c: Context) {
   try {
-    const access = await requireAccess(c, "organization", "read");
-    const organization = isApiKeyAccess(access)
-      ? await readOrganizationApiKeyResource(access.organizationId, "organization")
-      : await readPartnerResource(access.organizationId, "organization");
+    const access = await requirePartnerResourceAccess(c, "organization", "read");
+    const organization = await readAuthorizedPartnerResource(access, "organization");
     return c.json({
       organizationId: access.organizationId,
-      ...(isApiKeyAccess(access)
-        ? { apiKeyId: access.apiKeyId, keyId: access.keyId, appName: access.name }
-        : { partnerAppId: access.partnerAppId, connectionId: access.connectionId, appName: access.appName }),
+      ...partnerResourceAccessIdentity(access),
       scopes: access.scopes,
       organization,
     });
   } catch (error) {
-    return accessError(error);
+    return partnerResourceAccessError(error);
   }
 }
 
@@ -85,13 +49,11 @@ export async function handlePartnerReadCollection(
   resource: Exclude<PartnerPermissionResource, "organization" | "media">,
 ) {
   try {
-    const access = await requireAccess(c, resource, "read");
-    const data = isApiKeyAccess(access)
-      ? await readOrganizationApiKeyResource(access.organizationId, resource, queryInput(c))
-      : await readPartnerResource(access.organizationId, resource, queryInput(c));
+    const access = await requirePartnerResourceAccess(c, resource, "read");
+    const data = await readAuthorizedPartnerResource(access, resource, queryInput(c));
     return c.json({ data });
   } catch (error) {
-    return accessError(error);
+    return partnerResourceAccessError(error);
   }
 }
 
@@ -101,16 +63,14 @@ export async function handlePartnerReadById(
   idParamName: string,
 ) {
   try {
-    const access = await requireAccess(c, resource, "read");
+    const access = await requirePartnerResourceAccess(c, resource, "read");
     const input = { [idParamName]: c.req.param(idParamName) };
-    const data = isApiKeyAccess(access)
-      ? await readOrganizationApiKeyResource(access.organizationId, resource, input)
-      : await readPartnerResource(access.organizationId, resource, input);
+    const data = await readAuthorizedPartnerResource(access, resource, input);
     return c.json({
       data,
     });
   } catch (error) {
-    return accessError(error);
+    return partnerResourceAccessError(error);
   }
 }
 
@@ -119,28 +79,24 @@ export async function handlePartnerClientWrite(
   action: Exclude<PartnerPermissionAction, "read">,
 ) {
   try {
-    const access = await requireAccess(c, "client", action);
+    const access = await requirePartnerResourceAccess(c, "client", action);
     const input = action === "create"
       ? await optionalJson(c)
       : { ...(await optionalJson(c) as Record<string, unknown>), clientId: c.req.param("clientId") };
-    const data = isApiKeyAccess(access)
-      ? await writeOrganizationApiKeyResource(access, "client", action, input)
-      : await writePartnerResource(access, "client", action, input);
+    const data = await writeAuthorizedPartnerResource(access, "client", action, input);
     return c.json({ data });
   } catch (error) {
-    return accessError(error);
+    return partnerResourceAccessError(error);
   }
 }
 
 export async function handlePartnerMediaList(c: Context) {
   try {
-    const access = await requireAccess(c, "media", "read");
-    const data = isApiKeyAccess(access)
-      ? await readOrganizationApiKeyResource(access.organizationId, "media", queryInput(c))
-      : await readPartnerResource(access.organizationId, "media", queryInput(c));
+    const access = await requirePartnerResourceAccess(c, "media", "read");
+    const data = await readAuthorizedPartnerResource(access, "media", queryInput(c));
     return c.json({ data });
   } catch (error) {
-    return accessError(error);
+    return partnerResourceAccessError(error);
   }
 }
 
@@ -149,9 +105,12 @@ export async function handlePartnerInboundWebhook(c: Context) {
   if (!parsed.ok) return parsed.response;
 
   try {
-    const access = await requireAccess(c, "client", "create");
-    if (isApiKeyAccess(access)) {
+    const access = await requirePartnerResourceAccess(c, "client", "create");
+    if (isPartnerApiKeyAccess(access)) {
       return c.json({ error: "API keys cannot call inbound webhook endpoints." }, 403);
+    }
+    if (!isPartnerOAuthAccess(access)) {
+      return c.json({ error: "Partner access denied." }, 401);
     }
     return c.json({
       result: await acceptInboundWebhook(access, {
@@ -160,6 +119,6 @@ export async function handlePartnerInboundWebhook(c: Context) {
       }),
     });
   } catch (error) {
-    return partnerAccessError(error);
+    return partnerResourceAccessError(error);
   }
 }

@@ -13,8 +13,7 @@ describe("project flow source", () => {
   const source = readSource("src/domains/projects/components/projects-screens.tsx");
 
   it("uses the project command detail header and tab spacing pattern", () => {
-    expect(source).toContain("<Tabs defaultValue=\"details\" className=\"space-y-8\"");
-    expect(source).toContain("relative min-h-[360px] overflow-hidden rounded-[24px]");
+    expect(source).toContain("<Tabs defaultValue=\"overview\" className=\"space-y-6\"");
     expect(source).toContain("MiniMovement label={td('sales.status.available')}");
     expect(source).toContain("<AppTabsList");
     expect(source).toContain("className=\"gap-8\"");
@@ -23,11 +22,15 @@ describe("project flow source", () => {
   });
 
   it("keeps project-specific detail tabs and data surfaces", () => {
-    for (const value of ['value: "details"', 'value: "inventory"', 'value: "documents"', 'value: "sales"', 'value: "activity"']) {
+    for (const value of ['value: "overview"', 'value: "inventory"', 'value: "documents"', 'value: "sales"', 'value: "activity"']) {
       expect(source).toContain(value);
     }
-    expect(source).toContain("{ label: String(t('detail.labels.units')), value: project.units");
-    expect(source).toContain("ReadinessBar label={td('metrics.launchReadiness')}");
+    expect(source).toContain("projectInventoryMetrics(units, project?.units ?? 0)");
+    expect(source).toContain("projectDocumentAssets(projectMedia)");
+    expect(source).toContain("compactProjectDetailRows(optionalCoreDetailRows)");
+    expect(source).toContain("projectLocationLabel(project)");
+    expect(source).toContain("ProjectMetaPill icon={Layers3}");
+    expect(source).toContain("ReadinessBar label={td('metrics.inventoryCoverage')}");
     expect(source).toContain("ResourceMediaBrowser");
     expect(source).not.toContain("REGA-8829-01");
     expect(source).not.toContain("42.8M SAR");

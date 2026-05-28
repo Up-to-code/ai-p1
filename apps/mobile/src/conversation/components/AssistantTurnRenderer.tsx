@@ -1,5 +1,5 @@
 import { useMemo, type ReactNode } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { Sparkles } from "lucide-react-native";
 
@@ -7,7 +7,7 @@ import type { AssistantAction, AssistantBlock, AssistantTurn } from "@/conversat
 import { Text } from "@/foundation/primitives/Text";
 import { MarkdownText } from "@/foundation/primitives/MarkdownText";
 import { isArabic } from "@/foundation/utils/rtl";
-import { theme, radii } from "@/foundation/theme/tokens";
+import { theme, radii, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { isRtlDirection, resolveAssistantDirection } from "@/conversation/lib/assistantPresentation";
 import { MessageActions } from "./MessageActions";
@@ -96,12 +96,14 @@ function RenderBlock({
   isAr,
   onAction,
   onSuggestionPress,
+  maxContentWidth,
 }: {
   block: AssistantBlock;
   turn: AssistantTurn;
   isAr: boolean;
   onAction?: AssistantTurnRendererProps["onAction"];
   onSuggestionPress?: AssistantTurnRendererProps["onSuggestionPress"];
+  maxContentWidth: number;
 }) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -110,7 +112,7 @@ function RenderBlock({
     case "text":
       return (
         <Section title={block.title} tone={turn.motion.preset} isAr={isAr} cardless>
-          <MarkdownText text={block.body} tone="secondary" style={styles.bodyText} onBadgePress={onSuggestionPress} />
+          <MarkdownText text={block.body} tone="secondary" style={styles.bodyText} onBadgePress={onSuggestionPress} maxContentWidth={maxContentWidth} />
           {renderBlockSuggestions(block, onSuggestionPress, false, isAr)}
         </Section>
       );
@@ -123,6 +125,7 @@ function RenderBlock({
               tone="secondary"
               style={styles.bodyText}
               onBadgePress={onSuggestionPress}
+              maxContentWidth={maxContentWidth}
             />
           ) : null}
           {renderBlockSuggestions(block, onSuggestionPress, false, isAr)}
@@ -162,7 +165,7 @@ function RenderBlock({
     case "followup":
       return (
         <Section title={block.title} tone={turn.motion.preset} isAr={isAr} cardless>
-          <MarkdownText text={block.prompt} tone="secondary" style={styles.bodyText} onBadgePress={onSuggestionPress} />
+          <MarkdownText text={block.prompt} tone="secondary" style={styles.bodyText} onBadgePress={onSuggestionPress} maxContentWidth={maxContentWidth} />
           {renderBlockSuggestions(block, onSuggestionPress, true, isAr)}
         </Section>
       );
@@ -198,7 +201,7 @@ function RenderBlock({
     case "advisor_note":
       return (
         <Section title={block.title} tone={turn.motion.preset} isAr={isAr} cardless>
-          <MarkdownText text={block.body} tone="secondary" style={styles.bodyText} onBadgePress={onSuggestionPress} />
+          <MarkdownText text={block.body} tone="secondary" style={styles.bodyText} onBadgePress={onSuggestionPress} maxContentWidth={maxContentWidth} />
           {block.bullets?.length ? (
             <View style={styles.bulletsWrap}>
               {block.bullets.map((bullet) => {
@@ -226,7 +229,7 @@ function RenderBlock({
     case "empty":
       return (
         <Section title={block.title} tone={turn.motion.preset} isAr={isAr} cardless>
-          <MarkdownText text={block.body} tone="secondary" style={styles.bodyText} onBadgePress={onSuggestionPress} />
+          <MarkdownText text={block.body} tone="secondary" style={styles.bodyText} onBadgePress={onSuggestionPress} maxContentWidth={maxContentWidth} />
           {renderBlockSuggestions(block, onSuggestionPress, true, isAr)}
         </Section>
       );
@@ -241,7 +244,9 @@ export function AssistantTurnRenderer({
   onSuggestionPress,
 }: AssistantTurnRendererProps) {
   const { colors } = useTheme();
+  const { width } = useWindowDimensions();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const maxContentWidth = Math.max(220, width - theme.spacing.lg * 2 - theme.spacing.xl * 2);
 
   const fullText = useMemo(() => {
     return turn.blocks
@@ -284,6 +289,7 @@ export function AssistantTurnRenderer({
               isAr={isAr}
               onAction={onAction}
               onSuggestionPress={onSuggestionPress}
+              maxContentWidth={maxContentWidth}
             />
           </View>
         );
@@ -302,7 +308,7 @@ function renderBlockSuggestions(
   isFollowup = false,
   isAr = false,
 ) {
-  const suggestions = (block as any).suggestions as string[] | undefined;
+  const suggestions = block.suggestions;
   if (!suggestions?.length) return null;
 
   const chips: PromptChipData[] = suggestions.map((s) => {
@@ -345,10 +351,12 @@ const rendererStyles = StyleSheet.create({
   },
 });
 
-const createStyles = (colors: any) => {
+const createStyles = (colors: AppColors) => {
   const isDark = colors.background === "#000000";
   return StyleSheet.create({
     container: {
+      width: "100%",
+      maxWidth: "100%",
       marginTop: 0,
       gap: 12, // Increased from 2 for better block separation
     },
@@ -360,10 +368,14 @@ const createStyles = (colors: any) => {
       gap: theme.spacing.md,
     },
     content: {
+      width: "100%",
+      minWidth: 0,
       flex: 1,
       gap: theme.spacing.md,
     },
     cardless: {
+      width: "100%",
+      maxWidth: "100%",
       paddingHorizontal: theme.spacing.xl,
       gap: 2,
       borderWidth: 0,
@@ -407,10 +419,13 @@ const createStyles = (colors: any) => {
       gap: theme.spacing.sm, // Increased from xs to sm
     },
     bulletRow: {
+      width: "100%",
+      maxWidth: "100%",
       flexDirection: "row",
       gap: 8,
     },
     bulletText: {
+      flexShrink: 1,
       fontSize: 14,
       lineHeight: 22,
       color: colors.textSecondary,

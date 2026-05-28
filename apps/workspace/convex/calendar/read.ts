@@ -3,6 +3,8 @@ import { query } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
+import { activeChronologicalWorkspaceRows, boundedWorkspaceReadLimit } from "../workspace/readSurface";
+import { calendarStats } from "../workspace/readStats";
 import { calendarEventValidator } from "./validators";
 
 const MAX_LIST_EVENTS = 500;
@@ -49,10 +51,7 @@ export const list = query({
           .take(MAX_LIST_EVENTS);
 
     return Promise.all(
-      events
-        .filter((event) => !event.deletedAt)
-        .sort((a, b) => a.startAt - b.startAt)
-        .map((event) => presentEvent(ctx, event)),
+      activeChronologicalWorkspaceRows(events).map((event) => presentEvent(ctx, event)),
     );
   },
 });
@@ -72,10 +71,7 @@ export const listRange = query({
       .take(MAX_RANGE_EVENTS);
 
     return Promise.all(
-      events
-        .filter((event) => !event.deletedAt)
-        .sort((a, b) => a.startAt - b.startAt)
-        .map((event) => presentEvent(ctx, event)),
+      activeChronologicalWorkspaceRows(events).map((event) => presentEvent(ctx, event)),
     );
   },
 });
@@ -89,17 +85,14 @@ export const listUpcoming = query({
   returns: v.array(calendarEventValidator),
   handler: async (ctx, args) => {
     await assertOrganizationResourcePermission(ctx, args.organizationId, "calendar", "read");
-    const limit = Math.max(1, Math.min(args.limit ?? 50, 100));
+    const limit = boundedWorkspaceReadLimit(args.limit, 50, 100);
     const events = await ctx.db
       .query("calendarEvents")
       .withIndex("by_start", (q) => q.eq("organizationId", args.organizationId).gte("startAt", args.startAt))
       .take(limit);
 
     return Promise.all(
-      events
-        .filter((event) => !event.deletedAt)
-        .sort((a, b) => a.startAt - b.startAt)
-        .map((event) => presentEvent(ctx, event)),
+      activeChronologicalWorkspaceRows(events).map((event) => presentEvent(ctx, event)),
     );
   },
 });
@@ -123,14 +116,6 @@ export const statsInRange = query({
       .query("calendarEvents")
       .withIndex("by_start", (q) => q.eq("organizationId", args.organizationId).gte("startAt", args.startAt).lte("startAt", args.endAt))
       .take(MAX_RANGE_EVENTS);
-    const active = events.filter((event) => !event.deletedAt);
-
-    return {
-      total: active.length,
-      confirmed: active.filter((event) => event.status === "confirmed").length,
-      pending: active.filter((event) => event.status === "pending").length,
-      draft: active.filter((event) => event.status === "draft").length,
-      owners: new Set(active.map((event) => event.owner)).size,
-    };
+    return calendarStats(events);
   },
 });

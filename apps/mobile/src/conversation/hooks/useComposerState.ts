@@ -1,16 +1,22 @@
 import { useEffect, useState } from "react";
 import type { NativeSyntheticEvent, TextInputContentSizeChangeEventData } from "react-native";
 
-const INPUT_MIN_HEIGHT = 24;
-const INPUT_LINE_HEIGHT = 22;
-const INPUT_MAX_VISIBLE_LINES = 3;
-const INPUT_MAX_HEIGHT = INPUT_LINE_HEIGHT * INPUT_MAX_VISIBLE_LINES;
-const EXPAND_THRESHOLD_HEIGHT = INPUT_MAX_HEIGHT;
-const EXPAND_THRESHOLD_LINES = 3;
-const HEIGHT_UPDATE_DEADZONE = 2;
+import {
+  clampComposerInputHeight,
+  composerMeasuredLineCount,
+  COMPOSER_INPUT_LINE_HEIGHT,
+  COMPOSER_INPUT_MAX_HEIGHT,
+  COMPOSER_INPUT_MIN_HEIGHT,
+  isComposerInputExpanded,
+  nextComposerMeasuredHeight,
+  resolveComposerMeasuredHeight,
+  shouldShowComposerExpansion,
+  shouldScrollComposerInput,
+} from "@/conversation/lib/composerDockLayout";
 
-function clampHeight(height: number) { return Math.min(Math.max(height, INPUT_MIN_HEIGHT), INPUT_MAX_HEIGHT); }
-function getMeasuredLineCount(height: number) { return Math.max(1, Math.round(height / INPUT_LINE_HEIGHT)); }
+const INPUT_MIN_HEIGHT = COMPOSER_INPUT_MIN_HEIGHT;
+const INPUT_LINE_HEIGHT = COMPOSER_INPUT_LINE_HEIGHT;
+const INPUT_MAX_HEIGHT = COMPOSER_INPUT_MAX_HEIGHT;
 
 export function useComposerState(draftText: string) {
   const [measuredContentHeight, setMeasuredContentHeight] = useState(INPUT_MIN_HEIGHT);
@@ -21,19 +27,19 @@ export function useComposerState(draftText: string) {
     }
   }, [draftText]);
 
-  const inputHeight = clampHeight(measuredContentHeight);
-  const measuredLineCount = getMeasuredLineCount(inputHeight);
-  const inputExpanded = measuredLineCount > 1 || draftText.includes("\n");
-  const showExpandComposer = measuredLineCount >= EXPAND_THRESHOLD_LINES || inputHeight >= EXPAND_THRESHOLD_HEIGHT;
+  const resolvedContentHeight = resolveComposerMeasuredHeight(draftText, measuredContentHeight);
+  const inputHeight = clampComposerInputHeight(resolvedContentHeight);
+  const measuredLineCount = composerMeasuredLineCount(inputHeight);
+  const inputExpanded = isComposerInputExpanded(inputHeight, draftText);
+  const showExpandComposer = shouldShowComposerExpansion(inputHeight);
+  const inputScrollable = shouldScrollComposerInput(resolvedContentHeight);
 
   const handleContentSizeChange = (
     event: NativeSyntheticEvent<TextInputContentSizeChangeEventData>,
   ) => {
-    const contentHeight = Math.round(event.nativeEvent.contentSize.height);
-    const nextHeight = clampHeight(contentHeight);
-    setMeasuredContentHeight((currentHeight) => (
-      Math.abs(currentHeight - nextHeight) >= HEIGHT_UPDATE_DEADZONE ? nextHeight : currentHeight
-    ));
+    setMeasuredContentHeight((currentHeight) =>
+      nextComposerMeasuredHeight(currentHeight, event.nativeEvent.contentSize.height),
+    );
   };
 
   const resetComposerState = () => { setMeasuredContentHeight(INPUT_MIN_HEIGHT); };
@@ -41,6 +47,7 @@ export function useComposerState(draftText: string) {
   return {
     inputHeight,
     inputExpanded,
+    inputScrollable,
     measuredLineCount,
     showExpandComposer,
     handleContentSizeChange,

@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
+  Image,
   Keyboard,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   TextInput,
   View,
@@ -17,11 +19,21 @@ import { useSafeAreaInsets, type EdgeInsets } from "react-native-safe-area-conte
 import { EdgeFade } from "@/conversation/components/EdgeFade";
 import { PromptChips } from "./PromptChips";
 import { EDITING_COPY, getPreparedWorkspacePrompts } from "./composerPromptData";
-import { theme } from "@/foundation/theme/tokens";
-import type { AppColors } from "@/foundation/theme/tokens";
+import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { Text } from "@/foundation/primitives/Text";
 import { composerStateConstants, useComposerState } from "@/conversation/hooks/useComposerState";
+import {
+  applyAttachmentProgress,
+  composerAttachmentProgressPercent,
+  getVisibleComposerAttachments,
+  markAttachmentsFailed,
+  markAttachmentsUploading,
+  mergePendingAgentAttachments,
+  removePendingAgentAttachment,
+  type AttachmentUploadProgressUpdate,
+} from "@/conversation/lib/agentAttachmentPresentation";
+import { COMPOSER_EDIT_FLOAT_GAP } from "@/conversation/lib/composerDockLayout";
 import { useAppStore } from "@/store";
 import { useVoiceComposer } from "@/voice/hooks/useVoiceComposer";
 import { RecordingVisualizer } from "@/voice/components/RecordingVisualizer";
@@ -34,7 +46,11 @@ import {
 import type { PendingAgentAttachment } from "@/types/domain";
 
 type QentrahComposerDockProps = {
-  onSend: (text: string, attachments?: PendingAgentAttachment[]) => void | Promise<void>;
+  onSend: (
+    text: string,
+    attachments?: PendingAgentAttachment[],
+    options?: { onAttachmentProgress?: (update: AttachmentUploadProgressUpdate) => void },
+  ) => void | Promise<void>;
   onStop: () => void;
   isStreaming: boolean;
   disabled?: boolean;
@@ -92,6 +108,7 @@ export function QentrahComposerDock({
   const {
     inputHeight,
     inputExpanded,
+    inputScrollable,
     handleContentSizeChange,
     resetComposerState,
   } = useComposerState(draftText);
@@ -104,6 +121,10 @@ export function QentrahComposerDock({
   const isVoicePending = voiceState === "requesting_permission";
   const hasText = draftText.trim().length > 0;
   const [pendingAttachments, setPendingAttachments] = useState<PendingAgentAttachment[]>([]);
+  const { visible: visibleAttachments, overflowCount } = useMemo(
+    () => getVisibleComposerAttachments(pendingAttachments),
+    [pendingAttachments],
+  );
   const canSubmit = hasText || pendingAttachments.length > 0;
 
   useEffect(() => {
@@ -151,13 +172,23 @@ export function QentrahComposerDock({
   const submitDraft = async () => {
     const value = draftText.trim();
     if ((!value && pendingAttachments.length === 0) || disabled) return;
+    const attachmentsForSend = pendingAttachments;
     resetComposerState();
+    if (attachmentsForSend.length > 0) {
+      setPendingAttachments(markAttachmentsUploading(attachmentsForSend));
+    }
     try {
-      await onSend(value, pendingAttachments);
+      await onSend(value, attachmentsForSend, {
+        onAttachmentProgress: (update) => {
+          setPendingAttachments((current) => applyAttachmentProgress(current, update));
+        },
+      });
       setPendingAttachments([]);
       setDraftText("");
-    } catch {
+    } catch (error) {
       // The controller owns the visible error banner; keep draft and attachments for retry.
+      const message = error instanceof Error ? error.message : "Upload failed.";
+      setPendingAttachments((current) => markAttachmentsFailed(current, message));
     }
   };
 
@@ -194,7 +225,7 @@ export function QentrahComposerDock({
 
   const appendAttachments = (attachments: PendingAgentAttachment[]) => {
     if (attachments.length === 0) return;
-    setPendingAttachments((current) => [...current, ...attachments].slice(0, 24));
+    setPendingAttachments((current) => mergePendingAgentAttachments(current, attachments));
   };
 
   const pickMedia = async () => {
@@ -257,9 +288,6 @@ export function QentrahComposerDock({
       )}
 
       <View style={styles.composerShell}>
-        <View pointerEvents="none" style={styles.composerTopFade}>
-          <EdgeFade color={colors.background} placement="bottom" startOpacity={0.92} midOpacity={0.34} />
-        </View>
         {isEditing ? (
           <View style={[styles.editingShelf, isRtl ? styles.editingShelfRtl : null]}>
             <Animated.View
@@ -287,32 +315,67 @@ export function QentrahComposerDock({
           ]}
         >
           {pendingAttachments.length > 0 ? (
-            <View style={[styles.attachmentTray, isRtl ? styles.attachmentTrayRtl : null]}>
-              {pendingAttachments.map((attachment) => {
+            <View style={styles.attachmentTray}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={[
+                  styles.attachmentTrayContent,
+                  isRtl ? styles.attachmentTrayContentRtl : null,
+                ]}
+              >
+              {visibleAttachments.map((attachment) => {
                 const Icon = attachment.kind === "image" || attachment.kind === "video" ? ImageIcon : FileText;
+                const status = attachment.uploadStatus ?? "pending";
+                const progress = composerAttachmentProgressPercent(attachment);
                 return (
-                  <View key={attachment.id} style={[styles.attachmentChip, isRtl ? styles.attachmentChipRtl : null]}>
-                    <Icon size={15} color={colors.textPrimary} />
-                    <View style={styles.attachmentTextWrap}>
-                      <Text style={styles.attachmentName} numberOfLines={1}>{attachment.name}</Text>
-                      <Text style={styles.attachmentMeta} numberOfLines={1}>
-                        {attachment.size ? `${(attachment.size / 1024 / 1024).toFixed(1)} MB` : attachment.mimeType}
-                      </Text>
+                  <View key={attachment.id} style={styles.attachmentChip}>
+                    <View style={styles.attachmentPreview}>
+                      {attachment.kind === "image" ? (
+                        <Image source={{ uri: attachment.uri }} style={styles.attachmentImage} />
+                      ) : (
+                        <Icon size={16} color={colors.textPrimary} />
+                      )}
+                      {status === "uploading" || status === "uploaded" ? (
+                        <View style={styles.attachmentProgressTrack}>
+                          <View style={[styles.attachmentProgressFill, { width: `${progress}%` }]} />
+                        </View>
+                      ) : null}
                     </View>
+                    <Text style={styles.attachmentName} numberOfLines={1}>{attachment.name}</Text>
                     <Pressable
                       hitSlop={10}
-                      onPress={() => setPendingAttachments((current) => current.filter((item) => item.id !== attachment.id))}
-                      style={({ pressed }) => [styles.removeAttachment, pressed ? styles.actionPressed : null]}
+                      disabled={status === "uploading"}
+                      onPress={() => setPendingAttachments((current) => removePendingAgentAttachment(current, attachment.id))}
+                      style={({ pressed }) => [
+                        styles.removeAttachment,
+                        pressed ? styles.actionPressed : null,
+                        status === "uploading" ? styles.actionDisabled : null,
+                      ]}
                     >
                       <X size={13} color={colors.textMuted} />
                     </Pressable>
                   </View>
                 );
               })}
+              {overflowCount > 0 ? (
+                <View style={styles.attachmentOverflow}>
+                  <Text style={styles.attachmentOverflowText}>+{overflowCount}</Text>
+                </View>
+              ) : null}
+              </ScrollView>
             </View>
           ) : null}
 
           <View style={[styles.inputField, inputExpanded ? styles.inputFieldExpanded : null]}>
+            {isEditing ? (
+              <View style={[styles.inputDetailPill, isRtl ? styles.inputDetailPillRtl : null]} pointerEvents="none">
+                <Text style={[styles.inputDetailPillText, { fontFamily: editingLabelFontFamily }]}>
+                  {editingCopy.label}
+                </Text>
+              </View>
+            ) : null}
             {isRecording ? (
               <View style={styles.visualizerWrap}>
                 <RecordingVisualizer active={isRecording} level={audioLevel} />
@@ -331,13 +394,14 @@ export function QentrahComposerDock({
                   autoCorrect
                   autoCapitalize="sentences"
                   enablesReturnKeyAutomatically
+                  returnKeyType="default"
                   placeholder={disabled ? surfaceCopy.composerDisabledPlaceholder : surfaceCopy.composerPlaceholder}
                   placeholderTextColor={colors.textMuted}
                   cursorColor={colors.textPrimary}
                   selectionColor={`${colors.textPrimary}44`}
                   underlineColorAndroid="transparent"
                   textAlignVertical="top"
-                  scrollEnabled={inputExpanded}
+                  scrollEnabled={inputScrollable}
                   onFocus={() => setComposerFocused(true)}
                   onBlur={() => setComposerFocused(false)}
                   style={[
@@ -436,9 +500,9 @@ const createStyles = (colors: AppColors, insets: EdgeInsets, isRtl: boolean) => 
     zIndex: 2000,
     position: "relative",
     backgroundColor: "transparent",
-    paddingHorizontal: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.md,
     paddingTop: 4,
-    paddingBottom: Math.max(insets.bottom, theme.spacing.lg),
+    paddingBottom: Math.max(insets.bottom, theme.spacing.md),
   },
   keyboardOpen: {
     paddingBottom: 0,
@@ -449,34 +513,36 @@ const createStyles = (colors: AppColors, insets: EdgeInsets, isRtl: boolean) => 
   composerShell: {
     position: "relative",
   },
-  composerTopFade: {
-    position: "absolute",
-    left: -theme.spacing.lg,
-    right: -theme.spacing.lg,
-    top: -34,
-    height: 42,
-  },
   editingShelf: {
-    minHeight: 0,
-    marginBottom: 8,
-    alignItems: "flex-start",
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: "100%",
+    marginBottom: COMPOSER_EDIT_FLOAT_GAP,
+    alignItems: "stretch",
+    zIndex: 6,
   },
   editingShelfRtl: {
-    alignItems: "flex-end",
+    alignItems: "stretch",
   },
   editingStrip: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     gap: 10,
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 16,
-    backgroundColor: "transparent",
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.divider,
+    shadowColor: "#000000",
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 8,
   },
   editingStripRtl: {
-    alignSelf: "flex-end",
     flexDirection: "row-reverse",
   },
   editingLabel: {
@@ -527,8 +593,8 @@ const createStyles = (colors: AppColors, insets: EdgeInsets, isRtl: boolean) => 
     gap: 8,
   },
   unifiedBar: {
-    minHeight: 118,
-    borderRadius: 22,
+    minHeight: 106,
+    borderRadius: 20,
     backgroundColor: colors.surface,
     overflow: "hidden",
     borderWidth: 1,
@@ -541,71 +607,125 @@ const createStyles = (colors: AppColors, insets: EdgeInsets, isRtl: boolean) => 
     alignItems: "stretch",
   },
   attachmentTray: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing.md,
-    paddingBottom: 2,
+    paddingTop: 10,
+    paddingBottom: 6,
   },
-  attachmentTrayRtl: {
+  attachmentTrayContent: {
+    paddingHorizontal: theme.spacing.md,
+    gap: 8,
+  },
+  attachmentTrayContentRtl: {
     flexDirection: "row-reverse",
   },
   attachmentChip: {
-    maxWidth: "100%",
-    minHeight: 44,
-    flexDirection: "row",
+    width: 86,
+    minHeight: 92,
     alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    justifyContent: "flex-start",
+    gap: 6,
+    padding: 7,
     borderRadius: 16,
     backgroundColor: colors.background,
     borderWidth: 1,
     borderColor: colors.divider,
   },
-  attachmentChipRtl: {
-    flexDirection: "row-reverse",
-  },
-  attachmentTextWrap: {
-    maxWidth: 180,
-    flexShrink: 1,
-  },
   attachmentName: {
+    width: "100%",
     color: colors.textPrimary,
     fontFamily: "Manrope_700Bold",
     fontSize: 11,
+    lineHeight: 14,
+    textAlign: "center",
   },
-  attachmentMeta: {
-    color: colors.textMuted,
-    fontFamily: "Manrope_500Medium",
-    fontSize: 10,
-    marginTop: 2,
+  attachmentPreview: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    overflow: "hidden",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.surfaceRaised,
+  },
+  attachmentImage: {
+    width: "100%",
+    height: "100%",
+  },
+  attachmentProgressTrack: {
+    position: "absolute",
+    left: 6,
+    right: 6,
+    bottom: 5,
+    height: 3,
+    borderRadius: 999,
+    overflow: "hidden",
+    backgroundColor: "rgba(255,255,255,0.28)",
+  },
+  attachmentProgressFill: {
+    height: "100%",
+    borderRadius: 999,
+    backgroundColor: colors.accent,
+  },
+  attachmentOverflow: {
+    width: 54,
+    height: 92,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.divider,
+  },
+  attachmentOverflowText: {
+    color: colors.textPrimary,
+    fontFamily: "Manrope_800ExtraBold",
+    fontSize: 15,
   },
   removeAttachment: {
-    width: 24,
-    height: 24,
+    position: "absolute",
+    top: 4,
+    right: 4,
+    width: 22,
+    height: 22,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: colors.surface,
   },
   inputField: {
     position: "relative",
     justifyContent: "center",
-    minHeight: 60,
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: 10,
-    paddingBottom: 4,
+    minHeight: 52,
+    paddingHorizontal: theme.spacing.md,
+    paddingTop: 8,
+    paddingBottom: 2,
   },
   inputFieldExpanded: {
     justifyContent: "flex-start",
+  },
+  inputDetailPill: {
+    alignSelf: "flex-start",
+    marginBottom: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.divider,
+  },
+  inputDetailPillRtl: {
+    alignSelf: "flex-end",
+  },
+  inputDetailPillText: {
+    color: colors.textMuted,
+    fontSize: 10,
+    lineHeight: 13,
   },
   input: {
     minHeight: INPUT_MIN_HEIGHT,
     maxHeight: INPUT_MAX_HEIGHT,
     color: colors.textPrimary,
     fontFamily: "Manrope_500Medium",
-    fontSize: 15,
+    fontSize: 16,
     lineHeight: 22,
     backgroundColor: "transparent",
   },
@@ -643,13 +763,13 @@ const createStyles = (colors: AppColors, insets: EdgeInsets, isRtl: boolean) => 
     justifyContent: "center",
   },
   actionRow: {
-    minHeight: 54,
+    minHeight: 52,
     flexDirection: isRtl ? "row-reverse" : "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: theme.spacing.md,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: 8,
     borderTopWidth: 1,
     borderTopColor: colors.divider,
   },

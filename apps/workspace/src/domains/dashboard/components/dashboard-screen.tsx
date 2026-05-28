@@ -12,26 +12,22 @@ import { cn } from "@/lib/utils";
 import { useAccountContext } from "@/domains/auth";
 import { useClientsIndexQuery } from "@/domains/clients/api/clients";
 import type { Client } from "@/domains/clients/store/clients.types";
+import {
+  compactEventType,
+  compactScheduleTitle,
+  dashboardDesk,
+  dashboardWeekRange,
+  latestDashboardClients,
+  latestDashboardProjects,
+  type DashboardOverview,
+} from "@/domains/dashboard/dashboard-view-model";
 import { parseWorkspaceMode, useWorkspaceStore } from "@/domains/dashboard/store/dashboard.store";
 import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
 import type { Project } from "@/domains/projects/store/projects.types";
-import { useHttpQueryResult } from "@/components/shared/use-http-query";
+import { useWorkspaceResourceResult } from "@/domains/resources/workspace-resource-request";
 import { useSearchParams } from "next/navigation";
 
 const TODAY = new Date();
-
-type DashboardOverview = {
-  weekEvents: Array<{
-    id: string;
-    date: string;
-    time: string;
-    title: string;
-    owner: string;
-    clientName?: string;
-    type: string;
-    priority: "normal" | "high" | "urgent";
-  }>;
-};
 
 export function DashboardScreen() {
   const t = useTranslations("Dashboard");
@@ -44,16 +40,12 @@ export function DashboardScreen() {
   const isWorkspaceReady = workspaceStatus === "ready";
   const workspaceOrganizationId = isWorkspaceReady ? account.workspace.organizationId ?? undefined : undefined;
   const weekRange = useMemo(() => {
-    const days = getWeekDays(TODAY);
-    const start = new Date(days[0]);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(days[days.length - 1]);
-    end.setHours(23, 59, 59, 999);
-    return { startAt: start.getTime(), endAt: end.getTime() };
+    return dashboardWeekRange(TODAY);
   }, []);
-  const overviewQuery = useHttpQueryResult<DashboardOverview>(
+  const overviewQuery = useWorkspaceResourceResult<DashboardOverview>(
     ["dashboard", workspaceOrganizationId, weekRange.startAt, weekRange.endAt],
-    workspaceOrganizationId ? `/api/v1/organizations/${workspaceOrganizationId}/read/dashboard/index` : undefined,
+    workspaceOrganizationId,
+    "dashboard/index",
     workspaceOrganizationId ? { startAt: weekRange.startAt, endAt: weekRange.endAt } : undefined,
   );
   const clientsQuery = useClientsIndexQuery(workspaceOrganizationId);
@@ -69,40 +61,13 @@ export function DashboardScreen() {
   }, [queryMode, setMode]);
 
   const desk = useMemo(() => {
-    const todayEvents = (overview?.weekEvents ?? [])
-      .filter((event) => isSameDay(parseDate(event.date), TODAY))
-      .slice(0, 10);
-    const upcomingEvents = (overview?.weekEvents ?? [])
-      .filter((event) => {
-        const eventDate = parseDate(event.date);
-        return eventDate ? eventDate.getTime() >= startOfToday().getTime() : false;
-      })
-      .slice(0, 10);
-
-    return {
-      todayEvents,
-      upcomingEvents,
-    };
+    return dashboardDesk(overview?.weekEvents ?? [], TODAY);
   }, [overview]);
   const latestClients = useMemo(() => {
-    return [...clients]
-      .sort((left, right) => {
-        const leftTime = left.createdAt ?? Date.parse(left.added) ?? 0;
-        const rightTime = right.createdAt ?? Date.parse(right.added) ?? 0;
-
-        return rightTime - leftTime;
-      })
-      .slice(0, 6);
+    return latestDashboardClients(clients);
   }, [clients]);
   const latestProjects = useMemo(() => {
-    return [...projects]
-      .sort((left, right) => {
-        const leftTime = left.createdAt ?? left.updatedAt ?? Date.parse(left.updated ?? "") ?? 0;
-        const rightTime = right.createdAt ?? right.updatedAt ?? Date.parse(right.updated ?? "") ?? 0;
-
-        return rightTime - leftTime;
-      })
-      .slice(0, 8);
+    return latestDashboardProjects(projects);
   }, [projects]);
 
   const aiPanel = useMemo(
@@ -365,36 +330,6 @@ function DashboardProjectTile({ project }: { project: Project }) {
   );
 }
 
-function compactScheduleTitle(value: string) {
-  return value
-    .replace(/^\s*[a-z]+\s+\d+\s*-\s*/i, "")
-    .replace(/\s+/g, " ")
-    .trim() || value;
-}
-
-const knownCalendarTypes = new Set([
-  "visit",
-  "call",
-  "meeting",
-  "client-visit",
-  "site-viewing",
-  "appointment",
-  "signing",
-  "follow-up",
-  "handover",
-  "audit",
-  "custom",
-]);
-
-function compactEventType(event: DashboardOverview["weekEvents"][number], translateType: (type: string) => string) {
-  const rawType = event.type || event.title.match(/^\s*([a-z]+)/i)?.[1] || "";
-  const normalized = rawType.replace(/_/g, "-").trim().toLowerCase();
-  if (knownCalendarTypes.has(normalized)) return translateType(normalized);
-
-  const fallback = normalized.replace(/-/g, " ").split(/\s+/).filter(Boolean)[0];
-  return (fallback || translateType("custom")).slice(0, 12);
-}
-
 function LatestClientsList({
   clients,
   emptyLabel,
@@ -452,36 +387,6 @@ function LatestClientsList({
         </div>
       )}
     </AppSection>
-  );
-}
-
-function parseDate(value: string) {
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
-}
-
-function startOfToday() {
-  const date = new Date(TODAY);
-  date.setHours(0, 0, 0, 0);
-  return date;
-}
-
-function getWeekDays(date: Date) {
-  const start = new Date(date);
-  start.setDate(date.getDate() - date.getDay());
-  return Array.from({ length: 7 }, (_, index) => {
-    const day = new Date(start);
-    day.setDate(start.getDate() + index);
-    return day;
-  });
-}
-
-function isSameDay(left: Date | undefined, right: Date) {
-  return Boolean(
-    left &&
-    left.getFullYear() === right.getFullYear() &&
-    left.getMonth() === right.getMonth() &&
-    left.getDate() === right.getDate(),
   );
 }
 

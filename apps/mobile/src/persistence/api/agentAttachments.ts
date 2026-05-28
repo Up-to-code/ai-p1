@@ -1,11 +1,21 @@
 import * as DocumentPicker from "expo-document-picker";
-import * as ImagePicker from "expo-image-picker";
 import { genUploader } from "uploadthing/client";
 
+import {
+  clampUploadProgress,
+  type AttachmentUploadProgressUpdate,
+} from "@/persistence/api/agentAttachmentProgress";
+import {
+  createPendingAgentAttachment,
+  resolveUploadBeginAttachmentId,
+  resolveUploadProgressAttachmentId,
+  uploadedAgentAttachmentFromResult,
+  type AgentAttachmentUploadResultFile,
+} from "@/persistence/api/agentAttachmentFileMapping";
 import { buildWorkspaceApiUrl, workspaceApiFetch } from "@/persistence/api/workspaceApiClient";
-import type { AgentAttachmentKind, PendingAgentAttachment, UploadedAgentAttachment } from "@/types/domain";
+import type { PendingAgentAttachment, UploadedAgentAttachment } from "@/types/domain";
 
-type UploadThingFile = File & { uri?: string };
+type UploadThingFile = File & { uri?: string; attachmentId?: string };
 
 const { uploadFiles } = genUploader<any>({
   url: buildWorkspaceApiUrl("/api/uploadthing"),
@@ -21,54 +31,21 @@ const { uploadFiles } = genUploader<any>({
   },
 });
 
-function inferAttachmentKind(mimeType: string): AgentAttachmentKind {
-  if (mimeType.startsWith("image/")) return "image";
-  if (mimeType.startsWith("video/")) return "video";
-  return "document";
-}
-
-function attachmentNameFromUri(uri: string) {
-  return decodeURIComponent(uri.split("/").pop() || "attachment");
-}
-
-function createAttachment(input: {
-  uri: string;
-  name?: string | null;
-  mimeType?: string | null;
-  size?: number | null;
-}): PendingAgentAttachment {
-  const mimeType = input.mimeType || "application/octet-stream";
-  const name = input.name || attachmentNameFromUri(input.uri);
-  return {
-    id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`,
-    uri: input.uri,
-    name,
-    mimeType,
-    size: input.size ?? undefined,
-    kind: inferAttachmentKind(mimeType),
-  };
-}
-
 export async function pickAgentMediaAttachments() {
-  const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (!permission.granted) {
-    throw new Error("Media library permission is required to attach images or videos.");
-  }
-
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ["images", "videos"],
-    allowsMultipleSelection: true,
-    quality: 0.92,
+  const result = await DocumentPicker.getDocumentAsync({
+    multiple: true,
+    copyToCacheDirectory: true,
+    type: ["image/*", "video/*"],
   });
 
   if (result.canceled) return [];
 
   return result.assets.map((asset) =>
-    createAttachment({
+    createPendingAgentAttachment({
       uri: asset.uri,
-      name: asset.fileName,
+      name: asset.name,
       mimeType: asset.mimeType,
-      size: asset.fileSize,
+      size: asset.size,
     }),
   );
 }
@@ -88,7 +65,7 @@ export async function pickAgentDocumentAttachments() {
   if (result.canceled) return [];
 
   return result.assets.map((asset) =>
-    createAttachment({
+    createPendingAgentAttachment({
       uri: asset.uri,
       name: asset.name,
       mimeType: asset.mimeType,
@@ -101,12 +78,16 @@ async function toUploadThingFile(attachment: PendingAgentAttachment): Promise<Up
   const blob = await fetch(attachment.uri).then((response) => response.blob());
   const file = new File([blob], attachment.name, { type: attachment.mimeType }) as UploadThingFile;
   file.uri = attachment.uri;
+  file.attachmentId = attachment.id;
   return file;
 }
 
 export async function uploadAgentMessageAttachments(
   organizationId: string,
   attachments: PendingAgentAttachment[],
+  options: {
+    onProgress?: (update: AttachmentUploadProgressUpdate) => void;
+  } = {},
 ): Promise<UploadedAgentAttachment[]> {
   if (attachments.length === 0) return [];
 
@@ -114,19 +95,43 @@ export async function uploadAgentMessageAttachments(
   const uploaded = await uploadFiles("agentMessageAttachment", {
     files,
     input: { organizationId },
+    concurrency: 2,
+    onUploadBegin: ({ file }: { file: string }) => {
+      const attachmentId = resolveUploadBeginAttachmentId(file, attachments);
+      if (!attachmentId) return;
+      options.onProgress?.({
+        id: attachmentId,
+        progress: 1,
+        status: "uploading",
+      });
+    },
+    onUploadProgress: ({
+      file,
+      progress,
+    }: {
+      file: UploadThingFile;
+      progress: number;
+    }) => {
+      const attachmentId = resolveUploadProgressAttachmentId(file, attachments);
+      if (!attachmentId) return;
+      options.onProgress?.({
+        id: attachmentId,
+        progress: clampUploadProgress(progress),
+        status: progress >= 100 ? "uploaded" : "uploading",
+      });
+    },
   } as any);
 
-  return uploaded.map((file: any, index: number) => {
+  return (uploaded as AgentAttachmentUploadResultFile[]).map((file, index) => {
     const fallback = attachments[index];
-    const serverData = file.serverData;
-    const mimeType = serverData?.mimeType || file.type || fallback?.mimeType || "application/octet-stream";
-    return {
-      key: serverData?.key || file.key,
-      url: serverData?.url || file.url || file.ufsUrl,
-      name: serverData?.name || file.name || fallback?.name || "attachment",
-      mimeType,
-      size: serverData?.size || file.size || fallback?.size || 0,
-      kind: inferAttachmentKind(mimeType),
-    };
+    const result = uploadedAgentAttachmentFromResult(file, fallback);
+    if (fallback) {
+      options.onProgress?.({
+        id: fallback.id,
+        progress: 100,
+        status: "uploaded",
+      });
+    }
+    return result;
   });
 }

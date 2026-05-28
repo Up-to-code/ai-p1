@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { StyleSheet, Text as RNText, View } from "react-native";
+import { StyleSheet, Text as RNText, View, type StyleProp, type TextStyle } from "react-native";
 import Animated, {
   Easing,
   interpolateColor,
@@ -12,7 +12,7 @@ import Animated, {
 import type { SharedValue } from "react-native-reanimated";
 
 import type { AssistantDirection } from "@/conversation/assistantProtocol";
-import { theme } from "@/foundation/theme/tokens";
+import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { LogoMark } from "@/foundation/icons/LogoMark";
 
@@ -40,7 +40,7 @@ type SweepGlyphProps = {
   progress: SharedValue<number>;
   baseColor: string;
   highlightColor: string;
-  style: any;
+  style: StyleProp<TextStyle>;
 };
 
 function SweepGlyph({
@@ -234,7 +234,7 @@ export function AssistantBrandMark({
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: AppColors) => StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",

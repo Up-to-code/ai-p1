@@ -11,9 +11,7 @@ const docsSlugs = [
   "ai-agent-implementation",
   "sdk-installation",
   "authorization-lifecycle",
-  "oauth-flow",
   "register-an-app",
-  "api-usage",
   "pdf-generator-example",
   "troubleshooting",
 ] as const;
@@ -27,5 +25,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: now,
     changeFrequency: path.startsWith("/docs") ? "monthly" : "weekly",
     priority: path === "/" ? 1 : path.startsWith("/docs") ? 0.7 : 0.8,
+    alternates: {
+      languages: {
+        "en-SA": `${siteUrl}${path}`,
+        en: `${siteUrl}${path}`,
+      },
+    },
   }));
 }

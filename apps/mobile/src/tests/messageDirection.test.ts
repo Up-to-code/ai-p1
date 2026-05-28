@@ -4,8 +4,10 @@ import assert from "node:assert/strict";
 import {
   detectAssistantMessageDirection,
   detectTextBlockDirection,
+  getDirectionalTextAnchor,
   resolveAssistantBrandMarkerVisibility,
   resolveMessagePhysicalSide,
+  resolveMessageRowSlots,
   resolveUserBubbleDirection,
 } from "../conversation/lib/messageDirection";
 
@@ -23,6 +25,8 @@ test("user bubble direction follows app locale, not typed text", () => {
 test("message rows use physical sides independent of locale direction", () => {
   assert.equal(resolveMessagePhysicalSide("user"), "right");
   assert.equal(resolveMessagePhysicalSide("assistant"), "left");
+  assert.deepEqual(resolveMessageRowSlots("user"), ["spacer", "message"]);
+  assert.deepEqual(resolveMessageRowSlots("assistant"), ["message", "spacer"]);
 });
 
 test("mixed assistant markdown can resolve direction per block", () => {
@@ -33,6 +37,11 @@ test("mixed assistant markdown can resolve direction per block", () => {
   ];
 
   assert.deepEqual(blocks.map(detectTextBlockDirection), ["ltr", "rtl", "ltr"]);
+});
+
+test("directional anchors stabilize punctuation and emoji in text runs", () => {
+  assert.equal(getDirectionalTextAnchor("rtl"), "\u200F");
+  assert.equal(getDirectionalTextAnchor("ltr"), "\u200E");
 });
 
 test("completed and pending assistant messages do not render history brand markers", () => {

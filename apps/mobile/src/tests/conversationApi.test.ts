@@ -24,6 +24,87 @@ function streamFrom(chunks: string[]) {
   });
 }
 
+class MockStreamingXhr {
+  static instances: MockStreamingXhr[] = [];
+
+  method = "";
+  url = "";
+  async = true;
+  body: XMLHttpRequestBodyInit | null = null;
+  headers: Record<string, string> = {};
+  responseText = "";
+  status = 200;
+  withCredentials = false;
+  aborted = false;
+  onprogress: (() => void) | null = null;
+  onloadend: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+
+  constructor() {
+    MockStreamingXhr.instances.push(this);
+  }
+
+  open(method: string, url: string, async = true) {
+    this.method = method;
+    this.url = url;
+    this.async = async;
+  }
+
+  setRequestHeader(name: string, value: string) {
+    this.headers[name.toLowerCase()] = value;
+  }
+
+  send(body?: XMLHttpRequestBodyInit | null) {
+    this.body = body ?? null;
+  }
+
+  abort() {
+    this.aborted = true;
+  }
+
+  push(chunk: string) {
+    this.responseText += chunk;
+    this.onprogress?.();
+  }
+
+  finish(status = this.status, responseText?: string) {
+    this.status = status;
+    if (typeof responseText === "string") {
+      this.responseText = responseText;
+    }
+    this.onloadend?.();
+  }
+}
+
+function setNativeRuntimeForTest() {
+  const originalNavigator = globalThis.navigator;
+  const originalXhr = globalThis.XMLHttpRequest;
+  MockStreamingXhr.instances = [];
+
+  Object.defineProperty(globalThis, "navigator", {
+    configurable: true,
+    value: { product: "ReactNative" },
+  });
+  globalThis.XMLHttpRequest = MockStreamingXhr as unknown as typeof XMLHttpRequest;
+
+  return () => {
+    Object.defineProperty(globalThis, "navigator", {
+      configurable: true,
+      value: originalNavigator,
+    });
+    globalThis.XMLHttpRequest = originalXhr;
+  };
+}
+
+async function waitForMockXhr() {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const xhr = MockStreamingXhr.instances[0];
+    if (xhr) return xhr;
+  }
+  throw new Error("Expected XMLHttpRequest to be created.");
+}
+
 test("mobile agent SSE parser handles split chunks, ag_ui, errors, and done events", () => {
   const events: AgentChatEvent[] = [];
   let rest = parseAgentSseChunk(
@@ -54,6 +135,113 @@ test("mobile agent SSE parser handles split chunks, ag_ui, errors, and done even
     { type: "error", error: "Agent stream returned an invalid event." },
     { type: "done", threadId: "thread_1" },
   ]);
+});
+
+test("mobile agent chat request streams incrementally with native XHR", async () => {
+  process.env.EXPO_PUBLIC_WORKSPACE_API_URL = "https://app.qentrah.com";
+  const restoreNativeRuntime = setNativeRuntimeForTest();
+  const events: AgentChatEvent[] = [];
+
+  try {
+    const pending = sendAgentChatRequest({
+      organizationId: "org_1",
+      message: "hello",
+      onEvent: (event) => events.push(event),
+    });
+
+    const xhr = await waitForMockXhr();
+    assert.equal(xhr.method, "POST");
+    assert.equal(xhr.url, "https://app.qentrah.com/api/v1/organizations/org_1/agents/chat");
+    assert.equal(xhr.withCredentials, true);
+    assert.equal(xhr.headers["content-type"], "application/json");
+    assert.equal(xhr.headers["x-qentrah-client"], "mobile");
+    assert.match(xhr.headers["x-request-id"] ?? "", /^mobile-/);
+    assert.equal(xhr.body, JSON.stringify({ message: "hello" }));
+
+    xhr.push('event: text\ndata: {"type":"text","text":"Hel"}\n\n');
+    assert.deepEqual(events, [{ type: "text", text: "Hel" }]);
+
+    xhr.push('event: text\ndata: {"type":"text","text":"lo"}\n\n');
+    assert.deepEqual(events, [
+      { type: "text", text: "Hel" },
+      { type: "text", text: "lo" },
+    ]);
+
+    xhr.finish(200);
+    await pending;
+  } finally {
+    restoreNativeRuntime();
+    delete process.env.EXPO_PUBLIC_WORKSPACE_API_URL;
+  }
+});
+
+test("mobile native XHR chat request flushes a buffered final SSE event", async () => {
+  process.env.EXPO_PUBLIC_WORKSPACE_API_URL = "https://app.qentrah.com";
+  const restoreNativeRuntime = setNativeRuntimeForTest();
+  const events: AgentChatEvent[] = [];
+
+  try {
+    const pending = sendAgentChatRequest({
+      organizationId: "org_1",
+      message: "hello",
+      onEvent: (event) => events.push(event),
+    });
+    const xhr = await waitForMockXhr();
+
+    xhr.push('event: text\ndata: {"type":"text","text":"Buffered"}');
+    assert.deepEqual(events, []);
+
+    xhr.finish(200);
+    await pending;
+  } finally {
+    restoreNativeRuntime();
+    delete process.env.EXPO_PUBLIC_WORKSPACE_API_URL;
+  }
+
+  assert.deepEqual(events, [{ type: "text", text: "Buffered" }]);
+});
+
+test("mobile native XHR chat request aborts through AbortSignal", async () => {
+  process.env.EXPO_PUBLIC_WORKSPACE_API_URL = "https://app.qentrah.com";
+  const restoreNativeRuntime = setNativeRuntimeForTest();
+  const controller = new AbortController();
+
+  try {
+    const pending = sendAgentChatRequest({
+      organizationId: "org_1",
+      message: "hello",
+      signal: controller.signal,
+      onEvent: () => undefined,
+    });
+    const xhr = await waitForMockXhr();
+
+    controller.abort();
+    assert.equal(xhr.aborted, true);
+    await assert.rejects(pending, /canceled/);
+  } finally {
+    restoreNativeRuntime();
+    delete process.env.EXPO_PUBLIC_WORKSPACE_API_URL;
+  }
+});
+
+test("mobile native XHR chat request surfaces server JSON errors", async () => {
+  process.env.EXPO_PUBLIC_WORKSPACE_API_URL = "https://app.qentrah.com";
+  const restoreNativeRuntime = setNativeRuntimeForTest();
+
+  try {
+    const pending = sendAgentChatRequest({
+      organizationId: "org_1",
+      message: "hello",
+      onEvent: () => undefined,
+    });
+    const xhr = await waitForMockXhr();
+
+    xhr.finish(401, JSON.stringify({ error: "Not signed in" }));
+    await assert.rejects(pending, /Not signed in/);
+  } finally {
+    restoreNativeRuntime();
+    delete process.env.EXPO_PUBLIC_WORKSPACE_API_URL;
+  }
 });
 
 test("mobile agent chat request streams workspace API events", async () => {

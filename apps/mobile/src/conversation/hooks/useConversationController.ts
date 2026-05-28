@@ -16,6 +16,14 @@ import {
   resolveActiveConversationThreadId,
 } from "@/conversation/lib/threadSelection";
 import {
+  applyStreamEvent,
+  buildConversationTimeline,
+  createLocalTurnId,
+  createStreamingAssistantTurn,
+  type DraftConversationTurn,
+  type StreamingConversationTurn,
+} from "@/conversation/lib/conversationTimeline";
+import {
   appendE2EUserPrompt,
   completeE2EPrompt,
   createE2EThread,
@@ -27,17 +35,16 @@ import {
   sendAgentChatRequest,
 } from "@/persistence/api/conversationApi";
 import { uploadAgentMessageAttachments } from "@/persistence/api/agentAttachments";
+import type { AttachmentUploadProgressUpdate } from "@/persistence/api/agentAttachmentProgress";
 import {
   useAgentRuntimeHealth,
   useRunStageFeed,
   useThreadPresentation,
-  useThreadMessages,
+  useThreadMessagesState,
   useThreadsState,
 } from "@/persistence/api/conversationData";
 import { useAppStore } from "@/store";
 import type { ConversationMessage, PendingAgentAttachment, UploadedAgentAttachment } from "@/types/domain";
-
-const LEGACY_PENDING_ASSISTANT_TEXT = "Thinking through your request...";
 
 export function useConversationController() {
   const { canUpgrade, isAuthenticated } = useAuthSession();
@@ -51,7 +58,6 @@ export function useConversationController() {
   const editingMessage = useAppStore((state) => state.editingMessage);
   const isCreatingThread = useAppStore((state) => state.isCreatingThread);
   const pendingPrompt = useAppStore((state) => state.pendingPrompt);
-  const pendingStartedAt = useAppStore((state) => state.pendingStartedAt);
   const runFailureMessage = useAppStore((state) => state.runFailureMessage);
   const e2eQaMode = useAppStore((state) => state.e2eQaMode);
   const setActiveThreadId = useAppStore((state) => state.setActiveThreadId);
@@ -70,8 +76,8 @@ export function useConversationController() {
     threadId: string | null;
     attachments?: PendingAgentAttachment[];
   } | null>(null);
-  const [streamingAssistant, setStreamingAssistant] = useState<ConversationMessage | null>(null);
-  const [pendingUserAttachments, setPendingUserAttachments] = useState<UploadedAgentAttachment[]>([]);
+  const [draftTurn, setDraftTurn] = useState<DraftConversationTurn | null>(null);
+  const [streamTurn, setStreamTurn] = useState<StreamingConversationTurn | null>(null);
   const [messagesRefreshKey, setMessagesRefreshKey] = useState(0);
 
   const {
@@ -79,6 +85,7 @@ export function useConversationController() {
     isLoaded: threadsLoaded,
     serverThreads,
     serverLoaded,
+    serverRefreshing,
     refreshThreads,
   } = useThreadsState();
   const runtimeHealth = useAgentRuntimeHealth();
@@ -93,42 +100,21 @@ export function useConversationController() {
     isCreatingThread,
     threads: serverThreads,
     threadsLoaded: serverLoaded,
+    threadsRefreshing: serverRefreshing,
+    hasTransientTurn: Boolean(draftTurn || streamTurn),
   });
-  const serverMessages = useThreadMessages(activeThreadId, null, canQueryActiveThread, messagesRefreshKey);
-  const messages = useMemo(() => {
-    const rows = [...serverMessages];
-    if (pendingPrompt) {
-      const hasOptimisticUser = rows.some((message) => message.role === "user" && message.text === pendingPrompt);
-      if (!hasOptimisticUser) {
-        rows.push({
-          id: "optimistic-user",
-          sessionId: activeThreadId ?? "threadless",
-          role: "user",
-          kind: "text",
-          text: pendingPrompt,
-          streamState: "complete",
-          relatedPropertyIds: [],
-          attachments: pendingUserAttachments,
-          createdAt: pendingStartedAt ? pendingStartedAt - 1 : Date.now() - 1,
-          runId: undefined,
-          sourceMetadata: [],
-        });
-      }
-    }
-    if (streamingAssistant && streamingAssistant.sessionId === (activeThreadId ?? "threadless")) {
-      const alreadyPersisted = rows.some((message) =>
-        message.role === "assistant"
-        && (
-          (streamingAssistant.runId && message.runId === streamingAssistant.runId)
-          || (message.text && message.text === streamingAssistant.text)
-        ),
-      );
-      if (!alreadyPersisted) {
-        rows.push(streamingAssistant);
-      }
-    }
-    return rows.sort((left, right) => left.createdAt - right.createdAt);
-  }, [activeThreadId, pendingPrompt, pendingStartedAt, pendingUserAttachments, serverMessages, streamingAssistant]);
+  const {
+    messages: serverMessages,
+    isLoading: serverMessagesLoading,
+    error: serverMessagesError,
+  } = useThreadMessagesState(activeThreadId, canQueryActiveThread, messagesRefreshKey);
+  const timeline = useMemo(() => buildConversationTimeline({
+    serverMessages,
+    activeThreadId,
+    draftTurn,
+    streamTurn,
+  }), [activeThreadId, draftTurn, serverMessages, streamTurn]);
+  const messages = timeline.messages;
   const threadPresentation = useThreadPresentation(activeThreadId);
   const resolvedPresentation = resolveThreadPresentationState(threadPresentation);
   const surfaceCopy = resolvedPresentation.surfaceCopy;
@@ -138,6 +124,11 @@ export function useConversationController() {
     activeRunId,
     runtimeHealth.capabilities?.stageFeed ?? true,
   );
+  const isThreadLoading =
+    workspace.status === "loading"
+    || (!threadsLoaded && messages.length === 0 && !timeline.hasTransientTurn)
+    || (serverRefreshing && messages.length === 0 && !timeline.hasTransientTurn)
+    || (serverMessagesLoading && messages.length === 0 && !timeline.hasTransientTurn);
 
   useEffect(() => {
     if (!threadsLoaded || isCreatingThread || resolvedThreadId === activeThreadId) {
@@ -163,8 +154,8 @@ export function useConversationController() {
       setActiveThreadId(null);
       setActiveRunId(null);
       setPendingPrompt(null);
-      setPendingUserAttachments([]);
-      setStreamingAssistant(null);
+      setDraftTurn(null);
+      setStreamTurn(null);
       setMessagesRefreshKey((value) => value + 1);
       refreshThreads?.();
     }
@@ -181,7 +172,13 @@ export function useConversationController() {
 
   const isStreaming = Boolean(pendingPrompt);
 
-  const sendPrompt = async (overrideText?: string, attachments: PendingAgentAttachment[] = []) => {
+  const sendPrompt = async (
+    overrideText?: string,
+    attachments: PendingAgentAttachment[] = [],
+    options: {
+      onAttachmentProgress?: (update: AttachmentUploadProgressUpdate) => void;
+    } = {},
+  ) => {
     const prompt = (overrideText ?? draftText).trim() || (attachments.length ? "Please review the attached files." : "");
     if (!prompt && attachments.length === 0) {
       return;
@@ -224,6 +221,7 @@ export function useConversationController() {
     }
 
     const startedAt = Date.now();
+    const localTurnId = createLocalTurnId(startedAt);
     const pendingAssistantText = surfaceCopy.pendingAssistantText;
     let uploadedAttachments: UploadedAgentAttachment[] = [];
 
@@ -235,7 +233,9 @@ export function useConversationController() {
           count: attachments.length,
           names: attachments.map((attachment) => attachment.name),
         });
-        uploadedAttachments = await uploadAgentMessageAttachments(workspace.organizationId!, attachments);
+        uploadedAttachments = await uploadAgentMessageAttachments(workspace.organizationId!, attachments, {
+          onProgress: options.onAttachmentProgress,
+        });
         logAgentDebug("upload.complete", {
           organizationId: workspace.organizationId,
           threadId,
@@ -261,20 +261,20 @@ export function useConversationController() {
         cancelEditingMessage();
       }
       setPendingPrompt(prompt, startedAt);
-      setPendingUserAttachments(uploadedAttachments);
-      setActiveRunId(null);
-      setStreamingAssistant({
-        id: "streaming-assistant",
-        sessionId: threadId ?? "threadless",
-        role: "assistant",
-        kind: "text",
-        text: pendingAssistantText,
-        streamState: "streaming",
-        relatedPropertyIds: [],
-        createdAt: startedAt + 1,
-        runId: undefined,
-        sourceMetadata: [],
+      setDraftTurn({
+        localTurnId,
+        prompt,
+        startedAt,
+        threadId,
+        attachments: uploadedAttachments,
       });
+      setActiveRunId(null);
+      setStreamTurn(createStreamingAssistantTurn({
+        localTurnId,
+        threadId,
+        startedAt,
+        pendingText: pendingAssistantText,
+      }));
     });
 
     track("ai_prompt_sent", { sessionId, threadId: threadId ?? undefined, route: currentRoute, prompt, source: "assistant" });
@@ -296,8 +296,8 @@ export function useConversationController() {
 
       completionTimeoutRef.current = setTimeout(() => {
         completeE2EPrompt(e2eThreadId, prompt, startedAt, runId);
-        setStreamingAssistant(null);
-        setPendingUserAttachments([]);
+        setDraftTurn(null);
+        setStreamTurn(null);
         completionTimeoutRef.current = null;
       }, 300);
 
@@ -330,44 +330,27 @@ export function useConversationController() {
             streamRunId = event.runId;
             setActiveThreadId(event.threadId);
             setActiveRunId(event.runId);
-            setStreamingAssistant((message) => message ? {
-              ...message,
-              sessionId: event.threadId,
-              runId: event.runId,
-              turnMeta: { ...message.turnMeta, runId: event.runId },
-            } : message);
+            setDraftTurn((turn) => turn ? { ...turn, threadId: event.threadId } : turn);
+            setStreamTurn((turn) => applyStreamEvent(turn, event));
             return;
           }
 
           if (event.type === "status") {
-            setStreamingAssistant((message) => {
-              if (!message || receivedText) return message;
-              return { ...message, text: event.message || message.text };
-            });
+            setStreamTurn((turn) => applyStreamEvent(turn, event));
             return;
           }
 
           if (event.type === "text") {
             receivedText = true;
-            setStreamingAssistant((message) => {
-              const base = message ?? {
-                id: "streaming-assistant",
-                sessionId: streamThreadId ?? "threadless",
-                role: "assistant" as const,
-                kind: "text" as const,
-                text: "",
-                streamState: "streaming" as const,
-                relatedPropertyIds: [],
-                createdAt: startedAt + 1,
-                runId: streamRunId ?? undefined,
-                sourceMetadata: [],
-              };
-              return {
-                ...base,
-                text: (base.text === LEGACY_PENDING_ASSISTANT_TEXT || base.text === pendingAssistantText ? "" : base.text) + event.text,
-                streamState: "streaming",
-              };
-            });
+            setStreamTurn((turn) => applyStreamEvent(turn, event) ?? applyStreamEvent(
+              createStreamingAssistantTurn({
+                localTurnId,
+                threadId: streamThreadId,
+                startedAt,
+                pendingText: pendingAssistantText,
+              }),
+              event,
+            ));
             return;
           }
 
@@ -375,42 +358,49 @@ export function useConversationController() {
             const parsed = assistantTurnSchema.safeParse(event.turn as never);
             if (!parsed.success) return;
             const uiTurn = parsed.data;
-            setStreamingAssistant((message) => message ? {
-              ...message,
-              kind: "assistant_turn",
-              text: uiTurn.assistantText ?? message.text,
-              relatedPropertyIds: extractTurnPropertyIds(uiTurn),
-              sourceMetadata: extractTurnSources(uiTurn),
-              uiTurn,
-              turnMeta: {
-                ...message.turnMeta,
-                runId: streamRunId ?? message.runId,
-                sources: extractTurnSources(uiTurn),
+            setStreamTurn((turn) => turn ? {
+              ...turn,
+              receivedText: Boolean(uiTurn.assistantText) || turn.receivedText,
+              message: {
+                ...turn.message,
+                kind: "assistant_turn",
+                text: uiTurn.assistantText ?? turn.message.text,
+                relatedPropertyIds: extractTurnPropertyIds(uiTurn),
+                sourceMetadata: extractTurnSources(uiTurn),
+                uiTurn,
+                turnMeta: {
+                  ...turn.message.turnMeta,
+                  runId: streamRunId ?? turn.message.runId,
+                  sources: extractTurnSources(uiTurn),
+                },
               },
-            } : message);
+            } : turn);
             return;
           }
 
           if (event.type === "confirmation_required") {
-            setStreamingAssistant((message) => message ? {
-              ...message,
-              text: message.text === LEGACY_PENDING_ASSISTANT_TEXT || message.text === pendingAssistantText
-                ? "This action needs your confirmation before I can run it."
-                : message.text,
-              turnMeta: {
-                ...message.turnMeta,
-                runId: streamRunId ?? message.runId,
-                confirmation: {
-                  confirmationId: event.confirmationId,
-                  summary: event.summary,
-                  resource: event.resource,
-                  action: event.action,
-                  inputPreview: event.inputPreview,
-                  expiresAt: event.expiresAt,
-                  status: "pending",
+            setStreamTurn((turn) => turn ? {
+              ...turn,
+              message: {
+                ...turn.message,
+                text: turn.message.text === pendingAssistantText
+                  ? "This action needs your confirmation before I can run it."
+                  : turn.message.text,
+                turnMeta: {
+                  ...turn.message.turnMeta,
+                  runId: streamRunId ?? turn.message.runId,
+                  confirmation: {
+                    confirmationId: event.confirmationId,
+                    summary: event.summary,
+                    resource: event.resource,
+                    action: event.action,
+                    inputPreview: event.inputPreview,
+                    expiresAt: event.expiresAt,
+                    status: "pending",
+                  },
                 },
               },
-            } : message);
+            } : turn);
             return;
           }
 
@@ -430,16 +420,9 @@ export function useConversationController() {
               attachments,
             };
             setPendingPrompt(null);
-            setPendingUserAttachments([]);
+            setDraftTurn(null);
             setActiveRunId(null);
-            setStreamingAssistant((message) => message ? {
-              ...message,
-              streamState: "complete",
-              turnMeta: {
-                ...message.turnMeta,
-                diagnostics: [event.error],
-              },
-            } : message);
+            setStreamTurn((turn) => applyStreamEvent(turn, event));
             return;
           }
 
@@ -453,14 +436,11 @@ export function useConversationController() {
             });
             setActiveThreadId(event.threadId);
             setPendingPrompt(null);
-            setPendingUserAttachments([]);
+            setDraftTurn(null);
             setActiveRunId(null);
             setRunFailureMessage(null);
-            setStreamingAssistant((message) => message ? {
-              ...message,
-              sessionId: event.threadId,
-              streamState: "complete",
-            } : message);
+            setStreamTurn((turn) => applyStreamEvent(turn, event));
+            setMessagesRefreshKey((value) => value + 1);
             refreshThreads?.();
             track("ai_response_stream_end", {
               sessionId,
@@ -473,7 +453,7 @@ export function useConversationController() {
         },
       });
       setPendingPrompt(null);
-      setPendingUserAttachments([]);
+      setDraftTurn(null);
       setActiveRunId(null);
       refreshThreads?.();
     } catch (error) {
@@ -483,9 +463,9 @@ export function useConversationController() {
           threadId: streamThreadId,
           runId: streamRunId,
         }, "warn");
-        setStreamingAssistant((message) => message ? { ...message, streamState: "stopped" } : message);
+        setStreamTurn((turn) => turn ? { ...turn, message: { ...turn.message, streamState: "stopped" } } : turn);
         setPendingPrompt(null);
-        setPendingUserAttachments([]);
+        setDraftTurn(null);
         setActiveRunId(null);
         setRunFailureMessage(null);
         return;
@@ -496,9 +476,9 @@ export function useConversationController() {
         setDraftText(prompt);
       }
       setPendingPrompt(null);
-      setPendingUserAttachments([]);
+      setDraftTurn(null);
       setActiveRunId(null);
-      setStreamingAssistant((message) => message ? { ...message, streamState: "complete" } : message);
+      setStreamTurn((turn) => turn ? { ...turn, message: { ...turn.message, streamState: "complete" } } : turn);
       const errorMessage = error instanceof Error ? error.message : surfaceCopy.runFailedTitle;
       const normalizedError = normalizeAgentFailureMessage(errorMessage, surfaceCopy);
       logAgentDebug("send.failed", {
@@ -553,7 +533,7 @@ export function useConversationController() {
   const stop = async () => {
     if (!isAuthenticated) {
       setPendingPrompt(null);
-      setPendingUserAttachments([]);
+      setDraftTurn(null);
       return;
     }
 
@@ -564,9 +544,9 @@ export function useConversationController() {
 
     if (e2eQaMode) {
       setPendingPrompt(null);
-      setPendingUserAttachments([]);
+      setDraftTurn(null);
       setActiveRunId(null);
-      setStreamingAssistant(null);
+      setStreamTurn(null);
       setRunFailureMessage(null);
       track("ai_response_stream_end", {
         sessionId,
@@ -581,9 +561,9 @@ export function useConversationController() {
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
     setPendingPrompt(null);
-    setPendingUserAttachments([]);
+    setDraftTurn(null);
     setActiveRunId(null);
-    setStreamingAssistant((message) => message ? { ...message, streamState: "stopped" } : null);
+    setStreamTurn((turn) => turn ? { ...turn, message: { ...turn.message, streamState: "stopped" } } : null);
     setRunFailureMessage(null);
     track("ai_response_stream_end", {
       sessionId,
@@ -636,18 +616,21 @@ export function useConversationController() {
   const approveConfirmation = async (confirmationId: string) => {
     if (!workspace.organizationId) return;
     await approveAgentConfirmation(workspace.organizationId, confirmationId);
-    setStreamingAssistant((message) => message ? {
-      ...message,
-      turnMeta: message.turnMeta?.confirmation?.confirmationId === confirmationId
+    setStreamTurn((turn) => turn ? {
+      ...turn,
+      message: {
+        ...turn.message,
+        turnMeta: turn.message.turnMeta?.confirmation?.confirmationId === confirmationId
         ? {
-            ...message.turnMeta,
+            ...turn.message.turnMeta,
             confirmation: {
-              ...message.turnMeta.confirmation,
+              ...turn.message.turnMeta.confirmation,
               status: "executed",
             },
           }
-        : message.turnMeta,
-    } : message);
+        : turn.message.turnMeta,
+      },
+    } : turn);
     setMessagesRefreshKey((value) => value + 1);
     refreshThreads?.();
   };
@@ -655,18 +638,21 @@ export function useConversationController() {
   const cancelConfirmation = async (confirmationId: string) => {
     if (!workspace.organizationId) return;
     await cancelAgentConfirmation(workspace.organizationId, confirmationId);
-    setStreamingAssistant((message) => message ? {
-      ...message,
-      turnMeta: message.turnMeta?.confirmation?.confirmationId === confirmationId
+    setStreamTurn((turn) => turn ? {
+      ...turn,
+      message: {
+        ...turn.message,
+        turnMeta: turn.message.turnMeta?.confirmation?.confirmationId === confirmationId
         ? {
-            ...message.turnMeta,
+            ...turn.message.turnMeta,
             confirmation: {
-              ...message.turnMeta.confirmation,
+              ...turn.message.turnMeta.confirmation,
               status: "canceled",
             },
           }
-        : message.turnMeta,
-    } : message);
+        : turn.message.turnMeta,
+      },
+    } : turn);
   };
 
   return {
@@ -675,6 +661,10 @@ export function useConversationController() {
     isAnonymous: false,
     runtimeHealth,
     messages,
+    hasTransientTurn: timeline.hasTransientTurn,
+    isThreadLoading,
+    threadLoadError: serverMessagesError,
+    retryThreadLoad: () => setMessagesRefreshKey((value) => value + 1),
     isStreaming,
     runFailureMessage,
     sendPrompt,

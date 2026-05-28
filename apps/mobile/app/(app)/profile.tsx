@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View, Pressable, Image, Alert } from "react-native";
+import { ScrollView, StyleSheet, View, Pressable, Image, Alert, Linking } from "react-native";
 import { useRouter } from "expo-router";
 import { useMemo } from "react";
 import * as Clipboard from "expo-clipboard";
@@ -9,7 +9,9 @@ import {
   Languages,
   Link,
   LogOut,
+  FileText,
   RefreshCw,
+  ShieldCheck,
   SunMoon,
 } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -18,6 +20,7 @@ import Animated, { FadeInUp } from "react-native-reanimated";
 import { Screen } from "@/foundation/primitives/Screen";
 import { Text } from "@/foundation/primitives/Text";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
+import type { AppColors } from "@/foundation/theme/tokens";
 import { useAuthSession } from "@/auth/useAuthSession";
 import { useWorkspaceAccess } from "@/auth/useWorkspaceAccess";
 import { signOutForAccountSwitch } from "@/auth/signOut";
@@ -25,10 +28,11 @@ import { useAppLocalization } from "@/foundation/localization";
 import { formatLanguagePreferenceLabel } from "@/foundation/localization/languageSettings";
 import { mirrorIcon } from "@/foundation/utils/layoutDirection";
 import { workspaceOrganizationLabel } from "@/auth/workspaceAccess";
+import { userAvatarPresentation } from "@/auth/userPresentation";
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { colors } = useTheme();
+  const { colors, appearanceMode } = useTheme();
   const { t, isRTL, locale, localePreference } = useAppLocalization();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors, isRTL), [colors, isRTL]);
@@ -54,14 +58,14 @@ export default function ProfileScreen() {
     );
   };
 
-  const displayName = user?.name ?? user?.email ?? "Qentrah user";
-  const avatarUrl = user?.image ?? null;
-  const initials = displayName
-    .split(" ")
-    .map((part: string) => part[0]?.toUpperCase() ?? "")
-    .join("")
-    .slice(0, 2);
+  const { displayName, avatarUrl, initials } = userAvatarPresentation(user);
   const languageSummary = formatLanguagePreferenceLabel(t, localePreference);
+  const appearanceSummary =
+    appearanceMode === "system"
+      ? t.appSettings.appearanceSystemTitle
+      : appearanceMode === "light"
+        ? t.appSettings.appearanceLightTitle
+        : t.appSettings.appearanceDarkTitle;
   const activeWorkspaceName = workspaceOrganizationLabel(
     workspace.activeOrganization,
     t.workspaceAccess.untitledWorkspace,
@@ -89,6 +93,10 @@ export default function ProfileScreen() {
         error instanceof Error ? error.message : t.workspaceAccess.errorBody,
       );
     }
+  };
+
+  const openWorkspacePublicPage = (slug: "privacy" | "terms" | "legal") => {
+    void Linking.openURL(`https://app.qentrah.com/${locale}/${slug}`);
   };
 
   const menuGroups: {
@@ -138,8 +146,32 @@ export default function ProfileScreen() {
         {
           id: "appearance",
           label: t.appSettings.appearanceTitle,
+          description: appearanceSummary,
           icon: <SunMoon size={18} color={colors.textPrimary} />,
           onPress: () => router.push("/(app)/appearance" as never),
+        },
+      ],
+    },
+    {
+      label: t.profile.services,
+      items: [
+        {
+          id: "privacy_policy",
+          label: "Privacy policy",
+          icon: <ShieldCheck size={18} color={colors.textPrimary} />,
+          onPress: () => openWorkspacePublicPage("privacy"),
+        },
+        {
+          id: "terms",
+          label: "Terms",
+          icon: <FileText size={18} color={colors.textPrimary} />,
+          onPress: () => openWorkspacePublicPage("terms"),
+        },
+        {
+          id: "legal",
+          label: "Legal",
+          icon: <FileText size={18} color={colors.textPrimary} />,
+          onPress: () => openWorkspacePublicPage("legal"),
         },
       ],
     },
@@ -218,7 +250,7 @@ export default function ProfileScreen() {
   );
 }
 
-const createStyles = (colors: any, isRTL: boolean) => StyleSheet.create({
+const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
   header: {
     position: "absolute",
     ...(isRTL ? { right: 20 } : { left: 20 }),

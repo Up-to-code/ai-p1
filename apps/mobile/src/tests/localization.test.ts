@@ -25,17 +25,16 @@ test("resolveLocaleDirection maps Arabic to rtl and others to ltr", () => {
   assert.equal(resolveLocaleDirection("fr"), "ltr");
 });
 
-test("buildLanguageOptions derives system and shared locales for settings", () => {
+test("buildLanguageOptions derives shared locales for settings", () => {
   const options = buildLanguageOptions(getMobileDictionary("en"));
 
   assert.deepEqual(
     options.map((option) => option.value),
-    ["system", "ar", "en", "fr"],
+    ["ar", "en", "fr"],
   );
-  assert.equal(options[0]?.title, "System default");
-  assert.equal(options[1]?.title, "العربية");
-  assert.equal(options[2]?.title, "English");
-  assert.equal(options[3]?.title, "Français");
+  assert.equal(options[0]?.title, "العربية");
+  assert.equal(options[1]?.title, "English");
+  assert.equal(options[2]?.title, "Français");
 });
 
 test("formatLanguagePreferenceLabel returns localized system copy for rtl and ltr settings", () => {

@@ -1,4 +1,13 @@
-import { Linking, Pressable, StyleSheet, View } from "react-native";
+import {
+  Image,
+  Linking,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  type StyleProp,
+  type TextStyle,
+} from "react-native";
 import React, { useMemo } from "react";
 import Animated, {
   FadeIn,
@@ -6,11 +15,13 @@ import Animated, {
 } from "react-native-reanimated";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
-import { Check, Copy, Pencil, X } from "lucide-react-native";
+import { Check, Copy, FileText, Image as ImageIcon, Pencil, Video, X } from "lucide-react-native";
 
 import { Text } from "@/foundation/primitives/Text";
 import { MarkdownText } from "@/foundation/primitives/MarkdownText";
-import { theme } from "@/foundation/theme/tokens";
+import { MarkdownTableViewport } from "@/foundation/primitives/MarkdownTableViewport";
+import { parseMarkdownTableRows } from "@/foundation/primitives/markdownTable";
+import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { useAppStore } from "@/store";
 import {
@@ -18,10 +29,11 @@ import {
   resolveAssistantDirection,
   resolveThreadPresentationState,
 } from "@/conversation/lib/assistantPresentation";
+import { getVisibleMessageAttachments } from "@/conversation/lib/agentAttachmentPresentation";
 import {
   detectAssistantMessageDirection,
   detectTextBlockDirection,
-  resolveMessagePhysicalSide,
+  getDirectionalTextAnchor,
   resolveUserBubbleDirection,
 } from "@/conversation/lib/messageDirection";
 import type { ThreadPresentation } from "@/conversation/assistantProtocol";
@@ -148,6 +160,46 @@ function ConfirmationCard({
 const PENDING_PLACEHOLDER = "Thinking through your request\u2026";
 const LEGACY_PENDING_PLACEHOLDER = "Thinking through your request...";
 
+function MessageAttachmentPreview({
+  attachments,
+  styles,
+  iconColor,
+}: {
+  attachments?: ConversationMessage["attachments"];
+  styles: ReturnType<typeof createStyles>;
+  iconColor: string;
+}) {
+  const { visible, overflowCount } = getVisibleMessageAttachments(attachments);
+  if (visible.length === 0) return null;
+
+  return (
+    <View style={styles.sentAttachmentGrid}>
+      {visible.map((attachment) => {
+        const Icon = attachment.kind === "video" ? Video : attachment.kind === "image" ? ImageIcon : FileText;
+        return (
+          <View key={`${attachment.key}:${attachment.url}`} style={styles.sentAttachmentTile}>
+            {attachment.kind === "image" ? (
+              <Image source={{ uri: attachment.url }} style={styles.sentAttachmentImage} />
+            ) : (
+              <View style={styles.sentAttachmentIconTile}>
+                <Icon size={18} color={iconColor} strokeWidth={2.2} />
+              </View>
+            )}
+            <Text style={styles.sentAttachmentName} numberOfLines={1}>
+              {attachment.name}
+            </Text>
+          </View>
+        );
+      })}
+      {overflowCount > 0 ? (
+        <View style={styles.sentAttachmentOverflow}>
+          <Text style={styles.sentAttachmentOverflowText}>+{overflowCount}</Text>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
 /**
  * Gemini-style streaming text: new words materialize smoothly
  * with staggered fade-in and subtle upward motion.
@@ -156,32 +208,51 @@ function StreamingText({
   text,
   isStreaming,
   style,
+  maxContentWidth,
 }: {
   text: string;
   isStreaming: boolean;
-  style: any;
+  style: StyleProp<TextStyle>;
+  maxContentWidth: number;
 }) {
   const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors, colors.background === "#000000" ? "dark" : "light"), [colors]);
+  const styles = useMemo(
+    () => createStyles(colors, colors.background === "#000000" ? "dark" : "light", maxContentWidth),
+    [colors, maxContentWidth],
+  );
 
   if (!isStreaming) {
-    return <MarkdownText text={text} tone="secondary" style={style} />;
+    return <MarkdownText text={text} tone="secondary" style={style} maxContentWidth={maxContentWidth} />;
   }
 
-  return <StreamingMarkdownText text={text} style={style} styles={styles} />;
+  return (
+    <StreamingMarkdownText
+      text={text}
+      style={style}
+      styles={styles}
+      maxContentWidth={maxContentWidth}
+      backgroundColor={colors.background}
+    />
+  );
 }
 
 function StreamingInlineMarkdown({
   text,
   style,
+  selectable = true,
+  direction,
 }: {
   text: string;
-  style: any;
+  style: StyleProp<TextStyle>;
+  selectable?: boolean;
+  direction?: "rtl" | "ltr";
 }) {
+  const textDirection = direction ?? detectTextBlockDirection(text);
   const parsedFullText = parseInlineMarkdown(text);
 
   return (
-    <Text tone="secondary" selectable={true} style={style}>
+    <Text tone="secondary" selectable={selectable} style={style}>
+      {getDirectionalTextAnchor(textDirection)}
       {parsedFullText}
     </Text>
   );
@@ -191,10 +262,14 @@ function StreamingMarkdownText({
   text,
   style,
   styles,
+  maxContentWidth,
+  backgroundColor,
 }: {
   text: string;
-  style: any;
+  style: StyleProp<TextStyle>;
   styles: ReturnType<typeof createStyles>;
+  maxContentWidth: number;
+  backgroundColor: string;
 }) {
   const lines = text.split("\n");
   let inCodeBlock = false;
@@ -218,7 +293,65 @@ function StreamingMarkdownText({
     codeBlockLanguage = "";
   };
 
-  lines.forEach((line, index) => {
+  for (let index = 0; index < lines.length; index += 1) {
+    const table = parseMarkdownTableRows(lines, index);
+    if (table && !inCodeBlock) {
+      blocks.push(
+        <MarkdownTableViewport
+          key={`table-${index}`}
+          contentWidth={maxContentWidth}
+          minWidth={table.minWidth}
+          backgroundColor={backgroundColor}
+        >
+          <View style={[styles.streamingTableGrid, { width: table.minWidth }]}>
+            <View style={[styles.streamingTableLine, styles.streamingTableHeaderLine]}>
+              {table.headers.map((cell, cellIndex) => {
+                const isBlockRtl = detectTextBlockDirection(cell) === "rtl";
+                return (
+                  <StreamingInlineMarkdown
+                    key={`table-head-${index}-${cellIndex}`}
+                    text={cell}
+                    selectable={false}
+                    direction={isBlockRtl ? "rtl" : "ltr"}
+                    style={[
+                      style,
+                      styles.streamingTableHeaderCell,
+                      cellIndex === table.columnCount - 1 && styles.streamingTableLastCell,
+                      isBlockRtl && styles.rtlText,
+                    ]}
+                  />
+                );
+              })}
+            </View>
+            {table.rows.map((row, rowIndex) => (
+              <View key={`table-row-${index}-${rowIndex}`} style={styles.streamingTableLine}>
+                {row.map((cell, cellIndex) => {
+                  const isBlockRtl = detectTextBlockDirection(cell) === "rtl";
+                  return (
+                    <StreamingInlineMarkdown
+                      key={`table-cell-${index}-${rowIndex}-${cellIndex}`}
+                      text={cell}
+                      selectable={false}
+                      direction={isBlockRtl ? "rtl" : "ltr"}
+                      style={[
+                        style,
+                        styles.streamingTableCell,
+                        cellIndex === table.columnCount - 1 && styles.streamingTableLastCell,
+                        isBlockRtl && styles.rtlText,
+                      ]}
+                    />
+                  );
+                })}
+              </View>
+            ))}
+          </View>
+        </MarkdownTableViewport>
+      );
+      index = table.nextIndex - 1;
+      continue;
+    }
+
+    const line = lines[index];
     const trimmed = line.trim();
     const fence = trimmed.match(/^```(\w*)/);
     if (fence) {
@@ -230,17 +363,17 @@ function StreamingMarkdownText({
         codeBlockLanguage = fence[1] || "";
         codeBlockLines = [];
       }
-      return;
+      continue;
     }
 
     if (inCodeBlock) {
       codeBlockLines.push(line);
-      return;
+      continue;
     }
 
     if (!trimmed) {
       blocks.push(<View key={`space-${index}`} style={styles.streamingSpacer} />);
-      return;
+      continue;
     }
 
     const headerMatch = trimmed.match(/^(#{1,3})\s+(.+)$/);
@@ -250,6 +383,7 @@ function StreamingMarkdownText({
         <StreamingInlineMarkdown
           key={`heading-${index}`}
           text={headerMatch[2]}
+          direction={detectTextBlockDirection(headerMatch[2])}
           style={[
             style,
             level === 1 ? styles.streamingH1 : level === 2 ? styles.streamingH2 : styles.streamingH3,
@@ -257,7 +391,7 @@ function StreamingMarkdownText({
           ]}
         />
       );
-      return;
+      continue;
     }
 
     const listMatch = trimmed.match(/^(\d+\.|[-*•])\s+(.+)$/);
@@ -273,21 +407,23 @@ function StreamingMarkdownText({
           </Text>
           <StreamingInlineMarkdown
             text={listMatch[2]}
+            direction={isBlockRtl ? "rtl" : "ltr"}
             style={[
               style,
               styles.streamingListText,
-              isBlockRtl && styles.rtlText,
+              isBlockRtl && styles.streamingListTextRtl,
             ]}
           />
         </View>
       );
-      return;
+      continue;
     }
 
     blocks.push(
       <StreamingInlineMarkdown
         key={`paragraph-${index}`}
         text={line}
+        direction={detectTextBlockDirection(line)}
         style={[
           style,
           styles.streamingParagraph,
@@ -295,7 +431,7 @@ function StreamingMarkdownText({
         ]}
       />
     );
-  });
+  }
 
   if (inCodeBlock) {
     flushCodeBlock("code-open");
@@ -370,7 +506,12 @@ export function MessageBubble({
   threadPresentation,
 }: MessageBubbleProps) {
   const { colors, resolvedColorScheme } = useTheme();
-  const styles = useMemo(() => createStyles(colors, resolvedColorScheme), [colors, resolvedColorScheme]);
+  const { width } = useWindowDimensions();
+  const maxContentWidth = Math.max(260, width - theme.spacing.lg * 2 - theme.spacing.xl);
+  const styles = useMemo(
+    () => createStyles(colors, resolvedColorScheme, maxContentWidth),
+    [colors, maxContentWidth, resolvedColorScheme],
+  );
   const localePreference = useAppStore((state) => state.localePreference);
   const isUser = message.role === "user";
   const isStreaming = message.streamState === "streaming";
@@ -413,19 +554,19 @@ export function MessageBubble({
   if (isUser) {
     const userDirection = resolveUserBubbleDirection(localePreference, resolvedThreadPresentation);
     const isUserRtl = userDirection === "rtl";
-    const userSide = resolveMessagePhysicalSide("user");
     return (
       <Animated.View
         entering={FadeIn.duration(200)}
-        style={[styles.row, styles.userRow, userSide === "right" ? styles.rowRight : styles.rowLeft, { marginTop: 32 }]}
+        style={[styles.row, styles.physicalMessageRow, styles.userPhysicalRow, { marginTop: 32 }]}
       >
-        <View style={[styles.messageStack, styles.userStack, styles.stackRight]}>
-          <Pressable
-            onLongPress={showActions}
-            delayLongPress={360}
-            onPress={() => actionsVisible ? onDismissActions?.() : undefined}
-          >
-            <View style={styles.userBubble}>
+        <View style={[styles.messageStack, styles.userStack]}>
+        <Pressable
+          onLongPress={showActions}
+          delayLongPress={360}
+          onPress={() => actionsVisible ? onDismissActions?.() : undefined}
+        >
+          <View style={styles.userBubble}>
+            {message.text ? (
               <Text
                 tone="primary"
                 selectable={true}
@@ -436,30 +577,35 @@ export function MessageBubble({
               >
                 {message.text}
               </Text>
-            </View>
-          </Pressable>
-          {actionsVisible ? (
-            <InlineMessageActions
-              align="end"
-              canEdit={Boolean(onEditMessage)}
-              direction={userDirection}
-              uiLocale={isUserRtl ? "ar" : resolvedThreadPresentation.uiLocale}
-              onCopy={copyMessage}
-              onEdit={editMessage}
+            ) : null}
+            <MessageAttachmentPreview
+              attachments={message.attachments}
+              styles={styles}
+              iconColor={colors.textPrimary}
             />
-          ) : null}
+          </View>
+        </Pressable>
+        {actionsVisible ? (
+          <InlineMessageActions
+            align="end"
+            canEdit={Boolean(onEditMessage)}
+            direction={userDirection}
+            uiLocale={isUserRtl ? "ar" : resolvedThreadPresentation.uiLocale}
+            onCopy={copyMessage}
+            onEdit={editMessage}
+          />
+        ) : null}
         </View>
       </Animated.View>
     );
   }
 
-  const assistantSide = resolveMessagePhysicalSide("assistant");
-
   return (
     <Animated.View
       entering={FadeIn.duration(250)}
-      style={[styles.row, styles.assistantRow, assistantSide === "left" ? styles.rowLeft : styles.rowRight]}
+      style={[styles.row, styles.physicalMessageRow, styles.assistantPhysicalRow, styles.assistantRow]}
     >
+      <View style={[styles.messageStack, styles.assistantStack]}>
       {localizedStageText && isPending && (
         <View style={styles.statusLine}>
           <View style={styles.statusDot} />
@@ -469,42 +615,38 @@ export function MessageBubble({
         </View>
       )}
 
-      <View style={[styles.messageStack, styles.assistantStack, styles.stackLeft]}>
-          <Pressable
-            onLongPress={showActions}
-            delayLongPress={360}
-            onPress={() => actionsVisible ? onDismissActions?.() : undefined}
-          >
-            <StreamingText
-              text={message.text}
-              isStreaming={isStreaming}
-              style={[
-                styles.assistantText,
-              ]}
-            />
-          </Pressable>
-          {actionsVisible ? (
-            <InlineMessageActions
-              align="start"
-              canEdit={false}
-              direction={assistantDirection}
-              uiLocale={message.uiTurn?.presentation?.uiLocale ?? resolvedThreadPresentation.uiLocale}
-              onCopy={copyMessage}
-            />
-          ) : null}
-          {message.turnMeta?.confirmation ? (
-            <ConfirmationCard
-              confirmation={message.turnMeta.confirmation}
-              onApprove={onApproveConfirmation}
-              onCancel={onCancelConfirmation}
-            />
-          ) : null}
-        </View>
+      <View>
+        <StreamingText
+          text={message.text}
+          isStreaming={isStreaming}
+          maxContentWidth={maxContentWidth}
+          style={[
+            styles.assistantText,
+          ]}
+        />
+      </View>
+      {actionsVisible ? (
+        <InlineMessageActions
+          align="start"
+          canEdit={false}
+          direction={assistantDirection}
+          uiLocale={message.uiTurn?.presentation?.uiLocale ?? resolvedThreadPresentation.uiLocale}
+          onCopy={copyMessage}
+        />
+      ) : null}
+      {message.turnMeta?.confirmation ? (
+        <ConfirmationCard
+          confirmation={message.turnMeta.confirmation}
+          onApprove={onApproveConfirmation}
+          onCancel={onCancelConfirmation}
+        />
+      ) : null}
+      </View>
     </Animated.View>
   );
 }
 
-const createStyles = (colors: any, colorScheme: "light" | "dark") => {
+const createStyles = (colors: AppColors, colorScheme: "light" | "dark", maxContentWidth = 320) => {
   const isDark = colorScheme === "dark";
   const actionSurface = isDark ? "rgba(28, 28, 30, 0.96)" : "rgba(255, 255, 255, 0.96)";
   const actionPressedSurface = isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)";
@@ -515,38 +657,32 @@ const createStyles = (colors: any, colorScheme: "light" | "dark") => {
     paddingHorizontal: theme.spacing.lg,
     marginBottom: theme.spacing.lg, 
   },
-  rowLeft: {
+  physicalMessageRow: {
+    width: "100%",
+    flexDirection: "column",
+    direction: "ltr",
+  },
+  userPhysicalRow: {
+    alignItems: "flex-end",
+  },
+  assistantPhysicalRow: {
     alignItems: "flex-start",
-  },
-  rowRight: {
-    alignItems: "flex-end",
-  },
-  userRow: {
-    alignItems: "flex-end",
   },
   messageStack: {
     gap: 7,
   },
   userStack: {
-    width: "85%",
+    maxWidth: Math.max(180, maxContentWidth * 0.82),
     alignItems: "flex-end",
+    flexShrink: 1,
   },
   assistantStack: {
-    width: "92%",
+    width: maxContentWidth,
+    maxWidth: "100%",
+    flexShrink: 1,
     alignItems: "flex-start",
-  },
-  stackLeft: {
-    alignSelf: "flex-start",
-    marginLeft: 0,
-    marginRight: "auto",
-  },
-  stackRight: {
-    alignSelf: "flex-end",
-    marginLeft: "auto",
-    marginRight: 0,
   },
   assistantRow: {
-    alignItems: "flex-start",
     paddingRight: theme.spacing.xl,
     marginTop: 24,
     marginBottom: 0,
@@ -563,6 +699,58 @@ const createStyles = (colors: any, colorScheme: "light" | "dark") => {
     fontSize: 16,
     lineHeight: 24,
     fontFamily: "Manrope_500Medium",
+  },
+  sentAttachmentGrid: {
+    marginTop: 10,
+    maxWidth: 240,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    justifyContent: "flex-end",
+  },
+  sentAttachmentTile: {
+    width: 70,
+    gap: 5,
+    alignItems: "center",
+  },
+  sentAttachmentImage: {
+    width: 62,
+    height: 62,
+    borderRadius: 14,
+    backgroundColor: colors.background,
+  },
+  sentAttachmentIconTile: {
+    width: 62,
+    height: 62,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.divider,
+  },
+  sentAttachmentName: {
+    width: 70,
+    color: colors.textSecondary,
+    fontSize: 10,
+    lineHeight: 13,
+    fontFamily: "Manrope_600SemiBold",
+    textAlign: "center",
+  },
+  sentAttachmentOverflow: {
+    width: 62,
+    height: 62,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.divider,
+  },
+  sentAttachmentOverflowText: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontFamily: "Manrope_800ExtraBold",
   },
   brandingWrap: {
     marginBottom: 4,
@@ -660,41 +848,52 @@ const createStyles = (colors: any, colorScheme: "light" | "dark") => {
     textTransform: "capitalize",
   },
   streamingMarkdown: {
-    width: "100%",
+    width: maxContentWidth,
+    maxWidth: "100%",
     gap: 6,
   },
   streamingParagraph: {
+    width: "100%",
     lineHeight: 24,
   },
   streamingSpacer: {
     height: 6,
   },
   streamingListItem: {
+    width: "100%",
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: 8,
-    paddingLeft: 8,
+    gap: 6,
+    paddingLeft: 2,
     marginTop: 2,
   },
   streamingListItemRtl: {
     flexDirection: "row-reverse",
     paddingLeft: 0,
-    paddingRight: 8,
+    paddingRight: 2,
   },
   rtlText: {
     textAlign: "right",
     writingDirection: "rtl",
   },
   streamingBullet: {
-    minWidth: 18,
+    width: 14,
     lineHeight: 24,
     fontFamily: "Manrope_700Bold",
+    textAlign: "center",
+    flexShrink: 0,
   },
   streamingListText: {
     flex: 1,
+    minWidth: 0,
     lineHeight: 24,
   },
+  streamingListTextRtl: {
+    textAlign: "right",
+    writingDirection: "rtl",
+  },
   streamingH1: {
+    width: "100%",
     fontSize: 21,
     lineHeight: 28,
     fontFamily: "Manrope_800ExtraBold",
@@ -702,6 +901,7 @@ const createStyles = (colors: any, colorScheme: "light" | "dark") => {
     marginTop: 8,
   },
   streamingH2: {
+    width: "100%",
     fontSize: 19,
     lineHeight: 26,
     fontFamily: "Manrope_800ExtraBold",
@@ -709,11 +909,58 @@ const createStyles = (colors: any, colorScheme: "light" | "dark") => {
     marginTop: 6,
   },
   streamingH3: {
+    width: "100%",
     fontSize: 17,
     lineHeight: 24,
     fontFamily: "Manrope_700Bold",
     color: colors.textPrimary,
     marginTop: 4,
+  },
+  streamingTableGrid: {
+    overflow: "hidden",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)",
+    direction: "ltr",
+  },
+  streamingTableLine: {
+    flexDirection: "row",
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  streamingTableHeaderLine: {
+    borderTopWidth: 0,
+    backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
+  },
+  streamingTableHeaderCell: {
+    width: 220,
+    minHeight: 48,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRightWidth: 1,
+    borderRightColor: colors.border,
+    fontSize: 13,
+    lineHeight: 18,
+    fontFamily: "Manrope_800ExtraBold",
+    color: colors.textPrimary,
+    textAlign: "left",
+    writingDirection: "ltr",
+  },
+  streamingTableCell: {
+    width: 220,
+    minHeight: 50,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRightWidth: 1,
+    borderRightColor: colors.border,
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: "left",
+    writingDirection: "ltr",
+  },
+  streamingTableLastCell: {
+    borderRightWidth: 0,
   },
   streamingCodeBlock: {
     borderRadius: 14,

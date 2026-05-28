@@ -6,6 +6,15 @@ import type { QueryCtx } from "../_generated/server";
 import { listResourceMedia, selectCoverUrl } from "../media/data";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { revealClientPii } from "../security/clientPii";
+import {
+  activeChronologicalWorkspaceRows,
+  activeDueWorkspaceRows,
+  activeUpdatedWorkspaceRows,
+  activeWorkspaceRows,
+  boundedWorkspaceReadLimit,
+  presentActiveWorkspacePage,
+} from "../workspace/readSurface";
+import { clientStats } from "../workspace/readStats";
 import { propertyUnitValidator } from "../properties/validators";
 import { clientTypeValidator, clientUnitLinkValidator, clientValidator } from "./validators";
 
@@ -34,12 +43,8 @@ async function nextClientWork(ctx: QueryCtx, organizationId: string, client: Doc
     .withIndex("by_client", (q) => q.eq("organizationId", organizationId).eq("clientId", client._id))
     .take(MAX_CLIENT_WORK_ITEMS);
 
-  const nextTask = tasks
-    .filter((task) => !task.deletedAt)
-    .sort((a, b) => (a.dueAt ?? Number.MAX_SAFE_INTEGER) - (b.dueAt ?? Number.MAX_SAFE_INTEGER))[0];
-  const nextEvent = events
-    .filter((event) => !event.deletedAt && event.startAt >= now)
-    .sort((a, b) => a.startAt - b.startAt)[0];
+  const nextTask = activeDueWorkspaceRows(tasks)[0];
+  const nextEvent = activeChronologicalWorkspaceRows(events.filter((event) => event.startAt >= now))[0];
 
   if (nextTask?.dueAt && (!nextEvent || nextTask.dueAt <= nextEvent.startAt)) {
     return {
@@ -119,13 +124,9 @@ export const list = query({
       .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
       .take(MAX_LIST_ITEMS);
 
-    const active = clients
-      .filter((client) => !client.deletedAt)
-      .sort((a, b) => b.updatedAt - a.updatedAt);
-
     // Source guard: list reads must stay list-item only, never per-client detail fan-out.
     // Keep the transformation equivalent to: return active.map(presentClientListItem)
-    return Promise.all(active.map(presentClientListItem));
+    return Promise.all(activeUpdatedWorkspaceRows(clients).map(presentClientListItem));
   },
 });
 
@@ -146,8 +147,7 @@ export const listPaged = query({
         .withIndex("by_organization_updated", (q) => q.eq("organizationId", args.organizationId))
         .order("desc")
         .take(MAX_SEARCH_SCAN_ITEMS);
-      const presented = await Promise.all(clients
-        .filter((client) => !client.deletedAt)
+      const presented = await Promise.all(activeWorkspaceRows(clients)
         .filter((client) => !args.type || client.type === args.type)
         .map(presentClientListItem));
       const matches = presented
@@ -174,9 +174,7 @@ export const listPaged = query({
 
     return {
       ...page,
-      page: await Promise.all(page.page
-        .filter((client) => !client.deletedAt)
-        .map(presentClientListItem)),
+      page: await presentActiveWorkspacePage(page.page, presentClientListItem),
     };
   },
 });
@@ -205,24 +203,7 @@ export const stats = query({
       .query("clients")
       .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
       .take(MAX_STATS_SCAN_ITEMS);
-    const active = clients.filter((client) => !client.deletedAt);
-
-    return {
-      total: active.length,
-      active: active.filter((client) => client.status === "active").length,
-      inactive: active.filter((client) => client.status === "inactive").length,
-      buyers: active.filter((client) => client.type === "Buyer").length,
-      tenants: active.filter((client) => client.type === "Tenant").length,
-      investors: active.filter((client) => client.type === "Investor").length,
-      brokers: active.filter((client) => client.type === "Broker").length,
-      stages: {
-        new: active.filter((client) => client.pipelineStage === "new").length,
-        qualified: active.filter((client) => client.pipelineStage === "qualified").length,
-        viewing: active.filter((client) => client.pipelineStage === "viewing").length,
-        negotiation: active.filter((client) => client.pipelineStage === "negotiation").length,
-        closed: active.filter((client) => client.pipelineStage === "closed").length,
-      },
-    };
+    return clientStats(clients);
   },
 });
 
@@ -231,16 +212,14 @@ export const options = query({
   returns: v.array(v.object({ id: v.string(), name: v.string() })),
   handler: async (ctx, args) => {
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
-    const limit = Math.max(1, Math.min(args.limit ?? 100, 200));
+    const limit = boundedWorkspaceReadLimit(args.limit, 100, 200);
     const clients = await ctx.db
       .query("clients")
       .withIndex("by_organization_updated", (q) => q.eq("organizationId", args.organizationId))
       .order("desc")
       .take(limit);
 
-    return Promise.all(clients
-      .filter((client) => !client.deletedAt)
-      .map(async (client) => ({ id: client._id, name: client.name })));
+    return Promise.all(activeWorkspaceRows(clients).map(async (client) => ({ id: client._id, name: client.name })));
   },
 });
 
@@ -275,9 +254,7 @@ export const listUnitLinks = query({
       .take(MAX_LINK_ITEMS);
 
     return Promise.all(
-      links
-        .filter((link) => !link.deletedAt)
-        .sort((a, b) => b.updatedAt - a.updatedAt)
+      activeUpdatedWorkspaceRows(links)
         .map(async (link) => {
           const unit = await ctx.db.get(link.propertyId as Id<"propertyUnits">);
           return {
@@ -306,9 +283,7 @@ export const listUnitLinksForProperty = query({
       .take(MAX_LINK_ITEMS);
 
     return Promise.all(
-      links
-        .filter((link) => !link.deletedAt)
-        .sort((a, b) => b.updatedAt - a.updatedAt)
+      activeUpdatedWorkspaceRows(links)
         .map(async (link) => {
           const client = await ctx.db.get(link.clientId as Id<"clients">);
           return {

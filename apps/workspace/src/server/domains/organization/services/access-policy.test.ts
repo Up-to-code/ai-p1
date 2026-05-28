@@ -3,6 +3,7 @@ import {
   assertCanChangeMemberRole,
   assertCanDeleteRole,
   assertCanRemoveMember,
+  assertOrganizationRetainsOwnerAfterMemberChange,
   normalizeOrganizationRoleName,
   validatePermissionPayload,
 } from "./access-policy";
@@ -54,6 +55,31 @@ describe("organization access policy", () => {
         roles: [customRole],
       }),
     ).toThrow("at least one owner");
+  });
+
+  it("allows owner transitions when the organization keeps another owner", () => {
+    const secondOwner = { id: "member_owner_2", userId: "user_owner_2", role: "owner,member" };
+
+    expect(() =>
+      assertOrganizationRetainsOwnerAfterMemberChange({
+        currentRole: owner.role,
+        members: [owner, secondOwner],
+      }),
+    ).not.toThrow();
+    expect(() =>
+      assertOrganizationRetainsOwnerAfterMemberChange({
+        currentRole: owner.role,
+        nextRole: "admin",
+        members: [owner, secondOwner],
+      }),
+    ).not.toThrow();
+    expect(() =>
+      assertOrganizationRetainsOwnerAfterMemberChange({
+        currentRole: owner.role,
+        nextRole: "owner,admin",
+        members: [owner, admin],
+      }),
+    ).not.toThrow();
   });
 
   it("blocks deleting built-in or in-use custom roles", () => {

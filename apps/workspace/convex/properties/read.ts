@@ -5,6 +5,14 @@ import type { Doc } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
 import { listResourceMedia, selectCoverUrl } from "../media/data";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
+import {
+  activeUpdatedWorkspaceRows,
+  activeWorkspaceRows,
+  boundedWorkspaceReadLimit,
+  presentActiveWorkspacePage,
+  workspaceSearchRows,
+} from "../workspace/readSurface";
+import { propertyStats } from "../workspace/readStats";
 import { propertyUnitValidator } from "./validators";
 
 const MAX_LIST_ITEMS = 300;
@@ -55,11 +63,7 @@ export const list = query({
       .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
       .take(MAX_LIST_ITEMS);
 
-    const active = units
-      .filter((unit) => !unit.deletedAt)
-      .sort((a, b) => b.updatedAt - a.updatedAt);
-
-    return Promise.all(active.map((unit) => presentPropertyListItem(ctx, unit)));
+    return Promise.all(activeUpdatedWorkspaceRows(units).map((unit) => presentPropertyListItem(ctx, unit)));
   },
 });
 
@@ -86,11 +90,12 @@ export const listPaged = query({
         .withIndex("by_organization_updated", (q) => q.eq("organizationId", args.organizationId))
         .order("desc")
         .take(MAX_SEARCH_SCAN_ITEMS);
-      const matches = units
-        .filter((unit) => !unit.deletedAt)
-        .filter((unit) => !args.status || unit.status === args.status)
-        .filter((unit) => [unit.title, unit.project, unit.city, unit.reference].some((value) => value.toLowerCase().includes(search)))
-        .slice(0, 100);
+      const matches = workspaceSearchRows(units, {
+        search,
+        status: args.status,
+        getStatus: (unit) => unit.status,
+        searchValues: (unit) => [unit.title, unit.project, unit.city, unit.reference],
+      });
 
       return {
         page: await Promise.all(matches.map((unit) => presentPropertyListItem(ctx, unit))),
@@ -112,9 +117,7 @@ export const listPaged = query({
 
     return {
       ...page,
-      page: await Promise.all(page.page
-        .filter((unit) => !unit.deletedAt)
-        .map((unit) => presentPropertyListItem(ctx, unit))),
+      page: await presentActiveWorkspacePage(page.page, (unit) => presentPropertyListItem(ctx, unit)),
     };
   },
 });
@@ -135,16 +138,7 @@ export const stats = query({
       .query("propertyUnits")
       .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
       .take(MAX_STATS_SCAN_ITEMS);
-    const active = units.filter((unit) => !unit.deletedAt);
-
-    return {
-      total: active.length,
-      available: active.filter((unit) => unit.status === "available").length,
-      pending: active.filter((unit) => unit.status === "pending").length,
-      reserved: active.filter((unit) => unit.status === "reserved").length,
-      sold: active.filter((unit) => unit.status === "sold").length,
-      draft: active.filter((unit) => unit.status === "draft").length,
-    };
+    return propertyStats(units);
   },
 });
 
@@ -153,16 +147,14 @@ export const options = query({
   returns: v.array(v.object({ id: v.string(), title: v.string() })),
   handler: async (ctx, args) => {
     await assertOrganizationResourcePermission(ctx, args.organizationId, "property", "read");
-    const limit = Math.max(1, Math.min(args.limit ?? 100, 200));
+    const limit = boundedWorkspaceReadLimit(args.limit, 100, 200);
     const units = await ctx.db
       .query("propertyUnits")
       .withIndex("by_organization_updated", (q) => q.eq("organizationId", args.organizationId))
       .order("desc")
       .take(limit);
 
-    return units
-      .filter((unit) => !unit.deletedAt)
-      .map((unit) => ({ id: unit._id, title: unit.title }));
+    return activeWorkspaceRows(units).map((unit) => ({ id: unit._id, title: unit.title }));
   },
 });
 
@@ -178,16 +170,17 @@ export const listByProject = query({
     const project = await ctx.db.get(args.projectId);
     if (!project || project.organizationId !== args.organizationId || project.deletedAt) return [];
 
-    const limit = Math.max(1, Math.min(args.limit ?? 100, 200));
+    const limit = boundedWorkspaceReadLimit(args.limit, 100, 200);
     const units = await ctx.db
       .query("propertyUnits")
       .withIndex("by_project_id", (q) => q.eq("projectId", args.projectId))
       .take(limit);
 
-    return Promise.all(units
-      .filter((unit) => unit.organizationId === args.organizationId && !unit.deletedAt)
-      .sort((a, b) => b.updatedAt - a.updatedAt)
-      .map((unit) => presentPropertyListItem(ctx, unit)));
+    return Promise.all(
+      activeUpdatedWorkspaceRows(units.filter((unit) => unit.organizationId === args.organizationId)).map((unit) =>
+        presentPropertyListItem(ctx, unit),
+      ),
+    );
   },
 });
 

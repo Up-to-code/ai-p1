@@ -6,7 +6,7 @@ import { ArrowRight, Building2, CheckCircle2, Loader2, LogOut, Plus } from "luci
 import { Button } from "@/foundation/primitives/Button";
 import { Text } from "@/foundation/primitives/Text";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
-import { theme } from "@/foundation/theme/tokens";
+import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useAppLocalization } from "@/foundation/localization";
 import { WorkspaceAccessRow, WorkspaceAccessSurface } from "@/auth/components/WorkspaceAccessSurface";
 import { shouldResetThreadForOrganizationSwitch } from "@/auth/workspaceAccess";
@@ -170,7 +170,7 @@ export default function ChooseWorkspaceScreen() {
   );
 }
 
-const createStyles = (colors: any, isRTL: boolean) => StyleSheet.create({
+const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
   loadingRow: {
     minHeight: 72,
     flexDirection: isRTL ? "row-reverse" : "row",

@@ -6,7 +6,7 @@ import { CheckCircle2, Loader2, LogIn, TriangleAlert } from "lucide-react-native
 import { Button } from "@/foundation/primitives/Button";
 import { Text } from "@/foundation/primitives/Text";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
-import { theme } from "@/foundation/theme/tokens";
+import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useAppLocalization } from "@/foundation/localization";
 import { WorkspaceAccessSurface } from "@/auth/components/WorkspaceAccessSurface";
 import { getAcceptedWorkspaceOrganizationId } from "@/auth/workspaceAccess";
@@ -136,7 +136,7 @@ export default function AcceptInviteScreen() {
   );
 }
 
-const createStyles = (colors: any) => ({
+const createStyles = (colors: AppColors) => ({
   stateCard: {
     minHeight: 180,
     alignItems: "center" as const,

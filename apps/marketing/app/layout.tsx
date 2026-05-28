@@ -9,6 +9,25 @@ const brand = brandLabel("en");
 const siteUrl = brandDomainUrl("root");
 const socialImage = new URL("/app-icon-512.png", brandDomainUrl("workspace")).toString();
 const brandStyle = { "--brand-primary": brandIdentity.colors.primary } as CSSProperties;
+const trustedKeywords = [
+  "كانترا",
+  "مساحة عمل عقارية",
+  "إدارة المشاريع العقارية",
+  "إدارة المخزون العقاري",
+  "CRM عقاري",
+  "إدارة العملاء العقاريين",
+  "المطورون العقاريون",
+  "الوسطاء العقاريون",
+  "السوق العقاري السعودي",
+  "real estate workspace Saudi Arabia",
+  "Saudi real estate CRM",
+  "property inventory management",
+  "project readiness",
+  "broker coordination",
+  "developer workflow",
+  "verified inventory",
+  "real estate operations",
+];
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -18,6 +37,12 @@ export const metadata: Metadata = {
     template: `%s | ${brand}`,
   },
   description: `${brand} public product home for real estate workspace and partner products.`,
+  keywords: trustedKeywords,
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [{ url: socialImage, sizes: "512x512", type: "image/png" }],
+    apple: [{ url: `${brandDomainUrl("workspace")}/apple-touch-icon.png`, sizes: "180x180", type: "image/png" }],
+  },
   authors: [{ name: brand }],
   creator: brand,
   publisher: brand,

@@ -10,7 +10,7 @@ import { useMemo, type ReactNode } from "react";
 
 import { useAppLocalization } from "@/foundation/localization";
 import { Text } from "@/foundation/primitives/Text";
-import { theme } from "@/foundation/theme/tokens";
+import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 
 type ButtonProps = PressableProps & {
@@ -61,7 +61,7 @@ export function Button({
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: AppColors) => StyleSheet.create({
   base: {
     minHeight: 48,
     borderRadius: theme.radii.pill,

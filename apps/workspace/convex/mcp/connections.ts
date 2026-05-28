@@ -16,6 +16,18 @@ import {
   type McpPermission,
   type McpResource,
 } from "./validators";
+import {
+  hasMcpPermission,
+  mcpPermissionRecord,
+  mcpRoleCanUseAction,
+  mcpRoleList,
+  parseMcpCustomPermission,
+} from "./connectionPermissions";
+import {
+  mcpConnectionTtlMs,
+  presentMcpConnection,
+  visibleMcpConnections,
+} from "./connectionLifecycle";
 
 const MAX_TOOL_CALLS_PER_MINUTE = 120;
 const MAX_CONNECTION_LIST_ITEMS = 500;
@@ -32,89 +44,6 @@ type BetterAuthOrganizationRole = {
   role: string;
   permission: string;
 };
-
-const defaultMcpRolePermissions = {
-  owner: {
-    organization: ["read", "update", "delete"],
-    client: ["create", "read", "update", "delete"],
-    task: ["create", "read", "update", "delete"],
-    project: ["create", "read", "update", "delete"],
-    property: ["create", "read", "update", "delete"],
-    calendar: ["create", "read", "update", "delete"],
-    media: ["create", "read", "update", "delete"],
-  },
-  admin: {
-    organization: ["read"],
-    client: ["create", "read", "update", "delete"],
-    task: ["create", "read", "update", "delete"],
-    project: ["create", "read", "update", "delete"],
-    property: ["create", "read", "update", "delete"],
-    calendar: ["create", "read", "update", "delete"],
-    media: ["create", "read", "update", "delete"],
-  },
-  member: {
-    organization: ["read"],
-    client: ["read"],
-    task: ["read"],
-    project: ["read"],
-    property: ["read"],
-    calendar: ["read"],
-    media: ["read"],
-  },
-} satisfies Record<"owner" | "admin" | "member", Partial<Record<McpResource, McpAction[]>>>;
-const mcpRolePermissions: Record<string, Partial<Record<McpResource, McpAction[]>>> = defaultMcpRolePermissions;
-
-function presentConnection(connection: Doc<"organizationMcpConnections">) {
-  return {
-    _id: connection._id,
-    _creationTime: connection._creationTime,
-    id: connection._id,
-    organizationId: connection.organizationId,
-    publicId: connection.publicId,
-    keyId: connection.keyId,
-    keyLast4: connection.keyLast4,
-    name: connection.name,
-    instructions: connection.instructions,
-    permissions: connection.permissions,
-    status: connection.status,
-    createdByUserId: connection.createdByUserId,
-    createdAt: connection.createdAt,
-    updatedAt: connection.updatedAt,
-    lastUsedAt: connection.lastUsedAt,
-    expiresAt: connection.expiresAt,
-    usageCount: connection.usageCount,
-    revokedAt: connection.revokedAt,
-  };
-}
-
-function permissionRecord(permissions: McpPermission[]) {
-  return Object.fromEntries(
-    permissions.map((permission) => [permission.resource, permission.actions]),
-  );
-}
-
-function hasPermission(
-  permissions: McpPermission[],
-  resource: McpResource,
-  action: McpAction,
-) {
-  return permissions.some((permission) =>
-    permission.resource === resource && permission.actions.includes(action),
-  );
-}
-
-function roleList(role: string) {
-  return role.split(",").map((item) => item.trim()).filter(Boolean);
-}
-
-function parseCustomPermission(value: string) {
-  try {
-    const parsed = JSON.parse(value) as Partial<Record<McpResource, McpAction[]>>;
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
 
 async function findOrganizationMember(
   ctx: Parameters<typeof assertOrganizationResourcePermission>[0],
@@ -153,15 +82,12 @@ async function canUserUseMcpAction(
 
   const customRoles = await listOrganizationRoles(ctx, organizationId);
   const customPermissionByRole = new Map(
-    customRoles.map((role) => [role.role, parseCustomPermission(role.permission)]),
+    customRoles.map((role) => [role.role, parseMcpCustomPermission(role.permission)]),
   );
 
-  return roleList(member.role).some((roleName) => {
-    const defaultPermission = mcpRolePermissions[roleName];
-    const customPermission = customPermissionByRole.get(roleName);
-    const actions = defaultPermission?.[resource] ?? customPermission?.[resource] ?? [];
-    return actions.includes(action);
-  });
+  return mcpRoleList(member.role).some((roleName) =>
+    mcpRoleCanUseAction(roleName, customPermissionByRole, resource, action),
+  );
 }
 
 async function filterLivePermissions(
@@ -251,10 +177,7 @@ export const list = query({
       .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
       .take(MAX_CONNECTION_LIST_ITEMS);
 
-    return connections
-      .filter((connection) => canManage || connection.createdByUserId === user._id)
-      .sort((a, b) => b.updatedAt - a.updatedAt)
-      .map(presentConnection);
+    return visibleMcpConnections(connections, { canManage, userId: user._id }).map(presentMcpConnection);
   },
 });
 
@@ -269,9 +192,9 @@ export const createFromHono = mutation({
     const key = await apiKeys.create(ctx, {
       name: args.input.name,
       namespace: `organization:${args.organizationId}`,
-      permissions: permissionRecord(args.input.permissions),
+      permissions: mcpPermissionRecord(args.input.permissions),
       metadata: { kind: "mcpConnection", organizationId: args.organizationId },
-      ttlMs: args.input.expiresAt ? Math.max(args.input.expiresAt - now, 0) : null,
+      ttlMs: mcpConnectionTtlMs(args.input.expiresAt, now),
     });
 
     const connectionId = await ctx.db.insert("organizationMcpConnections", {
@@ -304,7 +227,7 @@ export const createFromHono = mutation({
     const connection = await ctx.db.get(connectionId);
     if (!connection) throw new Error("Agent link could not be created.");
 
-    return { connection: presentConnection(connection), secret: key.token };
+    return { connection: presentMcpConnection(connection), secret: key.token };
   },
 });
 
@@ -356,7 +279,7 @@ export const updateFromHono = mutation({
 
     const connection = await ctx.db.get(args.connectionId);
     if (!connection) throw new Error("Agent link was not found.");
-    return presentConnection(connection);
+    return presentMcpConnection(connection);
   },
 });
 
@@ -427,7 +350,7 @@ export const rotateFromHono = mutation({
 
     const connection = await ctx.db.get(args.connectionId);
     if (!connection) throw new Error("Agent link was not found.");
-    return { connection: presentConnection(connection), secret: rotated.token };
+    return { connection: presentMcpConnection(connection), secret: rotated.token };
   },
 });
 
@@ -464,7 +387,7 @@ export const validateConnection = query({
       return { ok: false, reason: "expired" };
     }
     const livePermissions = await filterLivePermissions(ctx, connection.organizationId, connection.createdByUserId, connection.permissions);
-    if (args.resource && args.action && !hasPermission(livePermissions, args.resource, args.action)) {
+    if (args.resource && args.action && !hasMcpPermission(livePermissions, args.resource, args.action)) {
       return { ok: false, reason: "permission_denied" };
     }
 

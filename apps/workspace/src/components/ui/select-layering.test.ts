@@ -12,7 +12,8 @@ describe("select layering", () => {
     const sheetSource = readFileSync(resolve(root, "src/components/ui/sheet.tsx"), "utf8");
 
     expect(calendarSource).toContain("z-[100]");
-    expect(calendarSource).toContain("z-[101]");
+    expect(calendarSource).toContain("z-[300]");
+    expect(calendarSource).toContain("z-[320]");
     expect(sheetSource).toContain("z-50");
     expect(selectSource).toContain("z-[260]");
     expect(selectSource).not.toContain("className=\"isolate z-50\"");

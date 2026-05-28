@@ -91,25 +91,29 @@ describe("Convex query load guards", () => {
     expect(read("src/domains/projects/components/projects-screens.tsx")).toContain("useProjectsIndexQuery");
     expect(read("src/domains/properties/components/properties-screens.tsx")).toContain("usePropertiesIndexQuery");
     expect(read("src/domains/clients/components/clients-screens.tsx")).toContain("useClientsIndexQuery");
-    expect(read("src/domains/activity/components/activity-screen.tsx")).toContain("useHttpIndexedPagedQuery");
+    expect(read("src/domains/activity/components/activity-screen.tsx")).toContain("useWorkspaceIndexedResource");
     expect(read("src/domains/calendar/components/calendar-screen.tsx")).toContain("useCalendarIndexRangeQueryResult");
-    expect(read("src/domains/dashboard/components/dashboard-screen.tsx")).toContain("/read/dashboard/index");
+    expect(read("src/domains/dashboard/components/dashboard-screen.tsx")).toContain("useWorkspaceResourceResult");
   });
 
   it("keeps agent context bounded", () => {
     const agentsRead = read("convex/agents/read.ts");
-    expect(agentsRead).toContain("Math.min(args.limit ?? 16, 30)");
+    const readSurface = read("convex/agents/readSurface.ts");
+    expect(agentsRead).toContain("boundedAgentReadLimit(args.limit, 16, 30)");
+    expect(readSurface).toContain("export function boundedAgentReadLimit");
+    expect(readSurface).toContain("Math.min(limit ?? fallback, max)");
     expect(agentsRead).toContain(".take(10)");
   });
 
   it("keeps MCP list tools limited and cursor-aware", () => {
     const catalog = read("src/server/protocols/mcp/tools/catalog.ts");
     const tools = read("convex/mcp/tools.ts");
+    const toolInputs = read("convex/mcp/toolInputs.ts");
     expect(catalog).toContain("const listLimit = z.number().int().min(1).max(50).optional()");
     expect(catalog).toContain("const listCursor = z.string().nullable().optional()");
-    expect(tools).toContain("const MAX_TOOL_LIST_LIMIT = 50");
-    expect(tools).toContain("function pagedResult");
-    expect(tools).toContain("continueCursor");
+    expect(toolInputs).toContain("const MAX_TOOL_LIST_LIMIT = 50");
+    expect(toolInputs).toContain("export function pagedResult");
+    expect(toolInputs).toContain("continueCursor");
     expect(tools).toContain(".paginate({ numItems: limit, cursor: listCursor(input) })");
   });
 });

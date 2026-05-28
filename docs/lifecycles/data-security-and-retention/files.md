@@ -5,12 +5,19 @@
 - `apps/workspace/convex/security/clientPii.ts`: shared client PII encryption/reveal helpers used by Workspace, partner API, organization API key, MCP, and webhook client writes.
 - `apps/workspace/convex/security/backfill.ts`: cursor-driven, resumable backfill jobs for legacy plaintext rows, payload encryption, agent memory encryption, and soft-delete flags. Uses internal actions for encryption and internal mutations for persistence.
 - `apps/workspace/convex/security/backfillTargets.ts`: Backfill Target Adapter registry for target metadata, id normalization, already-protected checks, and encryption/redaction patch creation.
+- `apps/workspace/convex/serviceTokens.ts`: shared Convex service-token assertion Module for constant-time comparison and boundary-specific env/error contracts.
 - `apps/workspace/convex/partnerApps/webhooks.ts`: creates webhook endpoints, accepts inbound events, stores payloads, queues outbound deliveries, signs and delivers callbacks.
+- `apps/workspace/convex/partnerApps/webhookDelivery.ts`: webhook delivery Implementation Module for inbound idempotency, encrypted payload persistence, client upsert side effects, outbound enqueueing, target lookup, and retry state.
+- `apps/workspace/convex/partnerApps/webhookSecrets.ts`: webhook signing-secret encryption/reveal and HMAC signature Implementation.
+- `apps/workspace/convex/partnerApps/webhookUrlSafety.ts`: HTTPS/private-host guard for partner webhook endpoint registration.
 - `apps/workspace/convex/partnerApps/resources.ts`: partner resource read/write bridge; must use a narrow Convex bridge token.
 - `apps/workspace/convex/organizationApiKeys.ts`: organization API key bridge; must use a narrow Convex bridge token.
 - `apps/workspace/convex/agents/write.ts`: stores agent messages, run steps, tool previews, summaries, and memory facts.
 - `apps/workspace/convex/agents/read.ts`: returns agent context and must understand encrypted/redacted storage.
 - `apps/workspace/convex/clients/read.ts`: hot CRM query path affected by soft delete and PII exposure.
+- `apps/workspace/convex/workspace/readStats.ts`: shared Workspace Convex read stats Module for soft-delete filtering and project/property/client stats calculations.
+- `apps/workspace/convex/workspace/readSurface.ts`: shared Workspace Convex business read-surface Module for active-row filtering, updated ordering, chronological ordering, due-date ordering, capped search rows, bounded read limits, and active paged-row presentation.
+- `apps/workspace/convex/workspace/dashboardOverview.ts`: shared Workspace Dashboard overview Module for soft-delete filtering, count composition, project cards, and event enrichment.
 - `apps/workspace/convex/clients/write.ts`: user-driven client writes now encrypt PII and return revealed values through server-side decrypt.
 - `apps/workspace/convex/mcp/tools.ts`: MCP client create/update/delete path now shares the same PII and soft-delete behavior.
 - `apps/workspace/convex/projects/read.ts`: hot project query path affected by soft delete and stats scans.

@@ -34,6 +34,23 @@ import { ResourceMediaUploader } from "@/domains/media/components/resource-media
 import { deleteMediaRequest, setMediaCoverRequest, uploadAndAttachMedia, useResourceMediaQuery } from "@/domains/media/api/media";
 import type { PropertyStatus, PropertyUnit } from "../store/properties.types";
 import { propertySchema, type PropertyFormValues } from "../validation/property.schema";
+import {
+  availablePropertyClientCandidates,
+  filterPropertyProjectOptions,
+  formatFileSize,
+  formatSAR,
+  linkStatusTone,
+  matchesPropertySearch,
+  propertyFilters,
+  propertyGalleryPreview,
+  propertyMediaAssets,
+  propertyViews,
+  selectedPropertyClientName,
+  statusTone,
+  translatedPropertyTypes,
+  unitLinkStatuses,
+  useFirstImagePreviewUrl,
+} from "../property-view-model";
 import { useOperationState } from "@/lib/utils/operation-state";
 import { DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, FormErrorSummary, HttpQueryState, ProgressiveLoadingState, SearchBox, StatusPill, TextInput, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { useUrlListState } from "@/components/shared/use-url-list-state";
@@ -41,51 +58,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { UtilityLipsUtility } from "@/lib/utils/utility-lips";
 
-/** Format a price string with SAR currency */
-function formatSAR(price: string | number): string {
-  const num = typeof price === 'string' ? parseFloat(price.replace(/,/g, '')) : price;
-  if (isNaN(num)) return String(price);
-  return new Intl.NumberFormat('en-SA', { style: 'decimal', maximumFractionDigits: 0 }).format(num) + ' SAR';
-}
-
-const propertyFilters = ["all", "available", "pending", "reserved", "sold", "draft"] as const;
-const propertyViews = ["grid", "list"] as const;
-const unitLinkStatuses = ["interested", "shortlisted", "viewing", "offer", "rejected"] as const;
-const translatedPropertyTypes = ["Apartment", "Studio", "Villa", "Penthouse", "Compound", "Office", "Retail"] as const;
 type PropertyMediaAsset = NonNullable<ReturnType<typeof useResourceMediaQuery>>[number];
-
-function statusTone(status: PropertyStatus) {
-  if (status === "available") return "success";
-  if (status === "pending" || status === "reserved") return "warning";
-  if (status === "sold") return "info";
-  return "neutral";
-}
-
-function linkStatusTone(status: (typeof unitLinkStatuses)[number]) {
-  if (status === "offer") return "success";
-  if (status === "viewing" || status === "shortlisted") return "info";
-  if (status === "rejected") return "danger";
-  return "neutral";
-}
-
-function useFirstImagePreviewUrl(files: File[]) {
-  const firstImage = useMemo(() => files.find((file) => file.type.startsWith("image/")) ?? null, [files]);
-  const previewUrl = useMemo(() => (firstImage ? URL.createObjectURL(firstImage) : null), [firstImage]);
-
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
-
-  return previewUrl;
-}
-
-function formatFileSize(size: number) {
-  if (!Number.isFinite(size) || size <= 0) return "0 KB";
-  if (size < 1024 * 1024) return `${Math.ceil(size / 1024)} KB`;
-  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 function UnitTile({ unit }: { unit: PropertyUnit }) {
   const t = useTranslations('Properties');
@@ -335,10 +308,7 @@ export function PropertiesWorkspace() {
   const units = useMemo(() => unitsQuery.results as PropertyUnit[], [unitsQuery.results]);
   const isLoading = isWorkspaceReady && unitsQuery.queryStatus === "loading";
   const isQueryBlocked = isLoading || unitsQuery.queryStatus === "error";
-  const filteredUnits = useMemo(() => units.filter((unit) => {
-    const q = search.trim().toLowerCase();
-    return !q || [unit.title, unit.project, unit.city, unit.reference].some((value) => value.toLowerCase().includes(q));
-  }), [units, search]);
+  const filteredUnits = useMemo(() => units.filter((unit) => matchesPropertySearch(unit, search)), [units, search]);
 
   const columns: AppDataTableColumn<PropertyUnit>[] = [
     { key: "title", header: t('form.nameLabel'), render: (unit) => <AppThumbnailCell src={unit.coverImageUrl} alt={unit.title} title={unit.title} meta={<span className="inline-flex items-center gap-1"><MapPin className="h-2.5 w-2.5" />{unit.city}</span>} /> },
@@ -444,8 +414,7 @@ export function PropertyDetailScreen({ id }: { id: string }) {
   const [deleting, setDeleting] = useState(false);
   const mediaQuery = useResourceMediaQuery(workspaceOrganizationId, "property", unit?.id);
   const mediaAssets = useMemo(() => mediaQuery ?? [], [mediaQuery]);
-  const galleryAssets = useMemo(() => mediaAssets.filter((asset) => asset.kind === "image" || asset.kind === "video"), [mediaAssets]);
-  const documentAssets = useMemo(() => mediaAssets.filter((asset) => asset.kind === "document"), [mediaAssets]);
+  const { galleryAssets, documentAssets } = useMemo(() => propertyMediaAssets(mediaAssets), [mediaAssets]);
   const clientCandidatesQuery = useClientsPagedQuery(isClientLinkOpen ? workspaceOrganizationId : undefined, { search: clientSearch });
   const clientCandidates = clientCandidatesQuery.results;
   const router = useRouter();
@@ -484,12 +453,13 @@ export function PropertyDetailScreen({ id }: { id: string }) {
     { label: t('form.statusLabel'), value: t(`toolbar.filters.${unit.status}`), icon: CheckCircle2 },
     { label: t('detail.labels.purpose'), value: t(`purposes.${unit.purpose}`), icon: FolderOpen },
   ];
-  const linkedClientIds = new Set(propertyClientLinks.map(({ link }) => String(link.clientId)));
-  const filteredAvailableClients = clientCandidates.filter((client) => !linkedClientIds.has(client.id));
-  const selectedClientName = clientCandidates.find((client) => client.id === clientToLink)?.name;
+  const filteredAvailableClients = useMemo(
+    () => availablePropertyClientCandidates(clientCandidates, propertyClientLinks),
+    [clientCandidates, propertyClientLinks],
+  );
+  const selectedClientName = selectedPropertyClientName(clientCandidates, clientToLink);
   const activeMedia = mediaViewerIndex === null ? null : galleryAssets[mediaViewerIndex] ?? null;
-  const previewGallery = galleryAssets.slice(0, 5);
-  const hiddenGalleryCount = Math.max(0, galleryAssets.length - previewGallery.length);
+  const { previewGallery, hiddenGalleryCount } = propertyGalleryPreview(galleryAssets);
   const latestDocuments = documentAssets.slice(0, 3);
   const linkSelectedClient = () => {
     if (!clientToLink) return;
@@ -1680,12 +1650,9 @@ function UnitProjectPicker({
   const selectedProject = projects.find((project) => project.id === value);
   const selectedName = selectedProject?.name ?? (value ? projectName : undefined);
   const selectedDisplayName = UtilityLipsUtility(selectedName || placeholder);
-  const normalizedSearch = search.trim().toLowerCase();
   const isLoading = queryStatus === "loading" || queryStatus === "idle";
   const hasError = queryStatus === "error";
-  const filteredProjects = normalizedSearch
-    ? projects.filter((project) => project.name.toLowerCase().includes(normalizedSearch))
-    : projects;
+  const filteredProjects = filterPropertyProjectOptions(projects, search);
 
   return (
     <div className="relative grid gap-2 text-start">

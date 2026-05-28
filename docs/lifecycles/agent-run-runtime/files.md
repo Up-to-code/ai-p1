@@ -1,0 +1,37 @@
+# Files
+
+- `apps/workspace/src/server/domains/agents/services/orchestrator.ts`: stable Hono-facing Agent run orchestration, streaming, provider fallback, and run persistence.
+- `apps/workspace/src/server/domains/agents/services/agent-language.ts`: Agent response language and prompt policy Module.
+- `apps/workspace/src/server/domains/agents/services/openrouter.ts`: OpenRouter provider Adapter.
+- `apps/workspace/src/server/domains/agents/services/tool-adapter.ts`: Agent tool Adapter used by the run runtime.
+- `apps/workspace/src/server/domains/agents/services/tool-executor.ts`: Agent tool executor Module for Workspace resource read/write dispatch and conversation memory reads.
+- `apps/workspace/src/server/domains/agents/services/tool-inputs.ts`: Agent tool input Module for schemas, bounded pagination, compact outputs, date ranges, task search filtering, external attachment names, and media kind inference.
+- `apps/workspace/src/server/domains/agents/services/tool-permissions.ts`: Agent tool permission projection Module from Workspace organization capabilities to MCP permissions.
+- `apps/workspace/src/server/domains/agents/services/tool-confirmations.ts`: Agent tool confirmation Module for preview text, confirmation persistence, and confirmation return shape.
+- `apps/workspace/src/domains/agents/conversation-runtime.ts`: Client conversation runtime Module for agent attachments and visible message reconciliation.
+- `apps/workspace/src/domains/agents/api/agent-chat-request.ts`: Browser Agent chat request Module for stream request construction, SSE chunk parsing, and HTTP error mapping.
+- `apps/mobile/src/conversation/lib/agentAttachmentPresentation.ts`: Mobile Agent attachment presentation Module for composer and sent-message attachment limits, merge/dedupe, progress projection, removal, upload transition, and failure state.
+- `apps/mobile/src/persistence/api/agentAttachmentFileMapping.ts`: Mobile Agent attachment file-mapping Module for picker asset normalization, MIME-kind inference, upload identity matching, and typed upload result projection.
+- `apps/mobile/src/persistence/api/agentAttachments.ts`: Mobile Agent attachment picker/upload Adapter that delegates file mapping and progress rules to deeper Modules.
+- `apps/mobile/src/conversation/lib/composerDockLayout.ts`: Mobile composer dock layout Module for input height bounds, line-count, expansion state, scroll threshold, edit gap, and measured-height updates.
+- `apps/mobile/src/conversation/lib/threadHistoryPresentation.ts`: Mobile thread history presentation Module for title fallback and thread date labels.
+- `apps/mobile/src/voice/lib/voiceComposerState.ts`: Mobile Voice Composer State Module for audio normalization, recognition result projection, and fixed unavailable/error copy.
+- `apps/mobile/src/voice/hooks/useVoiceComposer.ts`: Mobile voice hook that wires native speech Adapter events to store updates through the Voice Composer State Module.
+- `apps/mobile/src/persistence/api/conversationDataMapping.ts`: Mobile Conversation Data Mapping Module for Agent thread sorting, Agent message projection, source/property extraction, and chronological message ordering.
+- `apps/mobile/src/persistence/api/conversationData.ts`: Mobile Agent read hooks that delegate mapping and sorting rules to the Conversation Data Mapping Module.
+- `apps/mobile/src/foundation/theme/tokens.ts`: Mobile theme token Interface source, including the `AppColors` contract used by style Modules.
+- `apps/mobile/src/shell/components/ScreenHeader.tsx`: Mobile shell header style Module with typed theme colors and safe-area insets.
+- `apps/mobile/src/conversation/components/ConversationFeed.tsx`: Mobile conversation feed style Module with typed theme colors and safe-area insets.
+- `apps/mobile/src/shell/errorStates.ts`: Mobile shell error-state catalog with typed Lucide icon metadata.
+- `apps/mobile/src/shell/components/ErrorStateScreen.tsx`: Mobile shell error screen Interface using typed Lucide icon metadata.
+- `apps/mobile/src/conversation/components/AssistantTurnRenderer.tsx`: Mobile Assistant turn renderer using the Assistant block Interface for suggestions.
+- `apps/mobile/src/conversation/components/AssistantBrandMark.tsx`: Mobile Assistant brand mark text animation with typed React Native text styles.
+- `apps/mobile/src/conversation/components/MessageBubble.tsx`: Mobile message bubble streaming text helpers with typed React Native text styles.
+- `apps/mobile/src/foundation/primitives/MarkdownText.tsx`: Mobile markdown text primitive with typed React Native text styles.
+- `apps/mobile/src/foundation/primitives/MarkdownTableViewport.tsx`: Mobile markdown table viewport with typed React Native view styles.
+- `apps/mobile/src/auth/userPresentation.ts`: Mobile user presentation Module for display name, avatar URL, and initials projection across app account surfaces.
+- `apps/mobile/app/(app)/threads.tsx`: Mobile thread history screen that renders the presentation Module output and keeps navigation/favorite UI wiring local.
+- `apps/mobile/src/shell/components/ChatDrawer.tsx`: Mobile drawer history surface using the thread history presentation Module for compact thread rows.
+- `apps/workspace/convex/agents/read.ts`: Agent thread/run read surface.
+- `apps/workspace/convex/agents/readSurface.ts`: Agent Convex read-surface Module for read limits, id presentation, thread page mapping, chronological message order, and encrypted content reveal.
+- `apps/workspace/convex/agents/write.ts`: Agent thread/run/step/tool-call write surface.

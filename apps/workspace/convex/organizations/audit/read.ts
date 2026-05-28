@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
 import { query } from "../../_generated/server";
 import { assertOrganizationPermission } from "../profile/access";
+import { auditStats } from "../../workspace/readStats";
 import { auditCategoryForAction, toPublicAuditEvent } from "./data";
 import { organizationAuditEventValidator } from "./validators";
 
@@ -62,14 +63,6 @@ export const stats = query({
       .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
       .order("desc")
       .take(MAX_AUDIT_STATS_EVENTS);
-    const businessCategories = new Set(["projects", "properties", "clients", "calendar", "media"]);
-    const peopleCategories = new Set(["organization", "people", "roles", "invites"]);
-
-    return {
-      total: events.length,
-      people: events.filter((event) => peopleCategories.has(auditCategoryForAction(event.action))).length,
-      business: events.filter((event) => businessCategories.has(auditCategoryForAction(event.action))).length,
-      latestAt: events[0]?.createdAt,
-    };
+    return auditStats(events, auditCategoryForAction);
   },
 });

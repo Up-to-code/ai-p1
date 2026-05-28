@@ -37,6 +37,7 @@ export default function AppLayout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="menu" />
       <Stack.Screen name="profile" />
+      <Stack.Screen name="threads" />
       <Stack.Screen name="appearance" />
       <Stack.Screen name="language" />
     </Stack>

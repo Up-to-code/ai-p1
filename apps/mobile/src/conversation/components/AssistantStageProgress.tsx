@@ -9,7 +9,7 @@ import {
   resolveThreadPresentationState,
 } from "@/conversation/lib/assistantPresentation";
 import { Text } from "@/foundation/primitives/Text";
-import { theme } from "@/foundation/theme/tokens";
+import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 
 type AssistantStageProgressProps = {
@@ -64,7 +64,7 @@ export function AssistantStageProgress({ events, threadPresentation }: Assistant
   );
 }
 
-const createStyles = (colors: any) =>
+const createStyles = (colors: AppColors) =>
   StyleSheet.create({
     container: {
       marginHorizontal: theme.spacing.xl,

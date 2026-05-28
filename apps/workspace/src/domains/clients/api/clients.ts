@@ -1,88 +1,32 @@
 "use client";
 
-import { useMemo } from "react";
-import { useMutation, useQueryClient, type InfiniteData, type QueryKey } from "@tanstack/react-query";
+import { useMutation, useQueryClient, type QueryKey } from "@tanstack/react-query";
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { useDebouncedValue, useHttpIndexedPagedQuery, useHttpPagedQuery, useHttpQuery, type IndexedInfinitePage } from "@/components/shared/use-http-query";
 import { useToast } from "@/components/ui/toast";
+import {
+  useWorkspaceIndexedResource,
+  useWorkspacePagedResource,
+  useWorkspaceResource,
+  workspaceMutation,
+} from "@/domains/resources/workspace-resource-request";
 import type { Client, ClientType } from "../store/clients.types";
 import type { ClientFormValues } from "../validation/client.schema";
+import {
+  clientFormValuesForPipeline,
+  patchClientInIndexData,
+  removeClientFromIndexData,
+  type ActiveClientPipelineStage,
+  type ClientStats,
+  type ClientsIndexData,
+} from "../pipeline-command";
 import { nextPipelineOrder, type PipelineOrderClient } from "../pipeline-order";
 
 export const CLIENTS_PAGE_SIZE = 50;
 
-type ClientStats = {
-  total: number;
-  active: number;
-  inactive: number;
-  buyers: number;
-  tenants: number;
-  investors: number;
-  brokers: number;
-  stages: Record<"new" | "qualified" | "viewing" | "negotiation" | "closed", number>;
-};
-
-type ClientsIndexData = InfiniteData<IndexedInfinitePage<Client, ClientStats>, string | null>;
-type PipelineStage = Client["pipelineStage"];
-type ActivePipelineStage = Exclude<PipelineStage, "closed">;
-
 export function clientsIndexQueryBaseKey(organizationId?: string) {
   return ["clients-index", organizationId] as const;
-}
-
-function clientFormValues(client: Client, stage: PipelineStage, pipelineOrder?: number): ClientFormValues {
-  return {
-    name: client.name,
-    type: client.type,
-    contact: client.contact,
-    phone: client.phone,
-    age: String(client.age),
-    nationality: client.nationality,
-    generation: client.generation,
-    budget: client.budget,
-    propertyInterest: client.propertyInterest,
-    status: client.status,
-    visibility: client.visibility ?? "private",
-    pipelineStage: stage,
-    pipelineOrder,
-    priority: client.priority,
-    nextAction: client.nextAction,
-    issue: client.issue ?? "",
-  };
-}
-
-function patchClientInIndexData(data: ClientsIndexData | undefined, clientId: string, patch: Partial<Client>) {
-  if (!data) return data;
-
-  return {
-    ...data,
-    pages: data.pages.map((page) => ({
-      ...page,
-      list: {
-        ...page.list,
-        page: page.list.page.map((client) => (
-          client.id === clientId ? { ...client, ...patch } : client
-        )),
-      },
-    })),
-  } satisfies ClientsIndexData;
-}
-
-function removeClientFromIndexData(data: ClientsIndexData | undefined, clientId: string) {
-  if (!data) return data;
-
-  return {
-    ...data,
-    pages: data.pages.map((page) => ({
-      ...page,
-      list: {
-        ...page.list,
-        page: page.list.page.filter((client) => client.id !== clientId),
-      },
-    })),
-  } satisfies ClientsIndexData;
 }
 
 export function useUpdateClientOptimisticMutation(queryKey: QueryKey | undefined) {
@@ -176,12 +120,12 @@ export function useMoveClientInPipelineMutation(queryKey: QueryKey | undefined) 
     }: {
       organizationId: string;
       client: Client;
-      stage: ActivePipelineStage;
+      stage: ActiveClientPipelineStage;
       stageClients: PipelineOrderClient[];
       targetIndex: number;
     }) => {
       const pipelineOrder = nextPipelineOrder(stageClients, client.id, targetIndex);
-      return updateClientRequest(organizationId, client.id, clientFormValues(client, stage, pipelineOrder));
+      return updateClientRequest(organizationId, client.id, clientFormValuesForPipeline(client, stage, pipelineOrder));
     },
     onMutate: async (variables) => {
       if (!queryKey) return { previousData: undefined };
@@ -218,45 +162,39 @@ export function useClientsQuery(organizationId?: string) {
 }
 
 export function useClientsPagedQuery(organizationId?: string, options?: { type?: ClientType; search?: string }) {
-  const type = options?.type;
-  const search = options?.search?.trim();
-  const debouncedSearch = useDebouncedValue(search, 250);
-  const params = useMemo(() => ({ type, search: debouncedSearch }), [debouncedSearch, type]);
-
-  return useHttpPagedQuery<Client>(
+  return useWorkspacePagedResource<Client>(
     ["clients-paged", organizationId],
-    organizationId ? `/api/v1/organizations/${organizationId}/read/clients` : undefined,
-    params,
+    organizationId,
+    "clients",
+    { type: options?.type, search: options?.search },
     CLIENTS_PAGE_SIZE,
   );
 }
 
 export function useClientsIndexQuery(organizationId?: string, options?: { type?: ClientType; search?: string }) {
-  const type = options?.type;
-  const search = options?.search?.trim();
-  const debouncedSearch = useDebouncedValue(search, 250);
-  const params = useMemo(() => ({ type, search: debouncedSearch }), [debouncedSearch, type]);
-
-  return useHttpIndexedPagedQuery<Client, ClientStats>(
+  return useWorkspaceIndexedResource<Client, ClientStats>(
     clientsIndexQueryBaseKey(organizationId),
-    organizationId ? `/api/v1/organizations/${organizationId}/read/clients/index` : undefined,
-    organizationId ? `/api/v1/organizations/${organizationId}/read/clients` : undefined,
-    params,
+    organizationId,
+    "clients/index",
+    "clients",
+    { type: options?.type, search: options?.search },
     CLIENTS_PAGE_SIZE,
   );
 }
 
 export function useClientStatsQuery(organizationId?: string) {
-  return useHttpQuery<ClientStats>(
+  return useWorkspaceResource<ClientStats>(
     ["clients-stats", organizationId],
-    organizationId ? `/api/v1/organizations/${organizationId}/read/clients/stats` : undefined,
+    organizationId,
+    "clients/stats",
   );
 }
 
 export function useClientOptionsQuery(organizationId?: string, options: { enabled?: boolean } = {}) {
-  return useHttpQuery<{ id: string; name: string }[]>(
+  return useWorkspaceResource<{ id: string; name: string }[]>(
     ["clients-options", organizationId],
-    organizationId && options.enabled !== false ? `/api/v1/organizations/${organizationId}/read/clients/options` : undefined,
+    organizationId && options.enabled !== false ? organizationId : undefined,
+    "clients/options",
   );
 }
 
@@ -303,51 +241,40 @@ export function clientPayloadFromForm(values: ClientFormValues) {
   };
 }
 
-async function jsonOrThrow(response: Response) {
-  const payload = await response.json();
-  if (!response.ok) {
-    throw new Error(payload.error ?? "Client request failed.");
-  }
-  return payload;
-}
-
 export async function createClientRequest(organizationId: string, values: ClientFormValues) {
-  const response = await fetch(`/api/v1/organizations/${organizationId}/clients`, {
+  return workspaceMutation<{ client: { id: string } }>(organizationId, "clients", {
     method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(clientPayloadFromForm(values)),
+    body: clientPayloadFromForm(values),
+    fallbackMessage: "Client request failed.",
   });
-  return jsonOrThrow(response) as Promise<{ client: { id: string } }>;
 }
 
 export async function updateClientRequest(organizationId: string, clientId: string, values: ClientFormValues) {
-  const response = await fetch(`/api/v1/organizations/${organizationId}/clients/${clientId}`, {
+  return workspaceMutation<{ client: { id: string } }>(organizationId, `clients/${clientId}`, {
     method: "PATCH",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(clientPayloadFromForm(values)),
+    body: clientPayloadFromForm(values),
+    fallbackMessage: "Client request failed.",
   });
-  return jsonOrThrow(response) as Promise<{ client: { id: string } }>;
 }
 
 export async function deleteClientRequest(organizationId: string, clientId: string) {
-  const response = await fetch(`/api/v1/organizations/${organizationId}/clients/${clientId}`, {
+  return workspaceMutation(organizationId, `clients/${clientId}`, {
     method: "DELETE",
+    fallbackMessage: "Client request failed.",
   });
-  return jsonOrThrow(response);
 }
 
 export async function linkClientUnitRequest(organizationId: string, clientId: string, propertyId: string, status = "interested", notes?: string) {
-  const response = await fetch(`/api/v1/organizations/${organizationId}/clients/${clientId}/units`, {
+  return workspaceMutation(organizationId, `clients/${clientId}/units`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ propertyId, status, notes: notes?.trim() || undefined }),
+    body: { propertyId, status, notes: notes?.trim() || undefined },
+    fallbackMessage: "Client request failed.",
   });
-  return jsonOrThrow(response);
 }
 
 export async function unlinkClientUnitRequest(organizationId: string, clientId: string, propertyId: string) {
-  const response = await fetch(`/api/v1/organizations/${organizationId}/clients/${clientId}/units/${propertyId}`, {
+  return workspaceMutation(organizationId, `clients/${clientId}/units/${propertyId}`, {
     method: "DELETE",
+    fallbackMessage: "Client request failed.",
   });
-  return jsonOrThrow(response);
 }

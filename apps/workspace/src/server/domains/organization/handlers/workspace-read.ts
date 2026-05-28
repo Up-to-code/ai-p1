@@ -2,280 +2,241 @@ import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
 import { fetchAuthQuery } from "@/server/auth/better-auth/server";
 import {
-  readEnumQuery,
-  readIdParam,
   readOptionalIdQuery,
   readOptionalNumberQuery,
   readPaginationQuery,
   readParam,
-  readSearchQuery,
   readTimeRangeQuery,
-  workspaceReadJson,
 } from "./workspace-read-helper";
+import {
+  readBoundedOptionalLimit,
+  readOrganizationId,
+  readWorkspaceIdParam,
+  readWorkspaceListQuery,
+  workspaceOrganizationReadJson,
+  workspaceReadJsonForOrganization,
+} from "./workspace-read-surface";
 
 const projectStatuses = ["pending", "draft", "approved", "rejected"] as const;
 const propertyStatuses = ["available", "reserved", "sold", "pending", "draft"] as const;
 const clientTypes = ["Buyer", "Tenant", "Investor", "Broker"] as const;
 
-function organizationIdOrResponse(c: Context) {
-  const parsed = readParam(c, "organizationId", "Organization id");
-  if (!parsed.ok) return { response: parsed.response };
-  return { organizationId: parsed.data };
-}
-
 export async function handleReadProjects(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
-  const pagination = readPaginationQuery(c);
-  if (!pagination.ok) return pagination.response;
-  const status = readEnumQuery(c, "status", projectStatuses);
-  if (!status.ok) return status.response;
-  const search = readSearchQuery(c);
-  if (!search.ok) return search.response;
+  const organizationId = readOrganizationId(c);
+  if (!organizationId.ok) return organizationId.response;
+  const query = readWorkspaceListQuery(c, "status", projectStatuses);
+  if (!query.ok) return query.response;
 
-  return workspaceReadJson(c, "projects list", () =>
+  return workspaceReadJsonForOrganization(c, "projects list", organizationId.data, (organizationId) =>
     fetchAuthQuery(api.projects.read.listPaged, {
-      organizationId: params.organizationId,
-      paginationOpts: pagination.data,
-      status: status.data,
-      search: search.data,
+      organizationId,
+      paginationOpts: query.data.paginationOpts,
+      status: query.data.filter,
+      search: query.data.search,
     }),
   );
 }
 
 export async function handleReadProjectStats(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
-  return workspaceReadJson(c, "project stats", () =>
-    fetchAuthQuery(api.projects.read.stats, { organizationId: params.organizationId }),
+  return workspaceOrganizationReadJson(c, "project stats", (organizationId) =>
+    fetchAuthQuery(api.projects.read.stats, { organizationId }),
   );
 }
 
 export async function handleReadProjectsIndex(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
-  const pagination = readPaginationQuery(c);
-  if (!pagination.ok) return pagination.response;
-  const status = readEnumQuery(c, "status", projectStatuses);
-  if (!status.ok) return status.response;
-  const search = readSearchQuery(c);
-  if (!search.ok) return search.response;
+  const organizationId = readOrganizationId(c);
+  if (!organizationId.ok) return organizationId.response;
+  const query = readWorkspaceListQuery(c, "status", projectStatuses);
+  if (!query.ok) return query.response;
 
-  return workspaceReadJson(c, "projects index", async () => {
+  return workspaceReadJsonForOrganization(c, "projects index", organizationId.data, async (organizationId) => {
     const [list, stats] = await Promise.all([
       fetchAuthQuery(api.projects.read.listPaged, {
-        organizationId: params.organizationId,
-        paginationOpts: pagination.data,
-        status: status.data,
-        search: search.data,
+        organizationId,
+        paginationOpts: query.data.paginationOpts,
+        status: query.data.filter,
+        search: query.data.search,
       }),
-      fetchAuthQuery(api.projects.read.stats, { organizationId: params.organizationId }),
+      fetchAuthQuery(api.projects.read.stats, { organizationId }),
     ]);
     return { list, stats };
   });
 }
 
 export async function handleReadProjectOptions(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
-  return workspaceReadJson(c, "project options", () =>
-    fetchAuthQuery(api.projects.read.options, { organizationId: params.organizationId, limit: 100 }),
+  return workspaceOrganizationReadJson(c, "project options", (organizationId) =>
+    fetchAuthQuery(api.projects.read.options, { organizationId, limit: 100 }),
   );
 }
 
 export async function handleReadProject(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
-  const projectId = readIdParam<"projects">(c, "projectId", "Project id");
+  const organizationId = readOrganizationId(c);
+  if (!organizationId.ok) return organizationId.response;
+  const projectId = readWorkspaceIdParam<"projects">(c, "projectId", "Project id");
   if (!projectId.ok) return projectId.response;
-  return workspaceReadJson(c, "project detail", () =>
+  return workspaceReadJsonForOrganization(c, "project detail", organizationId.data, (organizationId) =>
     fetchAuthQuery(api.projects.read.get, {
-      organizationId: params.organizationId,
+      organizationId,
       projectId: projectId.data,
     }),
   );
 }
 
 export async function handleReadProperties(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
-  const pagination = readPaginationQuery(c);
-  if (!pagination.ok) return pagination.response;
-  const status = readEnumQuery(c, "status", propertyStatuses);
-  if (!status.ok) return status.response;
-  const search = readSearchQuery(c);
-  if (!search.ok) return search.response;
+  const organizationId = readOrganizationId(c);
+  if (!organizationId.ok) return organizationId.response;
+  const query = readWorkspaceListQuery(c, "status", propertyStatuses);
+  if (!query.ok) return query.response;
 
-  return workspaceReadJson(c, "properties list", () =>
+  return workspaceReadJsonForOrganization(c, "properties list", organizationId.data, (organizationId) =>
     fetchAuthQuery(api.properties.read.listPaged, {
-      organizationId: params.organizationId,
-      paginationOpts: pagination.data,
-      status: status.data,
-      search: search.data,
+      organizationId,
+      paginationOpts: query.data.paginationOpts,
+      status: query.data.filter,
+      search: query.data.search,
     }),
   );
 }
 
 export async function handleReadPropertyStats(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
-  return workspaceReadJson(c, "property stats", () =>
-    fetchAuthQuery(api.properties.read.stats, { organizationId: params.organizationId }),
+  return workspaceOrganizationReadJson(c, "property stats", (organizationId) =>
+    fetchAuthQuery(api.properties.read.stats, { organizationId }),
   );
 }
 
 export async function handleReadPropertiesIndex(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
-  const pagination = readPaginationQuery(c);
-  if (!pagination.ok) return pagination.response;
-  const status = readEnumQuery(c, "status", propertyStatuses);
-  if (!status.ok) return status.response;
-  const search = readSearchQuery(c);
-  if (!search.ok) return search.response;
+  const organizationId = readOrganizationId(c);
+  if (!organizationId.ok) return organizationId.response;
+  const query = readWorkspaceListQuery(c, "status", propertyStatuses);
+  if (!query.ok) return query.response;
 
-  return workspaceReadJson(c, "properties index", async () => {
+  return workspaceReadJsonForOrganization(c, "properties index", organizationId.data, async (organizationId) => {
     const [list, stats] = await Promise.all([
       fetchAuthQuery(api.properties.read.listPaged, {
-        organizationId: params.organizationId,
-        paginationOpts: pagination.data,
-        status: status.data,
-        search: search.data,
+        organizationId,
+        paginationOpts: query.data.paginationOpts,
+        status: query.data.filter,
+        search: query.data.search,
       }),
-      fetchAuthQuery(api.properties.read.stats, { organizationId: params.organizationId }),
+      fetchAuthQuery(api.properties.read.stats, { organizationId }),
     ]);
     return { list, stats };
   });
 }
 
 export async function handleReadPropertyOptions(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
-  return workspaceReadJson(c, "property options", () =>
-    fetchAuthQuery(api.properties.read.options, { organizationId: params.organizationId, limit: 100 }),
+  return workspaceOrganizationReadJson(c, "property options", (organizationId) =>
+    fetchAuthQuery(api.properties.read.options, { organizationId, limit: 100 }),
   );
 }
 
 export async function handleReadPropertiesByProject(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
-  const projectId = readIdParam<"projects">(c, "projectId", "Project id");
+  const organizationId = readOrganizationId(c);
+  if (!organizationId.ok) return organizationId.response;
+  const projectId = readWorkspaceIdParam<"projects">(c, "projectId", "Project id");
   if (!projectId.ok) return projectId.response;
-  const rawLimit = readOptionalNumberQuery(c, "limit");
-  if (!rawLimit.ok) return rawLimit.response;
-  const limit = rawLimit.data === undefined ? undefined : Math.max(1, Math.min(Math.floor(rawLimit.data), 200));
+  const limit = readBoundedOptionalLimit(c, 200);
+  if (!limit.ok) return limit.response;
 
-  return workspaceReadJson(c, "project properties", () =>
+  return workspaceReadJsonForOrganization(c, "project properties", organizationId.data, (organizationId) =>
     fetchAuthQuery(api.properties.read.listByProject, {
-      organizationId: params.organizationId,
+      organizationId,
       projectId: projectId.data,
-      limit,
+      limit: limit.data,
     }),
   );
 }
 
 export async function handleReadProperty(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
+  const organizationId = readOrganizationId(c);
+  if (!organizationId.ok) return organizationId.response;
   const propertyId = readParam(c, "propertyId", "Property id");
   if (!propertyId.ok) return propertyId.response;
-  return workspaceReadJson(c, "property detail", () =>
+  return workspaceReadJsonForOrganization(c, "property detail", organizationId.data, (organizationId) =>
     fetchAuthQuery(api.properties.read.get, {
-      organizationId: params.organizationId,
+      organizationId,
       propertyId: propertyId.data,
     }),
   );
 }
 
 export async function handleReadClients(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
-  const pagination = readPaginationQuery(c);
-  if (!pagination.ok) return pagination.response;
-  const type = readEnumQuery(c, "type", clientTypes);
-  if (!type.ok) return type.response;
-  const search = readSearchQuery(c);
-  if (!search.ok) return search.response;
+  const organizationId = readOrganizationId(c);
+  if (!organizationId.ok) return organizationId.response;
+  const query = readWorkspaceListQuery(c, "type", clientTypes);
+  if (!query.ok) return query.response;
 
-  return workspaceReadJson(c, "clients list", () =>
+  return workspaceReadJsonForOrganization(c, "clients list", organizationId.data, (organizationId) =>
     fetchAuthQuery(api.clients.read.listPaged, {
-      organizationId: params.organizationId,
-      paginationOpts: pagination.data,
-      type: type.data,
-      search: search.data,
+      organizationId,
+      paginationOpts: query.data.paginationOpts,
+      type: query.data.filter,
+      search: query.data.search,
     }),
   );
 }
 
 export async function handleReadClientStats(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
-  return workspaceReadJson(c, "client stats", () =>
-    fetchAuthQuery(api.clients.read.stats, { organizationId: params.organizationId }),
+  return workspaceOrganizationReadJson(c, "client stats", (organizationId) =>
+    fetchAuthQuery(api.clients.read.stats, { organizationId }),
   );
 }
 
 export async function handleReadClientsIndex(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
-  const pagination = readPaginationQuery(c);
-  if (!pagination.ok) return pagination.response;
-  const type = readEnumQuery(c, "type", clientTypes);
-  if (!type.ok) return type.response;
-  const search = readSearchQuery(c);
-  if (!search.ok) return search.response;
+  const organizationId = readOrganizationId(c);
+  if (!organizationId.ok) return organizationId.response;
+  const query = readWorkspaceListQuery(c, "type", clientTypes);
+  if (!query.ok) return query.response;
 
-  return workspaceReadJson(c, "clients index", async () => {
+  return workspaceReadJsonForOrganization(c, "clients index", organizationId.data, async (organizationId) => {
     const [list, stats] = await Promise.all([
       fetchAuthQuery(api.clients.read.listPaged, {
-        organizationId: params.organizationId,
-        paginationOpts: pagination.data,
-        type: type.data,
-        search: search.data,
+        organizationId,
+        paginationOpts: query.data.paginationOpts,
+        type: query.data.filter,
+        search: query.data.search,
       }),
-      fetchAuthQuery(api.clients.read.stats, { organizationId: params.organizationId }),
+      fetchAuthQuery(api.clients.read.stats, { organizationId }),
     ]);
     return { list, stats };
   });
 }
 
 export async function handleReadClientOptions(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
-  return workspaceReadJson(c, "client options", () =>
-    fetchAuthQuery(api.clients.read.options, { organizationId: params.organizationId, limit: 100 }),
+  return workspaceOrganizationReadJson(c, "client options", (organizationId) =>
+    fetchAuthQuery(api.clients.read.options, { organizationId, limit: 100 }),
   );
 }
 
 export async function handleReadCalendarEvents(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
+  const organizationId = readOrganizationId(c);
+  if (!organizationId.ok) return organizationId.response;
   const range = readTimeRangeQuery(c, { requireBoth: true });
   if (!range.ok) return range.response;
   const clientId = readOptionalIdQuery<"clients">(c, "clientId", "Client id");
   if (!clientId.ok) return clientId.response;
-  return workspaceReadJson(c, "calendar events", async () => {
+  return workspaceReadJsonForOrganization(c, "calendar events", organizationId.data, async (organizationId) => {
     return range.data
       ? await fetchAuthQuery(api.calendar.read.listRange, {
-          organizationId: params.organizationId,
+          organizationId,
           startAt: range.data.startAt,
           endAt: range.data.endAt,
         })
       : await fetchAuthQuery(api.calendar.read.list, {
-          organizationId: params.organizationId,
+          organizationId,
           clientId: clientId.data,
         });
   });
 }
 
 export async function handleReadCalendarStats(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
+  const organizationId = readOrganizationId(c);
+  if (!organizationId.ok) return organizationId.response;
   const range = readTimeRangeQuery(c, { defaultStartAt: 0, defaultEndAt: Date.now() });
   if (!range.ok) return range.response;
-  return workspaceReadJson(c, "calendar stats", () =>
+  return workspaceReadJsonForOrganization(c, "calendar stats", organizationId.data, (organizationId) =>
     fetchAuthQuery(api.calendar.read.statsInRange, {
-      organizationId: params.organizationId,
+      organizationId,
       startAt: range.data!.startAt,
       endAt: range.data!.endAt,
     }),
@@ -283,20 +244,20 @@ export async function handleReadCalendarStats(c: Context) {
 }
 
 export async function handleReadCalendarIndex(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
+  const organizationId = readOrganizationId(c);
+  if (!organizationId.ok) return organizationId.response;
   const range = readTimeRangeQuery(c, { requireBoth: true });
   if (!range.ok) return range.response;
 
-  return workspaceReadJson(c, "calendar index", async () => {
+  return workspaceReadJsonForOrganization(c, "calendar index", organizationId.data, async (organizationId) => {
     const [events, stats] = await Promise.all([
       fetchAuthQuery(api.calendar.read.listRange, {
-        organizationId: params.organizationId,
+        organizationId,
         startAt: range.data!.startAt,
         endAt: range.data!.endAt,
       }),
       fetchAuthQuery(api.calendar.read.statsInRange, {
-        organizationId: params.organizationId,
+        organizationId,
         startAt: range.data!.startAt,
         endAt: range.data!.endAt,
       }),
@@ -306,65 +267,60 @@ export async function handleReadCalendarIndex(c: Context) {
 }
 
 export async function handleReadUpcomingCalendarEvents(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
+  const organizationId = readOrganizationId(c);
+  if (!organizationId.ok) return organizationId.response;
   const startAt = readOptionalNumberQuery(c, "startAt");
   if (!startAt.ok) return startAt.response;
-  const rawLimit = readOptionalNumberQuery(c, "limit");
-  if (!rawLimit.ok) return rawLimit.response;
-  const limit = rawLimit.data === undefined ? undefined : Math.max(1, Math.min(Math.floor(rawLimit.data), 100));
+  const limit = readBoundedOptionalLimit(c, 100);
+  if (!limit.ok) return limit.response;
 
-  return workspaceReadJson(c, "upcoming calendar events", () =>
+  return workspaceReadJsonForOrganization(c, "upcoming calendar events", organizationId.data, (organizationId) =>
     fetchAuthQuery(api.calendar.read.listUpcoming, {
-      organizationId: params.organizationId,
+      organizationId,
       startAt: startAt.data ?? Date.now(),
-      limit,
+      limit: limit.data,
     }),
   );
 }
 
 export async function handleReadTaskOptions(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
-  return workspaceReadJson(c, "task options", () =>
-    fetchAuthQuery(api.clientTasks.read.options, { organizationId: params.organizationId, limit: 100 }),
+  return workspaceOrganizationReadJson(c, "task options", (organizationId) =>
+    fetchAuthQuery(api.clientTasks.read.options, { organizationId, limit: 100 }),
   );
 }
 
 export async function handleReadActivity(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
+  const organizationId = readOrganizationId(c);
+  if (!organizationId.ok) return organizationId.response;
   const pagination = readPaginationQuery(c);
   if (!pagination.ok) return pagination.response;
-  return workspaceReadJson(c, "activity list", () =>
+  return workspaceReadJsonForOrganization(c, "activity list", organizationId.data, (organizationId) =>
     fetchAuthQuery(api.organizations.audit.read.listPaged, {
-      organizationId: params.organizationId,
+      organizationId,
       paginationOpts: pagination.data,
     }),
   );
 }
 
 export async function handleReadActivityStats(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
-  return workspaceReadJson(c, "activity stats", () =>
-    fetchAuthQuery(api.organizations.audit.read.stats, { organizationId: params.organizationId }),
+  return workspaceOrganizationReadJson(c, "activity stats", (organizationId) =>
+    fetchAuthQuery(api.organizations.audit.read.stats, { organizationId }),
   );
 }
 
 export async function handleReadActivityIndex(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
+  const organizationId = readOrganizationId(c);
+  if (!organizationId.ok) return organizationId.response;
   const pagination = readPaginationQuery(c);
   if (!pagination.ok) return pagination.response;
 
-  return workspaceReadJson(c, "activity index", async () => {
+  return workspaceReadJsonForOrganization(c, "activity index", organizationId.data, async (organizationId) => {
     const [list, stats] = await Promise.all([
       fetchAuthQuery(api.organizations.audit.read.listPaged, {
-        organizationId: params.organizationId,
+        organizationId,
         paginationOpts: pagination.data,
       }),
-      fetchAuthQuery(api.organizations.audit.read.stats, { organizationId: params.organizationId }),
+      fetchAuthQuery(api.organizations.audit.read.stats, { organizationId }),
     ]);
     return { list, stats };
   });
@@ -375,13 +331,13 @@ export async function handleReadDashboardIndex(c: Context) {
 }
 
 export async function handleReadDashboardOverview(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
+  const organizationId = readOrganizationId(c);
+  if (!organizationId.ok) return organizationId.response;
   const range = readTimeRangeQuery(c, { defaultStartAt: 0, defaultEndAt: Date.now() });
   if (!range.ok) return range.response;
-  return workspaceReadJson(c, "dashboard overview", () =>
+  return workspaceReadJsonForOrganization(c, "dashboard overview", organizationId.data, (organizationId) =>
     fetchAuthQuery(api.dashboard.read.overview, {
-      organizationId: params.organizationId,
+      organizationId,
       startAt: range.data!.startAt,
       endAt: range.data!.endAt,
     }),

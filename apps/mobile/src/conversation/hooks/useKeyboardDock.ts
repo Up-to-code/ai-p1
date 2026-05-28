@@ -1,10 +1,9 @@
 import { Platform } from "react-native";
 
-type KeyboardDockResult = {
-  dockBottomOffset: number;
-  listBottomPadding: number;
-  keyboardVisible: boolean;
-};
+import {
+  calculateKeyboardDock,
+  type KeyboardDockLayout,
+} from "@/conversation/lib/keyboardDockLayout";
 
 export function useKeyboardDock({
   bottomInset,
@@ -16,22 +15,12 @@ export function useKeyboardDock({
   dockHeight: number;
   keyboardHeight: number;
   keyboardGap?: number;
-}): KeyboardDockResult {
-  const keyboardVisible = keyboardHeight > 0;
-  const restingGap = 0;
-  const composerBuffer = Math.max(Math.min(bottomInset, 12), 8);
-
-  return {
-    dockBottomOffset:
-      Platform.OS === "ios" && keyboardVisible
-        ? keyboardHeight + keyboardGap + 4
-        : 0,
-    listBottomPadding:
-      Math.min(dockHeight, 200) +
-      composerBuffer +
-      (Platform.OS === "ios" && keyboardVisible
-        ? keyboardHeight + keyboardGap + 4
-        : restingGap),
-    keyboardVisible,
-  };
+}): KeyboardDockLayout {
+  return calculateKeyboardDock({
+    bottomInset,
+    dockHeight,
+    keyboardHeight,
+    keyboardGap,
+    isIos: Platform.OS === "ios",
+  });
 }

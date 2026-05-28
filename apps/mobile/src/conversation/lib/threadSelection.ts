@@ -7,6 +7,8 @@ type ThreadSelectionArgs = {
   isCreatingThread: boolean;
   threads: ThreadSummary[];
   threadsLoaded: boolean;
+  threadsRefreshing?: boolean;
+  hasTransientTurn?: boolean;
 };
 
 export function resolveActiveConversationThreadId({
@@ -34,9 +36,15 @@ export function canQueryConversationThread({
   isCreatingThread,
   threads,
   threadsLoaded,
+  threadsRefreshing = false,
+  hasTransientTurn = false,
 }: ThreadSelectionArgs) {
   if (!activeThreadId || isCreatingThread || !threadsLoaded) {
     return false;
+  }
+
+  if (threadsRefreshing && hasTransientTurn) {
+    return true;
   }
 
   return threads.some((thread) => thread._id === activeThreadId);

@@ -2,6 +2,11 @@
 
 import { authClient } from "@/lib/auth-client";
 import type { OrganizationPermissionStatement } from "@/packages/authz";
+import {
+  organizationApiPath,
+  readOrganizationJsonResponse,
+  requestOrganizationAction,
+} from "./organization-request";
 
 type AuthError = {
   message?: string;
@@ -235,7 +240,7 @@ export function updateAuthOrganization(
   data: { name?: string; slug?: string; logo?: string; metadata?: Record<string, unknown> },
 ) {
   return requestOrganizationAction<{ organization: unknown }>(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/identity`,
+    organizationApiPath(organizationId, "identity"),
     "PATCH",
     data,
     "Organization update failed.",
@@ -252,7 +257,7 @@ export async function listOrganizationMembers(organizationId: string) {
 
 export function createOrganizationInvitation(organizationId: string, input: { email: string; role: string }) {
   return requestOrganizationAction<{ invitation: OrganizationInvitation }>(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/invitations`,
+    organizationApiPath(organizationId, "invitations"),
     "POST",
     input,
     "Invitation could not be created.",
@@ -267,7 +272,7 @@ export function listOrganizationInvitations(organizationId: string) {
 
 export function cancelOrganizationInvitation(organizationId: string, invitationId: string) {
   return requestOrganizationAction<{ invitation: unknown }>(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/invitations/${encodeURIComponent(invitationId)}`,
+    organizationApiPath(organizationId, "invitations", invitationId),
     "DELETE",
     undefined,
     "Invitation could not be canceled.",
@@ -276,7 +281,7 @@ export function cancelOrganizationInvitation(organizationId: string, invitationI
 
 export function updateOrganizationMemberRole(organizationId: string, memberId: string, role: string) {
   return requestOrganizationAction<{ member: unknown }>(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/members/${encodeURIComponent(memberId)}/role`,
+    organizationApiPath(organizationId, "members", memberId, "role"),
     "PATCH",
     { role },
     "Member role could not be updated.",
@@ -285,7 +290,7 @@ export function updateOrganizationMemberRole(organizationId: string, memberId: s
 
 export function removeOrganizationMember(organizationId: string, memberIdOrEmail: string) {
   return requestOrganizationAction<{ member: unknown }>(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/members/${encodeURIComponent(memberIdOrEmail)}`,
+    organizationApiPath(organizationId, "members", memberIdOrEmail),
     "DELETE",
     undefined,
     "Member could not be removed.",
@@ -294,7 +299,7 @@ export function removeOrganizationMember(organizationId: string, memberIdOrEmail
 
 export function listOrganizationRoles(organizationId: string) {
   return requestOrganizationAction<{ roles: OrganizationRole[] }>(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/roles`,
+    organizationApiPath(organizationId, "roles"),
     "GET",
     undefined,
     "Roles could not be loaded.",
@@ -307,7 +312,7 @@ export function createOrganizationRole(
   permission: Partial<Record<keyof OrganizationPermissionStatement, string[]>>,
 ) {
   return requestOrganizationAction<{ role: { roleData: OrganizationRole } }>(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/roles`,
+    organizationApiPath(organizationId, "roles"),
     "POST",
     { role, permission },
     "Role could not be created.",
@@ -323,7 +328,7 @@ export function updateOrganizationRole(
   },
 ) {
   return requestOrganizationAction<{ role: { roleData: OrganizationRole } }>(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/roles/${encodeURIComponent(roleId)}`,
+    organizationApiPath(organizationId, "roles", roleId),
     "PATCH",
     data,
     "Role could not be updated.",
@@ -332,7 +337,7 @@ export function updateOrganizationRole(
 
 export function deleteOrganizationRole(organizationId: string, roleId: string) {
   return requestOrganizationAction<{ role: unknown }>(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/roles/${encodeURIComponent(roleId)}`,
+    organizationApiPath(organizationId, "roles", roleId),
     "DELETE",
     undefined,
     "Role could not be deleted.",
@@ -348,33 +353,9 @@ export function acceptOrganizationInvitation(invitationId: string) {
   );
 }
 
-async function readJsonResponse<T>(response: Response, fallback: string): Promise<T> {
-  const payload = await response.json().catch(() => ({})) as { error?: string };
-  if (!response.ok) {
-    throw new Error(payload.error ?? fallback);
-  }
-
-  return payload as T;
-}
-
-async function requestOrganizationAction<T>(
-  url: string,
-  method: "GET" | "POST" | "PATCH" | "DELETE",
-  body: unknown,
-  fallback: string,
-) {
-  const response = await fetch(url, {
-    method,
-    headers: body === undefined ? undefined : { "Content-Type": "application/json" },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
-
-  return readJsonResponse<T>(response, fallback);
-}
-
 export function getOrganizationCapabilities(organizationId: string) {
   return requestOrganizationAction<{ capabilities: OrganizationCapabilities }>(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/capabilities`,
+    organizationApiPath(organizationId, "capabilities"),
     "GET",
     undefined,
     "Organization access could not be loaded.",
@@ -383,7 +364,7 @@ export function getOrganizationCapabilities(organizationId: string) {
 
 export function listOrganizationMcpConnections(organizationId: string) {
   return requestOrganizationAction<{ connections: OrganizationMcpConnection[] }>(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/mcp-connections`,
+    organizationApiPath(organizationId, "mcp-connections"),
     "GET",
     undefined,
     "Agent links could not be loaded.",
@@ -400,7 +381,7 @@ export function createOrganizationMcpConnection(
   },
 ) {
   return requestOrganizationAction<{ connection: OrganizationMcpConnection; agentLink: string }>(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/mcp-connections`,
+    organizationApiPath(organizationId, "mcp-connections"),
     "POST",
     input,
     "Agent link could not be created.",
@@ -419,7 +400,7 @@ export function updateOrganizationMcpConnection(
   },
 ) {
   return requestOrganizationAction<{ connection: OrganizationMcpConnection }>(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/mcp-connections/${encodeURIComponent(connectionId)}`,
+    organizationApiPath(organizationId, "mcp-connections", connectionId),
     "PATCH",
     input,
     "Agent link could not be updated.",
@@ -428,7 +409,7 @@ export function updateOrganizationMcpConnection(
 
 export function revokeOrganizationMcpConnection(organizationId: string, connectionId: string) {
   return requestOrganizationAction<{ revoked: boolean }>(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/mcp-connections/${encodeURIComponent(connectionId)}`,
+    organizationApiPath(organizationId, "mcp-connections", connectionId),
     "DELETE",
     undefined,
     "Agent link could not be revoked.",
@@ -437,7 +418,7 @@ export function revokeOrganizationMcpConnection(organizationId: string, connecti
 
 export function rotateOrganizationMcpConnection(organizationId: string, connectionId: string) {
   return requestOrganizationAction<{ connection: OrganizationMcpConnection; agentLink: string }>(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/mcp-connections/${encodeURIComponent(connectionId)}/rotate`,
+    organizationApiPath(organizationId, "mcp-connections", connectionId, "rotate"),
     "POST",
     undefined,
     "A new link could not be made.",
@@ -446,7 +427,7 @@ export function rotateOrganizationMcpConnection(organizationId: string, connecti
 
 export function listOrganizationApiKeys(organizationId: string) {
   return requestOrganizationAction<{ keys: OrganizationApiKey[] }>(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/api-keys`,
+    organizationApiPath(organizationId, "api-keys"),
     "GET",
     undefined,
     "API keys could not be loaded.",
@@ -462,7 +443,7 @@ export function createOrganizationApiKey(
   },
 ) {
   return requestOrganizationAction<{ key: OrganizationApiKey; apiKey: string }>(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/api-keys`,
+    organizationApiPath(organizationId, "api-keys"),
     "POST",
     input,
     "API key could not be created.",
@@ -475,7 +456,7 @@ export function rotateOrganizationApiKey(
   input: { expiry: OrganizationApiKeyExpiry },
 ) {
   return requestOrganizationAction<{ key: OrganizationApiKey; apiKey: string }>(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/api-keys/${encodeURIComponent(apiKeyId)}/rotate`,
+    organizationApiPath(organizationId, "api-keys", apiKeyId, "rotate"),
     "POST",
     input,
     "API key could not be rotated.",
@@ -484,7 +465,7 @@ export function rotateOrganizationApiKey(
 
 export function revokeOrganizationApiKey(organizationId: string, apiKeyId: string) {
   return requestOrganizationAction<{ revoked: boolean }>(
-    `/api/v1/organizations/${encodeURIComponent(organizationId)}/api-keys/${encodeURIComponent(apiKeyId)}`,
+    organizationApiPath(organizationId, "api-keys", apiKeyId),
     "DELETE",
     undefined,
     "API key could not be revoked.",
@@ -492,38 +473,28 @@ export function revokeOrganizationApiKey(organizationId: string, apiKeyId: strin
 }
 
 export async function createOrganizationInviteLink(organizationId: string, input: { role: string; locale: string }) {
-  const response = await fetch(`/api/v1/organizations/${encodeURIComponent(organizationId)}/invite-links`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-  });
-
-  return readJsonResponse<{ inviteLink: OrganizationInviteLink; inviteUrl: string }>(
-    response,
+  return requestOrganizationAction<{ inviteLink: OrganizationInviteLink; inviteUrl: string }>(
+    organizationApiPath(organizationId, "invite-links"),
+    "POST",
+    input,
     "Invite link could not be created.",
   );
 }
 
 export async function cancelOrganizationInviteLink(organizationId: string, inviteLinkId: string) {
-  const response = await fetch(`/api/v1/organizations/${encodeURIComponent(organizationId)}/invite-links/${encodeURIComponent(inviteLinkId)}`, {
-    method: "DELETE",
-  });
-
-  return readJsonResponse<{ inviteLink: OrganizationInviteLink }>(
-    response,
+  return requestOrganizationAction<{ inviteLink: OrganizationInviteLink }>(
+    organizationApiPath(organizationId, "invite-links", inviteLinkId),
+    "DELETE",
+    undefined,
     "Invite link could not be canceled.",
   );
 }
 
 export async function acceptOrganizationInviteLink(token: string) {
-  const response = await fetch("/api/v1/organizations/invite-links/accept", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token }),
-  });
-
-  return readJsonResponse<{ inviteLink: OrganizationInviteLink }>(
-    response,
+  return requestOrganizationAction<{ inviteLink: OrganizationInviteLink }>(
+    "/api/v1/organizations/invite-links/accept",
+    "POST",
+    { token },
     "Invite link could not be accepted.",
   ).then((result) => result.inviteLink);
 }

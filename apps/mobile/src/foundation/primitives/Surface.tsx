@@ -1,7 +1,7 @@
 import { View, StyleSheet, type ViewProps } from "react-native";
 import { useMemo } from "react";
 
-import { theme } from "@/foundation/theme/tokens";
+import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 
 export function Surface({ style, ...props }: ViewProps) {
@@ -10,7 +10,7 @@ export function Surface({ style, ...props }: ViewProps) {
   return <View style={[styles.surface, style]} {...props} />;
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: AppColors) => StyleSheet.create({
   surface: {
     backgroundColor: colors.surface,
     borderRadius: theme.radii.md,

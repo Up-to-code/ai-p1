@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAppLocalization } from "@/foundation/localization";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
+import type { AppColors } from "@/foundation/theme/tokens";
 
 export type ScreenProps = ViewProps & {
   safe?: boolean;
@@ -32,7 +33,7 @@ export function Screen({ style, children, safe = false, edges = ["bottom"], ...p
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: AppColors) => StyleSheet.create({
   content: {
     flex: 1,
     backgroundColor: colors.background,

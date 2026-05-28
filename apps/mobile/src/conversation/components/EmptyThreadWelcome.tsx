@@ -13,13 +13,13 @@ import Svg, { Path } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "@/foundation/primitives/Text";
-import { theme } from "@/foundation/theme/tokens";
+import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 
 import { LogoMark } from "@/foundation/icons/LogoMark";
 
 /** Simple breathing logo animation — scales very subtly */
-function BreathingLogo({ colors, color }: { colors: any; color?: string }) {
+function BreathingLogo({ colors, color }: { colors: AppColors; color?: string }) {
   const scale = useSharedValue(1);
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export function EmptyThreadWelcome() {
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: AppColors) => StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",

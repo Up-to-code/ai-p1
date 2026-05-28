@@ -1,15 +1,14 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
-import { assertOrganizationResourcePermission } from "../organizations/profile/access";
-import { getMediaAsset, listResourceMedia, listResourceMediaFolders } from "./data";
+import {
+  getMediaAsset,
+  listResourceMedia,
+  listResourceMediaFolders,
+  orderedResourceMedia,
+  orderedResourceMediaFolders,
+} from "./data";
+import { assertMediaPermission } from "./resourcePolicy";
 import { mediaAssetValidator, mediaFolderValidator, mediaResourceTypeValidator } from "./validators";
-
-function permissionResourceForMedia(resourceType: "project" | "property" | "client" | "calendarEvent" | "task") {
-  if (resourceType === "project") return "project";
-  if (resourceType === "property") return "property";
-  if (resourceType === "calendarEvent") return "calendar";
-  return "client";
-}
 
 export const listForResource = query({
   args: {
@@ -19,11 +18,10 @@ export const listForResource = query({
   },
   returns: v.array(mediaAssetValidator),
   handler: async (ctx, args) => {
-    const resource = permissionResourceForMedia(args.resourceType);
-    await assertOrganizationResourcePermission(ctx, args.organizationId, resource, "read");
+    await assertMediaPermission(ctx, args.organizationId, args.resourceType, "read");
 
     const media = await listResourceMedia(ctx, args.organizationId, args.resourceType, args.resourceId);
-    return media.sort((a, b) => a.sortOrder - b.sortOrder || a.createdAt - b.createdAt);
+    return orderedResourceMedia(media);
   },
 });
 
@@ -39,8 +37,7 @@ export const getForDelete = query({
       throw new Error("Media asset was not found.");
     }
 
-    const resource = permissionResourceForMedia(asset.resourceType);
-    await assertOrganizationResourcePermission(ctx, args.organizationId, resource, "update");
+    await assertMediaPermission(ctx, args.organizationId, asset.resourceType, "update");
 
     return asset;
   },
@@ -54,11 +51,10 @@ export const listFoldersForResource = query({
   },
   returns: v.array(mediaFolderValidator),
   handler: async (ctx, args) => {
-    const resource = permissionResourceForMedia(args.resourceType);
-    await assertOrganizationResourcePermission(ctx, args.organizationId, resource, "read");
+    await assertMediaPermission(ctx, args.organizationId, args.resourceType, "read");
 
     const folders = await listResourceMediaFolders(ctx, args.organizationId, args.resourceType, args.resourceId);
-    return folders.sort((a, b) => a.name.localeCompare(b.name) || a.createdAt - b.createdAt);
+    return orderedResourceMediaFolders(folders);
   },
 });
 
@@ -83,8 +79,7 @@ export const getForAuthorizedRoute = query({
     const asset = await getMediaAsset(ctx, args.mediaId);
     if (!asset) return null;
 
-    const resource = permissionResourceForMedia(asset.resourceType);
-    await assertOrganizationResourcePermission(ctx, asset.organizationId, resource, "read");
+    await assertMediaPermission(ctx, asset.organizationId, asset.resourceType, "read");
 
     return asset;
   },

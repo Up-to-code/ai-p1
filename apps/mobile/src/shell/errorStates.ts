@@ -4,6 +4,7 @@ import {
   CloudOff,
   Construction,
   FileQuestion,
+  type LucideIcon,
   Wrench,
 } from "lucide-react-native";
 
@@ -19,7 +20,7 @@ export type ErrorStateDefinition = {
   body: string;
   signal: string;
   technicalNote: string;
-  Icon: any;
+  Icon: LucideIcon;
 };
 
 export const errorStates: ErrorStateDefinition[] = [

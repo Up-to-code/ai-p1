@@ -31,11 +31,19 @@ import { useIntegrationsStore } from "@/domains/integrations";
 import { useAccountContext } from "@/domains/auth";
 import type { PartnerCatalogApp, PartnerConnection } from "../store/integrations.types";
 import {
+  partnerCatalogFilters,
+  revokePartnerConnection,
+  updatePartnerConnectionStatus,
+  usePartnerCatalogApps,
+  usePartnerConnections,
+} from "../integrations-runtime";
+import {
   buildPartnerCatalogCards,
   buildPartnerConnectionCard,
   findPartnerIntegrationDetail,
   filterPartnerCatalogCards,
   integrationStatusTone,
+  partnerConnectionExpiryLabel,
   type PartnerCatalogFilter,
   type PartnerCatalogCardModel,
 } from "../store/integrations.view-model";
@@ -47,63 +55,16 @@ export function IntegrationsScreen() {
   const { activeTab, setActiveTab } = useIntegrationsStore();
   const account = useAccountContext();
   const organizationId = account.workspace.organizationId;
-  const [apps, setApps] = useState<PartnerCatalogApp[]>([]);
-  const [connections, setConnections] = useState<PartnerConnection[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isConnectionsLoading, setIsConnectionsLoading] = useState(true);
-
-  useEffect(() => {
-    let active = true;
-    fetch("/api/v1/integrations/partner-apps")
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Partner apps could not be loaded.")))
-      .then((payload: { apps?: PartnerCatalogApp[] }) => {
-        if (active) setApps(payload.apps ?? []);
-      })
-      .catch(() => {
-        if (active) setApps([]);
-      })
-      .finally(() => {
-        if (active) setIsLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!organizationId) {
-      return;
-    }
-
-    let active = true;
-    fetch(`/api/v1/organizations/${encodeURIComponent(organizationId)}/partner-connections`)
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Partner connections could not be loaded.")))
-      .then((payload: { connections?: PartnerConnection[] }) => {
-        if (active) setConnections(payload.connections ?? []);
-      })
-      .catch(() => {
-        if (active) setConnections([]);
-      })
-      .finally(() => {
-        if (active) setIsConnectionsLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [organizationId]);
+  const { apps, isLoading } = usePartnerCatalogApps();
+  const {
+    connections,
+    isLoading: isConnectionsLoading,
+    refreshConnections,
+  } = usePartnerConnections(organizationId);
 
   const catalogCards = buildPartnerCatalogCards(apps, connections);
   const visibleConnections = organizationId ? connections : [];
   const visibleConnectionsLoading = organizationId ? isConnectionsLoading : false;
-  const refreshConnections = () => {
-    if (!organizationId) return;
-    setIsConnectionsLoading(true);
-    fetch(`/api/v1/organizations/${encodeURIComponent(organizationId)}/partner-connections`)
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Partner connections could not be loaded.")))
-      .then((payload: { connections?: PartnerConnection[] }) => setConnections(payload.connections ?? []))
-      .catch(() => setConnections([]))
-      .finally(() => setIsConnectionsLoading(false));
-  };
 
   return (
     <AppPageShell maxWidth="full">
@@ -154,7 +115,6 @@ function PartnerCatalogGrid({
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<PartnerCatalogFilter>("all");
   const filteredCards = useMemo(() => filterPartnerCatalogCards(cards, query, filter), [cards, query, filter]);
-  const filterOptions: PartnerCatalogFilter[] = ["all", "connected", "available"];
 
   if (isLoading) {
     return (
@@ -203,7 +163,7 @@ function PartnerCatalogGrid({
               <DropdownMenuLabel>{t('catalog.filter')}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup value={filter} onValueChange={(value) => setFilter(value as PartnerCatalogFilter)}>
-                {filterOptions.map((value) => (
+                {partnerCatalogFilters.map((value) => (
                   <DropdownMenuRadioItem key={value} value={value} className="py-2 text-sm font-semibold">
                     {t(`catalog.filters.${value}`)}
                   </DropdownMenuRadioItem>
@@ -321,22 +281,6 @@ function AppIcon({ app }: { app: PartnerCatalogApp }) {
   );
 }
 
-async function updatePartnerConnection(organizationId: string, connection: PartnerConnection, status: "active" | "paused") {
-  const response = await fetch(`/api/v1/organizations/${encodeURIComponent(organizationId)}/partner-connections/${encodeURIComponent(connection.id)}`, {
-    method: "PATCH",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ status }),
-  });
-  if (!response.ok) throw new Error("Partner connection could not be updated.");
-}
-
-async function revokePartnerConnection(organizationId: string, connection: PartnerConnection) {
-  const response = await fetch(`/api/v1/organizations/${encodeURIComponent(organizationId)}/partner-connections/${encodeURIComponent(connection.id)}`, {
-    method: "DELETE",
-  });
-  if (!response.ok) throw new Error("Partner connection could not be revoked.");
-}
-
 function PartnerConnectionCard({
   connection,
   organizationId,
@@ -362,8 +306,8 @@ function PartnerConnectionCard({
     if (!organizationId) return;
     setIsMutating(true);
     try {
-      if (action === "revoke") await revokePartnerConnection(organizationId, connection);
-      else await updatePartnerConnection(organizationId, connection, action === "pause" ? "paused" : "active");
+      if (action === "revoke") await revokePartnerConnection(organizationId, connection.id);
+      else await updatePartnerConnectionStatus(organizationId, connection.id, action === "pause" ? "paused" : "active");
       onConnectionChanged();
     } finally {
       setIsMutating(false);
@@ -392,7 +336,7 @@ function PartnerConnectionCard({
           </div>
           <div className="flex justify-between gap-4">
             <dt>Expires</dt>
-            <dd>{connection.expiresAt ? new Date(connection.expiresAt).toLocaleDateString() : "No expiry"}</dd>
+            <dd>{partnerConnectionExpiryLabel(connection.expiresAt, "No expiry")}</dd>
           </div>
         </dl>
       </div>
@@ -476,46 +420,8 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
   const t = useTranslations('Integrations');
   const account = useAccountContext();
   const organizationId = account.workspace.organizationId;
-  const [apps, setApps] = useState<PartnerCatalogApp[]>([]);
-  const [connections, setConnections] = useState<PartnerConnection[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    let active = true;
-    fetch("/api/v1/integrations/partner-apps")
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Partner apps could not be loaded.")))
-      .then((payload: { apps?: PartnerCatalogApp[] }) => {
-        if (active) setApps(payload.apps ?? []);
-      })
-      .catch(() => {
-        if (active) setApps([]);
-      })
-      .finally(() => {
-        if (active) setIsLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!organizationId) {
-      return;
-    }
-
-    let active = true;
-    fetch(`/api/v1/organizations/${encodeURIComponent(organizationId)}/partner-connections`)
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Partner connections could not be loaded.")))
-      .then((payload: { connections?: PartnerConnection[] }) => {
-        if (active) setConnections(payload.connections ?? []);
-      })
-      .catch(() => {
-        if (active) setConnections([]);
-      });
-    return () => {
-      active = false;
-    };
-  }, [organizationId]);
+  const { apps, isLoading } = usePartnerCatalogApps();
+  const { connections } = usePartnerConnections(organizationId);
 
   const { app, connection } = findPartnerIntegrationDetail(id, apps, connections);
 
@@ -586,7 +492,7 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
                       {app.allowedScopes.length} scopes
                     </span>
                     <span className="rounded-full border border-zinc-200 px-2.5 py-1 text-[11px] font-bold text-zinc-500 dark:border-white/10 dark:text-zinc-400">
-                      {connection?.expiresAt ? new Date(connection.expiresAt).toLocaleDateString() : "14 day auth"}
+                      {partnerConnectionExpiryLabel(connection?.expiresAt, "14 day auth")}
                     </span>
                   </div>
                 </div>

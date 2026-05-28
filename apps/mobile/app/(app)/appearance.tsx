@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppLocalization } from "@/foundation/localization";
 import { Screen } from "@/foundation/primitives/Screen";
 import { Text } from "@/foundation/primitives/Text";
-import { theme } from "@/foundation/theme/tokens";
+import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import type { AppearanceMode } from "@/store/slices/preferenceSlice";
 
@@ -95,7 +95,7 @@ function OptionIcon({ mode, color }: { mode: "system" | "light" | "dark"; color:
   return <MoonStar size={18} color={color} />;
 }
 
-const createStyles = (colors: any, isRTL: boolean) =>
+const createStyles = (colors: AppColors, isRTL: boolean) =>
   StyleSheet.create({
     screen: {
       flex: 1,

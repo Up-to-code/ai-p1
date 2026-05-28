@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { WorkspaceDocsJsonLd } from "@/components/seo-json-ld";
 import { docsTopics, getDocsMetadata, isDocsTopic, McpDocsPage } from "../_components/mcp-docs";
 
 export function generateStaticParams() {
@@ -33,5 +34,10 @@ export default async function DocsTopicPage({
     notFound();
   }
 
-  return <McpDocsPage locale={locale} topicSlug={topic} />;
+  return (
+    <>
+      <WorkspaceDocsJsonLd locale={locale} />
+      <McpDocsPage locale={locale} topicSlug={topic} />
+    </>
+  );
 }

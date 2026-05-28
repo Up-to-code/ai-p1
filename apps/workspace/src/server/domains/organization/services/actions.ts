@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
-import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/better-auth/server";
-import { assertCanUseOrganizationResource, getOrganizationCapabilities } from "@/server/utils/organization/access-checker";
+import { fetchAuthQuery } from "@/server/auth/better-auth/server";
+import { getOrganizationCapabilities } from "@/server/utils/organization/access-checker";
 import type { OrganizationPermissionStatement } from "@/packages/authz";
 import { OrganizationActionError } from "../errors/action-error";
 import {
@@ -12,11 +12,16 @@ import {
   assertRoleNameIsCustom,
   normalizeOrganizationRoleName,
   validatePermissionPayload,
-  type OrganizationInvitationForPolicy,
-  type OrganizationMemberForPolicy,
-  type OrganizationRoleForPolicy,
 } from "./access-policy";
 import { callBetterAuth, getBetterAuthSession } from "./better-auth-proxy";
+import {
+  listInvitationsForOrganizationAction,
+  listMembersForOrganizationAction,
+  listRolesForOrganizationAction,
+  recordOrganizationAction,
+  requireOrganizationAction,
+  runOrganizationActionWorkflow,
+} from "./action-workflow";
 import type {
   CreateOrganizationInvitationInput,
   CreateOrganizationRoleInput,
@@ -25,59 +30,9 @@ import type {
   UpdateOrganizationRoleInput,
 } from "../validation/actions.schema";
 
-type MemberListResponse = { members?: OrganizationMemberForPolicy[] } | OrganizationMemberForPolicy[];
-type InvitationListResponse = OrganizationInvitationForPolicy[];
-type RoleListResponse = OrganizationRoleForPolicy[];
-
-async function recordOrganizationAction(
-  organizationId: string,
-  input: { action: string; target: string; summary: string },
-) {
-  await fetchAuthMutation(api.organizations.audit.write.recordFromHono, {
-    organizationId,
-    input,
-  });
-}
-
-async function requireOrganizationAction(
-  organizationId: string,
-  resource: Parameters<typeof assertCanUseOrganizationResource>[1],
-  action: string,
-) {
-  try {
-    await assertCanUseOrganizationResource(organizationId, resource, action);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "You are not allowed to perform this organization action.";
-    throw new OrganizationActionError(message, 403);
-  }
-}
-
-function unwrapMembers(data: MemberListResponse) {
-  return Array.isArray(data) ? data : data.members ?? [];
-}
-
-async function listMembers(c: Context, organizationId: string) {
-  const data = await callBetterAuth<MemberListResponse>(c, "/organization/list-members", {
-    query: { organizationId, limit: 100, offset: 0 },
-    fallback: "Members could not be loaded.",
-  });
-
-  return unwrapMembers(data);
-}
-
-async function listInvitations(c: Context, organizationId: string) {
-  return callBetterAuth<InvitationListResponse>(c, "/organization/list-invitations", {
-    query: { organizationId },
-    fallback: "Invitations could not be loaded.",
-  });
-}
-
-async function listRoles(c: Context, organizationId: string) {
-  return callBetterAuth<RoleListResponse>(c, "/organization/list-roles", {
-    query: { organizationId },
-    fallback: "Work roles could not be loaded.",
-  });
-}
+const listMembers = listMembersForOrganizationAction;
+const listInvitations = listInvitationsForOrganizationAction;
+const listRoles = listRolesForOrganizationAction;
 
 export async function listOrganizationWorkRoles(c: Context, organizationId: string) {
   await requireOrganizationAction(organizationId, "role", "read");
@@ -94,22 +49,20 @@ export async function updateOrganizationIdentity(
   organizationId: string,
   input: OrganizationIdentityUpdateInput,
 ) {
-  await requireOrganizationAction(organizationId, "organization", "update");
-
-  const organization = await callBetterAuth(c, "/organization/update", {
-    body: { organizationId, data: input },
-    fallback: "Organization could not be updated.",
+  return runOrganizationActionWorkflow(organizationId, {
+    permission: { resource: "organization", action: "update" },
+    perform: () => callBetterAuth(c, "/organization/update", {
+      body: { organizationId, data: input },
+      fallback: "Organization could not be updated.",
+    }),
+    audit: {
+      action: "organization.identity.update",
+      target: organizationId,
+      summary: input.logo
+        ? "Updated organization logo."
+        : `Updated organization identity${input.name ? ` to ${input.name}` : ""}.`,
+    },
   });
-
-  await recordOrganizationAction(organizationId, {
-    action: "organization.identity.update",
-    target: organizationId,
-    summary: input.logo
-      ? "Updated organization logo."
-      : `Updated organization identity${input.name ? ` to ${input.name}` : ""}.`,
-  });
-
-  return organization;
 }
 
 export async function createOrganizationEmailInvitation(
@@ -117,21 +70,19 @@ export async function createOrganizationEmailInvitation(
   organizationId: string,
   input: CreateOrganizationInvitationInput,
 ) {
-  await requireOrganizationAction(organizationId, "member", "create");
-  await assertCanAssignRole(c, organizationId, input.role);
-
-  const invitation = await callBetterAuth(c, "/organization/invite-member", {
-    body: { organizationId, email: input.email, role: input.role },
-    fallback: "Invitation could not be created.",
+  return runOrganizationActionWorkflow(organizationId, {
+    permission: { resource: "member", action: "create" },
+    prepare: () => assertCanAssignRole(c, organizationId, input.role),
+    perform: () => callBetterAuth(c, "/organization/invite-member", {
+      body: { organizationId, email: input.email, role: input.role },
+      fallback: "Invitation could not be created.",
+    }),
+    audit: {
+      action: "organization.invitation.create",
+      target: input.email,
+      summary: `Invited ${input.email} as ${input.role}.`,
+    },
   });
-
-  await recordOrganizationAction(organizationId, {
-    action: "organization.invitation.create",
-    target: input.email,
-    summary: `Invited ${input.email} as ${input.role}.`,
-  });
-
-  return invitation;
 }
 
 export async function cancelOrganizationEmailInvitation(
@@ -139,20 +90,18 @@ export async function cancelOrganizationEmailInvitation(
   organizationId: string,
   invitationId: string,
 ) {
-  await requireOrganizationAction(organizationId, "member", "create");
-
-  const invitation = await callBetterAuth(c, "/organization/cancel-invitation", {
-    body: { invitationId },
-    fallback: "Invitation could not be canceled.",
+  return runOrganizationActionWorkflow(organizationId, {
+    permission: { resource: "member", action: "create" },
+    perform: () => callBetterAuth(c, "/organization/cancel-invitation", {
+      body: { invitationId },
+      fallback: "Invitation could not be canceled.",
+    }),
+    audit: {
+      action: "organization.invitation.cancel",
+      target: invitationId,
+      summary: "Canceled email invitation.",
+    },
   });
-
-  await recordOrganizationAction(organizationId, {
-    action: "organization.invitation.cancel",
-    target: invitationId,
-    summary: "Canceled email invitation.",
-  });
-
-  return invitation;
 }
 
 export async function updateOrganizationMemberRole(

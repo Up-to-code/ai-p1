@@ -17,6 +17,10 @@ describe("property detail redesign source", () => {
     expect(source).toContain("usePropertyClientLinksQuery(workspaceOrganizationId, unit?.id)");
     expect(source).toContain('useResourceMediaQuery(workspaceOrganizationId, "property", unit?.id)');
     expect(source).toContain("useClientsPagedQuery(isClientLinkOpen ? workspaceOrganizationId : undefined, { search: clientSearch })");
+    expect(source).toContain("propertyMediaAssets(mediaAssets)");
+    expect(source).toContain("propertyGalleryPreview(galleryAssets)");
+    expect(source).toContain("availablePropertyClientCandidates(clientCandidates, propertyClientLinks)");
+    expect(source).toContain("selectedPropertyClientName(clientCandidates, clientToLink)");
     expect(source).toContain("linkClientUnitRequest(workspaceOrganizationId, clientToLink, unit.id");
     expect(source).toContain("unlinkClientUnitRequest(workspaceOrganizationId, link.clientId, unit.id)");
   });

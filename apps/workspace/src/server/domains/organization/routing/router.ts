@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { mobileRequestContextMiddleware } from "@/server/middleware/mobile-request-context";
+import { organizationRequestSafetyMiddleware } from "@/server/security";
 import {
   handleAcceptOrganizationInviteLink,
   handleCancelOrganizationInviteLink,
@@ -117,7 +117,7 @@ import {
 
 export const organizationRouter = new Hono();
 
-organizationRouter.use("/:organizationId/*", mobileRequestContextMiddleware);
+organizationRouter.use("/:organizationId/*", organizationRequestSafetyMiddleware);
 
 organizationRouter.post(
   "/invite-links/accept",

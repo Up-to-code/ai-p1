@@ -11,7 +11,7 @@ import { parsePartnerAccessClaims } from "@qentrah/partner-auth-core";
 import { oauthDebug } from "./oauth-debug";
 
 export type PartnerAccessContext = {
-  type?: "oauth";
+  type: "oauth";
   token: string;
   organizationId: string;
   partnersClientId: string;

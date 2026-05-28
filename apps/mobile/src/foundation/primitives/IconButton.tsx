@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, type PressableProps } from "react-native";
 import { useMemo, type ReactNode } from "react";
 
 import { useTheme } from "@/foundation/theme/ThemeProvider";
+import type { AppColors } from "@/foundation/theme/tokens";
 
 type IconButtonProps = PressableProps & {
   children: ReactNode;
@@ -26,7 +27,7 @@ export function IconButton({ children, active, style, ...props }: IconButtonProp
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: AppColors) => StyleSheet.create({
   base: {
     width: 44,
     height: 44,

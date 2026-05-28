@@ -1,5 +1,26 @@
 # Changes
 
+## 2026-05-28 Workspace Read Stats Count Surface
+
+- Added `convex/workspace/readSurface.ts` so project, property, client, calendar, and task read queries share active-row filtering, updated ordering, chronological ordering, due-date ordering, bounded option limits, capped search rows, and active page presentation behind one Convex read Module.
+- Deepened `convex/workspace/readStats.ts` so client, project, property, calendar, and audit stats share one internal counting seam for active rows, field buckets, unique owners, and category totals.
+- Deepened `convex/workspace/dashboardOverview.ts` so Dashboard active-row selection, count composition, project card projection, and week-event enrichment are separate internal seams behind the same overview Interface.
+- Preserved stable Convex callers, stat keys, soft-delete behavior, and response shapes while keeping the read stats tests as the Module interface surface.
+
+## 2026-05-28 Workspace Read Stats Depth
+
+- Added `convex/workspace/readStats.ts` so hot project, property, client, calendar, and audit stats queries share soft-delete filtering and count calculation behind one Module.
+- Added `convex/workspace/dashboardOverview.ts` so Dashboard count composition, project card projection, event ordering, and client/task enrichment sit behind one Module.
+- Preserved stable Convex query function names, permission checks, scan limits, return shapes, and PII reveal behavior.
+- Added focused tests for shared soft-delete filtering and client/project/property stats.
+
+## 2026-05-28 Runtime Architecture Deepening
+
+- Kept the backfill runner as the scheduling/progress owner while making `security/backfillTargets.ts` an explicit Adapter registry for table reads, id normalization, protection checks, and patch creation.
+- Added the shared Convex `serviceTokens` Module and moved admin, backfill, billing bridge, partner resource, and webhook bridge assertions through it without changing env names or error messages.
+- Split partner webhook URL safety, signing-secret crypto, inbound/outbound delivery state, and retry behavior into internal Modules behind the stable `partnerApps.webhooks` Convex facade.
+- Added focused tests for webhook URL/signature/retry behavior, request safety, workspace read surface parsing, and existing backfill Adapter behavior.
+
 ## 2026-05-16 Architecture Deepening Pass
 
 - Split target-specific backfill behavior into `security/backfillTargets.ts` so the job runner owns scheduling/progress while target Adapters own table reads, id normalization, idempotency checks, and patch creation.

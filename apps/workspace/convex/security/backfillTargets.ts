@@ -33,40 +33,42 @@ export type BackfillPatchResult = {
 
 type BackfillRow = Record<string, any>;
 type PaginationOpts = { numItems: number; cursor: string | null };
+type BackfillTargetAdapter = {
+  table:
+    | "clients"
+    | "projects"
+    | "propertyUnits"
+    | "partnerWebhookDeliveries"
+    | "partnerInboundEvents"
+    | "agentMessages"
+    | "agentMemorySummaries"
+    | "agentMemoryFacts";
+  isProtected(row: BackfillRow): boolean;
+  patchFor(row: BackfillRow): Promise<BackfillPatch | null> | BackfillPatch | null;
+};
 
 function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : "backfill_failed";
 }
 
-function deletedFlagPatch(row: BackfillRow) {
-  if (row.isDeleted !== undefined) return null;
-  return { id: row._id, patch: { isDeleted: Boolean(row.deletedAt) } };
+function deletedFlagAdapter(table: BackfillTargetAdapter["table"]): BackfillTargetAdapter {
+  return {
+    table,
+    isProtected: (row) => row.isDeleted !== undefined,
+    patchFor: (row) => row.isDeleted !== undefined
+      ? null
+      : { id: row._id, patch: { isDeleted: Boolean(row.deletedAt) } },
+  };
 }
 
-function isProtected(target: BackfillTarget, row: BackfillRow) {
-  if (target === "clientsDeletedFlag" || target === "projectsDeletedFlag" || target === "propertiesDeletedFlag") {
-    return row.isDeleted !== undefined;
-  }
-  if (target === "clientPii") {
-    return Boolean(row.encryptedContact && row.encryptedPhone && row.encryptedNationality && row.encryptedBudget);
-  }
-  if (target === "webhookDeliveries" || target === "inboundEvents") {
-    return Boolean(row.encryptedPayload || row.payload === undefined);
-  }
-  if (target === "agentMessages") return Boolean(row.encryptedContent);
-  if (target === "agentMemorySummaries") return Boolean(row.encryptedSummary);
-  return Boolean(row.encryptedFact);
-}
-
-async function patchFor(target: BackfillTarget, row: BackfillRow): Promise<BackfillPatch | null> {
-  if (isProtected(target, row)) return null;
-
-  if (target === "clientsDeletedFlag" || target === "projectsDeletedFlag" || target === "propertiesDeletedFlag") {
-    return deletedFlagPatch(row);
-  }
-
-  if (target === "clientPii") {
-    return {
+const targetAdapters = {
+  clientsDeletedFlag: deletedFlagAdapter("clients"),
+  projectsDeletedFlag: deletedFlagAdapter("projects"),
+  propertiesDeletedFlag: deletedFlagAdapter("propertyUnits"),
+  clientPii: {
+    table: "clients",
+    isProtected: (row) => Boolean(row.encryptedContact && row.encryptedPhone && row.encryptedNationality && row.encryptedBudget),
+    patchFor: async (row) => ({
       id: row._id,
       patch: {
         ...await protectClientPii(row.organizationId, {
@@ -77,11 +79,12 @@ async function patchFor(target: BackfillTarget, row: BackfillRow): Promise<Backf
         }),
         updatedAt: Date.now(),
       },
-    };
-  }
-
-  if (target === "webhookDeliveries") {
-    return {
+    }),
+  },
+  webhookDeliveries: {
+    table: "partnerWebhookDeliveries",
+    isProtected: (row) => Boolean(row.encryptedPayload || row.payload === undefined),
+    patchFor: async (row) => ({
       id: row._id,
       patch: {
         encryptedPayload: await protectOrganizationJson(row.organizationId, "partner-webhook-delivery", row.payload),
@@ -90,11 +93,12 @@ async function patchFor(target: BackfillTarget, row: BackfillRow): Promise<Backf
         expiresAt: row.expiresAt ?? row.createdAt + 90 * 24 * 60 * 60 * 1000,
         updatedAt: Date.now(),
       },
-    };
-  }
-
-  if (target === "inboundEvents") {
-    return {
+    }),
+  },
+  inboundEvents: {
+    table: "partnerInboundEvents",
+    isProtected: (row) => Boolean(row.encryptedPayload || row.payload === undefined),
+    patchFor: async (row) => ({
       id: row._id,
       patch: {
         encryptedPayload: await protectOrganizationJson(row.organizationId, "partner-inbound-event", row.payload),
@@ -102,22 +106,24 @@ async function patchFor(target: BackfillTarget, row: BackfillRow): Promise<Backf
         payloadRedacted: true,
         expiresAt: row.expiresAt ?? row.createdAt + 90 * 24 * 60 * 60 * 1000,
       },
-    };
-  }
-
-  if (target === "agentMessages") {
-    return {
+    }),
+  },
+  agentMessages: {
+    table: "agentMessages",
+    isProtected: (row) => Boolean(row.encryptedContent),
+    patchFor: async (row) => ({
       id: row._id,
       patch: {
         encryptedContent: await protectOrganizationText(row.organizationId, "agent-message", row.content),
         content: redactSensitiveText(String(row.content ?? "")),
         contentRedacted: true,
       },
-    };
-  }
-
-  if (target === "agentMemorySummaries") {
-    return {
+    }),
+  },
+  agentMemorySummaries: {
+    table: "agentMemorySummaries",
+    isProtected: (row) => Boolean(row.encryptedSummary),
+    patchFor: async (row) => ({
       id: row._id,
       patch: {
         encryptedSummary: await protectOrganizationText(row.organizationId, "agent-memory-summary", row.summary),
@@ -125,18 +131,31 @@ async function patchFor(target: BackfillTarget, row: BackfillRow): Promise<Backf
         summaryRedacted: true,
         updatedAt: Date.now(),
       },
-    };
-  }
+    }),
+  },
+  agentMemoryFacts: {
+    table: "agentMemoryFacts",
+    isProtected: (row) => Boolean(row.encryptedFact),
+    patchFor: async (row) => ({
+      id: row._id,
+      patch: {
+        encryptedFact: await protectOrganizationText(row.organizationId, "agent-memory-fact", row.fact),
+        fact: redactSensitiveText(String(row.fact ?? "")),
+        factRedacted: true,
+        updatedAt: Date.now(),
+      },
+    }),
+  },
+} satisfies Record<BackfillTarget, BackfillTargetAdapter>;
 
-  return {
-    id: row._id,
-    patch: {
-      encryptedFact: await protectOrganizationText(row.organizationId, "agent-memory-fact", row.fact),
-      fact: redactSensitiveText(String(row.fact ?? "")),
-      factRedacted: true,
-      updatedAt: Date.now(),
-    },
-  };
+function adapterFor(target: BackfillTarget) {
+  return targetAdapters[target];
+}
+
+async function patchFor(target: BackfillTarget, row: BackfillRow): Promise<BackfillPatch | null> {
+  const adapter = adapterFor(target);
+  if (adapter.isProtected(row)) return null;
+  return await adapter.patchFor(row);
 }
 
 export async function createBackfillPatchesForTarget(
@@ -159,37 +178,9 @@ export async function createBackfillPatchesForTarget(
 }
 
 export function readBackfillTargetPage(ctx: QueryCtx, target: BackfillTarget, paginationOpts: PaginationOpts) {
-  if (target === "clientsDeletedFlag" || target === "clientPii") {
-    return ctx.db.query("clients").paginate(paginationOpts);
-  }
-  if (target === "projectsDeletedFlag") {
-    return ctx.db.query("projects").paginate(paginationOpts);
-  }
-  if (target === "propertiesDeletedFlag") {
-    return ctx.db.query("propertyUnits").paginate(paginationOpts);
-  }
-  if (target === "webhookDeliveries") {
-    return ctx.db.query("partnerWebhookDeliveries").paginate(paginationOpts);
-  }
-  if (target === "inboundEvents") {
-    return ctx.db.query("partnerInboundEvents").paginate(paginationOpts);
-  }
-  if (target === "agentMessages") {
-    return ctx.db.query("agentMessages").paginate(paginationOpts);
-  }
-  if (target === "agentMemorySummaries") {
-    return ctx.db.query("agentMemorySummaries").paginate(paginationOpts);
-  }
-  return ctx.db.query("agentMemoryFacts").paginate(paginationOpts);
+  return ctx.db.query(adapterFor(target).table).paginate(paginationOpts);
 }
 
 export function normalizeBackfillTargetId(ctx: MutationCtx, target: BackfillTarget, id: string) {
-  if (target === "clientsDeletedFlag" || target === "clientPii") return ctx.db.normalizeId("clients", id);
-  if (target === "projectsDeletedFlag") return ctx.db.normalizeId("projects", id);
-  if (target === "propertiesDeletedFlag") return ctx.db.normalizeId("propertyUnits", id);
-  if (target === "webhookDeliveries") return ctx.db.normalizeId("partnerWebhookDeliveries", id);
-  if (target === "inboundEvents") return ctx.db.normalizeId("partnerInboundEvents", id);
-  if (target === "agentMessages") return ctx.db.normalizeId("agentMessages", id);
-  if (target === "agentMemorySummaries") return ctx.db.normalizeId("agentMemorySummaries", id);
-  return ctx.db.normalizeId("agentMemoryFacts", id);
+  return ctx.db.normalizeId(adapterFor(target).table, id);
 }

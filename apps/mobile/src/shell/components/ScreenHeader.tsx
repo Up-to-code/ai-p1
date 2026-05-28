@@ -1,8 +1,8 @@
 import { StyleSheet, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets, type EdgeInsets } from "react-native-safe-area-context";
 
 import { Text } from "@/foundation/primitives/Text";
-import { theme } from "@/foundation/theme/tokens";
+import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 
 type ScreenHeaderProps = {
@@ -36,7 +36,7 @@ export function ScreenHeader({ eyebrow, title, subtitle, showCopy = true }: Scre
   );
 }
 
-const createStyles = (colors: any, insets: any) => StyleSheet.create({
+const createStyles = (colors: AppColors, insets: EdgeInsets) => StyleSheet.create({
   container: { paddingHorizontal: theme.spacing.lg, paddingTop: insets.top + theme.spacing.md, paddingBottom: theme.spacing.md },
   copyBlock: { gap: theme.spacing.xs },
   eyebrow: {

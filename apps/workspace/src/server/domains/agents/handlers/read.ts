@@ -15,6 +15,13 @@ function parseLimit(c: Context, fallback: number, max: number) {
   return value;
 }
 
+function parseCursor(c: Context) {
+  const raw = c.req.query("cursor");
+  if (raw == null || raw === "") return null;
+  if (raw.length > 2048) return undefined;
+  return raw;
+}
+
 export async function handleListAgentThreads(c: Context) {
   const organizationId = c.req.param("organizationId");
   if (!organizationId) {
@@ -26,12 +33,18 @@ export async function handleListAgentThreads(c: Context) {
     return c.json({ error: "Invalid agent thread limit." }, 400);
   }
 
-  const threads = await fetchAuthQuery(api.agents.read.listThreads, {
+  const cursor = parseCursor(c);
+  if (cursor === undefined) {
+    return c.json({ error: "Invalid agent thread cursor." }, 400);
+  }
+
+  const page = await fetchAuthQuery(api.agents.read.listThreadsPage, {
     organizationId,
     limit,
+    cursor,
   });
 
-  return c.json({ threads });
+  return c.json(page);
 }
 
 export async function handleListAgentMessages(c: Context) {
