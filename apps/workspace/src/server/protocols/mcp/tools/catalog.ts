@@ -1,6 +1,12 @@
 import { z } from "zod";
 import { evaluateAgentToolRisk } from "@/server/domains/agents/policies/risk-policy";
-import { getRegistryTool, type McpAdapter } from "./registry-core";
+import {
+  getRegistryTool,
+  type McpAdapter,
+  type McpToolApprovalRequirement,
+  type McpToolDataSensitivity,
+  type McpToolRiskLevel,
+} from "./registry-core";
 
 export type McpPermissionResource =
   | "organization"
@@ -28,6 +34,9 @@ export type McpToolDefinition = {
   action: McpPermissionAction;
   inputSchema?: z.ZodRawShape;
   destructive?: boolean;
+  riskLevel: McpToolRiskLevel;
+  approvalRequirement: McpToolApprovalRequirement;
+  dataSensitivity: McpToolDataSensitivity;
 };
 
 const id = z.string().min(1);
@@ -37,7 +46,7 @@ const listLimit = z.number().int().min(1).max(50).optional();
 const listSearch = z.string().trim().max(160).optional();
 const listCursor = z.string().nullable().optional();
 
-export const agentToolCatalog: McpToolDefinition[] = [
+const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approvalRequirement" | "dataSensitivity">> = [
   {
     name: "organization_info",
     title: "Organization info",
@@ -395,6 +404,26 @@ export const agentToolCatalog: McpToolDefinition[] = [
     action: "create",
   },
 ];
+
+function withSafetyMetadata(tool: Omit<McpToolDefinition, "riskLevel" | "approvalRequirement" | "dataSensitivity">): McpToolDefinition {
+  const registryTool = getRegistryTool(tool.name);
+  if (!registryTool) {
+    return {
+      ...tool,
+      riskLevel: "admin",
+      approvalRequirement: "admin",
+      dataSensitivity: "private_organization",
+    };
+  }
+  return {
+    ...tool,
+    riskLevel: registryTool.riskLevel,
+    approvalRequirement: registryTool.approvalRequirement,
+    dataSensitivity: registryTool.dataSensitivity,
+  };
+}
+
+export const agentToolCatalog: McpToolDefinition[] = rawAgentToolCatalog.map(withSafetyMetadata);
 
 export const mcpToolCatalog = agentToolCatalog.filter((tool) =>
   getRegistryTool(tool.name)?.adapters.includes("mcp"),

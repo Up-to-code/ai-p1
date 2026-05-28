@@ -38,12 +38,16 @@ export const dashboardMetrics = [
 
 export const sdkInstallSnippet = `pnpm add @qentrah/auth-sdk
 
-import { createOidcClient } from "@qentrah/auth-sdk/client";
+import { createQentrahPartnerAuthHandlers } from "@qentrah/auth-sdk/partner/next";
 
-export const qentrah = createOidcClient({
-  issuer: process.env.QENTRAH_ISSUER!,
+export const qentrahAuth = createQentrahPartnerAuthHandlers({
+  workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL!,
   clientId: process.env.QENTRAH_CLIENT_ID!,
-  redirectUri: "/oauth/callback",
+  clientSecret: process.env.QENTRAH_CLIENT_SECRET,
+  redirectUri: \`\${process.env.PARTNER_APP_URL}/api/qentrah/oauth/callback\`,
+  scopes: ["organization:read", "client:read"],
+  sessionStore,
+  tokenStore,
 });`;
 
 export const quickStartCards = [

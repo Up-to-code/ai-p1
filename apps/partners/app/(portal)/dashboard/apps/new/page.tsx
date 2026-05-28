@@ -23,8 +23,10 @@ export default async function NewAppPage() {
       
       <div>
         <p className="text-xs font-bold uppercase text-primary">New app</p>
-        <h1 className="mt-2 text-3xl font-bold text-foreground">Create application</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Register credentials, callback URLs, and scopes for review.</p>
+        <h1 className="mt-2 text-3xl font-bold text-foreground">Create integration app</h1>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+          Register the app profile, debug callback, sandbox scopes, Workspace contract, and production review links in one flow.
+        </p>
       </div>
       
       <div className="max-w-7xl">

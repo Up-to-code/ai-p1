@@ -1,83 +1,91 @@
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, Bot, CheckCircle2, FileCheck, KeyRound, Send, ShieldCheck, Workflow } from "lucide-react";
+import { ArrowRight, Bot } from "lucide-react";
 import { codeToHtml } from "shiki";
-import { brandLabel, brandRoutePath } from "@qentrah/brand-identity";
+import { brandRoutePath } from "@qentrah/brand-identity";
 
-const brand = brandLabel("en");
 const oauthCallbackPath = brandRoutePath("oauthCallback");
 
-const heroCode = `const qentrah = createPartnerConsole({
-  clientId: "partners_client_...",
-  redirectUri: "https://app.example.com${oauthCallbackPath}",
-  scopes: ["organization:read", "client:read"],
+const heroCode = `import { createQentrahPartnerAuthHandlers } from "@qentrah/auth-sdk/partner/next";
+
+export const handlers = createQentrahPartnerAuthHandlers({
+  clientId: process.env.QENTRAH_CLIENT_ID,
+  clientSecret: process.env.QENTRAH_CLIENT_SECRET,
+  workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL,
+  appBaseUrl: process.env.PARTNER_APP_URL,
+  redirectUri: \`\${process.env.PARTNER_APP_URL}${oauthCallbackPath}\`,
+  scopes: ["client:read", "property:read", "task:create"],
+  tokenStore
 });
 
-await qentrah.authorizeWorkspace();
-const clients = await qentrah.clients.list();`;
+export const GET = handlers.start;`;
 
-const partnerSteps = [
-  ["Draft", "Add your app URL, callback, and requested scopes."],
-  ["Review", "Qentrah checks consent, token handling, and least-privilege access."],
-  ["Launch", "Approved apps become available for workspace authorization."],
-];
+const platformPillars = [
+  {
+    eyebrow: "01 / Consent Lifecycle",
+    title: "Server-first OAuth with PKCE",
+    description: "Start authorization from your backend, send the admin through Workspace consent, and keep authorization codes, refresh tokens, and client secrets out of browser JavaScript.",
+    bullets: ["Backend start route", "Workspace consent", "Server-side token store"],
+    code: `import { createQentrahPartnerAuthHandlers } from "@qentrah/auth-sdk/partner/next";
 
-const integrationExamples = [
+export const handlers = createQentrahPartnerAuthHandlers({
+  clientId: process.env.QENTRAH_CLIENT_ID,
+  workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL,
+  scopes: ["client:read", "property:read"],
+  tokenStore,
+});`,
+  },
   {
-    icon: ShieldCheck,
-    eyebrow: "Permissions",
-    title: "Ask for only what the workflow needs.",
-    description: "Keep consent clean with small, readable scopes. Organization owners see the exact access request before approving your app.",
-    bullets: ["Start read-only", "Explain each scope", "Add write access later"],
-    code: `const access = await qentrah.permissions.request({
+    eyebrow: "02 / Workspace APIs",
+    title: "Scoped resource reads and writes",
+    description: "Call Workspace partner APIs from trusted backend code after consent. Qentrah validates organization, client, audience, expiry, revocation, and resource scopes on every request.",
+    bullets: ["Bearer tokens only", "Organization-scoped routes", "Resource/action checks"],
+    code: `import { createQentrahServiceAppClient } from "@qentrah/auth-sdk/partner/service-app";
+
+const qentrah = createQentrahServiceAppClient({ tokenStore });
+
+const clients = await qentrah.read({
   organizationId,
-  scopes: ["organization:read", "client:read"],
-  reason: "Show CRM contacts inside your dashboard",
+  resource: "client",
+  input: { status: "active" },
 });`,
   },
   {
-    icon: Workflow,
-    eyebrow: "Webhooks",
-    title: "Listen for workspace changes without polling.",
-    description: "Subscribe to the events your product uses. Store the signing secret on your backend and verify every inbound payload.",
-    bullets: ["Client updates", "Project changes", "Signed payloads"],
-    code: `await qentrah.webhooks.create({
-  url: "https://app.example.com/qentrah/webhook",
-  events: ["client.updated", "project.created"],
+    eyebrow: "03 / System AI",
+    title: "Qentrah system AI operator",
+    description: "Use the Partners MCP link to let your internal agent inspect app status, update drafts, read sandbox evidence, and submit review requests inside the same permission model as the portal.",
+    bullets: ["Partners MCP link", "Tool-scoped access", "Sandbox evidence"],
+    code: `{
+  "mcpServers": {
+    "qentrah-partners": {
+      "url": "https://partners.qentrah.com/api/mcp/partner/PUBLIC_ID/SECRET"
+    }
+  }
+}`,
+  },
+  {
+    eyebrow: "04 / Event Outbox",
+    title: "Verified webhook handlers",
+    description: "Receive Qentrah events through a raw-body verified webhook route. Payload signatures are checked before JSON parsing so partner apps can safely react to client and property changes.",
+    bullets: ["Raw-body verification", "Signed delivery headers", "Backend event handling"],
+    code: `import { createQentrahWebhookHandler } from "@qentrah/auth-sdk/partner/webhooks";
+
+export const POST = createQentrahWebhookHandler({
+  secret: process.env.QENTRAH_WEBHOOK_SECRET,
+  async onEvent(event) {
+    await syncWorkspaceEvent(event);
+  },
 });`,
   },
   {
-    icon: Bot,
-    eyebrow: "MCP",
-    title: "Ready for AI agents and operator workflows.",
-    description: "Expose approved tools through MCP so AI assistants can work with Qentrah data using the same reviewed permissions as your app.",
-    bullets: ["Agent-ready tools", "Reviewed permissions", "Workspace context"],
-    code: `await qentrah.mcp.connect({
-  organizationId,
-  tools: ["clients.search", "tasks.create"],
-  mode: "reviewed",
-});`,
-  },
-  {
-    icon: KeyRound,
-    eyebrow: "Clean data",
-    title: "Read normalized workspace records.",
-    description: "Use reviewed access to read clients, projects, tasks, and calendar data in a predictable shape that is safe to display.",
-    bullets: ["Stable resource IDs", "Scoped organization data", "Server-side token use"],
-    code: `const clients = await qentrah.clients.list({
-  organizationId,
-  fields: ["name", "phone", "owner", "stage"],
-});`,
-  },
-  {
-    icon: Send,
-    eyebrow: "Review",
-    title: "Submit the same app when it is ready.",
-    description: "When local testing works, send the draft to review with notes that explain your product, data use, and webhook lifecycle.",
-    bullets: ["Review notes", "Callback checks", "Runtime sync"],
-    code: `await qentrah.apps.submitForReview({
-  appId,
-  notes: "CRM sync for approved sales teams.",
-});`,
+    eyebrow: "05 / Catalog Review",
+    title: "Draft, sandbox, submit",
+    description: "Register redirect URIs, request the smallest useful scope set, test against sandbox organizations, then submit the app for review from the partner dashboard.",
+    bullets: ["Redirect URI checks", "Sandbox API explorer", "Review-state tracking"],
+    code: `POST /api/v1/partner/organizations/<sandbox_org>/clients
+Authorization: Bearer <sandbox_access_token>
+Content-Type: application/json
+
+{ "name": "Riyadh buyer", "status": "active" }`,
   },
 ];
 
@@ -86,7 +94,7 @@ function codeTransformers() {
     {
       pre(node: { properties: Record<string, unknown> }) {
         node.properties.style = "";
-        node.properties.class = "m-0 min-w-max bg-transparent p-5 text-xs leading-6";
+        node.properties.class = "m-0 min-w-max bg-transparent p-5 text-[11px] leading-relaxed";
       },
       code(node: { properties: Record<string, unknown> }) {
         node.properties.class = "font-mono";
@@ -108,8 +116,9 @@ export default async function LandingPage() {
       transformers: codeTransformers(),
     }),
   ]);
+  
   const highlightedIntegrationExamples = await Promise.all(
-    integrationExamples.map(async ({ code }) => {
+    platformPillars.map(async ({ code }) => {
       const [light, dark] = await Promise.all([
         codeToHtml(code, {
           lang: "typescript",
@@ -126,169 +135,172 @@ export default async function LandingPage() {
     }),
   );
 
+  const formattedExamples = platformPillars.map((item, index) => ({
+    eyebrow: item.eyebrow,
+    title: item.title,
+    description: item.description,
+    bullets: item.bullets,
+    code: item.code,
+    highlightedCode: highlightedIntegrationExamples[index],
+  }));
+
   return (
-    <main className="overflow-hidden">
-      <section className="hero-grid-bg relative border-b border-border px-5 py-14 lg:py-20">
-        <div className="absolute inset-x-0 top-0 -z-10 h-[540px] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--primary)_12%,transparent),transparent)]" />
-        <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(480px,1.05fr)]">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-xs font-bold text-primary">
-              <BadgeCheck className="size-4" />
-              Reviewed partner access
+    <main className="min-h-screen bg-background text-foreground antialiased overflow-x-hidden selection:bg-primary/20 selection:text-primary-foreground dark:selection:text-white">
+      <section className="relative border-b border-zinc-200/70 px-5 py-16 dark:border-zinc-900/70 sm:px-6 md:py-20 lg:py-24 hero-grid-bg">
+        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[560px] bg-[radial-gradient(90%_50%_at_12%_0%,color-mix(in_srgb,var(--primary)_14%,transparent),transparent_62%)]" />
+
+        <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(460px,1.1fr)] lg:gap-14">
+          <div className="space-y-7">
+            <div className="max-w-3xl space-y-5">
+              <p className="text-[11px] font-black uppercase text-primary">Qentrah Partners</p>
+              <h1 className="text-balance text-5xl font-black leading-[0.98] tracking-tight text-zinc-950 dark:text-zinc-50 md:text-6xl xl:text-7xl">
+                Integrate with the source of record.
+              </h1>
+              <p className="max-w-2xl text-base font-medium leading-7 text-zinc-600 dark:text-zinc-400 md:text-lg">
+                Build partner apps that authorize through Workspace, call organization-scoped APIs, and expose tools to the system AI.
+              </p>
             </div>
-            <h1 className="mt-6 max-w-4xl text-balance text-[44px] font-bold leading-[0.98] text-foreground md:text-[76px]">
-              Build partner apps for {brand} workspaces.
-            </h1>
-            <p className="mt-6 max-w-2xl text-[16px] font-medium leading-8 text-muted-foreground">
-              Register OAuth clients, request scoped organization access, and give customers a clear, reviewed path to connect your product.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/signup" style={{ color: "#ffffff" }} className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#0e1726] px-6 text-sm font-bold transition-colors hover:bg-[#1c2a3d] dark:bg-[#0e1726] dark:hover:bg-[#1c2a3d]">
-                Become a partner
+
+            <div className="flex max-w-md flex-col gap-3 sm:flex-row">
+              <Link
+                href="/signup"
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-extrabold !text-white transition-colors hover:bg-primary/90 sm:w-auto"
+              >
+                Create app
                 <ArrowRight className="size-4" />
               </Link>
-              <Link href="/docs/oauth-flow" className="inline-flex h-12 items-center justify-center rounded-full border border-border bg-card px-6 text-sm font-bold text-foreground transition-colors hover:bg-muted">
-                Read OAuth guide
+              <Link
+                href="/docs"
+                className="inline-flex h-12 w-full items-center justify-center rounded-full border border-zinc-300 bg-background px-6 text-sm font-bold text-foreground transition-colors hover:bg-muted dark:border-zinc-800 sm:w-auto"
+              >
+                Read the docs
               </Link>
             </div>
           </div>
 
-          <div className="grid gap-4">
-            <div className="code-zone-shadow overflow-hidden rounded-[14px] border border-[#d0d7de] bg-[#ffffff] dark:border-[#30363d] dark:bg-[#0d1117]">
-              <div className="flex items-center justify-between border-b border-[#d0d7de] bg-[#f6f8fa] px-4 py-3 dark:border-[#30363d] dark:bg-[#161b22]">
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="hidden items-center gap-1.5 sm:flex" aria-hidden="true">
-                    <span className="size-3 rounded-full bg-[#ff5f56]" />
-                    <span className="size-3 rounded-full bg-[#ffbd2e]" />
-                    <span className="size-3 rounded-full bg-[#27c93f]" />
-                  </div>
-                  <span className="truncate text-xs font-bold text-[#57606a] dark:text-[#8b949e]">qentrah-partner-demo</span>
-                </div>
-                <span className="rounded-[6px] border border-primary/30 bg-primary/10 px-2 py-1 text-[10px] font-bold uppercase text-primary dark:border-[#1f6feb]/50 dark:bg-[#1f6feb]/15 dark:text-[#58a6ff]">
-                  live preview
-                </span>
+          <div className="relative">
+            <div className="absolute -inset-5 -z-10 rounded-[2rem] bg-[radial-gradient(circle_at_70%_20%,color-mix(in_srgb,var(--primary)_18%,transparent),transparent_58%)]" />
+            <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_24px_80px_rgba(14,23,38,0.10)] dark:border-zinc-800 dark:bg-[#07090c]/95 dark:shadow-none">
+              <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 px-5 py-3 text-[10px] font-black uppercase text-zinc-400 dark:border-zinc-800 dark:bg-zinc-900/35 dark:text-zinc-500">
+                <span>oauth-start.ts</span>
+                <span className="rounded bg-primary/10 px-2 py-0.5 text-[9px] text-primary">Auth SDK</span>
               </div>
-              <div className="flex border-b border-[#d0d7de] bg-[#ffffff] dark:border-[#30363d] dark:bg-[#0d1117]">
-                <div className="border-r border-[#d0d7de] bg-[#f6f8fa] px-4 py-2 font-mono text-xs font-semibold text-[#24292f] dark:border-[#30363d] dark:bg-[#161b22] dark:text-[#c9d1d9]">
-                  authorize-with-qentrah.ts
-                </div>
-                <div className="hidden px-4 py-2 font-mono text-xs text-[#57606a] dark:text-[#8b949e] sm:block">oauth-callback.ts</div>
-              </div>
-              <div className="grid grid-cols-[44px_minmax(0,1fr)] bg-[#ffffff] dark:bg-[#0d1117]">
-                <div className="select-none border-r border-[#d0d7de] bg-[#f6f8fa] py-5 text-right font-mono text-xs leading-6 text-[#8c959f] dark:border-[#30363d] dark:bg-[#0d1117] dark:text-[#6e7681]">
-                  {Array.from({ length: 9 }, (_, index) => (
-                    <div key={index} className="pr-3">{index + 1}</div>
-                  ))}
-                </div>
-                <div aria-label="Light mode TypeScript OAuth example" className="overflow-auto bg-[#ffffff] text-[#24292f] dark:hidden [&_pre]:bg-transparent [&_pre]:font-mono [&_pre]:text-xs" dangerouslySetInnerHTML={{ __html: highlightedHeroCodeLight }} />
-                <div aria-label="Dark mode TypeScript OAuth example" className="hidden overflow-auto bg-[#0d1117] text-[#c9d1d9] dark:block [&_pre]:bg-transparent [&_pre]:font-mono [&_pre]:text-xs" dangerouslySetInnerHTML={{ __html: highlightedHeroCodeDark }} />
-              </div>
-              <div className="flex items-center justify-between border-t border-[#d0d7de] bg-[#f6f8fa] px-4 py-2 text-[11px] font-semibold text-[#57606a] dark:border-[#30363d] dark:bg-[#161b22] dark:text-[#8b949e]">
-                <span>TypeScript</span>
-                <span>reviewed OAuth flow</span>
-              </div>
-            </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
-              {partnerSteps.map(([label, text]) => (
-                <div key={label} className="rounded-[10px] border border-border bg-card p-4">
-                  <p className="text-sm font-bold text-foreground">{label}</p>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{text}</p>
-                </div>
-              ))}
+              <div className="overflow-auto p-6 font-mono text-[11px] leading-relaxed">
+                <div
+                  aria-label="Light mode TypeScript OAuth example"
+                  className="block overflow-auto dark:hidden [&_pre]:m-0 [&_pre]:bg-transparent [&_pre]:p-0 [&_pre]:font-mono [&_pre]:text-xs [&_pre]:leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: highlightedHeroCodeLight }}
+                />
+                <div
+                  aria-label="Dark mode TypeScript OAuth example"
+                  className="hidden overflow-auto dark:block [&_pre]:m-0 [&_pre]:bg-transparent [&_pre]:p-0 [&_pre]:font-mono [&_pre]:text-xs [&_pre]:leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: highlightedHeroCodeDark }}
+                />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section aria-labelledby="partner-overview" className="px-5 py-14">
-        <div className="mx-auto max-w-7xl space-y-10">
-          <div className="max-w-3xl">
-            <p className="text-xs font-bold uppercase text-primary">Integration examples</p>
-            <h2 id="partner-overview" className="mt-3 text-3xl font-bold leading-tight text-foreground md:text-4xl">Five building blocks for a reviewed partner app.</h2>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground">
-              Each section pairs plain text with a small code example, so developers can see how permissions, webhooks, MCP, clean data, and review fit together.
+      <section aria-labelledby="partner-overview" className="relative border-b border-zinc-200/70 bg-white px-5 py-20 dark:border-zinc-900/70 dark:bg-zinc-950 sm:px-6 md:py-28">
+        <div className="mx-auto max-w-7xl space-y-28 md:space-y-36">
+          <div className="max-w-3xl space-y-4">
+            <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-black uppercase text-primary">
+              Core Capabilities
+            </span>
+            <h2 id="partner-overview" className="text-4xl md:text-5xl font-extrabold leading-tight text-zinc-900 dark:text-white tracking-tight">
+              Platform specifications. Built for engineers.
+            </h2>
+            <p className="text-base text-zinc-600 dark:text-zinc-400 max-w-xl font-medium leading-relaxed">
+              Explore the five concrete integration surfaces used by the portal, docs, SDK examples, sandbox, and MCP operator.
             </p>
           </div>
 
-          <div className="space-y-6">
-            {integrationExamples.map(({ icon: Icon, eyebrow, title, description, bullets, code }, index) => {
-              const reverse = index % 2 === 1;
-              const highlightedCode = highlightedIntegrationExamples[index];
+          <div className="space-y-28 md:space-y-40">
+            {formattedExamples.map((item, index) => {
+              const isEven = index % 2 === 0;
               return (
-                <article key={title} className="grid items-stretch gap-4 lg:grid-cols-2">
-                  <div className={`rounded-[14px] border border-border bg-card p-6 md:p-7 ${reverse ? "lg:order-2" : ""}`}>
-                    <div className="flex items-center gap-3">
-                      <div className="flex size-10 items-center justify-center rounded-[10px] bg-primary/10 text-primary">
-                        <Icon aria-hidden="true" className="size-5" />
-                      </div>
-                      <div className="flex min-w-0 items-center gap-3">
-                        <div>
-                          <p className="text-xs font-bold uppercase text-primary">{eyebrow}</p>
-                          <p className="text-xs font-semibold text-muted-foreground">Example {index + 1}</p>
-                        </div>
-                      </div>
-                    </div>
-                    <h3 className="mt-6 text-2xl font-bold leading-tight text-foreground">{title}</h3>
-                    <p className="mt-3 text-sm leading-7 text-muted-foreground">{description}</p>
-                    <div className="mt-5 grid gap-2 sm:grid-cols-3">
-                      {bullets.map((item) => (
-                        <div key={item} className="flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-xs font-bold text-foreground">
-                          <CheckCircle2 aria-hidden="true" className="size-3.5 shrink-0 text-primary" />
-                          {item}
+                <div 
+                  key={item.title} 
+                  className={`grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center`}
+                >
+                  <div className={`space-y-6 lg:col-span-5 ${isEven ? "lg:order-1" : "lg:order-2"}`}>
+                    <span className="text-xs font-black uppercase tracking-widest text-primary">
+                      {item.eyebrow}
+                    </span>
+                    <h3 className="text-3xl font-extrabold leading-tight text-zinc-900 dark:text-white tracking-tight font-sans">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 font-medium">
+                      {item.description}
+                    </p>
+                    
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {item.bullets.map((bullet) => (
+                        <div
+                          key={bullet}
+                          className="flex items-center gap-1.5 rounded-full border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/40 px-3 py-1.5 text-[10px] font-bold text-zinc-600 dark:text-zinc-300"
+                        >
+                          <span className="size-1 rounded-full bg-primary" />
+                          {bullet}
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  <div className={`code-zone-shadow overflow-hidden rounded-[14px] border border-[#d0d7de] bg-[#ffffff] dark:border-[#30363d] dark:bg-[#0d1117] ${reverse ? "lg:order-1" : ""}`}>
-                    <div className="flex items-center justify-between border-b border-[#d0d7de] bg-[#f6f8fa] px-4 py-3 dark:border-[#30363d] dark:bg-[#161b22]">
-                      <div className="flex min-w-0 items-center gap-3">
-                        <div className="hidden items-center gap-1.5 sm:flex" aria-hidden="true">
-                          <span className="size-3 rounded-full bg-[#ff5f56]" />
-                          <span className="size-3 rounded-full bg-[#ffbd2e]" />
-                          <span className="size-3 rounded-full bg-[#27c93f]" />
-                        </div>
-                        <span className="truncate font-mono text-xs font-semibold text-[#57606a] dark:text-[#8b949e]">{eyebrow.toLowerCase()}.ts</span>
+                  <div className={`lg:col-span-7 ${isEven ? "lg:order-2" : "lg:order-1"}`}>
+                    <div className="relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#07090c]/90 text-[11px] font-mono leading-relaxed">
+                      <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/30 px-4 py-2.5 text-[9px] text-zinc-400 dark:text-zinc-500 uppercase tracking-widest font-black">
+                        <span>{item.eyebrow.toLowerCase().replace(" ", "").split("/")[1]?.trim() || "sdk-helper"}.ts</span>
+                        <span>TypeScript SDK</span>
                       </div>
-                      <span className="rounded-[6px] border border-primary/30 bg-primary/10 px-2 py-1 text-[10px] font-bold uppercase text-primary dark:border-[#1f6feb]/50 dark:bg-[#1f6feb]/15 dark:text-[#58a6ff]">syntax</span>
-                    </div>
-                    <div className="flex border-b border-[#d0d7de] bg-[#ffffff] dark:border-[#30363d] dark:bg-[#0d1117]">
-                      <div className="border-r border-[#d0d7de] bg-[#f6f8fa] px-4 py-2 font-mono text-xs font-semibold text-[#24292f] dark:border-[#30363d] dark:bg-[#161b22] dark:text-[#c9d1d9]">
-                        {eyebrow.toLowerCase()}.ts
+                      
+                      <div className="p-5 overflow-auto max-h-[220px] scrollbar-thin">
+                        <div 
+                          dangerouslySetInnerHTML={{ __html: item.highlightedCode.light }} 
+                          className="block dark:hidden [&_pre]:bg-transparent [&_pre]:p-0 [&_pre]:m-0 [&_pre]:font-mono [&_pre]:text-xs [&_pre]:leading-relaxed"
+                        />
+                        <div 
+                          dangerouslySetInnerHTML={{ __html: item.highlightedCode.dark }} 
+                          className="hidden dark:block [&_pre]:bg-transparent [&_pre]:p-0 [&_pre]:m-0 [&_pre]:font-mono [&_pre]:text-xs [&_pre]:leading-relaxed"
+                        />
                       </div>
-                      <div className="hidden px-4 py-2 font-mono text-xs text-[#57606a] dark:text-[#8b949e] sm:block">review-notes.md</div>
-                    </div>
-                    <div className="grid grid-cols-[44px_minmax(0,1fr)] bg-[#ffffff] dark:bg-[#0d1117]">
-                      <div className="select-none border-r border-[#d0d7de] bg-[#f6f8fa] py-5 text-right font-mono text-xs leading-6 text-[#8c959f] dark:border-[#30363d] dark:bg-[#0d1117] dark:text-[#6e7681]">
-                        {code.split("\n").map((_, lineIndex) => (
-                          <div key={lineIndex} className="pr-3">{lineIndex + 1}</div>
-                        ))}
-                      </div>
-                      <div className="overflow-auto bg-[#ffffff] text-[#24292f] dark:hidden [&_pre]:bg-transparent [&_pre]:font-mono [&_pre]:text-xs" dangerouslySetInnerHTML={{ __html: highlightedCode?.light ?? "" }} />
-                      <div className="hidden overflow-auto bg-[#0d1117] text-[#c9d1d9] dark:block [&_pre]:bg-transparent [&_pre]:font-mono [&_pre]:text-xs" dangerouslySetInnerHTML={{ __html: highlightedCode?.dark ?? "" }} />
-                    </div>
-                    <div className="flex items-center justify-between border-t border-[#d0d7de] bg-[#f6f8fa] px-4 py-2 text-[11px] font-semibold text-[#57606a] dark:border-[#30363d] dark:bg-[#161b22] dark:text-[#8b949e]">
-                      <span>TypeScript</span>
-                      <span>{eyebrow.toLowerCase()} example</span>
                     </div>
                   </div>
-                </article>
+
+                </div>
               );
             })}
           </div>
         </div>
       </section>
 
-      <section className="border-t border-border px-5 py-14 text-center">
-        <FileCheck aria-hidden="true" className="mx-auto size-6 text-primary" />
-        <h2 className="mx-auto mt-5 max-w-2xl text-3xl font-bold leading-tight text-foreground">Start with one callback and a reviewed scope request.</h2>
-        <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-muted-foreground">
-          Create the draft, test locally, then submit when your authorization flow is ready for review.
-        </p>
-        <Link href="/signup" className="mt-7 inline-flex h-12 items-center justify-center rounded-full bg-primary px-6 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90">
-          Create partner account
-        </Link>
+      <section className="relative overflow-hidden bg-zinc-50 px-5 py-24 text-center dark:bg-[#07090c] sm:px-6 md:py-32">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-96 bg-[radial-gradient(ellipse_120%_60%_at_50%_100%,color-mix(in_srgb,var(--primary)_10%,transparent),transparent_60%)]" />
+        
+        <div className="mx-auto max-w-4xl space-y-8 relative z-10">
+          <div className="mx-auto size-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 text-primary">
+            <Bot className="size-6" />
+          </div>
+          
+          <h2 className="text-4xl md:text-6xl font-extrabold leading-none text-zinc-900 dark:text-white tracking-tight">
+            Build the integration. Let system AI operate it.
+          </h2>
+          
+          <p className="mx-auto max-w-xl text-lg text-zinc-600 dark:text-zinc-400 font-medium leading-relaxed">
+            Register a partner app, wire the real SDK routes, test sandbox resource APIs, then create a Partners MCP link for your internal operator.
+          </p>
+          
+          <div className="pt-4 flex justify-center">
+            <Link
+              href="/signup"
+              className="inline-flex h-14 items-center justify-center rounded-full bg-zinc-950 dark:bg-zinc-50 px-10 text-sm font-extrabold transition-all duration-300 hover:bg-zinc-800 dark:hover:bg-zinc-200 active:scale-[0.98] !text-zinc-50 dark:!text-zinc-950"
+            >
+              Create Developer App
+            </Link>
+          </div>
+        </div>
       </section>
     </main>
   );

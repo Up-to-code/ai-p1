@@ -108,9 +108,16 @@ model PartnerApp {
   clientSecretHash              String?
   name                          String
   publisherName                 String
+  description                   String   @default("Partner integration managed in Qentrah Partners.")
+  appCategory                   String   @default("operations")
+  integrationMode               String   @default("sandbox")
+  supportEmail                  String?
   homepageUrl                   String?
   iconUrl                       String?
   logoUrl                       String?
+  webhookUrl                    String?
+  privacyPolicyUrl              String?
+  termsOfServiceUrl             String?
   clientType                    String
   redirectUris                  String[]
   allowedScopes                 String[]

@@ -19,7 +19,7 @@ type UploadThingFile = File & { uri?: string; attachmentId?: string };
 
 const { uploadFiles } = genUploader<any>({
   url: buildWorkspaceApiUrl("/api/uploadthing"),
-  package: "qentrah-mobile",
+  package: "qentrah",
   fetch: (input, init) => {
     if (typeof input === "string" && input.startsWith("file:")) {
       return fetch(input, init);

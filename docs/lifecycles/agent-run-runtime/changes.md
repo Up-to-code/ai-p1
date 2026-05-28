@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-05-28 Enterprise Agent Safety Gateway
+
+- Added a shared Agent tool policy gateway for in-product agent tool calls and MCP agent-link calls.
+- Extended tool metadata with risk level, approval requirement, and data sensitivity so policy decisions are explicit instead of inferred from tool names alone.
+- In-product agent writes now route through the approval policy: ordinary write actions require user approval, while high-impact organization/member/role/destructive actions require admin approval.
+- Preserved encrypted Agent message, confirmation input, memory, and tool-preview storage while keeping model-visible previews redacted.
+
 ## 2026-05-28 Mobile Thread History Presentation Depth
 
 - Added a Mobile thread history presentation Module so the Threads screen no longer owns title fallback or thread timestamp/date label selection inline.

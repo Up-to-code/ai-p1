@@ -7,7 +7,12 @@ describe("partner portal schemas", () => {
     const parsed = partnerAppFormSchema.parse({
       name: "Partner CRM",
       publisherName: "Acme",
+      description: "Sync buyer records into Qentrah Workspace for the sales team.",
+      appCategory: "crm",
+      integrationMode: "debug",
+      supportEmail: "support@partner.example.com",
       homepageUrl: "https://partner.example.com",
+      webhookUrl: "https://partner.example.com/api/qentrah/webhooks",
       clientType: "public",
       redirectUris: "https://app.example.com/oauth/callback\nhttp://localhost:3000/callback",
       allowedScopes: "client:read\nproperty:read",
@@ -18,6 +23,10 @@ describe("partner portal schemas", () => {
       "http://localhost:3000/callback",
     ]);
     expect(parsed.homepageUrl).toBe("https://partner.example.com");
+    expect(parsed.appCategory).toBe("crm");
+    expect(parsed.integrationMode).toBe("debug");
+    expect(parsed.supportEmail).toBe("support@partner.example.com");
+    expect(parsed.webhookUrl).toBe("https://partner.example.com/api/qentrah/webhooks");
     expect(parsed.allowedScopes).toEqual(["client:read", "property:read"]);
   });
 
@@ -26,6 +35,7 @@ describe("partner portal schemas", () => {
       partnerAppFormSchema.parse({
         name: "P",
         publisherName: "A",
+        description: "too short",
         homepageUrl: "https://partner.example.com",
         clientType: "public",
         redirectUris: "http://evil.example/callback",
@@ -39,6 +49,7 @@ describe("partner portal schemas", () => {
       partnerAppFormSchema.parse({
         name: "Partner CRM",
         publisherName: "Acme",
+        description: "Sync buyer records into Qentrah Workspace for the sales team.",
         homepageUrl: "https://partner.example.com",
         clientType: "public",
         redirectUris: "https://app.example.com/oauth/callback",

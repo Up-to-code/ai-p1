@@ -1,3 +1,5 @@
+const brandPrimary = "#0b5cff";
+
 export const darkColors = {
   background: "#000000",
   backgroundSoft: "#0A0A0A",
@@ -7,8 +9,9 @@ export const darkColors = {
   textPrimary: "#FFFFFF",
   textSecondary: "#A3A3A3",
   textMuted: "#737373",
-  accent: "#0B5CFF",
+  accent: brandPrimary,
   success: "#22C55E",
+  danger: "#EF4444",
   border: "rgba(255,255,255,0.1)",
 };
 
@@ -21,8 +24,9 @@ export const lightColors = {
   textPrimary: "#000000",
   textSecondary: "#52525B",
   textMuted: "#A1A1AA",
-  accent: "#0B5CFF",
+  accent: brandPrimary,
   success: "#16A34A",
+  danger: "#DC2626",
   border: "rgba(0,0,0,0.05)",
 };
 

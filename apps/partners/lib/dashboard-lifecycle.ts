@@ -60,6 +60,10 @@ export function syncTone(app: PartnerAppSummary) {
 }
 
 export function nextStepFor(app: PartnerAppSummary) {
+  if (app.integrationMode === "integrate") return "Wire the SDK button, callback route, and token storage.";
+  if (app.integrationMode === "debug") return "Debug OAuth state, PKCE, redirect URIs, and callback errors.";
+  if (app.integrationMode === "sandbox") return "Run sandbox OAuth and collect request-log evidence.";
+  if (app.integrationMode === "workspace" && app.status !== "active") return "Submit for review before Workspace authorization.";
   if (app.status === "draft") return "Finish redirect URIs and submit for review.";
   if (app.workspaceSyncStatus === "failed") return "Runtime sync failed. Admin approval will retry it.";
   if (app.status === "pending_review") return "Waiting for admin review.";
@@ -71,4 +75,12 @@ export function nextStepFor(app: PartnerAppSummary) {
 
 export function clientTypeLabel(app: PartnerAppSummary) {
   return app.clientType === "public" ? "Public PKCE" : "Confidential";
+}
+
+export function integrationModeLabel(app: PartnerAppSummary) {
+  if (app.integrationMode === "integrate") return "Integrate";
+  if (app.integrationMode === "debug") return "Debug";
+  if (app.integrationMode === "workspace") return "Workspace";
+  if (app.integrationMode === "production") return "Production";
+  return "Sandbox";
 }

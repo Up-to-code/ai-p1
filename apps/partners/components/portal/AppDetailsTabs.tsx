@@ -20,6 +20,7 @@ import {
   authorizationLifecycleFiles,
   authorizationLifecyclePhases,
 } from "@/lib/authorization-lifecycle";
+import { qentrahAuthSdkJsdelivrUrl } from "@/lib/sdk-version";
 import { cn } from "@/lib/utils";
 import type { SandboxActionState } from "@/app/(portal)/dashboard/actions";
 import type { PartnerAppSummary } from "@/server/partnerApps";
@@ -113,7 +114,7 @@ const serviceApp = createQentrahServiceAppClient({
 
   if (language === "javascript") {
     return `<button id="qentrah-authorize">Authorize with Qentrah</button>
-<script src="https://cdn.jsdelivr.net/npm/@qentrah/auth-sdk@0.1.5/dist/qentrah-auth.js"></script>
+<script src="${qentrahAuthSdkJsdelivrUrl}"></script>
 <script>
   window.QentrahAuth.mountAuthorizeButton({
     buttonId: "qentrah-authorize",
@@ -139,7 +140,7 @@ const handlers = createQentrahPartnerAuthHandlers({
   }
 
   return `# The browser helper can be loaded without npm:
-curl -L "https://cdn.jsdelivr.net/npm/@qentrah/auth-sdk@0.1.5/dist/qentrah-auth.js" -o public/vendor/qentrah/qentrah-auth.js
+curl -L "${qentrahAuthSdkJsdelivrUrl}" -o public/vendor/qentrah/qentrah-auth.js
 
 # Backend calls still use saved server-side tokens:
 curl -X POST "https://app.qentrah.com/api/v1/partner/organizations/<organization-id>/resources/client/create" \\
@@ -201,6 +202,12 @@ export function AppDetailsTabs({
   const selectedCode = useMemo(() => codeFor(app, language), [app, language]);
   const reviewItems = [
     {
+      label: "App description",
+      ready: app.description.trim().length >= 24,
+      detail: app.description || "Describe what the integration does before review.",
+      owner: "Catalog profile",
+    },
+    {
       label: "Callback URL",
       ready: app.redirectUris.length > 0,
       detail: app.redirectUris[0] ?? "Add a redirect URI before review.",
@@ -217,6 +224,24 @@ export function AppDetailsTabs({
       ready: Boolean(app.homepageUrl),
       detail: app.homepageUrl ?? "Add the product URL users will visit.",
       owner: "Review profile",
+    },
+    {
+      label: "Support contact",
+      ready: Boolean(app.supportEmail),
+      detail: app.supportEmail ?? "Add a support email for production follow-up.",
+      owner: "Operations",
+    },
+    {
+      label: "Webhook endpoint",
+      ready: Boolean(app.webhookUrl),
+      detail: app.webhookUrl ?? "Add a webhook endpoint before relying on event delivery.",
+      owner: "Backend events",
+    },
+    {
+      label: "Policy links",
+      ready: Boolean(app.privacyPolicyUrl && app.termsOfServiceUrl),
+      detail: app.privacyPolicyUrl && app.termsOfServiceUrl ? "Privacy policy and terms are set." : "Add privacy policy and terms URLs.",
+      owner: "Production review",
     },
   ];
   const readyCount = reviewItems.filter((item) => item.ready).length;
@@ -251,8 +276,15 @@ export function AppDetailsTabs({
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <InfoBlock label="App name" value={app.name} />
               <InfoBlock label="Publisher" value={app.publisherName} />
+              <InfoBlock label="Description" value={app.description} wide />
+              <InfoBlock label="Category" value={app.appCategory} />
+              <InfoBlock label="Integration mode" value={app.integrationMode} />
+              <InfoBlock label="Support email" value={app.supportEmail ?? "Not set"} />
               <InfoBlock label="Partner URL" value={app.homepageUrl ?? "Not set"} />
               <InfoBlock label="Icon URL" value={app.iconUrl ?? app.logoUrl ?? "Not set"} />
+              <InfoBlock label="Webhook URL" value={app.webhookUrl ?? "Not set"} wide />
+              <InfoBlock label="Privacy policy" value={app.privacyPolicyUrl ?? "Not set"} />
+              <InfoBlock label="Terms of service" value={app.termsOfServiceUrl ?? "Not set"} />
               <InfoBlock label="Client type" value={app.clientType === "public" ? "Public PKCE" : "Confidential"} />
               <InfoBlock label="Authorization lifetime" value={`${app.authorizationExpiresAfterDays} days`} />
             </div>

@@ -12,6 +12,8 @@ type ExpoExtra = {
   mobileEnvironment?: string;
 };
 
+const productionWorkspaceUrl = "https://app.qentrah.com";
+
 function getExpoExtra() {
   return (Constants.expoConfig?.extra ?? {}) as ExpoExtra;
 }
@@ -41,7 +43,7 @@ export function getAuthUrl() {
   return normalizeRuntimeUrl(
     normalizeUrlEnvValue(getExpoExtra().authUrl) ||
     normalizeUrlEnvValue(process.env.EXPO_PUBLIC_AUTH_URL) ||
-    "",
+    productionWorkspaceUrl,
   );
 }
 
@@ -49,7 +51,8 @@ export function getWorkspaceApiUrl() {
   return normalizeRuntimeUrl(
     normalizeUrlEnvValue(getExpoExtra().workspaceApiUrl) ||
     normalizeUrlEnvValue(process.env.EXPO_PUBLIC_WORKSPACE_API_URL) ||
-    getAuthUrl(),
+    getAuthUrl() ||
+    productionWorkspaceUrl,
   );
 }
 

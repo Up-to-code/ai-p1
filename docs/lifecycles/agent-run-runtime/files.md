@@ -8,6 +8,7 @@
 - `apps/workspace/src/server/domains/agents/services/tool-inputs.ts`: Agent tool input Module for schemas, bounded pagination, compact outputs, date ranges, task search filtering, external attachment names, and media kind inference.
 - `apps/workspace/src/server/domains/agents/services/tool-permissions.ts`: Agent tool permission projection Module from Workspace organization capabilities to MCP permissions.
 - `apps/workspace/src/server/domains/agents/services/tool-confirmations.ts`: Agent tool confirmation Module for preview text, confirmation persistence, and confirmation return shape.
+- `apps/workspace/src/server/domains/agents/policies/tool-policy.ts`: shared Agent tool policy gateway for adapter, permission, risk, approval, and deny-by-default decisions.
 - `apps/workspace/src/domains/agents/conversation-runtime.ts`: Client conversation runtime Module for agent attachments and visible message reconciliation.
 - `apps/workspace/src/domains/agents/api/agent-chat-request.ts`: Browser Agent chat request Module for stream request construction, SSE chunk parsing, and HTTP error mapping.
 - `apps/mobile/src/conversation/lib/agentAttachmentPresentation.ts`: Mobile Agent attachment presentation Module for composer and sent-message attachment limits, merge/dedupe, progress projection, removal, upload transition, and failure state.

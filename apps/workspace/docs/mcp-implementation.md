@@ -23,7 +23,11 @@ MCP gives us:
 - **Single point of extension** — adding a new capability means adding one tool, not a new API endpoint
 - **AI-native discoverability** — the AI client lists tools automatically; no documentation needed at runtime
 
-Agent links are organization-scoped API keys. Creating, updating, rotating, and revoking them is platform-admin-only through `PLATFORM_ADMIN_EMAILS`. The raw URL is shown once, and read tools expose only records explicitly marked `visibility: "public"` plus media explicitly marked `shareVisibility: "public"`.
+Agent links are organization-scoped API keys managed from Organization settings by users with the required organization API-key permissions. The raw URL is shown once, and read tools expose only records explicitly marked `visibility: "public"` plus media explicitly marked `shareVisibility: "public"`.
+
+MCP is an adapter, not the security layer. Every MCP tool call passes through Workspace validation, live delegated-permission checks, the Agent tool policy gateway, redaction, and audit handling. External MCP write/delete tools create encrypted approval records and return a confirmation-required response instead of mutating immediately. High-impact actions require admin approval before execution.
+
+The safety model maps to OWASP Agentic AI and Secure MCP guidance by using allowlisted tools, strict input schemas, scoped credentials, deny-by-default policy, read/write separation, human approval for risky actions, encrypted approval inputs, and auditable decisions. It also supports NIST AI RMF, NIST CSF 2.0, NIST Privacy Framework, ISO/IEC 42001, and NIST SP 800-57 control mapping for governance, monitoring, privacy, and key-management review.
 
 The MCP endpoint lives at `/api/mcp` and is protected behind the same Better Auth + organization session that guards the rest of the app.
 

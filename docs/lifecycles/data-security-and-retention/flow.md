@@ -16,6 +16,13 @@ Target flow after this pass:
 5. New project/property/client writes include `isDeleted: false`, and deletes set `isDeleted: true`. Existing rows still need a backfill before reads can rely only on active-record indexes.
 6. Service-token boundaries are separated: admin Convex, Workspace admin API, and Workspace Convex bridge.
 7. Compatibility fields stay only until a data backfill removes legacy partner connection fields.
+8. Agent tool approvals store full inputs encrypted, expose only redacted previews to models/MCP clients, and require user or admin approval before any approved write is executed.
+
+Enterprise agent safety controls:
+1. Agent and MCP tool catalogs declare risk level, approval requirement, and data sensitivity.
+2. The policy gateway denies unknown or incomplete tools by default.
+3. Tool input/output previews are redacted before audit, model-visible, or MCP-visible use.
+4. Admin-impact approvals are separated from ordinary user confirmations and should be reviewed through operator-controlled workflows.
 
 Backfill flow after production hardening:
 1. Admin operator calls `security/backfill:startDataSecurityBackfill` with `ADMIN_CONVEX_SERVICE_TOKEN`, optional target list, and optional batch size.

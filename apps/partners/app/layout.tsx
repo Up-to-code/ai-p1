@@ -7,7 +7,7 @@ import { rootFontClassName } from "@/lib/rootFonts";
 import "fumadocs-ui/style.css";
 import "./globals.css";
 
-const siteName = `${brandProductName("partners", "en")} Programmers`;
+const siteName = brandProductName("partners", "en");
 const siteDescription = `Create, test, and submit ${brandLabel("en")} organization authorization apps.`;
 
 export const metadata: Metadata = {

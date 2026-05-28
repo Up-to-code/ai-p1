@@ -1,24 +1,17 @@
 import type { MetadataRoute } from "next";
-import { brandDomainUrl } from "@qentrah/brand-identity";
 
-const siteUrl = brandDomainUrl("root");
+import { allLocalizedMarketingPaths, localizedLanguages, marketingSitemapPriority } from "@/lib/seo";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
-  return ["/ar", "/en"].map((path) => ({
-    url: `${siteUrl}${path}`,
+  return allLocalizedMarketingPaths().map(({ path, url }) => ({
+    url,
     lastModified: now,
     changeFrequency: "weekly",
-    priority: path === "/ar" ? 1 : 0.9,
+    priority: marketingSitemapPriority(path),
     alternates: {
-      languages: {
-        "ar-SA": `${siteUrl}/ar`,
-        ar: `${siteUrl}/ar`,
-        "en-SA": `${siteUrl}/en`,
-        en: `${siteUrl}/en`,
-        "x-default": `${siteUrl}/ar`,
-      },
+      languages: localizedLanguages(path, true),
     },
   }));
 }

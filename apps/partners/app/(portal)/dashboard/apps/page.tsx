@@ -4,6 +4,7 @@ import { ArrowRight, Boxes, Plus } from "lucide-react";
 import { StatusBadge } from "@/components/brand/StatusBadge";
 import {
   clientTypeLabel,
+  integrationModeLabel,
   nextStepFor,
   syncLabel,
   syncTone,
@@ -27,9 +28,9 @@ export default async function AppsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-bold uppercase text-primary">Applications</p>
-          <h1 className="mt-2 text-3xl font-bold text-foreground">OAuth clients</h1>
+          <h1 className="mt-2 text-3xl font-bold text-foreground">Integration apps</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Review configuration, credentials, sync state, and launch readiness for every partner app.
+            Track each app from SDK integration and debugging through sandbox evidence, Workspace authorization, and production review.
           </p>
         </div>
         <Link href="/dashboard/apps/new" className="inline-flex h-10 items-center justify-center gap-2 rounded-[6px] bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90">
@@ -46,7 +47,7 @@ export default async function AppsPage() {
             <div>
               <h2 className="text-lg font-semibold text-foreground">Create your first app</h2>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                Start with redirect URIs and a minimal scope set, then submit the app for review when its OAuth flow is ready.
+                Start with app information, redirect URIs, and a minimal scope set, then move through sandbox, Workspace, and production review.
               </p>
               <Link href="/dashboard/apps/new" className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-[6px] bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90">
                 <Plus className="h-4 w-4" />
@@ -67,7 +68,9 @@ export default async function AppsPage() {
                 <StatusBadge status={app.status} />
               </div>
               <p className="mt-4 break-all font-mono text-xs text-muted-foreground">{app.clientId ?? "client_id pending"}</p>
+              <p className="mt-3 line-clamp-2 text-sm leading-5 text-muted-foreground">{app.description}</p>
               <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold">
+                <span className="rounded-[999px] border border-border bg-muted px-2.5 py-1 text-primary">{integrationModeLabel(app)}</span>
                 <span className="rounded-[999px] border border-border bg-muted px-2.5 py-1 text-foreground">{clientTypeLabel(app)}</span>
                 <span className={`rounded-[999px] border border-border bg-muted px-2.5 py-1 ${syncTone(app)}`}>{syncLabel(app)}</span>
                 <span className="rounded-[999px] border border-border bg-muted px-2.5 py-1 text-muted-foreground">{app.allowedScopes.length} scopes</span>

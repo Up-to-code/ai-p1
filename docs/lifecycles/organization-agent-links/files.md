@@ -7,6 +7,7 @@
 - `apps/workspace/src/server/domains/mcpConnections/validation/mcp-connection.schema.ts`: request validation for create/update payloads.
 - `apps/workspace/src/server/protocols/mcp/tools/registry-core.ts`: shared MCP/Agent tool registry, adapter membership, permission map, and read-tool declarations.
 - `apps/workspace/src/server/protocols/mcp/tools/catalog.ts`: Hono MCP-facing tool catalog facade filtered through the shared registry.
+- `apps/workspace/src/server/domains/agents/policies/tool-policy.ts`: shared policy gateway for adapter, risk, permission, and approval decisions before MCP execution.
 - `apps/workspace/src/server/domains/agents/services/agent-language.ts`: Agent response language and prompt policy Module.
 - `apps/workspace/src/server/domains/agents/services/tool-adapter.ts`: Agent-facing adapter that opts into the Agent registry surface and confirmation-capable tools.
 - `apps/workspace/convex/mcp/connections.ts`: organization MCP connection persistence, key creation/rotation/revocation, permission checks, and validation.
@@ -15,6 +16,7 @@
 - `apps/workspace/convex/mcp/toolRegistry.ts`: Convex adapter over the shared tool registry for permission checks and read-tool classification.
 - `apps/workspace/convex/mcp/toolCall.ts`: MCP call execution Module for connection validation, usage reservation, and read/write dispatch.
 - `apps/workspace/convex/mcp/tools.ts`: downstream MCP tool execution using validated connection permissions.
+- `apps/workspace/convex/agents/confirmations.ts`: encrypted approval record persistence for external MCP writes and in-product agent confirmations.
 - `apps/workspace/convex/mcp/toolInputs.ts`: MCP tool input Module for input parsing, pagination bounds, resource payload construction, and linked-record assertions.
 - `apps/workspace/convex/mcp/readSurface.ts`: MCP read surface Module for public Workspace record filtering, search projection, paged result presentation, public media ordering, and calendar event ordering.
 - `apps/workspace/convex/workspace/businessData.ts`: shared Workspace business data helpers used by MCP tool execution for record presentation, active-record checks, references, and MCP audit actor fields.

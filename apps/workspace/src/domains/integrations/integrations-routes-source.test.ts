@@ -9,6 +9,13 @@ function readSource(path: string) {
   return readFileSync(resolve(root, path), "utf8");
 }
 
+function getValueAtPath(value: unknown, path: string) {
+  return path.split(".").reduce<unknown>((current, segment) => {
+    if (!current || typeof current !== "object") return undefined;
+    return (current as Record<string, unknown>)[segment];
+  }, value);
+}
+
 describe("web apps route aliases", () => {
   it("keeps web apps as the rendered route and integrations as compatibility redirects", () => {
     expect(readSource("src/app/[locale]/(app)/web-apps/page.tsx")).toContain("IntegrationsScreen");
@@ -21,5 +28,21 @@ describe("web apps route aliases", () => {
     expect(readSource("src/components/layout/sidebar.tsx")).toContain('{ name: "integrations", href: "/web-apps", icon: Plug }');
     expect(readSource("messages/en.json")).toContain('"integrations": "Web Apps"');
     expect(readSource("messages/ar.json")).toContain('"integrations": "تطبيقات الويب"');
+  });
+
+  it("keeps literal integration screen message keys available in English and Arabic", () => {
+    const source = readSource("src/domains/integrations/components/integrations-screen.tsx");
+    const enMessages = JSON.parse(readSource("messages/en.json")) as Record<string, unknown>;
+    const arMessages = JSON.parse(readSource("messages/ar.json")) as Record<string, unknown>;
+    const keys = Array.from(source.matchAll(/\bt(?:\.raw)?\('([^']+)'/g), (match) => match[1])
+      .filter((key): key is string => Boolean(key))
+      .filter((key) => !key.includes("${"));
+
+    expect(keys.length).toBeGreaterThan(0);
+
+    for (const key of new Set(keys)) {
+      expect(getValueAtPath(enMessages, `Integrations.${key}`), key).not.toBeUndefined();
+      expect(getValueAtPath(arMessages, `Integrations.${key}`), key).not.toBeUndefined();
+    }
   });
 });

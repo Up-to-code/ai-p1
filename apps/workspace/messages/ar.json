@@ -19,7 +19,7 @@
   },
   "AutoUi": {
     "The Saudi Arabia Central Real Estate Data Synchronization Engine___": "محرك مزامنة البيانات العقارية المركزي في المملكة العربية السعودية",
-    "© 2026 Qentrah Platform___ All rights reserved___": "© 2026 منصة كانترا. جميع الحقوق محفوظة.",
+    "© 2026 qentrah Platform___ All rights reserved___": "© 2026 منصة كانترا. جميع الحقوق محفوظة.",
     "Sign in to access your real estate data workspace___": "سجل الدخول للوصول إلى مركز البيانات العقارية الخاص بك.",
     "Min___ 8 characters": "الحد الأدنى 8 أحرف",
     "Enter an invite code or use a shared link to join an existing workspace___": "أدخل كود الدعوة أو استخدم رابط المشاركة للانضمام إلى مساحة عمل موجودة.",
@@ -230,6 +230,7 @@
     "clients": "العملاء",
     "calendar": "التقويم",
     "organization": "المؤسسة",
+    "usage": "الاستخدام",
     "billing": "الفوترة",
     "integrations": "تطبيقات الويب",
     "components": "عناصر الواجهة",
@@ -2334,7 +2335,37 @@
     },
     "webhooks": {
       "title": "قياسات الويبهوك",
-      "desc": "مراقبة التسليم الوهمية نشطة."
+      "desc": "مراقبة التسليم الوهمية نشطة.",
+      "activeEndpoints": "نقاط النهاية النشطة",
+      "deliveries": "عمليات التسليم (٢٤ ساعة)",
+      "successRate": "معدل النجاح",
+      "latency": "متوسط وقت الاستجابة",
+      "endpointsTitle": "نقاط نهاية الويبهوك",
+      "addEndpoint": "إضافة نقطة نهاية",
+      "configure": "تكوين",
+      "signingSecret": "سر التوقيع",
+      "hide": "إخفاء",
+      "reveal": "إظهار",
+      "subscribedEvents": "الأحداث المشتركة",
+      "recentDeliveries": "عمليات التسليم الأخيرة",
+      "deliveryId": "معرّف التسليم",
+      "event": "الحدث",
+      "endpoint": "نقطة النهاية",
+      "duration": "وقت الاستجابة",
+      "status": "الحالة",
+      "time": "الوقت",
+      "minsAgo": "قبل {count} دقائق",
+      "hourAgo": "قبل ساعة واحدة",
+      "hoursAgo": "قبل {count} ساعات",
+      "justNow": "الآن",
+      "endpointsData": {
+        "aqar": {
+          "name": "تغذية صادر سوق عقار"
+        },
+        "crm": {
+          "name": "بوابة وارد CRM المؤسسي"
+        }
+      }
     },
     "detail": {
       "notFound": "تطبيق الويب غير موجود",
@@ -2359,6 +2390,189 @@
         "name": "الاسم",
         "status": "الحالة",
         "events": "الأحداث"
+      },
+      "visitPartner": "زيارة موقع الشريك",
+      "notSet": "لم يحدد",
+      "available": "متاح",
+      "overview": "نظرة عامة",
+      "permissionsTitle": "صلاحيات التكامل",
+      "permissionsDescription": "راجع الصلاحيات الدقيقة التي يمكن لهذا التكامل استخدامها قبل ربطه بمساحة العمل.",
+      "videoTitle": "عرض توضيحي مرئي",
+      "accessDetails": "تفاصيل الوصول",
+      "metadataTitle": "بيانات التطبيق",
+      "developer": "المطور",
+      "website": "الموقع",
+      "privacyPolicy": "سياسة الخصوصية",
+      "developerPolicy": "سياسة المطور",
+      "dataPolicy": "سياسة البيانات",
+      "policyStatus": "مطلوب",
+      "managedByQentrah": "تدار وفق سياسة مساحة عمل قنطرة",
+      "configure": "تهيئة التكامل",
+      "pause": "إيقاف المزامنة مؤقتاً",
+      "resume": "استئناف المزامنة",
+      "revoke": "إلغاء الصلاحية",
+      "connect": "ربط التكامل",
+      "unavailable": "غير متوفر",
+      "clientId": "معرّف العميل (Client ID)",
+      "callbackUrl": "رابط إعادة التوجيه",
+      "startUrl": "رابط البدء",
+      "connectionStatus": "حالة الاتصال",
+      "connected": "متصل",
+      "notConnected": "غير متصل",
+      "partnerIntegration": "تكامل macOS",
+      "appDetails": {
+        "icloud": {
+          "category": "تخزين الأصول والمزامنة",
+          "valueProp": "اربط مجلدات Apple iCloud Drive بسلاسة مع إعلانات عقاراتك في قنطرة. ارفع مخططات الطوابق، أو صور العقارات عالية الدقة، أو ملفات العقود بصيغة PDF على جهاز الماك الخاص بك وستراها تتزامن فوراً في مسار عمل مساحة العمل.",
+          "scopes": {
+            "read": "يسمح لقنطرة بقراءة وسائط الإعلانات ومخططات PDF والصور المقدمة من العملاء مباشرة من مجلدات iCloud الخاصة بك.",
+            "write": "يسمح لقنطرة بعمل نسخة احتياطية تلقائياً لعقود البيع الموقعة، والإفصاحات العقارية، والفواتير مباشرة في دليل iCloud Drive الخاص بك."
+          },
+          "videoTitle": "شرح: مزامنة Apple iCloud Drive مع إعلانات قنطرة",
+          "videoDuration": "2:40",
+          "screenshotTitle": "حالة مزامنة iCloud - معاينة مسار العمل المباشر",
+          "screenshot2Title": "دليل المجلد الاحتياطي لـ iCloud",
+          "screenshot": {
+            "connection": "اتصال مجلد iCloud",
+            "status": "نشط ومتزامن",
+            "folder": "مجلد الأصول",
+            "files": "الملفات المتزامنة",
+            "filesCount": "٤٢ صورة عالية الدقة • ٣ ملفات PDF",
+            "syncLog": "سجل المزامنة الأخير",
+            "filesBackups": "نسخ المجلد الاحتياطية",
+            "filesCountBackups": "١٨ عقد PDF • ٦ شهادات قانونية"
+          }
+        },
+        "calendar": {
+          "category": "الجداول والتقاويم",
+          "valueProp": "قم بمزامنة فترات عرض العقارات، ومواعيد معاينة العملاء، وأحداث تقويم الزيارات المفتوحة تلقائياً في قنطرة مع Apple Calendar على جهاز macOS الخاص بك. لن تفوتك معاينة أبداً.",
+          "scopes": {
+            "read": "استرجع حجوزات العملاء والمواعيد الشخصية على تقويم Apple الخاص بك لعرض فترات المتاحة بدقة على صفحات الإعلانات.",
+            "write": "أنشئ وجدول وحدّث أحداث فحص العقارات ومعاينات العملاء مباشرة في Apple Calendar الخاص بك."
+          },
+          "videoTitle": "عرض توضيحي: جداول عرض العقارات مع تقويم iCloud",
+          "videoDuration": "1:55",
+          "screenshotTitle": "فترات معاينة متزامنة مع تقويم iCloud",
+          "screenshot2Title": "موزع فترات المعاينة في تقويم iCloud",
+          "screenshot": {
+            "status": "حالة مزامنة التقويم",
+            "synced": "متزامن",
+            "may": "مايو",
+            "showing": "معاينة المنار - شقة ١٠٤",
+            "showingDetails": "٢:٠٠ م - ٣:٠٠ م • العميل: أحمد منصور",
+            "contract": "اجتماع توقيع العقد",
+            "contractDetails": "١١:٠٠ ص - ١٢:٠٠ م • غرفة اجتماعات المقر الرئيسي",
+            "showingSlots": "فترات المعاينة المتاحة",
+            "slot1": "فترة الصباح - ١٠:٠٠ ص (الرياض)",
+            "slot2": "فترة المساء - ٤:٣٠ م (جدة)"
+          }
+        },
+        "contacts": {
+          "category": "إدارة العملاء وجهات الاتصال",
+          "valueProp": "جسر الفجوة بين قاعدة بيانات CRM لعملائك العقاريين ودفتر جهات اتصال macOS المحلي. العملاء المهتمون الجدد المضافون في قنطرة سيظهرون تلقائياً في جهات اتصالك مع تصنيفات مطابقة.",
+          "scopes": {
+            "read": "يمكّن من قراءة بطاقات اتصال العملاء لحل تفاصيل إدارة علاقات العملاء (CRM) بسرعة أو استيراد قوائم أرقام الهواتف.",
+            "write": "يمكّن من دفع أرقام هواتف الوساطة، وملفات تعريف المشترين/البائعين، وجهات اتصال العملاء المهتمين مباشرة إلى دليل جهات اتصال Apple المحلي الخاص بك."
+          },
+          "videoTitle": "نظرة عامة: إدارة العملاء وجهات الاتصال على أجهزة macOS",
+          "videoDuration": "3:10",
+          "screenshotTitle": "فهرس بوابة جهات اتصال العملاء",
+          "screenshot2Title": "قواعد المطابقة والمزامنة لعملاء CRM",
+          "screenshot": {
+            "sync": "مزامنة دفتر العناوين",
+            "pending": "في انتظار التكوين",
+            "buyer": "عميل مهتم بالشراء",
+            "tenant": "عميل مهتم بالاستئجار",
+            "syncRules": "قواعد مزامنة العملاء المهتمين",
+            "rule1": "تعيين تلقائي لوساطة الرياض",
+            "rule2": "تنقيح الملاحظات الشخصية عند المزامنة"
+          }
+        },
+        "spotlight": {
+          "category": "فهرسة النظام",
+          "valueProp": "ابحث في كامل محفظة عروضك العقارية، بما في ذلك المباني النشطة، والوحدات، وتوصيفات المهام، والعملاء، مباشرة من بحث Mac Spotlight المحلي (Cmd + Space) باستخدام فهرسة محلية فهرسية فائقة السرعة.",
+          "scopes": {
+            "write": "يسمح لقنطرة بتسجيل واصفات بحث محلي فائقة السرعة لمخزون عقاراتك وعملائك النشطين مباشرة في كتالوج بحث Mac OS الخاص بك."
+          },
+          "videoTitle": "عرض توضيحي: بحث Spotlight المحلي لعروض قنطرة",
+          "videoDuration": "1:40",
+          "screenshotTitle": "فهرسة بحث Mac Spotlight",
+          "screenshot2Title": "قياسات إعادة بناء فهرس Spotlight",
+          "screenshot": {
+            "status": "حالة فهرس البحث المحلي",
+            "ready": "جاهز للفهرسة المحلية",
+            "search": "Spotlight search: \"Al Manar\"",
+            "complex": "Al Manar Residential Complex",
+            "complexDesc": "Qentrah Workspace Project • Riyadh",
+            "apt": "Apt A-101 (Al Manar)",
+            "aptDesc": "Available Unit • 145 sqm • 3 Bed",
+            "open": "Open in Qentrah",
+            "indexTelemetry": "قياسات إعادة البناء",
+            "rebuildTime": "إعادة بناء الفهرس: ١٢ مللي ثانية",
+            "totalIndexed": "١,٢٤٠ وحدة • ٤٢ مشروعاً"
+          }
+        },
+        "default": {
+          "category": "تكامل خارجي",
+          "videoTitle": "شرح تهيئة وربط {name} بشكل آمن",
+          "videoDuration": "2:00",
+          "screenshotTitle": "إحصائيات مزامنة {name}",
+          "screenshot2Title": "معاينة ثانوية لـ {name}",
+          "screenshotHtml": "تكامل لوحة التحكم جاهز.",
+          "scopeDesc": "يمنح إمكانية الوصول إلى مورد {scope} الخاص بمساحة عملك."
+        }
+      },
+      "appStoreGrid": {
+        "ratings": "التقييمات",
+        "ageRating": "التوافق",
+        "chart": "الترتيب",
+        "developer": "المطور",
+        "language": "اللغة",
+        "size": "الحجم",
+        "years": "سنوات",
+        "yearsVal": "4+",
+        "languageVal": "العربية + EN",
+        "languageSub": "متعدد اللغات",
+        "sizeVal": "سحابي",
+        "sizeSub": "مزامنة فورية",
+        "chartVal": "رقم 1",
+        "productivity": "إنتاجية",
+        "verified": "موثق",
+        "compatibility": "التوافق",
+        "compatVal": "Mac وويب",
+        "compatSub": "جميع المتصفحات"
+      },
+      "reviews": {
+        "title": "التقييمات والمراجعات",
+        "outOf": "من 5",
+        "ratingValue": "4.9",
+        "reviewsCount": "128 تقييم",
+        "items": [
+          {
+            "title": "منقذ حقيقي لإعلاناتنا!",
+            "author": "سارة ج. (العمليات)",
+            "time": "قبل يومين",
+            "rating": 5,
+            "comment": "جعل هذا التكامل مزامنة ملفات iCloud الخاصة بنا سهلة للغاية. لا مزيد من النسخ اليدوي لمخططات الطوابق عالية الدقة!"
+          },
+          {
+            "title": "مزامنة مثالية للتقويم",
+            "author": "أحمد م. (وسيط)",
+            "time": "قبل أسبوع",
+            "rating": 5,
+            "comment": "تظهر جميع فترات المعاينة فوراً في تقويم Apple المحلي الخاص بي. ميزة غيرت قواعد اللعبة بالكامل."
+          },
+          {
+            "title": "فهرسة Spotlight سريعة جداً!",
+            "author": "عبد المنعم ع. (مطور)",
+            "time": "قبل 3 أسابيع",
+            "rating": 5,
+            "comment": "البحث عن الوحدات النشطة مباشرة من Mac باستخدام Cmd+Space سريع للغاية. مثير للإعجاب حقاً."
+          }
+        ],
+        "writeTitle": "اكتب مراجعة",
+        "placeholder": "شاركنا تجربتك مع هذا التكامل…",
+        "submit": "إرسال المراجعة"
       }
     },
     "items": {

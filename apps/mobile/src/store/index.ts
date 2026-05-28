@@ -27,7 +27,7 @@ export const useAppStore = create<AppStore>()(
       ...createUiSlice(...args),
     }),
     {
-      name: "qentrah-mobile-store",
+      name: "qentrah-store",
       version: MOBILE_STORE_VERSION,
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({

@@ -49,9 +49,16 @@ export const partnerAppsRepository = {
     input: {
       name: string;
       publisherName: string;
+      description: string;
+      appCategory: string;
+      integrationMode: string;
+      supportEmail?: string;
       homepageUrl: string;
       iconUrl?: string;
       logoUrl?: string;
+      webhookUrl?: string;
+      privacyPolicyUrl?: string;
+      termsOfServiceUrl?: string;
       clientType: PartnerAppClientType;
       redirectUris: string[];
       allowedScopes: string[];
@@ -71,9 +78,16 @@ export const partnerAppsRepository = {
         clientSecretHash: clientSecret,
         name: input.name.trim(),
         publisherName: input.publisherName.trim(),
+        description: input.description.trim(),
+        appCategory: input.appCategory,
+        integrationMode: input.integrationMode,
+        supportEmail: input.supportEmail?.trim() || undefined,
         homepageUrl: input.homepageUrl.trim(),
         iconUrl: input.iconUrl?.trim() || undefined,
         logoUrl: input.logoUrl?.trim() || undefined,
+        webhookUrl: input.webhookUrl?.trim() || undefined,
+        privacyPolicyUrl: input.privacyPolicyUrl?.trim() || undefined,
+        termsOfServiceUrl: input.termsOfServiceUrl?.trim() || undefined,
         clientType: input.clientType,
         redirectUris: normalizeRedirectUris(input.redirectUris),
         allowedScopes: normalizeScopes(input.allowedScopes),
@@ -97,9 +111,16 @@ export const partnerAppsRepository = {
       appId: string;
       name: string;
       publisherName: string;
+      description: string;
+      appCategory: string;
+      integrationMode: string;
+      supportEmail?: string;
       homepageUrl: string;
       iconUrl?: string;
       logoUrl?: string;
+      webhookUrl?: string;
+      privacyPolicyUrl?: string;
+      termsOfServiceUrl?: string;
       redirectUris: string[];
       allowedScopes: string[];
     },
@@ -111,9 +132,16 @@ export const partnerAppsRepository = {
       data: {
         name: input.name.trim(),
         publisherName: input.publisherName.trim(),
+        description: input.description.trim(),
+        appCategory: input.appCategory,
+        integrationMode: input.integrationMode,
+        supportEmail: input.supportEmail?.trim() || null,
         homepageUrl: input.homepageUrl.trim(),
         iconUrl: input.iconUrl?.trim() || undefined,
         logoUrl: input.logoUrl?.trim() || undefined,
+        webhookUrl: input.webhookUrl?.trim() || null,
+        privacyPolicyUrl: input.privacyPolicyUrl?.trim() || null,
+        termsOfServiceUrl: input.termsOfServiceUrl?.trim() || null,
         redirectUris: normalizeRedirectUris(input.redirectUris),
         allowedScopes: normalizeScopes(input.allowedScopes),
         status: app.status === "rejected" ? "draft" : app.status,

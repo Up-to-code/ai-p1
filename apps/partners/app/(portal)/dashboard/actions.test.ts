@@ -33,7 +33,12 @@ function appFormData() {
   const formData = new FormData();
   formData.set("name", "Partner CRM");
   formData.set("publisherName", "Acme");
+  formData.set("description", "Sync buyer records and lead status into Qentrah Workspace.");
+  formData.set("appCategory", "crm");
+  formData.set("integrationMode", "sandbox");
+  formData.set("supportEmail", "support@partner.example.com");
   formData.set("homepageUrl", "https://partner.example.com");
+  formData.set("webhookUrl", "https://partner.example.com/api/qentrah/webhooks");
   formData.set("clientType", "public");
   formData.set("redirectUris", "https://partner.example.com/api/auth/qentrah/callback");
   formData.set("allowedScopes", "organization:read\nclient:read");
@@ -62,5 +67,12 @@ describe("partner app dashboard actions", () => {
       clientId: "partners_client_1",
       message: "App created.",
     });
+    expect(partnerAppsRepository.create).toHaveBeenCalledWith("partner_user_1", expect.objectContaining({
+      description: "Sync buyer records and lead status into Qentrah Workspace.",
+      appCategory: "crm",
+      integrationMode: "sandbox",
+      supportEmail: "support@partner.example.com",
+      webhookUrl: "https://partner.example.com/api/qentrah/webhooks",
+    }));
   });
 });

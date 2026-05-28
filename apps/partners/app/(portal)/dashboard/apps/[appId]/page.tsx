@@ -5,6 +5,7 @@ import { StatusBadge } from "@/components/brand/StatusBadge";
 import { AppDetailsTabs } from "@/components/portal/AppDetailsTabs";
 import { Button } from "@/components/ui/button";
 import { getToken } from "@/lib/auth-server";
+import { integrationModeLabel } from "@/lib/dashboard-lifecycle";
 import { canEditPartnerApp } from "@/lib/navigation";
 import { ensureSandboxAction, submitPartnerAppForReviewAction } from "@/app/(portal)/dashboard/actions";
 import { partnerAppsRepository } from "@/server/partnerApps";
@@ -12,6 +13,11 @@ import { sandboxRepository } from "@/server/sandbox";
 import type { PartnerAppSummary } from "@/server/partnerApps";
 
 function lifecycleGuidance(app: PartnerAppSummary) {
+  if (app.integrationMode === "integrate") return "Integrate mode keeps the focus on wiring the SDK button, backend callback, token storage, and first Workspace API read.";
+  if (app.integrationMode === "debug") return "Debug mode keeps the focus on OAuth state, PKCE, redirect URI, token exchange, and webhook evidence before review.";
+  if (app.integrationMode === "sandbox") return "Sandbox mode mirrors OAuth and scoped CRUD without touching production Workspace data.";
+  if (app.integrationMode === "workspace" && app.status !== "active") return "Workspace mode is ready after review approval projects the OAuth runtime into Workspace.";
+  if (app.integrationMode === "production") return "Production mode expects production URLs, support contact, policies, scopes, and webhook endpoints to be review-ready.";
   if (app.status === "draft") return "Draft apps are editable. Submit when redirect URIs, scopes, and partner URL are production-ready.";
   if (app.workspaceSyncStatus === "failed") return "The app is reviewed in Partners, but its Better Auth OAuth runtime projection failed. Admin approval will retry it.";
   if (app.status === "pending_review") return "Submission is waiting for Admin review in Partners.";
@@ -53,6 +59,7 @@ export default async function AppDetailsPage({
             <StatusBadge status={app.status} />
             <h1 className="mt-4 text-3xl font-bold text-foreground">{app.name}</h1>
             <p className="mt-1 text-sm text-muted-foreground">{app.publisherName}</p>
+            <p className="mt-4 max-w-3xl text-sm leading-6 text-muted-foreground">{app.description}</p>
             <p className="mt-4 break-all font-mono text-xs text-muted-foreground">client_id: {app.clientId}</p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -81,8 +88,8 @@ export default async function AppDetailsPage({
 
       <div className="grid gap-3 md:grid-cols-3">
         <div className="command-panel p-4">
-          <p className="text-xs font-bold uppercase text-muted-foreground">Review state</p>
-          <p className="mt-2 text-sm font-semibold text-foreground">{app.status.replace("_", " ")}</p>
+          <p className="text-xs font-bold uppercase text-muted-foreground">Integration mode</p>
+          <p className="mt-2 text-sm font-semibold text-foreground">{integrationModeLabel(app)}</p>
         </div>
         <div className="command-panel p-4">
           <p className="text-xs font-bold uppercase text-muted-foreground">OAuth runtime</p>
@@ -92,6 +99,20 @@ export default async function AppDetailsPage({
           <p className="text-xs font-bold uppercase text-muted-foreground">Runtime app id</p>
           <p className="mt-2 break-all font-mono text-xs text-foreground">{app.workspacePartnerAppId ?? app.id}</p>
         </div>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-4">
+        {([
+          ["Category", app.appCategory],
+          ["Support", app.supportEmail ?? "Not set"],
+          ["Webhook", app.webhookUrl ?? "Not set"],
+          ["Policies", app.privacyPolicyUrl && app.termsOfServiceUrl ? "Ready" : "Incomplete"],
+        ] satisfies Array<[string, string]>).map(([label, value]) => (
+          <div key={label} className="command-panel p-4">
+            <p className="text-xs font-bold uppercase text-muted-foreground">{label}</p>
+            <p className="mt-2 break-words text-sm font-semibold text-foreground">{value}</p>
+          </div>
+        ))}
       </div>
 
       <div className="command-panel p-4">

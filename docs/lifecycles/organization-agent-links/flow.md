@@ -26,3 +26,13 @@
 - Convex `organizationMcpConnections`: organization grant and link status.
 - Convex API key component: actual secret validation and rotation.
 - `PLATFORM_ADMIN_EMAILS`: platform/operator-only actions, not organization agent-link management.
+
+## Tool Call Safety Gateway
+
+1. The MCP transport validates the agent-link public id and secret.
+2. Convex filters the link permissions against the creator's current organization permissions.
+3. The Agent tool policy gateway evaluates adapter, actor type, organization, tool, resource/action, risk level, approval requirement, and permissions.
+4. Read tools execute only after policy allows the call.
+5. External MCP write/delete tools never mutate immediately. They create an encrypted pending approval record and return a confirmation-required response.
+6. High-impact actions, including destructive changes, member/role management, organization identity changes, production-system actions, billing/payment actions, and broad data changes, require admin approval.
+7. Full tool input stays encrypted in the approval record. MCP/model-visible responses receive only redacted previews and approval metadata.

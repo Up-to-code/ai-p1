@@ -419,6 +419,11 @@ export function useConversationController() {
               threadId,
               attachments,
             };
+            if (streamThreadId) {
+              setActiveThreadId(streamThreadId);
+              setMessagesRefreshKey((value) => value + 1);
+              refreshThreads?.();
+            }
             setPendingPrompt(null);
             setDraftTurn(null);
             setActiveRunId(null);
@@ -496,6 +501,11 @@ export function useConversationController() {
         threadId,
         attachments,
       };
+      if (streamThreadId) {
+        setActiveThreadId(streamThreadId);
+        setMessagesRefreshKey((value) => value + 1);
+        refreshThreads?.();
+      }
     } finally {
       if (abortControllerRef.current === abortController) {
         abortControllerRef.current = null;

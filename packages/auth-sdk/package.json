@@ -1,6 +1,6 @@
 {
   "name": "@qentrah/auth-sdk",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Batteries-included Qentrah partner integration SDK for developers building OAuth, webhooks, resource calls, and consoles.",
   "license": "UNLICENSED",
   "type": "module",

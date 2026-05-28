@@ -13,6 +13,7 @@ import { useAuthSession } from "@/auth/useAuthSession";
 import { authClient, isWorkspaceAuthConfigured } from "@/auth/authClient";
 import { AppleIcon, GoogleIcon } from "@/foundation/components/BrandIcons";
 import { TypewriterText } from "@/foundation/components/TypewriterText";
+import { LogoMark } from "@/foundation/icons/LogoMark";
 import { useAppLocalization } from "@/foundation/localization";
 import { markAuthSessionActive } from "@/auth/signOut";
 import {
@@ -82,6 +83,10 @@ export default function AuthScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Animated.View entering={FadeInUp.delay(120).springify()} style={styles.heroWrap}>
+          <View style={[styles.logoBadge, { backgroundColor: colors.accent }]}>
+            <LogoMark size={42} color={colors.background} />
+          </View>
+
           <Text variant="display" style={[styles.wordmark, { color: colors.textPrimary }]}>
             {t.auth.wordmark}
           </Text>
@@ -179,8 +184,15 @@ const createStyles = (colors: AppColors) => StyleSheet.create({
   },
   heroWrap: {
     alignItems: "center",
-    gap: 20,
+    gap: 18,
     marginTop: 100,
+  },
+  logoBadge: {
+    alignItems: "center",
+    borderRadius: 22,
+    height: 76,
+    justifyContent: "center",
+    width: 76,
   },
   wordmark: {
     fontSize: 42,

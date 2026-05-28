@@ -16,7 +16,7 @@ export default async function LocaleHomePage({ params }: { params: Promise<{ loc
   return (
     <>
       <MarketingHomeJsonLd locale={locale} />
-      <HomePage locale={locale} />
+      <HomePage />
     </>
   );
 }

@@ -230,6 +230,7 @@
     "clients": "Clients",
     "calendar": "Calendar",
     "organization": "Organization",
+    "usage": "Usage",
     "billing": "Billing",
     "integrations": "Web Apps",
     "components": "UI Components",
@@ -2338,7 +2339,37 @@
     },
     "webhooks": {
       "title": "Webhook Telemetry",
-      "desc": "Mock delivery monitoring is online."
+      "desc": "Mock delivery monitoring is online.",
+      "activeEndpoints": "Active Endpoints",
+      "deliveries": "Deliveries (24h)",
+      "successRate": "Success Rate",
+      "latency": "Avg Latency",
+      "endpointsTitle": "Webhook Endpoints",
+      "addEndpoint": "Add Endpoint",
+      "configure": "Configure",
+      "signingSecret": "Signing Secret",
+      "hide": "Hide",
+      "reveal": "Reveal",
+      "subscribedEvents": "Subscribed Events",
+      "recentDeliveries": "Recent Deliveries",
+      "deliveryId": "Delivery ID",
+      "event": "Event",
+      "endpoint": "Endpoint",
+      "duration": "Latency",
+      "status": "Status",
+      "time": "Time",
+      "minsAgo": "{count} mins ago",
+      "hourAgo": "1 hour ago",
+      "hoursAgo": "{count} hours ago",
+      "justNow": "Just now",
+      "endpointsData": {
+        "aqar": {
+          "name": "Aqar Marketplace Outbound Feed"
+        },
+        "crm": {
+          "name": "Institutional CRM Inbound Gateway"
+        }
+      }
     },
     "detail": {
       "notFound": "Web app not found",
@@ -2363,6 +2394,189 @@
         "name": "Name",
         "status": "Status",
         "events": "Events"
+      },
+      "visitPartner": "Visit Partner Site",
+      "notSet": "Not set",
+      "available": "Available",
+      "overview": "Overview",
+      "permissionsTitle": "Integration Permissions",
+      "permissionsDescription": "Review the exact scopes this integration can use before connecting it to your workspace.",
+      "videoTitle": "Video Demonstration",
+      "accessDetails": "Access Details",
+      "metadataTitle": "App Metadata",
+      "developer": "Developer",
+      "website": "Website",
+      "privacyPolicy": "Privacy Policy",
+      "developerPolicy": "Developer Policy",
+      "dataPolicy": "Data Policy",
+      "policyStatus": "Required",
+      "managedByQentrah": "Managed by Qentrah workspace policy",
+      "configure": "Configure Integration",
+      "pause": "Pause Syncing",
+      "resume": "Resume Syncing",
+      "revoke": "Revoke Access",
+      "connect": "Connect Integration",
+      "unavailable": "Unavailable",
+      "clientId": "Client ID",
+      "callbackUrl": "Callback URL",
+      "startUrl": "Start URL",
+      "connectionStatus": "Connection Status",
+      "connected": "Connected",
+      "notConnected": "Not connected",
+      "partnerIntegration": "macOS Integration",
+      "appDetails": {
+        "icloud": {
+          "category": "Asset Storage & Synchronization",
+          "valueProp": "Seamlessly bind Apple iCloud Drive folders to your Qentrah listings. Upload floor plans, HD property photos, or contract PDFs on your Mac and see them sync instantly into the workspace pipeline.",
+          "scopes": {
+            "read": "Allows Qentrah to read listing media, PDF blueprints, and client-submitted photos directly from your iCloud folders.",
+            "write": "Allows Qentrah to automatically back up signed sales contracts, brokerage disclosures, and invoices directly into your iCloud Drive directory."
+          },
+          "videoTitle": "Tutorial: Syncing Apple iCloud Drive with Qentrah Listings",
+          "videoDuration": "2:40",
+          "screenshotTitle": "iCloud Sync Status - Live Pipeline Preview",
+          "screenshot2Title": "iCloud Folder Backup Directory",
+          "screenshot": {
+            "connection": "iCloud Folder Connection",
+            "status": "Active & Synced",
+            "folder": "Asset Folder",
+            "files": "Synced Files",
+            "filesCount": "42 HD Photos • 3 PDFs",
+            "syncLog": "Recent Sync Log",
+            "filesBackups": "Folder Backups",
+            "filesCountBackups": "18 PDF Contracts • 6 Legal Certificates"
+          }
+        },
+        "calendar": {
+          "category": "Schedules & Calendars",
+          "valueProp": "Automatically sync showing slots, client viewing appointments, and open-house calendar events in Qentrah directly to your macOS Apple Calendar. Never double-book another listing showing.",
+          "scopes": {
+            "read": "Retrieve client bookings and personal appointments on your Apple Calendar to show precise availability slots on listing pages.",
+            "write": "Create, schedule, and update property inspection events and client showings directly into your Apple Calendar."
+          },
+          "videoTitle": "Demo: Real Estate Showing Schedules with iCloud Calendar",
+          "videoDuration": "1:55",
+          "screenshotTitle": "iCloud Calendar Synced Showings Slots",
+          "screenshot2Title": "iCloud Calendar Showing Slot Dispatcher",
+          "screenshot": {
+            "status": "Calendar Sync Status",
+            "synced": "Synced",
+            "may": "May",
+            "showing": "Al Manar Showing - Apt 104",
+            "showingDetails": "2:00 PM - 3:00 PM • client: Ahmed Mansour",
+            "contract": "Contract Signing Meeting",
+            "contractDetails": "11:00 AM - 12:00 PM • HQ Conference Room",
+            "showingSlots": "Available Showing Slots",
+            "slot1": "Morning Slot - 10:00 AM (Riyadh)",
+            "slot2": "Afternoon Slot - 4:30 PM (Jeddah)"
+          }
+        },
+        "contacts": {
+          "category": "CRM & Contacts",
+          "valueProp": "Bridge the gap between your real estate CRM database and your local macOS Contacts book. New customer leads added inside Qentrah will automatically populate in your contacts list with matching labels.",
+          "scopes": {
+            "read": "Enables reading client contact cards to quickly resolve CRM details or import phone number lists.",
+            "write": "Enables pushing brokerage phone numbers, buyer/seller profiles, and showing lead contact sheets directly to your local Apple contacts directory."
+          },
+          "videoTitle": "Overview: Managing Leads & Contacts on macOS Devices",
+          "videoDuration": "3:10",
+          "screenshotTitle": "Lead Contact Gateway Index",
+          "screenshot2Title": "CRM Leads Matching & Sync Rules",
+          "screenshot": {
+            "sync": "Address Book Synchronization",
+            "pending": "Pending configuration",
+            "buyer": "Buyer Lead",
+            "tenant": "Tenant Lead",
+            "syncRules": "Lead Synchronization Rules",
+            "rule1": "Auto-assign to Riyadh Brokerage",
+            "rule2": "Redact personal notes on sync"
+          }
+        },
+        "spotlight": {
+          "category": "System Indexing",
+          "valueProp": "Search your entire real estate listing portfolio, including active buildings, units, task descriptions, and clients, directly from your local Mac Spotlight search (Cmd + Space) using high-velocity local indexing.",
+          "scopes": {
+            "write": "Allows Qentrah to register lightning-fast local search descriptors for your property inventory and active clients directly into your Mac OS search catalog."
+          },
+          "videoTitle": "Demo: Local Spotlight Search for Qentrah Listings",
+          "videoDuration": "1:40",
+          "screenshotTitle": "Mac Spotlight Search Indexing",
+          "screenshot2Title": "Spotlight Index Rebuild Telemetry",
+          "screenshot": {
+            "status": "Local Search Index Status",
+            "ready": "Ready for local indexing",
+            "search": "Spotlight search: \"Al Manar\"",
+            "complex": "Al Manar Residential Complex",
+            "complexDesc": "Qentrah Workspace Project • Riyadh",
+            "apt": "Apt A-101 (Al Manar)",
+            "aptDesc": "Available Unit • 145 sqm • 3 Bed",
+            "open": "Open in Qentrah",
+            "indexTelemetry": "Rebuild Telemetry",
+            "rebuildTime": "Index rebuild: 12ms",
+            "totalIndexed": "1,240 Units • 42 Projects"
+          }
+        },
+        "default": {
+          "category": "External Integration",
+          "videoTitle": "How to configure and connect {name} safely",
+          "videoDuration": "2:00",
+          "screenshotTitle": "{name} Sync Telemetry",
+          "screenshot2Title": "{name} Secondary Preview",
+          "screenshotHtml": "Dashboard integration ready.",
+          "scopeDesc": "Grants permission to access your workspace {scope} resource."
+        }
+      },
+      "appStoreGrid": {
+        "ratings": "RATINGS",
+        "ageRating": "COMPATIBILITY",
+        "chart": "CHART",
+        "developer": "DEVELOPER",
+        "language": "LANGUAGE",
+        "size": "SIZE",
+        "years": "Years",
+        "yearsVal": "4+",
+        "languageVal": "EN + AR",
+        "languageSub": "Multilingual",
+        "sizeVal": "Cloud",
+        "sizeSub": "Instant Sync",
+        "chartVal": "No. 1",
+        "productivity": "Productivity",
+        "verified": "Verified",
+        "compatibility": "COMPATIBILITY",
+        "compatVal": "Mac & Web",
+        "compatSub": "All Browsers"
+      },
+      "reviews": {
+        "title": "Ratings & Reviews",
+        "outOf": "out of 5",
+        "ratingValue": "4.9",
+        "reviewsCount": "128 ratings",
+        "items": [
+          {
+            "title": "Absolute lifesaver for listings!",
+            "author": "Sarah J. (Operations)",
+            "time": "2 days ago",
+            "rating": 5,
+            "comment": "This integration made syncing our iCloud files so easy. No more manual copying of HD floor plans!"
+          },
+          {
+            "title": "Perfect Calendar Sync",
+            "author": "Ahmed M. (Broker)",
+            "time": "1 week ago",
+            "rating": 5,
+            "comment": "All showing slots immediately appear in my local Apple Calendar. Absolute game changer."
+          },
+          {
+            "title": "Spotlight indexing is fast!",
+            "author": "Abdulmonem A. (Developer)",
+            "time": "3 weeks ago",
+            "rating": 5,
+            "comment": "Searching active units directly from Mac Command+Space is incredibly fast. Very impressed."
+          }
+        ],
+        "writeTitle": "Write a Review",
+        "placeholder": "Share your experience with this integration…",
+        "submit": "Submit Review"
       }
     },
     "items": {

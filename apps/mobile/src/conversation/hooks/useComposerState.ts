@@ -37,12 +37,19 @@ export function useComposerState(draftText: string) {
   const handleContentSizeChange = (
     event: NativeSyntheticEvent<TextInputContentSizeChangeEventData>,
   ) => {
+    const nextHeight = event.nativeEvent?.contentSize?.height;
+    if (typeof nextHeight !== "number") {
+      return;
+    }
+
     setMeasuredContentHeight((currentHeight) =>
-      nextComposerMeasuredHeight(currentHeight, event.nativeEvent.contentSize.height),
+      nextComposerMeasuredHeight(currentHeight, nextHeight),
     );
   };
 
-  const resetComposerState = () => { setMeasuredContentHeight(INPUT_MIN_HEIGHT); };
+  const resetComposerState = () => {
+    setMeasuredContentHeight(INPUT_MIN_HEIGHT);
+  };
 
   return {
     inputHeight,

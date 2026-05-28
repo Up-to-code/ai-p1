@@ -35,6 +35,7 @@ export const agentToolStatusValidator = v.union(
   v.literal("allowed"),
   v.literal("blocked"),
   v.literal("requires_confirmation"),
+  v.literal("requires_admin_approval"),
   v.literal("failed"),
 );
 

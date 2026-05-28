@@ -9,7 +9,8 @@ const {
 const workspaceRoot = path.resolve(__dirname, "../..");
 const appRoot = __dirname;
 const brandName = "Qentrah";
-const brandPrimary = "#0B5CFF";
+const brandPrimary = "#0b5cff";
+const splashBackground = "#000000";
 
 function loadEnvFile(filePath: string) {
   if (!existsSync(filePath)) {
@@ -53,13 +54,9 @@ const config: ExpoConfig = {
   userInterfaceStyle: "automatic",
   icon: "./assets/brand/qentrah-mobile-icon.png",
   splash: {
-    image: "./assets/brand/qentrah-splash-icon.png",
-    resizeMode: "contain",
-    backgroundColor: brandPrimary,
+    backgroundColor: splashBackground,
     dark: {
-      image: "./assets/brand/qentrah-splash-icon.png",
-      resizeMode: "contain",
-      backgroundColor: brandPrimary,
+      backgroundColor: splashBackground,
     },
   },
   experiments: {
@@ -68,7 +65,16 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: false,
     bundleIdentifier: "com.qentrah.mobile",
+    buildNumber: "7",
     associatedDomains: ["applinks:app.qentrah.com"],
+    infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
+      NSPhotoLibraryUsageDescription:
+        "Allow Qentrah to let you attach photos and documents to workspace messages.",
+      NSCameraUsageDescription: "Allow Qentrah to let you capture photos for workspace messages.",
+      NSLocalNetworkUsageDescription:
+        "Allow Qentrah to connect to the development server while testing on your device.",
+    },
   },
   android: {
     package: "com.qentrah.mobile",
@@ -108,6 +114,7 @@ const config: ExpoConfig = {
   },
   web: {
     favicon: "./assets/brand/qentrah-favicon.png",
+    name: brandName,
   },
   plugins: [
     "expo-font",
@@ -121,6 +128,9 @@ const config: ExpoConfig = {
     ],
   ],
   extra: {
+    eas: {
+      projectId: "514606c6-a5f7-4512-a73d-4916d051eb6b",
+    },
     authUrl: mobileEnvironment.authUrl,
     workspaceApiUrl: mobileEnvironment.workspaceApiUrl,
     mobileEnvironment: mobileEnvironment.environment,

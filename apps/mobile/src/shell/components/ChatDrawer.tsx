@@ -1,5 +1,5 @@
 import { ActivityIndicator, Image, Modal, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
-import { ChevronRight, Clock, Plus, Settings, Star, X } from "lucide-react-native";
+import { AlertCircle, ChevronRight, Clock, Plus, RotateCcw, Settings, Star, X } from "lucide-react-native";
 import { useMemo } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
@@ -189,10 +189,14 @@ export function ChatDrawerContent({
                 <ThreadSkeletonRows />
               ) : threadHistory.error ? (
                 <Pressable style={styles.listItem} onPress={threadHistory.refresh}>
-                  <View style={styles.itemIconBox}>
-                    <ActivityIndicator size="small" color={colors.accent} />
+                  <View style={[styles.itemIconBox, styles.errorIconBox]}>
+                    <AlertCircle size={18} color={colors.danger} />
                   </View>
-                  <Text variant="body" style={styles.itemLabel}>{threadHistory.error}</Text>
+                  <View style={styles.itemTextBlock}>
+                    <Text variant="body" style={styles.itemLabel}>{t.menu.loadConversationsError}</Text>
+                    <Text variant="caption" tone="muted" style={styles.itemSubLabel}>{t.menu.retry}</Text>
+                  </View>
+                  <RotateCcw size={14} color={colors.textMuted} style={mirrorIcon(isRTL)} />
                 </Pressable>
               ) : null}
 
@@ -326,7 +330,7 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
   },
   profile: {
     marginBottom: 24,
-    marginTop: 12,
+    marginTop: 0,
   },
   profileTap: {
     flexDirection: isRTL ? "row-reverse" : "row",
@@ -419,10 +423,21 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  errorIconBox: {
+    backgroundColor: `${colors.danger}12`,
+  },
+  itemTextBlock: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
+  },
   itemLabel: {
     flex: 1,
     color: colors.textPrimary,
     fontWeight: "800",
+    textAlign: isRTL ? "right" : "left",
+  },
+  itemSubLabel: {
     textAlign: isRTL ? "right" : "left",
   },
   divider: {

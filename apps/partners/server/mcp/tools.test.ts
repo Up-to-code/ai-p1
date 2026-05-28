@@ -38,6 +38,9 @@ describe("Partner MCP tools", () => {
         clientId: "client_1",
         name: "Demo",
         publisherName: "Qentrah",
+        description: "Demo app for testing the full partner integration lifecycle.",
+        appCategory: "operations",
+        integrationMode: "sandbox",
         clientType: "public",
         status: "draft",
         redirectUris: ["https://example.com/callback"],
@@ -51,7 +54,7 @@ describe("Partner MCP tools", () => {
     const result = await callPartnerMcpTool({ authSubject: "user_1", permissions: allPermissions }, "partner_apps_list", {});
 
     expect(partnerAppsRepository.list).toHaveBeenCalledWith("user_1");
-    expect(result.content[0]?.text).toContain("Finish redirect URIs");
+    expect(result.content[0]?.text).toContain("Run sandbox OAuth");
   });
 
   it("does not return OAuth client secrets when creating confidential apps", async () => {
@@ -65,7 +68,12 @@ describe("Partner MCP tools", () => {
     const result = await callPartnerMcpTool({ authSubject: "user_1", permissions: allPermissions }, "partner_apps_create", {
       name: "Demo",
       publisherName: "Qentrah",
+      description: "Demo app for testing confidential OAuth creation through MCP.",
+      appCategory: "operations",
+      integrationMode: "sandbox",
+      supportEmail: "support@example.com",
       homepageUrl: "https://example.com",
+      webhookUrl: "https://example.com/webhooks/qentrah",
       clientType: "confidential",
       redirectUris: ["https://example.com/callback"],
       allowedScopes: ["organization:read"],
@@ -154,6 +162,10 @@ describe("Partner MCP tools", () => {
   });
 
   it("keeps tool definitions free of local MCP secrets", () => {
-    expect(JSON.stringify(partnerMcpToolDefinitions)).not.toMatch(/mcp_secret|client_secret|clientSecret/i);
+    const serialized = JSON.stringify(partnerMcpToolDefinitions);
+    expect(serialized).not.toMatch(/mcp_secret|client_secret|clientSecret/i);
+    expect(serialized).toContain("integrationMode");
+    expect(serialized).toContain("webhookUrl");
+    expect(serialized).toContain("privacyPolicyUrl");
   });
 });

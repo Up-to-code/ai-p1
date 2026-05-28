@@ -1,34 +1,12 @@
 import { brandDomainUrl, brandIdentity, brandLabel, brandProductName } from "@qentrah/brand-identity";
 
-import type { Locale } from "@/lib/content";
+import { getContent, getWorkspaceLanding, type Locale } from "@/lib/content";
+import { publicSeoLinks } from "@/lib/public-links";
 
 const rootUrl = brandDomainUrl("root");
 const workspaceUrl = brandDomainUrl("workspace");
 const partnersUrl = brandDomainUrl("partners");
-const logoUrl = `${workspaceUrl}/app-icon-512.png`;
-const trustedArabicKeywords = [
-  "مساحة عمل عقارية",
-  "CRM عقاري",
-  "إدارة العملاء العقاريين",
-  "إدارة المشاريع العقارية",
-  "إدارة المخزون العقاري",
-  "المطورون العقاريون",
-  "الوسطاء العقاريون",
-  "المعاينات العقارية",
-  "السوق العقاري السعودي",
-  "بيانات عقارية موثوقة",
-];
-const trustedEnglishKeywords = [
-  "Saudi real estate workspace",
-  "real estate CRM",
-  "property inventory management",
-  "project readiness",
-  "broker coordination",
-  "developer workflow",
-  "client follow-ups",
-  "viewing management",
-  "verified real estate data",
-];
+const logoUrl = `${rootUrl}/app-icon-512.png`;
 
 function JsonLd({ data }: { data: Record<string, unknown> }) {
   return (
@@ -43,10 +21,10 @@ export function MarketingHomeJsonLd({ locale }: { locale: Locale }) {
   const isArabic = locale === "ar";
   const url = `${rootUrl}/${locale}`;
   const name = brandLabel(locale);
-  const description = isArabic
-    ? "كانترا مساحة عمل عقارية سعودية لإدارة العملاء والمشاريع والمخزون العقاري والمعاينات وعمليات CRM، وتوحيد بيانات المطورين والوسطاء من مصدر واحد موثوق."
-    : "Qentrah is a Saudi real estate workspace for CRM, projects, verified inventory, viewings, broker coordination, developer workflows, and partner integrations.";
-  const keywords = isArabic ? trustedArabicKeywords : trustedEnglishKeywords;
+  const copy = getContent(locale);
+  const landing = getWorkspaceLanding(locale);
+  const description = landing.home.hero.description;
+  const keywords = [copy.nav.brand, copy.nav.workspace, copy.nav.partners];
 
   const organization = {
     "@context": "https://schema.org",
@@ -75,11 +53,20 @@ export function MarketingHomeJsonLd({ locale }: { locale: Locale }) {
     inLanguage: isArabic ? "ar-SA" : "en-SA",
     keywords,
     publisher: { "@id": `${rootUrl}/#organization` },
-    potentialAction: {
-      "@type": "SearchAction",
-      target: `${rootUrl}/${locale}?q={search_term_string}`,
-      "query-input": "required name=search_term_string",
-    },
+  };
+
+  const siteNavigation = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "@id": `${url}#site-navigation`,
+    name: isArabic ? "روابط كانترا الرئيسية" : "Qentrah primary links",
+    itemListElement: publicSeoLinks.map((link, index) => ({
+      "@type": "SiteNavigationElement",
+      position: index + 1,
+      name: link.labels[locale],
+      description: link.descriptions[locale],
+      url: `${rootUrl}/${locale}${link.href}`,
+    })),
   };
 
   const app = {
@@ -125,7 +112,64 @@ export function MarketingHomeJsonLd({ locale }: { locale: Locale }) {
     <>
       <JsonLd data={organization} />
       <JsonLd data={website} />
+      <JsonLd data={siteNavigation} />
       <JsonLd data={app} />
+      <JsonLd data={breadcrumbs} />
+    </>
+  );
+}
+
+export function MarketingPageJsonLd({
+  description,
+  locale,
+  path,
+  title,
+}: {
+  description: string;
+  locale: Locale;
+  path: string;
+  title: string;
+}) {
+  const isArabic = locale === "ar";
+  const cleanPath = path.replace(/^\/+/u, "");
+  const pageUrl = `${rootUrl}/${locale}${cleanPath ? `/${cleanPath}` : ""}`;
+  const homeUrl = `${rootUrl}/${locale}`;
+
+  const webPage = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${pageUrl}#webpage`,
+    url: pageUrl,
+    name: title,
+    description,
+    inLanguage: isArabic ? "ar-SA" : "en-SA",
+    isPartOf: { "@id": `${rootUrl}/#website` },
+    publisher: { "@id": `${rootUrl}/#organization` },
+  };
+
+  const breadcrumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "@id": `${pageUrl}#breadcrumb`,
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: isArabic ? "الرئيسية" : "Home",
+        item: homeUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: title,
+        item: pageUrl,
+      },
+    ],
+  };
+
+  return (
+    <>
+      <JsonLd data={webPage} />
       <JsonLd data={breadcrumbs} />
     </>
   );

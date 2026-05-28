@@ -4,15 +4,24 @@ import { normalizeRedirectUris, normalizeScopes } from "@/server/partnerAppPolic
 export type PartnerAppStatus = "draft" | "pending_review" | "active" | "rejected" | "suspended";
 export type PartnerAppClientType = "public" | "confidential";
 export type PartnerWorkspaceSyncStatus = "not_synced" | "pending" | "synced" | "failed";
+export type PartnerAppCategory = "brokerage" | "developer" | "crm" | "marketing" | "operations" | "other";
+export type PartnerIntegrationMode = "integrate" | "debug" | "sandbox" | "workspace" | "production";
 
 export type PartnerAppSummary = {
   id: string;
   clientId: string;
   name: string;
   publisherName: string;
+  description: string;
+  appCategory: PartnerAppCategory;
+  integrationMode: PartnerIntegrationMode;
+  supportEmail?: string | null;
   homepageUrl?: string | null;
   iconUrl?: string | null;
   logoUrl?: string | null;
+  webhookUrl?: string | null;
+  privacyPolicyUrl?: string | null;
+  termsOfServiceUrl?: string | null;
   clientType: PartnerAppClientType;
   status: PartnerAppStatus;
   workspacePartnerAppId?: string | null;
@@ -45,9 +54,15 @@ export type PartnerAppCatalogRow = {
   name: string;
   publisherName: string;
   description?: string | null;
+  appCategory?: string | null;
+  integrationMode?: string | null;
+  supportEmail?: string | null;
   homepageUrl?: string | null;
   iconUrl?: string | null;
   logoUrl?: string | null;
+  webhookUrl?: string | null;
+  privacyPolicyUrl?: string | null;
+  termsOfServiceUrl?: string | null;
   clientType: string;
   status: string;
   workspacePartnerAppId?: string | null;
@@ -72,6 +87,16 @@ function clientType(value: string): PartnerAppClientType {
   return value === "confidential" ? "confidential" : "public";
 }
 
+function appCategory(value: string | null | undefined): PartnerAppCategory {
+  if (value === "brokerage" || value === "developer" || value === "crm" || value === "marketing" || value === "operations" || value === "other") return value;
+  return "operations";
+}
+
+function integrationMode(value: string | null | undefined): PartnerIntegrationMode {
+  if (value === "integrate" || value === "debug" || value === "sandbox" || value === "workspace" || value === "production") return value;
+  return "sandbox";
+}
+
 export function adminStatus(status: string): AdminPartnerAppRecord["status"] {
   if (status === "active") return "approved";
   if (status === "pending_review") return "pending";
@@ -86,9 +111,16 @@ export function toPartnerAppSummary(app: PartnerAppCatalogRow): PartnerAppSummar
     clientId: app.clientId,
     name: app.name,
     publisherName: app.publisherName,
+    description: app.description || `${app.publisherName} partner app managed in Qentrah Partners.`,
+    appCategory: appCategory(app.appCategory),
+    integrationMode: integrationMode(app.integrationMode),
+    supportEmail: app.supportEmail,
     homepageUrl: app.homepageUrl,
     iconUrl: app.iconUrl ?? app.logoUrl,
     logoUrl: app.logoUrl,
+    webhookUrl: app.webhookUrl,
+    privacyPolicyUrl: app.privacyPolicyUrl,
+    termsOfServiceUrl: app.termsOfServiceUrl,
     clientType: clientType(app.clientType),
     status: app.status as PartnerAppStatus,
     workspacePartnerAppId: app.workspacePartnerAppId,

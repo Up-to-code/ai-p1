@@ -1,5 +1,8 @@
 import { brandDomainUrl, brandIdentity, brandLabel, brandProductName } from "@qentrah/brand-identity";
 
+import workspaceAr from "../../workspace/messages/ar.json";
+import workspaceEn from "../../workspace/messages/en.json";
+
 export const locales = ["en", "ar"] as const;
 export type Locale = (typeof locales)[number];
 
@@ -14,317 +17,175 @@ export function getDirection(locale: Locale) {
 export const productUrls = {
   workspace: process.env.NEXT_PUBLIC_WORKSPACE_URL?.trim() || brandDomainUrl("workspace"),
   partners: process.env.NEXT_PUBLIC_PARTNERS_URL?.trim() || brandDomainUrl("partners"),
-  contact: `mailto:${brandIdentity.domains.email}`
+  contact: `mailto:${brandIdentity.domains.email}`,
 };
 
-const brandEn = brandLabel("en");
-const brandAr = brandLabel("ar");
-const workspaceEn = brandProductName("workspace", "en");
-const workspaceAr = brandProductName("workspace", "ar");
-const partnersEn = brandProductName("partners", "en");
-const partnersAr = brandProductName("partners", "ar");
+export function getAlternateLocale(locale: Locale): Locale {
+  return locale === "ar" ? "en" : "ar";
+}
+
+export function getWorkspaceLanding(locale: Locale) {
+  return locale === "ar" ? workspaceAr.Landing : workspaceEn.Landing;
+}
+
+export function getMarketingMessages(locale: Locale) {
+  return locale === "ar" ? workspaceAr : workspaceEn;
+}
+
+const workspaceEnName = brandProductName("workspace", "en");
+const workspaceArName = brandProductName("workspace", "ar");
+const partnersEnName = brandProductName("partners", "en");
+const partnersArName = brandProductName("partners", "ar");
+
+export type LegalBlockBody = string | Array<string | string[]>;
+export type LegalBlockCopy = { title: string; body: LegalBlockBody };
+
+function block(title: string, body: LegalBlockBody): LegalBlockCopy {
+  return { title, body };
+}
+
+const workspaceLegal = {
+  en: {
+    privacyTitle: "Privacy Policy",
+    termsTitle: "Terms of Service",
+    legalTitle: "Legal Notice",
+    privacyUpdated: "Last updated: May 4, 2026",
+    termsUpdated: "Last updated: May 4, 2026",
+    legalUpdated: "Last updated: May 4, 2026",
+    privacyContact: "If you have privacy questions, contact us at",
+    privacy: [
+      block("1. Introduction", "Qentrah Workspace operates a real estate workspace and data synchronization platform for teams in Saudi Arabia. This policy explains how we collect, use, disclose, and protect information when you use the platform."),
+      block("2. Information We Collect", "We collect information you provide directly, including name, email, phone, organization details, commercial registration information, and documents submitted during onboarding. We may also collect device, IP, browser, and usage information."),
+      block("3. How We Use Information", "We use information to verify organizations, manage accounts, support workspace features, synchronize property data, operate integrations, provide support, and meet applicable Saudi regulatory and compliance requirements."),
+      block("4. Data Sharing", "We share data only with authorized users, service providers, and connected platforms you approve. We do not sell personal data."),
+      block("5. Data Security", "We use reasonable security measures, including access controls, encryption, audit logging, and secure integration handling."),
+      block("6. Data Retention", "We retain data while your account is active or as needed for service, security, legal, and compliance purposes."),
+    ],
+    terms: [
+      block("1. Acceptance of Terms", "By accessing or using the platform, you agree to these Terms of Service. If you use the platform for an organization, you confirm that you are authorized to bind that organization."),
+      block("2. Platform Description", "The platform provides real estate workspace, data management, synchronization, and integration tools for authorized developers, brokers, operators, and partners."),
+      block("3. Account Responsibilities", "You are responsible for account credentials, accurate onboarding information, and lawful use of the platform. Fraudulent or misleading information may result in suspension or termination."),
+      block("4. Data Accuracy", "Organizations are responsible for the accuracy of project, property, client, and operational data submitted to the platform."),
+      block("5. Integrations", "Connected tools and partner integrations are subject to approval, scoped access, and security requirements. We may suspend integrations that misuse data or violate platform rules."),
+      block("6. Limitation of Liability", "The platform is provided as is to the extent permitted by law. We are not liable for indirect or consequential damages arising from use of the platform."),
+      block("7. Governing Law", "These Terms are governed by the laws of the Kingdom of Saudi Arabia. Disputes are resolved by the competent courts of Riyadh."),
+    ],
+    legal: [
+      block("Company Information", [`${workspaceEnName} is operated by ${brandIdentity.legalName.en}.`, ["Headquarters: Riyadh, Kingdom of Saudi Arabia", "VAT Registration: 3XXXXXXXXXX0003"]]),
+      block("Regulatory Compliance", "The platform operates in accordance with applicable Saudi real estate, data protection, and electronic service requirements."),
+      block("Intellectual Property", "All content, trademarks, logos, and intellectual property displayed on this platform are owned by the company or their respective owners. Unauthorized use is prohibited."),
+      block("Dispute Resolution", "Any disputes arising from the use of this platform are subject to the competent courts of Riyadh, Kingdom of Saudi Arabia."),
+    ],
+  },
+  ar: {
+    privacyTitle: "سياسة الخصوصية",
+    termsTitle: "شروط الخدمة",
+    legalTitle: "إشعار قانوني",
+    privacyUpdated: "آخر تحديث: مايو 2026",
+    termsUpdated: "آخر تحديث: مايو 2026",
+    legalUpdated: "آخر تحديث: مايو 2026",
+    privacyContact: "لأي استفسار متعلق بالخصوصية أو بياناتك الشخصية، يمكنك التواصل معنا عبر:",
+    privacy: [
+      block("1. المقدمة", ["توضح هذه السياسة كيف تقوم كانترا بجمع البيانات الشخصية واستخدامها وحمايتها عند استخدام المنصة أو التواصل معنا أو الاستفادة من خدمات مساحة العمل العقارية.", "باستخدامك للمنصة، فإنك تقرّ بأنك قرأت هذه السياسة وفهمت طريقة تعامل كانترا مع بياناتك."]),
+      block("2. المعلومات التي نجمعها", ["قد نجمع المعلومات التي تقدمها لنا مباشرة، مثل:", ["الاسم", "البريد الإلكتروني", "رقم الجوال", "اسم الشركة أو الفريق", "معلومات الحساب", "بيانات المشاريع والوحدات والعملاء التي يتم إدخالها في مساحة العمل", "الرسائل والاستفسارات المرسلة عبر نماذج التواصل"], "كما قد نجمع بيانات تقنية عند استخدام المنصة، مثل عنوان IP، نوع المتصفح، الجهاز المستخدم، وسجلات الاستخدام لتحسين الأداء والأمان."]),
+      block("3. كيف نستخدم المعلومات", ["نستخدم البيانات للأغراض التالية:", ["إنشاء الحسابات وإدارة مساحات العمل", "تشغيل خدمات المنصة وإدارة المشاريع والوحدات والعملاء", "تحسين تجربة المستخدم وتطوير خصائص المنصة", "تقديم الدعم الفني والتشغيلي", "إرسال التنبيهات والتحديثات المرتبطة بالخدمة", "تعزيز الأمان ومنع الاستخدام غير المصرح به", "الالتزام بالمتطلبات النظامية والتنظيمية عند الحاجة"]]),
+      block("4. مشاركة البيانات", ["لا نبيع بياناتك الشخصية.", "قد نشارك بعض البيانات عند الحاجة مع:", ["مزودي الخدمات التقنية والاستضافة", "أدوات التكامل التي تختار ربطها بالمنصة", "الجهات النظامية عند وجود التزام قانوني", "أعضاء فريقك أو المستخدمين المصرح لهم داخل مساحة العمل بحسب الصلاحيات المحددة"], "وتتم مشاركة البيانات بالحد اللازم لتقديم الخدمة أو الامتثال للمتطلبات النظامية."]),
+      block("5. حماية البيانات", ["تتخذ كانترا إجراءات تقنية وتنظيمية لحماية البيانات من الوصول غير المصرح به أو الفقدان أو التعديل أو الإفصاح غير المشروع.", "وتشمل هذه الإجراءات إدارة الصلاحيات، التحكم في الوصول، مراقبة الأنشطة، واستخدام مزودي خدمات موثوقين."]),
+      block("6. الاحتفاظ بالبيانات", ["نحتفظ بالبيانات طوال مدة استخدامك للمنصة أو حسب ما تقتضيه أغراض التشغيل أو المتطلبات النظامية.", "وعند انتهاء الحاجة إلى البيانات، يتم حذفها أو إخفاء هويتها وفق الإجراءات المعتمدة."]),
+      block("7. حقوق المستخدم", ["يحق لك، بحسب الأنظمة المعمول بها، طلب:", ["الاطلاع على بياناتك", "تصحيح البيانات غير الدقيقة", "تحديث البيانات الناقصة", "طلب حذف البيانات عند عدم الحاجة إليها", "سحب الموافقة متى كان الاعتماد على الموافقة أساسًا للمعالجة"], "يمكن إرسال الطلبات عبر بيانات التواصل الموضحة في هذه السياسة."]),
+      block("8. ملفات الارتباط والتقنيات المشابهة", ["قد تستخدم كانترا ملفات الارتباط لتحسين تجربة الاستخدام، تحليل الأداء، وحفظ تفضيلات المستخدم.", "يمكنك التحكم في ملفات الارتباط من إعدادات المتصفح، وقد يؤثر تعطيلها على بعض وظائف المنصة."]),
+      block("9. التحديثات على السياسة", ["قد نقوم بتحديث سياسة الخصوصية من وقت لآخر. سيتم نشر النسخة المحدثة داخل هذه الصفحة مع توضيح تاريخ آخر تحديث.", "استمرارك في استخدام المنصة بعد التحديث يعني اطلاعك على النسخة الجديدة."]),
+    ],
+    terms: [
+      block("1. قبول الشروط", "باستخدامك لمنصة كانترا أو الوصول إلى أي من خدماتها، فإنك توافق على الالتزام بهذه الشروط والسياسات المرتبطة بها.\n\nإذا كنت تستخدم المنصة نيابة عن شركة أو مؤسسة، فإنك تقر بأن لديك الصلاحية النظامية لتمثيلها والالتزام بهذه الشروط نيابة عنها."),
+      block("2. وصف المنصة", "توفر كانترا مساحة عمل عقارية تساعد المطورين، الوسطاء، وفرق المبيعات على إدارة المشاريع، الوحدات، العملاء، البيانات، والتكاملات من خلال بيئة تشغيل موحدة.\n\nتسعى المنصة إلى تحسين كفاءة التشغيل، توحيد البيانات، وتسريع متابعة الفرص العقارية، ولا تُعد بديلاً عن التحقق المهني أو النظامي من المعلومات قبل اتخاذ القرارات التجارية أو التعاقدية."),
+      block("3. مسؤولية الحساب", "أنت مسؤول عن الحفاظ على سرية بيانات الدخول، وإدارة صلاحيات المستخدمين داخل مساحة العمل، وجميع الأنشطة التي تتم من خلال حسابك.\n\nيجب عليك إبلاغ فريق كانترا فورًا عند الاشتباه في أي استخدام غير مصرح به أو اختراق أو فقدان لبيانات الدخول."),
+      block("4. دقة البيانات", "تتحمل المؤسسة أو المستخدم مسؤولية صحة ودقة البيانات التي يتم إدخالها في المنصة، بما في ذلك بيانات المشاريع، الوحدات، الأسعار، المخزون، العملاء، المرفقات، والعروض.\n\nلا تتحمل كانترا مسؤولية القرارات أو التعاملات الناتجة عن بيانات غير صحيحة، غير محدثة، أو مدخلة من قبل المستخدم بشكل خاطئ."),
+      block("5. التكاملات والخدمات الخارجية", "قد تتيح كانترا ربط المنصة بأدوات أو خدمات خارجية، مثل تطبيقات التواصل، أنظمة الأتمتة، واجهات API، أو خدمات الشركاء.\n\nيقر المستخدم بأن استخدام أي تكامل خارجي يخضع لشروط وسياسات مزود الخدمة الخارجي، وأن كانترا لا تتحمل مسؤولية أي خلل أو توقف أو تغيير يصدر من تلك الخدمات خارج نطاق سيطرتها المباشرة."),
+      block("6. حدود المسؤولية", "تُقدم كانترا خدماتها كما هي ووفق الإمكانات المتاحة، وتسعى إلى ضمان استقرار المنصة ودقة التشغيل قدر الإمكان.\n\nولا تتحمل كانترا مسؤولية أي خسائر غير مباشرة أو تبعية، أو فقدان فرص تجارية، أو أضرار ناتجة عن سوء استخدام المنصة، أو إدخال بيانات غير دقيقة، أو الاعتماد على معلومات غير محدثة من قبل المستخدمين أو الأطراف المرتبطة بهم."),
+      block("7. القانون الحاكم", "تخضع هذه الشروط وتُفسر وفق الأنظمة المعمول بها في المملكة العربية السعودية.\n\nوفي حال نشوء أي نزاع يتعلق باستخدام المنصة أو هذه الشروط، يتم السعي أولًا إلى تسويته وديًا، وفي حال تعذر ذلك تكون الجهة القضائية المختصة في المملكة العربية السعودية هي المرجع للفصل في النزاع."),
+      block("8. تعديل الشروط", "يحق لـ كانترا تحديث هذه الشروط من وقت لآخر بما يتناسب مع تطوير المنصة أو المتطلبات التشغيلية أو النظامية.\n\nسيتم نشر النسخة المحدثة داخل هذه الصفحة، ويُعد استمرار استخدام المنصة بعد التحديث قبولًا بالشروط المعدلة."),
+      block("9. التواصل", "لأي استفسار متعلق بشروط الخدمة، يمكن التواصل مع فريق كانترا عبر:\n\nhello@qentrah.com"),
+    ],
+    legal: [
+      block("1. معلومات الشركة", ["تُدار منصة كانترا بواسطة شركة إتجاه التقنية، وهي منصة مساحة عمل عقارية تقدم حلولًا تشغيلية للمطورين، الوسطاء، وفرق المبيعات.", ["المقر: جدة، المملكة العربية السعودية", "الرقم الضريبي: 310425795900003"]]),
+      block("2. الامتثال التنظيمي", "تعمل كانترا وفق الأنظمة المعمول بها في المملكة العربية السعودية، بما يشمل المتطلبات ذات الصلة بالخدمات الإلكترونية، حماية البيانات، والتعاملات الرقمية."),
+      block("3. الملكية الفكرية", "جميع العلامات التجارية، الشعارات، التصاميم، النصوص، البرمجيات، الواجهات، والمحتويات المعروضة على المنصة مملوكة لـ كانترا أو مرخّصة لها.\n\nيحظر نسخ أو إعادة استخدام أو توزيع أي جزء من المنصة دون موافقة خطية مسبقة."),
+      block("4. استخدام المنصة", "يجب استخدام المنصة للأغراض المصرح بها فقط، وبما لا يخالف الأنظمة أو حقوق الأطراف الأخرى أو شروط الخدمة المعتمدة من كانترا.\n\nتحتفظ كانترا بحق تعليق أو تقييد الوصول إلى المنصة عند وجود استخدام مخالف أو نشاط غير مصرح به."),
+      block("5. دقة المعلومات", "تعتمد المنصة على البيانات التي يتم إدخالها أو تحديثها من قبل المستخدمين أو الجهات المصرح لها داخل مساحة العمل.\n\nلذلك، يتحمل المستخدم أو الجهة المالكة للحساب مسؤولية دقة بيانات المشاريع، الوحدات، الأسعار، المخزون، العملاء، والمرفقات المدخلة في المنصة."),
+      block("6. حدود المسؤولية", "تقدم كانترا خدماتها وفق الإمكانات المتاحة، وتسعى إلى الحفاظ على استقرار المنصة ودقة التشغيل.\n\nولا تتحمل كانترا مسؤولية أي خسائر مباشرة أو غير مباشرة ناتجة عن سوء استخدام المنصة، أو إدخال بيانات غير دقيقة، أو الاعتماد على معلومات غير محدثة من قبل المستخدمين."),
+      block("7. حماية البيانات", "تتعامل كانترا مع البيانات الشخصية وفق سياسة الخصوصية المعتمدة، وبما يتوافق مع المتطلبات النظامية ذات الصلة بحماية البيانات الشخصية في المملكة العربية السعودية.\n\nلمزيد من التفاصيل، يرجى مراجعة سياسة الخصوصية الخاصة بالمنصة."),
+      block("8. تسوية النزاعات", "تخضع هذه الصفحة وأي نزاع متعلق باستخدام المنصة للأنظمة المعمول بها في المملكة العربية السعودية.\n\nوفي حال نشوء أي نزاع، يتم السعي أولًا إلى تسويته وديًا، وفي حال تعذر ذلك يكون الاختصاص للجهات القضائية المختصة في المملكة العربية السعودية."),
+      block("9. التواصل القانوني", "لأي استفسار قانوني متعلق بالمنصة، يمكن التواصل عبر:\n\nlegal@qentrah.com"),
+    ],
+  },
+} as const;
 
 export const content = {
   en: {
     nav: {
-      brand: brandEn,
+      brand: brandLabel("en"),
       products: "Products",
-      privacy: "Privacy",
-      terms: "Terms",
-      workspace: "Open Workspace",
-      partners: "Partner Portal",
-      language: "العربية"
-    },
-    home: {
-      eyebrow: `${brandEn} product ecosystem`,
-      title: "The real estate operating layer, on one domain.",
-      description:
-        `${brandEn} gives real estate teams one workspace for daily work and one trusted path for partner integrations around that work.`,
-      primaryCta: "Open Workspace",
-      secondaryCta: "Explore Partners",
-      contactCta: `Talk to ${brandEn}`,
-      atlasEyebrow: "Product atlas",
-      atlasTitle: "Two public products. One operating system.",
-      atlasDescription:
-        "Workspace is where teams run clients, properties, projects, and follow-ups. Partners is where approved builders connect useful tools to that workspace.",
-      flowEyebrow: "Operating flow",
-      flowTitle: "From market signal to workspace action.",
-      flowDescription:
-        "The public story is simple: capture the signal, reconcile the operating context, authorize trusted tools, and move the team to the next action.",
-      trustEyebrow: "Trust network",
-      trustTitle: "Integrations connect through consent, not shortcuts.",
-      trustDescription:
-        `Partner products use OAuth, scoped access, and organization-level consent. ${brandEn} keeps workspace data behind clear permissions and approved API paths.`,
-      futureEyebrow: "What this unlocks next",
-      futureTitle: "The domain can grow without confusing the product.",
-      futureDescription:
-        `Future ${brandEn} offerings should feel like more rooms in the same operating layer, not separate brands fighting for attention.`,
-      finalTitle: "Start with the workspace. Expand through trusted products.",
-      finalDescription:
-        `Open ${workspaceEn} for daily real estate work, or explore Partners if you are building approved tools for ${brandEn} teams.`
+      privacy: workspaceEn.Landing.footer.privacy,
+      terms: workspaceEn.Landing.footer.terms,
+      legal: workspaceEn.Landing.footer.legal,
+      workspace: workspaceEn.Landing.nav.dashboard,
+      partners: partnersEnName,
+      language: "العربية",
     },
     products: [
       {
         id: "workspace",
-        name: workspaceEn,
-        status: "Main product",
+        name: workspaceEnName,
+        status: workspaceEn.Landing.footer.workspace,
         href: productUrls.workspace,
-        cta: "Open Workspace",
-        description: "The operating product for real estate organizations to manage clients, properties, projects, teams, approvals, and daily work.",
-        bullets: ["Today desk for real estate teams", "Clients, properties, projects, and calendar work", "Inventory readiness and operational approvals"]
+        cta: workspaceEn.Landing.home.hero.primary,
+        description: workspaceEn.Landing.home.hero.description,
       },
       {
         id: "partners",
-        name: partnersEn,
-        status: "Trusted integration path",
+        name: partnersEnName,
+        status: partnersEnName,
         href: productUrls.partners,
-        cta: "Open Partner Portal",
-        description: `The partner product for developers and software teams to register apps, request review, and connect approved tools to ${brandEn} workspaces.`,
-        bullets: ["OAuth app registration", "Scoped organization consent", "Approved partner APIs"]
-      }
+        cta: partnersEnName,
+        description: workspaceLegal.en.terms[1].body,
+      },
     ] as const,
-    flow: [
-      {
-        title: "Market signal",
-        description: "Leads, inventory changes, media, pricing, and project updates enter the operating layer."
-      },
-      {
-        title: "Workspace truth",
-        description: "Teams reconcile clients, properties, projects, units, calendar work, and approvals in one place."
-      },
-      {
-        title: "Trusted connection",
-        description: "Approved partners connect through OAuth, scopes, and organization-level consent."
-      },
-      {
-        title: "Next action",
-        description: "Operators know what to follow up, approve, publish, prepare, or hand off next."
-      }
-    ] as const,
-    trust: [
-      {
-        label: "OAuth authorization code with PKCE",
-        description: "Operator approval stays explicit before data moves."
-      },
-      {
-        label: "Organization-level consent",
-        description: "Operator approval stays explicit before data moves."
-      },
-      {
-        label: "Scoped partner APIs",
-        description: "Every integration path is scoped, reviewed, and reversible."
-      },
-      {
-        label: "Approved app lifecycle",
-        description: "Every integration path is scoped, reviewed, and reversible."
-      },
-      {
-        label: "No direct database access",
-        description: "Every integration path is scoped, reviewed, and reversible."
-      }
-    ] as const,
-    future: [
-      "More workspace workflows",
-      "More approved partner categories",
-      "More market-facing operating views"
-    ] as const,
-    legal: {
-      privacyTitle: "Privacy Policy",
-      termsTitle: "Terms of Service",
-      updated: "Last updated: May 12, 2026",
-      intro:
-        `These pages summarize how ${brandEn} handles public website, workspace, and partner-program information. They should be reviewed by counsel before production use.`,
-      privacy: [
-        {
-          title: "Information we collect",
-          body: "We collect information you provide directly, including account details, organization details, contact information, and documentation submitted during onboarding or partner review."
-        },
-        {
-          title: "How information is used",
-          body: `Information is used to operate ${brandEn} products, verify organizations, provide workspace features, review partner apps, support integrations, and maintain security and compliance records.`
-        },
-        {
-          title: "Data sharing",
-          body: `${brandEn} shares data with connected services only when an organization authorizes that access or when required to operate the requested product workflow. We do not sell personal data.`
-        },
-        {
-          title: "Security and retention",
-          body: `${brandEn} uses access controls, encrypted transport, audit records, and scoped authorization. Data is retained while accounts, organizations, or required compliance records remain active.`
-        }
-      ],
-      terms: [
-        {
-          title: "Acceptance",
-          body: `By using ${brandEn} products, you agree to these terms. If you use ${brandEn} on behalf of an organization, you confirm that you have authority to bind that organization.`
-        },
-        {
-          title: "Product use",
-          body: `${brandEn} provides real estate workspace tools and partner authorization flows. Users are responsible for accurate information, lawful use, and protecting their account credentials.`
-        },
-        {
-          title: "Partner integrations",
-          body: `Partner apps must use approved OAuth flows, scoped APIs, and secure token handling. ${brandEn} may reject, suspend, or revoke integrations that misuse data or violate review requirements.`
-        },
-        {
-          title: "Limitations",
-          body: `${brandEn} products are provided without warranties beyond those required by law. ${brandEn} is not liable for indirect or consequential damages arising from use of the platform.`
-        }
-      ]
-    }
+    legal: workspaceLegal.en,
   },
   ar: {
     nav: {
-      brand: brandAr,
+      brand: brandLabel("ar"),
       products: "المنتجات",
-      privacy: "الخصوصية",
-      terms: "الشروط",
-      workspace: "فتح مساحة العمل",
-      partners: "بوابة الشركاء",
-      language: "English"
-    },
-    home: {
-      eyebrow: `منظومة منتجات ${brandAr}`,
-      title: "مساحة عمل عقارية سعودية لإدارة CRM والمشاريع والعقارات.",
-      description:
-        `تمنح ${brandAr} شركات العقار في السعودية مساحة عمل يومية لإدارة العملاء والمشاريع والمخزون العقاري والمعاينات وعمليات CRM من مصدر واحد موثوق للمطورين والوسطاء.`,
-      primaryCta: "فتح مساحة العمل",
-      secondaryCta: "استكشاف الشركاء",
-      contactCta: `تواصل مع ${brandAr}`,
-      atlasEyebrow: "خريطة المنتجات",
-      atlasTitle: "منتجان عامان. نظام تشغيل واحد.",
-      atlasDescription:
-        "مساحة العمل هي مكان تشغيل العملاء والعقارات والمشاريع والمتابعات والمعاينات العقارية في السعودية. والشركاء هو مسار ربط الأدوات المعتمدة بهذه المساحة.",
-      flowEyebrow: "سير التشغيل",
-      flowTitle: "من إشارة السوق إلى إجراء داخل مساحة العمل.",
-      flowDescription:
-        "القصة العامة واضحة: اجمع بيانات المشاريع والمخزون والعملاء، وحد سياق المطور والوسيط، ثم انقل الفريق إلى الخطوة التالية بثقة.",
-      trustEyebrow: "شبكة الثقة",
-      trustTitle: "التكاملات تتصل بالموافقة، لا بالاختصارات.",
-      trustDescription:
-        "تستخدم منتجات الشركاء OAuth وصلاحيات محددة وموافقة على مستوى المؤسسة. تبقى بيانات مساحة العمل خلف أذونات واضحة ومسارات API معتمدة.",
-      futureEyebrow: "ما الذي يفتحه هذا لاحقا",
-      futureTitle: "يمكن للنطاق أن ينمو بدون تشتيت المنتج.",
-      futureDescription:
-        `يجب أن تبدو عروض ${brandAr} المستقبلية كغرف إضافية داخل طبقة التشغيل نفسها، لا كعلامات منفصلة تتنافس على الانتباه.`,
-      finalTitle: "ابدأ بمساحة العمل. وتوسع عبر منتجات موثوقة.",
-      finalDescription:
-        `افتح ${workspaceAr} لتشغيل العمل العقاري اليومي، أو استكشف الشركاء إذا كنت تبني أدوات معتمدة لفرق ${brandAr}.`
+      privacy: workspaceAr.Landing.footer.privacy,
+      terms: workspaceAr.Landing.footer.terms,
+      legal: workspaceAr.Landing.footer.legal,
+      workspace: workspaceAr.Landing.nav.dashboard,
+      partners: partnersArName,
+      language: "English",
     },
     products: [
       {
         id: "workspace",
-        name: workspaceAr,
-        status: "المنتج الرئيسي",
+        name: workspaceArName,
+        status: workspaceAr.Landing.footer.workspace,
         href: productUrls.workspace,
-        cta: "فتح مساحة العمل",
-        description: "منتج التشغيل للمؤسسات العقارية لإدارة العملاء والعقارات والمشاريع والفرق والموافقات والعمل اليومي.",
-        bullets: ["مكتب اليوم لفرق العقار", "عملاء وعقارات ومشاريع وتقويم", "جاهزية المخزون والموافقات التشغيلية"]
+        cta: workspaceAr.Landing.home.hero.primary,
+        description: workspaceAr.Landing.home.hero.description,
       },
       {
         id: "partners",
-        name: partnersAr,
-        status: "مسار التكاملات الموثوقة",
+        name: partnersArName,
+        status: partnersArName,
         href: productUrls.partners,
-        cta: "فتح بوابة الشركاء",
-        description: `منتج الشركاء للمطورين وفرق البرمجيات لتسجيل التطبيقات وطلب المراجعة وربط الأدوات المعتمدة بمساحات عمل ${brandAr}.`,
-        bullets: ["تسجيل تطبيقات OAuth", "موافقة مؤسسية محددة الصلاحيات", "واجهات API للشركاء المعتمدين"]
-      }
+        cta: partnersArName,
+        description: workspaceLegal.ar.terms[1].body,
+      },
     ] as const,
-    flow: [
-      {
-        title: "إشارة السوق",
-        description: "يدخل الطلب وتغيرات المخزون والوسائط والتسعير وتحديثات المشاريع إلى طبقة التشغيل."
-      },
-      {
-        title: "حقيقة مساحة العمل",
-        description: "يوحد الفريق العملاء والعقارات والمشاريع والوحدات والتقويم والموافقات في مكان واحد."
-      },
-      {
-        title: "اتصال موثوق",
-        description: "يتصل الشركاء المعتمدون عبر OAuth والصلاحيات والموافقة على مستوى المؤسسة."
-      },
-      {
-        title: "الخطوة التالية",
-        description: "يعرف المشغل ما يحتاج متابعة أو اعتمادا أو نشرا أو تحضيرا أو تسليما."
-      }
-    ] as const,
-    trust: [
-      {
-        label: "OAuth مع PKCE",
-        description: "تبقى موافقة المشغل واضحة قبل انتقال البيانات."
-      },
-      {
-        label: "موافقة على مستوى المؤسسة",
-        description: "تبقى موافقة المشغل واضحة قبل انتقال البيانات."
-      },
-      {
-        label: "واجهات API محددة الصلاحيات",
-        description: "كل مسار تكامل محدد الصلاحيات، ومراجع، وقابل للإلغاء."
-      },
-      {
-        label: "دورة حياة للتطبيقات المعتمدة",
-        description: "كل مسار تكامل محدد الصلاحيات، ومراجع، وقابل للإلغاء."
-      },
-      {
-        label: "بدون وصول مباشر لقاعدة البيانات",
-        description: "كل مسار تكامل محدد الصلاحيات، ومراجع، وقابل للإلغاء."
-      }
-    ] as const,
-    future: [
-      "تدفقات عمل أكثر داخل مساحة العمل",
-      "فئات أكثر من الشركاء المعتمدين",
-      "رؤى تشغيلية أكثر للسوق"
-    ] as const,
-    legal: {
-      privacyTitle: "سياسة الخصوصية",
-      termsTitle: "شروط الخدمة",
-      updated: "آخر تحديث: 12 مايو 2026",
-      intro:
-        `تلخص هذه الصفحات كيفية تعامل ${brandAr} مع معلومات الموقع العام ومساحة العمل وبرنامج الشركاء. يجب مراجعتها قانونيا قبل الاستخدام الإنتاجي.`,
-      privacy: [
-        {
-          title: "المعلومات التي نجمعها",
-          body: "نجمع المعلومات التي تقدمها مباشرة، بما في ذلك تفاصيل الحساب والمؤسسة ومعلومات التواصل والمستندات المقدمة أثناء الانضمام أو مراجعة الشركاء."
-        },
-        {
-          title: "كيفية استخدام المعلومات",
-          body: `تستخدم المعلومات لتشغيل منتجات ${brandAr}، والتحقق من المؤسسات، وتوفير ميزات مساحة العمل، ومراجعة تطبيقات الشركاء، ودعم التكاملات، وحفظ سجلات الأمان والامتثال.`
-        },
-        {
-          title: "مشاركة البيانات",
-          body: `تشارك ${brandAr} البيانات مع الخدمات المتصلة فقط عندما تفوض المؤسسة هذا الوصول أو عندما يكون ذلك مطلوبا لتشغيل تدفق المنتج المطلوب. لا نبيع البيانات الشخصية.`
-        },
-        {
-          title: "الأمان والاحتفاظ",
-          body: `تستخدم ${brandAr} ضوابط وصول ونقلا مشفرا وسجلات تدقيق وتفويضا محدد الصلاحيات. يتم الاحتفاظ بالبيانات ما دامت الحسابات أو المؤسسات أو سجلات الامتثال المطلوبة نشطة.`
-        }
-      ],
-      terms: [
-        {
-          title: "القبول",
-          body: `باستخدام منتجات ${brandAr}، فإنك توافق على هذه الشروط. إذا كنت تستخدم ${brandAr} نيابة عن مؤسسة، فأنت تؤكد أن لديك صلاحية إلزام تلك المؤسسة.`
-        },
-        {
-          title: "استخدام المنتج",
-          body: `توفر ${brandAr} أدوات مساحة عمل عقارية وتدفقات تفويض للشركاء. يتحمل المستخدمون مسؤولية دقة المعلومات والاستخدام النظامي وحماية بيانات الدخول.`
-        },
-        {
-          title: "تكاملات الشركاء",
-          body: `يجب أن تستخدم تطبيقات الشركاء تدفقات OAuth المعتمدة وواجهات API محددة الصلاحيات والتعامل الآمن مع الرموز. قد ترفض ${brandAr} أو تعلق أو تلغي التكاملات التي تسيء استخدام البيانات أو تخالف متطلبات المراجعة.`
-        },
-        {
-          title: "الحدود",
-          body: `تقدم منتجات ${brandAr} دون ضمانات تتجاوز ما يتطلبه القانون. لا تتحمل ${brandAr} مسؤولية الأضرار غير المباشرة أو التبعية الناتجة عن استخدام المنصة.`
-        }
-      ]
-    }
-  }
+    legal: workspaceLegal.ar,
+  },
 } as const;
 
 export function getContent(locale: Locale) {
   return content[locale];
-}
-
-export function getAlternateLocale(locale: Locale): Locale {
-  return locale === "ar" ? "en" : "ar";
 }

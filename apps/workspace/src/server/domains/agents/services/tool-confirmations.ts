@@ -9,6 +9,7 @@ export type AgentToolConfirmation = {
   summary: string;
   resource: string;
   action: string;
+  approvalType: "user" | "admin";
   inputPreview?: string;
   expiresAt: number;
 };
@@ -39,6 +40,8 @@ export async function createAgentToolConfirmation(
     tool: tool.name,
     resource: tool.resource,
     action: tool.action,
+    riskLevel: tool.riskLevel,
+    approvalRequirement: tool.approvalRequirement,
     summary: `${tool.title}: ${compactAgentToolPreview(input, 220)}`,
     inputPreview,
     input,
@@ -51,6 +54,7 @@ export async function createAgentToolConfirmation(
     summary: confirmation.summary,
     resource: confirmation.resource,
     action: confirmation.action,
+    approvalType: confirmation.approvalRequirement === "admin" ? "admin" as const : "user" as const,
     inputPreview: confirmation.inputPreview,
     expiresAt: confirmation.expiresAt,
   };

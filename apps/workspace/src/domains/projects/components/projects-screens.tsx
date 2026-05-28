@@ -425,21 +425,21 @@ export function ProjectDetailScreen({ id }: { id: string }) {
     <AppPageShell contentClassName="space-y-6 pb-14">
       <Tabs defaultValue="overview" className="space-y-6">
         <section className="space-y-5 text-start">
-          <div className="grid gap-5 border-b border-zinc-100 pb-6 dark:border-white/5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
+          <div className="grid gap-4 border-b border-zinc-100 pb-5 dark:border-white/5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
             <div className="min-w-0 max-w-5xl">
               <div className="flex flex-wrap items-center gap-2">
                 <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
                 {locationLabel && <ProjectMetaPill icon={MapPin}>{locationLabel}</ProjectMetaPill>}
                 {project.developer && <ProjectMetaPill icon={Building2}>{project.developer}</ProjectMetaPill>}
               </div>
-              <h1 className="mt-4 text-3xl font-black leading-tight text-zinc-950 dark:text-white md:text-5xl">{project.name}</h1>
-              <p className="mt-3 max-w-3xl text-sm font-semibold leading-7 text-zinc-600 dark:text-zinc-300">{project.description}</p>
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <ProjectMetaPill icon={Copy}>{project.reference}</ProjectMetaPill>
-                <ProjectMetaPill icon={Layers3}>{project.units} {t('card.units')}</ProjectMetaPill>
-                {project.priceRange && <ProjectMetaPill icon={Landmark}>{project.priceRange}</ProjectMetaPill>}
-                {project.regaAuthorizationNo && <ProjectMetaPill icon={FileText}>{project.regaAuthorizationNo}</ProjectMetaPill>}
+              <h1 className="mt-4 max-w-4xl text-2xl font-black leading-tight text-zinc-950 dark:text-white md:text-4xl">{project.name}</h1>
+              <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px] font-black uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+                <span>{project.reference}</span>
+                <span>{project.units} {t('card.units')}</span>
+                {project.priceRange && <span>{project.priceRange}</span>}
+                {project.regaAuthorizationNo && <span>{project.regaAuthorizationNo}</span>}
               </div>
+              <p className="mt-3 max-w-3xl text-sm font-medium leading-6 text-zinc-600 dark:text-zinc-300">{project.description}</p>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 xl:justify-end">
@@ -457,7 +457,7 @@ export function ProjectDetailScreen({ id }: { id: string }) {
           </div>
 
           <AppTabsList
-            className="gap-8"
+            className="gap-5"
             tabs={[
               { value: "overview", label: td('tabs.overview'), icon: LayoutGrid },
               { value: "inventory", label: td('tabs.inventory'), icon: Layers3 },
@@ -505,20 +505,6 @@ export function ProjectDetailScreen({ id }: { id: string }) {
             </AppSection>
 
             <div className="grid content-start gap-5">
-              <AppSection title={td('overview.unitsTitle')} description={td('overview.unitsDesc')}>
-                <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-zinc-200/70 dark:bg-white/10">
-                  <CompactFact label={t('detail.labels.units')} value={project.units} />
-                  <CompactFact label={td('metrics.live')} value={liveUnitCount} />
-                  <CompactFact label={td('metrics.available')} value={availableUnits} />
-                  <CompactFact label={td('sales.status.reserved')} value={reservedUnits} />
-                </div>
-                <div className="mt-5 space-y-4 border-t border-zinc-100 pt-5 dark:border-white/5">
-                  <ReadinessBar label={td('metrics.inventoryCoverage')} value={inventoryCoverage} />
-                  <MiniMovement label={td('sales.status.available')} value={availableUnits} total={liveUnitCount} className="bg-emerald-500" />
-                  <MiniMovement label={td('sales.status.sold')} value={soldUnits} total={liveUnitCount} className="bg-zinc-400" />
-                </div>
-              </AppSection>
-
               <AppSection title={td('overview.registryTitle')}>
                 <RegistryRows rows={coreDetailRows} />
               </AppSection>
@@ -677,23 +663,46 @@ function ProjectMetaPill({ icon: Icon, children }: { icon: typeof Building2; chi
   );
 }
 
-function ProjectUnitCard({ unit }: { unit: { id: string; title: string; reference: string; type: string; status: string; price: string; area: string; bedrooms?: number | string; bathrooms?: number | string } }) {
+function ProjectUnitCard({ unit }: { unit: { id: string; title: string; reference: string; type: string; status: string; price: string; area: string; bedrooms?: number | string; bathrooms?: number | string; city?: string; image?: string; coverImageUrl?: string } }) {
+  const rooms = [unit.bedrooms, unit.bathrooms].filter((value) => typeof value === "number").join(" / ");
+
   return (
-    <Link href={`/properties/${unit.reference || unit.id}`} className="block border border-zinc-200/70 bg-zinc-50/50 p-4 text-start transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/[0.025] dark:hover:bg-white/[0.04]">
+    <Link
+      href={`/properties/${unit.id}`}
+      className="block rounded-[18px] border border-zinc-200 bg-white p-4 text-start shadow-none transition-colors hover:border-zinc-300 hover:bg-zinc-50/50 dark:border-white/5 dark:bg-[#0A0A0A] dark:hover:border-white/15 dark:hover:bg-white/[0.025]"
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{unit.reference}</p>
-          <h3 className="mt-2 line-clamp-2 text-sm font-black text-zinc-950 dark:text-white">{unit.title}</h3>
+          <p className="truncate text-[10px] font-black uppercase tracking-[0.16em] text-zinc-400">{unit.reference}</p>
+          <h3 className="mt-2 line-clamp-2 text-sm font-black leading-snug text-zinc-950 dark:text-white">{unit.title}</h3>
+          <p className="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+            <MapPin className="h-3 w-3 shrink-0" />
+            <span className="truncate">{unit.city || unit.reference}</span>
+          </p>
         </div>
-        <StatusPill label={unit.status} tone={unit.status === "available" ? "success" : unit.status === "sold" ? "neutral" : "warning"} />
+        <div className="shrink-0">
+          <StatusPill label={unit.status} tone={unit.status === "available" ? "success" : unit.status === "sold" ? "neutral" : "warning"} />
+        </div>
       </div>
-      <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-xs font-bold text-zinc-500 dark:text-zinc-400">
-        <span>{unit.type}</span>
-        <span className="text-end">{unit.area}</span>
-        <span className="text-zinc-950 dark:text-white">{unit.price}</span>
-        <span className="text-end">{[unit.bedrooms, unit.bathrooms].filter((value) => typeof value === "number").join(" / ")}</span>
+
+      <div className="mt-4 border-t border-zinc-100 pt-4 dark:border-white/5">
+        <p className="truncate text-sm font-black text-zinc-950 dark:text-white">{unit.price}</p>
+        <div className="mt-3 grid grid-cols-3 gap-3">
+          <UnitMiniFact label="Type" value={unit.type} />
+          <UnitMiniFact label="Area" value={unit.area} />
+          <UnitMiniFact label="Rooms" value={rooms || "—"} />
+        </div>
       </div>
     </Link>
+  );
+}
+
+function UnitMiniFact({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="min-w-0 space-y-1">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">{label}</p>
+      <p className="truncate text-xs font-semibold text-zinc-800 dark:text-zinc-200">{value}</p>
+    </div>
   );
 }
 

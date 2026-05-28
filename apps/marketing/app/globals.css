@@ -31,7 +31,7 @@
 
 :root {
   color-scheme: light;
-  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
   --background: #f7f9fc;
   --foreground: #0e1726;
   --card: #ffffff;
@@ -93,6 +93,11 @@
     background-attachment: fixed;
     background-size: 100% 28px, 28px 100%, 100% 100%;
     font-family: var(--font-sans);
+  }
+
+  html[dir="rtl"] *,
+  [dir="rtl"] * {
+    letter-spacing: 0;
   }
 
   a {

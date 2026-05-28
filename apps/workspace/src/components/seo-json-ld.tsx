@@ -18,6 +18,33 @@ const trustedKeywords = [
   "broker coordination",
   "developer workflow",
 ];
+const primaryLinks = [
+  {
+    name: "Qentrah Workspace",
+    description: "Enter the public Qentrah Workspace overview for Saudi real estate operations.",
+    url: workspaceUrl,
+  },
+  {
+    name: "Developers",
+    description: "See how development teams prepare projects and verified inventory in Qentrah.",
+    url: `${workspaceUrl}/en/developer`,
+  },
+  {
+    name: "Brokers",
+    description: "See how brokers manage clients, viewings, and live inventory in Qentrah.",
+    url: `${workspaceUrl}/en/broker`,
+  },
+  {
+    name: "Docs",
+    description: "Read public documentation for connecting AI agents to Qentrah Workspace.",
+    url: `${workspaceUrl}/en/docs`,
+  },
+  {
+    name: "Contact",
+    description: "Contact Qentrah to map your real estate workspace workflow.",
+    url: `${workspaceUrl}/en/contact`,
+  },
+] as const;
 
 function JsonLd({ data }: { data: Record<string, unknown> }) {
   return (
@@ -83,10 +110,25 @@ export function WorkspacePublicJsonLd() {
     ],
   };
 
+  const siteNavigation = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "@id": `${workspaceUrl}/#site-navigation`,
+    name: "Qentrah Workspace primary links",
+    itemListElement: primaryLinks.map((link, index) => ({
+      "@type": "SiteNavigationElement",
+      position: index + 1,
+      name: link.name,
+      description: link.description,
+      url: link.url,
+    })),
+  };
+
   return (
     <>
       <JsonLd data={app} />
       <JsonLd data={webPage} />
+      <JsonLd data={siteNavigation} />
       <JsonLd data={breadcrumbs} />
     </>
   );

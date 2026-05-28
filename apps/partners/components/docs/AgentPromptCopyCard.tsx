@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, Clipboard, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { qentrahAuthSdkJsdelivrUrl } from "@/lib/sdk-version";
 
 const agentImplementationPrompt = String.raw`You are implementing a Qentrah partner integration in an existing web app.
 
@@ -24,7 +25,7 @@ SDK requirements:
 - Add a frontend button with the exact copy: "Authorize with Qentrah".
 - For bundled apps, use mountQentrahAuthorizeButton from @qentrah/auth-sdk/partner/browser.
 - For no-build HTML apps, load the pinned HTTPS script:
-  https://cdn.jsdelivr.net/npm/@qentrah/auth-sdk@0.1.5/dist/qentrah-auth.js
+  ${qentrahAuthSdkJsdelivrUrl}
 - The button should navigate to /api/qentrah/oauth/start.
 - Add backend start and callback routes using createQentrahPartnerAuthHandlers from @qentrah/auth-sdk/partner/next.
 - Implement sessionStore for pending state/PKCE using HttpOnly, SameSite=Lax, short-lived cookies or an equivalent server session.
@@ -88,17 +89,17 @@ export function AgentPromptCopyCard() {
     }
   }
 
-  const label = copyState === "copied" ? "Copied" : copyState === "failed" ? "Copy failed" : "Copy AI agent prompt";
+  const label = copyState === "copied" ? "Copied" : copyState === "failed" ? "Copy failed" : "Copy system AI prompt";
   const Icon = copyState === "copied" ? Check : copyState === "failed" ? X : Clipboard;
 
   return (
     <div className="not-prose command-panel my-6 p-4 text-card-foreground">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="max-w-2xl">
-          <p className="text-xs font-bold uppercase text-primary">AI agent starter</p>
+          <p className="text-xs font-bold uppercase text-primary">System AI starter</p>
           <h2 className="mt-2 text-xl font-semibold tracking-normal text-foreground">Copy a complete implementation brief</h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Paste this into your coding agent to build the SDK button, backend routes, token storage, webhooks, env usage, and Workspace API reads.
+            Paste this into your system AI operator to build the SDK button, backend routes, token storage, webhooks, env usage, and Workspace API reads.
           </p>
         </div>
         <Button type="button" onClick={copyPrompt} aria-live="polite" className="h-9 gap-2 self-start rounded-[6px] bg-primary text-primary-foreground hover:bg-primary/90">

@@ -124,12 +124,12 @@ function UnitTile({ unit }: { unit: PropertyUnit }) {
 
 function PropertyInfoTile({ icon: Icon, label, value }: { icon: LucideIcon; label: ReactNode; value: ReactNode }) {
   return (
-    <div className="min-w-0 rounded-2xl bg-zinc-50 p-4 dark:bg-white/[0.03]">
-      <span className="flex items-center gap-2 text-[11px] font-bold text-zinc-400">
-        <Icon className="h-3.5 w-3.5 shrink-0" />
+    <div className="min-w-0 rounded-xl border border-zinc-200/70 bg-white px-3 py-2.5 dark:border-white/10 dark:bg-white/[0.02]">
+      <span className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+        <Icon className="h-3 w-3 shrink-0" />
         <span className="truncate">{label}</span>
       </span>
-      <p className="mt-3 truncate text-sm font-black text-zinc-900 dark:text-white">{value}</p>
+      <p className="mt-1.5 truncate text-xs font-bold text-zinc-900 dark:text-white">{value}</p>
     </div>
   );
 }
@@ -417,6 +417,10 @@ export function PropertyDetailScreen({ id }: { id: string }) {
   const { galleryAssets, documentAssets } = useMemo(() => propertyMediaAssets(mediaAssets), [mediaAssets]);
   const clientCandidatesQuery = useClientsPagedQuery(isClientLinkOpen ? workspaceOrganizationId : undefined, { search: clientSearch });
   const clientCandidates = clientCandidatesQuery.results;
+  const filteredAvailableClients = useMemo(
+    () => availablePropertyClientCandidates(clientCandidates, propertyClientLinks),
+    [clientCandidates, propertyClientLinks],
+  );
   const router = useRouter();
   const deleteOperation = useOperationState({ errorMessage: "Unit delete failed." });
   const linkOperation = useOperationState({ errorMessage: "Client link failed." });
@@ -453,10 +457,6 @@ export function PropertyDetailScreen({ id }: { id: string }) {
     { label: t('form.statusLabel'), value: t(`toolbar.filters.${unit.status}`), icon: CheckCircle2 },
     { label: t('detail.labels.purpose'), value: t(`purposes.${unit.purpose}`), icon: FolderOpen },
   ];
-  const filteredAvailableClients = useMemo(
-    () => availablePropertyClientCandidates(clientCandidates, propertyClientLinks),
-    [clientCandidates, propertyClientLinks],
-  );
   const selectedClientName = selectedPropertyClientName(clientCandidates, clientToLink);
   const activeMedia = mediaViewerIndex === null ? null : galleryAssets[mediaViewerIndex] ?? null;
   const { previewGallery, hiddenGalleryCount } = propertyGalleryPreview(galleryAssets);
@@ -495,20 +495,20 @@ export function PropertyDetailScreen({ id }: { id: string }) {
     <AppPageShell contentClassName="space-y-6 pb-14">
       <Tabs defaultValue="overview" className="space-y-6">
         <section className="border-b border-zinc-200/70 pb-4 text-start dark:border-white/10">
-          <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-            <div className="min-w-0 space-y-3">
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-500">
-                <span>{unit.project}</span>
-                <span className="h-1 w-1 rounded-full bg-zinc-400/70" />
-                <span>{unit.reference}</span>
-              </div>
+          <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+            <div className="min-w-0">
               <h1 className="max-w-5xl text-2xl font-black leading-tight text-zinc-950 dark:text-white md:text-3xl">
                 {unit.title}
               </h1>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px] font-black uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+                <span>{unit.reference}</span>
+                <span>{unit.project}</span>
+                <span>{formatSAR(unit.price)}</span>
+                <span>{unit.area}</span>
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
                 <StatusPill label={t(`toolbar.filters.${unit.status}`)} tone={statusTone(unit.status)} />
                 <StatusPill label={t(`purposes.${unit.purpose}`)} tone="neutral" />
-                <span className="inline-flex h-8 items-center rounded-full bg-zinc-950 px-3 text-xs font-black text-white dark:bg-white dark:text-zinc-950">{formatSAR(unit.price)}</span>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 pt-1 xl:justify-end">

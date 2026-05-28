@@ -92,6 +92,8 @@ export type MobileDictionary = {
     userSettings: string;
     errorScreens: string;
     syncResearchArchive: string;
+    loadConversationsError: string;
+    retry: string;
   };
   profile: {
     account: string;
@@ -382,17 +384,19 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       appearanceDarkDescription: "Low-glare surfaces for night use.",
     },
     menu: {
-      title: "Menu",
-      researchArchive: "Research archive",
-      workspaceTools: "Workspace tools",
-      startConversation: "Start new conversation",
+      title: "Qentrah",
+      researchArchive: "Workspace conversations",
+      workspaceTools: "Qentrah Workspace",
+      startConversation: "New conversation",
       untitledSearch: "Untitled search",
       fullHistory: "View full history",
       savedProperties: "Saved properties",
       favoriteChats: "Favorite chats",
-      userSettings: "User settings",
+      userSettings: "Workspace settings",
       errorScreens: "Error screens",
       syncResearchArchive: "Log in to sync your research archive",
+      loadConversationsError: "Unable to load conversations",
+      retry: "Retry",
     },
     profile: {
       account: "Account",
@@ -684,17 +688,19 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       appearanceDarkDescription: "أسطح منخفضة الوهج للاستخدام ليلًا.",
     },
     menu: {
-      title: "القائمة",
-      researchArchive: "أرشيف البحث",
-      workspaceTools: "أدوات المساحة",
-      startConversation: "ابدأ محادثة جديدة",
+      title: "كانترا",
+      researchArchive: "محادثات المساحة",
+      workspaceTools: "مساحة كانترا",
+      startConversation: "محادثة جديدة",
       untitledSearch: "بحث بدون عنوان",
       fullHistory: "عرض السجل الكامل",
       savedProperties: "العقارات المحفوظة",
       favoriteChats: "المحادثات المفضلة",
-      userSettings: "إعدادات المستخدم",
+      userSettings: "إعدادات المساحة",
       errorScreens: "شاشات الأخطاء",
       syncResearchArchive: "سجل الدخول لمزامنة أرشيف البحث",
+      loadConversationsError: "تعذر تحميل المحادثات",
+      retry: "إعادة المحاولة",
     },
     profile: {
       account: "الحساب",
@@ -986,17 +992,19 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       appearanceDarkDescription: "Surfaces moins lumineuses pour le soir.",
     },
     menu: {
-      title: "Menu",
-      researchArchive: "Archive de recherche",
-      workspaceTools: "Outils de l’espace",
+      title: "Qentrah",
+      researchArchive: "Conversations de l’espace",
+      workspaceTools: "Qentrah Workspace",
       startConversation: "Nouvelle conversation",
       untitledSearch: "Recherche sans titre",
       fullHistory: "Voir tout l’historique",
       savedProperties: "Biens enregistrés",
       favoriteChats: "Chats favoris",
-      userSettings: "Paramètres utilisateur",
+      userSettings: "Paramètres de l’espace",
       errorScreens: "Écrans d’erreur",
       syncResearchArchive: "Connectez-vous pour synchroniser vos recherches",
+      loadConversationsError: "Impossible de charger les conversations",
+      retry: "Réessayer",
     },
     profile: {
       account: "Compte",

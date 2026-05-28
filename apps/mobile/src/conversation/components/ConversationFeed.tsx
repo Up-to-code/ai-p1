@@ -400,7 +400,7 @@ export function ConversationFeed({
       />
 
       <ScrollToLatestButton
-        bottomOffset={bottomContentInset}
+        bottomOffset={scrollButtonBottomOffset}
         contentFillsViewport={contentFillsViewport}
         isAtEnd={isAtEnd}
         onPress={() => {

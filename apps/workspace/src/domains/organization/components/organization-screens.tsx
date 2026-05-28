@@ -465,132 +465,128 @@ export function OrganizationScreen() {
       <div className="mx-auto max-w-7xl px-6 py-10">
         {activeTab === "profile" && (
           <div className="space-y-8">
-            <AccessSummary
-              loading={capabilitiesQuery.isLoading}
-              labels={{
-                title: t("access.title"),
-                description: t("access.description"),
-                allowed: t("access.allowed"),
-                blocked: t("access.blocked"),
-              }}
-              items={[
-                { label: t("access.profile"), allowed: canUpdateOrganization },
-                { label: t("access.invite"), allowed: canInviteMembers },
-                { label: t("access.members"), allowed: canUpdateMembers || canRemoveMembers },
-                { label: t("access.roles"), allowed: canManageRoles },
-                { label: t("access.agentLinks"), allowed: canReadAgentLinks || canCreateAgentLinks },
-              ]}
-            />
-
-            <Section title={t("sections.workspaceData")} description={t("sections.workspaceDataDesc")}>
-              <div className="grid gap-4 md:grid-cols-3">
+            <Section title={t("sections.workspaceData")}>
+              <div className="grid gap-3.5 sm:grid-cols-3">
                 <OrgDataCard icon={Building2} label={t("labels.orgId")} value={organizationId || "-"} />
                 <OrgDataCard icon={ShieldCheck} label={t("labels.slug")} value={account.organization.slug || "-"} />
                 <OrgDataCard icon={Users} label={t("labels.members")} value={members.length.toString()} />
               </div>
             </Section>
 
-            <Section title={t("sections.legal")} description={t("sections.legalDesc")}>
-              <div className="grid gap-5 md:grid-cols-2">
-                <OrgField id="name" label={t("labels.displayName")} registration={register("name")} error={errors.name?.message} />
-                <OrgField id="legalName" label={t("labels.legalName")} registration={register("legalName")} error={errors.legalName?.message} />
-                <OrgField id="type" label={t("labels.type")} registration={register("type")} error={errors.type?.message} />
-                <OrgField id="address" label={t("labels.address")} registration={register("address")} error={errors.address?.message} />
-              </div>
-            </Section>
+            <div className="border-t border-zinc-200/60 pt-8 dark:border-white/[0.06]">
+              <Section title={t("sections.legal")}>
+                <div className="grid gap-5 md:grid-cols-2">
+                  <OrgField id="name" label={t("labels.displayName")} registration={register("name")} error={errors.name?.message} />
+                  <OrgField id="legalName" label={t("labels.legalName")} registration={register("legalName")} error={errors.legalName?.message} />
+                  <OrgField id="type" label={t("labels.type")} registration={register("type")} error={errors.type?.message} />
+                  <OrgField id="address" label={t("labels.address")} registration={register("address")} error={errors.address?.message} />
+                </div>
+              </Section>
+            </div>
 
-            <Section title={t("sections.contact")} description={t("sections.contactDesc")}>
-              <div className="grid gap-5 md:grid-cols-2">
-                <OrgField id="email" label={t("labels.email")} type="email" registration={register("email")} error={errors.email?.message} />
-                <OrgField id="phone" label={t("labels.phone")} type="tel" registration={register("phone")} error={errors.phone?.message} />
-                <OrgField id="website" label={t("labels.website")} type="url" registration={register("website")} error={errors.website?.message} />
-              </div>
-            </Section>
+            <div className="border-t border-zinc-200/60 pt-8 dark:border-white/[0.06]">
+              <Section title={t("sections.contact")}>
+                <div className="grid gap-5 md:grid-cols-2">
+                  <OrgField id="email" label={t("labels.email")} type="email" registration={register("email")} error={errors.email?.message} />
+                  <OrgField id="phone" label={t("labels.phone")} type="tel" registration={register("phone")} error={errors.phone?.message} />
+                  <OrgField id="website" label={t("labels.website")} type="url" registration={register("website")} error={errors.website?.message} />
+                </div>
+              </Section>
+            </div>
           </div>
         )}
 
         {activeTab === "members" && (
           <div className="space-y-8">
-            <Section title={t("members.title")} description={t("members.description")}>
+            <Section
+              title={t("members.title")}
+              actions={(
+                <div className="flex flex-wrap gap-2 sm:justify-end">
+                  <Button disabled={!canInviteMembers} onClick={() => setInviteDialogOpen(true)} className="h-9.5 rounded-lg bg-zinc-900 text-[9px] font-black uppercase tracking-widest text-white hover:bg-black disabled:opacity-50">
+                    <Plus className="me-1.5 h-3.5 w-3.5" />
+                    {t("invites.open")}
+                  </Button>
+                  <Link href={`/${locale}/settings/organization/custom-permissions`} className={cn(buttonVariants({ variant: "outline" }), "h-9.5 rounded-lg text-[9px] font-black uppercase tracking-widest")}>
+                    <ShieldCheck className="me-1.5 h-3.5 w-3.5" />
+                    {t("roles.manageWorkRoles")}
+                  </Link>
+                </div>
+              )}
+            >
               <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-white/[0.06] dark:bg-[#111]">
-                <div className="flex flex-col gap-3 border-b border-zinc-100 p-4 dark:border-white/[0.06] sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm font-black text-zinc-900 dark:text-white">{t("members.tableTitle")}</p>
-                    <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{t("members.tableDesc")}</p>
+                {membersQuery.isLoading ? (
+                  <div className="p-4">
+                    <LoadingRow label={t("members.loading")} />
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button disabled={!canInviteMembers} onClick={() => setInviteDialogOpen(true)} className="h-10 rounded-xl bg-zinc-900 text-[10px] font-black uppercase tracking-widest text-white hover:bg-black disabled:opacity-50">
-                      <Plus className="me-2 h-3.5 w-3.5" />
-                      {t("invites.open")}
-                    </Button>
-                    <Link href={`/${locale}/settings/organization/custom-permissions`} className={cn(buttonVariants({ variant: "outline" }), "h-10 rounded-xl text-[10px] font-black uppercase tracking-widest")}>
-                      <ShieldCheck className="me-2 h-3.5 w-3.5" />
-                      {t("roles.manageWorkRoles")}
-                    </Link>
+                ) : members.length === 0 ? (
+                  <div className="p-4">
+                    <EmptyState title={t("members.emptyTitle")} description={t("members.emptyDesc")} />
                   </div>
-                </div>
-                <div className="space-y-3 p-4">
-                  {membersQuery.isLoading && <LoadingRow label={t("members.loading")} />}
-                  {!membersQuery.isLoading && members.length === 0 && <EmptyState title={t("members.emptyTitle")} description={t("members.emptyDesc")} />}
-                  {members.map((member) => (
-                    <MemberRow
-                      key={member.id}
-                      member={member}
-                      roles={availableRoles}
-                      roleLabels={defaultRoleLabels}
-                      isCurrentUser={member.userId === account.user.id}
-                      isLastOwner={isOwner(member.role) && ownerCount <= 1}
-                      canUpdateRole={canUpdateMembers}
-                      canRemove={canRemoveMembers}
-                      onChangeRole={(role) => setMemberAction({ member, type: "role", role })}
-                      onRemove={() => setMemberAction({ member, type: "remove" })}
-                      labels={{
-                        currentUser: t("members.currentUser"),
-                        remove: t("members.remove"),
-                        role: t("members.role"),
-                        joined: t("members.joined"),
-                      }}
-                    />
-                  ))}
-                </div>
+                ) : (
+                  <div className="px-5 divide-y divide-zinc-100/60 dark:divide-white/[0.04]">
+                    {members.map((member) => (
+                      <MemberRow
+                        key={member.id}
+                        member={member}
+                        roles={availableRoles}
+                        roleLabels={defaultRoleLabels}
+                        isCurrentUser={member.userId === account.user.id}
+                        isLastOwner={isOwner(member.role) && ownerCount <= 1}
+                        canUpdateRole={canUpdateMembers}
+                        canRemove={canRemoveMembers}
+                        onChangeRole={(role) => setMemberAction({ member, type: "role", role })}
+                        onRemove={() => setMemberAction({ member, type: "remove" })}
+                        labels={{
+                          currentUser: t("members.currentUser"),
+                          remove: t("members.remove"),
+                          role: t("members.role"),
+                          joined: t("members.joined"),
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </Section>
 
             <Section title={t("invites.pendingTitle")} description={t("invites.pendingDesc")}>
-              <div className="space-y-3">
-                {(invitationsQuery.data ?? []).length === 0 && pendingInviteLinks.length === 0 && <EmptyState title={t("invites.emptyTitle")} description={t("invites.emptyDesc")} />}
-                {pendingInviteLinks.map((inviteLink) => (
-                  <PendingInviteLinkRow
-                    key={inviteLink.id}
-                    inviteLink={inviteLink}
-                    onCancel={() => cancelInviteLinkMutation.mutate(inviteLink.id)}
-                    canceling={cancelInviteLinkMutation.isPending || !canInviteMembers}
-                    labels={{
-                      linkTitle: t("invites.linkTitle"),
-                      expires: t("invites.expires"),
-                      cancel: t("invites.cancel"),
-                    }}
-                    roleLabels={defaultRoleLabels}
-                  />
-                ))}
-                {(invitationsQuery.data ?? []).map((invite) => (
-                  <PendingInviteRow
-                    key={invite.id}
-                    invite={invite}
-                    copied={copiedInviteId === invite.id}
-                    onCopy={() => copyInviteLink(invite)}
-                    onCancel={() => cancelInviteMutation.mutate(invite.id)}
-                    canceling={cancelInviteMutation.isPending || !canInviteMembers}
-                    roleLabels={defaultRoleLabels}
-                    labels={{
-                      emailTitle: t("invites.emailTitle"),
-                      copy: t("invites.copy"),
-                      copied: t("invites.copied"),
-                      cancel: t("invites.cancel"),
-                    }}
-                  />
-                ))}
-              </div>
+              {(invitationsQuery.data ?? []).length === 0 && pendingInviteLinks.length === 0 ? (
+                <EmptyState title={t("invites.emptyTitle")} description={t("invites.emptyDesc")} />
+              ) : (
+                <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white px-5 divide-y divide-zinc-100/60 dark:border-white/[0.06] dark:bg-[#111] dark:divide-white/[0.04]">
+                  {pendingInviteLinks.map((inviteLink) => (
+                    <PendingInviteLinkRow
+                      key={inviteLink.id}
+                      inviteLink={inviteLink}
+                      onCancel={() => cancelInviteLinkMutation.mutate(inviteLink.id)}
+                      canceling={cancelInviteLinkMutation.isPending || !canInviteMembers}
+                      labels={{
+                        linkTitle: t("invites.linkTitle"),
+                        expires: t("invites.expires"),
+                        cancel: t("invites.cancel"),
+                      }}
+                      roleLabels={defaultRoleLabels}
+                    />
+                  ))}
+                  {(invitationsQuery.data ?? []).map((invite) => (
+                    <PendingInviteRow
+                      key={invite.id}
+                      invite={invite}
+                      copied={copiedInviteId === invite.id}
+                      onCopy={() => copyInviteLink(invite)}
+                      onCancel={() => cancelInviteMutation.mutate(invite.id)}
+                      canceling={cancelInviteMutation.isPending || !canInviteMembers}
+                      roleLabels={defaultRoleLabels}
+                      labels={{
+                        emailTitle: t("invites.emailTitle"),
+                        copy: t("invites.copy"),
+                        copied: t("invites.copied"),
+                        cancel: t("invites.cancel"),
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
             </Section>
           </div>
         )}
@@ -998,22 +994,23 @@ function AgentLinksPanel({
     const isDraft = connection.status === "draft";
 
     return (
-      <div key={connection.id} className={cn("rounded-[24px] border border-zinc-200 bg-white p-4 dark:border-white/[0.06] dark:bg-[#111]", isDraft && "border-sky-200 bg-sky-50/60 dark:border-sky-400/25 dark:bg-sky-950/20")}>
+      <div key={connection.id} className={cn("rounded-2xl border border-zinc-100 bg-white p-4.5 transition-all dark:border-white/[0.04] dark:bg-[#111]", isDraft && "border-sky-200/60 bg-sky-500/5 dark:border-sky-500/10")}>
         <div className="flex h-full flex-col gap-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-1.5">
                 <StatusPill label={t(`status.${connection.status}`)} tone={connection.status === "active" ? "success" : connection.status === "paused" || isDraft ? "warning" : "neutral"} />
-                <span className="rounded-full bg-zinc-100 px-2.5 py-1 font-mono text-[10px] font-bold text-zinc-500 dark:bg-white/5">{t("labels.keyEnding", { last4: connection.keyLast4 })}</span>
+                <span className="rounded-full bg-zinc-100 px-2 py-0.5 font-mono text-[9px] font-bold text-zinc-500 dark:bg-white/5">{t("labels.keyEnding", { last4: connection.keyLast4 })}</span>
               </div>
-              <p className="mt-3 truncate text-base font-black text-zinc-900 dark:text-white">{connection.name}</p>
+              <p className="mt-2.5 truncate text-sm font-black text-zinc-800 dark:text-zinc-200">{connection.name}</p>
             </div>
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-500 dark:bg-white/5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-50 text-zinc-400 dark:bg-white/5 dark:text-zinc-500">
               <Bot className="h-4 w-4" />
             </div>
           </div>
-          <div className="flex items-center gap-2 rounded-2xl bg-zinc-50 px-3 py-2 dark:bg-white/[0.03]">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-zinc-200 text-[10px] font-black text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+          
+          <div className="flex items-center gap-2 rounded-xl bg-zinc-50/50 px-2.5 py-1.5 dark:bg-white/[0.01]">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-zinc-100 text-[9px] font-black text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
               {creatorImage ? (
                 <span
                   aria-label={creatorName}
@@ -1024,30 +1021,39 @@ function AgentLinksPanel({
               ) : getInitials(creatorName)}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-xs font-black text-zinc-900 dark:text-white">{creatorName}</p>
-              <p className="truncate text-[10px] font-bold text-zinc-400">{t("labels.createdBy", { email: creatorEmail })}</p>
+              <p className="truncate text-[10px] font-black text-zinc-900 dark:text-white">{creatorName}</p>
+              <p className="truncate text-[9px] font-bold text-zinc-400">{t("labels.createdBy", { email: creatorEmail })}</p>
             </div>
           </div>
-          <p className="line-clamp-3 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+          
+          <p className="line-clamp-2 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
             {agentPermissionSummary(connection.permissions, {
               resource: (resource) => t(`resources.${resource}`),
               action: (action) => t(`actions.${action}`),
             }) || t("labels.noWork")}
           </p>
-          <div className="grid gap-2 rounded-2xl bg-zinc-50 p-3 text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:bg-white/[0.03] sm:grid-cols-3">
+
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[9px] font-bold text-zinc-400 uppercase tracking-wider">
             <span>{t("labels.used", { count: connection.usageCount })}</span>
+            <span className="h-0.5 w-0.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
             <span>{t("labels.created", { date: formatDate(connection.createdAt) })}</span>
-            <span>{connection.lastUsedAt ? t("labels.lastUsed", { date: formatDate(connection.lastUsedAt) }) : t("labels.noWork")}</span>
+            {connection.lastUsedAt && (
+              <>
+                <span className="h-0.5 w-0.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                <span>{t("labels.lastUsed", { date: formatDate(connection.lastUsedAt) })}</span>
+              </>
+            )}
           </div>
-          <div className="mt-auto flex flex-wrap gap-2 border-t border-zinc-100 pt-3 dark:border-white/[0.06]">
+
+          <div className="mt-auto flex flex-wrap gap-1.5 border-t border-zinc-100/60 pt-3 dark:border-white/[0.04]">
             {connection.status !== "revoked" && (
               <Button
                 variant="outline"
                 disabled={!canCreate || updateMutation.isPending}
                 onClick={() => updateMutation.mutate({ connection, input: { status: connection.status === "active" ? "paused" : "active" } })}
-                className="rounded-xl text-[10px] font-black uppercase tracking-widest"
+                className="h-8 rounded-lg text-[9px] font-black uppercase tracking-widest px-2.5"
               >
-                <PauseCircle className="me-2 h-3.5 w-3.5" />
+                <PauseCircle className="me-1.5 h-3.5 w-3.5" />
                 {connection.status === "active" ? t("buttons.pause") : t("buttons.resume")}
               </Button>
             )}
@@ -1056,9 +1062,9 @@ function AgentLinksPanel({
                 variant="outline"
                 disabled={!canCreate || updateMutation.isPending}
                 onClick={() => openEditAgentLinkDialog(connection)}
-                className="rounded-xl text-[10px] font-black uppercase tracking-widest"
+                className="h-8 rounded-lg text-[9px] font-black uppercase tracking-widest px-2.5"
               >
-                <Save className="me-2 h-3.5 w-3.5" />
+                <Save className="me-1.5 h-3.5 w-3.5" />
                 {t("buttons.edit")}
               </Button>
             )}
@@ -1067,9 +1073,9 @@ function AgentLinksPanel({
                 variant="outline"
                 disabled={!canCreate || rotateMutation.isPending}
                 onClick={() => rotateMutation.mutate(connection)}
-                className="rounded-xl text-[10px] font-black uppercase tracking-widest"
+                className="h-8 rounded-lg text-[9px] font-black uppercase tracking-widest px-2.5"
               >
-                <RefreshCcw className="me-2 h-3.5 w-3.5" />
+                <RefreshCcw className="me-1.5 h-3.5 w-3.5" />
                 {t("buttons.rotate")}
               </Button>
             )}
@@ -1078,9 +1084,9 @@ function AgentLinksPanel({
                 variant="outline"
                 disabled={!canDelete || revokeMutation.isPending}
                 onClick={() => revokeMutation.mutate(connection)}
-                className="rounded-xl border-sky-200 text-[10px] font-black uppercase tracking-widest text-sky-700 hover:bg-sky-50 dark:border-sky-400/30 dark:text-sky-300 dark:hover:bg-sky-950/30"
+                className="h-8 rounded-lg text-[9px] font-black uppercase tracking-widest px-2.5 text-sky-700 border-sky-100 bg-sky-500/5 hover:bg-sky-500/10 dark:border-sky-500/15"
               >
-                <Trash2 className="me-2 h-3.5 w-3.5" />
+                <Trash2 className="me-1.5 h-3.5 w-3.5" />
                 {t("buttons.moveToDraft")}
               </Button>
             )}
@@ -1091,7 +1097,7 @@ function AgentLinksPanel({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <Section
         title={t("title")}
         description={t("description")}
@@ -1099,38 +1105,41 @@ function AgentLinksPanel({
           <Button
             disabled={!canCreate}
             onClick={openNewAgentLinkDialog}
-            className="h-11 rounded-xl bg-zinc-900 px-5 text-[10px] font-black uppercase tracking-widest text-white hover:bg-black"
+            className="h-10 rounded-lg bg-zinc-900 px-4 text-[9px] font-black uppercase tracking-widest text-white hover:bg-black"
           >
-            <Plus className="me-2 h-4 w-4" />
+            <Plus className="me-1.5 h-3.5 w-3.5" />
             {t("newButton")}
           </Button>
         )}
       >
-        <div className="grid gap-3 md:grid-cols-3">
-          <OrgDataCard icon={KeyRound} label={t("stats.active")} value={agentStats.active.toString()} />
-          <OrgDataCard icon={Bot} label={t("stats.calls")} value={agentStats.calls.toString()} />
-          <OrgDataCard icon={ShieldCheck} label={t("stats.drafts")} value={agentStats.drafts.toString()} />
-        </div>
-      </Section>
-
-      <Section title={t("existingTitle")} description={t("existingDescription")}>
-        <div className="grid gap-3 xl:grid-cols-2">
-          {!canRead && <EmptyState title={t("empty.noAccessTitle")} description={t("empty.noAccessDescription")} />}
-          {canRead && query.isLoading && <LoadingRow label={t("empty.loading")} />}
-          {canRead && !query.isLoading && visibleConnections.length === 0 && <EmptyState title={t("empty.noLinksTitle")} description={t("empty.noLinksDescription")} />}
-          {visibleConnections.map(connectionCard)}
-        </div>
-        {canRead && draftConnections.length > 0 && (
-          <div className="mt-4 flex justify-center">
-            <Button
-              variant="outline"
-              onClick={() => setShowDrafts((current) => !current)}
-              className="rounded-full px-5 text-[10px] font-black uppercase tracking-widest"
-            >
-              {showDrafts ? t("buttons.hideDrafts") : t("buttons.showDrafts", { count: draftConnections.length })}
-            </Button>
+        <div className="space-y-6">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-zinc-400">
+            <span>{t("stats.active")}: <strong className="text-zinc-700 dark:text-zinc-300">{agentStats.active}</strong></span>
+            <span className="h-1 w-1 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+            <span>{t("stats.calls")}: <strong className="text-zinc-700 dark:text-zinc-300">{agentStats.calls}</strong></span>
+            <span className="h-1 w-1 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+            <span>{t("stats.drafts")}: <strong className="text-zinc-700 dark:text-zinc-300">{agentStats.drafts}</strong></span>
           </div>
-        )}
+
+          <div className="grid gap-4 xl:grid-cols-2">
+            {!canRead && <EmptyState title={t("empty.noAccessTitle")} description={t("empty.noAccessDescription")} />}
+            {canRead && query.isLoading && <LoadingRow label={t("empty.loading")} />}
+            {canRead && !query.isLoading && visibleConnections.length === 0 && <EmptyState title={t("empty.noLinksTitle")} description={t("empty.noLinksDescription")} />}
+            {visibleConnections.map(connectionCard)}
+          </div>
+          
+          {canRead && draftConnections.length > 0 && (
+            <div className="mt-4 flex justify-center">
+              <Button
+                variant="outline"
+                onClick={() => setShowDrafts((current) => !current)}
+                className="h-8.5 rounded-full px-4 text-[9px] font-black uppercase tracking-widest"
+              >
+                {showDrafts ? t("buttons.hideDrafts") : t("buttons.showDrafts", { count: draftConnections.length })}
+              </Button>
+            </div>
+          )}
+        </div>
       </Section>
 
       <Dialog open={dialogOpen} onOpenChange={(open) => {
@@ -1431,7 +1440,7 @@ function ApiKeysPanel({
   const oneTimeStarterRequest = organizationApiStarterRequest(oneTimeApiBaseUrl, oneTimeKey);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <Section
         title={t("title")}
         description={t("description")}
@@ -1439,61 +1448,72 @@ function ApiKeysPanel({
           <Button
             disabled={!canCreate}
             onClick={openCreateDialog}
-            className="h-11 rounded-xl bg-zinc-900 px-5 text-[10px] font-black uppercase tracking-widest text-white hover:bg-black"
+            className="h-10 rounded-lg bg-zinc-900 px-4 text-[9px] font-black uppercase tracking-widest text-white hover:bg-black"
           >
-            <Plus className="me-2 h-4 w-4" />
+            <Plus className="me-1.5 h-3.5 w-3.5" />
             {t("newButton")}
           </Button>
         )}
       >
-        <div className="grid gap-3 md:grid-cols-3">
-          <OrgDataCard icon={KeyRound} label={t("stats.active")} value={stats.active.toString()} />
-          <OrgDataCard icon={ShieldCheck} label={t("stats.quota")} value={t("stats.quotaValue")} />
-          <OrgDataCard icon={RefreshCcw} label={t("stats.calls")} value={stats.calls.toString()} />
-        </div>
-      </Section>
+        <div className="space-y-6">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-zinc-400">
+            <span>{t("stats.active")}: <strong className="text-zinc-700 dark:text-zinc-300">{stats.active}</strong></span>
+            <span className="h-1 w-1 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+            <span>{t("stats.quota")}: <strong className="text-zinc-700 dark:text-zinc-300">{t("stats.quotaValue")}</strong></span>
+            <span className="h-1 w-1 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+            <span>{t("stats.calls")}: <strong className="text-zinc-700 dark:text-zinc-300">{stats.calls}</strong></span>
+          </div>
 
-      <Section title={t("existingTitle")} description={t("existingDescription")}>
-        <div className="grid gap-3 xl:grid-cols-2">
-          {!canRead && <EmptyState title={t("empty.noAccessTitle")} description={t("empty.noAccessDescription")} />}
-          {canRead && query.isLoading && <LoadingRow label={t("empty.loading")} />}
-          {canRead && !query.isLoading && keys.length === 0 && <EmptyState title={t("empty.noKeysTitle")} description={t("empty.noKeysDescription")} />}
-          {keys.map((key) => (
-            <div key={key.id} className="rounded-[24px] border border-zinc-200 bg-white p-4 dark:border-white/[0.06] dark:bg-[#111]">
+          <div className="grid gap-4 xl:grid-cols-2">
+            {!canRead && <EmptyState title={t("empty.noAccessTitle")} description={t("empty.noAccessDescription")} />}
+            {canRead && query.isLoading && <LoadingRow label={t("empty.loading")} />}
+            {canRead && !query.isLoading && keys.length === 0 && <EmptyState title={t("empty.noKeysTitle")} description={t("empty.noKeysDescription")} />}
+            {keys.map((key) => (
+            <div key={key.id} className="rounded-2xl border border-zinc-100 bg-white p-4.5 transition-all dark:border-white/[0.04] dark:bg-[#111]">
               <div className="flex h-full flex-col gap-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5">
                       <StatusPill label={t(`status.${key.status}`)} tone={key.status === "active" ? "success" : key.status === "expired" ? "warning" : "neutral"} />
-                      <span className="rounded-full bg-zinc-100 px-2.5 py-1 font-mono text-[10px] font-bold text-zinc-500 dark:bg-white/5">{t("labels.keyEnding", { last4: key.keyLast4 })}</span>
+                      <span className="rounded-full bg-zinc-100 px-2 py-0.5 font-mono text-[9px] font-bold text-zinc-500 dark:bg-white/5">{t("labels.keyEnding", { last4: key.keyLast4 })}</span>
                     </div>
-                    <p className="mt-3 truncate text-base font-black text-zinc-900 dark:text-white">{key.name}</p>
+                    <p className="mt-2.5 truncate text-sm font-black text-zinc-800 dark:text-zinc-200">{key.name}</p>
                   </div>
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-500 dark:bg-white/5">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-50 text-zinc-400 dark:bg-white/5 dark:text-zinc-500">
                     <KeyRound className="h-4 w-4" />
                   </div>
                 </div>
-                <p className="line-clamp-3 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
-                    {apiKeyPermissionSummary(key.permissions, {
-                      resource: (resource) => t(`resources.${resource}`),
-                      action: (action) => t(`actions.${action}`),
-                    }) || t("labels.noWork")}
+                
+                <p className="line-clamp-2 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
+                  {apiKeyPermissionSummary(key.permissions, {
+                    resource: (resource) => t(`resources.${resource}`),
+                    action: (action) => t(`actions.${action}`),
+                  }) || t("labels.noWork")}
                 </p>
-                <div className="grid gap-2 rounded-2xl bg-zinc-50 p-3 text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:bg-white/[0.03] sm:grid-cols-2">
+
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[9px] font-bold text-zinc-400 uppercase tracking-wider">
                   <span>{t("labels.used", { count: key.usageCount })}</span>
+                  <span className="h-0.5 w-0.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
                   <span>{t("labels.quota", { used: key.quotaUsed, limit: key.quotaLimit })}</span>
+                  <span className="h-0.5 w-0.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
                   <span>{key.expiresAt ? t("labels.expires", { date: formatDate(key.expiresAt) }) : t("labels.neverExpires")}</span>
-                  <span>{key.lastUsedAt ? t("labels.lastUsed", { date: formatDate(key.lastUsedAt) }) : t("labels.noWork")}</span>
+                  {key.lastUsedAt && (
+                    <>
+                      <span className="h-0.5 w-0.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                      <span>{t("labels.lastUsed", { date: formatDate(key.lastUsedAt) })}</span>
+                    </>
+                  )}
                 </div>
-                <div className="mt-auto flex flex-wrap gap-2 border-t border-zinc-100 pt-3 dark:border-white/[0.06]">
+
+                <div className="mt-auto flex flex-wrap gap-1.5 border-t border-zinc-100/60 pt-3 dark:border-white/[0.04]">
                   {key.status !== "revoked" && (
                     <Button
                       variant="outline"
                       disabled={!canUpdate || rotateMutation.isPending}
                       onClick={() => openRotateDialog(key)}
-                      className="rounded-xl text-[10px] font-black uppercase tracking-widest"
+                      className="h-8 rounded-lg text-[9px] font-black uppercase tracking-widest px-2.5"
                     >
-                      <RefreshCcw className="me-2 h-3.5 w-3.5" />
+                      <RefreshCcw className="me-1.5 h-3.5 w-3.5" />
                       {t("buttons.rotate")}
                     </Button>
                   )}
@@ -1502,9 +1522,9 @@ function ApiKeysPanel({
                       variant="outline"
                       disabled={!canDelete || revokeMutation.isPending}
                       onClick={() => revokeMutation.mutate(key)}
-                      className="rounded-xl border-red-200 text-[10px] font-black uppercase tracking-widest text-red-600 hover:bg-red-50"
+                      className="h-8 rounded-lg text-[9px] font-black uppercase tracking-widest px-2.5 text-red-600 border-red-100 bg-red-500/5 hover:bg-red-500/10 dark:border-red-500/15"
                     >
-                      <Trash2 className="me-2 h-3.5 w-3.5" />
+                      <Trash2 className="me-1.5 h-3.5 w-3.5" />
                       {t("buttons.revoke")}
                     </Button>
                   )}
@@ -1512,6 +1532,7 @@ function ApiKeysPanel({
               </div>
             </div>
           ))}
+          </div>
         </div>
       </Section>
 
@@ -1915,24 +1936,24 @@ function AccessSummary({
   items: { label: string; allowed: boolean }[];
 }) {
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/[0.06] dark:bg-[#111]">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="border-b border-zinc-200/60 pb-6 dark:border-white/[0.06]">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <p className="flex items-center gap-2 text-sm font-black text-zinc-900 dark:text-white">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin text-zinc-400" /> : <ShieldCheck className="h-4 w-4 text-emerald-500" />}
+          <p className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-900 dark:text-white">
+            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-400" /> : <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />}
             {labels.title}
           </p>
-          <p className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">{labels.description}</p>
+          <p className="mt-1 text-[10px] leading-5 text-zinc-400 dark:text-zinc-500">{labels.description}</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {items.map((item) => (
             <span
               key={item.label}
               className={cn(
-                "rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-widest",
+                "rounded-full border px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest transition-colors",
                 item.allowed
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300"
-                  : "border-zinc-200 bg-zinc-50 text-zinc-400 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-500",
+                  ? "border-emerald-200/50 bg-emerald-500/10 text-emerald-700 dark:border-emerald-500/20 dark:text-emerald-400"
+                  : "border-zinc-200 bg-transparent text-zinc-400 dark:border-white/5 dark:text-zinc-500",
               )}
               title={item.allowed ? labels.allowed : labels.blocked}
             >
@@ -1947,25 +1968,29 @@ function AccessSummary({
 
 function OrgField({ id, label, type = "text", registration, error }: { id: string; label: string; type?: string; registration: UseFormRegisterReturn; error?: string }) {
   return (
-    <div className="space-y-2">
-      <Label htmlFor={id} className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{label}</Label>
-      <Input id={id} type={type} className="h-12 rounded-xl border-zinc-200 bg-white font-medium focus-visible:ring-blue-600/20 dark:border-white/10 dark:bg-[#111]" aria-invalid={Boolean(error)} {...registration} />
-      {error && <p className="text-[10px] font-bold uppercase tracking-wider text-red-600">{error}</p>}
+    <div className="space-y-1.5">
+      <Label htmlFor={id} className="text-[9px] font-black uppercase tracking-[0.12em] text-zinc-400 dark:text-zinc-500">{label}</Label>
+      <Input
+        id={id}
+        type={type}
+        className="h-10 rounded-lg border-zinc-200 bg-white/50 text-xs font-semibold shadow-none transition-colors focus-visible:border-zinc-400 focus-visible:ring-0 dark:border-white/10 dark:bg-[#0c0c0c] dark:focus-visible:border-zinc-700"
+        aria-invalid={Boolean(error)}
+        {...registration}
+      />
+      {error && <p className="text-[9px] font-bold uppercase tracking-wider text-red-500">{error}</p>}
     </div>
   );
 }
 
 function OrgDataCard({ icon: Icon, label, value }: { icon: typeof Building2; label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-white/[0.06] dark:bg-[#111]">
-      <div className="flex items-center gap-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-500 dark:bg-white/5 dark:text-zinc-400">
-          <Icon className="h-4 w-4" />
-        </div>
-        <div className="min-w-0">
-          <p className="text-[9px] font-black uppercase tracking-[0.15em] text-zinc-400">{label}</p>
-          <p className="mt-1 truncate text-sm font-black text-zinc-900 dark:text-white" title={value}>{value}</p>
-        </div>
+    <div className="flex items-center gap-3 rounded-xl border border-zinc-100 bg-zinc-50/50 p-4 transition-colors hover:bg-zinc-50 dark:border-white/[0.04] dark:bg-white/[0.01] dark:hover:bg-white/[0.02]">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500 dark:bg-white/5 dark:text-zinc-400">
+        <Icon className="h-3.5 w-3.5" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">{label}</p>
+        <p className="mt-0.5 truncate text-xs font-black text-zinc-800 dark:text-zinc-200" title={value}>{value}</p>
       </div>
     </div>
   );
@@ -1998,29 +2023,31 @@ function MemberRow({
   const email = memberEmail(member);
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/[0.06] dark:bg-[#111] md:flex-row md:items-center">
+    <div className="flex flex-col gap-4 py-4.5 border-b border-zinc-100/60 dark:border-white/[0.04] last:border-b-0 md:flex-row md:items-center">
       <div className="flex min-w-0 flex-1 items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-zinc-100 text-xs font-black uppercase text-zinc-500 dark:bg-white/5">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-zinc-100 text-xs font-black uppercase text-zinc-500 dark:bg-white/5">
           {member.user?.image ? <img src={member.user.image} alt={name} className="h-full w-full object-cover" /> : getInitials(name)}
         </div>
         <div className="min-w-0">
-          <p className="truncate text-sm font-black text-zinc-900 dark:text-white">{name} {isCurrentUser && <span className="text-[10px] text-zinc-400">({labels.currentUser})</span>}</p>
-          <p className="mt-1 truncate text-[10px] font-bold uppercase tracking-widest text-zinc-400">{email}</p>
+          <p className="truncate text-xs font-black text-zinc-900 dark:text-white">
+            {name} {isCurrentUser && <span className="text-[9px] font-bold text-zinc-400">({labels.currentUser})</span>}
+          </p>
+          <p className="mt-0.5 truncate text-[9px] font-bold uppercase tracking-widest text-zinc-400">{email}</p>
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">{labels.joined} {formatDate(member.createdAt)}</span>
+      <div className="flex flex-wrap items-center gap-4">
+        <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">{labels.joined} {formatDate(member.createdAt)}</span>
         <select
           value={member.role}
           disabled={isLastOwner || !canUpdateRole}
           onChange={(event) => onChangeRole(event.target.value)}
-          className="h-9 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-bold dark:border-white/10 dark:bg-[#111]"
+          className="h-8.5 rounded-lg border border-zinc-200 bg-white px-2.5 text-xs font-bold transition-colors dark:border-white/10 dark:bg-[#111]"
           aria-label={labels.role}
         >
           {roles.map((role) => <option key={role} value={role}>{formatRoleName(role, roleLabels)}</option>)}
         </select>
-        <Button variant="outline" disabled={isCurrentUser || isLastOwner || !canRemove} onClick={onRemove} className="h-9 rounded-xl text-[10px] font-black uppercase tracking-widest text-red-600">
-          <Trash2 className="me-2 h-3.5 w-3.5" />
+        <Button variant="outline" disabled={isCurrentUser || isLastOwner || !canRemove} onClick={onRemove} className="h-8.5 rounded-lg border-red-100 bg-red-500/5 px-3 text-[9px] font-black uppercase tracking-widest text-red-600 hover:bg-red-500/10 dark:border-red-500/15">
+          <Trash2 className="me-1.5 h-3.5 w-3.5" />
           {labels.remove}
         </Button>
       </div>
@@ -2046,18 +2073,20 @@ function PendingInviteRow({
   labels: { emailTitle: string; copy: string; copied: string; cancel: string };
 }) {
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/[0.06] dark:bg-[#111] md:flex-row md:items-center">
+    <div className="flex flex-col gap-4 py-4.5 border-b border-zinc-100/60 dark:border-white/[0.04] last:border-b-0 md:flex-row md:items-center">
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-black text-zinc-900 dark:text-white">{invite.email}</p>
-        <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-zinc-400">{labels.emailTitle} / {formatRoleName(invite.role, roleLabels)} / {invite.status} / {formatDate(invite.expiresAt)}</p>
+        <p className="truncate text-xs font-black text-zinc-900 dark:text-white">{invite.email}</p>
+        <p className="mt-1 text-[9px] font-bold uppercase tracking-widest text-zinc-400">
+          {labels.emailTitle} &bull; {formatRoleName(invite.role, roleLabels)} &bull; {invite.status} &bull; {formatDate(invite.expiresAt)}
+        </p>
       </div>
-      <div className="flex gap-2">
-        <Button variant="outline" onClick={onCopy} className="h-9 rounded-xl text-[10px] font-black uppercase tracking-widest">
-          {copied ? <CheckCircle2 className="me-2 h-3.5 w-3.5" /> : <Copy className="me-2 h-3.5 w-3.5" />}
+      <div className="flex items-center gap-2">
+        <Button variant="outline" onClick={onCopy} className="h-8.5 rounded-lg text-[9px] font-black uppercase tracking-widest px-3">
+          {copied ? <CheckCircle2 className="me-1.5 h-3.5 w-3.5 text-emerald-500" /> : <Copy className="me-1.5 h-3.5 w-3.5" />}
           {copied ? labels.copied : labels.copy}
         </Button>
-        <Button variant="outline" onClick={onCancel} disabled={canceling} className="h-9 rounded-xl text-[10px] font-black uppercase tracking-widest text-red-600">
-          <Trash2 className="me-2 h-3.5 w-3.5" />
+        <Button variant="outline" onClick={onCancel} disabled={canceling} className="h-8.5 rounded-lg text-[9px] font-black uppercase tracking-widest px-3 text-red-600 border-red-100 bg-red-500/5 hover:bg-red-500/10 dark:border-red-500/15">
+          <Trash2 className="me-1.5 h-3.5 w-3.5" />
           {labels.cancel}
         </Button>
       </div>
@@ -2079,14 +2108,16 @@ function PendingInviteLinkRow({
   labels: { linkTitle: string; expires: string; cancel: string };
 }) {
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/[0.06] dark:bg-[#111] md:flex-row md:items-center">
+    <div className="flex flex-col gap-4 py-4.5 border-b border-zinc-100/60 dark:border-white/[0.04] last:border-b-0 md:flex-row md:items-center">
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-black text-zinc-900 dark:text-white">{labels.linkTitle}</p>
-        <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-zinc-400">{formatRoleName(inviteLink.role, roleLabels)} / {inviteLink.status} / {labels.expires} {formatDate(inviteLink.expiresAt)}</p>
+        <p className="truncate text-xs font-black text-zinc-900 dark:text-white">{labels.linkTitle}</p>
+        <p className="mt-1 text-[9px] font-bold uppercase tracking-widest text-zinc-400">
+          {formatRoleName(inviteLink.role, roleLabels)} &bull; {inviteLink.status} &bull; {labels.expires} {formatDate(inviteLink.expiresAt)}
+        </p>
       </div>
-      <div className="flex gap-2">
-        <Button variant="outline" onClick={onCancel} disabled={canceling} className="h-9 rounded-xl text-[10px] font-black uppercase tracking-widest text-red-600">
-          <Trash2 className="me-2 h-3.5 w-3.5" />
+      <div className="flex items-center gap-2">
+        <Button variant="outline" onClick={onCancel} disabled={canceling} className="h-8.5 rounded-lg text-[9px] font-black uppercase tracking-widest px-3 text-red-600 border-red-100 bg-red-500/5 hover:bg-red-500/10 dark:border-red-500/15">
+          <Trash2 className="me-1.5 h-3.5 w-3.5" />
           {labels.cancel}
         </Button>
       </div>

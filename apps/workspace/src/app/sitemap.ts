@@ -3,7 +3,7 @@ import { brandDomainUrl } from "@qentrah/brand-identity";
 
 const siteUrl = brandDomainUrl("workspace");
 const locales = ["en", "ar"] as const;
-const publicPaths = ["", "/about", "/broker", "/contact", "/developer", "/docs"] as const;
+const publicPaths = ["", "/about", "/broker", "/contact", "/developer", "/docs", "/privacy", "/terms", "/legal"] as const;
 const docsTopics = [
   "why-public",
   "endpoint",

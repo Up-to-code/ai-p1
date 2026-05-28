@@ -175,6 +175,25 @@ test("mobile agent chat request streams incrementally with native XHR", async ()
   }
 });
 
+test("mobile native chat request uses production workspace URL when Expo extra is missing", async () => {
+  const restoreNativeRuntime = setNativeRuntimeForTest();
+
+  try {
+    const pending = sendAgentChatRequest({
+      organizationId: "org_1",
+      message: "hello",
+      onEvent: () => undefined,
+    });
+
+    const xhr = await waitForMockXhr();
+    assert.equal(xhr.url, "https://app.qentrah.com/api/v1/organizations/org_1/agents/chat");
+    xhr.finish(200);
+    await pending;
+  } finally {
+    restoreNativeRuntime();
+  }
+});
+
 test("mobile native XHR chat request flushes a buffered final SSE event", async () => {
   process.env.EXPO_PUBLIC_WORKSPACE_API_URL = "https://app.qentrah.com";
   const restoreNativeRuntime = setNativeRuntimeForTest();

@@ -18,6 +18,8 @@ function fakeContext(input: {
     req: {
       param: (name: string) => input.params?.[name],
       query: (name: string) => input.query?.[name],
+      header: (name: string) => name.toLowerCase() === "x-request-id" ? "test-request-id" : undefined,
+      path: "/api/v1/organizations/org_1/agents/threads",
     },
     json: (payload: unknown, status = 200) => new Response(JSON.stringify(payload), { status }),
   } as never;
@@ -100,26 +102,50 @@ describe("agent read handlers", () => {
     await expect(messagesResponse.json()).resolves.toMatchObject({ error: "Invalid agent message limit." });
   });
 
-  it("surfaces unauthorized access from Convex auth", async () => {
+  it("returns a controlled forbidden response from Convex auth", async () => {
     vi.mocked(fetchAuthQuery).mockRejectedValueOnce(new Error("Unauthorized"));
 
-    await expect(handleListAgentThreads(fakeContext({
+    const response = await handleListAgentThreads(fakeContext({
       params: { organizationId: "org_forbidden" },
       query: {},
-    }))).rejects.toThrow("Unauthorized");
+    })) as Response;
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      error: "You do not have access to this workspace.",
+    });
   });
 
-  it("surfaces cross-organization message access denial from Convex auth", async () => {
+  it("returns a controlled forbidden response for cross-organization message access", async () => {
     vi.mocked(fetchAuthQuery).mockRejectedValueOnce(new Error("Unauthorized"));
 
-    await expect(handleListAgentMessages(fakeContext({
+    const response = await handleListAgentMessages(fakeContext({
       params: { organizationId: "org_forbidden", threadId: "thread_from_other_org" },
       query: {},
-    }))).rejects.toThrow("Unauthorized");
+    })) as Response;
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      error: "You do not have access to this workspace.",
+    });
     expect(fetchAuthQuery).toHaveBeenCalledWith(expect.anything(), {
       organizationId: "org_forbidden",
       threadId: "thread_from_other_org",
       limit: 80,
     });
+  });
+
+  it("returns a controlled read failure instead of a global 500", async () => {
+    vi.mocked(fetchAuthQuery).mockRejectedValueOnce(new Error("Convex validation failed"));
+
+    const response = await handleListAgentThreads(fakeContext({
+      params: { organizationId: "org_1" },
+      query: {},
+    })) as Response;
+
+    expect(response.status).toBe(502);
+    const payload = await response.json() as { error: string; requestId: string };
+    expect(payload.error).toContain("Unable to load conversations.");
+    expect(payload.requestId).toBe("test-request-id");
   });
 });

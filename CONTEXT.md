@@ -13,6 +13,7 @@ This file gives architecture skills a shared domain language for Qentrah. Use th
 ## Source Of Truth
 
 - **Partners app catalog**: partner app metadata, client id, redirect URIs, allowed scopes, publisher identity, review notes, and published status. Owned by Partners.
+- **Partner app integration profile**: Partners-owned app information that explains what the app does and where it is in the integrate/debug/sandbox/workspace/production path. Includes category, description, support contact, webhook endpoint, policy links, and current integration mode.
 - **OAuth runtime projection**: minimal Better Auth OAuth client state needed for Workspace to authorize/token partner apps. Owned operationally by Workspace, projected from Partners.
 - **Organization partner grant**: Workspace Convex `organizationPartnerConnections` record binding an organization to a Partners app/client, approved scopes, status, authorizing user/member, expiry, and last verification time.
 - **Partner resource access**: Workspace API enforcement that validates Better Auth token claims, organization grant state, scopes, and resource/action permission before business data is returned or mutated.

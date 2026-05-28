@@ -2,6 +2,8 @@ function trimTrailingSlash(value: string) {
   return value.replace(/\/+$/, "");
 }
 
+const productionWorkspaceApiUrl = "https://app.qentrah.com";
+
 let fallbackInstallationId: string | null = null;
 let installationHashPromise: Promise<string> | null = null;
 
@@ -22,7 +24,7 @@ function getWorkspaceApiBaseUrl() {
     getRuntimeWorkspaceApiUrl()
       || process.env.EXPO_PUBLIC_WORKSPACE_API_URL
       || process.env.EXPO_PUBLIC_AUTH_URL
-      || "",
+      || productionWorkspaceApiUrl,
   );
 }
 
@@ -62,7 +64,7 @@ function createInstallationId() {
   const random = globalThis.crypto && "randomUUID" in globalThis.crypto
     ? globalThis.crypto.randomUUID()
     : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 18)}`;
-  return `qentrah-mobile-${random}`;
+  return `qentrah-${random}`;
 }
 
 function stableHash(value: string) {

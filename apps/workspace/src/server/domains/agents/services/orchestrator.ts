@@ -26,6 +26,7 @@ type AgentStreamEvent =
       summary: string;
       resource: string;
       action: string;
+      approvalType?: "user" | "admin";
       inputPreview?: string;
       expiresAt: number;
     }

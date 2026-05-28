@@ -6,8 +6,9 @@ Use this package to add OAuth connection, token refresh, webhook verification, p
 
 This NPM package is published for developers who are building Qentrah integrations. It is not an open-source release of the Qentrah platform or a disclosure of private platform internals.
 
-## What's New In 0.3.1
+## What's New In 0.3.2
 
+- Corrects the Next.js route-handler examples for `qentrahAuth.start` and `qentrahAuth.callback`.
 - Adds a headless partner integration harness for sections, scopes, lifecycle metadata, safe results, and UI-ready rows.
 - Expands the service-app client with read/search/filter helpers for organization, clients, properties, projects, tasks, calendar, media, and webhooks.
 - Adds client create, update, and delete helpers.
@@ -152,14 +153,14 @@ export const qentrahAuth = createQentrahPartnerAuthHandlers({
 // app/api/qentrah/oauth/start/route.ts
 import { qentrahAuth } from "../config";
 
-export const GET = qentrahAuth.GET.start;
+export const GET = qentrahAuth.start;
 ```
 
 ```ts
 // app/api/qentrah/oauth/callback/route.ts
 import { qentrahAuth } from "../config";
 
-export const GET = qentrahAuth.GET.callback;
+export const GET = qentrahAuth.callback;
 ```
 
 For other backend frameworks, use the lower-level helpers from `@qentrah/auth-sdk/partner` and wire the generated redirect URL, pending state storage, callback validation, and token storage into your own routes.

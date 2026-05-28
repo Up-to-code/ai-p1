@@ -133,4 +133,4 @@ npm --workspace @qentrah/partners run build
 - [Apps and packages](../../docs/architecture/apps-and-packages.md)
 - [Partner platform flow](../../docs/partner-platform/README.md)
 - [Partner implementation guide](../../docs/partner-platform/partner-implementation-guide.md)
-- [AI agent implementation prompt](./content/docs/ai-agent-implementation.mdx)
+- [System AI implementation prompt](./content/docs/ai-agent-implementation.mdx)

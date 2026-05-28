@@ -17,11 +17,11 @@ import {
 import { executeWorkspaceTool, readAgentConversationMemory } from "./tool-executor";
 import { toolInputSchemas } from "./tool-inputs";
 import { agentToolPermissionsFromCapabilities } from "./tool-permissions";
-import { evaluateAgentToolRisk } from "../policies/risk-policy";
+import { evaluateAgentToolPolicy } from "../policies/tool-policy";
 
 type AgentToolResult = {
   tool: McpToolDefinition;
-  status: "allowed" | "blocked" | "failed" | "requires_confirmation";
+  status: "allowed" | "blocked" | "failed" | "requires_confirmation" | "requires_admin_approval";
   input?: unknown;
   output?: unknown;
   error?: string;
@@ -43,20 +43,29 @@ type OrganizationCapabilities = Awaited<ReturnType<typeof fetchAuthQuery<typeof 
 
 async function runLoggedTool(runtime: AgentToolRuntime, tool: McpToolDefinition, input: unknown) {
   await runtime.onStatus?.(tool.title);
-  const risk = evaluateAgentToolRisk(tool);
-  if (risk.state === "blocked") {
-    const message = risk.reason ?? "This agent action is not available.";
+  const policy = evaluateAgentToolPolicy({
+    adapter: "agent",
+    actorType: "user",
+    organizationId: runtime.organizationId,
+    tool,
+    permissions: [{ resource: tool.resource, actions: [tool.action] }],
+  });
+  if (policy.state === "blocked") {
+    const message = policy.reason || "This agent action is not available.";
     const result = { tool, status: "blocked" as const, input, error: message };
     await runtime.onToolResult?.(result);
     return { ok: false, tool: tool.name, error: message };
   }
 
-  if (risk.state === "requires_confirmation") {
+  if (policy.state === "requires_user_approval" || policy.state === "requires_admin_approval") {
     try {
       const confirmation = await createAgentToolConfirmation(runtime, tool, input);
+      const status: AgentToolResult["status"] = policy.state === "requires_admin_approval"
+        ? "requires_admin_approval"
+        : "requires_confirmation";
       const result = {
         tool,
-        status: "requires_confirmation" as const,
+        status,
         input,
         confirmationId: confirmation.confirmationId,
         output: confirmation,
@@ -67,8 +76,9 @@ async function runLoggedTool(runtime: AgentToolRuntime, tool: McpToolDefinition,
         ok: false,
         tool: tool.name,
         confirmationRequired: true,
+        approvalType: policy.state === "requires_admin_approval" ? "admin" : "user",
         confirmation,
-        message: "This action requires explicit confirmation before it can run.",
+        message: policy.reason,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : "Confirmation could not be created.";

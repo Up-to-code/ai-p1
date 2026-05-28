@@ -31,14 +31,28 @@ export async function approveAgentConfirmation(c: Context, organizationId: strin
     confirmationId: confirmationId as Id<"agentConfirmations">,
   });
 
+  if (!approved.confirmation.threadId || !approved.confirmation.runId) {
+    return {
+      confirmation: approved.confirmation,
+      result: {
+        ok: false,
+        tool: approved.confirmation.tool,
+        approvalOnly: true,
+        message: "Approval recorded. External MCP execution is intentionally not replayed from this endpoint.",
+      },
+    };
+  }
+
+  const threadId = approved.confirmation.threadId;
+  const runId = approved.confirmation.runId;
   const runtime = {
     honoContext: c,
     organizationId,
-    threadId: approved.confirmation.threadId,
-    runId: approved.confirmation.runId,
+    threadId,
+    runId,
     requestContext: getMobileRequestContext(c),
     onToolResult: (result: AgentToolResult) =>
-      recordConfirmedTool(organizationId, approved.confirmation.threadId, approved.confirmation.runId, result),
+      recordConfirmedTool(organizationId, threadId, runId, result),
   };
 
   const result = await executeConfirmedAgentTool(runtime, approved.confirmation.tool, approved.input);

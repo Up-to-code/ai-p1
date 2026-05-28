@@ -12,6 +12,7 @@ import {
   History as HistoryIcon,
   Building,
   CalendarDays,
+  Gauge,
   MessageSquareText,
   MoreHorizontal,
   Menu,
@@ -70,7 +71,7 @@ const navigationGroups = [
     label: "administration",
     items: [
       { name: "organization", href: "/settings/organization", icon: Landmark },
-      { name: "billing", href: "/billing", icon: CreditCard },
+      { name: "usage", href: "/usage", icon: Gauge },
       { name: "activity", href: "/activity", icon: HistoryIcon },
       { name: "integrations", href: "/web-apps", icon: Plug },
     ],

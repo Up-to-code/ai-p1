@@ -22,6 +22,39 @@ function parseCursor(c: Context) {
   return raw;
 }
 
+function isUnauthorizedError(error: unknown) {
+  return error instanceof Error && /\b(unauthorized|forbidden)\b/i.test(error.message);
+}
+
+function requestId(c: Context) {
+  return c.req.header("x-request-id") ?? crypto.randomUUID();
+}
+
+function agentReadErrorResponse(c: Context, error: unknown, fallback: string) {
+  const id = requestId(c);
+  const message = error instanceof Error ? error.message : String(error ?? "Unknown error");
+  const cause = error instanceof Error && error.cause instanceof Error ? error.cause.message : undefined;
+
+  if (isUnauthorizedError(error)) {
+    console.warn("workspace.agent.read.forbidden", {
+      requestId: id,
+      path: c.req.path,
+      error: message,
+      cause,
+    });
+    return c.json({ error: "You do not have access to this workspace.", requestId: id }, 403);
+  }
+
+  console.error("workspace.agent.read.failed", {
+    requestId: id,
+    path: c.req.path,
+    error: message,
+    cause,
+  });
+
+  return c.json({ error: `${fallback} Request ID: ${id}`, requestId: id }, 502);
+}
+
 export async function handleListAgentThreads(c: Context) {
   const organizationId = c.req.param("organizationId");
   if (!organizationId) {
@@ -38,13 +71,17 @@ export async function handleListAgentThreads(c: Context) {
     return c.json({ error: "Invalid agent thread cursor." }, 400);
   }
 
-  const page = await fetchAuthQuery(api.agents.read.listThreadsPage, {
-    organizationId,
-    limit,
-    cursor,
-  });
+  try {
+    const page = await fetchAuthQuery(api.agents.read.listThreadsPage, {
+      organizationId,
+      limit,
+      cursor,
+    });
 
-  return c.json(page);
+    return c.json(page);
+  } catch (error) {
+    return agentReadErrorResponse(c, error, "Unable to load conversations.");
+  }
 }
 
 export async function handleListAgentMessages(c: Context) {
@@ -63,11 +100,15 @@ export async function handleListAgentMessages(c: Context) {
     return c.json({ error: "Invalid agent message limit." }, 400);
   }
 
-  const messages = await fetchAuthQuery(api.agents.read.listMessages, {
-    organizationId,
-    threadId: threadId as Id<"agentThreads">,
-    limit,
-  });
+  try {
+    const messages = await fetchAuthQuery(api.agents.read.listMessages, {
+      organizationId,
+      threadId: threadId as Id<"agentThreads">,
+      limit,
+    });
 
-  return c.json({ messages });
+    return c.json({ messages });
+  } catch (error) {
+    return agentReadErrorResponse(c, error, "Unable to load messages.");
+  }
 }

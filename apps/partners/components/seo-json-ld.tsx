@@ -18,6 +18,33 @@ const trustedKeywords = [
   "المطورون العقاريون",
   "الوسطاء العقاريون",
 ];
+const primaryLinks = [
+  {
+    name: "Qentrah Partners",
+    description: "Build and submit Qentrah partner apps for Workspace authorization.",
+    url: partnersUrl,
+  },
+  {
+    name: "Documentation",
+    description: "Read OAuth, SDK, and partner API integration guides.",
+    url: `${partnersUrl}/docs`,
+  },
+  {
+    name: "Pricing",
+    description: "Review partner program pricing and platform access.",
+    url: `${partnersUrl}/pricing`,
+  },
+  {
+    name: "Security",
+    description: "Review Qentrah partner integration security controls.",
+    url: `${partnersUrl}/security`,
+  },
+  {
+    name: "Support",
+    description: "Get help with partner apps, reviews, and integrations.",
+    url: `${partnersUrl}/support`,
+  },
+] as const;
 
 function JsonLd({ data }: { data: Record<string, unknown> }) {
   return (
@@ -67,9 +94,24 @@ export function PartnersMarketingJsonLd() {
     ],
   };
 
+  const siteNavigation = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "@id": `${partnersUrl}/#site-navigation`,
+    name: "Qentrah Partners primary links",
+    itemListElement: primaryLinks.map((link, index) => ({
+      "@type": "SiteNavigationElement",
+      position: index + 1,
+      name: link.name,
+      description: link.description,
+      url: link.url,
+    })),
+  };
+
   return (
     <>
       <JsonLd data={app} />
+      <JsonLd data={siteNavigation} />
       <JsonLd data={breadcrumbs} />
     </>
   );
