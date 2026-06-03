@@ -32,7 +32,13 @@ describe("deriveWorkspaceStatus", () => {
 
 describe("getWorkspaceAuthRedirect", () => {
   it("sends signed-out users to localized sign-in", () => {
-    expect(getWorkspaceAuthRedirect({ isSignedIn: false, workspaceStatus: "ready", locale: "ar" })).toBe("/ar/sign-in");
+    expect(getWorkspaceAuthRedirect({ isSignedIn: false, workspaceStatus: "ready", locale: "ar" })).toBe(
+      "/ar/sign-in?callbackURL=%2Far%2Fchoose-org",
+    );
+  });
+
+  it("does not use app-shell routes as auth callbacks", () => {
+    expect(getWorkspaceAuthRedirect({ isSignedIn: false, workspaceStatus: "ready", locale: "ar" })).not.toContain("dashboard");
   });
 
   it("does not redirect during the organization auth handoff", () => {

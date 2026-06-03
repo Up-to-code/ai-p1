@@ -2,6 +2,8 @@ import { createClient, type GenericCtx } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
 import { expo } from "@better-auth/expo";
 import { oauthProvider } from "@better-auth/oauth-provider";
+import type { BetterAuthPlugin } from "better-auth";
+import { createAuthMiddleware } from "better-auth/api";
 import { betterAuth, type BetterAuthOptions } from "better-auth/minimal";
 import { jwt, organization } from "better-auth/plugins";
 import {
@@ -10,6 +12,7 @@ import {
 } from "../src/packages/authz";
 import { getAuthRuntimeConfig } from "../src/packages/config/auth";
 import { partnerAppsRuntimeConfig } from "../src/packages/config/partner-apps";
+import { normalizeSocialSignInCallbackURL } from "../src/server/auth/better-auth/callback-normalization";
 import {
   partnerAdvertisedMetadata,
   partnerClientRegistrationAllowedScopes,
@@ -48,6 +51,25 @@ export const authComponent = createClient<DataModel, typeof authSchema>(
   },
 );
 
+function workspaceAuthCallbackPlugin(): BetterAuthPlugin {
+  return {
+    id: "workspace-auth-callback",
+    hooks: {
+      before: [
+        {
+          matcher: (ctx) => Boolean(ctx.method === "POST" && ctx.path?.startsWith("/sign-in/social")),
+          handler: createAuthMiddleware(async (ctx) => {
+            if (ctx.body?.callbackURL) {
+              ctx.body.callbackURL = normalizeSocialSignInCallbackURL(ctx.body.callbackURL);
+            }
+            return { context: ctx };
+          }),
+        },
+      ],
+    },
+  };
+}
+
 // Auth options are shared by runtime auth and the schema generator.
 export const createAuthOptions = (
   ctx: GenericCtx<DataModel>,
@@ -85,6 +107,7 @@ export const createAuthOptions = (
     },
     socialProviders,
     plugins: [
+      workspaceAuthCallbackPlugin(),
       jwt({ jwks: { keyPairConfig: { alg: "RS256" } } }),
       convex({ authConfig, jwksRotateOnTokenGenerationError: true }),
       expo(),

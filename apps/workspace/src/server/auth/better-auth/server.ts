@@ -3,6 +3,7 @@ import { fetchAction, fetchMutation, fetchQuery, preloadQuery } from "convex/nex
 import type { Preloaded } from "convex/react";
 import type { ArgsAndOptions, FunctionReference, FunctionReturnType } from "convex/server";
 import { AsyncLocalStorage } from "node:async_hooks";
+import { normalizeBetterAuthRequest } from "./callback-normalization";
 import { authTokenOptions, resolveConvexAuthToken } from "./token";
 
 // Server helpers keep Hono and Next adapters using the same Better Auth token flow.
@@ -61,7 +62,7 @@ export const isAuthenticated = nextAuth.isAuthenticated;
 
 export const handler = {
   GET: nextAuth.handler.GET,
-  POST: nextAuth.handler.POST,
+  POST: async (request: Request) => nextAuth.handler.POST(await normalizeBetterAuthRequest(request)),
 };
 
 export const getToken = () => getRequestToken();

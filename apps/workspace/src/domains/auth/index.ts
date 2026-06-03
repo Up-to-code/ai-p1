@@ -6,4 +6,4 @@ export { clearAuthHandoff, readAuthHandoff, writeAuthHandoff } from "./auth-hand
 export type { WorkspaceStatus } from "./workspace-status";
 export { useGoogleSignIn } from "./hooks/use-google-sign-in";
 export type { AuthRedirectOptions } from "./types/auth-redirect.types";
-export { createLocaleAuthCallbackUrl } from "./utils/auth-callback-url";
+export { createLocaleAuthCallbackUrl, resolveAuthEntryCallbackUrl } from "./utils/auth-callback-url";

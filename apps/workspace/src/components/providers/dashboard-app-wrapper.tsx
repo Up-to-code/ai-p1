@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import { redirect, usePathname, useSearchParams } from "next/navigation";
+import { redirect } from "next/navigation";
 import { useLocale } from "next-intl";
 import { PendingApprovalBanner } from "@/components/layout/pending-approval-banner";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -26,17 +26,13 @@ export function DashboardAppWrapper({ children }: { children: ReactNode }) {
 
 function DashboardAuthenticatedShell({ children }: { children: ReactNode }) {
   const locale = useLocale();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const account = useAccountContext();
   const isAuthHandoffPending = useAuthHandoffPending(account.isSignedIn, account.workspace.organizationId);
-  const callbackURL = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
   const authRedirect = getWorkspaceAuthRedirect({
     isSignedIn: account.isSignedIn,
     workspaceStatus: account.workspace.status,
     locale,
     isAuthHandoffPending,
-    callbackURL,
   });
 
   useEffect(() => {
