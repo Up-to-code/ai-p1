@@ -79,7 +79,7 @@ export async function completeMobileOAuth(input: {
     throw new Error("Qentrah sign-in could not verify this callback. Try signing in again.");
   }
 
-  const auth = await getWorkOSClient().userManagement.authenticateWithCode({
+  const auth = await getWorkOSClient().userManagement.authenticateWithCodeAndVerifier({
     ...mobileAuthOptions({
       ipAddress: input.ipAddress,
       userAgent: input.userAgent,

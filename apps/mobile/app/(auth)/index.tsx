@@ -9,7 +9,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native";
-import { Redirect, useRouter, useSegments } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
@@ -19,13 +19,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "@/foundation/primitives/Text";
 import { Button } from "@/foundation/primitives/Button";
-import { theme, type AppColors } from "@/foundation/theme/tokens";
+import { type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { useAuthSession } from "@/auth/useAuthSession";
 import { AuthGlassSurface } from "@/auth/components/AuthGlassSurface";
 import { authClient, isWorkspaceAuthConfigured } from "@/auth/authClient";
 import { AppleIcon, GoogleIcon } from "@/foundation/components/BrandIcons";
-import { TypewriterText } from "@/foundation/components/TypewriterText";
 import { useAppLocalization } from "@/foundation/localization";
 import { markAuthSessionActive } from "@/auth/signOut";
 import {
@@ -43,17 +42,14 @@ export default function AuthScreen() {
   const insets = useSafeAreaInsets();
   const { colors, resolvedColorScheme } = useTheme();
   const systemUI = useSystemUI();
-  const { t, isRTL, locale } = useAppLocalization();
+  const { t, isRTL } = useAppLocalization();
   const isDark = resolvedColorScheme === "dark";
-  const segments = useSegments();
   const styles = useMemo(() => createStyles(colors, isDark, systemUI.sizes.auth), [colors, isDark, systemUI.sizes.auth]);
-  const landingPhrases = useMemo(() => t.auth.landingPhrases, [t.auth.landingPhrases]);
   const { canAccessApp, isReady } = useAuthSession();
   const authProviders = useMobileAuthProviders();
   const signInInFlightRef = useRef(false);
   const [signingProvider, setSigningProvider] = useState<MobileSocialProvider | null>(null);
   const activeSignInLabel = signingProvider ? t.auth.signingIn : null;
-  const isFocusedAuthLanding = segments[0] === "(auth)" && segments[1] === undefined;
 
   if (isReady && canAccessApp) {
     return <Redirect href="/(app)" />;
@@ -130,15 +126,6 @@ export default function AuthScreen() {
               { tintColor: isDark ? "#F5F7FB" : "#20242D" },
             ]}
           />
-          <View style={styles.typewriterWrap}>
-            <TypewriterText
-              key={locale}
-              active={isFocusedAuthLanding}
-              hapticsEnabled={false}
-              phrases={landingPhrases}
-              color={colors.textSecondary}
-            />
-          </View>
         </Animated.View>
 
         <Animated.View
@@ -297,12 +284,12 @@ function NativeAuthButton({
 }: NativeAuthButtonProps) {
   const swiftUI = getAvailableExpoSwiftUI();
   const systemUI = useSystemUI();
-  const authSizes = systemUI.sizes.auth;
+  const nativeButtonHeight = systemUI.sizes.auth.buttonHeight;
+  const nativeButtonRadius = systemUI.sizes.auth.buttonRadius;
 
   if (swiftUI) {
     const { Button: SwiftUIButton, Host: SwiftUIHost, modifiers } = swiftUI;
     
-    // Extract only layout-safe properties for the host wrapper to prevent double border/background styling issues
     const flattenedStyle = StyleSheet.flatten(style);
     const {
       borderWidth,
@@ -329,8 +316,8 @@ function NativeAuthButton({
           systemImage={systemImage as never}
           variant="borderedProminent"
           modifiers={[
-            modifiers.frame({ minHeight: authSizes.buttonHeight, maxWidth: 1000 }),
-            modifiers.cornerRadius(authSizes.buttonRadius),
+            modifiers.frame({ minHeight: nativeButtonHeight, maxWidth: 1000 }),
+            modifiers.cornerRadius(nativeButtonRadius),
             modifiers.foregroundStyle(foregroundColor),
             modifiers.accessibilityLabel(label),
           ]}
@@ -403,14 +390,6 @@ const createStyles = (colors: AppColors, isDark: boolean, authSizes: ReturnType<
   brandLogo: {
     height: 58,
     width: 58,
-  },
-  typewriterWrap: {
-    alignItems: "center",
-    minHeight: 84,
-    justifyContent: "center",
-    opacity: 0.86,
-    paddingHorizontal: theme.spacing.md,
-    width: "100%",
   },
   actionsWrap: {
     marginBottom: 0,

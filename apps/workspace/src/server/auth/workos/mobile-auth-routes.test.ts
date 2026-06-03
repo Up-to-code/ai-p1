@@ -46,7 +46,7 @@ describe("mobile WorkOS auth routes", () => {
     const completeRoute = routeSource("src/app/api/auth/workos/mobile/complete/route.ts");
 
     expect(source).toContain("completeMobileOAuth");
-    expect(source).toContain("authenticateWithCode");
+    expect(source).toContain("authenticateWithCodeAndVerifier");
     expect(source).not.toContain("new Map");
     expect(mobileRouter).toContain("codeVerifier");
     expect(mobileRouter).toContain("mobileEmailVerificationChallenge");

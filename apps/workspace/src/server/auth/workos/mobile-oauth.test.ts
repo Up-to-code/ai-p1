@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const workos = {
   userManagement: {
-    authenticateWithCode: vi.fn(),
+    authenticateWithCodeAndVerifier: vi.fn(),
     getAuthorizationUrlWithPKCE: vi.fn(),
   },
 };
@@ -31,7 +31,7 @@ describe("mobile WorkOS OAuth", () => {
       state: "state_1",
       codeVerifier: "verifier_1",
     });
-    workos.userManagement.authenticateWithCode.mockResolvedValue({
+    workos.userManagement.authenticateWithCodeAndVerifier.mockResolvedValue({
       sealedSession: "sealed_session",
       organizationId: "org_workos",
       user: {
@@ -117,7 +117,7 @@ describe("mobile WorkOS OAuth", () => {
       },
     });
 
-    expect(workos.userManagement.authenticateWithCode).toHaveBeenCalledWith({
+    expect(workos.userManagement.authenticateWithCodeAndVerifier).toHaveBeenCalledWith({
       clientId: "client_test",
       code: "code_1",
       codeVerifier: "verifier_1",
