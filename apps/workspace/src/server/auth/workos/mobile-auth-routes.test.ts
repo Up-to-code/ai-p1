@@ -11,7 +11,9 @@ function routeSource(path: string) {
 describe("mobile WorkOS auth routes", () => {
   it("starts Apple and Google OAuth directly through WorkOS PKCE", () => {
     const source = routeSource("src/server/auth/workos/mobile-oauth.ts");
+    const mobileRouter = routeSource("src/server/auth/workos/mobile-routes.ts");
     const startRoute = routeSource("src/app/api/auth/workos/mobile/start/route.ts");
+    const appSource = routeSource("src/server/app/app.ts");
 
     expect(source).toContain("getAuthorizationUrlWithPKCE");
     expect(source).toContain("AppleOAuth");
@@ -19,38 +21,42 @@ describe("mobile WorkOS auth routes", () => {
     expect(source).toContain("provider,");
     expect(source).toContain("provider === \"authkit\"");
     expect(source).toContain("redirectUri,");
-    expect(startRoute).toContain("url: auth.url");
-    expect(startRoute).toContain("state: auth.state");
-    expect(startRoute).toContain("codeVerifier: auth.codeVerifier");
+    expect(mobileRouter).toContain('workosMobileAuthRouter.get("/start"');
+    expect(mobileRouter).toContain("url: auth.url");
+    expect(mobileRouter).toContain("state: auth.state");
+    expect(mobileRouter).toContain("codeVerifier: auth.codeVerifier");
+    expect(appSource).toContain("app.route(\"/auth/workos/mobile\", workosMobileAuthRouter)");
+    expect(startRoute).toContain("handle(app)");
   });
 
   it("forwards OAuth email verification challenges into the mobile code flow", () => {
-    const source = routeSource("src/app/api/auth/workos/mobile/complete/route.ts");
+    const source = routeSource("src/server/auth/workos/mobile-routes.ts");
 
     expect(source).toContain("mobileEmailVerificationChallenge");
     expect(source).toContain("emailVerification");
-    expect(source).toContain("NextResponse.json");
-    expect(source).toContain("status: 409");
+    expect(source).toContain("c.json");
+    expect(source).toContain("409");
   });
 
   it("exchanges mobile PKCE callbacks through JSON instead of server memory", () => {
     const source = routeSource("src/server/auth/workos/mobile-oauth.ts");
+    const mobileRouter = routeSource("src/server/auth/workos/mobile-routes.ts");
     const completeRoute = routeSource("src/app/api/auth/workos/mobile/complete/route.ts");
 
     expect(source).toContain("completeMobileOAuth");
     expect(source).toContain("authenticateWithCode");
     expect(source).not.toContain("new Map");
-    expect(completeRoute).toContain("codeVerifier");
-    expect(completeRoute).toContain("mobileEmailVerificationChallenge");
+    expect(mobileRouter).toContain("codeVerifier");
+    expect(mobileRouter).toContain("mobileEmailVerificationChallenge");
+    expect(completeRoute).toContain("handle(app)");
   });
 
   it("keeps password auth on JSON errors instead of hosted fallback urls", () => {
-    const login = routeSource("src/app/api/auth/workos/mobile/password/login/route.ts");
-    const register = routeSource("src/app/api/auth/workos/mobile/password/register/route.ts");
+    const mobileRouter = routeSource("src/server/auth/workos/mobile-routes.ts");
 
-    expect(`${login}\n${register}`).not.toContain("fallbackUrl");
-    expect(`${login}\n${register}`).not.toContain("mobileHostedAuthFallback");
-    expect(`${login}\n${register}`).toContain("mobileAuthErrorMessage");
+    expect(mobileRouter).not.toContain("fallbackUrl");
+    expect(mobileRouter).not.toContain("mobileHostedAuthFallback");
+    expect(mobileRouter).toContain("mobileAuthErrorMessage");
   });
 
   it("keeps mobile OAuth on JSON start and complete routes without hosted redirect fallbacks", () => {
