@@ -26,7 +26,7 @@ import {
 import { useMobileAuthProviders } from "@/auth/useMobileAuthProviders";
 import { EdgeFade } from "@/conversation/components/EdgeFade";
 import { useSystemUI } from "@/foundation/system/useSystemUI";
-import { authErrorMessage } from "@/auth/authErrors";
+import { socialAuthErrorMessage } from "@/auth/authErrors";
 
 export default function AuthScreen() {
   const router = useRouter();
@@ -79,7 +79,7 @@ export default function AuthScreen() {
       }
       Alert.alert(
         t.auth.signInUnavailableTitle,
-        authErrorMessage(error, t.auth.signInUnavailableBody),
+        socialAuthErrorMessage(error, t.auth.signInUnavailableBody, provider),
       );
     } finally {
       signInInFlightRef.current = false;

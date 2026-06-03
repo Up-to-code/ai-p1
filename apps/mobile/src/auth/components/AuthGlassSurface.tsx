@@ -1,7 +1,5 @@
-import { BlurView } from "expo-blur";
-import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
+import { StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import { type ReactNode } from "react";
-import { GlassView } from "expo-glass-effect";
 
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { type AppColors } from "@/foundation/theme/tokens";
@@ -12,12 +10,15 @@ type AuthGlassSurfaceProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-export function AuthGlassSurface({ children, intensity = 54, style }: AuthGlassSurfaceProps) {
+export function AuthGlassSurface({ children, style }: AuthGlassSurfaceProps) {
   const { colors, resolvedColorScheme } = useTheme();
   const styles = createStyles(colors, resolvedColorScheme === "dark");
   const surfaceStyle = [styles.surface, style];
 
-  if (Platform.OS === "ios") {
+  const glassEffect = getAvailableGlassEffect();
+  if (glassEffect) {
+    const { GlassView } = glassEffect;
+
     return (
       <GlassView
         colorScheme={resolvedColorScheme}
@@ -31,15 +32,25 @@ export function AuthGlassSurface({ children, intensity = 54, style }: AuthGlassS
     );
   }
 
-  if (Platform.OS === "web") {
-    return (
-      <BlurView intensity={intensity} tint={resolvedColorScheme === "dark" ? "dark" : "light"} style={surfaceStyle}>
-        {children}
-      </BlurView>
-    );
-  }
-
   return <View style={surfaceStyle}>{children}</View>;
+}
+
+function getAvailableGlassEffect() {
+  try {
+    const availability =
+      require("expo-glass-effect/build/isLiquidGlassAvailable").isLiquidGlassAvailable() &&
+      require("expo-glass-effect/build/isGlassEffectAPIAvailable").isGlassEffectAPIAvailable();
+
+    if (!availability) {
+      return null;
+    }
+
+    return {
+      GlassView: require("expo-glass-effect/build/GlassView").default as typeof import("expo-glass-effect").GlassView,
+    };
+  } catch {
+    return null;
+  }
 }
 
 const createStyles = (colors: AppColors, isDark: boolean) => StyleSheet.create({

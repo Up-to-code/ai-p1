@@ -20,6 +20,7 @@ vi.mock("@/server/auth/workos", () => ({
 }));
 
 import { completeMobileOAuth, safeMobileReturnTo, startMobileOAuth, workosMobileProvider } from "./mobile-oauth";
+import { mobileOAuthErrorMessage } from "./mobile-password";
 
 describe("mobile WorkOS OAuth", () => {
   beforeEach(() => {
@@ -109,5 +110,14 @@ describe("mobile WorkOS OAuth", () => {
       ipAddress: "127.0.0.1",
       userAgent: "vitest",
     });
+  });
+
+  it("keeps OAuth linked-account errors out of password copy", () => {
+    expect(mobileOAuthErrorMessage(new Error("User not found.")))
+      .toBe("No Qentrah account is linked to this social sign-in. Create an account first or sign in with email.");
+    expect(mobileOAuthErrorMessage(new Error("The email or password does not match a Qentrah account.")))
+      .toBe("No Qentrah account is linked to this social sign-in. Create an account first or sign in with email.");
+    expect(mobileOAuthErrorMessage(new Error("WorkOS API key and client id are required.")))
+      .toBe("Qentrah social sign-in is not ready in this build.");
   });
 });

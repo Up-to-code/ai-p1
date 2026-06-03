@@ -54,6 +54,26 @@ export function mobileAuthErrorMessage(error: unknown, fallback = "Qentrah could
   return normalized;
 }
 
+export function mobileOAuthErrorMessage(error: unknown, fallback = "Qentrah sign-in callback failed.") {
+  const raw = error instanceof Error ? error.message : typeof error === "string" ? error : "";
+  const normalized = (raw || fallback)
+    .replace(/workos authkit/giu, "Qentrah sign-in")
+    .replace(/workos/giu, "Qentrah")
+    .replace(/authkit/giu, "Qentrah sign-in")
+    .trim();
+  if (!normalized) return fallback;
+  if (/api key|client id|not configured|configuration|provider.*not.*found|required environment/iu.test(normalized)) {
+    return "Qentrah social sign-in is not ready in this build.";
+  }
+  if (/email or password|invalid|incorrect|credentials|not found|no user|unknown user/iu.test(normalized)) {
+    return "No Qentrah account is linked to this social sign-in. Create an account first or sign in with email.";
+  }
+  if (/rate limit|too many|requests/iu.test(normalized)) {
+    return "Too many attempts. Wait a minute, then try again.";
+  }
+  return normalized;
+}
+
 function validateEmailPassword(input: MobilePasswordAuthInput) {
   const email = normalizeEmail(input.email);
   const password = stringValue(input.password);

@@ -33,6 +33,37 @@ export function authErrorMessage(error: unknown, fallback = qentrahFallback) {
   return normalized;
 }
 
+function socialProviderLabel(provider?: "apple" | "google") {
+  if (provider === "apple") return "Apple";
+  if (provider === "google") return "Google";
+  return "social";
+}
+
+export function socialAuthErrorMessage(
+  error: unknown,
+  fallback = "Unable to complete Qentrah sign in.",
+  provider?: "apple" | "google",
+) {
+  const raw = error instanceof Error ? error.message : typeof error === "string" ? error : "";
+  const normalized = cleanProviderNames(raw || fallback).trim();
+  if (!normalized) return fallback;
+
+  const providerLabel = socialProviderLabel(provider);
+  if (/cancel/iu.test(normalized)) {
+    return `${providerLabel} sign in was cancelled.`;
+  }
+  if (/not configured|configuration|provider.*not.*found|api key|client id|required environment/iu.test(normalized)) {
+    return `${providerLabel} sign in is not ready in this build. Check the app configuration and try again.`;
+  }
+  if (/email or password|invalid|incorrect|credentials|not found|no user|unknown user/iu.test(normalized)) {
+    return `No Qentrah account is linked to this ${providerLabel} account. Create an account first or sign in with email.`;
+  }
+  if (/rate limit|too many|requests/iu.test(normalized)) {
+    return "Too many attempts. Wait a minute, then try again.";
+  }
+  return normalized;
+}
+
 export function resetPasswordReason(error: unknown) {
   const message = authErrorMessage(error, "We could not send a reset email for that address.");
   if (/not match|not found|unknown user/iu.test(message)) {

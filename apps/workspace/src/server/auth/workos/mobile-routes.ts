@@ -6,6 +6,7 @@ import {
   confirmMobilePasswordReset,
   mobileAuthErrorMessage,
   mobileEmailVerificationChallenge,
+  mobileOAuthErrorMessage,
   registerWithMobilePassword,
   requestMobilePasswordReset,
   signInWithMobilePassword,
@@ -133,7 +134,7 @@ workosMobileAuthRouter.post("/complete", async (c) => {
     }
     return c.json({
       ok: false,
-      error: mobileAuthErrorMessage(error, "Qentrah sign-in callback failed."),
+      error: mobileOAuthErrorMessage(error, "Qentrah sign-in callback failed."),
     }, 400);
   }
 });
