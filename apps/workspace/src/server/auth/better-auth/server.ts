@@ -4,6 +4,11 @@ import type { Preloaded } from "convex/react";
 import type { ArgsAndOptions, FunctionReference, FunctionReturnType } from "convex/server";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { normalizeBetterAuthRequest } from "./callback-normalization";
+import {
+  isRecoverableAuthSessionPath,
+  staleAuthCookieRecoveryFallback,
+  staleAuthCookieRecoveryResponse,
+} from "./stale-cookie-recovery";
 import { authTokenOptions, resolveConvexAuthToken } from "./token";
 
 // Server helpers keep Hono and Next adapters using the same Better Auth token flow.
@@ -61,7 +66,14 @@ export function runWithAuthHeaders<T>(headers: Headers, operation: () => T | Pro
 export const isAuthenticated = nextAuth.isAuthenticated;
 
 export const handler = {
-  GET: nextAuth.handler.GET,
+  GET: async (request: Request) => {
+    try {
+      return staleAuthCookieRecoveryResponse(request, await nextAuth.handler.GET(request));
+    } catch (error) {
+      if (!isRecoverableAuthSessionPath(request)) throw error;
+      return staleAuthCookieRecoveryFallback(request);
+    }
+  },
   POST: async (request: Request) => nextAuth.handler.POST(await normalizeBetterAuthRequest(request)),
 };
 
