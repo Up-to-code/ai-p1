@@ -74,4 +74,49 @@ describe("auth runtime config", () => {
       "qentrah:///auth-callback",
     ]));
   });
+
+  it("falls back to a local secret when BETTER_AUTH_SECRET is missing outside production", async () => {
+    const { getAuthRuntimeConfig } = await loadAuthConfig({
+      BETTER_AUTH_SECRET: "",
+      NODE_ENV: "development",
+      BETTER_AUTH_URL: "http://localhost:3000",
+    });
+
+    expect(getAuthRuntimeConfig("runtime").secret).toBe("local-qentrah-workspace-better-auth-secret");
+  });
+
+  it("falls back to a local secret when Convex local dev reports NODE_ENV as production", async () => {
+    const { getAuthRuntimeConfig } = await loadAuthConfig({
+      BETTER_AUTH_SECRET: "",
+      NODE_ENV: "production",
+      CONVEX_DEPLOYMENT: "anonymous:anonymous-workspace",
+      BETTER_AUTH_URL: "http://localhost:3000",
+    });
+
+    expect(getAuthRuntimeConfig("runtime").secret).toBe("local-qentrah-workspace-better-auth-secret");
+  });
+
+  it("still requires BETTER_AUTH_SECRET in production-like environments", async () => {
+    await expect(async () => {
+      const { getAuthRuntimeConfig } = await loadAuthConfig({
+        BETTER_AUTH_SECRET: "",
+        VERCEL_ENV: "production",
+        BETTER_AUTH_URL: "http://localhost:3000",
+      });
+
+      getAuthRuntimeConfig("runtime");
+    }).rejects.toThrow("BETTER_AUTH_SECRET must be at least 32 characters.");
+  });
+
+  it("still requires BETTER_AUTH_SECRET in production Convex deployments", async () => {
+    await expect(async () => {
+      const { getAuthRuntimeConfig } = await loadAuthConfig({
+        BETTER_AUTH_SECRET: "",
+        CONVEX_DEPLOYMENT: "prod:workspace",
+        BETTER_AUTH_URL: "https://app.qentrah.com",
+      });
+
+      getAuthRuntimeConfig("runtime");
+    }).rejects.toThrow("BETTER_AUTH_SECRET must be at least 32 characters.");
+  });
 });

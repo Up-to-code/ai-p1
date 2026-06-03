@@ -4,6 +4,11 @@ type AuthConfigMode = "runtime" | "schema";
 
 const productionSiteUrl = "https://app.qentrah.com";
 const productionAdminUrl = "https://admin.qentrah.com";
+const LOCAL_BETTER_AUTH_SECRET = "local-qentrah-workspace-better-auth-secret";
+
+function isProductionLikeEnv() {
+  return process.env.VERCEL_ENV === "production" || process.env.CONVEX_DEPLOYMENT?.startsWith("prod:") === true;
+}
 
 function normalizeUrl(value: string) {
   const trimmed = value.trim();
@@ -89,7 +94,11 @@ export function isPlatformAdminEmail(
 export function getAuthRuntimeConfig(mode: AuthConfigMode) {
   const secret =
     mode === "runtime"
-      ? envReader.min("BETTER_AUTH_SECRET", envReader.read("BETTER_AUTH_SECRET", ""), 32)
+      ? envReader.min(
+          "BETTER_AUTH_SECRET",
+          isProductionLikeEnv() ? envReader.read("BETTER_AUTH_SECRET", "") : LOCAL_BETTER_AUTH_SECRET,
+          32,
+        )
       : schemaOnlySecret;
 
   return {
