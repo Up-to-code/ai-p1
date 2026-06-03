@@ -111,6 +111,9 @@ test("auth callback routes oauth email verification challenges to the code scree
   assert.equal(source.includes("const code = firstSearchParam(params.code)"), true);
   assert.equal(source.includes("if (code) query.set(\"code\", code);"), true);
   assert.equal(source.includes("if (callbackState) query.set(\"state\", callbackState);"), true);
+  assert.equal(source.includes("await authClient.completeMobileCallback"), true);
+  assert.equal(source.includes("markAuthSessionActive();"), true);
+  assert.equal(source.includes("router.replace(\"/\");"), true);
   assert.equal(source.includes("pendingAuthenticationToken"), true);
   assert.equal(source.includes("pathname: \"/(auth)/login\""), true);
 });
@@ -125,6 +128,16 @@ test("mobile password auth does not expose hosted fallback urls", () => {
   assert.equal(socialAuthSource.includes("fallbackUrl"), false);
   assert.equal(loginSource.includes("fallbackUrl"), false);
   assert.equal(registerSource.includes("fallbackUrl"), false);
+});
+
+test("mobile WorkOS sealed sessions are chunked before SecureStore persistence", () => {
+  const source = readFileSync(path.resolve(srcRoot, "auth/authClient.ts"), "utf8");
+
+  assert.equal(source.includes("secureStoreChunkSize"), true);
+  assert.equal(source.includes("sealedSessionChunkCountKey"), true);
+  assert.equal(source.includes("secureSetSealedSession"), true);
+  assert.equal(source.includes("readSealedSession"), true);
+  assert.equal(source.includes("await clearSealedSession();"), true);
 });
 
 test("mobile social auth opens the WorkOS url returned by the start endpoint", () => {

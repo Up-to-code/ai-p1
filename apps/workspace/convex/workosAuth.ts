@@ -187,6 +187,73 @@ export const resolveSession = query({
   },
 });
 
+export const ensureMobileSessionProjection = mutation({
+  args: {
+    workosUserId: v.string(),
+    workosOrganizationId: v.string(),
+    email: v.optional(v.string()),
+    role: v.optional(v.string()),
+    roles: v.array(v.string()),
+    permissions: v.array(v.string()),
+  },
+  returns: v.object({
+    userId: v.string(),
+    workosUserId: v.string(),
+    organizationId: v.string(),
+    workosOrganizationId: v.string(),
+    membershipId: v.optional(v.string()),
+    workosMembershipId: v.optional(v.string()),
+    role: v.optional(v.string()),
+    roles: v.array(v.string()),
+    permissions: v.array(v.string()),
+    organizationName: v.optional(v.string()),
+  }),
+  handler: async (ctx, args) => {
+    const organization = await organizationByWorkOSId(ctx, args.workosOrganizationId);
+    if (!organization) throw new Error("WorkOS organization is not linked to a local workspace.");
+
+    const now = Date.now();
+    const roles = args.roles.length > 0 ? args.roles : [args.role ?? "member"];
+    const role = args.role ?? roles[0];
+    const existing = await ctx.db
+      .query("workosOrganizationMembers")
+      .withIndex("by_workos_org_user", (q) =>
+        q.eq("workosOrganizationId", args.workosOrganizationId).eq("workosUserId", args.workosUserId),
+      )
+      .unique();
+    const memberPatch = {
+      organizationId: organization.organizationId,
+      userId: args.workosUserId,
+      email: args.email,
+      role,
+      roles,
+      permissions: args.permissions,
+      status: "active" as const,
+      updatedAt: now,
+    };
+    const membershipId = existing?._id ?? await ctx.db.insert("workosOrganizationMembers", {
+      workosOrganizationId: args.workosOrganizationId,
+      workosUserId: args.workosUserId,
+      createdAt: now,
+      ...memberPatch,
+    });
+    if (existing) await ctx.db.patch(existing._id, memberPatch);
+
+    return {
+      userId: args.workosUserId,
+      workosUserId: args.workosUserId,
+      organizationId: organization.organizationId,
+      workosOrganizationId: args.workosOrganizationId,
+      membershipId,
+      workosMembershipId: existing?.workosMembershipId,
+      role,
+      roles,
+      permissions: args.permissions,
+      organizationName: organization.name,
+    };
+  },
+});
+
 export const listUserOrganizations = query({
   args: { workosUserId: v.string() },
   returns: v.array(v.object({

@@ -13,7 +13,9 @@ export const FALLBACK_AUTH_URL = "https://placeholder.workspace.invalid";
 const accessTokenKey = "qentrah.workos.accessToken";
 const refreshTokenKey = "qentrah.workos.refreshToken";
 const sealedSessionKey = "qentrah.workos.sealedSession";
+const sealedSessionChunkCountKey = `${sealedSessionKey}.chunkCount`;
 const oauthTransactionKey = "qentrah.workos.oauthTransaction";
+const secureStoreChunkSize = 1800;
 
 type WorkOSMobileTokens = {
   accessToken: string;
@@ -121,9 +123,57 @@ async function secureDelete(key: string) {
   await SecureStore.deleteItemAsync(key);
 }
 
+function sealedSessionChunkKey(index: number) {
+  return `${sealedSessionKey}.chunk.${index}`;
+}
+
+function parseChunkCount(value: string | null) {
+  if (!value) return 0;
+  const count = Number.parseInt(value, 10);
+  return Number.isSafeInteger(count) && count > 0 ? count : 0;
+}
+
+async function clearSealedSession() {
+  const chunkCount = parseChunkCount(await secureGet(sealedSessionChunkCountKey));
+  await secureDelete(sealedSessionKey);
+  await secureDelete(sealedSessionChunkCountKey);
+  await Promise.all(
+    Array.from({ length: chunkCount }, (_, index) => secureDelete(sealedSessionChunkKey(index))),
+  );
+}
+
+async function readSealedSession() {
+  const direct = await secureGet(sealedSessionKey);
+  if (direct) return direct;
+
+  const chunkCount = parseChunkCount(await secureGet(sealedSessionChunkCountKey));
+  if (!chunkCount) return null;
+
+  const chunks = await Promise.all(
+    Array.from({ length: chunkCount }, (_, index) => secureGet(sealedSessionChunkKey(index))),
+  );
+  if (chunks.some((chunk) => !chunk)) {
+    await clearSealedSession();
+    return null;
+  }
+  return chunks.join("");
+}
+
+async function secureSetSealedSession(sealedSession: string) {
+  await clearSealedSession();
+  if (sealedSession.length <= secureStoreChunkSize) {
+    await secureSet(sealedSessionKey, sealedSession);
+    return;
+  }
+
+  const chunks = sealedSession.match(new RegExp(`.{1,${secureStoreChunkSize}}`, "gu")) ?? [];
+  await Promise.all(chunks.map((chunk, index) => secureSet(sealedSessionChunkKey(index), chunk)));
+  await secureSet(sealedSessionChunkCountKey, String(chunks.length));
+}
+
 async function readCredential() {
   if (cachedCredential) return cachedCredential;
-  const sealedSession = await secureGet(sealedSessionKey);
+  const sealedSession = await readSealedSession();
   if (sealedSession) {
     cachedCredential = { type: "sealedSession", sealedSession };
     return cachedCredential;
@@ -141,7 +191,7 @@ async function readCredential() {
 async function storeTokens(tokens: WorkOSMobileTokens) {
   cachedCredential = { type: "tokens", ...tokens };
   await clearOAuthTransaction();
-  await secureDelete(sealedSessionKey);
+  await clearSealedSession();
   await secureSet(accessTokenKey, tokens.accessToken);
   if (tokens.refreshToken) await secureSet(refreshTokenKey, tokens.refreshToken);
 }
@@ -151,7 +201,7 @@ async function storeSealedSession(sealedSession: string) {
   await clearOAuthTransaction();
   await secureDelete(accessTokenKey);
   await secureDelete(refreshTokenKey);
-  await secureSet(sealedSessionKey, sealedSession);
+  await secureSetSealedSession(sealedSession);
 }
 
 async function clearCredential() {
@@ -159,7 +209,7 @@ async function clearCredential() {
   await clearOAuthTransaction();
   await secureDelete(accessTokenKey);
   await secureDelete(refreshTokenKey);
-  await secureDelete(sealedSessionKey);
+  await clearSealedSession();
 }
 
 async function storeOAuthTransaction(transaction: MobileOAuthTransaction) {

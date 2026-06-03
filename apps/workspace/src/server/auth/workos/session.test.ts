@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   authenticateWithSessionCookie: vi.fn(),
+  convexMutation: vi.fn(),
   convexQuery: vi.fn(),
 }));
 
@@ -24,6 +25,7 @@ vi.mock("./client", () => ({
 
 vi.mock("@/server/convex/http-client", () => ({
   convexCalls: {
+    mutation: mocks.convexMutation,
     query: mocks.convexQuery,
   },
 }));
@@ -49,6 +51,14 @@ describe("WorkOS session resolver", () => {
       workosOrganizationId: "org_workos",
       roles: ["member"],
       permissions: [],
+    });
+    mocks.convexMutation.mockResolvedValue({
+      userId: "user_workos",
+      workosUserId: "user_workos",
+      organizationId: "org_local",
+      workosOrganizationId: "org_workos",
+      roles: ["admin"],
+      permissions: ["workspace:read"],
     });
   });
 
@@ -82,5 +92,30 @@ describe("WorkOS session resolver", () => {
     await expect(resolveWorkOSSessionFromHeaders(new Headers({
       authorization: "WorkOS-Session expired",
     }))).rejects.toThrow("WorkOS mobile session is invalid.");
+  });
+
+  it("projects a valid mobile session when the local membership is missing", async () => {
+    mocks.convexQuery.mockResolvedValueOnce(null);
+
+    await expect(resolveWorkOSSessionFromHeaders(new Headers({
+      authorization: "WorkOS-Session sealed_session",
+    }))).resolves.toEqual(expect.objectContaining({
+      userId: "user_workos",
+      workosUserId: "user_workos",
+      organizationId: "org_local",
+      workosOrganizationId: "org_workos",
+      role: "admin",
+      roles: ["admin"],
+      permissions: ["workspace:read"],
+    }));
+
+    expect(mocks.convexMutation).toHaveBeenCalledWith(expect.anything(), {
+      email: undefined,
+      workosUserId: "user_workos",
+      workosOrganizationId: "org_workos",
+      role: "admin",
+      roles: ["admin"],
+      permissions: ["workspace:read"],
+    });
   });
 });

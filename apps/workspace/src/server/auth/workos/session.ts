@@ -97,6 +97,57 @@ async function resolveProjectedSession(input: {
   };
 }
 
+async function ensureMobileProjectedSession(input: {
+  email?: string;
+  workosUserId: string;
+  workosOrganizationId: string;
+  role?: string;
+  roles?: string[];
+  permissions?: string[];
+  sessionId?: string;
+}) {
+  const resolved = await convexCalls.query<{
+    workosUserId: string;
+    workosOrganizationId: string;
+  }, WorkOSResolvedSession | null>(api.workosAuth.resolveSession, {
+    workosUserId: input.workosUserId,
+    workosOrganizationId: input.workosOrganizationId,
+  });
+  if (resolved) {
+    return {
+      ...resolved,
+      role: input.role ?? resolved.role,
+      roles: input.roles ?? resolved.roles,
+      permissions: input.permissions ?? resolved.permissions,
+      sessionId: input.sessionId,
+    };
+  }
+
+  const projected = await convexCalls.mutation<{
+    email?: string;
+    workosUserId: string;
+    workosOrganizationId: string;
+    role?: string;
+    roles: string[];
+    permissions: string[];
+  }, WorkOSResolvedSession>(api.workosAuth.ensureMobileSessionProjection, {
+    email: input.email,
+    workosUserId: input.workosUserId,
+    workosOrganizationId: input.workosOrganizationId,
+    role: input.role,
+    roles: input.roles ?? [],
+    permissions: input.permissions ?? [],
+  });
+
+  return {
+    ...projected,
+    role: input.role ?? projected.role,
+    roles: input.roles ?? projected.roles,
+    permissions: input.permissions ?? projected.permissions,
+    sessionId: input.sessionId,
+  };
+}
+
 export async function resolveWorkOSSessionFromHeaders(headers: Headers): Promise<WorkOSResolvedSession> {
   const sealedSession = workosSealedSessionFromHeaders(headers);
   if (sealedSession) {
@@ -110,7 +161,8 @@ export async function resolveWorkOSSessionFromHeaders(headers: Headers): Promise
     if (!session.organizationId) {
       throw new Error("WorkOS organization is required for workspace routes.");
     }
-    return resolveProjectedSession({
+    return ensureMobileProjectedSession({
+      email: typeof session.user.email === "string" ? session.user.email : undefined,
       workosUserId: session.user.id,
       workosOrganizationId: session.organizationId,
       role: session.role,
