@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { workosRuntimeConfig } from "@/packages/config";
 import { completeMobileOAuth, safeMobileReturnTo, startMobileOAuth } from "./mobile-oauth";
 import {
   confirmMobileEmailVerification,
@@ -48,6 +49,32 @@ async function jsonBody<TBody>(request: Request) {
   return await request.json().catch(() => ({})) as TBody;
 }
 
+function workosApiOrigin() {
+  try {
+    return new URL(workosRuntimeConfig.apiBaseUrl).origin;
+  } catch {
+    return "https://api.workos.com";
+  }
+}
+
+function isWorkOSAuthorizationUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.origin === workosApiOrigin() && url.pathname === "/user_management/authorize";
+  } catch {
+    return false;
+  }
+}
+
+function mobileAuthorizationRedirectUrl(requestUrl: string, authorizationUrl: string) {
+  const url = new URL(requestUrl);
+  url.pathname = "/api/auth/workos/mobile/authorize";
+  url.search = "";
+  url.hash = "";
+  url.searchParams.set("to", authorizationUrl);
+  return url.toString();
+}
+
 workosMobileAuthRouter.get("/start", async (c) => {
   const url = new URL(c.req.url);
 
@@ -62,7 +89,7 @@ workosMobileAuthRouter.get("/start", async (c) => {
 
     return c.json({
       ok: true,
-      url: auth.url,
+      url: mobileAuthorizationRedirectUrl(c.req.url, auth.url),
       state: auth.state,
       codeVerifier: auth.codeVerifier,
     });
@@ -73,6 +100,19 @@ workosMobileAuthRouter.get("/start", async (c) => {
       returnTo: safeMobileReturnTo(url.searchParams.get("return_to")),
     }, 400);
   }
+});
+
+workosMobileAuthRouter.get("/authorize", (c) => {
+  const url = new URL(c.req.url);
+  const authorizationUrl = url.searchParams.get("to") ?? "";
+  if (!isWorkOSAuthorizationUrl(authorizationUrl)) {
+    return c.json({
+      ok: false,
+      error: "Qentrah sign-in could not start.",
+    }, 400);
+  }
+
+  return c.redirect(authorizationUrl);
 });
 
 workosMobileAuthRouter.post("/complete", async (c) => {

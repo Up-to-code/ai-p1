@@ -22,9 +22,11 @@ describe("mobile WorkOS auth routes", () => {
     expect(source).toContain("provider === \"authkit\"");
     expect(source).toContain("redirectUri,");
     expect(mobileRouter).toContain('workosMobileAuthRouter.get("/start"');
-    expect(mobileRouter).toContain("url: auth.url");
+    expect(mobileRouter).toContain("mobileAuthorizationRedirectUrl(c.req.url, auth.url)");
     expect(mobileRouter).toContain("state: auth.state");
     expect(mobileRouter).toContain("codeVerifier: auth.codeVerifier");
+    expect(mobileRouter).toContain('workosMobileAuthRouter.get("/authorize"');
+    expect(mobileRouter).toContain("isWorkOSAuthorizationUrl");
     expect(appSource).toContain("app.route(\"/auth/workos/mobile\", workosMobileAuthRouter)");
     expect(startRoute).toContain("handle(app)");
   });
