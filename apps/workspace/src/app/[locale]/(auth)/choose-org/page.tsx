@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Link, useRouter } from "@/i18n/routing";
 import { BrandMark } from "@/components/logo";
@@ -47,6 +47,25 @@ function getAuthError(error: unknown, fallback: string) {
 }
 
 export default function ChooseOrgPage() {
+  const locale = useLocale();
+  const router = useRouter();
+  const session = authClient.useSession();
+  const brandLabel = locale === "ar" ? "كانترا" : "qentrah";
+  const isSignedIn = Boolean(session.data?.session);
+
+  useEffect(() => {
+    if (session.isPending || isSignedIn) return;
+    router.replace(`/sign-in?callbackURL=${encodeURIComponent(`/${locale}/choose-org`)}`);
+  }, [isSignedIn, locale, router, session.isPending]);
+
+  if (session.isPending || !isSignedIn) {
+    return <AuthRouteLoadingState brandLabel={brandLabel} />;
+  }
+
+  return <ChooseOrgSignedInContent />;
+}
+
+function ChooseOrgSignedInContent() {
   const t = useTranslations("ChooseOrg");
   const locale = useLocale();
   const isAr = locale === "ar";
@@ -387,6 +406,17 @@ export default function ChooseOrgPage() {
           </div>
         </div>
       </section>
+    </main>
+  );
+}
+
+function AuthRouteLoadingState({ brandLabel }: { brandLabel: string }) {
+  return (
+    <main className="flex min-h-svh items-center justify-center bg-[oklch(97.5%_0.006_255)] px-6 text-foreground dark:bg-[oklch(8.5%_0.012_255)]">
+      <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-5 py-4 text-sm font-bold text-text-secondary shadow-sm">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        <span>{brandLabel}</span>
+      </div>
     </main>
   );
 }

@@ -1,4 +1,4 @@
-import { Alert, Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, Image, Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Redirect, useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
@@ -13,7 +13,6 @@ import { useAuthSession } from "@/auth/useAuthSession";
 import { authClient, isWorkspaceAuthConfigured } from "@/auth/authClient";
 import { AppleIcon, GoogleIcon } from "@/foundation/components/BrandIcons";
 import { TypewriterText } from "@/foundation/components/TypewriterText";
-import { LogoMark } from "@/foundation/icons/LogoMark";
 import { useAppLocalization } from "@/foundation/localization";
 import { markAuthSessionActive } from "@/auth/signOut";
 import {
@@ -83,8 +82,11 @@ export default function AuthScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Animated.View entering={FadeInUp.delay(120).springify()} style={styles.heroWrap}>
-          <View style={[styles.logoBadge, { backgroundColor: colors.accent }]}>
-            <LogoMark size={42} color={colors.background} />
+          <View style={styles.logoBadge}>
+            <Image
+              source={require("../../assets/brand/qentrah-logo.png")}
+              style={styles.logoImage}
+            />
           </View>
 
           <Text variant="display" style={[styles.wordmark, { color: colors.textPrimary }]}>
@@ -189,10 +191,16 @@ const createStyles = (colors: AppColors) => StyleSheet.create({
   },
   logoBadge: {
     alignItems: "center",
-    borderRadius: 22,
-    height: 76,
+    borderRadius: 0,
+    height: 52,
     justifyContent: "center",
-    width: 76,
+    width: 52,
+    backgroundColor: "#FFFFFF",
+  },
+  logoImage: {
+    height: 42,
+    width: 42,
+    resizeMode: "contain",
   },
   wordmark: {
     fontSize: 42,
