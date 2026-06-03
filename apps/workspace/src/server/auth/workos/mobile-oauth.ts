@@ -1,10 +1,10 @@
 import { assertWorkOSConfigured, getWorkOSClient } from "@/server/auth/workos";
 import { workosRuntimeConfig } from "@/packages/config";
+import { mobileAuthOptions, mobileAuthResult, type MobilePasswordAuthResult } from "./mobile-password";
 
 type MobileWorkOSProvider = "authkit" | "AppleOAuth" | "GoogleOAuth";
 type MobileOAuthResult = {
-  accessToken: string;
-  refreshToken?: string;
+  session: MobilePasswordAuthResult;
 };
 
 export function workosMobileProvider(value: string | null): MobileWorkOSProvider {
@@ -80,15 +80,15 @@ export async function completeMobileOAuth(input: {
   }
 
   const auth = await getWorkOSClient().userManagement.authenticateWithCode({
-    clientId: workosRuntimeConfig.clientId,
+    ...mobileAuthOptions({
+      ipAddress: input.ipAddress,
+      userAgent: input.userAgent,
+    }),
     code,
     codeVerifier,
-    ipAddress: input.ipAddress,
-    userAgent: input.userAgent,
   });
 
   return {
-    accessToken: auth.accessToken,
-    refreshToken: auth.refreshToken,
+    session: mobileAuthResult(auth),
   };
 }

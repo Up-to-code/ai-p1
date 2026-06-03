@@ -284,6 +284,7 @@ type SocialAuthCompleteResponse = {
   error?: string;
   ok?: boolean;
   refreshToken?: string;
+  session?: { sealedSession?: string };
 };
 
 async function startSocialAuth(input: {
@@ -328,12 +329,16 @@ async function completeOAuthCallback(input: { code: string; state: string }) {
     }),
   });
   const payload = await response.json().catch(() => null) as SocialAuthCompleteResponse | null;
-  if (!response.ok || !payload?.ok || !payload.accessToken) {
+  if (!response.ok || !payload?.ok || (!payload.session?.sealedSession && !payload.accessToken)) {
     const error = new Error(payload?.error ?? "Qentrah sign-in callback failed.") as Error & {
       emailVerification?: EmailVerificationChallenge;
     };
     if (payload?.emailVerification) error.emailVerification = payload.emailVerification;
     throw error;
+  }
+  if (payload.session?.sealedSession) {
+    await storeSealedSession(payload.session.sealedSession);
+    return fetchSession();
   }
   await storeTokens({
     accessToken: payload.accessToken,

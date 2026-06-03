@@ -56,7 +56,7 @@ export function socialAuthErrorMessage(
     return `${providerLabel} sign in is not ready in this build. Check the app configuration and try again.`;
   }
   if (/email or password|invalid|incorrect|credentials|not found|no user|unknown user/iu.test(normalized)) {
-    return `No Qentrah account is linked to this ${providerLabel} account. Create an account first or sign in with email.`;
+    return `${providerLabel} sign in could not finish. Try again.`;
   }
   if (/rate limit|too many|requests/iu.test(normalized)) {
     return "Too many attempts. Wait a minute, then try again.";

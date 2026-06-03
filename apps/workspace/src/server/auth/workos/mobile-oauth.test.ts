@@ -10,6 +10,7 @@ const workos = {
 vi.mock("@/packages/config", () => ({
   workosRuntimeConfig: {
     clientId: "client_test",
+    cookiePassword: "x".repeat(32),
     mobileCallbackUrl: "qentrah://auth-callback",
   },
 }));
@@ -31,8 +32,14 @@ describe("mobile WorkOS OAuth", () => {
       codeVerifier: "verifier_1",
     });
     workos.userManagement.authenticateWithCode.mockResolvedValue({
-      accessToken: "access_1",
-      refreshToken: "refresh_1",
+      sealedSession: "sealed_session",
+      organizationId: "org_workos",
+      user: {
+        id: "user_1",
+        email: "agent@example.com",
+        firstName: "Noura",
+        lastName: "Ahmed",
+      },
     });
   });
 
@@ -99,8 +106,15 @@ describe("mobile WorkOS OAuth", () => {
       ipAddress: "127.0.0.1",
       userAgent: "vitest",
     })).resolves.toEqual({
-      accessToken: "access_1",
-      refreshToken: "refresh_1",
+      session: {
+        sealedSession: "sealed_session",
+        organizationId: "org_workos",
+        user: {
+          id: "user_1",
+          email: "agent@example.com",
+          name: "Noura Ahmed",
+        },
+      },
     });
 
     expect(workos.userManagement.authenticateWithCode).toHaveBeenCalledWith({
@@ -108,15 +122,19 @@ describe("mobile WorkOS OAuth", () => {
       code: "code_1",
       codeVerifier: "verifier_1",
       ipAddress: "127.0.0.1",
+      session: {
+        sealSession: true,
+        cookiePassword: "x".repeat(32),
+      },
       userAgent: "vitest",
     });
   });
 
-  it("keeps OAuth linked-account errors out of password copy", () => {
+  it("keeps OAuth account lookup errors out of password and linked-account copy", () => {
     expect(mobileOAuthErrorMessage(new Error("User not found.")))
-      .toBe("No Qentrah account is linked to this social sign-in. Create an account first or sign in with email.");
+      .toBe("Qentrah social sign-in could not finish. Try again.");
     expect(mobileOAuthErrorMessage(new Error("The email or password does not match a Qentrah account.")))
-      .toBe("No Qentrah account is linked to this social sign-in. Create an account first or sign in with email.");
+      .toBe("Qentrah social sign-in could not finish. Try again.");
     expect(mobileOAuthErrorMessage(new Error("WorkOS API key and client id are required.")))
       .toBe("Qentrah social sign-in is not ready in this build.");
   });

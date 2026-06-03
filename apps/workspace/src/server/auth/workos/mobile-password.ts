@@ -66,7 +66,7 @@ export function mobileOAuthErrorMessage(error: unknown, fallback = "Qentrah sign
     return "Qentrah social sign-in is not ready in this build.";
   }
   if (/email or password|invalid|incorrect|credentials|not found|no user|unknown user/iu.test(normalized)) {
-    return "No Qentrah account is linked to this social sign-in. Create an account first or sign in with email.";
+    return "Qentrah social sign-in could not finish. Try again.";
   }
   if (/rate limit|too many|requests/iu.test(normalized)) {
     return "Too many attempts. Wait a minute, then try again.";
@@ -88,7 +88,7 @@ function displayName(user: { firstName?: string | null; lastName?: string | null
   return name || user.email;
 }
 
-function authResult(input: {
+export function mobileAuthResult(input: {
   sealedSession?: string;
   organizationId?: string;
   user: { id: string; email: string; firstName?: string | null; lastName?: string | null };
@@ -141,7 +141,7 @@ function splitFullName(value: unknown) {
   };
 }
 
-function authOptions(input: MobilePasswordAuthInput) {
+export function mobileAuthOptions(input: Pick<MobilePasswordAuthInput, "ipAddress" | "userAgent">) {
   if (!workosRuntimeConfig.cookiePassword) {
     throw new Error("WorkOS cookie password is required.");
   }
@@ -161,12 +161,12 @@ async function authenticate(input: MobilePasswordAuthInput) {
   assertWorkOSConfigured();
   const { email, password } = validateEmailPassword(input);
   const auth = await getWorkOSClient().userManagement.authenticateWithPassword({
-    ...authOptions(input),
+    ...mobileAuthOptions(input),
     email,
     password,
   });
 
-  return authResult(auth);
+  return mobileAuthResult(auth);
 }
 
 export async function signInWithMobilePassword(input: MobilePasswordAuthInput) {
@@ -223,7 +223,7 @@ export async function confirmMobileEmailVerification(input: {
   }
 
   const auth = await getWorkOSClient().userManagement.authenticateWithEmailVerification({
-    ...authOptions({
+    ...mobileAuthOptions({
       ipAddress: input.ipAddress,
       userAgent: input.userAgent,
     }),
@@ -231,5 +231,5 @@ export async function confirmMobileEmailVerification(input: {
     pendingAuthenticationToken,
   });
 
-  return authResult(auth);
+  return mobileAuthResult(auth);
 }

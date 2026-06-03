@@ -210,18 +210,18 @@ test("social auth surfaces provider setup errors", async () => {
   );
 });
 
-test("social auth does not show email password copy for linked-account errors", () => {
+test("social auth does not show email password or linked-account copy for account lookup errors", () => {
   assert.equal(
     socialAuthErrorMessage(new Error("The email or password does not match a Qentrah account."), undefined, "google"),
-    "No Qentrah account is linked to this Google account. Create an account first or sign in with email.",
+    "Google sign in could not finish. Try again.",
   );
   assert.equal(
     socialAuthErrorMessage(new Error("User not found."), undefined, "apple"),
-    "No Qentrah account is linked to this Apple account. Create an account first or sign in with email.",
+    "Apple sign in could not finish. Try again.",
   );
   assert.equal(
     socialAuthErrorMessage(new Error("User not found.")),
-    "No Qentrah account is linked to this social account. Create an account first or sign in with email.",
+    "social sign in could not finish. Try again.",
   );
   assert.equal(
     socialAuthErrorMessage(new Error("GoogleOAuth was cancelled."), undefined, "google"),

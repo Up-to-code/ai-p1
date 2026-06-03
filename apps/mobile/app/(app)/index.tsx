@@ -1,4 +1,4 @@
-import { Image, StyleSheet, View, Pressable } from "react-native";
+import { Image, Platform, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import { useRouter } from "expo-router";
 import { Menu } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -16,7 +16,7 @@ import { userAvatarPresentation } from "@/auth/userPresentation";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { colors } = useTheme();
+  const { colors, resolvedColorScheme } = useTheme();
   const { t } = useAppLocalization();
   const insets = useSafeAreaInsets();
   const { user } = useAuthSession();
@@ -59,7 +59,14 @@ export default function HomeScreen() {
           onPress={() => setIsDrawerOpen(true)}
           accessibilityLabel={t.menu.title}
         >
-          <Menu size={16} color={colors.textPrimary} />
+          <HomeMenuAction
+            colorScheme={resolvedColorScheme}
+            fallbackIconColor={colors.textPrimary}
+            label={t.menu.title}
+            onPress={() => setIsDrawerOpen(true)}
+            style={styles.nativeMenuAction}
+            tintColor={colors.textPrimary}
+          />
         </Pressable>
       </View>
 
@@ -77,6 +84,66 @@ export default function HomeScreen() {
       />
     </Screen>
   );
+}
+
+type ExpoSwiftUI = {
+  Button: typeof import("@expo/ui/swift-ui").Button;
+  Host: typeof import("@expo/ui/swift-ui").Host;
+  modifiers: typeof import("@expo/ui/swift-ui/modifiers");
+};
+
+type HomeMenuActionProps = {
+  colorScheme: "light" | "dark";
+  fallbackIconColor: string;
+  label: string;
+  onPress: () => void;
+  style: StyleProp<ViewStyle>;
+  tintColor: string;
+};
+
+function HomeMenuAction({ colorScheme, fallbackIconColor, label, onPress, style, tintColor }: HomeMenuActionProps) {
+  const swiftUI = getAvailableExpoSwiftUI();
+  if (swiftUI) {
+    const { Button: SwiftUIButton, Host: SwiftUIHost, modifiers } = swiftUI;
+    return (
+      <SwiftUIHost colorScheme={colorScheme} matchContents style={style}>
+        <SwiftUIButton
+          color={tintColor}
+          controlSize="regular"
+          onPress={onPress}
+          systemImage="line.3.horizontal"
+          variant="plain"
+          modifiers={[
+            modifiers.frame({ width: 30, height: 30 }),
+            modifiers.accessibilityLabel(label),
+          ]}
+        />
+      </SwiftUIHost>
+    );
+  }
+
+  return <Menu size={16} color={fallbackIconColor} />;
+}
+
+function getAvailableExpoSwiftUI(): ExpoSwiftUI | null {
+  if (Platform.OS !== "ios") {
+    return null;
+  }
+
+  try {
+    const swiftUI = require("@expo/ui/swift-ui") as Pick<ExpoSwiftUI, "Button" | "Host">;
+    const modifiers = require("@expo/ui/swift-ui/modifiers") as ExpoSwiftUI["modifiers"];
+    if (!swiftUI.Button || !swiftUI.Host) {
+      return null;
+    }
+    return {
+      Button: swiftUI.Button,
+      Host: swiftUI.Host,
+      modifiers,
+    };
+  } catch {
+    return null;
+  }
 }
 
 const styles = StyleSheet.create({
@@ -109,6 +176,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     overflow: "hidden",
+  },
+  nativeMenuAction: {
+    width: 30,
+    height: 30,
   },
   avatarImage: {
     width: 28,
