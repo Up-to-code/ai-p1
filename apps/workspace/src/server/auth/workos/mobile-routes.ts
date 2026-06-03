@@ -4,6 +4,7 @@ import { completeMobileOAuth, safeMobileReturnTo, startMobileOAuth } from "./mob
 import {
   confirmMobileEmailVerification,
   confirmMobilePasswordReset,
+  mobileAuthErrorDetails,
   mobileAuthErrorMessage,
   mobileEmailVerificationChallenge,
   mobileOAuthErrorMessage,
@@ -132,6 +133,7 @@ workosMobileAuthRouter.post("/complete", async (c) => {
     if (emailVerification) {
       return c.json({ ok: false, emailVerification }, 409);
     }
+    console.error("WorkOS mobile OAuth completion failed", mobileAuthErrorDetails(error));
     return c.json({
       ok: false,
       error: mobileOAuthErrorMessage(error, "Qentrah sign-in callback failed."),

@@ -1,7 +1,17 @@
-import { Alert, Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Alert,
+  Linking,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from "react-native";
 import { Redirect, useRouter, useSegments } from "expo-router";
 import { Image } from "expo-image";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { Mail } from "lucide-react-native";
 
@@ -140,9 +150,33 @@ export default function AuthScreen() {
               {authProviders.map(({ provider }) => {
                 const isSigningIn = signingProvider !== null;
                 const providerLabel = provider === "apple" ? t.auth.continueWithApple : t.auth.continueWithGoogle;
-                const providerIcon = provider === "apple"
-                  ? <AppleIcon size={20} color="#F5F7FB" />
-                  : <GoogleIcon size={20} />;
+                if (provider === "apple") {
+                  return (
+                    <NativeAuthButton
+                      key={provider}
+                      buttonColor={isDark ? "#F5F7FB" : "#151A22"}
+                      colorScheme={isDark ? "dark" : "light"}
+                      disabled={isSigningIn}
+                      fallbackIcon={<AppleIcon size={20} color={styles.appleAuthButtonLabel.color} />}
+                      fallbackTextStyle={styles.appleAuthButtonLabel}
+                      foregroundColor={styles.appleAuthButtonLabel.color}
+                      label={
+                        signingProvider === provider
+                          ? activeSignInLabel ?? t.auth.signingIn
+                          : providerLabel
+                      }
+                      onPress={() => void handleSocialSignIn(provider)}
+                      style={[
+                        styles.secondaryBtn,
+                        styles.appleAuthButton,
+                        isSigningIn && styles.disabledBtn,
+                      ]}
+                      systemImage="apple.logo"
+                      testID="auth.continue_apple"
+                    />
+                  );
+                }
+                const providerIcon = <GoogleIcon size={20} />;
                 return (
                   <Button
                     key={provider}
@@ -165,10 +199,13 @@ export default function AuthScreen() {
                   />
                 );
               })}
-              <Button
+              <NativeAuthButton
+                buttonColor={isDark ? "#0E1218" : "#171C24"}
+                colorScheme={isDark ? "dark" : "light"}
                 testID="auth.continue_email_password"
-                variant="secondary"
-                leading={<Mail size={19} color="#F5F7FB" />}
+                fallbackIcon={<Mail size={19} color="#F5F7FB" />}
+                fallbackTextStyle={styles.themedAuthButtonLabel}
+                foregroundColor={styles.themedAuthButtonLabel.color}
                 label={t.auth.continueWithEmail}
                 disabled={signingProvider !== null}
                 onPress={() => router.push("/(auth)/login")}
@@ -177,7 +214,7 @@ export default function AuthScreen() {
                   signingProvider !== null && styles.disabledBtn,
                   styles.themedAuthButton,
                 ]}
-                textStyle={styles.themedAuthButtonLabel}
+                systemImage="envelope"
               />
             </View>
 
@@ -223,6 +260,120 @@ export default function AuthScreen() {
       </ScrollView>
     </View>
   );
+}
+
+type ExpoSwiftUI = {
+  Button: typeof import("@expo/ui/swift-ui").Button;
+  Host: typeof import("@expo/ui/swift-ui").Host;
+  modifiers: typeof import("@expo/ui/swift-ui/modifiers");
+};
+
+type NativeAuthButtonProps = {
+  buttonColor: string;
+  colorScheme: "light" | "dark";
+  disabled: boolean;
+  fallbackIcon: ReactNode;
+  fallbackTextStyle: { color: string; fontSize: number; lineHeight: number };
+  foregroundColor: string;
+  label: string;
+  onPress: () => void;
+  style: StyleProp<ViewStyle>;
+  systemImage: string;
+  testID: string;
+};
+
+function NativeAuthButton({
+  buttonColor,
+  colorScheme,
+  disabled,
+  fallbackIcon,
+  fallbackTextStyle,
+  foregroundColor,
+  label,
+  onPress,
+  style,
+  systemImage,
+  testID,
+}: NativeAuthButtonProps) {
+  const swiftUI = getAvailableExpoSwiftUI();
+  const systemUI = useSystemUI();
+  const authSizes = systemUI.sizes.auth;
+
+  if (swiftUI) {
+    const { Button: SwiftUIButton, Host: SwiftUIHost, modifiers } = swiftUI;
+    
+    // Extract only layout-safe properties for the host wrapper to prevent double border/background styling issues
+    const flattenedStyle = StyleSheet.flatten(style);
+    const {
+      borderWidth,
+      borderColor,
+      borderRadius,
+      backgroundColor,
+      padding,
+      paddingHorizontal,
+      paddingVertical,
+      paddingLeft,
+      paddingRight,
+      paddingTop,
+      paddingBottom,
+      ...hostStyle
+    } = flattenedStyle;
+
+    return (
+      <SwiftUIHost colorScheme={colorScheme} style={hostStyle}>
+        <SwiftUIButton
+          color={buttonColor}
+          controlSize="large"
+          disabled={disabled}
+          onPress={onPress}
+          systemImage={systemImage as never}
+          variant="borderedProminent"
+          modifiers={[
+            modifiers.frame({ minHeight: authSizes.buttonHeight, maxWidth: 1000 }),
+            modifiers.cornerRadius(authSizes.buttonRadius),
+            modifiers.foregroundStyle(foregroundColor),
+            modifiers.accessibilityLabel(label),
+          ]}
+        >
+          {label}
+        </SwiftUIButton>
+      </SwiftUIHost>
+    );
+  }
+
+  return (
+    <Button
+      testID={testID}
+      variant="secondary"
+      leading={fallbackIcon}
+      label={label}
+      disabled={disabled}
+      onPress={onPress}
+      style={style}
+      textStyle={fallbackTextStyle}
+    />
+  );
+}
+
+function getAvailableExpoSwiftUI(): ExpoSwiftUI | null {
+  if (Platform.OS !== "ios") {
+    return null;
+  }
+
+  try {
+    const swiftUI = require("@expo/ui/swift-ui") as Pick<ExpoSwiftUI, "Button" | "Host">;
+    const modifiers = require("@expo/ui/swift-ui/modifiers") as ExpoSwiftUI["modifiers"];
+    if (!swiftUI.Button || !swiftUI.Host) {
+      return null;
+    }
+    return {
+      Button: swiftUI.Button,
+      Host: swiftUI.Host,
+      modifiers,
+    };
+  } catch {
+    return null;
+  }
 }
 
 const createStyles = (colors: AppColors, isDark: boolean, authSizes: ReturnType<typeof useSystemUI>["sizes"]["auth"]) => StyleSheet.create({
@@ -313,14 +464,28 @@ const createStyles = (colors: AppColors, isDark: boolean, authSizes: ReturnType<
     minHeight: authSizes.buttonHeight,
     borderRadius: authSizes.buttonRadius,
     borderWidth: 1,
+    width: "100%",
   },
   themedAuthButton: {
     backgroundColor: isDark ? "#0E1218" : "#171C24",
     borderColor: "transparent",
     paddingHorizontal: authSizes.buttonHorizontalPadding,
+    width: "100%",
   },
   themedAuthButtonLabel: {
     color: "#F5F7FB",
+    fontSize: authSizes.buttonFontSize,
+    lineHeight: authSizes.buttonLineHeight,
+  },
+  appleAuthButton: {
+    backgroundColor: isDark ? "#F5F7FB" : "#151A22",
+    borderColor: isDark ? "rgba(245, 247, 251, 0.72)" : "rgba(21, 26, 34, 0.86)",
+    justifyContent: "center",
+    paddingHorizontal: authSizes.buttonHorizontalPadding,
+    width: "100%",
+  },
+  appleAuthButtonLabel: {
+    color: isDark ? "#151A22" : "#F5F7FB",
     fontSize: authSizes.buttonFontSize,
     lineHeight: authSizes.buttonLineHeight,
   },

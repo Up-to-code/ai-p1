@@ -114,6 +114,15 @@ function rawErrorData(error: unknown) {
   return rawData && typeof rawData === "object" ? rawData as Record<string, unknown> : null;
 }
 
+export function mobileAuthErrorDetails(error: unknown) {
+  const rawData = rawErrorData(error);
+  return {
+    name: error instanceof Error ? error.name : undefined,
+    message: error instanceof Error ? error.message : typeof error === "string" ? error : undefined,
+    rawData,
+  };
+}
+
 export function mobileEmailVerificationChallenge(error: unknown): MobileEmailVerificationChallenge | null {
   const rawData = rawErrorData(error);
   if (rawData?.code !== "email_verification_required") return null;
