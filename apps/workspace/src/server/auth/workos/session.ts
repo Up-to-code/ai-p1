@@ -20,6 +20,9 @@ export type WorkOSAccessClaims = {
 export type WorkOSResolvedSession = {
   userId: string;
   workosUserId: string;
+  userName?: string;
+  userEmail?: string;
+  userImage?: string | null;
   organizationId: string;
   workosOrganizationId: string;
   membershipId?: string;
@@ -30,6 +33,16 @@ export type WorkOSResolvedSession = {
   organizationName?: string;
   sessionId?: string;
 };
+
+function displayName(user: {
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+  id: string;
+}) {
+  const name = [user.firstName, user.lastName].map((part) => part?.trim()).filter(Boolean).join(" ");
+  return name || user.email || user.id;
+}
 
 let jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
 
@@ -71,33 +84,7 @@ export async function verifyWorkOSAccessToken(token: string): Promise<WorkOSAcce
   return payload;
 }
 
-async function resolveProjectedSession(input: {
-  workosUserId: string;
-  workosOrganizationId: string;
-  role?: string;
-  roles?: string[];
-  permissions?: string[];
-  sessionId?: string;
-}) {
-  const resolved = await convexCalls.query<{
-    workosUserId: string;
-    workosOrganizationId: string;
-  }, WorkOSResolvedSession | null>(api.workosAuth.resolveSession, {
-    workosUserId: input.workosUserId,
-    workosOrganizationId: input.workosOrganizationId,
-  });
-  if (!resolved) throw new Error("WorkOS session has no matching Convex organization membership.");
-
-  return {
-    ...resolved,
-    role: input.role ?? resolved.role,
-    roles: input.roles ?? resolved.roles,
-    permissions: input.permissions ?? resolved.permissions,
-    sessionId: input.sessionId,
-  };
-}
-
-async function ensureMobileProjectedSession(input: {
+export async function ensureWorkOSProjectedSession(input: {
   email?: string;
   workosUserId: string;
   workosOrganizationId: string;
@@ -116,13 +103,19 @@ async function ensureMobileProjectedSession(input: {
     workosOrganizationId: input.workosOrganizationId,
   });
   if (resolved) {
-    return {
-      ...resolved,
-      role: input.role ?? resolved.role,
-      roles: input.roles ?? resolved.roles,
-      permissions: input.permissions ?? resolved.permissions,
-      sessionId: input.sessionId,
-    };
+    const shouldReconcileMobileOwner =
+      resolved.organizationId.startsWith("org_workos_") &&
+      resolved.userId === input.workosUserId &&
+      resolved.role !== "owner";
+    if (!shouldReconcileMobileOwner) {
+      return {
+        ...resolved,
+        role: resolved.role ?? input.role,
+        roles: resolved.roles.length > 0 ? resolved.roles : input.roles ?? [],
+        permissions: resolved.permissions.length > 0 ? resolved.permissions : input.permissions ?? [],
+        sessionId: input.sessionId,
+      };
+    }
   }
 
   const projected = await convexCalls.mutation<{
@@ -145,12 +138,38 @@ async function ensureMobileProjectedSession(input: {
     permissions: input.permissions ?? [],
   });
 
+  if (resolved) {
+    return {
+      ...projected,
+      role: projected.role,
+      roles: projected.roles,
+      permissions: projected.permissions,
+      sessionId: input.sessionId,
+    };
+  }
+
   return {
     ...projected,
-    role: input.role ?? projected.role,
-    roles: input.roles ?? projected.roles,
-    permissions: input.permissions ?? projected.permissions,
+    role: projected.role ?? input.role,
+    roles: projected.roles.length > 0 ? projected.roles : input.roles ?? [],
+    permissions: projected.permissions.length > 0 ? projected.permissions : input.permissions ?? [],
     sessionId: input.sessionId,
+  };
+}
+
+async function workOSOrganizationContext(workosOrganizationId: string) {
+  const organization = await getWorkOSClient().organizations
+    .getOrganization(workosOrganizationId)
+    .catch(() => null);
+  const organizationMetadata = organization?.metadata ?? {};
+  const organizationId = organization?.externalId ??
+    organizationMetadata.qentrah_organization_id ??
+    organizationMetadata.organizationId ??
+    undefined;
+
+  return {
+    organizationId,
+    organizationName: organization?.name,
   };
 }
 
@@ -167,38 +186,48 @@ export async function resolveWorkOSSessionFromHeaders(headers: Headers): Promise
     if (!session.organizationId) {
       throw new Error("WorkOS organization is required for workspace routes.");
     }
-    const organization = await getWorkOSClient().organizations
-      .getOrganization(session.organizationId)
-      .catch(() => null);
-    const organizationMetadata = organization?.metadata ?? {};
-    const organizationId = organization?.externalId ??
-      organizationMetadata.qentrah_organization_id ??
-      organizationMetadata.organizationId ??
-      undefined;
-    return ensureMobileProjectedSession({
+    const organization = await workOSOrganizationContext(session.organizationId);
+    return ensureWorkOSProjectedSession({
       email: typeof session.user.email === "string" ? session.user.email : undefined,
       workosUserId: session.user.id,
       workosOrganizationId: session.organizationId,
-      organizationId,
-      organizationName: organization?.name,
+      organizationId: organization.organizationId,
+      organizationName: organization.organizationName,
       role: session.role,
       roles: session.roles,
       permissions: session.permissions,
       sessionId: session.sessionId,
-    });
+    }).then((resolved) => ({
+      ...resolved,
+      userName: displayName(session.user),
+      userEmail: typeof session.user.email === "string" ? session.user.email : undefined,
+      userImage: session.user.profilePictureUrl ?? null,
+    }));
   }
 
   const token = workosAccessTokenFromHeaders(headers);
   if (!token) throw new Error("WorkOS access token is required.");
   const claims = await verifyWorkOSAccessToken(token);
   if (!claims.org_id) throw new Error("WorkOS organization is required for workspace routes.");
+  const [user, organization] = await Promise.all([
+    getWorkOSClient().userManagement.getUser(claims.sub).catch(() => null),
+    workOSOrganizationContext(claims.org_id),
+  ]);
 
-  return resolveProjectedSession({
+  return ensureWorkOSProjectedSession({
+    email: typeof user?.email === "string" ? user.email : undefined,
     workosUserId: claims.sub,
     workosOrganizationId: claims.org_id,
+    organizationId: organization.organizationId,
+    organizationName: organization.organizationName,
     role: claims.role,
     roles: claims.roles,
     permissions: claims.permissions,
     sessionId: claims.sid,
-  });
+  }).then((resolved) => ({
+    ...resolved,
+    userName: user ? displayName(user) : undefined,
+    userEmail: typeof user?.email === "string" ? user.email : undefined,
+    userImage: user?.profilePictureUrl ?? null,
+  }));
 }

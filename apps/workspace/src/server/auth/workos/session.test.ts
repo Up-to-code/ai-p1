@@ -67,8 +67,9 @@ describe("WorkOS session resolver", () => {
       workosUserId: "user_workos",
       organizationId: "org_local",
       workosOrganizationId: "org_workos",
-      roles: ["admin"],
-      permissions: ["workspace:read"],
+      role: "owner",
+      roles: ["owner", "admin"],
+      permissions: ["organization:update", "apiKey:create"],
     });
   });
 
@@ -81,7 +82,7 @@ describe("WorkOS session resolver", () => {
       organizationId: "org_local",
       workosOrganizationId: "org_workos",
       role: "admin",
-      roles: ["admin"],
+      roles: ["member"],
       permissions: ["workspace:read"],
       sessionId: "session_1",
     }));
@@ -114,9 +115,9 @@ describe("WorkOS session resolver", () => {
       workosUserId: "user_workos",
       organizationId: "org_local",
       workosOrganizationId: "org_workos",
-      role: "admin",
-      roles: ["admin"],
-      permissions: ["workspace:read"],
+      role: "owner",
+      roles: ["owner", "admin"],
+      permissions: ["organization:update", "apiKey:create"],
     }));
 
     expect(mocks.convexMutation).toHaveBeenCalledWith(expect.anything(), {
@@ -129,5 +130,44 @@ describe("WorkOS session resolver", () => {
       roles: ["admin"],
       permissions: ["workspace:read"],
     });
+  });
+
+  it("reconciles mobile-created workspaces to owner membership", async () => {
+    mocks.convexQuery.mockResolvedValueOnce({
+      userId: "user_workos",
+      workosUserId: "user_workos",
+      organizationId: "org_workos_orgworkos",
+      workosOrganizationId: "org_workos",
+      role: "admin",
+      roles: ["admin"],
+      permissions: ["widgets:users-table:manage"],
+    });
+    mocks.convexMutation.mockResolvedValueOnce({
+      userId: "user_workos",
+      workosUserId: "user_workos",
+      organizationId: "org_workos_orgworkos",
+      workosOrganizationId: "org_workos",
+      role: "owner",
+      roles: ["owner", "admin"],
+      permissions: ["organization:update", "apiKey:create"],
+    });
+
+    await expect(resolveWorkOSSessionFromHeaders(new Headers({
+      authorization: "WorkOS-Session sealed_session",
+    }))).resolves.toEqual(expect.objectContaining({
+      organizationId: "org_workos_orgworkos",
+      role: "owner",
+      roles: ["owner", "admin"],
+      permissions: ["organization:update", "apiKey:create"],
+    }));
+
+    expect(mocks.convexMutation).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
+      workosUserId: "user_workos",
+      workosOrganizationId: "org_workos",
+      organizationId: "org_local",
+      organizationName: "Noura Workspace",
+      role: "admin",
+      roles: ["admin"],
+    }));
   });
 });

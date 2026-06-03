@@ -20,7 +20,9 @@ describe("web WorkOS auth routes", () => {
     expect(signIn).toContain("NEXT_PUBLIC_WORKOS_REDIRECT_URI");
     expect(signIn).toContain("`${url.origin}/callback`");
     expect(signUp).toContain("`${url.origin}/callback`");
-    expect(callback).toContain("handleAuth()");
+    expect(callback).toContain("handleAuth({");
+    expect(callback).toContain("returnPathname: postLoginPathname()");
+    expect(callback).toContain("ensureWorkOSProjectedSession");
     expect(workosConfig).toContain("`${fallbackSiteUrl}/callback`");
     expect(workosConfig).not.toContain("/api/auth/workos/callback");
   });

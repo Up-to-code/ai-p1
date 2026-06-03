@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
+import { organizationPermissionStatement } from "../src/packages/authz";
 
 const workosEventDataValidator = v.object({
   id: v.optional(v.string()),
@@ -34,6 +35,12 @@ function stringField(value: unknown) {
 
 function arrayField(value: unknown) {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function allOrganizationPermissionSlugs() {
+  return Object.entries(organizationPermissionStatement).flatMap(([resource, actions]) =>
+    actions.map((action) => `${resource}:${action}`),
+  );
 }
 
 function authKitProjectionEventId(eventType: string, data: Record<string, unknown>) {
@@ -252,21 +259,30 @@ export const ensureMobileSessionProjection = mutation({
       }
     }
 
-    const roles = args.roles.length > 0 ? args.roles : [args.role ?? "member"];
-    const role = args.role ?? roles[0];
     const existing = await ctx.db
       .query("workosOrganizationMembers")
       .withIndex("by_workos_org_user", (q) =>
         q.eq("workosOrganizationId", args.workosOrganizationId).eq("workosUserId", args.workosUserId),
       )
       .unique();
+    const isMobileCreatedOrganization = organization.organizationId.startsWith("org_workos_");
+    const shouldGrantOwner = isMobileCreatedOrganization &&
+      (!existing || existing.userId === args.workosUserId) &&
+      (!existing?.role || existing.role === "admin" || existing.role === "member");
+    const roles = shouldGrantOwner
+      ? ["owner", "admin"]
+      : args.roles.length > 0 ? args.roles : [args.role ?? "member"];
+    const role = shouldGrantOwner ? "owner" : args.role ?? roles[0];
+    const permissions = shouldGrantOwner
+      ? Array.from(new Set([...args.permissions, ...allOrganizationPermissionSlugs()]))
+      : args.permissions;
     const memberPatch = {
       organizationId: organization.organizationId,
       userId: args.workosUserId,
       email: args.email,
       role,
       roles,
-      permissions: args.permissions,
+      permissions,
       status: "active" as const,
       updatedAt: now,
     };
@@ -287,7 +303,7 @@ export const ensureMobileSessionProjection = mutation({
       workosMembershipId: existing?.workosMembershipId,
       role,
       roles,
-      permissions: args.permissions,
+      permissions,
       organizationName: organization.name,
     };
   },

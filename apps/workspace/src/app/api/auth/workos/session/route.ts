@@ -55,9 +55,9 @@ export async function GET(request: Request) {
         user: {
           id: resolved.userId,
           workosUserId: resolved.workosUserId,
-          name: resolved.workosUserId,
-          email: "Mobile WorkOS user",
-          image: null,
+          name: resolved.userName ?? resolved.userEmail ?? resolved.workosUserId,
+          email: resolved.userEmail ?? "No email set",
+          image: resolved.userImage ?? null,
         },
         organization: {
           id: resolved.organizationId,
@@ -96,9 +96,9 @@ export async function GET(request: Request) {
         id: resolvedOrganization?.organizationId ?? "",
         workosOrganizationId: resolvedOrganization?.workosOrganizationId ?? "",
         name: resolvedOrganization?.organizationName ?? "Workspace",
-        role: auth.role ?? resolvedOrganization?.role,
-        roles: auth.roles ?? resolvedOrganization?.roles ?? [],
-        permissions: auth.permissions ?? resolvedOrganization?.permissions ?? [],
+        role: resolvedOrganization?.role ?? auth.role,
+        roles: resolvedOrganization?.roles.length ? resolvedOrganization.roles : auth.roles ?? [],
+        permissions: resolvedOrganization?.permissions.length ? resolvedOrganization.permissions : auth.permissions ?? [],
       },
     });
   } catch (error) {
