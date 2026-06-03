@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   authenticateWithSessionCookie: vi.fn(),
+  getOrganization: vi.fn(),
   convexMutation: vi.fn(),
   convexQuery: vi.fn(),
 }));
@@ -19,6 +20,9 @@ vi.mock("./client", () => ({
     userManagement: {
       authenticateWithSessionCookie: mocks.authenticateWithSessionCookie,
       getJwksUrl: () => "https://api.workos.com/jwks",
+    },
+    organizations: {
+      getOrganization: mocks.getOrganization,
     },
   }),
 }));
@@ -43,6 +47,12 @@ describe("WorkOS session resolver", () => {
       roles: ["admin"],
       permissions: ["workspace:read"],
       sessionId: "session_1",
+    });
+    mocks.getOrganization.mockResolvedValue({
+      id: "org_workos",
+      name: "Noura Workspace",
+      externalId: "org_local",
+      metadata: {},
     });
     mocks.convexQuery.mockResolvedValue({
       userId: "user_local",
@@ -113,6 +123,8 @@ describe("WorkOS session resolver", () => {
       email: undefined,
       workosUserId: "user_workos",
       workosOrganizationId: "org_workos",
+      organizationId: "org_local",
+      organizationName: "Noura Workspace",
       role: "admin",
       roles: ["admin"],
       permissions: ["workspace:read"],

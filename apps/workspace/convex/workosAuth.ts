@@ -191,6 +191,8 @@ export const ensureMobileSessionProjection = mutation({
   args: {
     workosUserId: v.string(),
     workosOrganizationId: v.string(),
+    organizationId: v.optional(v.string()),
+    organizationName: v.optional(v.string()),
     email: v.optional(v.string()),
     role: v.optional(v.string()),
     roles: v.array(v.string()),
@@ -209,10 +211,47 @@ export const ensureMobileSessionProjection = mutation({
     organizationName: v.optional(v.string()),
   }),
   handler: async (ctx, args) => {
-    const organization = await organizationByWorkOSId(ctx, args.workosOrganizationId);
-    if (!organization) throw new Error("WorkOS organization is not linked to a local workspace.");
-
     const now = Date.now();
+    let organization = await organizationByWorkOSId(ctx, args.workosOrganizationId);
+    const organizationId =
+      args.organizationId ??
+      organization?.organizationId ??
+      `org_workos_${args.workosOrganizationId.replace(/[^a-zA-Z0-9]/g, "")}`;
+    const organizationName =
+      args.organizationName?.trim() ||
+      organization?.name ||
+      (args.email ? `${args.email.split("@")[0]}'s Workspace` : "Qentrah Workspace");
+
+    if (!organization) {
+      const existingByLocal = await ctx.db
+        .query("organizations")
+        .withIndex("by_organization_id", (q) => q.eq("organizationId", organizationId))
+        .unique();
+      const organizationPatch = {
+        organizationId,
+        workosOrganizationId: args.workosOrganizationId,
+        name: organizationName,
+        legalName: organizationName,
+        type: "broker",
+        email: args.email ?? "",
+        phone: "",
+        website: "",
+        address: "",
+        updatedAt: now,
+      };
+      if (existingByLocal) {
+        await ctx.db.patch(existingByLocal._id, organizationPatch);
+        organization = { ...existingByLocal, ...organizationPatch };
+      } else {
+        const createdId = await ctx.db.insert("organizations", organizationPatch);
+        organization = {
+          _id: createdId,
+          _creationTime: now,
+          ...organizationPatch,
+        };
+      }
+    }
+
     const roles = args.roles.length > 0 ? args.roles : [args.role ?? "member"];
     const role = args.role ?? roles[0];
     const existing = await ctx.db

@@ -101,6 +101,8 @@ async function ensureMobileProjectedSession(input: {
   email?: string;
   workosUserId: string;
   workosOrganizationId: string;
+  organizationId?: string;
+  organizationName?: string;
   role?: string;
   roles?: string[];
   permissions?: string[];
@@ -127,6 +129,8 @@ async function ensureMobileProjectedSession(input: {
     email?: string;
     workosUserId: string;
     workosOrganizationId: string;
+    organizationId?: string;
+    organizationName?: string;
     role?: string;
     roles: string[];
     permissions: string[];
@@ -134,6 +138,8 @@ async function ensureMobileProjectedSession(input: {
     email: input.email,
     workosUserId: input.workosUserId,
     workosOrganizationId: input.workosOrganizationId,
+    organizationId: input.organizationId,
+    organizationName: input.organizationName,
     role: input.role,
     roles: input.roles ?? [],
     permissions: input.permissions ?? [],
@@ -161,10 +167,20 @@ export async function resolveWorkOSSessionFromHeaders(headers: Headers): Promise
     if (!session.organizationId) {
       throw new Error("WorkOS organization is required for workspace routes.");
     }
+    const organization = await getWorkOSClient().organizations
+      .getOrganization(session.organizationId)
+      .catch(() => null);
+    const organizationMetadata = organization?.metadata ?? {};
+    const organizationId = organization?.externalId ??
+      organizationMetadata.qentrah_organization_id ??
+      organizationMetadata.organizationId ??
+      undefined;
     return ensureMobileProjectedSession({
       email: typeof session.user.email === "string" ? session.user.email : undefined,
       workosUserId: session.user.id,
       workosOrganizationId: session.organizationId,
+      organizationId,
+      organizationName: organization?.name,
       role: session.role,
       roles: session.roles,
       permissions: session.permissions,
