@@ -81,6 +81,7 @@ Common Workspace variables:
 | `WORKOS_COOKIE_DOMAIN` | Server | Optional cookie domain for Workspace WorkOS session cookies |
 | `WORKOS_COOKIE_SECURE` | Server | Set `false` only for local HTTP testing |
 | `WORKOS_API_BASE_URL` | Server | WorkOS API origin override for tests/sandbox; defaults to `https://api.workos.com` |
+| `WORKOS_MOBILE_CALLBACK_URL` | Server | Mobile OAuth callback URL; defaults to `qentrah:///auth-callback` | Must match the mobile app callback URI. |
 | `GOOGLE_CLIENT_ID` | Server | Google sign-in client ID |
 | `GOOGLE_CLIENT_SECRET` | Secret | Google sign-in secret |
 | `APPLE_CLIENT_ID` | Server | Optional Apple sign-in client ID or bundle identifier |

@@ -67,6 +67,17 @@ describe("mobile WorkOS OAuth", () => {
     expect(safeMobileReturnTo("https://app.qentrah.com/api/auth/workos/mobile/callback")).toBe("qentrah:///auth-callback");
   });
 
+  it("uses configured mobile callback fallback when returnTo is invalid", async () => {
+    const { workosRuntimeConfig } = await import("@/packages/config");
+    const originalCallback = workosRuntimeConfig.mobileCallbackUrl;
+    try {
+      workosRuntimeConfig.mobileCallbackUrl = "https://app.qentrah.com/api/auth/workos/mobile/callback";
+      expect(safeMobileReturnTo("invalid-callback")).toBe(workosRuntimeConfig.mobileCallbackUrl);
+    } finally {
+      workosRuntimeConfig.mobileCallbackUrl = originalCallback;
+    }
+  });
+
   it("keeps screen hints only for AuthKit", async () => {
     await startMobileOAuth({
       provider: null,

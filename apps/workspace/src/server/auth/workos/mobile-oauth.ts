@@ -13,16 +13,31 @@ export function workosMobileProvider(value: string | null): MobileWorkOSProvider
   return "authkit";
 }
 
-export function safeMobileReturnTo(value: string | null | undefined) {
-  if (!value) return "qentrah:///auth-callback";
+function isWorkspaceMobileCallbackUrl(value: string) {
+  if (!value) return false;
+  if (value === workosRuntimeConfig.mobileCallbackUrl) return true;
   try {
     const url = new URL(value);
-    if (url.protocol === "qentrah:" && url.hostname === "" && url.pathname === "/auth-callback") return url.toString();
-    if (url.protocol === "qentrah:" && url.hostname === "auth-callback") return url.toString();
+    if (url.protocol === "qentrah:" && url.hostname === "" && url.pathname === "/auth-callback") return true;
+    if (url.protocol === "qentrah:" && url.hostname === "auth-callback") return true;
+  } catch {
+    // Non-URL values are not valid mobile callbacks.
+  }
+  return false;
+}
+
+export function safeMobileReturnTo(value: string | null | undefined) {
+  if (!value) return workosRuntimeConfig.mobileCallbackUrl;
+  if (isWorkspaceMobileCallbackUrl(value)) return value;
+
+  try {
+    const url = new URL(value);
+    if (url.protocol === "qentrah:" && url.hostname === "" && url.pathname === "/auth-callback") return value;
+    if (url.protocol === "qentrah:" && url.hostname === "auth-callback") return value;
   } catch {
     // Fall through to the default app callback.
   }
-  return "qentrah:///auth-callback";
+  return workosRuntimeConfig.mobileCallbackUrl;
 }
 
 export async function startMobileOAuth(input: {

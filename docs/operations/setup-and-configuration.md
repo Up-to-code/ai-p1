@@ -192,6 +192,7 @@ Core env variables:
 | `WORKOS_CLIENT_ID` | Required for WorkOS migration rollout | Vercel | AuthKit client id expected in WorkOS session JWT claims. | WorkOS dashboard. |
 | `WORKOS_WEBHOOK_SECRET` | Required for WorkOS webhooks | Vercel secret | Verifies `/api/webhooks/workos` deliveries before Convex projection. | WorkOS webhook endpoint settings. |
 | `WORKOS_CALLBACK_URL` | Optional | Vercel | AuthKit callback URL; defaults to `${SITE_URL}/api/auth/workos/callback`. | Workspace deployed callback URL. |
+| `WORKOS_MOBILE_CALLBACK_URL` | Optional | Vercel | Mobile OAuth callback URL used by `/api/auth/workos/mobile/start`; defaults to `qentrah:///auth-callback` for Expo link-based flows. | Must match the mobile app return/callback URI. |
 | `WORKOS_LOGOUT_RETURN_URL` | Optional | Vercel | Post-logout return URL; defaults to `${SITE_URL}/en/sign-in`. | Workspace sign-in URL. |
 | `WORKOS_POST_LOGIN_URL` | Optional | Vercel | Post-login Workspace URL; defaults to `${SITE_URL}/en`. | Workspace home URL. |
 | `WORKOS_JWT_ISSUER` | Optional | Vercel | WorkOS session token issuer override. | Defaults to `https://api.workos.com`. |
