@@ -13,13 +13,7 @@ import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { Link } from "@/i18n/routing";
-
-const navItems = [
-  { key: "solutions", href: "/#solutions" },
-  { key: "pricing", href: "/#pricing" },
-  { key: "resources", href: "/#resources" },
-  { key: "company", href: "/about" },
-] as const;
+import { publicNavItems } from "@/components/landing/public-nav-items";
 
 export const NavigationSheet = () => {
   const t = useTranslations("Landing.nav");
@@ -38,7 +32,7 @@ export const NavigationSheet = () => {
       <SheetContent side={isAr ? "right" : "left"} className="w-[min(88vw,340px)] px-6 py-8">
         <Logo />
         <nav className="mt-8 grid gap-2" aria-label={t("home")}>
-          {navItems.map((item) => (
+          {publicNavItems.map((item) => (
             <Link
               className="flex h-12 w-full items-center rounded-xl px-4 text-base font-semibold text-foreground transition hover:bg-muted focus:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
               href={item.href}

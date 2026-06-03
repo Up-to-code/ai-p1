@@ -364,7 +364,7 @@ async function organizationDashboard(ctx: QueryCtx, org: Doc<"organizations">) {
       id: "submissions",
       title: "Partner and access submissions",
       description: "Partner authorizations, organization API keys, and MCP access for this organization.",
-      href: `/organizations/${org._id}?tab=access`,
+      href: `/organizations/${org._id}?tab=submissions`,
       rows: [
         ...partnerConnections.map(partnerConnectionSummary),
         ...apiKeys.map(apiKeySummary),

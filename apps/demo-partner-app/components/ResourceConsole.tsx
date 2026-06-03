@@ -16,7 +16,6 @@ import {
 } from "@/lib/demo-sections";
 import { demoBrandConfig } from "@/lib/config";
 import {
-  buildQentrahPartnerOAuthLifecycle,
   buildQentrahPartnerResourceSearchParams,
   createQentrahPartnerConsoleService,
   qentrahPartnerFilterPlaceholder,
@@ -80,7 +79,7 @@ export function ResourceConsole({ runtime }: { runtime: RuntimeSnapshot }) {
     () => createQentrahPartnerConsoleService({
       workspaceBaseUrl: runtime.workspaceBaseUrl,
       partnerAppUrl: runtime.partnerAppUrl,
-      redirectUri: `${runtime.partnerAppUrl}${demoBrandConfig.oauthCallbackPath}`,
+      redirectUri: `${runtime.partnerAppUrl}${demoBrandConfig.authCallbackPath}`,
       requestedScopes: runtime.requestedScopes,
       grantedScopes,
     }),
@@ -279,7 +278,7 @@ export function ResourceConsole({ runtime }: { runtime: RuntimeSnapshot }) {
           </div>
           <div className="topbar-actions">
             <a className="button secondary" href="/">Landing page</a>
-            <a className="button" href={demoBrandConfig.oauthStartPath}>
+            <a className="button" href={demoBrandConfig.authStartPath}>
               Authorize
               <ArrowRight size={16} />
             </a>
@@ -352,19 +351,25 @@ function Overview({ runtime, latestResults }: { runtime: RuntimeSnapshot; latest
   return (
     <div className="console-grid three">
       <Metric title="Connection" value={runtime.connected ? "Connected" : "Not connected"} detail={runtime.organizationId ?? "Authorize a workspace."} />
-      <Metric title="Token expiry" value={runtime.expiresAt ?? "No token"} detail="Tokens are stored server-side only." />
+      <Metric title="Key expiry" value={runtime.expiresAt ?? "No expiry"} detail="WorkOS partner keys are stored server-side only." />
       <Metric title="Recent tests" value={String(latestResults.length)} detail="Captured in this browser session." />
     </div>
   );
 }
 
 function Flow({ runtime }: { runtime: RuntimeSnapshot }) {
-  const lifecycle = buildQentrahPartnerOAuthLifecycle({
-    workspaceBaseUrl: runtime.workspaceBaseUrl,
-    partnerAppUrl: runtime.partnerAppUrl,
-    redirectUri: `${runtime.partnerAppUrl}${demoBrandConfig.oauthCallbackPath}`,
-    requestedScopes: runtime.requestedScopes,
-  });
+  const lifecycle = {
+    phases: [
+      ["Workspace grant", "A workspace member approves this partner app and its requested permission scopes."],
+      ["WorkOS key issue", "Workspace creates a scoped WorkOS partner API key and binds it to the organization grant."],
+      ["Server-side use", "This demo stores the key in an encrypted cookie and calls Workspace partner APIs from the server."],
+    ],
+    endpoints: {
+      workspace: new URL("/en/integrations", runtime.workspaceBaseUrl).toString(),
+      callback: `${runtime.partnerAppUrl}${demoBrandConfig.authCallbackPath}`,
+      resource: new URL("/api/v1/partner", runtime.workspaceBaseUrl).toString(),
+    },
+  };
   return (
     <div className="panel-section">
       <div className="flow-track">
@@ -379,10 +384,9 @@ function Flow({ runtime }: { runtime: RuntimeSnapshot }) {
           </article>
         ))}
       </div>
-      <div className="oauth-endpoints">
-        <Endpoint label="Authorize" value={lifecycle.endpoints.authorize} />
+      <div className="auth-endpoints">
+        <Endpoint label="Workspace grant" value={lifecycle.endpoints.workspace} />
         <Endpoint label="Callback" value={lifecycle.endpoints.callback} />
-        <Endpoint label="Token" value={lifecycle.endpoints.token} />
         <Endpoint label="Resource" value={lifecycle.endpoints.resource} />
       </div>
     </div>
@@ -393,7 +397,7 @@ function Credentials({ runtime }: { runtime: RuntimeSnapshot }) {
   const rows = [
     ["Connected", runtime.connected ? "Yes" : "No"],
     ["Organization", runtime.organizationId ?? "Not connected"],
-    ["Token expiry", runtime.expiresAt ?? "No token"],
+    ["Key expiry", runtime.expiresAt ?? "No expiry"],
     ["Workspace", runtime.workspaceBaseUrl],
     ["Resource audience", runtime.resourceAudience],
   ];
@@ -404,7 +408,7 @@ function Credentials({ runtime }: { runtime: RuntimeSnapshot }) {
       </div>
       <ScopeList title="Requested scopes" scopes={runtime.requestedScopes} />
       <ScopeList title="Granted scopes" scopes={runtime.grantedScopes.length ? runtime.grantedScopes : ["Not available from current token response"]} />
-      <form action={demoBrandConfig.oauthLogoutPath} method="post">
+      <form action={demoBrandConfig.authLogoutPath} method="post">
         <button className="button danger" type="submit">Clear session and reauthorize</button>
       </form>
     </div>
@@ -556,7 +560,7 @@ function ResourceSection({
             <strong>Authorization required</strong>
             <p>{reconnectCopy}</p>
           </div>
-          <a className="button" href={demoBrandConfig.oauthStartPath}>
+          <a className="button" href={demoBrandConfig.authStartPath}>
             Authorize
             <ArrowRight size={16} />
           </a>

@@ -167,6 +167,8 @@ export async function markTamaraPaymentStatusFromWebhookEvent(
     if (subscription) {
       await billingDb(ctx).patch(subscription._id, {
         planId: plan.id,
+        marketId: plan.marketId,
+        billingCycle: plan.billingCycle,
         status: "active",
         latestPaymentId: args.paymentId,
         ...period,
@@ -176,6 +178,8 @@ export async function markTamaraPaymentStatusFromWebhookEvent(
       await billingDb(ctx).insert("organizationSubscriptions", {
         organizationId: payment.organizationId,
         planId: plan.id,
+        marketId: plan.marketId,
+        billingCycle: plan.billingCycle,
         status: "active",
         latestPaymentId: args.paymentId,
         ...period,

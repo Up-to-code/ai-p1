@@ -55,8 +55,18 @@ const sectionIcons: Record<DemoSectionId, LucideIcon> = {
   results: UserRound,
 };
 
+function demoSectionCopy(section: QentrahPartnerSectionConfig): QentrahPartnerSectionConfig {
+  if (section.id !== "flow") return section;
+  return {
+    ...section,
+    label: "Auth Flow",
+    description: "Workspace organization grant plus WorkOS partner key lifecycle and endpoints.",
+    emptyState: "WorkOS partner key flow metadata is always available.",
+  };
+}
+
 export const demoSections: DemoSectionConfig[] = qentrahPartnerSections.map((section) => ({
-  ...section,
+  ...demoSectionCopy(section),
   icon: sectionIcons[section.id],
 }));
 
@@ -64,7 +74,7 @@ export const demoSectionIds = qentrahPartnerSectionIds;
 
 export function findDemoSection(id: string): DemoSectionConfig {
   const section = findQentrahPartnerSection(id);
-  return { ...section, icon: sectionIcons[section.id] };
+  return { ...demoSectionCopy(section), icon: sectionIcons[section.id] };
 }
 
 export const missingScopes = qentrahMissingScopes;

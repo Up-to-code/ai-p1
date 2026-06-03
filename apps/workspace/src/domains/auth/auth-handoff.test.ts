@@ -4,6 +4,7 @@ import {
   createAuthHandoff,
   decodeAuthHandoff,
   encodeAuthHandoff,
+  getAuthHandoffRemainingMs,
 } from "./auth-handoff";
 
 describe("auth handoff", () => {
@@ -22,5 +23,12 @@ describe("auth handoff", () => {
     expect(decodeAuthHandoff("not json")).toBeNull();
     expect(decodeAuthHandoff(JSON.stringify({ createdAt: 1_000 }), 1_500)).toBeNull();
     expect(decodeAuthHandoff(JSON.stringify({ organizationId: "org_1" }), 1_500)).toBeNull();
+  });
+
+  it("reports only the remaining handoff wait time", () => {
+    const handoff = createAuthHandoff("org_1", 1_000);
+
+    expect(getAuthHandoffRemainingMs(handoff, 1_500)).toBe(AUTH_HANDOFF_TTL_MS - 500);
+    expect(getAuthHandoffRemainingMs(handoff, 1_000 + AUTH_HANDOFF_TTL_MS + 1)).toBe(0);
   });
 });

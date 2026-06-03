@@ -16,7 +16,7 @@ export default async function UnlockPage({
             Unlock the {brandProductName("demo", "en")}
           </h1>
           <p style={{ color: "var(--muted)", lineHeight: 1.7 }}>
-            Enter the custom setup token before opening the demo app. OAuth still requires workspace consent inside {brand}.
+            Enter the custom setup token before opening the demo app. Workspace consent still happens inside {brand}.
           </p>
           {params.error === "invalid" ? (
             <div className="error" role="alert">That setup token is not valid.</div>

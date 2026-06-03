@@ -1,9 +1,9 @@
 # Risks
 
-- If organization role permissions are too broad, admins may remove members they should not. Keep Better Auth `member:delete` permission and Qentrah owner-safety checks together.
+- If organization role permissions are too broad, admins may remove members they should not. Keep WorkOS `member:delete` permission slugs and Qentrah owner-safety checks together.
 - If platform-admin checks are kept in this path, valid organization owners can be blocked by environment allowlist drift.
-- If Better Auth role definitions change, Workspace capabilities and server authorization must remain aligned.
-- Audit recording failure currently happens after Better Auth removal; retry/compensation is not handled in this small fix.
+- If WorkOS role definitions change, Workspace capabilities and server authorization must remain aligned through the Convex projection.
+- Audit recording failure currently happens after WorkOS removal; retry/compensation is not handled in this small fix.
 
 ## Rollback
 

@@ -5,7 +5,7 @@ export type TamaraAmount = {
   currency: string;
 };
 
-type TamaraBillingPlanId = "saudi_monthly" | "saudi_yearly";
+type TamaraBillingPlanId = string;
 
 export type TamaraCheckoutContext = {
   locale: string;
@@ -71,7 +71,7 @@ function discount(input: TamaraCheckoutContext["discount"]) {
 }
 
 function planSku(planId: TamaraBillingPlanId) {
-  return planId === "saudi_yearly" ? "qentrah-saudi-yearly" : "qentrah-saudi-monthly";
+  return `qentrah-${planId.replace(/[^a-z0-9]+/giu, "-").replace(/^-|-$/gu, "").toLowerCase()}`;
 }
 
 export function buildTamaraCheckoutPayload(context: TamaraCheckoutContext, config: { siteUrl: string; webhookUrl: string }) {

@@ -3,29 +3,35 @@ import type { McpAction, McpPermission, McpResource } from "./validators";
 export const defaultMcpRolePermissions = {
   owner: {
     organization: ["read", "update", "delete"],
+    member: ["read"],
     client: ["create", "read", "update", "delete"],
     task: ["create", "read", "update", "delete"],
     project: ["create", "read", "update", "delete"],
     property: ["create", "read", "update", "delete"],
     calendar: ["create", "read", "update", "delete"],
+    integration: ["read"],
     media: ["create", "read", "update", "delete"],
   },
   admin: {
     organization: ["read"],
+    member: ["read"],
     client: ["create", "read", "update", "delete"],
     task: ["create", "read", "update", "delete"],
     project: ["create", "read", "update", "delete"],
     property: ["create", "read", "update", "delete"],
     calendar: ["create", "read", "update", "delete"],
+    integration: ["read"],
     media: ["create", "read", "update", "delete"],
   },
   member: {
     organization: ["read"],
+    member: ["read"],
     client: ["read"],
     task: ["read"],
     project: ["read"],
     property: ["read"],
     calendar: ["read"],
+    integration: ["read"],
     media: ["read"],
   },
 } satisfies Record<"owner" | "admin" | "member", Partial<Record<McpResource, McpAction[]>>>;
@@ -50,15 +56,6 @@ export function hasMcpPermission(
 
 export function mcpRoleList(role: string) {
   return role.split(",").map((item) => item.trim()).filter(Boolean);
-}
-
-export function parseMcpCustomPermission(value: string) {
-  try {
-    const parsed = JSON.parse(value) as Partial<Record<McpResource, McpAction[]>>;
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
 }
 
 export function mcpRoleCanUseAction(

@@ -1,5 +1,17 @@
 import { makeFunctionReference } from "convex/server";
-import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/better-auth/server";
+import {
+  DEFAULT_MARKET_ID,
+  billingSelectionKey,
+  getMarketPricing,
+  isTamaraEligible,
+  normalizeBillingSelection,
+  resolveSubscriptionEntitlements,
+  type BillingCycle,
+  type MarketId,
+  type SubscriptionEntitlements,
+  type SubscriptionPlanId,
+} from "@qentrah/domain-contracts/subscription-pricing";
+import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/convex-workos/server";
 import { convexCalls } from "@/server/convex/http-client";
 import type { BillingCheckoutPayload, TamaraWebhookPayload } from "../validation/billing.schema";
 import {
@@ -11,13 +23,15 @@ import {
 import { assertTamaraWebhookConfig, getTamaraRuntimeConfig } from "./tamara-config";
 import { verifyTamaraWebhookToken } from "./tamara-webhook-token";
 
-type BillingPlanId = "saudi_monthly" | "saudi_yearly";
+type BillingPlanId = `${SubscriptionPlanId}_${BillingCycle}` | "saudi_monthly" | "saudi_yearly";
 
 type BillingPayment = {
   _id: string;
   amount: number;
   currency: string;
-  planId: BillingPlanId;
+  planId: string;
+  marketId?: MarketId;
+  billingCycle?: BillingCycle;
   tamaraOrderId?: string;
 };
 
@@ -37,32 +51,13 @@ type AcceptedTamaraWebhook = {
   payment: BillingPayment | null;
 };
 
-const SAUDI_MONTHLY_PLAN = {
-  id: "saudi_monthly" as const,
-  name: "Qentrah Saudi Arabia",
-  amount: 499,
-  currency: "SAR",
-  periodDays: 30,
-};
-
-const SAUDI_YEARLY_PLAN = {
-  id: "saudi_yearly" as const,
-  name: "Qentrah Saudi Arabia Annual",
-  amount: 5988,
-  currency: "SAR",
-  periodDays: 365,
-};
-
-const SAUDI_BILLING_PLANS = {
-  [SAUDI_MONTHLY_PLAN.id]: SAUDI_MONTHLY_PLAN,
-  [SAUDI_YEARLY_PLAN.id]: SAUDI_YEARLY_PLAN,
-};
+type ServerBillingPlan = ReturnType<typeof getServerBillingPlan>;
 
 const refs = {
   getSubscriptionOverview: makeFunctionReference<"query", { organizationId: string }, unknown>("billing/read:getSubscriptionOverview"),
   getTamaraPaymentByOrder: makeFunctionReference<"query", { organizationId: string; orderId: string }, unknown>("billing/read:getTamaraPaymentByOrder"),
-  createPendingTamaraPaymentFromHono: makeFunctionReference<"mutation", { organizationId: string; input: { planId: BillingPlanId } }, {
-    plan: { id: BillingPlanId; name: string; amount: number; currency: string; periodDays: number };
+  createPendingTamaraPaymentFromHono: makeFunctionReference<"mutation", { organizationId: string; input: { planId: string; marketId?: MarketId; billingCycle?: BillingCycle } }, {
+    plan: ServerBillingPlan;
     payment: { _id: string; id: string; orderReferenceId: string; orderNumber: string };
     organization: { name: string; legalName: string; email: string; phone: string; address: string };
   }>("billing/write:createPendingTamaraPaymentFromHono"),
@@ -118,8 +113,25 @@ function failedStatusForEvent(eventType: string) {
   return null;
 }
 
-function getServerBillingPlan(planId: BillingPlanId) {
-  return SAUDI_BILLING_PLANS[planId];
+function getServerBillingPlan(planId: string, marketId: string = DEFAULT_MARKET_ID, billingCycle?: BillingCycle) {
+  const normalized = normalizeBillingSelection(planId);
+  const cycle = billingCycle ?? normalized.cycle;
+  const pricing = getMarketPricing({ marketId, planId: normalized.planId, cycle });
+  if (pricing.checkoutMode === "contact_sales" || pricing.amount === null) {
+    throw new Error("This billing plan requires sales-assisted setup.");
+  }
+  return {
+    id: billingSelectionKey({ planId: normalized.planId, cycle }),
+    planId: normalized.planId,
+    marketId: pricing.marketId,
+    billingCycle: pricing.cycle,
+    name: pricing.name,
+    amount: pricing.amount,
+    currency: pricing.currency,
+    periodDays: pricing.periodDays,
+    providerEligibility: pricing.providerEligibility,
+    entitlements: resolveSubscriptionEntitlements(normalized.planId),
+  };
 }
 
 function isDevelopmentConvexFunctionError(error: unknown) {
@@ -136,9 +148,12 @@ function localBillingOverview(organizationId: string, planId: BillingPlanId = "s
   const plan = getServerBillingPlan(planId);
   return {
     plan,
+    entitlements: plan.entitlements,
     subscription: {
       organizationId,
-      planId: plan.id,
+      planId: plan.planId,
+      marketId: plan.marketId,
+      billingCycle: plan.billingCycle,
       status: "inactive" as const,
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -181,12 +196,21 @@ export async function getBillingSubscription(organizationId: string) {
 }
 
 export async function createBillingCheckout(organizationId: string, input: BillingCheckoutPayload) {
+  const selectedPlan = getServerBillingPlan(input.planId, input.marketId, input.billingCycle);
+  if (!isTamaraEligible(selectedPlan)) {
+    throw new Error("Tamara checkout is available only for eligible yearly billing variants.");
+  }
+
   const context = await fetchAuthMutation(refs.createPendingTamaraPaymentFromHono, {
       organizationId,
-      input: { planId: input.planId },
+      input: {
+        planId: selectedPlan.id,
+        marketId: selectedPlan.marketId,
+        billingCycle: selectedPlan.billingCycle,
+      },
     })
     .catch((error) => {
-      if (isDevelopmentConvexFunctionError(error)) return localCheckoutContext(organizationId, input.planId);
+      if (isDevelopmentConvexFunctionError(error)) return localCheckoutContext(organizationId, selectedPlan.id as BillingPlanId);
       throw error;
     });
 
@@ -212,7 +236,9 @@ export async function createBillingCheckout(organizationId: string, input: Billi
         return {
           ...context.payment,
           organizationId,
-          planId: context.plan.id,
+          planId: context.plan.planId,
+          marketId: context.plan.marketId,
+          billingCycle: context.plan.billingCycle,
           amount: context.plan.amount,
           currency: context.plan.currency,
           tamaraOrderId: checkout.order_id,
@@ -317,7 +343,7 @@ export async function processTamaraWebhook(input: {
         await captureTamaraOrder({
           orderId,
           amount: { amount: accepted.payment.amount, currency: accepted.payment.currency },
-          itemName: getServerBillingPlan(accepted.payment.planId).name,
+          itemName: getServerBillingPlan(accepted.payment.planId, accepted.payment.marketId, accepted.payment.billingCycle).name,
           planId: accepted.payment.planId,
         });
         await convexCalls.mutation(refs.markTamaraPaymentStatusFromWebhook, {

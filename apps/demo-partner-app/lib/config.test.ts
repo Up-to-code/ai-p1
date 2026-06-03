@@ -39,7 +39,7 @@ describe("demo config", () => {
 
   it("documents the current local Partners registration", () => {
     expect(localDemoRegistration).toMatchObject({
-      appName: "Qentrah OAuth Demo",
+      appName: "Qentrah Partner Key Demo",
       publisherName: "ZA",
       partnerAppUrl: "http://localhost:3004",
       clientId: "partners_client_MvdsQoheDgpiYjk5iA9tBGY-",
@@ -56,7 +56,6 @@ describe("demo config", () => {
       "project:read",
       "property:read",
       "task:read",
-      "offline_access",
     ]);
   });
 });

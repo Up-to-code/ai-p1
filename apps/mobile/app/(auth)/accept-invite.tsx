@@ -4,7 +4,6 @@ import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { CheckCircle2, Loader2, LogIn, TriangleAlert } from "lucide-react-native";
 
 import { Button } from "@/foundation/primitives/Button";
-import { Text } from "@/foundation/primitives/Text";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useAppLocalization } from "@/foundation/localization";

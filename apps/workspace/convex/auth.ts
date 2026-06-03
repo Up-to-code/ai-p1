@@ -1,175 +1,108 @@
-import { createClient, type GenericCtx } from "@convex-dev/better-auth";
-import { convex } from "@convex-dev/better-auth/plugins";
-import { expo } from "@better-auth/expo";
-import { oauthProvider } from "@better-auth/oauth-provider";
-import { betterAuth, type BetterAuthOptions } from "better-auth/minimal";
-import { jwt, organization } from "better-auth/plugins";
-import {
-  organizationAccessControl,
-  organizationRoles,
-} from "../src/packages/authz";
-import { getAuthRuntimeConfig } from "../src/packages/config/auth";
-import { partnerAppsRuntimeConfig } from "../src/packages/config/partner-apps";
-import {
-  partnerAdvertisedMetadata,
-  partnerClientRegistrationAllowedScopes,
-  partnerClientRegistrationDefaultScopes,
-  partnerOAuthClaims,
-  partnerOAuthScopes,
-  partnerScopeExpirations,
-  scopeToPermission,
-} from "@qentrah/partner-auth-core";
-import authConfig from "./auth.config";
-import { components } from "./_generated/api";
+import { AuthKit, type AuthFunctions } from "@convex-dev/workos-authkit";
+import { components, internal } from "./_generated/api";
 import type { DataModel } from "./_generated/dataModel";
-import authSchema from "./betterAuth/schema";
+import type { QueryCtx, MutationCtx } from "./_generated/server";
 
-const URLWithCanParse = URL as typeof URL & {
-  canParse?: (url: string | URL, base?: string | URL) => boolean;
+type WorkOSAuthUser = NonNullable<Awaited<ReturnType<AuthKit<DataModel>["getAuthUser"]>>>;
+
+export type WorkspaceAuthUser = WorkOSAuthUser & {
+  _id: string;
+  name?: string;
 };
 
-if (!URLWithCanParse.canParse) {
-  URLWithCanParse.canParse = (url, base) => {
-    try {
-      new URL(url, base);
-      return true;
-    } catch {
-      return false;
-    }
+const authFunctions: AuthFunctions = internal.auth;
+
+const additionalWorkOSEventTypes = [
+  "organization.updated",
+  "organization_membership.created",
+  "organization_membership.updated",
+  "organization_membership.deleted",
+  "api_key.created",
+  "api_key.revoked",
+] as const;
+
+export const authKit = new AuthKit<DataModel>(components.workOSAuthKit, {
+  authFunctions,
+  additionalEventTypes: [...additionalWorkOSEventTypes],
+});
+
+async function requireAuthUser(ctx: QueryCtx | MutationCtx): Promise<WorkspaceAuthUser> {
+  const user = await authKit.getAuthUser(ctx);
+  if (!user) {
+    throw new Error("Not authenticated.");
+  }
+
+  const name = [user.firstName, user.lastName].filter(Boolean).join(" ").trim() || user.email;
+  return {
+    ...user,
+    _id: user.id,
+    name,
   };
 }
 
-// The component client bridges Better Auth storage to Convex and keeps plugin schema local.
-export const authComponent = createClient<DataModel, typeof authSchema>(
-  components.betterAuth,
-  {
-    local: { schema: authSchema },
-    verbose: getAuthRuntimeConfig("schema").verbose,
-  },
-);
-
-// Auth options are shared by runtime auth and the schema generator.
-export const createAuthOptions = (
-  ctx: GenericCtx<DataModel>,
-  mode: "runtime" | "schema",
-) => {
-  const authRuntimeConfig = getAuthRuntimeConfig(mode);
-  const oauthScopes = [...partnerOAuthScopes];
-  const hasPartnerScope = (scopes: readonly string[]) =>
-    scopes.some((scope) => Boolean(scopeToPermission(scope)));
-  const socialProviders: BetterAuthOptions["socialProviders"] = {
-    google: {
-      clientId: authRuntimeConfig.googleClientId,
-      clientSecret: authRuntimeConfig.googleClientSecret,
-    },
-  };
-
-  if (authRuntimeConfig.appleClientId) {
-    socialProviders.apple = {
-      clientId: authRuntimeConfig.appleClientId,
-      ...(authRuntimeConfig.appleAppBundleIdentifier
-        ? { appBundleIdentifier: authRuntimeConfig.appleAppBundleIdentifier }
-        : {}),
-    };
-  }
-
-  return {
-    appName: "Qentrah Workspace",
-    baseURL: authRuntimeConfig.siteUrl,
-    trustedOrigins: authRuntimeConfig.trustedOrigins,
-    secret: authRuntimeConfig.secret,
-    database: authComponent.adapter(ctx),
-    emailAndPassword: {
-      enabled: true,
-      requireEmailVerification: false,
-    },
-    socialProviders,
-    plugins: [
-      jwt({ jwks: { keyPairConfig: { alg: "RS256" } } }),
-      convex({ authConfig, jwksRotateOnTokenGenerationError: true }),
-      expo(),
-      oauthProvider({
-        loginPage: "/en/sign-in",
-        consentPage: "/oauth/consent",
-        scopes: [...oauthScopes],
-        advertisedMetadata: partnerAdvertisedMetadata(),
-        validAudiences: [
-          authRuntimeConfig.siteUrl,
-          partnerAppsRuntimeConfig.oauthAudience,
-        ].filter(Boolean),
-        clientRegistrationDefaultScopes: partnerClientRegistrationDefaultScopes(),
-        clientRegistrationAllowedScopes: partnerClientRegistrationAllowedScopes(),
-        allowDynamicClientRegistration: false,
-        accessTokenExpiresIn: 60 * 60,
-        refreshTokenExpiresIn: 30 * 24 * 60 * 60,
-        scopeExpirations: partnerScopeExpirations,
-        silenceWarnings: { oauthAuthServerConfig: true },
-        clientPrivileges: ({ user }) => {
-          if (!user?.email) return undefined;
-          return authRuntimeConfig.platformAdminEmails.includes(
-            user.email.trim().toLowerCase(),
-          ) || undefined;
-        },
-        postLogin: {
-          page: "/oauth/select-organization",
-          shouldRedirect: async ({ session, scopes }) =>
-            hasPartnerScope(scopes) && !session.activeOrganizationId,
-          consentReferenceId: ({ session, scopes }) => {
-            if (!hasPartnerScope(scopes)) return undefined;
-            const organizationId = session.activeOrganizationId as string | undefined;
-            if (!organizationId) {
-              throw new Error("Organization selection is required for partner scopes.");
-            }
-            return organizationId;
-          },
-        },
-        customAccessTokenClaims: ({ referenceId, scopes, metadata }) => {
-          const partnerScopes = scopes.filter((scope) => scopeToPermission(scope));
-          if (!referenceId || partnerScopes.length === 0) return {};
-          if (metadata?.partnerAppStatus !== "approved") {
-            throw new Error("Partner app is not approved.");
-          }
-          return {
-            [partnerOAuthClaims.organizationId]: referenceId,
-            [partnerOAuthClaims.partnerScopes]: partnerScopes,
-          };
-        },
-        customTokenResponseFields: ({ verificationValue }) => {
-          if (!verificationValue?.referenceId) return {};
-          return { [partnerOAuthClaims.organizationId]: verificationValue.referenceId };
-        },
-        prefix: {
-          clientSecret: "qentrah_oac_",
-          refreshToken: "qentrah_ort_",
-          opaqueAccessToken: "qentrah_oat_",
-        },
-      }),
-      organization({
-        ac: organizationAccessControl,
-        roles: organizationRoles,
-        creatorRole: "owner",
-        allowUserToCreateOrganization: true,
-        teams: {
-          enabled: true,
-          defaultTeam: { enabled: true },
-          allowRemovingAllTeams: false,
-        },
-        dynamicAccessControl: {
-          enabled: true,
-          maximumRolesPerOrganization: 50,
-        },
-      }),
-    ],
-  } satisfies BetterAuthOptions;
+export const authComponent = {
+  getAuthUser: requireAuthUser,
 };
 
-export const options = createAuthOptions({} as GenericCtx<DataModel>, "schema");
-
-// Convex HTTP routes create the Better Auth instance per request context.
-export const createAuth = (ctx: GenericCtx<DataModel>) =>
-  betterAuth(createAuthOptions(ctx, "runtime"));
-
-export const createSchemaAuth = (ctx: GenericCtx<DataModel>) =>
-  betterAuth(createAuthOptions(ctx, "schema"));
-
-export const { getAuthUser } = authComponent.clientApi();
+export const getAuthUser = requireAuthUser;
+export const { backfillUsers } = authKit.utils();
+export const { authKitEvent } = authKit.events({
+  "user.created": async (ctx, event) => {
+    await ctx.runMutation(internal.workosAuth.projectAuthKitEvent, {
+      event: event.event,
+      data: event.data,
+    });
+  },
+  "user.updated": async (ctx, event) => {
+    await ctx.runMutation(internal.workosAuth.projectAuthKitEvent, {
+      event: event.event,
+      data: event.data,
+    });
+  },
+  "user.deleted": async (ctx, event) => {
+    await ctx.runMutation(internal.workosAuth.projectAuthKitEvent, {
+      event: event.event,
+      data: event.data,
+    });
+  },
+  "organization.updated": async (ctx, event) => {
+    await ctx.runMutation(internal.workosAuth.projectAuthKitEvent, {
+      event: event.event,
+      data: event.data,
+    });
+  },
+  "organization_membership.created": async (ctx, event) => {
+    await ctx.runMutation(internal.workosAuth.projectAuthKitEvent, {
+      event: event.event,
+      data: event.data,
+    });
+  },
+  "organization_membership.updated": async (ctx, event) => {
+    await ctx.runMutation(internal.workosAuth.projectAuthKitEvent, {
+      event: event.event,
+      data: event.data,
+    });
+  },
+  "organization_membership.deleted": async (ctx, event) => {
+    await ctx.runMutation(internal.workosAuth.projectAuthKitEvent, {
+      event: event.event,
+      data: event.data,
+    });
+  },
+  "api_key.created": async (ctx, event) => {
+    await ctx.runMutation(internal.workosAuth.projectAuthKitEvent, {
+      event: event.event,
+      data: event.data,
+    });
+  },
+  "api_key.revoked": async (ctx, event) => {
+    await ctx.runMutation(internal.workosAuth.projectAuthKitEvent, {
+      event: event.event,
+      data: event.data,
+    });
+  },
+});
+export const { authKitAction } = authKit.actions({
+  authentication: async (_ctx, _action, response) => response.allow(),
+  userRegistration: async (_ctx, _action, response) => response.allow(),
+});

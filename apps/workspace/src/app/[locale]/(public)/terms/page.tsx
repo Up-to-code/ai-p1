@@ -1,8 +1,5 @@
-"use client";
-
-import { useLocale } from "next-intl";
-
 import { LegalArticle, LegalBlock } from "@/components/landing/public-page-shell";
+import { publicPageMetadata } from "@/lib/seo/public-pages";
 
 const copy = {
   en: {
@@ -37,8 +34,17 @@ const copy = {
   },
 };
 
-export default function TermsPage() {
-  const locale = useLocale();
+type PageProps = {
+  params: Promise<{ locale: string }>;
+};
+
+export async function generateMetadata({ params }: PageProps) {
+  const { locale } = await params;
+  return publicPageMetadata(locale, "terms");
+}
+
+export default async function TermsPage({ params }: PageProps) {
+  const { locale } = await params;
   const isAr = locale === "ar";
   const c = isAr ? copy.ar : copy.en;
 

@@ -2,7 +2,7 @@
 
 The mobile app is a Workspace AI client. It owns the native UI, local draft/thread selection state, and the small adapters needed to call Workspace APIs.
 
-Workspace owns authorization, organization membership, permissions, agent orchestration, confirmation-gated actions, and business execution through Hono APIs. Mobile must use `workspaceApiFetch` and Better Auth organization hooks for backend communication.
+Workspace owns authorization, organization membership, permissions, agent orchestration, confirmation-gated actions, and business execution through Hono APIs. Mobile must use `workspaceApiFetch` with the WorkOS Bearer session projected by Workspace for backend communication.
 
 Convex is not a mobile dependency. It remains behind Workspace/Hono as persistence for organization data, agent threads, messages, confirmations, and encrypted records.
 

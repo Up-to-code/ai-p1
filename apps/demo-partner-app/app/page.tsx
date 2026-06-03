@@ -5,18 +5,18 @@ import { readTokenSession } from "@/lib/session";
 const steps = [
   {
     icon: KeyRound,
-    title: "Start OAuth",
-    text: "The user clicks Authorize and leaves this demo for Qentrah Workspace.",
+    title: "Open Workspace",
+    text: "The user clicks Authorize and reviews this partner app inside Qentrah Workspace.",
   },
   {
     icon: Building2,
-    title: "Choose organization",
-    text: "Workspace confirms which organization will grant access.",
+    title: "Approve organization",
+    text: "Workspace confirms which organization will grant access and stores the local grant.",
   },
   {
     icon: ShieldCheck,
-    title: "Accept service",
-    text: "The user reviews scopes and accepts the partner service.",
+    title: "Issue WorkOS key",
+    text: "Workspace issues a scoped WorkOS partner API key for server-side resource access.",
   },
 ];
 
@@ -31,12 +31,12 @@ export default async function HomePage() {
           <span className="brand-mark">Q</span>
           <span>
             <strong>{demoBrandConfig.appName}</strong>
-            <small>Partner OAuth sample</small>
+            <small>WorkOS partner key sample</small>
           </span>
         </a>
         <div className="topbar-actions">
           {session ? <a className="button secondary" href="/dashboard">Open dashboard</a> : null}
-          <a className="button" href={demoBrandConfig.oauthStartPath}>
+          <a className="button" href={demoBrandConfig.authStartPath}>
             Authorize with {demoBrandConfig.brandName}
             <ArrowRight size={16} />
           </a>
@@ -48,19 +48,19 @@ export default async function HomePage() {
           <p className="micro">Live partner authorization</p>
           <h1>Connect this demo app to your Qentrah workspace.</h1>
           <p className="lede">
-            This is the normal partner app experience: inspect the service, click authorize, accept the requested access in Qentrah, then return here with a live organization connection.
+            This is the normal partner app experience: inspect the service, click authorize, approve the requested access in Qentrah, then return here with a live WorkOS-backed organization connection.
           </p>
           <div className="hero-actions">
-            <a className="button big" href={demoBrandConfig.oauthStartPath}>
+            <a className="button big" href={demoBrandConfig.authStartPath}>
               Authorize with {demoBrandConfig.brandName}
               <ArrowRight size={18} />
             </a>
             <a className="button secondary big" href="/dashboard">View demo dashboard</a>
           </div>
-          <div className="trust-row" aria-label="OAuth safeguards">
-            <span><CheckCircle2 size={15} /> PKCE authorization</span>
-            <span><CheckCircle2 size={15} /> Server token exchange</span>
-            <span><CheckCircle2 size={15} /> Scoped organization consent</span>
+          <div className="trust-row" aria-label="WorkOS partner key safeguards">
+            <span><CheckCircle2 size={15} /> WorkOS API key validation</span>
+            <span><CheckCircle2 size={15} /> Convex grant enforcement</span>
+            <span><CheckCircle2 size={15} /> Scoped organization access</span>
           </div>
         </div>
 

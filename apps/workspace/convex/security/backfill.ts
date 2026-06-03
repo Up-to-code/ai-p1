@@ -143,7 +143,7 @@ export const runBackfillBatch = internalAction({
   handler: async (ctx, args) => {
     const batch = await ctx.runQuery(internal.security.backfill.readBatch, { jobId: args.jobId }) as null | {
       job: { target: BackfillTarget };
-      page: { page: Array<Record<string, any>>; continueCursor: string; isDone: boolean };
+      page: { page: Array<Record<string, unknown>>; continueCursor: string; isDone: boolean };
     };
     if (!batch) return null;
 
@@ -198,7 +198,7 @@ export const applyBatch = internalMutation({
         });
         continue;
       }
-      await ctx.db.patch(id as any, item.patch);
+      await ctx.db.patch(id, item.patch);
       patched += 1;
     }
 

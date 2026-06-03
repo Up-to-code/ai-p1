@@ -13,7 +13,7 @@ Domain-neutral backend utility boundary for cache.
 - Domain business logic
 - Hono route handlers
 - Provider SDK wiring
-- Secrets, allowlists, credentials, database, Convex, Auth0, or Better Auth implementation
+- Secrets, allowlists, credentials, database, Convex, Auth0, or WorkOS implementation
 
 ## Public Export Expectations
 Export type contracts and stable utility entrypoints only. During initialization, empty exports are acceptable.

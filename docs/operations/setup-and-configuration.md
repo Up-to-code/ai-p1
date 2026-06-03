@@ -98,25 +98,24 @@ sequenceDiagram
 
   Dev->>Partners: Create app draft
   Dev->>Partners: Submit app for review
-  Partners->>Workspace: POST /api/v1/admin/partner-app-registrations
-  Admin->>Workspace: Review submission
-  Workspace->>Partners: POST /api/qentrah-review-callback
+  Admin->>Partners: Review submission
   Partners->>Partners: Mark app active/rejected/suspended
-  Partner->>Workspace: OAuth authorize request
-  Workspace->>Partner: Authorization code
-  Partner->>Workspace: Token exchange
-  Partner->>Workspace: Partner resource API calls
+  Workspace->>Partners: Fetch published catalog and verify app/client/scopes
+  Workspace->>Workspace: Store organizationPartnerConnections grant
+  Workspace->>WorkOS: Create organization API key for active grant
+  Workspace->>Workspace: Store workosPartnerApiKeys projection
+  Partner->>Workspace: Partner resource calls with WorkOS key
 ```
 
-OAuth/resource flow:
+WorkOS partner resource flow:
 
 1. Partner product renders `Authorize with Qentrah`.
-2. Partner backend creates OAuth `state`, PKCE verifier, and PKCE challenge.
-3. Partner redirects to `QENTRAH_WORKSPACE_API_URL/oauth/authorize`.
-4. Workspace authenticates the user, checks organization permission, validates requested scopes, and records consent.
-5. Workspace redirects back to the partner callback with an authorization code.
-6. Partner backend exchanges the code at `QENTRAH_WORKSPACE_API_URL/oauth/token`.
-7. Partner stores tokens server-side and calls `QENTRAH_WORKSPACE_API_URL/api/v1/partner/...` with `Authorization: Bearer <access_token>`.
+2. Workspace AuthKit authenticates the user and selected organization through WorkOS.
+3. Workspace verifies the published app, Partners client id, redirect URI, and requested scopes with Partners.
+4. Workspace checks organization permissions and records the organization grant in Convex.
+5. Workspace creates a WorkOS organization API key for the active grant and stores only its projection in Convex.
+6. Partner stores the returned WorkOS key server-side and calls `QENTRAH_WORKSPACE_API_URL/api/v1/partner/...` with `Authorization: Bearer <workos_partner_key>`.
+7. Workspace validates the WorkOS key, Convex key projection, organization grant, and resource/action permission on every request.
 
 ## Development Workflow
 
@@ -158,8 +157,7 @@ External docs:
 - Vercel env variables: [vercel.com/docs/environment-variables](https://vercel.com/docs/environment-variables)
 - Vercel CLI env commands: [vercel.com/docs/cli/env](https://vercel.com/docs/cli/env)
 - Convex env variables: [docs.convex.dev/production/environment-variables](https://docs.convex.dev/production/environment-variables)
-- Better Auth installation/env: [better-auth.com/docs/installation](https://better-auth.com/docs/installation)
-- Better Auth options/env behavior: [better-auth.com/docs/reference/options](https://better-auth.com/docs/reference/options)
+- WorkOS AuthKit docs: [workos.com/docs/user-management/authkit](https://workos.com/docs/user-management/authkit)
 - UploadThing dashboard/docs: [docs.uploadthing.com](https://docs.uploadthing.com)
 - OpenRouter keys: [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys)
 - Sentry project settings: [docs.sentry.io/platforms/javascript/guides/nextjs](https://docs.sentry.io/platforms/javascript/guides/nextjs)
@@ -188,20 +186,29 @@ Core env variables:
 | --- | --- | --- | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | Production | Vercel | Public Workspace base URL used by app links and auth flows. | Your deployed Workspace domain. |
 | `SITE_URL` | Production | Vercel and sometimes Convex | Server-side canonical Workspace URL. | Same as Workspace domain. |
-| `BETTER_AUTH_URL` | Optional | Vercel/Convex | Better Auth explicit base URL; defaults through site URL logic. | Same as Workspace domain if needed. |
-| `BETTER_AUTH_SECRET` | Required runtime | Vercel and Convex | Better Auth signing secret, minimum 32 characters. | Generate with `openssl rand -base64 32`. |
-| `BETTER_AUTH_TRUSTED_ORIGINS` | Optional | Vercel/Convex | Comma-separated extra trusted origins. | Your preview/custom domains. |
 | `TRUSTED_ORIGINS` | Optional | Vercel/Convex | Additional trusted origins. | Your preview/custom domains. |
+| `WORKOS_AUTH_ENABLED` | Required | Vercel | Enables WorkOS AuthKit login/callback/logout and WorkOS session middleware. | Set `true` after WorkOS app setup. |
+| `WORKOS_API_KEY` | Required | Vercel secret | WorkOS server API key for AuthKit, Organizations, API Keys, and webhook verification. | WorkOS dashboard; rotate immediately if exposed. |
+| `WORKOS_CLIENT_ID` | Required for WorkOS migration rollout | Vercel | AuthKit client id expected in WorkOS session JWT claims. | WorkOS dashboard. |
+| `WORKOS_WEBHOOK_SECRET` | Required for WorkOS webhooks | Vercel secret | Verifies `/api/webhooks/workos` deliveries before Convex projection. | WorkOS webhook endpoint settings. |
+| `WORKOS_CALLBACK_URL` | Optional | Vercel | AuthKit callback URL; defaults to `${SITE_URL}/api/auth/workos/callback`. | Workspace deployed callback URL. |
+| `WORKOS_LOGOUT_RETURN_URL` | Optional | Vercel | Post-logout return URL; defaults to `${SITE_URL}/en/sign-in`. | Workspace sign-in URL. |
+| `WORKOS_POST_LOGIN_URL` | Optional | Vercel | Post-login Workspace URL; defaults to `${SITE_URL}/en`. | Workspace home URL. |
+| `WORKOS_JWT_ISSUER` | Optional | Vercel | WorkOS session token issuer override. | Defaults to `https://api.workos.com`. |
+| `WORKOS_COOKIE_DOMAIN` | Optional | Vercel | Cookie domain for WorkOS access/refresh cookies. | Workspace apex/subdomain policy. |
+| `WORKOS_COOKIE_SECURE` | Optional local only | Local/Vercel | Set `false` only when testing over local HTTP. | Defaults secure. |
+| `WORKOS_API_BASE_URL` | Optional tests/sandbox | Vercel/local | WorkOS API origin override. | Defaults to `https://api.workos.com`. |
+| `NEXT_PUBLIC_WORKOS_REDIRECT_URI` | Local/live flow | Local/Vercel | WorkOS AuthKit redirect URI used by the local callback flow. | Must match a WorkOS application redirect URI. |
 | `GOOGLE_CLIENT_ID` | Optional | Vercel/Convex | Google sign-in client ID. | Google Cloud OAuth credentials. |
 | `GOOGLE_CLIENT_SECRET` | Optional | Vercel/Convex | Google sign-in client secret. | Google Cloud OAuth credentials. |
 | `PLATFORM_ADMIN_EMAILS` | Optional | Vercel/Convex | Comma-separated platform admin allowlist. | Internal admin list. |
 | `NEXT_PUBLIC_CONVEX_URL` | Required | Vercel/local | Browser Convex URL. | Convex dashboard. |
 | `CONVEX_URL` | Required for server/Convex bridge | Vercel/local | Convex cloud URL. | Convex dashboard. |
 | `NEXT_PUBLIC_CONVEX_SITE_URL` | Required for auth bridge | Vercel/local | Public Convex site URL. | Convex dashboard; usually `.convex.site`. |
-| `CONVEX_SITE_URL` | Required for auth bridge | Vercel/local/Convex | Convex site URL for Better Auth callbacks/JWKS. | Convex dashboard. |
-| `PARTNER_APPS_ENABLED` | Optional | Vercel/Convex | Enables partner app OAuth/resource behavior; defaults true. | Set `false` only to disable partner app features. |
-| `PARTNER_OAUTH_ISSUER` | Optional | Vercel/Convex | OAuth issuer override; defaults to Workspace URL. | Workspace URL. |
-| `PARTNER_OAUTH_AUDIENCE` | Optional | Vercel/Convex | Partner API audience; defaults to `${SITE_URL}/api/v1/partner`. | Workspace URL. |
+| `CONVEX_SITE_URL` | Optional for Convex HTTP routes | Vercel/local/Convex | Convex site URL for deployment HTTP routes. | Convex dashboard. |
+| `PARTNER_APPS_ENABLED` | Optional | Vercel/Convex | Enables partner app authorization and resource behavior; defaults true. | Set `false` only to disable partner app features. |
+| `PARTNER_OAUTH_ISSUER` | Legacy optional | Vercel/Convex | Legacy partner OAuth issuer override; kept only for transition metadata/challenges. | Workspace URL. |
+| `PARTNER_OAUTH_AUDIENCE` | Legacy optional | Vercel/Convex | Legacy partner API audience; kept only for transition metadata/challenges. | Workspace URL. |
 | `WORKSPACE_CONVEX_BRIDGE_SECRET` | Required for partner/API resource calls | Vercel/Convex | Server-only token used by Workspace Hono routes when calling protected Convex resource functions. | Generate and store as secret. |
 | `PARTNER_WEBHOOK_SECRET_ENCRYPTION_KEY` | Needed for encrypted partner webhooks | Convex/server | Encrypts stored partner webhook secrets. | Generate and store as secret. |
 | `ORGANIZATION_DATA_ENCRYPTION_KEY` | Needed for organization data encryption | Convex/server | Master key for organization-scoped user/business data encryption. | Generate and store as secret. |
@@ -212,6 +219,15 @@ Core env variables:
 | `OPENROUTER_APP_NAME` | Optional | Vercel/Convex/server | App attribution for OpenRouter. | Internal name. |
 | `UPLOADTHING_TOKEN` | Optional shortcut | Vercel | Encoded UploadThing token; can hydrate secret/app ID. | UploadThing dashboard. |
 | `UPLOADTHING_SECRET` | Required when using UploadThing without token | Vercel | UploadThing API secret. | UploadThing dashboard. |
+
+Before running a live WorkOS partner app flow, rotate any exposed WorkOS key and then run:
+
+```bash
+npm --workspace @qentrah/workspace run check:workos-live-prereqs
+npm --workspace @qentrah/workspace run test:workos-partner-flow
+```
+
+The prerequisite check refuses the exposed `sk_test` value and verifies that the local/live WorkOS, Partners, and bridge env variables are present before external WorkOS API calls are attempted.
 | `UPLOADTHING_APP_ID` | Required when using UploadThing without token | Vercel | UploadThing app ID. | UploadThing dashboard. |
 | `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Optional | Vercel/local | Enables location picker/preview map UI. | Mapbox access token page. |
 | `TAMARA_API_BASE_URL` | Required for production billing | Vercel | Tamara API origin. Use `https://api.tamara.co` in production. | Tamara merchant integration setup. |
@@ -234,7 +250,10 @@ Minimal local Workspace `.env.local` shape:
 ```bash
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 SITE_URL=http://localhost:3000
-BETTER_AUTH_SECRET=replace-with-at-least-32-characters
+WORKOS_AUTH_ENABLED=true
+WORKOS_CLIENT_ID=<workos-client-id>
+WORKOS_API_KEY=<workos-api-key>
+WORKOS_COOKIE_PASSWORD=replace-with-at-least-32-characters
 NEXT_PUBLIC_CONVEX_URL=https://<deployment>.convex.cloud
 CONVEX_URL=https://<deployment>.convex.cloud
 NEXT_PUBLIC_CONVEX_SITE_URL=https://<deployment>.convex.site
@@ -247,7 +266,6 @@ PARTNERS_REVIEW_CALLBACK_TOKEN=local-review-callback-token
 Convex values to set for Workspace:
 
 ```bash
-npx convex env set BETTER_AUTH_SECRET "replace-with-at-least-32-characters"
 npx convex env set SITE_URL "http://localhost:3000"
 npx convex env set CONVEX_SITE_URL "https://<deployment>.convex.site"
 npx convex env set WORKSPACE_CONVEX_BRIDGE_SECRET "replace-with-at-least-32-characters"
@@ -449,7 +467,7 @@ Use this table when setting up a new environment.
 | Convex site URL | Convex | [Convex dashboard](https://dashboard.convex.dev) | Usually the same deployment slug with `.convex.site`. |
 | Convex env vars | Convex | [Convex env docs](https://docs.convex.dev/production/environment-variables) | Set secrets with dashboard or `npx convex env set`. |
 | Vercel project env | Vercel | [Vercel env docs](https://vercel.com/docs/environment-variables) | Configure separately per Vercel project. |
-| Better Auth secret | Internal | [Better Auth install docs](https://better-auth.com/docs/installation) | Generate locally; keep stable per environment. |
+| WorkOS AuthKit credentials | WorkOS | [WorkOS dashboard](https://dashboard.workos.com) | Use Workspace application credentials and webhook secret. |
 | Google OAuth client | Google Cloud | [Google credentials](https://console.cloud.google.com/apis/credentials) | Add local and production redirect/origin values. |
 | UploadThing token/secret | UploadThing | [UploadThing docs](https://docs.uploadthing.com) | `UPLOADTHING_TOKEN` can hydrate `UPLOADTHING_SECRET` and `UPLOADTHING_APP_ID`. |
 | OpenRouter key | OpenRouter | [OpenRouter keys](https://openrouter.ai/settings/keys) | Required for live AI agent model responses. |
@@ -561,11 +579,11 @@ Marketing owns:
 
 Workspace:
 
-- OAuth authorize: `/oauth/authorize`
-- OAuth token: `/oauth/token`
+- WorkOS login: `/api/auth/workos/login`
+- WorkOS callback: `/api/auth/workos/callback`
+- WorkOS partner key issuance: `/api/v1/organizations/:organizationId/partner-workos-api-keys`
 - Partner resources: `/api/v1/partner/organizations/:organizationId/...`
-- Admin partner apps: `/api/v1/admin/partner-apps`
-- Admin registration sync: `/api/v1/admin/partner-app-registrations`
+- Partner connections: `/api/v1/organizations/:organizationId/partner-connections`
 - Agent chat: `/api/.../agents/chat` through organization routing
 
 Partners:
@@ -578,8 +596,8 @@ Partners:
 
 Demo Partner App:
 
-- OAuth start: `/api/auth/qentrah/start`
-- OAuth callback: `/api/auth/qentrah/callback`
+- Partner authorization start: `/api/auth/qentrah/start`
+- Partner authorization callback: `/api/auth/qentrah/callback`
 - Logout: `/api/auth/qentrah/logout`
 - Local proxy APIs: `/api/qentrah/me`, `/api/qentrah/clients`, `/api/qentrah/properties`
 
@@ -620,10 +638,10 @@ npm --workspace @qentrah/workspace run test:e2e
 
 ## Troubleshooting
 
-`Set BETTER_AUTH_SECRET before running`
+`WorkOS API key and client id are required.`
 
-- Add a 32+ character `BETTER_AUTH_SECRET`.
-- Set it in both the app runtime and the related Convex deployment if Convex auth functions need it.
+- Add `WORKOS_API_KEY`, `WORKOS_CLIENT_ID`, and `WORKOS_AUTH_ENABLED=true`.
+- Confirm the WorkOS redirect URI matches the Workspace callback URL.
 
 `Partners auth is missing Convex auth URLs`
 
@@ -644,13 +662,13 @@ Admin Review cannot load apps:
 - Confirm `WORKSPACE_ADMIN_SERVICE_TOKEN`.
 - Confirm Workspace admin API routes are running.
 
-Demo Partner App OAuth callback fails:
+Demo Partner App authorization callback fails:
 
 - Confirm `PARTNER_APP_URL` exactly matches the registered redirect URI origin.
 - Confirm redirect URI is registered as `${PARTNER_APP_URL}/api/auth/qentrah/callback`.
-- Confirm `QENTRAH_CLIENT_ID` matches the approved OAuth client.
+- Confirm `QENTRAH_CLIENT_ID` matches the approved Partners client.
 - Confirm `SESSION_SECRET` is at least 32 characters.
-- Confirm the OAuth request includes `resource=${QENTRAH_WORKSPACE_API_URL}/api/v1/partner`.
+- Confirm the Workspace organization has an active partner connection grant and WorkOS partner key projection.
 
 Workspace partner resource API returns `connection_expired`:
 

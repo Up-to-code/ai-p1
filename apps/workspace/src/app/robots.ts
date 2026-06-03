@@ -26,6 +26,10 @@ export default function robots(): MetadataRoute.Robots {
         "/ar/terms",
         "/en/legal",
         "/ar/legal",
+        "/en/blog",
+        "/ar/blog",
+        "/en/blog/",
+        "/ar/blog/",
       ],
       disallow: [
         "/admin",

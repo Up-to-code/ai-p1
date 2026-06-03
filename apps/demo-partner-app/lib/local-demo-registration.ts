@@ -1,7 +1,7 @@
-import { brandProductName, brandRoutePath } from "@qentrah/brand-identity";
+import { brandRoutePath } from "@qentrah/brand-identity";
 
 export const localDemoRegistration = {
-  appName: brandProductName("demo", "en"),
+  appName: "Qentrah Partner Key Demo",
   publisherName: "ZA",
   partnerAppUrl: "http://localhost:3004",
   clientId: "partners_client_MvdsQoheDgpiYjk5iA9tBGY-",
@@ -17,6 +17,5 @@ export const localDemoRegistration = {
     "project:read",
     "property:read",
     "task:read",
-    "offline_access",
   ],
 } as const;

@@ -57,6 +57,15 @@ export const createPartnerWebhookEndpointSchema = z.object({
   events: z.array(z.string().trim().min(1)).min(1),
 });
 
+export const createWorkOSPartnerApiKeySchema = z.object({
+  connectionId: z.string().trim().min(1),
+  partnerId: z.string().trim().min(1),
+  partnerClientId: z.string().trim().min(1),
+  name: z.string().trim().min(1).max(120),
+  permissions: z.array(partnerScopeSchema).min(1),
+  expiresAt: z.coerce.number().optional(),
+});
+
 export const inboundWebhookSchema = z.object({
   eventId: z.string().trim().min(1),
   eventType: z.string().trim().min(1),
@@ -67,4 +76,5 @@ export const inboundWebhookSchema = z.object({
 export type AuthorizePartnerConnectionPayload = z.infer<typeof authorizePartnerConnectionSchema>;
 export type UpdatePartnerConnectionPayload = z.infer<typeof updatePartnerConnectionSchema>;
 export type CreatePartnerWebhookEndpointPayload = z.infer<typeof createPartnerWebhookEndpointSchema>;
+export type CreateWorkOSPartnerApiKeyPayload = z.infer<typeof createWorkOSPartnerApiKeySchema>;
 export type InboundWebhookPayload = z.infer<typeof inboundWebhookSchema>;

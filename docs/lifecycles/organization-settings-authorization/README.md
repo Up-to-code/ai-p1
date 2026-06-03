@@ -15,4 +15,4 @@ Keep Workspace organization settings actions authorized by organization roles an
 Organization owners and permitted custom roles manage organization-owned settings. Platform admins are separate operator accounts for internal/admin surfaces and should not be required for normal Workspace organization administration.
 
 ## Current Status
-Active. Organization settings writes should use Better Auth organization permissions and Qentrah safety policy. `PLATFORM_ADMIN_EMAILS` remains only for platform/operator actions.
+Active. Organization settings writes should use WorkOS organization memberships, custom roles, permission slugs, the Convex projection, and Qentrah safety policy. `PLATFORM_ADMIN_EMAILS` remains only for platform/operator actions.

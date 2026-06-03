@@ -17,11 +17,9 @@ import {
   MoreHorizontal,
   Menu,
   Mail,
-  Loader2,
   Plus,
   Search,
   ShieldCheck,
-  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -30,26 +28,8 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useSidebar } from "./sidebar-context";
 import { useAccountContext } from "@/domains/auth";
 import { useTheme } from "@/components/providers/theme-provider";
-import { authClient } from "@/lib/auth-client";
-import { selectExistingOrganization, type AuthResult } from "@/domains/auth/organization-selection";
-import { writeAuthHandoff } from "@/domains/auth";
 import { useAgentThreadsQuery } from "@/domains/agents";
 import { workspaceModeHref } from "@/domains/dashboard/store/dashboard.store";
-
-type BetterAuthOrganization = {
-  id: string;
-  name: string;
-  slug?: string | null;
-  logo?: string | null;
-};
-
-type SidebarAuthClient = typeof authClient & {
-  organization: {
-    setActive: (input: { organizationId: string }) => Promise<AuthResult<BetterAuthOrganization | null>>;
-  };
-};
-
-const organizationApi = authClient as SidebarAuthClient;
 
 const navigationGroups = [
   {
@@ -88,15 +68,6 @@ function isGeneratedOrganizationName(value: string) {
   );
 }
 
-function getInitials(value: string) {
-  return value
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("") || "AN";
-}
-
 export function Sidebar() {
   const t = useTranslations('Sidebar');
   const locale = useLocale();
@@ -115,21 +86,11 @@ export function Sidebar() {
   const agentThreads = useMemo(() => queriedAgentThreads ?? [], [queriedAgentThreads]);
   const visibleAgentThreads = agentThreads.slice(0, 3);
   const hasMoreAgentThreads = agentThreads.length > visibleAgentThreads.length;
-  const organizationsQuery = authClient.useListOrganizations();
-  const organizations = useMemo(
-    () => ((organizationsQuery.data ?? []) as BetterAuthOrganization[])
-      .filter((organization) => organization.id)
-      .slice(0, 4),
-    [organizationsQuery.data],
-  );
-  const [switchingOrganizationId, setSwitchingOrganizationId] = useState<string | null>(null);
   const [threadHistoryOpen, setThreadHistoryOpen] = useState(false);
   const [threadSearch, setThreadSearch] = useState("");
   const organizationDisplayName =
     account.organization.legalName?.trim() ||
     (!isGeneratedOrganizationName(account.organization.name) ? account.organization.name : locale === "ar" ? "المؤسسة" : "Organization");
-  const organizationsLabel = locale === "ar" ? "مساحات العمل" : "Workspaces";
-  const currentLabel = locale === "ar" ? "الحالية" : "Current";
   const threadsLabel = locale === "ar" ? "المحادثات" : "Threads";
   const newThreadLabel = locale === "ar" ? "جديد" : "New";
   const historyLabel = locale === "ar" ? "السجل" : "History";
@@ -144,25 +105,6 @@ export function Sidebar() {
     if (!query) return agentThreads;
     return agentThreads.filter((thread) => thread.title.toLowerCase().includes(query));
   }, [agentThreads, threadSearch]);
-
-  async function switchOrganization(organizationId: string) {
-    if (organizationId === account.organization.id || switchingOrganizationId) return;
-
-    setSwitchingOrganizationId(organizationId);
-    try {
-      await selectExistingOrganization({
-        organizationId,
-        setActive: organizationApi.organization.setActive,
-        navigate: (href, selectedOrganizationId) => {
-          writeAuthHandoff(selectedOrganizationId);
-          window.location.replace(href);
-        },
-        nextHref: `/${locale}${pathname}`,
-      });
-    } catch {
-      setSwitchingOrganizationId(null);
-    }
-  }
 
   return (
     <aside
@@ -200,7 +142,7 @@ export function Sidebar() {
                 alt="Qentrah"
                 width={20}
                 height={24}
-                className="h-5 w-5"
+                className="h-5 w-auto object-contain"
                 priority
               />
             </div>
@@ -264,67 +206,6 @@ export function Sidebar() {
       )}>
 
         <div className="space-y-3 p-3 pt-3">
-          {!isCollapsed && organizations.length > 1 && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between px-1">
-                <p className={cn(
-                  "text-[10px] font-black uppercase tracking-[0.2em]",
-                  isDarkMode ? "text-zinc-600" : "text-zinc-400"
-                )}>
-                  {organizationsLabel}
-                </p>
-              </div>
-              <div className="space-y-1">
-                {organizations.map((organization) => {
-                  const isActive = organization.id === account.organization.id;
-                  const isSwitching = switchingOrganizationId === organization.id;
-                  const organizationName = organization.name?.trim() || (locale === "ar" ? "مؤسسة" : "Organization");
-
-                  return (
-                    <button
-                      key={organization.id}
-                      type="button"
-                      onClick={() => switchOrganization(organization.id)}
-                      disabled={isActive || Boolean(switchingOrganizationId)}
-                      className={cn(
-                        "flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-start transition-all",
-                        isActive
-                          ? isDarkMode ? "bg-white/[0.08] text-white" : "bg-zinc-100 text-zinc-950"
-                          : isDarkMode ? "text-zinc-500 hover:bg-white/5 hover:text-white" : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-950",
-                        "disabled:cursor-default disabled:opacity-100"
-                      )}
-                      title={organizationName}
-                    >
-                      <span className={cn(
-                        "flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-lg text-[9px] font-black uppercase",
-                        isActive
-                          ? isDarkMode ? "bg-white/15 text-white" : "bg-white text-zinc-950"
-                          : isDarkMode ? "bg-white/10 text-zinc-300" : "bg-zinc-100 text-zinc-600"
-                      )}>
-                        {organization.logo ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={organization.logo} alt="" className="h-full w-full object-cover" />
-                        ) : (
-                          getInitials(organizationName)
-                        )}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[12px] font-black leading-tight">{organizationName}</span>
-                        <span className={cn(
-                          "mt-0.5 block truncate text-[9px] font-bold uppercase tracking-wider",
-                          isActive ? "text-emerald-500" : isDarkMode ? "text-zinc-600" : "text-zinc-400"
-                        )}>
-                          {isActive ? currentLabel : organization.slug || organization.id}
-                        </span>
-                      </span>
-                      {isSwitching && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-primary" />}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
           {!isCollapsed && workspaceOrganizationId && (
             <div className="space-y-2">
               <div className="flex items-center justify-between px-1">

@@ -2,10 +2,16 @@ import { cookies } from "next/headers";
 import { secureCookieOptions, tokenCookieName } from "./cookies";
 import { decryptJson, encryptJson } from "./crypto";
 import { requiredEnv } from "./config";
-import type { OAuthTokens } from "./oauth";
 
-export type TokenSession = OAuthTokens & {
-  organizationId?: string;
+export type TokenSession = {
+  accessToken: string;
+  tokenType: "WorkOSPartnerApiKey";
+  organizationId: string;
+  obtainedAt: number;
+  expiresAt?: number;
+  scope?: string;
+  keyId?: string;
+  keyLast4?: string;
 };
 
 export async function storeTokenSession(tokens: TokenSession) {

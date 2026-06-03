@@ -15,4 +15,11 @@ describe("billing period extension", () => {
       currentPeriodEndAt: 5_000 + 30 * 24 * 60 * 60 * 1000,
     });
   });
+
+  it("uses the selected plan period when provided", () => {
+    expect(nextBillingPeriod(1_000, undefined, 365)).toEqual({
+      currentPeriodStartAt: 1_000,
+      currentPeriodEndAt: 1_000 + 365 * 24 * 60 * 60 * 1000,
+    });
+  });
 });

@@ -440,7 +440,7 @@ function InfoLine({ label, value, href }: { label: string; value?: string; href?
 
 function OrganizationDetailPage({ detail, locale }: { detail: AdminDetailResponse; locale: Locale }) {
   const searchParams = useSearchParams();
-  const activeTab = searchParams.get("tab");
+  const activeTab = normalizeOrganizationTab(searchParams.get("tab"));
   const members = detail.sections.find((section) => section.id === "members");
   const access = detail.sections.find((section) => section.id === "submissions");
   const business = detail.sections.find((section) => section.id === "business");
@@ -504,6 +504,10 @@ function OrganizationDetailPage({ detail, locale }: { detail: AdminDetailRespons
       )}
     </div>
   );
+}
+
+function normalizeOrganizationTab(tab: string | null) {
+  return tab === "access" ? "submissions" : tab;
 }
 
 function OrganizationWorkMap({ detail, sections, locale }: { detail: AdminDetailResponse; sections: AdminDetailResponse["sections"]; locale: Locale }) {

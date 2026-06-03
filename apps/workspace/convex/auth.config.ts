@@ -1,22 +1,31 @@
 import type { AuthConfig } from "convex/server";
 
 export function resolveConvexAuthConfigEnv(env: Record<string, string | undefined> = process.env) {
-  const siteUrl = env.CONVEX_SITE_URL?.trim() || env.NEXT_PUBLIC_CONVEX_SITE_URL?.trim() || "";
+  const clientId = env.WORKOS_CLIENT_ID?.trim() || env.NEXT_PUBLIC_WORKOS_CLIENT_ID?.trim() || "";
+  const apiHostname = env.WORKOS_API_HOSTNAME?.trim() || "api.workos.com";
+  const apiBaseUrl = `https://${apiHostname}`;
   return {
-    siteUrl,
-    jwksUrl: siteUrl ? `${siteUrl}/api/auth/convex/jwks` : "",
+    clientId,
+    apiBaseUrl,
+    jwksUrl: clientId ? `${apiBaseUrl}/sso/jwks/${clientId}` : "",
   };
 }
 
-const { siteUrl, jwksUrl } = resolveConvexAuthConfigEnv();
+const { clientId, apiBaseUrl, jwksUrl } = resolveConvexAuthConfigEnv();
 
-// Convex validates Better Auth JWTs before protected queries subscribe to data.
+// Convex validates WorkOS AuthKit JWTs before protected queries subscribe to data.
 export default {
   providers: [
     {
       type: "customJwt",
-      issuer: siteUrl,
-      applicationID: "convex",
+      issuer: `${apiBaseUrl}/`,
+      algorithm: "RS256",
+      jwks: jwksUrl,
+      applicationID: clientId,
+    },
+    {
+      type: "customJwt",
+      issuer: `${apiBaseUrl}/user_management/${clientId}`,
       algorithm: "RS256",
       jwks: jwksUrl,
     },

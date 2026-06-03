@@ -175,6 +175,30 @@ export const readTool = internalQuery({
       };
     }
 
+    if (args.tool === "members_list") {
+      const page = await ctx.db
+        .query("workosOrganizationMembers")
+        .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
+        .order("desc")
+        .paginate({ numItems: listLimit(input), cursor: listCursor(input) });
+
+      return {
+        ...page,
+        page: page.page
+          .filter((member) => member.status === "active")
+          .map((member) => ({
+            id: member._id,
+            userId: member.userId,
+            email: member.email,
+            role: member.role ?? member.roles[0] ?? "member",
+            roles: member.roles,
+            status: member.status,
+            createdAt: member.createdAt,
+            updatedAt: member.updatedAt,
+          })),
+      };
+    }
+
     if (args.tool === "clients_list") {
       const limit = listLimit(input);
       const search = searchTerm(input);
@@ -325,6 +349,30 @@ export const readTool = internalQuery({
     if (args.tool === "tasks_get") {
       const task = await ctx.db.get(requiredString(input, "taskId") as Id<"clientTasks">);
       return presentWorkspaceRecord(assertPublicWorkspaceRecord(assertActiveWorkspaceRecord(task, args.organizationId, "Task"), "Task"));
+    }
+
+    if (args.tool === "integrations_list") {
+      const page = await ctx.db
+        .query("organizationPartnerConnections")
+        .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
+        .order("desc")
+        .paginate({ numItems: listLimit(input), cursor: listCursor(input) });
+
+      return {
+        ...page,
+        page: page.page.map((connection) => ({
+          id: connection._id,
+          partnersAppId: connection.partnersAppId,
+          partnersClientId: connection.partnersClientId,
+          status: connection.status,
+          scopes: connection.scopes,
+          authorizedByUserId: connection.authorizedByUserId,
+          expiresAt: connection.expiresAt,
+          lastVerifiedAt: connection.lastVerifiedAt,
+          createdAt: connection.createdAt,
+          updatedAt: connection.updatedAt,
+        })),
+      };
     }
 
     if (args.tool === "media_list") {

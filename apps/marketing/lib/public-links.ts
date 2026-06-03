@@ -1,14 +1,14 @@
-import { brandDomainUrl, brandProductName } from "@qentrah/brand-identity";
+import { brandDomainUrl } from "@qentrah/brand-identity";
 
-import { productUrls, type Locale } from "@/lib/content";
+import type { Locale } from "@/lib/content";
 
-export type PublicSeoLinkId = "workspace" | "partners" | "developers" | "brokers" | "contact";
+export type PublicSeoLinkId = "home" | "pricing" | "docs" | "about";
 
 type PublicSeoLink = {
   id: PublicSeoLinkId;
   href: string;
   externalUrl: string;
-  navKey: "dashboard" | "partners" | "developers" | "brokers" | "contact";
+  navKey: PublicSeoLinkId;
   labels: Record<Locale, string>;
   descriptions: Record<Locale, string>;
 };
@@ -17,78 +17,64 @@ const rootUrl = brandDomainUrl("root");
 
 export const publicSeoLinks = [
   {
-    id: "workspace",
-    href: "/dashboard",
-    externalUrl: productUrls.workspace,
-    navKey: "dashboard",
+    id: "home",
+    href: "/",
+    externalUrl: rootUrl,
+    navKey: "home",
     labels: {
-      en: brandProductName("workspace", "en"),
-      ar: brandProductName("workspace", "ar"),
+      en: "Home",
+      ar: "الرئيسية",
     },
     descriptions: {
-      en: "Enter the Qentrah Workspace for real estate projects, units, clients, approvals, and partner apps.",
-      ar: "ادخل إلى مساحة العمل كانترا لإدارة المشاريع والوحدات والعملاء والموافقات وتطبيقات الشركاء.",
+      en: "Open the Qentrah public homepage.",
+      ar: "افتح الصفحة الرئيسية العامة لكانترا.",
     },
   },
   {
-    id: "partners",
-    href: "/partners",
-    externalUrl: productUrls.partners,
-    navKey: "partners",
+    id: "pricing",
+    href: "/#pricing",
+    externalUrl: `${rootUrl}/#pricing`,
+    navKey: "pricing",
     labels: {
-      en: brandProductName("partners", "en"),
-      ar: brandProductName("partners", "ar"),
+      en: "Pricing",
+      ar: "الأسعار",
     },
     descriptions: {
-      en: "Build and submit Qentrah partner apps that connect securely to organization workspace data.",
-      ar: "ابنِ تطبيقات شركاء كانترا واربطها بأمان ببيانات مساحة عمل المؤسسات.",
+      en: "View Qentrah workspace pricing.",
+      ar: "اطلع على أسعار مساحة عمل كانترا.",
     },
   },
   {
-    id: "developers",
-    href: "/developer",
-    externalUrl: `${rootUrl}/developer`,
-    navKey: "developers",
+    id: "docs",
+    href: "/docs",
+    externalUrl: `${rootUrl}/docs`,
+    navKey: "docs",
     labels: {
-      en: "Developers",
-      ar: "المطورون",
+      en: "Docs",
+      ar: "التوثيق",
     },
     descriptions: {
-      en: "See how real estate developers prepare projects, verify inventory, and coordinate brokers in Qentrah.",
-      ar: "تعرّف على طريقة تجهيز المطورين للمشاريع والتحقق من المخزون وتنسيق الوسطاء في كانترا.",
+      en: "Read Qentrah public documentation.",
+      ar: "اقرأ توثيق كانترا العام.",
     },
   },
   {
-    id: "brokers",
-    href: "/broker",
-    externalUrl: `${rootUrl}/broker`,
-    navKey: "brokers",
+    id: "about",
+    href: "/about",
+    externalUrl: `${rootUrl}/about`,
+    navKey: "about",
     labels: {
-      en: "Brokers",
-      ar: "الوسطاء",
+      en: "About us",
+      ar: "من نحن",
     },
     descriptions: {
-      en: "See how brokers organize follow-ups, viewings, client context, and verified inventory in Qentrah.",
-      ar: "تعرّف على طريقة تنظيم الوسطاء للمتابعات والمعاينات وسياق العملاء والمخزون الموثق في كانترا.",
-    },
-  },
-  {
-    id: "contact",
-    href: "/contact",
-    externalUrl: `${rootUrl}/contact`,
-    navKey: "contact",
-    labels: {
-      en: "Contact",
-      ar: "التواصل",
-    },
-    descriptions: {
-      en: "Contact Qentrah to map your real estate workspace, partner integration, or onboarding workflow.",
-      ar: "تواصل مع كانترا لربط مساحة عملك العقارية أو تكاملات الشركاء أو مسار التفعيل.",
+      en: "Learn about Qentrah and the team building it.",
+      ar: "تعرّف على كانترا والفريق الذي يبنيها.",
     },
   },
 ] as const satisfies readonly PublicSeoLink[];
 
-export const publicSeoPathIds = ["", "dashboard", "partners", "developer", "broker", "contact"] as const;
+export const publicSeoPathIds = ["", "docs", "about"] as const;
 
 export function findPublicSeoLink(id: PublicSeoLinkId) {
   return publicSeoLinks.find((link) => link.id === id);

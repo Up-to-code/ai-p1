@@ -1,11 +1,11 @@
 import { defineApp } from "convex/server";
 import apiKeys from "convex-api-keys/convex.config.js";
-import betterAuth from "./betterAuth/convex.config";
+import workOSAuthKit from "@convex-dev/workos-authkit/convex.config";
 
-// Local component registration lets auth schema evolve with enterprise plugins.
+// WorkOS AuthKit owns identity sync; app authorization remains in Workspace tables.
 const app = defineApp();
 
-app.use(betterAuth);
+app.use(workOSAuthKit);
 app.use(apiKeys);
 
 export default app;

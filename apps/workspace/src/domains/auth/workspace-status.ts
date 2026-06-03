@@ -42,8 +42,8 @@ export function getWorkspaceAuthRedirect({
 }) {
   if (isAuthHandoffPending) return null;
   if (!isSignedIn) {
-    const callback = callbackURL?.startsWith(`/${locale}/`) ? `?callbackURL=${encodeURIComponent(callbackURL)}` : "";
-    return `/${locale}/sign-in${callback}`;
+    const callback = callbackURL?.startsWith(`/${locale}/`) ? `?returnTo=${encodeURIComponent(callbackURL)}` : "";
+    return `/sign-in${callback}`;
   }
   if (workspaceStatus === "noOrganization") return `/${locale}/choose-org`;
   return null;

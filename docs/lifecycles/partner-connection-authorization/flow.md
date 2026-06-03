@@ -10,39 +10,40 @@ flowchart TD
   Admin --> Decision{"Approved?"}
   Decision -- "No" --> Hidden["Partners keeps app rejected or suspended"]
   Decision -- "Yes" --> Published["Partners marks app active and publishes catalog entry"]
-  Published --> RuntimeSync["Partners syncs minimal OAuth runtime data to Workspace"]
-  RuntimeSync --> BetterAuth["Workspace upserts Better Auth OAuth client"]
   WorkspaceCatalog["Workspace Integrations"] --> FetchCatalog["Fetch available apps from Partners platform API"]
   FetchCatalog --> Published
-  OrgOwner["Organization owner"] --> Connect["Connect app in Workspace"]
-  Connect --> Verify["Workspace verifies app, client, redirect URI, and requested scopes with Partners"]
-  Verify --> Grant["Workspace saves organizationPartnerConnections grant"]
-  Grant --> OAuth["Better Auth authorize/token runtime"]
-  OAuth --> PartnerApi["Partner calls Workspace partner API"]
-  PartnerApi --> Enforce["Workspace checks token claims plus organization grant scopes"]
+  OrgMember["Workspace owner/member"] --> Connect["Authorize app in Workspace"]
+  Connect --> WorkOSSession["WorkOS AuthKit proves user and organization identity"]
+  WorkOSSession --> Verify["Workspace verifies app, client, redirect URI, and requested scopes with Partners"]
+  Verify --> PermissionCheck["Convex checks WorkOS-backed organization permissions"]
+  PermissionCheck --> Grant["Convex saves organizationPartnerConnections grant"]
+  Grant --> IssueKey["Workspace creates WorkOS organization API key"]
+  IssueKey --> KeyProjection["Convex records workosPartnerApiKeys tuple"]
+  KeyProjection --> PartnerApi["Partner calls Workspace partner API with WorkOS key"]
+  PartnerApi --> WorkOSValidate["Workspace validates key with WorkOS"]
+  WorkOSValidate --> Enforce["Convex checks key projection, grant status, and scopes"]
 ```
 
 1. Partners app catalog stores app status, client id, redirect URIs, and maximum allowed scopes.
 2. Admin reviews through Partners APIs; Workspace does not review or persist the catalog.
-3. Partners syncs only minimal OAuth runtime state to Workspace so Better Auth can enable/disable the OAuth client.
-   - The shared `OAuthRuntimeProjectionInput` contract owns the payload shape.
-   - Partners keeps the HTTP Adapter that signs/sends the projection.
-   - Workspace keeps the Better Auth Adapter that applies the projection.
-4. Workspace integrations fetch active apps from Partners platform APIs.
+3. Workspace integrations fetch active apps from Partners platform APIs.
    - Partners caches published catalog responses briefly because catalog metadata is global/safe and the Workspace UI can request it repeatedly during navigation.
    - Cache keys include pagination and `updatedSince`, so callers still get distinct pages and incremental refreshes.
-5. Partner starts OAuth authorization against Workspace `/oauth/authorize`.
-6. Better Auth handles authorization-code and PKCE protocol behavior.
-7. Workspace consent verifies app/client/scopes with Partners and records the organization grant for requested resource scopes.
-8. Better Auth consent completes and issues tokens.
-9. Workspace custom token claims include canonical `organization_id` and partner scopes for organization-bound grants.
-10. Partner resource APIs call the `authorizePartnerResourceRequest` Interface, which verifies the bearer token with Better Auth, parses canonical claims, then validates against `organizationPartnerConnections`.
-11. Workspace integrations UI consumes a view-model Module that merges live Partners catalog data with local organization grants.
+4. A Workspace owner/member authorizes a partner app from Workspace.
+5. WorkOS AuthKit proves user identity and selected organization before the Workspace handler can mutate grants.
+6. Workspace verifies app/client/redirect/scopes with Partners and checks `oauthApp:authorize` plus each requested resource permission through Convex `assertOrganizationResourcePermission`.
+7. Convex stores the organization grant in `organizationPartnerConnections` with only the requested and verified scopes.
+8. Workspace issues a WorkOS organization API key only for an active grant and requested key permissions that are a subset of approved scopes.
+9. Convex records the key projection in `workosPartnerApiKeys`, including WorkOS API key id, WorkOS owner organization id, partner id, Partners client id, connection id, permissions, status, and expiry.
+10. Partner resource APIs validate the bearer key with WorkOS, then validate the Convex key projection and active organization grant before reading or mutating data.
+11. Partner-key writes are audited as `partnerApp` actors and can enqueue outbound partner webhooks. Workspace organization API keys remain separate `apiKey` actors and cannot call inbound partner webhook endpoints.
+12. Legacy Better Auth/OAuth bearer tokens are rejected with `410`; partners must use WorkOS partner API keys.
 
 ## Dependencies
 
 - Partner app max scopes must be checked before saving a Workspace grant.
 - Saved grant scopes must be the user-approved requested scopes, not the app maximum.
-- Resource APIs must reject tokens without canonical `organization_id` or OAuth client id.
+- WorkOS key permissions must be a subset of the saved organization grant scopes.
+- Resource APIs must validate both WorkOS key state and Convex grant state on every request.
 - Strict schema deployment requires old `partnerAppId` and `oauthClientId` records to be migrated first.
-- Workspace may project approved app state into Better Auth OAuth clients, but that projection must not become a catalog or review source of truth.
+- Workspace may keep legacy OAuth sync endpoints as transition shims, but they must not grant data access or become a catalog/review source of truth.

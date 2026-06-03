@@ -34,11 +34,11 @@ describe("demo section registry", () => {
 
   it("redacts credential-looking values", () => {
     expect(sanitizeCredentialPayload({
-      access_token: "raw-access",
+      partnerKey: "raw-key",
       nested: { authorization: "Bearer abc123", name: "Demo" },
       text: "mcp_secret_supersecret",
     })).toEqual({
-      access_token: "[redacted]",
+      partnerKey: "[redacted]",
       nested: { authorization: "[redacted]", name: "Demo" },
       text: "[redacted]",
     });

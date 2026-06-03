@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   createPartnerConnectionGrant,
+  createWorkOSPartnerApiKey,
   fetchPartnerCatalogApps,
   fetchPartnerConnections,
   partnerCatalogFilters,
@@ -76,7 +77,7 @@ describe("integrations runtime", () => {
       "/api/v1/organizations/org%201/partner-connections/connection%2F1",
       {
         method: "PATCH",
-        headers: { "content-type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "paused" }),
       },
     );
@@ -114,12 +115,57 @@ describe("integrations runtime", () => {
     );
   });
 
+  it("creates WorkOS partner API keys through the organization route", async () => {
+    const apiKey = {
+      id: "workos_key_1",
+      workosApiKeyId: "api_key_1",
+      key: "sk_test_secret",
+      keyLast4: "cret",
+      permissions: ["client:read"],
+    };
+    const fetcher = vi.fn(async () => jsonResponse({ apiKey })) as unknown as typeof fetch;
+
+    await expect(createWorkOSPartnerApiKey(
+      "org 1",
+      {
+        connectionId: "connection/1",
+        partnerId: "partner_1",
+        partnerClientId: "partners_client_1",
+        name: "CRM bridge",
+        permissions: ["client:read"],
+      },
+      fetcher,
+    )).resolves.toEqual(apiKey);
+
+    expect(fetcher).toHaveBeenCalledWith(
+      "/api/v1/organizations/org%201/partner-workos-api-keys",
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          connectionId: "connection/1",
+          partnerId: "partner_1",
+          partnerClientId: "partners_client_1",
+          name: "CRM bridge",
+          permissions: ["client:read"],
+        }),
+      },
+    );
+  });
+
   it("preserves current error messages for failed runtime calls", async () => {
     const fetcher = vi.fn(async () => jsonResponse({ error: "nope" }, { status: 500 })) as unknown as typeof fetch;
 
     await expect(fetchPartnerCatalogApps(fetcher)).rejects.toThrow("Partner apps could not be loaded.");
     await expect(fetchPartnerConnections("org_1", fetcher)).rejects.toThrow("Partner connections could not be loaded.");
-    await expect(updatePartnerConnectionStatus("org_1", "connection_1", "active", fetcher)).rejects.toThrow("Partner connection could not be updated.");
-    await expect(revokePartnerConnection("org_1", "connection_1", fetcher)).rejects.toThrow("Partner connection could not be revoked.");
+    await expect(updatePartnerConnectionStatus("org_1", "connection_1", "active", fetcher)).rejects.toThrow("nope");
+    await expect(createWorkOSPartnerApiKey("org_1", {
+      connectionId: "connection_1",
+      partnerId: "partner_1",
+      partnerClientId: "partners_client_1",
+      name: "CRM bridge",
+      permissions: ["client:read"],
+    }, fetcher)).rejects.toThrow("WorkOS partner API key could not be created.");
+    await expect(revokePartnerConnection("org_1", "connection_1", fetcher)).rejects.toThrow("nope");
   });
 });

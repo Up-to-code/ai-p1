@@ -1,5 +1,13 @@
 # Changes
 
+## 2026-06-03 WorkOS MCP Scope Expansion Plan
+
+- Documented WorkOS MCP Auth as a future OAuth 2.1 authorization layer, not a replacement for Qentrah's MCP tool server.
+- Added safe external MCP read scopes for organization members and partner integrations.
+- Kept member writes/deletes, role management, organization mutation, billing writes, API key writes, and secret-bearing integration work outside the external MCP adapter.
+- Updated lifecycle docs from Better Auth language to WorkOS membership projection language.
+- Recorded the phased migration path for a parallel WorkOS/AuthKit bearer-token MCP endpoint.
+
 ## 2026-05-28 MCP Connection Lifecycle Depth
 
 - Added `convex/mcp/connectionLifecycle.ts` so Agent link presentation, visible-list filtering, updated ordering, and token TTL calculation live behind a tested lifecycle Module.

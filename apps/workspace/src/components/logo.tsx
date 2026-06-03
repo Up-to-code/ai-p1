@@ -10,7 +10,7 @@ export const BrandMark = ({ className = "h-5 w-5", priority = false }: { classNa
       alt="Qentrah"
       width={24}
       height={28}
-      className={`${className} dark:hidden`}
+      className={`${className} w-auto object-contain dark:hidden`}
       priority={priority}
     />
     <Image
@@ -18,7 +18,7 @@ export const BrandMark = ({ className = "h-5 w-5", priority = false }: { classNa
       alt="Qentrah"
       width={24}
       height={28}
-      className={`${className} hidden dark:block`}
+      className={`${className} w-auto object-contain hidden dark:block`}
       priority={priority}
     />
   </>

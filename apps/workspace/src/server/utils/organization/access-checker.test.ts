@@ -14,11 +14,11 @@ vi.mock("@convex/_generated/api", () => ({
   },
 }));
 
-vi.mock("@/server/auth/better-auth/server", () => ({
+vi.mock("@/server/auth/convex-workos/server", () => ({
   fetchAuthQuery: vi.fn(),
 }));
 
-import { fetchAuthQuery } from "@/server/auth/better-auth/server";
+import { fetchAuthQuery } from "@/server/auth/convex-workos/server";
 import {
   assertCanUseOrganizationResource,
   getOrganizationCapabilities,

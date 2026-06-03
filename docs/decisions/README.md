@@ -6,7 +6,7 @@ kebab-case; chronology is preserved in this index instead of numeric prefixes.
 | Order | Decision | Status | Date |
 | --- | --- | --- | --- |
 | 1 | [Partners owns partner app catalog and review](./partners-owns-partner-app-catalog-and-review.md) | Accepted | Existing decision |
-| 2 | [Workspace owns organization grants and OAuth runtime projection](./workspace-owns-organization-grants-and-oauth-runtime-projection.md) | Accepted | Existing decision |
+| 2 | [Workspace owns organization grants and WorkOS partner key projection](./workspace-owns-organization-grants-and-oauth-runtime-projection.md) | Accepted | Existing decision, updated for WorkOS cutover |
 | 3 | [Lifecycle docs required for connected changes](./lifecycle-docs-required-for-connected-changes.md) | Accepted | Existing decision |
 
 ## Maintenance

@@ -1,21 +1,22 @@
 # Qentrah Demo Partner App
 
 The Demo Partner App is a deployable Next.js reference implementation for
-external partners integrating with Qentrah Workspace OAuth and resource APIs.
+external partners integrating with Qentrah Workspace WorkOS partner keys and
+resource APIs.
 
 It demonstrates:
 
 - a public setup-token gate for demo deployments
 - `Authorize with Qentrah`
-- OAuth 2.1 authorization code flow with PKCE
-- server-side authorization code exchange
+- Workspace organization grant handoff
+- server-side storage for a Workspace-issued WorkOS partner API key
 - encrypted HttpOnly cookie session storage for demo use
 - Workspace resource API calls for organization, clients, and properties
 - safe server-side create/update calls through Workspace APIs
 
-Production partner apps should store OAuth tokens in a durable server-side token
-vault or database with rotation and audit logging. This demo uses encrypted
-cookies so it can run without an extra database.
+Production partner apps should store WorkOS partner API keys in a durable
+server-side vault or database with rotation and audit logging. This demo uses
+encrypted cookies so it can run without an extra database.
 
 ## Local Development
 
@@ -43,13 +44,13 @@ Open the app, unlock with `DEMO_ACCESS_TOKEN`, then click `Authorize with Qentra
 | `app/unlock/page.tsx` | Demo setup-token form |
 | `app/dashboard/page.tsx` | Authorized demo dashboard |
 | `app/api/unlock/route.ts` | Demo unlock route |
-| `app/api/auth/qentrah/start/route.ts` | Starts OAuth with state and PKCE |
-| `app/api/auth/qentrah/callback/route.ts` | Exchanges authorization code server-side |
+| `app/api/auth/qentrah/start/route.ts` | Sends the user to Workspace integrations |
+| `app/api/auth/qentrah/callback/route.ts` | Stores the WorkOS partner key issued by Workspace |
 | `app/api/qentrah/me/route.ts` | Organization/account resource call |
 | `app/api/qentrah/clients/route.ts` | Client list/create proxy |
 | `app/api/qentrah/clients/[clientId]/route.ts` | Client update proxy |
 | `app/api/qentrah/properties/route.ts` | Property list proxy |
-| `lib/oauth.ts` | OAuth, PKCE, state, and token helpers |
+| `lib/partner-key-auth.ts` | WorkOS partner key callback helpers |
 | `lib/workspace-api.ts` | Workspace resource API client |
 | `lib/config.ts` | Environment loading |
 
@@ -66,8 +67,8 @@ DEMO_ACCESS_TOKEN=local-demo-access
 SESSION_SECRET=replace-with-a-local-random-value
 ```
 
-`QENTRAH_CLIENT_SECRET` is optional for public PKCE clients. Leave it empty when
-testing a public client.
+`QENTRAH_CLIENT_SECRET` is no longer required by this demo. Keep it unset unless
+you are testing a legacy client registration.
 
 See:
 
@@ -93,7 +94,8 @@ Use these values when creating the app in Qentrah Partners:
   - `property:read`
   - `task:read`
 
-After review approval, copy the issued OAuth client ID into `QENTRAH_CLIENT_ID`.
+After review approval, copy the issued partner client ID into
+`QENTRAH_CLIENT_ID`.
 
 ## Vercel Deployment
 

@@ -88,6 +88,10 @@
       "types": "./dist/session.d.ts",
       "import": "./dist/session.js"
     },
+    "./subscription-pricing": {
+      "types": "./dist/subscriptionPricing.d.ts",
+      "import": "./dist/subscriptionPricing.js"
+    },
     "./verifications": {
       "types": "./dist/verifications.d.ts",
       "import": "./dist/verifications.js"

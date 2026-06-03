@@ -1,29 +1,19 @@
 "use client";
 
-import { ArrowRight, ChevronLeft } from "lucide-react";
+import { ArrowRight, ChevronLeft, ShieldCheck } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { BrandMark } from "@/components/logo";
+import { WorkOSLogoutButton } from "@/components/auth/workos-logout-button";
 import { Link } from "@/i18n/routing";
 
 type AuthAccessScreenProps = {
   mode: "sign-in" | "sign-up";
   isPending: boolean;
-  onGoogleSignIn: () => void;
+  onAuthStart: () => void;
 };
 
 const authVideoUrl = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/agentic-hero-9yW3wnTNMfn2U6lsVhTTZSJFEvAoSj.mp4";
-
-function GoogleMark() {
-  return (
-    <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
-      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-    </svg>
-  );
-}
 
 function LegalAgreement({ isAr }: { isAr: boolean }) {
   const t = useTranslations("signin");
@@ -59,19 +49,13 @@ function LegalAgreement({ isAr }: { isAr: boolean }) {
   );
 }
 
-export function AuthAccessScreen({ mode, isPending, onGoogleSignIn }: AuthAccessScreenProps) {
+export function AuthAccessScreen({ mode, isPending, onAuthStart }: AuthAccessScreenProps) {
   const t = useTranslations("signin");
   const locale = useLocale();
   const isAr = locale === "ar";
   const isSignUp = mode === "sign-up";
   const brandLabel = isAr ? "كانترا" : "qentrah";
-  const googleLabel = isAr ? (
-    <span dir="rtl">
-      الدخول عبر <bdi dir="ltr">Google</bdi>
-    </span>
-  ) : (
-    t("google")
-  );
+  const authLabel = isSignUp ? t("workosSignUp") : t("workosSignIn");
 
   return (
     <main className="min-h-svh overflow-x-hidden bg-[oklch(97.5%_0.006_255)] text-foreground dark:bg-[oklch(8.5%_0.012_255)] lg:grid lg:min-h-screen lg:grid-cols-2">
@@ -85,13 +69,16 @@ export function AuthAccessScreen({ mode, isPending, onGoogleSignIn }: AuthAccess
               {brandLabel}
             </span>
           </Link>
-          <Link
-            href="/"
-            className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-surface px-4 text-[10px] font-black uppercase tracking-[0.08em] text-text-secondary transition hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          >
-            <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
-            {t("backToHome")}
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/"
+              className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-surface px-4 text-[10px] font-black uppercase tracking-[0.08em] text-text-secondary transition hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+              {t("backToHome")}
+            </Link>
+            <WorkOSLogoutButton compact />
+          </div>
         </div>
 
         <div className="flex flex-1 items-center justify-center py-10">
@@ -117,11 +104,11 @@ export function AuthAccessScreen({ mode, isPending, onGoogleSignIn }: AuthAccess
             <button
               className="mt-8 flex h-12 w-full items-center justify-center gap-3 rounded-2xl bg-[oklch(13%_0.024_255)] px-5 text-sm font-bold text-[oklch(98%_0.006_255)] transition hover:bg-[oklch(20%_0.03_255)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.99] disabled:pointer-events-none disabled:opacity-55 dark:bg-[oklch(96%_0.006_255)] dark:text-[oklch(13%_0.024_255)] dark:hover:bg-[oklch(90%_0.008_255)]"
               disabled={isPending}
-              onClick={onGoogleSignIn}
+              onClick={onAuthStart}
               type="button"
             >
-              <GoogleMark />
-              <span className="min-w-0 truncate">{isPending ? t("connecting") : googleLabel}</span>
+              <ShieldCheck className="h-5 w-5" />
+              <span className="min-w-0 truncate">{isPending ? t("connecting") : authLabel}</span>
               <ArrowRight className="h-4 w-4 rtl:rotate-180" />
             </button>
 

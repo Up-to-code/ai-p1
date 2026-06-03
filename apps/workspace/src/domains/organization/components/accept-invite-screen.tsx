@@ -3,22 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@workos-inc/authkit-nextjs/components";
 import { CheckCircle2, Loader2, LogIn, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
-import { requireOrganizationResult, type AuthResult } from "@/domains/auth/organization-selection";
 import { writeAuthHandoff } from "@/domains/auth";
-import { acceptOrganizationInvitation, acceptOrganizationInviteLink } from "../api/better-auth-organization";
-import type { OrganizationInvitationAcceptance, OrganizationInviteLink } from "../api/better-auth-organization";
-
-type BetterAuthOrganization = { id?: string | null };
-type AcceptInviteAuthClient = typeof authClient & {
-  organization: {
-    setActive: (input: { organizationId: string }) => Promise<AuthResult<BetterAuthOrganization | null>>;
-  };
-};
-
-const organizationApi = authClient as AcceptInviteAuthClient;
+import { acceptOrganizationInvitation, acceptOrganizationInviteLink } from "../api/workos-organization";
+import type { OrganizationInvitationAcceptance, OrganizationInviteLink } from "../api/workos-organization";
 
 function getAcceptedOrganizationId(result: OrganizationInviteLink | OrganizationInvitationAcceptance) {
   return (
@@ -33,7 +23,7 @@ export function AcceptInviteScreen() {
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const session = authClient.useSession();
+  const session = useAuth();
   const invitationId = searchParams.get("invitationId");
   const inviteToken = searchParams.get("inviteToken");
   const [status, setStatus] = useState<"idle" | "accepting" | "accepted" | "error">("idle");
@@ -41,7 +31,7 @@ export function AcceptInviteScreen() {
   const hasStartedAccepting = useRef(false);
 
   useEffect(() => {
-    if ((!invitationId && !inviteToken) || session.isPending || !session.data?.user || hasStartedAccepting.current) return;
+    if ((!invitationId && !inviteToken) || session.loading || !session.user || hasStartedAccepting.current) return;
 
     let cancelled = false;
     hasStartedAccepting.current = true;
@@ -59,11 +49,6 @@ export function AcceptInviteScreen() {
         const organizationId = getAcceptedOrganizationId(result);
 
         if (organizationId) {
-          requireOrganizationResult(
-            await organizationApi.organization.setActive({ organizationId }),
-            t("errorDesc"),
-            organizationId,
-          );
           writeAuthHandoff(organizationId);
         }
 
@@ -83,9 +68,9 @@ export function AcceptInviteScreen() {
     return () => {
       cancelled = true;
     };
-  }, [invitationId, inviteToken, locale, session.data?.user, session.isPending, t]);
+  }, [invitationId, inviteToken, locale, session.loading, session.user, t]);
 
-  const isSignedOut = !session.isPending && !session.data?.user;
+  const isSignedOut = !session.loading && !session.user;
   const isMissingInvite = !invitationId && !inviteToken;
   const currentInvitePath = `/${locale}/accept-invite?${inviteToken ? `inviteToken=${encodeURIComponent(inviteToken)}` : `invitationId=${encodeURIComponent(invitationId ?? "")}`}`;
 

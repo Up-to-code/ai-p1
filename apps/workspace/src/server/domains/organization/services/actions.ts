@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
-import { fetchAuthQuery } from "@/server/auth/better-auth/server";
+import { fetchAuthQuery } from "@/server/auth/convex-workos/server";
 import { getOrganizationCapabilities } from "@/server/utils/organization/access-checker";
 import type { OrganizationPermissionStatement } from "@/packages/authz";
 import { OrganizationActionError } from "../errors/action-error";
@@ -13,7 +13,18 @@ import {
   normalizeOrganizationRoleName,
   validatePermissionPayload,
 } from "./access-policy";
-import { callBetterAuth, getBetterAuthSession } from "./better-auth-proxy";
+import {
+  acceptWorkOSOrganizationInvitation,
+  cancelWorkOSOrganizationInvitation,
+  createWorkOSOrganizationInvitation,
+  createWorkOSOrganizationRole,
+  deleteWorkOSOrganizationRole,
+  getWorkOSOrganizationSession,
+  removeWorkOSOrganizationMember,
+  updateWorkOSOrganizationIdentity,
+  updateWorkOSOrganizationMemberRole,
+  updateWorkOSOrganizationRole,
+} from "./workos-organization-adapter";
 import {
   listInvitationsForOrganizationAction,
   listMembersForOrganizationAction,
@@ -51,10 +62,7 @@ export async function updateOrganizationIdentity(
 ) {
   return runOrganizationActionWorkflow(organizationId, {
     permission: { resource: "organization", action: "update" },
-    perform: () => callBetterAuth(c, "/organization/update", {
-      body: { organizationId, data: input },
-      fallback: "Organization could not be updated.",
-    }),
+    perform: () => updateWorkOSOrganizationIdentity(organizationId, input),
     audit: {
       action: "organization.identity.update",
       target: organizationId,
@@ -73,10 +81,10 @@ export async function createOrganizationEmailInvitation(
   return runOrganizationActionWorkflow(organizationId, {
     permission: { resource: "member", action: "create" },
     prepare: () => assertCanAssignRole(c, organizationId, input.role),
-    perform: () => callBetterAuth(c, "/organization/invite-member", {
-      body: { organizationId, email: input.email, role: input.role },
-      fallback: "Invitation could not be created.",
-    }),
+    perform: async () => {
+      const session = await getWorkOSOrganizationSession(c);
+      return createWorkOSOrganizationInvitation(organizationId, input, session.workosUserId);
+    },
     audit: {
       action: "organization.invitation.create",
       target: input.email,
@@ -92,10 +100,7 @@ export async function cancelOrganizationEmailInvitation(
 ) {
   return runOrganizationActionWorkflow(organizationId, {
     permission: { resource: "member", action: "create" },
-    perform: () => callBetterAuth(c, "/organization/cancel-invitation", {
-      body: { invitationId },
-      fallback: "Invitation could not be canceled.",
-    }),
+    perform: () => cancelWorkOSOrganizationInvitation(invitationId),
     audit: {
       action: "organization.invitation.cancel",
       target: invitationId,
@@ -123,10 +128,7 @@ export async function updateOrganizationMemberRole(
     roles,
   });
 
-  const member = await callBetterAuth(c, "/organization/update-member-role", {
-    body: { organizationId, memberId, role: input.role },
-    fallback: "Member role could not be updated.",
-  });
+  const member = await updateWorkOSOrganizationMemberRole(organizationId, memberId, input.role);
 
   await recordOrganizationAction(organizationId, {
     action: "organization.member.role.update",
@@ -142,20 +144,17 @@ export async function removeOrganizationMember(
   organizationId: string,
   memberIdOrEmail: string,
 ) {
-  const session = await getBetterAuthSession(c);
+  const session = await getWorkOSOrganizationSession(c);
   await requireOrganizationAction(organizationId, "member", "delete");
   const members = await listMembers(c, organizationId);
 
   assertCanRemoveMember({
-    currentUserId: session.user?.id ?? "",
+    currentUserId: session.workosUserId,
     targetMemberIdOrEmail: memberIdOrEmail,
     members,
   });
 
-  const member = await callBetterAuth(c, "/organization/remove-member", {
-    body: { organizationId, memberIdOrEmail },
-    fallback: "Member could not be removed.",
-  });
+  const member = await removeWorkOSOrganizationMember(organizationId, memberIdOrEmail);
 
   await recordOrganizationAction(organizationId, {
     action: "organization.member.remove",
@@ -178,16 +177,13 @@ export async function createOrganizationWorkRole(
   }
   assertRoleNameIsCustom(role);
 
-  const created = await callBetterAuth(c, "/organization/create-role", {
-    body: {
-      organizationId,
-      role,
-      permission: validatePermissionPayload(
-        input.permission as Partial<Record<keyof OrganizationPermissionStatement, string[]>>,
-      ),
-    },
-    fallback: "Work role could not be created.",
-  });
+  const created = await createWorkOSOrganizationRole(
+    organizationId,
+    role,
+    validatePermissionPayload(
+      input.permission as Partial<Record<keyof OrganizationPermissionStatement, string[]>>,
+    ),
+  );
 
   await recordOrganizationAction(organizationId, {
     action: "organization.role.create",
@@ -216,20 +212,13 @@ export async function updateOrganizationWorkRole(
     assertRoleNameIsCustom(nextRoleName);
   }
 
-  const updated = await callBetterAuth(c, "/organization/update-role", {
-    body: {
-      organizationId,
-      roleId,
-      data: {
-        roleName: nextRoleName,
-        permission: input.permission
-          ? validatePermissionPayload(
-            input.permission as Partial<Record<keyof OrganizationPermissionStatement, string[]>>,
-          )
-          : undefined,
-      },
-    },
-    fallback: "Work role could not be updated.",
+  const updated = await updateWorkOSOrganizationRole(organizationId, currentRole.role, {
+    roleName: nextRoleName,
+    permission: input.permission
+      ? validatePermissionPayload(
+        input.permission as Partial<Record<keyof OrganizationPermissionStatement, string[]>>,
+      )
+      : undefined,
   });
 
   await recordOrganizationAction(organizationId, {
@@ -263,10 +252,7 @@ export async function deleteOrganizationWorkRole(
 
   assertCanDeleteRole({ role, members, invitations, pendingInviteLinkCount });
 
-  const deleted = await callBetterAuth(c, "/organization/delete-role", {
-    body: { organizationId, roleId },
-    fallback: "Work role could not be deleted.",
-  });
+  const deleted = await deleteWorkOSOrganizationRole(organizationId, role.role);
 
   await recordOrganizationAction(organizationId, {
     action: "organization.role.delete",
@@ -294,15 +280,12 @@ export async function acceptOrganizationEmailInvitation(
   c: Context,
   invitationId: string,
 ) {
-  const accepted = await callBetterAuth<AcceptInvitationResponse>(c, "/organization/accept-invitation", {
-    body: { invitationId },
-    fallback: "Invitation could not be accepted.",
-  });
+  const accepted = await acceptWorkOSOrganizationInvitation(c, invitationId) as AcceptInvitationResponse;
   const organizationId =
     accepted.organizationId ??
     accepted.invitation?.organizationId ??
     accepted.member?.organizationId ??
-    (await getBetterAuthSession(c).catch(() => null))?.session?.activeOrganizationId;
+    (await getWorkOSOrganizationSession(c).catch(() => null))?.organizationId;
 
   if (organizationId) {
     await recordOrganizationAction(organizationId, {

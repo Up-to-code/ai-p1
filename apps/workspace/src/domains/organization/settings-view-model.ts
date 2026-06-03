@@ -10,7 +10,7 @@ import type {
   OrganizationMember,
   OrganizationMcpConnection,
   OrganizationRole,
-} from "./api/better-auth-organization";
+} from "./api/workos-organization";
 
 export type Tab = "profile" | "members" | "agentLinks" | "apiKeys" | "invites" | "roles";
 export type InviteMode = "link" | "email";
@@ -301,6 +301,9 @@ export function grantableAgentPermissions(capabilities?: OrganizationCapabilitie
   if (!capabilities) return [];
   const actions = {
     organization: capabilities.canReadOrganization ? ["read"] : [],
+    member: [
+      capabilities.canReadMembers && "read",
+    ],
     client: [
       capabilities.canReadClients && "read",
       capabilities.canCreateClients && "create",
@@ -330,6 +333,9 @@ export function grantableAgentPermissions(capabilities?: OrganizationCapabilitie
       capabilities.canCreateTasks && "create",
       capabilities.canUpdateTasks && "update",
       capabilities.canDeleteTasks && "delete",
+    ],
+    integration: [
+      capabilities.canReadIntegrations && "read",
     ],
     media: [
       capabilities.canReadMedia && "read",

@@ -21,11 +21,12 @@ import type {
   McpConnectionPermission,
   OrganizationApiKeyPermission,
   OrganizationCapabilities,
-} from "./api/better-auth-organization";
+} from "./api/workos-organization";
 
 const baseCapabilities: OrganizationCapabilities = {
   canReadOrganization: true,
   canUpdateOrganization: false,
+  canReadMembers: true,
   canInviteMembers: false,
   canUpdateMembers: false,
   canRemoveMembers: false,
@@ -53,6 +54,7 @@ const baseCapabilities: OrganizationCapabilities = {
   canCreateMedia: false,
   canUpdateMedia: false,
   canDeleteMedia: false,
+  canReadIntegrations: true,
   canReadApiKeys: false,
   canCreateApiKeys: false,
   canUpdateApiKeys: false,
@@ -69,11 +71,13 @@ describe("organization settings permission view model", () => {
   it("projects capabilities into grantable Agent permissions", () => {
     expect(grantableAgentPermissions(baseCapabilities)).toEqual([
       { resource: "organization", actions: ["read"] },
+      { resource: "member", actions: ["read"] },
       { resource: "client", actions: ["read", "create", "update"] },
       { resource: "property", actions: ["read", "create"] },
       { resource: "project", actions: ["read", "update"] },
       { resource: "calendar", actions: ["read", "create"] },
       { resource: "task", actions: ["read"] },
+      { resource: "integration", actions: ["read"] },
       { resource: "media", actions: ["read"] },
     ]);
   });

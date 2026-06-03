@@ -12,6 +12,7 @@ import { useAppLocalization } from "@/foundation/localization";
 import { Text } from "@/foundation/primitives/Text";
 import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
+import { useSystemUI } from "@/foundation/system/useSystemUI";
 
 type ButtonProps = PressableProps & {
   label: string;
@@ -32,7 +33,8 @@ export function Button({
 }: ButtonProps) {
   const { colors } = useTheme();
   const { isRTL } = useAppLocalization();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { sizes } = useSystemUI();
+  const styles = useMemo(() => createStyles(colors, sizes.auth), [colors, sizes.auth]);
 
   return (
     <Pressable
@@ -48,6 +50,7 @@ export function Button({
       {leading ? <View style={styles.leading}>{leading}</View> : null}
       <Text 
         variant="label" 
+        numberOfLines={2}
         style={[
           styles.label, 
           variant === "primary" ? styles.primaryLabel : styles.secondaryLabel,
@@ -61,15 +64,15 @@ export function Button({
   );
 }
 
-const createStyles = (colors: AppColors) => StyleSheet.create({
+const createStyles = (colors: AppColors, authSizes: ReturnType<typeof useSystemUI>["sizes"]["auth"]) => StyleSheet.create({
   base: {
-    minHeight: 48,
+    minHeight: authSizes.buttonHeight,
     borderRadius: theme.radii.pill,
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
     gap: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.xl,
+    paddingHorizontal: authSizes.buttonHorizontalPadding,
   },
   primary: {
     backgroundColor: colors.accent,
@@ -87,6 +90,11 @@ const createStyles = (colors: AppColors) => StyleSheet.create({
   },
   label: {
     fontFamily: "Manrope_800ExtraBold",
+    fontSize: authSizes.buttonFontSize,
+    lineHeight: authSizes.buttonLineHeight,
+    flexShrink: 1,
+    minWidth: 0,
+    textAlign: "center",
   },
   primaryLabel: {
     color: "#FFFFFF",
@@ -96,9 +104,11 @@ const createStyles = (colors: AppColors) => StyleSheet.create({
   },
   leading: {
     marginRight: theme.spacing.xs,
+    flexShrink: 0,
   },
   trailing: {
     marginLeft: theme.spacing.xs,
+    flexShrink: 0,
   },
   rtl: {
     flexDirection: "row-reverse",

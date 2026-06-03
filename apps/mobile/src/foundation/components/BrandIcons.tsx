@@ -1,8 +1,7 @@
 import Svg, { Path } from "react-native-svg";
 
-/** Official Apple  logo (black silhouette). Colorize via `color` prop. */
-export function AppleIcon({ size = 24, color = "#000000" }: { size?: number; color?: string }) {
-  // Viewbox: 0 0 814 1000  (original W3 SVG)
+/** Official Apple logo silhouette. Colorize via `color` prop. */
+export function AppleIcon({ size = 24, color = "#F5F7FB" }: { size?: number; color?: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 814 1000">
       <Path

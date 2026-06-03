@@ -262,7 +262,7 @@ export function qentrahGrantedScopesFromTokenSet(tokenSet: Pick<QentrahPartnerTo
     .filter(Boolean);
 }
 
-const sensitiveKeyPattern = /access_token|accessToken|refresh_token|refreshToken|client_secret|clientSecret|authorization|password|secret|token/i;
+const sensitiveKeyPattern = /access_token|accessToken|refresh_token|refreshToken|client_secret|clientSecret|authorization|password|secret|token|apiKey|partnerKey|keyValue/i;
 
 export function sanitizeQentrahPartnerPayload(value: unknown): unknown {
   if (value === null || value === undefined) return value;

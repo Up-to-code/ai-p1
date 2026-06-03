@@ -2,19 +2,32 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  MOBILE_AUTH_CALLBACK_URL,
+  confirmWorkspaceEmailVerification,
+  confirmWorkspacePasswordReset,
   mobileSocialProviders,
+  requestWorkspacePasswordReset,
+  signInWithWorkspaceEmailPassword,
   signInWithWorkspaceSocialProvider,
+  registerWithWorkspaceEmailPassword,
   socialAuthError,
 } from "@/auth/socialAuth";
+import { resolveMobileAuthProviders } from "@/auth/mobileAuthProviders";
 
-test("mobile auth exposes configured social providers without email auth", () => {
-  assert.deepEqual([...mobileSocialProviders], ["google"]);
+test("mobile auth exposes Apple and Google social auth without an inline email social provider", () => {
+  assert.deepEqual([...mobileSocialProviders], ["apple", "google"]);
+  assert.equal(mobileSocialProviders.includes("apple"), true);
   assert.equal(mobileSocialProviders.includes("google"), true);
   assert.equal((mobileSocialProviders as readonly string[]).includes("email"), false);
 });
 
-test("Google social auth starts Better Auth through the workspace callback route", async () => {
+test("mobile auth provider presentation mirrors the supported social providers", () => {
+  assert.deepEqual(resolveMobileAuthProviders(), [
+    { provider: "apple" },
+    { provider: "google" },
+  ]);
+});
+
+test("social auth starts WorkOS through the mobile app callback route", async () => {
   const calls: unknown[] = [];
   const client = {
     signIn: {
@@ -31,7 +44,150 @@ test("Google social auth starts Better Auth through the workspace callback route
   await signInWithWorkspaceSocialProvider(client, "google");
 
   assert.deepEqual(calls, [
-    { provider: "google", callbackURL: MOBILE_AUTH_CALLBACK_URL },
+    { provider: "google" },
+    "getSession",
+  ]);
+
+  await signInWithWorkspaceSocialProvider(client, "apple");
+
+  assert.deepEqual(calls.slice(2), [
+    { provider: "apple" },
+    "getSession",
+  ]);
+});
+
+test("email password auth starts local WorkOS password sign in with the mobile callback", async () => {
+  const calls: unknown[] = [];
+  const client = {
+    signIn: {
+      password: async (input: unknown) => {
+        calls.push(input);
+        return {};
+      },
+      social: async () => ({}),
+    },
+    getSession: async () => {
+      calls.push("getSession");
+    },
+  };
+
+  await signInWithWorkspaceEmailPassword(client, { email: "agent@example.com", password: "password-1" });
+
+  assert.deepEqual(calls, [
+    { email: "agent@example.com", password: "password-1" },
+    "getSession",
+  ]);
+});
+
+test("email password registration starts local WorkOS password registration with the mobile callback", async () => {
+  const calls: unknown[] = [];
+  const client = {
+    signIn: {
+      social: async () => ({}),
+    },
+    signUp: {
+      emailPassword: async (input: unknown) => {
+        calls.push(input);
+        return {};
+      },
+    },
+    getSession: async () => {
+      calls.push("getSession");
+    },
+  };
+
+  await registerWithWorkspaceEmailPassword(client, {
+    name: "Noura Ahmed",
+    email: "noura@example.com",
+    password: "password-1",
+  });
+
+  assert.deepEqual(calls, [
+    {
+      name: "Noura Ahmed",
+      email: "noura@example.com",
+      password: "password-1",
+    },
+    "getSession",
+  ]);
+});
+
+test("password reset request and confirmation use the mobile auth client", async () => {
+  const calls: unknown[] = [];
+  const client = {
+    signIn: {
+      social: async () => ({}),
+    },
+    requestPasswordReset: async (input: unknown) => {
+      calls.push(input);
+      return {};
+    },
+    confirmPasswordReset: async (input: unknown) => {
+      calls.push(input);
+      return {};
+    },
+    getSession: async () => undefined,
+  };
+
+  await requestWorkspacePasswordReset(client, "agent@example.com");
+  await confirmWorkspacePasswordReset(client, { token: "reset-token", newPassword: "password-1" });
+
+  assert.deepEqual(calls, [
+    { email: "agent@example.com" },
+    { token: "reset-token", newPassword: "password-1" },
+  ]);
+});
+
+test("email verification challenge is preserved for password sign in", async () => {
+  const challenge = {
+    code: "email_verification_required" as const,
+    email: "agent@example.com",
+    pendingAuthenticationToken: "pending-token",
+  };
+  const client = {
+    signIn: {
+      password: async () => ({
+        error: {
+          message: "Email verification required.",
+          emailVerification: challenge,
+        },
+      }),
+      social: async () => ({}),
+    },
+    getSession: async () => undefined,
+  };
+
+  await assert.rejects(
+    () => signInWithWorkspaceEmailPassword(client, { email: "agent@example.com", password: "password-1" }),
+    (error) => {
+      assert.deepEqual((error as { emailVerification?: unknown }).emailVerification, challenge);
+      return true;
+    },
+  );
+});
+
+test("email verification confirmation stores the resulting mobile session", async () => {
+  const calls: unknown[] = [];
+  const client = {
+    signIn: {
+      social: async () => ({}),
+    },
+    confirmEmailVerification: async (input: unknown) => {
+      calls.push(input);
+      return {};
+    },
+    getSession: async () => {
+      calls.push("getSession");
+    },
+  };
+
+  await confirmWorkspaceEmailVerification(client, {
+    code: "123456",
+    pendingAuthenticationToken: "pending-token",
+  });
+
+  assert.deepEqual(calls, [
+    { code: "123456", pendingAuthenticationToken: "pending-token" },
     "getSession",
   ]);
 });
@@ -45,10 +201,10 @@ test("social auth surfaces provider setup errors", async () => {
   await assert.rejects(
     () => signInWithWorkspaceSocialProvider({
       signIn: {
-        social: async () => ({ error: { message: "Google OAuth is not configured." } }),
+        social: async () => ({ error: { message: "Qentrah sign-in is not configured." } }),
       },
       getSession: async () => undefined,
     }, "google"),
-    /Google OAuth is not configured/,
+    /Qentrah sign-in is not configured/,
   );
 });

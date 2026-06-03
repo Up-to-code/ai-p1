@@ -117,6 +117,7 @@ const config: ExpoConfig = {
     name: brandName,
   },
   plugins: [
+    "expo-apple-authentication",
     "expo-font",
     "expo-router",
     [

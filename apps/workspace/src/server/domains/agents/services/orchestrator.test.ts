@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/better-auth/server";
+import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/convex-workos/server";
 import { hasOpenRouterConfig, streamOpenRouterText } from "./openrouter";
 import { createAgentChatStream, detectAgentResponseLanguage } from "./orchestrator";
 
@@ -11,7 +11,7 @@ vi.mock("@/server/config/agent-runtime", () => ({
   getOpenRouterModelCandidates: (primaryModel: string, fallbackModels: string[]) => [primaryModel, ...fallbackModels],
 }));
 
-vi.mock("@/server/auth/better-auth/server", () => ({
+vi.mock("@/server/auth/convex-workos/server", () => ({
   fetchAuthMutation: vi.fn(),
   fetchAuthQuery: vi.fn(),
 }));
@@ -107,6 +107,26 @@ function finishMutationPayloads() {
     .filter((payload) => "assistantMessage" in payload);
 }
 
+function mockAgentQueries(overrides: Partial<typeof capabilities> = {}) {
+  vi.mocked(fetchAuthQuery).mockImplementation(async (...callArgs) => {
+    const payload = callArgs[1] as Record<string, unknown>;
+    if (payload.meter === "ai_chat") {
+      return {
+        meter: "ai_chat",
+        used: 0,
+        limit: 100,
+        remaining: 100,
+        requested: payload.requested ?? 1,
+        allowed: true,
+      };
+    }
+    return {
+      ...capabilities,
+      ...overrides,
+    };
+  });
+}
+
 describe("agent orchestrator stream", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -122,9 +142,7 @@ describe("agent orchestrator stream", () => {
       }
       return null;
     });
-    vi.mocked(fetchAuthQuery).mockResolvedValue({
-      ...capabilities,
-    });
+    mockAgentQueries();
     vi.mocked(hasOpenRouterConfig).mockReturnValue(false);
     vi.mocked(streamOpenRouterText).mockReturnValue({
       textStream: chunks([]),
@@ -158,10 +176,7 @@ describe("agent orchestrator stream", () => {
 
   it("emits confirmation events for high-risk model-selected tools without executing them", async () => {
     vi.mocked(hasOpenRouterConfig).mockReturnValue(true);
-    vi.mocked(fetchAuthQuery).mockResolvedValue({
-      ...capabilities,
-      canRemoveMembers: true,
-    });
+    mockAgentQueries({ canUpdateMembers: true, canRemoveMembers: true });
     vi.mocked(fetchAuthMutation).mockImplementation(async (...callArgs) => {
       const payload = callArgs[1] as Record<string, unknown>;
       if ("message" in payload && "model" in payload) {
@@ -216,7 +231,7 @@ describe("agent orchestrator stream", () => {
     expect(
       vi.mocked(fetchAuthMutation).mock.calls.some((call) =>
         (call[1] as Record<string, unknown>).tool === "members_remove"
-        && (call[1] as Record<string, unknown>).status === "requires_confirmation",
+        && (call[1] as Record<string, unknown>).status === "requires_admin_approval",
       ),
     ).toBe(true);
   });
@@ -254,7 +269,7 @@ describe("agent orchestrator stream", () => {
     );
 
     expect(events.filter((event) => event.type === "text").map((event) => event.text)).toEqual(["Hello."]);
-    expect(fetchAuthQuery).toHaveBeenCalledTimes(1);
+    expect(fetchAuthQuery).toHaveBeenCalledTimes(2);
     const openRouterInput = vi.mocked(streamOpenRouterText).mock.calls.at(-1)?.[0];
     expect(openRouterInput?.prompt).not.toContain("Workspace context:");
     expect(openRouterInput?.prompt).toContain("Response language: English");
@@ -263,6 +278,43 @@ describe("agent orchestrator stream", () => {
       clients_list: expect.any(Object),
       conversation_memory: expect.any(Object),
     }));
+  });
+
+  it("blocks AI runs before provider calls when subscription has no AI credits", async () => {
+    vi.mocked(hasOpenRouterConfig).mockReturnValue(true);
+    vi.mocked(fetchAuthQuery).mockImplementation(async (...callArgs) => {
+      const payload = callArgs[1] as Record<string, unknown>;
+      if (payload.meter === "ai_chat") {
+        return {
+          meter: "ai_chat",
+          used: 0,
+          limit: 0,
+          remaining: 0,
+          requested: 1,
+          allowed: false,
+          reason: "Plan does not include this entitlement.",
+        };
+      }
+      return capabilities;
+    });
+
+    const events = await readEvents(
+      createAgentChatStream({
+        organizationId: "org_1",
+        message: "summarize clients",
+      }),
+    );
+
+    expect(events.filter((event) => event.type === "text").map((event) => event.text)).toEqual([
+      "Plan does not include this entitlement.",
+    ]);
+    expect(streamOpenRouterText).not.toHaveBeenCalled();
+    expect(finishMutationPayloads()).toMatchObject([
+      {
+        status: "blocked",
+        assistantMessage: "Plan does not include this entitlement.",
+      },
+    ]);
   });
 
   it("instructs the model to answer Arabic requests in Arabic without translating exact stored data", async () => {
@@ -312,6 +364,16 @@ describe("agent orchestrator stream", () => {
     vi.mocked(hasOpenRouterConfig).mockReturnValue(true);
     vi.mocked(fetchAuthQuery).mockImplementation(async (...callArgs) => {
       const payload = callArgs[1] as Record<string, unknown>;
+      if (payload.meter === "ai_chat") {
+        return {
+          meter: "ai_chat",
+          used: 0,
+          limit: 100,
+          remaining: 100,
+          requested: payload.requested ?? 1,
+          allowed: true,
+        };
+      }
       if ("paginationOpts" in payload) {
         return { page: [{ id: "client_1", name: "Ahmed" }], isDone: true, continueCursor: "" };
       }
@@ -340,8 +402,30 @@ describe("agent orchestrator stream", () => {
     ).toBe(true);
   });
 
-  it("strips presented database fields before running update tools", async () => {
+  it("requires confirmation before running client update tools", async () => {
     vi.mocked(hasOpenRouterConfig).mockReturnValue(true);
+    vi.mocked(fetchAuthMutation).mockImplementation(async (...callArgs) => {
+      const payload = callArgs[1] as Record<string, unknown>;
+      if ("message" in payload && "model" in payload) {
+        return {
+          thread: { _id: "thread_1" },
+          run: { _id: "run_1" },
+          userMessageId: "message_user",
+        };
+      }
+      if ("tool" in payload && payload.tool === "clients_update") {
+        return {
+          id: "confirmation_client_update",
+          summary: "Update client",
+          resource: "client",
+          action: "update",
+          approvalRequirement: "user",
+          inputPreview: "{}",
+          expiresAt: 123,
+        };
+      }
+      return null;
+    });
     const presentedClient = {
       _id: "client_1",
       _creationTime: 1778414255329,
@@ -369,6 +453,16 @@ describe("agent orchestrator stream", () => {
     };
     vi.mocked(fetchAuthQuery).mockImplementation(async (...callArgs) => {
       const payload = callArgs[1] as Record<string, unknown>;
+      if (payload.meter === "ai_chat") {
+        return {
+          meter: "ai_chat",
+          used: 0,
+          limit: 100,
+          remaining: 100,
+          requested: payload.requested ?? 1,
+          allowed: true,
+        };
+      }
       if ("clientId" in payload) return presentedClient;
       return capabilities;
     });
@@ -379,7 +473,7 @@ describe("agent orchestrator stream", () => {
           clientId: "client_1",
           phone: "2010111222333",
         }, {} as never);
-        yield (result as { ok: boolean }).ok ? "Updated." : "Failed.";
+        yield (result as { confirmationRequired?: boolean }).confirmationRequired ? "Needs confirmation." : "Failed.";
       })(),
     }) as never);
 
@@ -390,24 +484,18 @@ describe("agent orchestrator stream", () => {
       }),
     );
 
-    expect(events.filter((event) => event.type === "text").map((event) => event.text)).toEqual(["Updated."]);
+    expect(events.filter((event) => event.type === "text").map((event) => event.text)).toEqual(["Needs confirmation."]);
+    expect(events).toContainEqual(expect.objectContaining({
+      type: "confirmation_required",
+      resource: "client",
+      action: "update",
+    }));
     const updatePayload = vi
       .mocked(fetchAuthMutation)
       .mock.calls
       .map((call) => call[1] as Record<string, unknown>)
       .find((payload) => payload.clientId === "client_1" && "input" in payload);
-    expect(updatePayload?.input).toMatchObject({
-      name: "Salma Samir 500",
-      phone: "2010111222333",
-      type: "Broker",
-      pipelineStage: "closed",
-      priority: "high",
-      status: "active",
-    });
-    expect(updatePayload?.input).not.toHaveProperty("_creationTime");
-    expect(updatePayload?.input).not.toHaveProperty("_id");
-    expect(updatePayload?.input).not.toHaveProperty("organizationId");
-    expect(updatePayload?.input).not.toHaveProperty("syncState");
+    expect(updatePayload).toBeUndefined();
   });
 
   it("returns a failed tool result for writes with missing required fields", async () => {
@@ -451,8 +539,7 @@ describe("agent orchestrator stream", () => {
 
   it("does not expose tools blocked by current permissions", async () => {
     vi.mocked(hasOpenRouterConfig).mockReturnValue(true);
-    vi.mocked(fetchAuthQuery).mockResolvedValue({
-      ...capabilities,
+    mockAgentQueries({
       canCreateClients: false,
       canUpdateClients: false,
       canDeleteClients: false,

@@ -1,34 +1,12 @@
 import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
-import { authComponent, createAuth } from "../../auth";
+import { authComponent } from "../../auth";
 import { assertOrganizationResourcePermission } from "../profile/access";
 import { findInviteLinkByTokenHash, toPublicInviteLink } from "./data";
 import {
   createOrganizationInviteLinkInputValidator,
   organizationInviteLinkValidator,
 } from "./validators";
-
-type AddMemberApi = {
-  addMember: (input: {
-    body: {
-      userId: string;
-      organizationId: string;
-      role: string;
-    };
-  }) => Promise<unknown>;
-};
-
-type AddMemberErrorResult = {
-  error?: {
-    message?: string;
-    code?: string;
-  } | null;
-};
-
-function isAlreadyMemberError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-  return message.toLowerCase().includes("already a member");
-}
 
 export const createInviteLinkFromHono = mutation({
   args: {
@@ -95,30 +73,50 @@ export const acceptInviteLinkFromHono = mutation({
       throw new Error("Invite link has expired.");
     }
 
-    const { auth } = await authComponent.getAuth(createAuth, ctx);
-    const organizationApi = auth.api as unknown as AddMemberApi;
+    const organization = await ctx.db
+      .query("organizations")
+      .withIndex("by_organization_id", (q) => q.eq("organizationId", inviteLink.organizationId))
+      .unique();
+    if (!organization?.workosOrganizationId) {
+      throw new Error("Organization is not linked to WorkOS.");
+    }
+    const workosOrganizationId = organization.workosOrganizationId;
 
-    try {
-      const addMemberResult = await organizationApi.addMember({
-        body: {
-          userId: user._id,
-          organizationId: inviteLink.organizationId,
-          role: inviteLink.role,
-        },
+    const existingMembership = await ctx.db
+      .query("workosOrganizationMembers")
+      .withIndex("by_workos_org_user", (q) =>
+        q.eq("workosOrganizationId", workosOrganizationId).eq("workosUserId", user.id),
+      )
+      .unique();
+
+    if (existingMembership?.status === "active") {
+      return toPublicInviteLink(inviteLink);
+    }
+
+    if (existingMembership) {
+      await ctx.db.patch(existingMembership._id, {
+        organizationId: inviteLink.organizationId,
+        userId: user._id,
+        email: user.email,
+        role: inviteLink.role,
+        roles: [inviteLink.role],
+        status: "active",
+        updatedAt: now,
       });
-      const addMemberError = (addMemberResult as AddMemberErrorResult | null)?.error;
-
-      if (addMemberError) {
-        if (isAlreadyMemberError(addMemberError.message ?? addMemberError.code)) {
-          return toPublicInviteLink(inviteLink);
-        }
-        throw new Error(addMemberError.message ?? addMemberError.code ?? "Invite link could not add member.");
-      }
-    } catch (error) {
-      if (isAlreadyMemberError(error)) {
-        return toPublicInviteLink(inviteLink);
-      }
-      throw error;
+    } else {
+      await ctx.db.insert("workosOrganizationMembers", {
+        organizationId: inviteLink.organizationId,
+        workosOrganizationId,
+        workosUserId: user.id,
+        userId: user._id,
+        email: user.email,
+        role: inviteLink.role,
+        roles: [inviteLink.role],
+        permissions: [],
+        status: "active",
+        createdAt: now,
+        updatedAt: now,
+      });
     }
 
     await ctx.db.patch(inviteLink._id, {

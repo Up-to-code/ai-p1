@@ -24,7 +24,7 @@ describe("organization invite link write authorization", () => {
     expect(source).toContain('throw new Error("Invite link is no longer active.")');
     expect(source).toContain("inviteLink.expiresAt <= now");
     expect(source).toContain('throw new Error("Invite link has expired.")');
-    expect(source).toContain("isAlreadyMemberError");
+    expect(source).toContain("existingMembership?.status === \"active\"");
     expect(source).toContain('status: "used"');
   });
 });

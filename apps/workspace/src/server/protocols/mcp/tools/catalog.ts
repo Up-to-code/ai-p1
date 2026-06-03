@@ -17,6 +17,7 @@ export type McpPermissionResource =
   | "project"
   | "calendar"
   | "task"
+  | "integration"
   | "media";
 
 export type McpPermissionAction = "read" | "create" | "update" | "delete";
@@ -57,7 +58,7 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
   {
     name: "organization_update_identity",
     title: "Update organization identity",
-    description: "Update the organization's Better Auth identity fields.",
+    description: "Update the organization's WorkOS identity fields.",
     resource: "organization",
     action: "update",
   },
@@ -67,6 +68,14 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     description: "Update the organization's workspace profile fields.",
     resource: "organization",
     action: "update",
+  },
+  {
+    name: "members_list",
+    title: "List members",
+    description: "List active organization members and their work roles.",
+    resource: "member",
+    action: "read",
+    inputSchema: { limit: listLimit, cursor: listCursor },
   },
   {
     name: "members_update_role",
@@ -387,6 +396,14 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     action: "delete",
     inputSchema: { taskId: id },
     destructive: true,
+  },
+  {
+    name: "integrations_list",
+    title: "List integrations",
+    description: "List partner app connections approved for this organization.",
+    resource: "integration",
+    action: "read",
+    inputSchema: { limit: listLimit, cursor: listCursor },
   },
   {
     name: "media_list",

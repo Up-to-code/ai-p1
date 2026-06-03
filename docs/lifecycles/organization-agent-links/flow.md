@@ -22,7 +22,7 @@
 
 ## Source Of Truth
 
-- Better Auth organization permissions: who can manage/delegate.
+- WorkOS membership projection plus Qentrah organization permissions: who can manage/delegate.
 - Convex `organizationMcpConnections`: organization grant and link status.
 - Convex API key component: actual secret validation and rotation.
 - `PLATFORM_ADMIN_EMAILS`: platform/operator-only actions, not organization agent-link management.
@@ -36,3 +36,29 @@
 5. External MCP write/delete tools never mutate immediately. They create an encrypted pending approval record and return a confirmation-required response.
 6. High-impact actions, including destructive changes, member/role management, organization identity changes, production-system actions, billing/payment actions, and broad data changes, require admin approval.
 7. Full tool input stays encrypted in the approval record. MCP/model-visible responses receive only redacted previews and approval metadata.
+
+## Current External MCP Scopes
+
+External MCP links can currently delegate:
+
+- `organization:read`
+- `member:read`
+- `client:create/read/update/delete`
+- `property:create/read/update/delete`
+- `project:create/read/update/delete`
+- `calendar:create/read/update/delete`
+- `task:create/read/update/delete`
+- `integration:read`
+- `media:read/create`
+
+Member write/delete, role management, organization mutation, billing writes, API key writes, and secret-bearing integration operations stay outside the external MCP adapter.
+
+## WorkOS MCP Auth Migration Flow
+
+1. Register a WorkOS/AuthKit MCP-compatible OAuth client and scopes.
+2. Add a new Qentrah MCP transport endpoint that accepts WorkOS/AuthKit bearer tokens.
+3. Validate the token issuer/audience and resolve WorkOS user and organization.
+4. Map granted WorkOS OAuth scopes into the same Qentrah MCP permission shape used by `organizationMcpConnections`.
+5. Reuse the existing MCP tool catalog, policy gateway, read/write approval behavior, quota reservation, and audit write path.
+6. Store audit actor type as a WorkOS MCP OAuth client/session, distinct from legacy `mcpConnection` links.
+7. Keep the legacy secret-link endpoint during migration and expose WorkOS OAuth setup as the preferred path only after tool-list and call parity tests pass.

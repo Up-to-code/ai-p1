@@ -27,6 +27,7 @@ export function tamaraReturnTone(status: TamaraReturnStatus, paymentStatus?: str
 }
 
 export function billingPriceLabel(plan: BillingPlan, locale: BillingLocale) {
+  if (plan.amount === null) return locale === "ar" ? "سعر مخصص" : "Custom";
   return new Intl.NumberFormat(locale === "ar" ? "ar-SA" : "en-US", {
     style: "currency",
     currency: plan.currency,
@@ -49,6 +50,7 @@ export function billingScreenCopy(locale: BillingLocale, isYearly: boolean) {
         pay: isYearly ? "اشتر الآن وادفع لاحقاً مع تمارا" : "متابعة الإعداد",
         starting: "جاري إنشاء الدفع...",
         secure: isYearly ? "يتم الدفع في صفحة تمارا الآمنة، ثم تعود إلى كانترا بعد الانتهاء." : "تمارا متاحة فقط لخيار الدفع السنوي بنظام اشتر الآن وادفع لاحقاً.",
+        noAi: "بدون رصيد ذكاء اصطناعي مضمّن",
         included: isYearly
           ? ["مساحة المشاريع والوحدات والعملاء", "دفع سنوي عبر تمارا", "مرحلة إعداد مجانية", "دعم الأدوار الأساسية"]
           : ["مساحة المشاريع والوحدات والعملاء", "مرحلة إعداد مجانية", "دعم الأدوار الأساسية", "تجديد يدوي كل 30 يوم"],
@@ -66,6 +68,7 @@ export function billingScreenCopy(locale: BillingLocale, isYearly: boolean) {
         pay: isYearly ? "Buy now, pay later with Tamara" : "Continue setup",
         starting: "Creating checkout...",
         secure: isYearly ? "Payment happens on Tamara's secure checkout, then you return to Qentrah when it is complete." : "Tamara is available only for the annual buy-now-pay-later option.",
+        noAi: "No included AI credit balance",
         included: isYearly
           ? ["Project, unit, and client workspace", "Annual payment through Tamara", "Free setup phase included", "Core organization roles"]
           : ["Project, unit, and client workspace", "Free setup phase included", "Core organization roles", "Manual renewal every 30 days"],

@@ -1,8 +1,8 @@
 import {
+  defaultBillingPlan,
   getBillingPlan,
   presentPayment,
   presentSubscription,
-  SAUDI_MONTHLY_PLAN,
   type StoredSubscription,
   type StoredTamaraPayment,
 } from "./data";
@@ -15,9 +15,11 @@ export function billingSubscriptionOverview(
   subscription: StoredSubscription | null,
   latestPayment: StoredTamaraPayment | null,
 ) {
+  const plan = subscription ? getBillingPlan(subscription.planId) : defaultBillingPlan();
   return {
-    plan: subscription ? getBillingPlan(subscription.planId) : SAUDI_MONTHLY_PLAN,
+    plan,
     subscription: subscription ? presentSubscription(subscription) : null,
     latestPayment: latestPayment ? presentPayment(latestPayment) : null,
+    entitlements: plan.entitlements,
   };
 }

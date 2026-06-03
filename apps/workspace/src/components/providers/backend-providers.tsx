@@ -1,20 +1,41 @@
 "use client";
 
+import { AuthKitProvider, useAccessToken, useAuth } from "@workos-inc/authkit-nextjs/components";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
-import { ConvexReactClient } from "convex/react";
-import { useState, type ReactNode } from "react";
-import { authClient } from "@/lib/auth-client";
+import { ConvexProviderWithAuth, ConvexReactClient } from "convex/react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { convexRuntimeConfig } from "@/packages/config";
 
 const convex = new ConvexReactClient(convexRuntimeConfig.url);
 
+function useAuthFromAuthKit() {
+  const { loading: isLoading, user } = useAuth();
+  const { getAccessToken, refresh } = useAccessToken();
+  const isAuthenticated = Boolean(user);
+
+  const fetchAccessToken = useCallback(
+    async ({ forceRefreshToken }: { forceRefreshToken?: boolean } = {}) => {
+      if (!user) return null;
+      const token = forceRefreshToken ? await refresh() : await getAccessToken();
+      return token ?? null;
+    },
+    [getAccessToken, refresh, user],
+  );
+
+  return useMemo(
+    () => ({
+      isLoading,
+      isAuthenticated,
+      fetchAccessToken,
+    }),
+    [fetchAccessToken, isAuthenticated, isLoading],
+  );
+}
+
 export function BackendProviders({
   children,
-  initialToken,
 }: {
   children: ReactNode;
-  initialToken?: string;
 }) {
   const [queryClient] = useState(
     () =>
@@ -29,12 +50,10 @@ export function BackendProviders({
   );
 
   return (
-    <ConvexBetterAuthProvider
-      client={convex}
-      authClient={authClient}
-      initialToken={initialToken}
-    >
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </ConvexBetterAuthProvider>
+    <AuthKitProvider>
+      <ConvexProviderWithAuth client={convex} useAuth={useAuthFromAuthKit}>
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      </ConvexProviderWithAuth>
+    </AuthKitProvider>
   );
 }

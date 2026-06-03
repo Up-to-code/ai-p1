@@ -14,9 +14,10 @@ describe("project flow source", () => {
 
   it("uses the project command detail header and tab spacing pattern", () => {
     expect(source).toContain("<Tabs defaultValue=\"overview\" className=\"space-y-6\"");
-    expect(source).toContain("MiniMovement label={td('sales.status.available')}");
+    expect(source).toContain("{ label: td('sales.status.available'), value: availableUnits");
+    expect(source).toContain("<SalesMovementRow");
     expect(source).toContain("<AppTabsList");
-    expect(source).toContain("className=\"gap-8\"");
+    expect(source).toContain("className=\"gap-5\"");
     expect(source).not.toContain("<TabsList");
     expect(source).not.toContain("<TabsTrigger");
   });
@@ -29,8 +30,10 @@ describe("project flow source", () => {
     expect(source).toContain("projectDocumentAssets(projectMedia)");
     expect(source).toContain("compactProjectDetailRows(optionalCoreDetailRows)");
     expect(source).toContain("projectLocationLabel(project)");
-    expect(source).toContain("ProjectMetaPill icon={Layers3}");
-    expect(source).toContain("ReadinessBar label={td('metrics.inventoryCoverage')}");
+    expect(source).toContain("{ value: \"inventory\", label: td('tabs.inventory'), icon: Layers3 }");
+    expect(source).toContain("{ label: td('sales.metrics.totalUnits'), value: liveUnitCount, icon: Layers3 }");
+    expect(source).toContain("inventoryCoverage");
+    expect(source).toContain("function ReadinessBar");
     expect(source).toContain("ResourceMediaBrowser");
     expect(source).not.toContain("REGA-8829-01");
     expect(source).not.toContain("42.8M SAR");

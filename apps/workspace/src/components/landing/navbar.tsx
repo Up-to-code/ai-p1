@@ -9,13 +9,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { Link } from "@/i18n/routing";
 import { Menu, X } from "lucide-react";
-
-const mobileNavItems = [
-  { key: "solutions", href: "/#solutions" },
-  { key: "pricing", href: "/#pricing" },
-  { key: "resources", href: "/#resources" },
-  { key: "company", href: "/about" },
-] as const;
+import { publicNavItems } from "@/components/landing/public-nav-items";
 
 export function Navbar() {
   const t = useTranslations("Landing.nav");
@@ -64,7 +58,7 @@ export function Navbar() {
         {isMenuOpen ? (
           <div className="absolute inset-x-0 top-full mt-2 rounded-[24px] border border-zinc-200 bg-background p-3 shadow-[0_22px_80px_rgba(15,23,42,0.16)] md:hidden dark:border-white/10">
             <nav className="grid gap-1" aria-label={t("home")}>
-              {mobileNavItems.map((item) => (
+              {publicNavItems.map((item) => (
                 <Link
                   className="flex h-10 w-full items-center rounded-2xl px-4 text-sm font-semibold text-zinc-800 transition hover:bg-zinc-100 focus:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 dark:text-zinc-100 dark:hover:bg-white/10 dark:focus:bg-white/10"
                   href={item.href}

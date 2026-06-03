@@ -10,5 +10,6 @@ export * from "./organizationApiKeys";
 export * from "./organizations";
 export * from "./profiles";
 export * from "./session";
+export * from "./subscriptionPricing";
 export * from "./verifications";
 export * from "./workspace";

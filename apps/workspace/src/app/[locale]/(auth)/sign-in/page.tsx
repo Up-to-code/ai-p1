@@ -1,27 +1,30 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { useLocale } from "next-intl";
-import { useSearchParams } from "next/navigation";
+import { createLocaleAuthCallbackUrl } from "@/domains/auth";
 
-import { AuthAccessScreen } from "@/components/auth/auth-access-screen";
-import { createLocaleAuthCallbackUrl, useGoogleSignIn } from "@/domains/auth";
+function safeLocalizedCallback(value: string | string[] | undefined, locale: string) {
+  const callback = Array.isArray(value) ? value[0] : value;
+  return callback?.startsWith(`/${locale}/`) ? callback : createLocaleAuthCallbackUrl(locale, "/dashboard");
+}
 
-export default function SignInPage() {
-  const locale = useLocale();
-  const searchParams = useSearchParams();
-  const requestedCallback = searchParams.get("callbackURL");
-  const callbackURL = requestedCallback?.startsWith(`/${locale}/`)
-    ? requestedCallback
-    : createLocaleAuthCallbackUrl(locale, "/choose-org");
-  const googleSignIn = useGoogleSignIn({
-    callbackURL,
-  });
+function safeOrganizationId(value: string | string[] | undefined) {
+  const organizationId = Array.isArray(value) ? value[0] : value;
+  return organizationId && /^org_[A-Za-z0-9]+$/.test(organizationId) ? organizationId : undefined;
+}
 
-  return (
-    <AuthAccessScreen
-      isPending={googleSignIn.isPending}
-      mode="sign-in"
-      onGoogleSignIn={googleSignIn.signIn}
-    />
-  );
+export default async function SignInPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ callbackURL?: string | string[]; returnTo?: string | string[]; organizationId?: string | string[] }>;
+}) {
+  const { locale } = await params;
+  const query = await searchParams;
+  const callbackURL = safeLocalizedCallback(query.returnTo ?? query.callbackURL, locale);
+  const nextParams = new URLSearchParams({ returnTo: callbackURL });
+  const organizationId = safeOrganizationId(query.organizationId);
+  if (organizationId) nextParams.set("organizationId", organizationId);
+
+  redirect(`/sign-in?${nextParams.toString()}`);
 }

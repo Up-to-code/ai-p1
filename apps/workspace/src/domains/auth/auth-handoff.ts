@@ -1,7 +1,7 @@
 export const AUTH_HANDOFF_STORAGE_KEY = "qentrah-auth-handoff";
 export const AUTH_HANDOFF_TTL_MS = 12_000;
 
-type AuthHandoff = {
+export type AuthHandoff = {
   organizationId: string;
   createdAt: number;
 };
@@ -29,6 +29,10 @@ export function decodeAuthHandoff(value: string | null, now = Date.now()) {
   } catch {
     return null;
   }
+}
+
+export function getAuthHandoffRemainingMs(handoff: AuthHandoff, now = Date.now()) {
+  return Math.max(0, AUTH_HANDOFF_TTL_MS - (now - handoff.createdAt));
 }
 
 export function writeAuthHandoff(organizationId: string) {

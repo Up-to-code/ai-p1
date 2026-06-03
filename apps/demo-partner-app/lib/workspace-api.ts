@@ -35,7 +35,7 @@ function requireOrganizationId(session: TokenSession) {
 function qentrahClient(session: TokenSession, fetcher?: typeof fetch) {
   return createQentrahServiceAppClient({
     workspaceBaseUrl: demoConfig().workspaceBaseUrl,
-    accessToken: session.access_token,
+    accessToken: session.accessToken,
     fetcher,
   });
 }

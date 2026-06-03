@@ -31,10 +31,10 @@ describe("demo resource API routes", () => {
     const { clearTokenSession, readTokenSession } = await import("@/lib/session");
     const { GET } = await import("../app/api/qentrah/me/route");
     vi.mocked(readTokenSession).mockResolvedValue({
-      access_token: "expired",
-      token_type: "Bearer" as const,
-      expires_in: 1,
-      obtained_at: Date.now() - 10_000,
+      accessToken: "expired",
+      tokenType: "WorkOSPartnerApiKey" as const,
+      obtainedAt: Date.now() - 10_000,
+      expiresAt: Date.now() - 1,
       organizationId: "org_1",
     });
 
@@ -50,10 +50,9 @@ describe("demo resource API routes", () => {
     const { deleteQentrahClient } = await import("@/lib/workspace-api");
     const { DELETE } = await import("../app/api/qentrah/clients/[clientId]/route");
     const session = {
-      access_token: "access",
-      token_type: "Bearer" as const,
-      expires_in: 3600,
-      obtained_at: Date.now(),
+      accessToken: "workos_partner_key",
+      tokenType: "WorkOSPartnerApiKey" as const,
+      obtainedAt: Date.now(),
       organizationId: "org_1",
     };
     vi.mocked(readTokenSession).mockResolvedValue(session);
@@ -70,10 +69,9 @@ describe("demo resource API routes", () => {
     const { readTokenSession } = await import("@/lib/session");
     const { GET } = await import("../app/api/qentrah/media/route");
     vi.mocked(readTokenSession).mockResolvedValue({
-      access_token: "access",
-      token_type: "Bearer" as const,
-      expires_in: 3600,
-      obtained_at: Date.now(),
+      accessToken: "workos_partner_key",
+      tokenType: "WorkOSPartnerApiKey" as const,
+      obtainedAt: Date.now(),
       organizationId: "org_1",
     });
 
@@ -88,10 +86,9 @@ describe("demo resource API routes", () => {
     const { sendQentrahWebhook } = await import("@/lib/workspace-api");
     const { POST } = await import("../app/api/qentrah/webhooks/route");
     const session = {
-      access_token: "access",
-      token_type: "Bearer" as const,
-      expires_in: 3600,
-      obtained_at: Date.now(),
+      accessToken: "workos_partner_key",
+      tokenType: "WorkOSPartnerApiKey" as const,
+      obtainedAt: Date.now(),
       organizationId: "org_1",
     };
     vi.mocked(readTokenSession).mockResolvedValue(session);

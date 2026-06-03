@@ -13,7 +13,7 @@ describe("billing view-model", () => {
   it("formats subscription dates, prices, and status tones", () => {
     expect(billingDateLabel(undefined, "en")).toBe("Not active yet");
     expect(billingDateLabel(Date.parse("2026-05-28T12:00:00.000Z"), "en")).toContain("2026");
-    expect(billingPriceLabel({ id: "saudi_yearly", name: "Yearly", amount: 1200, currency: "SAR", periodDays: 365 }, "en")).toContain("SAR");
+    expect(billingPriceLabel({ id: "better_yearly", planId: "better", marketId: "sa", cycle: "yearly", name: "Yearly", amount: 1200, currency: "SAR", periodDays: 365, checkoutMode: "provider", entitlements: { aiAccess: true, includedCredits: 1, includedCreditCards: 1, appAccessLevel: "standard", apiKeyQuota: 1, agentLinkQuota: 1, supportLevel: "priority" } }, "en")).toContain("SAR");
     expect(subscriptionTone("active")).toBe("success");
     expect(subscriptionTone("past_due")).toBe("danger");
     expect(subscriptionTone()).toBe("neutral");

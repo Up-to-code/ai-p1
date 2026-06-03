@@ -2,24 +2,43 @@
 
 import { useEffect, useState } from "react";
 import {
+  DEFAULT_BILLING_CYCLE,
+  DEFAULT_MARKET_ID,
+  DEFAULT_SUBSCRIPTION_PLAN_ID,
+  getMarketPricing,
+  normalizeBillingSelection,
+  resolveSubscriptionEntitlements,
+  type BillingCycle,
+  type MarketId,
+  type SubscriptionEntitlements,
+  type SubscriptionPlanId,
+} from "@qentrah/domain-contracts/subscription-pricing";
+import {
   organizationApiPath,
   requestOrganizationAction,
 } from "@/domains/organization/api/organization-request";
 
-export type BillingPlanId = "saudi_monthly" | "saudi_yearly";
+export type BillingPlanId = `${SubscriptionPlanId}_${BillingCycle}` | "saudi_monthly" | "saudi_yearly";
 
 export type BillingPlan = {
-  id: BillingPlanId;
+  id: BillingPlanId | SubscriptionPlanId;
+  planId: SubscriptionPlanId;
+  marketId: MarketId;
+  cycle: BillingCycle;
   name: string;
-  amount: number;
+  amount: number | null;
   currency: string;
   periodDays: number;
+  checkoutMode: "provider" | "contact_sales";
+  entitlements: SubscriptionEntitlements;
 };
 
 export type BillingSubscription = {
   id?: string;
   organizationId: string;
-  planId: BillingPlanId;
+  planId: BillingPlanId | SubscriptionPlanId;
+  marketId?: MarketId;
+  billingCycle?: BillingCycle;
   status: "inactive" | "pending" | "active" | "past_due" | "canceled";
   currentPeriodStartAt?: number;
   currentPeriodEndAt?: number;
@@ -30,7 +49,9 @@ export type BillingSubscription = {
 export type TamaraPayment = {
   id: string;
   organizationId: string;
-  planId: BillingPlanId;
+  planId: BillingPlanId | SubscriptionPlanId;
+  marketId?: MarketId;
+  billingCycle?: BillingCycle;
   orderReferenceId: string;
   orderNumber: string;
   tamaraOrderId?: string;
@@ -46,27 +67,37 @@ export type BillingOverview = {
   plan: BillingPlan;
   subscription: BillingSubscription | null;
   latestPayment: TamaraPayment | null;
+  entitlements?: SubscriptionEntitlements;
 };
 
-const SAUDI_MONTHLY_PLAN: BillingPlan = {
-  id: "saudi_monthly",
-  name: "Qentrah Saudi Arabia",
-  amount: 499,
-  currency: "SAR",
-  periodDays: 30,
-};
+export function billingPlanFromSelection(selection?: string | null): BillingPlan {
+  const normalized = normalizeBillingSelection(selection);
+  const pricing = getMarketPricing(normalized);
+  return {
+    id: `${normalized.planId}_${normalized.cycle}`,
+    planId: normalized.planId,
+    marketId: normalized.marketId,
+    cycle: normalized.cycle,
+    name: pricing.name,
+    amount: pricing.amount,
+    currency: pricing.currency,
+    periodDays: pricing.periodDays,
+    checkoutMode: pricing.checkoutMode,
+    entitlements: resolveSubscriptionEntitlements(normalized.planId),
+  };
+}
 
-export const SAUDI_YEARLY_PLAN: BillingPlan = {
-  id: "saudi_yearly",
-  name: "Qentrah Saudi Arabia Annual",
-  amount: 5988,
-  currency: "SAR",
-  periodDays: 365,
-};
+const DEFAULT_BILLING_PLAN = billingPlanFromSelection(`${DEFAULT_SUBSCRIPTION_PLAN_ID}_${DEFAULT_BILLING_CYCLE}`);
 
 export const BILLING_PLANS: Record<BillingPlanId, BillingPlan> = {
-  saudi_monthly: SAUDI_MONTHLY_PLAN,
-  saudi_yearly: SAUDI_YEARLY_PLAN,
+  saudi_monthly: billingPlanFromSelection("saudi_monthly"),
+  saudi_yearly: billingPlanFromSelection("saudi_yearly"),
+  good_monthly: billingPlanFromSelection("good_monthly"),
+  good_yearly: billingPlanFromSelection("good_yearly"),
+  better_monthly: billingPlanFromSelection("better_monthly"),
+  better_yearly: billingPlanFromSelection("better_yearly"),
+  custom_monthly: billingPlanFromSelection("custom_monthly"),
+  custom_yearly: billingPlanFromSelection("custom_yearly"),
 };
 
 export function useBillingOverview(organizationId?: string | null) {
@@ -101,15 +132,18 @@ export function useBillingOverview(organizationId?: string | null) {
 
 export function fallbackBillingOverview(organizationId: string): BillingOverview {
   return {
-    plan: SAUDI_MONTHLY_PLAN,
+    plan: DEFAULT_BILLING_PLAN,
     subscription: {
       organizationId,
-      planId: "saudi_monthly",
+      planId: DEFAULT_SUBSCRIPTION_PLAN_ID,
+      marketId: DEFAULT_MARKET_ID,
+      billingCycle: DEFAULT_BILLING_CYCLE,
       status: "inactive",
       createdAt: Date.now(),
       updatedAt: Date.now(),
     },
     latestPayment: null,
+    entitlements: DEFAULT_BILLING_PLAN.entitlements,
   };
 }
 
@@ -126,11 +160,18 @@ export async function createTamaraCheckoutRequest(input: {
   organizationId: string;
   locale: "en" | "ar";
   planId?: BillingPlanId;
+  marketId?: MarketId;
+  billingCycle?: BillingCycle;
 }) {
   return requestOrganizationAction<{ checkoutUrl: string; orderId: string; status: string }>(
     organizationApiPath(input.organizationId, "billing", "tamara", "checkout"),
     "POST",
-    { planId: input.planId ?? "saudi_monthly", locale: input.locale },
+    {
+      planId: input.planId ?? `${DEFAULT_SUBSCRIPTION_PLAN_ID}_${DEFAULT_BILLING_CYCLE}`,
+      marketId: input.marketId ?? DEFAULT_MARKET_ID,
+      billingCycle: input.billingCycle ?? DEFAULT_BILLING_CYCLE,
+      locale: input.locale,
+    },
     "Billing request failed.",
   );
 }

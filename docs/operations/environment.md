@@ -22,7 +22,7 @@ walkthrough, see [Setup and configuration](./setup-and-configuration.md).
 | Vercel | App deployment env variables | [Vercel environment variables](https://vercel.com/docs/environment-variables) |
 | Vercel CLI | Pulling and managing env from the terminal | [Vercel CLI env](https://vercel.com/docs/cli/env) |
 | Convex | Backend deployment env variables | [Convex environment variables](https://docs.convex.dev/production/environment-variables) |
-| Better Auth | Auth configuration guidance | [Better Auth installation](https://better-auth.com/docs/installation) |
+| WorkOS | AuthKit, Organizations, API Keys, and webhooks | [WorkOS docs](https://workos.com/docs) |
 | UploadThing | Upload app ID, secret, token | [UploadThing docs](https://docs.uploadthing.com) |
 | OpenRouter | AI model API keys | [OpenRouter keys](https://openrouter.ai/settings/keys) |
 | Sentry | DSN and source map upload token | [Sentry Next.js docs](https://docs.sentry.io/platforms/javascript/guides/nextjs) |
@@ -41,15 +41,15 @@ Production domain defaults:
 
 | Variable | Used by | Required when | Purpose |
 | --- | --- | --- | --- |
-| `QENTRAH_WORKSPACE_API_URL` | Partners, Demo Partner App | Calling Workspace APIs or OAuth | Canonical Workspace origin |
+| `QENTRAH_WORKSPACE_API_URL` | Partners, Demo Partner App | Calling Workspace partner authorization and resource APIs | Canonical Workspace origin |
 | `PARTNERS_API_BASE_URL` | Admin Review, Workspace | Reviewing and reading published partner apps | Partners origin for admin/platform service APIs |
 | `PARTNERS_ADMIN_SERVICE_TOKEN` | Admin Review, Partners | Reviewing partner apps | Service token for Partners admin APIs |
 | `PARTNERS_PLATFORM_SERVICE_TOKEN` | Partners, Workspace | Published catalog reads and authorization verification | Service token for Partners platform APIs |
-| `WORKSPACE_ADMIN_SERVICE_TOKEN` | Admin Review, Workspace | Workspace operational data and OAuth projection | Service token accepted by Workspace admin APIs |
+| `WORKSPACE_ADMIN_SERVICE_TOKEN` | Admin Review, Workspace | Workspace operational data and transition admin routes | Service token accepted by Workspace admin APIs |
 | `ADMIN_CONVEX_SERVICE_TOKEN` | Admin Review, Workspace Convex | Direct Admin-to-Convex reads/actions | Dedicated service token for Convex admin functions; do not reuse Workspace admin token |
-| `QENTRAH_CLIENT_ID` | Demo Partner App, partner products | OAuth integration | Public OAuth client ID issued after partner app approval |
-| `QENTRAH_CLIENT_SECRET` | Confidential partner products | Confidential OAuth clients | Secret used only by server-side token exchange |
-| `PARTNER_APP_URL` | Demo Partner App, partner products | OAuth callback construction | Partner app public origin |
+| `QENTRAH_CLIENT_ID` | Demo Partner App, partner products | Partners client id for app authorization | Public client ID issued after partner app approval |
+| `QENTRAH_CLIENT_SECRET` | Confidential partner products | Legacy confidential clients | Secret used only by legacy server-side token exchange |
+| `PARTNER_APP_URL` | Demo Partner App, partner products | Partner authorization callback construction | Partner app public origin |
 | `SESSION_SECRET` | Demo Partner App | Demo session cookie encryption | Local encryption/signing secret |
 
 ## Workspace Variables
@@ -59,7 +59,7 @@ Production baseline:
 ```bash
 NEXT_PUBLIC_SITE_URL=https://app.qentrah.com
 SITE_URL=https://app.qentrah.com
-BETTER_AUTH_URL=https://app.qentrah.com
+WORKOS_AUTH_ENABLED=true
 ```
 
 Common Workspace variables:
@@ -68,10 +68,19 @@ Common Workspace variables:
 | --- | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | Browser | Public Workspace base URL |
 | `SITE_URL` | Server | Canonical Workspace URL |
-| `BETTER_AUTH_URL` | Server | Explicit Better Auth base URL when needed |
-| `BETTER_AUTH_SECRET` | Secret | Better Auth signing secret |
-| `BETTER_AUTH_TRUSTED_ORIGINS` | Server | Extra trusted origins |
 | `TRUSTED_ORIGINS` | Server | Additional trusted origins |
+| `WORKOS_AUTH_ENABLED` | Server | Enables WorkOS AuthKit routes and middleware |
+| `WORKOS_API_KEY` | Secret | WorkOS server API key for AuthKit, Organizations, API Keys, and webhook verification |
+| `WORKOS_CLIENT_ID` | Server | WorkOS AuthKit client id expected in session JWTs |
+| `WORKOS_WEBHOOK_SECRET` | Secret | WorkOS webhook signing secret for `/api/webhooks/workos` |
+| `WORKOS_COOKIE_PASSWORD` | Secret | Reserved WorkOS cookie encryption/password value; keep at least 32 characters when enabled |
+| `WORKOS_CALLBACK_URL` | Server | AuthKit callback URL; defaults to `${SITE_URL}/api/auth/workos/callback` |
+| `WORKOS_LOGOUT_RETURN_URL` | Server | Post-logout return URL; defaults to `${SITE_URL}/en/sign-in` |
+| `WORKOS_POST_LOGIN_URL` | Server | Post-login Workspace URL; defaults to `${SITE_URL}/en` |
+| `WORKOS_JWT_ISSUER` | Server | WorkOS session token issuer override; defaults to `https://api.workos.com` |
+| `WORKOS_COOKIE_DOMAIN` | Server | Optional cookie domain for Workspace WorkOS session cookies |
+| `WORKOS_COOKIE_SECURE` | Server | Set `false` only for local HTTP testing |
+| `WORKOS_API_BASE_URL` | Server | WorkOS API origin override for tests/sandbox; defaults to `https://api.workos.com` |
 | `GOOGLE_CLIENT_ID` | Server | Google sign-in client ID |
 | `GOOGLE_CLIENT_SECRET` | Secret | Google sign-in secret |
 | `APPLE_CLIENT_ID` | Server | Optional Apple sign-in client ID or bundle identifier |
@@ -177,7 +186,7 @@ EXPO_PUBLIC_DEV_AUTH_URL=http://<your-lan-ip>:3000
 | --- | --- | --- |
 | `QENTRAH_MOBILE_ENV` | Build-time | Selects `development` local API behavior or `production` release behavior |
 | `EXPO_PUBLIC_WORKSPACE_API_URL` | Mobile client | Workspace API origin for `/api/v1` calls from Expo |
-| `EXPO_PUBLIC_AUTH_URL` | Mobile client | Better Auth origin for sign-in/session APIs |
+| `EXPO_PUBLIC_AUTH_URL` | Mobile client | Workspace auth origin for sign-in/session APIs |
 | `EXPO_PUBLIC_CONVEX_URL` | Mobile client | Convex client URL |
 | `EXPO_PUBLIC_CONVEX_SITE_URL` | Mobile client | Optional Convex site URL fallback for auth bridges |
 | `EXPO_PUBLIC_DEV_WORKSPACE_API_URL` | Mobile client | Development-only Workspace API origin; use a LAN IP for physical devices |
@@ -208,9 +217,9 @@ PARTNER_APP_URL=https://demo.qentrah.com
 
 | Variable | Exposure | Purpose |
 | --- | --- | --- |
-| `QENTRAH_WORKSPACE_API_URL` | Server | Workspace OAuth and resource API origin |
-| `QENTRAH_CLIENT_ID` | Public/server | OAuth client ID |
-| `QENTRAH_CLIENT_SECRET` | Secret | Optional confidential client secret |
+| `QENTRAH_WORKSPACE_API_URL` | Server | Workspace partner authorization and resource API origin |
+| `QENTRAH_CLIENT_ID` | Public/server | Partners client ID |
+| `QENTRAH_CLIENT_SECRET` | Secret | Optional legacy confidential client secret |
 | `PARTNER_APP_URL` | Server | Demo app public origin |
 | `DEMO_ACCESS_TOKEN` | Secret | Demo unlock value |
 | `SESSION_SECRET` | Secret | Cookie encryption/signing secret |

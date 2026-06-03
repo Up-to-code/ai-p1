@@ -18,10 +18,13 @@ describe("billing request wrappers", () => {
     vi.setSystemTime(new Date("2026-05-28T00:00:00.000Z"));
 
     expect(fallbackBillingOverview("org_1")).toMatchObject({
-      plan: { id: "saudi_monthly" },
+      plan: { id: "good_monthly", planId: "good", marketId: "sa", cycle: "monthly" },
+      entitlements: { aiAccess: false },
       subscription: {
         organizationId: "org_1",
-        planId: "saudi_monthly",
+        planId: "good",
+        marketId: "sa",
+        billingCycle: "monthly",
         status: "inactive",
         createdAt: Date.parse("2026-05-28T00:00:00.000Z"),
         updatedAt: Date.parse("2026-05-28T00:00:00.000Z"),
@@ -52,7 +55,7 @@ describe("billing request wrappers", () => {
     expect(fetcher).toHaveBeenNthCalledWith(2, "/api/v1/organizations/org%201/billing/tamara/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ planId: "saudi_monthly", locale: "ar" }),
+      body: JSON.stringify({ planId: "good_monthly", marketId: "sa", billingCycle: "monthly", locale: "ar" }),
     });
     expect(fetcher).toHaveBeenNthCalledWith(3, "/api/v1/organizations/org%201/billing/tamara/orders/order%2F1", {
       method: "GET",

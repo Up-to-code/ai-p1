@@ -1,8 +1,9 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import type { Context } from "hono";
-import { fetchAuthMutation } from "@/server/auth/better-auth/server";
+import { fetchAuthMutation } from "@/server/auth/convex-workos/server";
 import { agentRuntimeConfig, getOpenRouterModelCandidates } from "@/server/config/agent-runtime";
+import { assertAiUsageAvailable, recordAiUsage } from "@/server/domains/billing/services/entitlements";
 import type { MobileRequestContext } from "@/server/middleware/mobile-request-context";
 import { evaluateAgentRequestRisk } from "../policies/risk-policy";
 import {
@@ -331,6 +332,20 @@ export function createAgentChatStream(input: {
           return;
         }
 
+        try {
+          await assertAiUsageAvailable(input.organizationId);
+        } catch (entitlementError) {
+          const response = entitlementError instanceof Error
+            ? entitlementError.message
+            : "AI usage is not available for this subscription.";
+          await recordStep(runIds, input.organizationId, "policy", "blocked", response);
+          await write({ type: "text", text: response });
+          await settleRun("blocked", response, { summary: input.message, error: response });
+          await write({ type: "done", threadId: runIds.threadId });
+          controller.close();
+          return;
+        }
+
         await write({ type: "status", message: "Preparing tools" });
         let modelToolActivity = 0;
         const tools = await buildAgentToolSet({
@@ -446,6 +461,20 @@ export function createAgentChatStream(input: {
         }
 
         const finalMessage = assistantMessage.trim() || "I could not produce a response.";
+        await recordAiUsage({
+          organizationId: input.organizationId,
+          modelId: agentRuntimeConfig.openRouterModel,
+          prompt,
+          completion: finalMessage,
+          toolCallCount: modelToolActivity,
+        }).catch((error) => {
+          console.warn("workspace.agent.usage_record.failed", {
+            organizationId: input.organizationId,
+            threadId: runIds.threadId,
+            runId: runIds.runId,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        });
         await settleRun("completed", finalMessage, {
           summary: finalMessage.slice(0, 500),
           memoryFacts: memoryFactsFrom(input.message),

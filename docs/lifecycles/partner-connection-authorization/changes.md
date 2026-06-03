@@ -1,5 +1,24 @@
 # Changes
 
+## 2026-06-02 WorkOS Partner Authorization Cutover
+
+- Removed the remaining Workspace partner-resource Better Auth token verification path; legacy OAuth bearer tokens now return `410` and partners must use WorkOS partner API keys.
+- Tightened WorkOS partner API key issuance so the requested Partners client id must match the active Workspace connection grant before WorkOS creates a key.
+- Routed WorkOS partner API key writes through the partner-app resource gateway actor, preserving partner audit entries and outbound webhook enqueueing while keeping organization API keys separate.
+- Allowed inbound partner webhook endpoints to accept validated WorkOS partner app keys while continuing to reject Workspace organization API keys.
+- Updated MCP connection permission filtering to read current WorkOS-backed organization member permissions and built-in role defaults instead of Better Auth role adapter state.
+- Updated the architecture context, ADR, and partner authorization lifecycle docs to describe WorkOS key validation plus Convex grant enforcement as the current partner auth runtime.
+
+## 2026-06-02 WorkOS Authorization Migration Slice
+
+- Added WorkOS AuthKit route handlers for login, callback, and logout while keeping Better Auth available during migration.
+- Added a WorkOS session Module for Hono JWT verification against WorkOS JWKS and Convex membership projection resolution.
+- Added WorkOS partner API key issuance and validation as a separate projection from local organization API keys.
+- Kept Workspace Convex as the source of truth for organization partner grants, partner key tuples, grant status, and resource permission intersection.
+- Added WorkOS webhook ingestion with signature verification and idempotent Convex event projection.
+- Preserved Partners as the app catalog/review owner; WorkOS does not own partner app catalog or Workspace resource authorization.
+- Deepened the WorkOS webhook projection helpers so direct `organization.*` and `user.*` events resolve IDs from `data.id`, while membership create/update events only update an existing Convex projection and do not grant access directly.
+
 ## 2026-05-28 Partners App Catalog Projection Depth
 
 - Added a Partners app catalog projection Module for portal summaries, Admin Review records, and published catalog records.

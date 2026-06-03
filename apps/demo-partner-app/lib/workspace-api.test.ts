@@ -22,10 +22,9 @@ function jsonResponse(payload: unknown, status = 200) {
 }
 
 const session: TokenSession = {
-  access_token: "access",
-  token_type: "Bearer",
-  expires_in: 3600,
-  obtained_at: 1,
+  accessToken: "workos_partner_key",
+  tokenType: "WorkOSPartnerApiKey",
+  obtainedAt: 1,
   organizationId: "org_123",
 };
 
@@ -43,7 +42,7 @@ describe("Workspace Hono API wrappers", () => {
 
     await expect(loadQentrahClients(session, { limit: 10, search: "Nora", type: "Buyer", indexStart: 24, indexEnd: 27 }, fetcher)).resolves.toEqual({ data: [{ id: "client_1" }] });
     expect(String(fetcher.mock.calls[0][0])).toBe("http://localhost:3000/api/v1/partner/organizations/org_123/clients?limit=10&search=Nora&type=Buyer&indexStart=24&indexEnd=27");
-    expect(fetcher.mock.calls[0][1]?.headers).toMatchObject({ authorization: "Bearer access" });
+    expect(fetcher.mock.calls[0][1]?.headers).toMatchObject({ authorization: "Bearer workos_partner_key" });
   });
 
   it("builds read URLs for every resource section", async () => {

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import * as Sentry from "@sentry/nextjs";
-import { runWithAuthHeaders } from "@/server/auth/better-auth/server";
+import { runWithAuthHeaders } from "@/server/auth/convex-workos/server";
 import { v1Router } from "@/server/routing/v1/router";
 import { uploadThingHandler } from "@/server/uploadthing/router";
 import { handleMcpAgent, handleMcpMethodNotAllowed } from "@/server/protocols/mcp/transports/agent-link";

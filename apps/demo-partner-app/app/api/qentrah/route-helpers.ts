@@ -11,12 +11,12 @@ export function errorResponse(error: unknown) {
 export async function requireDemoSession() {
   const session = await readTokenSession();
   if (!session) return { response: NextResponse.json({ error: "missing_bearer" }, { status: 401 }) };
-  if (session.expires_in > 0 && session.obtained_at + session.expires_in * 1000 <= Date.now()) {
+  if (session.expiresAt && session.expiresAt <= Date.now()) {
     await clearTokenSession();
     return {
       response: NextResponse.json({
         error: "token_expired",
-        message: "The stored demo token expired. Authorize again to load Workspace data.",
+        message: "The stored WorkOS partner key expired. Authorize again to load Workspace data.",
       }, { status: 401 }),
     };
   }

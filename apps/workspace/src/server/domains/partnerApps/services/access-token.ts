@@ -1,17 +1,13 @@
 import type { Context } from "hono";
-import { verifyAccessToken } from "better-auth/oauth2";
-import { api } from "@convex/_generated/api";
-import { convexCalls } from "@/server/convex/http-client";
 import { partnerAppsRuntimeConfig } from "@/packages/config";
 import type {
   PartnerPermissionAction,
   PartnerPermissionResource,
 } from "@qentrah/partner-auth-core";
-import { parsePartnerAccessClaims } from "@qentrah/partner-auth-core";
 import { oauthDebug } from "./oauth-debug";
 
 export type PartnerAccessContext = {
-  type: "oauth";
+  type: "oauth" | "partnerApp";
   token: string;
   organizationId: string;
   partnersClientId: string;
@@ -67,92 +63,10 @@ export async function authorizePartnerResourceRequest(
     action,
     token,
   });
-  const jwt = await verifyAccessToken(token, {
-    jwksUrl: partnerJwksUrl(),
-    verifyOptions: {
-      issuer: partnerIssuerCandidates(),
-      audience: partnerAppsRuntimeConfig.oauthAudience,
-    },
-    scopes: [`${resource}:${action}`],
+  throw new Response(JSON.stringify({ error: "Partner OAuth bearer tokens have been removed. Use a WorkOS partner API key." }), {
+    status: 410,
+    headers: { "Content-Type": "application/json" },
   });
-
-  let claims;
-  try {
-    claims = parsePartnerAccessClaims(jwt as Record<string, unknown>);
-  } catch (error) {
-    throw new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Invalid partner token claims." }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  if (claims.organizationId !== organizationId) {
-    oauthDebug("workspace.partner_resource.verify.organization_mismatch", {
-      routeOrganizationId: organizationId,
-      tokenOrganizationId: claims.organizationId,
-      partnersClientId: claims.partnersClientId,
-    });
-    throw new Response(JSON.stringify({ error: "Token organization does not match this route." }), {
-      status: 403,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  const validation = await convexCalls.query<{
-    organizationId: string;
-    partnersClientId: string;
-    scopes: string[];
-    resource: PartnerPermissionResource;
-    action: PartnerPermissionAction;
-  }, {
-    ok: boolean;
-    reason?: string;
-    partnerAppId?: string;
-    connectionId?: string;
-    scopes?: string[];
-    appName?: string;
-  }>(api.partnerApps.apps.validateAccess, {
-    organizationId,
-    partnersClientId: claims.partnersClientId,
-    scopes: claims.partnerScopes,
-    resource,
-    action,
-  });
-
-  if (!validation.ok || !validation.partnerAppId || !validation.connectionId) {
-    oauthDebug("workspace.partner_resource.validate.denied", {
-      organizationId,
-      partnersClientId: claims.partnersClientId,
-      resource,
-      action,
-      reason: validation.reason,
-    });
-    throw new Response(JSON.stringify({ error: validation.reason ?? "Partner access denied." }), {
-      status: validation.reason === "scope_denied" ? 403 : 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  oauthDebug("workspace.partner_resource.validate.success", {
-    organizationId,
-    partnersClientId: claims.partnersClientId,
-    partnerAppId: validation.partnerAppId,
-    connectionId: validation.connectionId,
-    resource,
-    action,
-    scopeCount: (validation.scopes ?? claims.partnerScopes).length,
-  });
-
-  return {
-    type: "oauth",
-    token,
-    organizationId,
-    partnersClientId: claims.partnersClientId,
-    partnerAppId: validation.partnerAppId,
-    connectionId: validation.connectionId,
-    scopes: validation.scopes ?? claims.partnerScopes,
-    appName: validation.appName,
-  };
 }
 
 export const requirePartnerAccess = authorizePartnerResourceRequest;

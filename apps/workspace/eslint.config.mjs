@@ -10,6 +10,12 @@ const eslintConfig = defineConfig([
       "react/no-unescaped-entities": "off",
     },
   },
+  {
+    files: ["convex/**/*.test.ts"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
@@ -17,6 +23,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "convex/_generated/**",
+    "electron/**/*.cjs",
+    "scripts/*.cjs",
   ]),
 ]);
 

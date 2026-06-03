@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, { 
   useAnimatedStyle, 
@@ -19,6 +19,8 @@ interface TypewriterTextProps {
   deletingSpeed?: number;
   pauseTime?: number;
   color?: string;
+  active?: boolean;
+  hapticsEnabled?: boolean;
 }
 
 export function TypewriterText({
@@ -27,6 +29,8 @@ export function TypewriterText({
   deletingSpeed = 50,
   pauseTime = 1500,
   color,
+  active = true,
+  hapticsEnabled = false,
 }: TypewriterTextProps) {
   const { colors } = useTheme();
   const { isRTL } = useAppLocalization();
@@ -35,9 +39,14 @@ export function TypewriterText({
   const [isDeleting, setIsDeleting] = useState(false);
   const cursorOpacity = useSharedValue(1);
   const phrasesKey = phrases.join("\n");
+  const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Blinking cursor animation
   useEffect(() => {
+    if (!active) {
+      cursorOpacity.value = withTiming(0, { duration: 160 });
+      return;
+    }
     cursorOpacity.value = withRepeat(
       withSequence(
         withTiming(0, { duration: 400 }),
@@ -46,50 +55,53 @@ export function TypewriterText({
       -1,
       true
     );
-  }, []);
+  }, [active, cursorOpacity]);
 
-  const handleTyping = useCallback(async () => {
-    const currentPhrase = phrases[phraseIndex];
-    
-    if (!isDeleting) {
-      // Typing
-      if (displayText.length < currentPhrase.length) {
+  useEffect(() => {
+    if (!active || phrases.length === 0) return undefined;
+
+    const currentPhrase = phrases[phraseIndex] ?? "";
+    const timer = setTimeout(() => {
+      if (!isDeleting && displayText.length < currentPhrase.length) {
         const nextChar = currentPhrase.charAt(displayText.length);
-        setDisplayText(prev => prev + nextChar);
-        
-        // Haptic feedback for each character
-        if (nextChar !== " ") {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        setDisplayText((previous) => previous + nextChar);
+        if (hapticsEnabled && nextChar !== " ") {
+          void Haptics.selectionAsync();
         }
-      } else {
-        // Full phrase typed, pause before deleting
-        setTimeout(() => setIsDeleting(true), pauseTime);
+        return;
       }
-    } else {
-      // Deleting
+
+      if (!isDeleting) {
+        pauseTimerRef.current = setTimeout(() => setIsDeleting(true), pauseTime);
+        return;
+      }
+
       if (displayText.length > 0) {
-        setDisplayText(prev => prev.slice(0, -1));
-        Haptics.selectionAsync(); // Subtle selection feedback for deletions
-      } else {
-        // Finished deleting, move to next phrase
-        setIsDeleting(false);
-        setPhraseIndex((prev) => (prev + 1) % phrases.length);
+        setDisplayText((previous) => previous.slice(0, -1));
+        return;
       }
-    }
-  }, [displayText, isDeleting, phraseIndex, phrases, pauseTime]);
 
-  useEffect(() => {
-    const timer = setTimeout(
-      handleTyping,
-      isDeleting ? deletingSpeed : typingSpeed
-    );
+      setIsDeleting(false);
+      setPhraseIndex((previous) => (previous + 1) % phrases.length);
+    }, isDeleting ? deletingSpeed : typingSpeed);
+
     return () => clearTimeout(timer);
-  }, [displayText, isDeleting, handleTyping]);
+  }, [active, deletingSpeed, displayText, hapticsEnabled, isDeleting, pauseTime, phraseIndex, phrases, typingSpeed]);
 
   useEffect(() => {
+    if (active || !pauseTimerRef.current) return;
+    clearTimeout(pauseTimerRef.current);
+    pauseTimerRef.current = null;
+  }, [active]);
+
+  useEffect(() => {
+    if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current);
     setDisplayText("");
     setPhraseIndex(0);
     setIsDeleting(false);
+    return () => {
+      if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current);
+    };
   }, [phrasesKey]);
 
   const cursorStyle = useAnimatedStyle(() => ({
@@ -128,15 +140,17 @@ const styles = StyleSheet.create({
     minHeight: 54,
     justifyContent: "center",
     alignItems: "center",
-    maxWidth: 310,
+    width: "100%",
   },
   textRow: {
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "center",
-    maxWidth: 310,
+    maxWidth: 320,
+    width: "100%",
   },
   text: {
+    flexShrink: 1,
     fontSize: 17,
     fontWeight: "600",
     letterSpacing: 0,

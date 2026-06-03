@@ -318,7 +318,7 @@ h2 {
   line-height: 1.55;
 }
 
-.oauth-endpoints {
+.auth-endpoints {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
@@ -789,7 +789,7 @@ pre {
   .hero-grid,
   .scope-band,
   .flow-track,
-  .oauth-endpoints,
+  .auth-endpoints,
   .two,
   .three {
     grid-template-columns: 1fr;

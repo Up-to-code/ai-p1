@@ -26,7 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Link, useRouter } from "@/i18n/routing";
 import { useAccountContext } from "@/domains/auth";
-import { getOrganizationCapabilities } from "@/domains/organization/api/better-auth-organization";
+import { getOrganizationCapabilities } from "@/domains/organization/api/workos-organization";
 import type { Project, ProjectStatus } from "../store/projects.types";
 import { projectOfferingTypes, projectSchema, type ProjectFormValues } from "../validation/project.schema";
 import {

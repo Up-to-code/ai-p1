@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This lifecycle covers partner OAuth authorization between Partners, Workspace, Better Auth, and organization-scoped resource APIs. It exists so partner app creation/review, OAuth runtime sync, user consent, organization grants, token claims, and resource access remain aligned.
+This lifecycle covers partner authorization between Partners, Workspace, WorkOS, Convex grants, and organization-scoped resource APIs. It exists so partner app creation/review, Workspace authorization, WorkOS partner API key issuance, Convex grant projection, and resource access remain aligned.
 
 ## Owner
 
@@ -14,13 +14,13 @@ This lifecycle covers partner OAuth authorization between Partners, Workspace, B
 ## Entrypoints
 
 - Partner app creation/review/catalog: Partners app and Partners Admin/platform APIs.
-- Better Auth OAuth client runtime sync: Workspace admin runtime-sync endpoint.
 - Partner catalog verification: Partners platform API.
-- OAuth provider runtime: Workspace Better Auth OAuth provider.
-- Consent UI: Workspace `/oauth/consent`.
+- Workspace user/org identity: WorkOS AuthKit session and Convex membership projection.
+- Partner connection UI: Workspace integrations routes and organization partner connection endpoints.
 - Organization grant persistence: Workspace Convex `organizationPartnerConnections`.
-- Resource enforcement: Workspace partner API bearer-token guard.
+- WorkOS partner API key projection: Workspace Convex `workosPartnerApiKeys`.
+- Resource enforcement: Workspace partner API bearer-token guard that validates WorkOS keys plus Convex grants.
 
 ## Current Status
 
-The intended state is source-of-truth split: Partners owns app metadata and review, Better Auth owns OAuth 2.1 protocol mechanics, and Workspace Convex owns organization-approved grants.
+The intended state is source-of-truth split: Partners owns app metadata and review, WorkOS owns Workspace identity and partner API key validation, and Workspace Convex owns organization-approved grants, key projection, resource authorization, and audit history.

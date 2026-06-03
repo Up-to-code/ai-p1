@@ -71,7 +71,7 @@ Demo redirect URI:
 https://demo.<root-domain>/api/auth/qentrah/callback
 ```
 
-Admin reviews partner apps through Partners using `PARTNERS_API_BASE_URL` and `PARTNERS_ADMIN_SERVICE_TOKEN`. Partners publishes only the minimal OAuth runtime projection to Workspace using `QENTRAH_WORKSPACE_API_URL` and `PARTNERS_PLATFORM_SERVICE_TOKEN`. Workspace reads approved catalog data from Partners and stores only organization authorization state. The demo app starts OAuth against Workspace with `QENTRAH_WORKSPACE_API_URL`, `QENTRAH_CLIENT_ID`, and `PARTNER_APP_URL`.
+Admin reviews partner apps through Partners using `PARTNERS_API_BASE_URL` and `PARTNERS_ADMIN_SERVICE_TOKEN`. Workspace reads approved catalog data from Partners using `PARTNERS_PLATFORM_SERVICE_TOKEN`, stores organization authorization grants, and issues WorkOS partner API keys only for active grants. The demo app starts partner authorization against Workspace with `QENTRAH_WORKSPACE_API_URL`, `QENTRAH_CLIENT_ID`, and `PARTNER_APP_URL`, then calls Workspace partner resources with the issued WorkOS key.
 
 ## Boundaries
 

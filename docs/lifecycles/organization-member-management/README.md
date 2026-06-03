@@ -9,10 +9,10 @@ Keep Workspace organization membership actions scoped to the active organization
 ## Entrypoints
 - Workspace organization settings members screen.
 - Hono organization action routes under `/api/v1/organizations/:organizationId`.
-- Better Auth organization membership endpoints.
+- WorkOS organization membership and invitation APIs.
 
 ## Actor/System Flow
-Organization owners and permitted work roles manage invitations, member roles, and member removal. Better Auth owns membership storage and role permission checks. Workspace service code adds Qentrah-specific safety checks and records audit events.
+Organization owners and permitted work roles manage invitations, member roles, and member removal. WorkOS owns membership, invitation, and custom role storage. Workspace Convex stores the local authorization projection, Qentrah-specific safety checks, and audit events.
 
 ## Current Status
 Active. Member removal should require organization `member:delete` permission and removal policy checks, not `PLATFORM_ADMIN_EMAILS`.

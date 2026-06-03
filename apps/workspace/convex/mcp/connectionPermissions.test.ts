@@ -4,7 +4,6 @@ import {
   mcpPermissionRecord,
   mcpRoleCanUseAction,
   mcpRoleList,
-  parseMcpCustomPermission,
 } from "./connectionPermissions";
 
 describe("MCP connection permissions", () => {
@@ -22,14 +21,14 @@ describe("MCP connection permissions", () => {
     expect(hasMcpPermission(permissions, "client", "delete")).toBe(false);
   });
 
-  it("parses comma-separated Better Auth role strings", () => {
+  it("parses comma-separated WorkOS role strings", () => {
     expect(mcpRoleList("owner, custom , ,member")).toEqual(["owner", "custom", "member"]);
   });
 
   it("preserves default role permissions before custom role permissions", () => {
     const custom = new Map([
-      ["custom", parseMcpCustomPermission(JSON.stringify({ property: ["read"] }))],
-      ["member", parseMcpCustomPermission(JSON.stringify({ property: ["delete"] }))],
+      ["custom", { property: ["read" as const] }],
+      ["member", { property: ["delete" as const] }],
     ]);
 
     expect(mcpRoleCanUseAction("owner", custom, "property", "delete")).toBe(true);
@@ -37,7 +36,4 @@ describe("MCP connection permissions", () => {
     expect(mcpRoleCanUseAction("member", custom, "property", "delete")).toBe(false);
   });
 
-  it("treats malformed custom permission JSON as empty", () => {
-    expect(parseMcpCustomPermission("{")).toEqual({});
-  });
 });

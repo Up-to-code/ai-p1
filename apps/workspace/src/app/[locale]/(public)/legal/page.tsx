@@ -1,9 +1,6 @@
-"use client";
-
-import { useLocale } from "next-intl";
-
 import { LegalArticle, LegalBlock } from "@/components/landing/public-page-shell";
 import { brandDomainUrl, brandIdentity, brandProductName } from "@qentrah/brand-identity";
+import { publicPageMetadata } from "@/lib/seo/public-pages";
 
 const copy = {
   en: {
@@ -54,8 +51,17 @@ function getCompanyDescription({
   return isAr && "companyDescription" in c ? c.companyDescription : `${workspaceName} is operated by ${legalName}.`;
 }
 
-export default function LegalPage() {
-  const locale = useLocale();
+type PageProps = {
+  params: Promise<{ locale: string }>;
+};
+
+export async function generateMetadata({ params }: PageProps) {
+  const { locale } = await params;
+  return publicPageMetadata(locale, "legal");
+}
+
+export default async function LegalPage({ params }: PageProps) {
+  const { locale } = await params;
   const isAr = locale === "ar";
   const c = isAr ? copy.ar : copy.en;
   const workspaceName = brandProductName("workspace", isAr ? "ar" : "en");

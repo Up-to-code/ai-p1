@@ -1,4 +1,4 @@
-import { brandEnvName, brandLabel, brandProductName, brandRoutePath, readBrandEnv } from "@qentrah/brand-identity";
+import { brandEnvName, brandLabel, brandRoutePath, readBrandEnv } from "@qentrah/brand-identity";
 
 import { localDemoRegistration } from "./local-demo-registration";
 
@@ -53,8 +53,8 @@ export function optionalBrandEnv(key: string, env: Record<string, string | undef
 
 export const demoBrandConfig = {
   brandName: brandLabel("en"),
-  appName: brandProductName("demo", "en"),
-  oauthStartPath: brandRoutePath("oauthStart"),
-  oauthCallbackPath: brandRoutePath("oauthCallback"),
-  oauthLogoutPath: brandRoutePath("oauthLogout"),
+  appName: "Qentrah Partner Key Demo",
+  authStartPath: brandRoutePath("oauthStart"),
+  authCallbackPath: brandRoutePath("oauthCallback"),
+  authLogoutPath: brandRoutePath("oauthLogout"),
 };

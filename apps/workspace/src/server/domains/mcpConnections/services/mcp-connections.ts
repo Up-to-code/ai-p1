@@ -1,6 +1,6 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/better-auth/server";
+import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/convex-workos/server";
 import type { CreateMcpConnectionPayload, UpdateMcpConnectionPayload } from "../validation/mcp-connection.schema";
 
 export function listMcpConnections(organizationId: string) {

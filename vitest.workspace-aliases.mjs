@@ -22,6 +22,7 @@ export const workspaceAliases = [
   { find: "@qentrah/platform-core/locale", replacement: fromRoot("./packages/platform-core/src/locale.ts") },
   { find: "@qentrah/platform-core/session", replacement: fromRoot("./packages/platform-core/src/session.ts") },
   { find: "@qentrah/platform-core", replacement: fromRoot("./packages/platform-core/src/index.ts") },
+  { find: "@qentrah/domain-contracts/subscription-pricing", replacement: fromRoot("./packages/domain-contracts/src/subscriptionPricing.ts") },
   { find: /^@qentrah\/domain-contracts\/(.+)$/, replacement: fromRoot("./packages/domain-contracts/src/$1.ts") },
   { find: "@qentrah/domain-contracts", replacement: fromRoot("./packages/domain-contracts/src/index.ts") },
   { find: /^@qentrah\/web-foundation\/(.+)$/, replacement: fromRoot("./packages/web-foundation/src/$1.ts") },

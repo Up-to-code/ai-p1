@@ -1,11 +1,13 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/better-auth/server";
+import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/convex-workos/server";
 import type {
   CreatePartnerWebhookEndpointPayload,
   AuthorizePartnerConnectionPayload,
+  CreateWorkOSPartnerApiKeyPayload,
   UpdatePartnerConnectionPayload,
 } from "../validation/partner-app.schema";
+import { getWorkOSClient } from "@/server/auth/workos/client";
 import { listPublishedPartnerApps, verifyPartnerAuthorization } from "./partners-platform";
 import { oauthDebug } from "./oauth-debug";
 
@@ -201,4 +203,84 @@ export async function createPartnerWebhookEndpoint(
     partnerAppId: input.partnerAppId,
   });
   return endpoint;
+}
+
+function keyLast4(value: string) {
+  return value.slice(-4) || "----";
+}
+
+export async function createWorkOSPartnerApiKey(
+  organizationId: string,
+  input: CreateWorkOSPartnerApiKeyPayload,
+) {
+  oauthDebug("workspace.workos_partner_api_key.create.start", {
+    organizationId,
+    connectionId: input.connectionId,
+    partnerId: input.partnerId,
+    partnerClientId: input.partnerClientId,
+    permissionCount: input.permissions.length,
+  });
+
+  const connections = await fetchAuthQuery(api.partnerApps.apps.listConnections, { organizationId }) as Array<{
+    id: string;
+    partnersAppId: string;
+    partnersClientId: string;
+    scopes: string[];
+    status: string;
+    effectiveStatus?: string;
+  }>;
+  const connection = connections.find((item) => item.id === input.connectionId);
+  if (!connection || connection.effectiveStatus !== "active") {
+    throw new Error("Active partner connection is required before issuing a WorkOS API key.");
+  }
+  if (input.partnerClientId !== connection.partnersClientId) {
+    throw new Error("Partner client id does not match the authorized connection.");
+  }
+
+  for (const permission of input.permissions) {
+    if (!connection.scopes.includes(permission)) {
+      throw new Error(`Partner connection has not approved ${permission}.`);
+    }
+  }
+
+  const organization = await fetchAuthQuery(api.workosAuth.resolveOrganizationForPartnerKey, {
+    organizationId,
+  }).catch(() => null) as { workosOrganizationId?: string } | null;
+  if (!organization?.workosOrganizationId) {
+    throw new Error("Workspace is not linked to a WorkOS organization.");
+  }
+
+  const apiKey = await getWorkOSClient().apiKeys.createOrganizationApiKey({
+    organizationId: organization.workosOrganizationId,
+    name: input.name,
+    permissions: input.permissions,
+  });
+
+  const recorded = await fetchAuthMutation(api.workosPartnerApiKeys.recordIssued, {
+    organizationId,
+    connectionId: input.connectionId as Id<"organizationPartnerConnections">,
+    partnerId: input.partnerId,
+    partnerClientId: connection.partnersClientId,
+    workosApiKeyId: apiKey.id,
+    workosOwnerOrganizationId: apiKey.owner.id,
+    keyLast4: keyLast4(apiKey.value),
+    name: input.name,
+    permissions: input.permissions,
+    expiresAt: input.expiresAt,
+  });
+
+  oauthDebug("workspace.workos_partner_api_key.create.success", {
+    organizationId,
+    connectionId: input.connectionId,
+    partnerId: input.partnerId,
+    workosApiKeyId: apiKey.id,
+  });
+
+  return {
+    id: recorded.id,
+    workosApiKeyId: apiKey.id,
+    key: apiKey.value,
+    keyLast4: keyLast4(apiKey.value),
+    permissions: apiKey.permissions,
+  };
 }

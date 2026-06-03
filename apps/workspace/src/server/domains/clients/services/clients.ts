@@ -1,5 +1,5 @@
 import { api } from "@convex/_generated/api";
-import { fetchAuthMutation } from "@/server/auth/better-auth/server";
+import { fetchAuthMutation } from "@/server/auth/convex-workos/server";
 import type { ClientPayload, ClientUnitLinkPayload } from "../validation/client.schema";
 
 function toConvexInput(input: ClientPayload) {

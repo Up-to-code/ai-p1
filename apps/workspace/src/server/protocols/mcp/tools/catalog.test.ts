@@ -7,10 +7,14 @@ import { createMcpConnectionSchema } from "@/server/domains/mcpConnections/valid
 describe("MCP tool catalog", () => {
   it("filters tools by selected permissions", () => {
     const tools = allowedMcpTools([
+      { resource: "member", actions: ["read"] },
+      { resource: "integration", actions: ["read"] },
       { resource: "client", actions: ["read", "create"] },
       { resource: "calendar", actions: ["read"] },
     ]);
 
+    expect(tools.map((tool) => tool.name)).toContain("members_list");
+    expect(tools.map((tool) => tool.name)).toContain("integrations_list");
     expect(tools.map((tool) => tool.name)).toContain("clients_list");
     expect(tools.map((tool) => tool.name)).toContain("clients_create");
     expect(tools.map((tool) => tool.name)).toContain("calendar_list_today");
@@ -31,6 +35,8 @@ describe("MCP tool catalog", () => {
       name: "Client operator",
       instructions: "Help with follow-ups.",
       permissions: [
+        { resource: "member", actions: ["read"] },
+        { resource: "integration", actions: ["read"] },
         { resource: "client", actions: ["read", "create"] },
         { resource: "task", actions: ["read", "update"] },
       ],
@@ -96,5 +102,8 @@ describe("MCP tool catalog", () => {
         "media_attach_url",
       ]),
     );
+    expect(mcpReadToolNames.has("members_list")).toBe(true);
+    expect(mcpReadToolNames.has("integrations_list")).toBe(true);
+    expect(mcpToolCatalog.map((tool) => tool.name)).not.toContain("members_remove");
   });
 });

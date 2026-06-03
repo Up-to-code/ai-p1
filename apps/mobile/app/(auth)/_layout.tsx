@@ -37,6 +37,8 @@ export default function AuthLayout() {
       screenOptions={screenOptions}
     >
       <Stack.Screen name="index" />
+      <Stack.Screen name="login" />
+      <Stack.Screen name="register" />
       <Stack.Screen name="choose-workspace" />
       <Stack.Screen name="accept-invite" />
     </Stack>

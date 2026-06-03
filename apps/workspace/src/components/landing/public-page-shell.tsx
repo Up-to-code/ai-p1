@@ -1,5 +1,3 @@
-"use client";
-
 import type { ReactNode } from "react";
 import Image from "next/image";
 import type { LucideIcon } from "lucide-react";
@@ -178,18 +176,36 @@ export function MetricCard({
   );
 }
 
-export function FeatureGrid({ items }: { items: { title: string; description: string; icon: LucideIcon }[] }) {
+export function FeatureGrid({ items }: { items: { title: string; description: string; icon: LucideIcon; href?: string }[] }) {
   return (
     <div className="grid gap-4 md:grid-cols-3">
-      {items.map(({ title, description, icon: Icon }) => (
-        <div key={title} className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+      {items.map(({ title, description, icon: Icon, href }) => {
+        const content = (
+          <>
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-950">
             <Icon className="h-5 w-5" />
           </div>
           <h3 className="mt-6 text-xl font-bold tracking-tight text-zinc-900 dark:text-white">{title}</h3>
           <p className="mt-3 text-sm font-medium leading-7 text-zinc-600 dark:text-zinc-400 rtl:leading-8">{description}</p>
-        </div>
-      ))}
+          </>
+        );
+
+        const baseClassName = "rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.04]";
+        const linkClassName = cn(
+          baseClassName,
+          "group transition-colors hover:border-blue-300 hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20 dark:hover:border-blue-400/40 dark:hover:bg-white/[0.06]",
+        );
+
+        return href ? (
+          <Link key={title} href={href} className={linkClassName}>
+            {content}
+          </Link>
+        ) : (
+          <div key={title} className={baseClassName}>
+            {content}
+          </div>
+        );
+      })}
     </div>
   );
 }

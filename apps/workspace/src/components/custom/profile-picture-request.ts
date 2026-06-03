@@ -1,7 +1,3 @@
-"use client";
-
-import { authClient } from "@/lib/auth-client";
-
 export type SaveProfileAvatarInput = {
   avatarUrl: string;
   avatarKey?: string;
@@ -25,18 +21,8 @@ export async function saveProfileAvatar(
   saveError: string,
 ) {
   await requestProfileAvatar({ avatarUrl, avatarKey }, saveError);
-
-  const { error } = await authClient.updateUser({ image: avatarUrl });
-  if (error) {
-    throw new Error(error.message ?? saveError);
-  }
 }
 
 export async function removeProfileAvatar(saveError: string) {
   await requestProfileAvatar({}, saveError);
-
-  const { error } = await authClient.updateUser({ image: null });
-  if (error) {
-    throw new Error(error.message ?? saveError);
-  }
 }

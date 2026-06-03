@@ -40,6 +40,16 @@ const primaryLinks = [
     url: `${workspaceUrl}/en/docs`,
   },
   {
+    name: "Blog",
+    description: "Read operating notes for real estate teams using Qentrah Workspace.",
+    url: `${workspaceUrl}/en/blog`,
+  },
+  {
+    name: "About",
+    description: "Learn how Qentrah builds real estate workspace software for operating teams.",
+    url: `${workspaceUrl}/en/about`,
+  },
+  {
     name: "Contact",
     description: "Contact Qentrah to map your real estate workspace workflow.",
     url: `${workspaceUrl}/en/contact`,

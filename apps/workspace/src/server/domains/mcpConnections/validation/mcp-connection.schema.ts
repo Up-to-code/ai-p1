@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const mcpPermissionSchema = z.object({
-  resource: z.enum(["organization", "client", "property", "project", "calendar", "task", "media"]),
+  resource: z.enum(["organization", "member", "client", "property", "project", "calendar", "task", "integration", "media"]),
   actions: z.array(z.enum(["read", "create", "update", "delete"])).min(1),
 });
 

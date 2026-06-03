@@ -1,5 +1,5 @@
 import { api } from "@convex/_generated/api";
-import { fetchAuthMutation } from "@/server/auth/better-auth/server";
+import { fetchAuthMutation } from "@/server/auth/convex-workos/server";
 import { floatingDateTimeToTimestamp, type CalendarEventPayload } from "../validation/calendar.schema";
 
 function toConvexInput(input: CalendarEventPayload) {

@@ -1,19 +1,24 @@
 import { StyleSheet, TextInput, View, type TextInputProps } from "react-native";
 import { type LucideIcon } from "lucide-react-native";
+import { type ReactNode } from "react";
 
 import { useAppLocalization } from "@/foundation/localization";
 import { Text } from "@/foundation/primitives/Text";
 import { theme } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
+import { useSystemUI } from "@/foundation/system/useSystemUI";
 
 type AuthFieldProps = TextInputProps & {
   label: string;
   icon?: LucideIcon;
+  trailing?: ReactNode;
 };
 
-export function AuthField({ label, icon: Icon, style, ...props }: AuthFieldProps) {
+export function AuthField({ label, icon: Icon, trailing, style, ...props }: AuthFieldProps) {
   const { colors } = useTheme();
   const { isRTL } = useAppLocalization();
+  const { sizes } = useSystemUI();
+  const authSizes = sizes.auth;
 
   return (
     <View style={styles.container}>
@@ -27,6 +32,8 @@ export function AuthField({ label, icon: Icon, style, ...props }: AuthFieldProps
           {
             backgroundColor: colors.background,
             borderColor: colors.divider,
+            borderRadius: authSizes.fieldRadius,
+            minHeight: authSizes.fieldHeight,
           },
         ]}
       >
@@ -39,6 +46,7 @@ export function AuthField({ label, icon: Icon, style, ...props }: AuthFieldProps
           textAlign={isRTL ? "right" : "left"}
           {...props}
         />
+        {trailing ? <View style={styles.trailing}>{trailing}</View> : null}
       </View>
     </View>
   );
@@ -50,6 +58,7 @@ const styles = StyleSheet.create({
   },
   field: {
     minHeight: 56,
+    width: "100%",
     borderWidth: 1,
     borderRadius: theme.radii.md,
     paddingHorizontal: theme.spacing.lg,
@@ -59,6 +68,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+    minWidth: 0,
     fontSize: 16,
     lineHeight: 22,
     fontFamily: "Manrope_500Medium",
@@ -69,5 +79,10 @@ const styles = StyleSheet.create({
   },
   inputRtl: {
     writingDirection: "rtl",
+  },
+  trailing: {
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
   },
 });

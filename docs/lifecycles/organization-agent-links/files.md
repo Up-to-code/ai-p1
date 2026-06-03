@@ -1,7 +1,7 @@
 # Files
 
 - `apps/workspace/src/domains/organization/components/organization-screens.tsx`: Agent Links panel, one-time link modal, capability gating, and list refresh behavior.
-- `apps/workspace/src/domains/organization/api/better-auth-organization.ts`: browser API wrapper for MCP connection routes.
+- `apps/workspace/src/domains/organization/api/workos-organization.ts`: browser API wrapper for organization-scoped MCP connection routes.
 - `apps/workspace/src/server/domains/mcpConnections/handlers/mcp-connections.ts`: Hono request/response boundary and generated agent-link URL.
 - `apps/workspace/src/server/domains/mcpConnections/services/mcp-connections.ts`: server bridge to Convex MCP connection functions.
 - `apps/workspace/src/server/domains/mcpConnections/validation/mcp-connection.schema.ts`: request validation for create/update payloads.
@@ -20,5 +20,6 @@
 - `apps/workspace/convex/mcp/toolInputs.ts`: MCP tool input Module for input parsing, pagination bounds, resource payload construction, and linked-record assertions.
 - `apps/workspace/convex/mcp/readSurface.ts`: MCP read surface Module for public Workspace record filtering, search projection, paged result presentation, public media ordering, and calendar event ordering.
 - `apps/workspace/convex/workspace/businessData.ts`: shared Workspace business data helpers used by MCP tool execution for record presentation, active-record checks, references, and MCP audit actor fields.
-- `apps/workspace/convex/organizations/profile/access.ts`: Better Auth organization permission checker used by Convex mutations.
+- `apps/workspace/convex/organizations/profile/access.ts`: WorkOS membership projection and Qentrah organization permission checker used by Convex mutations.
 - `apps/workspace/convex/platform/access.ts`: platform operator allowlist helper; should not gate organization agent-link management.
+- Future WorkOS MCP Auth endpoint: new MCP transport that validates WorkOS/AuthKit OAuth tokens and maps OAuth scopes to Qentrah MCP permissions before reusing the existing tool execution path.

@@ -7,6 +7,13 @@ export default defineConfig({
     environment: "node",
     globals: true,
     include: ["src/**/*.test.ts", "convex/**/*.test.ts"],
+    env: {
+      CONVEX_URL: "https://test.convex.cloud",
+      NEXT_PUBLIC_CONVEX_URL: "https://test.convex.cloud",
+      WORKOS_API_KEY: "sk_test_vitest",
+      WORKOS_CLIENT_ID: "client_test_vitest",
+      WORKOS_WEBHOOK_SECRET: "whsec_test_vitest",
+    },
   },
   resolve: {
     alias: [

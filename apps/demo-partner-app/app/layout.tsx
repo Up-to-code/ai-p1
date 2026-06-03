@@ -6,7 +6,7 @@ const brand = brandLabel("en");
 
 export const metadata: Metadata = {
   title: `${brand} Partner Auth Demo`,
-  description: `Standalone partner OAuth demo for ${brand} organization authorization.`,
+  description: `Standalone WorkOS partner key demo for ${brand} organization authorization.`,
   icons: {
     icon: "/favicon.svg",
   },

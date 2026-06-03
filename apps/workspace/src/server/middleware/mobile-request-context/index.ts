@@ -10,6 +10,12 @@ export type MobileRequestContext = {
   installationIdHash?: string;
 };
 
+type MobileContext = Context<{
+  Variables: {
+    mobileRequestContext?: MobileRequestContext;
+  };
+}>;
+
 function firstHeaderValue(value: string | undefined) {
   return value?.split(",")[0]?.trim() || undefined;
 }
@@ -41,15 +47,15 @@ export function resolveMobileRequestContext(c: Context): MobileRequestContext {
   };
 }
 
-export function setMobileRequestContext(c: Context, context: MobileRequestContext) {
-  (c as any).set("mobileRequestContext", context);
+export function setMobileRequestContext(c: MobileContext, context: MobileRequestContext) {
+  c.set("mobileRequestContext", context);
 }
 
-export function getMobileRequestContext(c: Context): MobileRequestContext | undefined {
-  return (c as any).get("mobileRequestContext") as MobileRequestContext | undefined;
+export function getMobileRequestContext(c: MobileContext): MobileRequestContext | undefined {
+  return c.get("mobileRequestContext");
 }
 
-export async function mobileRequestContextMiddleware(c: Context, next: Next) {
+export async function mobileRequestContextMiddleware(c: MobileContext, next: Next) {
   const context = resolveMobileRequestContext(c);
   setMobileRequestContext(c, context);
   c.header("x-request-id", context.requestId);

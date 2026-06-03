@@ -1,13 +1,26 @@
-import { createAccessControl } from "better-auth/plugins/access";
-import {
-  adminAc,
-  defaultStatements,
-  memberAc,
-  ownerAc,
-} from "better-auth/plugins/organization/access";
+type PermissionStatements = Record<string, readonly string[]>;
+
+function newRole(statements: PermissionStatements) {
+  return {
+    statements,
+    authorize(request: Partial<Record<string, readonly string[]>>) {
+      const success = Object.entries(request).every(([resource, actions]) => {
+        const allowed = statements[resource] ?? [];
+        return (actions ?? []).every((action) => allowed.includes(action));
+      });
+      return { success };
+    },
+  };
+}
+
+function createAccessControl(statements: PermissionStatements) {
+  return {
+    statements,
+    newRole,
+  };
+}
 
 export const organizationPermissionStatement = {
-  ...defaultStatements,
   organization: ["read", "update", "delete"],
   team: ["create", "read", "update", "delete"],
   member: ["create", "read", "update", "delete"],
@@ -28,9 +41,8 @@ export const organizationAccessControl = createAccessControl(
   organizationPermissionStatement,
 );
 
-// Shared roles keep Better Auth, Hono, and Convex aligned around the organization boundary.
+// Shared roles keep WorkOS, Hono, and Convex aligned around the organization boundary.
 export const organizationOwnerRole = organizationAccessControl.newRole({
-  ...ownerAc.statements,
   organization: ["read", "update", "delete"],
   team: ["create", "read", "update", "delete"],
   member: ["create", "read", "update", "delete"],
@@ -48,7 +60,6 @@ export const organizationOwnerRole = organizationAccessControl.newRole({
 });
 
 export const organizationAdminRole = organizationAccessControl.newRole({
-  ...adminAc.statements,
   organization: ["read"],
   team: ["read"],
   member: ["read"],
@@ -66,7 +77,6 @@ export const organizationAdminRole = organizationAccessControl.newRole({
 });
 
 export const organizationMemberRole = organizationAccessControl.newRole({
-  ...memberAc.statements,
   organization: ["read"],
   team: ["read"],
   member: ["read"],

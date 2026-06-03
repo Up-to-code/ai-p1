@@ -27,8 +27,8 @@ The dev script starts Next.js and Convex together. Use
 
 - Authenticated Workspace product pages.
 - Public localized pages and legal pages.
-- Better Auth integration and organization-aware session handling.
-- OAuth authorization code + PKCE provider for partner apps.
+- WorkOS AuthKit integration and organization-aware session handling.
+- WorkOS partner API key authorization for partner apps.
 - Partner resource APIs under `/api/v1/partner`.
 - Internal service APIs used by Partners and Admin Review.
 - Upload, map, AI runtime, observability, permissions, and domain services.
@@ -40,11 +40,9 @@ The dev script starts Next.js and Convex together. Use
 | `src/app/[locale]/(app)` | Authenticated product pages: dashboard, activity, calendar, clients, integrations, organization, projects, properties, team |
 | `src/app/[locale]/(auth)` | Sign-in, sign-up, invite acceptance, organization selection |
 | `src/app/[locale]/(public)` | Public website and legal pages inside Workspace |
-| `src/app/oauth/authorize` | OAuth authorization endpoint |
-| `src/app/oauth/token` | OAuth token endpoint |
-| `src/app/oauth/consent` | Consent page for partner access |
-| `src/app/oauth/select-organization` | Organization selection for OAuth |
-| `src/app/api/auth/[...all]` | Better Auth route handler |
+| `src/app/sign-in` | WorkOS AuthKit sign-in redirect route |
+| `src/app/callback` | WorkOS AuthKit callback route |
+| `src/app/api/auth/workos/*` | WorkOS AuthKit session, login, logout, organization bootstrap, and organization list routes |
 | `src/app/api/[[...route]]` | Hono/API route entrypoint |
 
 ## Important Folders
@@ -74,7 +72,10 @@ Common Workspace variables include:
 
 - `NEXT_PUBLIC_SITE_URL`
 - `SITE_URL`
-- `BETTER_AUTH_SECRET`
+- `WORKOS_AUTH_ENABLED`
+- `WORKOS_API_KEY`
+- `WORKOS_CLIENT_ID`
+- `WORKOS_COOKIE_PASSWORD`
 - `NEXT_PUBLIC_CONVEX_URL`
 - `CONVEX_URL`
 - `NEXT_PUBLIC_CONVEX_SITE_URL`

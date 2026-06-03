@@ -32,7 +32,16 @@ describe("deriveWorkspaceStatus", () => {
 
 describe("getWorkspaceAuthRedirect", () => {
   it("sends signed-out users to localized sign-in", () => {
-    expect(getWorkspaceAuthRedirect({ isSignedIn: false, workspaceStatus: "ready", locale: "ar" })).toBe("/ar/sign-in");
+    expect(getWorkspaceAuthRedirect({ isSignedIn: false, workspaceStatus: "ready", locale: "ar" })).toBe("/sign-in");
+  });
+
+  it("preserves the requested app route when sending signed-out users to WorkOS", () => {
+    expect(getWorkspaceAuthRedirect({
+      isSignedIn: false,
+      workspaceStatus: "ready",
+      locale: "en",
+      callbackURL: "/en/clients/client_1?tab=activity",
+    })).toBe("/sign-in?returnTo=%2Fen%2Fclients%2Fclient_1%3Ftab%3Dactivity");
   });
 
   it("does not redirect during the organization auth handoff", () => {

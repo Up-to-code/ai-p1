@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-02 WorkOS Organization Adapter Migration
+
+- Replaced the Better Auth organization HTTP proxy with the WorkOS organization Adapter for members, invitations, custom roles, and role permission slugs.
+- Kept the Hono and browser organization Interfaces stable while moving WorkOS SDK details behind one service Module.
+- Preserved Qentrah owner-retention policy, Convex permission enforcement, and audit writes.
+
 ## 2026-05-16
 
 - Created lifecycle docs for Workspace organization member management.
@@ -9,7 +15,7 @@
 
 ## 2026-05-28 Action Workflow Depth
 
-- Added an organization action workflow Module for repeated permission assertion, Better Auth list access, action execution, and audit recording.
+- Added an organization action workflow Module for repeated permission assertion, organization list access, action execution, and audit recording.
 - Kept Hono handlers and exported service functions stable while moving duplicated workflow mechanics out of individual action implementations.
 
 ## 2026-05-28 Access Policy Owner Retention Depth
