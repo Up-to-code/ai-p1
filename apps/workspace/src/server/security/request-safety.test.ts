@@ -5,7 +5,7 @@ import {
   requestSafetyMiddleware,
   workspaceRequestSafetyPolicy,
 } from "./request-safety";
-import { getMobileRequestContext } from "@/server/middleware/mobile-request-context";
+import { getMobileRequestContext, type MobileRequestContext } from "@/server/middleware/mobile-request-context";
 
 describe("workspace request safety module", () => {
   it("keeps app-boundary policy disabled by default", async () => {
@@ -23,7 +23,7 @@ describe("workspace request safety module", () => {
   });
 
   it("owns organization request context composition without changing the request id contract", async () => {
-    const app = new Hono();
+    const app = new Hono<{ Variables: { mobileRequestContext?: MobileRequestContext } }>();
     app.use("/:organizationId/*", organizationRequestSafetyMiddleware);
     app.get("/:organizationId/read/projects", (c) => c.json({
       context: getMobileRequestContext(c),

@@ -36,7 +36,7 @@ const MINUTE_MS = 60 * 1000;
 async function organizationAgentLinkQuotaLimit(ctx: Pick<QueryCtx, "db">, organizationId: string) {
   const subscription = await ctx.db
     .query("organizationSubscriptions")
-    .withIndex("by_organization_id", (q: { eq: (field: string, value: unknown) => unknown }) => q.eq("organizationId", organizationId))
+    .withIndex("by_organization_id", (q) => q.eq("organizationId", organizationId))
     .first();
   return getBillingPlan(subscription?.planId ?? "good_monthly").entitlements.agentLinkQuota;
 }

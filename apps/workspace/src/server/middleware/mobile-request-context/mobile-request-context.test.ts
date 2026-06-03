@@ -3,11 +3,12 @@ import { describe, expect, it } from "vitest";
 import {
   getMobileRequestContext,
   mobileRequestContextMiddleware,
+  type MobileRequestContext,
 } from "./index";
 
 describe("mobile request context middleware", () => {
   it("normalizes mobile request metadata and exposes the request id", async () => {
-    const app = new Hono();
+    const app = new Hono<{ Variables: { mobileRequestContext?: MobileRequestContext } }>();
     app.use("*", mobileRequestContextMiddleware);
     app.get("/api/v1/organizations/:organizationId/agents/threads", (c) => {
       const context = getMobileRequestContext(c);

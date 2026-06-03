@@ -114,7 +114,7 @@ const targetAdapters = {
     patchFor: async (row) => ({
       id: String(row._id),
       patch: {
-        encryptedContent: await protectOrganizationText(String(row.organizationId), "agent-message", row.content),
+        encryptedContent: await protectOrganizationText(String(row.organizationId), "agent-message", String(row.content ?? "")),
         content: redactSensitiveText(String(row.content ?? "")),
         contentRedacted: true,
       },
@@ -126,7 +126,7 @@ const targetAdapters = {
     patchFor: async (row) => ({
       id: String(row._id),
       patch: {
-        encryptedSummary: await protectOrganizationText(String(row.organizationId), "agent-memory-summary", row.summary),
+        encryptedSummary: await protectOrganizationText(String(row.organizationId), "agent-memory-summary", String(row.summary ?? "")),
         summary: encryptedPlaceholder(),
         summaryRedacted: true,
         updatedAt: Date.now(),
@@ -137,9 +137,9 @@ const targetAdapters = {
     table: "agentMemoryFacts",
     isProtected: (row) => Boolean(row.encryptedFact),
     patchFor: async (row) => ({
-      id: row._id,
+      id: String(row._id),
       patch: {
-        encryptedFact: await protectOrganizationText(row.organizationId, "agent-memory-fact", row.fact),
+        encryptedFact: await protectOrganizationText(String(row.organizationId), "agent-memory-fact", String(row.fact ?? "")),
         fact: redactSensitiveText(String(row.fact ?? "")),
         factRedacted: true,
         updatedAt: Date.now(),
