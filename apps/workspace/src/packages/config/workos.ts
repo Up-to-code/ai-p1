@@ -25,7 +25,7 @@ export const workosRuntimeConfig = {
   cookiePassword: envReader.read("WORKOS_COOKIE_PASSWORD", ""),
   callbackUrl: envReader.read(
     "WORKOS_CALLBACK_URL",
-    `${fallbackSiteUrl}/api/auth/workos/callback`,
+    `${fallbackSiteUrl}/callback`,
   ),
   mobileCallbackUrl: envReader.read(
     "WORKOS_MOBILE_CALLBACK_URL",
