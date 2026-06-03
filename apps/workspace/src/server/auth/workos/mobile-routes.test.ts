@@ -12,7 +12,7 @@ vi.mock("@/packages/config", () => ({
     apiBaseUrl: "https://api.workos.com",
     clientId: "client_test",
     cookiePassword: "x".repeat(32),
-    mobileCallbackUrl: "qentrah:///auth-callback",
+    mobileCallbackUrl: "qentrah://auth-callback",
   },
 }));
 
@@ -51,6 +51,9 @@ describe("mobile WorkOS Hono routes", () => {
     expect(authorizeUrl.searchParams.get("to")).toBe(
       "https://api.workos.com/user_management/authorize?provider=AppleOAuth&state=state_1",
     );
+    expect(workos.userManagement.getAuthorizationUrlWithPKCE).toHaveBeenCalledWith(expect.objectContaining({
+      redirectUri: "qentrah://auth-callback",
+    }));
   });
 
   it("redirects only to WorkOS authorization URLs", async () => {

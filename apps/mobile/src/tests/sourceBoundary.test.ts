@@ -146,6 +146,6 @@ test("mobile social auth opens the WorkOS url returned by the start endpoint", (
   assert.equal(source.includes("/api/auth/workos/mobile/callback"), false);
   assert.equal(callbackSource.includes("Linking.createURL(mobileAuthCallbackPath"), true);
   assert.equal(callbackSource.includes("scheme: mobileAuthScheme"), true);
-  assert.equal(callbackSource.includes("isTripleSlashed: true"), true);
+  assert.equal(callbackSource.includes("isTripleSlashed: true"), false);
   assert.equal(callbackSource.includes("mobileAuthCallbackUrlWithQuery"), true);
 });

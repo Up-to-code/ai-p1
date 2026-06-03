@@ -1,5 +1,5 @@
 /* eslint-disable max-lines */
-export const MOBILE_AUTH_CALLBACK_URL = "qentrah:///auth-callback";
+export const MOBILE_AUTH_CALLBACK_URL = "qentrah://auth-callback";
 
 export type MobileSocialProvider = "apple" | "google";
 export type MobileAuthScreenHint = "sign-in" | "sign-up";

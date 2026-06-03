@@ -10,7 +10,7 @@ const workos = {
 vi.mock("@/packages/config", () => ({
   workosRuntimeConfig: {
     clientId: "client_test",
-    mobileCallbackUrl: "qentrah:///auth-callback",
+    mobileCallbackUrl: "qentrah://auth-callback",
   },
 }));
 
@@ -44,7 +44,7 @@ describe("mobile WorkOS OAuth", () => {
   it("starts direct mobile OAuth with the app callback and without social screen hints", async () => {
     await expect(startMobileOAuth({
       provider: "google",
-      returnTo: "qentrah:///auth-callback",
+      returnTo: "qentrah://auth-callback",
       screenHint: "sign-up",
     })).resolves.toEqual({
       url: "https://api.workos.com/user_management/authorize?provider=GoogleOAuth",
@@ -55,7 +55,7 @@ describe("mobile WorkOS OAuth", () => {
     expect(workos.userManagement.getAuthorizationUrlWithPKCE).toHaveBeenCalledWith({
       provider: "GoogleOAuth",
       clientId: "client_test",
-      redirectUri: "qentrah:///auth-callback",
+      redirectUri: "qentrah://auth-callback",
       organizationId: undefined,
       loginHint: undefined,
     });
@@ -64,7 +64,7 @@ describe("mobile WorkOS OAuth", () => {
   it("accepts the Expo Router callback form and legacy host-style callback", () => {
     expect(safeMobileReturnTo("qentrah:///auth-callback")).toBe("qentrah:///auth-callback");
     expect(safeMobileReturnTo("qentrah://auth-callback")).toBe("qentrah://auth-callback");
-    expect(safeMobileReturnTo("https://app.qentrah.com/api/auth/workos/mobile/callback")).toBe("qentrah:///auth-callback");
+    expect(safeMobileReturnTo("https://app.qentrah.com/api/auth/workos/mobile/callback")).toBe("qentrah://auth-callback");
   });
 
   it("uses configured mobile callback fallback when returnTo is invalid", async () => {
@@ -81,7 +81,7 @@ describe("mobile WorkOS OAuth", () => {
   it("keeps screen hints only for AuthKit", async () => {
     await startMobileOAuth({
       provider: null,
-      returnTo: "qentrah:///auth-callback",
+      returnTo: "qentrah://auth-callback",
       screenHint: "sign-up",
     });
 

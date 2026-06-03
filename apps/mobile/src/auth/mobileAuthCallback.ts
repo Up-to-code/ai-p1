@@ -6,7 +6,6 @@ const mobileAuthCallbackPath = "auth-callback";
 export function getMobileAuthCallbackUrl() {
   return Linking.createURL(mobileAuthCallbackPath, {
     scheme: mobileAuthScheme,
-    isTripleSlashed: true,
   });
 }
 

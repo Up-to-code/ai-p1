@@ -29,7 +29,7 @@ export const workosRuntimeConfig = {
   ),
   mobileCallbackUrl: envReader.read(
     "WORKOS_MOBILE_CALLBACK_URL",
-    "qentrah:///auth-callback",
+    "qentrah://auth-callback",
   ),
   logoutReturnUrl: envReader.read(
     "WORKOS_LOGOUT_RETURN_URL",
