@@ -1,17 +1,17 @@
 # Auth / Organization Access
 
 ## Purpose
-Reserved boundary for organization-access in the WorkOS, session, access, and authorization architecture.
+Reserved boundary for organization-access in the Better Auth, Auth0, session, access, and authorization architecture.
 
 ## What Belongs Here
 - Provider-neutral contracts
-- Future WorkOS integration boundaries
-- Future OIDC mapping documentation
+- Future Better Auth integration boundaries
+- Future Auth0/OIDC mapping documentation
 - Session, role, policy, permission, or access-check placeholders
 
 ## What Must Not Live Here
-- Raw WorkOS initialization outside provider seams
-- Raw WorkOS client IDs, secrets, issuers, or tenant values
+- Real Better Auth initialization code in this pass
+- Auth0 client IDs, secrets, issuers, or tenant values
 - Database adapters or Convex calls
 - HTTP route handlers with auth logic inline
 
@@ -25,4 +25,4 @@ Future exports should be public auth contracts only. Route handlers should consu
 - Never leak provider-specific details into domain services.
 
 ## Future Implementation Notes
-When WorkOS integration expands, wire provider/session config here first, then expose typed guards for Hono middleware and domain policies.
+When Better Auth is introduced, wire provider/session config here first, then expose typed guards for Hono middleware and domain policies.

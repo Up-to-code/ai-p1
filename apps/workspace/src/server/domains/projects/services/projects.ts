@@ -1,5 +1,5 @@
 import { api } from "@convex/_generated/api";
-import { fetchAuthMutation } from "@/server/auth/convex-workos/server";
+import { fetchAuthMutation } from "@/server/auth/better-auth/server";
 import type { ProjectPayload } from "../validation/project.schema";
 
 export async function createProject(organizationId: string, input: ProjectPayload) {

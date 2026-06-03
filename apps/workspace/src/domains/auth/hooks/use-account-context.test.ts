@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { deriveAccountOrganizationPending, resolveActiveAuthOrganization } from "./use-account-context";
 
 describe("resolveActiveAuthOrganization", () => {
-  it("uses the active organization only when the auth provider returned an id", () => {
+  it("uses the active organization only when Better Auth returned an id", () => {
     expect(resolveActiveAuthOrganization({ id: "org_1", name: "ETJAH" })).toEqual({
       id: "org_1",
       name: "ETJAH",

@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import * as Sentry from "@sentry/nextjs";
-import { runWithAuthHeaders } from "@/server/auth/convex-workos/server";
-import { workosMobileAuthRouter } from "@/server/auth/workos/mobile-routes";
+import { runWithAuthHeaders } from "@/server/auth/better-auth/server";
 import { v1Router } from "@/server/routing/v1/router";
 import { uploadThingHandler } from "@/server/uploadthing/router";
 import { handleMcpAgent, handleMcpMethodNotAllowed } from "@/server/protocols/mcp/transports/agent-link";
@@ -52,7 +51,6 @@ app.all("/uploadthing", (c) => uploadThingHandler(c.req.raw));
 app.get("/mcp/agent/:publicId/:secret", handleMcpMethodNotAllowed);
 app.delete("/mcp/agent/:publicId/:secret", handleMcpMethodNotAllowed);
 app.post("/mcp/agent/:publicId/:secret", handleMcpAgent);
-app.route("/auth/workos/mobile", workosMobileAuthRouter);
 app.route("/v1", v1Router);
 
 app.notFound((c) => c.json({ error: "Not Found" }, 404));

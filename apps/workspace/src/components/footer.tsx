@@ -1,4 +1,7 @@
-import { getTranslations } from "next-intl/server";
+"use client";
+
+import { ArrowUpRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/routing";
 import { BrandMark } from "@/components/logo";
@@ -11,7 +14,6 @@ const footerGroups = [
       { href: "/broker", label: "brokers" },
       { href: "/about", label: "about" },
       { href: "/docs", label: "documentation" },
-      { href: "/blog", label: "blog" },
     ],
   },
   {
@@ -31,8 +33,8 @@ const footerGroups = [
   },
 ] as const;
 
-export default async function Footer() {
-  const t = await getTranslations("Landing.footer");
+export default function Footer() {
+  const t = useTranslations("Landing.footer");
 
   return (
     <footer className="border-t border-zinc-200 bg-white dark:border-white/10 dark:bg-zinc-950">
@@ -70,6 +72,7 @@ export default async function Footer() {
                         href={link.href}
                       >
                         {t(link.label)}
+                        <ArrowUpRight className="h-3 w-3 opacity-45 rtl:-rotate-90" />
                       </Link>
                     </li>
                   ))}
@@ -83,6 +86,7 @@ export default async function Footer() {
             href="/contact"
           >
             {t("contact")}
+            <ArrowUpRight className="h-4 w-4 rtl:-rotate-90" />
           </Link>
         </div>
 

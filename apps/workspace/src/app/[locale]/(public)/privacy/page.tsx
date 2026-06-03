@@ -1,8 +1,10 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { useLocale } from "next-intl";
 
 import { LegalArticle, LegalBlock } from "@/components/landing/public-page-shell";
 import { brandDomainUrl } from "@qentrah/brand-identity";
-import { publicPageMetadata } from "@/lib/seo/public-pages";
 
 const copy = {
   en: {
@@ -41,17 +43,8 @@ const copy = {
 type BlockBody = string | Array<string | string[]>;
 type LegalCopyBlock = [title: string, body: BlockBody];
 
-type PageProps = {
-  params: Promise<{ locale: string }>;
-};
-
-export async function generateMetadata({ params }: PageProps) {
-  const { locale } = await params;
-  return publicPageMetadata(locale, "privacy");
-}
-
-export default async function PrivacyPage({ params }: PageProps) {
-  const { locale } = await params;
+export default function PrivacyPage() {
+  const locale = useLocale();
   const isAr = locale === "ar";
   const c = isAr ? copy.ar : copy.en;
   const privacyEmail = `privacy@${brandDomainUrl("root").replace("https://", "")}`;

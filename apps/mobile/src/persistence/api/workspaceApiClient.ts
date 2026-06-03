@@ -115,14 +115,14 @@ async function getInstallationIdHash() {
   return installationHashPromise;
 }
 
-function getStoredAuthorizationHeader() {
+function getStoredAuthCookie() {
   if (!isNativeRuntime()) {
     return "";
   }
 
   try {
-    const auth = require("@/auth/authClient") as { authClient?: { getAuthorizationHeader?: () => string } };
-    return auth.authClient?.getAuthorizationHeader?.() ?? "";
+    const auth = require("@/auth/authClient") as { authClient?: { getCookie?: () => string } };
+    return auth.authClient?.getCookie?.() ?? "";
   } catch {
     return "";
   }
@@ -130,9 +130,9 @@ function getStoredAuthorizationHeader() {
 
 function withWorkspaceAuthHeaders(headers: HeadersInit | undefined) {
   const nextHeaders = new Headers(headers);
-  const authorization = getStoredAuthorizationHeader();
-  if (authorization && !nextHeaders.has("authorization")) {
-    nextHeaders.set("authorization", authorization);
+  const cookie = getStoredAuthCookie();
+  if (cookie && !nextHeaders.has("cookie")) {
+    nextHeaders.set("cookie", cookie);
   }
   return nextHeaders;
 }

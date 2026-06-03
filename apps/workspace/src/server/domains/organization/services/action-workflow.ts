@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
-import { fetchAuthMutation } from "@/server/auth/convex-workos/server";
+import { fetchAuthMutation } from "@/server/auth/better-auth/server";
 import { assertCanUseOrganizationResource } from "@/server/utils/organization/access-checker";
 import { OrganizationActionError } from "../errors/action-error";
 import type {
@@ -8,11 +8,7 @@ import type {
   OrganizationMemberForPolicy,
   OrganizationRoleForPolicy,
 } from "./access-policy";
-import {
-  listWorkOSOrganizationInvitations,
-  listWorkOSOrganizationMembers,
-  listWorkOSOrganizationRoles,
-} from "./workos-organization-adapter";
+import { callBetterAuth } from "./better-auth-proxy";
 
 type MemberListResponse = { members?: OrganizationMemberForPolicy[] } | OrganizationMemberForPolicy[];
 type InvitationListResponse = OrganizationInvitationForPolicy[];
@@ -57,19 +53,26 @@ function unwrapMembers(data: MemberListResponse) {
 }
 
 export async function listMembersForOrganizationAction(c: Context, organizationId: string) {
-  void c;
-  const data = await listWorkOSOrganizationMembers(organizationId);
+  const data = await callBetterAuth<MemberListResponse>(c, "/organization/list-members", {
+    query: { organizationId, limit: 100, offset: 0 },
+    fallback: "Members could not be loaded.",
+  });
+
   return unwrapMembers(data);
 }
 
 export async function listInvitationsForOrganizationAction(c: Context, organizationId: string) {
-  void c;
-  return listWorkOSOrganizationInvitations(organizationId) as Promise<InvitationListResponse>;
+  return callBetterAuth<InvitationListResponse>(c, "/organization/list-invitations", {
+    query: { organizationId },
+    fallback: "Invitations could not be loaded.",
+  });
 }
 
 export async function listRolesForOrganizationAction(c: Context, organizationId: string) {
-  void c;
-  return listWorkOSOrganizationRoles(organizationId) as Promise<RoleListResponse>;
+  return callBetterAuth<RoleListResponse>(c, "/organization/list-roles", {
+    query: { organizationId },
+    fallback: "Work roles could not be loaded.",
+  });
 }
 
 export async function runOrganizationActionWorkflow<T>(

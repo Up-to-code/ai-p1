@@ -22,7 +22,6 @@ import type * as auth from "../auth.js";
 import type * as billing_data from "../billing/data.js";
 import type * as billing_read from "../billing/read.js";
 import type * as billing_readSurface from "../billing/readSurface.js";
-import type * as billing_usageSurface from "../billing/usageSurface.js";
 import type * as billing_validators from "../billing/validators.js";
 import type * as billing_webhookProcessing from "../billing/webhookProcessing.js";
 import type * as billing_write from "../billing/write.js";
@@ -93,8 +92,6 @@ import type * as userProfiles_data from "../userProfiles/data.js";
 import type * as userProfiles_read from "../userProfiles/read.js";
 import type * as userProfiles_validators from "../userProfiles/validators.js";
 import type * as userProfiles_write from "../userProfiles/write.js";
-import type * as workosAuth from "../workosAuth.js";
-import type * as workosPartnerApiKeys from "../workosPartnerApiKeys.js";
 import type * as workspace_businessData from "../workspace/businessData.js";
 import type * as workspace_dashboardOverview from "../workspace/dashboardOverview.js";
 import type * as workspace_readStats from "../workspace/readStats.js";
@@ -121,7 +118,6 @@ declare const fullApi: ApiFromModules<{
   "billing/data": typeof billing_data;
   "billing/read": typeof billing_read;
   "billing/readSurface": typeof billing_readSurface;
-  "billing/usageSurface": typeof billing_usageSurface;
   "billing/validators": typeof billing_validators;
   "billing/webhookProcessing": typeof billing_webhookProcessing;
   "billing/write": typeof billing_write;
@@ -192,8 +188,6 @@ declare const fullApi: ApiFromModules<{
   "userProfiles/read": typeof userProfiles_read;
   "userProfiles/validators": typeof userProfiles_validators;
   "userProfiles/write": typeof userProfiles_write;
-  workosAuth: typeof workosAuth;
-  workosPartnerApiKeys: typeof workosPartnerApiKeys;
   "workspace/businessData": typeof workspace_businessData;
   "workspace/dashboardOverview": typeof workspace_dashboardOverview;
   "workspace/readStats": typeof workspace_readStats;
@@ -227,6 +221,6 @@ export declare const internal: FilterApi<
 >;
 
 export declare const components: {
-  workOSAuthKit: import("@convex-dev/workos-authkit/_generated/component.js").ComponentApi<"workOSAuthKit">;
+  betterAuth: import("../betterAuth/_generated/component.js").ComponentApi<"betterAuth">;
   apiKeys: import("convex-api-keys/_generated/component.js").ComponentApi<"apiKeys">;
 };

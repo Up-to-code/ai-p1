@@ -311,9 +311,10 @@ export function McpDocsPage({
                     
                     // Render custom code block with copy button
                     return (
-                      <CodeBlockWithCopy language={match[1]}>
-                        {String(children).replace(/\n$/, "")}
-                      </CodeBlockWithCopy>
+                      <CodeBlockWithCopy 
+                        language={match[1]} 
+                        children={String(children).replace(/\n$/, "")} 
+                      />
                     );
                   },
                 }}

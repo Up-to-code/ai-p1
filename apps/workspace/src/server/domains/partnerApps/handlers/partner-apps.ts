@@ -4,13 +4,11 @@ import { parseJsonBody, routePromise, runEffectRoute } from "@/server/effect/rou
 import {
   authorizePartnerConnectionSchema,
   createPartnerWebhookEndpointSchema,
-  createWorkOSPartnerApiKeySchema,
   updatePartnerConnectionSchema,
 } from "../validation/partner-app.schema";
 import {
   authorizePartnerConnection,
   createPartnerWebhookEndpoint,
-  createWorkOSPartnerApiKey,
   listPartnerApps,
   listPartnerConnections,
   revokePartnerConnection,
@@ -93,21 +91,6 @@ export async function handleCreatePartnerWebhookEndpoint(c: Context) {
       const input = yield* parseJsonBody(c, createPartnerWebhookEndpointSchema, "Invalid partner webhook payload.");
       const endpoint = yield* routePromise(() => createPartnerWebhookEndpoint(organizationId, input), fallbackError);
       return { endpoint };
-    }),
-    { fallbackError, status: 201 },
-  );
-}
-
-export async function handleCreateWorkOSPartnerApiKey(c: Context) {
-  const organizationId = c.req.param("organizationId");
-  if (!organizationId) return c.json({ error: "Organization id is required." }, 400);
-
-  return runEffectRoute(
-    c,
-    Effect.gen(function* () {
-      const input = yield* parseJsonBody(c, createWorkOSPartnerApiKeySchema, "Invalid WorkOS partner API key payload.");
-      const apiKey = yield* routePromise(() => createWorkOSPartnerApiKey(organizationId, input), fallbackError);
-      return { apiKey };
     }),
     { fallbackError, status: 201 },
   );

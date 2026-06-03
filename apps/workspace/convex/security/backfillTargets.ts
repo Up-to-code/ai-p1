@@ -31,7 +31,7 @@ export type BackfillPatchResult = {
   failures: Array<{ id: string; error: string }>;
 };
 
-type BackfillRow = Record<string, unknown>;
+type BackfillRow = Record<string, any>;
 type PaginationOpts = { numItems: number; cursor: string | null };
 type BackfillTargetAdapter = {
   table:
@@ -57,7 +57,7 @@ function deletedFlagAdapter(table: BackfillTargetAdapter["table"]): BackfillTarg
     isProtected: (row) => row.isDeleted !== undefined,
     patchFor: (row) => row.isDeleted !== undefined
       ? null
-      : { id: String(row._id), patch: { isDeleted: Boolean(row.deletedAt) } },
+      : { id: row._id, patch: { isDeleted: Boolean(row.deletedAt) } },
   };
 }
 
@@ -69,9 +69,9 @@ const targetAdapters = {
     table: "clients",
     isProtected: (row) => Boolean(row.encryptedContact && row.encryptedPhone && row.encryptedNationality && row.encryptedBudget),
     patchFor: async (row) => ({
-      id: String(row._id),
+      id: row._id,
       patch: {
-        ...await protectClientPii(String(row.organizationId), {
+        ...await protectClientPii(row.organizationId, {
           contact: String(row.contact ?? ""),
           phone: String(row.phone ?? ""),
           nationality: String(row.nationality ?? ""),
@@ -85,12 +85,12 @@ const targetAdapters = {
     table: "partnerWebhookDeliveries",
     isProtected: (row) => Boolean(row.encryptedPayload || row.payload === undefined),
     patchFor: async (row) => ({
-      id: String(row._id),
+      id: row._id,
       patch: {
-        encryptedPayload: await protectOrganizationJson(String(row.organizationId), "partner-webhook-delivery", row.payload),
+        encryptedPayload: await protectOrganizationJson(row.organizationId, "partner-webhook-delivery", row.payload),
         payload: encryptedPlaceholder(),
         payloadRedacted: true,
-        expiresAt: Number(row.expiresAt ?? row.createdAt) + 90 * 24 * 60 * 60 * 1000,
+        expiresAt: row.expiresAt ?? row.createdAt + 90 * 24 * 60 * 60 * 1000,
         updatedAt: Date.now(),
       },
     }),
@@ -99,12 +99,12 @@ const targetAdapters = {
     table: "partnerInboundEvents",
     isProtected: (row) => Boolean(row.encryptedPayload || row.payload === undefined),
     patchFor: async (row) => ({
-      id: String(row._id),
+      id: row._id,
       patch: {
-        encryptedPayload: await protectOrganizationJson(String(row.organizationId), "partner-inbound-event", row.payload),
+        encryptedPayload: await protectOrganizationJson(row.organizationId, "partner-inbound-event", row.payload),
         payload: encryptedPlaceholder(),
         payloadRedacted: true,
-        expiresAt: Number(row.expiresAt ?? row.createdAt) + 90 * 24 * 60 * 60 * 1000,
+        expiresAt: row.expiresAt ?? row.createdAt + 90 * 24 * 60 * 60 * 1000,
       },
     }),
   },
@@ -112,9 +112,9 @@ const targetAdapters = {
     table: "agentMessages",
     isProtected: (row) => Boolean(row.encryptedContent),
     patchFor: async (row) => ({
-      id: String(row._id),
+      id: row._id,
       patch: {
-        encryptedContent: await protectOrganizationText(String(row.organizationId), "agent-message", String(row.content ?? "")),
+        encryptedContent: await protectOrganizationText(row.organizationId, "agent-message", row.content),
         content: redactSensitiveText(String(row.content ?? "")),
         contentRedacted: true,
       },
@@ -124,9 +124,9 @@ const targetAdapters = {
     table: "agentMemorySummaries",
     isProtected: (row) => Boolean(row.encryptedSummary),
     patchFor: async (row) => ({
-      id: String(row._id),
+      id: row._id,
       patch: {
-        encryptedSummary: await protectOrganizationText(String(row.organizationId), "agent-memory-summary", String(row.summary ?? "")),
+        encryptedSummary: await protectOrganizationText(row.organizationId, "agent-memory-summary", row.summary),
         summary: encryptedPlaceholder(),
         summaryRedacted: true,
         updatedAt: Date.now(),
@@ -137,9 +137,9 @@ const targetAdapters = {
     table: "agentMemoryFacts",
     isProtected: (row) => Boolean(row.encryptedFact),
     patchFor: async (row) => ({
-      id: String(row._id),
+      id: row._id,
       patch: {
-        encryptedFact: await protectOrganizationText(String(row.organizationId), "agent-memory-fact", String(row.fact ?? "")),
+        encryptedFact: await protectOrganizationText(row.organizationId, "agent-memory-fact", row.fact),
         fact: redactSensitiveText(String(row.fact ?? "")),
         factRedacted: true,
         updatedAt: Date.now(),

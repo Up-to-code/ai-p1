@@ -5,8 +5,6 @@ describe("organization capability evaluator", () => {
   it("grants owner capabilities", () => {
     const capabilities = evaluateOrganizationCapabilities({ memberRole: "owner" });
 
-    expect(capabilities.canReadMembers).toBe(true);
-    expect(capabilities.canReadIntegrations).toBe(true);
     expect(capabilities.canUpdateOrganization).toBe(true);
     expect(capabilities.canCreateApiKeys).toBe(true);
     expect(capabilities.canDeleteClients).toBe(true);
@@ -17,8 +15,6 @@ describe("organization capability evaluator", () => {
     const capabilities = evaluateOrganizationCapabilities({ memberRole: "admin" });
 
     expect(capabilities.canReadOrganization).toBe(true);
-    expect(capabilities.canReadMembers).toBe(true);
-    expect(capabilities.canReadIntegrations).toBe(true);
     expect(capabilities.canUpdateOrganization).toBe(false);
     expect(capabilities.canReadApiKeys).toBe(true);
     expect(capabilities.canCreateApiKeys).toBe(false);
@@ -28,8 +24,6 @@ describe("organization capability evaluator", () => {
   it("grants member read-only capabilities", () => {
     const capabilities = evaluateOrganizationCapabilities({ memberRole: "member" });
 
-    expect(capabilities.canReadMembers).toBe(true);
-    expect(capabilities.canReadIntegrations).toBe(true);
     expect(capabilities.canReadClients).toBe(true);
     expect(capabilities.canCreateClients).toBe(false);
     expect(capabilities.canReadProjects).toBe(true);
@@ -58,8 +52,6 @@ describe("organization capability evaluator", () => {
     const missing = evaluateOrganizationCapabilities({ memberRole: null });
 
     expect(unknown.canReadOrganization).toBe(false);
-    expect(unknown.canReadMembers).toBe(false);
-    expect(unknown.canReadIntegrations).toBe(false);
     expect(unknown.canReadClients).toBe(false);
     expect(missing.canReadOrganization).toBe(false);
     expect(missing.canReadClients).toBe(false);

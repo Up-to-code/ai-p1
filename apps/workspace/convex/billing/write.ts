@@ -3,7 +3,7 @@ import { mutation } from "../_generated/server";
 import type { MutationCtx } from "../_generated/server";
 import { authComponent } from "../auth";
 import { assertOrganizationPermission } from "../organizations/profile/access";
-import { billingCycleValidator, billingPlanIdValidator, checkoutContextValidator, marketIdValidator, tamaraPaymentStatusValidator, tamaraPaymentValidator, usageMeterKindValidator, usageProjectionValidator } from "./validators";
+import { billingPlanIdValidator, checkoutContextValidator, tamaraPaymentStatusValidator, tamaraPaymentValidator } from "./validators";
 import { getBillingPlan, presentPayment } from "./data";
 import type {
   StoredOrganizationProfile,
@@ -15,12 +15,11 @@ import {
   markTamaraPaymentStatusFromWebhookEvent,
   markTamaraWebhookFailed,
 } from "./webhookProcessing";
-import { billingWindow, nextUsageMeterState, usageProjection } from "./usageSurface";
 
 type BillingRecord = StoredOrganizationProfile | StoredSubscription | StoredTamaraPayment | Record<string, unknown>;
 
 type BillingQueryBuilder = {
-  eq(field: string, value: unknown): BillingQueryBuilder;
+  eq(field: string, value: unknown): unknown;
 };
 
 type BillingQuery = {
@@ -58,32 +57,11 @@ async function findSubscription(ctx: MutationCtx, organizationId: string) {
     .first() as Promise<StoredSubscription | null>;
 }
 
-async function findUsageMeter(
-  ctx: MutationCtx,
-  input: { organizationId: string; meter: string; windowStartedAt: number },
-) {
-  return billingDb(ctx)
-    .query("organizationUsageMeters")
-    .withIndex("by_organization_meter_window", (q) => q
-      .eq("organizationId", input.organizationId)
-      .eq("meter", input.meter)
-      .eq("windowStartedAt", input.windowStartedAt))
-    .first() as Promise<(Record<string, unknown> & {
-      _id: string;
-      used: number;
-      limit: number;
-      addOnUsed?: number;
-      addOnLimit?: number;
-    }) | null>;
-}
-
 async function upsertPendingSubscription(
   ctx: MutationCtx,
   organizationId: string,
   latestPaymentId: string,
   planId: string,
-  marketId: string,
-  billingCycle: string,
   now: number,
 ) {
   const plan = getBillingPlan(planId);
@@ -91,8 +69,6 @@ async function upsertPendingSubscription(
   if (existing) {
     await billingDb(ctx).patch(existing._id, {
       planId: plan.id,
-      marketId: plan.marketId,
-      billingCycle: plan.billingCycle,
       status: existing.status === "active" ? existing.status : "pending",
       latestPaymentId,
       updatedAt: now,
@@ -103,8 +79,6 @@ async function upsertPendingSubscription(
   await billingDb(ctx).insert("organizationSubscriptions", {
     organizationId,
     planId: plan.id,
-    marketId: plan.marketId,
-    billingCycle: plan.billingCycle,
     status: "pending",
     latestPaymentId,
     createdAt: now,
@@ -115,11 +89,7 @@ async function upsertPendingSubscription(
 export const createPendingTamaraPaymentFromHono = mutation({
   args: {
     organizationId: v.string(),
-    input: v.object({
-      planId: billingPlanIdValidator,
-      marketId: v.optional(marketIdValidator),
-      billingCycle: v.optional(billingCycleValidator),
-    }),
+    input: v.object({ planId: billingPlanIdValidator }),
   },
   returns: checkoutContextValidator,
   handler: async (ctx, args) => {
@@ -137,8 +107,6 @@ export const createPendingTamaraPaymentFromHono = mutation({
       orderNumber: reference,
       amount: plan.amount,
       currency: plan.currency,
-      marketId: plan.marketId,
-      billingCycle: plan.billingCycle,
       status: "pending",
       createdByUserId: user._id,
       createdAt: now,
@@ -146,7 +114,7 @@ export const createPendingTamaraPaymentFromHono = mutation({
       expiresAt: now + 30 * 60 * 1000,
     });
 
-    await upsertPendingSubscription(ctx, args.organizationId, paymentId, plan.id, plan.marketId, plan.billingCycle, now);
+    await upsertPendingSubscription(ctx, args.organizationId, paymentId, plan.id, now);
 
     const payment = await billingDb(ctx).get(paymentId) as StoredTamaraPayment | null;
     if (!payment) throw new Error("Tamara payment could not be created.");
@@ -192,7 +160,7 @@ export const attachTamaraCheckoutFromHono = mutation({
       status: args.input.status === "new" ? "new" : "pending",
       updatedAt: now,
     });
-    await upsertPendingSubscription(ctx, args.organizationId, args.paymentId, existing.planId, existing.marketId ?? "sa", existing.billingCycle ?? "monthly", now);
+    await upsertPendingSubscription(ctx, args.organizationId, args.paymentId, existing.planId, now);
 
     const payment = await billingDb(ctx).get(args.paymentId) as StoredTamaraPayment | null;
     if (!payment) throw new Error("Tamara payment was not found.");
@@ -263,74 +231,4 @@ export const markTamaraPaymentStatusFromWebhook = mutation({
   },
   returns: tamaraPaymentValidator,
   handler: async (ctx, args) => markTamaraPaymentStatusFromWebhookEvent(ctx, args),
-});
-
-export const recordUsageFromHono = mutation({
-  args: {
-    organizationId: v.string(),
-    meter: usageMeterKindValidator,
-    used: v.number(),
-  },
-  returns: usageProjectionValidator,
-  handler: async (ctx, args) => {
-    await assertOrganizationPermission(ctx, args.organizationId, "update");
-    const subscription = await findSubscription(ctx, args.organizationId);
-    const plan = getBillingPlan(subscription?.planId ?? "good_monthly");
-    const window = billingWindow({
-      now: Date.now(),
-      currentPeriodStartAt: subscription?.currentPeriodStartAt,
-      currentPeriodEndAt: subscription?.currentPeriodEndAt,
-    });
-    const existing = await findUsageMeter(ctx, {
-      organizationId: args.organizationId,
-      meter: args.meter,
-      windowStartedAt: window.windowStartedAt,
-    });
-    const requested = Math.max(1, Math.ceil(args.used));
-    const projected = usageProjection({
-      meter: args.meter,
-      entitlements: plan.entitlements,
-      existing: existing as never,
-      requested,
-    });
-    if (!projected.allowed) return projected;
-
-    const nextState = nextUsageMeterState({
-      projection: projected,
-      existing: existing as never,
-      requested,
-    });
-    const now = Date.now();
-    if (existing) {
-      await billingDb(ctx).patch(existing._id, {
-        used: nextState.used,
-        limit: nextState.limit,
-        addOnUsed: nextState.addOnUsed,
-        addOnLimit: nextState.addOnLimit,
-        updatedAt: now,
-      });
-    } else {
-      await billingDb(ctx).insert("organizationUsageMeters", {
-        organizationId: args.organizationId,
-        meter: args.meter,
-        windowStartedAt: window.windowStartedAt,
-        windowEndsAt: window.windowEndsAt,
-        used: nextState.used,
-        limit: nextState.limit,
-        addOnUsed: nextState.addOnUsed,
-        addOnLimit: nextState.addOnLimit,
-        updatedAt: now,
-      });
-    }
-
-    return {
-      ...projected,
-      used: nextState.used + nextState.addOnUsed,
-      remaining: Math.max(0, projected.limit - nextState.used - nextState.addOnUsed),
-      subscriptionUsed: nextState.used,
-      subscriptionRemaining: Math.max(0, nextState.limit - nextState.used),
-      addOnUsed: nextState.addOnUsed,
-      addOnRemaining: Math.max(0, nextState.addOnLimit - nextState.addOnUsed),
-    };
-  },
 });

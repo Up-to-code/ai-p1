@@ -2,13 +2,11 @@ import { v } from "convex/values";
 
 export const mcpResourceValidator = v.union(
   v.literal("organization"),
-  v.literal("member"),
   v.literal("client"),
   v.literal("property"),
   v.literal("project"),
   v.literal("calendar"),
   v.literal("task"),
-  v.literal("integration"),
   v.literal("media"),
 );
 
@@ -62,13 +60,11 @@ export const mcpConnectionValidator = v.object({
 
 export type McpResource =
   | "organization"
-  | "member"
   | "client"
   | "property"
   | "project"
   | "calendar"
   | "task"
-  | "integration"
   | "media";
 
 export type McpAction = "read" | "create" | "update" | "delete";

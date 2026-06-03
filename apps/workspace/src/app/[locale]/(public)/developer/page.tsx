@@ -1,26 +1,17 @@
+"use client";
+
 import { Building2, CheckCircle2, FileCheck2, ShieldCheck, Wifi } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/routing";
-import { publicPageMetadata } from "@/lib/seo/public-pages";
 
 type WorkflowItem = {
   title: string;
   description: string;
 };
 
-type PageProps = {
-  params: Promise<{ locale: string }>;
-};
-
-export async function generateMetadata({ params }: PageProps) {
-  const { locale } = await params;
-  return publicPageMetadata(locale, "developer");
-}
-
-export default async function DeveloperPage({ params }: PageProps) {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Landing.developer" });
+export default function DeveloperPage() {
+  const t = useTranslations("Landing.developer");
   const workflow = t.raw("workflow.items") as WorkflowItem[];
   const points = [
     { icon: Wifi, title: t("signals.sync.value"), description: t("signals.sync.helper") },

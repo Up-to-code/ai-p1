@@ -5,7 +5,6 @@ import { v } from "convex/values";
 export default defineSchema({
   organizations: defineTable({
     organizationId: v.string(),
-    workosOrganizationId: v.optional(v.string()),
     name: v.string(),
     legalName: v.string(),
     type: v.string(),
@@ -13,91 +12,15 @@ export default defineSchema({
     phone: v.string(),
     website: v.string(),
     address: v.string(),
-    updatedAt: v.number(),
-  })
-    .index("by_organization_id", ["organizationId"])
-    .index("by_workos_organization_id", ["workosOrganizationId"])
-    .index("by_updated", ["updatedAt"]),
-  workosIdentityMappings: defineTable({
-    workosUserId: v.string(),
-    email: v.string(),
-    migrationStatus: v.union(
-      v.literal("pending"),
-      v.literal("linked"),
-      v.literal("verified"),
-      v.literal("failed"),
-    ),
-    lastVerifiedAt: v.optional(v.number()),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-  })
-    .index("by_workos_user_id", ["workosUserId"])
-    .index("by_email", ["email"])
-    .index("by_status_updated", ["migrationStatus", "updatedAt"]),
-  workosOrganizationMembers: defineTable({
-    organizationId: v.string(),
-    workosOrganizationId: v.string(),
-    workosUserId: v.string(),
-    workosMembershipId: v.optional(v.string()),
-    userId: v.string(),
-    email: v.optional(v.string()),
-    role: v.optional(v.string()),
-    roles: v.array(v.string()),
-    permissions: v.array(v.string()),
-    status: v.union(v.literal("active"), v.literal("inactive"), v.literal("pending"), v.literal("deleted")),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-  })
-    .index("by_workos_org_user", ["workosOrganizationId", "workosUserId"])
-    .index("by_organization_id", ["organizationId"])
-    .index("by_workos_membership_id", ["workosMembershipId"])
-    .index("by_user", ["userId"])
-    .index("by_status_updated", ["status", "updatedAt"]),
-  workosWebhookEvents: defineTable({
-    eventId: v.string(),
-    eventType: v.string(),
+    // Temporary tolerance for production rows created during the reverted WorkOS auth attempt.
     workosOrganizationId: v.optional(v.string()),
-    workosUserId: v.optional(v.string()),
-    status: v.union(v.literal("processed"), v.literal("duplicate"), v.literal("failed")),
-    error: v.optional(v.string()),
-    raw: v.any(),
-    receivedAt: v.number(),
-    processedAt: v.optional(v.number()),
-  })
-    .index("by_event_id", ["eventId"])
-    .index("by_type_received", ["eventType", "receivedAt"])
-    .index("by_status_received", ["status", "receivedAt"])
-    .index("by_workos_organization", ["workosOrganizationId"]),
-  workosPartnerApiKeys: defineTable({
-    organizationId: v.string(),
-    partnerId: v.string(),
-    partnerClientId: v.string(),
-    partnersAppId: v.string(),
-    partnersClientId: v.string(),
-    connectionId: v.id("organizationPartnerConnections"),
-    workosApiKeyId: v.string(),
-    workosOwnerOrganizationId: v.string(),
-    keyLast4: v.string(),
-    name: v.string(),
-    permissions: v.array(v.string()),
-    status: v.union(v.literal("active"), v.literal("revoked"), v.literal("expired")),
-    expiresAt: v.optional(v.number()),
-    createdByUserId: v.string(),
-    createdAt: v.number(),
     updatedAt: v.number(),
-    lastUsedAt: v.optional(v.number()),
-    revokedAt: v.optional(v.number()),
   })
-    .index("by_workos_api_key_id", ["workosApiKeyId"])
     .index("by_organization_id", ["organizationId"])
-    .index("by_connection", ["connectionId"])
-    .index("by_partner_workspace_client", ["partnerId", "organizationId", "partnerClientId"])
-    .index("by_status_updated", ["status", "updatedAt"]),
+    .index("by_updated", ["updatedAt"]),
   organizationSubscriptions: defineTable({
     organizationId: v.string(),
     planId: v.string(),
-    marketId: v.optional(v.string()),
-    billingCycle: v.optional(v.string()),
     status: v.union(
       v.literal("inactive"),
       v.literal("pending"),
@@ -116,8 +39,6 @@ export default defineSchema({
   tamaraPayments: defineTable({
     organizationId: v.string(),
     planId: v.string(),
-    marketId: v.optional(v.string()),
-    billingCycle: v.optional(v.string()),
     orderReferenceId: v.string(),
     orderNumber: v.string(),
     tamaraOrderId: v.optional(v.string()),
@@ -158,24 +79,6 @@ export default defineSchema({
     .index("by_event_key", ["eventKey"])
     .index("by_tamara_order", ["tamaraOrderId"])
     .index("by_received", ["receivedAt"]),
-  organizationUsageMeters: defineTable({
-    organizationId: v.string(),
-    meter: v.union(
-      v.literal("ai_chat"),
-      v.literal("agent_link_call"),
-      v.literal("api_key_call"),
-      v.literal("app_access"),
-    ),
-    windowStartedAt: v.number(),
-    windowEndsAt: v.number(),
-    used: v.number(),
-    limit: v.number(),
-    addOnUsed: v.optional(v.number()),
-    addOnLimit: v.optional(v.number()),
-    updatedAt: v.number(),
-  })
-    .index("by_organization_meter_window", ["organizationId", "meter", "windowStartedAt"])
-    .index("by_organization_meter", ["organizationId", "meter"]),
   organizationAuditEvents: defineTable({
     organizationId: v.string(),
     actorUserId: v.string(),
@@ -235,13 +138,11 @@ export default defineSchema({
     permissions: v.array(v.object({
       resource: v.union(
         v.literal("organization"),
-        v.literal("member"),
         v.literal("client"),
         v.literal("property"),
         v.literal("project"),
         v.literal("calendar"),
         v.literal("task"),
-        v.literal("integration"),
         v.literal("media"),
       ),
       actions: v.array(v.union(

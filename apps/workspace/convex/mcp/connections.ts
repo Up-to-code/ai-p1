@@ -1,10 +1,9 @@
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "../_generated/server";
-import type { QueryCtx } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
+import { components } from "../_generated/api";
 import { apiKeys } from "../apiKeys";
 import { authComponent } from "../auth";
-import { getBillingPlan } from "../billing/data";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import {
   createMcpConnectionInputValidator,
@@ -22,6 +21,7 @@ import {
   mcpPermissionRecord,
   mcpRoleCanUseAction,
   mcpRoleList,
+  parseMcpCustomPermission,
 } from "./connectionPermissions";
 import {
   mcpConnectionTtlMs,
@@ -33,31 +33,41 @@ const MAX_TOOL_CALLS_PER_MINUTE = 120;
 const MAX_CONNECTION_LIST_ITEMS = 500;
 const MINUTE_MS = 60 * 1000;
 
-async function organizationAgentLinkQuotaLimit(ctx: Pick<QueryCtx, "db">, organizationId: string) {
-  const subscription = await ctx.db
-    .query("organizationSubscriptions")
-    .withIndex("by_organization_id", (q) => q.eq("organizationId", organizationId))
-    .first();
-  return getBillingPlan(subscription?.planId ?? "good_monthly").entitlements.agentLinkQuota;
-}
+type BetterAuthMember = {
+  organizationId: string;
+  userId: string;
+  role: string;
+};
+
+type BetterAuthOrganizationRole = {
+  organizationId: string;
+  role: string;
+  permission: string;
+};
 
 async function findOrganizationMember(
   ctx: Parameters<typeof assertOrganizationResourcePermission>[0],
   organizationId: string,
   userId: string,
 ) {
-  const members = await ctx.db
-    .query("workosOrganizationMembers")
-    .withIndex("by_user", (q) => q.eq("userId", userId))
-    .collect();
-  const member = members.find((entry) => entry.organizationId === organizationId && entry.status === "active");
-  if (!member) return null;
-  return {
-    organizationId: member.organizationId,
-    userId: member.userId,
-    role: member.role ?? "member",
-    permissions: member.permissions,
-  };
+  return await ctx.runQuery(components.betterAuth.adapter.findOne, {
+    model: "member",
+    where: [
+      { field: "organizationId", value: organizationId },
+      { field: "userId", value: userId },
+    ],
+  }) as BetterAuthMember | null;
+}
+
+async function listOrganizationRoles(
+  ctx: Parameters<typeof assertOrganizationResourcePermission>[0],
+  organizationId: string,
+) {
+  return await ctx.runQuery(components.betterAuth.adapter.findMany, {
+    model: "organizationRole",
+    paginationOpts: { cursor: null, numItems: 100 },
+    where: [{ field: "organizationId", value: organizationId }],
+  }) as BetterAuthOrganizationRole[];
 }
 
 async function canUserUseMcpAction(
@@ -70,9 +80,13 @@ async function canUserUseMcpAction(
   const member = await findOrganizationMember(ctx, organizationId, userId);
   if (!member) return false;
 
-  if (member.permissions.includes(`${resource}:${action}`)) return true;
+  const customRoles = await listOrganizationRoles(ctx, organizationId);
+  const customPermissionByRole = new Map(
+    customRoles.map((role) => [role.role, parseMcpCustomPermission(role.permission)]),
+  );
+
   return mcpRoleList(member.role).some((roleName) =>
-    mcpRoleCanUseAction(roleName, new Map(), resource, action),
+    mcpRoleCanUseAction(roleName, customPermissionByRole, resource, action),
   );
 }
 
@@ -411,10 +425,6 @@ export const reserveUsage = internalMutation({
     const nextCount = isCurrentWindow ? (connection.rateLimitCount ?? 0) + 1 : 1;
     if (nextCount > MAX_TOOL_CALLS_PER_MINUTE) {
       return { ok: false, reason: "rate_limited" };
-    }
-    const quotaLimit = await organizationAgentLinkQuotaLimit(ctx, args.organizationId);
-    if (connection.usageCount + 1 > quotaLimit) {
-      return { ok: false, reason: "quota_exhausted" };
     }
 
     await apiKeys.touch(ctx, { keyId: args.keyId });

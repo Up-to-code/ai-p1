@@ -32,9 +32,13 @@ const vercelProjectProductionUrl = readUrl(
 );
 const vercelUrl = readUrl("VERCEL_URL", "");
 const publicSiteUrl = readUrl("NEXT_PUBLIC_SITE_URL", vercelProjectProductionUrl);
-const siteUrl = readUrl("SITE_URL", publicSiteUrl);
+const siteUrl = readUrl(
+  "SITE_URL",
+  envReader.read("BETTER_AUTH_URL", publicSiteUrl),
+);
 const adminSiteUrl = readUrl("ADMIN_SITE_URL", productionAdminUrl);
 const configuredTrustedOrigins = [
+  ...parseTrustedOrigins(envReader.read("BETTER_AUTH_TRUSTED_ORIGINS", "")),
   ...parseTrustedOrigins(envReader.read("TRUSTED_ORIGINS", "")),
 ];
 
@@ -85,14 +89,14 @@ export function isPlatformAdminEmail(
 export function getAuthRuntimeConfig(mode: AuthConfigMode) {
   const secret =
     mode === "runtime"
-      ? envReader.min("WORKOS_COOKIE_PASSWORD", envReader.read("WORKOS_COOKIE_PASSWORD", ""), 32)
+      ? envReader.min("BETTER_AUTH_SECRET", envReader.read("BETTER_AUTH_SECRET", ""), 32)
       : schemaOnlySecret;
 
   return {
     siteUrl,
     trustedOrigins,
     secret,
-    verbose: envReader.read("WORKOS_AUTH_VERBOSE", "false") === "true",
+    verbose: envReader.read("BETTER_AUTH_VERBOSE", "false") === "true",
     googleClientId: envReader.read("GOOGLE_CLIENT_ID", ""),
     googleClientSecret: envReader.read("GOOGLE_CLIENT_SECRET", ""),
     appleClientId: envReader.read("APPLE_CLIENT_ID", ""),

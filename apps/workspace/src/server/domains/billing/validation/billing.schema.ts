@@ -1,9 +1,7 @@
 import { z } from "zod";
 
 export const billingCheckoutSchema = z.object({
-  planId: z.string().trim().min(1).default("good_monthly"),
-  marketId: z.string().trim().min(1).default("sa"),
-  billingCycle: z.enum(["monthly", "yearly"]).default("monthly"),
+  planId: z.enum(["saudi_monthly", "saudi_yearly"]).default("saudi_monthly"),
   locale: z.enum(["en", "ar"]).default("en"),
   discount: z.object({
     name: z.string().trim().min(1),

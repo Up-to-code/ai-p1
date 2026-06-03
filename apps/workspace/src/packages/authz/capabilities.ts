@@ -7,7 +7,6 @@ import {
 export const organizationCapabilityChecks = {
   canReadOrganization: { resource: "organization", action: "read" },
   canUpdateOrganization: { resource: "organization", action: "update" },
-  canReadMembers: { resource: "member", action: "read" },
   canInviteMembers: { resource: "member", action: "create" },
   canUpdateMembers: { resource: "member", action: "update" },
   canRemoveMembers: { resource: "member", action: "delete" },
@@ -35,7 +34,6 @@ export const organizationCapabilityChecks = {
   canCreateMedia: { resource: "media", action: "create" },
   canUpdateMedia: { resource: "media", action: "update" },
   canDeleteMedia: { resource: "media", action: "delete" },
-  canReadIntegrations: { resource: "integration", action: "read" },
   canReadApiKeys: { resource: "apiKey", action: "read" },
   canCreateApiKeys: { resource: "apiKey", action: "create" },
   canUpdateApiKeys: { resource: "apiKey", action: "update" },

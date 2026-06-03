@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition, useState } from "react";
-import { Link } from "@/i18n/routing";
+import { Link, useRouter } from "@/i18n/routing";
 import { CircleUser, LogOut } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useAccountContext } from "@/domains/auth";
+import { authClient } from "@/lib/auth-client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,17 +26,16 @@ import {
 
 export function ProfileMenu() {
   const t = useTranslations("ProfileMenu");
+  const router = useRouter();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [isLoggingOut, startLogoutTransition] = useTransition();
   const account = useAccountContext();
   const handleLogout = () => {
-    startLogoutTransition(() => {
-      const form = document.createElement("form");
-      form.method = "post";
-      form.action = "/api/auth/workos/logout";
-      form.style.display = "none";
-      document.body.appendChild(form);
-      form.submit();
+    startLogoutTransition(async () => {
+      await authClient.signOut();
+      setLogoutOpen(false);
+      router.replace("/sign-in");
+      router.refresh();
     });
   };
 

@@ -1,5 +1,20 @@
 import { v } from "convex/values";
 import { action } from "../_generated/server";
+import { components } from "../_generated/api";
+import { normalizePartnerScopes } from "@qentrah/partner-auth-core";
+
+const baseOAuthScopes = ["openid", "profile", "email", "offline_access"] as const;
+
+function oauthClientScopes(scopes: string[]) {
+  return Array.from(new Set([...baseOAuthScopes, ...normalizePartnerScopes(scopes)]));
+}
+
+function oauthMetadata(workspacePartnerAppId: string, status: string) {
+  return JSON.stringify({
+    partnerAppId: workspacePartnerAppId,
+    partnerAppStatus: status,
+  });
+}
 
 const oauthClientSyncInputValidator = v.object({
   workspacePartnerAppId: v.string(),
@@ -21,9 +36,52 @@ export const upsertFromPartnersService = action({
   args: { input: oauthClientSyncInputValidator },
   returns: v.object({ clientId: v.string(), created: v.boolean() }),
   handler: async (ctx, args) => {
-    console.warn(
-      `[partnerApps/oauthClients] Ignored legacy OAuth client sync for ${args.input.clientId}; partner access now uses WorkOS API keys.`,
-    );
-    return { clientId: args.input.clientId, created: false };
+    const now = Date.now();
+    const input = args.input;
+    const publicClient = input.clientType === "public";
+    const data = {
+      clientId: input.clientId,
+      name: input.name,
+      uri: input.homepageUrl,
+      icon: input.logoUrl,
+      redirectUris: input.redirectUris,
+      scopes: oauthClientScopes(input.allowedScopes),
+      tokenEndpointAuthMethod: publicClient ? "none" : "client_secret_basic",
+      grantTypes: ["authorization_code", "refresh_token"],
+      responseTypes: ["code"],
+      public: publicClient,
+      type: publicClient ? "spa" : "web",
+      requirePKCE: true,
+      disabled: input.status !== "approved",
+      metadata: oauthMetadata(input.workspacePartnerAppId, input.status),
+      updatedAt: now,
+    };
+
+    const existing = await ctx.runQuery(components.betterAuth.adapter.findOne, {
+      model: "oauthClient",
+      where: [{ field: "clientId", value: input.clientId }],
+    });
+
+    if (existing) {
+      await ctx.runMutation(components.betterAuth.adapter.updateOne, {
+        input: {
+          model: "oauthClient",
+          where: [{ field: "clientId", value: input.clientId }],
+          update: data,
+        },
+      });
+      return { clientId: input.clientId, created: false };
+    }
+
+    await ctx.runMutation(components.betterAuth.adapter.create, {
+      input: {
+        model: "oauthClient",
+        data: {
+          ...data,
+          createdAt: now,
+        },
+      },
+    });
+    return { clientId: input.clientId, created: true };
   },
 });

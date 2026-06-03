@@ -1,28 +1,23 @@
 "use client";
 
-import { createContext, createElement, useContext, useMemo, type ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { createContext, createElement, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useConvexAuth, useQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
+import { authClient } from "@/lib/auth-client";
 import { deriveWorkspaceStatus, type WorkspaceStatus } from "../workspace-status";
 
-type WorkOSSessionResponse = {
-  ok: boolean;
-  session?: {
-    user: {
-      id: string;
-      workosUserId: string;
-      name: string;
-      email: string;
-      image: string | null;
-    };
-    organization: {
-      id: string;
-      workosOrganizationId: string;
-      name: string;
-      role?: string;
-      roles: string[];
-      permissions: string[];
-    };
-  };
+type BetterAuthOrganization = {
+  id?: string;
+  name?: string | null;
+  slug?: string | null;
+  logo?: string | null;
+  metadata?: unknown;
+};
+
+type OrganizationMetadata = {
+  status?: string;
+  brandColor?: string;
+  sound?: string;
 };
 
 type AccountContextValue = {
@@ -58,13 +53,24 @@ type AccountContextValue = {
     brandColor?: string;
     sound?: string;
     initials: string;
-    role?: string;
-    roles: string[];
-    permissions: string[];
   };
 };
 
 const AccountContext = createContext<AccountContextValue | null>(null);
+const CONVEX_AUTH_STALL_MS = 8_000;
+
+function parseMetadata(metadata?: unknown): OrganizationMetadata {
+  if (!metadata) return {};
+  if (typeof metadata === "object") return metadata as OrganizationMetadata;
+  if (typeof metadata !== "string") return {};
+
+  try {
+    const parsed = JSON.parse(metadata) as OrganizationMetadata;
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
 
 function getInitials(value: string) {
   return value
@@ -75,8 +81,8 @@ function getInitials(value: string) {
     .join("") || "AN";
 }
 
-export function resolveActiveAuthOrganization<T extends ({ id?: string } & Record<string, unknown>) | null | undefined>(
-  activeOrganization: T,
+export function resolveActiveAuthOrganization(
+  activeOrganization: BetterAuthOrganization | null | undefined,
 ) {
   return activeOrganization?.id ? activeOrganization : null;
 }
@@ -89,72 +95,114 @@ export function deriveAccountOrganizationPending(input: {
   return input.activeOrganizationPending;
 }
 
-async function fetchWorkOSSession() {
-  const response = await fetch("/api/auth/workos/session", { cache: "no-store" });
-  if (response.status === 401) return null;
-  const payload = await response.json().catch(() => ({})) as WorkOSSessionResponse;
-  if (!response.ok || !payload.session) {
-    throw new Error("WorkOS session could not be loaded.");
-  }
-  return payload.session;
-}
-
 function useAccountContextValue(): AccountContextValue {
-  const sessionQuery = useQuery({
-    queryKey: ["workos-session"],
-    queryFn: fetchWorkOSSession,
-    staleTime: 30_000,
-    refetchOnWindowFocus: false,
+  const session = authClient.useSession();
+  const activeOrganization = authClient.useActiveOrganization();
+  const { isAuthenticated: isConvexAuthenticated, isLoading: isConvexAuthPending } = useConvexAuth();
+  const [convexAuthStallKey, setConvexAuthStallKey] = useState<string | null>(null);
+
+  const authOrganization = resolveActiveAuthOrganization(
+    activeOrganization.data as BetterAuthOrganization | null | undefined,
+  );
+  const organizationId = authOrganization?.id ?? null;
+  const isOrganizationPending = deriveAccountOrganizationPending({
+    activeOrganizationPending: activeOrganization.isPending,
   });
-  const session = sessionQuery.data ?? null;
-  const organizationId = session?.organization.id ?? null;
-  const isSessionPending = sessionQuery.isPending;
+  const shouldExpectConvexAuth = Boolean(session.data?.session && organizationId) && !session.isPending && !isOrganizationPending;
+  const convexAuthWaitKey = shouldExpectConvexAuth && isConvexAuthPending
+    ? `${organizationId}:${session.data?.user?.id ?? "anonymous"}`
+    : null;
+  const isConvexAuthStalled = Boolean(convexAuthWaitKey && convexAuthStallKey === convexAuthWaitKey);
+
+  useEffect(() => {
+    if (!convexAuthWaitKey) return;
+
+    const timeout = window.setTimeout(() => setConvexAuthStallKey(convexAuthWaitKey), CONVEX_AUTH_STALL_MS);
+    return () => window.clearTimeout(timeout);
+  }, [convexAuthWaitKey]);
+
   const workspaceStatus = deriveWorkspaceStatus({
-    isSessionPending,
-    isOrganizationPending: false,
+    isSessionPending: session.isPending,
+    isOrganizationPending,
     organizationId,
-    isConvexAuthPending: false,
-    isConvexAuthenticated: Boolean(session),
-    isConvexAuthStalled: false,
+    isConvexAuthPending,
+    isConvexAuthenticated,
+    isConvexAuthStalled,
   });
   const isWorkspaceReady = workspaceStatus === "ready";
+  const shouldReadOrganizationProfile = isWorkspaceReady && isConvexAuthenticated;
+  const shouldReadUserProfile = isConvexAuthenticated;
+  const organizationProfile = useQuery(
+    api.organizations.profile.read.getProfile,
+    shouldReadOrganizationProfile && organizationId ? { organizationId } : "skip",
+  );
+  const userProfile = useQuery(
+    api.userProfiles.read.getCurrent,
+    shouldReadUserProfile ? {} : "skip",
+  );
 
   return useMemo(() => {
-    const userName = session?.user.name?.trim() || "Account";
-    const userEmail = session?.user.email?.trim() || "No email set";
-    const organizationName = session?.organization.name?.trim() || "Workspace";
+    const user = session.data?.user;
+    const metadata = parseMetadata(authOrganization?.metadata);
+    const userName = user?.name?.trim() || "Account";
+    const userEmail = user?.email?.trim() || "No email set";
+    const organizationName =
+      organizationProfile?.name?.trim() ||
+      authOrganization?.name?.trim() ||
+      "Workspace";
+    const organizationStatus = metadata.status || (organizationId ? "Active workspace" : "Workspace ready");
 
     return {
-      isSignedIn: Boolean(session),
+      isSignedIn: Boolean(session.data?.session),
       isPending: workspaceStatus === "loadingSession",
       workspace: {
         status: workspaceStatus,
         organizationId,
-        isOrganizationPending: false,
-        isConvexAuthPending: false,
-        isConvexAuthenticated: Boolean(session),
+        isOrganizationPending,
+        isConvexAuthPending,
+        isConvexAuthenticated,
         isReady: isWorkspaceReady,
       },
       user: {
-        id: session?.user.id ?? "",
+        id: user?.id ?? "",
         name: userName,
         email: userEmail,
-        image: session?.user.image ?? null,
+        image: userProfile?.avatarUrl ?? user?.image ?? null,
         initials: getInitials(userName),
       },
       organization: {
         id: organizationId,
         name: organizationName,
-        logo: null,
-        slug: null,
-        status: organizationId ? "Active workspace" : "Workspace ready",
+        legalName: organizationProfile?.legalName,
+        type: organizationProfile?.type,
+        email: organizationProfile?.email,
+        phone: organizationProfile?.phone,
+        website: organizationProfile?.website,
+        address: organizationProfile?.address,
+        logo: authOrganization?.logo ?? null,
+        slug: authOrganization?.slug ?? null,
+        status: organizationStatus,
+        brandColor: metadata.brandColor,
+        sound: metadata.sound,
         initials: getInitials(organizationName),
-        role: session?.organization.role,
-        roles: session?.organization.roles ?? [],
-        permissions: session?.organization.permissions ?? [],
       },
     };
-  }, [isWorkspaceReady, organizationId, session, workspaceStatus]);
+  }, [
+    authOrganization?.logo,
+    authOrganization?.metadata,
+    authOrganization?.name,
+    authOrganization?.slug,
+    isConvexAuthenticated,
+    isConvexAuthPending,
+    isOrganizationPending,
+    isWorkspaceReady,
+    organizationId,
+    organizationProfile,
+    session.data?.session,
+    session.data?.user,
+    userProfile,
+    workspaceStatus,
+  ]);
 }
 
 export function AccountProvider({ children }: { children: ReactNode }) {

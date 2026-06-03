@@ -1,20 +1,9 @@
 import createMiddleware from 'next-intl/middleware';
-import type { NextFetchEvent, NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import * as Sentry from "@sentry/nextjs";
-import { authkitProxy } from "@workos-inc/authkit-nextjs";
 import {routing} from './i18n/routing';
-import { applyWorkOSProxyHeaders } from "./proxy-headers";
 
 const intlMiddleware = createMiddleware(routing);
-const workosRedirectUri = process.env.NEXT_PUBLIC_WORKOS_REDIRECT_URI ?? "http://localhost:3000/callback";
-const workosProxy = authkitProxy({
-  redirectUri: workosRedirectUri,
-  eagerAuth: true,
-  middlewareAuth: {
-    enabled: false,
-    unauthenticatedPaths: [],
-  },
-});
 
 function getRouteMetric(pathname: string) {
   const segments = pathname
@@ -34,17 +23,12 @@ function getRouteMetric(pathname: string) {
   return segments.length > 0 ? `/${segments.join("/")}` : "/";
 }
 
-export default async function proxy(request: NextRequest, event: NextFetchEvent) {
+export default function proxy(request: NextRequest) {
   const startedAt = Date.now();
   const route = getRouteMetric(request.nextUrl.pathname);
 
   try {
-    const workosResponse = await workosProxy(request, event);
-    if (request.nextUrl.pathname.startsWith("/api/") || request.nextUrl.pathname === "/callback") {
-      return workosResponse;
-    }
-    const intlResponse = intlMiddleware(request);
-    return workosResponse ? applyWorkOSProxyHeaders(intlResponse, workosResponse.headers) : intlResponse;
+    return intlMiddleware(request);
   } finally {
     const attributes = { route, method: request.method };
 
@@ -55,7 +39,7 @@ export default async function proxy(request: NextRequest, event: NextFetchEvent)
     });
   }
 }
-
+ 
 export const config = {
   matcher: [
     "/",
@@ -69,7 +53,5 @@ export const config = {
     "/broker",
     "/docs",
     "/docs/:path*",
-    "/callback",
-    "/api/:path*",
   ],
 };

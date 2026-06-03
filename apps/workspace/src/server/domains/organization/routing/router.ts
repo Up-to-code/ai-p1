@@ -105,7 +105,6 @@ import {
 import {
   handleAuthorizePartnerConnection,
   handleCreatePartnerWebhookEndpoint,
-  handleCreateWorkOSPartnerApiKey,
   handleListPartnerConnections,
   handleRevokePartnerConnection,
   handleUpdatePartnerConnection,
@@ -427,11 +426,6 @@ organizationRouter.delete(
 organizationRouter.post(
   "/:organizationId/partner-webhook-endpoints",
   handleCreatePartnerWebhookEndpoint,
-);
-
-organizationRouter.post(
-  "/:organizationId/partner-workos-api-keys",
-  handleCreateWorkOSPartnerApiKey,
 );
 
 export type OrganizationRouterType = typeof organizationRouter;

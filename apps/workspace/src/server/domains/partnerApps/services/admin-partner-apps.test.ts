@@ -61,7 +61,7 @@ describe("Workspace partner app service tokens", () => {
     )).toThrow("Invalid Workspace admin service token.");
   });
 
-  it("upserts the WorkOS partner client after Partners runtime sync", async () => {
+  it("upserts the Better Auth OAuth client after Partners runtime sync", async () => {
     convexActionMock.mockResolvedValueOnce({ clientId: "partners_client_demo", created: true });
 
     await expect(syncOAuthClientRuntime({

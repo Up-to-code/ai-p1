@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import fs from "fs";
 import path from "path";
 
-import { workspacePublicMetadata } from "@/lib/seo/public-metadata";
 import { docsTopicsList, DocsTopicSlug, DocData } from "./mcp-docs-shared";
 
 export { docsTopics, isDocsTopic, docsTopicsList } from "./mcp-docs-shared";
@@ -68,10 +67,8 @@ export function getDocData(locale: string, slug: DocsTopicSlug): DocData {
 
 export function getDocsMetadata(locale: string, topicSlug: DocsTopicSlug): Metadata {
   const doc = getDocData(locale, topicSlug);
-  return workspacePublicMetadata({
-    locale,
-    path: topicSlug === "overview" ? "/docs" : `/docs/${topicSlug}`,
+  return {
     title: `${doc.title} | Qentrah MCP`,
     description: doc.description,
-  });
+  };
 }

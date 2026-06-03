@@ -248,7 +248,6 @@
   "Landing": {
     "nav": {
       "home": "Home",
-      "docs": "Docs",
       "documentation": "Docs",
       "developers": "Developers",
       "brokers": "Brokers",
@@ -257,7 +256,6 @@
       "resources": "Resources",
       "company": "Company",
       "about": "About",
-      "aboutUs": "About us",
       "contact": "Contact",
       "signIn": "Sign In",
       "dashboard": "Workspace",
@@ -266,8 +264,7 @@
       "work": "Work",
       "ai": "AI",
       "openMenu": "Open public navigation",
-      "closeMenu": "Close public navigation",
-      "blog": "Blog"
+      "closeMenu": "Close public navigation"
     },
     "home": {
       "hero": {
@@ -937,16 +934,13 @@
       "tagline": "Workspace infrastructure for real estate teams",
       "developerReady": "Developer ready",
       "aiNative": "AI native",
-      "verifiedOps": "Verified ops",
-      "blog": "Blog"
+      "verifiedOps": "Verified ops"
     }
   },
   "signin": {
     "title": "Welcome Back",
     "description": "Sign in to access your real estate data workspace.",
     "google": "Sign in with Google",
-    "workosSignIn": "Sign in with WorkOS",
-    "workosSignUp": "Create account with WorkOS",
     "connecting": "Connecting...",
     "createAccount": "Create an Account",
     "createAccountDesc": "Join the central synchronization engine for Saudi real estate.",
@@ -1995,23 +1989,19 @@
       },
       "resources": {
         "organization": "Organization",
-        "member": "Members",
         "client": "Clients",
         "property": "Apartments",
         "project": "Projects",
         "calendar": "Calendar",
         "task": "Tasks",
-        "integration": "Integrations",
         "media": "Documents"
       },
       "resourceHelp": {
-        "member": "Active members and their work roles.",
         "client": "Profiles, pipeline, links to apartments.",
         "property": "Inventory, open apartment, specific field edits.",
         "project": "Development context and project records.",
         "calendar": "Today, month, scheduling and meeting changes.",
         "task": "Client work, due dates, completion.",
-        "integration": "Approved partner app connections and scopes.",
         "media": "List files and attach URL-backed documents."
       },
       "actions": {

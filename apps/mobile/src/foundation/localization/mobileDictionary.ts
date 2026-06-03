@@ -222,23 +222,6 @@ export type MobileDictionary = {
     missingDetailBody: string;
     resetLinkSentTitle: string;
     resetLinkSentBody: string;
-    resetToken: string;
-    resetTokenPlaceholder: string;
-    newPassword: string;
-    confirmPassword: string;
-    completeReset: string;
-    resetCompleteTitle: string;
-    resetCompleteBody: string;
-    resetPasswordMismatch: string;
-    resetPasswordShort: string;
-    resendResetCode: string;
-    resendResetCodeIn: string;
-    emailVerificationTitle: string;
-    emailVerificationBody: string;
-    emailVerificationSentTo: string;
-    emailVerificationCode: string;
-    emailVerificationCodePlaceholder: string;
-    confirmEmail: string;
     backToLogin: string;
     resetFailedTitle: string;
     email: string;
@@ -540,29 +523,12 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       forgotHeader: "Recovery",
       forgotTitle: "Restore access",
       forgotBody: "Enter your email to securely recover your identity.",
-      requestResetLink: "Send reset code",
+      requestResetLink: "Request reset link",
       sending: "Sending...",
       missingDetailTitle: "Missing detail",
-      missingDetailBody: "Enter your email to request a reset code.",
-      resetLinkSentTitle: "Reset code sent",
-      resetLinkSentBody: "Code sent to",
-      resetToken: "Reset code",
-      resetTokenPlaceholder: "Paste the code from the email",
-      newPassword: "New password",
-      confirmPassword: "Confirm password",
-      completeReset: "Update password",
-      resetCompleteTitle: "Password updated",
-      resetCompleteBody: "Your Qentrah password has been changed. Sign in with the new password.",
-      resetPasswordMismatch: "The new passwords do not match.",
-      resetPasswordShort: "Use at least 8 characters for the new password.",
-      resendResetCode: "Resend code",
-      resendResetCodeIn: "Resend in",
-      emailVerificationTitle: "Verify your email",
-      emailVerificationBody: "Enter the code sent to your email to finish sign in.",
-      emailVerificationSentTo: "Code sent to",
-      emailVerificationCode: "Verification code",
-      emailVerificationCodePlaceholder: "Enter the code from the email",
-      confirmEmail: "Confirm email",
+      missingDetailBody: "Enter your email to request a reset link.",
+      resetLinkSentTitle: "Reset link sent",
+      resetLinkSentBody: "Check your email and follow the instructions to reset your password.",
       backToLogin: "Back to login",
       resetFailedTitle: "Reset failed",
       email: "Email",
@@ -861,29 +827,12 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       forgotHeader: "الاستعادة",
       forgotTitle: "استعادة الوصول",
       forgotBody: "أدخل بريدك الإلكتروني لاستعادة هويتك بأمان.",
-      requestResetLink: "إرسال رمز إعادة التعيين",
+      requestResetLink: "طلب رابط إعادة التعيين",
       sending: "جارٍ الإرسال...",
       missingDetailTitle: "تفصيل ناقص",
-      missingDetailBody: "أدخل بريدك الإلكتروني لطلب رمز إعادة التعيين.",
-      resetLinkSentTitle: "تم إرسال رمز إعادة التعيين",
-      resetLinkSentBody: "تم إرسال الرمز إلى",
-      resetToken: "رمز إعادة التعيين",
-      resetTokenPlaceholder: "الصق الرمز من البريد الإلكتروني",
-      newPassword: "كلمة المرور الجديدة",
-      confirmPassword: "تأكيد كلمة المرور",
-      completeReset: "تحديث كلمة المرور",
-      resetCompleteTitle: "تم تحديث كلمة المرور",
-      resetCompleteBody: "تم تغيير كلمة مرور Qentrah. سجّل الدخول بكلمة المرور الجديدة.",
-      resetPasswordMismatch: "كلمتا المرور الجديدتان غير متطابقتين.",
-      resetPasswordShort: "استخدم 8 أحرف على الأقل لكلمة المرور الجديدة.",
-      resendResetCode: "إعادة إرسال الرمز",
-      resendResetCodeIn: "إعادة الإرسال بعد",
-      emailVerificationTitle: "تحقق من بريدك",
-      emailVerificationBody: "أدخل الرمز المرسل إلى بريدك لإكمال تسجيل الدخول.",
-      emailVerificationSentTo: "تم إرسال الرمز إلى",
-      emailVerificationCode: "رمز التحقق",
-      emailVerificationCodePlaceholder: "أدخل الرمز من البريد الإلكتروني",
-      confirmEmail: "تأكيد البريد",
+      missingDetailBody: "أدخل بريدك الإلكتروني لطلب رابط إعادة التعيين.",
+      resetLinkSentTitle: "تم إرسال رابط إعادة التعيين",
+      resetLinkSentBody: "تحقق من بريدك الإلكتروني واتبع التعليمات لإعادة تعيين كلمة المرور.",
       backToLogin: "العودة لتسجيل الدخول",
       resetFailedTitle: "فشل إعادة التعيين",
       email: "البريد الإلكتروني",
@@ -1182,29 +1131,12 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       forgotHeader: "Récupération",
       forgotTitle: "Rétablir l’accès",
       forgotBody: "Entrez votre e-mail pour récupérer votre identité en toute sécurité.",
-      requestResetLink: "Envoyer le code",
+      requestResetLink: "Demander un lien",
       sending: "Envoi...",
       missingDetailTitle: "Information manquante",
-      missingDetailBody: "Entrez votre e-mail pour demander un code de réinitialisation.",
-      resetLinkSentTitle: "Code envoyé",
-      resetLinkSentBody: "Code envoyé à",
-      resetToken: "Code de réinitialisation",
-      resetTokenPlaceholder: "Collez le code reçu par e-mail",
-      newPassword: "Nouveau mot de passe",
-      confirmPassword: "Confirmer le mot de passe",
-      completeReset: "Mettre à jour le mot de passe",
-      resetCompleteTitle: "Mot de passe mis à jour",
-      resetCompleteBody: "Votre mot de passe Qentrah a été modifié. Connectez-vous avec le nouveau mot de passe.",
-      resetPasswordMismatch: "Les nouveaux mots de passe ne correspondent pas.",
-      resetPasswordShort: "Utilisez au moins 8 caractères pour le nouveau mot de passe.",
-      resendResetCode: "Renvoyer le code",
-      resendResetCodeIn: "Renvoyer dans",
-      emailVerificationTitle: "Vérifiez votre e-mail",
-      emailVerificationBody: "Entrez le code reçu par e-mail pour terminer la connexion.",
-      emailVerificationSentTo: "Code envoyé à",
-      emailVerificationCode: "Code de vérification",
-      emailVerificationCodePlaceholder: "Entrez le code reçu par e-mail",
-      confirmEmail: "Confirmer l’e-mail",
+      missingDetailBody: "Entrez votre e-mail pour demander un lien de réinitialisation.",
+      resetLinkSentTitle: "Lien envoyé",
+      resetLinkSentBody: "Vérifiez votre e-mail et suivez les instructions.",
       backToLogin: "Retour à la connexion",
       resetFailedTitle: "Échec de réinitialisation",
       email: "E-mail",

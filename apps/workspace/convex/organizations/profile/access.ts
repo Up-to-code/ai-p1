@@ -1,12 +1,9 @@
 import { v } from "convex/values";
 import type { MutationCtx, QueryCtx } from "../../_generated/server";
 import { query } from "../../_generated/server";
-import { authComponent } from "../../auth";
-import {
-  evaluateOrganizationCapabilities,
-  organizationCapabilityChecks,
-  type OrganizationCapabilityKey,
-} from "../../../src/packages/authz";
+import { components } from "../../_generated/api";
+import { authComponent, createAuth } from "../../auth";
+import { evaluateOrganizationCapabilities } from "../../../src/packages/authz";
 import { isPlatformAdminEmail } from "../../../src/packages/config/auth";
 
 type OrganizationAction = "read" | "update";
@@ -29,7 +26,6 @@ type OrganizationPermissionResource =
 const capabilitiesReturnValidator = v.object({
   canReadOrganization: v.boolean(),
   canUpdateOrganization: v.boolean(),
-  canReadMembers: v.boolean(),
   canInviteMembers: v.boolean(),
   canUpdateMembers: v.boolean(),
   canRemoveMembers: v.boolean(),
@@ -57,7 +53,6 @@ const capabilitiesReturnValidator = v.object({
   canCreateMedia: v.boolean(),
   canUpdateMedia: v.boolean(),
   canDeleteMedia: v.boolean(),
-  canReadIntegrations: v.boolean(),
   canReadApiKeys: v.boolean(),
   canCreateApiKeys: v.boolean(),
   canUpdateApiKeys: v.boolean(),
@@ -70,55 +65,23 @@ const capabilitiesReturnValidator = v.object({
   canManageVisibility: v.boolean(),
 });
 
-type WorkOSUserRef = {
+type BetterAuthUserRef = {
   id?: string;
   _id?: string;
   email?: string;
 };
 
-function authUserId(user: WorkOSUserRef) {
+type BetterAuthMemberRef = {
+  role?: string | null;
+};
+
+type BetterAuthDynamicRoleRef = {
+  role?: string | null;
+  permission?: string | null;
+};
+
+function authUserId(user: BetterAuthUserRef) {
   return user.id ?? user._id;
-}
-
-function memberHasPermissionSlugs(
-  member: { permissions?: string[] } | null,
-  resource: OrganizationPermissionResource,
-  action: string,
-) {
-  return member?.permissions?.includes(`${resource}:${action}`) === true;
-}
-
-function capabilityKeyFor(resource: OrganizationPermissionResource, action: string) {
-  for (const [key, check] of Object.entries(organizationCapabilityChecks)) {
-    if (check.resource === resource && check.action === action) return key as OrganizationCapabilityKey;
-  }
-  return null;
-}
-
-async function getWorkOSMember(ctx: QueryCtx | MutationCtx, organizationId: string, userId: string) {
-  const members = await ctx.db
-    .query("workosOrganizationMembers")
-    .withIndex("by_user", (q) => q.eq("userId", userId))
-    .collect();
-  return members.find((member) => member.organizationId === organizationId && member.status === "active") ?? null;
-}
-
-async function getOrganizationCapabilitiesForUser(
-  ctx: QueryCtx | MutationCtx,
-  organizationId: string,
-  user: WorkOSUserRef,
-) {
-  const userId = authUserId(user);
-  const isPlatformAdmin = isPlatformAdminEmail(user.email);
-  if (!userId) {
-    return evaluateOrganizationCapabilities({ isPlatformAdmin });
-  }
-
-  const member = await getWorkOSMember(ctx, organizationId, userId);
-  return evaluateOrganizationCapabilities({
-    memberRole: member?.role,
-    isPlatformAdmin,
-  });
 }
 
 export async function assertOrganizationPermission(
@@ -135,7 +98,17 @@ export async function assertOrganizationResourcePermission(
   resource: OrganizationPermissionResource,
   action: string,
 ) {
-  if (!(await canUseOrganizationResourceAction(ctx, organizationId, resource, action))) {
+  await authComponent.getAuthUser(ctx);
+  const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
+  const permission = await auth.api.hasPermission({
+    body: {
+      organizationId,
+      permissions: { [resource]: [action] },
+    },
+    headers,
+  });
+
+  if (!permission.success) {
     throw new Error(`You do not have permission to ${action} this organization ${resource}.`);
   }
 }
@@ -146,15 +119,17 @@ export async function canUseOrganizationResourceAction(
   resource: OrganizationPermissionResource,
   action: string,
 ) {
-  const user = await authComponent.getAuthUser(ctx) as WorkOSUserRef;
-  const userId = authUserId(user);
-  const member = userId ? await getWorkOSMember(ctx, organizationId, userId) : null;
-  if (memberHasPermissionSlugs(member, resource, action)) return true;
-  const capabilities = await getOrganizationCapabilitiesForUser(ctx, organizationId, user);
-  if (capabilities.isPlatformAdmin) return true;
-  if (resource === "visibility" && action === "update") return capabilities.canManageVisibility;
-  const key = capabilityKeyFor(resource, action);
-  return key ? capabilities[key] === true : false;
+  await authComponent.getAuthUser(ctx);
+  const { auth, headers } = await authComponent.getAuth(createAuth, ctx);
+  const permission = await auth.api.hasPermission({
+    body: {
+      organizationId,
+      permissions: { [resource]: [action] },
+    },
+    headers,
+  });
+
+  return permission.success;
 }
 
 export const canUpdateProfile = query({
@@ -210,7 +185,45 @@ export const getCapabilities = query({
   args: { organizationId: v.string() },
   returns: capabilitiesReturnValidator,
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx) as WorkOSUserRef;
-    return getOrganizationCapabilitiesForUser(ctx, args.organizationId, user);
+    const user = await authComponent.getAuthUser(ctx) as BetterAuthUserRef;
+    const userId = authUserId(user);
+    const isPlatformAdmin = isPlatformAdminEmail(user.email);
+    if (!userId) {
+      return evaluateOrganizationCapabilities({ isPlatformAdmin });
+    }
+
+    const member = await ctx.runQuery(components.betterAuth.adapter.findOne, {
+      model: "member",
+      where: [
+        { field: "organizationId", value: args.organizationId },
+        { field: "userId", value: userId },
+      ],
+    }) as BetterAuthMemberRef | null;
+
+    const dynamicRolesPage = await ctx.runQuery(components.betterAuth.adapter.findMany, {
+      model: "organizationRole",
+      where: [{ field: "organizationId", value: args.organizationId }],
+      paginationOpts: { numItems: 100, cursor: null },
+    }) as { page: BetterAuthDynamicRoleRef[] };
+
+    const invalidDynamicRoles: string[] = [];
+    const capabilities = evaluateOrganizationCapabilities({
+      memberRole: member?.role,
+      dynamicRoles: dynamicRolesPage.page.flatMap((role: BetterAuthDynamicRoleRef) =>
+        role.role && role.permission
+          ? [{ role: role.role, permission: role.permission }]
+          : [],
+      ),
+      isPlatformAdmin,
+      onInvalidDynamicRole: (role) => invalidDynamicRoles.push(role),
+    });
+
+    for (const role of invalidDynamicRoles) {
+      console.warn(
+        `[organization-capabilities] Ignored invalid dynamic role permission JSON for organization ${args.organizationId}: ${role}`,
+      );
+    }
+
+    return capabilities;
   },
 });

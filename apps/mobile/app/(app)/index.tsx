@@ -108,12 +108,14 @@ function HomeMenuAction({ colorScheme, fallbackIconColor, label, onPress, style,
     return (
       <SwiftUIHost colorScheme={colorScheme} matchContents style={style}>
         <SwiftUIButton
-          color={tintColor}
-          controlSize="regular"
+          label={label}
           onPress={onPress}
           systemImage="line.3.horizontal"
-          variant="plain"
           modifiers={[
+            modifiers.buttonStyle("plain"),
+            modifiers.controlSize("regular"),
+            modifiers.labelStyle("iconOnly"),
+            modifiers.tint(tintColor),
             modifiers.frame({ width: 30, height: 30 }),
             modifiers.accessibilityLabel(label),
           ]}

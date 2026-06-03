@@ -26,7 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Link, useRouter } from "@/i18n/routing";
 import { useAccountContext } from "@/domains/auth";
-import { getOrganizationCapabilities } from "@/domains/organization/api/workos-organization";
+import { getOrganizationCapabilities } from "@/domains/organization/api/better-auth-organization";
 import { CLIENTS_PAGE_SIZE, linkClientUnitRequest, unlinkClientUnitRequest, useClientsPagedQuery, usePropertyClientLinksQuery } from "@/domains/clients/api/clients";
 import { createPropertyRequest, deletePropertyRequest, PROPERTIES_PAGE_SIZE, updatePropertyRequest, usePropertiesIndexQuery, usePropertyQuery } from "../api/properties";
 import { useProjectOptionsQueryResult } from "@/domains/projects/api/projects";

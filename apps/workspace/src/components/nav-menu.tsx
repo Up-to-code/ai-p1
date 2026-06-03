@@ -11,7 +11,13 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { publicNavItems } from "@/components/landing/public-nav-items";
+
+const navItems = [
+  { key: "solutions", href: "/#solutions" },
+  { key: "pricing", href: "/#pricing" },
+  { key: "resources", href: "/#resources" },
+  { key: "company", href: "/about" },
+] as const;
 
 export const NavMenu = (props: ComponentProps<typeof NavigationMenu>) => {
   const t = useTranslations("Landing.nav");
@@ -19,7 +25,7 @@ export const NavMenu = (props: ComponentProps<typeof NavigationMenu>) => {
   return (
     <NavigationMenu {...props}>
       <NavigationMenuList className="gap-1 data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-start data-[orientation=vertical]:justify-start">
-        {publicNavItems.map((item) => (
+        {navItems.map((item) => (
           <NavigationMenuItem key={item.key}>
             <NavigationMenuLink className={navigationMenuTriggerStyle()} render={<Link href={item.href} />}>
               {t(item.key)}

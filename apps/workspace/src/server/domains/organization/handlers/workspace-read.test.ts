@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@/server/auth/convex-workos/server", () => ({
+vi.mock("@/server/auth/better-auth/server", () => ({
   fetchAuthQuery: vi.fn(),
 }));
 import {

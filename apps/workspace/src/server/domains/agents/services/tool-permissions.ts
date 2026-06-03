@@ -7,7 +7,6 @@ import type {
 export type AgentOrganizationCapabilities = {
   canReadOrganization: boolean;
   canUpdateOrganization: boolean;
-  canReadMembers: boolean;
   canInviteMembers: boolean;
   canUpdateMembers: boolean;
   canRemoveMembers: boolean;
@@ -39,7 +38,6 @@ export type AgentOrganizationCapabilities = {
   canCreateMedia: boolean;
   canUpdateMedia: boolean;
   canDeleteMedia: boolean;
-  canReadIntegrations: boolean;
 };
 
 export function agentToolPermissionsFromCapabilities(capabilities: AgentOrganizationCapabilities): McpPermission[] {
@@ -49,7 +47,7 @@ export function agentToolPermissionsFromCapabilities(capabilities: AgentOrganiza
       capabilities.canUpdateOrganization && "update",
     ],
     member: [
-      capabilities.canReadMembers && "read",
+      capabilities.canReadOrganization && "read",
       capabilities.canInviteMembers && "create",
       capabilities.canUpdateMembers && "update",
       capabilities.canRemoveMembers && "delete",
@@ -95,9 +93,6 @@ export function agentToolPermissionsFromCapabilities(capabilities: AgentOrganiza
       capabilities.canCreateMedia && "create",
       capabilities.canUpdateMedia && "update",
       capabilities.canDeleteMedia && "delete",
-    ],
-    integration: [
-      capabilities.canReadIntegrations && "read",
     ],
   } satisfies Record<McpPermissionResource, Array<McpPermissionAction | false>>;
 

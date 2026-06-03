@@ -26,7 +26,6 @@ describe("personal MCP link source guards", () => {
 
     expect(source).toContain("filterLivePermissions");
     expect(source).toContain("canUserUseMcpAction");
-    expect(source).toContain("member.permissions.includes(`${resource}:${action}`)");
     expect(source).toContain("hasMcpPermission(livePermissions, args.resource, args.action)");
     expect(permissions).toContain("hasMcpPermission");
     expect(source).toContain("permissions: livePermissions");

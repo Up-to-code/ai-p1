@@ -1,6 +1,7 @@
+import { getToken } from "@convex-dev/better-auth/utils";
 import { UploadThingError } from "uploadthing/server";
 import { z } from "zod";
-import { resolveConvexAuthToken } from "@/server/auth/convex-workos/token";
+import { convexRuntimeConfig } from "@/packages/config";
 import { assertCanUseOrganizationResource } from "@/server/utils/organization/access-checker";
 
 export const organizationUploadInputSchema = z.object({
@@ -62,9 +63,9 @@ export const agentMessageAttachmentUploadPolicy = {
 } as const;
 
 export async function requireSignedInUploadUser(req: Request) {
-  const token = await resolveConvexAuthToken(new Headers(req.headers));
+  const token = await getToken(convexRuntimeConfig.siteUrl, new Headers(req.headers));
 
-  if (!token) {
+  if (!token.token) {
     throw new UploadThingError("You must be signed in to upload a profile picture.");
   }
 

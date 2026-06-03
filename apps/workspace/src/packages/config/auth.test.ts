@@ -16,9 +16,10 @@ afterEach(() => {
 describe("auth runtime config", () => {
   it("uses the public site URL when explicit auth URLs are absent", async () => {
     const { getAuthRuntimeConfig } = await loadAuthConfig({
-      WORKOS_COOKIE_PASSWORD: "x".repeat(32),
+      BETTER_AUTH_SECRET: "x".repeat(32),
       NEXT_PUBLIC_SITE_URL: "https://w-ai.online",
       SITE_URL: "",
+      BETTER_AUTH_URL: "",
       VERCEL_URL: "",
       VERCEL_PROJECT_PRODUCTION_URL: "",
     });
@@ -31,9 +32,10 @@ describe("auth runtime config", () => {
 
   it("adds configured trusted origins with URL normalization", async () => {
     const { getAuthRuntimeConfig } = await loadAuthConfig({
-      WORKOS_COOKIE_PASSWORD: "x".repeat(32),
+      BETTER_AUTH_SECRET: "x".repeat(32),
       SITE_URL: "http://localhost:3000",
-      TRUSTED_ORIGINS: "w-ai.online, https://admin.w-ai.online, qentrah://auth-callback, partners.w-ai.online",
+      BETTER_AUTH_TRUSTED_ORIGINS: "w-ai.online, https://admin.w-ai.online, qentrah://auth-callback ",
+      TRUSTED_ORIGINS: "partners.w-ai.online",
     });
 
     expect(getAuthRuntimeConfig("runtime").trustedOrigins).toEqual(
@@ -48,12 +50,14 @@ describe("auth runtime config", () => {
 
   it("trusts the production Workspace and Admin origins by default", async () => {
     const { getAuthRuntimeConfig } = await loadAuthConfig({
-      WORKOS_COOKIE_PASSWORD: "x".repeat(32),
+      BETTER_AUTH_SECRET: "x".repeat(32),
       VERCEL_URL: "",
       VERCEL_PROJECT_PRODUCTION_URL: "",
       NEXT_PUBLIC_SITE_URL: "",
       SITE_URL: "",
+      BETTER_AUTH_URL: "",
       ADMIN_SITE_URL: "",
+      BETTER_AUTH_TRUSTED_ORIGINS: "",
       TRUSTED_ORIGINS: "",
     });
 

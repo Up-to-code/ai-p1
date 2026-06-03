@@ -31,7 +31,7 @@ describe("property detail redesign source", () => {
     }
     expect(source).toContain("<Tabs defaultValue=\"overview\"");
     expect(source).toContain("<AppTabsList");
-    expect(source).toContain("className=\"gap-8\"");
+    expect(source).toContain("className=\"min-w-0 space-y-3\"");
     expect(source).toContain("<div className=\"mt-6\">");
     expect(source).not.toContain("rounded-[18px] border border-zinc-200/70 bg-zinc-50/70 p-1");
   });

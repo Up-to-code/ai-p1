@@ -12,7 +12,6 @@ import { useAppLocalization } from "@/foundation/localization";
 import { Text } from "@/foundation/primitives/Text";
 import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
-import { useSystemUI } from "@/foundation/system/useSystemUI";
 
 type ButtonProps = PressableProps & {
   label: string;
@@ -33,8 +32,7 @@ export function Button({
 }: ButtonProps) {
   const { colors } = useTheme();
   const { isRTL } = useAppLocalization();
-  const { sizes } = useSystemUI();
-  const styles = useMemo(() => createStyles(colors, sizes.auth), [colors, sizes.auth]);
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <Pressable
@@ -50,7 +48,6 @@ export function Button({
       {leading ? <View style={styles.leading}>{leading}</View> : null}
       <Text 
         variant="label" 
-        numberOfLines={2}
         style={[
           styles.label, 
           variant === "primary" ? styles.primaryLabel : styles.secondaryLabel,
@@ -64,15 +61,15 @@ export function Button({
   );
 }
 
-const createStyles = (colors: AppColors, authSizes: ReturnType<typeof useSystemUI>["sizes"]["auth"]) => StyleSheet.create({
+const createStyles = (colors: AppColors) => StyleSheet.create({
   base: {
-    minHeight: authSizes.buttonHeight,
+    minHeight: 48,
     borderRadius: theme.radii.pill,
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
     gap: theme.spacing.sm,
-    paddingHorizontal: authSizes.buttonHorizontalPadding,
+    paddingHorizontal: theme.spacing.xl,
   },
   primary: {
     backgroundColor: colors.accent,
@@ -90,11 +87,6 @@ const createStyles = (colors: AppColors, authSizes: ReturnType<typeof useSystemU
   },
   label: {
     fontFamily: "Manrope_800ExtraBold",
-    fontSize: authSizes.buttonFontSize,
-    lineHeight: authSizes.buttonLineHeight,
-    flexShrink: 1,
-    minWidth: 0,
-    textAlign: "center",
   },
   primaryLabel: {
     color: "#FFFFFF",
@@ -104,11 +96,9 @@ const createStyles = (colors: AppColors, authSizes: ReturnType<typeof useSystemU
   },
   leading: {
     marginRight: theme.spacing.xs,
-    flexShrink: 0,
   },
   trailing: {
     marginLeft: theme.spacing.xs,
-    flexShrink: 0,
   },
   rtl: {
     flexDirection: "row-reverse",

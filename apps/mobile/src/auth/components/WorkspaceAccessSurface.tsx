@@ -130,7 +130,7 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
   },
   content: {
     flexGrow: 1,
-    paddingHorizontal: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.xl,
   },
   topBar: {
     minHeight: 40,
@@ -155,8 +155,8 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     backgroundColor: colors.accent,
   },
   hero: {
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.lg,
+    paddingTop: theme.spacing.xl,
+    paddingBottom: theme.spacing.xl,
     gap: theme.spacing.xs,
     alignItems: isRTL ? "flex-end" : "flex-start",
   },
@@ -170,8 +170,8 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
   },
   title: {
     color: colors.textPrimary,
-    fontSize: 28,
-    lineHeight: 34,
+    fontSize: 30,
+    lineHeight: 36,
     fontFamily: "Manrope_800ExtraBold",
     textAlign: isRTL ? "right" : "left",
   },
@@ -227,7 +227,6 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
   },
   rowText: {
     flex: 1,
-    minWidth: 0,
     gap: 2,
     alignItems: isRTL ? "flex-end" : "flex-start",
   },

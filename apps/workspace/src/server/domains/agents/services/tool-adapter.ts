@@ -3,7 +3,7 @@ import type { Id } from "@convex/_generated/dataModel";
 import type { ToolSet } from "ai";
 import type { Context } from "hono";
 import { z } from "zod";
-import { fetchAuthQuery } from "@/server/auth/convex-workos/server";
+import { fetchAuthQuery } from "@/server/auth/better-auth/server";
 import type { MobileRequestContext } from "@/server/middleware/mobile-request-context";
 import {
   allowedMcpTools,

@@ -1,12 +1,14 @@
+"use client";
+
 import { ArrowRight, ArrowUpRight } from "lucide-react";
-import { getLocale, getTranslations } from "next-intl/server";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
-const CTA = async () => {
-  const t = await getTranslations("Landing.home.cta");
-  const locale = await getLocale();
+const CTA = () => {
+  const t = useTranslations("Landing.home.cta");
+  const locale = useLocale();
   const isAr = locale === "ar";
 
   return (

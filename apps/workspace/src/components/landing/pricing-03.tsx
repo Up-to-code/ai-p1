@@ -6,27 +6,18 @@ import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import type { Transition } from "framer-motion";
 import { ArrowRight, CalendarDays, CircleCheck, Sparkles } from "lucide-react";
-import {
-  billingSelectionKey,
-  getMarketPricing,
-  resolveSubscriptionEntitlements,
-  type BillingCycle,
-  type SubscriptionEntitlements,
-  type SubscriptionPlanId,
-} from "@qentrah/domain-contracts/subscription-pricing";
 
 import { LandingButton, PublicSection } from "@/components/landing/public-landing-kit";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 type TooltipKey = "sync" | "ai" | "governance";
-type PricingCycle = "monthly" | "annual";
+type BillingCycle = "monthly" | "annual";
 
 type PricingPlan = {
-  id: SubscriptionPlanId;
+  id: "saudi_monthly" | "saudi_yearly" | "custom";
   name: string;
   price: number | "custom";
-  entitlements?: SubscriptionEntitlements;
   period?: "month" | "year";
   country?: string;
   description: string;
@@ -68,108 +59,86 @@ const planCopy = {
     },
     plans: [
       {
-        id: "good",
-        name: "Good",
+        id: "saudi_monthly",
+        name: "Saudi Arabia",
         country: "Saudi Arabia",
-        price: "custom",
+        price: 499,
         period: "month",
-        description: "For teams that need the core real estate workspace, light app access, and no bundled AI credit spend.",
+        description: "For Saudi real estate teams running properties, clients, calendars, automations, and connected sales channels from one workspace.",
         buttonText: "Start setup",
-        href: "/billing?plan=good_monthly",
+        href: "/billing?plan=saudi_monthly",
+        isPopular: true,
         features: [
           { title: "Project management", tooltip: "sync" },
           { title: "Unit management" },
           { title: "Client management" },
           { title: "Calendar management" },
-          { title: "Limited apps and integrations" },
-          { title: "Starter API access" },
-          { title: "No bundled AI credits", tooltip: "ai" },
-        ],
-      },
-      {
-        id: "better",
-        name: "Better",
-        country: "Saudi Arabia",
-        price: "custom",
-        period: "month",
-        description: "For teams that want AI agents, higher usage budgets, and broader app access in daily operations.",
-        buttonText: "Start with AI",
-        href: "/billing?plan=better_monthly",
-        isPopular: true,
-        features: [
-          { title: "Everything in Good" },
+          { title: "Apps and integrations" },
+          { title: "Social media channels" },
+          { title: "Website management" },
+          { title: "API access" },
           { title: "AI agents and workflows", tooltip: "ai" },
-          { title: "3 included AI credit cards" },
-          { title: "Standard apps and integrations", tooltip: "sync" },
-          { title: "Higher API and agent-link quotas" },
-          { title: "Priority support", tooltip: "governance" },
         ],
       },
       {
         id: "custom",
         name: "Custom",
         price: "custom",
-        description: "For larger teams that need custom AI budgets, private workflows, custom apps, and dedicated onboarding.",
+        description: "For larger teams that want Qentrah designed around their operating model, website, agents, and private workflows.",
         buttonText: "Talk to Qentrah",
         href: "/contact",
         features: [
-          { title: "Custom AI credit cards", tooltip: "ai" },
-          { title: "Custom app and integration access", tooltip: "sync" },
-          { title: "Custom API and agent-link quotas" },
+          { title: "Custom managed website" },
+          { title: "Custom integrations", tooltip: "sync" },
+          { title: "Private API keys" },
+          { title: "Webhooks" },
+          { title: "Agent links" },
+          { title: "AI agent setup", tooltip: "ai" },
+          { title: "CRM setup" },
+          { title: "Calendar setup" },
           { title: "Dedicated onboarding", tooltip: "governance" },
         ],
       },
     ],
     annualPlans: [
       {
-        id: "good",
-        name: "Good",
+        id: "saudi_yearly",
+        name: "Annual price",
         country: "Saudi Arabia",
-        price: "custom",
+        price: 5988,
         period: "year",
-        description: "Annual core workspace access for teams that want predictable operations without bundled AI credit spend.",
+        description: "One yearly Qentrah workspace period for teams managing properties, clients, automations, agents, and connected channels.",
         buttonText: "Start annual setup",
-        href: "/billing?plan=good_yearly",
+        href: "/billing?plan=saudi_yearly",
+        isPopular: true,
         features: [
           { title: "Project management", tooltip: "sync" },
           { title: "Unit management" },
           { title: "Client management" },
           { title: "Calendar management" },
-          { title: "Limited apps and integrations" },
-          { title: "Starter API access" },
-          { title: "No bundled AI credits", tooltip: "ai" },
-        ],
-      },
-      {
-        id: "better",
-        name: "Better",
-        country: "Saudi Arabia",
-        price: "custom",
-        period: "year",
-        description: "Annual AI-enabled workspace access with included AI credit cards and broader app access.",
-        buttonText: "Start annual AI setup",
-        href: "/billing?plan=better_yearly",
-        isPopular: true,
-        features: [
-          { title: "Everything in Good" },
+          { title: "Apps and integrations" },
+          { title: "Social media channels" },
+          { title: "Website management" },
+          { title: "API access" },
           { title: "AI agents and workflows", tooltip: "ai" },
-          { title: "3 included AI credit cards" },
-          { title: "Standard apps and integrations", tooltip: "sync" },
-          { title: "Higher API and agent-link quotas" },
-          { title: "Priority support", tooltip: "governance" },
         ],
       },
       {
         id: "custom",
         name: "Custom",
         price: "custom",
-        description: "For larger teams that need custom AI budgets, private workflows, custom apps, and dedicated onboarding.",
+        description: "For larger teams that want Qentrah designed around their operating model, website, agents, and private workflows.",
         buttonText: "Talk to Qentrah",
         href: "/contact",
         features: [
-          { title: "Custom AI credit cards", tooltip: "ai" },
-          { title: "Custom app and integration access", tooltip: "sync" },
-          { title: "Custom API and agent-link quotas" },
+          { title: "Custom managed website" },
+          { title: "Custom integrations", tooltip: "sync" },
+          { title: "Private API keys" },
+          { title: "Webhooks" },
+          { title: "Agent links" },
+          { title: "AI agent setup", tooltip: "ai" },
+          { title: "CRM setup" },
+          { title: "Calendar setup" },
           { title: "Dedicated onboarding", tooltip: "governance" },
         ],
       },
@@ -203,102 +172,84 @@ const planCopy = {
     },
     plans: [
       {
-        id: "good",
-        name: "Good",
+        id: "saudi_monthly",
+        name: "باقة مرنة",
         price: 499,
         period: "month",
         description: "اختر الباقة التي تناسب حجم فريقك وطريقة تشغيلك، وابدأ بإدارة المشاريع، الوحدات، العملاء، والفرص من مساحة واحدة.",
         buttonText: "ابدأ الإعداد",
-        href: "/billing?plan=good_monthly",
+        href: "/billing?plan=saudi_monthly",
+        isPopular: true,
         features: [
           { title: "إدارة المشاريع", tooltip: "sync" },
           { title: "إدارة الوحدات" },
           { title: "إدارة العملاء" },
           { title: "إدارة التقويم" },
-          { title: "تكاملات محدودة" },
-          { title: "وصول API أساسي" },
-          { title: "بدون رصيد ذكاء اصطناعي مضمّن", tooltip: "ai" },
-        ],
-      },
-      {
-        id: "better",
-        name: "Better",
-        price: "custom",
-        period: "month",
-        description: "للفرق التي تريد وكلاء ذكاء اصطناعي، رصيد استخدام أعلى، ووصولاً أوسع للتطبيقات.",
-        buttonText: "ابدأ مع الذكاء الاصطناعي",
-        href: "/billing?plan=better_monthly",
-        isPopular: true,
-        features: [
-          { title: "كل مزايا Good" },
+          { title: "التطبيقات والتكاملات" },
+          { title: "قنوات التواصل الاجتماعي" },
+          { title: "إدارة الموقع الإلكتروني" },
+          { title: "وصول API" },
           { title: "وكلاء الذكاء الاصطناعي وسير العمل", tooltip: "ai" },
-          { title: "3 بطاقات رصيد ذكاء اصطناعي" },
-          { title: "تكاملات وتطبيقات أوسع", tooltip: "sync" },
-          { title: "حصص أعلى للـ API وروابط الوكلاء" },
         ],
       },
       {
         id: "custom",
         name: "باقة مخصصة",
         price: "custom",
-        description: "للفرق الأكبر التي تحتاج رصيد ذكاء اصطناعي مخصص، تطبيقات خاصة، وتهيئة مخصصة.",
+        description: "للمطورين والفرق التي تحتاج حلولًا مصممة حسب التشغيل، الموقع، الوكلاء، وسير العمل الخاص.",
         buttonText: "تحدث مع كانترا",
         href: "/contact",
         features: [
-          { title: "بطاقات رصيد ذكاء اصطناعي مخصصة", tooltip: "ai" },
-          { title: "تطبيقات وتكاملات مخصصة", tooltip: "sync" },
-          { title: "حصص API وروابط وكلاء مخصصة" },
+          { title: "موقع مخصص ومدار" },
+          { title: "تكاملات مخصصة", tooltip: "sync" },
+          { title: "مفاتيح API خاصة" },
+          { title: "Webhooks" },
+          { title: "روابط الوكلاء" },
+          { title: "إعداد وكلاء الذكاء الاصطناعي", tooltip: "ai" },
+          { title: "إعداد CRM" },
+          { title: "إعداد التقويم" },
           { title: "تهيئة مخصصة", tooltip: "governance" },
         ],
       },
     ],
     annualPlans: [
       {
-        id: "good",
-        name: "Good",
+        id: "saudi_yearly",
+        name: "باقة مرنة",
         price: 5988,
         period: "year",
         description: "اختر الباقة التي تناسب حجم فريقك وطريقة تشغيلك، وابدأ بإدارة المشاريع، الوحدات، العملاء، والفرص من مساحة واحدة.",
         buttonText: "ابدأ الإعداد السنوي",
-        href: "/billing?plan=good_yearly",
+        href: "/billing?plan=saudi_yearly",
+        isPopular: true,
         features: [
           { title: "إدارة المشاريع", tooltip: "sync" },
           { title: "إدارة الوحدات" },
           { title: "إدارة العملاء" },
           { title: "إدارة التقويم" },
-          { title: "تكاملات محدودة" },
-          { title: "وصول API أساسي" },
-          { title: "بدون رصيد ذكاء اصطناعي مضمّن", tooltip: "ai" },
-        ],
-      },
-      {
-        id: "better",
-        name: "Better",
-        price: "custom",
-        period: "year",
-        description: "وصول سنوي لمساحة عمل مدعومة بالذكاء الاصطناعي مع بطاقات رصيد مضمّنة وتكاملات أوسع.",
-        buttonText: "ابدأ الإعداد السنوي للذكاء الاصطناعي",
-        href: "/billing?plan=better_yearly",
-        isPopular: true,
-        features: [
-          { title: "كل مزايا Good" },
+          { title: "التطبيقات والتكاملات" },
+          { title: "قنوات التواصل الاجتماعي" },
+          { title: "إدارة الموقع الإلكتروني" },
+          { title: "وصول API" },
           { title: "وكلاء الذكاء الاصطناعي وسير العمل", tooltip: "ai" },
-          { title: "3 بطاقات رصيد ذكاء اصطناعي" },
-          { title: "تكاملات وتطبيقات أوسع", tooltip: "sync" },
-          { title: "حصص أعلى للـ API وروابط الوكلاء" },
         ],
       },
       {
         id: "custom",
         name: "باقة مخصصة",
         price: "custom",
-        description: "للفرق الأكبر التي تحتاج رصيد ذكاء اصطناعي مخصص، تطبيقات خاصة، وتهيئة مخصصة.",
+        description: "للمطورين والفرق التي تحتاج حلولًا مصممة حسب التشغيل، الموقع، الوكلاء، وسير العمل الخاص.",
         buttonText: "تحدث مع كانترا",
         href: "/contact",
         features: [
-          { title: "بطاقات رصيد ذكاء اصطناعي مخصصة", tooltip: "ai" },
-          { title: "تطبيقات وتكاملات مخصصة", tooltip: "sync" },
-          { title: "حصص API وروابط وكلاء مخصصة" },
+          { title: "موقع مخصص ومدار" },
+          { title: "تكاملات مخصصة", tooltip: "sync" },
+          { title: "مفاتيح API خاصة" },
+          { title: "Webhooks" },
+          { title: "روابط الوكلاء" },
+          { title: "إعداد وكلاء الذكاء الاصطناعي", tooltip: "ai" },
+          { title: "إعداد CRM" },
+          { title: "إعداد التقويم" },
           { title: "تهيئة مخصصة", tooltip: "governance" },
         ],
       },
@@ -308,7 +259,7 @@ const planCopy = {
   "en" | "ar",
   {
     eyebrow: string;
-    tabs: Record<PricingCycle, string>;
+    tabs: Record<BillingCycle, string>;
     popular: string;
     perMonth: string;
     perYear: string;
@@ -332,8 +283,8 @@ const planCopy = {
 
 export function Pricing03({ locale }: { locale: string }) {
   const copy = locale === "ar" ? planCopy.ar : planCopy.en;
-  const [billingCycle, setBillingCycle] = useState<PricingCycle>("annual");
-  const activePlans = hydratePlans(billingCycle === "monthly" ? copy.plans : copy.annualPlans, billingCycle === "monthly" ? "monthly" : "yearly");
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>("annual");
+  const activePlans = billingCycle === "monthly" ? copy.plans : copy.annualPlans;
   const shouldReduceMotion = useReducedMotion();
   const panelTransition: Transition = shouldReduceMotion ? { duration: 0 } : { duration: 0.34, ease: [0.22, 1, 0.36, 1] };
   const indicatorTransition: Transition = shouldReduceMotion ? { duration: 0 } : { duration: 0.32, ease: [0.22, 1, 0.36, 1] };
@@ -382,7 +333,7 @@ export function Pricing03({ locale }: { locale: string }) {
           initial={false}
           transition={panelTransition}
         >
-          <div className="relative grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <div className="relative grid grid-cols-1 gap-5 lg:grid-cols-2">
             {activePlans.map((plan, index) => (
               <motion.div
                 animate={{ opacity: 1, y: 0 }}
@@ -414,20 +365,6 @@ export function Pricing03({ locale }: { locale: string }) {
       </div>
     </PublicSection>
   );
-}
-
-function hydratePlans(plans: PricingPlan[], cycle: BillingCycle): PricingPlan[] {
-  return plans.map((plan) => {
-    const marketPricing = getMarketPricing({ marketId: "sa", planId: plan.id, cycle });
-    return {
-      ...plan,
-      price: marketPricing.amount ?? "custom",
-      period: cycle === "yearly" ? "year" : "month",
-      href: plan.id === "custom" ? plan.href : `/billing?plan=${billingSelectionKey({ planId: plan.id, cycle })}`,
-      entitlements: resolveSubscriptionEntitlements(plan.id),
-      isPopular: marketPricing.publicFeatureFlags.highlighted,
-    };
-  });
 }
 
 function TamaraAnnualBanner({ copy }: { copy: (typeof planCopy)["en"] | (typeof planCopy)["ar"] }) {
@@ -469,7 +406,7 @@ function TamaraAnnualBanner({ copy }: { copy: (typeof planCopy)["en"] | (typeof 
             <Sparkles className="mt-1 h-5 w-5 shrink-0 text-[#9600F1]" />
           </div>
           <LandingButton
-            href="/billing?plan=good_yearly"
+            href="/billing?plan=saudi_yearly"
             className="mt-4 h-11 w-full rounded-full border-[#9600F1] bg-[#9600F1] text-white hover:bg-[#7E00CA] dark:border-[#9600F1] dark:bg-[#9600F1] dark:text-white"
             variant="secondary"
           >
@@ -479,20 +416,6 @@ function TamaraAnnualBanner({ copy }: { copy: (typeof planCopy)["en"] | (typeof 
         </div>
       </div>
     </aside>
-  );
-}
-
-function formatQuota(value: number) {
-  if (value >= 1_000_000) return "Custom";
-  return value.toLocaleString();
-}
-
-function PlanLimit({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 dark:border-white/10 dark:bg-white/[0.045]">
-      <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{label}</p>
-      <p className="mt-1 truncate text-xs font-black capitalize text-zinc-900 dark:text-white">{value}</p>
-    </div>
   );
 }
 
@@ -557,14 +480,6 @@ function PlanCard({
             )}
           </p>
         </div>
-        {plan.entitlements && (
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <PlanLimit label="AI credits" value={plan.entitlements.aiAccess ? plan.entitlements.includedCredits.toLocaleString() : "None"} />
-            <PlanLimit label="Apps" value={plan.entitlements.appAccessLevel} />
-            <PlanLimit label="API calls" value={formatQuota(plan.entitlements.apiKeyQuota)} />
-            <PlanLimit label="Agent links" value={formatQuota(plan.entitlements.agentLinkQuota)} />
-          </div>
-        )}
       </div>
 
       <LandingButton

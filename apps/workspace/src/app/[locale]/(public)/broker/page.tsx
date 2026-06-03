@@ -1,26 +1,17 @@
+"use client";
+
 import { CalendarClock, CheckCircle2, Home, MessageSquareText, Search, UsersRound } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/routing";
-import { publicPageMetadata } from "@/lib/seo/public-pages";
 
 type WorkflowItem = {
   title: string;
   description: string;
 };
 
-type PageProps = {
-  params: Promise<{ locale: string }>;
-};
-
-export async function generateMetadata({ params }: PageProps) {
-  const { locale } = await params;
-  return publicPageMetadata(locale, "broker");
-}
-
-export default async function BrokerPage({ params }: PageProps) {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Landing.broker" });
+export default function BrokerPage() {
+  const t = useTranslations("Landing.broker");
   const workflow = t.raw("workflow.items") as WorkflowItem[];
   const points = [
     { icon: UsersRound, title: t("signals.clients.value"), description: t("signals.clients.helper") },

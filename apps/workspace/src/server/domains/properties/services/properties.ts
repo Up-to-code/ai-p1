@@ -1,5 +1,5 @@
 import { api } from "@convex/_generated/api";
-import { fetchAuthMutation } from "@/server/auth/convex-workos/server";
+import { fetchAuthMutation } from "@/server/auth/better-auth/server";
 import type { PropertyPayload } from "../validation/property.schema";
 
 export async function createProperty(organizationId: string, input: PropertyPayload) {

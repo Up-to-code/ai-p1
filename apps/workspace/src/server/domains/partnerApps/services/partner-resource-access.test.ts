@@ -1,13 +1,15 @@
 import { Hono } from "hono";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Id } from "@convex/_generated/dataModel";
+import { verifyAccessToken } from "better-auth/oauth2";
 import { convexCalls } from "@/server/convex/http-client";
 import {
   partnerResourceAccessError,
   requirePartnerResourceAccess,
-  writeAuthorizedPartnerResource,
 } from "./partner-resource-access";
-import { writeOrganizationApiKeyResource, writePartnerResource } from "./resources";
+
+vi.mock("better-auth/oauth2", () => ({
+  verifyAccessToken: vi.fn(),
+}));
 
 vi.mock("@convex/_generated/api", () => ({
   api: {
@@ -16,7 +18,7 @@ vi.mock("@convex/_generated/api", () => ({
     },
     partnerApps: {
       apps: {
-        validateWorkOSApiKey: "partnerApps.apps.validateWorkOSApiKey",
+        validateAccess: "partnerApps.apps.validateAccess",
       },
     },
   },
@@ -27,9 +29,6 @@ vi.mock("@/packages/config", () => ({
     issuer: "https://qentrah.test",
     oauthAudience: "https://api.qentrah.test",
   },
-  workosRuntimeConfig: {
-    apiKey: "sk_test",
-  },
 }));
 
 vi.mock("@/server/convex/http-client", () => ({
@@ -39,16 +38,9 @@ vi.mock("@/server/convex/http-client", () => ({
   },
 }));
 
-vi.mock("./resources", () => ({
-  readOrganizationApiKeyResource: vi.fn(),
-  readPartnerResource: vi.fn(),
-  writeOrganizationApiKeyResource: vi.fn(),
-  writePartnerResource: vi.fn(),
-}));
-
+const verifyAccessTokenMock = vi.mocked(verifyAccessToken);
 const convexMutationMock = vi.mocked(convexCalls.mutation);
-const writePartnerResourceMock = vi.mocked(writePartnerResource);
-const writeOrganizationApiKeyResourceMock = vi.mocked(writeOrganizationApiKeyResource);
+const convexQueryMock = vi.mocked(convexCalls.query);
 
 function appForAccessTests() {
   const app = new Hono();
@@ -63,19 +55,44 @@ function appForAccessTests() {
   return app;
 }
 
-describe("partner resource access", () => {
+describe("partner resource access seam", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("rejects legacy OAuth bearer tokens", async () => {
+  it("authorizes OAuth bearer access through Better Auth claims and organization grants", async () => {
+    verifyAccessTokenMock.mockResolvedValueOnce({
+      organization_id: "org_1",
+      azp: "partners_client_1",
+      partner_scopes: ["client:read"],
+      scope: "openid client:read",
+    });
+    convexQueryMock.mockResolvedValueOnce({
+      ok: true,
+      partnerAppId: "partners_app_1",
+      connectionId: "connection_1",
+      scopes: ["client:read"],
+      appName: "Partner CRM",
+    });
+
     const response = await appForAccessTests().request("/organizations/org_1/clients", {
       headers: { authorization: "Bearer oauth-token" },
     });
 
-    expect(response.status).toBe(410);
-    await expect(response.json()).resolves.toEqual({
-      error: "Partner OAuth bearer tokens have been removed. Use a WorkOS partner API key.",
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      type: "oauth",
+      organizationId: "org_1",
+      partnerAppId: "partners_app_1",
+      connectionId: "connection_1",
+      scopes: ["client:read"],
+    });
+    expect(convexQueryMock).toHaveBeenCalledWith("partnerApps.apps.validateAccess", {
+      organizationId: "org_1",
+      partnersClientId: "partners_client_1",
+      scopes: ["client:read"],
+      resource: "client",
+      action: "read",
     });
   });
 
@@ -86,13 +103,14 @@ describe("partner resource access", () => {
     await expect(response.json()).resolves.toEqual({
       error: "Bearer tokens must use the Authorization header.",
     });
+    expect(verifyAccessTokenMock).not.toHaveBeenCalled();
   });
 
-  it("preserves missing bearer challenge", async () => {
+  it("preserves missing OAuth bearer challenge", async () => {
     const response = await appForAccessTests().request("/organizations/org_1/clients");
 
     expect(response.status).toBe(401);
-    expect(response.headers.get("www-authenticate")).toContain("Bearer resource_metadata=");
+    expect(response.headers.get("www-authenticate")).toContain("https://api.qentrah.test");
   });
 
   it("authorizes organization API key bearer access through quota reservation", async () => {
@@ -117,37 +135,23 @@ describe("partner resource access", () => {
       keyId: "component_key_1",
       scopes: ["client:read"],
     });
+    expect(convexMutationMock).toHaveBeenCalledWith("organizationApiKeys.validateAndReserve", {
+      organizationId: "org_1",
+      secret: "qentrah_org_secret",
+      resource: "client",
+      action: "read",
+    });
+    expect(verifyAccessTokenMock).not.toHaveBeenCalled();
   });
 
-  it("routes WorkOS partner API key writes as partner app access, not legacy OAuth", async () => {
-    writePartnerResourceMock.mockResolvedValueOnce({ ok: true });
+  it("preserves organization API key rate limit status", async () => {
+    convexMutationMock.mockResolvedValueOnce({ ok: false, reason: "rate_limited" });
 
-    await expect(writeAuthorizedPartnerResource({
-      type: "workosPartnerApiKey",
-      token: "sk_live_secret",
-      organizationId: "org_1",
-      partnerId: "partner_1",
-      partnerClientId: "partners_client_1",
-      partnersAppId: "partners_app_1",
-      partnersClientId: "partners_client_1",
-      connectionId: "connection_1" as Id<"organizationPartnerConnections">,
-      apiKeyId: "workos_key_1" as Id<"workosPartnerApiKeys">,
-      workosApiKeyId: "api_key_1",
-      workosOwnerOrganizationId: "org_workos_1",
-      name: "CRM",
-      scopes: ["client:update"],
-    }, "client", "update", { clientId: "client_1" })).resolves.toEqual({ ok: true });
+    const response = await appForAccessTests().request("/organizations/org_1/clients", {
+      headers: { authorization: "Bearer qentrah_org_secret" },
+    });
 
-    expect(writeOrganizationApiKeyResourceMock).not.toHaveBeenCalled();
-    expect(writePartnerResourceMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: "partnerApp",
-        partnerAppId: "partners_app_1",
-        connectionId: "connection_1",
-      }),
-      "client",
-      "update",
-      { clientId: "client_1" },
-    );
+    expect(response.status).toBe(429);
+    await expect(response.json()).resolves.toEqual({ error: "rate_limited" });
   });
 });

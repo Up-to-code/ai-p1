@@ -59,7 +59,7 @@ import {
   type OrganizationInvitation,
   type OrganizationMember,
   type OrganizationRole,
-} from "../api/workos-organization";
+} from "../api/better-auth-organization";
 import { OrganizationLogoUploader } from "./organization-logo-uploader";
 import {
   advancedActionColumns,
@@ -781,13 +781,11 @@ const agentPermissionAreas: Array<{
   icon: typeof Users;
   actions: McpPermissionAction[];
 }> = [
-  { resource: "member", icon: Users, actions: ["read"] },
   { resource: "client", icon: Users, actions: ["read", "create", "update", "delete"] },
   { resource: "property", icon: Home, actions: ["read", "create", "update", "delete"] },
   { resource: "project", icon: Building2, actions: ["read", "create", "update", "delete"] },
   { resource: "calendar", icon: CalendarDays, actions: ["read", "create", "update", "delete"] },
   { resource: "task", icon: CheckCircle2, actions: ["read", "create", "update", "delete"] },
-  { resource: "integration", icon: LinkIcon, actions: ["read"] },
   { resource: "media", icon: FileText, actions: ["read", "create"] },
 ];
 
@@ -798,12 +796,10 @@ const agentPresets: Array<{ id: AgentPresetId; permissions: McpConnectionPermiss
     id: "client",
     permissions: [
       { resource: "organization", actions: ["read"] },
-      { resource: "member", actions: ["read"] },
       { resource: "client", actions: ["read", "create", "update"] },
       { resource: "property", actions: ["read"] },
       { resource: "calendar", actions: ["read", "create", "update"] },
       { resource: "task", actions: ["read", "create", "update"] },
-      { resource: "integration", actions: ["read"] },
       { resource: "media", actions: ["read", "create"] },
     ],
   },
@@ -811,11 +807,9 @@ const agentPresets: Array<{ id: AgentPresetId; permissions: McpConnectionPermiss
     id: "apartment",
     permissions: [
       { resource: "organization", actions: ["read"] },
-      { resource: "member", actions: ["read"] },
       { resource: "client", actions: ["read", "update"] },
       { resource: "property", actions: ["read", "create", "update"] },
       { resource: "project", actions: ["read", "update"] },
-      { resource: "integration", actions: ["read"] },
       { resource: "media", actions: ["read", "create"] },
     ],
   },
@@ -823,26 +817,22 @@ const agentPresets: Array<{ id: AgentPresetId; permissions: McpConnectionPermiss
     id: "calendar",
     permissions: [
       { resource: "organization", actions: ["read"] },
-      { resource: "member", actions: ["read"] },
       { resource: "client", actions: ["read"] },
       { resource: "property", actions: ["read"] },
       { resource: "project", actions: ["read"] },
       { resource: "calendar", actions: ["read", "create", "update"] },
       { resource: "task", actions: ["read", "update"] },
-      { resource: "integration", actions: ["read"] },
     ],
   },
   {
     id: "full",
     permissions: [
       { resource: "organization", actions: ["read"] },
-      { resource: "member", actions: ["read"] },
       { resource: "client", actions: ["read", "create", "update", "delete"] },
       { resource: "property", actions: ["read", "create", "update", "delete"] },
       { resource: "project", actions: ["read", "create", "update", "delete"] },
       { resource: "calendar", actions: ["read", "create", "update", "delete"] },
       { resource: "task", actions: ["read", "create", "update", "delete"] },
-      { resource: "integration", actions: ["read"] },
       { resource: "media", actions: ["read", "create"] },
     ],
   },

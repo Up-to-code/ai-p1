@@ -18,16 +18,6 @@ type PartnerConnectionsPayload = {
   connections?: PartnerConnection[];
 };
 
-type WorkOSPartnerApiKeyPayload = {
-  apiKey?: {
-    id: string;
-    workosApiKeyId: string;
-    key: string;
-    keyLast4: string;
-    permissions: string[];
-  };
-};
-
 export const partnerCatalogFilters: PartnerCatalogFilter[] = ["all", "connected", "available"];
 
 async function readJsonPayload<T>(response: Response, errorMessage: string): Promise<T> {
@@ -87,36 +77,6 @@ export async function createPartnerConnectionGrant(
     "Partner connection could not be created.",
     fetcher,
   );
-}
-
-export async function createWorkOSPartnerApiKey(
-  organizationId: string,
-  input: {
-    connectionId: string;
-    partnerId: string;
-    partnerClientId: string;
-    name: string;
-    permissions: string[];
-    expiresAt?: number;
-  },
-  fetcher: Fetcher = fetch,
-) {
-  const response = await fetcher(
-    organizationApiPath(organizationId, "partner-workos-api-keys"),
-    {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(input),
-    },
-  );
-  const payload = await readJsonPayload<WorkOSPartnerApiKeyPayload>(
-    response,
-    "WorkOS partner API key could not be created.",
-  );
-  if (!payload.apiKey) {
-    throw new Error("WorkOS partner API key could not be created.");
-  }
-  return payload.apiKey;
 }
 
 export async function revokePartnerConnection(
@@ -336,7 +296,7 @@ export function usePartnerConnections(organizationId?: string | null) {
   }, [organizationId]);
 
   useEffect(() => {
-    void Promise.resolve().then(refreshConnections);
+    refreshConnections();
   }, [refreshConnections]);
 
   return { connections, isLoading, refreshConnections };

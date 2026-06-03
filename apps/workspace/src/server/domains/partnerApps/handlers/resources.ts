@@ -9,12 +9,12 @@ import {
   acceptInboundWebhook,
 } from "../services/resources";
 import {
-  isOrganizationApiKeyAccess,
+  isPartnerApiKeyAccess,
+  isPartnerOAuthAccess,
   partnerResourceAccessError,
   partnerResourceAccessIdentity,
   readAuthorizedPartnerResource,
   requirePartnerResourceAccess,
-  toPartnerAppAccess,
   writeAuthorizedPartnerResource,
 } from "../services/partner-resource-access";
 
@@ -106,15 +106,14 @@ export async function handlePartnerInboundWebhook(c: Context) {
 
   try {
     const access = await requirePartnerResourceAccess(c, "client", "create");
-    if (isOrganizationApiKeyAccess(access)) {
-      return c.json({ error: "Organization API keys cannot call inbound webhook endpoints." }, 403);
+    if (isPartnerApiKeyAccess(access)) {
+      return c.json({ error: "API keys cannot call inbound webhook endpoints." }, 403);
     }
-    const partnerAccess = toPartnerAppAccess(access);
-    if (!partnerAccess) {
+    if (!isPartnerOAuthAccess(access)) {
       return c.json({ error: "Partner access denied." }, 401);
     }
     return c.json({
-      result: await acceptInboundWebhook(partnerAccess, {
+      result: await acceptInboundWebhook(access, {
         ...parsed.data,
         idempotencyKey: c.req.header("idempotency-key") ?? undefined,
       }),

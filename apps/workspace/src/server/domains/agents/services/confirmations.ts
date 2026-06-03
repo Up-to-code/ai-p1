@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { fetchAuthMutation } from "@/server/auth/convex-workos/server";
+import { fetchAuthMutation } from "@/server/auth/better-auth/server";
 import { getMobileRequestContext } from "@/server/middleware/mobile-request-context";
 import { executeConfirmedAgentTool, type AgentToolResult } from "./tool-adapter";
 

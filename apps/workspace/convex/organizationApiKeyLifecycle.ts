@@ -2,7 +2,6 @@ import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { apiKeys } from "./apiKeys";
 import { authComponent } from "./auth";
-import { getBillingPlan } from "./billing/data";
 import { assertOrganizationResourcePermission } from "./organizations/profile/access";
 
 export const ORGANIZATION_API_KEY_PREFIX = "qentrah_org_";
@@ -12,14 +11,6 @@ export const ORGANIZATION_API_KEY_QUOTA_WINDOW_MS = 60 * 60 * 1000;
 type ApiKeyResource = "organization" | "client" | "property" | "project" | "calendar" | "task" | "media";
 type ApiKeyAction = "read" | "create" | "update" | "delete";
 type ApiKeyPermission = { resource: ApiKeyResource; actions: ApiKeyAction[] };
-
-async function organizationApiKeyQuotaLimit(ctx: QueryCtx | MutationCtx, organizationId: string) {
-  const subscription = await ctx.db
-    .query("organizationSubscriptions")
-    .withIndex("by_organization_id", (q) => q.eq("organizationId", organizationId))
-    .first();
-  return getBillingPlan(subscription?.planId ?? "good_monthly").entitlements.apiKeyQuota;
-}
 
 export function organizationApiKeyStatus(key: Pick<Doc<"organizationApiKeys">, "status" | "expiresAt">, now = Date.now()) {
   return key.status === "active" && key.expiresAt && key.expiresAt <= now ? "expired" as const : key.status;
@@ -277,8 +268,7 @@ export async function validateAndReserveOrganizationApiKey(
   const windowStartedAt = key.quotaWindowStartedAt ?? now;
   const isCurrentWindow = now - windowStartedAt < ORGANIZATION_API_KEY_QUOTA_WINDOW_MS;
   const nextQuotaUsed = isCurrentWindow ? (key.quotaUsed ?? 0) + 1 : 1;
-  const quotaLimit = await organizationApiKeyQuotaLimit(ctx, args.organizationId);
-  if (nextQuotaUsed > quotaLimit) return { ok: false, reason: "rate_limited" };
+  if (nextQuotaUsed > ORGANIZATION_API_KEY_QUOTA_LIMIT) return { ok: false, reason: "rate_limited" };
 
   await apiKeys.touch(ctx, { keyId: key.keyId });
   await ctx.db.patch(apiKeyId, {

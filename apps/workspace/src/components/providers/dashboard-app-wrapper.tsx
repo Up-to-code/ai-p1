@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { redirect, usePathname, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import { PendingApprovalBanner } from "@/components/layout/pending-approval-banner";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ToastProvider } from "@/components/ui/toast";
 import { AccountProvider, useAccountContext } from "@/domains/auth";
 import { getWorkspaceAuthRedirect } from "@/domains/auth/workspace-status";
-import { clearAuthHandoff, getAuthHandoffRemainingMs, readAuthHandoff, type AuthHandoff } from "@/domains/auth";
+import { clearAuthHandoff, readAuthHandoff } from "@/domains/auth";
 import { markAppPerformance } from "@/lib/utils/performance";
 
 // This wrapper is the dashboard boundary: auth and app-wide providers live here.
@@ -27,7 +27,6 @@ export function DashboardAppWrapper({ children }: { children: ReactNode }) {
 function DashboardAuthenticatedShell({ children }: { children: ReactNode }) {
   const locale = useLocale();
   const pathname = usePathname();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const account = useAccountContext();
   const isAuthHandoffPending = useAuthHandoffPending(account.isSignedIn, account.workspace.organizationId);
@@ -50,12 +49,12 @@ function DashboardAuthenticatedShell({ children }: { children: ReactNode }) {
     }
   }, [account.workspace.organizationId, account.workspace.status]);
 
-  useEffect(() => {
-    if (authRedirect) router.replace(authRedirect);
-  }, [authRedirect, router]);
-
-  if (account.workspace.status === "loadingSession" || isAuthHandoffPending || authRedirect) {
+  if (account.workspace.status === "loadingSession" || isAuthHandoffPending) {
     return <DashboardLoadingState />;
+  }
+
+  if (authRedirect) {
+    redirect(authRedirect);
   }
 
   const isPendingApproval = false;
@@ -80,38 +79,27 @@ function DashboardAuthenticatedShell({ children }: { children: ReactNode }) {
 }
 
 function useAuthHandoffPending(isSignedIn: boolean, organizationId: string | null) {
-  const [pendingHandoff, setPendingHandoff] = useState<AuthHandoff | null>(() => {
+  const [pendingOrganizationId, setPendingOrganizationId] = useState<string | null>(() => {
     if (typeof window === "undefined") return null;
-    return readAuthHandoff();
+    const handoff = readAuthHandoff();
+    return handoff?.organizationId ?? null;
   });
-  const pendingOrganizationId = pendingHandoff?.organizationId ?? null;
 
   useEffect(() => {
-    if (!pendingHandoff) return;
-
-    const clearPendingHandoff = () => {
-      clearAuthHandoff();
-      queueMicrotask(() => setPendingHandoff(null));
-    };
+    if (!pendingOrganizationId) return;
 
     if (isSignedIn && organizationId === pendingOrganizationId) {
-      clearPendingHandoff();
-      return;
-    }
-
-    const remainingMs = getAuthHandoffRemainingMs(pendingHandoff);
-    if (remainingMs === 0) {
-      clearPendingHandoff();
+      clearAuthHandoff();
       return;
     }
 
     const timeout = window.setTimeout(() => {
       clearAuthHandoff();
-      setPendingHandoff(null);
-    }, remainingMs);
+      setPendingOrganizationId(null);
+    }, 12_000);
 
     return () => window.clearTimeout(timeout);
-  }, [isSignedIn, organizationId, pendingHandoff, pendingOrganizationId]);
+  }, [isSignedIn, organizationId, pendingOrganizationId]);
 
   return Boolean(
     pendingOrganizationId &&

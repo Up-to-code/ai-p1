@@ -11,18 +11,13 @@ import {
   type OrganizationApiKeyAccessContext,
 } from "./organization-api-key-access";
 import {
-  isLikelyWorkOSPartnerApiKeyToken,
-  requireWorkOSPartnerApiKeyAccess,
-  type WorkOSPartnerApiKeyAccessContext,
-} from "./workos-partner-api-key-access";
-import {
   readOrganizationApiKeyResource,
   readPartnerResource,
   writeOrganizationApiKeyResource,
   writePartnerResource,
 } from "./resources";
 
-export type PartnerResourceAccessContext = PartnerAccessContext | OrganizationApiKeyAccessContext | WorkOSPartnerApiKeyAccessContext;
+export type PartnerResourceAccessContext = PartnerAccessContext | OrganizationApiKeyAccessContext;
 
 function routeOrganizationId(c: Context) {
   const organizationId = c.req.param("organizationId");
@@ -42,43 +37,14 @@ function authorizationBearerToken(c: Context) {
 
 export function isPartnerApiKeyAccess(
   access: PartnerResourceAccessContext,
-): access is OrganizationApiKeyAccessContext | WorkOSPartnerApiKeyAccessContext {
-  return access.type === "apiKey" || access.type === "workosPartnerApiKey";
-}
-
-export function isOrganizationApiKeyAccess(
-  access: PartnerResourceAccessContext,
 ): access is OrganizationApiKeyAccessContext {
   return access.type === "apiKey";
 }
 
 export function isPartnerOAuthAccess(
   access: PartnerResourceAccessContext,
-): access is PartnerAccessContext & { type: "oauth" } {
-  return access.type === "oauth";
-}
-
-export function isPartnerAppAccess(
-  access: PartnerResourceAccessContext,
 ): access is PartnerAccessContext {
-  return access.type === "oauth" || access.type === "partnerApp";
-}
-
-export function toPartnerAppAccess(
-  access: PartnerResourceAccessContext,
-): PartnerAccessContext | null {
-  if (access.type === "oauth" || access.type === "partnerApp") return access;
-  if (access.type !== "workosPartnerApiKey") return null;
-  return {
-    type: "partnerApp",
-    token: access.token,
-    organizationId: access.organizationId,
-    partnersClientId: access.partnersClientId,
-    partnerAppId: access.partnersAppId,
-    connectionId: access.connectionId,
-    scopes: access.scopes,
-    appName: access.name,
-  };
+  return access.type === "oauth";
 }
 
 export async function requirePartnerResourceAccess(
@@ -91,9 +57,6 @@ export async function requirePartnerResourceAccess(
   if (isOrganizationApiKeyToken(token)) {
     return requireOrganizationApiKeyAccess(c, organizationId, resource, action);
   }
-  if (isLikelyWorkOSPartnerApiKeyToken(token)) {
-    return requireWorkOSPartnerApiKeyAccess(c, organizationId, resource, action);
-  }
   return authorizePartnerResourceRequest(c, organizationId, resource, action);
 }
 
@@ -104,11 +67,7 @@ export function partnerResourceAccessError(error: unknown) {
 
 export function partnerResourceAccessIdentity(access: PartnerResourceAccessContext) {
   return isPartnerApiKeyAccess(access)
-    ? {
-      apiKeyId: access.apiKeyId,
-      keyId: access.type === "apiKey" ? access.keyId : access.workosApiKeyId,
-      appName: access.name,
-    }
+    ? { apiKeyId: access.apiKeyId, keyId: access.keyId, appName: access.name }
     : { partnerAppId: access.partnerAppId, connectionId: access.connectionId, appName: access.appName };
 }
 
@@ -118,9 +77,7 @@ export function readAuthorizedPartnerResource(
   input?: unknown,
 ) {
   return isPartnerApiKeyAccess(access)
-    ? access.type === "apiKey"
-      ? readOrganizationApiKeyResource(access.organizationId, resource, input)
-      : readPartnerResource(access.organizationId, resource, input)
+    ? readOrganizationApiKeyResource(access.organizationId, resource, input)
     : readPartnerResource(access.organizationId, resource, input);
 }
 
@@ -130,13 +87,7 @@ export function writeAuthorizedPartnerResource(
   action: Exclude<PartnerPermissionAction, "read">,
   input?: unknown,
 ) {
-  if (access.type === "apiKey") {
-    return writeOrganizationApiKeyResource(access, resource, action, input);
-  }
-  if (access.type === "workosPartnerApiKey") {
-    const partnerAccess = toPartnerAppAccess(access);
-    if (!partnerAccess) throw new Error("Partner access denied.");
-    return writePartnerResource(partnerAccess, resource, action, input);
-  }
-  return writePartnerResource(access, resource, action, input);
+  return isPartnerApiKeyAccess(access)
+    ? writeOrganizationApiKeyResource(access, resource, action, input)
+    : writePartnerResource(access, resource, action, input);
 }

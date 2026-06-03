@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery as useReactQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useAccountContext } from "@/domains/auth";
-import { getOrganizationCapabilities } from "@/domains/organization/api/workos-organization";
+import { getOrganizationCapabilities } from "@/domains/organization/api/better-auth-organization";
 import { createClientRequest, updateClientRequest } from "@/domains/clients/api/clients";
 import type { Client, ClientType, PipelineStage } from "../store/clients.types";
 import { clientSchema, type ClientFormValues } from "../validation/client.schema";

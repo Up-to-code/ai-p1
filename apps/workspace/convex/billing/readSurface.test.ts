@@ -30,19 +30,13 @@ describe("billing read surface", () => {
   });
 
   it("composes subscription overview with inactive fallback plan", () => {
-    expect(billingSubscriptionOverview(null, null)).toMatchObject({
+    expect(billingSubscriptionOverview(null, null)).toEqual({
       plan: {
-        id: "good_monthly",
-        planId: "good",
-        marketId: "sa",
-        billingCycle: "monthly",
+        id: "saudi_monthly",
+        name: "Qentrah Saudi Arabia",
         amount: 499,
         currency: "SAR",
         periodDays: 30,
-      },
-      entitlements: {
-        aiAccess: false,
-        includedCredits: 0,
       },
       subscription: null,
       latestPayment: null,
@@ -60,9 +54,9 @@ describe("billing read surface", () => {
     };
 
     expect(billingSubscriptionOverview(subscription, payment({ _id: "payment_1" }))).toMatchObject({
-      plan: { id: "good_yearly", planId: "good", billingCycle: "yearly" },
-      subscription: { id: "subscription_1", planId: "good", billingCycle: "yearly" },
-      latestPayment: { id: "payment_1", planId: "good", billingCycle: "monthly" },
+      plan: { id: "saudi_yearly" },
+      subscription: { id: "subscription_1", planId: "saudi_yearly" },
+      latestPayment: { id: "payment_1", planId: "saudi_monthly" },
     });
   });
 });

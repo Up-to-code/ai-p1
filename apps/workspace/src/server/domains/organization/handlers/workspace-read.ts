@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
-import { fetchAuthQuery } from "@/server/auth/convex-workos/server";
+import { fetchAuthQuery } from "@/server/auth/better-auth/server";
 import {
   readOptionalIdQuery,
   readOptionalNumberQuery,

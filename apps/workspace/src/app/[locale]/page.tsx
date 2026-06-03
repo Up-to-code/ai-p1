@@ -1,4 +1,6 @@
-import { getTranslations } from "next-intl/server";
+"use client";
+
+import { useLocale, useTranslations } from "next-intl";
 
 import CTA from "@/components/cta";
 import Footer from "@/components/footer";
@@ -12,20 +14,10 @@ import { ProblemSection } from "@/components/landing/problem-section";
 import { AppsPlatform } from "@/components/landing/apps-platform";
 import { AnimatedHomeHero } from "@/components/landing/animated-home-hero";
 import LogoCloud from "@/components/logo-cloud";
-import { publicPageMetadata } from "@/lib/seo/public-pages";
 
-type PageProps = {
-  params: Promise<{ locale: string }>;
-};
-
-export async function generateMetadata({ params }: PageProps) {
-  const { locale } = await params;
-  return publicPageMetadata(locale, "home");
-}
-
-export default async function InstitutionalLanding({ params }: PageProps) {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Landing.home" });
+export default function InstitutionalLanding() {
+  const t = useTranslations("Landing.home");
+  const locale = useLocale();
   const isAr = locale === "ar";
 
   return (
