@@ -1,5 +1,5 @@
 import { Alert, Image, Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { Redirect, useRouter } from "expo-router";
+import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 
@@ -15,6 +15,8 @@ import { AppleIcon, GoogleIcon } from "@/foundation/components/BrandIcons";
 import { TypewriterText } from "@/foundation/components/TypewriterText";
 import { useAppLocalization } from "@/foundation/localization";
 import { markAuthSessionActive } from "@/auth/signOut";
+import { mobilePostAuthRoute, sanitizeAuthCallback } from "@/auth/authNavigation";
+import { useWorkspaceIdentity } from "@/auth/useWorkspaceIdentity";
 import {
   mobileSocialProviders,
   signInWithWorkspaceSocialProvider,
@@ -23,17 +25,20 @@ import {
 
 export default function AuthScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ callbackURL?: string | string[] }>();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const { t, isRTL, locale } = useAppLocalization();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const landingPhrases = useMemo(() => t.auth.landingPhrases, [t.auth.landingPhrases]);
   const { canAccessApp, isReady } = useAuthSession();
+  const workspace = useWorkspaceIdentity();
+  const postAuthRoute = sanitizeAuthCallback(params.callbackURL);
   const signInInFlightRef = useRef(false);
   const [signingProvider, setSigningProvider] = useState<MobileSocialProvider | null>(null);
 
-  if (isReady && canAccessApp) {
-    return <Redirect href="/(app)" />;
+  if (isReady && canAccessApp && workspace.status !== "loading") {
+    return <Redirect href={mobilePostAuthRoute({ canAccessApp, workspaceStatus: workspace.status })} />;
   }
 
   const handleSocialSignIn = async (provider: MobileSocialProvider) => {
@@ -50,7 +55,7 @@ export default function AuthScreen() {
       }
       await signInWithWorkspaceSocialProvider(authClient, provider);
       markAuthSessionActive();
-      router.replace("/");
+      router.replace(postAuthRoute as never);
     } catch (error) {
       Alert.alert(
         t.auth.signInUnavailableTitle,

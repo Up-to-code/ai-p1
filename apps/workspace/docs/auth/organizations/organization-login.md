@@ -20,6 +20,8 @@ Purpose: User signs in personally, then selects active organization.
 - Plain Convex Auth is forbidden.
 - Organization context is required for organization-scoped access.
 - Scopes grant client capability; workspace permissions and visibility decide resource access.
+- After personal sign-in, Workspace and Mobile must route authenticated users through active organization resolution before opening organization-scoped surfaces.
+- Signed-in users with no active organization must land on the organization chooser, where they can select an existing organization or create one.
 
 ## Implementation Rules
 

@@ -45,3 +45,15 @@ test("workspace chooser does not expose manual invite entry UI", () => {
   assert.equal(source.includes("invite_input"), false);
   assert.equal(source.includes("parseInviteInput"), false);
 });
+
+test("mobile layouts require workspace identity before opening the app shell", () => {
+  const appLayout = readFileSync(path.resolve(appRoot, "(app)/_layout.tsx"), "utf8");
+  const authLayout = readFileSync(path.resolve(appRoot, "(auth)/_layout.tsx"), "utf8");
+  const authScreen = readFileSync(path.resolve(appRoot, "(auth)/index.tsx"), "utf8");
+
+  assert.equal(appLayout.includes("useWorkspaceIdentity"), true);
+  assert.equal(appLayout.includes('workspace.status !== "ready"'), true);
+  assert.equal(authLayout.includes("mobilePostAuthRoute"), true);
+  assert.equal(authScreen.includes("mobilePostAuthRoute"), true);
+  assert.equal(authScreen.includes('Redirect href="/(app)"'), false);
+});

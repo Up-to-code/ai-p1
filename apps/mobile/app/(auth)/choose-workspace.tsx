@@ -64,7 +64,7 @@ export default function ChooseWorkspaceScreen() {
     }
   };
 
-  const useAnotherAccount = async () => {
+  const handleUseAnotherAccount = async () => {
     await signOutForAccountSwitch();
     router.replace("/(auth)");
   };
@@ -94,7 +94,7 @@ export default function ChooseWorkspaceScreen() {
               variant="ghost"
               label={t.workspaceAccess.useAnotherAccount}
               leading={<LogOut size={16} color={colors.textSecondary} style={mirrorIcon(isRTL)} />}
-              onPress={() => void useAnotherAccount()}
+              onPress={() => void handleUseAnotherAccount()}
               textStyle={styles.footerGhostText}
             />
           ) : null}

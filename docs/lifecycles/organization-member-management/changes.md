@@ -22,3 +22,11 @@
 
 - Deepened the organization access-policy Module with one owner-retention Interface shared by member removal and member role changes.
 - Preserved existing self-removal, missing-member, assignable-role, built-in-role, and last-owner error behavior.
+
+## 2026-06-03 Auth Organization Selection Redirects
+
+- Hardened Workspace `choose-org` so organization APIs mount only after Better Auth session hydration confirms the user is signed in.
+- Centralized Mobile post-auth route decisions in the auth navigation Module so social sign-in and OAuth callback return through the Workspace gate instead of hard-coding home.
+- Required Mobile app and auth layouts to resolve active Workspace identity before opening the app shell, so a signed-in user without an active organization lands on create/select workspace instead of home or app content.
+- Fixed Mobile invite sign-in to target the actual auth entry route and preserve the invite callback path.
+- Renamed the Mobile account-switch handler so React hook linting does not misclassify it as a hook.

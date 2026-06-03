@@ -4,7 +4,6 @@ import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { CheckCircle2, Loader2, LogIn, TriangleAlert } from "lucide-react-native";
 
 import { Button } from "@/foundation/primitives/Button";
-import { Text } from "@/foundation/primitives/Text";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useAppLocalization } from "@/foundation/localization";
@@ -70,7 +69,7 @@ export default function AcceptInviteScreen() {
           <LogIn size={28} color={colors.accent} />
           <Button
             label={t.auth.logIn}
-            onPress={() => router.replace(authRouteWithCallback("/(auth)/login", currentPath) as never)}
+            onPress={() => router.replace(authRouteWithCallback("/(auth)", currentPath) as never)}
           />
         </View>
       </WorkspaceAccessSurface>
