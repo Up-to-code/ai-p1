@@ -26,7 +26,7 @@ export function useGoogleSignIn({ callbackURL }: AuthRedirectOptions) {
         title: "Google sign-in failed",
         description:
           message.includes("provider") || message.includes("client")
-            ? "Google OAuth is not configured. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, then restart Convex."
+            ? "Google sign-in is not enabled in Clerk. Enable the Google provider in Clerk, then try again."
             : message,
         type: "error",
       });

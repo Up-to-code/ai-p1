@@ -963,6 +963,10 @@
     "signUpLink": "Sign up",
     "signInLink": "Sign in",
     "connecting": "Connecting...",
+    "connectingGoogle": "Opening Google...",
+    "connectingApple": "Opening Apple...",
+    "connectingEmail": "Checking account...",
+    "verifyingCode": "Verifying code...",
     "createAccount": "Create an Account",
     "createAccountDesc": "Join the central synchronization engine for Saudi real estate.",
     "visualEyebrow": "Market truth, partner motion, workspace action",
@@ -975,7 +979,19 @@
     "agreementAnd": "and",
     "agreementPrivacy": "Privacy Policy",
     "agreementSuffix": ".",
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "errors": {
+      "authStillLoading": "Authentication is still loading. Try again in a moment.",
+      "callbackFailed": "Could not complete sign-in. Return to sign-in and try again.",
+      "passwordNotEnabled": "Email and password sign-in is not enabled for this workspace.",
+      "signInFailed": "Could not sign in. Check your email and password, then try again.",
+      "signUpFailed": "Could not create your account. Review the fields and try again.",
+      "socialProviderNotEnabled": "This social sign-in provider is not enabled in Clerk. Enable the provider, then try again.",
+      "socialStartFailed": "Could not start social sign-in. Try again or use email.",
+      "unsupportedStep": "This account needs an authentication step that is not supported here yet.",
+      "verificationIncomplete": "Verification is not complete. Check the code and try again.",
+      "verifyFailed": "Could not verify this code. Check the code and try again."
+    }
   },
   "ProfileMenu": {
     "open": "Open profile menu",
@@ -3268,10 +3284,14 @@
   "ChooseOrg": {
     "eyebrow": "Workspace access",
     "title": "Continue into qentrah",
-    "subtitle": "Choose a workspace, join by invite, or create a new organization.",
+    "subtitle": "Choose an existing workspace or create a new organization to finish access.",
     "loading": "Loading workspaces...",
     "useAnotherAccount": "Use another account",
+    "signingOut": "Signing out...",
+    "continueWorkspace": "Continue to workspace",
+    "currentWorkspace": "Current workspace",
     "untitledWorkspace": "Untitled workspace",
+    "setupAccess": "Set up access",
     "joinTitle": "I have an invite",
     "joinDesc": "Paste an invite link or code to join an existing workspace.",
     "inviteUnsupported": "Invite links open from the invitation URL. Manual invite codes are not supported in this custom screen yet.",

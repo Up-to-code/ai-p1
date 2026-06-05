@@ -5,7 +5,7 @@ function readUrl(value: string | undefined) {
 }
 
 function normalizeSiteUrl(env: TamaraEnv) {
-  return readUrl(env.SITE_URL || env.BETTER_AUTH_URL || env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000");
+  return readUrl(env.SITE_URL || env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000");
 }
 
 export function getTamaraRuntimeConfig(env: TamaraEnv = process.env) {

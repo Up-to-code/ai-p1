@@ -61,7 +61,7 @@ test("mobile runtime can rewrite localhost dev URLs to the Expo host", () => {
   );
 });
 
-test("mobile production config ignores generic local workspace URLs", () => {
+test("mobile production config ignores legacy generic workspace URLs", () => {
   const config = resolveMobileEnvironmentConfig({
     QENTRAH_MOBILE_ENV: "production",
     EXPO_PUBLIC_WORKSPACE_API_URL: "http://localhost:3000",
@@ -106,7 +106,7 @@ test("mobile production config rejects non-HTTPS remote auth and API URLs", () =
 test("mobile production config rejects placeholder Clerk publishable keys", () => {
   const config = resolveMobileEnvironmentConfig({
     QENTRAH_MOBILE_ENV: "production",
-    EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: "set-in-eas-environment",
+    EXPO_PUBLIC_PRODUCTION_CLERK_PUBLISHABLE_KEY: "set-in-eas-environment",
   });
 
   assert.deepEqual(getMobileEnvironmentIssues(config), [
@@ -117,7 +117,7 @@ test("mobile production config rejects placeholder Clerk publishable keys", () =
 test("mobile config carries Clerk publishable key for native auth", () => {
   const config = resolveMobileEnvironmentConfig({
     QENTRAH_MOBILE_ENV: "production",
-    EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_live_123",
+    EXPO_PUBLIC_PRODUCTION_CLERK_PUBLISHABLE_KEY: "pk_live_123",
   });
 
   assert.equal(config.clerkPublishableKey, "pk_live_123");

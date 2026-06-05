@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, ChevronLeft, KeyRound, Mail, UserRound } from "lucide-react";
+import { AlertCircle, ArrowRight, ChevronLeft, KeyRound, Loader2, Mail, UserRound } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { FormEvent, useState } from "react";
 
@@ -23,6 +23,7 @@ type AuthAccessScreenProps = {
 };
 
 const authVideoUrl = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/agentic-hero-9yW3wnTNMfn2U6lsVhTTZSJFEvAoSj.mp4";
+const isAppleAuthEnabled = process.env.NEXT_PUBLIC_ENABLE_APPLE_AUTH === "true";
 
 function GoogleMark() {
   return (
@@ -69,6 +70,25 @@ function LegalAgreement({ isAr }: { isAr: boolean }) {
   );
 }
 
+function AuthBrandLockup({ className = "" }: { className?: string }) {
+  const locale = useLocale();
+  const isAr = locale === "ar";
+  const brandLabel = isAr ? "كانترا" : "qentrah";
+
+  return (
+    <Link href="/" className={`group inline-flex items-center gap-2.5 ${className}`}>
+      <BrandMark className="h-7 w-7 transition-transform duration-200 group-hover:scale-105" priority />
+      <span className="text-lg font-black leading-none tracking-tight text-foreground">
+        {brandLabel}
+      </span>
+    </Link>
+  );
+}
+
+function PendingSpinner() {
+  return <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />;
+}
+
 export function AuthAccessScreen({
   error,
   isPending,
@@ -88,7 +108,7 @@ export function AuthAccessScreen({
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
-  const brandLabel = isAr ? "كانترا" : "qentrah";
+  const isEmailPending = isPending && !pendingProvider;
 
   function handleCredentialsSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -104,14 +124,7 @@ export function AuthAccessScreen({
     <main className="min-h-svh overflow-x-hidden bg-[oklch(97.5%_0.006_255)] text-foreground dark:bg-[oklch(8.5%_0.012_255)] lg:grid lg:min-h-screen lg:grid-cols-2">
       <section className={`flex min-h-svh flex-col px-4 py-5 sm:px-8 lg:min-h-screen lg:px-12 lg:py-8 ${isAr ? "lg:[grid-column:2]" : "lg:[grid-column:1]"}`}>
         <div className="flex items-center justify-between gap-4">
-          <Link href="/" className="group flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-border bg-surface text-foreground transition group-hover:bg-muted">
-              <BrandMark className="h-5.5 w-5.5" priority />
-            </span>
-            <span className="text-lg font-black tracking-tight text-foreground">
-              {brandLabel}
-            </span>
-          </Link>
+          <AuthBrandLockup />
           <Link
             href="/"
             className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-surface px-4 text-[10px] font-black uppercase tracking-[0.08em] text-text-secondary transition hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -123,14 +136,7 @@ export function AuthAccessScreen({
 
         <div className="flex flex-1 items-center justify-center py-10">
           <div className="w-full max-w-[min(420px,calc(100vw-2rem))] min-w-0 text-start">
-            <div className="mb-8 flex items-center gap-3 lg:hidden">
-              <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-border bg-background">
-                <BrandMark className="h-6 w-6" priority />
-              </span>
-              <span className="text-2xl font-black tracking-tight text-foreground">
-                {brandLabel}
-              </span>
-            </div>
+            <AuthBrandLockup className="mb-8 lg:hidden [&>img]:h-8 [&>img]:w-8 [&>span]:text-2xl" />
 
             <div className="space-y-3">
               <h1 className="text-[32px] font-semibold leading-tight tracking-0 text-foreground sm:text-4xl rtl:leading-[1.25]">
@@ -141,7 +147,7 @@ export function AuthAccessScreen({
               </p>
             </div>
 
-            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+            <div className={`mt-8 grid gap-3 ${isAppleAuthEnabled ? "sm:grid-cols-2" : ""}`}>
               <Button
                 className="h-12 rounded-2xl border-zinc-200 bg-white text-sm font-bold text-zinc-950 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-white"
                 disabled={isPending}
@@ -149,23 +155,25 @@ export function AuthAccessScreen({
                 type="button"
                 variant="outline"
               >
-                <GoogleMark />
+                {isPending && pendingProvider === "google" ? <PendingSpinner /> : <GoogleMark />}
                 <span className="min-w-0 truncate">
-                  {isPending && pendingProvider === "google" ? t("connecting") : t("google")}
+                  {isPending && pendingProvider === "google" ? t("connectingGoogle") : t("google")}
                 </span>
               </Button>
-              <Button
-                className="h-12 rounded-2xl border-zinc-200 bg-white text-sm font-bold text-zinc-950 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-white"
-                disabled={isPending}
-                onClick={() => onSocialSignIn("apple")}
-                type="button"
-                variant="outline"
-              >
-                <span className="text-lg leading-none"></span>
-                <span className="min-w-0 truncate">
-                  {isPending && pendingProvider === "apple" ? t("connecting") : t("apple")}
-                </span>
-              </Button>
+              {isAppleAuthEnabled ? (
+                <Button
+                  className="h-12 rounded-2xl border-zinc-200 bg-white text-sm font-bold text-zinc-950 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-white"
+                  disabled={isPending}
+                  onClick={() => onSocialSignIn("apple")}
+                  type="button"
+                  variant="outline"
+                >
+                  {isPending && pendingProvider === "apple" ? <PendingSpinner /> : <span className="text-lg leading-none"></span>}
+                  <span className="min-w-0 truncate">
+                    {isPending && pendingProvider === "apple" ? t("connectingApple") : t("apple")}
+                  </span>
+                </Button>
+              ) : null}
             </div>
 
             <div className="my-6 flex items-center gap-3">
@@ -257,13 +265,23 @@ export function AuthAccessScreen({
                   </div>
                 </div>
                 {error ? (
-                  <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold leading-5 text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-200">
-                    {error}
-                  </p>
+                  <div className="flex gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold leading-5 text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-200" role="alert">
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                    <p>{error}</p>
+                  </div>
                 ) : null}
                 <Button className="h-12 w-full rounded-2xl text-sm font-bold" disabled={isPending} type="submit">
-                  {isPending ? t("connecting") : isSignUp ? t("createAccountButton") : t("continueWithEmail")}
-                  <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                  {isEmailPending ? (
+                    <>
+                      <PendingSpinner />
+                      {t("connectingEmail")}
+                    </>
+                  ) : (
+                    <>
+                      {isSignUp ? t("createAccountButton") : t("continueWithEmail")}
+                      <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                    </>
+                  )}
                 </Button>
               </form>
             ) : (
@@ -284,17 +302,27 @@ export function AuthAccessScreen({
                   />
                 </div>
                 {error ? (
-                  <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold leading-5 text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-200">
-                    {error}
-                  </p>
+                  <div className="flex gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold leading-5 text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-200" role="alert">
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                    <p>{error}</p>
+                  </div>
                 ) : (
                   <p className="text-sm font-medium leading-6 text-text-secondary">
                     {phase === "verify_email" ? t("verificationEmailHelp") : t("verificationSecondFactorHelp")}
                   </p>
                 )}
                 <Button className="h-12 w-full rounded-2xl text-sm font-bold" disabled={isPending} type="submit">
-                  {isPending ? t("connecting") : t("verifyCode")}
-                  <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                  {isEmailPending ? (
+                    <>
+                      <PendingSpinner />
+                      {t("verifyingCode")}
+                    </>
+                  ) : (
+                    <>
+                      {t("verifyCode")}
+                      <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                    </>
+                  )}
                 </Button>
               </form>
             )}
@@ -353,14 +381,7 @@ export function AuthAccessScreen({
         />
 
         <div className="relative z-10 flex min-h-screen flex-col justify-between p-10">
-          <Link href="/" className="group flex w-fit items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-[var(--auth-visual-logo-border)] bg-[var(--auth-visual-logo-bg)] text-[var(--auth-visual-text)] backdrop-blur-xl transition group-hover:bg-[var(--auth-visual-base)]">
-              <BrandMark className="h-5.5 w-5.5" priority />
-            </span>
-            <span className="text-base font-black tracking-tight">
-              {brandLabel}
-            </span>
-          </Link>
+          <AuthBrandLockup className="[&>span]:text-[var(--auth-visual-text)]" />
 
           <div className="max-w-xl pb-6">
             {t("visualEyebrow") ? (

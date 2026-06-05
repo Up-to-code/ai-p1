@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useClerk, useSignIn, useSignUp } from "@clerk/nextjs";
+import { useAuth, useClerk, useSignIn, useSignUp } from "@clerk/nextjs";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { resolveAuthEntryCallbackUrl } from "../utils/auth-callback-url";
 
@@ -22,18 +23,86 @@ type CredentialsInput = {
   password: string;
 };
 
+type AuthErrorMessageKey =
+  | "authStillLoading"
+  | "callbackFailed"
+  | "passwordNotEnabled"
+  | "signInFailed"
+  | "signUpFailed"
+  | "socialProviderNotEnabled"
+  | "socialStartFailed"
+  | "unsupportedStep"
+  | "verificationIncomplete"
+  | "verifyFailed";
+
 const providerStrategies: Record<ClerkSocialProvider, `oauth_${string}`> = {
   apple: "oauth_apple",
   google: "oauth_google",
 };
+const socialRedirectFallbackMs = 6000;
 
-function authErrorMessage(error: unknown, fallback: string) {
+type ExternalVerification = {
+  externalVerificationRedirectURL?: URL | string | null;
+} | null | undefined;
+
+function externalVerificationRedirectUrl(verification: ExternalVerification) {
+  const value = verification?.externalVerificationRedirectURL;
+  if (!value) return null;
+  return value instanceof URL ? value.toString() : value;
+}
+
+function assignExternalRedirect(url: string) {
+  window.location.assign(url);
+}
+
+function clerkErrorText(error: unknown) {
   const candidate = error as {
     message?: string;
     errors?: Array<{ message?: string; longMessage?: string; code?: string }>;
   };
   const first = candidate?.errors?.[0];
-  return first?.longMessage ?? first?.message ?? first?.code ?? candidate?.message ?? fallback;
+  return first?.longMessage ?? first?.message ?? first?.code ?? candidate?.message ?? null;
+}
+
+function localizedAuthError(
+  error: unknown,
+  fallback: string,
+  t: (key: AuthErrorMessageKey) => string,
+) {
+  const message = clerkErrorText(error);
+  if (!message) return fallback;
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes("provider") || normalized.includes("client")) {
+    return t("socialProviderNotEnabled");
+  }
+
+  if (normalized.includes("did not redirect")) {
+    return t("socialStartFailed");
+  }
+
+  if (normalized.includes("loading")) {
+    return t("authStillLoading");
+  }
+
+  if (normalized.includes("password") && normalized.includes("not enabled")) {
+    return t("passwordNotEnabled");
+  }
+
+  if (normalized.includes("unsupported next step")) {
+    return t("unsupportedStep");
+  }
+
+  if (normalized.includes("verification") && normalized.includes("not complete")) {
+    return t("verificationIncomplete");
+  }
+
+  return message;
+}
+
+function isAlreadySignedInError(error: unknown) {
+  const message = clerkErrorText(error)?.toLowerCase() ?? "";
+  return message.includes("already signed in");
 }
 
 function toLocalizedPath(locale: string, path: string) {
@@ -48,8 +117,10 @@ function toRouterHref(locale: string, url: string) {
 }
 
 export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInput) {
+  const t = useTranslations("signin.errors") as (key: AuthErrorMessageKey) => string;
   const router = useRouter();
   const clerk = useClerk();
+  const clerkAuth = useAuth();
   const { signIn, fetchStatus: signInFetchStatus } = useSignIn();
   const { signUp, fetchStatus: signUpFetchStatus } = useSignUp();
   const [phase, setPhase] = useState<AuthFlowPhase>("credentials");
@@ -61,6 +132,39 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
   const signUpLoaded = signUpFetchStatus !== "fetching";
 
   const finalCallbackURL = useMemo(() => resolveAuthEntryCallbackUrl(locale, callbackURL), [callbackURL, locale]);
+
+  const redirectExistingSession = useCallback(async () => {
+    const clerkState = clerk as unknown as {
+      isSignedIn?: boolean;
+      organization?: { id?: string | null } | null;
+      session?: {
+        currentTask?: unknown;
+        lastActiveOrganizationId?: string | null;
+      } | null;
+      setActive?: (input: { organization: string }) => Promise<void>;
+    };
+    const session = clerkState.session ?? null;
+    const organizationId = clerkAuth.orgId ?? clerkState.organization?.id ?? session?.lastActiveOrganizationId ?? null;
+    const isSignedIn = Boolean(clerkAuth.isSignedIn || clerkState.isSignedIn || session);
+
+    if (!isSignedIn) return false;
+
+    if (session?.currentTask) {
+      router.replace("/choose-org");
+      return true;
+    }
+
+    if (organizationId) {
+      if (!clerkAuth.orgId) {
+        await clerkState.setActive?.({ organization: organizationId });
+      }
+      router.replace("/dashboard");
+      return true;
+    }
+
+    router.replace("/choose-org");
+    return true;
+  }, [clerk, clerkAuth.isSignedIn, clerkAuth.orgId, router]);
 
   const navigateAfterAuth = useCallback(
     ({ session, decorateUrl }: { session?: { currentTask?: unknown } | null; decorateUrl: (url: string) => string }) => {
@@ -92,7 +196,7 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
     }
 
     router.replace(toRouterHref(locale, finalCallbackURL));
-  }, [finalCallbackURL, navigateAfterAuth, router, signIn]);
+  }, [finalCallbackURL, locale, navigateAfterAuth, router, signIn]);
 
   const finalizeSignUp = useCallback(async () => {
     const api = signUp as unknown as {
@@ -106,7 +210,7 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
     }
 
     router.replace(toRouterHref(locale, finalCallbackURL));
-  }, [finalCallbackURL, navigateAfterAuth, router, signUp]);
+  }, [finalCallbackURL, locale, navigateAfterAuth, router, signUp]);
 
   const signInWithSocial = useCallback(
     async (provider: ClerkSocialProvider) => {
@@ -122,26 +226,43 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
         }
 
         const callback = `${toLocalizedPath(locale, "/sso-callback")}?callbackURL=${encodeURIComponent(finalCallbackURL)}`;
+        const startUrl = window.location.href;
         const api = signIn as unknown as {
-          sso?: (input: {
-            strategy: `oauth_${string}`;
-            redirectCallbackUrl: string;
-            redirectUrl: string;
-          }) => Promise<{ error?: unknown } | undefined>;
           authenticateWithRedirect?: (input: {
             strategy: `oauth_${string}`;
             redirectUrl: string;
             redirectUrlComplete: string;
           }) => Promise<unknown>;
+          create?: (input: {
+            actionCompleteRedirectUrl?: string;
+            redirectUrl: string;
+            strategy: `oauth_${string}`;
+          }) => Promise<{
+            error?: unknown;
+            firstFactorVerification?: ExternalVerification;
+          } | undefined>;
+          firstFactorVerification?: ExternalVerification;
+          sso?: (input: {
+            strategy: `oauth_${string}`;
+            redirectCallbackUrl: string;
+            redirectUrl: string;
+          }) => Promise<{ error?: unknown } | undefined>;
         };
 
-        if (api.sso) {
-          const result = await api.sso({
+        if (api.create) {
+          const result = await api.create({
+            actionCompleteRedirectUrl: finalCallbackURL,
             strategy: providerStrategies[provider],
-            redirectCallbackUrl: callback,
             redirectUrl: callback,
           });
           if (result?.error) throw result.error;
+
+          const redirectUrl = externalVerificationRedirectUrl(result?.firstFactorVerification ?? api.firstFactorVerification);
+          if (!redirectUrl) {
+            throw new Error("Social sign-in did not redirect.");
+          }
+
+          assignExternalRedirect(redirectUrl);
           return;
         }
 
@@ -151,18 +272,45 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
             redirectUrl: callback,
             redirectUrlComplete: finalCallbackURL,
           });
+          window.setTimeout(() => {
+            if (window.location.href !== startUrl || !pendingRef.current) return;
+            setError(t("socialStartFailed"));
+            setIsPending(false);
+            setPendingProvider(null);
+            pendingRef.current = false;
+          }, socialRedirectFallbackMs);
+          return;
+        }
+
+        if (api.sso) {
+          const result = await api.sso({
+            strategy: providerStrategies[provider],
+            redirectCallbackUrl: callback,
+            redirectUrl: finalCallbackURL,
+          });
+          if (result?.error) throw result.error;
+
+          const redirectUrl = externalVerificationRedirectUrl(api.firstFactorVerification);
+          if (!redirectUrl) {
+            throw new Error("Social sign-in did not redirect.");
+          }
+
+          assignExternalRedirect(redirectUrl);
           return;
         }
 
         throw new Error("This Clerk SDK does not expose a social sign-in flow.");
       } catch (caught) {
-        setError(authErrorMessage(caught, "Could not start social sign-in."));
+        if (process.env.NODE_ENV !== "production") {
+          console.error("[Qentrah auth] social sign-in failed", caught);
+        }
+        setError(localizedAuthError(caught, t("socialStartFailed"), t));
         setIsPending(false);
         setPendingProvider(null);
         pendingRef.current = false;
       }
     },
-    [finalCallbackURL, locale, signIn, signInLoaded],
+    [finalCallbackURL, locale, signIn, signInLoaded, t],
   );
 
   const submitCredentials = useCallback(
@@ -173,6 +321,10 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
       setIsPending(true);
 
       try {
+        if (mode === "sign-in" && (await redirectExistingSession())) {
+          return;
+        }
+
         if (mode === "sign-in") {
           if (!signInLoaded || !signIn) throw new Error("Authentication is still loading.");
           const api = signIn as unknown as {
@@ -239,13 +391,16 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
 
         throw new Error("Sign-up requires an unsupported next step.");
       } catch (caught) {
-        setError(authErrorMessage(caught, mode === "sign-in" ? "Could not sign in." : "Could not create account."));
+        if (mode === "sign-in" && isAlreadySignedInError(caught) && (await redirectExistingSession())) {
+          return;
+        }
+        setError(localizedAuthError(caught, mode === "sign-in" ? t("signInFailed") : t("signUpFailed"), t));
       } finally {
         setIsPending(false);
         pendingRef.current = false;
       }
     },
-    [finalizeSignIn, finalizeSignUp, mode, signIn, signInLoaded, signUp, signUpLoaded],
+    [finalizeSignIn, finalizeSignUp, mode, redirectExistingSession, signIn, signInLoaded, signUp, signUpLoaded, t],
   );
 
   const verifyCode = useCallback(
@@ -286,13 +441,13 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
         }
         throw new Error("Verification is not complete.");
       } catch (caught) {
-        setError(authErrorMessage(caught, "Could not verify this code."));
+        setError(localizedAuthError(caught, t("verifyFailed"), t));
       } finally {
         setIsPending(false);
         pendingRef.current = false;
       }
     },
-    [finalizeSignIn, finalizeSignUp, phase, signIn, signUp],
+    [finalizeSignIn, finalizeSignUp, phase, signIn, signUp, t],
   );
 
   const finalizeCallback = useCallback(async () => {
@@ -350,7 +505,7 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
 
       router.replace(`/sign-in?callbackURL=${encodeURIComponent(finalCallbackURL)}`);
     } catch (caught) {
-      setError(authErrorMessage(caught, "Could not complete sign-in."));
+      setError(localizedAuthError(caught, t("callbackFailed"), t));
       router.replace(`/sign-in?callbackURL=${encodeURIComponent(finalCallbackURL)}`);
     } finally {
       pendingRef.current = false;
@@ -360,13 +515,13 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
     finalCallbackURL,
     finalizeSignIn,
     finalizeSignUp,
-    locale,
     navigateAfterAuth,
     router,
     signIn,
     signInLoaded,
     signUp,
     signUpLoaded,
+    t,
   ]);
 
   return {

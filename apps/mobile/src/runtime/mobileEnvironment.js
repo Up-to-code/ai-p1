@@ -51,9 +51,6 @@ function resolveMobileEnvironmentConfig(env = process.env) {
   if (environment === "production") {
     const workspaceApiUrl = firstValue(
       env.EXPO_PUBLIC_PRODUCTION_WORKSPACE_API_URL,
-      env.QENTRAH_WORKSPACE_API_URL,
-      env.WORKSPACE_API_BASE_URL,
-      env.NEXT_PUBLIC_SITE_URL,
       PRODUCTION_WORKSPACE_URL,
     );
     const authUrl = firstValue(
@@ -70,20 +67,14 @@ function resolveMobileEnvironmentConfig(env = process.env) {
 
   const workspaceApiUrl = firstValue(
     env.EXPO_PUBLIC_DEV_WORKSPACE_API_URL,
-    env.QENTRAH_DEV_WORKSPACE_API_URL,
-    env.EXPO_PUBLIC_WORKSPACE_API_URL,
-    env.QENTRAH_WORKSPACE_API_URL,
-    env.WORKSPACE_API_BASE_URL,
     DEFAULT_DEV_WORKSPACE_URL,
   );
   const authUrl = firstValue(
     env.EXPO_PUBLIC_DEV_AUTH_URL,
-    env.EXPO_PUBLIC_AUTH_URL,
     workspaceApiUrl,
   );
   const clerkPublishableKey = firstValue(
     env.EXPO_PUBLIC_DEV_CLERK_PUBLISHABLE_KEY,
-    env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY,
   );
 
   return { environment, workspaceApiUrl, authUrl, clerkPublishableKey };

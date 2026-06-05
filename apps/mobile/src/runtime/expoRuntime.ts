@@ -43,7 +43,6 @@ function normalizeRuntimeUrl(value: string) {
 export function getAuthUrl() {
   return normalizeRuntimeUrl(
     normalizeUrlEnvValue(getExpoExtra().authUrl) ||
-    normalizeUrlEnvValue(process.env.EXPO_PUBLIC_AUTH_URL) ||
     productionWorkspaceUrl,
   );
 }
@@ -51,7 +50,6 @@ export function getAuthUrl() {
 export function getWorkspaceApiUrl() {
   return normalizeRuntimeUrl(
     normalizeUrlEnvValue(getExpoExtra().workspaceApiUrl) ||
-    normalizeUrlEnvValue(process.env.EXPO_PUBLIC_WORKSPACE_API_URL) ||
     getAuthUrl() ||
     productionWorkspaceUrl,
   );
@@ -59,7 +57,6 @@ export function getWorkspaceApiUrl() {
 
 export function getClerkPublishableKey() {
   return normalizeUrlEnvValue(getExpoExtra().clerkPublishableKey)
-    || normalizeUrlEnvValue(process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY)
     || "";
 }
 

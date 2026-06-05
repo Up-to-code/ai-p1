@@ -185,50 +185,33 @@ Core env variables:
 | Variable | Required | Where it lives | Purpose | Where to get it |
 | --- | --- | --- | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | Production | Vercel | Public Workspace base URL used by app links and auth flows. | Your deployed Workspace domain. |
-| `SITE_URL` | Production | Vercel and sometimes Convex | Server-side canonical Workspace URL. | Same as Workspace domain. |
-| `TRUSTED_ORIGINS` | Optional | Vercel/Convex | Additional trusted origins. | Your preview/custom domains. |
-| `WORKOS_AUTH_ENABLED` | Required | Vercel | Enables WorkOS AuthKit login/callback/logout and WorkOS session middleware. | Set `true` after WorkOS app setup. |
-| `WORKOS_API_KEY` | Required | Vercel secret | WorkOS server API key for AuthKit, Organizations, API Keys, and webhook verification. | WorkOS dashboard; rotate immediately if exposed. |
-| `WORKOS_CLIENT_ID` | Required for WorkOS migration rollout | Vercel | AuthKit client id expected in WorkOS session JWT claims. | WorkOS dashboard. |
-| `WORKOS_WEBHOOK_SECRET` | Required for WorkOS webhooks | Vercel secret | Verifies `/api/webhooks/workos` deliveries before Convex projection. | WorkOS webhook endpoint settings. |
-| `WORKOS_CALLBACK_URL` | Optional | Vercel | AuthKit callback URL; defaults to `${SITE_URL}/api/auth/workos/callback`. | Workspace deployed callback URL. |
-| `WORKOS_MOBILE_CALLBACK_URL` | Optional | Vercel | Mobile OAuth callback URL used by `/api/auth/workos/mobile/start`; defaults to `qentrah://auth-callback` for Expo link-based flows. | Must match the mobile app return/callback URI registered in WorkOS. |
-| `WORKOS_LOGOUT_RETURN_URL` | Optional | Vercel | Post-logout return URL; defaults to `${SITE_URL}/en/sign-in`. | Workspace sign-in URL. |
-| `WORKOS_POST_LOGIN_URL` | Optional | Vercel | Post-login Workspace URL; defaults to `${SITE_URL}/en`. | Workspace home URL. |
-| `WORKOS_JWT_ISSUER` | Optional | Vercel | WorkOS session token issuer override. | Defaults to `https://api.workos.com`. |
-| `WORKOS_COOKIE_DOMAIN` | Optional | Vercel | Cookie domain for WorkOS access/refresh cookies. | Workspace apex/subdomain policy. |
-| `WORKOS_COOKIE_SECURE` | Optional local only | Local/Vercel | Set `false` only when testing over local HTTP. | Defaults secure. |
-| `WORKOS_API_BASE_URL` | Optional tests/sandbox | Vercel/local | WorkOS API origin override. | Defaults to `https://api.workos.com`. |
-| `NEXT_PUBLIC_WORKOS_REDIRECT_URI` | Local/live flow | Local/Vercel | WorkOS AuthKit redirect URI used by the local callback flow. | Must match a WorkOS application redirect URI. |
-| `GOOGLE_CLIENT_ID` | Optional | Vercel/Convex | Google sign-in client ID. | Google Cloud OAuth credentials. |
-| `GOOGLE_CLIENT_SECRET` | Optional | Vercel/Convex | Google sign-in client secret. | Google Cloud OAuth credentials. |
-| `PLATFORM_ADMIN_EMAILS` | Optional | Vercel/Convex | Comma-separated platform admin allowlist. | Internal admin list. |
+| `SITE_URL` | Production | Vercel | Server-side canonical Workspace URL. | Same as Workspace domain. |
+| `NEXT_PUBLIC_API_URL` | Production | Vercel/local | Public Workspace API origin. | Same as Workspace domain. |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Required | Vercel/local | Clerk browser publishable key. | Clerk dashboard. |
+| `CLERK_SECRET_KEY` | Required | Vercel secret | Clerk server API key. | Clerk dashboard. |
+| `CLERK_FRONTEND_API_URL` | Required | Vercel and Convex | Clerk issuer domain used by Convex auth config. | Clerk dashboard; use the domain configured for the Convex JWT template. |
+| `PLATFORM_ADMIN_EMAILS` | Optional | Vercel | Comma-separated platform admin allowlist. | Internal admin list. |
+| `CONVEX_DEPLOYMENT` | Local/dev | Local | Convex deployment selector. | Convex CLI/dashboard. |
 | `NEXT_PUBLIC_CONVEX_URL` | Required | Vercel/local | Browser Convex URL. | Convex dashboard. |
 | `CONVEX_URL` | Required for server/Convex bridge | Vercel/local | Convex cloud URL. | Convex dashboard. |
 | `NEXT_PUBLIC_CONVEX_SITE_URL` | Required for auth bridge | Vercel/local | Public Convex site URL. | Convex dashboard; usually `.convex.site`. |
-| `CONVEX_SITE_URL` | Optional for Convex HTTP routes | Vercel/local/Convex | Convex site URL for deployment HTTP routes. | Convex dashboard. |
-| `PARTNER_APPS_ENABLED` | Optional | Vercel/Convex | Enables partner app authorization and resource behavior; defaults true. | Set `false` only to disable partner app features. |
-| `PARTNER_OAUTH_ISSUER` | Legacy optional | Vercel/Convex | Legacy partner OAuth issuer override; kept only for transition metadata/challenges. | Workspace URL. |
-| `PARTNER_OAUTH_AUDIENCE` | Legacy optional | Vercel/Convex | Legacy partner API audience; kept only for transition metadata/challenges. | Workspace URL. |
+| `CONVEX_SITE_URL` | Required | Vercel/local | Convex site URL for deployment HTTP routes. | Convex dashboard. |
+| `PARTNER_APPS_ENABLED` | Optional | Vercel | Enables partner app authorization and resource behavior; defaults true. | Set `false` only to disable partner app features. |
+| `PARTNER_OAUTH_ISSUER` | Optional | Vercel | Partner OAuth issuer override. | Workspace URL. |
+| `PARTNER_OAUTH_AUDIENCE` | Optional | Vercel | Partner API audience. | Workspace URL. |
+| `PARTNERS_API_BASE_URL` | Required for partner catalog reads | Vercel | Partners API origin. | Partners deployment URL. |
+| `NEXT_PUBLIC_PARTNERS_AUTH_URL` | Optional fallback | Vercel/local | Partners origin fallback. | Partners deployment URL. |
+| `PARTNERS_PLATFORM_SERVICE_TOKEN` | Required for partner catalog reads | Vercel secret | Service token accepted by Partners platform APIs. | Generate a shared internal secret. |
 | `WORKSPACE_CONVEX_BRIDGE_SECRET` | Required for partner/API resource calls | Vercel/Convex | Server-only token used by Workspace Hono routes when calling protected Convex resource functions. | Generate and store as secret. |
 | `PARTNER_WEBHOOK_SECRET_ENCRYPTION_KEY` | Needed for encrypted partner webhooks | Convex/server | Encrypts stored partner webhook secrets. | Generate and store as secret. |
 | `ORGANIZATION_DATA_ENCRYPTION_KEY` | Needed for organization data encryption | Convex/server | Master key for organization-scoped user/business data encryption. | Generate and store as secret. |
 | `WORKSPACE_ADMIN_SERVICE_TOKEN` | Required for Admin Review | Vercel/Convex | Service token accepted by Workspace admin APIs. | Generate a shared internal secret. |
-| `PARTNERS_REVIEW_CALLBACK_TOKEN` | Required for callback security | Vercel/Convex and Partners | Token Workspace uses when notifying Partners of review decisions. | Generate a shared internal secret. |
 | `OPENROUTER_API_KEY` | Required for live AI agent responses | Vercel/Convex/server | Calls OpenRouter through the AI SDK provider. | OpenRouter dashboard. |
 | `OPENROUTER_MODEL` | Optional | Vercel/Convex/server | Model ID; defaults to configured Qwen model. | OpenRouter model catalog. |
+| `OPENROUTER_FALLBACK_MODELS` | Optional | Vercel/server | Fallback model IDs. | OpenRouter model catalog. |
 | `OPENROUTER_APP_NAME` | Optional | Vercel/Convex/server | App attribution for OpenRouter. | Internal name. |
 | `UPLOADTHING_TOKEN` | Optional shortcut | Vercel | Encoded UploadThing token; can hydrate secret/app ID. | UploadThing dashboard. |
 | `UPLOADTHING_SECRET` | Required when using UploadThing without token | Vercel | UploadThing API secret. | UploadThing dashboard. |
-
-Before running a live WorkOS partner app flow, rotate any exposed WorkOS key and then run:
-
-```bash
-npm --workspace @qentrah/workspace run check:workos-live-prereqs
-npm --workspace @qentrah/workspace run test:workos-partner-flow
-```
-
-The prerequisite check refuses the exposed `sk_test` value and verifies that the local/live WorkOS, Partners, and bridge env variables are present before external WorkOS API calls are attempted.
 | `UPLOADTHING_APP_ID` | Required when using UploadThing without token | Vercel | UploadThing app ID. | UploadThing dashboard. |
 | `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Optional | Vercel/local | Enables location picker/preview map UI. | Mapbox access token page. |
 | `TAMARA_API_BASE_URL` | Required for production billing | Vercel | Tamara API origin. Use `https://api.tamara.co` in production. | Tamara merchant integration setup. |
@@ -251,27 +234,27 @@ Minimal local Workspace `.env.local` shape:
 ```bash
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 SITE_URL=http://localhost:3000
-WORKOS_AUTH_ENABLED=true
-WORKOS_CLIENT_ID=<workos-client-id>
-WORKOS_API_KEY=<workos-api-key>
-WORKOS_COOKIE_PASSWORD=replace-with-at-least-32-characters
-NEXT_PUBLIC_CONVEX_URL=https://<deployment>.convex.cloud
-CONVEX_URL=https://<deployment>.convex.cloud
-NEXT_PUBLIC_CONVEX_SITE_URL=https://<deployment>.convex.site
-CONVEX_SITE_URL=https://<deployment>.convex.site
+NEXT_PUBLIC_API_URL=http://localhost:3000
+CONVEX_DEPLOYMENT=bright-sheep-471
+NEXT_PUBLIC_CONVEX_URL=https://bright-sheep-471.convex.cloud
+CONVEX_URL=https://bright-sheep-471.convex.cloud
+NEXT_PUBLIC_CONVEX_SITE_URL=https://bright-sheep-471.convex.site
+CONVEX_SITE_URL=https://bright-sheep-471.convex.site
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<clerk-publishable-key>
+CLERK_SECRET_KEY=<clerk-secret-key>
+CLERK_FRONTEND_API_URL=<clerk-frontend-api-url>
 WORKSPACE_CONVEX_BRIDGE_SECRET=replace-with-at-least-32-characters
 WORKSPACE_ADMIN_SERVICE_TOKEN=local-workspace-admin-token
-PARTNERS_REVIEW_CALLBACK_TOKEN=local-review-callback-token
 ```
 
 Convex values to set for Workspace:
 
 ```bash
-npx convex env set SITE_URL "http://localhost:3000"
-npx convex env set CONVEX_SITE_URL "https://<deployment>.convex.site"
-npx convex env set WORKSPACE_CONVEX_BRIDGE_SECRET "replace-with-at-least-32-characters"
-npx convex env set WORKSPACE_ADMIN_SERVICE_TOKEN "local-workspace-admin-token"
-npx convex env set PARTNERS_REVIEW_CALLBACK_TOKEN "local-review-callback-token"
+npx convex env set CLERK_FRONTEND_API_URL "<clerk-frontend-api-url>" --deployment bright-sheep-471
+npx convex env set WORKSPACE_CONVEX_BRIDGE_SECRET "replace-with-at-least-32-characters" --deployment bright-sheep-471
+npx convex env set ADMIN_CONVEX_SERVICE_TOKEN "local-admin-convex-token" --deployment bright-sheep-471
+npx convex env set ORGANIZATION_DATA_ENCRYPTION_KEY "replace-with-at-least-32-characters" --deployment bright-sheep-471
+npx convex env set PARTNER_WEBHOOK_SECRET_ENCRYPTION_KEY "replace-with-at-least-32-characters" --deployment bright-sheep-471
 ```
 
 Use Convex dashboard or CLI for Convex env. Use Vercel project settings for Vercel env.
@@ -639,10 +622,11 @@ npm --workspace @qentrah/workspace run test:e2e
 
 ## Troubleshooting
 
-`WorkOS API key and client id are required.`
+`Clerk or Convex auth is not configured.`
 
-- Add `WORKOS_API_KEY`, `WORKOS_CLIENT_ID`, and `WORKOS_AUTH_ENABLED=true`.
-- Confirm the WorkOS redirect URI matches the Workspace callback URL.
+- Add `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, and `CLERK_FRONTEND_API_URL`.
+- Confirm `CLERK_FRONTEND_API_URL` is also set on the Workspace Convex deployment.
+- Confirm the Workspace Convex URLs point at `bright-sheep-471`.
 
 `Partners auth is missing Convex auth URLs`
 

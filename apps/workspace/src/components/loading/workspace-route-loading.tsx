@@ -15,9 +15,7 @@ export function WorkspaceRouteLoading({ variant = "app" }: WorkspaceRouteLoading
 function BrandLoader() {
   return (
     <div className="flex items-center gap-3">
-      <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-background">
-        <BrandMark className="h-5 w-5" priority />
-      </span>
+      <BrandMark className="h-7 w-7" priority />
       <Skeleton className="h-4 w-20 rounded-full" />
     </div>
   );

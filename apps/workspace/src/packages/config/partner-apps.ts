@@ -9,10 +9,7 @@ function normalizeUrl(value: string) {
 const fallbackSiteUrl = normalizeUrl(
   envReader.read(
     "SITE_URL",
-    envReader.read(
-      "BETTER_AUTH_URL",
-      envReader.read("NEXT_PUBLIC_SITE_URL", "http://localhost:3000"),
-    ),
+    envReader.read("NEXT_PUBLIC_SITE_URL", "http://localhost:3000"),
   ),
 );
 

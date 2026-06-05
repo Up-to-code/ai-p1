@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useClerk, useUser } from "@clerk/nextjs";
-import { ArrowRight, Building2, CheckCircle2, LogOut, Plus, Ticket } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useClerk, useOrganization, useUser } from "@clerk/nextjs";
+import { AlertCircle, ArrowRight, Building2, CheckCircle2, Loader2, LogOut, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { BrandMark } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/toast";
 import { Link, useRouter } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
@@ -76,19 +75,29 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
   const router = useRouter();
   const clerk = useClerk();
   const { isLoaded: userLoaded, user } = useUser();
-  const { toast } = useToast();
-  const [choice, setChoice] = useState<"create" | "invite" | null>(null);
+  const { isLoaded: organizationLoaded, organization } = useOrganization();
+  const [choice, setChoice] = useState<"create" | null>(null);
   const [organizationName, setOrganizationName] = useState("");
-  const [organizations, setOrganizations] = useState<ClerkOrganization[]>([]);
-  const [membershipsLoaded, setMembershipsLoaded] = useState(false);
+  const [remoteMemberships, setRemoteMemberships] = useState<{ userId: string; organizations: ClerkOrganization[] } | null>(null);
   const [busyId, setBusyId] = useState("");
   const [busyAction, setBusyAction] = useState<"create" | "sign-out" | "">("");
-  const [setupError, setSetupError] = useState<"organizations-disabled" | null>(null);
+  const [error, setError] = useState("");
 
-  const currentOrganizationId =
-    (clerk as unknown as { organization?: { id?: string | null } }).organization?.id ?? null;
+  const cachedOrganizations = useMemo(
+    () => normalizeMemberships(user?.organizationMemberships as ClerkMembershipList),
+    [user],
+  );
+  const remoteOrganizations =
+    remoteMemberships && remoteMemberships.userId === user?.id ? remoteMemberships.organizations : null;
+  const organizations = remoteOrganizations ?? cachedOrganizations;
+  const canRefreshMemberships = Boolean(
+    user &&
+      (user as unknown as { getOrganizationMemberships?: () => Promise<ClerkMembershipList> }).getOrganizationMemberships,
+  );
+  const membershipsLoading = Boolean(user && canRefreshMemberships && remoteMemberships?.userId !== user.id);
+  const currentOrganizationId = organization?.id ?? null;
   const isBusy = Boolean(busyId || busyAction);
-  const isLoading = !userLoaded || !membershipsLoaded;
+  const isLoading = !userLoaded || !organizationLoaded || membershipsLoading;
   const activeChoice = choice ?? (!isLoading && organizations.length === 0 ? "create" : null);
 
   useEffect(() => {
@@ -99,39 +108,34 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
     }
 
     let active = true;
-    setOrganizations(normalizeMemberships(user.organizationMemberships as ClerkMembershipList));
-    setMembershipsLoaded(true);
-
-    const membershipsApi = user as unknown as {
+    const getOrganizationMemberships = (user as unknown as {
       getOrganizationMemberships?: () => Promise<ClerkMembershipList>;
-    };
+    }).getOrganizationMemberships;
 
-    void membershipsApi
-      .getOrganizationMemberships?.()
+    if (!getOrganizationMemberships) return;
+
+    void getOrganizationMemberships
+      .call(user)
       .then((memberships) => {
-        if (active) setOrganizations(normalizeMemberships(memberships));
+        if (active) setRemoteMemberships({ userId: user.id, organizations: normalizeMemberships(memberships) });
       })
       .catch(() => {
-        if (active) setOrganizations(normalizeMemberships(user.organizationMemberships as ClerkMembershipList));
+        if (active) setRemoteMemberships({ userId: user.id, organizations: cachedOrganizations });
       });
 
     return () => {
       active = false;
     };
-  }, [locale, router, user, userLoaded]);
+  }, [cachedOrganizations, locale, router, user, userLoaded]);
 
   async function selectOrganization(organizationId: string) {
     setBusyId(organizationId);
-    setSetupError(null);
+    setError("");
     try {
       await clerk.setActive({ organization: organizationId });
       router.replace("/dashboard");
     } catch (error) {
-      toast({
-        title: t("errorTitle"),
-        description: error instanceof Error ? error.message : t("errorDesc"),
-        type: "error",
-      });
+      setError(error instanceof Error ? error.message : t("errorDesc"));
     } finally {
       setBusyId("");
     }
@@ -140,12 +144,12 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
   async function createOrganization() {
     const name = organizationName.trim();
     if (!name) {
-      toast({ title: t("errorTitle"), description: t("nameRequired"), type: "error" });
+      setError(t("nameRequired"));
       return;
     }
 
     setBusyAction("create");
-    setSetupError(null);
+    setError("");
     try {
       const clerkApi = clerk as unknown as {
         createOrganization?: (input: { name: string }) => Promise<ClerkOrganization>;
@@ -158,33 +162,27 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
       router.replace("/onboarding");
     } catch (error) {
       if (isOrganizationsDisabledError(error)) {
-        setSetupError("organizations-disabled");
+        setError(t("organizationsDisabled"));
         return;
       }
       if (isOrganizationSlugsDisabledError(error)) {
-        setSetupError(null);
-        toast({
-          title: t("errorTitle"),
-          description: t("slugsDisabled"),
-          type: "error",
-        });
+        setError(t("slugsDisabled"));
         return;
       }
-      toast({
-        title: t("errorTitle"),
-        description: error instanceof Error ? error.message : t("errorDesc"),
-        type: "error",
-      });
+      setError(error instanceof Error ? error.message : t("errorDesc"));
     } finally {
       setBusyAction("");
     }
   }
 
-  async function useAnotherAccount() {
+  async function handleUseAnotherAccount() {
     setBusyAction("sign-out");
+    setError("");
     try {
       await clerk.signOut();
       router.replace("/sign-in");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : t("errorDesc"));
     } finally {
       setBusyAction("");
     }
@@ -196,14 +194,12 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
       <div className="relative mx-auto flex min-h-[calc(100svh-3rem)] w-full max-w-5xl flex-col">
         <header className="flex items-center justify-between gap-4">
           <Link href="/" className="group flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-border bg-[oklch(99%_0.004_255)] dark:bg-[oklch(14%_0.016_255)]">
-              <BrandMark className="h-5.5 w-5.5" priority />
-            </span>
+            <BrandMark className="h-7 w-auto" priority />
             <span className="text-lg font-black tracking-tight">qentrah</span>
           </Link>
-          <Button disabled={busyAction === "sign-out"} onClick={() => void useAnotherAccount()} size="sm" type="button" variant="ghost">
-            <LogOut className="h-4 w-4" />
-            {t("useAnotherAccount")}
+          <Button disabled={busyAction === "sign-out"} onClick={() => void handleUseAnotherAccount()} size="sm" type="button" variant="ghost">
+            {busyAction === "sign-out" ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
+            {busyAction === "sign-out" ? t("signingOut") : t("useAnotherAccount")}
           </Button>
         </header>
 
@@ -225,6 +221,19 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
               <WorkspaceListSkeleton label={t("loading")} />
             ) : (
               <div className="divide-y divide-border">
+                {error ? (
+                  <div className="flex items-start gap-3 bg-red-50 px-5 py-4 text-sm font-semibold leading-6 text-red-700 dark:bg-red-400/10 dark:text-red-200">
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                    <p>{error}</p>
+                  </div>
+                ) : null}
+
+                {organizations.length > 0 ? (
+                  <div className="bg-muted/40 px-5 py-3 text-[10px] font-black uppercase tracking-[0.08em] text-text-secondary">
+                    {t("existingTitle")}
+                  </div>
+                ) : null}
+
                 {organizations.map((organization) => {
                   const isCurrent = currentOrganizationId === organization.id;
                   return (
@@ -247,13 +256,21 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
                           {organization.name ?? t("untitledWorkspace")}
                         </span>
                         <span className="mt-1 block truncate text-xs font-semibold text-text-secondary">
-                          {organization.slug ?? organization.id}
+                          {isCurrent ? t("currentWorkspace") : organization.slug ?? organization.id}
                         </span>
                       </span>
-                      <ArrowRight className="h-4 w-4 text-text-secondary rtl:rotate-180" />
+                      {busyId === organization.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-text-secondary" />
+                      ) : (
+                        <ArrowRight className="h-4 w-4 text-text-secondary rtl:rotate-180" />
+                      )}
                     </button>
                   );
                 })}
+
+                <div className="bg-muted/40 px-5 py-3 text-[10px] font-black uppercase tracking-[0.08em] text-text-secondary">
+                  {t("setupAccess")}
+                </div>
 
                 <button
                   className={cn(
@@ -261,7 +278,10 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
                     activeChoice === "create" && "bg-muted",
                   )}
                   disabled={isBusy}
-                  onClick={() => setChoice(choice === "create" ? null : "create")}
+                  onClick={() => {
+                    setError("");
+                    setChoice(choice === "create" ? null : "create");
+                  }}
                   type="button"
                 >
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-surface">
@@ -275,11 +295,6 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
 
                 {activeChoice === "create" ? (
                   <div className="space-y-4 bg-muted/60 p-5">
-                    {setupError === "organizations-disabled" ? (
-                      <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold leading-6 text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-200">
-                        {t("organizationsDisabled")}
-                      </p>
-                    ) : null}
                     <div className="space-y-2">
                       <Label htmlFor="organization-name" className="text-xs font-black uppercase tracking-[0.08em] text-text-secondary">
                         {t("createNameLabel")}
@@ -287,41 +302,28 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
                       <Input
                         className="h-12 rounded-2xl"
                         id="organization-name"
-                        onChange={(event) => setOrganizationName(event.target.value)}
+                        onChange={(event) => {
+                          setOrganizationName(event.target.value);
+                          setError("");
+                        }}
                         placeholder={t("createNamePlaceholder")}
                         value={organizationName}
                       />
                     </div>
                     <Button className="h-12 w-full rounded-2xl text-sm font-bold" disabled={busyAction === "create"} onClick={() => void createOrganization()} type="button">
+                      {busyAction === "create" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                       {busyAction === "create" ? t("creating") : t("createBtn")}
-                      <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                      {busyAction === "create" ? null : <ArrowRight className="h-4 w-4 rtl:rotate-180" />}
                     </Button>
                   </div>
                 ) : null}
 
-                <button
-                  className={cn(
-                    "flex w-full items-center gap-4 p-5 text-start transition hover:bg-muted",
-                    activeChoice === "invite" && "bg-muted",
-                  )}
-                  disabled={isBusy}
-                  onClick={() => setChoice(choice === "invite" ? null : "invite")}
-                  type="button"
-                >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-surface">
-                    <Ticket className="h-5 w-5 text-foreground" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-black text-foreground">{t("joinTitle")}</span>
-                    <span className="mt-1 block text-xs font-semibold leading-5 text-text-secondary">{t("joinDesc")}</span>
-                  </span>
-                </button>
-
-                {activeChoice === "invite" ? (
-                  <div className="bg-muted/60 p-5">
-                    <p className="rounded-2xl border border-border bg-background px-4 py-3 text-sm font-semibold leading-6 text-text-secondary">
-                      {t("inviteUnsupported")}
-                    </p>
+                {currentOrganizationId ? (
+                  <div className="bg-background p-5">
+                    <Button className="h-12 w-full rounded-2xl text-sm font-bold" disabled={isBusy} onClick={() => router.replace("/dashboard")} type="button">
+                      {t("continueWorkspace")}
+                      <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                    </Button>
                   </div>
                 ) : null}
               </div>
