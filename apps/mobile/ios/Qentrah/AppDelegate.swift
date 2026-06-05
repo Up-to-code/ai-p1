@@ -1,4 +1,4 @@
-import Expo
+public import Expo
 import React
 import ReactAppDependencyProvider
 
@@ -19,7 +19,6 @@ public class AppDelegate: ExpoAppDelegate {
 
     reactNativeDelegate = delegate
     reactNativeFactory = factory
-    bindReactNativeFactory(factory)
 
 #if os(iOS) || os(tvOS)
     window = UIWindow(frame: UIScreen.main.bounds)
@@ -61,19 +60,7 @@ class ReactNativeDelegate: ExpoReactNativeFactoryDelegate {
 
   override func bundleURL() -> URL? {
 #if DEBUG
-    let fallbackURL = RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: ".expo/.virtual-metro-entry")
-
-    guard
-      let ipPath = Bundle.main.path(forResource: "ip", ofType: "txt"),
-      let ipAddress = try? String(contentsOfFile: ipPath).trimmingCharacters(in: .whitespacesAndNewlines),
-      !ipAddress.isEmpty
-    else {
-      return fallbackURL
-    }
-
-    let debugBundleURL = URL(string: "http://\(ipAddress):8081/.expo/.virtual-metro-entry.bundle?platform=ios&dev=true&minify=false")
-    NSLog("Qentrah debug JS bundle URL: \(debugBundleURL?.absoluteString ?? "nil")")
-    return debugBundleURL
+    return RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: ".expo/.virtual-metro-entry")
 #else
     return Bundle.main.url(forResource: "main", withExtension: "jsbundle")
 #endif

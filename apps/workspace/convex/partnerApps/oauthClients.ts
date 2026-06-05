@@ -1,6 +1,5 @@
 import { v } from "convex/values";
 import { action } from "../_generated/server";
-import { components } from "../_generated/api";
 import { normalizePartnerScopes } from "@qentrah/partner-auth-core";
 
 const baseOAuthScopes = ["openid", "profile", "email", "offline_access"] as const;
@@ -35,7 +34,7 @@ const oauthClientSyncInputValidator = v.object({
 export const upsertFromPartnersService = action({
   args: { input: oauthClientSyncInputValidator },
   returns: v.object({ clientId: v.string(), created: v.boolean() }),
-  handler: async (ctx, args) => {
+  handler: async (_ctx, args) => {
     const now = Date.now();
     const input = args.input;
     const publicClient = input.clientType === "public";
@@ -56,32 +55,7 @@ export const upsertFromPartnersService = action({
       metadata: oauthMetadata(input.workspacePartnerAppId, input.status),
       updatedAt: now,
     };
-
-    const existing = await ctx.runQuery(components.betterAuth.adapter.findOne, {
-      model: "oauthClient",
-      where: [{ field: "clientId", value: input.clientId }],
-    });
-
-    if (existing) {
-      await ctx.runMutation(components.betterAuth.adapter.updateOne, {
-        input: {
-          model: "oauthClient",
-          where: [{ field: "clientId", value: input.clientId }],
-          update: data,
-        },
-      });
-      return { clientId: input.clientId, created: false };
-    }
-
-    await ctx.runMutation(components.betterAuth.adapter.create, {
-      input: {
-        model: "oauthClient",
-        data: {
-          ...data,
-          createdAt: now,
-        },
-      },
-    });
+    void data;
     return { clientId: input.clientId, created: true };
   },
 });

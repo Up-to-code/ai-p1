@@ -2,7 +2,7 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import type { MobileRequestContext } from "@/server/middleware/mobile-request-context";
 import type { McpToolDefinition } from "@/server/protocols/mcp/tools/catalog";
-import { fetchAuthMutation } from "@/server/auth/better-auth/server";
+import { fetchAuthMutation } from "@/server/auth/clerk-convex";
 
 export type AgentToolConfirmation = {
   confirmationId: string;

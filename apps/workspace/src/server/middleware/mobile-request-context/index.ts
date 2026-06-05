@@ -8,6 +8,8 @@ export type MobileRequestContext = {
   platform?: string;
   appVersion?: string;
   installationIdHash?: string;
+  selectedOrganizationId?: string;
+  selectedRegions: string[];
 };
 
 function firstHeaderValue(value: string | undefined) {
@@ -20,6 +22,14 @@ function createRequestId() {
   }
 
   return `req_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function parseRegionsHeader(value: string | undefined) {
+  if (!value) return [];
+  return value
+    .split(",")
+    .map((region) => region.trim())
+    .filter(Boolean);
 }
 
 export function resolveMobileRequestContext(c: Context): MobileRequestContext {
@@ -38,6 +48,8 @@ export function resolveMobileRequestContext(c: Context): MobileRequestContext {
     platform: c.req.header("x-qentrah-platform")?.trim() || undefined,
     appVersion: c.req.header("x-qentrah-app-version")?.trim() || undefined,
     installationIdHash: c.req.header("x-qentrah-installation-id")?.trim() || undefined,
+    selectedOrganizationId: c.req.header("x-qentrah-organization-id")?.trim() || undefined,
+    selectedRegions: parseRegionsHeader(c.req.header("x-qentrah-regions")),
   };
 }
 

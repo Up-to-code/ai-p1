@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
-import { fetchAuthQuery } from "@/server/auth/better-auth/server";
+import { fetchAuthQuery } from "@/server/auth/clerk-convex";
 import {
   readOptionalIdQuery,
   readOptionalNumberQuery,
@@ -10,9 +10,10 @@ import {
 } from "./workspace-read-helper";
 import {
   readBoundedOptionalLimit,
+  workspaceIndexedListReadJson,
   readOrganizationId,
   readWorkspaceIdParam,
-  readWorkspaceListQuery,
+  workspacePagedListReadJson,
   workspaceOrganizationReadJson,
   workspaceReadJsonForOrganization,
 } from "./workspace-read-surface";
@@ -22,19 +23,17 @@ const propertyStatuses = ["available", "reserved", "sold", "pending", "draft"] a
 const clientTypes = ["Buyer", "Tenant", "Investor", "Broker"] as const;
 
 export async function handleReadProjects(c: Context) {
-  const organizationId = readOrganizationId(c);
-  if (!organizationId.ok) return organizationId.response;
-  const query = readWorkspaceListQuery(c, "status", projectStatuses);
-  if (!query.ok) return query.response;
-
-  return workspaceReadJsonForOrganization(c, "projects list", organizationId.data, (organizationId) =>
-    fetchAuthQuery(api.projects.read.listPaged, {
+  return workspacePagedListReadJson(c, {
+    label: "projects list",
+    filterName: "status",
+    allowedFilters: projectStatuses,
+    read: (organizationId, query) => fetchAuthQuery(api.projects.read.listPaged, {
       organizationId,
-      paginationOpts: query.data.paginationOpts,
-      status: query.data.filter,
-      search: query.data.search,
+      paginationOpts: query.paginationOpts,
+      status: query.filter,
+      search: query.search,
     }),
-  );
+  });
 }
 
 export async function handleReadProjectStats(c: Context) {
@@ -44,22 +43,17 @@ export async function handleReadProjectStats(c: Context) {
 }
 
 export async function handleReadProjectsIndex(c: Context) {
-  const organizationId = readOrganizationId(c);
-  if (!organizationId.ok) return organizationId.response;
-  const query = readWorkspaceListQuery(c, "status", projectStatuses);
-  if (!query.ok) return query.response;
-
-  return workspaceReadJsonForOrganization(c, "projects index", organizationId.data, async (organizationId) => {
-    const [list, stats] = await Promise.all([
-      fetchAuthQuery(api.projects.read.listPaged, {
-        organizationId,
-        paginationOpts: query.data.paginationOpts,
-        status: query.data.filter,
-        search: query.data.search,
-      }),
-      fetchAuthQuery(api.projects.read.stats, { organizationId }),
-    ]);
-    return { list, stats };
+  return workspaceIndexedListReadJson(c, {
+    label: "projects index",
+    filterName: "status",
+    allowedFilters: projectStatuses,
+    readList: (organizationId, query) => fetchAuthQuery(api.projects.read.listPaged, {
+      organizationId,
+      paginationOpts: query.paginationOpts,
+      status: query.filter,
+      search: query.search,
+    }),
+    readStats: (organizationId) => fetchAuthQuery(api.projects.read.stats, { organizationId }),
   });
 }
 
@@ -83,19 +77,17 @@ export async function handleReadProject(c: Context) {
 }
 
 export async function handleReadProperties(c: Context) {
-  const organizationId = readOrganizationId(c);
-  if (!organizationId.ok) return organizationId.response;
-  const query = readWorkspaceListQuery(c, "status", propertyStatuses);
-  if (!query.ok) return query.response;
-
-  return workspaceReadJsonForOrganization(c, "properties list", organizationId.data, (organizationId) =>
-    fetchAuthQuery(api.properties.read.listPaged, {
+  return workspacePagedListReadJson(c, {
+    label: "properties list",
+    filterName: "status",
+    allowedFilters: propertyStatuses,
+    read: (organizationId, query) => fetchAuthQuery(api.properties.read.listPaged, {
       organizationId,
-      paginationOpts: query.data.paginationOpts,
-      status: query.data.filter,
-      search: query.data.search,
+      paginationOpts: query.paginationOpts,
+      status: query.filter,
+      search: query.search,
     }),
-  );
+  });
 }
 
 export async function handleReadPropertyStats(c: Context) {
@@ -105,22 +97,17 @@ export async function handleReadPropertyStats(c: Context) {
 }
 
 export async function handleReadPropertiesIndex(c: Context) {
-  const organizationId = readOrganizationId(c);
-  if (!organizationId.ok) return organizationId.response;
-  const query = readWorkspaceListQuery(c, "status", propertyStatuses);
-  if (!query.ok) return query.response;
-
-  return workspaceReadJsonForOrganization(c, "properties index", organizationId.data, async (organizationId) => {
-    const [list, stats] = await Promise.all([
-      fetchAuthQuery(api.properties.read.listPaged, {
-        organizationId,
-        paginationOpts: query.data.paginationOpts,
-        status: query.data.filter,
-        search: query.data.search,
-      }),
-      fetchAuthQuery(api.properties.read.stats, { organizationId }),
-    ]);
-    return { list, stats };
+  return workspaceIndexedListReadJson(c, {
+    label: "properties index",
+    filterName: "status",
+    allowedFilters: propertyStatuses,
+    readList: (organizationId, query) => fetchAuthQuery(api.properties.read.listPaged, {
+      organizationId,
+      paginationOpts: query.paginationOpts,
+      status: query.filter,
+      search: query.search,
+    }),
+    readStats: (organizationId) => fetchAuthQuery(api.properties.read.stats, { organizationId }),
   });
 }
 
@@ -161,19 +148,17 @@ export async function handleReadProperty(c: Context) {
 }
 
 export async function handleReadClients(c: Context) {
-  const organizationId = readOrganizationId(c);
-  if (!organizationId.ok) return organizationId.response;
-  const query = readWorkspaceListQuery(c, "type", clientTypes);
-  if (!query.ok) return query.response;
-
-  return workspaceReadJsonForOrganization(c, "clients list", organizationId.data, (organizationId) =>
-    fetchAuthQuery(api.clients.read.listPaged, {
+  return workspacePagedListReadJson(c, {
+    label: "clients list",
+    filterName: "type",
+    allowedFilters: clientTypes,
+    read: (organizationId, query) => fetchAuthQuery(api.clients.read.listPaged, {
       organizationId,
-      paginationOpts: query.data.paginationOpts,
-      type: query.data.filter,
-      search: query.data.search,
+      paginationOpts: query.paginationOpts,
+      type: query.filter,
+      search: query.search,
     }),
-  );
+  });
 }
 
 export async function handleReadClientStats(c: Context) {
@@ -183,22 +168,17 @@ export async function handleReadClientStats(c: Context) {
 }
 
 export async function handleReadClientsIndex(c: Context) {
-  const organizationId = readOrganizationId(c);
-  if (!organizationId.ok) return organizationId.response;
-  const query = readWorkspaceListQuery(c, "type", clientTypes);
-  if (!query.ok) return query.response;
-
-  return workspaceReadJsonForOrganization(c, "clients index", organizationId.data, async (organizationId) => {
-    const [list, stats] = await Promise.all([
-      fetchAuthQuery(api.clients.read.listPaged, {
-        organizationId,
-        paginationOpts: query.data.paginationOpts,
-        type: query.data.filter,
-        search: query.data.search,
-      }),
-      fetchAuthQuery(api.clients.read.stats, { organizationId }),
-    ]);
-    return { list, stats };
+  return workspaceIndexedListReadJson(c, {
+    label: "clients index",
+    filterName: "type",
+    allowedFilters: clientTypes,
+    readList: (organizationId, query) => fetchAuthQuery(api.clients.read.listPaged, {
+      organizationId,
+      paginationOpts: query.paginationOpts,
+      type: query.filter,
+      search: query.search,
+    }),
+    readStats: (organizationId) => fetchAuthQuery(api.clients.read.stats, { organizationId }),
   });
 }
 

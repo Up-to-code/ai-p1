@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import { redirect } from "next/navigation";
 import { useLocale } from "next-intl";
 import { PendingApprovalBanner } from "@/components/layout/pending-approval-banner";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -13,6 +12,7 @@ import { ToastProvider } from "@/components/ui/toast";
 import { AccountProvider, useAccountContext } from "@/domains/auth";
 import { getWorkspaceAuthRedirect } from "@/domains/auth/workspace-status";
 import { clearAuthHandoff, readAuthHandoff } from "@/domains/auth";
+import { useRouter } from "@/i18n/routing";
 import { markAppPerformance } from "@/lib/utils/performance";
 
 // This wrapper is the dashboard boundary: auth and app-wide providers live here.
@@ -26,6 +26,7 @@ export function DashboardAppWrapper({ children }: { children: ReactNode }) {
 
 function DashboardAuthenticatedShell({ children }: { children: ReactNode }) {
   const locale = useLocale();
+  const router = useRouter();
   const account = useAccountContext();
   const isAuthHandoffPending = useAuthHandoffPending(account.isSignedIn, account.workspace.organizationId);
   const authRedirect = getWorkspaceAuthRedirect({
@@ -45,12 +46,13 @@ function DashboardAuthenticatedShell({ children }: { children: ReactNode }) {
     }
   }, [account.workspace.organizationId, account.workspace.status]);
 
-  if (account.workspace.status === "loadingSession" || isAuthHandoffPending) {
-    return <DashboardLoadingState />;
-  }
+  useEffect(() => {
+    if (!authRedirect) return;
+    router.replace(toRouterHref(locale, authRedirect));
+  }, [authRedirect, locale, router]);
 
-  if (authRedirect) {
-    redirect(authRedirect);
+  if (account.workspace.status === "loadingSession" || isAuthHandoffPending || authRedirect) {
+    return <DashboardLoadingState />;
   }
 
   const isPendingApproval = false;
@@ -72,6 +74,13 @@ function DashboardAuthenticatedShell({ children }: { children: ReactNode }) {
       </SidebarProvider>
     </ToastProvider>
   );
+}
+
+function toRouterHref(locale: string, url: string) {
+  const localizedPrefix = `/${locale}`;
+  if (url === localizedPrefix) return "/";
+  if (url.startsWith(`${localizedPrefix}/`)) return url.slice(localizedPrefix.length);
+  return url;
 }
 
 function useAuthHandoffPending(isSignedIn: boolean, organizationId: string | null) {

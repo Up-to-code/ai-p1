@@ -1,5 +1,5 @@
 import { api } from "@convex/_generated/api";
-import { fetchAuthMutation } from "@/server/auth/better-auth/server";
+import { fetchAuthMutation } from "@/server/auth/clerk-convex";
 import type { ClientTaskPayload } from "../validation/client-task.schema";
 
 function toConvexInput(input: ClientTaskPayload) {

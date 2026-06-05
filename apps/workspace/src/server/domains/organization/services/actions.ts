@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
-import { fetchAuthQuery } from "@/server/auth/better-auth/server";
+import { fetchAuthQuery } from "@/server/auth/clerk-convex";
 import { getOrganizationCapabilities } from "@/server/utils/organization/access-checker";
 import type { OrganizationPermissionStatement } from "@/packages/authz";
 import { OrganizationActionError } from "../errors/action-error";
@@ -13,7 +13,7 @@ import {
   normalizeOrganizationRoleName,
   validatePermissionPayload,
 } from "./access-policy";
-import { callBetterAuth, getBetterAuthSession } from "./better-auth-proxy";
+import { callClerkOrganization, getClerkSession } from "./clerk-organization-proxy";
 import {
   listInvitationsForOrganizationAction,
   listMembersForOrganizationAction,
@@ -51,7 +51,7 @@ export async function updateOrganizationIdentity(
 ) {
   return runOrganizationActionWorkflow(organizationId, {
     permission: { resource: "organization", action: "update" },
-    perform: () => callBetterAuth(c, "/organization/update", {
+    perform: () => callClerkOrganization(c, "/organization/update", {
       body: { organizationId, data: input },
       fallback: "Organization could not be updated.",
     }),
@@ -73,7 +73,7 @@ export async function createOrganizationEmailInvitation(
   return runOrganizationActionWorkflow(organizationId, {
     permission: { resource: "member", action: "create" },
     prepare: () => assertCanAssignRole(c, organizationId, input.role),
-    perform: () => callBetterAuth(c, "/organization/invite-member", {
+    perform: () => callClerkOrganization(c, "/organization/invite-member", {
       body: { organizationId, email: input.email, role: input.role },
       fallback: "Invitation could not be created.",
     }),
@@ -92,7 +92,7 @@ export async function cancelOrganizationEmailInvitation(
 ) {
   return runOrganizationActionWorkflow(organizationId, {
     permission: { resource: "member", action: "create" },
-    perform: () => callBetterAuth(c, "/organization/cancel-invitation", {
+    perform: () => callClerkOrganization(c, "/organization/cancel-invitation", {
       body: { invitationId },
       fallback: "Invitation could not be canceled.",
     }),
@@ -123,7 +123,7 @@ export async function updateOrganizationMemberRole(
     roles,
   });
 
-  const member = await callBetterAuth(c, "/organization/update-member-role", {
+  const member = await callClerkOrganization(c, "/organization/update-member-role", {
     body: { organizationId, memberId, role: input.role },
     fallback: "Member role could not be updated.",
   });
@@ -142,7 +142,7 @@ export async function removeOrganizationMember(
   organizationId: string,
   memberIdOrEmail: string,
 ) {
-  const session = await getBetterAuthSession(c);
+  const session = await getClerkSession(c);
   await requireOrganizationAction(organizationId, "member", "delete");
   const members = await listMembers(c, organizationId);
 
@@ -152,7 +152,7 @@ export async function removeOrganizationMember(
     members,
   });
 
-  const member = await callBetterAuth(c, "/organization/remove-member", {
+  const member = await callClerkOrganization(c, "/organization/remove-member", {
     body: { organizationId, memberIdOrEmail },
     fallback: "Member could not be removed.",
   });
@@ -178,7 +178,7 @@ export async function createOrganizationWorkRole(
   }
   assertRoleNameIsCustom(role);
 
-  const created = await callBetterAuth(c, "/organization/create-role", {
+  const created = await callClerkOrganization(c, "/organization/create-role", {
     body: {
       organizationId,
       role,
@@ -216,7 +216,7 @@ export async function updateOrganizationWorkRole(
     assertRoleNameIsCustom(nextRoleName);
   }
 
-  const updated = await callBetterAuth(c, "/organization/update-role", {
+  const updated = await callClerkOrganization(c, "/organization/update-role", {
     body: {
       organizationId,
       roleId,
@@ -263,7 +263,7 @@ export async function deleteOrganizationWorkRole(
 
   assertCanDeleteRole({ role, members, invitations, pendingInviteLinkCount });
 
-  const deleted = await callBetterAuth(c, "/organization/delete-role", {
+  const deleted = await callClerkOrganization(c, "/organization/delete-role", {
     body: { organizationId, roleId },
     fallback: "Work role could not be deleted.",
   });
@@ -294,7 +294,7 @@ export async function acceptOrganizationEmailInvitation(
   c: Context,
   invitationId: string,
 ) {
-  const accepted = await callBetterAuth<AcceptInvitationResponse>(c, "/organization/accept-invitation", {
+  const accepted = await callClerkOrganization<AcceptInvitationResponse>(c, "/organization/accept-invitation", {
     body: { invitationId },
     fallback: "Invitation could not be accepted.",
   });
@@ -302,7 +302,7 @@ export async function acceptOrganizationEmailInvitation(
     accepted.organizationId ??
     accepted.invitation?.organizationId ??
     accepted.member?.organizationId ??
-    (await getBetterAuthSession(c).catch(() => null))?.session?.activeOrganizationId;
+    (await getClerkSession(c).catch(() => null))?.session?.activeOrganizationId;
 
   if (organizationId) {
     await recordOrganizationAction(organizationId, {

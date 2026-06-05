@@ -8,6 +8,7 @@ export const mcpPermissionSchema = z.object({
 export const createMcpConnectionSchema = z.object({
   name: z.string().trim().min(1),
   instructions: z.string().trim().optional().transform((value) => value || undefined),
+  principalType: z.enum(["user", "organization"]).optional(),
   permissions: z.array(mcpPermissionSchema).min(1),
   expiresAt: z.coerce.number().optional(),
 });

@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
-import { authComponent } from "../auth";
+import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import {
   agentRunStatusValidator,
@@ -39,7 +39,7 @@ export const startRunFromHono = mutation({
     userMessageId: v.id("agentMessages"),
   }),
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "organization", "read");
 
     const now = Date.now();

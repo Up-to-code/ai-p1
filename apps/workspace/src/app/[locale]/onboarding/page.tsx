@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth, useOrganization } from "@clerk/nextjs";
 import { useTranslations } from "next-intl";
+import { WorkspaceRouteLoading } from "@/components/loading/workspace-route-loading";
+import { BrandMark } from "@/components/logo";
+import { Link } from "@/i18n/routing";
 import { WizardStepper } from "@/domains/onboarding";
 import { CompanyInfoForm } from "@/domains/onboarding";
 import { BrandSetupForm } from "@/domains/onboarding";
@@ -11,35 +15,71 @@ import { useRouter } from "@/i18n/routing";
 export default function OnboardingPage() {
   const t = useTranslations("Onboarding");
   const router = useRouter();
+  const auth = useAuth();
+  const organization = useOrganization();
   const [currentStep, setCurrentStep] = useState(1);
 
   const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, 3));
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
   const finishSetup = () => router.push("/dashboard");
+  const organizationName = organization.organization?.name ?? "";
+
+  if (!auth.isLoaded || !organization.isLoaded) {
+    return <WorkspaceRouteLoading variant="onboarding" />;
+  }
+
+  if (!auth.isSignedIn || !organization.organization) {
+    return (
+      <div className="flex min-h-[70svh] w-full max-w-lg flex-col items-center justify-center text-center">
+        <Link href="/" className="mb-10 flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-zinc-200 bg-[oklch(99%_0.004_255)] dark:border-white/10 dark:bg-[oklch(13%_0.016_255)]">
+            <BrandMark className="h-5 w-5" priority />
+          </span>
+          <span className="text-lg font-black text-zinc-950 dark:text-white">qentrah</span>
+        </Link>
+        <h1 className="text-3xl font-semibold tracking-0 text-zinc-950 dark:text-white">
+          {t("organizationRequiredTitle")}
+        </h1>
+        <p className="mt-4 max-w-sm text-sm font-medium leading-6 text-zinc-500 dark:text-zinc-400">
+          {t("organizationRequiredDesc")}
+        </p>
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <Link className="inline-flex h-12 items-center justify-center rounded-2xl bg-zinc-950 px-6 text-sm font-bold text-white hover:bg-black dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100" href="/choose-org">
+            {t("chooseOrganization")}
+          </Link>
+          <Link className="inline-flex h-12 items-center justify-center rounded-2xl border border-zinc-200 px-6 text-sm font-bold text-zinc-950 hover:bg-zinc-100 dark:border-white/10 dark:text-white dark:hover:bg-white/10" href="/sign-in">
+            {t("signIn")}
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full max-w-2xl flex flex-col items-center gap-16">
-      
-      {/* Stepper Header */}
-      <div className="w-full flex flex-col items-center text-center gap-10">
-        <div className="space-y-4">
-          <h1 className="text-3xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white md:text-4xl">
+    <div className="w-full max-w-3xl flex flex-col items-center gap-12">
+      <Link href="/" className="flex items-center gap-3">
+        <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-zinc-200 bg-[oklch(99%_0.004_255)] dark:border-white/10 dark:bg-[oklch(13%_0.016_255)]">
+          <BrandMark className="h-5 w-5" priority />
+        </span>
+        <span className="text-lg font-black text-zinc-950 dark:text-white">qentrah</span>
+      </Link>
+      <div className="w-full flex flex-col items-center text-center gap-9">
+        <div className="space-y-3">
+          <h1 className="text-3xl font-semibold tracking-0 text-zinc-950 dark:text-white md:text-4xl">
             {t("title")}
           </h1>
-          <p className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-400">
+          <p className="mx-auto max-w-md text-sm font-medium leading-6 text-zinc-500 dark:text-zinc-400">
             {t("subtitle")}
           </p>
         </div>
         <WizardStepper currentStep={currentStep} />
       </div>
 
-      {/* Dynamic Form Content */}
       <div className="w-full">
-        {currentStep === 1 && <CompanyInfoForm onNext={nextStep} />}
+        {currentStep === 1 && <CompanyInfoForm onNext={nextStep} organizationName={organizationName} />}
         {currentStep === 2 && <BrandSetupForm onNext={nextStep} onBack={prevStep} />}
         {currentStep === 3 && <TeamInviteForm onBack={prevStep} onFinish={finishSetup} />}
       </div>
-      
     </div>
   );
 }

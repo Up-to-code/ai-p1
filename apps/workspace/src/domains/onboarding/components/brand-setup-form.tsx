@@ -30,10 +30,10 @@ export function BrandSetupForm({ onNext, onBack }: FormProps) {
   
   return (
     <form onSubmit={handleSubmit(onNext)}>
-      <Card className="w-full border-0 shadow-none bg-zinc-50 dark:bg-white/[0.02] rounded-[24px]">
+      <Card className="w-full rounded-[24px] border border-zinc-200 bg-[oklch(99%_0.004_255)] dark:border-white/10 dark:bg-[oklch(13%_0.016_255)]">
         <CardHeader className="pb-8 pt-8">
-          <CardTitle className="text-xl font-black uppercase tracking-tight text-zinc-900 dark:text-white text-start">{t("title")}</CardTitle>
-          <CardDescription className="text-xs font-bold text-zinc-500 text-start mt-2">
+          <CardTitle className="text-2xl font-semibold tracking-0 text-zinc-950 dark:text-white text-start">{t("title")}</CardTitle>
+          <CardDescription className="mt-2 text-sm font-medium leading-6 text-zinc-500 text-start dark:text-zinc-400">
             {t("desc")}
           </CardDescription>
         </CardHeader>
@@ -41,7 +41,7 @@ export function BrandSetupForm({ onNext, onBack }: FormProps) {
         <CardContent className="space-y-8 px-8">
           <div className="space-y-3">
             <div className="flex items-center gap-1">
-              <Label htmlFor="brandColor" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("color")}</Label>
+              <Label htmlFor="brandColor" className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">{t("color")}</Label>
                 <Tooltip>
                   <TooltipTrigger className="inline-flex cursor-help">
                     <HelpCircle className="w-3 h-3 text-zinc-400 hover:text-zinc-900 transition-colors" />
@@ -52,10 +52,10 @@ export function BrandSetupForm({ onNext, onBack }: FormProps) {
                 </Tooltip>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl border border-zinc-200 dark:border-white/10 shadow-none shrink-0" style={{ backgroundColor: defaultBrandColor }} />
-                <Input id="brandColor" placeholder={defaultBrandColor} className="h-12 rounded-xl border-zinc-200 bg-white font-medium focus-visible:ring-blue-600/20 dark:border-white/10 dark:bg-[#0A0A0A] font-mono" aria-invalid={Boolean(errors.brandColor)} {...register("brandColor")} />
+                <div className="w-12 h-12 rounded-2xl border border-zinc-200 dark:border-white/10 shrink-0" style={{ backgroundColor: defaultBrandColor }} />
+                <Input id="brandColor" placeholder={defaultBrandColor} className="h-12 rounded-2xl border-zinc-200 bg-transparent px-4 text-sm font-medium focus-visible:ring-blue-600/15 dark:border-white/10 font-mono" aria-invalid={Boolean(errors.brandColor)} {...register("brandColor")} />
               </div>
-              {errors.brandColor && <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider">{errors.brandColor.message}</p>}
+              {errors.brandColor && <p className="text-xs font-semibold text-red-600">{errors.brandColor.message}</p>}
             </div>
 
 
@@ -80,14 +80,14 @@ export function BrandSetupForm({ onNext, onBack }: FormProps) {
         </CardContent>
 
         <CardFooter className="pt-8 pb-8 px-8 flex items-center justify-between rtl:flex-row-reverse border-t border-zinc-200 dark:border-white/10 mt-8">
-          <Button variant="ghost" type="button" className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white" onClick={onBack}>
+          <Button variant="ghost" type="button" className="text-sm font-semibold text-zinc-500 hover:text-zinc-950 dark:hover:text-white" onClick={onBack}>
             {tc("back")}
           </Button>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" type="button" className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white" onClick={onNext}>
+            <Button variant="ghost" type="button" className="text-sm font-semibold text-zinc-500 hover:text-zinc-950 dark:hover:text-white" onClick={onNext}>
               {tc("skipStep")}
             </Button>
-            <Button className="h-14 px-8 rounded-[28px] bg-zinc-900 text-white hover:bg-black font-black uppercase tracking-widest text-[11px] shadow-2xl shadow-zinc-900/20 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 transition-all active:scale-[0.98]" type="submit">
+            <Button className="h-12 px-7 rounded-2xl bg-zinc-950 text-sm font-bold text-white hover:bg-black dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100" type="submit">
               {t("continue")}
             </Button>
           </div>

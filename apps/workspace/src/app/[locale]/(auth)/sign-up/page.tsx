@@ -1,25 +1,13 @@
-"use client";
+import { AuthEntryClient } from "@/domains/auth/components/auth-entry-client";
 
-import { useLocale } from "next-intl";
-import { useSearchParams } from "next/navigation";
-
-import { AuthAccessScreen } from "@/components/auth/auth-access-screen";
-import { resolveAuthEntryCallbackUrl, useGoogleSignIn } from "@/domains/auth";
-
-export default function SignUpPage() {
-  const locale = useLocale();
-  const searchParams = useSearchParams();
-  const requestedCallback = searchParams.get("callbackURL");
-  const callbackURL = resolveAuthEntryCallbackUrl(locale, requestedCallback);
-  const googleSignIn = useGoogleSignIn({
-    callbackURL,
-  });
-
-  return (
-    <AuthAccessScreen
-      isPending={googleSignIn.isPending}
-      mode="sign-up"
-      onGoogleSignIn={googleSignIn.signIn}
-    />
-  );
+export default async function SignUpPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ callbackURL?: string }>;
+}) {
+  const { locale } = await params;
+  const { callbackURL } = await searchParams;
+  return <AuthEntryClient callbackURL={callbackURL} locale={locale} mode="sign-up" />;
 }

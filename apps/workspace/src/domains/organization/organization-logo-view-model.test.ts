@@ -5,6 +5,7 @@ import {
   organizationLogoCoverLayout,
   organizationLogoOutputSize,
 } from "./organization-logo-view-model";
+import { updateOrganizationProfileSchema } from "./validation/organization.schema";
 
 describe("organization logo view model", () => {
   it("clamps scalar crop values", () => {
@@ -33,5 +34,20 @@ describe("organization logo view model", () => {
       x: -256,
       y: -0,
     });
+  });
+
+  it("allows saving an uploaded logo URL with organization profile data", () => {
+    const parsed = updateOrganizationProfileSchema.safeParse({
+      name: "Qentrah",
+      legalName: "",
+      type: "",
+      email: "",
+      phone: "",
+      website: "",
+      address: "",
+      logo: "https://cdn.example.com/org-logo.webp",
+    });
+
+    expect(parsed.success).toBe(true);
   });
 });

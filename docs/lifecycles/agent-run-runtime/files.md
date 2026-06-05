@@ -31,8 +31,31 @@
 - `apps/mobile/src/foundation/primitives/MarkdownText.tsx`: Mobile markdown text primitive with typed React Native text styles.
 - `apps/mobile/src/foundation/primitives/MarkdownTableViewport.tsx`: Mobile markdown table viewport with typed React Native view styles.
 - `apps/mobile/src/auth/userPresentation.ts`: Mobile user presentation Module for display name, avatar URL, and initials projection across app account surfaces.
+- `apps/mobile/src/auth/AuthProvider.tsx`: Mobile Clerk provider and runtime bridge for SecureStore-backed Clerk sessions and Workspace API token forwarding.
+- `apps/mobile/src/auth/authClient.ts`: Mobile auth facade that adapts Clerk session, user, organization, creation, selection, and sign-out APIs to existing workspace access call sites.
+- `apps/mobile/src/auth/emailPasswordAuth.ts`: Mobile Clerk email/password auth Module for sign-in, sign-up, email-code verification, and Clerk error projection.
+- `apps/mobile/src/tests/emailPasswordAuth.test.ts`: Mobile Clerk email/password auth Module tests for missing details, sign-in finalization, signup verification, and Clerk error projection.
+- `apps/mobile/src/auth/socialAuth.ts`: Mobile Clerk SSO helper for Google sign-in and other web-style provider flows.
+- `apps/mobile/app/(auth)/index.tsx`: Mobile auth landing route for the modal-style bottom auth sheet, workspace social auth choices, native Apple sign-in launch, and Log in/Sign up email route entry.
+- `apps/mobile/app/(auth)/email.tsx`: Mobile stepped email/password auth modal for email-first, password, and verification states with Android `@expo/ui` Jetpack Compose non-secret input/button adapters and secure password input fallback.
+- `apps/mobile/app.config.ts`: Mobile Expo config carrying Clerk runtime URLs and native Apple sign-in capability.
+- `apps/mobile/src/persistence/api/workspaceApiClient.ts`: Mobile Workspace API client that attaches Clerk bearer tokens, installation metadata, and request context headers.
+- `apps/workspace/src/server/middleware/mobile-request-context/index.ts`: Workspace request context middleware that parses mobile request metadata, selected organization id, and selected organization regions.
 - `apps/mobile/app/(app)/threads.tsx`: Mobile thread history screen that renders the presentation Module output and keeps navigation/favorite UI wiring local.
 - `apps/mobile/src/shell/components/ChatDrawer.tsx`: Mobile drawer history surface using the thread history presentation Module for compact thread rows.
 - `apps/workspace/convex/agents/read.ts`: Agent thread/run read surface.
 - `apps/workspace/convex/agents/readSurface.ts`: Agent Convex read-surface Module for read limits, id presentation, thread page mapping, chronological message order, and encrypted content reveal.
 - `apps/workspace/convex/agents/write.ts`: Agent thread/run/step/tool-call write surface.
+
+## Mobile auth custom haptics
+- `apps/mobile/src/foundation/haptics/customHaptics.ts`
+- `apps/mobile/ios/Qentrah/QentrahTypewriterWave.ahap`
+- `apps/mobile/ios/Qentrah.xcodeproj/project.pbxproj`
+- `apps/mobile/app/(auth)/index.tsx`
+- `apps/mobile/package.json`
+- `package-lock.json`
+- `apps/mobile/ios/Podfile.lock`
+
+## Mobile email auth keyboard handling
+- `apps/mobile/app/(auth)/email.tsx`
+- `apps/mobile/src/foundation/keyboard/useKeyboardClearance.ts`

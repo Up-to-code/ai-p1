@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/toast";
 import { uploadFiles } from "@/lib/uploadthing";
 import { cn } from "@/lib/utils";
-import { updateAuthOrganization } from "../api/better-auth-organization";
+import { updateAuthOrganization } from "../api/clerk-organization-api";
 import {
   clampLogoCropPosition,
   organizationLogoCoverLayout,
@@ -82,7 +82,7 @@ export function OrganizationLogoUploader({
     removedDescription: string;
     uploadFailed: string;
   };
-  onSaved: () => void;
+  onSaved: (logo: string | null) => void | Promise<void>;
 }) {
   const { toast } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -173,9 +173,9 @@ export function OrganizationLogoUploader({
       }
 
       await updateAuthOrganization(organizationId, { logo: logoUrl });
+      await onSaved(logoUrl);
       toast({ title: labels.savedTitle, description: labels.savedDescription, type: "success" });
       closeCropper();
-      onSaved();
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : labels.uploadFailed;
       setError(message);
@@ -191,8 +191,8 @@ export function OrganizationLogoUploader({
 
     try {
       await updateAuthOrganization(organizationId, { logo: "" });
+      await onSaved(null);
       toast({ title: labels.removedTitle, description: labels.removedDescription, type: "success" });
-      onSaved();
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : labels.uploadFailed;
       setError(message);

@@ -87,7 +87,7 @@ function tool(input: Omit<McpToolRegistryItem, "riskLevel" | "approvalRequiremen
 
 export const mcpToolRegistry = [
   tool({ name: "organization_info", title: "Organization info", description: "Get this agent link's organization context and allowed work.", resource: "organization", action: "read", adapters: both }),
-  tool({ name: "organization_update_identity", title: "Update organization identity", description: "Update the organization's Better Auth identity fields.", resource: "organization", action: "update", adapters: agentOnly }),
+  tool({ name: "organization_update_identity", title: "Update organization identity", description: "Update the organization's dev organization identity fields.", resource: "organization", action: "update", adapters: agentOnly }),
   tool({ name: "organization_update_profile", title: "Update organization profile", description: "Update the organization's workspace profile fields.", resource: "organization", action: "update", adapters: agentOnly }),
   tool({ name: "members_update_role", title: "Update member role", description: "Change an organization member's work role.", resource: "member", action: "update", adapters: agentOnly }),
   tool({ name: "members_remove", title: "Remove member", description: "Remove an organization member.", resource: "member", action: "delete", destructive: true, adapters: agentOnly }),

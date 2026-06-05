@@ -8,24 +8,28 @@ function read(path: string) {
   return readFileSync(resolve(root, path), "utf8");
 }
 
-describe("personal MCP link source guards", () => {
-  it("keeps MCP links member-owned instead of platform-admin gated", () => {
+describe("MCP link principal source guards", () => {
+  it("keeps MCP links member-owned or organization-owned instead of platform-admin gated", () => {
     const source = read("convex/mcp/connections.ts");
     const lifecycle = read("convex/mcp/connectionLifecycle.ts");
 
     expect(source).not.toContain("assertPlatformAdmin");
-    expect(source).toContain("connection.createdByUserId === user._id");
+    expect(source).toContain("principalType = args.input.principalType ?? \"user\"");
+    expect(source).toContain("principalUserId: principalType === \"user\" ? user._id : undefined");
+    expect(source).toContain("mcpConnectionPrincipalType(connection) === \"user\"");
     expect(source).toContain("canManageMcpConnections");
     expect(source).toContain("visibleMcpConnections(connections, { canManage, userId: user._id })");
-    expect(lifecycle).toContain(".filter((connection) => params.canManage || connection.createdByUserId === params.userId)");
+    expect(lifecycle).toContain("mcpConnectionPrincipalType(connection) === \"organization\"");
+    expect(lifecycle).toContain("(connection.principalUserId ?? connection.createdByUserId) === params.userId");
   });
 
-  it("re-checks creator permissions before exposing MCP tools", () => {
+  it("re-checks user principal permissions before exposing MCP tools", () => {
     const source = read("convex/mcp/connections.ts");
     const permissions = read("convex/mcp/connectionPermissions.ts");
 
     expect(source).toContain("filterLivePermissions");
     expect(source).toContain("canUserUseMcpAction");
+    expect(source).toContain("principalType === \"organization\"");
     expect(source).toContain("hasMcpPermission(livePermissions, args.resource, args.action)");
     expect(permissions).toContain("hasMcpPermission");
     expect(source).toContain("permissions: livePermissions");
@@ -35,6 +39,8 @@ describe("personal MCP link source guards", () => {
     const source = read("src/domains/organization/components/organization-screens.tsx");
 
     expect(source).toContain("const canCreateAgentLinks = capabilities?.canReadOrganization ?? false");
+    expect(source).toContain("const [principalType, setPrincipalType]");
+    expect(source).toContain("principalType,");
     expect(source).toContain("openEditAgentLinkDialog");
     expect(source).toContain("permissions: selectedGrantablePermissions");
     expect(source).toContain("clampAgentPermissionsToGrantable(cloneAgentPermissions(connection.permissions), grantablePermissions)");

@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { internalMutation, mutation } from "../_generated/server";
-import { authComponent } from "../auth";
+import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { assertPlatformAdmin } from "../platform/access";
 import {
@@ -76,7 +76,7 @@ function presentConfirmation(doc: Doc<"agentConfirmations">) {
 }
 
 async function requireCurrentUser(ctx: MutationCtx) {
-  const user = await authComponent.getAuthUser(ctx);
+  const user = await clerkAuthComponent.getAuthUser(ctx);
   const userId = user._id;
   if (!userId) throw new Error("Authenticated user was not found.");
   return String(userId);

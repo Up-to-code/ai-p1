@@ -1,18 +1,16 @@
-import { ScrollView, StyleSheet, View, Pressable, Image, Alert, Linking } from "react-native";
+import { ScrollView, StyleSheet, View, Pressable, Image, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useMemo } from "react";
-import * as Clipboard from "expo-clipboard";
 import {
   BriefcaseBusiness,
   ChevronLeft,
   ChevronRight,
   Languages,
-  Link,
   LogOut,
-  FileText,
   RefreshCw,
-  ShieldCheck,
-  SunMoon,
+  Monitor,
+  MoonStar,
+  SunMedium,
 } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInUp } from "react-native-reanimated";
@@ -29,11 +27,18 @@ import { formatLanguagePreferenceLabel } from "@/foundation/localization/languag
 import { mirrorIcon } from "@/foundation/utils/layoutDirection";
 import { workspaceOrganizationLabel } from "@/auth/workspaceAccess";
 import { userAvatarPresentation } from "@/auth/userPresentation";
+import type { AppearanceMode } from "@/store/slices/preferenceSlice";
+
+const APPEARANCE_OPTIONS: Array<{ value: AppearanceMode; icon: "system" | "light" | "dark" }> = [
+  { value: "system", icon: "system" },
+  { value: "light", icon: "light" },
+  { value: "dark", icon: "dark" },
+];
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { colors, appearanceMode } = useTheme();
-  const { t, isRTL, locale, localePreference } = useAppLocalization();
+  const { colors, appearanceMode, setAppearanceMode } = useTheme();
+  const { t, isRTL, localePreference } = useAppLocalization();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors, isRTL), [colors, isRTL]);
   const { user } = useAuthSession();
@@ -60,44 +65,18 @@ export default function ProfileScreen() {
 
   const { displayName, avatarUrl, initials } = userAvatarPresentation(user);
   const languageSummary = formatLanguagePreferenceLabel(t, localePreference);
-  const appearanceSummary =
-    appearanceMode === "system"
-      ? t.appSettings.appearanceSystemTitle
-      : appearanceMode === "light"
-        ? t.appSettings.appearanceLightTitle
-        : t.appSettings.appearanceDarkTitle;
   const activeWorkspaceName = workspaceOrganizationLabel(
     workspace.activeOrganization,
     t.workspaceAccess.untitledWorkspace,
   );
-
-  const handleCreateInviteLink = async () => {
-    if (!workspace.organizationId) {
-      router.push("/(auth)/choose-workspace" as never);
-      return;
-    }
-
-    try {
-      const invite = await workspace.createInviteLink({
-        organizationId: workspace.organizationId,
-        role: "member",
-        locale,
-      });
-      if (invite.inviteUrl) {
-        await Clipboard.setStringAsync(invite.inviteUrl);
-      }
-      Alert.alert(t.workspaceAccess.inviteLinkCreated, t.workspaceAccess.inviteLinkCopied);
-    } catch (error) {
-      Alert.alert(
-        t.workspaceAccess.errorTitle,
-        error instanceof Error ? error.message : t.workspaceAccess.errorBody,
-      );
-    }
-  };
-
-  const openWorkspacePublicPage = (slug: "privacy" | "terms" | "legal") => {
-    void Linking.openURL(`https://app.qentrah.com/${locale}/${slug}`);
-  };
+  const appearanceOptions = APPEARANCE_OPTIONS.map((option) => ({
+    ...option,
+    title: option.value === "system"
+      ? t.appSettings.appearanceSystemTitle
+      : option.value === "light"
+        ? t.appSettings.appearanceLightTitle
+        : t.appSettings.appearanceDarkTitle,
+  }));
 
   const menuGroups: {
     label: string;
@@ -114,22 +93,16 @@ export default function ProfileScreen() {
       items: [
         {
           id: "active_workspace",
-          label: t.workspaceAccess.activeWorkspace,
+          label: t.workspaceAccess.organizationSettingsTitle,
           description: activeWorkspaceName,
           icon: <BriefcaseBusiness size={18} color={colors.textPrimary} />,
-          onPress: () => router.push("/(auth)/choose-workspace" as never),
+          onPress: () => router.push("/(app)/organization" as never),
         },
         {
           id: "switch_workspace",
           label: t.workspaceAccess.switchWorkspace,
           icon: <RefreshCw size={18} color={colors.textPrimary} />,
           onPress: () => router.push("/(auth)/choose-workspace" as never),
-        },
-        {
-          id: "create_invite_link",
-          label: t.workspaceAccess.createInviteLink,
-          icon: <Link size={18} color={colors.textPrimary} />,
-          onPress: () => void handleCreateInviteLink(),
         },
       ],
     },
@@ -142,36 +115,6 @@ export default function ProfileScreen() {
           description: languageSummary,
           icon: <Languages size={18} color={colors.textPrimary} />,
           onPress: () => router.push("/(app)/language" as never),
-        },
-        {
-          id: "appearance",
-          label: t.appSettings.appearanceTitle,
-          description: appearanceSummary,
-          icon: <SunMoon size={18} color={colors.textPrimary} />,
-          onPress: () => router.push("/(app)/appearance" as never),
-        },
-      ],
-    },
-    {
-      label: t.profile.services,
-      items: [
-        {
-          id: "privacy_policy",
-          label: "Privacy policy",
-          icon: <ShieldCheck size={18} color={colors.textPrimary} />,
-          onPress: () => openWorkspacePublicPage("privacy"),
-        },
-        {
-          id: "terms",
-          label: "Terms",
-          icon: <FileText size={18} color={colors.textPrimary} />,
-          onPress: () => openWorkspacePublicPage("terms"),
-        },
-        {
-          id: "legal",
-          label: "Legal",
-          icon: <FileText size={18} color={colors.textPrimary} />,
-          onPress: () => openWorkspacePublicPage("legal"),
         },
       ],
     },
@@ -237,6 +180,30 @@ export default function ProfileScreen() {
               </View>
             </View>
           ))}
+
+          <View style={styles.groupWrapper}>
+            <Text variant="caption" tone="muted" style={styles.groupLabel}>{t.appSettings.appearanceTitle}</Text>
+            <View style={styles.modeGroup}>
+              {appearanceOptions.map((option) => {
+                const selected = option.value === appearanceMode;
+                return (
+                  <Pressable
+                    key={option.value}
+                    testID={`profile.appearance.${option.value}`}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    style={[styles.modeButton, selected && styles.modeButtonSelected]}
+                    onPress={() => setAppearanceMode(option.value)}
+                  >
+                    <AppearanceIcon mode={option.icon} color={selected ? colors.background : colors.textPrimary} />
+                    <Text style={[styles.modeText, selected && styles.modeTextSelected]} numberOfLines={1}>
+                      {option.title}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
         </View>
 
         <View style={styles.footer}>
@@ -248,6 +215,18 @@ export default function ProfileScreen() {
       </ScrollView>
     </Screen>
   );
+}
+
+function AppearanceIcon({ mode, color }: { mode: "system" | "light" | "dark"; color: string }) {
+  if (mode === "system") {
+    return <Monitor size={17} color={color} />;
+  }
+
+  if (mode === "light") {
+    return <SunMedium size={17} color={color} />;
+  }
+
+  return <MoonStar size={17} color={color} />;
 }
 
 const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
@@ -329,6 +308,36 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.divider,
     overflow: "hidden",
+  },
+  modeGroup: {
+    flexDirection: isRTL ? "row-reverse" : "row",
+    gap: 8,
+  },
+  modeButton: {
+    flex: 1,
+    minHeight: 54,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.divider,
+    backgroundColor: colors.surface,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingHorizontal: 8,
+  },
+  modeButtonSelected: {
+    borderColor: colors.textPrimary,
+    backgroundColor: colors.textPrimary,
+  },
+  modeText: {
+    color: colors.textPrimary,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "800",
+    textAlign: "center",
+  },
+  modeTextSelected: {
+    color: colors.background,
   },
   item: {
     flexDirection: isRTL ? "row-reverse" : "row",

@@ -10,6 +10,7 @@ export type OrganizationProfile = {
   phone: string;
   website: string;
   address: string;
+  logo?: string;
   updatedAt: number;
 };
 

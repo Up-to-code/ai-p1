@@ -1,6 +1,7 @@
 export type WorkspaceStatus =
   | "loadingSession"
   | "noOrganization"
+  | "organizationAccessDenied"
   | "convexAuthLoading"
   | "convexAuthFailed"
   | "ready";
@@ -12,6 +13,7 @@ export function deriveWorkspaceStatus({
   isConvexAuthPending,
   isConvexAuthenticated,
   isConvexAuthStalled = false,
+  hasOrganizationAccessDenied = false,
 }: {
   isSessionPending: boolean;
   isOrganizationPending: boolean;
@@ -19,11 +21,13 @@ export function deriveWorkspaceStatus({
   isConvexAuthPending: boolean;
   isConvexAuthenticated: boolean;
   isConvexAuthStalled?: boolean;
+  hasOrganizationAccessDenied?: boolean;
 }): WorkspaceStatus {
   if (isSessionPending || isOrganizationPending) return "loadingSession";
   if (!organizationId) return "noOrganization";
   if (isConvexAuthPending) return isConvexAuthStalled ? "convexAuthFailed" : "convexAuthLoading";
   if (!isConvexAuthenticated) return "convexAuthFailed";
+  if (hasOrganizationAccessDenied) return "organizationAccessDenied";
   return "ready";
 }
 
@@ -42,6 +46,6 @@ export function getWorkspaceAuthRedirect({
   if (!isSignedIn) {
     return `/${locale}/sign-in?callbackURL=${encodeURIComponent(`/${locale}/choose-org`)}`;
   }
-  if (workspaceStatus === "noOrganization") return `/${locale}/choose-org`;
+  if (workspaceStatus === "noOrganization" || workspaceStatus === "organizationAccessDenied") return `/${locale}/choose-org`;
   return null;
 }

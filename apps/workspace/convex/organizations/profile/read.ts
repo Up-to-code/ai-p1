@@ -25,6 +25,7 @@ export const getProfile = query({
         phone: profile.phone,
         website: profile.website,
         address: profile.address,
+        logo: profile.logo,
         updatedAt: profile.updatedAt,
       };
     }

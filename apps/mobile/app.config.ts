@@ -10,7 +10,8 @@ const workspaceRoot = path.resolve(__dirname, "../..");
 const appRoot = __dirname;
 const brandName = "Qentrah";
 const brandPrimary = "#0b5cff";
-const splashBackground = "#000000";
+const splashBackground = "#FFFFFF";
+const splashDarkBackground = "#000000";
 
 function loadEnvFile(filePath: string) {
   if (!existsSync(filePath)) {
@@ -53,12 +54,6 @@ const config: ExpoConfig = {
   orientation: "portrait",
   userInterfaceStyle: "automatic",
   icon: "./assets/brand/qentrah-mobile-icon.png",
-  splash: {
-    backgroundColor: splashBackground,
-    dark: {
-      backgroundColor: splashBackground,
-    },
-  },
   experiments: {
     typedRoutes: true,
   },
@@ -66,6 +61,7 @@ const config: ExpoConfig = {
     supportsTablet: false,
     bundleIdentifier: "com.qentrah.mobile",
     buildNumber: "7",
+    usesAppleSignIn: true,
     associatedDomains: ["applinks:app.qentrah.com"],
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
@@ -119,6 +115,24 @@ const config: ExpoConfig = {
   plugins: [
     "expo-font",
     "expo-router",
+    "expo-apple-authentication",
+    "expo-image",
+    "expo-secure-store",
+    [
+      "expo-splash-screen",
+      {
+        image: "./assets/brand/qentrah-splash-icon.png",
+        imageWidth: 28,
+        resizeMode: "contain",
+        backgroundColor: splashBackground,
+        dark: {
+          backgroundColor: splashDarkBackground,
+          image: "./assets/brand/qentrah-splash-icon-dark.png",
+        },
+      },
+    ],
+    "expo-status-bar",
+    "expo-web-browser",
     [
       "expo-speech-recognition",
       {
@@ -132,6 +146,7 @@ const config: ExpoConfig = {
       projectId: "514606c6-a5f7-4512-a73d-4916d051eb6b",
     },
     authUrl: mobileEnvironment.authUrl,
+    clerkPublishableKey: mobileEnvironment.clerkPublishableKey,
     workspaceApiUrl: mobileEnvironment.workspaceApiUrl,
     mobileEnvironment: mobileEnvironment.environment,
     brand: {

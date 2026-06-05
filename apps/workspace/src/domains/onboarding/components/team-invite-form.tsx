@@ -36,20 +36,20 @@ export function TeamInviteForm({ onBack, onFinish }: FormProps) {
   
   return (
     <form onSubmit={handleSubmit(() => undefined)}>
-      <Card className="w-full border-0 shadow-none bg-zinc-50 dark:bg-white/[0.02] rounded-[24px]">
+      <Card className="w-full rounded-[24px] border border-zinc-200 bg-[oklch(99%_0.004_255)] dark:border-white/10 dark:bg-[oklch(13%_0.016_255)]">
         <CardHeader className="pb-8 pt-8">
-          <CardTitle className="text-xl font-black uppercase tracking-tight text-zinc-900 dark:text-white text-start">{t("title")}</CardTitle>
-          <CardDescription className="text-xs font-bold text-zinc-500 text-start mt-2">
+          <CardTitle className="text-2xl font-semibold tracking-0 text-zinc-950 dark:text-white text-start">{t("title")}</CardTitle>
+          <CardDescription className="mt-2 text-sm font-medium leading-6 text-zinc-500 text-start dark:text-zinc-400">
             {t("desc")}
           </CardDescription>
         </CardHeader>
       
         <CardContent className="space-y-8 px-8">
           {/* Inline Add Form */}
-          <div className="flex flex-col md:flex-row items-end gap-4 bg-white dark:bg-[#0A0A0A] p-6 rounded-2xl border border-zinc-200 dark:border-white/10 shadow-sm">
+          <div className="flex flex-col md:flex-row items-end gap-4 bg-transparent p-0">
             <div className="w-full md:flex-1 space-y-3">
               <div className="flex items-center gap-1">
-                <Label htmlFor="inviteEmail" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("emailLabel")}</Label>
+                <Label htmlFor="inviteEmail" className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">{t("emailLabel")}</Label>
                 <Tooltip>
                   <TooltipTrigger className="inline-flex cursor-help">
                     <HelpCircle className="w-3 h-3 text-zinc-400 hover:text-zinc-900 transition-colors" />
@@ -59,12 +59,12 @@ export function TeamInviteForm({ onBack, onFinish }: FormProps) {
                   </TooltipContent>
                 </Tooltip>
               </div>
-              <Input id="inviteEmail" placeholder={t("emailPlaceholder")} className="h-12 rounded-xl border-zinc-200 bg-white font-medium focus-visible:ring-blue-600/20 dark:border-white/10 dark:bg-[#0A0A0A]" aria-invalid={Boolean(errors.inviteEmail)} {...register("inviteEmail")} />
-              {errors.inviteEmail && <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider">{errors.inviteEmail.message}</p>}
+              <Input id="inviteEmail" placeholder={t("emailPlaceholder")} className="h-12 rounded-2xl border-zinc-200 bg-transparent px-4 text-sm font-medium focus-visible:ring-blue-600/15 dark:border-white/10" aria-invalid={Boolean(errors.inviteEmail)} {...register("inviteEmail")} />
+              {errors.inviteEmail && <p className="text-xs font-semibold text-red-600">{errors.inviteEmail.message}</p>}
             </div>
             <div className="w-full md:w-48 space-y-3">
               <div className="flex items-center gap-1">
-                <Label htmlFor="inviteRole" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("roleLabel")}</Label>
+                <Label htmlFor="inviteRole" className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">{t("roleLabel")}</Label>
                 <Tooltip>
                   <TooltipTrigger className="inline-flex cursor-help">
                     <HelpCircle className="w-3 h-3 text-zinc-400 hover:text-zinc-900 transition-colors" />
@@ -74,22 +74,22 @@ export function TeamInviteForm({ onBack, onFinish }: FormProps) {
                   </TooltipContent>
                 </Tooltip>
               </div>
-              <Input id="inviteRole" placeholder="Admin" className="h-12 rounded-xl border-zinc-200 bg-white font-medium focus-visible:ring-blue-600/20 dark:border-white/10 dark:bg-[#0A0A0A] text-zinc-500 cursor-not-allowed" readOnly {...register("inviteRole")} />
+              <Input id="inviteRole" placeholder="Admin" className="h-12 rounded-2xl border-zinc-200 bg-transparent px-4 text-sm font-medium text-zinc-500 cursor-not-allowed focus-visible:ring-blue-600/15 dark:border-white/10" readOnly {...register("inviteRole")} />
             </div>
-            <Button className="w-full md:w-auto h-12 px-6 rounded-xl bg-zinc-900 text-white hover:bg-black font-black uppercase tracking-widest text-[10px] dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 transition-all" type="button">
+            <Button className="w-full md:w-auto h-12 px-6 rounded-2xl bg-zinc-950 text-sm font-bold text-white hover:bg-black dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100" type="button">
               <UserPlus className="w-4 h-4 me-2 rtl:ms-2 rtl:me-0" />
               {t("addBtn")}
             </Button>
           </div>
 
           {/* Pending Invites Table */}
-          <div className="rounded-2xl border border-zinc-200 dark:border-white/10 overflow-hidden bg-white dark:bg-[#0A0A0A]">
+          <div className="rounded-2xl border border-zinc-200 dark:border-white/10 overflow-hidden bg-transparent">
             <table className="w-full text-sm text-start">
               <thead className="bg-zinc-50 dark:bg-white/[0.02] border-b border-zinc-200 dark:border-white/10 text-zinc-500">
                 <tr>
-                  <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-start">{t("tableEmail")}</th>
-                  <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-start">{t("tableRole")}</th>
-                  <th className="px-6 py-4 font-black uppercase tracking-widest text-[9px] text-end">{t("tableActions")}</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-start">{t("tableEmail")}</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-start">{t("tableRole")}</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-end">{t("tableActions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -108,15 +108,15 @@ export function TeamInviteForm({ onBack, onFinish }: FormProps) {
         </CardContent>
 
         <CardFooter className="pt-8 pb-8 px-8 flex items-center justify-between rtl:flex-row-reverse border-t border-zinc-200 dark:border-white/10 mt-8">
-          <Button variant="ghost" type="button" className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white" onClick={onBack} disabled={isSubmitting}>
+          <Button variant="ghost" type="button" className="text-sm font-semibold text-zinc-500 hover:text-zinc-950 dark:hover:text-white" onClick={onBack} disabled={isSubmitting}>
             {tc("back")}
           </Button>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" type="button" className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-white" onClick={handleFinish} disabled={isSubmitting}>
+            <Button variant="ghost" type="button" className="text-sm font-semibold text-zinc-500 hover:text-zinc-950 dark:hover:text-white" onClick={handleFinish} disabled={isSubmitting}>
               {tc("saveAndExit")}
             </Button>
             <Button 
-              className="h-14 px-8 rounded-[28px] bg-zinc-900 text-white hover:bg-black font-black uppercase tracking-widest text-[11px] shadow-2xl shadow-zinc-900/20 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none" 
+              className="h-12 px-7 rounded-2xl bg-zinc-950 text-sm font-bold text-white hover:bg-black dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 disabled:opacity-50 disabled:pointer-events-none" 
               type="button"
               onClick={handleFinish}
               disabled={isSubmitting}

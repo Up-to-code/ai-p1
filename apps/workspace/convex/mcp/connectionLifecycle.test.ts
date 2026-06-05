@@ -27,16 +27,25 @@ describe("MCP connection lifecycle", () => {
       id: "connection_1",
       publicId: "public",
       keyLast4: "1234",
+      principalType: "user",
+      principalUserId: "user_1",
       expiresAt: 50,
     });
   });
 
-  it("filters visible connections unless the user can manage all links", () => {
+  it("filters visible user connections unless the user can manage all links", () => {
     const own = connection({ _id: "own" as never, createdByUserId: "user_1", updatedAt: 1 });
     const other = connection({ _id: "other" as never, createdByUserId: "user_2", updatedAt: 2 });
 
     expect(visibleMcpConnections([own, other], { canManage: false, userId: "user_1" }).map((item) => item._id)).toEqual(["own"]);
     expect(visibleMcpConnections([own, other], { canManage: true, userId: "user_1" }).map((item) => item._id)).toEqual(["other", "own"]);
+  });
+
+  it("keeps organization principal connections visible to members", () => {
+    const orgLink = connection({ _id: "org" as never, principalType: "organization", createdByUserId: "user_2" });
+    const userLink = connection({ _id: "user" as never, principalType: "user", createdByUserId: "user_2" });
+
+    expect(visibleMcpConnections([orgLink, userLink], { canManage: false, userId: "user_1" }).map((item) => item._id)).toEqual(["org"]);
   });
 
   it("derives token ttl from optional expiration", () => {

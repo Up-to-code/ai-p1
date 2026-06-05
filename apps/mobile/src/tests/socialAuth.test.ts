@@ -14,25 +14,25 @@ test("mobile auth exposes configured social providers without email auth", () =>
   assert.equal((mobileSocialProviders as readonly string[]).includes("email"), false);
 });
 
-test("Google social auth starts Better Auth through the workspace callback route", async () => {
+test("Google social auth starts Clerk SSO through the workspace callback route", async () => {
   const calls: unknown[] = [];
-  const client = {
-    signIn: {
-      social: async (input: unknown) => {
-        calls.push(input);
-        return {};
-      },
-    },
-    getSession: async () => {
-      calls.push("getSession");
+  const flow = {
+    startSSOFlow: async (input: unknown) => {
+      calls.push(input);
+      return {
+        createdSessionId: "sess_1",
+        setActive: async (input: unknown) => {
+          calls.push(input);
+        },
+      };
     },
   };
 
-  await signInWithWorkspaceSocialProvider(client, "google");
+  await signInWithWorkspaceSocialProvider(flow, "google");
 
   assert.deepEqual(calls, [
-    { provider: "google", callbackURL: MOBILE_AUTH_CALLBACK_URL },
-    "getSession",
+    { strategy: "oauth_google", redirectUrl: MOBILE_AUTH_CALLBACK_URL },
+    { session: "sess_1" },
   ]);
 });
 
@@ -44,11 +44,8 @@ test("social auth surfaces provider setup errors", async () => {
 
   await assert.rejects(
     () => signInWithWorkspaceSocialProvider({
-      signIn: {
-        social: async () => ({ error: { message: "Google OAuth is not configured." } }),
-      },
-      getSession: async () => undefined,
+      startSSOFlow: async () => ({}),
     }, "google"),
-    /Google OAuth is not configured/,
+    /google sign in is not configured/,
   );
 });

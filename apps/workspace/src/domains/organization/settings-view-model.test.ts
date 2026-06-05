@@ -21,7 +21,7 @@ import type {
   McpConnectionPermission,
   OrganizationApiKeyPermission,
   OrganizationCapabilities,
-} from "./api/better-auth-organization";
+} from "./api/clerk-organization-api";
 
 const baseCapabilities: OrganizationCapabilities = {
   canReadOrganization: true,

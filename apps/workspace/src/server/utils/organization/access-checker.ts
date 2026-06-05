@@ -1,5 +1,5 @@
 import { api } from "@convex/_generated/api";
-import { fetchAuthQuery } from "@/server/auth/better-auth/server";
+import { fetchAuthQuery } from "@/server/auth/clerk-convex";
 import type { OrganizationCapabilities } from "@/packages/authz";
 
 type OrganizationResource =

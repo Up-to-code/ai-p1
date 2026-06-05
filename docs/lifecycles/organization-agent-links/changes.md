@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-04 MCP Principal Ownership
+
+- Added explicit user and organization principals for Workspace MCP agent links.
+- User-principal links stay tied to the creator and continue to be permission-clamped against that user's live organization access.
+- Organization-principal links can be created by members who can manage agent links, are visible to organization members, and validate against the stored organization grant.
+- Extended the Hono create payload, Convex storage projection, API key metadata, and organization settings UI to carry the chosen principal.
+
 ## 2026-06-03 WorkOS MCP Scope Expansion Plan
 
 - Documented WorkOS MCP Auth as a future OAuth 2.1 authorization layer, not a replacement for Qentrah's MCP tool server.

@@ -1,3 +1,5 @@
+import { WorkspaceRouteLoading } from "@/components/loading/workspace-route-loading";
+
 export default function AppLoading() {
-  return null;
+  return <WorkspaceRouteLoading variant="app" />;
 }

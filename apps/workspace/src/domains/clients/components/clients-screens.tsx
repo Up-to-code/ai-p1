@@ -43,7 +43,7 @@ import {
 } from "@/domains/clients/api/client-tasks";
 import { useCalendarEventsQuery, useUpcomingCalendarEventsQuery } from "@/domains/calendar/api/calendar";
 import { usePropertiesQuery } from "@/domains/properties/api/properties";
-import { getOrganizationCapabilities } from "@/domains/organization/api/better-auth-organization";
+import { getOrganizationCapabilities } from "@/domains/organization/api/clerk-organization-api";
 import { ClientDocumentsManager } from "@/domains/media/components/client-documents-manager";
 import type { Client, ClientType } from "../store/clients.types";
 import {

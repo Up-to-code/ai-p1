@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/better-auth/server";
+import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/clerk-convex";
 import { hasOpenRouterConfig, streamOpenRouterText } from "./openrouter";
 import { createAgentChatStream, detectAgentResponseLanguage } from "./orchestrator";
 
@@ -11,7 +11,7 @@ vi.mock("@/server/config/agent-runtime", () => ({
   getOpenRouterModelCandidates: (primaryModel: string, fallbackModels: string[]) => [primaryModel, ...fallbackModels],
 }));
 
-vi.mock("@/server/auth/better-auth/server", () => ({
+vi.mock("@/server/auth/clerk-convex", () => ({
   fetchAuthMutation: vi.fn(),
   fetchAuthQuery: vi.fn(),
 }));

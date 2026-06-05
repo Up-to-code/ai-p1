@@ -1,6 +1,6 @@
 import { api } from "@convex/_generated/api";
 import { UTApi } from "uploadthing/server";
-import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/better-auth/server";
+import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/clerk-convex";
 import { hydrateUploadThingEnvFromToken } from "@/server/uploadthing/config";
 import {
   validateMediaKind,

@@ -57,7 +57,7 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
   {
     name: "organization_update_identity",
     title: "Update organization identity",
-    description: "Update the organization's Better Auth identity fields.",
+    description: "Update the organization's dev organization identity fields.",
     resource: "organization",
     action: "update",
   },

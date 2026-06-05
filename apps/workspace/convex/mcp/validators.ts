@@ -22,9 +22,15 @@ export const mcpPermissionValidator = v.object({
   actions: v.array(mcpActionValidator),
 });
 
+export const mcpConnectionPrincipalTypeValidator = v.union(
+  v.literal("user"),
+  v.literal("organization"),
+);
+
 export const createMcpConnectionInputValidator = v.object({
   name: v.string(),
   instructions: v.optional(v.string()),
+  principalType: v.optional(mcpConnectionPrincipalTypeValidator),
   permissions: v.array(mcpPermissionValidator),
   expiresAt: v.optional(v.number()),
 });
@@ -49,6 +55,8 @@ export const mcpConnectionValidator = v.object({
   instructions: v.optional(v.string()),
   permissions: v.array(mcpPermissionValidator),
   status: v.union(v.literal("active"), v.literal("paused"), v.literal("draft"), v.literal("revoked")),
+  principalType: mcpConnectionPrincipalTypeValidator,
+  principalUserId: v.optional(v.string()),
   createdByUserId: v.string(),
   createdAt: v.number(),
   updatedAt: v.number(),

@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../../_generated/server";
-import { authComponent, createAuth } from "../../auth";
+import { clerkAuthComponent, createAuth } from "../../auth";
 import { assertOrganizationResourcePermission } from "../profile/access";
 import { findInviteLinkByTokenHash, toPublicInviteLink } from "./data";
 import {
@@ -37,7 +37,7 @@ export const createInviteLinkFromHono = mutation({
   },
   returns: organizationInviteLinkValidator,
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "member", "create");
 
     const existing = await findInviteLinkByTokenHash(ctx, args.input.tokenHash);
@@ -81,7 +81,7 @@ export const acceptInviteLinkFromHono = mutation({
   },
   returns: organizationInviteLinkValidator,
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     const inviteLink = await findInviteLinkByTokenHash(ctx, args.tokenHash);
     const now = Date.now();
 
@@ -95,7 +95,7 @@ export const acceptInviteLinkFromHono = mutation({
       throw new Error("Invite link has expired.");
     }
 
-    const { auth } = await authComponent.getAuth(createAuth, ctx);
+    const { auth } = await clerkAuthComponent.getAuth(createAuth, ctx);
     const organizationApi = auth.api as unknown as AddMemberApi;
 
     try {
@@ -154,7 +154,7 @@ export const cancelInviteLinkFromHono = mutation({
   },
   returns: organizationInviteLinkValidator,
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "member", "create");
     const inviteLink = await ctx.db.get(args.inviteLinkId);
     const now = Date.now();

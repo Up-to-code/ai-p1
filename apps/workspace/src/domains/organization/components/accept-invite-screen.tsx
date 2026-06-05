@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { requireOrganizationResult, type AuthResult } from "@/domains/auth/organization-selection";
 import { writeAuthHandoff } from "@/domains/auth";
-import { acceptOrganizationInvitation, acceptOrganizationInviteLink } from "../api/better-auth-organization";
-import type { OrganizationInvitationAcceptance, OrganizationInviteLink } from "../api/better-auth-organization";
+import { acceptOrganizationInvitation, acceptOrganizationInviteLink } from "../api/clerk-organization-api";
+import type { OrganizationInvitationAcceptance, OrganizationInviteLink } from "../api/clerk-organization-api";
 
 type BetterAuthOrganization = { id?: string | null };
 type AcceptInviteAuthClient = typeof authClient & {

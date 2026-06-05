@@ -4,6 +4,7 @@ export type MobileEnvironmentConfig = {
   environment: MobileEnvironmentName;
   workspaceApiUrl: string;
   authUrl: string;
+  clerkPublishableKey: string;
 };
 
 type Env = Record<string, string | undefined>;
@@ -14,4 +15,5 @@ export function resolveMobileEnvironmentConfig(env?: Env): MobileEnvironmentConf
 export function resolveReachableDevUrl(value: string, hostUri?: string): string;
 export function isLocalUrl(value: string): boolean;
 export function isHttpsUrl(value: string): boolean;
+export function isClerkPublishableKey(value: string): boolean;
 export function getMobileEnvironmentIssues(config: MobileEnvironmentConfig): string[];

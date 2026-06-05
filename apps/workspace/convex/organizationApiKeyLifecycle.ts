@@ -1,7 +1,7 @@
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { apiKeys } from "./apiKeys";
-import { authComponent } from "./auth";
+import { clerkAuthComponent } from "./auth";
 import { assertOrganizationResourcePermission } from "./organizations/profile/access";
 
 export const ORGANIZATION_API_KEY_PREFIX = "qentrah_org_";
@@ -102,7 +102,7 @@ export async function createOrganizationApiKey(
     };
   },
 ) {
-  const user = await authComponent.getAuthUser(ctx);
+  const user = await clerkAuthComponent.getAuthUser(ctx);
   await assertApiKeyManagementPermission(ctx, args.organizationId, "create");
   await assertDelegatedPermissions(ctx, args.organizationId, args.input.permissions);
 
@@ -162,7 +162,7 @@ export async function rotateOrganizationApiKey(
     input: { expiresAt?: number };
   },
 ) {
-  const user = await authComponent.getAuthUser(ctx);
+  const user = await clerkAuthComponent.getAuthUser(ctx);
   await assertApiKeyManagementPermission(ctx, args.organizationId, "update");
   const existing = await ctx.db.get(args.apiKeyId);
   if (!existing || existing.organizationId !== args.organizationId || existing.status === "revoked") {
@@ -211,7 +211,7 @@ export async function revokeOrganizationApiKey(
   ctx: MutationCtx,
   args: { organizationId: string; apiKeyId: Id<"organizationApiKeys"> },
 ) {
-  const user = await authComponent.getAuthUser(ctx);
+  const user = await clerkAuthComponent.getAuthUser(ctx);
   await assertApiKeyManagementPermission(ctx, args.organizationId, "delete");
   const existing = await ctx.db.get(args.apiKeyId);
   if (!existing || existing.organizationId !== args.organizationId) {

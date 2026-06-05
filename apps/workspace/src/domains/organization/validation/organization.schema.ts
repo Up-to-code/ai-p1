@@ -9,6 +9,7 @@ export const updateOrganizationProfileSchema = z.object({
   phone: z.string().trim().max(40, "Phone is too long."),
   website: z.string().trim().max(120, "Website is too long."),
   address: z.string().trim().max(240, "Address is too long."),
+  logo: z.string().trim().url("Logo must be a valid URL.").or(z.literal("")).optional(),
 });
 
 export type UpdateOrganizationProfileValues = z.output<typeof updateOrganizationProfileSchema>;

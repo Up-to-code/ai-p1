@@ -1,16 +1,12 @@
 import { Redirect, Stack } from "expo-router";
 import { useMemo } from "react";
 
-import { useAuthSession } from "@/auth/useAuthSession";
-import { useWorkspaceIdentity } from "@/auth/useWorkspaceIdentity";
+import { useMobileAuthGate } from "@/auth/mobileAuthGate";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { AppBootScreen } from "@/shell/components/AppBootScreen";
-import { useAppStore } from "@/store";
 
 export default function AppLayout() {
-  const hydrationComplete = useAppStore((state) => state.hydrationComplete);
-  const { canAccessApp, isReady } = useAuthSession();
-  const workspace = useWorkspaceIdentity();
+  const gate = useMobileAuthGate();
   const { colors } = useTheme();
   const screenOptions = useMemo(
     () => ({
@@ -24,16 +20,12 @@ export default function AppLayout() {
     [colors.background],
   );
 
-  if (!hydrationComplete || !isReady || (canAccessApp && workspace.status === "loading")) {
+  if (!gate.isReady || !gate.destination) {
     return <AppBootScreen />;
   }
 
-  if (!canAccessApp) {
-    return <Redirect href="/(auth)" />;
-  }
-
-  if (workspace.status !== "ready") {
-    return <Redirect href="/(auth)/choose-workspace" />;
+  if (gate.status !== "ready") {
+    return <Redirect href={gate.destination} />;
   }
 
   return (
@@ -43,8 +35,8 @@ export default function AppLayout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="menu" />
       <Stack.Screen name="profile" />
+      <Stack.Screen name="organization" />
       <Stack.Screen name="threads" />
-      <Stack.Screen name="appearance" />
       <Stack.Screen name="language" />
     </Stack>
   );

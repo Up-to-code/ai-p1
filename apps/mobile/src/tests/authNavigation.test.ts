@@ -29,6 +29,6 @@ test("auth route callback avoids self and gate loops", () => {
 test("mobile post-auth routing sends signed-in users through workspace selection", () => {
   assert.equal(mobilePostAuthRoute({ canAccessApp: false }), MOBILE_AUTH_ENTRY_ROUTE);
   assert.equal(mobilePostAuthRoute({ canAccessApp: true, workspaceStatus: "ready" }), "/(app)");
-  assert.equal(mobilePostAuthRoute({ canAccessApp: true, workspaceStatus: "needs_workspace" }), MOBILE_WORKSPACE_GATE_ROUTE);
-  assert.equal(mobilePostAuthRoute({ canAccessApp: true, workspaceStatus: "error" }), MOBILE_WORKSPACE_GATE_ROUTE);
+  assert.equal(mobilePostAuthRoute({ canAccessApp: true, workspaceStatus: "needs_workspace" }), "/(auth)/choose-workspace");
+  assert.equal(mobilePostAuthRoute({ canAccessApp: true, workspaceStatus: "error" }), "/(auth)/choose-workspace");
 });

@@ -12,6 +12,7 @@ export const BrandMark = ({ className = "h-5 w-5", priority = false }: { classNa
       height={28}
       className={`${className} dark:hidden`}
       priority={priority}
+      style={{ width: "auto" }}
     />
     <Image
       src="/brand-logo-white.svg"
@@ -20,6 +21,7 @@ export const BrandMark = ({ className = "h-5 w-5", priority = false }: { classNa
       height={28}
       className={`${className} hidden dark:block`}
       priority={priority}
+      style={{ width: "auto" }}
     />
   </>
 );

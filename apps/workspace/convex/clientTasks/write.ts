@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
-import { authComponent } from "../auth";
+import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { assertPlatformAdmin } from "../platform/access";
 import { clientTaskInputValidator, clientTaskValidator } from "./validators";
@@ -41,7 +41,7 @@ export const createFromHono = mutation({
   args: { organizationId: v.string(), input: clientTaskInputValidator },
   returns: clientTaskValidator,
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     if ((args.input.visibility ?? "private") === "public") {
       await assertPlatformAdmin(ctx);
@@ -78,7 +78,7 @@ export const updateFromHono = mutation({
   args: { organizationId: v.string(), taskId: v.id("clientTasks"), input: clientTaskInputValidator },
   returns: clientTaskValidator,
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const existing = await ctx.db.get(args.taskId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Task was not found.");
@@ -115,7 +115,7 @@ export const deleteFromHono = mutation({
   args: { organizationId: v.string(), taskId: v.id("clientTasks") },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const existing = await ctx.db.get(args.taskId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Task was not found.");
