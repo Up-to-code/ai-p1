@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     ],
     shortcut: [{ url: "/favicon.svg", type: "image/svg+xml" }],
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
-    other: [{ rel: "mask-icon", url: "/mask-icon.svg", color: "#011B5A" }],
+    other: [{ rel: "mask-icon", url: "/mask-icon.svg", color: "#121212" }],
   },
   appleWebApp: {
     capable: true,

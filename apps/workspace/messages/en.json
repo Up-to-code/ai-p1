@@ -3255,16 +3255,16 @@
       "displayName": "Brand Display Name",
       "color": "Brand Color (Hex)",
       "logo": "Organization Logo",
-      "logoDesc": "PNG, JPG, or SVG. Minimum 400x400px recommended.",
+      "logoDesc": "PNG, JPG, or SVG. A square 400x400px logo is recommended. You can adjust the crop later in organization settings.",
       "continue": "Continue to Invite Team",
       "brandNamePlaceholder": "e.g. Acme",
       "brandNameTooltip": "The primary name of your brand.",
       "brandColorTooltip": "The primary color associated with your brand identity.",
-      "logoTooltip": "Your brand official logo."
+      "logoTooltip": "Your brand's official logo."
     },
     "team": {
       "title": "Invite Team Members",
-      "desc": "Invite collaborators to help manage your projects and integrations.",
+      "desc": "Invite teammates who should help manage projects, clients, and integrations. You can skip this and invite them later.",
       "emailLabel": "Email Address",
       "roleLabel": "Role",
       "addBtn": "Add",
@@ -3274,17 +3274,29 @@
       "skip": "Skip Invites",
       "submit": "Finish",
       "emailPlaceholder": "colleague@company.com",
-      "emailTooltip": "The email address of the team member you wish to invite.",
-      "roleTooltip": "The access level granted to this team member."
+      "emailTooltip": "Use a teammate email. The owner and existing members are already part of this organization.",
+      "roleTooltip": "Choose the work role this teammate will receive when they accept the invite.",
+      "loadingInvites": "Loading pending invitations...",
+      "emptyInvites": "No pending invitations yet.",
+      "cancelInvite": "Cancel invitation",
+      "loadFailed": "Invitations could not be loaded.",
+      "errors": {
+        "current-user": "You are already the owner of this organization.",
+        "member": "This email already belongs to an organization member.",
+        "pending-invite": "This email already has a pending invitation.",
+        "createFailed": "Invitation could not be sent.",
+        "cancelFailed": "Invitation could not be canceled."
+      }
     },
     "common": {
-      "uploadOrDrag": "Click to upload or drag and drop"
+      "uploadOrDrag": "Choose a file or drag it here",
+      "selectedFiles": "{count, plural, one {1 file selected} other {# files selected}}"
     }
   },
   "ChooseOrg": {
-    "eyebrow": "Workspace access",
-    "title": "Continue into qentrah",
-    "subtitle": "Choose an existing workspace or create a new organization to finish access.",
+    "eyebrow": "Workspace",
+    "title": "Choose an organization",
+    "subtitle": "Continue with an existing organization or create one.",
     "loading": "Loading workspaces...",
     "useAnotherAccount": "Use another account",
     "signingOut": "Signing out...",
@@ -3300,12 +3312,12 @@
     "joinBtn": "Join Workspace",
     "joinHelp": "Ask your organization admin for an invite code, or check your email for an invitation link.",
     "createTitle": "Create organization",
-    "createDesc": "Start a new workspace and finish the basic setup.",
+    "createDesc": "Start a new workspace.",
     "createNameLabel": "Organization Name",
     "createNamePlaceholder": "e.g. Acme Real Estate",
     "createBtn": "Start Setup",
     "creating": "Creating...",
-    "existingTitle": "Your organizations",
+    "existingTitle": "Organizations",
     "nameRequired": "Enter an organization name first.",
     "inviteRequired": "Paste an invite link or token first.",
     "errorTitle": "Organization setup failed",

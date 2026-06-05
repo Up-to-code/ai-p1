@@ -196,7 +196,7 @@ export function Sidebar() {
               isDarkMode ? "bg-white/10 ring-white/10" : "bg-white ring-zinc-200"
             )}>
               <Image
-                src={isDarkMode ? "/brand-logo-white.svg" : "/brand-logo-dark-blue.svg"}
+                src={isDarkMode ? "/brand-logo-white.svg" : "/brand-logo.svg"}
                 alt="Qentrah"
                 width={20}
                 height={24}

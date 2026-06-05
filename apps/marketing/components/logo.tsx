@@ -6,7 +6,7 @@ import { useLocale } from "next-intl";
 export const BrandMark = ({ className = "h-5 w-5", priority = false }: { className?: string; priority?: boolean }) => (
   <>
     <Image
-      src="/brand-logo-dark-blue.svg"
+      src="/brand-logo.svg"
       alt="Qentrah"
       width={24}
       height={28}

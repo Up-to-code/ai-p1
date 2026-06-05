@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { mock } from "node:test";
 
 import {
   MOBILE_AUTH_CALLBACK_URL,
@@ -16,6 +17,7 @@ test("mobile auth exposes configured social providers without email auth", () =>
 
 test("Google social auth starts Clerk SSO through the workspace callback route", async () => {
   const calls: unknown[] = [];
+  const createUrl = mock.fn((path: string) => `qentrah://${path.replace(/^\//, "")}`);
   const flow = {
     startSSOFlow: async (input: unknown) => {
       calls.push(input);
@@ -28,10 +30,12 @@ test("Google social auth starts Clerk SSO through the workspace callback route",
     },
   };
 
-  await signInWithWorkspaceSocialProvider(flow, "google");
+  await signInWithWorkspaceSocialProvider(flow, "google", createUrl);
 
+  assert.equal(createUrl.mock.callCount(), 1);
+  assert.deepEqual(createUrl.mock.calls[0]?.arguments, [MOBILE_AUTH_CALLBACK_URL]);
   assert.deepEqual(calls, [
-    { strategy: "oauth_google", redirectUrl: MOBILE_AUTH_CALLBACK_URL },
+    { strategy: "oauth_google", redirectUrl: "qentrah://sso-callback" },
     { session: "sess_1" },
   ]);
 });
@@ -45,7 +49,7 @@ test("social auth surfaces provider setup errors", async () => {
   await assert.rejects(
     () => signInWithWorkspaceSocialProvider({
       startSSOFlow: async () => ({}),
-    }, "google"),
+    }, "google", (path) => `qentrah://${path.replace(/^\//, "")}`),
     /google sign in is not configured/,
   );
 });

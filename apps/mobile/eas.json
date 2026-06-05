@@ -12,7 +12,7 @@
         "QENTRAH_MOBILE_ENV": "production",
         "EXPO_PUBLIC_PRODUCTION_WORKSPACE_API_URL": "https://app.qentrah.com",
         "EXPO_PUBLIC_PRODUCTION_AUTH_URL": "https://app.qentrah.com",
-        "EXPO_PUBLIC_PRODUCTION_CLERK_PUBLISHABLE_KEY": "set-in-eas-environment"
+        "EXPO_PUBLIC_PRODUCTION_CLERK_PUBLISHABLE_KEY": "pk_live_Y2xlcmsucWVudHJhaC5jb20k"
       }
     }
   },

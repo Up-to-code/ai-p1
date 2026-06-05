@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth, useOrganization } from "@clerk/nextjs";
+import { useAuth, useOrganization, useUser } from "@clerk/nextjs";
 import { useTranslations } from "next-intl";
 import { WorkspaceRouteLoading } from "@/components/loading/workspace-route-loading";
 import { BrandMark } from "@/components/logo";
@@ -17,6 +17,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const auth = useAuth();
   const organization = useOrganization();
+  const user = useUser();
   const [currentStep, setCurrentStep] = useState(1);
 
   const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, 3));
@@ -24,7 +25,7 @@ export default function OnboardingPage() {
   const finishSetup = () => router.push("/dashboard");
   const organizationName = organization.organization?.name ?? "";
 
-  if (!auth.isLoaded || !organization.isLoaded) {
+  if (!auth.isLoaded || !organization.isLoaded || !user.isLoaded) {
     return <WorkspaceRouteLoading variant="onboarding" />;
   }
 
@@ -78,7 +79,14 @@ export default function OnboardingPage() {
       <div className="w-full">
         {currentStep === 1 && <CompanyInfoForm onNext={nextStep} organizationName={organizationName} />}
         {currentStep === 2 && <BrandSetupForm onNext={nextStep} onBack={prevStep} />}
-        {currentStep === 3 && <TeamInviteForm onBack={prevStep} onFinish={finishSetup} />}
+        {currentStep === 3 && (
+          <TeamInviteForm
+            organizationId={organization.organization.id}
+            currentUserEmail={user.user?.primaryEmailAddress?.emailAddress ?? null}
+            onBack={prevStep}
+            onFinish={finishSetup}
+          />
+        )}
       </div>
     </div>
   );

@@ -51,7 +51,7 @@
     "color": [
       "Use white or near-white surfaces for brand-sign-in and launch screens.",
       "Use #121212 for the primary mark on white.",
-      "Use #011B5A only where the existing dark-blue logo variant is explicitly needed."
+      "Use #121212 for the black logo variant on light backgrounds."
     ],
     "accessibility": [
       "Maintain strong contrast between the logo and its background.",

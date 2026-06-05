@@ -189,34 +189,40 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
   }
 
   return (
-    <main className="relative min-h-svh overflow-hidden bg-[oklch(96.5%_0.008_255)] px-4 py-6 text-foreground dark:bg-[oklch(8.5%_0.012_255)] sm:px-6 lg:px-10">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_24%,oklch(90%_0.035_255)_0%,transparent_32%),linear-gradient(135deg,transparent,oklch(99%_0.004_255)_55%,transparent)] dark:bg-[radial-gradient(circle_at_70%_24%,oklch(24%_0.045_255)_0%,transparent_32%),linear-gradient(135deg,transparent,oklch(12%_0.018_255)_55%,transparent)]" />
-      <div className="relative mx-auto flex min-h-[calc(100svh-3rem)] w-full max-w-5xl flex-col">
-        <header className="flex items-center justify-between gap-4">
-          <Link href="/" className="group flex items-center gap-3">
-            <BrandMark className="h-7 w-auto" priority />
-            <span className="text-lg font-black tracking-tight">qentrah</span>
-          </Link>
-          <Button disabled={busyAction === "sign-out"} onClick={() => void handleUseAnotherAccount()} size="sm" type="button" variant="ghost">
+    <main className="min-h-svh bg-[oklch(96.5%_0.008_255)] px-4 py-6 text-foreground dark:bg-[oklch(8.5%_0.012_255)] sm:px-6">
+      <div className="mx-auto flex min-h-[calc(100svh-3rem)] w-full max-w-3xl flex-col">
+        <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+          <Button
+            className="justify-self-start text-text-secondary"
+            disabled={busyAction === "sign-out"}
+            onClick={() => void handleUseAnotherAccount()}
+            size="sm"
+            type="button"
+            variant="ghost"
+          >
             {busyAction === "sign-out" ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
-            {busyAction === "sign-out" ? t("signingOut") : t("useAnotherAccount")}
+            <span className="hidden sm:inline">{busyAction === "sign-out" ? t("signingOut") : t("useAnotherAccount")}</span>
           </Button>
+          <Link href="/" className="group flex items-center gap-2 justify-self-center">
+            <span className="text-sm font-black tracking-tight">qentrah</span>
+            <BrandMark className="h-6 w-auto" priority />
+          </Link>
         </header>
 
-        <section className="grid flex-1 items-center gap-10 py-10 lg:grid-cols-[0.85fr_1.15fr]">
-          <div className="max-w-xl">
-            <p className="text-[10px] font-black uppercase tracking-[0.08em] text-primary">
+        <section className="flex flex-1 flex-col items-center justify-center gap-7 py-8 sm:py-10">
+          <div className="max-w-sm text-center">
+            <p className="text-[11px] font-black text-primary">
               {t("eyebrow")}
             </p>
-            <h1 className="mt-5 text-4xl font-semibold leading-tight tracking-0 text-foreground sm:text-5xl rtl:leading-[1.18]">
+            <h1 className="mt-3 text-3xl font-semibold leading-[1.08] tracking-0 text-foreground sm:text-4xl rtl:leading-[1.14]">
               {t("title")}
             </h1>
-            <p className="mt-4 max-w-md text-base font-medium leading-8 text-text-secondary">
+            <p className="mt-3 text-sm font-medium leading-6 text-text-secondary">
               {t("subtitle")}
             </p>
           </div>
 
-          <div className="overflow-hidden rounded-[28px] border border-[oklch(87%_0.014_255)] bg-[oklch(99%_0.004_255)] dark:border-white/10 dark:bg-[oklch(13%_0.016_255)]">
+          <div className="w-full max-w-[424px] overflow-hidden rounded-3xl border border-[oklch(86%_0.014_255)] bg-[oklch(99%_0.004_255)] dark:border-white/10 dark:bg-[oklch(13%_0.016_255)]">
             {isLoading ? (
               <WorkspaceListSkeleton label={t("loading")} />
             ) : (

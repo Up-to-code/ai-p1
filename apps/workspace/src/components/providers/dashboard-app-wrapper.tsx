@@ -7,7 +7,7 @@ import { PendingApprovalBanner } from "@/components/layout/pending-approval-bann
 import { Sidebar } from "@/components/layout/sidebar";
 import { SidebarProvider } from "@/components/layout/sidebar-context";
 import { Topbar } from "@/components/layout/topbar";
-import { Skeleton } from "@/components/ui/skeleton";
+import { WorkspaceRouteLoading } from "@/components/loading/workspace-route-loading";
 import { ToastProvider } from "@/components/ui/toast";
 import { AccountProvider, useAccountContext } from "@/domains/auth";
 import { getWorkspaceAuthRedirect } from "@/domains/auth/workspace-status";
@@ -113,48 +113,5 @@ function useAuthHandoffPending(isSignedIn: boolean, organizationId: string | nul
 }
 
 function DashboardLoadingState() {
-  return (
-    <div className="flex h-full overflow-hidden bg-background text-text-primary">
-      <aside className="hidden w-[var(--sidebar-width-expanded)] shrink-0 border-e border-border bg-surface p-4 lg:block">
-        <div className="flex h-10 items-center gap-3">
-          <Skeleton className="h-7 w-7 rounded-lg" />
-          <Skeleton className="h-4 w-16 rounded-full" />
-        </div>
-        <div className="mt-8 space-y-7">
-          {[0, 1, 2].map((group) => (
-            <div key={group} className="space-y-3">
-              <Skeleton className="h-2.5 w-16 rounded-full" />
-              {[0, 1, 2].map((item) => (
-                <div key={item} className="flex h-10 items-center gap-3 rounded-xl px-2">
-                  <Skeleton className="h-5 w-5 rounded-md" />
-                  <Skeleton className="h-3 w-24 rounded-full" />
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      </aside>
-      <div className="flex min-w-0 flex-1 flex-col bg-surface">
-        <header className="flex h-[var(--topbar-height)] shrink-0 items-center gap-4 border-b border-border bg-surface px-4 sm:px-6 lg:px-8">
-          <Skeleton className="h-8 w-44 rounded-full" />
-          <div className="ms-auto flex items-center gap-2">
-            <Skeleton className="hidden h-9 w-28 rounded-full sm:block" />
-            <Skeleton className="h-9 w-20 rounded-full" />
-            <Skeleton className="h-10 w-10 rounded-full" />
-          </div>
-        </header>
-        <main className="flex-1 bg-background p-6 lg:p-10">
-          <div className="mx-auto max-w-[1400px] space-y-6">
-            <Skeleton className="h-28 rounded-[24px]" />
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {[0, 1, 2, 3].map((item) => (
-                <Skeleton key={item} className="h-28 rounded-[20px]" />
-              ))}
-            </div>
-            <Skeleton className="h-72 rounded-[24px]" />
-          </div>
-        </main>
-      </div>
-    </div>
-  );
+  return <WorkspaceRouteLoading variant="session" />;
 }
