@@ -1,4 +1,5 @@
 import type { Context, Next } from "hono";
+import { runWithAuthHeaders } from "@/server/auth/clerk-convex";
 import {
   mobileRequestContextMiddleware,
   type MobileRequestContext,
@@ -50,5 +51,9 @@ export async function requestSafetyMiddleware(_c: Context, next: Next) {
 }
 
 export async function organizationRequestSafetyMiddleware(c: Context, next: Next) {
-  await mobileRequestContextMiddleware(c, next);
+  await mobileRequestContextMiddleware(c, async () => {
+    await runWithAuthHeaders(c.req.raw.headers, async () => {
+      await next();
+    });
+  });
 }

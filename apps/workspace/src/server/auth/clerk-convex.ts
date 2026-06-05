@@ -1,7 +1,8 @@
+import { AsyncLocalStorage } from "node:async_hooks";
 import { fetchAction, fetchMutation, fetchQuery, preloadQuery } from "convex/nextjs";
 import type { Preloaded } from "convex/react";
 import type { ArgsAndOptions, FunctionReference, FunctionReturnType } from "convex/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth, getAuth } from "@clerk/nextjs/server";
 
 type OptionalArgs<FuncRef extends FunctionReference<"query" | "mutation" | "action">> =
   FuncRef["_args"] extends Record<string, never>
@@ -18,18 +19,29 @@ function clerkArgs<FuncRef extends FunctionReference<"query" | "mutation" | "act
   ] as ArgsAndOptions<FuncRef, { token?: string }>;
 }
 
+const authRequestStore = new AsyncLocalStorage<Request>();
+
 export function runWithAuthHeaders<T>(headers: Headers, operation: () => T | Promise<T>) {
-  void headers;
-  return operation();
+  const request = new Request("https://qentrah.internal/api/auth-context", { headers });
+  return authRequestStore.run(request, operation);
+}
+
+async function getRequestAuth() {
+  const request = authRequestStore.getStore();
+  if (request) {
+    return getAuth(request as never, { acceptsToken: "session_token" });
+  }
+
+  return auth();
 }
 
 export async function isAuthenticated() {
-  const session = await auth();
+  const session = await getRequestAuth();
   return Boolean(session.userId);
 }
 
 export async function getToken() {
-  const session = await auth();
+  const session = await getRequestAuth();
   return session.getToken({ template: "convex" });
 }
 
