@@ -1,24 +1,11 @@
 "use client";
 
-import { createContext, createElement, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, createElement, useContext, useMemo, type ReactNode } from "react";
+import { useAuth, useOrganization, useUser } from "@clerk/nextjs";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
-import { authClient } from "@/lib/auth-client";
-import { deriveWorkspaceStatus, type WorkspaceStatus } from "../workspace-status";
-
-type BetterAuthOrganization = {
-  id?: string;
-  name?: string | null;
-  slug?: string | null;
-  logo?: string | null;
-  metadata?: unknown;
-};
-
-type OrganizationMetadata = {
-  status?: string;
-  brandColor?: string;
-  sound?: string;
-};
+import { deriveWorkspaceStatus } from "../workspace-status";
+import type { WorkspaceStatus } from "../workspace-status";
 
 type AccountContextValue = {
   isPending: boolean;
@@ -57,20 +44,6 @@ type AccountContextValue = {
 };
 
 const AccountContext = createContext<AccountContextValue | null>(null);
-const CONVEX_AUTH_STALL_MS = 8_000;
-
-function parseMetadata(metadata?: unknown): OrganizationMetadata {
-  if (!metadata) return {};
-  if (typeof metadata === "object") return metadata as OrganizationMetadata;
-  if (typeof metadata !== "string") return {};
-
-  try {
-    const parsed = JSON.parse(metadata) as OrganizationMetadata;
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
 
 function getInitials(value: string) {
   return value
@@ -81,80 +54,67 @@ function getInitials(value: string) {
     .join("") || "AN";
 }
 
-export function resolveActiveAuthOrganization(
-  activeOrganization: BetterAuthOrganization | null | undefined,
-) {
-  return activeOrganization?.id ? activeOrganization : null;
-}
+function clerkMembershipOrganizationIds(user: ReturnType<typeof useUser>["user"]) {
+  const memberships = user?.organizationMemberships;
+  const data = Array.isArray(memberships)
+    ? memberships
+    : (memberships as { data?: unknown[] } | null | undefined)?.data ?? [];
 
-export function deriveAccountOrganizationPending(input: {
-  activeOrganizationPending: boolean;
-  listedOrganizationsPending?: boolean;
-}) {
-  void input.listedOrganizationsPending;
-  return input.activeOrganizationPending;
+  return data
+    .map((membership) => (membership as { organization?: { id?: string | null } | null }).organization?.id)
+    .filter((id): id is string => Boolean(id));
 }
 
 function useAccountContextValue(): AccountContextValue {
-  const session = authClient.useSession();
-  const activeOrganization = authClient.useActiveOrganization();
-  const { isAuthenticated: isConvexAuthenticated, isLoading: isConvexAuthPending } = useConvexAuth();
-  const [convexAuthStallKey, setConvexAuthStallKey] = useState<string | null>(null);
-
-  const authOrganization = resolveActiveAuthOrganization(
-    activeOrganization.data as BetterAuthOrganization | null | undefined,
+  const auth = useAuth();
+  const userQuery = useUser();
+  const organizationQuery = useOrganization();
+  const convexAuth = useConvexAuth();
+  const organizationId = auth.orgId ?? organizationQuery.organization?.id ?? null;
+  const isOrganizationPending = !organizationQuery.isLoaded;
+  const isConvexAuthenticated = convexAuth.isAuthenticated;
+  const isConvexAuthPending = !convexAuth.isLoading && auth.isSignedIn ? false : convexAuth.isLoading;
+  const membershipOrganizationIds = clerkMembershipOrganizationIds(userQuery.user);
+  const hasLoadedMemberships = userQuery.isLoaded;
+  const hasOrganizationAccessDenied =
+    typeof organizationId === "string" &&
+    hasLoadedMemberships &&
+    !membershipOrganizationIds.includes(organizationId);
+  const organizationProfile = useQuery(
+    api.organizations.profile.read.getProfile,
+    organizationId && isConvexAuthenticated && !hasOrganizationAccessDenied ? { organizationId } : "skip",
   );
-  const organizationId = authOrganization?.id ?? null;
-  const isOrganizationPending = deriveAccountOrganizationPending({
-    activeOrganizationPending: activeOrganization.isPending,
-  });
-  const shouldExpectConvexAuth = Boolean(session.data?.session && organizationId) && !session.isPending && !isOrganizationPending;
-  const convexAuthWaitKey = shouldExpectConvexAuth && isConvexAuthPending
-    ? `${organizationId}:${session.data?.user?.id ?? "anonymous"}`
-    : null;
-  const isConvexAuthStalled = Boolean(convexAuthWaitKey && convexAuthStallKey === convexAuthWaitKey);
-
-  useEffect(() => {
-    if (!convexAuthWaitKey) return;
-
-    const timeout = window.setTimeout(() => setConvexAuthStallKey(convexAuthWaitKey), CONVEX_AUTH_STALL_MS);
-    return () => window.clearTimeout(timeout);
-  }, [convexAuthWaitKey]);
-
-  const workspaceStatus = deriveWorkspaceStatus({
-    isSessionPending: session.isPending,
+  const userProfile = useQuery(
+    api.userProfiles.read.getCurrent,
+    {},
+  );
+  const workspaceStatus: WorkspaceStatus = deriveWorkspaceStatus({
+    isSessionPending: !auth.isLoaded || !userQuery.isLoaded,
     isOrganizationPending,
     organizationId,
     isConvexAuthPending,
     isConvexAuthenticated,
-    isConvexAuthStalled,
+    hasOrganizationAccessDenied,
   });
   const isWorkspaceReady = workspaceStatus === "ready";
-  const shouldReadOrganizationProfile = isWorkspaceReady && isConvexAuthenticated;
-  const shouldReadUserProfile = isConvexAuthenticated;
-  const organizationProfile = useQuery(
-    api.organizations.profile.read.getProfile,
-    shouldReadOrganizationProfile && organizationId ? { organizationId } : "skip",
-  );
-  const userProfile = useQuery(
-    api.userProfiles.read.getCurrent,
-    shouldReadUserProfile ? {} : "skip",
-  );
 
   return useMemo(() => {
-    const user = session.data?.user;
-    const metadata = parseMetadata(authOrganization?.metadata);
-    const userName = user?.name?.trim() || "Account";
-    const userEmail = user?.email?.trim() || "No email set";
+    const clerkUser = userQuery.user;
+    const clerkOrganization = organizationQuery.organization;
+    const userName =
+      clerkUser?.fullName?.trim() ||
+      clerkUser?.username?.trim() ||
+      clerkUser?.primaryEmailAddress?.emailAddress ||
+      "Workspace user";
+    const userEmail = clerkUser?.primaryEmailAddress?.emailAddress ?? "";
     const organizationName =
       organizationProfile?.name?.trim() ||
-      authOrganization?.name?.trim() ||
+      clerkOrganization?.name?.trim() ||
       "Workspace";
-    const organizationStatus = metadata.status || (organizationId ? "Active workspace" : "Workspace ready");
 
     return {
-      isSignedIn: Boolean(session.data?.session),
-      isPending: workspaceStatus === "loadingSession",
+      isSignedIn: Boolean(auth.isSignedIn),
+      isPending: !auth.isLoaded || !userQuery.isLoaded || isOrganizationPending,
       workspace: {
         status: workspaceStatus,
         organizationId,
@@ -164,10 +124,10 @@ function useAccountContextValue(): AccountContextValue {
         isReady: isWorkspaceReady,
       },
       user: {
-        id: user?.id ?? "",
+        id: auth.userId ?? clerkUser?.id ?? "",
         name: userName,
         email: userEmail,
-        image: userProfile?.avatarUrl ?? user?.image ?? null,
+        image: userProfile?.avatarUrl ?? clerkUser?.imageUrl ?? null,
         initials: getInitials(userName),
       },
       organization: {
@@ -179,27 +139,29 @@ function useAccountContextValue(): AccountContextValue {
         phone: organizationProfile?.phone,
         website: organizationProfile?.website,
         address: organizationProfile?.address,
-        logo: authOrganization?.logo ?? null,
-        slug: authOrganization?.slug ?? null,
-        status: organizationStatus,
-        brandColor: metadata.brandColor,
-        sound: metadata.sound,
+        logo: organizationProfile?.logo ?? clerkOrganization?.imageUrl ?? null,
+        slug: clerkOrganization?.slug ?? organizationId,
+        status: "active",
+        brandColor: undefined,
+        sound: undefined,
         initials: getInitials(organizationName),
       },
     };
   }, [
-    authOrganization?.logo,
-    authOrganization?.metadata,
-    authOrganization?.name,
-    authOrganization?.slug,
+    auth.isLoaded,
+    auth.isSignedIn,
+    auth.userId,
+    isOrganizationPending,
     isConvexAuthenticated,
     isConvexAuthPending,
-    isOrganizationPending,
     isWorkspaceReady,
+    hasOrganizationAccessDenied,
+    organizationQuery.organization,
     organizationId,
     organizationProfile,
-    session.data?.session,
-    session.data?.user,
+    membershipOrganizationIds,
+    userQuery.isLoaded,
+    userQuery.user,
     userProfile,
     workspaceStatus,
   ]);

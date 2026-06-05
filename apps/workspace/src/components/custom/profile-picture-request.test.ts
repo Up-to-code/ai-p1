@@ -14,7 +14,7 @@ describe("profile picture request module", () => {
     vi.unstubAllGlobals();
   });
 
-  it("saves avatar metadata then updates Better Auth user image", async () => {
+  it("saves avatar metadata then updates dev identity user image", async () => {
     const { saveProfileAvatar } = await import("./profile-picture-request");
     const fetcher = vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 }));
     vi.stubGlobal("fetch", fetcher);
@@ -30,7 +30,7 @@ describe("profile picture request module", () => {
     expect(updateUser).toHaveBeenCalledWith({ image: "https://cdn.example/avatar.webp" });
   });
 
-  it("removes avatar metadata then clears Better Auth user image", async () => {
+  it("removes avatar metadata then clears dev identity user image", async () => {
     const { removeProfileAvatar } = await import("./profile-picture-request");
     const fetcher = vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 }));
     vi.stubGlobal("fetch", fetcher);
@@ -46,7 +46,7 @@ describe("profile picture request module", () => {
     expect(updateUser).toHaveBeenCalledWith({ image: null });
   });
 
-  it("preserves server and Better Auth error fallback behavior", async () => {
+  it("preserves server and dev identity error fallback behavior", async () => {
     const { removeProfileAvatar, saveProfileAvatar } = await import("./profile-picture-request");
     vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ error: "Server failed." }), { status: 400 })));
 

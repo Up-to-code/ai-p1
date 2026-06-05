@@ -33,7 +33,7 @@ export function WizardStepper({ currentStep }: WizardStepperProps) {
                   />
                 </div>
               )}
-              <div className="flex flex-col items-center gap-3 relative z-10 bg-white dark:bg-[#0A0A0A] py-1 px-1">
+              <div className="flex flex-col items-center gap-3 relative z-10 bg-[oklch(97.5%_0.006_255)] dark:bg-[oklch(8.5%_0.012_255)] py-1 px-1">
                 <div
                   className={cn(
                     "flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-300",
@@ -50,7 +50,7 @@ export function WizardStepper({ currentStep }: WizardStepperProps) {
                   ) : (
                     <span 
                       className={cn(
-                        "text-[9px] font-black uppercase tracking-widest", 
+                        "text-xs font-semibold", 
                         status === "current" ? "text-zinc-900 dark:text-white" : "text-zinc-400 dark:text-zinc-600"
                       )}
                     >
@@ -58,7 +58,7 @@ export function WizardStepper({ currentStep }: WizardStepperProps) {
                     </span>
                   )}
                 </div>
-                <span className="absolute -bottom-6 text-[9px] font-black uppercase tracking-widest whitespace-nowrap text-zinc-500 dark:text-zinc-400 hidden sm:block">
+                <span className="absolute -bottom-6 text-xs font-semibold whitespace-nowrap text-zinc-500 dark:text-zinc-400 hidden sm:block">
                   {status === "current" && step.name}
                 </span>
               </div>

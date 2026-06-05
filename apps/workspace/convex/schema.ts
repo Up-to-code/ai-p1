@@ -12,6 +12,7 @@ export default defineSchema({
     phone: v.string(),
     website: v.string(),
     address: v.string(),
+    logo: v.optional(v.string()),
     // Temporary tolerance for production rows created during the reverted WorkOS auth attempt.
     workosOrganizationId: v.optional(v.string()),
     updatedAt: v.number(),
@@ -153,6 +154,8 @@ export default defineSchema({
       )),
     })),
     status: v.union(v.literal("active"), v.literal("paused"), v.literal("draft"), v.literal("revoked")),
+    principalType: v.optional(v.union(v.literal("user"), v.literal("organization"))),
+    principalUserId: v.optional(v.string()),
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),

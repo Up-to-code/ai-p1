@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
-import { authComponent } from "../auth";
+import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { calendarEventInputValidator, calendarEventValidator } from "./validators";
 
@@ -56,7 +56,7 @@ export const createFromHono = mutation({
   args: { organizationId: v.string(), input: calendarEventInputValidator },
   returns: calendarEventValidator,
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "calendar", "create");
     await assertOptionalLinks(ctx, args.organizationId, args.input);
     const now = Date.now();
@@ -91,7 +91,7 @@ export const updateFromHono = mutation({
   args: { organizationId: v.string(), eventId: v.id("calendarEvents"), input: calendarEventInputValidator },
   returns: calendarEventValidator,
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "calendar", "update");
     const existing = await ctx.db.get(args.eventId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Calendar event was not found.");
@@ -122,7 +122,7 @@ export const deleteFromHono = mutation({
   args: { organizationId: v.string(), eventId: v.id("calendarEvents") },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "calendar", "delete");
     const existing = await ctx.db.get(args.eventId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Calendar event was not found.");

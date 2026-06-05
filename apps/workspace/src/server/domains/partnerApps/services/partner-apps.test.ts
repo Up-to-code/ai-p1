@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "@convex/_generated/api";
-import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/better-auth/server";
+import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/clerk-convex";
 import { authorizePartnerConnection, listPartnerConnections, updatePartnerConnection } from "./partner-apps";
 import { verifyPartnerAuthorization, listPublishedPartnerApps } from "./partners-platform";
 
@@ -19,7 +19,7 @@ vi.mock("@convex/_generated/api", () => ({
   },
 }));
 
-vi.mock("@/server/auth/better-auth/server", () => ({
+vi.mock("@/server/auth/clerk-convex", () => ({
   fetchAuthMutation: vi.fn(),
   fetchAuthQuery: vi.fn(),
 }));

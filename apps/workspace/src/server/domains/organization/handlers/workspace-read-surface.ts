@@ -39,6 +39,63 @@ export async function workspaceReadJsonForOrganization<T>(
   return workspaceReadJson(c, label, () => operation(organizationId));
 }
 
+export async function workspacePagedListReadJson<TFilter extends string, T>(
+  c: Context,
+  options: {
+    label: string;
+    filterName: string;
+    allowedFilters: readonly TFilter[];
+    read: (
+      organizationId: string,
+      query: {
+        paginationOpts: { numItems: number; cursor: string | null };
+        filter: TFilter | undefined;
+        search: string | undefined;
+      },
+    ) => Promise<T>;
+  },
+) {
+  const organizationId = readOrganizationId(c);
+  if (!organizationId.ok) return organizationId.response;
+  const query = readWorkspaceListQuery(c, options.filterName, options.allowedFilters);
+  if (!query.ok) return query.response;
+
+  return workspaceReadJsonForOrganization(c, options.label, organizationId.data, (organizationId) =>
+    options.read(organizationId, query.data),
+  );
+}
+
+export async function workspaceIndexedListReadJson<TFilter extends string, TList, TStats>(
+  c: Context,
+  options: {
+    label: string;
+    filterName: string;
+    allowedFilters: readonly TFilter[];
+    readList: (
+      organizationId: string,
+      query: {
+        paginationOpts: { numItems: number; cursor: string | null };
+        filter: TFilter | undefined;
+        search: string | undefined;
+      },
+    ) => Promise<TList>;
+    readStats: (organizationId: string) => Promise<TStats>;
+  },
+) {
+  const organizationId = readOrganizationId(c);
+  if (!organizationId.ok) return organizationId.response;
+  const query = readWorkspaceListQuery(c, options.filterName, options.allowedFilters);
+  if (!query.ok) return query.response;
+
+  return workspaceReadJsonForOrganization(c, options.label, organizationId.data, async (organizationId) => {
+    const [list, stats] = await Promise.all([
+      options.readList(organizationId, query.data),
+      options.readStats(organizationId),
+    ]);
+    return { list, stats };
+  });
+}
+
 export function readWorkspaceListQuery<TValue extends string>(
   c: Context,
   enumName: string,

@@ -38,6 +38,30 @@ export class HttpRequestError extends Error {
   }
 }
 
+function emptyPagedResponse<T>(): PagedResponse<T> {
+  return { page: [], isDone: true, continueCursor: "" };
+}
+
+export function normalizePagedResponse<T>(response: PagedResponse<T> | null | undefined): PagedResponse<T> {
+  if (!response || !Array.isArray(response.page) || typeof response.isDone !== "boolean") {
+    return emptyPagedResponse<T>();
+  }
+  return {
+    page: response.page,
+    isDone: response.isDone,
+    continueCursor: typeof response.continueCursor === "string" ? response.continueCursor : "",
+  };
+}
+
+export function normalizeIndexedPagedResponse<T, TStats>(
+  response: IndexedPagedResponse<T, TStats> | null | undefined,
+): IndexedInfinitePage<T, TStats> {
+  return {
+    list: normalizePagedResponse(response?.list),
+    stats: response?.stats,
+  };
+}
+
 export function isHttpTimeoutError(error: unknown) {
   return error instanceof HttpTimeoutError || (error instanceof Error && error.name === "HttpTimeoutError");
 }
@@ -215,7 +239,10 @@ export function useHttpPagedQuery<T>(
       ),
     enabled: Boolean(path),
     initialPageParam: null as string | null,
-    getNextPageParam: (lastPage) => lastPage.isDone ? undefined : lastPage.continueCursor,
+    getNextPageParam: (lastPage) => {
+      const page = normalizePagedResponse(lastPage);
+      return page.isDone ? undefined : page.continueCursor;
+    },
     placeholderData: placeholderForSameOrganization<InfiniteData<PagedResponse<T>, string | null>>(url),
     retry: 1,
     staleTime: 10_000,
@@ -223,8 +250,8 @@ export function useHttpPagedQuery<T>(
   });
   useHttpPerformanceMarks(path, url, query.isFetching, Boolean(query.data) || query.isError);
 
-  const results = path ? query.data?.pages.flatMap((page) => page.page) ?? [] : [];
-  const lastPage = path ? query.data?.pages.at(-1) : undefined;
+  const results = path ? query.data?.pages.flatMap((page) => normalizePagedResponse(page).page) ?? [] : [];
+  const lastPage = path ? normalizePagedResponse(query.data?.pages.at(-1)) : undefined;
   const queryStatus: HttpQueryStatus = !path
     ? "idle"
     : query.isError
@@ -282,7 +309,7 @@ export function useHttpIndexedPagedQuery<T, TStats>(
     queryFn: async ({ pageParam, signal }) => {
       if (pageParam === null) {
         const indexed = await fetchJson<IndexedPagedResponse<T, TStats>>(url, { signal });
-        return { list: indexed.list, stats: indexed.stats } satisfies IndexedInfinitePage<T, TStats>;
+        return normalizeIndexedPagedResponse(indexed);
       }
       const list = await fetchJson<PagedResponse<T>>(
         makeUrl(pagePath!, {
@@ -292,11 +319,14 @@ export function useHttpIndexedPagedQuery<T, TStats>(
         }),
         { signal },
       );
-      return { list } satisfies IndexedInfinitePage<T, TStats>;
+      return { list: normalizePagedResponse(list) } satisfies IndexedInfinitePage<T, TStats>;
     },
     enabled: Boolean(indexPath && pagePath),
     initialPageParam: null as string | null,
-    getNextPageParam: (lastPage) => lastPage.list.isDone ? undefined : lastPage.list.continueCursor,
+    getNextPageParam: (lastPage) => {
+      const page = normalizePagedResponse(lastPage?.list);
+      return page.isDone ? undefined : page.continueCursor;
+    },
     placeholderData: placeholderForSameOrganization<InfiniteData<IndexedInfinitePage<T, TStats>, string | null>>(url),
     retry: 1,
     staleTime: 10_000,
@@ -305,8 +335,8 @@ export function useHttpIndexedPagedQuery<T, TStats>(
   useHttpPerformanceMarks(indexPath, url, query.isFetching, Boolean(query.data) || query.isError);
 
   const isEnabled = Boolean(indexPath && pagePath);
-  const results = isEnabled ? query.data?.pages.flatMap((page) => page.list.page) ?? [] : [];
-  const lastPage = isEnabled ? query.data?.pages.at(-1)?.list : undefined;
+  const results = isEnabled ? query.data?.pages.flatMap((page) => normalizePagedResponse(page?.list).page) ?? [] : [];
+  const lastPage = isEnabled ? normalizePagedResponse(query.data?.pages.at(-1)?.list) : undefined;
   const stats = isEnabled ? query.data?.pages[0]?.stats : undefined;
   const queryStatus: HttpQueryStatus = !isEnabled
     ? "idle"

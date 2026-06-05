@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
-import { fetchAuthMutation } from "@/server/auth/better-auth/server";
+import { fetchAuthMutation } from "@/server/auth/clerk-convex";
 import { assertCanUseOrganizationResource } from "@/server/utils/organization/access-checker";
 import { OrganizationActionError } from "../errors/action-error";
 import type {
@@ -8,7 +8,7 @@ import type {
   OrganizationMemberForPolicy,
   OrganizationRoleForPolicy,
 } from "./access-policy";
-import { callBetterAuth } from "./better-auth-proxy";
+import { callClerkOrganization } from "./clerk-organization-proxy";
 
 type MemberListResponse = { members?: OrganizationMemberForPolicy[] } | OrganizationMemberForPolicy[];
 type InvitationListResponse = OrganizationInvitationForPolicy[];
@@ -53,7 +53,7 @@ function unwrapMembers(data: MemberListResponse) {
 }
 
 export async function listMembersForOrganizationAction(c: Context, organizationId: string) {
-  const data = await callBetterAuth<MemberListResponse>(c, "/organization/list-members", {
+  const data = await callClerkOrganization<MemberListResponse>(c, "/organization/list-members", {
     query: { organizationId, limit: 100, offset: 0 },
     fallback: "Members could not be loaded.",
   });
@@ -62,14 +62,14 @@ export async function listMembersForOrganizationAction(c: Context, organizationI
 }
 
 export async function listInvitationsForOrganizationAction(c: Context, organizationId: string) {
-  return callBetterAuth<InvitationListResponse>(c, "/organization/list-invitations", {
+  return callClerkOrganization<InvitationListResponse>(c, "/organization/list-invitations", {
     query: { organizationId },
     fallback: "Invitations could not be loaded.",
   });
 }
 
 export async function listRolesForOrganizationAction(c: Context, organizationId: string) {
-  return callBetterAuth<RoleListResponse>(c, "/organization/list-roles", {
+  return callClerkOrganization<RoleListResponse>(c, "/organization/list-roles", {
     query: { organizationId },
     fallback: "Work roles could not be loaded.",
   });

@@ -3,6 +3,7 @@
   "compilerOptions": {
     "strict": false,
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "types": [
       "jest",
       "node",

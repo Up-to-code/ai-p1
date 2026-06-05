@@ -1,12 +1,11 @@
 import { useMemo } from "react";
 
 import { authClient } from "@/auth/authClient";
-import { useAuthSession } from "@/auth/useAuthSession";
+import { useMobileAuthGate } from "@/auth/mobileAuthGate";
 import {
   acceptWorkspaceInviteLink,
   createAndSelectWorkspaceOrganization,
   createWorkspaceInviteLink,
-  mergeWorkspaceOrganizations,
   selectWorkspaceOrganization,
   type AuthResult,
   type WorkspaceOrganization,
@@ -15,34 +14,28 @@ import {
 type OrganizationApi = {
   create?: (input: {
     name: string;
-    slug: string;
+    slug?: string;
     metadata?: Record<string, unknown>;
   }) => Promise<AuthResult<WorkspaceOrganization | null>>;
   setActive?: (input: { organizationId: string }) => Promise<AuthResult<WorkspaceOrganization | null>>;
 };
 
 export function useWorkspaceAccess() {
-  const { isAuthenticated, isReady } = useAuthSession();
-  const activeOrganization = authClient.useActiveOrganization();
-  const organizationsQuery = authClient.useListOrganizations();
+  const gate = useMobileAuthGate();
   const organizationApi = (authClient.organization ?? {}) as OrganizationApi;
 
-  const active = activeOrganization?.data as WorkspaceOrganization | null | undefined;
-  const organizations = useMemo(() => {
-    return mergeWorkspaceOrganizations(
-      (organizationsQuery?.data ?? []) as WorkspaceOrganization[],
-      active,
-    );
-  }, [active, organizationsQuery?.data]);
-  const isPending = Boolean(activeOrganization?.isPending || organizationsQuery?.isPending);
+  const organizations = useMemo(() => gate.organizations as WorkspaceOrganization[], [gate.organizations]);
 
   return {
-    isReady,
-    isAuthenticated,
-    isPending,
-    activeOrganization: active ?? null,
-    organizationId: active?.id ?? null,
+    isReady: gate.isReady,
+    isAuthenticated: gate.isAuthenticated,
+    isPending: !gate.isReady || gate.status === "selecting_workspace",
+    activeOrganization: gate.activeOrganization as WorkspaceOrganization | null,
+    organizationId: gate.organizationId,
+    regions: gate.regions,
     organizations,
+    status: gate.status,
+    error: gate.error,
     async selectOrganization(organizationId: string) {
       if (!organizationApi.setActive) throw new Error("Workspace selection is not available.");
       return selectWorkspaceOrganization({ organizationId, setActive: organizationApi.setActive });

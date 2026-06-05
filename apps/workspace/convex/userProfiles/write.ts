@@ -1,5 +1,5 @@
 import { mutation } from "../_generated/server";
-import { authComponent } from "../auth";
+import { clerkAuthComponent } from "../auth";
 import { findUserProfile } from "./data";
 import {
   currentUserProfileValidator,
@@ -12,7 +12,7 @@ export const updateCurrentUserAvatarFromHono = mutation({
   },
   returns: currentUserProfileValidator,
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     const now = Date.now();
     const existing = await findUserProfile(ctx, user._id);
 

@@ -38,7 +38,7 @@ test("mobile source stays behind the Workspace API boundary", () => {
   assert.deepEqual(matches, []);
 });
 
-test("workspace chooser does not expose manual invite entry UI", () => {
+test("workspace chooser leaves invite entry to deep links", () => {
   const source = readFileSync(path.resolve(appRoot, "(auth)/choose-workspace.tsx"), "utf8");
 
   assert.equal(source.includes("workspace.join"), false);
@@ -51,9 +51,9 @@ test("mobile layouts require workspace identity before opening the app shell", (
   const authLayout = readFileSync(path.resolve(appRoot, "(auth)/_layout.tsx"), "utf8");
   const authScreen = readFileSync(path.resolve(appRoot, "(auth)/index.tsx"), "utf8");
 
-  assert.equal(appLayout.includes("useWorkspaceIdentity"), true);
-  assert.equal(appLayout.includes('workspace.status !== "ready"'), true);
-  assert.equal(authLayout.includes("mobilePostAuthRoute"), true);
-  assert.equal(authScreen.includes("mobilePostAuthRoute"), true);
+  assert.equal(appLayout.includes("useMobileAuthGate"), true);
+  assert.equal(appLayout.includes('gate.status !== "ready"'), true);
+  assert.equal(authLayout.includes("useMobileAuthGate"), true);
+  assert.equal(authScreen.includes("useMobileAuthGate"), true);
   assert.equal(authScreen.includes('Redirect href="/(app)"'), false);
 });

@@ -4,6 +4,8 @@ import {
   HttpRequestError,
   HttpTimeoutError,
   makeUrl,
+  normalizeIndexedPagedResponse,
+  normalizePagedResponse,
   placeholderForSameOrganization,
 } from "./use-http-query";
 
@@ -89,5 +91,24 @@ describe("use-http-query helpers", () => {
     expect(placeholder(previousData, {
       queryKey: ["/api/v1/organizations/org_2/read/projects?search="],
     } as never)).toBeUndefined();
+  });
+
+  it("normalizes missing paged responses to an exhausted empty page", () => {
+    expect(normalizePagedResponse(undefined)).toEqual({
+      page: [],
+      isDone: true,
+      continueCursor: "",
+    });
+  });
+
+  it("normalizes missing indexed pages without reading isDone from undefined", () => {
+    expect(normalizeIndexedPagedResponse(undefined)).toEqual({
+      list: {
+        page: [],
+        isDone: true,
+        continueCursor: "",
+      },
+      stats: undefined,
+    });
   });
 });

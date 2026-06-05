@@ -12,7 +12,7 @@ vi.mock("@convex/_generated/api", () => ({
   },
 }));
 
-vi.mock("@/server/auth/better-auth/server", () => ({
+vi.mock("@/server/auth/clerk-convex", () => ({
   fetchAuthMutation: vi.fn(),
   fetchAuthQuery: vi.fn(),
 }));
@@ -22,14 +22,14 @@ vi.mock("@/server/utils/organization/access-checker", () => ({
   getOrganizationCapabilities: vi.fn(),
 }));
 
-vi.mock("./better-auth-proxy", () => ({
-  callBetterAuth: vi.fn(),
-  getBetterAuthSession: vi.fn(),
+vi.mock("./clerk-organization-proxy", () => ({
+  callClerkOrganization: vi.fn(),
+  getClerkSession: vi.fn(),
 }));
 
-import { fetchAuthMutation } from "@/server/auth/better-auth/server";
+import { fetchAuthMutation } from "@/server/auth/clerk-convex";
 import { assertCanUseOrganizationResource } from "@/server/utils/organization/access-checker";
-import { callBetterAuth, getBetterAuthSession } from "./better-auth-proxy";
+import { callClerkOrganization, getClerkSession } from "./clerk-organization-proxy";
 import { removeOrganizationMember } from "./actions";
 
 const context = {} as never;
@@ -37,7 +37,7 @@ const context = {} as never;
 describe("organization actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getBetterAuthSession).mockResolvedValue({
+    vi.mocked(getClerkSession).mockResolvedValue({
       session: { userId: "user_owner", activeOrganizationId: "org_1" },
       user: {
         id: "user_owner",
@@ -47,7 +47,7 @@ describe("organization actions", () => {
     });
     vi.mocked(assertCanUseOrganizationResource).mockResolvedValue(undefined);
     vi.mocked(fetchAuthMutation).mockResolvedValue(undefined);
-    vi.mocked(callBetterAuth).mockImplementation(async (_c, path) => {
+    vi.mocked(callClerkOrganization).mockImplementation(async (_c, path) => {
       if (path === "/organization/list-members") {
         return [
           { id: "member_owner", userId: "user_owner", role: "owner", user: { email: "owner@example.com" } },
@@ -59,7 +59,7 @@ describe("organization actions", () => {
         return { id: "member_target" };
       }
 
-      throw new Error(`Unexpected Better Auth path: ${path}`);
+      throw new Error(`Unexpected dev identity path: ${path}`);
     });
   });
 
@@ -69,7 +69,7 @@ describe("organization actions", () => {
     });
 
     expect(assertCanUseOrganizationResource).toHaveBeenCalledWith("org_1", "member", "delete");
-    expect(callBetterAuth).toHaveBeenCalledWith(
+    expect(callClerkOrganization).toHaveBeenCalledWith(
       context,
       "/organization/remove-member",
       expect.objectContaining({

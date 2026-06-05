@@ -1,5 +1,5 @@
 import { api } from "@convex/_generated/api";
-import { fetchAuthMutation } from "@/server/auth/better-auth/server";
+import { fetchAuthMutation } from "@/server/auth/clerk-convex";
 import type { UpdateProfileAvatarInput } from "../validation/update-avatar.schema";
 
 export function updateCurrentUserAvatar(input: UpdateProfileAvatarInput) {

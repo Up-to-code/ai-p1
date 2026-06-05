@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@/server/auth/better-auth/server", () => ({
+vi.mock("@/server/auth/clerk-convex", () => ({
   fetchAuthQuery: vi.fn(),
 }));
 
-import { fetchAuthQuery } from "@/server/auth/better-auth/server";
+import { fetchAuthQuery } from "@/server/auth/clerk-convex";
 import {
   handleListAgentMessages,
   handleListAgentThreads,

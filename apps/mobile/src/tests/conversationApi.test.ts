@@ -1,4 +1,4 @@
-import test from "node:test";
+import test, { after, afterEach } from "node:test";
 import assert from "node:assert/strict";
 
 import {
@@ -10,18 +10,69 @@ import {
   sendAgentChatRequest,
   type AgentChatEvent,
 } from "../persistence/api/conversationApi";
+import {
+  resetWorkspaceApiClientForTest,
+  setWorkspaceAuthTokenGetter,
+  setWorkspacePlatformNameForTest,
+} from "../persistence/api/workspaceApiClient";
 
 const encoder = new TextEncoder();
 
+afterEach(() => {
+  resetWorkspaceApiClientForTest();
+  delete process.env.EXPO_PUBLIC_WORKSPACE_API_URL;
+});
+
+after(() => {
+  const handles = (process as unknown as { _getActiveHandles?: () => Array<{ constructor?: { name?: string }; close?: () => void }> })
+    ._getActiveHandles?.() ?? [];
+  for (const handle of handles) {
+    if (handle.constructor?.name === "MessagePort") {
+      handle.close?.();
+    }
+  }
+});
+
 function streamFrom(chunks: string[]) {
-  return new ReadableStream<Uint8Array>({
-    start(controller) {
-      for (const chunk of chunks) {
-        controller.enqueue(encoder.encode(chunk));
-      }
-      controller.close();
+  const encodedChunks = chunks.map((chunk) => encoder.encode(chunk));
+  let index = 0;
+  return {
+    getReader() {
+      return {
+        async read() {
+          const value = encodedChunks[index];
+          index += 1;
+          return value ? { done: false, value } : { done: true, value: undefined };
+        },
+      };
     },
-  });
+  };
+}
+
+function jsonResponse(payload: unknown, status = 200) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    json: async () => payload,
+  } as Response;
+}
+
+function textResponse(text: string, status = 200) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    body: null,
+    text: async () => text,
+    json: async () => JSON.parse(text),
+  } as Response;
+}
+
+function streamResponse(chunks: string[], status = 200) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    body: streamFrom(chunks),
+  } as unknown as Response;
 }
 
 class MockStreamingXhr {
@@ -86,6 +137,7 @@ function setNativeRuntimeForTest() {
     value: { product: "ReactNative" },
   });
   globalThis.XMLHttpRequest = MockStreamingXhr as unknown as typeof XMLHttpRequest;
+  setWorkspacePlatformNameForTest("ios");
 
   return () => {
     Object.defineProperty(globalThis, "navigator", {
@@ -140,6 +192,7 @@ test("mobile agent SSE parser handles split chunks, ag_ui, errors, and done even
 test("mobile agent chat request streams incrementally with native XHR", async () => {
   process.env.EXPO_PUBLIC_WORKSPACE_API_URL = "https://app.qentrah.com";
   const restoreNativeRuntime = setNativeRuntimeForTest();
+  setWorkspaceAuthTokenGetter(async () => "clerk-mobile-token");
   const events: AgentChatEvent[] = [];
 
   try {
@@ -154,6 +207,7 @@ test("mobile agent chat request streams incrementally with native XHR", async ()
     assert.equal(xhr.url, "https://app.qentrah.com/api/v1/organizations/org_1/agents/chat");
     assert.equal(xhr.withCredentials, true);
     assert.equal(xhr.headers["content-type"], "application/json");
+    assert.equal(xhr.headers.authorization, "Bearer clerk-mobile-token");
     assert.equal(xhr.headers["x-qentrah-client"], "mobile");
     assert.match(xhr.headers["x-request-id"] ?? "", /^mobile-/);
     assert.equal(xhr.body, JSON.stringify({ message: "hello" }));
@@ -170,6 +224,7 @@ test("mobile agent chat request streams incrementally with native XHR", async ()
     xhr.finish(200);
     await pending;
   } finally {
+    setWorkspaceAuthTokenGetter(null);
     restoreNativeRuntime();
     delete process.env.EXPO_PUBLIC_WORKSPACE_API_URL;
   }
@@ -265,6 +320,7 @@ test("mobile native XHR chat request surfaces server JSON errors", async () => {
 
 test("mobile agent chat request streams workspace API events", async () => {
   process.env.EXPO_PUBLIC_WORKSPACE_API_URL = "https://app.qentrah.com";
+  setWorkspaceAuthTokenGetter(async () => "clerk-fetch-token");
   const events: AgentChatEvent[] = [];
   const originalFetch = globalThis.fetch;
   globalThis.fetch = (async (url, init) => {
@@ -273,19 +329,17 @@ test("mobile agent chat request streams workspace API events", async () => {
     assert.equal(init?.credentials, "include");
     assert.equal(init?.body, JSON.stringify({ message: "hello" }));
     const headers = init?.headers as Headers;
+    assert.equal(headers.get("authorization"), "Bearer clerk-fetch-token");
     assert.equal(headers.get("x-qentrah-client"), "mobile");
     assert.match(headers.get("x-request-id") ?? "", /^mobile-/);
     assert.ok(headers.get("x-qentrah-platform"));
     assert.ok(headers.get("x-qentrah-app-version"));
     assert.match(headers.get("x-qentrah-installation-id") ?? "", /^v1_/);
-    return new Response(
-      streamFrom([
+    return streamResponse([
         'event: text\ndata: {"type":"text","text":"Hel"}\n\n',
         'event: text\ndata: {"type":"text","text":"lo"}\n\n',
         'event: done\ndata: {"type":"done","threadId":"thread_1"}\n\n',
-      ]),
-      { status: 200 },
-    );
+      ]);
   }) as typeof fetch;
 
   try {
@@ -295,6 +349,7 @@ test("mobile agent chat request streams workspace API events", async () => {
       onEvent: (event) => events.push(event),
     });
   } finally {
+    setWorkspaceAuthTokenGetter(null);
     globalThis.fetch = originalFetch;
     delete process.env.EXPO_PUBLIC_WORKSPACE_API_URL;
   }
@@ -326,7 +381,7 @@ test("mobile agent chat request includes uploaded attachment metadata", async ()
         ],
       }),
     );
-    return new Response('event: done\ndata: {"type":"done","threadId":"thread_1"}\n\n');
+    return textResponse('event: done\ndata: {"type":"done","threadId":"thread_1"}\n\n');
   }) as typeof fetch;
 
   try {
@@ -356,13 +411,10 @@ test("mobile agent chat request parses buffered SSE when native fetch has no rea
   process.env.EXPO_PUBLIC_WORKSPACE_API_URL = "https://app.qentrah.com";
   const events: AgentChatEvent[] = [];
   const originalFetch = globalThis.fetch;
-  globalThis.fetch = (async () => ({
-    ok: true,
-    body: null,
-    text: async () =>
-      'event: text\ndata: {"type":"text","text":"Buffered"}\n\n'
-      + 'event: done\ndata: {"type":"done","threadId":"thread_1"}\n\n',
-  })) as unknown as typeof fetch;
+  globalThis.fetch = (async () => textResponse(
+    'event: text\ndata: {"type":"text","text":"Buffered"}\n\n'
+    + 'event: done\ndata: {"type":"done","threadId":"thread_1"}\n\n',
+  )) as typeof fetch;
 
   try {
     await sendAgentChatRequest({
@@ -387,7 +439,7 @@ test("mobile agent confirmation helpers call workspace API endpoints", async () 
   const calls: Array<{ url: string; method?: string }> = [];
   globalThis.fetch = (async (url, init) => {
     calls.push({ url: String(url), method: init?.method });
-    return new Response(JSON.stringify({ ok: true }));
+    return jsonResponse({ ok: true });
   }) as typeof fetch;
 
   try {
@@ -417,9 +469,9 @@ test("mobile agent read adapter returns threads and messages", async () => {
   globalThis.fetch = (async (url) => {
     calls.push(String(url));
     if (String(url).includes("/messages")) {
-      return new Response(JSON.stringify({ messages: [{ _id: "msg_1", _creationTime: 1, role: "assistant", content: "Hi" }] }));
+      return jsonResponse({ messages: [{ _id: "msg_1", _creationTime: 1, role: "assistant", content: "Hi" }] });
     }
-    return new Response(JSON.stringify({ threads: [{ _id: "thread_1", _creationTime: 1, title: "Thread" }] }));
+    return jsonResponse({ threads: [{ _id: "thread_1", _creationTime: 1, title: "Thread" }] });
   }) as typeof fetch;
 
   try {

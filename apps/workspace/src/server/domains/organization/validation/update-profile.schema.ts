@@ -8,6 +8,7 @@ export const updateOrganizationProfileSchema = z.object({
   phone: z.string().trim().max(40),
   website: z.string().trim().max(120),
   address: z.string().trim().max(240),
+  logo: z.string().trim().url().or(z.literal("")).optional(),
 });
 
 export type UpdateOrganizationProfileInput = z.infer<

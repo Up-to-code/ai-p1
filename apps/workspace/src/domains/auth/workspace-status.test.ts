@@ -19,6 +19,10 @@ describe("deriveWorkspaceStatus", () => {
     expect(deriveWorkspaceStatus({ ...readyInput, organizationId: null })).toBe("noOrganization");
   });
 
+  it("rejects active organization ids that the user cannot read", () => {
+    expect(deriveWorkspaceStatus({ ...readyInput, hasOrganizationAccessDenied: true })).toBe("organizationAccessDenied");
+  });
+
   it("keeps the workspace out of ready while Convex auth is loading or disconnected", () => {
     expect(deriveWorkspaceStatus({ ...readyInput, isConvexAuthPending: true })).toBe("convexAuthLoading");
     expect(deriveWorkspaceStatus({ ...readyInput, isConvexAuthPending: true, isConvexAuthStalled: true })).toBe("convexAuthFailed");
@@ -47,6 +51,7 @@ describe("getWorkspaceAuthRedirect", () => {
 
   it("sends signed-in users without an active organization to choose-org", () => {
     expect(getWorkspaceAuthRedirect({ isSignedIn: true, workspaceStatus: "noOrganization", locale: "en" })).toBe("/en/choose-org");
+    expect(getWorkspaceAuthRedirect({ isSignedIn: true, workspaceStatus: "organizationAccessDenied", locale: "en" })).toBe("/en/choose-org");
   });
 
   it("does not redirect while workspace auth is still loading or ready", () => {

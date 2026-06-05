@@ -164,7 +164,7 @@ Production baseline:
 QENTRAH_MOBILE_ENV=production
 EXPO_PUBLIC_PRODUCTION_WORKSPACE_API_URL=https://app.qentrah.com
 EXPO_PUBLIC_PRODUCTION_AUTH_URL=https://app.qentrah.com
-EXPO_PUBLIC_PRODUCTION_CONVEX_URL=<production Convex URL>
+EXPO_PUBLIC_PRODUCTION_CLERK_PUBLISHABLE_KEY=<Clerk publishable key>
 ```
 
 Development baseline for simulator usage:
@@ -173,6 +173,7 @@ Development baseline for simulator usage:
 QENTRAH_MOBILE_ENV=development
 EXPO_PUBLIC_DEV_WORKSPACE_API_URL=http://localhost:3000
 EXPO_PUBLIC_DEV_AUTH_URL=http://localhost:3000
+EXPO_PUBLIC_DEV_CLERK_PUBLISHABLE_KEY=<Clerk publishable key>
 ```
 
 Development baseline for a physical device:
@@ -181,26 +182,39 @@ Development baseline for a physical device:
 QENTRAH_MOBILE_ENV=development
 EXPO_PUBLIC_DEV_WORKSPACE_API_URL=http://<your-lan-ip>:3000
 EXPO_PUBLIC_DEV_AUTH_URL=http://<your-lan-ip>:3000
+EXPO_PUBLIC_DEV_CLERK_PUBLISHABLE_KEY=<Clerk publishable key>
 ```
 
 | Variable | Exposure | Purpose |
 | --- | --- | --- |
 | `QENTRAH_MOBILE_ENV` | Build-time | Selects `development` local API behavior or `production` release behavior |
 | `EXPO_PUBLIC_WORKSPACE_API_URL` | Mobile client | Workspace API origin for `/api/v1` calls from Expo |
-| `EXPO_PUBLIC_AUTH_URL` | Mobile client | Workspace auth origin for sign-in/session APIs |
-| `EXPO_PUBLIC_CONVEX_URL` | Mobile client | Convex client URL |
-| `EXPO_PUBLIC_CONVEX_SITE_URL` | Mobile client | Optional Convex site URL fallback for auth bridges |
+| `EXPO_PUBLIC_AUTH_URL` | Mobile client | Workspace auth origin fallback; usually matches Workspace API origin |
+| `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | Mobile client | Clerk Expo publishable key used by the mobile auth provider |
 | `EXPO_PUBLIC_DEV_WORKSPACE_API_URL` | Mobile client | Development-only Workspace API origin; use a LAN IP for physical devices |
 | `EXPO_PUBLIC_DEV_AUTH_URL` | Mobile client | Development-only auth origin; usually matches the local Workspace origin |
-| `EXPO_PUBLIC_DEV_CONVEX_URL` | Mobile client | Development-only Convex client URL override |
+| `EXPO_PUBLIC_DEV_CLERK_PUBLISHABLE_KEY` | Mobile client | Development-only Clerk publishable key override |
 | `EXPO_PUBLIC_PRODUCTION_WORKSPACE_API_URL` | Mobile client | Production release Workspace API origin; defaults to `https://app.qentrah.com` |
 | `EXPO_PUBLIC_PRODUCTION_AUTH_URL` | Mobile client | Production release auth origin; defaults to the production Workspace origin |
-| `EXPO_PUBLIC_PRODUCTION_CONVEX_URL` | Mobile client | Production release Convex client URL |
+| `EXPO_PUBLIC_PRODUCTION_CLERK_PUBLISHABLE_KEY` | Mobile client | Production release Clerk publishable key; required for production mobile builds |
 | `EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN` | Mobile client | Mapbox public token for mobile map surfaces |
 
 Mobile values are public once bundled into the app. Do not add service tokens,
 client secrets, refresh tokens, or OAuth access tokens with an `EXPO_PUBLIC_`
 prefix.
+
+Set the real production Clerk publishable key in the EAS production environment
+before building. It must use Clerk's `pk_test_...` or `pk_live_...` publishable
+key shape. The `apps/mobile/eas.json` value is a placeholder so missing
+configuration fails during app config resolution instead of silently shipping a
+non-authenticating build.
+
+Mobile selected-region context comes from the active Clerk organization public
+metadata. Set either `regions: ["ksa", "gulf"]` or `region: "ksa"` on the
+organization. Mobile forwards the selected organization id and normalized
+regions to Workspace API requests as request context headers; Workspace should
+still treat authorization as Clerk/Convex-owned and use these headers only as
+mobile context metadata.
 
 The mobile app resolves URLs by build intent, not by whether the build happens
 on a developer laptop. `QENTRAH_MOBILE_ENV=development` uses development/local

@@ -22,7 +22,7 @@ describe("MCP connection permissions", () => {
     expect(hasMcpPermission(permissions, "client", "delete")).toBe(false);
   });
 
-  it("parses comma-separated Better Auth role strings", () => {
+  it("parses comma-separated dev identity role strings", () => {
     expect(mcpRoleList("owner, custom , ,member")).toEqual(["owner", "custom", "member"]);
   });
 

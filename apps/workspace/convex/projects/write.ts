@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
-import { authComponent } from "../auth";
+import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { assertPlatformAdmin } from "../platform/access";
 import { projectInputValidator, projectValidator } from "./validators";
@@ -27,7 +27,7 @@ export const createFromHono = mutation({
   },
   returns: projectValidator,
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "create");
     if ((args.input.visibility ?? "private") === "public") {
       await assertPlatformAdmin(ctx);
@@ -68,7 +68,7 @@ export const updateFromHono = mutation({
   },
   returns: projectValidator,
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "update");
     const existing = await ctx.db.get(args.projectId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {
@@ -109,7 +109,7 @@ export const deleteFromHono = mutation({
   },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "delete");
     const existing = await ctx.db.get(args.projectId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {

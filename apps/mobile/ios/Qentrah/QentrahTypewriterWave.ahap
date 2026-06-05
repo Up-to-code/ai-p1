@@ -1,0 +1,79 @@
+{
+  "Version": 1,
+  "Metadata": {
+    "Project": "Qentrah",
+    "Created": "2026-06-04",
+    "Description": "High smooth word wave for auth headline."
+  },
+  "Pattern": [
+    {
+      "Event": {
+        "EventType": "HapticContinuous",
+        "Time": 0,
+        "EventDuration": 0.42,
+        "EventParameters": [
+          {
+            "ParameterID": "HapticIntensity",
+            "ParameterValue": 0.62
+          },
+          {
+            "ParameterID": "HapticSharpness",
+            "ParameterValue": 0.08
+          }
+        ]
+      }
+    },
+    {
+      "ParameterCurve": {
+        "ParameterID": "HapticIntensityControl",
+        "Time": 0,
+        "ParameterCurveControlPoints": [
+          {
+            "Time": 0,
+            "ParameterValue": 0.12
+          },
+          {
+            "Time": 0.085,
+            "ParameterValue": 0.82
+          },
+          {
+            "Time": 0.25,
+            "ParameterValue": 0.76
+          },
+          {
+            "Time": 0.34,
+            "ParameterValue": 0.32
+          },
+          {
+            "Time": 0.42,
+            "ParameterValue": 0.08
+          }
+        ]
+      }
+    },
+    {
+      "ParameterCurve": {
+        "ParameterID": "HapticSharpnessControl",
+        "Time": 0,
+        "ParameterCurveControlPoints": [
+          {
+            "Time": 0,
+            "ParameterValue": 0.08
+          },
+          {
+            "Time": 0.12,
+            "ParameterValue": 0.10
+          },
+          {
+            "Time": 0.3,
+            "ParameterValue": 0.08
+          },
+          {
+            "Time": 0.42,
+            "ParameterValue": 0.05
+          }
+        ]
+      }
+    }
+  ]
+}

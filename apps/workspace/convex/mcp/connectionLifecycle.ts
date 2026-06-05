@@ -1,10 +1,17 @@
 import type { Doc } from "../_generated/dataModel";
 
+export type McpConnectionPrincipalType = "user" | "organization";
+
 export function mcpConnectionTtlMs(expiresAt: number | undefined, now = Date.now()) {
   return expiresAt ? Math.max(expiresAt - now, 0) : null;
 }
 
+export function mcpConnectionPrincipalType(connection: Doc<"organizationMcpConnections">): McpConnectionPrincipalType {
+  return connection.principalType ?? "user";
+}
+
 export function presentMcpConnection(connection: Doc<"organizationMcpConnections">) {
+  const principalType = mcpConnectionPrincipalType(connection);
   return {
     _id: connection._id,
     _creationTime: connection._creationTime,
@@ -17,6 +24,10 @@ export function presentMcpConnection(connection: Doc<"organizationMcpConnections
     instructions: connection.instructions,
     permissions: connection.permissions,
     status: connection.status,
+    principalType,
+    principalUserId: principalType === "user"
+      ? connection.principalUserId ?? connection.createdByUserId
+      : undefined,
     createdByUserId: connection.createdByUserId,
     createdAt: connection.createdAt,
     updatedAt: connection.updatedAt,
@@ -32,6 +43,10 @@ export function visibleMcpConnections(
   params: { canManage: boolean; userId: string },
 ) {
   return connections
-    .filter((connection) => params.canManage || connection.createdByUserId === params.userId)
+    .filter((connection) =>
+      params.canManage ||
+      mcpConnectionPrincipalType(connection) === "organization" ||
+      (connection.principalUserId ?? connection.createdByUserId) === params.userId,
+    )
     .sort((a, b) => b.updatedAt - a.updatedAt);
 }

@@ -250,6 +250,8 @@ export type MobileDictionary = {
     createButton: string;
     namePlaceholder: string;
     nameRequired: string;
+    yourWorkspaces: string;
+    setupAccess: string;
     typeBroker: string;
     typeDeveloper: string;
     inviteEyebrow: string;
@@ -557,6 +559,8 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       createButton: "Create",
       namePlaceholder: "Workspace name",
       nameRequired: "Enter a workspace name.",
+      yourWorkspaces: "Your workspaces",
+      setupAccess: "Set up access",
       typeBroker: "Broker",
       typeDeveloper: "Developer",
       inviteEyebrow: "Organization invite",
@@ -861,6 +865,8 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       createButton: "إنشاء",
       namePlaceholder: "اسم مساحة العمل",
       nameRequired: "أدخل اسم مساحة العمل.",
+      yourWorkspaces: "مساحاتك",
+      setupAccess: "إعداد الوصول",
       typeBroker: "وسيط",
       typeDeveloper: "مطوّر",
       inviteEyebrow: "دعوة منظمة",
@@ -1165,6 +1171,8 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       createButton: "Créer",
       namePlaceholder: "Nom de l’espace",
       nameRequired: "Entrez le nom de l’espace.",
+      yourWorkspaces: "Vos espaces",
+      setupAccess: "Configurer l’accès",
       typeBroker: "Courtier",
       typeDeveloper: "Promoteur",
       inviteEyebrow: "Invitation organisation",

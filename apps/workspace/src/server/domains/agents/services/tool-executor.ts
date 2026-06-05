@@ -1,7 +1,7 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import type { Context } from "hono";
-import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/better-auth/server";
+import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/clerk-convex";
 import type { McpToolDefinition } from "@/server/protocols/mcp/tools/catalog";
 import {
   cancelOrganizationEmailInvitation,

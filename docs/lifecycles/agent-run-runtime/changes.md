@@ -1,5 +1,23 @@
 # Changes
 
+## 2026-06-04 Mobile Clerk Workspace Auth
+
+- Replaced the Mobile Better Auth client seam with a Clerk Expo facade backed by SecureStore token cache.
+- Added mobile Clerk bearer-token forwarding through `workspaceApiFetch` so Workspace Hono APIs can resolve Clerk identity before Convex auth token forwarding.
+- Kept the workspace chooser, selected-organization reset behavior, and Agent API paths stable while requiring Clerk publishable-key configuration for production mobile builds.
+- Added selected-organization request context headers, including Clerk organization metadata regions, so Workspace APIs can derive mobile region context from the selected organization.
+- Split email/password auth into a dedicated Mobile auth route with Clerk login, signup, and email-code verification, leaving the landing auth route as the social/email choice surface.
+- Added native iOS Apple sign-in through Clerk's Expo Apple adapter and the `expo-apple-authentication` config plugin; Google remains on the Clerk SSO helper.
+- Added an Android `@expo/ui` Jetpack Compose adapter for the dedicated email/password route so Android uses native Compose filter-chip tabs, non-secret text inputs, and submit button while secure password fields keep the React Native secure-input fallback.
+- Added a Mobile Clerk email/password auth Module so the dedicated route owns presentation state while sign-in, sign-up, email-code verification, and Clerk error projection stay behind a smaller Interface.
+- Kept missing email verification-code handling inside the Mobile Clerk email/password auth Module so the route does not leak empty-code validation to Clerk.
+- Reshaped the Mobile auth entry to match the modal reference pattern: a bottom auth sheet with Apple, Google, Sign up, and Log in actions, and a dedicated stepped email modal for email-first, password, and verification states.
+- Distilled the Mobile auth entry visual hierarchy after device review: removed the oversized close control, clipped hero headline, duplicate sheet logo, and heavy bottom sheet chrome in favor of a centered QENTRAH brand and direct action stack.
+- Removed the experimental auth UI chrome and platform-specific email-screen styling in favor of basic Apple-style mobile screens with stable flex sizing, 44-point controls, standard rounded fields, and predictable safe-area spacing.
+- Added keyboard-safe layout to the Mobile email auth route so email, password, and verification inputs remain reachable while the software keyboard is open.
+- Removed the incompatible `@expo/ui` native adapters after iOS build failure; the auth screens now use React Native controls so the native app can compile while keeping keyboard-dismiss behavior and larger field spacing.
+- Removed the password visibility toggle from the Mobile email auth input so the password field stays secure and visually simpler.
+
 ## 2026-05-28 Enterprise Agent Safety Gateway
 
 - Added a shared Agent tool policy gateway for in-product agent tool calls and MCP agent-link calls.
@@ -92,3 +110,13 @@
 - Created lifecycle docs for the Workspace Agent run runtime.
 - Extracted Agent language detection, system prompt construction, and model prompt construction into `agent-language.ts`.
 - Kept `orchestrator.ts` as the stable run Interface and preserved the `detectAgentResponseLanguage` export for existing tests and callers.
+
+## Mobile auth custom haptics
+- Added `react-native-hapticlabs` and `react-native-fs` so the mobile app can play a bundled Core Haptics AHAP wave instead of relying only on Expo's predefined haptics.
+- Added `QentrahTypewriterWave.ahap`, a short low-sharpness continuous pattern with uneven intensity curves for the auth typewriter headline.
+- Routed typewriter feedback through a throttled haptics helper with Expo selection fallback.
+
+## Mobile email auth keyboard handling
+- Redesigned the email/password auth screen around a darker zinc card matching the mobile auth landing surface.
+- Added a custom keyboard clearance hook that dismisses on outside taps and scrolls focused fields with screen-size-based extra clearance.
+- Tightened TextInput padding and height to reduce oversized native field spacing.

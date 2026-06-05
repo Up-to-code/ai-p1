@@ -11,7 +11,7 @@ Backend middleware boundary for the Hono server architecture. Middleware here wi
 
 ## What Must Not Live Here
 - Domain business logic
-- Direct database, Convex, Better Auth, Auth0, queue, or cache provider calls
+- Direct database, Convex, Auth provider, Auth0, queue, or cache provider calls
 - Cross-domain internals
 - Credentials or provider secrets
 

@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   readBoundedOptionalLimit,
   readWorkspaceListQuery,
+  workspaceIndexedListReadJson,
   workspaceOrganizationReadJson,
+  workspacePagedListReadJson,
 } from "./workspace-read-surface";
 
 function fakeContext(input: {
@@ -58,5 +60,53 @@ describe("workspace read surface module", () => {
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ organizationId: "org_1" });
+  });
+
+  it("runs paged list reads through one organization and filter interface", async () => {
+    const response = await workspacePagedListReadJson(fakeContext({
+      params: { organizationId: "org_1" },
+      query: { limit: "25", cursor: "cursor_1", status: "approved", search: "tower" },
+    }), {
+      label: "projects list",
+      filterName: "status",
+      allowedFilters: ["approved", "draft"] as const,
+      read: async (organizationId, query) => ({ organizationId, query }),
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      organizationId: "org_1",
+      query: {
+        paginationOpts: { numItems: 25, cursor: "cursor_1" },
+        filter: "approved",
+        search: "tower",
+      },
+    });
+  });
+
+  it("runs indexed reads with list and stats sharing the same parsed query", async () => {
+    const response = await workspaceIndexedListReadJson(fakeContext({
+      params: { organizationId: "org_1" },
+      query: { limit: "10", type: "Buyer" },
+    }), {
+      label: "clients index",
+      filterName: "type",
+      allowedFilters: ["Buyer", "Tenant"] as const,
+      readList: async (organizationId, query) => ({ organizationId, query }),
+      readStats: async (organizationId) => ({ organizationId, total: 1 }),
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      list: {
+        organizationId: "org_1",
+        query: {
+          paginationOpts: { numItems: 10, cursor: null },
+          filter: "Buyer",
+          search: undefined,
+        },
+      },
+      stats: { organizationId: "org_1", total: 1 },
+    });
   });
 });

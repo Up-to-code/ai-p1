@@ -65,18 +65,27 @@ function resolvePackageRoot(packageName) {
   return findBunPackageRoot(packageName) ?? undefined;
 }
 
+function resolveProjectPackageRoot(packageName) {
+  const projectCandidate = path.resolve(projectNodeModules, packageName);
+  return fs.existsSync(projectCandidate) ? projectCandidate : undefined;
+}
+
 function resolveSingletonPath(moduleName) {
   const packageName = getPackageName(moduleName);
-  const packageRoot = resolvePackageRoot(packageName);
+  const packageRoot = ["react", "react-dom", "react-native", "scheduler"].includes(packageName)
+    ? resolveProjectPackageRoot(packageName) ?? resolvePackageRoot(packageName)
+    : resolvePackageRoot(packageName);
 
   if (packageRoot) {
     if (moduleName === packageName) {
-      return packageRoot;
+      const pkgJsonPath = path.join(packageRoot, "package.json");
+      const main = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8")).main ?? "index.js";
+      return path.join(packageRoot, main);
     }
 
     try {
       return require.resolve(moduleName, {
-        paths: [projectRoot, workspaceRoot, path.dirname(packageRoot)],
+        paths: [projectRoot, path.dirname(packageRoot)],
       });
     } catch {
       return path.join(packageRoot, moduleName.slice(packageName.length + 1));
@@ -121,19 +130,16 @@ config.resolver.extraNodeModules = new Proxy(
 
 const strictSingletons = [
   "react",
-  "react/jsx-runtime",
-  "react/jsx-dev-runtime",
   "react-dom",
   "react-native"
 ];
 
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  if (strictSingletons.includes(moduleName)) {
-    return context.resolveRequest(
-      context,
-      resolveSingletonPath(moduleName),
-      platform
-    );
+  if (strictSingletons.some((singleton) => moduleName === singleton || moduleName.startsWith(`${singleton}/`))) {
+    const filePath = resolveSingletonPath(moduleName);
+    if (filePath && fs.existsSync(filePath)) {
+      return { type: "sourceFile", filePath };
+    }
   }
   return context.resolveRequest(context, moduleName, platform);
 };

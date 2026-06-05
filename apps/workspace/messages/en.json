@@ -941,6 +941,27 @@
     "title": "Welcome Back",
     "description": "Sign in to access your real estate data workspace.",
     "google": "Sign in with Google",
+    "apple": "Continue with Apple",
+    "or": "or",
+    "firstNameLabel": "First name",
+    "firstNamePlaceholder": "First name",
+    "lastNameLabel": "Last name",
+    "lastNamePlaceholder": "Last name",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "name@company.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "continueWithEmail": "Continue with email",
+    "createAccountButton": "Create account",
+    "verificationCodeLabel": "Verification code",
+    "verificationCodePlaceholder": "123456",
+    "verificationEmailHelp": "Enter the code sent to your email address.",
+    "verificationSecondFactorHelp": "Enter the second-factor code sent to your email address.",
+    "verifyCode": "Verify code",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "signUpLink": "Sign up",
+    "signInLink": "Sign in",
     "connecting": "Connecting...",
     "createAccount": "Create an Account",
     "createAccountDesc": "Join the central synchronization engine for Saudi real estate.",
@@ -1972,10 +1993,21 @@
         "canDoDescription": "The agent cannot work outside these permissions. Revoke this link or make a new one to change the allowed work.",
         "name": "Name",
         "startWith": "Start with",
+        "principal": "Runs as",
         "instructions": "What should this agent know?",
         "deleteConfirmation": "I understand this link can remove selected records, and I want to allow that work.",
         "make": "Make agent link",
         "save": "Save agent link"
+      },
+      "principal": {
+        "user": {
+          "title": "My user",
+          "description": "The agent keeps my live permissions. If my access changes, the link is clamped."
+        },
+        "organization": {
+          "title": "Organization",
+          "description": "The agent runs for this workspace and is visible to workspace members."
+        }
       },
       "defaults": {
         "instructions": "Help the team manage clients, apartments, tasks, and calendar work inside this organization."
@@ -3156,6 +3188,10 @@
   "Onboarding": {
     "title": "Setup your Organization",
     "subtitle": "Complete the basic setup to start using your workspace. Legal documents can be added later when needed.",
+    "organizationRequiredTitle": "Choose a workspace first",
+    "organizationRequiredDesc": "Onboarding runs inside an active organization. Create a workspace or select one before continuing.",
+    "chooseOrganization": "Create or select workspace",
+    "signIn": "Sign in",
     "stepper": {
       "company": "Company Information",
       "legal": "Legal Documentation",
@@ -3230,10 +3266,15 @@
     }
   },
   "ChooseOrg": {
+    "eyebrow": "Workspace access",
     "title": "Continue into qentrah",
     "subtitle": "Choose a workspace, join by invite, or create a new organization.",
+    "loading": "Loading workspaces...",
+    "useAnotherAccount": "Use another account",
+    "untitledWorkspace": "Untitled workspace",
     "joinTitle": "I have an invite",
     "joinDesc": "Paste an invite link or code to join an existing workspace.",
+    "inviteUnsupported": "Invite links open from the invitation URL. Manual invite codes are not supported in this custom screen yet.",
     "joinCodeLabel": "Invite Code or Link",
     "joinCodePlaceholder": "e.g. INV-8X3K9",
     "joinBtn": "Join Workspace",
@@ -3242,15 +3283,14 @@
     "createDesc": "Start a new workspace and finish the basic setup.",
     "createNameLabel": "Organization Name",
     "createNamePlaceholder": "e.g. Acme Real Estate",
-    "createTypeLabel": "Organization Type",
-    "createTypePlaceholder": "Select your organization type",
-    "typeBroker": "Broker",
-    "typeDeveloper": "Developer",
     "createBtn": "Start Setup",
+    "creating": "Creating...",
     "existingTitle": "Your organizations",
     "nameRequired": "Enter an organization name first.",
     "inviteRequired": "Paste an invite link or token first.",
     "errorTitle": "Organization setup failed",
-    "errorDesc": "Could not complete this organization action."
+    "errorDesc": "Could not complete this organization action.",
+    "organizationsDisabled": "Clerk Organizations are not enabled for this instance. Enable Organizations in the Clerk Dashboard, then create the workspace again.",
+    "slugsDisabled": "Organization slugs are disabled in Clerk. The workspace will be created without a custom slug."
   }
 }

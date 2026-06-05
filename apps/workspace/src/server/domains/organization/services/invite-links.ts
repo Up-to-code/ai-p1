@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { fetchAuthMutation } from "@/server/auth/better-auth/server";
+import { fetchAuthMutation } from "@/server/auth/clerk-convex";
 import type {
   AcceptOrganizationInviteLinkInput,
   CreateOrganizationInviteLinkInput,

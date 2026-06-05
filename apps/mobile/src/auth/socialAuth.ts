@@ -1,4 +1,4 @@
-export const MOBILE_AUTH_CALLBACK_URL = "/auth-callback";
+export const MOBILE_AUTH_CALLBACK_URL = "/sso-callback";
 
 export type MobileSocialProvider = "apple" | "google";
 
@@ -8,15 +8,16 @@ export const mobileSocialProviders: readonly MobileSocialProvider[] =
     : ["google"];
 
 type AuthError = { message?: string; code?: string } | null | undefined;
+type ClerkSsoStrategy = "oauth_apple" | "oauth_google";
 
-type SocialAuthClient = {
-  signIn: {
-    social: (input: {
-      provider: MobileSocialProvider;
-      callbackURL: string;
-    }) => Promise<{ error?: AuthError } | undefined>;
-  };
-  getSession: () => Promise<unknown>;
+export type SocialAuthFlow = {
+  startSSOFlow: (input: {
+    strategy: ClerkSsoStrategy;
+    redirectUrl: string;
+  }) => Promise<{
+    createdSessionId?: string | null;
+    setActive?: (input: { session: string }) => Promise<void>;
+  }>;
 };
 
 let activeSocialSignIn: Promise<void> | null = null;
@@ -26,7 +27,7 @@ export function socialAuthError(error: AuthError, provider: MobileSocialProvider
 }
 
 export async function signInWithWorkspaceSocialProvider(
-  client: SocialAuthClient,
+  flow: SocialAuthFlow,
   provider: MobileSocialProvider,
 ) {
   if (activeSocialSignIn) {
@@ -34,16 +35,17 @@ export async function signInWithWorkspaceSocialProvider(
   }
 
   activeSocialSignIn = (async () => {
-    const result = await client.signIn.social({
-      provider,
-      callbackURL: MOBILE_AUTH_CALLBACK_URL,
+    const result = await flow.startSSOFlow({
+      strategy: `oauth_${provider}` as ClerkSsoStrategy,
+      redirectUrl: MOBILE_AUTH_CALLBACK_URL,
     });
 
-    if (result?.error) {
-      throw new Error(socialAuthError(result.error, provider));
+    if (result.createdSessionId && result.setActive) {
+      await result.setActive({ session: result.createdSessionId });
+      return;
     }
 
-    await client.getSession();
+    throw new Error(socialAuthError(null, provider));
   })();
 
   try {

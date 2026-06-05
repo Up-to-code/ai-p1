@@ -1,5 +1,5 @@
 import { makeFunctionReference } from "convex/server";
-import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/better-auth/server";
+import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/clerk-convex";
 import { convexCalls } from "@/server/convex/http-client";
 import type { BillingCheckoutPayload, TamaraWebhookPayload } from "../validation/billing.schema";
 import {

@@ -37,7 +37,7 @@ describe("organization selection flow", () => {
     expect(navigate).toHaveBeenCalledWith("/dashboard", "org_1");
   });
 
-  it("does not navigate when Better Auth returns an error", async () => {
+  it("does not navigate when dev identity returns an error", async () => {
     const navigate = vi.fn();
 
     await expect(
@@ -67,7 +67,7 @@ describe("organization selection flow", () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it("does not navigate when Better Auth confirms a different organization", async () => {
+  it("does not navigate when dev identity confirms a different organization", async () => {
     const navigate = vi.fn();
 
     await expect(

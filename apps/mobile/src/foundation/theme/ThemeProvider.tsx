@@ -15,11 +15,13 @@ type ThemeContextValue = {
   setAppearanceMode: (value: AppearanceMode) => void;
 };
 
+const defaultLightTheme: AppTheme = { ...theme, colors: lightColors };
+
 const ThemeContext = createContext<ThemeContextValue>({
-  theme,
-  colors: theme.colors,
+  theme: defaultLightTheme,
+  colors: lightColors,
   appearanceMode: "system",
-  resolvedColorScheme: "dark",
+  resolvedColorScheme: "light",
   setAppearanceMode: () => undefined,
 });
 

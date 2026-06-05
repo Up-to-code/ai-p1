@@ -59,7 +59,7 @@ import {
   type OrganizationInvitation,
   type OrganizationMember,
   type OrganizationRole,
-} from "../api/better-auth-organization";
+} from "../api/clerk-organization-api";
 import { OrganizationLogoUploader } from "./organization-logo-uploader";
 import {
   advancedActionColumns,
@@ -248,17 +248,19 @@ export function OrganizationScreen() {
     phone: account.organization.phone ?? "",
     website: account.organization.website ?? "",
     address: account.organization.address ?? "",
+    logo: account.organization.logo ?? "",
   }), [
     account.organization.address,
     account.organization.email,
     account.organization.legalName,
+    account.organization.logo,
     account.organization.name,
     account.organization.phone,
     account.organization.type,
     account.organization.website,
   ]);
 
-  const { register, handleSubmit, reset, formState: { dirtyFields, errors, isSubmitting } } = useForm<UpdateOrganizationProfileValues>({
+  const { register, handleSubmit, reset, getValues, formState: { dirtyFields, errors, isSubmitting } } = useForm<UpdateOrganizationProfileValues>({
     resolver: zodResolver(updateOrganizationProfileSchema),
     defaultValues: organizationFormValues,
   });
@@ -286,6 +288,7 @@ export function OrganizationScreen() {
         phone: profile.phone,
         website: profile.website,
         address: profile.address,
+        logo: profile.logo ?? "",
       });
       toast({ title: t("toasts.profileSavedTitle"), description: t("toasts.profileSavedDesc"), type: "success" });
     } catch (caught) {
@@ -293,6 +296,25 @@ export function OrganizationScreen() {
       toast({ title: t("toasts.actionFailed"), description: message, type: "error" });
     }
   });
+
+  async function saveOrganizationLogo(logo: string | null) {
+    if (!organizationId) return;
+    const profile = await updateProfile.mutateAsync({
+      ...getValues(),
+      logo: logo ?? "",
+    });
+    reset({
+      name: profile.name,
+      legalName: profile.legalName,
+      type: profile.type,
+      email: profile.email,
+      phone: profile.phone,
+      website: profile.website,
+      address: profile.address,
+      logo: profile.logo ?? "",
+    });
+    refreshOrganizationData();
+  }
 
   const tabs: { id: Tab; label: string; icon: typeof Users }[] = [
     { id: "profile", label: t("tabs.profile"), icon: Building2 },
@@ -388,7 +410,7 @@ export function OrganizationScreen() {
                 name={account.organization.name}
                 logo={account.organization.logo}
                 initials={initials}
-                onSaved={refreshOrganizationData}
+                onSaved={saveOrganizationLogo}
                 labels={{
                   upload: t("logo.upload"),
                   remove: t("logo.remove"),
@@ -861,6 +883,7 @@ function AgentLinksPanel({
   const [agentName, setAgentName] = useState(() => t("presets.client"));
   const [instructions, setInstructions] = useState(() => t("defaults.instructions"));
   const [presetId, setPresetId] = useState<AgentPresetId | "custom">("client");
+  const [principalType, setPrincipalType] = useState<OrganizationMcpConnection["principalType"]>("user");
   const [permissions, setPermissions] = useState<McpConnectionPermission[]>(cloneAgentPermissions(agentPresets[0].permissions));
   const [allowDelete, setAllowDelete] = useState(false);
   const [oneTimeLink, setOneTimeLink] = useState("");
@@ -879,6 +902,7 @@ function AgentLinksPanel({
     mutationFn: () => createOrganizationMcpConnection(organizationId, {
       name: agentName,
       instructions,
+      principalType,
       permissions: selectedGrantablePermissions,
     }),
     onSuccess: async (result) => {
@@ -940,6 +964,7 @@ function AgentLinksPanel({
     const defaultPreset = agentPresets[0];
     setEditingConnection(null);
     setPresetId(defaultPreset.id);
+    setPrincipalType("user");
     setPermissions(clampAgentPermissionsToGrantable(cloneAgentPermissions(defaultPreset.permissions), grantablePermissions));
     setAgentName(t(`presets.${defaultPreset.id}`));
     setInstructions(t("defaults.instructions"));
@@ -952,6 +977,7 @@ function AgentLinksPanel({
   function openEditAgentLinkDialog(connection: OrganizationMcpConnection) {
     setEditingConnection(connection);
     setPresetId("custom");
+    setPrincipalType(connection.principalType);
     setPermissions(clampAgentPermissionsToGrantable(cloneAgentPermissions(connection.permissions), grantablePermissions));
     setAgentName(connection.name);
     setInstructions(connection.instructions ?? "");
@@ -1001,6 +1027,7 @@ function AgentLinksPanel({
               <div className="flex flex-wrap items-center gap-1.5">
                 <StatusPill label={t(`status.${connection.status}`)} tone={connection.status === "active" ? "success" : connection.status === "paused" || isDraft ? "warning" : "neutral"} />
                 <span className="rounded-full bg-zinc-100 px-2 py-0.5 font-mono text-[9px] font-bold text-zinc-500 dark:bg-white/5">{t("labels.keyEnding", { last4: connection.keyLast4 })}</span>
+                <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[9px] font-black text-zinc-500 dark:bg-white/5">{t(`principal.${connection.principalType}.title`)}</span>
               </div>
               <p className="mt-2.5 truncate text-sm font-black text-zinc-800 dark:text-zinc-200">{connection.name}</p>
             </div>
@@ -1199,6 +1226,34 @@ function AgentLinksPanel({
                   </select>
                 </div>
               </div>
+              {!isEditing && (
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.principal")}</Label>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {(["user", "organization"] as const).map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => setPrincipalType(type)}
+                        className={cn(
+                          "rounded-xl border px-4 py-3 text-start transition-colors",
+                          principalType === type
+                            ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-950"
+                            : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 dark:border-white/10 dark:bg-[#111] dark:text-zinc-200",
+                        )}
+                      >
+                        <span className="block text-xs font-black">{t(`principal.${type}.title`)}</span>
+                        <span className={cn(
+                          "mt-1 block text-[11px] leading-5",
+                          principalType === type ? "text-white/70 dark:text-zinc-600" : "text-zinc-500 dark:text-zinc-400",
+                        )}>
+                          {t(`principal.${type}.description`)}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="agentInstructions" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.instructions")}</Label>
                 <textarea

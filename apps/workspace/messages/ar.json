@@ -937,6 +937,27 @@
     "title": "مرحبًا بعودتك",
     "description": "سجّل الدخول للوصول إلى مساحة عملك وإدارة مشاريعك، وحداتك، عملائك، وفرصك من مكان واحد.",
     "google": "الدخول عبر Google",
+    "apple": "المتابعة عبر Apple",
+    "or": "أو",
+    "firstNameLabel": "الاسم الأول",
+    "firstNamePlaceholder": "الاسم الأول",
+    "lastNameLabel": "اسم العائلة",
+    "lastNamePlaceholder": "اسم العائلة",
+    "emailLabel": "البريد الإلكتروني",
+    "emailPlaceholder": "name@company.com",
+    "passwordLabel": "كلمة المرور",
+    "passwordPlaceholder": "أدخل كلمة المرور",
+    "continueWithEmail": "المتابعة بالبريد",
+    "createAccountButton": "إنشاء الحساب",
+    "verificationCodeLabel": "رمز التحقق",
+    "verificationCodePlaceholder": "123456",
+    "verificationEmailHelp": "أدخل الرمز المرسل إلى بريدك الإلكتروني.",
+    "verificationSecondFactorHelp": "أدخل رمز التحقق الإضافي المرسل إلى بريدك الإلكتروني.",
+    "verifyCode": "تحقق من الرمز",
+    "noAccount": "ليس لديك حساب؟",
+    "hasAccount": "لديك حساب بالفعل؟",
+    "signUpLink": "أنشئ حسابًا",
+    "signInLink": "سجّل الدخول",
     "connecting": "جاري الاتصال...",
     "createAccount": "إنشاء حساب جديد",
     "createAccountDesc": "انضم إلى محرك المزامنة المركزي للعقارات السعودية.",
@@ -1968,10 +1989,21 @@
         "canDoDescription": "لا يستطيع الوكيل الخروج عن هذه الصلاحيات. ألغ الرابط أو أنشئ رابطا جديدا إذا أردت تغيير العمل المسموح.",
         "name": "الاسم",
         "startWith": "ابدأ من",
+        "principal": "يعمل باسم",
         "instructions": "ماذا يجب أن يعرف هذا الوكيل؟",
         "deleteConfirmation": "أفهم أن هذا الرابط يستطيع إزالة السجلات المحددة، وأريد السماح بهذا العمل.",
         "make": "إنشاء رابط الوكيل",
         "save": "حفظ رابط الوكيل"
+      },
+      "principal": {
+        "user": {
+          "title": "مستخدمي",
+          "description": "يبقى الوكيل مربوطا بصلاحياتي الحالية. إذا تغيرت صلاحياتي يتم تقليل الرابط."
+        },
+        "organization": {
+          "title": "المؤسسة",
+          "description": "يعمل الوكيل باسم مساحة العمل ويظهر لأعضاء المؤسسة."
+        }
       },
       "defaults": {
         "instructions": "ساعد الفريق في إدارة العملاء والعقارات والمهام والمواعيد داخل هذه المؤسسة."
@@ -3152,6 +3184,10 @@
   "Onboarding": {
     "title": "إعداد مؤسستك",
     "subtitle": "أكمل الإعداد الأساسي لبدء استخدام مساحة العمل. يمكن إضافة المستندات القانونية لاحقاً عند الحاجة.",
+    "organizationRequiredTitle": "اختر مساحة عمل أولاً",
+    "organizationRequiredDesc": "يعمل الإعداد داخل مؤسسة نشطة. أنشئ مساحة عمل أو اختر واحدة قبل المتابعة.",
+    "chooseOrganization": "إنشاء أو اختيار مساحة عمل",
+    "signIn": "تسجيل الدخول",
     "stepper": {
       "company": "معلومات الشركة",
       "legal": "الوثائق القانونية",
@@ -3228,10 +3264,15 @@
     }
   },
   "ChooseOrg": {
+    "eyebrow": "وصول مساحة العمل",
     "title": "أكمل الدخول إلى كانترا",
     "subtitle": "اختر مساحة عملك، أو انضم بدعوة، أو أنشئ مؤسسة جديدة.",
+    "loading": "جاري تحميل مساحات العمل...",
+    "useAnotherAccount": "استخدام حساب آخر",
+    "untitledWorkspace": "مساحة عمل بدون اسم",
     "joinTitle": "لدي دعوة",
     "joinDesc": "الصق رابط الدعوة أو الرمز للانضمام إلى مساحة عمل موجودة.",
+    "inviteUnsupported": "روابط الدعوة تفتح من رابط الدعوة نفسه. إدخال أكواد الدعوة يدويًا غير مدعوم في هذه الشاشة بعد.",
     "joinCodeLabel": "كود أو رابط الدعوة",
     "joinCodePlaceholder": "مثال: INV-8X3K9",
     "joinBtn": "انضمام إلى مساحة العمل",
@@ -3240,15 +3281,14 @@
     "createDesc": "ابدأ مساحة عمل جديدة وأكمل الإعداد الأساسي.",
     "createNameLabel": "اسم المؤسسة",
     "createNamePlaceholder": "مثال: شركة العقارات النموذجية",
-    "createTypeLabel": "نوع المؤسسة",
-    "createTypePlaceholder": "حدد نوع مؤسستك",
-    "typeBroker": "وسيط",
-    "typeDeveloper": "مطور",
     "createBtn": "بدء الإعداد",
+    "creating": "جاري الإنشاء...",
     "existingTitle": "مؤسساتك",
     "nameRequired": "أدخل اسم المؤسسة أولا.",
     "inviteRequired": "الصق رابط الدعوة أو الرمز أولا.",
     "errorTitle": "فشل إعداد المؤسسة",
-    "errorDesc": "تعذر إكمال إجراء المؤسسة."
+    "errorDesc": "تعذر إكمال إجراء المؤسسة.",
+    "organizationsDisabled": "ميزة المؤسسات غير مفعلة في Clerk لهذا المشروع. فعّل Organizations من لوحة Clerk ثم أنشئ مساحة العمل مرة أخرى.",
+    "slugsDisabled": "روابط المؤسسات المختصرة غير مفعلة في Clerk. سيتم إنشاء مساحة العمل بدون رابط مختصر مخصص."
   }
 }

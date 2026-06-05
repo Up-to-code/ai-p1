@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import type { MutationCtx } from "../_generated/server";
-import { authComponent } from "../auth";
+import { clerkAuthComponent } from "../auth";
 import { assertOrganizationPermission } from "../organizations/profile/access";
 import { billingPlanIdValidator, checkoutContextValidator, tamaraPaymentStatusValidator, tamaraPaymentValidator } from "./validators";
 import { getBillingPlan, presentPayment } from "./data";
@@ -93,7 +93,7 @@ export const createPendingTamaraPaymentFromHono = mutation({
   },
   returns: checkoutContextValidator,
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationPermission(ctx, args.organizationId, "update");
     const plan = getBillingPlan(args.input.planId);
 

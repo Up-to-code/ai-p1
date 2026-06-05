@@ -3,7 +3,7 @@ import { mutation } from "../_generated/server";
 import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
-import { authComponent } from "../auth";
+import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { assertPlatformAdmin } from "../platform/access";
 import { protectClientPii, revealClientPii } from "../security/clientPii";
@@ -71,7 +71,7 @@ export const createFromHono = mutation({
   },
   returns: clientValidator,
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "create");
     if ((args.input.visibility ?? "private") === "public") {
       await assertPlatformAdmin(ctx);
@@ -113,7 +113,7 @@ export const updateFromHono = mutation({
   },
   returns: clientValidator,
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const existing = await assertClient(ctx, args.organizationId, args.clientId);
     const nextVisibility = args.input.visibility ?? (existing.visibility ?? "private");
@@ -152,7 +152,7 @@ export const deleteFromHono = mutation({
   },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "delete");
     const existing = await assertClient(ctx, args.organizationId, args.clientId);
     const now = Date.now();
@@ -181,7 +181,7 @@ export const linkUnitFromHono = mutation({
   },
   returns: clientUnitLinkValidator,
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     await assertClient(ctx, args.organizationId, args.input.clientId);
     const property = await assertUnit(ctx, args.organizationId, args.input.propertyId);
@@ -235,7 +235,7 @@ export const unlinkUnitFromHono = mutation({
   },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     await assertClient(ctx, args.organizationId, args.clientId);
     await assertUnit(ctx, args.organizationId, args.propertyId);

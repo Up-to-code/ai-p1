@@ -1,22 +1,14 @@
 import { Redirect } from "expo-router";
 
-import { useAuthSession } from "@/auth/useAuthSession";
-import { useWorkspaceIdentity } from "@/auth/useWorkspaceIdentity";
+import { useMobileAuthGate } from "@/auth/mobileAuthGate";
 import { AppBootScreen } from "@/shell/components/AppBootScreen";
-import { useAppStore } from "@/store";
 
 export default function IndexScreen() {
-  const hydrationComplete = useAppStore((state) => state.hydrationComplete);
-  const { canAccessApp, isReady } = useAuthSession();
-  const workspace = useWorkspaceIdentity();
+  const gate = useMobileAuthGate();
 
-  if (!hydrationComplete || !isReady || (canAccessApp && workspace.status === "loading")) {
+  if (!gate.isReady || !gate.destination) {
     return <AppBootScreen />;
   }
 
-  if (!canAccessApp) {
-    return <Redirect href="/(auth)" />;
-  }
-
-  return <Redirect href={workspace.status === "ready" ? "/(app)" : "/(auth)/choose-workspace"} />;
+  return <Redirect href={gate.destination} />;
 }

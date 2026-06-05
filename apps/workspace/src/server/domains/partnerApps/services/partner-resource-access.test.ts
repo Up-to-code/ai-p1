@@ -1,25 +1,15 @@
 import { Hono } from "hono";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { verifyAccessToken } from "better-auth/oauth2";
 import { convexCalls } from "@/server/convex/http-client";
 import {
   partnerResourceAccessError,
   requirePartnerResourceAccess,
 } from "./partner-resource-access";
 
-vi.mock("better-auth/oauth2", () => ({
-  verifyAccessToken: vi.fn(),
-}));
-
 vi.mock("@convex/_generated/api", () => ({
   api: {
     organizationApiKeys: {
       validateAndReserve: "organizationApiKeys.validateAndReserve",
-    },
-    partnerApps: {
-      apps: {
-        validateAccess: "partnerApps.apps.validateAccess",
-      },
     },
   },
 }));
@@ -34,13 +24,10 @@ vi.mock("@/packages/config", () => ({
 vi.mock("@/server/convex/http-client", () => ({
   convexCalls: {
     mutation: vi.fn(),
-    query: vi.fn(),
   },
 }));
 
-const verifyAccessTokenMock = vi.mocked(verifyAccessToken);
 const convexMutationMock = vi.mocked(convexCalls.mutation);
-const convexQueryMock = vi.mocked(convexCalls.query);
 
 function appForAccessTests() {
   const app = new Hono();
@@ -55,44 +42,19 @@ function appForAccessTests() {
   return app;
 }
 
-describe("partner resource access seam", () => {
+describe("partner resource access seam during dev auth purge", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("authorizes OAuth bearer access through Better Auth claims and organization grants", async () => {
-    verifyAccessTokenMock.mockResolvedValueOnce({
-      organization_id: "org_1",
-      azp: "partners_client_1",
-      partner_scopes: ["client:read"],
-      scope: "openid client:read",
-    });
-    convexQueryMock.mockResolvedValueOnce({
-      ok: true,
-      partnerAppId: "partners_app_1",
-      connectionId: "connection_1",
-      scopes: ["client:read"],
-      appName: "Partner CRM",
-    });
-
+  it("rejects OAuth bearer access while customer auth is purged", async () => {
     const response = await appForAccessTests().request("/organizations/org_1/clients", {
       headers: { authorization: "Bearer oauth-token" },
     });
 
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toMatchObject({
-      type: "oauth",
-      organizationId: "org_1",
-      partnerAppId: "partners_app_1",
-      connectionId: "connection_1",
-      scopes: ["client:read"],
-    });
-    expect(convexQueryMock).toHaveBeenCalledWith("partnerApps.apps.validateAccess", {
-      organizationId: "org_1",
-      partnersClientId: "partners_client_1",
-      scopes: ["client:read"],
-      resource: "client",
-      action: "read",
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toEqual({
+      error: "Partner OAuth bearer access is disabled during the dev-only auth purge.",
     });
   });
 
@@ -103,7 +65,6 @@ describe("partner resource access seam", () => {
     await expect(response.json()).resolves.toEqual({
       error: "Bearer tokens must use the Authorization header.",
     });
-    expect(verifyAccessTokenMock).not.toHaveBeenCalled();
   });
 
   it("preserves missing OAuth bearer challenge", async () => {
@@ -141,7 +102,6 @@ describe("partner resource access seam", () => {
       resource: "client",
       action: "read",
     });
-    expect(verifyAccessTokenMock).not.toHaveBeenCalled();
   });
 
   it("preserves organization API key rate limit status", async () => {

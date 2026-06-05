@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import { brandDomainUrl, brandIdentity, brandLabel, brandProductName } from "@qentrah/brand-identity";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { NextIntlClientProvider } from 'next-intl';
@@ -8,7 +9,6 @@ import { routing } from '@/i18n/routing';
 import { LocaleDocumentAttrs } from "@/components/i18n/locale-document-attrs";
 import { UiLocalizer } from '@/components/i18n/ui-localizer';
 import { BackendProviders } from "@/components/providers/backend-providers";
-import { getToken } from "@/server/auth/better-auth/server";
 import { ToastProvider } from "@/components/ui/toast";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 
@@ -89,21 +89,22 @@ export default async function RootLayout({
   }
 
   const messages = await getMessages();
-  const initialToken = await getToken().catch(() => undefined);
 
   return (
-    <NextIntlClientProvider messages={messages}>
-      <BackendProviders initialToken={initialToken}>
-        <ThemeProvider>
-          <TooltipProvider>
-            <ToastProvider>
-              <LocaleDocumentAttrs locale={locale} />
-              <UiLocalizer />
-              {children}
-            </ToastProvider>
-          </TooltipProvider>
-        </ThemeProvider>
-      </BackendProviders>
-    </NextIntlClientProvider>
+    <ClerkProvider>
+      <NextIntlClientProvider messages={messages}>
+        <BackendProviders>
+          <ThemeProvider>
+            <TooltipProvider>
+              <ToastProvider>
+                <LocaleDocumentAttrs locale={locale} />
+                <UiLocalizer />
+                {children}
+              </ToastProvider>
+            </TooltipProvider>
+          </ThemeProvider>
+        </BackendProviders>
+      </NextIntlClientProvider>
+    </ClerkProvider>
   );
 }

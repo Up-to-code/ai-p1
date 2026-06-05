@@ -15,12 +15,14 @@ type WorkspaceAccessSurfaceProps = {
   body?: string;
   onBack?: () => void;
   showTopBar?: boolean;
+  cardPresentation?: "grouped" | "cards";
   children: ReactNode;
   footer?: ReactNode;
   contentStyle?: StyleProp<ViewStyle>;
 };
 
 type WorkspaceAccessRowProps = {
+  card?: boolean;
   testID?: string;
   icon: ReactNode;
   title: string;
@@ -38,6 +40,7 @@ export function WorkspaceAccessSurface({
   body,
   onBack,
   showTopBar = true,
+  cardPresentation = "grouped",
   children,
   footer,
   contentStyle,
@@ -78,7 +81,7 @@ export function WorkspaceAccessSurface({
           {body ? <Text tone="secondary" style={styles.body}>{body}</Text> : null}
         </View>
 
-        <View style={styles.card}>{children}</View>
+        <View style={cardPresentation === "cards" ? styles.cardList : styles.card}>{children}</View>
         {footer ? <View style={styles.footer}>{footer}</View> : null}
       </ScrollView>
     </View>
@@ -86,6 +89,7 @@ export function WorkspaceAccessSurface({
 }
 
 export function WorkspaceAccessRow({
+  card,
   testID,
   icon,
   title,
@@ -107,6 +111,7 @@ export function WorkspaceAccessRow({
       onPress={onPress}
       style={({ pressed }) => [
         styles.row,
+        card && styles.rowCard,
         selected && styles.rowSelected,
         pressed && !disabled ? styles.rowPressed : null,
         disabled ? styles.rowDisabled : null,
@@ -152,7 +157,7 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: colors.accent,
+    backgroundColor: colors.textPrimary,
   },
   hero: {
     paddingTop: theme.spacing.xl,
@@ -161,7 +166,7 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     alignItems: isRTL ? "flex-end" : "flex-start",
   },
   eyebrow: {
-    color: colors.accent,
+    color: colors.textMuted,
     fontSize: 11,
     lineHeight: 16,
     fontFamily: "Manrope_800ExtraBold",
@@ -188,6 +193,9 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     backgroundColor: colors.surface,
     overflow: "hidden",
   },
+  cardList: {
+    gap: theme.spacing.sm,
+  },
   footer: {
     paddingTop: theme.spacing.lg,
     alignItems: "center",
@@ -202,6 +210,14 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     paddingVertical: theme.spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.divider,
+  },
+  rowCard: {
+    borderWidth: 1,
+    borderColor: colors.divider,
+    borderRadius: 18,
+    borderBottomWidth: 1,
+    backgroundColor: colors.surface,
+    overflow: "hidden",
   },
   rowPressed: {
     opacity: 0.78,
@@ -223,7 +239,7 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     backgroundColor: colors.background,
   },
   rowIconSelected: {
-    borderColor: colors.accent,
+    borderColor: colors.textPrimary,
   },
   rowText: {
     flex: 1,

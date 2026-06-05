@@ -10,7 +10,7 @@ import type {
   OrganizationMember,
   OrganizationMcpConnection,
   OrganizationRole,
-} from "./api/better-auth-organization";
+} from "./api/clerk-organization-api";
 
 export type Tab = "profile" | "members" | "agentLinks" | "apiKeys" | "invites" | "roles";
 export type InviteMode = "link" | "email";

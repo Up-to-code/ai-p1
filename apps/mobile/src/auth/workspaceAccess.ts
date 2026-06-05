@@ -5,6 +5,8 @@ export type WorkspaceOrganization = {
   name?: string | null;
   slug?: string | null;
   logo?: string | null;
+  regions?: string[];
+  metadata?: string | Record<string, unknown> | null;
 };
 
 export type WorkspaceInviteAcceptance = {
@@ -46,7 +48,7 @@ export type CreateWorkspaceInput<TOrganization extends WorkspaceOrganization> = 
   type: "broker" | "developer";
   create: (input: {
     name: string;
-    slug: string;
+    slug?: string;
     metadata?: Record<string, unknown>;
   }) => Promise<AuthResult<TOrganization | null>>;
   setActive: (input: { organizationId: string }) => Promise<AuthResult<TOrganization | null>>;
@@ -78,6 +80,33 @@ export function mergeWorkspaceOrganizations(
     seen.add(organization.id);
     return true;
   });
+}
+
+function readOrganizationMetadata(organization: WorkspaceOrganization | null | undefined) {
+  const metadata = organization?.metadata;
+  if (!metadata) return {};
+  if (typeof metadata === "object") return metadata as Record<string, unknown>;
+
+  try {
+    const parsed = JSON.parse(metadata);
+    return parsed && typeof parsed === "object" ? parsed as Record<string, unknown> : {};
+  } catch {
+    return {};
+  }
+}
+
+export function getWorkspaceOrganizationRegions(organization: WorkspaceOrganization | null | undefined) {
+  if (Array.isArray(organization?.regions)) {
+    return organization.regions.filter((region) => typeof region === "string" && region.trim()).map((region) => region.trim());
+  }
+
+  const metadata = readOrganizationMetadata(organization);
+  const regions = metadata.regions;
+  if (Array.isArray(regions)) {
+    return regions.filter((region): region is string => typeof region === "string" && region.trim().length > 0).map((region) => region.trim());
+  }
+
+  return typeof metadata.region === "string" && metadata.region.trim() ? [metadata.region.trim()] : [];
 }
 
 export function shouldResetThreadForOrganizationSwitch(currentOrganizationId: string | null | undefined, nextOrganizationId: string) {
@@ -115,6 +144,11 @@ export function slugifyWorkspaceName(value: string) {
   return slug || `org-${Date.now().toString(36)}`;
 }
 
+function isSlugConflict(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return /slug/i.test(message) && /(exist|taken|unique|already|duplicate)/i.test(message);
+}
+
 export async function selectWorkspaceOrganization<TOrganization extends WorkspaceOrganization>({
   organizationId,
   setActive,
@@ -132,14 +166,29 @@ export async function createAndSelectWorkspaceOrganization<TOrganization extends
   create,
   setActive,
 }: CreateWorkspaceInput<TOrganization>) {
-  const organization = requireWorkspaceOrganization(
-    await create({
-      name: name.trim(),
-      slug: slugifyWorkspaceName(name),
-      metadata: { type, status: "Workspace ready" },
-    }),
-    "Could not create this workspace.",
-  );
+  const trimmedName = name.trim();
+  const metadata = { type, status: "Workspace ready" };
+  let organization: TOrganization;
+
+  try {
+    organization = requireWorkspaceOrganization(
+      await create({ name: trimmedName, metadata }),
+      "Could not create this workspace.",
+    );
+  } catch (error) {
+    if (!isSlugConflict(error)) {
+      throw error;
+    }
+
+    organization = requireWorkspaceOrganization(
+      await create({
+        name: trimmedName,
+        slug: `${slugifyWorkspaceName(trimmedName)}-${Math.floor(1000 + Math.random() * 9000)}`,
+        metadata,
+      }),
+      "Could not create this workspace.",
+    );
+  }
 
   requireWorkspaceOrganization(
     await setActive({ organizationId: organization.id }),

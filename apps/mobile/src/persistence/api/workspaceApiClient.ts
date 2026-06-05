@@ -6,6 +6,38 @@ const productionWorkspaceApiUrl = "https://app.qentrah.com";
 
 let fallbackInstallationId: string | null = null;
 let installationHashPromise: Promise<string> | null = null;
+let workspaceAuthTokenGetter: (() => Promise<string | null>) | null = null;
+let workspacePlatformNameForTest: string | null = null;
+let workspaceOrganizationRequestContext: { organizationId: string | null; regions: string[] } = {
+  organizationId: null,
+  regions: [],
+};
+
+export function setWorkspaceAuthTokenGetter(getter: (() => Promise<string | null>) | null) {
+  workspaceAuthTokenGetter = getter;
+}
+
+export function resetWorkspaceApiClientForTest() {
+  fallbackInstallationId = null;
+  installationHashPromise = null;
+  workspaceAuthTokenGetter = null;
+  workspacePlatformNameForTest = null;
+  workspaceOrganizationRequestContext = {
+    organizationId: null,
+    regions: [],
+  };
+}
+
+export function setWorkspacePlatformNameForTest(platformName: string | null) {
+  workspacePlatformNameForTest = platformName;
+}
+
+export function setWorkspaceOrganizationRequestContext(context: { organizationId: string | null; regions?: string[] }) {
+  workspaceOrganizationRequestContext = {
+    organizationId: context.organizationId,
+    regions: context.regions?.filter((region) => region.trim()) ?? [],
+  };
+}
 
 function getRuntimeWorkspaceApiUrl() {
   try {
@@ -33,6 +65,8 @@ function isNativeRuntime() {
 }
 
 function getPlatformName() {
+  if (workspacePlatformNameForTest) return workspacePlatformNameForTest;
+
   try {
     const native = require("react-native") as { Platform?: { OS?: string } };
     return native.Platform?.OS ?? "unknown";
@@ -128,17 +162,27 @@ function getStoredAuthCookie() {
   }
 }
 
-function withWorkspaceAuthHeaders(headers: HeadersInit | undefined) {
+async function withWorkspaceAuthHeaders(headers: HeadersInit | undefined) {
   const nextHeaders = new Headers(headers);
+  const token = await workspaceAuthTokenGetter?.().catch(() => null);
+  if (token && !nextHeaders.has("authorization")) {
+    nextHeaders.set("authorization", `Bearer ${token}`);
+  }
   const cookie = getStoredAuthCookie();
   if (cookie && !nextHeaders.has("cookie")) {
     nextHeaders.set("cookie", cookie);
+  }
+  if (workspaceOrganizationRequestContext.organizationId && !nextHeaders.has("x-qentrah-organization-id")) {
+    nextHeaders.set("x-qentrah-organization-id", workspaceOrganizationRequestContext.organizationId);
+  }
+  if (workspaceOrganizationRequestContext.regions.length > 0 && !nextHeaders.has("x-qentrah-regions")) {
+    nextHeaders.set("x-qentrah-regions", workspaceOrganizationRequestContext.regions.join(","));
   }
   return nextHeaders;
 }
 
 async function withMobileRequestHeaders(headers: HeadersInit | undefined) {
-  const nextHeaders = withWorkspaceAuthHeaders(headers);
+  const nextHeaders = await withWorkspaceAuthHeaders(headers);
   if (!nextHeaders.has("x-qentrah-client")) nextHeaders.set("x-qentrah-client", "mobile");
   if (!nextHeaders.has("x-request-id")) nextHeaders.set("x-request-id", createRequestId());
   if (!nextHeaders.has("x-qentrah-platform")) nextHeaders.set("x-qentrah-platform", getPlatformName());

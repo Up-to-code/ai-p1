@@ -30,6 +30,7 @@ describe("MCP tool catalog", () => {
     const result = createMcpConnectionSchema.safeParse({
       name: "Client operator",
       instructions: "Help with follow-ups.",
+      principalType: "organization",
       permissions: [
         { resource: "client", actions: ["read", "create"] },
         { resource: "task", actions: ["read", "update"] },
