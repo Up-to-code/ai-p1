@@ -1,7 +1,7 @@
-import { access, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import path from "node:path";
-import { chromium } from "@playwright/test";
+import sharp from "sharp";
 
 const appRoot = process.cwd();
 const buildDir = path.join(appRoot, "build");
@@ -23,19 +23,6 @@ function run(command, args) {
       reject(new Error(`${command} ${args.join(" ")} exited with code ${code}`));
     });
   });
-}
-
-async function firstExistingPath(paths) {
-  for (const candidate of paths) {
-    try {
-      await access(candidate);
-      return candidate;
-    } catch {
-      // Keep looking.
-    }
-  }
-
-  return undefined;
 }
 
 await mkdir(buildDir, { recursive: true });
@@ -81,32 +68,4 @@ const dmgBackground = `<svg width="660" height="400" viewBox="0 0 660 400" fill=
 
 await writeFile(dmgBackgroundSvg, dmgBackground);
 await rm(dmgBackgroundPng, { force: true });
-
-const systemChrome = await firstExistingPath([
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-  "/Applications/Chromium.app/Contents/MacOS/Chromium",
-  "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
-]);
-const browser = await chromium.launch({
-  headless: true,
-  ...(systemChrome ? { executablePath: systemChrome } : {}),
-});
-try {
-  const page = await browser.newPage({ viewport: { width: 660, height: 400 }, deviceScaleFactor: 1 });
-  await page.setContent(`
-    <!doctype html>
-    <html>
-      <head>
-        <meta charset="utf-8" />
-        <style>
-          html, body { width: 660px; height: 400px; margin: 0; overflow: hidden; background: #121212; }
-          svg { display: block; width: 660px; height: 400px; }
-        </style>
-      </head>
-      <body>${dmgBackground}</body>
-    </html>
-  `);
-  await page.screenshot({ path: dmgBackgroundPng, type: "png" });
-} finally {
-  await browser.close();
-}
+await sharp(Buffer.from(dmgBackground)).png().toFile(dmgBackgroundPng);
