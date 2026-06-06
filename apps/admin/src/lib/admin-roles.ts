@@ -2,7 +2,7 @@ import { adminSecurityConfig } from "./security";
 
 export type AdminRole = "platform_admin" | "security_reviewer" | "support_operator" | "audit_viewer";
 
-export type AdminRoleDefinition = {
+type AdminRoleDefinition = {
   id: AdminRole;
   label: string;
   arabicLabel: string;
@@ -12,7 +12,7 @@ export type AdminRoleDefinition = {
   mutationAccess: boolean;
 };
 
-export const adminRoleDefinitions: AdminRoleDefinition[] = [
+const adminRoleDefinitions: AdminRoleDefinition[] = [
   {
     id: "platform_admin",
     label: "Platform admin",

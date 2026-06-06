@@ -18,6 +18,7 @@ import { updateOrganizationProfile } from "@/server/domains/organization/service
 import {
   calendarInputSchema,
   cleanInput,
+  clientCreateInputSchema,
   clientInputSchema,
   compact,
   extensionName,
@@ -35,6 +36,7 @@ import {
   roleCreateInputSchema,
   roleUpdateInputSchema,
   startOfToday,
+  stripPresentedDatabaseFields,
   taskToolSearchResults,
   taskInputSchema,
 } from "./tool-inputs";
@@ -132,16 +134,20 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
     case "clients_create":
       return fetchAuthMutation(api.clients.write.createFromHono, {
         organizationId,
-        input: cleanInput(clientInputSchema, input) as never,
+        input: clientCreateInputSchema.parse(input) as never,
       });
     case "clients_update": {
       const existing = await fetchAuthQuery(api.clients.read.get, { organizationId, clientId: input.clientId as Id<"clients"> });
       if (!existing) throw new Error("Client was not found.");
-      const { clientId: _clientId, ...patch } = input;
+      const patch = { ...input };
+      delete patch.clientId;
       return fetchAuthMutation(api.clients.write.updateFromHono, {
         organizationId,
         clientId: input.clientId as Id<"clients">,
-        input: cleanInput(clientInputSchema, { ...existing, ...patch }) as never,
+        input: cleanInput(clientInputSchema, {
+          ...stripPresentedDatabaseFields(existing as Record<string, unknown>),
+          ...stripPresentedDatabaseFields(patch),
+        }) as never,
       });
     }
     case "clients_delete":
@@ -183,14 +189,18 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
     case "properties_update_field": {
       const existing = await fetchAuthQuery(api.properties.read.get, { organizationId, propertyId: input.propertyId as Id<"propertyUnits"> });
       if (!existing) throw new Error("Property unit was not found.");
-      const { propertyId: _propertyId, field, value, ...patch } = input;
+      const { field, value } = input;
+      const patch = { ...input };
+      delete patch.propertyId;
+      delete patch.field;
+      delete patch.value;
       const merged = tool.name === "properties_update_field"
         ? { ...existing, [String(field)]: value }
         : { ...existing, ...patch };
       return fetchAuthMutation(api.properties.write.updateFromHono, {
         organizationId,
         propertyId: input.propertyId as Id<"propertyUnits">,
-        input: cleanInput(propertyInputSchema, merged) as never,
+        input: cleanInput(propertyInputSchema, stripPresentedDatabaseFields(merged as Record<string, unknown>)) as never,
       });
     }
     case "properties_delete":
@@ -211,11 +221,15 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
     case "projects_update": {
       const existing = await fetchAuthQuery(api.projects.read.get, { organizationId, projectId: input.projectId as Id<"projects"> });
       if (!existing) throw new Error("Project was not found.");
-      const { projectId: _projectId, ...patch } = input;
+      const patch = { ...input };
+      delete patch.projectId;
       return fetchAuthMutation(api.projects.write.updateFromHono, {
         organizationId,
         projectId: input.projectId as Id<"projects">,
-        input: cleanInput(projectInputSchema, { ...existing, ...patch }) as never,
+        input: cleanInput(projectInputSchema, {
+          ...stripPresentedDatabaseFields(existing as Record<string, unknown>),
+          ...stripPresentedDatabaseFields(patch),
+        }) as never,
       });
     }
     case "projects_delete":
@@ -251,11 +265,15 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
       const events = await fetchAuthQuery(api.calendar.read.list, { organizationId });
       const existing = events.find((event) => event.id === input.eventId || event._id === input.eventId);
       if (!existing) throw new Error("Calendar event was not found.");
-      const { eventId: _eventId, ...patch } = input;
+      const patch = { ...input };
+      delete patch.eventId;
       return fetchAuthMutation(api.calendar.write.updateFromHono, {
         organizationId,
         eventId: input.eventId as Id<"calendarEvents">,
-        input: cleanInput(calendarInputSchema, { ...existing, ...patch }) as never,
+        input: cleanInput(calendarInputSchema, {
+          ...stripPresentedDatabaseFields(existing as Record<string, unknown>),
+          ...stripPresentedDatabaseFields(patch),
+        }) as never,
       });
     }
     case "calendar_delete":
@@ -280,11 +298,15 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
       const tasks = await fetchAuthQuery(api.clientTasks.read.list, { organizationId });
       const existing = tasks.find((task) => task.id === input.taskId || task._id === input.taskId);
       if (!existing) throw new Error("Task was not found.");
-      const { taskId: _taskId, ...patch } = input;
+      const patch = { ...input };
+      delete patch.taskId;
       return fetchAuthMutation(api.clientTasks.write.updateFromHono, {
         organizationId,
         taskId: input.taskId as Id<"clientTasks">,
-        input: cleanInput(taskInputSchema, { ...existing, ...patch }) as never,
+        input: cleanInput(taskInputSchema, {
+          ...stripPresentedDatabaseFields(existing as Record<string, unknown>),
+          ...stripPresentedDatabaseFields(patch),
+        }) as never,
       });
     }
     case "tasks_complete": {
@@ -294,7 +316,10 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
       return fetchAuthMutation(api.clientTasks.write.updateFromHono, {
         organizationId,
         taskId: input.taskId as Id<"clientTasks">,
-        input: cleanInput(taskInputSchema, { ...existing, status: "done" }) as never,
+        input: cleanInput(taskInputSchema, {
+          ...stripPresentedDatabaseFields(existing as Record<string, unknown>),
+          status: "done",
+        }) as never,
       });
     }
     case "tasks_delete":

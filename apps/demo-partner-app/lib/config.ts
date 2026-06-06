@@ -4,7 +4,7 @@ import { localDemoRegistration } from "./local-demo-registration";
 
 export const requestedScopes = localDemoRegistration.scopes;
 
-export function normalizeBaseUrl(value: string) {
+function normalizeBaseUrl(value: string) {
   const trimmed = value.trim().replace(/\/+$/u, "");
   if (!trimmed) throw new Error("Base URL is required.");
   return /^https?:\/\//iu.test(trimmed) ? trimmed : `https://${trimmed}`;
@@ -14,10 +14,6 @@ export function requiredEnv(name: string, env: Record<string, string | undefined
   const value = env[name]?.trim();
   if (!value) throw new Error(`Set ${name} before running the demo app.`);
   return value;
-}
-
-export function optionalEnv(name: string, env: Record<string, string | undefined> = process.env) {
-  return env[name]?.trim() || undefined;
 }
 
 export function demoConfig(env: Record<string, string | undefined> = process.env) {
@@ -41,13 +37,13 @@ export function publicDemoConfig(env: Record<string, string | undefined> = proce
   };
 }
 
-export function requiredBrandEnv(key: string, env: Record<string, string | undefined> = process.env) {
+function requiredBrandEnv(key: string, env: Record<string, string | undefined> = process.env) {
   const value = readBrandEnv(key, env);
   if (!value) throw new Error(`Set ${brandEnvName(key)} before running the demo app.`);
   return value;
 }
 
-export function optionalBrandEnv(key: string, env: Record<string, string | undefined> = process.env) {
+function optionalBrandEnv(key: string, env: Record<string, string | undefined> = process.env) {
   return readBrandEnv(key, env);
 }
 

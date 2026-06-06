@@ -59,14 +59,6 @@ export function useProjectPropertiesQuery(organizationId: string | undefined, pr
   );
 }
 
-export function usePropertyStatsQuery(organizationId?: string) {
-  return useWorkspaceResource<PropertyStats>(
-    ["properties-stats", organizationId],
-    organizationId,
-    "properties/stats",
-  );
-}
-
 export function usePropertyOptionsQuery(organizationId?: string, options: { enabled?: boolean } = {}) {
   return useWorkspaceResource<{ id: string; title: string }[]>(
     ["properties-options", organizationId],
@@ -83,7 +75,7 @@ export function usePropertyQuery(organizationId: string | undefined, propertyId:
   );
 }
 
-export function propertyPayloadFromForm(values: PropertyFormValues) {
+function propertyPayloadFromForm(values: PropertyFormValues) {
   return {
     title: values.title,
     projectId: values.projectId || undefined,

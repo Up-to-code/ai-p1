@@ -6,7 +6,7 @@
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
-    "typeRoots": ["../../apps/web/node_modules/@types", "../../node_modules/@types"],
+    "typeRoots": ["../../node_modules/@types"],
     "types": ["react", "react-dom", "node"],
     "esModuleInterop": true,
     "module": "esnext",
@@ -15,13 +15,10 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "paths": {
-      "@/*": ["apps/web/*"],
       "@convex/*": ["convex/_generated/*"],
       "@convex/api": ["convex/_generated/api.d.ts"],
       "@qentrah/ag-ui": ["packages/ag-ui/src/index.ts"],
-      "@qentrah/ag-ui/react": ["packages/ag-ui/src/react/index.ts"],
-      "@qentrah/ag-ui/qentrah": ["packages/ag-ui/src/qentrah/index.ts"],
-      "zod": ["node_modules/zod"]
+      "@qentrah/ag-ui/react": ["packages/ag-ui/src/react/index.ts"]
     }
   },
   "include": [
@@ -32,5 +29,5 @@
     "src/react/**/*.ts",
     "src/index.ts"
   ],
-  "exclude": ["node_modules", "src/qentrah/**/*", "examples/**/*", "**/*.test.ts", "**/*.test.tsx"]
+  "exclude": ["node_modules", "examples/**/*", "**/*.test.ts", "**/*.test.tsx"]
 }

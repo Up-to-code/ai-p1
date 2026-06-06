@@ -15,7 +15,7 @@ const numberLocales: Record<AppLocale, string> = {
   fr: "fr-FR",
 };
 
-export function resolveLocale(input?: string | null): AppLocale {
+function resolveLocale(input?: string | null): AppLocale {
   if (input === "ar" || input === "fr") return input;
   return "en";
 }
@@ -42,12 +42,4 @@ export function getWebDictionary(locale: AppLocale) {
   return {
     locale,
   };
-}
-
-export function formatWebCopy(value: string, replacements?: Record<string, string | number>) {
-  if (!replacements) return value;
-  return Object.entries(replacements).reduce(
-    (copy, [key, replacement]) => copy.replaceAll(`{${key}}`, String(replacement)),
-    value,
-  );
 }

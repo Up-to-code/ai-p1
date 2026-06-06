@@ -5,12 +5,12 @@ import { Bell, CheckCircle2, Info, TriangleAlert, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export type ToastType = "success" | "warning" | "info" | "error";
+type ToastType = "success" | "warning" | "info" | "error";
 
 export interface ToastOptions {
   title: string;
   description?: string;
-  type?: ToastType;
+  type?: "success" | "warning" | "info" | "error";
   action?: {
     label: string;
     onClick: () => void;

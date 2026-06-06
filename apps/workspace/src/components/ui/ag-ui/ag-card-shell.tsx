@@ -21,7 +21,3 @@ export function AgCardShell({
     </section>
   );
 }
-
-export function agInnerPanelClassName() {
-  return "border border-slate-100 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-800/50";
-}

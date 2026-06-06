@@ -1,0 +1,64 @@
+{
+  "$schema": "https://unpkg.com/knip/schema.json",
+  "entry": [
+    "scripts/vercel-ignore.mjs"
+  ],
+  "ignore": [
+    ".agents/skills/impeccable/scripts/**",
+    "scripts/vercel-ignore.mjs"
+  ],
+  "ignoreBinaries": [
+    "rg"
+  ],
+  "workspaces": {
+    "apps/workspace": {
+      "entry": [
+        "electron/preload.cjs",
+        "scripts/check-production-env.mjs",
+        "scripts/electron-after-pack.cjs",
+        "src/app/[locale]/global-error.tsx"
+      ],
+      "ignoreBinaries": [
+        "ps"
+      ]
+    },
+    "apps/partners": {
+      "entry": [
+        ".source/browser.ts",
+        ".source/dynamic.ts",
+        ".source/source.config.mjs",
+        "e2e/**/*.spec.ts",
+        "scripts/check-production-env.mjs"
+      ],
+      "ignoreBinaries": [
+        "playwright"
+      ]
+    },
+    "apps/demo-partner-app": {
+      "entry": [
+        "e2e/**/*.spec.ts"
+      ],
+      "ignoreBinaries": [
+        "playwright"
+      ]
+    },
+    "apps/mobile": {
+      "entry": [
+        "app.config.ts",
+        "babel.config.js"
+      ],
+      "ignoreDependencies": [
+        "babel-preset-expo",
+        "expo-updates"
+      ],
+      "ignoreBinaries": [
+        "maestro"
+      ]
+    },
+    "packages/authorization": {
+      "ignoreDependencies": [
+        "react"
+      ]
+    }
+  }
+}

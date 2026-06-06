@@ -2,7 +2,7 @@ import { useAuth, useNativeSession, useOrganization, useUser } from "@clerk/expo
 
 import { getClerkPublishableKey } from "@/runtime/expoRuntime";
 
-export const FALLBACK_AUTH_URL = "https://placeholder.workspace.invalid";
+const FALLBACK_AUTH_URL = "https://placeholder.workspace.invalid";
 
 type AuthError = { message?: string; code?: string } | null;
 

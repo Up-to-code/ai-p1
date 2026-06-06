@@ -10,16 +10,12 @@ import type { TrustedHostPolicy } from "./host-checkers";
 import type { OriginCheckPolicy } from "./origin-checkers";
 import type { ReferrerPolicyContract } from "./referrer-checkers";
 
-export type WorkspaceRequestSafetyPolicy = {
+type WorkspaceRequestSafetyPolicy = {
   cors: CorsPolicyContract & CorsPreflightPolicy;
   headers: SecurityHeaderPolicy;
   host: TrustedHostPolicy;
   origin: OriginCheckPolicy;
   referrer: ReferrerPolicyContract;
-};
-
-export type WorkspaceRequestSafetyContext = {
-  mobile?: MobileRequestContext;
 };
 
 export const workspaceRequestSafetyPolicy: WorkspaceRequestSafetyPolicy = {

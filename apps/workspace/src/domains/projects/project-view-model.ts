@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
 import type { Project, ProjectStatus } from "./store/projects.types";
 import { projectCategories, projectOfferingTypes } from "./validation/project.schema";
 import type { ProjectFormValues } from "./validation/project.schema";
@@ -10,11 +9,11 @@ export const projectViews = ["grid", "list"] as const;
 export const monthFormatter = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" });
 export const weekdayFormatter = new Intl.DateTimeFormat("en-US", { weekday: "short" });
 
-export function projectPriceId() {
+function projectPriceId() {
   return `price-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
-export function toProjectPriceRows(project?: Project | null): ProjectFormValues["projectPrices"] {
+function toProjectPriceRows(project?: Project | null): ProjectFormValues["projectPrices"] {
   if (project?.projectPrices?.length) {
     return project.projectPrices.map((item) => ({ id: item.id, label: item.label, price: item.price }));
   }
@@ -59,13 +58,13 @@ export function matchesProjectSearch(project: Pick<Project, "name" | "reference"
   return !query || [project.name, project.reference, project.city, project.developer].some((value) => value.toLowerCase().includes(query));
 }
 
-export function projectFormType(project?: Project | null): ProjectFormValues["type"] {
+function projectFormType(project?: Project | null): ProjectFormValues["type"] {
   return projectCategories.includes(project?.type as ProjectFormValues["type"])
     ? project?.type as ProjectFormValues["type"]
     : "Residential";
 }
 
-export function projectFormUnitTypes(project?: Project | null): ProjectFormValues["unitTypes"] {
+function projectFormUnitTypes(project?: Project | null): ProjectFormValues["unitTypes"] {
   return (project?.unitTypes ?? []).filter((type): type is ProjectFormValues["unitTypes"][number] =>
     projectOfferingTypes.includes(type as ProjectFormValues["unitTypes"][number]),
   );
@@ -94,12 +93,6 @@ export function projectFormDefaults(project?: Project | null): ProjectFormValues
   };
 }
 
-export function projectPriceDisplay(form: Pick<ProjectFormValues, "averagePrice" | "projectPrices" | "priceRange">) {
-  const prices = (form.projectPrices ?? []).map((item) => item.price).filter(Boolean);
-  if (prices.length > 0) return prices.join(" - ");
-  return form.averagePrice || form.priceRange || "850K SAR";
-}
-
 export function parseIsoDate(value?: string) {
   if (!value) return undefined;
   const [year, month, day] = value.split("-").map(Number);
@@ -125,18 +118,6 @@ export function projectWeekdayLabels(formatter = weekdayFormatter) {
   });
 }
 
-export function useFirstImagePreviewUrl(files: File[]) {
-  const firstImage = useMemo(() => files.find((file) => file.type.startsWith("image/")) ?? null, [files]);
-  const previewUrl = useMemo(() => (firstImage ? URL.createObjectURL(firstImage) : null), [firstImage]);
-
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
-
-  return previewUrl;
-}
 
 export function formatIsoDate(date: Date) {
   const year = date.getFullYear();

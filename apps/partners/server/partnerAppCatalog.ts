@@ -3,9 +3,9 @@ import { normalizeRedirectUris, normalizeScopes } from "@/server/partnerAppPolic
 
 export type PartnerAppStatus = "draft" | "pending_review" | "active" | "rejected" | "suspended";
 export type PartnerAppClientType = "public" | "confidential";
-export type PartnerWorkspaceSyncStatus = "not_synced" | "pending" | "synced" | "failed";
-export type PartnerAppCategory = "brokerage" | "developer" | "crm" | "marketing" | "operations" | "other";
-export type PartnerIntegrationMode = "integrate" | "debug" | "sandbox" | "workspace" | "production";
+type PartnerWorkspaceSyncStatus = "not_synced" | "pending" | "synced" | "failed";
+type PartnerAppCategory = "brokerage" | "developer" | "crm" | "marketing" | "operations" | "other";
+type PartnerIntegrationMode = "integrate" | "debug" | "sandbox" | "workspace" | "production";
 
 export type PartnerAppSummary = {
   id: string;
@@ -97,7 +97,7 @@ function integrationMode(value: string | null | undefined): PartnerIntegrationMo
   return "sandbox";
 }
 
-export function adminStatus(status: string): AdminPartnerAppRecord["status"] {
+function adminStatus(status: string): AdminPartnerAppRecord["status"] {
   if (status === "active") return "approved";
   if (status === "pending_review") return "pending";
   if (status === "suspended") return "suspended";

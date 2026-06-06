@@ -1,4 +1,4 @@
-export type MobileAuthGateStatus =
+type MobileAuthGateStatus =
   | "loading"
   | "signed_out"
   | "ready"
@@ -7,13 +7,13 @@ export type MobileAuthGateStatus =
   | "setup_workspace"
   | "error";
 
-export type MobileAuthGateDestination =
+type MobileAuthGateDestination =
   | "/(auth)"
   | "/(auth)/choose-workspace"
   | "/(app)"
   | null;
 
-export type MobileAuthWorkspaceStatus =
+type MobileAuthWorkspaceStatus =
   | "loading"
   | "ready"
   | "needs_workspace"

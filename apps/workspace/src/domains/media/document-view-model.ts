@@ -12,7 +12,7 @@ export type PendingUpload = {
   isEditing: boolean;
 };
 
-export function inferLocalKind(file: File): MediaKind {
+function inferLocalKind(file: File): MediaKind {
   if (file.type.startsWith("image/")) return "image";
   if (file.type.startsWith("video/")) return "video";
   return "document";
@@ -48,12 +48,12 @@ export async function copyText(value: string, unavailableMessage: string) {
   await navigator.clipboard.writeText(value);
 }
 
-export function pendingUploadId(file: File) {
+function pendingUploadId(file: File) {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
   return `${file.name}-${file.lastModified}-${Math.random().toString(36).slice(2)}`;
 }
 
-export function splitFileName(name: string) {
+function splitFileName(name: string) {
   const dotIndex = name.lastIndexOf(".");
   if (dotIndex <= 0) return { baseName: name, extension: "" };
   return {

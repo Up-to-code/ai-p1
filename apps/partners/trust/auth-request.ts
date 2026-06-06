@@ -4,7 +4,7 @@ type AuthRequestContext = Pick<Request, "headers" | "url"> & {
   nextUrl: Pick<URL, "origin">;
 };
 
-export function getPartnersAuthOrigin(request: AuthRequestContext) {
+function getPartnersAuthOrigin(request: AuthRequestContext) {
   return process.env.NEXT_PUBLIC_PARTNERS_AUTH_URL?.trim()
     || process.env.BETTER_AUTH_URL?.trim()
     || request.headers.get("origin")

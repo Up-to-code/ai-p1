@@ -7,7 +7,6 @@ Reusable AG UI package for rendering structured agent turns as ready-made UI car
 - Protocol types and schemas for `AgUiConversationTurn`
 - Default cards for drafts, updates, missing-data prompts, market insights, and approval flows
 - React renderer with registry overrides and host-owned action callbacks
-- Qentrah adapter entrypoint for the current property form, rich text editor, and delete confirmation modal
 
 ## Entry points
 
@@ -15,7 +14,6 @@ Reusable AG UI package for rendering structured agent turns as ready-made UI car
 import type { AgUiConversationTurn } from "@qentrah/ag-ui";
 import { resolveAgUiTurn } from "@qentrah/ag-ui";
 import { AgUiTurnRenderer } from "@qentrah/ag-ui/react";
-import { AgPropertyForm } from "@qentrah/ag-ui/qentrah";
 ```
 
 ## First render

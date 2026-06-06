@@ -291,5 +291,3 @@ partnersHonoApp.route("/", sandboxOAuthApp);
 
 partnersHonoApp.notFound((c) => c.json({ error: "Not Found" }, 404));
 partnersHonoApp.onError((error, c) => c.json({ error: error.message || "Internal Server Error" }, 500));
-
-export type PartnersHonoAppType = typeof partnersHonoApp;

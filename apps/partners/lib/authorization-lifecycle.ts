@@ -1,4 +1,4 @@
-export type AuthorizationLifecycleLayer =
+type AuthorizationLifecycleLayer =
   | "partner_frontend"
   | "partner_backend"
   | "workspace_oauth"

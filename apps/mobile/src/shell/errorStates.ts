@@ -8,9 +8,9 @@ import {
   Wrench,
 } from "lucide-react-native";
 
-export type ErrorStateKind = "scratch" | "crash" | "not-found" | "offline" | "maintenance";
+type ErrorStateKind = "scratch" | "crash" | "not-found" | "offline" | "maintenance";
 
-export type ErrorStateDefinition = {
+type ErrorStateDefinition = {
   kind: ErrorStateKind;
   route: `/(app)/errors/${ErrorStateKind}`;
   menuLabel: string;
@@ -23,7 +23,7 @@ export type ErrorStateDefinition = {
   Icon: LucideIcon;
 };
 
-export const errorStates: ErrorStateDefinition[] = [
+const errorStates: ErrorStateDefinition[] = [
   {
     kind: "scratch",
     route: "/(app)/errors/scratch",
@@ -86,7 +86,7 @@ export const errorStates: ErrorStateDefinition[] = [
   },
 ];
 
-export const fallbackErrorState: ErrorStateDefinition = {
+const fallbackErrorState: ErrorStateDefinition = {
   kind: "not-found",
   route: "/(app)/errors/not-found",
   menuLabel: "Unavailable",

@@ -151,9 +151,17 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
   {
     name: "clients_create",
     title: "Create client",
-    description: "Create a client profile.",
+    description: "Create a client profile. Required: name and either contact/email or phone. Type, property interest, budget, pipeline fields, priority, age, nationality, generation, and next action are optional.",
     resource: "client",
     action: "create",
+    inputSchema: {
+      name: id,
+      contact: maybeText,
+      email: maybeText,
+      phone: maybeText,
+      type: z.enum(["Buyer", "Tenant", "Investor", "Broker"]).optional(),
+      propertyInterest: maybeText,
+    },
   },
   {
     name: "clients_update",

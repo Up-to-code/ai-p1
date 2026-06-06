@@ -12,6 +12,12 @@ export const getCurrent = query({
 
     return {
       userId,
+      name: profile?.name,
+      phone: profile?.phone,
+      role: profile?.role,
+      language: profile?.language,
+      timezone: profile?.timezone,
+      notifications: profile?.notifications,
       avatarUrl: profile?.avatarUrl,
       avatarKey: profile?.avatarKey,
       updatedAt: profile?.updatedAt ?? 0,

@@ -1,6 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import { fetchAction, fetchMutation, fetchQuery, preloadQuery } from "convex/nextjs";
-import type { Preloaded } from "convex/react";
+import { fetchMutation, fetchQuery } from "convex/nextjs";
 import type { ArgsAndOptions, FunctionReference, FunctionReturnType } from "convex/server";
 import { auth, getAuth } from "@clerk/nextjs/server";
 
@@ -35,21 +34,9 @@ async function getRequestAuth() {
   return auth();
 }
 
-export async function isAuthenticated() {
-  const session = await getRequestAuth();
-  return Boolean(session.userId);
-}
-
-export async function getToken() {
+async function getToken() {
   const session = await getRequestAuth();
   return session.getToken({ template: "convex" });
-}
-
-export async function preloadAuthQuery<Query extends FunctionReference<"query">>(
-  query: Query,
-  ...args: OptionalArgs<Query>
-): Promise<Preloaded<Query>> {
-  return preloadQuery(query, ...clerkArgs<Query>(args, await getToken()));
 }
 
 export async function fetchAuthQuery<Query extends FunctionReference<"query">>(
@@ -64,11 +51,4 @@ export async function fetchAuthMutation<Mutation extends FunctionReference<"muta
   ...args: OptionalArgs<Mutation>
 ): Promise<FunctionReturnType<Mutation>> {
   return fetchMutation(mutation, ...clerkArgs<Mutation>(args, await getToken()));
-}
-
-export async function fetchAuthAction<Action extends FunctionReference<"action">>(
-  action: Action,
-  ...args: OptionalArgs<Action>
-): Promise<FunctionReturnType<Action>> {
-  return fetchAction(action, ...clerkArgs<Action>(args, await getToken()));
 }

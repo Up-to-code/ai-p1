@@ -1,18 +1,8 @@
 import type { Metadata } from "next";
 import { brandIdentity } from "@qentrah/brand-identity";
-import { Cairo, Geist, Geist_Mono } from "next/font/google";
+import { Cairo } from "next/font/google";
 
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 const cairo = Cairo({
   variable: "--font-cairo",
@@ -40,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${cairo.variable} h-full antialiased`}
+      className={`${cairo.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="h-full flex flex-col bg-background text-text-primary" suppressHydrationWarning>

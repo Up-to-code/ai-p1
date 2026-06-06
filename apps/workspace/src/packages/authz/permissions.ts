@@ -17,7 +17,6 @@ export const organizationPermissionStatement = {
 
 export type OrganizationPermissionStatement =
   typeof organizationPermissionStatement;
-export type OrganizationRoleName = "owner" | "admin" | "member";
 
 type PermissionMap = Partial<Record<keyof OrganizationPermissionStatement, readonly string[]>>;
 
@@ -37,13 +36,42 @@ const allStatements = Object.fromEntries(
   Object.entries(organizationPermissionStatement).map(([resource, actions]) => [resource, [...actions]]),
 ) as PermissionMap;
 
+const adminStatements = {
+  organization: ["read"],
+  member: ["create", "read", "update"],
+  role: ["read"],
+  client: ["create", "read", "update", "delete"],
+  task: ["create", "read", "update", "delete"],
+  project: ["create", "read", "update", "delete"],
+  property: ["create", "read", "update", "delete"],
+  calendar: ["create", "read", "update", "delete"],
+  media: ["create", "read", "update", "delete"],
+  integration: ["read", "update"],
+  apiKey: ["read"],
+  oauthApp: ["read"],
+} satisfies PermissionMap;
+
+const memberStatements = {
+  organization: ["read"],
+  team: ["read"],
+  member: ["read"],
+  role: ["read"],
+  client: ["read"],
+  task: ["read"],
+  project: ["read"],
+  property: ["read"],
+  calendar: ["read"],
+  media: ["read"],
+  integration: ["read"],
+} satisfies PermissionMap;
+
 export const organizationAccessControl = {
   newRole: role,
 };
 
-export const organizationOwnerRole = role(allStatements);
-export const organizationAdminRole = role(allStatements);
-export const organizationMemberRole = role(allStatements);
+const organizationOwnerRole = role(allStatements);
+const organizationAdminRole = role(adminStatements);
+const organizationMemberRole = role(memberStatements);
 
 export const organizationRoles = {
   owner: organizationOwnerRole,

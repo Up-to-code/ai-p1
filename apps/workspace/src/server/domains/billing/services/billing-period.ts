@@ -1,4 +1,4 @@
-export const BILLING_PERIOD_DAYS = 30;
+const BILLING_PERIOD_DAYS = 30;
 
 export function nextBillingPeriod(now: number, currentPeriodEndAt?: number) {
   const currentEnd = currentPeriodEndAt ?? 0;

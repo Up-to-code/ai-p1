@@ -1,7 +1,7 @@
 import type { AssistantTurn } from "@/conversation/assistantProtocol";
 import type { ConversationMessage } from "@/types/domain";
 
-export type E2ESource = NonNullable<ConversationMessage["sourceMetadata"]>[number];
+type E2ESource = NonNullable<ConversationMessage["sourceMetadata"]>[number];
 
 export type E2EFixtureUser = {
   id: string;
@@ -22,7 +22,6 @@ export const E2E_QA_USER: E2EFixtureUser = {
   name: "QA Qentrah",
   email: "qa@qentrah.test",
 };
-export const E2E_QA_PASSWORD = "qa-password";
 
 const FUNDING_SOURCES: E2ESource[] = [
   {

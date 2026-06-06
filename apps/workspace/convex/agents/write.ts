@@ -26,6 +26,16 @@ function titleFromMessage(message: string) {
   return normalized.length > 56 ? `${normalized.slice(0, 53)}...` : normalized;
 }
 
+function assertOwnedThread(
+  thread: { organizationId: string; createdByUserId: string } | null,
+  organizationId: string,
+  userId: string,
+) {
+  if (!thread || thread.organizationId !== organizationId || thread.createdByUserId !== userId) {
+    throw new Error("Agent thread was not found.");
+  }
+}
+
 export const startRunFromHono = mutation({
   args: {
     organizationId: v.string(),
@@ -40,20 +50,19 @@ export const startRunFromHono = mutation({
   }),
   handler: async (ctx, args) => {
     const user = await clerkAuthComponent.getAuthUser(ctx);
+    const userId = String(user._id);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "organization", "read");
 
     const now = Date.now();
     let threadId = args.threadId;
     if (threadId) {
       const existing = await ctx.db.get(threadId);
-      if (!existing || existing.organizationId !== args.organizationId) {
-        throw new Error("Agent thread was not found.");
-      }
+      assertOwnedThread(existing, args.organizationId, userId);
     } else {
       threadId = await ctx.db.insert("agentThreads", {
         organizationId: args.organizationId,
         title: titleFromMessage(args.message),
-        createdByUserId: user._id,
+        createdByUserId: userId,
         createdAt: now,
         updatedAt: now,
         lastMessageAt: now,
@@ -65,7 +74,7 @@ export const startRunFromHono = mutation({
       threadId,
       status: "running",
       model: args.model,
-      createdByUserId: user._id,
+      createdByUserId: userId,
       startedAt: now,
     });
     const userMessageId = await ctx.db.insert("agentMessages", {
@@ -93,6 +102,93 @@ export const startRunFromHono = mutation({
     if (!thread || !run) throw new Error("Agent run could not be started.");
 
     return { thread: present(thread), run: present(run), userMessageId };
+  },
+});
+
+export const deleteThreadFromHono = mutation({
+  args: {
+    organizationId: v.string(),
+    threadId: v.id("agentThreads"),
+  },
+  returns: v.object({
+    deleted: v.boolean(),
+    threadId: v.string(),
+  }),
+  handler: async (ctx, args) => {
+    const user = await clerkAuthComponent.getAuthUser(ctx);
+    const userId = String(user._id);
+    await assertOrganizationResourcePermission(ctx, args.organizationId, "organization", "read");
+
+    const thread = await ctx.db.get(args.threadId);
+    assertOwnedThread(thread, args.organizationId, userId);
+
+    const runningRun = await ctx.db
+      .query("agentRuns")
+      .withIndex("by_thread", (q) =>
+        q.eq("organizationId", args.organizationId).eq("threadId", args.threadId),
+      )
+      .filter((q) => q.eq(q.field("status"), "running"))
+      .first();
+    if (runningRun) {
+      throw new Error("Agent thread has a running run.");
+    }
+
+    const runs = await ctx.db
+      .query("agentRuns")
+      .withIndex("by_thread", (q) =>
+        q.eq("organizationId", args.organizationId).eq("threadId", args.threadId),
+      )
+      .collect();
+
+    for (const run of runs) {
+      const [steps, toolCalls, confirmations] = await Promise.all([
+        ctx.db
+          .query("agentRunSteps")
+          .withIndex("by_run", (q) => q.eq("organizationId", args.organizationId).eq("runId", run._id))
+          .collect(),
+        ctx.db
+          .query("agentToolCalls")
+          .withIndex("by_run", (q) => q.eq("organizationId", args.organizationId).eq("runId", run._id))
+          .collect(),
+        ctx.db
+          .query("agentConfirmations")
+          .withIndex("by_run", (q) => q.eq("organizationId", args.organizationId).eq("runId", run._id))
+          .collect(),
+      ]);
+
+      for (const step of steps) await ctx.db.delete(step._id);
+      for (const toolCall of toolCalls) await ctx.db.delete(toolCall._id);
+      for (const confirmation of confirmations) await ctx.db.delete(confirmation._id);
+      await ctx.db.delete(run._id);
+    }
+
+    const [messages, summaries, facts] = await Promise.all([
+      ctx.db
+        .query("agentMessages")
+        .withIndex("by_thread", (q) =>
+          q.eq("organizationId", args.organizationId).eq("threadId", args.threadId),
+        )
+        .collect(),
+      ctx.db
+        .query("agentMemorySummaries")
+        .withIndex("by_thread", (q) =>
+          q.eq("organizationId", args.organizationId).eq("threadId", args.threadId),
+        )
+        .collect(),
+      ctx.db
+        .query("agentMemoryFacts")
+        .withIndex("by_thread", (q) =>
+          q.eq("organizationId", args.organizationId).eq("threadId", args.threadId),
+        )
+        .collect(),
+    ]);
+
+    for (const message of messages) await ctx.db.delete(message._id);
+    for (const summary of summaries) await ctx.db.delete(summary._id);
+    for (const fact of facts) await ctx.db.delete(fact._id);
+    await ctx.db.delete(args.threadId);
+
+    return { deleted: true, threadId: args.threadId };
   },
 });
 

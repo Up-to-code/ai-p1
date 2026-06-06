@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { hydrateUploadThingEnvFromToken, normalizeUploadThingToken, parseUploadThingToken } from "./config";
@@ -55,5 +58,33 @@ describe("UploadThing config", () => {
 
     expect(env.UPLOADTHING_SECRET).toBe("sk_test_existing");
     expect(env.UPLOADTHING_APP_ID).toBe("existing_app");
+  });
+
+  it("falls back to .env.production when local runtime env is missing the token", () => {
+    const token = encodeToken();
+    const previousCwd = process.cwd();
+    const cwd = mkdtempSync(join(tmpdir(), "qentrah-uploadthing-"));
+
+    try {
+      writeFileSync(
+        join(cwd, ".env.production"),
+        [
+          `UPLOADTHING_TOKEN='${token}'`,
+          "UPLOADTHING_SECRET=sk_test_from_file",
+          "UPLOADTHING_APP_ID=app_from_file",
+        ].join("\n"),
+      );
+      process.chdir(cwd);
+
+      const env: Record<string, string | undefined> = {};
+      hydrateUploadThingEnvFromToken(env);
+
+      expect(env.UPLOADTHING_TOKEN).toBe(token);
+      expect(env.UPLOADTHING_SECRET).toBe("sk_test_from_file");
+      expect(env.UPLOADTHING_APP_ID).toBe("app_from_file");
+    } finally {
+      process.chdir(previousCwd);
+      rmSync(cwd, { recursive: true, force: true });
+    }
   });
 });

@@ -22,9 +22,7 @@
     "typecheck": "npm run typecheck --workspaces --if-present"
   },
   "devDependencies": {
-    "@better-auth/core": "1.6.10",
-    "effect": "^3.21.2",
-    "next": "^16.3.0-canary.19"
+    "effect": "^3.21.2"
   },
   "overrides": {
     "effect": "$effect",
@@ -41,11 +39,5 @@
     "@swc/core-linux-x64-gnu": "^1.15.33",
     "@tailwindcss/oxide-linux-x64-gnu": "^4.3.0",
     "lightningcss-linux-x64-gnu": "^1.32.0"
-  },
-  "dependencies": {
-    "@qentrah/brand-identity": "0.1.0",
-    "better-call": "^1.3.5",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
   }
 }

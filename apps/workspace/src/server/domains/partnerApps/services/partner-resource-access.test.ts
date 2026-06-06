@@ -42,19 +42,19 @@ function appForAccessTests() {
   return app;
 }
 
-describe("partner resource access seam during dev auth purge", () => {
+describe("partner resource access seam", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("rejects OAuth bearer access while customer auth is purged", async () => {
+  it("rejects legacy partner OAuth bearer access", async () => {
     const response = await appForAccessTests().request("/organizations/org_1/clients", {
       headers: { authorization: "Bearer oauth-token" },
     });
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(410);
     await expect(response.json()).resolves.toEqual({
-      error: "Partner OAuth bearer access is disabled during the dev-only auth purge.",
+      error: "Legacy partner OAuth bearer tokens are no longer supported.",
     });
   });
 
@@ -67,11 +67,13 @@ describe("partner resource access seam during dev auth purge", () => {
     });
   });
 
-  it("preserves missing OAuth bearer challenge", async () => {
+  it("rejects missing bearer credentials as unsupported partner bearer access", async () => {
     const response = await appForAccessTests().request("/organizations/org_1/clients");
 
-    expect(response.status).toBe(401);
-    expect(response.headers.get("www-authenticate")).toContain("https://api.qentrah.test");
+    expect(response.status).toBe(410);
+    await expect(response.json()).resolves.toEqual({
+      error: "Legacy partner OAuth bearer tokens are no longer supported.",
+    });
   });
 
   it("authorizes organization API key bearer access through quota reservation", async () => {

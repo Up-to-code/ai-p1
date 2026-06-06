@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import type {
   AdminAction,
   AdminActionRequest,
@@ -69,8 +68,4 @@ export async function runAdminDomainAction(domain: AdminDomainId, request: Admin
     if (error instanceof Error) throw error;
     throw new Error("Admin action failed.");
   }
-}
-
-export function createLocalAuditId() {
-  return randomUUID();
 }

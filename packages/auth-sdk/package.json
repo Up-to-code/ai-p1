@@ -62,10 +62,6 @@
     "prepublishOnly": "npm run test && npm run build"
   },
   "devDependencies": {
-    "@types/react": "^19.2.3",
-    "@types/react-dom": "^19.2.3",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
     "typescript": "^5",
     "vitest": "^4.1.6"
   }

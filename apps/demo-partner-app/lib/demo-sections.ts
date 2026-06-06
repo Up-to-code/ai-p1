@@ -28,7 +28,6 @@ import {
 } from "@qentrah/auth-sdk/partner/harness";
 
 export type DemoSectionId = QentrahPartnerSectionId;
-export type DemoOperation = QentrahPartnerOperation;
 export type DemoOperationResult = QentrahPartnerOperationResult;
 export type DemoSectionConfig = QentrahPartnerSectionConfig & { icon: LucideIcon };
 

@@ -1,7 +1,7 @@
 import { access, mkdir, rm, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import path from "node:path";
-import { chromium } from "playwright";
+import { chromium } from "@playwright/test";
 
 const appRoot = process.cwd();
 const buildDir = path.join(appRoot, "build");

@@ -71,6 +71,5 @@ export const clerkAuthComponent = {
 };
 
 export const createAuth = () => ({ api: clerkOrganizationApi });
-export const createSchemaAuth = createAuth;
 export const options = {};
 export const getAuthUser = clerkAuthComponent.getAuthUser;

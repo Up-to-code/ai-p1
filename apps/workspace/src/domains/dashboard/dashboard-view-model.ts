@@ -13,18 +13,18 @@ export type DashboardOverview = {
   weekEvents: DashboardEvent[];
 };
 
-export function parseDashboardDate(value: string) {
+function parseDashboardDate(value: string) {
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? undefined : parsed;
 }
 
-export function dashboardStartOfDay(date: Date) {
+function dashboardStartOfDay(date: Date) {
   const start = new Date(date);
   start.setHours(0, 0, 0, 0);
   return start;
 }
 
-export function dashboardWeekDays(date: Date) {
+function dashboardWeekDays(date: Date) {
   const start = new Date(date);
   start.setDate(date.getDate() - date.getDay());
   return Array.from({ length: 7 }, (_, index) => {
@@ -42,7 +42,7 @@ export function dashboardWeekRange(date: Date) {
   return { startAt: start.getTime(), endAt: end.getTime() };
 }
 
-export function isDashboardSameDay(left: Date | undefined, right: Date) {
+function isDashboardSameDay(left: Date | undefined, right: Date) {
   return Boolean(
     left &&
     left.getFullYear() === right.getFullYear() &&

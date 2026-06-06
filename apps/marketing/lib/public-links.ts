@@ -2,7 +2,7 @@ import { brandDomainUrl } from "@qentrah/brand-identity";
 
 import type { Locale } from "@/lib/content";
 
-export type PublicSeoLinkId = "home" | "pricing" | "docs" | "about";
+type PublicSeoLinkId = "home" | "pricing" | "docs" | "about";
 
 type PublicSeoLink = {
   id: PublicSeoLinkId;
@@ -73,9 +73,3 @@ export const publicSeoLinks = [
     },
   },
 ] as const satisfies readonly PublicSeoLink[];
-
-export const publicSeoPathIds = ["", "docs", "about"] as const;
-
-export function findPublicSeoLink(id: PublicSeoLinkId) {
-  return publicSeoLinks.find((link) => link.id === id);
-}

@@ -480,7 +480,7 @@ function TableLoadingSkeleton({ rows }: { rows: number }) {
   );
 }
 
-export function ErrorState({
+function ErrorState({
   title,
   description,
   action,
@@ -591,7 +591,7 @@ export function DeleteRecordDialog({
   );
 }
 
-export function FormField({
+function FormField({
   id,
   label,
   error,
@@ -665,7 +665,7 @@ export function TextInput({
   );
 }
 
-export function WizardActions({
+function WizardActions({
   onNext,
   onBack,
   nextLabel,
@@ -708,7 +708,7 @@ export function WizardActions({
   );
 }
 
-export function ChoiceGrid<TValue extends string>({
+function ChoiceGrid<TValue extends string>({
   id,
   label,
   value,
@@ -785,7 +785,7 @@ export function FormActions({
   );
 }
 
-export function IconAction({
+function IconAction({
   label,
   children,
   onClick,

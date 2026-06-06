@@ -35,7 +35,7 @@ export const COMMON_PERMISSION_GROUPS = [
 
 const scopePattern = /^[a-z][a-z0-9:_-]*$/u;
 
-export function parseManualScopes(value: string) {
+function parseManualScopes(value: string) {
   return value
     .split(/[\n, ]+/u)
     .map((entry) => entry.trim())

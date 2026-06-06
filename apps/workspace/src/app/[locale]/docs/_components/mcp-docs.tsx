@@ -12,7 +12,6 @@ import { Link } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import type { DocsTopicSlug, DocData } from "./mcp-docs-shared";
 
-export { isDocsTopic, docsTopics } from "./mcp-docs-shared";
 export type { DocsTopicSlug } from "./mcp-docs-shared";
 
 function topicHref(slug: DocsTopicSlug) {

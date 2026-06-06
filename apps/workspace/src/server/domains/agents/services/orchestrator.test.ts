@@ -107,6 +107,14 @@ function finishMutationPayloads() {
     .filter((payload) => "assistantMessage" in payload);
 }
 
+function creditUsageMutationPayloads() {
+  return vi
+    .mocked(fetchAuthMutation)
+    .mock.calls
+    .map((call) => call[1] as Record<string, unknown>)
+    .filter((payload) => "runId" in payload && "modelId" in payload);
+}
+
 describe("agent orchestrator stream", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -244,6 +252,7 @@ describe("agent orchestrator stream", () => {
     vi.mocked(hasOpenRouterConfig).mockReturnValue(true);
     vi.mocked(streamOpenRouterText).mockReturnValue({
       textStream: chunks(["Hello."]),
+      totalUsage: Promise.resolve({ inputTokens: 120, outputTokens: 40 }),
     } as never);
 
     const events = await readEvents(
@@ -263,6 +272,15 @@ describe("agent orchestrator stream", () => {
       clients_list: expect.any(Object),
       conversation_memory: expect.any(Object),
     }));
+    expect(creditUsageMutationPayloads()).toEqual([
+      expect.objectContaining({
+        runId: "run_1",
+        modelId: "test/model",
+        promptTokens: 120,
+        completionTokens: 40,
+        toolCallCount: 0,
+      }),
+    ]);
   });
 
   it("instructs the model to answer Arabic requests in Arabic without translating exact stored data", async () => {
@@ -586,6 +604,7 @@ describe("agent orchestrator stream", () => {
         error: "model failed",
       },
     ]);
+    expect(creditUsageMutationPayloads()).toEqual([]);
   });
 
   it("retries with a fallback model when the primary model fails before streaming text", async () => {

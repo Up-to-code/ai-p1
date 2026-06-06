@@ -76,7 +76,7 @@ describe("integrations runtime", () => {
       "/api/v1/organizations/org%201/partner-connections/connection%2F1",
       {
         method: "PATCH",
-        headers: { "content-type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "paused" }),
       },
     );
@@ -114,12 +114,12 @@ describe("integrations runtime", () => {
     );
   });
 
-  it("preserves current error messages for failed runtime calls", async () => {
+  it("preserves current error messages for catalog reads and organization action errors", async () => {
     const fetcher = vi.fn(async () => jsonResponse({ error: "nope" }, { status: 500 })) as unknown as typeof fetch;
 
     await expect(fetchPartnerCatalogApps(fetcher)).rejects.toThrow("Partner apps could not be loaded.");
     await expect(fetchPartnerConnections("org_1", fetcher)).rejects.toThrow("Partner connections could not be loaded.");
-    await expect(updatePartnerConnectionStatus("org_1", "connection_1", "active", fetcher)).rejects.toThrow("Partner connection could not be updated.");
-    await expect(revokePartnerConnection("org_1", "connection_1", fetcher)).rejects.toThrow("Partner connection could not be revoked.");
+    await expect(updatePartnerConnectionStatus("org_1", "connection_1", "active", fetcher)).rejects.toThrow("nope");
+    await expect(revokePartnerConnection("org_1", "connection_1", fetcher)).rejects.toThrow("nope");
   });
 });

@@ -21,6 +21,50 @@ type BillingPayment = {
   tamaraOrderId?: string;
 };
 
+type TamaraPayment = {
+  id: string;
+  organizationId: string;
+  planId: BillingPlanId;
+  orderReferenceId: string;
+  orderNumber: string;
+  tamaraOrderId?: string;
+  amount: number;
+  currency: string;
+  status: "pending" | "new" | "approved" | "authorised" | "captured" | "failed" | "canceled" | "expired";
+  checkoutUrl?: string;
+  failureReason?: string;
+  updatedAt: number;
+};
+
+type BillingOverview = {
+  plan: typeof SAUDI_MONTHLY_PLAN | typeof SAUDI_YEARLY_PLAN;
+  subscription: {
+    organizationId: string;
+    planId: BillingPlanId;
+    status: "inactive" | "pending" | "active" | "past_due" | "canceled";
+    currentPeriodStartAt?: number;
+    currentPeriodEndAt?: number;
+    createdAt?: number;
+    updatedAt: number;
+  } | null;
+  latestPayment: TamaraPayment | null;
+};
+
+export type OrganizationBillingUsage = {
+  overview: BillingOverview;
+  credits: {
+    subscriptionCreditsGranted: number;
+    subscriptionCreditsUsed: number;
+    subscriptionCreditsRemaining: number;
+    addOnCreditsGranted: number;
+    addOnCreditsUsed: number;
+    addOnCreditsRemaining: number;
+    currentPeriodStartAt?: number;
+    currentPeriodEndAt?: number;
+  };
+  payments: TamaraPayment[];
+};
+
 type AcceptTamaraWebhookArgs = {
   serverToken: string;
   input: {
@@ -60,7 +104,23 @@ const SAUDI_BILLING_PLANS = {
 
 const refs = {
   getSubscriptionOverview: makeFunctionReference<"query", { organizationId: string }, unknown>("billing/read:getSubscriptionOverview"),
+  getUsageOverview: makeFunctionReference<"query", { organizationId: string }, OrganizationBillingUsage>("billing/read:getUsageOverview"),
   getTamaraPaymentByOrder: makeFunctionReference<"query", { organizationId: string; orderId: string }, unknown>("billing/read:getTamaraPaymentByOrder"),
+  ensureCreditBalanceForOrganization: makeFunctionReference<"mutation", { organizationId: string }, unknown>("billing/write:ensureCreditBalanceForOrganization"),
+  recordAgentCreditUsage: makeFunctionReference<"mutation", {
+    organizationId: string;
+    runId: string;
+    modelId: string;
+    promptTokens?: number;
+    completionTokens?: number;
+    toolCallCount?: number;
+  }, {
+    recorded: boolean;
+    requestedCredits: number;
+    subscriptionCreditsUsed: number;
+    addOnCreditsUsed: number;
+    reason?: string;
+  }>("billing/write:recordAgentCreditUsage"),
   createPendingTamaraPaymentFromHono: makeFunctionReference<"mutation", { organizationId: string; input: { planId: BillingPlanId } }, {
     plan: { id: BillingPlanId; name: string; amount: number; currency: string; periodDays: number };
     payment: { _id: string; id: string; orderReferenceId: string; orderNumber: string };
@@ -148,6 +208,21 @@ function localBillingOverview(organizationId: string, planId: BillingPlanId = "s
   };
 }
 
+function localBillingUsage(organizationId: string): OrganizationBillingUsage {
+  return {
+    overview: localBillingOverview(organizationId),
+    credits: {
+      subscriptionCreditsGranted: 0,
+      subscriptionCreditsUsed: 0,
+      subscriptionCreditsRemaining: 0,
+      addOnCreditsGranted: 0,
+      addOnCreditsUsed: 0,
+      addOnCreditsRemaining: 0,
+    },
+    payments: [],
+  };
+}
+
 function localCheckoutContext(organizationId: string, planId: BillingPlanId) {
   const reference = localOrderReference();
   const plan = getServerBillingPlan(planId);
@@ -176,6 +251,39 @@ export async function getBillingSubscription(organizationId: string) {
     return await fetchAuthQuery(refs.getSubscriptionOverview, { organizationId });
   } catch (error) {
     if (isDevelopmentConvexFunctionError(error)) return localBillingOverview(organizationId);
+    throw error;
+  }
+}
+
+export async function getBillingUsage(organizationId: string) {
+  try {
+    await fetchAuthMutation(refs.ensureCreditBalanceForOrganization, { organizationId });
+    return await fetchAuthQuery(refs.getUsageOverview, { organizationId });
+  } catch (error) {
+    if (isDevelopmentConvexFunctionError(error)) return localBillingUsage(organizationId);
+    throw error;
+  }
+}
+
+export async function recordAgentCreditUsage(organizationId: string, input: {
+  runId: string;
+  modelId: string;
+  promptTokens?: number;
+  completionTokens?: number;
+  toolCallCount?: number;
+}) {
+  try {
+    return await fetchAuthMutation(refs.recordAgentCreditUsage, { organizationId, ...input });
+  } catch (error) {
+    if (isDevelopmentConvexFunctionError(error)) {
+      return {
+        recorded: false,
+        requestedCredits: 0,
+        subscriptionCreditsUsed: 0,
+        addOnCreditsUsed: 0,
+        reason: "Credit usage recording is unavailable in local Convex.",
+      };
+    }
     throw error;
   }
 }

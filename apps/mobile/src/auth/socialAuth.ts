@@ -23,7 +23,7 @@ export type SocialAuthFlow = {
 
 let activeSocialSignIn: Promise<void> | null = null;
 
-export function createWorkspaceAuthRedirectUrl(path = MOBILE_AUTH_CALLBACK_URL) {
+function createWorkspaceAuthRedirectUrl(path = MOBILE_AUTH_CALLBACK_URL) {
   const { createURL } = require("expo-linking") as typeof import("expo-linking");
   return createURL(path);
 }

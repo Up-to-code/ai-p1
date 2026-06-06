@@ -10,7 +10,10 @@ import {
   grantableAgentPermissions,
   grantableApiKeyPermissions,
   hasAgentDeletePermission,
+  canManageCustomPermissions,
   memberRoleCount,
+  normalizeOrganizationSettingsTab,
+  organizationSettingsTabs,
   ownerMemberCount,
   pendingInvitationCount,
   toggleAgentPermission,
@@ -66,6 +69,56 @@ const baseCapabilities: OrganizationCapabilities = {
 };
 
 describe("organization settings permission view model", () => {
+  it("keeps the primary organization tabs complete", () => {
+    expect(organizationSettingsTabs).toEqual(["profile", "members", "agentLinks", "apiKeys"]);
+  });
+
+  it("normalizes stale role tab URLs back to members", () => {
+    expect(normalizeOrganizationSettingsTab("roles")).toBe("members");
+    expect(normalizeOrganizationSettingsTab("apiKeys")).toBe("apiKeys");
+    expect(normalizeOrganizationSettingsTab("unknown")).toBe("profile");
+    expect(normalizeOrganizationSettingsTab(null)).toBe("profile");
+  });
+
+  it("allows owners to manage custom permissions", () => {
+    expect(canManageCustomPermissions({
+      capabilities: baseCapabilities,
+      currentMemberRole: "owner",
+    })).toBe(true);
+    expect(canManageCustomPermissions({
+      capabilities: baseCapabilities,
+      currentMemberRole: "admin,owner",
+    })).toBe(true);
+  });
+
+  it("allows non-owners only with role and member management permissions", () => {
+    expect(canManageCustomPermissions({
+      capabilities: {
+        ...baseCapabilities,
+        canCreateRoles: true,
+        canUpdateRoles: true,
+        canUpdateMembers: true,
+      },
+      currentMemberRole: "operations-manager",
+    })).toBe(true);
+  });
+
+  it("denies partial custom permission management grants", () => {
+    expect(canManageCustomPermissions({
+      capabilities: {
+        ...baseCapabilities,
+        canCreateRoles: true,
+        canUpdateRoles: true,
+        canUpdateMembers: false,
+      },
+      currentMemberRole: "operations-manager",
+    })).toBe(false);
+    expect(canManageCustomPermissions({
+      capabilities: undefined,
+      currentMemberRole: null,
+    })).toBe(false);
+  });
+
   it("projects capabilities into grantable Agent permissions", () => {
     expect(grantableAgentPermissions(baseCapabilities)).toEqual([
       { resource: "organization", actions: ["read"] },

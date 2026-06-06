@@ -1,4 +1,4 @@
-export const PARTNER_SIGNUP_MIN_PASSWORD_LENGTH = 12;
+const PARTNER_SIGNUP_MIN_PASSWORD_LENGTH = 12;
 
 export const PARTNER_COUNTRY_OPTIONS = [
   { code: "SA", label: "Saudi Arabia" },

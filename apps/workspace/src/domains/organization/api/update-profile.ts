@@ -1,7 +1,10 @@
-import { apiClient } from "@/lib/api/client";
+import {
+  organizationApiPath,
+  requestOrganizationAction,
+} from "./organization-request";
 import type { UpdateOrganizationProfileValues } from "../validation/organization.schema";
 
-export type OrganizationProfile = {
+type OrganizationProfile = {
   organizationId: string;
   name: string;
   legalName: string;
@@ -23,18 +26,10 @@ export async function updateOrganizationProfileRequest(
   organizationId: string,
   input: UpdateOrganizationProfileValues,
 ) {
-  const response = await apiClient.api.v1.organizations[
-    ":organizationId"
-  ].profile.$patch({
-    param: { organizationId },
-    json: input,
-  });
-
-  if (!response.ok) {
-    const payload = (await response.json()) as { error: string };
-    throw new Error(payload.error);
-  }
-
-  const payload = (await response.json()) as UpdateOrganizationProfileResponse;
-  return payload.profile;
+  return requestOrganizationAction<UpdateOrganizationProfileResponse>(
+    organizationApiPath(organizationId, "profile"),
+    "PATCH",
+    input,
+    "Organization profile update failed.",
+  ).then((payload) => payload.profile);
 }

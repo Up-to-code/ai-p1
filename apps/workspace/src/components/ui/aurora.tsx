@@ -89,5 +89,3 @@ export const AuroraShaders = forwardRef<HTMLDivElement, AuroraShadersProps>(
 );
 
 AuroraShaders.displayName = "AuroraShaders";
-
-export default AuroraShaders;

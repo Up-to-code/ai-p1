@@ -12,8 +12,8 @@ export type AnalyticsEventName =
   | "contact_agent"
   | "schedule_visit";
 
-export type ConversationRole = "user" | "assistant";
-export type ConversationKind =
+type ConversationRole = "user" | "assistant";
+type ConversationKind =
   | "text"
   | "assistant_turn";
 export type StreamState = "idle" | "streaming" | "complete" | "stopped";
@@ -42,7 +42,7 @@ export type UploadedAgentAttachment = {
   kind: AgentAttachmentKind;
 };
 
-export type ConversationTurnMeta = {
+type ConversationTurnMeta = {
   runId?: string;
   workflowId?: string;
   sources?: AssistantSource[];
@@ -77,7 +77,7 @@ export type ConversationMessage = {
 export type ConversationTurnAction = AssistantAction;
 export type ConversationRunStage = AssistantStageEvent;
 
-export type ConversationRunStatus = {
+type ConversationRunStatus = {
   runId: string;
   status: "queued" | "running" | "completed" | "failed" | "cancelled";
   summary?: string;
@@ -126,7 +126,7 @@ export type AgentRuntimeHealth = {
   message?: string;
 };
 
-export type InsightCard = {
+type InsightCard = {
   id: string;
   title: string;
   body: string;

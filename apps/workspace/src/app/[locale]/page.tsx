@@ -8,7 +8,6 @@ import { Faq02 } from "@/components/landing/faq-02";
 import { Navbar } from "@/components/landing/navbar";
 import { Pricing03 } from "@/components/landing/pricing-03";
 import { WebsiteBuilderConnect } from "@/components/landing/website-builder-connect";
-import { WebsiteTemplatesShowcase } from "@/components/landing/website-templates-showcase";
 import { McpAgentsShowcase } from "@/components/landing/mcp-agents-showcase";
 import { ProblemSection } from "@/components/landing/problem-section";
 import { AppsPlatform } from "@/components/landing/apps-platform";
@@ -21,7 +20,7 @@ export default function InstitutionalLanding() {
   const isAr = locale === "ar";
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground selection:bg-emerald-500/30">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <Navbar />
 
       <main className="flex-1">
@@ -39,8 +38,6 @@ export default function InstitutionalLanding() {
         <ProblemSection locale={locale} />
 
         <AppsPlatform locale={locale} />
-
-        <WebsiteTemplatesShowcase locale={locale} />
 
         <WebsiteBuilderConnect locale={locale} />
 

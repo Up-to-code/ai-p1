@@ -27,19 +27,28 @@ describe("profile view model", () => {
   it("keeps profile tab vocabulary stable", () => {
     expect(profileTabs).toEqual([
       { id: "profile", labelKey: "tabs.profile", icon: "profile" },
-      { id: "notifications", labelKey: "tabs.notifications", icon: "notifications" },
+      { id: "account", labelKey: "tabs.account", icon: "account" },
       { id: "security", labelKey: "tabs.security", icon: "security" },
     ]);
   });
 
-  it("builds form values from account identity and local profile settings", () => {
-    expect(profileFormValues({ name: "Account Name", email: "account@example.com" }, profile)).toEqual({
+  it("builds form values from account identity and persisted profile settings", () => {
+    expect(profileFormValues({
       name: "Account Name",
       email: "account@example.com",
-      phone: "+966500000000",
-      role: "Organization Admin",
-      language: "en",
-      timezone: "Africa/Cairo",
+      profile: {
+        phone: "+201111111111",
+        role: "Project Manager",
+        language: "ar",
+        timezone: "Asia/Riyadh",
+        notifications: profile.notifications,
+      },
+    }, profile)).toEqual({
+      name: "Account Name",
+      phone: "+201111111111",
+      role: "Project Manager",
+      language: "ar",
+      timezone: "Asia/Riyadh",
     });
   });
 
@@ -50,8 +59,8 @@ describe("profile view model", () => {
       permissionKeys: ["manageMembers", "editOrganization", "viewBilling", "apiAccess", "allProjects"],
     });
     expect(profileRolePresentation("Workspace Owner")).toMatchObject({
-      roleKey: "viewer",
-      permissionKeys: ["viewProjects", "downloadReports"],
+      roleKey: "workspaceOwner",
+      permissionKeys: ["manageMembers", "editOrganization", "viewBilling", "apiAccess", "allProjects"],
     });
   });
 

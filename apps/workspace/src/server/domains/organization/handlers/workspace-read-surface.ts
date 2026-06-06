@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import type { Id, TableNames } from "@convex/_generated/dataModel";
+import type { TableNames } from "@convex/_generated/dataModel";
 import {
   readEnumQuery,
   readIdParam,
@@ -137,8 +137,4 @@ export function readBoundedOptionalLimit(c: Context, maxLimit: number) {
     ok: true as const,
     data: rawLimit.data === undefined ? undefined : Math.max(1, Math.min(Math.floor(rawLimit.data), maxLimit)),
   };
-}
-
-export function castWorkspaceId<TTable extends TableNames>(id: string) {
-  return id as Id<TTable>;
 }

@@ -20,10 +20,6 @@ export const productUrls = {
   contact: `mailto:${brandIdentity.domains.email}`,
 };
 
-export function getAlternateLocale(locale: Locale): Locale {
-  return locale === "ar" ? "en" : "ar";
-}
-
 export function getWorkspaceLanding(locale: Locale) {
   return locale === "ar" ? workspaceAr.Landing : workspaceEn.Landing;
 }
@@ -38,7 +34,7 @@ const partnersEnName = brandProductName("partners", "en");
 const partnersArName = brandProductName("partners", "ar");
 
 export type LegalBlockBody = string | Array<string | string[]>;
-export type LegalBlockCopy = { title: string; body: LegalBlockBody };
+type LegalBlockCopy = { title: string; body: LegalBlockBody };
 
 function block(title: string, body: LegalBlockBody): LegalBlockCopy {
   return { title, body };
@@ -121,7 +117,7 @@ const workspaceLegal = {
   },
 } as const;
 
-export const content = {
+const content = {
   en: {
     nav: {
       brand: brandLabel("en"),

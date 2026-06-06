@@ -7,6 +7,5 @@ module.exports = {
   ],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
-    "^@zayon/assistant-protocol$": "<rootDir>/../../packages/zayon-assistant-protocol/src/index.ts",
   },
 };

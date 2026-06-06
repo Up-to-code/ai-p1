@@ -2,10 +2,11 @@ import type {
   McpPermission,
   McpToolDefinition,
 } from "@/server/protocols/mcp/tools/catalog";
+import { evaluateAgentToolRisk } from "./risk-policy";
 
-export type AgentToolPolicyAdapter = "agent" | "mcp";
-export type AgentToolPolicyActorType = "user" | "mcpConnection";
-export type AgentToolPolicyDecisionState =
+type AgentToolPolicyAdapter = "agent" | "mcp";
+type AgentToolPolicyActorType = "user" | "mcpConnection";
+type AgentToolPolicyDecisionState =
   | "allowed"
   | "blocked"
   | "requires_user_approval"
@@ -59,6 +60,27 @@ export function evaluateAgentToolPolicy(input: AgentToolPolicyInput): AgentToolP
     };
   }
 
+  const agentRisk = input.adapter === "agent"
+    ? evaluateAgentToolRisk({ resource: tool.resource, action: tool.action, tool: tool.name })
+    : { state: "allowed" as const };
+  if (agentRisk.state === "blocked") {
+    return {
+      state: "blocked",
+      reason: agentRisk.reason ?? "This agent action is not available.",
+      riskLevel: tool.riskLevel,
+      approvalRequirement: tool.approvalRequirement,
+    };
+  }
+
+  if (input.adapter === "agent" && agentRisk.category === "member_delete") {
+    return {
+      state: "requires_user_approval",
+      reason: agentRisk.reason ?? "This agent action requires user approval before execution.",
+      riskLevel: tool.riskLevel,
+      approvalRequirement: tool.approvalRequirement,
+    };
+  }
+
   if (tool.approvalRequirement === "admin") {
     return {
       state: "requires_admin_approval",
@@ -77,7 +99,7 @@ export function evaluateAgentToolPolicy(input: AgentToolPolicyInput): AgentToolP
     };
   }
 
-  if (tool.approvalRequirement === "user") {
+  if (input.adapter !== "agent" && tool.approvalRequirement === "user") {
     return {
       state: "requires_user_approval",
       reason: "This agent action requires user approval before execution.",

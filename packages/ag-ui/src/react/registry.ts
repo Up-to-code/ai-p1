@@ -39,8 +39,6 @@ export const AG_UI_COMPONENT_REGISTRY: Record<string, AgUiRegisteredComponent> =
   target_summary: AgTargetSummary as AgUiRegisteredComponent,
 };
 
-export const DEFAULT_AG_UI_COMPONENT_REGISTRY = AG_UI_COMPONENT_REGISTRY;
-
 /**
  * WHY:   Hosts should be able to replace specific AG UI cards without forking the default package registry.
  * WHAT:  Returns a merged registry that applies renderer overrides on top of the package defaults.

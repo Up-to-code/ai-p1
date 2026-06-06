@@ -67,4 +67,3 @@ export const inboundWebhookSchema = z.object({
 export type AuthorizePartnerConnectionPayload = z.infer<typeof authorizePartnerConnectionSchema>;
 export type UpdatePartnerConnectionPayload = z.infer<typeof updatePartnerConnectionSchema>;
 export type CreatePartnerWebhookEndpointPayload = z.infer<typeof createPartnerWebhookEndpointSchema>;
-export type InboundWebhookPayload = z.infer<typeof inboundWebhookSchema>;

@@ -1,7 +1,3 @@
-import { createPkcePair } from "./pkce";
-
-export { createPkcePair };
-
 export type BuildQentrahAuthorizeUrlInput = {
   workspaceBaseUrl: string;
   clientId: string;
@@ -18,7 +14,7 @@ function normalizeBaseUrl(value: string) {
   return /^https?:\/\//iu.test(trimmed) ? trimmed : `https://${trimmed}`;
 }
 
-export function partnerResourceAudience(workspaceBaseUrl: string) {
+function partnerResourceAudience(workspaceBaseUrl: string) {
   return new URL("/api/v1/partner", normalizeBaseUrl(workspaceBaseUrl)).toString();
 }
 

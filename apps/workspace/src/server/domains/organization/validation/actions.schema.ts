@@ -6,7 +6,7 @@ const permissionResourceKeys = Object.keys(organizationPermissionStatement) as [
   ...(keyof typeof organizationPermissionStatement)[],
 ];
 
-export const organizationPermissionResourceSchema = z.enum(permissionResourceKeys);
+const organizationPermissionResourceSchema = z.enum(permissionResourceKeys);
 
 export const organizationIdentityUpdateSchema = z.object({
   name: z.string().trim().min(1).max(120).optional(),
@@ -28,7 +28,7 @@ export const updateOrganizationMemberRoleSchema = z.object({
   role: z.string().trim().min(1).max(80),
 });
 
-export const organizationRolePermissionSchema = z.partialRecord(
+const organizationRolePermissionSchema = z.partialRecord(
   organizationPermissionResourceSchema,
   z.array(z.string().trim().min(1)).max(20),
 );
@@ -45,7 +45,6 @@ export const updateOrganizationRoleSchema = z.object({
 
 export type OrganizationIdentityUpdateInput = z.infer<typeof organizationIdentityUpdateSchema>;
 export type CreateOrganizationInvitationInput = z.infer<typeof createOrganizationInvitationSchema>;
-export type AcceptOrganizationInvitationInput = z.infer<typeof acceptOrganizationInvitationSchema>;
 export type UpdateOrganizationMemberRoleInput = z.infer<typeof updateOrganizationMemberRoleSchema>;
 export type CreateOrganizationRoleInput = z.infer<typeof createOrganizationRoleSchema>;
 export type UpdateOrganizationRoleInput = z.infer<typeof updateOrganizationRoleSchema>;

@@ -26,13 +26,49 @@ describe("client validation", () => {
     expect(parsed.issue).toBeUndefined();
   });
 
+  it("accepts a minimal client with email contact only", () => {
+    const parsed = clientPayloadSchema.parse({
+      name: "Mona Saleh",
+      contact: "mona@example.com",
+    });
+
+    expect(parsed).toMatchObject({
+      name: "Mona Saleh",
+      type: "Buyer",
+      contact: "mona@example.com",
+      phone: "",
+      age: 0,
+      status: "active",
+      pipelineStage: "new",
+      priority: "normal",
+      nextAction: "Follow up",
+    });
+  });
+
+  it("accepts a minimal client with phone only", () => {
+    const parsed = clientPayloadSchema.parse({
+      name: "Mona Saleh",
+      phone: "+20 100 000 0000",
+    });
+
+    expect(parsed.contact).toBe("+20 100 000 0000");
+    expect(parsed.phone).toBe("+20 100 000 0000");
+  });
+
+  it("rejects a client without any contact method", () => {
+    expect(() =>
+      clientPayloadSchema.parse({
+        name: "Mona Saleh",
+      }),
+    ).toThrow("Provide either contact/email or phone");
+  });
+
   it("rejects invalid client identity and stage values", () => {
     expect(() =>
       clientPayloadSchema.parse({
         name: "",
         type: "Buyer",
-        contact: "not-email",
-        phone: "123",
+        contact: "mona",
         age: 12,
         nationality: "Saudi",
         generation: "Millennial",

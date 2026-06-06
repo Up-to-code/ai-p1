@@ -235,6 +235,7 @@
     "integrations": "Web Apps",
     "components": "UI Components",
     "activity": "Activity Log",
+    "comingSoon": "Coming soon",
     "announcements": "Announcements",
     "settings": "Settings",
     "collapse": "Collapse",
@@ -1919,9 +1920,9 @@
     },
     "members": {
       "title": "Members",
-      "description": "Keep people, work roles, and pending invitations in one simple table.",
+      "description": "Keep people, custom permissions, and pending invitations in one simple table.",
       "tableTitle": "Team table",
-      "tableDesc": "Change a person's work role from the dropdown. Create or edit work roles on their own page.",
+      "tableDesc": "Change a person's role from the dropdown. Create or edit custom permissions from this page.",
       "loading": "Loading members...",
       "emptyTitle": "No members found",
       "emptyDesc": "Members will appear here when they join the organization.",
@@ -1939,6 +1940,8 @@
     "access": {
       "title": "Your access",
       "description": "These actions come from your current work role and are checked again on the backend.",
+      "profileEditAllowed": "You can edit this organization's profile. Save writes through the workspace authorization checks.",
+      "profileEditBlocked": "Your current work role can view this profile but cannot edit organization identity fields.",
       "profile": "Profile",
       "invite": "Invites",
       "members": "Members",
@@ -2201,11 +2204,11 @@
     },
     "roles": {
       "pageEyebrow": "Allowed work",
-      "pageTitle": "Custom work roles",
+      "pageTitle": "Custom permissions",
       "pageDesc": "Create one clear work rule at a time. The screen stays focused: choose a template, adjust the work grid, and save it for the invite dropdown.",
-      "backToOrganization": "Back to organization",
+      "backToOrganization": "Back to members",
       "lessIsMoreHint": "Less is more: invite people on the team table, create work roles here.",
-      "manageWorkRoles": "Custom work roles",
+      "manageWorkRoles": "Custom permissions",
       "templatesTitle": "Start from a work role",
       "templatesDesc": "Choose a real estate operations template or start blank. Templates are copied into your new work role and never change the protected built-in roles.",
       "templateSelect": "Start from",
@@ -2365,15 +2368,36 @@
       "scopes": "scopes",
       "connected": "Connected",
       "oauthStart": "OAuth start",
+      "comingSoon": "Coming soon",
       "connect": "Connect",
       "manage": "Manage",
       "missingStart": "Start URL missing",
       "details": "Details"
     },
     "tabs": {
+      "overview": "Overview",
       "catalog": "Catalog",
       "connected": "Connected",
       "webhooks": "Webhooks"
+    },
+    "overview": {
+      "badge": "Integration overview",
+      "title": "Workspace app connections",
+      "description": "Review the approved app catalog, active workspace connections, and upcoming web app surfaces from one place.",
+      "browseCatalog": "Browse catalog",
+      "comingSoon": "Coming soon",
+      "lowerTitle": "Lower page queue",
+      "sideTitle": "Side panel queue",
+      "sideItems": [
+        "App approvals",
+        "Webhook health",
+        "Native macOS bridge"
+      ],
+      "stats": {
+        "available": "Catalog apps",
+        "connected": "Active",
+        "soon": "Queued"
+      }
     },
     "stats": {
       "connected": "Connected",
@@ -3066,6 +3090,8 @@
       "personalDesc": "Your public identity within the platform.",
       "work": "Work Information",
       "workDesc": "Your position and responsibilities within the organization.",
+      "organizationBasics": "Organization Basics",
+      "organizationBasicsDesc": "Core workspace identity details saved to your active organization.",
       "accountData": "Account Data",
       "accountDataDesc": "Live identity data from your signed-in account and active workspace.",
       "rolePerms": "Role & Permissions",
@@ -3075,7 +3101,7 @@
       "timezone": "Timezone",
       "timezoneDesc": "All dates and times will be displayed in this timezone.",
       "notifPrefs": "Notification Preferences",
-      "notifPrefsDesc": "Choose what you get notified about. Changes apply immediately.",
+      "notifPrefsDesc": "Choose what you get notified about. Changes are saved with your profile.",
       "accountIdentity": "Account Identity",
       "accountIdentityDesc": "Core credentials tied to your account.",
       "accessSecurity": "Access & Security",
@@ -3127,6 +3153,14 @@
       "email": "Email",
       "phone": "Phone"
     },
+    "organization": {
+      "name": "Organization Name",
+      "legalName": "Legal Name",
+      "email": "Organization Email",
+      "phone": "Organization Phone",
+      "website": "Website",
+      "address": "Address"
+    },
     "account": {
       "name": "User Name",
       "email": "User Email",
@@ -3138,12 +3172,14 @@
     },
     "tabs": {
       "profile": "Profile",
+      "account": "Account Data",
       "preferences": "Preferences",
       "notifications": "Notifications",
       "security": "Security"
     },
     "roles": {
       "organizationAdmin": "Organization Admin",
+      "workspaceOwner": "Workspace Owner",
       "projectManager": "Project Manager",
       "projectEditor": "Project Editor",
       "viewer": "Viewer",

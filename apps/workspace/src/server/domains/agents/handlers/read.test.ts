@@ -1,11 +1,13 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/server/auth/clerk-convex", () => ({
+  fetchAuthMutation: vi.fn(),
   fetchAuthQuery: vi.fn(),
 }));
 
-import { fetchAuthQuery } from "@/server/auth/clerk-convex";
+import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/clerk-convex";
 import {
+  handleDeleteAgentThread,
   handleListAgentMessages,
   handleListAgentThreads,
 } from "./read";
@@ -26,6 +28,10 @@ function fakeContext(input: {
 }
 
 describe("agent read handlers", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("lists authenticated workspace threads", async () => {
     vi.mocked(fetchAuthQuery).mockResolvedValueOnce({
       threads: [{ _id: "thread_1", id: "thread_1", _creationTime: 1, title: "Thread" }],
@@ -70,6 +76,28 @@ describe("agent read handlers", () => {
     });
   });
 
+  it("deletes an authenticated user-owned workspace thread", async () => {
+    vi.mocked(fetchAuthMutation).mockResolvedValueOnce({
+      deleted: true,
+      threadId: "thread_1",
+    } as never);
+
+    const response = await handleDeleteAgentThread(fakeContext({
+      params: { organizationId: "org_1", threadId: "thread_1" },
+      query: {},
+    })) as Response;
+
+    await expect(response.json()).resolves.toEqual({
+      deleted: true,
+      threadId: "thread_1",
+    });
+    expect(response.status).toBe(200);
+    expect(fetchAuthMutation).toHaveBeenCalledWith(expect.anything(), {
+      organizationId: "org_1",
+      threadId: "thread_1",
+    });
+  });
+
   it("rejects missing organization and thread ids", async () => {
     const threadsResponse = await handleListAgentThreads(fakeContext({
       params: {},
@@ -79,11 +107,17 @@ describe("agent read handlers", () => {
       params: { organizationId: "org_1" },
       query: {},
     })) as Response;
+    const deleteResponse = await handleDeleteAgentThread(fakeContext({
+      params: { organizationId: "org_1" },
+      query: {},
+    })) as Response;
 
     expect(threadsResponse.status).toBe(400);
     await expect(threadsResponse.json()).resolves.toMatchObject({ error: "Organization id is required." });
     expect(messagesResponse.status).toBe(400);
     await expect(messagesResponse.json()).resolves.toMatchObject({ error: "Thread id is required." });
+    expect(deleteResponse.status).toBe(400);
+    await expect(deleteResponse.json()).resolves.toMatchObject({ error: "Thread id is required." });
   });
 
   it("rejects invalid limits", async () => {
@@ -107,6 +141,48 @@ describe("agent read handlers", () => {
 
     const response = await handleListAgentThreads(fakeContext({
       params: { organizationId: "org_forbidden" },
+      query: {},
+    })) as Response;
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      error: "You do not have access to this workspace.",
+    });
+  });
+
+  it("returns a controlled not found response for non-owned thread deletion", async () => {
+    vi.mocked(fetchAuthMutation).mockRejectedValueOnce(new Error("Agent thread was not found."));
+
+    const response = await handleDeleteAgentThread(fakeContext({
+      params: { organizationId: "org_1", threadId: "thread_from_other_user" },
+      query: {},
+    })) as Response;
+
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toMatchObject({
+      error: "Agent thread was not found.",
+    });
+  });
+
+  it("returns a controlled conflict response for active thread deletion", async () => {
+    vi.mocked(fetchAuthMutation).mockRejectedValueOnce(new Error("Agent thread has a running run."));
+
+    const response = await handleDeleteAgentThread(fakeContext({
+      params: { organizationId: "org_1", threadId: "thread_running" },
+      query: {},
+    })) as Response;
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({
+      error: expect.stringContaining("still running"),
+    });
+  });
+
+  it("returns a controlled forbidden response for delete auth failures", async () => {
+    vi.mocked(fetchAuthMutation).mockRejectedValueOnce(new Error("Unauthorized"));
+
+    const response = await handleDeleteAgentThread(fakeContext({
+      params: { organizationId: "org_forbidden", threadId: "thread_1" },
       query: {},
     })) as Response;
 

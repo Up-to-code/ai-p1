@@ -69,6 +69,23 @@ export const billingOverviewValidator = v.object({
   latestPayment: v.union(tamaraPaymentValidator, v.null()),
 });
 
+export const billingCreditUsageValidator = v.object({
+  subscriptionCreditsGranted: v.number(),
+  subscriptionCreditsUsed: v.number(),
+  subscriptionCreditsRemaining: v.number(),
+  addOnCreditsGranted: v.number(),
+  addOnCreditsUsed: v.number(),
+  addOnCreditsRemaining: v.number(),
+  currentPeriodStartAt: v.optional(v.number()),
+  currentPeriodEndAt: v.optional(v.number()),
+});
+
+export const billingUsageOverviewValidator = v.object({
+  overview: billingOverviewValidator,
+  credits: billingCreditUsageValidator,
+  payments: v.array(tamaraPaymentValidator),
+});
+
 export const checkoutContextValidator = v.object({
   plan: billingPlanValidator,
   payment: tamaraPaymentValidator,

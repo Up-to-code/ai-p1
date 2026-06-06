@@ -16,7 +16,7 @@ function normalizeBaseUrl(value?: string) {
   return value?.trim().replace(/\/+$/u, "") ?? "";
 }
 
-export function partnersPlatformConfig(env: PartnersPlatformEnv = process.env) {
+function partnersPlatformConfig(env: PartnersPlatformEnv = process.env) {
   return {
     baseUrl: normalizeBaseUrl(env.PARTNERS_API_BASE_URL ?? env.NEXT_PUBLIC_PARTNERS_AUTH_URL),
     serviceToken: (

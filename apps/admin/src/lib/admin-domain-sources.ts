@@ -12,7 +12,7 @@ import { adminSecurityConfig, redactSecret } from "./security";
 import { adminConvexConfigured, getAdminDomainDetailFromConvex, listAdminDomainFromConvex, runAdminDomainActionInConvex } from "./admin-convex";
 import { getPartnerAppDetailFromPartners, listPartnerAppsFromPartners, partnersAdminConfigured, reviewPartnerAppThroughPartners } from "./partners";
 
-export type AdminDomainSource = {
+type AdminDomainSource = {
   configured: () => boolean;
   list: (domain: AdminDomainId, request?: AdminListRequest) => Promise<AdminListResponse>;
   detail: (domain: AdminDomainId, id: string, identity?: AdminIdentity) => Promise<AdminDetailResponse | null>;
@@ -63,7 +63,7 @@ function unavailableList(domain: AdminDomainId, message: string): AdminListRespo
   };
 }
 
-export const localSecurityAdminSource: AdminDomainSource = {
+const localSecurityAdminSource: AdminDomainSource = {
   configured: () => true,
   async list(domain, request = {}) {
     const rows = filterRows(securityRows(), request.search);
@@ -100,7 +100,7 @@ export const localSecurityAdminSource: AdminDomainSource = {
   },
 };
 
-export const partnersAdminSource: AdminDomainSource = {
+const partnersAdminSource: AdminDomainSource = {
   configured: partnersAdminConfigured,
   list: listPartnerAppsFromPartners,
   detail: getPartnerAppDetailFromPartners,
@@ -120,7 +120,7 @@ export const partnersAdminSource: AdminDomainSource = {
   },
 };
 
-export const workspaceConvexAdminSource: AdminDomainSource = {
+const workspaceConvexAdminSource: AdminDomainSource = {
   configured: adminConvexConfigured,
   async list(domain, request = {}) {
     if (!adminConvexConfigured()) {

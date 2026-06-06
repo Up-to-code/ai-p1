@@ -12,11 +12,13 @@ import type {
   OrganizationRole,
 } from "./api/clerk-organization-api";
 
-export type Tab = "profile" | "members" | "agentLinks" | "apiKeys" | "invites" | "roles";
+export type OrganizationSettingsTab = "profile" | "members" | "agentLinks" | "apiKeys";
+export type Tab = OrganizationSettingsTab;
 export type InviteMode = "link" | "email";
 export type PermissionResource = keyof OrganizationPermissionStatement;
 export type WorkAction = "read" | "create" | "update" | "delete" | "authorize";
 
+export const organizationSettingsTabs = ["profile", "members", "agentLinks", "apiKeys"] as const satisfies readonly OrganizationSettingsTab[];
 export const defaultRoleNames = ["owner", "admin", "member"] as const;
 export const workActionColumns: WorkAction[] = ["read", "create", "update", "delete"];
 export const advancedActionColumns: WorkAction[] = ["read", "create", "update", "delete", "authorize"];
@@ -189,6 +191,26 @@ export function isOwner(role: string) {
   return role.split(",").map((part) => part.trim()).includes("owner");
 }
 
+export function normalizeOrganizationSettingsTab(value: string | null): OrganizationSettingsTab {
+  if (value === "roles") return "members";
+  return organizationSettingsTabs.includes(value as OrganizationSettingsTab)
+    ? value as OrganizationSettingsTab
+    : "profile";
+}
+
+export function canManageCustomPermissions(input: {
+  capabilities?: OrganizationCapabilities;
+  currentMemberRole?: string | null;
+}) {
+  if (input.currentMemberRole && isOwner(input.currentMemberRole)) return true;
+  const capabilities = input.capabilities;
+  return Boolean(
+    capabilities?.canCreateRoles &&
+    capabilities.canUpdateRoles &&
+    capabilities.canUpdateMembers,
+  );
+}
+
 export function formatDate(value: Date | string | number) {
   return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(value));
 }
@@ -248,7 +270,7 @@ export function apiKeyStats(keys: Array<{ status: string; usageCount: number }>)
   };
 }
 
-export function formatCustomRoleName(role: string) {
+function formatCustomRoleName(role: string) {
   return role
     .replace(/[-_]+/g, " ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());

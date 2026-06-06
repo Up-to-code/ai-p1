@@ -2,9 +2,9 @@ import { cookies } from "next/headers";
 
 export type AdminLocale = "en" | "ar";
 
-export const ADMIN_LOCALE_COOKIE = "qentrah_admin_locale";
+const ADMIN_LOCALE_COOKIE = "qentrah_admin_locale";
 
-export function isAdminLocale(value: unknown): value is AdminLocale {
+function isAdminLocale(value: unknown): value is AdminLocale {
   return value === "en" || value === "ar";
 }
 
@@ -206,8 +206,6 @@ export const copy = {
     },
   },
 } as const;
-
-export type AdminCopy = typeof copy.en;
 
 export function statusLabel(locale: AdminLocale, value: string) {
   const normalized = value.toLowerCase().replace(/\s+/gu, "_") as keyof (typeof copy.en.status);

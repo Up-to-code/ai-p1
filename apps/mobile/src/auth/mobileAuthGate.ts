@@ -2,13 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { authClient, isAuthConfigured } from "@/auth/authClient";
 import { resolveMobileAuthGate } from "@/auth/mobileAuthGateResolver";
-export type {
-  MobileAuthGateDestination,
-  MobileAuthGateResolution,
-  MobileAuthGateStatus,
-  MobileAuthWorkspaceStatus,
-  ResolveMobileAuthGateInput,
-} from "@/auth/mobileAuthGateResolver";
 import { getWorkspaceOrganizationRegions, mergeWorkspaceOrganizations, type WorkspaceOrganization } from "@/auth/workspaceAccess";
 import { setWorkspaceOrganizationRequestContext } from "@/persistence/api/workspaceApiClient";
 import { useAppStore } from "@/store";

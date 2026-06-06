@@ -12,8 +12,6 @@
   Ships the default ready-to-use card components.
 - `src/react`
   Provides the renderer plus registry merge helpers and action dispatch plumbing.
-- `src/qentrah`
-  Keeps the currently coupled Qentrah workspace adapters behind a dedicated entrypoint.
 
 ## Rendering lifecycle
 
@@ -29,11 +27,6 @@
 - Consumers can override only the card ids they care about.
 - Unknown card ids fail safely and render nothing.
 
-## Generic core vs Qentrah adapter
+## Host responsibilities
 
-- Generic core:
-  Cards, protocol, schemas, orchestration helper, and renderer.
-- Qentrah adapter:
-  `AgPropertyForm`, `AgRichTextEditor`, and `AgDeleteConfirmModal`.
-
-The adapter exists because those components still depend on UploadThing, Qentrah workspace visuals, and Qentrah-specific contracts. That keeps the generic package usable in other projects without importing workspace-only code.
+The package stays host-neutral. Workspace-specific forms, uploads, routing, and contracts belong in the host app instead of this package.

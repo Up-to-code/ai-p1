@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { WorkspaceApiError, loadQentrahClients } from "./workspace-api";
 import { buildQentrahAuthorizeUrl } from "./oauth-url";
 import { localDemoRegistration } from "./local-demo-registration";
-import { createCodeChallenge, createCodeVerifier } from "./pkce";
+import { createCodeChallenge, createCodeVerifier, createPkcePair } from "./pkce";
 import { exchangeAuthorizationCode, refreshAccessToken } from "./token-exchange";
 
 function jsonResponse(payload: unknown, status = 200) {
@@ -68,6 +68,14 @@ describe("partner OAuth examples", () => {
     expect(verifier).toHaveLength(64);
     expect(challenge).toMatch(/^[A-Za-z0-9_-]+$/u);
     expect(challenge).not.toBe(verifier);
+  });
+
+  it("creates the documented PKCE pair for backend authorize routes", async () => {
+    const pkce = await createPkcePair();
+
+    expect(pkce.verifier).toHaveLength(64);
+    expect(pkce.challenge).toMatch(/^[A-Za-z0-9_-]+$/u);
+    expect(pkce.challenge).not.toBe(pkce.verifier);
   });
 
   it("exchanges an authorization code from the backend", async () => {

@@ -11,7 +11,7 @@ export function parsePlatformAdminEmails(value: string) {
   );
 }
 
-export const platformAdminEmails = parsePlatformAdminEmails(
+const platformAdminEmails = parsePlatformAdminEmails(
   envReader.read("PLATFORM_ADMIN_EMAILS", ""),
 );
 

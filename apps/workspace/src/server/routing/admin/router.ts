@@ -6,5 +6,3 @@ import {
 export const adminRouter = new Hono();
 
 adminRouter.post("/oauth-client-runtime-sync", handleSyncOAuthClientRuntimeFromPartners);
-
-export type AdminRouterType = typeof adminRouter;

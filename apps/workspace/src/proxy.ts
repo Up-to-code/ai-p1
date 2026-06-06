@@ -1,6 +1,6 @@
 import createMiddleware from 'next-intl/middleware';
 import { clerkMiddleware } from "@clerk/nextjs/server";
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import {routing} from './i18n/routing';
 
@@ -27,6 +27,10 @@ function isProtectedRoute(request: NextRequest) {
   return (locale === "ar" || locale === "en") && protectedRouteSegments.has(segment ?? "");
 }
 
+function isApiRoute(request: NextRequest) {
+  return request.nextUrl.pathname.startsWith("/api/");
+}
+
 function getRouteMetric(pathname: string) {
   const segments = pathname
     .split("/")
@@ -51,6 +55,10 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
   const locale = request.nextUrl.pathname.split("/").filter(Boolean)[0] ?? routing.defaultLocale;
 
   try {
+    if (isApiRoute(request)) {
+      return NextResponse.next();
+    }
+
     if (isProtectedRoute(request)) {
       await auth.protect({
         unauthenticatedUrl: new URL(`/${locale}/sign-in`, request.url).toString(),

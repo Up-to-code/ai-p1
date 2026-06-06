@@ -1,3 +1,3 @@
 "use client";
 
-export { Button, buttonVariants } from "@qentrah/ui/button";
+export { Button } from "@qentrah/ui/button";

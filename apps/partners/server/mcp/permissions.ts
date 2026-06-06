@@ -1,6 +1,6 @@
 import { z } from "zod/v4";
 
-export const partnerMcpToolPermissionSchema = z.object({
+const partnerMcpToolPermissionSchema = z.object({
   resource: z.enum(["partner_apps", "sandbox", "guidance"]),
   actions: z.array(z.enum(["read", "create", "update", "delete", "submit"])).min(1),
 });

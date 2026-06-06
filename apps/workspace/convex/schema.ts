@@ -37,6 +37,55 @@ export default defineSchema({
   })
     .index("by_organization_id", ["organizationId"])
     .index("by_status_period_end", ["status", "currentPeriodEndAt"]),
+  organizationCreditBalances: defineTable({
+    organizationId: v.string(),
+    planId: v.string(),
+    subscriptionCreditsGranted: v.number(),
+    subscriptionCreditsUsed: v.number(),
+    addOnCreditsGranted: v.number(),
+    addOnCreditsUsed: v.number(),
+    currentPeriodStartAt: v.optional(v.number()),
+    currentPeriodEndAt: v.optional(v.number()),
+    updatedAt: v.number(),
+  })
+    .index("by_organization_id", ["organizationId"])
+    .index("by_period_end", ["currentPeriodEndAt"]),
+  organizationCreditLedger: defineTable({
+    organizationId: v.string(),
+    kind: v.union(
+      v.literal("grant"),
+      v.literal("top_up"),
+      v.literal("usage"),
+      v.literal("adjustment"),
+    ),
+    meter: v.optional(v.union(
+      v.literal("ai_chat"),
+      v.literal("agent_link_call"),
+      v.literal("api_key_call"),
+      v.literal("app_access"),
+    )),
+    sourceType: v.optional(v.string()),
+    sourceId: v.optional(v.string()),
+    agentRunId: v.optional(v.id("agentRuns")),
+    modelId: v.optional(v.string()),
+    promptTokens: v.optional(v.number()),
+    completionTokens: v.optional(v.number()),
+    toolCallCount: v.optional(v.number()),
+    calculatedCredits: v.number(),
+    requestedCredits: v.number(),
+    subscriptionCreditsDelta: v.number(),
+    addOnCreditsDelta: v.number(),
+    subscriptionCreditsUsed: v.number(),
+    addOnCreditsUsed: v.number(),
+    balanceAfterSubscriptionCredits: v.number(),
+    balanceAfterAddOnCredits: v.number(),
+    billingPeriodStartAt: v.optional(v.number()),
+    billingPeriodEndAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_organization_created", ["organizationId", "createdAt"])
+    .index("by_organization_kind_created", ["organizationId", "kind", "createdAt"])
+    .index("by_agent_run", ["organizationId", "agentRunId"]),
   tamaraPayments: defineTable({
     organizationId: v.string(),
     planId: v.string(),
@@ -310,6 +359,7 @@ export default defineSchema({
   })
     .index("by_organization_id", ["organizationId"])
     .index("by_organization_updated", ["organizationId", "updatedAt"])
+    .index("by_organization_creator_updated", ["organizationId", "createdByUserId", "updatedAt"])
     .index("by_updated", ["updatedAt"]),
   agentMessages: defineTable({
     organizationId: v.string(),
@@ -465,6 +515,17 @@ export default defineSchema({
     .index("by_token_hash", ["tokenHash"]),
   userProfiles: defineTable({
     userId: v.string(),
+    name: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    role: v.optional(v.string()),
+    language: v.optional(v.union(v.literal("en"), v.literal("ar"))),
+    timezone: v.optional(v.string()),
+    notifications: v.optional(v.object({
+      product: v.boolean(),
+      approvals: v.boolean(),
+      billing: v.boolean(),
+      security: v.boolean(),
+    })),
     avatarUrl: v.optional(v.string()),
     avatarKey: v.optional(v.string()),
     updatedAt: v.number(),

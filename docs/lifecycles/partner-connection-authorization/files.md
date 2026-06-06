@@ -2,31 +2,23 @@
 
 - `packages/partner-auth-core`: shared partner scope, permission resource/action, audience, and claim compatibility contract.
 - `packages/partner-workspace-sync`: legacy Partners-to-Workspace runtime projection contract kept for transition compatibility; it must not grant data access.
-- `apps/workspace/convex/partnerApps/apps.ts`: organization connection grant source of truth, Partners catalog verification boundary, WorkOS-backed permission checks, and connection lifecycle mutations.
-- `apps/workspace/convex/workosPartnerApiKeys.ts`: Convex-bound WorkOS partner API key issuance projection and grant validation.
-- `apps/workspace/convex/partnerResourceGateway.ts`: shared Convex resource gateway for WorkOS partner app access and organization API key access. Owns bridge-token assertion, resource read shape, client write behavior, actor-specific audit, and partner-only outbound webhook enqueueing.
+- `apps/workspace/convex/partnerApps/apps.ts`: organization connection grant source of truth, Partners catalog verification boundary, permission checks, and connection lifecycle mutations.
+- `apps/workspace/convex/partnerResourceGateway.ts`: shared Convex resource gateway for partner-app actor and organization API key access. Owns bridge-token assertion, resource read shape, client write behavior, actor-specific audit, and partner-only outbound webhook enqueueing.
 - `apps/workspace/convex/partnerApps/resources.ts`: stable Convex wrapper for partner resource reads and writes through the shared resource gateway.
 - `apps/workspace/convex/partnerApps/webhooks.ts`: stable Convex webhook facade for endpoint creation, inbound event acceptance, outbound enqueueing, delivery target lookup, retry marking, and delivery actions.
 - `apps/workspace/convex/partnerApps/webhookDelivery.ts`: internal Partner webhook delivery Module for idempotency, encrypted event/delivery persistence, client upsert side effects, outbound target filtering, and retry scheduling.
 - `apps/workspace/convex/partnerApps/webhookSecrets.ts`: internal Partner webhook secret encryption/reveal and delivery signature Module.
 - `apps/workspace/convex/partnerApps/webhookUrlSafety.ts`: internal Partner webhook endpoint URL safety Module.
-- `apps/workspace/convex/mcp/connections.ts`: MCP connection lifecycle, WorkOS-backed member permission filtering, API key reservation, and agent-link quota enforcement.
+- `apps/workspace/convex/mcp/connections.ts`: MCP connection lifecycle, member permission filtering, API key reservation, and agent-link quota enforcement.
 - `apps/workspace/convex/mcp/connectionPermissions.ts`: MCP built-in role permission mapping and permission normalization.
-- `apps/workspace/convex/schema.ts`: `organizationPartnerConnections`, `workosPartnerApiKeys`, WorkOS organization/member projection, MCP connections, and API key schema compatibility boundary.
-- `apps/workspace/convex/workosAuth.ts`: WorkOS identity, membership, organization, and webhook projection functions.
-- `apps/workspace/src/server/auth/workos/*`: WorkOS AuthKit client, cookie, session, and Hono middleware Modules.
-- `apps/workspace/src/server/auth/convex-workos/server.ts`: server-side Convex call adapter for WorkOS-authenticated Workspace routes.
-- `apps/workspace/src/app/api/auth/workos/*/route.ts`: WorkOS AuthKit login, callback, and logout route handlers.
-- `apps/workspace/src/app/api/webhooks/workos/route.ts`: WorkOS webhook verification entrypoint into Convex projection mutations.
-- `apps/workspace/src/server/domains/partnerApps/services/partner-apps.ts`: Partners catalog verification, organization grant mutation calls, WorkOS partner API key issuance, and Convex key projection recording.
-- `apps/workspace/src/server/domains/partnerApps/services/workos-partner-api-key-access.ts`: Hono-facing WorkOS partner API key Adapter.
-- `apps/workspace/src/server/domains/partnerApps/services/access-token.ts`: transition shim that rejects legacy OAuth bearer tokens.
-- `apps/workspace/src/server/domains/partnerApps/services/partner-resource-access.ts`: Hono-facing partner resource access Module that detects organization API keys, WorkOS partner API keys, and legacy OAuth tokens, maps access errors, and dispatches authorized resource reads/writes.
-- `apps/workspace/src/server/domains/partnerApps/services/resources.ts`: typed Convex bridge calls for authorized partner/API-key resource reads, writes, and inbound webhooks.
+- `apps/workspace/convex/schema.ts`: `organizationPartnerConnections`, organization API keys, MCP connections, and API key schema compatibility boundary.
+- `apps/workspace/src/server/domains/partnerApps/services/partner-apps.ts`: Partners catalog verification and organization grant mutation calls.
+- `apps/workspace/src/server/domains/partnerApps/services/partner-resource-access.ts`: Hono-facing partner resource access Module that validates organization API keys, rejects legacy OAuth bearer tokens, maps access errors, and dispatches authorized resource reads/writes.
+- `apps/workspace/src/server/domains/partnerApps/services/resources.ts`: typed Convex bridge calls for authorized organization API key resource reads and writes.
 - `apps/workspace/src/server/domains/partnerApps/routing/router.ts`: Workspace partner API boundary; exposes partner catalog, connection, key, resource, and webhook routes.
 - `apps/workspace/src/server/domains/partnerApps/handlers/resources.ts`: Hono resource handlers that keep organization API key access separate from WorkOS partner app access.
 - `apps/workspace/src/server/domains/partnerApps/handlers/admin-partner-apps.ts`: transition boundary for old Workspace admin runtime-sync endpoints.
-- `apps/workspace/src/server/domains/partnerApps/validation/partner-app.schema.ts`: request validators for Workspace-owned connection, WorkOS key issuance, and webhook flows.
+- `apps/workspace/src/server/domains/partnerApps/validation/partner-app.schema.ts`: request validators for Workspace-owned connection and webhook flows.
 - `apps/workspace/src/server/domains/partnerApps/validation/admin-partner-app.schema.ts`: legacy admin route validation boundary for transition-only runtime sync.
 - `apps/workspace/src/server/routing/admin/router.ts`: exposes the Workspace admin transition endpoint used by older Partners callers.
 - `apps/partners/server/adminPartnerApps.ts`: Partners admin source of truth for review decisions and publisher app status.
@@ -38,22 +30,18 @@
 - `apps/partners/app/api/platform/published-apps/route.ts`: service-token protected published catalog list endpoint consumed by Workspace.
 - `apps/partners/app/api/platform/published-apps/[appId]/route.ts`: service-token protected single published app endpoint.
 - `apps/workspace/src/domains/integrations/store/integrations.view-model.ts`: integrations UI view-model Module for catalog/grant merge, effective status, actions, detail lookup, and connection expiry labels.
-- `apps/workspace/src/domains/integrations/integrations-runtime.ts`: client-side integrations runtime Module for published catalog reads, organization connection reads, connection status mutation, revocation, WorkOS key issuance, and shared catalog filter options.
+- `apps/workspace/src/domains/integrations/integrations-runtime.ts`: client-side integrations runtime Module for published catalog reads, organization connection reads, connection status mutation, revocation, and shared catalog filter options.
 - `apps/workspace/convex/partnerApps/migrations.ts`: pre-cutover migration for old connection field names.
 - `packages/partner-auth-core/README.md`: short package-boundary note so shared exports are discoverable without reading all source.
 
 ## Related Tests
 
 - `packages/partner-auth-core/src/index.test.ts`
-- `apps/workspace/src/server/domains/partnerApps/services/access-token.test.ts`
 - `apps/workspace/src/server/domains/partnerApps/services/partner-resource-access.test.ts`
-- `apps/workspace/src/server/domains/partnerApps/services/workos-partner-api-key-access.test.ts`
 - `apps/workspace/src/server/domains/partnerApps/services/organization-api-key-access.test.ts`
 - `apps/workspace/src/server/domains/partnerApps/handlers/resources-source.test.ts`
 - `apps/workspace/convex/partnerResourceGateway.test.ts`
 - `apps/workspace/src/server/domains/partnerApps/services/partner-apps.test.ts`
-- `apps/workspace/src/server/auth/workos/session.test.ts`
-- `apps/workspace/convex/workosAuth.test.ts`
 - `apps/workspace/convex/mcp/connectionPermissions.test.ts`
 - `apps/workspace/src/domains/organization/mcp-personal-links-source.test.ts`
 - `apps/workspace/src/server/domains/partnerApps/services/admin-partner-apps.test.ts`

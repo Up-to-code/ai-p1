@@ -318,7 +318,7 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
                     key={msg.id ?? `${msg.role}-${i}`}
                     dir={assistantDirection}
                     className={cn(
-                      "group flex animate-in flex-col gap-2 fade-in slide-in-from-bottom-2 duration-300",
+                      "group flex flex-col gap-2",
                       msg.role === "user" ? "items-end" : "items-start",
                     )}
                   >

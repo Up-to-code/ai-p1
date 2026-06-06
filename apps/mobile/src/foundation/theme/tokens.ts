@@ -30,7 +30,7 @@ export const lightColors = {
   border: "rgba(0,0,0,0.05)",
 };
 
-export const spacing = {
+const spacing = {
   xs: 4,
   sm: 8,
   md: 12,
@@ -47,7 +47,7 @@ export const radii = {
   pill: 999,
 };
 
-export const shadows = {
+const shadows = {
   calm: {
     shadowColor: "#000000",
     shadowOpacity: 0.28,
@@ -60,7 +60,7 @@ export const shadows = {
   },
 };
 
-export const typography = {
+const typography = {
   display: {
     fontSize: 30,
     lineHeight: 36,

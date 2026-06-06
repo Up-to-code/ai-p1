@@ -6,6 +6,7 @@ import {
   createBillingCheckout,
   getBillingSubscription,
   getBillingTamaraOrder,
+  getBillingUsage,
   processTamaraWebhook,
 } from "../services/billing";
 
@@ -23,6 +24,17 @@ export async function handleGetBillingSubscription(c: Context) {
 
   try {
     return c.json(await getBillingSubscription(id));
+  } catch (error) {
+    return handleBillingError(c, error);
+  }
+}
+
+export async function handleGetBillingUsage(c: Context) {
+  const id = organizationId(c);
+  if (!id) return c.json({ error: "Organization id is required." }, 400);
+
+  try {
+    return c.json(await getBillingUsage(id));
   } catch (error) {
     return handleBillingError(c, error);
   }

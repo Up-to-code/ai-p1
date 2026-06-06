@@ -10,7 +10,6 @@ import {
 } from "@/server/partnerAppCatalog";
 import { syncOAuthClientRuntimeProjection } from "@/server/qentrahWorkspace";
 import { oauthDebug } from "@/server/oauth-debug";
-export { assertPartnersAdminServiceToken, partnersAdminServiceTokenFromEnv } from "@/server/serviceTokens";
 export type { AdminPartnerAppRecord };
 
 function runtimeProjectionStatus(status: PartnerReviewRequest["status"]): OAuthRuntimeProjectionStatus {

@@ -32,7 +32,7 @@ export function createLocalTurnId(startedAt: number) {
   return `local-turn-${startedAt}`;
 }
 
-export function createOptimisticUserMessage(turn: DraftConversationTurn, activeThreadId: string | null): ConversationMessage {
+function createOptimisticUserMessage(turn: DraftConversationTurn, activeThreadId: string | null): ConversationMessage {
   return {
     id: `${turn.localTurnId}-user`,
     sessionId: turn.threadId ?? activeThreadId ?? "threadless",

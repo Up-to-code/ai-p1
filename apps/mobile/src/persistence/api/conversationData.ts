@@ -19,7 +19,6 @@ import type {
   AgentRuntimeHealth,
   ConversationMessage,
   ConversationRunStage,
-  ConversationRunStatus,
 } from "@/types/domain";
 
 export function useAgentRuntimeHealth(): AgentRuntimeHealth {
@@ -168,10 +167,6 @@ export function useThreadsState() {
   };
 }
 
-export function useThreads(): AgentThread[] {
-  return useThreadsState().threads;
-}
-
 export function usePaginatedAgentThreads(pageSize = 10) {
   const workspace = useWorkspaceIdentity();
   const e2eQaMode = useAppStore((state) => state.e2eQaMode);
@@ -266,14 +261,6 @@ export function useThreadPresentation(_threadId: string | null): ThreadPresentat
   return null;
 }
 
-export function useThreadMessages(
-  threadId: string | null,
-  enableServerQuery = true,
-  refreshKey = 0,
-) {
-  return useThreadMessagesState(threadId, enableServerQuery, refreshKey).messages;
-}
-
 export function useThreadMessagesState(
   threadId: string | null,
   enableServerQuery = true,
@@ -360,12 +347,4 @@ export function useThreadMessagesState(
 
 export function useRunStageFeed(_threadId: string | null, _runId: string | null, _enabled = true): ConversationRunStage[] {
   return [];
-}
-
-export function useRunStatus(
-  _threadId: string | null,
-  _runId: string | null,
-  _enabled = true,
-): ConversationRunStatus | null {
-  return null;
 }

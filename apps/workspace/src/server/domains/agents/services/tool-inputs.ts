@@ -8,6 +8,7 @@ const listSchema = z.object({
   cursor: z.string().nullable().optional(),
 }).passthrough();
 const visibilitySchema = z.enum(["private", "public"]).optional();
+const clientContactText = z.string().trim().optional().transform((value) => value || undefined);
 export const organizationIdentityInputSchema = z.object({
   name: z.string().trim().min(1).max(120).optional(),
   slug: z.string().trim().min(1).max(120).optional(),
@@ -62,6 +63,37 @@ export const clientInputSchema = z.object({
   nextAction: z.string(),
   issue: optionalText,
 }).passthrough();
+export const clientCreateInputSchema = z.object({
+  name: z.string().trim().min(1),
+  type: z.enum(["Buyer", "Tenant", "Investor", "Broker"]).default("Buyer"),
+  contact: clientContactText,
+  email: clientContactText,
+  phone: clientContactText,
+  age: z.coerce.number().int().min(0).max(120).default(0),
+  nationality: z.string().trim().default(""),
+  generation: z.string().trim().default(""),
+  budget: z.string().trim().default(""),
+  propertyInterest: z.string().trim().default(""),
+  status: z.enum(["active", "inactive"]).default("active"),
+  visibility: visibilitySchema,
+  pipelineStage: z.enum(["new", "qualified", "viewing", "negotiation", "closed"]).default("new"),
+  pipelineOrder: z.number().optional(),
+  priority: z.enum(["normal", "high", "urgent"]).default("normal"),
+  nextAction: z.string().trim().default("Follow up"),
+  issue: clientContactText,
+}).passthrough().superRefine((value, context) => {
+  if (!value.contact && !value.email && !value.phone) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Provide either contact/email or phone for the client.",
+      path: ["contact"],
+    });
+  }
+}).transform(({ email, ...value }) => ({
+  ...value,
+  contact: value.contact ?? email ?? value.phone ?? "",
+  phone: value.phone ?? "",
+}));
 export const propertyInputSchema = z.object({
   title: z.string().min(1),
   projectId: stringId.optional(),
@@ -129,6 +161,31 @@ export function cleanInput<T extends z.ZodRawShape>(schema: z.ZodObject<T>, valu
   return schema.strip().parse(value);
 }
 
+const presentedDatabaseFields = [
+  "_id",
+  "_creationTime",
+  "id",
+  "organizationId",
+  "createdByUserId",
+  "createdAt",
+  "updatedAt",
+  "deletedAt",
+  "isDeleted",
+  "syncState",
+  "added",
+  "lastContact",
+  "nextActionDate",
+  "appointmentTime",
+];
+
+export function stripPresentedDatabaseFields(value: Record<string, unknown>) {
+  const clean = { ...value };
+  for (const field of presentedDatabaseFields) {
+    delete clean[field];
+  }
+  return clean;
+}
+
 export const toolInputSchemas: Record<string, z.ZodTypeAny> = {
   organization_info: z.object({}).passthrough(),
   organization_update_identity: organizationIdentityInputSchema,
@@ -143,7 +200,7 @@ export const toolInputSchemas: Record<string, z.ZodTypeAny> = {
   roles_delete: z.object({ roleId: stringId }).passthrough(),
   clients_list: listSchema,
   clients_get: z.object({ clientId: stringId }).passthrough(),
-  clients_create: clientInputSchema,
+  clients_create: clientCreateInputSchema,
   clients_update: clientInputSchema.partial().extend({ clientId: stringId }).passthrough(),
   clients_delete: z.object({ clientId: stringId }).passthrough(),
   clients_link_unit: z.object({

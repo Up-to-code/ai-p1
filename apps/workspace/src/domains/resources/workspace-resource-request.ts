@@ -10,18 +10,18 @@ import {
   type IndexedInfinitePage,
 } from "@/components/shared/use-http-query";
 
-export type WorkspaceResourceFilters = Record<string, string | number | boolean | null | undefined>;
+type WorkspaceResourceFilters = Record<string, string | number | boolean | null | undefined>;
 
-export function organizationResourcePath(organizationId: string, path: string) {
+function organizationResourcePath(organizationId: string, path: string) {
   const suffix = path.startsWith("/") ? path : `/${path}`;
   return `/api/v1/organizations/${organizationId}${suffix}`;
 }
 
-export function organizationReadPath(organizationId: string, path: string) {
+function organizationReadPath(organizationId: string, path: string) {
   return organizationResourcePath(organizationId, `/read/${path.replace(/^\/+/u, "")}`);
 }
 
-export function useDebouncedResourceFilters<T extends WorkspaceResourceFilters>(filters: T | undefined) {
+function useDebouncedResourceFilters<T extends WorkspaceResourceFilters>(filters: T | undefined) {
   const search = typeof filters?.search === "string" ? filters.search.trim() : undefined;
   const debouncedSearch = useDebouncedValue(search, 250);
   return useMemo(() => ({ ...filters, search: debouncedSearch }) as unknown as T, [debouncedSearch, filters]);
@@ -87,7 +87,7 @@ export function useWorkspaceResourceResult<T>(
   );
 }
 
-export async function workspaceJsonOrThrow(response: Response, fallbackMessage: string) {
+async function workspaceJsonOrThrow(response: Response, fallbackMessage: string) {
   const payload = await response.json();
   if (!response.ok) {
     throw new Error(payload.error ?? fallbackMessage);

@@ -4,7 +4,7 @@ import {
   type OrganizationPermissionStatement,
 } from "./permissions";
 
-export const organizationCapabilityChecks = {
+const organizationCapabilityChecks = {
   canReadOrganization: { resource: "organization", action: "read" },
   canUpdateOrganization: { resource: "organization", action: "update" },
   canInviteMembers: { resource: "member", action: "create" },
@@ -50,14 +50,14 @@ export const organizationCapabilityChecks = {
   }
 >;
 
-export type OrganizationCapabilityKey = keyof typeof organizationCapabilityChecks;
+type OrganizationCapabilityKey = keyof typeof organizationCapabilityChecks;
 
 export type OrganizationCapabilities = Record<OrganizationCapabilityKey, boolean> & {
   isPlatformAdmin: boolean;
   canManageVisibility: boolean;
 };
 
-export type DynamicOrganizationRole = {
+type DynamicOrganizationRole = {
   role: string;
   permission: string;
 };

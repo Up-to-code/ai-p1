@@ -750,7 +750,7 @@ function AdminNestedSections({ sections, locale }: { sections: AdminDetailRespon
   );
 }
 
-export function AdminFieldGrid({ record, locale }: { record: AdminRecordSummary; locale: Locale }) {
+function AdminFieldGrid({ record, locale }: { record: AdminRecordSummary; locale: Locale }) {
   return (
     <Panel>
       <div className="flex items-start justify-between gap-4">
@@ -799,7 +799,7 @@ function SafeField({ field, locale }: { field: AdminRecordSummary["fields"][numb
   );
 }
 
-export function AdminActionPanel({ domain, recordId, actions, locale }: { domain: string; recordId: string; actions: AdminAction[]; locale: Locale }) {
+function AdminActionPanel({ domain, recordId, actions, locale }: { domain: string; recordId: string; actions: AdminAction[]; locale: Locale }) {
   const router = useRouter();
   const [reason, setReason] = useState("");
   const [message, setMessage] = useState<string | null>(null);
@@ -863,7 +863,7 @@ export function AdminActionPanel({ domain, recordId, actions, locale }: { domain
   );
 }
 
-export function AdminAuditTimeline({ events, locale }: { events: AdminAuditEvent[]; locale: Locale }) {
+function AdminAuditTimeline({ events, locale }: { events: AdminAuditEvent[]; locale: Locale }) {
   return (
     <Panel>
       <h2 className="text-lg font-black">{text(locale, "Audit timeline", "سجل التدقيق")}</h2>

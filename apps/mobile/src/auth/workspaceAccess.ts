@@ -25,7 +25,7 @@ export type WorkspaceInviteLink = {
   expiresAt?: number;
 };
 
-export type WorkspaceAccessState =
+type WorkspaceAccessState =
   | { status: "signed_out" | "loading" }
   | { status: "ready"; organizationId: string; organizations: WorkspaceOrganization[] }
   | { status: "needs_workspace"; organizations: WorkspaceOrganization[] }
@@ -54,7 +54,7 @@ export type CreateWorkspaceInput<TOrganization extends WorkspaceOrganization> = 
   setActive: (input: { organizationId: string }) => Promise<AuthResult<TOrganization | null>>;
 };
 
-export function workspaceAuthError(error: AuthError, fallback: string) {
+function workspaceAuthError(error: AuthError, fallback: string) {
   if (!error) return fallback;
   return error.message ?? error.code ?? fallback;
 }

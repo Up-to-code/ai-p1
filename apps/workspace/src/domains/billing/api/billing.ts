@@ -16,7 +16,7 @@ export type BillingPlan = {
   periodDays: number;
 };
 
-export type BillingSubscription = {
+type BillingSubscription = {
   id?: string;
   organizationId: string;
   planId: BillingPlanId;
@@ -48,6 +48,28 @@ export type BillingOverview = {
   latestPayment: TamaraPayment | null;
 };
 
+export type OrganizationBillingUsage = {
+  overview: BillingOverview;
+  credits: {
+    subscriptionCreditsGranted: number;
+    subscriptionCreditsUsed: number;
+    subscriptionCreditsRemaining: number;
+    addOnCreditsGranted: number;
+    addOnCreditsUsed: number;
+    addOnCreditsRemaining: number;
+    currentPeriodStartAt?: number;
+    currentPeriodEndAt?: number;
+  };
+  payments: TamaraPayment[];
+};
+
+export type BillingUsageState =
+  | { status: "idle" | "loading"; data?: undefined; error?: undefined }
+  | { status: "error"; data?: undefined; error: Error }
+  | { status: "ready"; data: OrganizationBillingUsage; error?: undefined };
+
+type InternalBillingUsageState = BillingUsageState & { organizationId?: string };
+
 const SAUDI_MONTHLY_PLAN: BillingPlan = {
   id: "saudi_monthly",
   name: "Qentrah Saudi Arabia",
@@ -56,7 +78,7 @@ const SAUDI_MONTHLY_PLAN: BillingPlan = {
   periodDays: 30,
 };
 
-export const SAUDI_YEARLY_PLAN: BillingPlan = {
+const SAUDI_YEARLY_PLAN: BillingPlan = {
   id: "saudi_yearly",
   name: "Qentrah Saudi Arabia Annual",
   amount: 5988,
@@ -99,6 +121,41 @@ export function useBillingOverview(organizationId?: string | null) {
   return organizationId ? overview : undefined;
 }
 
+export function useBillingUsage(organizationId?: string | null): BillingUsageState {
+  const [state, setState] = useState<InternalBillingUsageState>({ status: "idle" });
+
+  useEffect(() => {
+    if (!organizationId) return;
+
+    let isCurrent = true;
+    const billingOrganizationId = organizationId;
+
+    async function loadUsage() {
+      try {
+        const payload = await getBillingUsageRequest(billingOrganizationId);
+        if (isCurrent) setState({ status: "ready", data: payload, organizationId: billingOrganizationId });
+      } catch (error) {
+        if (isCurrent) {
+          setState({
+            status: "error",
+            error: error instanceof Error ? error : new Error("Billing usage request failed."),
+            organizationId: billingOrganizationId,
+          });
+        }
+      }
+    }
+
+    void loadUsage();
+    return () => {
+      isCurrent = false;
+    };
+  }, [organizationId]);
+
+  if (!organizationId) return { status: "idle" };
+  if (state.organizationId !== organizationId) return { status: "loading" };
+  return state;
+}
+
 export function fallbackBillingOverview(organizationId: string): BillingOverview {
   return {
     plan: SAUDI_MONTHLY_PLAN,
@@ -113,12 +170,36 @@ export function fallbackBillingOverview(organizationId: string): BillingOverview
   };
 }
 
+export function fallbackBillingUsage(organizationId: string): OrganizationBillingUsage {
+  return {
+    overview: fallbackBillingOverview(organizationId),
+    credits: {
+      subscriptionCreditsGranted: 0,
+      subscriptionCreditsUsed: 0,
+      subscriptionCreditsRemaining: 0,
+      addOnCreditsGranted: 0,
+      addOnCreditsUsed: 0,
+      addOnCreditsRemaining: 0,
+    },
+    payments: [],
+  };
+}
+
 export function getBillingOverviewRequest(organizationId: string) {
   return requestOrganizationAction<BillingOverview>(
     organizationApiPath(organizationId, "billing", "subscription"),
     "GET",
     undefined,
     "Billing request failed.",
+  );
+}
+
+export function getBillingUsageRequest(organizationId: string) {
+  return requestOrganizationAction<OrganizationBillingUsage>(
+    organizationApiPath(organizationId, "billing", "usage"),
+    "GET",
+    undefined,
+    "Billing usage request failed.",
   );
 }
 

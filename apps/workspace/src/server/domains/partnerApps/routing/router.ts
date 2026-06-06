@@ -50,6 +50,3 @@ partnerResourceRouter.get("/organizations/:organizationId/calendar", (c) => hand
 partnerResourceRouter.get("/organizations/:organizationId/calendar/:eventId", (c) => handlePartnerReadById(c, "calendar", "eventId"));
 partnerResourceRouter.get("/organizations/:organizationId/media", handlePartnerMediaList);
 partnerResourceRouter.post("/organizations/:organizationId/webhooks/inbound", handlePartnerInboundWebhook);
-
-export type PartnerAppsRouterType = typeof partnerAppsRouter;
-export type PartnerResourceRouterType = typeof partnerResourceRouter;

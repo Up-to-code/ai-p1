@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useForm, useWatch, type FieldErrors, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery as useReactQuery } from "@tanstack/react-query";
-import { BarChart3, Building2, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, CircleHelp, Copy, Edit, FileText, FolderOpen, History, ImageIcon, Landmark, Layers3, LayoutGrid, List, Loader2, MapPin, MoreHorizontal, Plus, Trash2, TrendingUp } from "lucide-react";
+import { BarChart3, Building2, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, CircleHelp, Copy, Edit, FileText, FolderOpen, History, Landmark, Layers3, LayoutGrid, List, Loader2, MapPin, MoreHorizontal, Plus, Trash2, TrendingUp } from "lucide-react";
 import {
   AppDataTable,
   AppPageHeader,
@@ -45,14 +45,12 @@ import {
   projectInventoryMetrics,
   projectLocationLabel,
   projectMovementWidth,
-  projectPriceDisplay,
   projectViews,
   projectWeekdayLabels,
   removeProjectPriceRow,
   statusTone,
   toggleProjectUnitType,
   updateProjectPriceRow,
-  useFirstImagePreviewUrl,
   weekdayFormatter,
 } from "../project-view-model";
 import { createProjectRequest, deleteProjectRequest, PROJECTS_PAGE_SIZE, updateProjectRequest, useProjectQuery, useProjectsIndexQuery } from "../api/projects";
@@ -431,6 +429,7 @@ export function ProjectDetailScreen({ id }: { id: string }) {
                 <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
                 {locationLabel && <ProjectMetaPill icon={MapPin}>{locationLabel}</ProjectMetaPill>}
                 {project.developer && <ProjectMetaPill icon={Building2}>{project.developer}</ProjectMetaPill>}
+                <ProjectMetaPill icon={Layers3}>{t(`types.${project.type}`)}</ProjectMetaPill>
               </div>
               <h1 className="mt-4 max-w-4xl text-2xl font-black leading-tight text-zinc-950 dark:text-white md:text-4xl">{project.name}</h1>
               <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px] font-black uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
@@ -457,7 +456,7 @@ export function ProjectDetailScreen({ id }: { id: string }) {
           </div>
 
           <AppTabsList
-            className="gap-5"
+            className="gap-8"
             tabs={[
               { value: "overview", label: td('tabs.overview'), icon: LayoutGrid },
               { value: "inventory", label: td('tabs.inventory'), icon: Layers3 },
@@ -530,6 +529,9 @@ export function ProjectDetailScreen({ id }: { id: string }) {
               </div>
             )}
           >
+            <div className="mb-5 max-w-sm">
+              <ReadinessBar label={td('metrics.inventoryCoverage')} value={inventoryCoverage} />
+            </div>
             {units.length === 0 ? (
               <EmptyWorkspace icon={Layers3} title={td('inventory.emptyTitle')} description={td('inventory.emptyDesc')} />
             ) : inventoryView === "table" ? (
@@ -600,14 +602,10 @@ export function ProjectDetailScreen({ id }: { id: string }) {
                   <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{liveUnitCount} / {plannedUnits}</span>
                 </div>
                 <div className="space-y-2">
-                  {[
-                    { label: td('sales.status.available'), value: availableUnits, className: "bg-emerald-500" },
-                    { label: td('sales.status.reserved'), value: reservedUnits, className: "bg-blue-500" },
-                    { label: td('sales.status.sold'), value: soldUnits, className: "bg-zinc-400" },
-                    { label: td('sales.status.pending'), value: pendingUnits, className: "bg-amber-500" },
-                  ].map((row) => (
-                    <SalesMovementRow key={row.label} label={row.label} value={row.value} total={liveUnitCount} className={row.className} />
-                  ))}
+                  <MiniMovement label={td('sales.status.available')} value={availableUnits} total={liveUnitCount} className="bg-emerald-500" />
+                  <MiniMovement label={td('sales.status.reserved')} value={reservedUnits} total={liveUnitCount} className="bg-blue-500" />
+                  <MiniMovement label={td('sales.status.sold')} value={soldUnits} total={liveUnitCount} className="bg-zinc-400" />
+                  <MiniMovement label={td('sales.status.pending')} value={pendingUnits} total={liveUnitCount} className="bg-amber-500" />
                 </div>
               </div>
               <aside className="border-t border-zinc-100 pt-5 dark:border-white/5 lg:border-s lg:border-t-0 lg:ps-5 lg:pt-0">
@@ -759,24 +757,6 @@ function RegistryRows({ rows, className }: { rows: [ReactNode, ReactNode][]; cla
   );
 }
 
-function SalesMovementRow({ label, value, total, className }: { label: ReactNode; value: number; total: number; className: string }) {
-  const width = projectMovementWidth(value, total);
-
-  return (
-    <div className="grid grid-cols-[3rem_minmax(0,1fr)] items-center gap-3">
-      <span className="text-end text-sm font-black tabular-nums text-zinc-950 dark:text-white">{value}</span>
-      <div className="min-w-0">
-        <div className="relative h-8 overflow-hidden bg-zinc-100 dark:bg-white/[0.06]">
-          <div className={cn("absolute inset-y-0 end-0", className)} style={{ width }} />
-          <span className="absolute inset-0 flex items-center justify-end px-3 text-[10px] font-black uppercase tracking-widest text-white mix-blend-difference">
-            {label}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function ProjectFormScreen({ id }: { id?: string }) {
   const t = useTranslations('Projects');
   const common = useTranslations('Common');
@@ -805,7 +785,6 @@ export function ProjectFormScreen({ id }: { id?: string }) {
     enabled: Boolean(workspaceOrganizationId),
   });
   const canManageVisibility = capabilitiesQuery.data?.canManageVisibility ?? false;
-  const pendingCoverPreviewUrl = useFirstImagePreviewUrl(pendingMediaFiles);
 
   const { control, handleSubmit, setValue, reset, formState: { errors, isSubmitting } } = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema) as Resolver<ProjectFormValues>,
@@ -921,15 +900,13 @@ export function ProjectFormScreen({ id }: { id?: string }) {
       />
 
       <form
-        className="mx-auto grid w-full max-w-[1160px] gap-6 xl:grid-cols-[minmax(0,760px)_minmax(280px,340px)] xl:items-start xl:justify-center"
+        className="mx-auto w-full max-w-4xl"
         onSubmit={(event) => {
           event.preventDefault();
           nextStep();
         }}
       >
-        <ProjectFormPreview form={form} pendingMediaCount={pendingMediaFiles.length} pendingDocumentCount={pendingDocumentFiles.length} pendingCoverPreviewUrl={pendingCoverPreviewUrl} existing={existing} />
-
-        <section className="order-1 rounded-[28px] border border-zinc-200/80 bg-white p-5 shadow-none dark:border-white/10 dark:bg-[#0B0B0B] md:p-7">
+        <section className="rounded-[28px] border border-zinc-200/80 bg-white p-5 shadow-none dark:border-white/10 dark:bg-[#0B0B0B] md:p-7">
           <ProjectFormProgress step={step} labels={[t("form.stepInformation"), t("form.stepGallery"), t("form.stepLegal"), t("form.stepDocuments"), t("form.stepDetails")]} />
           <FormErrorSummary errors={fieldErrors} />
 
@@ -1491,120 +1468,6 @@ function OfferingMixGrid({
           );
         })}
       </div>
-    </div>
-  );
-}
-
-function ProjectFormPreview({
-  form,
-  pendingMediaCount,
-  pendingDocumentCount,
-  pendingCoverPreviewUrl,
-  existing,
-}: {
-  form: ProjectFormValues;
-  pendingMediaCount: number;
-  pendingDocumentCount: number;
-  pendingCoverPreviewUrl?: string | null;
-  existing?: Project | null;
-}) {
-  const t = useTranslations("Projects");
-  const previewImageUrl = pendingCoverPreviewUrl || existing?.coverImageUrl || "";
-  const checklist = [
-    [t("form.nameLabel"), form.name],
-    [t("form.cityLabel"), form.city],
-    [t("form.unitsLabel"), form.units],
-    [t("form.offeringMixLabel"), form.unitTypes?.length ? String(form.unitTypes.length) : ""],
-    [t("form.legalChecklist"), form.regaAuthorizationNo || form.planNumber || form.plotNumber || form.postalIdentity],
-    [t("form.previewMedia"), pendingMediaCount ? String(pendingMediaCount) : ""],
-    [t("form.previewDocuments"), pendingDocumentCount ? String(pendingDocumentCount) : ""],
-    [t("form.descLabel"), form.description],
-  ];
-
-  return (
-    <aside className="order-2 space-y-5 xl:sticky xl:top-24">
-      <article className="space-y-4">
-        <div className="relative h-44 overflow-hidden rounded-[24px] border border-zinc-200/70 bg-zinc-950 dark:border-white/10">
-          {previewImageUrl ? (
-            <Image
-              src={previewImageUrl}
-              alt={form.name || existing?.name || t("form.previewName")}
-              fill
-              sizes="(max-width: 768px) 100vw, 380px"
-              unoptimized={previewImageUrl.startsWith("blob:")}
-              className="object-cover opacity-80 grayscale"
-            />
-          ) : (
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,255,255,0.18),transparent_30%),linear-gradient(135deg,rgba(255,255,255,0.10),transparent_45%)]" />
-          )}
-          <div className="absolute inset-x-4 top-4 flex items-center justify-between gap-3">
-            <span className="rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[8px] font-black uppercase tracking-widest text-white/70 backdrop-blur">{form.type || t("types.Residential")}</span>
-            <StatusPill label={t(`toolbar.filters.${form.status || "draft"}`)} tone={form.status === "approved" ? "success" : form.status === "pending" ? "warning" : form.status === "rejected" ? "danger" : "neutral"} />
-          </div>
-          <div className="flex h-full w-full items-center justify-center text-white/15">
-            <Building2 className="h-9 w-9" />
-          </div>
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent p-4">
-            <p className="text-[9px] font-black uppercase tracking-widest text-white/45">{form.city || t("form.previewCity")}</p>
-            <h2 className="mt-1.5 line-clamp-2 text-lg font-black uppercase tracking-tight text-white">{form.name || t("form.previewName")}</h2>
-            <p className="mt-2 truncate text-xs font-bold text-white/60">{form.developer || t("form.previewDeveloper")}</p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-2">
-            <PreviewMetric label={t("card.units")} value={form.units || "0"} />
-            <PreviewMetric label={t("card.value")} value={projectPriceDisplay(form)} />
-          </div>
-          {form.unitTypes?.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {form.unitTypes.slice(0, 4).map((type) => (
-                <span key={type} className="rounded-full bg-zinc-100 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:bg-white/10 dark:text-zinc-300">
-                  {t(`types.${type}`)}
-                </span>
-              ))}
-            </div>
-          )}
-          <div className="flex flex-wrap gap-2">
-            {pendingMediaCount > 0 && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
-                <ImageIcon className="h-3 w-3" />
-                {pendingMediaCount}
-              </span>
-            )}
-            {pendingDocumentCount > 0 && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-300">
-                <FileText className="h-3 w-3" />
-                {pendingDocumentCount}
-              </span>
-            )}
-          </div>
-          <p className="text-xs font-semibold leading-6 text-zinc-500 dark:text-zinc-400">{form.description || t("form.previewDescription")}</p>
-        </div>
-      </article>
-
-      <div className="border-t border-zinc-200/70 pt-4 dark:border-white/10">
-        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t("form.previewChecklist")}</p>
-        <div className="mt-4 grid gap-1">
-          {checklist.map(([label, value]) => (
-            <div key={label} className="flex items-center justify-between gap-3 py-2">
-              <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{label}</span>
-              <span className={cn("inline-flex h-5 w-5 items-center justify-center rounded-full", value ? "bg-emerald-500/10 text-emerald-500" : "bg-zinc-200 text-zinc-400 dark:bg-white/10")}>
-                {value ? <CheckCircle2 className="h-3.5 w-3.5" /> : <span className="h-2 w-2 rounded-full bg-current" />}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </aside>
-  );
-}
-
-function PreviewMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="border-b border-zinc-200/70 py-2.5 dark:border-white/10">
-      <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{label}</p>
-      <p className="mt-2 truncate text-sm font-black text-zinc-900 dark:text-white">{value}</p>
     </div>
   );
 }

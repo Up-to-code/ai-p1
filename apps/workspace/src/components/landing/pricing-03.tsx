@@ -1,11 +1,10 @@
 "use client";
 
 import NumberFlow from "@number-flow/react";
-import Image from "next/image";
 import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import type { Transition } from "framer-motion";
-import { ArrowRight, CalendarDays, CircleCheck, Sparkles } from "lucide-react";
+import { ArrowRight, CalendarDays, CircleCheck, CircleX } from "lucide-react";
 
 import { LandingButton, PublicSection } from "@/components/landing/public-landing-kit";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +14,7 @@ type TooltipKey = "sync" | "ai" | "governance";
 type BillingCycle = "monthly" | "annual";
 
 type PricingPlan = {
-  id: "saudi_monthly" | "saudi_yearly" | "custom";
+  id: "individual_monthly" | "individual_yearly" | "startup_monthly" | "startup_yearly" | "custom";
   name: string;
   price: number | "custom";
   period?: "month" | "year";
@@ -25,6 +24,7 @@ type PricingPlan = {
   href: string;
   isPopular?: boolean;
   features: Array<{
+    included?: boolean;
     title: string;
     tooltip?: TooltipKey;
   }>;
@@ -37,21 +37,11 @@ const planCopy = {
       monthly: "Monthly",
       annual: "Annually",
     },
-    popular: "Saudi Arabia",
+    popular: "Most useful",
     perMonth: "per month",
     perYear: "per year",
     customPrice: "Custom",
     annualBadge: "Annual access",
-    tamara: {
-      label: "Annual BNPL",
-      title: "Buy now, pay later with Tamara",
-      description: "Use Tamara for the yearly Qentrah plan only. Split the annual access payment while keeping monthly setup separate.",
-      cta: "Pay yearly with Tamara",
-      amount: "5,988 SAR",
-      note: "Hosted Tamara checkout",
-      logoAlt: "Tamara",
-      logoSrc: "/Tamara Media Kit/Logos/Tamara Logos-01.png",
-    },
     tooltips: {
       sync: "Keeps projects, units, media, pricing, and availability aligned across teams.",
       ai: "AI assists with triage, drafting, summaries, and repetitive operational work.",
@@ -59,86 +49,116 @@ const planCopy = {
     },
     plans: [
       {
-        id: "saudi_monthly",
-        name: "Saudi Arabia",
-        country: "Saudi Arabia",
-        price: 499,
+        id: "individual_monthly",
+        name: "Individual",
+        price: 9,
         period: "month",
-        description: "For Saudi real estate teams running properties, clients, calendars, automations, and connected sales channels from one workspace.",
-        buttonText: "Start setup",
-        href: "/billing?plan=saudi_monthly",
-        isPopular: true,
+        description: "A one-person workspace for core real estate work: projects, units, clients, and a basic calendar.",
+        buttonText: "Start individual",
+        href: "/billing?plan=individual_monthly",
         features: [
-          { title: "Project management", tooltip: "sync" },
+          { title: "1 user only" },
+          { title: "1 organization only" },
+          { title: "Project management" },
           { title: "Unit management" },
           { title: "Client management" },
-          { title: "Calendar management" },
-          { title: "Apps and integrations" },
-          { title: "Social media channels" },
-          { title: "Website management" },
-          { title: "API access" },
+          { title: "Basic calendar" },
+          { included: false, title: "AI, MCP, and memberships" },
+        ],
+      },
+      {
+        id: "startup_monthly",
+        name: "Startup",
+        price: 29,
+        period: "month",
+        description: "For a small organization that needs AI, MCP workflows, the mobile app, and shared work across up to five members.",
+        buttonText: "Start startup",
+        href: "/billing?plan=startup_monthly",
+        isPopular: true,
+        features: [
+          { title: "Everything in Individual" },
           { title: "AI agents and workflows", tooltip: "ai" },
+          { title: "MCP tools" },
+          { title: "Up to 5 members", tooltip: "governance" },
+          { title: "One organization" },
+          { title: "Mobile app access" },
+          { title: "Mobile AI information" },
+          { title: "Notifications and scheduled times" },
         ],
       },
       {
         id: "custom",
         name: "Custom",
         price: "custom",
-        description: "For larger teams that want Qentrah designed around their operating model, website, agents, and private workflows.",
+        description: "For companies that need more members, heavier AI usage, custom organization setup, and private workflows.",
         buttonText: "Talk to Qentrah",
         href: "/contact",
         features: [
-          { title: "Custom managed website" },
+          { title: "More than 5 members" },
+          { title: "Multiple organizations" },
+          { title: "Higher AI usage", tooltip: "ai" },
+          { title: "Custom organization configuration" },
           { title: "Custom integrations", tooltip: "sync" },
-          { title: "Private API keys" },
-          { title: "Webhooks" },
-          { title: "Agent links" },
-          { title: "AI agent setup", tooltip: "ai" },
-          { title: "CRM setup" },
-          { title: "Calendar setup" },
+          { title: "Private MCP setup" },
+          { title: "Custom website and workflows" },
           { title: "Dedicated onboarding", tooltip: "governance" },
         ],
       },
     ],
     annualPlans: [
       {
-        id: "saudi_yearly",
-        name: "Annual price",
-        country: "Saudi Arabia",
-        price: 5988,
+        id: "individual_yearly",
+        name: "Individual",
+        price: 108,
         period: "year",
-        description: "One yearly Qentrah workspace period for teams managing properties, clients, automations, agents, and connected channels.",
-        buttonText: "Start annual setup",
-        href: "/billing?plan=saudi_yearly",
-        isPopular: true,
+        description: "Annual access for one person running core real estate work: projects, units, clients, and a basic calendar.",
+        buttonText: "Start individual",
+        href: "/billing?plan=individual_yearly",
         features: [
-          { title: "Project management", tooltip: "sync" },
+          { title: "1 user only" },
+          { title: "1 organization only" },
+          { title: "Project management" },
           { title: "Unit management" },
           { title: "Client management" },
-          { title: "Calendar management" },
-          { title: "Apps and integrations" },
-          { title: "Social media channels" },
-          { title: "Website management" },
-          { title: "API access" },
+          { title: "Basic calendar" },
+          { included: false, title: "AI, MCP, and memberships" },
+        ],
+      },
+      {
+        id: "startup_yearly",
+        name: "Startup",
+        price: 348,
+        period: "year",
+        description: "Annual access for a small organization using AI, MCP workflows, the mobile app, and shared work across up to five members.",
+        buttonText: "Start startup",
+        href: "/billing?plan=startup_yearly",
+        isPopular: true,
+        features: [
+          { title: "Everything in Individual" },
           { title: "AI agents and workflows", tooltip: "ai" },
+          { title: "MCP tools" },
+          { title: "Up to 5 members", tooltip: "governance" },
+          { title: "One organization" },
+          { title: "Mobile app access" },
+          { title: "Mobile AI information" },
+          { title: "Notifications and scheduled times" },
         ],
       },
       {
         id: "custom",
         name: "Custom",
         price: "custom",
-        description: "For larger teams that want Qentrah designed around their operating model, website, agents, and private workflows.",
+        description: "For companies that need more members, heavier AI usage, custom organization setup, and private workflows.",
         buttonText: "Talk to Qentrah",
         href: "/contact",
         features: [
-          { title: "Custom managed website" },
+          { title: "More than 5 members" },
+          { title: "Multiple organizations" },
+          { title: "Higher AI usage", tooltip: "ai" },
+          { title: "Custom organization configuration" },
           { title: "Custom integrations", tooltip: "sync" },
-          { title: "Private API keys" },
-          { title: "Webhooks" },
-          { title: "Agent links" },
-          { title: "AI agent setup", tooltip: "ai" },
-          { title: "CRM setup" },
-          { title: "Calendar setup" },
+          { title: "Private MCP setup" },
+          { title: "Custom website and workflows" },
           { title: "Dedicated onboarding", tooltip: "governance" },
         ],
       },
@@ -150,21 +170,11 @@ const planCopy = {
       monthly: "شهري",
       annual: "سنوي",
     },
-    popular: "باقة مرنة",
+    popular: "الأكثر استخداماً",
     perMonth: "شهرياً",
     perYear: "سنوياً",
     customPrice: "مخصص",
     annualBadge: "وصول سنوي",
-    tamara: {
-      label: "تقسيط سنوي",
-      title: "اشتر الآن وادفع لاحقاً مع تمارا",
-      description: "استخدم تمارا للخطة السنوية فقط. قسّط دفع الوصول السنوي مع بقاء الإعداد الشهري منفصلاً.",
-      cta: "ادفع سنوياً مع تمارا",
-      amount: "5,988 ر.س",
-      note: "دفع آمن عبر تمارا",
-      logoAlt: "تمارا",
-      logoSrc: "/Tamara Media Kit/Logos/Tamara Logos-04.png",
-    },
     tooltips: {
       sync: "يحافظ على توافق المشاريع والوحدات والوسائط والأسعار والتوفر بين الفرق.",
       ai: "يساعد الذكاء الاصطناعي في الفرز، الصياغة، التلخيص، والعمل التشغيلي المتكرر.",
@@ -172,84 +182,116 @@ const planCopy = {
     },
     plans: [
       {
-        id: "saudi_monthly",
-        name: "باقة مرنة",
-        price: 499,
+        id: "individual_monthly",
+        name: "فردي",
+        price: 9,
         period: "month",
-        description: "اختر الباقة التي تناسب حجم فريقك وطريقة تشغيلك، وابدأ بإدارة المشاريع، الوحدات، العملاء، والفرص من مساحة واحدة.",
-        buttonText: "ابدأ الإعداد",
-        href: "/billing?plan=saudi_monthly",
-        isPopular: true,
+        description: "مساحة عمل لشخص واحد لإدارة العمل العقاري الأساسي: المشاريع، الوحدات، العملاء، وتقويم بسيط.",
+        buttonText: "ابدأ الفردي",
+        href: "/billing?plan=individual_monthly",
         features: [
-          { title: "إدارة المشاريع", tooltip: "sync" },
+          { title: "مستخدم واحد فقط" },
+          { title: "منظمة واحدة فقط" },
+          { title: "إدارة المشاريع" },
           { title: "إدارة الوحدات" },
           { title: "إدارة العملاء" },
-          { title: "إدارة التقويم" },
-          { title: "التطبيقات والتكاملات" },
-          { title: "قنوات التواصل الاجتماعي" },
-          { title: "إدارة الموقع الإلكتروني" },
-          { title: "وصول API" },
+          { title: "تقويم أساسي" },
+          { included: false, title: "الذكاء الاصطناعي وMCP والعضويات" },
+        ],
+      },
+      {
+        id: "startup_monthly",
+        name: "Startup",
+        price: 29,
+        period: "month",
+        description: "لمنظمة صغيرة تحتاج الذكاء الاصطناعي، أدوات MCP، تطبيق الجوال، والعمل المشترك حتى خمسة أعضاء.",
+        buttonText: "ابدأ Startup",
+        href: "/billing?plan=startup_monthly",
+        isPopular: true,
+        features: [
+          { title: "كل ما في الفردي" },
           { title: "وكلاء الذكاء الاصطناعي وسير العمل", tooltip: "ai" },
+          { title: "أدوات MCP" },
+          { title: "حتى 5 أعضاء", tooltip: "governance" },
+          { title: "منظمة واحدة" },
+          { title: "تطبيق الجوال" },
+          { title: "معلومات ذكية في الجوال" },
+          { title: "الإشعارات والمواعيد المجدولة" },
         ],
       },
       {
         id: "custom",
         name: "باقة مخصصة",
         price: "custom",
-        description: "للمطورين والفرق التي تحتاج حلولًا مصممة حسب التشغيل، الموقع، الوكلاء، وسير العمل الخاص.",
+        description: "للشركات التي تحتاج أعضاء أكثر، استخدام ذكاء اصطناعي أعلى، إعداد منظمة مخصص، وسير عمل خاص.",
         buttonText: "تحدث مع كانترا",
         href: "/contact",
         features: [
-          { title: "موقع مخصص ومدار" },
+          { title: "أكثر من 5 أعضاء" },
+          { title: "منظمات متعددة" },
+          { title: "استخدام ذكاء اصطناعي أعلى", tooltip: "ai" },
+          { title: "تخصيص إعدادات المنظمة" },
           { title: "تكاملات مخصصة", tooltip: "sync" },
-          { title: "مفاتيح API خاصة" },
-          { title: "Webhooks" },
-          { title: "روابط الوكلاء" },
-          { title: "إعداد وكلاء الذكاء الاصطناعي", tooltip: "ai" },
-          { title: "إعداد CRM" },
-          { title: "إعداد التقويم" },
+          { title: "إعداد MCP خاص" },
+          { title: "موقع وسير عمل مخصص" },
           { title: "تهيئة مخصصة", tooltip: "governance" },
         ],
       },
     ],
     annualPlans: [
       {
-        id: "saudi_yearly",
-        name: "باقة مرنة",
-        price: 5988,
+        id: "individual_yearly",
+        name: "فردي",
+        price: 108,
         period: "year",
-        description: "اختر الباقة التي تناسب حجم فريقك وطريقة تشغيلك، وابدأ بإدارة المشاريع، الوحدات، العملاء، والفرص من مساحة واحدة.",
-        buttonText: "ابدأ الإعداد السنوي",
-        href: "/billing?plan=saudi_yearly",
-        isPopular: true,
+        description: "وصول سنوي لشخص واحد يدير العمل العقاري الأساسي: المشاريع، الوحدات، العملاء، وتقويم بسيط.",
+        buttonText: "ابدأ الفردي",
+        href: "/billing?plan=individual_yearly",
         features: [
-          { title: "إدارة المشاريع", tooltip: "sync" },
+          { title: "مستخدم واحد فقط" },
+          { title: "منظمة واحدة فقط" },
+          { title: "إدارة المشاريع" },
           { title: "إدارة الوحدات" },
           { title: "إدارة العملاء" },
-          { title: "إدارة التقويم" },
-          { title: "التطبيقات والتكاملات" },
-          { title: "قنوات التواصل الاجتماعي" },
-          { title: "إدارة الموقع الإلكتروني" },
-          { title: "وصول API" },
+          { title: "تقويم أساسي" },
+          { included: false, title: "الذكاء الاصطناعي وMCP والعضويات" },
+        ],
+      },
+      {
+        id: "startup_yearly",
+        name: "Startup",
+        price: 348,
+        period: "year",
+        description: "وصول سنوي لمنظمة صغيرة تستخدم الذكاء الاصطناعي، أدوات MCP، تطبيق الجوال، والعمل المشترك حتى خمسة أعضاء.",
+        buttonText: "ابدأ Startup",
+        href: "/billing?plan=startup_yearly",
+        isPopular: true,
+        features: [
+          { title: "كل ما في الفردي" },
           { title: "وكلاء الذكاء الاصطناعي وسير العمل", tooltip: "ai" },
+          { title: "أدوات MCP" },
+          { title: "حتى 5 أعضاء", tooltip: "governance" },
+          { title: "منظمة واحدة" },
+          { title: "تطبيق الجوال" },
+          { title: "معلومات ذكية في الجوال" },
+          { title: "الإشعارات والمواعيد المجدولة" },
         ],
       },
       {
         id: "custom",
         name: "باقة مخصصة",
         price: "custom",
-        description: "للمطورين والفرق التي تحتاج حلولًا مصممة حسب التشغيل، الموقع، الوكلاء، وسير العمل الخاص.",
+        description: "للشركات التي تحتاج أعضاء أكثر، استخدام ذكاء اصطناعي أعلى، إعداد منظمة مخصص، وسير عمل خاص.",
         buttonText: "تحدث مع كانترا",
         href: "/contact",
         features: [
-          { title: "موقع مخصص ومدار" },
+          { title: "أكثر من 5 أعضاء" },
+          { title: "منظمات متعددة" },
+          { title: "استخدام ذكاء اصطناعي أعلى", tooltip: "ai" },
+          { title: "تخصيص إعدادات المنظمة" },
           { title: "تكاملات مخصصة", tooltip: "sync" },
-          { title: "مفاتيح API خاصة" },
-          { title: "Webhooks" },
-          { title: "روابط الوكلاء" },
-          { title: "إعداد وكلاء الذكاء الاصطناعي", tooltip: "ai" },
-          { title: "إعداد CRM" },
-          { title: "إعداد التقويم" },
+          { title: "إعداد MCP خاص" },
+          { title: "موقع وسير عمل مخصص" },
           { title: "تهيئة مخصصة", tooltip: "governance" },
         ],
       },
@@ -265,16 +307,6 @@ const planCopy = {
     perYear: string;
     customPrice: string;
     annualBadge: string;
-    tamara: {
-      label: string;
-      title: string;
-      description: string;
-      cta: string;
-      amount: string;
-      note: string;
-      logoAlt: string;
-      logoSrc: string;
-    };
     tooltips: Record<string, string>;
     plans: PricingPlan[];
     annualPlans: PricingPlan[];
@@ -292,13 +324,13 @@ export function Pricing03({ locale }: { locale: string }) {
   return (
     <PublicSection
       id="pricing"
-      className="relative bg-white py-14 dark:bg-zinc-950 md:py-20"
+      className="relative bg-white py-20 dark:bg-[#080808] md:py-28"
     >
-      <div className="relative mx-auto max-w-6xl">
-        <div className="sticky top-20 z-20 mb-8 flex justify-center py-2">
+      <div className="relative mx-auto max-w-7xl">
+        <div className="sticky top-20 z-20 mb-10 flex justify-center py-2">
           <div
             aria-label={copy.eyebrow}
-            className="grid w-full max-w-sm grid-cols-2 rounded-full border border-zinc-200 bg-zinc-100/95 p-1 text-xs font-black uppercase tracking-widest shadow-sm shadow-zinc-200/50 backdrop-blur dark:border-white/10 dark:bg-zinc-900/90 dark:shadow-none"
+            className="grid w-full max-w-sm grid-cols-2 rounded-full border border-zinc-200 bg-zinc-100/95 p-1 text-xs font-black uppercase tracking-widest shadow-sm shadow-zinc-200/50 backdrop-blur dark:border-white/10 dark:bg-white/[0.06] dark:shadow-none"
             role="tablist"
           >
             {(["monthly", "annual"] as const).map((cycle) => (
@@ -328,12 +360,12 @@ export function Pricing03({ locale }: { locale: string }) {
 
         <motion.div
           animate={{ opacity: 1, y: 0 }}
-          className="mx-auto max-w-5xl"
+          className="mx-auto max-w-6xl"
           data-billing-cycle={billingCycle}
           initial={false}
           transition={panelTransition}
         >
-          <div className="relative grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <div className="relative grid grid-cols-1 gap-6 lg:grid-cols-3">
             {activePlans.map((plan, index) => (
               <motion.div
                 animate={{ opacity: 1, y: 0 }}
@@ -350,72 +382,9 @@ export function Pricing03({ locale }: { locale: string }) {
               </motion.div>
             ))}
           </div>
-          <motion.div
-            animate={{ opacity: 1, y: 0 }}
-            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 14 }}
-            key="tamara-annual-banner"
-            transition={{
-              ...panelTransition,
-              delay: shouldReduceMotion ? 0 : 0.08,
-            }}
-          >
-            <TamaraAnnualBanner copy={copy} />
-          </motion.div>
         </motion.div>
       </div>
     </PublicSection>
-  );
-}
-
-function TamaraAnnualBanner({ copy }: { copy: (typeof planCopy)["en"] | (typeof planCopy)["ar"] }) {
-  return (
-    <aside
-      className="relative mt-5 overflow-hidden rounded-[1.5rem] border border-[#D7C8FF] bg-[#F2E8FF] p-5 text-start text-[#16181D] transition duration-300 hover:bg-[#F5EDFF] dark:border-[#C9B8FF]/60 dark:bg-[#F2E8FF] md:p-6"
-      data-testid="pricing-banner-tamara"
-    >
-      <div className="absolute inset-x-8 top-0 h-1 rounded-b-full bg-[#9600F1]" />
-
-      <div className="grid items-center gap-6 md:grid-cols-[180px_minmax(0,1fr)] lg:grid-cols-[200px_minmax(0,1fr)_240px]">
-        <div className="flex items-center">
-          <Image
-            alt={copy.tamara.logoAlt}
-            className="h-auto w-40 object-contain md:w-44"
-            height={687}
-            priority={false}
-            src={copy.tamara.logoSrc}
-            width={1354}
-          />
-        </div>
-
-        <div className="min-w-0">
-          <Badge className="bg-[#9600F1] text-white dark:bg-[#9600F1] dark:text-white">
-            {copy.tamara.label}
-          </Badge>
-          <h3 className="mt-3 text-2xl font-black tracking-tight md:text-3xl rtl:leading-[1.25]">{copy.tamara.title}</h3>
-          <p className="mt-3 max-w-2xl text-sm font-semibold leading-7 text-[#5A4A72]">
-            {copy.tamara.description}
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-[#D7C8FF] bg-white/55 p-4 md:col-span-2 lg:col-span-1">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-[#9600F1]">{copy.tamara.note}</p>
-              <p className="mt-2 text-2xl font-black tracking-tight">{copy.tamara.amount}</p>
-            </div>
-            <Sparkles className="mt-1 h-5 w-5 shrink-0 text-[#9600F1]" />
-          </div>
-          <LandingButton
-            href="/billing?plan=saudi_yearly"
-            className="mt-4 h-11 w-full rounded-full border-[#9600F1] bg-[#9600F1] text-white hover:bg-[#7E00CA] dark:border-[#9600F1] dark:bg-[#9600F1] dark:text-white"
-            variant="secondary"
-          >
-            {copy.tamara.cta}
-            <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-          </LandingButton>
-        </div>
-      </div>
-    </aside>
   );
 }
 
@@ -431,14 +400,14 @@ function PlanCard({
   return (
     <article
       className={cn(
-        "relative flex min-h-[560px] w-full flex-col overflow-hidden rounded-[1.5rem] border border-zinc-200 bg-white p-6 text-start transition duration-300 hover:border-zinc-300 hover:bg-zinc-50/40 dark:border-white/10 dark:bg-white/[0.045] dark:hover:border-white/15 dark:hover:bg-white/[0.06]",
-        plan.isPopular && "border-blue-500 bg-blue-50/50 text-zinc-950 hover:border-blue-500 hover:bg-blue-50/70 dark:border-blue-400/80 dark:bg-blue-500/[0.12] dark:text-white dark:hover:bg-blue-500/[0.16]",
+        "relative flex min-h-[520px] w-full flex-col overflow-hidden rounded-[1.25rem] border border-zinc-200 bg-white p-5 text-start transition duration-300 hover:border-zinc-300 hover:bg-zinc-50/40 dark:border-white/10 dark:bg-[#171717] dark:hover:border-white/20 dark:hover:bg-[#1b1b1b] md:p-6",
+          plan.isPopular && "border-zinc-950 bg-zinc-50 text-zinc-950 hover:border-zinc-950 hover:bg-zinc-100/70 dark:border-white/60 dark:bg-[#202020] dark:text-white dark:hover:bg-[#242424]",
       )}
       data-testid={`pricing-card-${plan.id}`}
     >
-      <div className={cn("absolute inset-x-8 top-0 h-1 rounded-b-full", plan.isPopular ? "bg-blue-500" : "bg-zinc-200 dark:bg-white/10")} />
+      <div className={cn("absolute inset-x-8 top-0 h-px", plan.isPopular ? "bg-zinc-950 dark:bg-white" : "bg-zinc-200 dark:bg-white/15")} />
       {plan.isPopular && (
-        <Badge className="absolute end-6 top-5 rounded-full bg-blue-600 px-3 text-white dark:bg-blue-600 dark:text-white">
+        <Badge className="absolute end-6 top-5 rounded-full bg-zinc-950 px-3 text-white dark:bg-white dark:text-zinc-950">
           {plan.period === "year" ? copy.annualBadge : copy.popular}
         </Badge>
       )}
@@ -446,35 +415,29 @@ function PlanCard({
       <div>
         <h3 className={cn("text-2xl font-black tracking-tight", plan.isPopular && "pe-28")}>{plan.name}</h3>
         {plan.country && (
-          <p className="mt-2 text-xs font-black uppercase tracking-[0.18em] text-blue-700 dark:text-blue-200">
+          <p className="mt-2 text-xs font-black uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
             {plan.country}
           </p>
         )}
-        <p className="mt-4 min-h-[84px] text-sm font-medium leading-7 text-zinc-500 dark:text-zinc-400">
+        <p className="mt-4 min-h-[72px] text-sm font-medium leading-7 text-zinc-500 dark:text-zinc-400">
           {plan.description}
         </p>
-        <div className="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50/80 p-5 dark:border-white/10 dark:bg-white/[0.055]">
-          <p className="flex min-h-[58px] flex-wrap items-end gap-2">
+        <div className="mt-5 rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4 dark:border-white/10 dark:bg-white/[0.035]">
+          <p className="flex min-h-[52px] flex-wrap items-end gap-2">
             {typeof plan.price === "number" ? (
               <>
+                <span className="pb-1 text-2xl font-black md:text-3xl">$</span>
                 <NumberFlow
-                  className="text-4xl font-black tracking-tight md:text-5xl"
+                  className="text-4xl font-black tracking-tight"
                   transformTiming={{ duration: 900, easing: "ease-out" }}
                   value={plan.price}
-                />
-                <Image
-                  alt={periodLabel}
-                  className="mb-1 h-7 w-auto dark:invert md:h-9"
-                  height={36}
-                  src="/saudi-riyal-symbol.svg"
-                  width={36}
                 />
                 <span className="pb-1 text-sm font-bold text-zinc-500 dark:text-zinc-400">
                   {periodLabel}
                 </span>
               </>
             ) : (
-              <span className="text-4xl font-black tracking-tight md:text-5xl">
+              <span className="text-4xl font-black tracking-tight">
                 {copy.customPrice}
               </span>
             )}
@@ -485,7 +448,7 @@ function PlanCard({
       <LandingButton
         href={plan.href}
         className={cn(
-          "mt-5 h-11 w-full rounded-full",
+          "mt-4 h-10 w-full rounded-full",
           plan.isPopular
             ? "bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
             : "border border-zinc-200 bg-white text-zinc-950 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/[0.06] dark:text-white dark:hover:bg-white/10",
@@ -497,15 +460,30 @@ function PlanCard({
         <ArrowRight className="h-4 w-4 rtl:rotate-180" />
       </LandingButton>
 
-      <div className="my-6 h-px bg-zinc-200/80 dark:bg-white/10" />
+      <div className="my-5 h-px bg-zinc-200/80 dark:bg-white/10" />
 
-      <ul className="mt-auto space-y-3">
-        {plan.features.map((feature) => (
-          <li className="flex items-start gap-3" key={feature.title}>
-            <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-            <span className="text-sm font-bold leading-relaxed">{feature.title}</span>
-          </li>
-        ))}
+      <ul className="mt-auto space-y-2.5">
+        {plan.features.map((feature) => {
+          const isIncluded = feature.included !== false;
+
+          return (
+            <li className="flex items-start gap-3" key={feature.title}>
+              {isIncluded ? (
+                <CircleCheck className="mt-1 h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              ) : (
+                <CircleX className="mt-1 h-3.5 w-3.5 shrink-0 text-red-500/80 dark:text-red-300/80" />
+              )}
+              <span
+                className={cn(
+                  "text-[13px] font-bold leading-relaxed",
+                  isIncluded ? "text-zinc-800 dark:text-zinc-200" : "text-zinc-500 dark:text-zinc-500",
+                )}
+              >
+                {feature.title}
+              </span>
+            </li>
+          );
+        })}
       </ul>
     </article>
   );

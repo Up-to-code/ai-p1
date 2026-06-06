@@ -1,6 +1,6 @@
 import type { PartnerCatalogApp, PartnerConnection, PartnerConnectionStatus } from "./integrations.types";
 
-export type IntegrationStatusTone = "success" | "warning" | "danger" | "neutral";
+type IntegrationStatusTone = "success" | "warning" | "danger" | "neutral";
 
 export type PartnerCatalogCardModel = {
   app: PartnerCatalogApp;
@@ -21,11 +21,11 @@ export type PartnerConnectionCardModel = {
   canRevoke: boolean;
 };
 
-export function effectivePartnerConnectionStatus(connection: PartnerConnection): PartnerConnectionStatus {
+function effectivePartnerConnectionStatus(connection: PartnerConnection): PartnerConnectionStatus {
   return connection.effectiveStatus ?? connection.status;
 }
 
-export function integrationStatusTone(status?: PartnerConnectionStatus | "available"): IntegrationStatusTone {
+function integrationStatusTone(status?: PartnerConnectionStatus | "available"): IntegrationStatusTone {
   if (status === "active") return "success";
   if (status === "expired" || status === "paused") return "warning";
   if (status === "revoked") return "danger";

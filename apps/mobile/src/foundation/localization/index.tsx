@@ -6,7 +6,7 @@ import {
   formatLocaleNumber,
   type AppLocale,
 } from "./webCompat";
-import { formatWebCopy, getWebDictionary } from "./webCompat";
+import { getWebDictionary } from "./webCompat";
 import { useAppStore } from "@/store";
 
 import { getMobileDictionary, type MobileDictionary } from "./mobileDictionary";
@@ -17,7 +17,7 @@ import {
   type LocalePreference,
 } from "./core";
 
-export type AppDictionary = Record<string, any> & ReturnType<typeof getWebDictionary> & MobileDictionary;
+type AppDictionary = Record<string, any> & ReturnType<typeof getWebDictionary> & MobileDictionary;
 
 type LocalizationContextValue = {
   locale: AppLocale;
@@ -96,17 +96,3 @@ export function LocalizationProvider({ children }: PropsWithChildren) {
 export function useAppLocalization() {
   return useContext(LocalizationContext);
 }
-
-export function useTranslation() {
-  const { t, locale, direction, isRTL, formatDate, formatNumber } = useAppLocalization();
-  return {
-    t,
-    locale,
-    direction,
-    isRTL,
-    formatDate,
-    formatNumber,
-  };
-}
-
-export { formatWebCopy };

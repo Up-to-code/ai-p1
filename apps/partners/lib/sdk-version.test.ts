@@ -21,7 +21,6 @@ const docsAndSnippets = [
   "content/docs/ai-agent-implementation.mdx",
   "components/docs/AgentPromptCopyCard.tsx",
   "components/portal/AppDetailsTabs.tsx",
-  "lib/portal-copy.ts",
 ] as const;
 
 describe("partner SDK documentation version", () => {

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const organizationApiKeyResourceSchema = z.enum([
+const organizationApiKeyResourceSchema = z.enum([
   "organization",
   "client",
   "property",
@@ -10,14 +10,14 @@ export const organizationApiKeyResourceSchema = z.enum([
   "media",
 ]);
 
-export const organizationApiKeyActionSchema = z.enum(["read", "create", "update", "delete"]);
+const organizationApiKeyActionSchema = z.enum(["read", "create", "update", "delete"]);
 
-export const organizationApiKeyPermissionSchema = z.object({
+const organizationApiKeyPermissionSchema = z.object({
   resource: organizationApiKeyResourceSchema,
   actions: z.array(organizationApiKeyActionSchema).min(1),
 });
 
-export const organizationApiKeyExpirySchema = z.enum(["5h", "14d", "30d", "never"]);
+const organizationApiKeyExpirySchema = z.enum(["5h", "14d", "30d", "never"]);
 
 export const createOrganizationApiKeySchema = z.object({
   name: z.string().trim().min(1).max(120),

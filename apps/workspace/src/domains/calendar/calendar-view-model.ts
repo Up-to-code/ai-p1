@@ -19,7 +19,7 @@ export const customEventTypeValues: CalendarEventFormValues["type"][] = [
   "custom",
 ];
 
-export function addCalendarDays(date: Date, days: number) {
+function addCalendarDays(date: Date, days: number) {
   const next = new Date(date);
   next.setDate(date.getDate() + days);
   return next;
@@ -129,13 +129,13 @@ export function getCalendarWeekDays(date: Date): Date[] {
   });
 }
 
-export function startOfCalendarDay(date: Date) {
+function startOfCalendarDay(date: Date) {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
   return d.getTime();
 }
 
-export function endOfCalendarDay(date: Date) {
+function endOfCalendarDay(date: Date) {
   const d = new Date(date);
   d.setHours(23, 59, 59, 999);
   return d.getTime();
@@ -232,7 +232,7 @@ export function generateCalendarTimeSlots() {
   return slots;
 }
 
-export function isCalendarEventInSlot(eventTime: string, slotTime: string) {
+function isCalendarEventInSlot(eventTime: string, slotTime: string) {
   const [eh, em] = eventTime.split(":").map(Number);
   const [sh, sm] = slotTime.split(":").map(Number);
   const eventMin = eh * 60 + em;
