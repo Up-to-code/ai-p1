@@ -1,7 +1,5 @@
 "use client";
 
-import { useQuery } from "convex/react";
-import { api } from "@convex/_generated/api";
 import {
   useWorkspaceIndexedResource,
   useWorkspacePagedResource,
@@ -22,10 +20,6 @@ type ProjectStats = {
   draft: number;
   rejected: number;
 };
-
-export function useProjectsQuery(organizationId?: string) {
-  return useQuery(api.projects.read.list, organizationId ? { organizationId } : "skip");
-}
 
 export function useProjectsPagedQuery(organizationId?: string, options?: { status?: ProjectStatus; search?: string }) {
   return useWorkspacePagedResource(
@@ -57,22 +51,6 @@ export function useProjectOptionsQueryResult(organizationId?: string, options?: 
   );
 }
 
-export function useProjectOptionsQuery(organizationId?: string) {
-  return useWorkspaceResource<{ id: string; name: string }[]>(
-    ["projects-options", organizationId],
-    organizationId,
-    "projects/options",
-  );
-}
-
-export function useProjectStatsQuery(organizationId?: string) {
-  return useWorkspaceResource<ProjectStats>(
-    ["projects-stats", organizationId],
-    organizationId,
-    "projects/stats",
-  );
-}
-
 export function useProjectQuery(organizationId: string | undefined, projectId: string) {
   return useWorkspaceResource<Project | null>(
     ["project", organizationId, projectId],
@@ -81,7 +59,7 @@ export function useProjectQuery(organizationId: string | undefined, projectId: s
   );
 }
 
-export function projectPayloadFromForm(values: ProjectFormValues) {
+function projectPayloadFromForm(values: ProjectFormValues) {
   const projectPrices = (values.projectPrices ?? [])
     .map((item) => ({
       id: item.id,

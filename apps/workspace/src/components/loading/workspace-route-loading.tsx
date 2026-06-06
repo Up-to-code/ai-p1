@@ -1,11 +1,13 @@
+import { Loader2 } from "lucide-react";
 import { BrandMark } from "@/components/logo";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type WorkspaceRouteLoadingProps = {
-  variant?: "auth" | "app" | "onboarding" | "choose-org";
+  variant?: "auth" | "app" | "onboarding" | "choose-org" | "session";
 };
 
 export function WorkspaceRouteLoading({ variant = "app" }: WorkspaceRouteLoadingProps) {
+  if (variant === "session") return <SessionCheckLoading />;
   if (variant === "auth") return <AuthRouteLoading />;
   if (variant === "onboarding") return <OnboardingRouteLoading />;
   if (variant === "choose-org") return <ChooseOrganizationRouteLoading />;
@@ -18,6 +20,18 @@ function BrandLoader() {
       <BrandMark className="h-7 w-7" priority />
       <Skeleton className="h-4 w-20 rounded-full" />
     </div>
+  );
+}
+
+function SessionCheckLoading() {
+  return (
+    <main className="grid min-h-svh place-items-center bg-[oklch(97.5%_0.006_255)] text-foreground dark:bg-[oklch(8.5%_0.012_255)]">
+      <div className="flex flex-col items-center gap-4">
+        <BrandMark className="h-8 w-8" priority />
+        <Loader2 className="h-6 w-6 animate-spin text-text-secondary" aria-hidden="true" />
+        <span className="sr-only">Checking session</span>
+      </div>
+    </main>
   );
 }
 
@@ -148,43 +162,63 @@ function OnboardingRouteLoading() {
 
 function AppRouteLoading() {
   return (
-    <div className="flex h-svh overflow-hidden bg-background text-foreground">
-      <aside className="hidden w-[var(--sidebar-width-expanded)] shrink-0 border-e border-border bg-surface p-4 lg:block">
-        <BrandLoader />
-        <div className="mt-8 space-y-7">
-          {[0, 1, 2].map((group) => (
-            <div className="space-y-3" key={group}>
-              <Skeleton className="h-2.5 w-16 rounded-full" />
-              {[0, 1, 2].map((item) => (
-                <div className="flex h-10 items-center gap-3 rounded-xl px-2" key={item}>
-                  <Skeleton className="h-5 w-5 rounded-md" />
-                  <Skeleton className="h-3 w-24 rounded-full" />
+    <div className="min-h-full bg-background p-6 text-foreground lg:p-10">
+      <div className="mx-auto max-w-[1400px] space-y-6">
+        <div className="space-y-3">
+          <Skeleton className="h-3 w-28 rounded-full" />
+          <Skeleton className="h-9 w-72 max-w-full rounded-full" />
+          <Skeleton className="h-4 w-96 max-w-full rounded-full" />
+        </div>
+        <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="space-y-6">
+            <section className="rounded-[24px] border border-border bg-surface p-5">
+              <div className="mb-5 flex items-center justify-between gap-4">
+                <Skeleton className="h-5 w-36 rounded-full" />
+                <Skeleton className="h-7 w-20 rounded-full" />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+                {[0, 1, 2].map((item) => (
+                  <Skeleton className="h-[232px] rounded-[22px]" key={item} />
+                ))}
+              </div>
+            </section>
+            <section className="rounded-[24px] border border-border bg-surface p-5">
+              <Skeleton className="mb-5 h-5 w-32 rounded-full" />
+              <div className="space-y-3">
+                {[0, 1, 2].map((item) => (
+                  <div className="flex items-center gap-3" key={item}>
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <Skeleton className="h-3 w-2/3 rounded-full" />
+                      <Skeleton className="h-2.5 w-1/2 rounded-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+          <section className="rounded-[24px] border border-border bg-surface p-5 xl:sticky xl:top-6">
+            <div className="mb-5 flex items-center justify-between gap-4">
+              <Skeleton className="h-5 w-40 rounded-full" />
+              <Skeleton className="h-7 w-20 rounded-full" />
+            </div>
+            <div className="space-y-4">
+              {[0, 1, 2, 3].map((item) => (
+                <div className="grid grid-cols-[54px_minmax(0,1fr)_32px] items-center gap-3" key={item}>
+                  <div className="space-y-2">
+                    <Skeleton className="mx-auto h-3 w-9 rounded-full" />
+                    <Skeleton className="mx-auto h-1.5 w-1.5 rounded-full" />
+                  </div>
+                  <div className="min-w-0 space-y-2">
+                    <Skeleton className="h-3 w-4/5 rounded-full" />
+                    <Skeleton className="h-2.5 w-1/2 rounded-full" />
+                  </div>
+                  <Skeleton className="h-8 w-8 rounded-full" />
                 </div>
               ))}
             </div>
-          ))}
+          </section>
         </div>
-      </aside>
-      <div className="flex min-w-0 flex-1 flex-col bg-surface">
-        <header className="flex h-[var(--topbar-height)] shrink-0 items-center gap-4 border-b border-border bg-surface px-4 sm:px-6 lg:px-8">
-          <Skeleton className="h-8 w-44 rounded-full" />
-          <div className="ms-auto flex items-center gap-2">
-            <Skeleton className="hidden h-9 w-28 rounded-full sm:block" />
-            <Skeleton className="h-9 w-20 rounded-full" />
-            <Skeleton className="h-10 w-10 rounded-full" />
-          </div>
-        </header>
-        <main className="flex-1 bg-background p-6 lg:p-10">
-          <div className="mx-auto max-w-[1400px] space-y-6">
-            <Skeleton className="h-28 rounded-[24px]" />
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {[0, 1, 2, 3].map((item) => (
-                <Skeleton className="h-28 rounded-[20px]" key={item} />
-              ))}
-            </div>
-            <Skeleton className="h-72 rounded-[24px]" />
-          </div>
-        </main>
       </div>
     </div>
   );

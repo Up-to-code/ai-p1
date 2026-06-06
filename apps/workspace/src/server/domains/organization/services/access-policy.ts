@@ -1,8 +1,8 @@
 import { organizationPermissionStatement, type OrganizationPermissionStatement } from "@/packages/authz";
 import { OrganizationActionError } from "../errors/action-error";
 
-export const defaultOrganizationRoles = ["owner", "admin", "member"] as const;
-export type DefaultOrganizationRole = (typeof defaultOrganizationRoles)[number];
+const defaultOrganizationRoles = ["owner", "admin", "member"] as const;
+type DefaultOrganizationRole = (typeof defaultOrganizationRoles)[number];
 
 export type OrganizationMemberForPolicy = {
   id: string;
@@ -21,18 +21,18 @@ export type OrganizationRoleForPolicy = {
   role: string;
 };
 
-export function isDefaultOrganizationRole(role: string) {
+function isDefaultOrganizationRole(role: string) {
   return defaultOrganizationRoles.includes(role as DefaultOrganizationRole);
 }
 
-export function parseRoleList(role: string) {
+function parseRoleList(role: string) {
   return role
     .split(",")
     .map((part) => part.trim())
     .filter(Boolean);
 }
 
-export function hasOwnerRole(role: string) {
+function hasOwnerRole(role: string) {
   return parseRoleList(role).includes("owner");
 }
 

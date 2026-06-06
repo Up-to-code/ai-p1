@@ -10,8 +10,12 @@ type SendAgentChatRequestInput = {
   onEvent: (event: AgentChatEvent) => void;
 };
 
-export function agentChatPath(organizationId: string) {
+function agentChatPath(organizationId: string) {
   return `/api/v1/organizations/${organizationId}/agents/chat`;
+}
+
+function agentThreadPath(organizationId: string, threadId: string) {
+  return `/api/v1/organizations/${organizationId}/agents/threads/${threadId}`;
 }
 
 export function parseAgentSseChunk(buffer: string, onEvent: (event: AgentChatEvent) => void) {
@@ -63,4 +67,17 @@ export async function sendAgentChatRequest(input: SendAgentChatRequestInput) {
   if (buffer.trim()) {
     parseAgentSseChunk(`${buffer}\n\n`, input.onEvent);
   }
+}
+
+export async function deleteAgentThreadRequest(organizationId: string, threadId: string) {
+  const response = await fetch(agentThreadPath(organizationId, threadId), {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload.error ?? "Unable to delete conversation.");
+  }
+
+  return response.json() as Promise<{ deleted: true; threadId: string }>;
 }

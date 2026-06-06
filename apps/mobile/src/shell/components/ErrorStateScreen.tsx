@@ -17,7 +17,7 @@ import { Text } from "@/foundation/primitives/Text";
 import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 
-export type ErrorStateAction = {
+type ErrorStateAction = {
   label: string;
   kind?: "primary" | "secondary" | "ghost";
   onPress?: () => void;

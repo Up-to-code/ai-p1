@@ -6,9 +6,9 @@ import {
 
 export type { AttachmentUploadProgressUpdate };
 
-export const MAX_COMPOSER_ATTACHMENT_PREVIEWS = 5;
-export const MAX_MESSAGE_ATTACHMENT_PREVIEWS = 5;
-export const MAX_PENDING_AGENT_ATTACHMENTS = 24;
+const MAX_COMPOSER_ATTACHMENT_PREVIEWS = 5;
+const MAX_MESSAGE_ATTACHMENT_PREVIEWS = 5;
+const MAX_PENDING_AGENT_ATTACHMENTS = 24;
 
 export function mergePendingAgentAttachments(
   current: PendingAgentAttachment[],

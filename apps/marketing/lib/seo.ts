@@ -4,9 +4,9 @@ import { brandDomainUrl, brandIdentity, brandLabel } from "@qentrah/brand-identi
 import { getContent, getMarketingMessages, getWorkspaceLanding, locales, type LegalBlockBody, type Locale } from "@/lib/content";
 import { publicSeoLinks } from "@/lib/public-links";
 
-export const siteUrl = brandDomainUrl("root");
+const siteUrl = brandDomainUrl("root");
 
-export const localeLanguages = {
+const localeLanguages = {
   "ar-SA": "/ar",
   ar: "/ar",
   "en-SA": "/en",
@@ -14,12 +14,7 @@ export const localeLanguages = {
   "x-default": "/ar",
 } as const;
 
-export const localeLabels = {
-  ar: "ar-SA",
-  en: "en-SA",
-} as const;
-
-export function localizedPath(locale: Locale, path = "") {
+function localizedPath(locale: Locale, path = "") {
   const cleanPath = path ? `/${path.replace(/^\/+/u, "")}` : "";
   return `/${locale}${cleanPath}`;
 }
@@ -33,15 +28,15 @@ export function localizedLanguages(path = "", absolute = false) {
   );
 }
 
-export function marketingTitle(locale: Locale) {
+function marketingTitle(locale: Locale) {
   return getMarketingMessages(locale).Landing.home.hero.title;
 }
 
-export function marketingDescription(locale: Locale) {
+function marketingDescription(locale: Locale) {
   return getMarketingMessages(locale).Landing.home.hero.description;
 }
 
-export function marketingKeywords(locale: Locale) {
+function marketingKeywords(locale: Locale) {
   const copy = getContent(locale);
 
   return [
@@ -55,7 +50,7 @@ export function marketingKeywords(locale: Locale) {
   ];
 }
 
-export function marketingIcons(): Metadata["icons"] {
+function marketingIcons(): Metadata["icons"] {
   return {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
@@ -248,7 +243,7 @@ function legalDescription(body: LegalBlockBody) {
   return typeof first === "string" ? first : body.flat().join(" ");
 }
 
-export const marketingSitemapPaths = [
+const marketingSitemapPaths = [
   "",
   "dashboard",
   "partners",

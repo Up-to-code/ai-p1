@@ -1,13 +1,13 @@
 import { z } from "zod/v4";
 
-export const qentrahIntegrationContractNames = [
+const qentrahIntegrationContractNames = [
   "partner.oauth_runtime_sync.v1",
   "workspace.capability_discovery.v1",
   "workspace.authorization_status.v1",
   "partner.event_delivery.v1",
 ] as const;
 
-export type QentrahIntegrationContractName = (typeof qentrahIntegrationContractNames)[number];
+type QentrahIntegrationContractName = (typeof qentrahIntegrationContractNames)[number];
 
 export const partnerOAuthRuntimeSyncSchema = z.object({
   contract: z.literal("partner.oauth_runtime_sync.v1"),
@@ -28,7 +28,7 @@ export const partnerOAuthRuntimeSyncSchema = z.object({
   occurredAt: z.number().int().positive(),
 }).strict();
 
-export const workspaceCapabilityDiscoverySchema = z.object({
+const workspaceCapabilityDiscoverySchema = z.object({
   contract: z.literal("workspace.capability_discovery.v1"),
   workspaceId: z.string().min(1),
   clientId: z.string().min(1),
@@ -44,7 +44,7 @@ export const workspaceAuthorizationStatusSchema = z.object({
   expiresAt: z.number().int().positive().optional(),
 });
 
-export const partnerEventDeliverySchema = z.object({
+const partnerEventDeliverySchema = z.object({
   contract: z.literal("partner.event_delivery.v1"),
   idempotencyKey: z.string().min(8),
   workspaceId: z.string().min(1),
@@ -54,17 +54,17 @@ export const partnerEventDeliverySchema = z.object({
   occurredAt: z.number().int().positive(),
 });
 
-export const qentrahIntegrationPayloadSchema = z.discriminatedUnion("contract", [
+const qentrahIntegrationPayloadSchema = z.discriminatedUnion("contract", [
   partnerOAuthRuntimeSyncSchema,
   workspaceCapabilityDiscoverySchema,
   workspaceAuthorizationStatusSchema,
   partnerEventDeliverySchema,
 ]);
 
-export type PartnerOAuthRuntimeSync = z.output<typeof partnerOAuthRuntimeSyncSchema>;
-export type WorkspaceCapabilityDiscovery = z.output<typeof workspaceCapabilityDiscoverySchema>;
-export type WorkspaceAuthorizationStatus = z.output<typeof workspaceAuthorizationStatusSchema>;
-export type PartnerEventDelivery = z.output<typeof partnerEventDeliverySchema>;
+type PartnerOAuthRuntimeSync = z.output<typeof partnerOAuthRuntimeSyncSchema>;
+type WorkspaceCapabilityDiscovery = z.output<typeof workspaceCapabilityDiscoverySchema>;
+type WorkspaceAuthorizationStatus = z.output<typeof workspaceAuthorizationStatusSchema>;
+type PartnerEventDelivery = z.output<typeof partnerEventDeliverySchema>;
 export type QentrahIntegrationPayload = z.output<typeof qentrahIntegrationPayloadSchema>;
 
 export function parseQentrahIntegrationPayload(input: unknown): QentrahIntegrationPayload {

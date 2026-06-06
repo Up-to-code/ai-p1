@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 import React, { useEffect, useState } from "react"
 import { codeToHtml } from "shiki"
 
-export type CodeBlockProps = {
+type CodeBlockProps = {
   children?: React.ReactNode
   className?: string
 } & React.HTMLProps<HTMLDivElement>
@@ -24,7 +24,7 @@ function CodeBlock({ children, className, ...props }: CodeBlockProps) {
   )
 }
 
-export type CodeBlockCodeProps = {
+type CodeBlockCodeProps = {
   code: string
   language?: string
   theme?: string
@@ -74,21 +74,4 @@ function CodeBlockCode({
   )
 }
 
-export type CodeBlockGroupProps = React.HTMLAttributes<HTMLDivElement>
-
-function CodeBlockGroup({
-  children,
-  className,
-  ...props
-}: CodeBlockGroupProps) {
-  return (
-    <div
-      className={cn("flex items-center justify-between", className)}
-      {...props}
-    >
-      {children}
-    </div>
-  )
-}
-
-export { CodeBlockGroup, CodeBlockCode, CodeBlock }
+export { CodeBlockCode, CodeBlock }

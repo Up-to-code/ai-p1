@@ -15,6 +15,7 @@ import {
   canQueryConversationThread,
   resolveActiveConversationThreadId,
 } from "@/conversation/lib/threadSelection";
+import { shouldResetConversationForOrganizationScope } from "@/conversation/lib/threadScope";
 import {
   applyStreamEvent,
   buildConversationTimeline,
@@ -150,7 +151,11 @@ export function useConversationController() {
     const nextOrganizationId = workspace.organizationId ?? null;
     previousOrganizationIdRef.current = nextOrganizationId;
 
-    if (previousOrganizationId && previousOrganizationId !== nextOrganizationId) {
+    if (shouldResetConversationForOrganizationScope({
+      activeThreadId,
+      previousOrganizationId,
+      nextOrganizationId,
+    })) {
       setActiveThreadId(null);
       setActiveRunId(null);
       setPendingPrompt(null);
@@ -159,7 +164,7 @@ export function useConversationController() {
       setMessagesRefreshKey((value) => value + 1);
       refreshThreads?.();
     }
-  }, [refreshThreads, setActiveRunId, setActiveThreadId, setPendingPrompt, workspace.organizationId]);
+  }, [activeThreadId, refreshThreads, setActiveRunId, setActiveThreadId, setPendingPrompt, workspace.organizationId]);
 
   useEffect(() => {
     if (!e2eQaMode && workspace.status === "signed_out") {

@@ -1,8 +1,8 @@
 export const MOBILE_AUTH_ENTRY_ROUTE = "/(auth)";
 export const MOBILE_WORKSPACE_GATE_ROUTE = "/";
-export const MOBILE_WORKSPACE_CHOOSER_ROUTE = "/(auth)/choose-workspace";
+const MOBILE_WORKSPACE_CHOOSER_ROUTE = "/(auth)/choose-workspace";
 
-export function firstSearchParam(value: string | string[] | undefined) {
+function firstSearchParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 

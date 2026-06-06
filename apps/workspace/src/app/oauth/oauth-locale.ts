@@ -1,10 +1,10 @@
-export const oauthLocales = ["en", "ar"] as const;
+const oauthLocales = ["en", "ar"] as const;
 
 export type OAuthLocale = (typeof oauthLocales)[number];
 
 const localeSet = new Set<string>(oauthLocales);
 
-export function isOAuthLocale(locale: string): locale is OAuthLocale {
+function isOAuthLocale(locale: string): locale is OAuthLocale {
   return localeSet.has(locale);
 }
 

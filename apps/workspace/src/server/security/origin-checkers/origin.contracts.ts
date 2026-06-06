@@ -1,6 +1,4 @@
-export type BlockedOriginReason = "missing-origin" | "untrusted-origin" | "invalid-origin" | "policy-not-configured";
-
-export interface AllowedOriginRule {
+interface AllowedOriginRule {
   readonly id: string;
   readonly description: string;
 }

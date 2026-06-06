@@ -2,26 +2,15 @@
 
 ## Existing Coverage
 
-- Partner access tests cover bearer header enforcement, legacy OAuth rejection, organization API key access, WorkOS partner API key validation, grant/key permission intersection, and actor routing.
-- Partner authorization service tests cover catalog verification, organization grant mutation, connection updates, and WorkOS partner API key issuance.
+- Partner access tests cover bearer header enforcement, legacy OAuth rejection, organization API key access, and key permission routing.
+- Partner authorization service tests cover catalog verification, organization grant mutation, and connection updates.
 - MCP connection tests cover permission normalization, built-in role defaults, and source-level protection against Better Auth role adapter reads.
 
 ## Required Checks For This Change
 
-- `npm --workspace @qentrah/workspace run codegen:convex` - passed 2026-06-02 WorkOS authorization migration slice.
-- `npm --workspace @qentrah/workspace run typecheck` - passed 2026-06-02 WorkOS authorization migration slice.
-- `npm --workspace @qentrah/workspace run test -- src/server/domains/partnerApps` - passed 2026-06-02 WorkOS partner authorization cutover.
-- `npm --workspace @qentrah/workspace run test -- src/domains/integrations/integrations-runtime.test.ts src/server/domains/partnerApps` - passed 2026-06-02 WorkOS partner app flow verification.
-- `npm --workspace @qentrah/workspace run test -- src/server/domains/partnerApps/services/workos-partner-flow.test.ts src/domains/integrations/integrations-runtime.test.ts src/server/domains/partnerApps` - passed 2026-06-02 WorkOS partner app all-flow verification.
-- `npm --workspace @qentrah/workspace run test:workos-partner-flow` - passed 2026-06-02 WorkOS partner app all-flow verification.
-- `npm --workspace @qentrah/workspace run typecheck` - passed 2026-06-02 WorkOS partner authorization cutover.
-- `npm --workspace @qentrah/workspace run test -- convex/mcp src/server/protocols/mcp src/server/domains/mcpConnections src/domains/organization/mcp-personal-links-source.test.ts` - passed 2026-06-02 WorkOS partner authorization cutover.
-- `npm --workspace @qentrah/workspace run test -- src/server convex` - passed 2026-06-02 WorkOS partner authorization cutover.
-- `npm --workspace @qentrah/workspace run test -- src/server convex src/domains/integrations/integrations-runtime.test.ts` - passed 2026-06-02 WorkOS partner app flow verification.
-- `npm --workspace @qentrah/workspace run build` - passed 2026-06-02 WorkOS partner authorization cutover.
-- `npm --workspace @qentrah/workspace run test -- src/server/auth/workos src/server/domains/partnerApps/services/workos-partner-api-key-access.test.ts src/server/domains/partnerApps/services/partner-resource-access.test.ts src/server/domains/partnerApps/services/organization-api-key-access.test.ts convex/auth.config.test.ts` - passed 2026-06-02 WorkOS authorization migration slice.
-- `npm --workspace @qentrah/workspace run test -- convex/workosAuth.test.ts src/server/auth/workos src/server/domains/partnerApps/services/workos-partner-api-key-access.test.ts` - passed 2026-06-02 WorkOS webhook projection deepening.
-- `npm --workspace @qentrah/workspace run typecheck` - passed 2026-06-02 WorkOS webhook projection deepening.
+- `npm --workspace @qentrah/workspace run test -- src/server/domains/partnerApps/services/partner-resource-access.test.ts src/server/domains/partnerApps/services/organization-api-key-access.test.ts src/server/domains/partnerApps/handlers/resources-source.test.ts` - passed 2026-06-06 architecture cleanup.
+- `npm --workspace @qentrah/workspace run test -- src/server/domains/partnerApps` - passed 2026-06-06 architecture cleanup.
+- `npm --workspace @qentrah/workspace run typecheck` - passed 2026-06-06 architecture cleanup.
 - `npm --workspace @qentrah/partner-auth-core test` - passed 2026-05-16.
 - `npm --workspace @qentrah/partner-auth-core run typecheck` - passed 2026-05-16.
 - `npm --workspace @qentrah/workspace test -- src/server/domains/partnerApps convex/partnerApps/migrations.test.ts` - passed 2026-05-16.

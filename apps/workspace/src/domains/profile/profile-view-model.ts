@@ -1,12 +1,12 @@
 import type { ProfileSettings } from "./store/profile.types";
 import type { ProfileFormValues } from "./validation/profile.schema";
 
-export type ProfileTab = "profile" | "notifications" | "security";
+export type ProfileTab = "profile" | "account" | "security";
 
 export type ProfileTabSpec = {
   id: ProfileTab;
-  labelKey: "tabs.profile" | "tabs.notifications" | "tabs.security";
-  icon: "profile" | "notifications" | "security";
+  labelKey: "tabs.profile" | "tabs.account" | "tabs.security";
+  icon: "profile" | "account" | "security";
 };
 
 export type ProfileRolePresentation = {
@@ -16,6 +16,13 @@ export type ProfileRolePresentation = {
 };
 
 const rolePermissionKeys: Record<string, string[]> = {
+  "Workspace Owner": [
+    "manageMembers",
+    "editOrganization",
+    "viewBilling",
+    "apiAccess",
+    "allProjects",
+  ],
   "Organization Admin": [
     "manageMembers",
     "editOrganization",
@@ -34,6 +41,8 @@ const rolePermissionKeys: Record<string, string[]> = {
 };
 
 const roleColors: Record<string, string> = {
+  "Workspace Owner":
+    "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20",
   "Organization Admin":
     "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20",
   "Project Manager":
@@ -45,6 +54,7 @@ const roleColors: Record<string, string> = {
 };
 
 const roleI18nKeys: Record<string, string> = {
+  "Workspace Owner": "workspaceOwner",
   "Organization Admin": "organizationAdmin",
   "Project Manager": "projectManager",
   "Project Editor": "projectEditor",
@@ -53,7 +63,7 @@ const roleI18nKeys: Record<string, string> = {
 
 export const profileTabs: ProfileTabSpec[] = [
   { id: "profile", labelKey: "tabs.profile", icon: "profile" },
-  { id: "notifications", labelKey: "tabs.notifications", icon: "notifications" },
+  { id: "account", labelKey: "tabs.account", icon: "account" },
   { id: "security", labelKey: "tabs.security", icon: "security" },
 ];
 
@@ -67,16 +77,19 @@ export function profileInitials(name: string) {
 }
 
 export function profileFormValues(
-  user: { name: string; email: string },
-  profile: ProfileSettings,
+  user: {
+    name: string;
+    email: string;
+    profile?: Omit<ProfileSettings, "name" | "email">;
+  },
+  profile?: ProfileSettings,
 ): ProfileFormValues {
   return {
     name: user.name,
-    email: user.email,
-    phone: profile.phone,
-    role: profile.role,
-    language: profile.language,
-    timezone: profile.timezone,
+    phone: user.profile?.phone ?? profile?.phone ?? "",
+    role: user.profile?.role ?? profile?.role ?? "Workspace Owner",
+    language: user.profile?.language ?? profile?.language ?? "en",
+    timezone: user.profile?.timezone ?? profile?.timezone ?? "Africa/Cairo",
   };
 }
 

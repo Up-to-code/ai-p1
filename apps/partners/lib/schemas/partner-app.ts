@@ -2,8 +2,8 @@ import { z } from "zod/v4";
 import type { PartnerAppClientType } from "@/server/partnerApps";
 import { accessCheckpointScopesSchema } from "@/validation/access-checkpoints";
 
-export const partnerAppCategorySchema = z.enum(["brokerage", "developer", "crm", "marketing", "operations", "other"]);
-export const partnerIntegrationModeSchema = z.enum(["integrate", "debug", "sandbox", "workspace", "production"]);
+const partnerAppCategorySchema = z.enum(["brokerage", "developer", "crm", "marketing", "operations", "other"]);
+const partnerIntegrationModeSchema = z.enum(["integrate", "debug", "sandbox", "workspace", "production"]);
 
 function parseLines(value: unknown) {
   if (Array.isArray(value)) return value.map(String);

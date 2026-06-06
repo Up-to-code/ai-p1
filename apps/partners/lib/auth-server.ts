@@ -129,7 +129,7 @@ function passwordSignupGatePlugin(): BetterAuthPlugin {
   };
 }
 
-export const authOptions = {
+const authOptions = {
   appName: "Qentrah Partners",
   baseURL: getAuthBaseUrl(),
   secret: getBetterAuthSecret(),
@@ -146,7 +146,7 @@ export const authOptions = {
   plugins: [passwordSignupGatePlugin()],
 } satisfies BetterAuthOptions;
 
-export const auth = betterAuth(authOptions);
+const auth = betterAuth(authOptions);
 
 export const handler = {
   GET: (request: Request) => auth.handler(request),
@@ -159,11 +159,7 @@ export async function getCurrentPartnerSession(requestHeaders?: Headers) {
   });
 }
 
-export async function getPartnerSessionFromRequest(request: Request) {
-  return getCurrentPartnerSession(request.headers);
-}
-
-export async function requireCurrentPartnerSession(requestHeaders?: Headers) {
+async function requireCurrentPartnerSession(requestHeaders?: Headers) {
   const session = await getCurrentPartnerSession(requestHeaders);
   if (!session?.user?.id) throw new Error("Authentication required");
   return session;

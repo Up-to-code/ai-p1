@@ -12,6 +12,7 @@ import {
   type AppDataTableColumn,
 } from "@/components/shared";
 import { EmptyWorkspace, HttpQueryState, StatusPill, WorkspaceQueryState } from "@/components/shared/crud-ui";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAccountContext } from "@/domains/auth";
 import { useWorkspaceIndexedResource } from "@/domains/resources/workspace-resource-request";
 import {
@@ -40,7 +41,6 @@ export function ActivityScreen() {
   );
   const stats = eventsQuery.stats;
   const isLoading = isWorkspaceReady && eventsQuery.queryStatus === "loading";
-  const isQueryBlocked = isLoading || eventsQuery.queryStatus === "error";
   const events = useMemo(() => eventsQuery.results as AuditEvent[], [eventsQuery.results]);
   const latest = stats?.latestAt ? activityRelativeTime(stats.latestAt, locale) : t("stats.none");
 
@@ -101,15 +101,19 @@ export function ActivityScreen() {
         <EmptyWorkspace icon={History} title={t("empty.noOrgTitle")} description={t("empty.noOrgDesc")} />
       ) : (
         <>
-          <AppStatsGrid stats={[
-            { label: t("stats.total"), value: stats?.total ?? "...", icon: Activity },
-            { label: t("stats.people"), value: stats?.people ?? "...", icon: Users },
-            { label: t("stats.business"), value: stats?.business ?? "...", icon: Building2 },
-            { label: t("stats.latest"), value: latest, icon: Clock3 },
-          ]} />
-          {isQueryBlocked ? (
+          {isLoading ? (
+            <ActivityLoadingSkeleton />
+          ) : (
+            <AppStatsGrid stats={[
+              { label: t("stats.total"), value: stats?.total ?? "...", icon: Activity },
+              { label: t("stats.people"), value: stats?.people ?? "...", icon: Users },
+              { label: t("stats.business"), value: stats?.business ?? "...", icon: Building2 },
+              { label: t("stats.latest"), value: latest, icon: Clock3 },
+            ]} />
+          )}
+          {eventsQuery.queryStatus === "error" ? (
             <HttpQueryState query={eventsQuery} variant="activity" />
-          ) : events.length === 0 ? (
+          ) : isLoading ? null : events.length === 0 ? (
             <EmptyWorkspace icon={History} title={t("empty.title")} description={t("empty.desc")} />
           ) : (
             <>
@@ -129,5 +133,42 @@ export function ActivityScreen() {
         </>
       )}
     </AppPageShell>
+  );
+}
+
+function ActivityLoadingSkeleton() {
+  return (
+    <div className="space-y-6" role="status" aria-label="Loading activity">
+      <div className="grid overflow-hidden rounded-[24px] border border-zinc-100 bg-white dark:border-white/5 dark:bg-[#0A0A0A] md:grid-cols-4">
+        {[0, 1, 2, 3].map((item) => (
+          <div key={item} className="border-b border-zinc-100 p-5 last:border-b-0 dark:border-white/5 md:border-b-0 md:border-e md:last:border-e-0">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-4">
+                <Skeleton className="h-3 w-24 rounded-full" />
+                <Skeleton className="h-7 w-20 rounded-full" />
+              </div>
+              <Skeleton className="h-4 w-4 rounded-full" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="overflow-hidden rounded-[24px] border border-zinc-100 bg-white dark:border-white/5 dark:bg-[#0A0A0A]">
+        <div className="grid grid-cols-[0.8fr_1fr_0.8fr_1.4fr_0.7fr] gap-8 border-b border-zinc-100 px-5 py-4 dark:border-white/5">
+          {[0, 1, 2, 3, 4].map((item) => (
+            <Skeleton key={item} className="h-3 w-20 rounded-full" />
+          ))}
+        </div>
+        {[0, 1, 2, 3, 4, 5, 6].map((row) => (
+          <div key={row} className="grid grid-cols-[0.8fr_1fr_0.8fr_1.4fr_0.7fr] items-center gap-8 border-b border-zinc-100 px-5 py-4 last:border-b-0 dark:border-white/5">
+            <Skeleton className="h-4 w-24 rounded-full" />
+            <Skeleton className="h-4 w-28 rounded-full" />
+            <Skeleton className="h-6 w-24 rounded-full" />
+            <Skeleton className="h-4 w-56 max-w-full rounded-full" />
+            <Skeleton className="h-4 w-20 justify-self-end rounded-full" />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

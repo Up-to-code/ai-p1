@@ -6,6 +6,7 @@ import {
 } from "./toolRegistry";
 import { getRegistryTool } from "../../src/server/protocols/mcp/tools/registry-core";
 import { evaluateAgentToolPolicy } from "../../src/server/domains/agents/policies/tool-policy";
+import { clientInput } from "./toolInputs";
 
 type Input = Record<string, unknown>;
 
@@ -18,6 +19,12 @@ function inputObject(value: unknown): Input {
 function compactPreview(value: unknown, maxLength = 900) {
   const text = typeof value === "string" ? value : JSON.stringify(value ?? {});
   return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+}
+
+function validateToolInputBeforeApproval(tool: string, input: Input) {
+  if (tool === "clients_create") {
+    clientInput(input);
+  }
 }
 
 export async function executeMcpToolCall(
@@ -63,6 +70,15 @@ export async function executeMcpToolCall(
   };
 
   const tool = getRegistryTool(args.tool);
+  try {
+    validateToolInputBeforeApproval(args.tool, common.input);
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Invalid tool input.",
+    };
+  }
+
   const decision = evaluateAgentToolPolicy({
     adapter: "mcp",
     actorType: "mcpConnection",

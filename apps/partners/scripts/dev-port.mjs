@@ -7,7 +7,7 @@ export function parsePreferredPort(value, fallback = 3002) {
   return Number.isInteger(parsed) && parsed > 0 && parsed < 65536 ? parsed : fallback;
 }
 
-export function canUsePort(port, host = "::") {
+function canUsePort(port, host = "::") {
   return new Promise((resolve) => {
     const server = net.createServer();
     server.unref();
@@ -31,7 +31,7 @@ export async function findAvailablePort(startPort, options = {}) {
   throw new Error(`No available port found from ${startPort} after ${maxAttempts} attempts`);
 }
 
-export function hasNextDevLock(packageDir = process.cwd()) {
+function hasNextDevLock(packageDir = process.cwd()) {
   return existsSync(join(packageDir, ".next", "dev", "lock"));
 }
 

@@ -17,12 +17,7 @@ export type AdminAccessState =
   | { status: "signed_out"; reason: string }
   | { status: "forbidden"; reason: string; email?: string };
 
-export function adminCallbackUrl(path = "/", origin?: string) {
-  const { adminOrigin } = adminSecurityConfig();
-  return `${origin ?? adminOrigin}/auth/callback?next=${encodeURIComponent(path)}`;
-}
-
-export async function getAdminAccessState(): Promise<AdminAccessState> {
+async function getAdminAccessState(): Promise<AdminAccessState> {
   const requestHeaders = await headers();
   const cookie = requestHeaders.get("cookie") ?? "";
   if (!cookie) return { status: "signed_out", reason: "missing-session-cookie" };

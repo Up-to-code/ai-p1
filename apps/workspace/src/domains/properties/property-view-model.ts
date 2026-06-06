@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
 import type { PropertyStatus } from "./store/properties.types";
 
 export const propertyFilters = ["all", "available", "pending", "reserved", "sold", "draft"] as const;
@@ -26,19 +25,6 @@ export function linkStatusTone(status: (typeof unitLinkStatuses)[number]) {
   if (status === "viewing" || status === "shortlisted") return "info";
   if (status === "rejected") return "danger";
   return "neutral";
-}
-
-export function useFirstImagePreviewUrl(files: File[]) {
-  const firstImage = useMemo(() => files.find((file) => file.type.startsWith("image/")) ?? null, [files]);
-  const previewUrl = useMemo(() => (firstImage ? URL.createObjectURL(firstImage) : null), [firstImage]);
-
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
-
-  return previewUrl;
 }
 
 export function formatFileSize(size: number) {

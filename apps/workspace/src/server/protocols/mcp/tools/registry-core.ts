@@ -1,4 +1,4 @@
-export type McpPermissionResource =
+type McpPermissionResource =
   | "organization"
   | "member"
   | "role"
@@ -9,7 +9,7 @@ export type McpPermissionResource =
   | "task"
   | "media";
 
-export type McpPermissionAction = "read" | "create" | "update" | "delete";
+type McpPermissionAction = "read" | "create" | "update" | "delete";
 
 export type McpAdapter = "agent" | "mcp";
 export type McpToolRiskLevel = "read" | "low_write" | "sensitive_write" | "destructive" | "admin";
@@ -21,7 +21,7 @@ export type McpToolDataSensitivity =
   | "secret_bearing"
   | "encrypted_payload";
 
-export type McpToolRegistryItem = {
+type McpToolRegistryItem = {
   name: string;
   title: string;
   description: string;
@@ -85,7 +85,7 @@ function tool(input: Omit<McpToolRegistryItem, "riskLevel" | "approvalRequiremen
   return { ...input, ...safetyForTool(input) };
 }
 
-export const mcpToolRegistry = [
+const mcpToolRegistry = [
   tool({ name: "organization_info", title: "Organization info", description: "Get this agent link's organization context and allowed work.", resource: "organization", action: "read", adapters: both }),
   tool({ name: "organization_update_identity", title: "Update organization identity", description: "Update the organization's dev organization identity fields.", resource: "organization", action: "update", adapters: agentOnly }),
   tool({ name: "organization_update_profile", title: "Update organization profile", description: "Update the organization's workspace profile fields.", resource: "organization", action: "update", adapters: agentOnly }),
@@ -99,7 +99,7 @@ export const mcpToolRegistry = [
   tool({ name: "roles_delete", title: "Delete work role", description: "Delete an organization work role.", resource: "role", action: "delete", destructive: true, adapters: agentOnly }),
   tool({ name: "clients_list", title: "List clients", description: "List active clients in the organization.", resource: "client", action: "read", adapters: both }),
   tool({ name: "clients_get", title: "Get client", description: "Get one client profile.", resource: "client", action: "read", adapters: both }),
-  tool({ name: "clients_create", title: "Create client", description: "Create a client profile.", resource: "client", action: "create", adapters: both }),
+  tool({ name: "clients_create", title: "Create client", description: "Create a client profile. Required: name and either contact/email or phone. Other CRM fields are optional.", resource: "client", action: "create", adapters: both }),
   tool({ name: "clients_update", title: "Update client", description: "Update a client profile.", resource: "client", action: "update", adapters: both }),
   tool({ name: "clients_delete", title: "Remove client", description: "Soft delete a client profile.", resource: "client", action: "delete", destructive: true, adapters: both }),
   tool({ name: "clients_link_unit", title: "Link client to apartment", description: "Connect a client with a specific apartment.", resource: "client", action: "update", adapters: both }),
@@ -133,9 +133,7 @@ export const mcpToolRegistry = [
   tool({ name: "media_attach_url", title: "Attach URL document", description: "Attach URL-backed file metadata to a workspace object.", resource: "media", action: "create", adapters: both }),
 ] as const satisfies readonly McpToolRegistryItem[];
 
-export type McpToolName = typeof mcpToolRegistry[number]["name"];
-
-export function toolsForAdapter(adapter: McpAdapter) {
+function toolsForAdapter(adapter: McpAdapter) {
   return mcpToolRegistry.filter((tool) => tool.adapters.includes(adapter));
 }
 

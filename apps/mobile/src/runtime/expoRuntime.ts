@@ -59,7 +59,3 @@ export function getClerkPublishableKey() {
   return normalizeUrlEnvValue(getExpoExtra().clerkPublishableKey)
     || "";
 }
-
-export function getMobileEnvironment() {
-  return getExpoExtra().mobileEnvironment ?? "development";
-}

@@ -13,7 +13,7 @@ type MarkdownTableViewportProps = {
   contentContainerStyle?: StyleProp<ViewStyle>;
 };
 
-export const MARKDOWN_TABLE_EDGE_PADDING = theme.spacing.sm;
+const MARKDOWN_TABLE_EDGE_PADDING = theme.spacing.sm;
 const TABLE_EDGE_FADE_WIDTH = 22;
 
 export function MarkdownTableViewport({

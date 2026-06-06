@@ -46,15 +46,14 @@ describe("project flow source", () => {
     expect(source).toContain("files: pendingDocumentFiles");
     expect(source).toContain("regaAuthorizationNo");
     expect(source).toContain("allowedKinds={[\"document\"]}");
-    expect(source).toContain("previewDocuments");
+    expect(source).not.toContain("previewChecklist");
     expect(source).toContain("ProjectPricingSection");
     expect(source).toContain("ProjectDatePicker");
   });
 
-  it("shows selected pending images in the side preview", () => {
-    expect(source).toContain("useFirstImagePreviewUrl");
-    expect(source).toContain("pendingCoverPreviewUrl");
-    expect(source).toContain('unoptimized={previewImageUrl.startsWith("blob:")}');
-    expect(source).toContain("existing?.coverImageUrl");
+  it("does not render the project form side preview", () => {
+    expect(source).not.toContain("ProjectFormPreview");
+    expect(source).not.toContain("pendingCoverPreviewUrl");
+    expect(source).not.toContain("previewImageUrl");
   });
 });

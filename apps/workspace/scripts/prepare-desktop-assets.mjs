@@ -1,7 +1,7 @@
 import { access, mkdir, rm, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import path from "node:path";
-import { chromium } from "playwright";
+import { chromium } from "@playwright/test";
 
 const appRoot = process.cwd();
 const buildDir = path.join(appRoot, "build");
@@ -63,7 +63,7 @@ await run("iconutil", ["-c", "icns", iconsetDir, "-o", path.join(buildDir, "icon
 await run("sips", ["-s", "format", "png", sourceIcon, "--out", path.join(buildDir, "icon.png")]);
 
 const dmgBackground = `<svg width="660" height="400" viewBox="0 0 660 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="660" height="400" fill="#011B5A"/>
+  <rect width="660" height="400" fill="#121212"/>
   <rect x="0" y="0" width="660" height="400" fill="url(#wash)" opacity="0.72"/>
   <path d="M705 -57L446 400H660V-57H705Z" fill="#02256C" opacity="0.72"/>
   <text x="52" y="76" fill="#F8FBFF" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700">Install</text>
@@ -73,7 +73,7 @@ const dmgBackground = `<svg width="660" height="400" viewBox="0 0 660 400" fill=
   <defs>
     <linearGradient id="wash" x1="0" y1="0" x2="660" y2="400" gradientUnits="userSpaceOnUse">
       <stop stop-color="#010B23"/>
-      <stop offset="0.54" stop-color="#011B5A"/>
+      <stop offset="0.54" stop-color="#121212"/>
       <stop offset="1" stop-color="#034C74"/>
     </linearGradient>
   </defs>
@@ -99,7 +99,7 @@ try {
       <head>
         <meta charset="utf-8" />
         <style>
-          html, body { width: 660px; height: 400px; margin: 0; overflow: hidden; background: #011B5A; }
+          html, body { width: 660px; height: 400px; margin: 0; overflow: hidden; background: #121212; }
           svg { display: block; width: 660px; height: 400px; }
         </style>
       </head>

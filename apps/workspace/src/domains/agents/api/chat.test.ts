@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { parseAgentSseChunk, sendAgentChatRequest, type AgentChatEvent } from "./chat";
+import { deleteAgentThreadRequest, parseAgentSseChunk, sendAgentChatRequest, type AgentChatEvent } from "./chat";
 
 vi.mock("convex/react", () => ({
   useQuery: vi.fn(),
@@ -164,5 +164,33 @@ describe("agent chat api client", () => {
         onEvent: vi.fn(),
       }),
     ).rejects.toThrow("No access");
+  });
+
+  it("deletes an agent thread through the organization API", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () =>
+      new Response(JSON.stringify({ deleted: true, threadId: "thread_1" }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    ));
+
+    await expect(deleteAgentThreadRequest("org_1", "thread_1")).resolves.toEqual({
+      deleted: true,
+      threadId: "thread_1",
+    });
+    expect(fetch).toHaveBeenCalledWith("/api/v1/organizations/org_1/agents/threads/thread_1", {
+      method: "DELETE",
+    });
+  });
+
+  it("throws useful delete errors", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () =>
+      new Response(JSON.stringify({ error: "Still running" }), {
+        status: 409,
+        headers: { "content-type": "application/json" },
+      }),
+    ));
+
+    await expect(deleteAgentThreadRequest("org_1", "thread_1")).rejects.toThrow("Still running");
   });
 });

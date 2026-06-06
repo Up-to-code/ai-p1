@@ -74,5 +74,3 @@ app.onError((error, c) => {
 
   return c.json({ error: "Internal Server Error" }, 500);
 });
-
-export type AppType = typeof app;

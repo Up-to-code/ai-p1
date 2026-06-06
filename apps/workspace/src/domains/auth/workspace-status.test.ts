@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { deriveWorkspaceStatus, getWorkspaceAuthRedirect } from "./workspace-status";
+import {
+  deriveWorkspaceStatus,
+  getWorkspaceAuthRedirect,
+} from "./workspace-status";
 
 const readyInput = {
   isSessionPending: false,

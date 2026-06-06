@@ -16,7 +16,7 @@ export default function manifest(): MetadataRoute.Manifest {
     dir: "rtl",
     lang: "ar-SA",
     background_color: "#F7F9FC",
-    theme_color: "#011B5A",
+    theme_color: "#121212",
     icons: [
       {
         src: "/app-icon-192.png",

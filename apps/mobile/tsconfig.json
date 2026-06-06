@@ -12,9 +12,6 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ],
-      "@zayon/assistant-protocol": [
-        "./src/conversation/assistantProtocol.ts"
       ]
     }
   },

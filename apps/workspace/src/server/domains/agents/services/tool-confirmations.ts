@@ -21,7 +21,7 @@ export type AgentToolConfirmationRuntime = {
   requestContext?: MobileRequestContext;
 };
 
-export function compactAgentToolPreview(value: unknown, maxLength = 900) {
+function compactAgentToolPreview(value: unknown, maxLength = 900) {
   const text = typeof value === "string" ? value : JSON.stringify(value);
   return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
 }

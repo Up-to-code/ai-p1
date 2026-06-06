@@ -1,9 +1,14 @@
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
 type UploadThingTokenPayload = {
   apiKey: string;
   appId: string;
   regions: string[];
   ingestHost?: string;
 };
+
+const uploadThingEnvKeys = new Set(["UPLOADTHING_TOKEN", "UPLOADTHING_SECRET", "UPLOADTHING_APP_ID"]);
 
 function stripCopiedEnvQuotes(value: string) {
   const trimmed = value.trim();
@@ -49,7 +54,43 @@ export function normalizeUploadThingToken(token: string) {
   return normalizedToken;
 }
 
+function parseEnvLine(line: string) {
+  const trimmed = line.trim();
+  if (!trimmed || trimmed.startsWith("#")) return null;
+
+  const normalized = trimmed.startsWith("export ") ? trimmed.slice("export ".length).trimStart() : trimmed;
+  const equalsIndex = normalized.indexOf("=");
+  if (equalsIndex <= 0) return null;
+
+  const key = normalized.slice(0, equalsIndex).trim();
+  if (!uploadThingEnvKeys.has(key)) return null;
+
+  const value = stripCopiedEnvQuotes(normalized.slice(equalsIndex + 1));
+  if (!value) return null;
+
+  return { key, value };
+}
+
+function hydrateUploadThingEnvFromProductionFile(env: Record<string, string | undefined> = process.env) {
+  if (env.UPLOADTHING_TOKEN) return;
+
+  const productionEnvPath = join(process.cwd(), ".env.production");
+  if (!existsSync(productionEnvPath)) return;
+
+  try {
+    for (const line of readFileSync(productionEnvPath, "utf8").split(/\r?\n/u)) {
+      const entry = parseEnvLine(line);
+      if (!entry || env[entry.key]) continue;
+      env[entry.key] = entry.value;
+    }
+  } catch {
+    // UploadThing will report the missing token if the local fallback cannot be read.
+  }
+}
+
 export function hydrateUploadThingEnvFromToken(env: Record<string, string | undefined> = process.env) {
+  hydrateUploadThingEnvFromProductionFile(env);
+
   const token = env.UPLOADTHING_TOKEN?.trim();
   if (!token) return;
 

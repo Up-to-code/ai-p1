@@ -1,7 +1,7 @@
 import { gateCookieName } from "./cookies";
 import { signValue, verifySignedValue } from "./crypto";
 
-export const gateCookieValue = "unlocked";
+const gateCookieValue = "unlocked";
 
 export function isPublicPath(pathname: string) {
   return (

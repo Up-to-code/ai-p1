@@ -57,7 +57,7 @@ export function AuthEntryClient({ callbackURL, locale, mode }: AuthEntryClientPr
   }, [clerkAuth.isLoaded, clerkAuth.orgId, clerkState, hasActiveOrganization, isSignedIn, organizationId, router, session]);
 
   if (!clerkAuth.isLoaded || isSignedIn) {
-    return <WorkspaceRouteLoading variant="auth" />;
+    return <WorkspaceRouteLoading variant="session" />;
   }
 
   return (

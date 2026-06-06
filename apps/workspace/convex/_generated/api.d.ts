@@ -19,6 +19,7 @@ import type * as agents_validators from "../agents/validators.js";
 import type * as agents_write from "../agents/write.js";
 import type * as apiKeys from "../apiKeys.js";
 import type * as auth from "../auth.js";
+import type * as billing_creditSurface from "../billing/creditSurface.js";
 import type * as billing_data from "../billing/data.js";
 import type * as billing_read from "../billing/read.js";
 import type * as billing_readSurface from "../billing/readSurface.js";
@@ -115,6 +116,7 @@ declare const fullApi: ApiFromModules<{
   "agents/write": typeof agents_write;
   apiKeys: typeof apiKeys;
   auth: typeof auth;
+  "billing/creditSurface": typeof billing_creditSurface;
   "billing/data": typeof billing_data;
   "billing/read": typeof billing_read;
   "billing/readSurface": typeof billing_readSurface;

@@ -3,7 +3,7 @@ import type { AdminSectionId } from "./admin-sections";
 
 export type AdminDomainId = AdminSectionId;
 
-export type AdminRecordStatus = "active" | "pending" | "warning" | "danger" | "muted" | "approved" | "rejected" | "suspended" | "archived";
+type AdminRecordStatus = "active" | "pending" | "warning" | "danger" | "muted" | "approved" | "rejected" | "suspended" | "archived";
 
 export type AdminListRequest = {
   page?: number;
@@ -15,7 +15,7 @@ export type AdminListRequest = {
   filters?: Record<string, string>;
 };
 
-export type AdminFacet = {
+type AdminFacet = {
   id: string;
   label: string;
   value: string;

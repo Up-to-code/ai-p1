@@ -1,4 +1,5 @@
 import type { Context, Next } from "hono";
+import { runWithAuthHeaders } from "@/server/auth/clerk-convex";
 import {
   mobileRequestContextMiddleware,
   type MobileRequestContext,
@@ -9,16 +10,12 @@ import type { TrustedHostPolicy } from "./host-checkers";
 import type { OriginCheckPolicy } from "./origin-checkers";
 import type { ReferrerPolicyContract } from "./referrer-checkers";
 
-export type WorkspaceRequestSafetyPolicy = {
+type WorkspaceRequestSafetyPolicy = {
   cors: CorsPolicyContract & CorsPreflightPolicy;
   headers: SecurityHeaderPolicy;
   host: TrustedHostPolicy;
   origin: OriginCheckPolicy;
   referrer: ReferrerPolicyContract;
-};
-
-export type WorkspaceRequestSafetyContext = {
-  mobile?: MobileRequestContext;
 };
 
 export const workspaceRequestSafetyPolicy: WorkspaceRequestSafetyPolicy = {
@@ -50,5 +47,9 @@ export async function requestSafetyMiddleware(_c: Context, next: Next) {
 }
 
 export async function organizationRequestSafetyMiddleware(c: Context, next: Next) {
-  await mobileRequestContextMiddleware(c, next);
+  await mobileRequestContextMiddleware(c, async () => {
+    await runWithAuthHeaders(c.req.raw.headers, async () => {
+      await next();
+    });
+  });
 }

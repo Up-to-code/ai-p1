@@ -1,11 +1,11 @@
 import { create } from "zustand";
 
 interface IntegrationsState {
-  activeTab: "catalog" | "connected" | "webhooks";
+  activeTab: "overview" | "catalog" | "connected" | "webhooks";
   setActiveTab: (tab: IntegrationsState["activeTab"]) => void;
 }
 
 export const useIntegrationsStore = create<IntegrationsState>((set) => ({
-  activeTab: "catalog",
+  activeTab: "overview",
   setActiveTab: (activeTab) => set({ activeTab }),
 }));

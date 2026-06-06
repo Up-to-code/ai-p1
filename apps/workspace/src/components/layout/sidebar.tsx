@@ -1,6 +1,5 @@
 "use client";
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Link, usePathname } from "@/i18n/routing";
 import {
@@ -21,11 +20,22 @@ import {
   Plus,
   Search,
   ShieldCheck,
-  CreditCard,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/toast";
 import { useTranslations, useLocale } from 'next-intl';
 import { useSidebar } from "./sidebar-context";
 import { useAccountContext } from "@/domains/auth";
@@ -33,14 +43,21 @@ import { useTheme } from "@/components/providers/theme-provider";
 import { authClient } from "@/lib/auth-client";
 import { selectExistingOrganization, type AuthResult } from "@/domains/auth/organization-selection";
 import { writeAuthHandoff } from "@/domains/auth";
-import { useAgentThreadsQuery } from "@/domains/agents";
+import { deleteAgentThreadRequest, useAgentThreadsQuery } from "@/domains/agents";
 import { workspaceModeHref } from "@/domains/dashboard/store/dashboard.store";
+import { agentThreadUrl } from "@/domains/agents/conversation-runtime";
 
 type BetterAuthOrganization = {
   id: string;
   name: string;
   slug?: string | null;
   logo?: string | null;
+};
+
+type AgentThread = {
+  id: string;
+  title: string;
+  lastMessageAt: number;
 };
 
 type SidebarAuthClient = typeof authClient & {
@@ -73,7 +90,7 @@ const navigationGroups = [
       { name: "organization", href: "/settings/organization", icon: Landmark },
       { name: "usage", href: "/usage", icon: Gauge },
       { name: "activity", href: "/activity", icon: HistoryIcon },
-      { name: "integrations", href: "/web-apps", icon: Plug },
+      { name: "integrations", href: "/web-apps", icon: Plug, disabled: true, badge: "comingSoon" },
     ],
   },
 ];
@@ -99,6 +116,7 @@ function getInitials(value: string) {
 
 export function Sidebar() {
   const t = useTranslations('Sidebar');
+  const { toast } = useToast();
   const locale = useLocale();
   const isRtl = locale === 'ar';
   const pathname = usePathname();
@@ -125,6 +143,8 @@ export function Sidebar() {
   const [switchingOrganizationId, setSwitchingOrganizationId] = useState<string | null>(null);
   const [threadHistoryOpen, setThreadHistoryOpen] = useState(false);
   const [threadSearch, setThreadSearch] = useState("");
+  const [threadPendingDelete, setThreadPendingDelete] = useState<AgentThread | null>(null);
+  const [deletingThreadId, setDeletingThreadId] = useState<string | null>(null);
   const organizationDisplayName =
     account.organization.legalName?.trim() ||
     (!isGeneratedOrganizationName(account.organization.name) ? account.organization.name : locale === "ar" ? "المؤسسة" : "Organization");
@@ -139,6 +159,15 @@ export function Sidebar() {
     : "Search AI threads for this workspace.";
   const threadSearchPlaceholder = locale === "ar" ? "ابحث في المحادثات..." : "Search threads...";
   const emptyThreadsLabel = locale === "ar" ? "لا توجد محادثات بعد" : "No threads yet";
+  const deleteThreadLabel = locale === "ar" ? "حذف المحادثة" : "Delete thread";
+  const deleteThreadTitle = locale === "ar" ? "حذف المحادثة؟" : "Delete this conversation?";
+  const deleteThreadDescription = locale === "ar"
+    ? "سيتم حذف هذه المحادثة ورسائلها وسجل تشغيل الذكاء نهائيا."
+    : "This permanently deletes the conversation, messages, and agent run history.";
+  const deleteThreadCancelLabel = locale === "ar" ? "إلغاء" : "Cancel";
+  const deleteThreadConfirmLabel = locale === "ar" ? "حذف" : "Delete";
+  const deleteThreadSuccessTitle = locale === "ar" ? "تم حذف المحادثة" : "Conversation deleted";
+  const deleteThreadFailedTitle = locale === "ar" ? "تعذر حذف المحادثة" : "Delete failed";
   const filteredAgentThreads = useMemo(() => {
     const query = threadSearch.trim().toLowerCase();
     if (!query) return agentThreads;
@@ -161,6 +190,32 @@ export function Sidebar() {
       });
     } catch {
       setSwitchingOrganizationId(null);
+    }
+  }
+
+  async function deleteSelectedThread() {
+    if (!workspaceOrganizationId || !threadPendingDelete || deletingThreadId) return;
+
+    const thread = threadPendingDelete;
+    setDeletingThreadId(thread.id);
+    try {
+      await deleteAgentThreadRequest(workspaceOrganizationId, thread.id);
+      setThreadPendingDelete(null);
+      setThreadHistoryOpen(false);
+      toast({ title: deleteThreadSuccessTitle, type: "success" });
+
+      if (activeThreadId === thread.id) {
+        window.history.replaceState(
+          null,
+          "",
+          agentThreadUrl(window.location.pathname, window.location.search),
+        );
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : undefined;
+      toast({ title: deleteThreadFailedTitle, description: message, type: "error" });
+    } finally {
+      setDeletingThreadId(null);
     }
   }
 
@@ -189,27 +244,6 @@ export function Sidebar() {
         >
           <Menu className="h-5 w-5" />
         </button>
-        {!isCollapsed && (
-          <div className="flex items-center gap-2">
-            <div className={cn(
-              "flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full ring-1",
-              isDarkMode ? "bg-white/10 ring-white/10" : "bg-white ring-zinc-200"
-            )}>
-              <Image
-                src={isDarkMode ? "/brand-logo-white.svg" : "/brand-logo-dark-blue.svg"}
-                alt="Qentrah"
-                width={20}
-                height={24}
-                className="h-5 w-5"
-                priority
-              />
-            </div>
-            <span className={cn(
-              "font-black text-lg tracking-tight lowercase",
-              isDarkMode ? "text-white" : "text-zinc-900"
-            )}>qentrah</span>
-          </div>
-        )}
       </div>
 
       {/* Navigation */}
@@ -224,8 +258,54 @@ export function Sidebar() {
             )}
             {group.items.map((item) => {
               const itemHref = item.href === "/dashboard" ? workspaceModeHref("ws") : item.href;
-              const isActive = pathname.startsWith(item.href);
+              const isDisabled = Boolean(item.disabled);
+              const isActive = !isDisabled && pathname.startsWith(item.href);
               const itemName = t(item.name);
+
+              const content = (
+                <>
+                  <item.icon className={cn(
+                    "h-[18px] w-[18px] transition-all",
+                    isActive ? (isDarkMode ? "text-white" : "text-zinc-900") : !isDisabled && "group-hover:text-zinc-900 dark:group-hover:text-white"
+                  )} />
+                  {!isCollapsed && (
+                    <>
+                      <span className="ms-4 min-w-0 flex-1 truncate text-[13px] font-bold tracking-tight transition-all">
+                        {itemName}
+                      </span>
+                      {item.badge === "comingSoon" && (
+                        <span className="ms-2 shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-sky-700 dark:bg-sky-400/10 dark:text-sky-200">
+                          {t("comingSoon")}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </>
+              );
+
+              const className = cn(
+                "group relative flex h-10 items-center rounded-xl px-3 transition-all duration-200",
+                isDisabled
+                  ? (isDarkMode ? "cursor-not-allowed text-zinc-600" : "cursor-not-allowed text-zinc-400")
+                  : isActive
+                    ? (isDarkMode ? "bg-white/10 text-white" : "bg-zinc-100 text-zinc-900")
+                    : (isDarkMode ? "text-zinc-500 hover:bg-white/5 hover:text-white" : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"),
+                isCollapsed && "mx-auto w-10 justify-center px-0"
+              );
+
+              if (isDisabled) {
+                return (
+                  <div
+                    key={item.name}
+                    aria-disabled="true"
+                    aria-label={isCollapsed ? `${itemName}, ${t("comingSoon")}` : undefined}
+                    title={isCollapsed ? `${itemName} - ${t("comingSoon")}` : undefined}
+                    className={className}
+                  >
+                    {content}
+                  </div>
+                );
+              }
 
               return (
                 <Link
@@ -233,23 +313,9 @@ export function Sidebar() {
                   href={itemHref}
                   aria-label={isCollapsed ? itemName : undefined}
                   title={isCollapsed ? itemName : undefined}
-                  className={cn(
-                    "group relative flex h-10 items-center rounded-xl px-3 transition-all duration-200",
-                    isActive
-                      ? (isDarkMode ? "bg-white/10 text-white" : "bg-zinc-100 text-zinc-900")
-                      : (isDarkMode ? "text-zinc-500 hover:bg-white/5 hover:text-white" : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"),
-                    isCollapsed && "mx-auto w-10 justify-center px-0"
-                  )}
+                  className={className}
                 >
-                  <item.icon className={cn(
-                    "h-[18px] w-[18px] transition-all",
-                    isActive ? (isDarkMode ? "text-white" : "text-zinc-900") : "group-hover:text-zinc-900 dark:group-hover:text-white"
-                  )} />
-                  {!isCollapsed && (
-                    <span className="ms-4 flex-1 text-[13px] font-bold tracking-tight transition-all">
-                      {itemName}
-                    </span>
-                  )}
+                  {content}
                 </Link>
               );
             })}
@@ -349,27 +415,45 @@ export function Sidebar() {
                 {visibleAgentThreads.length > 0 ? (
                   visibleAgentThreads.map((thread) => {
                     const isActive = activeThreadId === thread.id;
+                    const isDeleting = deletingThreadId === thread.id;
 
                     return (
-                      <Link
+                      <div
                         key={thread.id}
-                        href={workspaceModeHref("ai", thread.id)}
                         className={cn(
-                          "flex min-h-9 items-center gap-2 rounded-xl px-2.5 py-2 text-start transition-all",
+                          "group/thread flex min-h-9 items-center gap-1 rounded-xl transition-all",
                           isActive
                             ? isDarkMode ? "bg-primary/20 text-white" : "bg-primary/10 text-zinc-950"
                             : isDarkMode ? "text-zinc-500 hover:bg-white/5 hover:text-white" : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-950"
                         )}
-                        title={thread.title}
                       >
-                        <MessageSquareText className={cn(
-                          "h-3.5 w-3.5 shrink-0",
-                          isActive ? "text-primary" : isDarkMode ? "text-zinc-600" : "text-zinc-400"
-                        )} />
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[11px] font-black leading-tight">{thread.title}</span>
-                        </span>
-                      </Link>
+                        <Link
+                          href={workspaceModeHref("ai", thread.id)}
+                          className="flex min-w-0 flex-1 items-center gap-2 px-2.5 py-2 text-start"
+                          title={thread.title}
+                        >
+                          <MessageSquareText className={cn(
+                            "h-3.5 w-3.5 shrink-0",
+                            isActive ? "text-primary" : isDarkMode ? "text-zinc-600" : "text-zinc-400"
+                          )} />
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-[11px] font-black leading-tight">{thread.title}</span>
+                          </span>
+                        </Link>
+                        <button
+                          type="button"
+                          aria-label={`${deleteThreadLabel}: ${thread.title}`}
+                          title={deleteThreadLabel}
+                          disabled={isDeleting}
+                          onClick={() => setThreadPendingDelete(thread)}
+                          className={cn(
+                            "me-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg opacity-0 transition-all focus-visible:opacity-100 disabled:opacity-60 group-hover/thread:opacity-100",
+                            isDarkMode ? "text-zinc-500 hover:bg-red-500/10 hover:text-red-300" : "text-zinc-400 hover:bg-red-50 hover:text-red-600",
+                          )}
+                        >
+                          {isDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                        </button>
+                      </div>
                     );
                   })
                 ) : (
@@ -526,28 +610,43 @@ export function Sidebar() {
             {filteredAgentThreads.length > 0 ? (
               filteredAgentThreads.map((thread) => {
                 const isActive = activeThreadId === thread.id;
+                const isDeleting = deletingThreadId === thread.id;
 
                 return (
-                  <Link
+                  <div
                     key={thread.id}
-                    href={workspaceModeHref("ai", thread.id)}
-                    onClick={() => setThreadHistoryOpen(false)}
                     className={cn(
-                      "flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-start transition-all",
+                      "group/thread flex min-h-11 items-center gap-1 rounded-xl transition-all",
                       isActive
                         ? "bg-primary/10 text-zinc-950 dark:bg-primary/20 dark:text-white"
                         : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white"
                     )}
-                    title={thread.title}
                   >
-                    <MessageSquareText className={cn("h-4 w-4 shrink-0", isActive ? "text-primary" : "text-zinc-400")} />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-black leading-tight">{thread.title}</span>
-                      <span className="mt-1 block text-[10px] font-bold uppercase tracking-wider text-zinc-400">
-                        {new Date(thread.lastMessageAt).toLocaleDateString(locale, { month: "short", day: "numeric" })}
+                    <Link
+                      href={workspaceModeHref("ai", thread.id)}
+                      onClick={() => setThreadHistoryOpen(false)}
+                      className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2 text-start"
+                      title={thread.title}
+                    >
+                      <MessageSquareText className={cn("h-4 w-4 shrink-0", isActive ? "text-primary" : "text-zinc-400")} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-black leading-tight">{thread.title}</span>
+                        <span className="mt-1 block text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                          {new Date(thread.lastMessageAt).toLocaleDateString(locale, { month: "short", day: "numeric" })}
+                        </span>
                       </span>
-                    </span>
-                  </Link>
+                    </Link>
+                    <button
+                      type="button"
+                      aria-label={`${deleteThreadLabel}: ${thread.title}`}
+                      title={deleteThreadLabel}
+                      disabled={isDeleting}
+                      onClick={() => setThreadPendingDelete(thread)}
+                      className="me-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-zinc-400 opacity-0 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:opacity-100 disabled:opacity-60 group-hover/thread:opacity-100 dark:hover:bg-red-500/10 dark:hover:text-red-300"
+                    >
+                      {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                    </button>
+                  </div>
                 );
               })
             ) : (
@@ -558,6 +657,34 @@ export function Sidebar() {
           </div>
         </DialogContent>
       </Dialog>
+      <AlertDialog open={Boolean(threadPendingDelete)} onOpenChange={(open) => {
+        if (!open && !deletingThreadId) setThreadPendingDelete(null);
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{deleteThreadTitle}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteThreadDescription}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={Boolean(deletingThreadId)}>
+              {deleteThreadCancelLabel}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={Boolean(deletingThreadId)}
+              onClick={(event) => {
+                event.preventDefault();
+                void deleteSelectedThread();
+              }}
+              className="bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500/20 dark:bg-red-500 dark:text-white dark:hover:bg-red-400"
+            >
+              {deletingThreadId ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+              {deleteThreadConfirmLabel}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </aside>
   );
 }

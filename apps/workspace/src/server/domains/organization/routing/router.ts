@@ -99,6 +99,7 @@ import {
   handleCancelAgentConfirmation,
 } from "@/server/domains/agents/handlers/confirmations";
 import {
+  handleDeleteAgentThread,
   handleListAgentMessages,
   handleListAgentThreads,
 } from "@/server/domains/agents/handlers/read";
@@ -112,6 +113,7 @@ import {
 import {
   handleCreateTamaraCheckout,
   handleGetBillingSubscription,
+  handleGetBillingUsage,
   handleGetTamaraOrder,
 } from "@/server/domains/billing/handlers/billing";
 
@@ -195,6 +197,7 @@ organizationRouter.get("/:organizationId/read/activity/index", handleReadActivit
 organizationRouter.get("/:organizationId/read/dashboard", handleReadDashboardOverview);
 organizationRouter.get("/:organizationId/read/dashboard/index", handleReadDashboardIndex);
 organizationRouter.get("/:organizationId/billing/subscription", handleGetBillingSubscription);
+organizationRouter.get("/:organizationId/billing/usage", handleGetBillingUsage);
 organizationRouter.post("/:organizationId/billing/tamara/checkout", handleCreateTamaraCheckout);
 organizationRouter.get("/:organizationId/billing/tamara/orders/:orderId", handleGetTamaraOrder);
 
@@ -403,6 +406,11 @@ organizationRouter.get(
   handleListAgentMessages,
 );
 
+organizationRouter.delete(
+  "/:organizationId/agents/threads/:threadId",
+  handleDeleteAgentThread,
+);
+
 organizationRouter.get(
   "/:organizationId/partner-connections",
   handleListPartnerConnections,
@@ -427,5 +435,3 @@ organizationRouter.post(
   "/:organizationId/partner-webhook-endpoints",
   handleCreatePartnerWebhookEndpoint,
 );
-
-export type OrganizationRouterType = typeof organizationRouter;

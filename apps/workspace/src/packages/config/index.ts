@@ -1,3 +1,2 @@
-export { apiRuntimeConfig, convexRuntimeConfig } from "./public";
-export { isPlatformAdminEmail, parsePlatformAdminEmails, platformAdminEmails } from "./auth";
+export { convexRuntimeConfig } from "./public";
 export { partnerAppsRuntimeConfig } from "./partner-apps";

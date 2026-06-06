@@ -16,7 +16,7 @@ hydrateUploadThingEnvFromToken();
 
 const f = createUploadthing();
 
-export const uploadRouter = {
+const uploadRouter = {
   profilePicture: f(imageUploadPolicy)
     .middleware(({ req }) => requireSignedInUploadUser(req))
     .onUploadComplete(({ file }) => uploadedImage(file)),

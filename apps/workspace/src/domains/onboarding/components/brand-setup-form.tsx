@@ -74,6 +74,7 @@ export function BrandSetupForm({ onNext, onBack }: FormProps) {
                   </Tooltip>
                 </div>
               } 
+              accept="image/png,image/jpeg,image/svg+xml"
               description={t("logoDesc")} 
             />
           </div>

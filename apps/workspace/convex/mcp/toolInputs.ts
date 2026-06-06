@@ -87,11 +87,17 @@ function oneOf<T extends string>(value: unknown, allowed: readonly T[], fallback
 }
 
 export function clientInput(input: Input) {
+  const phone = optionalString(input, "phone") ?? "";
+  const contact = optionalString(input, "contact") ?? optionalString(input, "email") ?? phone;
+  if (!contact && !phone) {
+    throw new Error("Provide either contact/email or phone for the client.");
+  }
+
   return {
     name: requiredString(input, "name"),
     type: oneOf(input.type, ["Buyer", "Tenant", "Investor", "Broker"] as const, "Buyer"),
-    contact: requiredString(input, "contact"),
-    phone: requiredString(input, "phone"),
+    contact: contact ?? "",
+    phone,
     age: optionalNumber(input, "age") ?? 0,
     nationality: optionalString(input, "nationality") ?? "",
     generation: optionalString(input, "generation") ?? "",

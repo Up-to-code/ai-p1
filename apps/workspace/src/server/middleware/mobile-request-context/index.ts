@@ -32,7 +32,7 @@ function parseRegionsHeader(value: string | undefined) {
     .filter(Boolean);
 }
 
-export function resolveMobileRequestContext(c: Context): MobileRequestContext {
+function resolveMobileRequestContext(c: Context): MobileRequestContext {
   const requestId = c.req.header("x-request-id")?.trim() || createRequestId();
   const clientHeader = c.req.header("x-qentrah-client")?.trim().toLowerCase();
   const client = clientHeader === "mobile" || clientHeader === "web" ? clientHeader : "unknown";
@@ -53,7 +53,7 @@ export function resolveMobileRequestContext(c: Context): MobileRequestContext {
   };
 }
 
-export function setMobileRequestContext(c: Context, context: MobileRequestContext) {
+function setMobileRequestContext(c: Context, context: MobileRequestContext) {
   (c as any).set("mobileRequestContext", context);
 }
 

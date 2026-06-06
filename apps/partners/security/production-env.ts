@@ -1,6 +1,6 @@
 import { readBrandEnv } from "@qentrah/brand-identity";
 
-export function getMissingPartnersProductionEnv() {
+function getMissingPartnersProductionEnv() {
   if (process.env.NODE_ENV !== "production") return [];
 
   const missing: string[] = [];

@@ -42,11 +42,12 @@ describe("property form source", () => {
     expect(source).toContain("project: selectedProject?.name ?? data.project");
   });
 
-  it("shows selected pending images in the side preview", () => {
-    expect(source).toContain("useFirstImagePreviewUrl");
-    expect(source).toContain("pendingCoverPreviewUrl");
-    expect(source).toContain('unoptimized={previewImageUrl.startsWith("blob:")}');
+  it("does not render the unit form side preview", () => {
+    expect(source).not.toContain("PropertyFormPreview");
+    expect(source).not.toContain("pendingCoverPreviewUrl");
+    expect(source).not.toContain("previewImageUrl");
     expect(source).toContain('cover: t("gallery.cover")');
+    expect(source).not.toContain("previewChecklist");
   });
 
   it("keeps unit form controls inline instead of nested card grids", () => {

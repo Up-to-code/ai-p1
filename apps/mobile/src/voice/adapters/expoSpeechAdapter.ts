@@ -83,10 +83,6 @@ export function stopSpeechRecognition() {
   speechRecognitionModule?.stop();
 }
 
-export function abortSpeechRecognition() {
-  speechRecognitionModule?.abort();
-}
-
 export function speechRecognitionAvailable() {
   return speechRecognitionModule?.isRecognitionAvailable() ?? false;
 }

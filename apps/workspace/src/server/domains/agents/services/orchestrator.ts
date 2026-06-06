@@ -3,6 +3,7 @@ import type { Id } from "@convex/_generated/dataModel";
 import type { Context } from "hono";
 import { fetchAuthMutation } from "@/server/auth/clerk-convex";
 import { agentRuntimeConfig, getOpenRouterModelCandidates } from "@/server/config/agent-runtime";
+import { recordAgentCreditUsage } from "@/server/domains/billing/services/billing";
 import type { MobileRequestContext } from "@/server/middleware/mobile-request-context";
 import { evaluateAgentRequestRisk } from "../policies/risk-policy";
 import {
@@ -45,6 +46,13 @@ type AgentChatAttachment = {
   mimeType: string;
   size: number;
   kind: "image" | "video" | "document";
+};
+
+type StreamTokenUsage = {
+  inputTokens?: number;
+  outputTokens?: number;
+  promptTokens?: number;
+  completionTokens?: number;
 };
 
 const encoder = new TextEncoder();
@@ -197,6 +205,15 @@ async function finishRun(input: {
     memoryFacts: input.memoryFacts,
     error: input.error,
   }).catch(() => undefined);
+}
+
+async function readFinalTokenUsage(result: { totalUsage?: PromiseLike<StreamTokenUsage> } | undefined) {
+  if (!result?.totalUsage) return {};
+  const usage = await result.totalUsage;
+  return {
+    promptTokens: usage.inputTokens ?? usage.promptTokens,
+    completionTokens: usage.outputTokens ?? usage.completionTokens,
+  };
 }
 
 async function startRunWithRetry(input: {
@@ -367,6 +384,8 @@ export function createAgentChatStream(input: {
         );
         let assistantMessage = "";
         let lastModelError: unknown;
+        let completedModel = agentRuntimeConfig.openRouterModel;
+        let completedUsage: Awaited<ReturnType<typeof readFinalTokenUsage>> = {};
 
         for (let attemptIndex = 0; attemptIndex < modelCandidates.length; attemptIndex += 1) {
           const model = modelCandidates[attemptIndex] ?? agentRuntimeConfig.openRouterModel;
@@ -388,6 +407,8 @@ export function createAgentChatStream(input: {
               await write({ type: "text", text: chunk });
             }
 
+            completedUsage = await readFinalTokenUsage(result).catch(() => ({}));
+            completedModel = model;
             lastModelError = undefined;
             if (attemptIndex > 0) {
               void recordStep(runIds, input.organizationId, "summarize", "completed", `Fallback model completed after ${attemptIndex + 1} attempt(s).`);
@@ -449,6 +470,20 @@ export function createAgentChatStream(input: {
         await settleRun("completed", finalMessage, {
           summary: finalMessage.slice(0, 500),
           memoryFacts: memoryFactsFrom(input.message),
+        });
+        await recordAgentCreditUsage(input.organizationId, {
+          runId: runIds.runId,
+          modelId: completedModel,
+          promptTokens: completedUsage.promptTokens,
+          completionTokens: completedUsage.completionTokens,
+          toolCallCount: modelToolActivity,
+        }).catch((error) => {
+          console.warn("workspace.agent.credit_usage.failed", {
+            organizationId: input.organizationId,
+            threadId: runIds.threadId,
+            runId: runIds.runId,
+            error: error instanceof Error ? error.message : String(error),
+          });
         });
         await write({ type: "done", threadId: runIds.threadId });
         controller.close();

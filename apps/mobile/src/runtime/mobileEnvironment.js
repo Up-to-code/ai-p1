@@ -156,9 +156,6 @@ function getMobileEnvironmentIssues(config) {
 module.exports = {
   getMobileEnvironmentIssues,
   resolveReachableDevUrl,
-  isHttpsUrl,
-  isLocalUrl,
-  isClerkPublishableKey,
   normalizeUrlEnvValue,
   resolveMobileEnvironmentConfig,
   resolveMobileEnvironmentName,

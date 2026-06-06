@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -16,6 +17,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useToast } from "@/components/ui/toast";
 import { StatusPill } from "@/components/shared/crud-ui";
 import { updateOrganizationProfileSchema, type UpdateOrganizationProfileValues } from "../validation/organization.schema";
@@ -74,6 +76,7 @@ import {
   clampApiKeyPermissionsToGrantable,
   cloneAgentPermissions,
   cloneApiKeyPermissions,
+  canManageCustomPermissions,
   defaultApiKeyPermissions,
   defaultRoleNames,
   emptyPermission,
@@ -88,6 +91,7 @@ import {
   memberName,
   memberRoleCount,
   normalizeRole,
+  normalizeOrganizationSettingsTab,
   ownerMemberCount,
   pendingInvitationCount,
   roleOptions,
@@ -107,11 +111,12 @@ import {
 export function OrganizationScreen() {
   const t = useTranslations("Organization");
   const locale = useLocale();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const account = useAccountContext();
   const organizationId = account.organization.id ?? "";
-  const [activeTab, setActiveTab] = useState<Tab>("profile");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("member");
   const [inviteMode, setInviteMode] = useState<InviteMode>("link");
@@ -120,6 +125,7 @@ export function OrganizationScreen() {
   const [createdInviteUrl, setCreatedInviteUrl] = useState("");
   const [createdInviteLinkId, setCreatedInviteLinkId] = useState<string | null>(null);
   const [memberAction, setMemberAction] = useState<{ member: OrganizationMember; type: "remove" | "role"; role?: string } | null>(null);
+  const [customPermissionsOpen, setCustomPermissionsOpen] = useState(false);
 
   const membersQuery = useQuery({
     queryKey: ["organization-members", organizationId],
@@ -157,11 +163,11 @@ export function OrganizationScreen() {
   const ownerCount = ownerMemberCount(members);
   const pendingInviteLinks = inviteLinks ?? [];
   const capabilities = capabilitiesQuery.data;
+  const currentMemberRole = members.find((member) => member.userId === account.user.id)?.role ?? null;
   const canUpdateOrganization = capabilities?.canUpdateOrganization ?? false;
   const canInviteMembers = capabilities?.canInviteMembers ?? false;
   const canUpdateMembers = capabilities?.canUpdateMembers ?? false;
   const canRemoveMembers = capabilities?.canRemoveMembers ?? false;
-  const canManageRoles = Boolean(capabilities?.canCreateRoles || capabilities?.canUpdateRoles || capabilities?.canDeleteRoles);
   const canReadAgentLinks = capabilities?.canReadOrganization ?? false;
   const canCreateAgentLinks = capabilities?.canReadOrganization ?? false;
   const canDeleteAgentLinks = capabilities?.canReadOrganization ?? false;
@@ -169,6 +175,11 @@ export function OrganizationScreen() {
   const canCreateApiKeys = capabilities?.canCreateApiKeys ?? false;
   const canUpdateApiKeys = capabilities?.canUpdateApiKeys ?? false;
   const canDeleteApiKeys = capabilities?.canDeleteApiKeys ?? false;
+  const canOpenCustomPermissions =
+    !membersQuery.isLoading &&
+    !capabilitiesQuery.isLoading &&
+    canManageCustomPermissions({ capabilities, currentMemberRole });
+  const activeTab = normalizeOrganizationSettingsTab(searchParams.get("tab"));
 
   const updateProfile = useUpdateOrganizationProfileMutation(organizationId);
   const refreshOrganizationData = () => {
@@ -323,6 +334,17 @@ export function OrganizationScreen() {
     { id: "apiKeys", label: t("tabs.apiKeys"), icon: KeyRound },
   ];
 
+  function setActiveOrganizationTab(tab: Tab) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (tab === "profile") {
+      params.delete("tab");
+    } else {
+      params.set("tab", tab);
+    }
+    const query = params.toString();
+    router.replace(`/${locale}/settings/organization${query ? `?${query}` : ""}`, { scroll: false });
+  }
+
   function makeInviteLink(invite: OrganizationInvitation) {
     const origin = typeof window === "undefined" ? "" : window.location.origin;
     return `${origin}/${locale}/accept-invite?invitationId=${encodeURIComponent(invite.id)}`;
@@ -468,7 +490,7 @@ export function OrganizationScreen() {
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => setActiveOrganizationTab(tab.id)}
                 className={cn(
                   "flex items-center gap-2 rounded-t-xl border-b-2 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all duration-150",
                   activeTab === tab.id
@@ -487,21 +509,13 @@ export function OrganizationScreen() {
       <div className="mx-auto max-w-7xl px-6 py-10">
         {activeTab === "profile" && (
           <div className="space-y-8">
-            <Section title={t("sections.workspaceData")}>
-              <div className="grid gap-3.5 sm:grid-cols-3">
-                <OrgDataCard icon={Building2} label={t("labels.orgId")} value={organizationId || "-"} />
-                <OrgDataCard icon={ShieldCheck} label={t("labels.slug")} value={account.organization.slug || "-"} />
-                <OrgDataCard icon={Users} label={t("labels.members")} value={members.length.toString()} />
-              </div>
-            </Section>
-
-            <div className="border-t border-zinc-200/60 pt-8 dark:border-white/[0.06]">
+            <div>
               <Section title={t("sections.legal")}>
                 <div className="grid gap-5 md:grid-cols-2">
-                  <OrgField id="name" label={t("labels.displayName")} registration={register("name")} error={errors.name?.message} />
-                  <OrgField id="legalName" label={t("labels.legalName")} registration={register("legalName")} error={errors.legalName?.message} />
-                  <OrgField id="type" label={t("labels.type")} registration={register("type")} error={errors.type?.message} />
-                  <OrgField id="address" label={t("labels.address")} registration={register("address")} error={errors.address?.message} />
+                  <OrgField id="name" label={t("labels.displayName")} registration={register("name")} error={errors.name?.message} disabled={!canUpdateOrganization} />
+                  <OrgField id="legalName" label={t("labels.legalName")} registration={register("legalName")} error={errors.legalName?.message} disabled={!canUpdateOrganization} />
+                  <OrgField id="type" label={t("labels.type")} registration={register("type")} error={errors.type?.message} disabled={!canUpdateOrganization} />
+                  <OrgField id="address" label={t("labels.address")} registration={register("address")} error={errors.address?.message} disabled={!canUpdateOrganization} />
                 </div>
               </Section>
             </div>
@@ -509,9 +523,9 @@ export function OrganizationScreen() {
             <div className="border-t border-zinc-200/60 pt-8 dark:border-white/[0.06]">
               <Section title={t("sections.contact")}>
                 <div className="grid gap-5 md:grid-cols-2">
-                  <OrgField id="email" label={t("labels.email")} type="email" registration={register("email")} error={errors.email?.message} />
-                  <OrgField id="phone" label={t("labels.phone")} type="tel" registration={register("phone")} error={errors.phone?.message} />
-                  <OrgField id="website" label={t("labels.website")} type="url" registration={register("website")} error={errors.website?.message} />
+                  <OrgField id="email" label={t("labels.email")} type="email" registration={register("email")} error={errors.email?.message} disabled={!canUpdateOrganization} />
+                  <OrgField id="phone" label={t("labels.phone")} type="tel" registration={register("phone")} error={errors.phone?.message} disabled={!canUpdateOrganization} />
+                  <OrgField id="website" label={t("labels.website")} type="url" registration={register("website")} error={errors.website?.message} disabled={!canUpdateOrganization} />
                 </div>
               </Section>
             </div>
@@ -528,17 +542,23 @@ export function OrganizationScreen() {
                     <Plus className="me-1.5 h-3.5 w-3.5" />
                     {t("invites.open")}
                   </Button>
-                  <Link href={`/${locale}/settings/organization/custom-permissions`} className={cn(buttonVariants({ variant: "outline" }), "h-9.5 rounded-lg text-[9px] font-black uppercase tracking-widest")}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={!canOpenCustomPermissions}
+                    onClick={() => setCustomPermissionsOpen(true)}
+                    className="h-9.5 rounded-lg text-[9px] font-black uppercase tracking-widest"
+                  >
                     <ShieldCheck className="me-1.5 h-3.5 w-3.5" />
                     {t("roles.manageWorkRoles")}
-                  </Link>
+                  </Button>
                 </div>
               )}
             >
               <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-white/[0.06] dark:bg-[#111]">
                 {membersQuery.isLoading ? (
                   <div className="p-4">
-                    <LoadingRow label={t("members.loading")} />
+                    <LoadingRow label={t("members.loading")} rows={3} />
                   </div>
                 ) : members.length === 0 ? (
                   <div className="p-4">
@@ -744,6 +764,11 @@ export function OrganizationScreen() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <CustomPermissionsDrawer
+        open={customPermissionsOpen}
+        onOpenChange={setCustomPermissionsOpen}
+      />
 
       <Dialog open={Boolean(memberAction)} onOpenChange={(open) => !open && setMemberAction(null)}>
         <DialogContent className="max-w-md rounded-2xl">
@@ -1003,7 +1028,6 @@ function AgentLinksPanel({
   const isEditing = Boolean(editingConnection);
   const connections = query.data ?? [];
   const {
-    workingConnections,
     draftConnections,
     visibleConnections,
     stats: agentStats,
@@ -1150,7 +1174,7 @@ function AgentLinksPanel({
 
           <div className="grid gap-4 xl:grid-cols-2">
             {!canRead && <EmptyState title={t("empty.noAccessTitle")} description={t("empty.noAccessDescription")} />}
-            {canRead && query.isLoading && <LoadingRow label={t("empty.loading")} />}
+            {canRead && query.isLoading && <LoadingCardGrid label={t("empty.loading")} />}
             {canRead && !query.isLoading && visibleConnections.length === 0 && <EmptyState title={t("empty.noLinksTitle")} description={t("empty.noLinksDescription")} />}
             {visibleConnections.map(connectionCard)}
           </div>
@@ -1521,7 +1545,7 @@ function ApiKeysPanel({
 
           <div className="grid gap-4 xl:grid-cols-2">
             {!canRead && <EmptyState title={t("empty.noAccessTitle")} description={t("empty.noAccessDescription")} />}
-            {canRead && query.isLoading && <LoadingRow label={t("empty.loading")} />}
+            {canRead && query.isLoading && <LoadingCardGrid label={t("empty.loading")} />}
             {canRead && !query.isLoading && keys.length === 0 && <EmptyState title={t("empty.noKeysTitle")} description={t("empty.noKeysDescription")} />}
             {keys.map((key) => (
             <div key={key.id} className="rounded-2xl border border-zinc-100 bg-white p-4.5 transition-all dark:border-white/[0.04] dark:bg-[#111]">
@@ -1714,6 +1738,48 @@ function ApiKeysPanel({
 }
 
 export function CustomPermissionsScreen() {
+  return <RoleManagementPanel />;
+}
+
+function CustomPermissionsDrawer({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const t = useTranslations("Organization");
+  const locale = useLocale();
+  const side = locale === "ar" ? "left" : "right";
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side={side}
+        className="!w-[min(96vw,1120px)] !max-w-none border-zinc-200 bg-zinc-50/95 p-0 shadow-2xl dark:border-white/10 dark:bg-[#0A0A0A]"
+      >
+        <div className="flex min-h-0 flex-1 flex-col">
+          <SheetHeader className="border-b border-zinc-200 bg-white px-6 py-6 pe-14 dark:border-white/[0.06] dark:bg-[#111111]">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-zinc-400">
+              {t("roles.pageEyebrow")}
+            </p>
+            <SheetTitle className="text-2xl font-black uppercase tracking-tight text-zinc-900 dark:text-white">
+              {t("roles.pageTitle")}
+            </SheetTitle>
+            <SheetDescription className="max-w-3xl text-xs font-medium leading-5 text-zinc-500 dark:text-zinc-400">
+              {t("roles.pageDesc")}
+            </SheetDescription>
+          </SheetHeader>
+          <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
+            <RoleManagementPanel surface="drawer" />
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function RoleManagementPanel({ surface = "page" }: { surface?: "page" | "drawer" }) {
   const t = useTranslations("Organization");
   const locale = useLocale();
   const queryClient = useQueryClient();
@@ -1823,11 +1889,151 @@ export function CustomPermissionsScreen() {
     );
   }
 
+  const content = (
+    <div className={surface === "drawer" ? "space-y-8" : "mx-auto max-w-5xl space-y-8 px-6 py-10"}>
+      <Section title={editingRole ? t("roles.editTitle") : t("roles.createTitle")} description={t("roles.createDesc")}>
+        <div className="space-y-5 rounded-2xl border border-zinc-200 bg-white p-5 dark:border-white/[0.06] dark:bg-[#111]">
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_260px_auto] lg:items-end">
+            <div className="space-y-2">
+              <Label htmlFor="roleName" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("roles.name")}</Label>
+              <Input id="roleName" value={roleName} onChange={(event) => setRoleName(event.target.value)} placeholder={t("roles.namePlaceholder")} className="h-11 rounded-xl" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="roleTemplate" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("roles.templateSelect")}</Label>
+              <Select value={templateId} onValueChange={(value) => value && applyTemplate(value)}>
+                <SelectTrigger
+                  id="roleTemplate"
+                  size="sm"
+                  className="h-11 rounded-xl border-zinc-200 bg-white px-3 text-sm font-extrabold text-zinc-950 hover:bg-zinc-50 focus:bg-white dark:border-white/10 dark:bg-[#111] dark:text-white dark:hover:bg-white/[0.07] dark:focus:bg-white/[0.07]"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent
+                  align="start"
+                  sideOffset={8}
+                  className="rounded-xl border-zinc-200 bg-white p-1.5 dark:border-white/10 dark:bg-[#111]"
+                >
+                  <SelectItem value="blank" className="rounded-lg py-2.5 text-sm font-bold">
+                    {t("roles.templateBlank")}
+                  </SelectItem>
+                  {workRoleTemplates.map((template) => (
+                    <SelectItem key={template.id} value={template.id} className="rounded-lg py-2.5 text-sm font-bold">
+                      {t(`roles.templates.${template.labelKey}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-2">
+              {editingRole && (
+                <Button variant="outline" type="button" onClick={() => { setEditingRole(null); setRoleName(""); setRolePermission(emptyPermission()); setTemplateId("blank"); }} className="h-11 rounded-xl">
+                  {t("roles.cancelEdit")}
+                </Button>
+              )}
+              <Button type="button" onClick={() => roleMutation.mutate()} disabled={roleMutation.isPending || !organizationId || (editingRole ? !canUpdateRoles : !canCreateRoles)} className="h-11 rounded-xl bg-zinc-900 text-white hover:bg-black disabled:opacity-50">
+                {roleMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Save className="me-2 h-4 w-4" />}
+                {editingRole ? t("roles.update") : t("roles.create")}
+              </Button>
+            </div>
+          </div>
+
+          <WorkRoleGrid
+            permission={rolePermission}
+            areas={workAreas}
+            actionColumns={workActionColumns}
+            onToggle={togglePermission}
+            labels={{
+              area: t("roles.grid.area"),
+              allowedWork: t("roles.grid.allowedWork"),
+              read: t("roles.actions.read"),
+              create: t("roles.actions.create"),
+              update: t("roles.actions.update"),
+              delete: t("roles.actions.delete"),
+              authorize: t("roles.actions.authorize"),
+              unavailable: t("roles.grid.unavailable"),
+            }}
+            getAreaLabel={(key) => t(`roles.workAreas.${key}`)}
+            getAreaHelp={(key) => t(`roles.workAreaHelp.${key}`)}
+          />
+
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={() => setShowAdvancedWork((current) => !current)}
+              className="text-[10px] font-black uppercase tracking-widest text-zinc-500 underline-offset-4 hover:text-zinc-900 hover:underline dark:hover:text-white"
+            >
+              {showAdvancedWork ? t("roles.hideAdvanced") : t("roles.showAdvanced")}
+            </button>
+            {showAdvancedWork && (
+              <WorkRoleGrid
+                permission={rolePermission}
+                areas={advancedWorkAreas}
+                actionColumns={advancedActionColumns}
+                onToggle={togglePermission}
+                labels={{
+                  area: t("roles.grid.area"),
+                  allowedWork: t("roles.grid.allowedWork"),
+                  read: t("roles.actions.read"),
+                  create: t("roles.actions.create"),
+                  update: t("roles.actions.update"),
+                  delete: t("roles.actions.delete"),
+                  authorize: t("roles.actions.authorize"),
+                  unavailable: t("roles.grid.unavailable"),
+                }}
+                getAreaLabel={(key) => t(`roles.workAreas.${key}`)}
+                getAreaHelp={(key) => t(`roles.workAreaHelp.${key}`)}
+              />
+            )}
+          </div>
+        </div>
+      </Section>
+
+      <Section title={t("roles.listTitle")} description={t("roles.listDesc")}>
+        <div className="space-y-3">
+          {rolesQuery.isLoading && <LoadingRow label={t("roles.loading")} rows={2} />}
+          {defaultRoleNames.map((role) => (
+            <RoleRow key={role} role={role} roleLabels={defaultRoleLabels} locked labels={{ builtIn: t("roles.builtIn"), edit: t("roles.edit"), delete: t("roles.delete") }} />
+          ))}
+          {customRoles.map((role) => {
+            const roleInUse = members.some((member) => member.role === role.role);
+            return (
+              <RoleRow
+                key={role.id}
+                role={role.role}
+                roleLabels={defaultRoleLabels}
+                memberCount={memberRoleCount(members, role.role)}
+                editDisabled={!canUpdateRoles}
+                deleteDisabled={!canDeleteRoles}
+                onEdit={canUpdateRoles ? () => beginEditRole(role) : undefined}
+                onDelete={() => {
+                  if (!canDeleteRoles) {
+                    toast({ title: t("toasts.actionFailed"), description: t("roles.notAllowed"), type: "error" });
+                    return;
+                  }
+                  if (roleInUse) {
+                    toast({ title: t("toasts.actionFailed"), description: t("roles.roleInUse"), type: "error" });
+                    return;
+                  }
+                  deleteRoleMutation.mutate(role);
+                }}
+                labels={{ builtIn: t("roles.custom"), edit: t("roles.edit"), delete: t("roles.delete") }}
+              />
+            );
+          })}
+        </div>
+      </Section>
+    </div>
+  );
+
+  if (surface === "drawer") {
+    return content;
+  }
+
   return (
     <div className="min-h-screen bg-zinc-50/50 dark:bg-[#0A0A0A]">
       <div className="border-b border-zinc-200 bg-white dark:border-white/[0.06] dark:bg-[#111111]">
         <div className="mx-auto max-w-5xl px-6 py-8">
-          <Link href={`/${locale}/settings/organization`} className={cn(buttonVariants({ variant: "ghost" }), "mb-5 h-9 rounded-xl text-[10px] font-black uppercase tracking-widest")}>
+          <Link href={`/${locale}/settings/organization?tab=members`} className={cn(buttonVariants({ variant: "ghost" }), "mb-5 h-9 rounded-xl text-[10px] font-black uppercase tracking-widest")}>
             {t("roles.backToOrganization")}
           </Link>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -1846,122 +2052,7 @@ export function CustomPermissionsScreen() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-5xl space-y-8 px-6 py-10">
-        <Section title={editingRole ? t("roles.editTitle") : t("roles.createTitle")} description={t("roles.createDesc")}>
-          <div className="space-y-5 rounded-2xl border border-zinc-200 bg-white p-5 dark:border-white/[0.06] dark:bg-[#111]">
-            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_260px_auto] lg:items-end">
-              <div className="space-y-2">
-                <Label htmlFor="roleName" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("roles.name")}</Label>
-                <Input id="roleName" value={roleName} onChange={(event) => setRoleName(event.target.value)} placeholder={t("roles.namePlaceholder")} className="h-11 rounded-xl" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="roleTemplate" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("roles.templateSelect")}</Label>
-                <select id="roleTemplate" value={templateId} onChange={(event) => applyTemplate(event.target.value)} className="h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm font-bold dark:border-white/10 dark:bg-[#111]">
-                  <option value="blank">{t("roles.templateBlank")}</option>
-                  {workRoleTemplates.map((template) => (
-                    <option key={template.id} value={template.id}>{t(`roles.templates.${template.labelKey}`)}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex gap-2">
-                {editingRole && (
-                  <Button variant="outline" type="button" onClick={() => { setEditingRole(null); setRoleName(""); setRolePermission(emptyPermission()); setTemplateId("blank"); }} className="h-11 rounded-xl">
-                    {t("roles.cancelEdit")}
-                  </Button>
-                )}
-                <Button type="button" onClick={() => roleMutation.mutate()} disabled={roleMutation.isPending || !organizationId || (editingRole ? !canUpdateRoles : !canCreateRoles)} className="h-11 rounded-xl bg-zinc-900 text-white hover:bg-black disabled:opacity-50">
-                  {roleMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Save className="me-2 h-4 w-4" />}
-                  {editingRole ? t("roles.update") : t("roles.create")}
-                </Button>
-              </div>
-            </div>
-
-            <WorkRoleGrid
-              permission={rolePermission}
-              areas={workAreas}
-              actionColumns={workActionColumns}
-              onToggle={togglePermission}
-              labels={{
-                area: t("roles.grid.area"),
-                allowedWork: t("roles.grid.allowedWork"),
-                read: t("roles.actions.read"),
-                create: t("roles.actions.create"),
-                update: t("roles.actions.update"),
-                delete: t("roles.actions.delete"),
-                authorize: t("roles.actions.authorize"),
-                unavailable: t("roles.grid.unavailable"),
-              }}
-              getAreaLabel={(key) => t(`roles.workAreas.${key}`)}
-              getAreaHelp={(key) => t(`roles.workAreaHelp.${key}`)}
-            />
-
-            <div className="space-y-3">
-              <button
-                type="button"
-                onClick={() => setShowAdvancedWork((current) => !current)}
-                className="text-[10px] font-black uppercase tracking-widest text-zinc-500 underline-offset-4 hover:text-zinc-900 hover:underline dark:hover:text-white"
-              >
-                {showAdvancedWork ? t("roles.hideAdvanced") : t("roles.showAdvanced")}
-              </button>
-              {showAdvancedWork && (
-                <WorkRoleGrid
-                  permission={rolePermission}
-                  areas={advancedWorkAreas}
-                  actionColumns={advancedActionColumns}
-                  onToggle={togglePermission}
-                  labels={{
-                    area: t("roles.grid.area"),
-                    allowedWork: t("roles.grid.allowedWork"),
-                    read: t("roles.actions.read"),
-                    create: t("roles.actions.create"),
-                    update: t("roles.actions.update"),
-                    delete: t("roles.actions.delete"),
-                    authorize: t("roles.actions.authorize"),
-                    unavailable: t("roles.grid.unavailable"),
-                  }}
-                  getAreaLabel={(key) => t(`roles.workAreas.${key}`)}
-                  getAreaHelp={(key) => t(`roles.workAreaHelp.${key}`)}
-                />
-              )}
-            </div>
-          </div>
-        </Section>
-
-        <Section title={t("roles.listTitle")} description={t("roles.listDesc")}>
-          <div className="space-y-3">
-            {rolesQuery.isLoading && <LoadingRow label={t("roles.loading")} />}
-            {defaultRoleNames.map((role) => (
-              <RoleRow key={role} role={role} roleLabels={defaultRoleLabels} locked labels={{ builtIn: t("roles.builtIn"), edit: t("roles.edit"), delete: t("roles.delete") }} />
-            ))}
-            {customRoles.map((role) => {
-              const roleInUse = members.some((member) => member.role === role.role);
-              return (
-                <RoleRow
-                  key={role.id}
-                  role={role.role}
-                  roleLabels={defaultRoleLabels}
-                  memberCount={memberRoleCount(members, role.role)}
-                  editDisabled={!canUpdateRoles}
-                  deleteDisabled={!canDeleteRoles}
-                  onEdit={canUpdateRoles ? () => beginEditRole(role) : undefined}
-                  onDelete={() => {
-                    if (!canDeleteRoles) {
-                      toast({ title: t("toasts.actionFailed"), description: t("roles.notAllowed"), type: "error" });
-                      return;
-                    }
-                    if (roleInUse) {
-                      toast({ title: t("toasts.actionFailed"), description: t("roles.roleInUse"), type: "error" });
-                      return;
-                    }
-                    deleteRoleMutation.mutate(role);
-                  }}
-                  labels={{ builtIn: t("roles.custom"), edit: t("roles.edit"), delete: t("roles.delete") }}
-                />
-              );
-            })}
-          </div>
-        </Section>
-      </div>
+      {content}
     </div>
   );
 }
@@ -1981,72 +2072,19 @@ function Section({ title, description, actions, children }: { title: string; des
   );
 }
 
-function AccessSummary({
-  loading,
-  labels,
-  items,
-}: {
-  loading: boolean;
-  labels: { title: string; description: string; allowed: string; blocked: string };
-  items: { label: string; allowed: boolean }[];
-}) {
-  return (
-    <div className="border-b border-zinc-200/60 pb-6 dark:border-white/[0.06]">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <p className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-900 dark:text-white">
-            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-400" /> : <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />}
-            {labels.title}
-          </p>
-          <p className="mt-1 text-[10px] leading-5 text-zinc-400 dark:text-zinc-500">{labels.description}</p>
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {items.map((item) => (
-            <span
-              key={item.label}
-              className={cn(
-                "rounded-full border px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest transition-colors",
-                item.allowed
-                  ? "border-emerald-200/50 bg-emerald-500/10 text-emerald-700 dark:border-emerald-500/20 dark:text-emerald-400"
-                  : "border-zinc-200 bg-transparent text-zinc-400 dark:border-white/5 dark:text-zinc-500",
-              )}
-              title={item.allowed ? labels.allowed : labels.blocked}
-            >
-              {item.label}
-            </span>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function OrgField({ id, label, type = "text", registration, error }: { id: string; label: string; type?: string; registration: UseFormRegisterReturn; error?: string }) {
+function OrgField({ id, label, type = "text", registration, error, disabled }: { id: string; label: string; type?: string; registration: UseFormRegisterReturn; error?: string; disabled?: boolean }) {
   return (
     <div className="space-y-1.5">
       <Label htmlFor={id} className="text-[9px] font-black uppercase tracking-[0.12em] text-zinc-400 dark:text-zinc-500">{label}</Label>
       <Input
         id={id}
         type={type}
-        className="h-10 rounded-lg border-zinc-200 bg-white/50 text-xs font-semibold shadow-none transition-colors focus-visible:border-zinc-400 focus-visible:ring-0 dark:border-white/10 dark:bg-[#0c0c0c] dark:focus-visible:border-zinc-700"
+        disabled={disabled}
+        className="h-10 rounded-lg border-zinc-200 bg-white/50 text-xs font-semibold shadow-none transition-colors focus-visible:border-zinc-400 focus-visible:ring-0 disabled:cursor-not-allowed disabled:bg-zinc-100/60 disabled:text-zinc-400 dark:border-white/10 dark:bg-[#0c0c0c] dark:disabled:bg-white/[0.03] dark:focus-visible:border-zinc-700"
         aria-invalid={Boolean(error)}
         {...registration}
       />
       {error && <p className="text-[9px] font-bold uppercase tracking-wider text-red-500">{error}</p>}
-    </div>
-  );
-}
-
-function OrgDataCard({ icon: Icon, label, value }: { icon: typeof Building2; label: string; value: string }) {
-  return (
-    <div className="flex items-center gap-3 rounded-xl border border-zinc-100 bg-zinc-50/50 p-4 transition-colors hover:bg-zinc-50 dark:border-white/[0.04] dark:bg-white/[0.01] dark:hover:bg-white/[0.02]">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500 dark:bg-white/5 dark:text-zinc-400">
-        <Icon className="h-3.5 w-3.5" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">{label}</p>
-        <p className="mt-0.5 truncate text-xs font-black text-zinc-800 dark:text-zinc-200" title={value}>{value}</p>
-      </div>
     </div>
   );
 }
@@ -2213,12 +2251,20 @@ function WorkRoleGrid({
         <tbody>
           {areas.map((area) => {
             const actions = organizationPermissionStatement[area.resource] as readonly string[];
+            const Icon = workAreaIcon(area.resource);
 
             return (
               <tr key={area.resource} className="border-b border-zinc-100 last:border-b-0 dark:border-white/[0.06]">
                 <td className="px-4 py-4 align-top">
-                  <p className="text-sm font-black text-zinc-900 dark:text-white">{getAreaLabel(area.labelKey)}</p>
-                  <p className="mt-1 max-w-sm text-xs leading-5 text-zinc-500 dark:text-zinc-400">{getAreaHelp(area.helperKey)}</p>
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500 dark:bg-white/5 dark:text-zinc-400">
+                      <Icon className="h-3.5 w-3.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-black text-zinc-900 dark:text-white">{getAreaLabel(area.labelKey)}</p>
+                      <p className="mt-1 max-w-sm text-xs leading-5 text-zinc-500 dark:text-zinc-400">{getAreaHelp(area.helperKey)}</p>
+                    </div>
+                  </div>
                 </td>
                 {actionColumns.map((action) => {
                   const available = actions.includes(action);
@@ -2259,6 +2305,27 @@ function WorkRoleGrid({
       </div>
     </div>
   );
+}
+
+function workAreaIcon(resource: PermissionResource) {
+  const icons: Record<PermissionResource, typeof Users> = {
+    organization: Building2,
+    team: Users,
+    member: Users,
+    project: Building2,
+    property: Home,
+    client: Users,
+    task: CheckCircle2,
+    calendar: CalendarDays,
+    media: FileText,
+    visibility: ShieldCheck,
+    integration: LinkIcon,
+    apiKey: KeyRound,
+    oauthApp: LinkIcon,
+    role: UserRoundCog,
+  };
+
+  return icons[resource];
 }
 
 function RoleRow({
@@ -2387,11 +2454,55 @@ function OrganizationSettingsSkeleton({ label, compact }: { label: string; compa
   );
 }
 
-function LoadingRow({ label }: { label: string }) {
+function LoadingRow({ label, rows = 1 }: { label: string; rows?: number }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-5 text-sm font-bold text-zinc-500 dark:border-white/[0.06] dark:bg-[#111]">
-      <Loader2 className="h-4 w-4 animate-spin" />
-      {label}
+    <div className="space-y-3" role="status" aria-label={label}>
+      {Array.from({ length: rows }).map((_, row) => (
+        <div key={row} className="flex items-center justify-between gap-4 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/[0.06] dark:bg-[#111]">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <Skeleton className="h-10 w-10 shrink-0 rounded-xl" />
+            <div className="min-w-0 flex-1 space-y-2">
+              <Skeleton className="h-4 w-40 max-w-full rounded-full" />
+              <Skeleton className="h-3 w-56 max-w-full rounded-full" />
+            </div>
+          </div>
+          <div className="hidden shrink-0 items-center gap-2 sm:flex">
+            <Skeleton className="h-7 w-24 rounded-full" />
+            <Skeleton className="h-8 w-8 rounded-lg" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function LoadingCardGrid({ label }: { label: string }) {
+  return (
+    <div className="contents" role="status" aria-label={label}>
+      {[0, 1].map((item) => (
+        <div key={item} className="rounded-2xl border border-zinc-100 bg-white p-4.5 dark:border-white/[0.04] dark:bg-[#111]">
+          <div className="flex h-full flex-col gap-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1 space-y-3">
+                <div className="flex items-center gap-1.5">
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                </div>
+                <Skeleton className="h-4 w-40 max-w-full rounded-full" />
+              </div>
+              <Skeleton className="h-9 w-9 shrink-0 rounded-xl" />
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Skeleton className="h-16 rounded-xl" />
+              <Skeleton className="h-16 rounded-xl" />
+            </div>
+            <div className="flex items-center justify-between border-t border-zinc-100 pt-3 dark:border-white/[0.05]">
+              <Skeleton className="h-3 w-28 rounded-full" />
+              <Skeleton className="h-8 w-24 rounded-lg" />
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

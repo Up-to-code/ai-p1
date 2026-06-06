@@ -193,10 +193,6 @@ export function resolveUiLocaleFromLanguageTag(languageTag?: string | null): Ass
   return null;
 }
 
-export function isSupportedAssistantUiLocale(value: unknown): value is AssistantUiLocale {
-  return value === "ar" || value === "en" || value === "fr";
-}
-
 export function getCuratedAssistantSurfaceCopy(locale: AssistantUiLocale) {
   return surfaceCopy[locale];
 }
@@ -215,12 +211,6 @@ export function extractTurnPropertyIds(turn: Partial<Pick<AssistantTurn, "blocks
 export function extractTurnSources(turn: Pick<AssistantTurn, "blocks">) {
   return turn.blocks.flatMap((block) => (block.type === "sources" ? block.sources : []));
 }
-
-export const assistantStageEventSchema = {
-  parse(value: AssistantStageEvent) {
-    return value;
-  },
-};
 
 export const assistantTurnSchema = {
   safeParse(value: AssistantTurn) {

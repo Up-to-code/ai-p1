@@ -82,14 +82,17 @@
   --color-text-primary: #0E1726;
   --color-text-secondary: #4F5B6B;
   --color-text-muted: #7B8794;
+  --color-selection-bg: #121212;
+  --color-selection-fg: #FFFFFF;
 
   --color-success: #22C55E;
   --color-warning: #F59E0B;
   --color-danger: #EF4444;
   --color-draft: #2D8CFF;
 
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-arabic: var(--font-cairo), var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: var(--font-cairo), "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   --font-size-h1: 28px;
   --font-size-h1-compact: 28px;
   --font-size-h2: 22px;
@@ -142,9 +145,16 @@
   --color-text-primary: #F4F4F5;
   --color-text-secondary: #A1A1AA;
   --color-text-muted: #71717A;
+  --color-selection-bg: #FFFFFF;
+  --color-selection-fg: #121212;
 }
 
 @layer base {
+  ::selection {
+    background: var(--color-selection-bg);
+    color: var(--color-selection-fg);
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
@@ -166,6 +176,7 @@
   code,
   kbd,
   .font-mono {
+    font-family: var(--font-mono);
     direction: ltr;
     unicode-bidi: isolate;
   }
@@ -182,6 +193,25 @@
 
   .font-geist {
     font-family: var(--font-sans);
+  }
+
+  button,
+  button *,
+  [role="button"],
+  [role="button"] *,
+  input,
+  select,
+  textarea {
+    letter-spacing: normal !important;
+    text-transform: none !important;
+  }
+
+  [class*="tracking-"] {
+    letter-spacing: normal !important;
+  }
+
+  .uppercase {
+    text-transform: none !important;
   }
 
   .scrollbar-none {

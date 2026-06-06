@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 
-export type AgUiComponentId =
+type AgUiComponentId =
   | "project_create_draft"
   | "offer_publish_draft"
   | "offer_send_draft"
@@ -19,7 +19,7 @@ export type AgUiComponentId =
   | "filter_summary"
   | "target_summary";
 
-export type AgUiActionDefinition = {
+type AgUiActionDefinition = {
   id:
     | "create_project"
     | "list_clients"
@@ -39,9 +39,9 @@ export type AgUiActionDefinition = {
   fields: string[];
 };
 
-export type AgUiExecutionState = "draft" | "collecting" | "ready" | "executing" | "completed" | "failed";
+type AgUiExecutionState = "draft" | "collecting" | "ready" | "executing" | "completed" | "failed";
 
-export type AgUiUnitReference = {
+type AgUiUnitReference = {
   id: string;
   label: string;
   bedrooms?: number;
@@ -50,7 +50,7 @@ export type AgUiUnitReference = {
   priceLabel?: string;
 };
 
-export type AgUiProjectReference = {
+type AgUiProjectReference = {
   id: string;
   title: string;
   location: string;
@@ -58,17 +58,14 @@ export type AgUiProjectReference = {
   summary?: string;
 };
 
-export type AgUiPersonCardType = "broker" | "client";
-export type AgUiPersonBadge = "verified" | "vip";
-
-export type AgUiPersonRelation = {
+type AgUiPersonRelation = {
   project: AgUiProjectReference | null;
   unit: AgUiUnitReference | null;
   stageLabel?: string;
   summary?: string;
 };
 
-export type AgUiDraftState = {
+type AgUiDraftState = {
   actionId: AgUiActionDefinition["id"];
   title: string;
   description: string;
@@ -104,7 +101,7 @@ export type AgUiActionInvocation = {
   payload?: unknown;
 };
 
-export type AgUiActionHandler = (invocation: AgUiActionInvocation) => void | Promise<void>;
+type AgUiActionHandler = (invocation: AgUiActionInvocation) => void | Promise<void>;
 
 export type AgUiActionHandlers = {
   onAction?: AgUiActionHandler;
@@ -113,7 +110,7 @@ export type AgUiActionHandlers = {
   byActionAndName?: Partial<Record<string, AgUiActionHandler>>;
 };
 
-export type AgUiCardRenderContext = {
+type AgUiCardRenderContext = {
   turn: AgUiConversationTurn;
   card: AgUiCardDefinition;
   actionHandlers?: AgUiActionHandlers;

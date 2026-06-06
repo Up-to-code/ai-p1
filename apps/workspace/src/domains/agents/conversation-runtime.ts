@@ -28,7 +28,7 @@ export function contentDirection(text: string): ContentDirection {
   return "auto";
 }
 
-export function inferAttachmentKind(mimeType: string): AgentChatAttachment["kind"] {
+function inferAttachmentKind(mimeType: string): AgentChatAttachment["kind"] {
   if (mimeType.startsWith("image/")) return "image";
   if (mimeType.startsWith("video/")) return "video";
   return "document";
@@ -90,7 +90,16 @@ export function visibleAgentConversationMessages(input: {
     latestDurableMessage.content === latestTransientMessage.content &&
     (!latestTransientMessage.agUiTurn || Boolean(latestDurableMessage.agUiTurn));
   if (!durableHasLatestMessage) return visibleTransientMessages;
-  return durable;
+  return durable.map((message, index) => {
+    const transient = visibleTransientMessages[index];
+    if (!transient) return message;
+    const sameRenderedMessage =
+      transient.role === message.role &&
+      transient.content === message.content &&
+      (!transient.agUiTurn || Boolean(message.agUiTurn));
+    if (!sameRenderedMessage) return message;
+    return { ...message, id: transient.id ?? message.id };
+  });
 }
 
 export function agentThreadUrl(pathname: string, search: string, threadId?: string) {

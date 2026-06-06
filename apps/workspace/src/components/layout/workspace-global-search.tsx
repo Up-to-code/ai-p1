@@ -5,12 +5,10 @@ import {
   Building,
   Building2,
   CalendarDays,
-  CreditCard,
   Gauge,
   History,
   Landmark,
   Loader2,
-  Plug,
   Search,
   UserRound,
 } from "lucide-react";
@@ -89,7 +87,6 @@ export function WorkspaceGlobalSearch() {
       { id: "usage", label: tSidebar("usage"), href: "/usage", icon: Gauge },
       { id: "organization", label: tSidebar("organization"), href: "/settings/organization", icon: Landmark },
       { id: "activity", label: tSidebar("activity"), href: "/activity", icon: History },
-      { id: "integrations", label: tSidebar("integrations"), href: "/web-apps", icon: Plug },
     ],
     [tSidebar],
   );

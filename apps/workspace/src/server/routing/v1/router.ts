@@ -15,5 +15,3 @@ v1Router.route("/partner-apps", partnerAppsRouter);
 v1Router.route("/partner", partnerResourceRouter);
 v1Router.route("/profile", profileRouter);
 v1Router.route("/billing", billingRouter);
-
-export type V1RouterType = typeof v1Router;

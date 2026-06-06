@@ -29,7 +29,7 @@ export function PartnerLogo({ href = "/", inverse = false, compact = false, clas
         )}
       >
         <Image
-          src={inverse ? "/brand-logo-white.svg" : "/brand-logo-dark-blue.svg"}
+          src={inverse ? "/brand-logo-white.svg" : "/brand-logo.svg"}
           alt="Qentrah"
           width={22}
           height={26}

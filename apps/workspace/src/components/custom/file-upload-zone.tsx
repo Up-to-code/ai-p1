@@ -1,42 +1,100 @@
+"use client";
+
+import { useId, useState, type ChangeEvent, type DragEvent, type KeyboardEvent, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { UploadCloud } from "lucide-react";
+import { CheckCircle2, UploadCloud } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FileUploadZoneProps {
-  label: React.ReactNode;
+  label: ReactNode;
   description?: string;
   className?: string;
+  accept?: string;
+  multiple?: boolean;
+  onFilesSelected?: (files: File[]) => void;
 }
 
-export function FileUploadZone({ label, description, className }: FileUploadZoneProps) {
+export function FileUploadZone({
+  label,
+  description,
+  className,
+  accept,
+  multiple = false,
+  onFilesSelected,
+}: FileUploadZoneProps) {
   const t = useTranslations("Onboarding.common");
+  const inputId = useId();
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+  function selectFiles(fileList: FileList | null) {
+    const files = Array.from(fileList ?? []);
+    if (files.length === 0) return;
+
+    const nextFiles = multiple ? files : files.slice(0, 1);
+    setSelectedFiles(nextFiles);
+    onFilesSelected?.(nextFiles);
+  }
+
+  function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
+    selectFiles(event.target.files);
+    event.currentTarget.value = "";
+  }
+
+  function handleDrop(event: DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    selectFiles(event.dataTransfer.files);
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLLabelElement>) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      document.getElementById(inputId)?.click();
+    }
+  }
   
   return (
     <div className="space-y-3 w-full">
       <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{label}</div>
-      <div 
+      <label
+        htmlFor={inputId}
+        tabIndex={0}
+        role="button"
         className={cn(
-          "border-2 border-dashed border-zinc-200 dark:border-white/10 rounded-2xl p-8 flex flex-col items-center justify-center text-center bg-zinc-50/50 dark:bg-white/[0.01] hover:bg-zinc-100 dark:hover:bg-white/[0.03] transition-all cursor-pointer group",
+          "border-2 border-dashed border-zinc-200 dark:border-white/10 rounded-2xl p-8 flex flex-col items-center justify-center text-center bg-zinc-50/50 dark:bg-white/[0.01] hover:bg-zinc-100 dark:hover:bg-white/[0.03] transition-all cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/20 focus-visible:ring-offset-2 dark:focus-visible:ring-blue-400/30 dark:focus-visible:ring-offset-zinc-950",
           className
         )}
         onDragOver={(e) => {
           e.preventDefault();
           e.dataTransfer.dropEffect = "copy";
         }}
-        onDrop={(e) => {
-          e.preventDefault();
-          const files = e.dataTransfer.files;
-          if (files.length > 0) {
-            console.log(`Uploaded ${files.length} files via drag and drop.`);
-          }
-        }}
+        onDrop={handleDrop}
+        onKeyDown={handleKeyDown}
       >
         <div className="w-12 h-12 rounded-xl bg-white dark:bg-[#0A0A0A] border border-zinc-200 dark:border-white/10 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-          <UploadCloud className="w-5 h-5 text-zinc-400 group-hover:text-blue-600 transition-colors" />
+          {selectedFiles.length > 0 ? (
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 transition-colors" />
+          ) : (
+            <UploadCloud className="w-5 h-5 text-zinc-400 group-hover:text-blue-600 transition-colors" />
+          )}
         </div>
-        <p className="text-[11px] font-black uppercase tracking-widest text-zinc-900 dark:text-white mb-2">{t("uploadOrDrag")}</p>
+        <p className="text-[11px] font-black uppercase tracking-widest text-zinc-900 dark:text-white mb-2">
+          {selectedFiles.length > 0 ? t("selectedFiles", { count: selectedFiles.length }) : t("uploadOrDrag")}
+        </p>
         {description && <p className="text-[10px] font-bold text-zinc-400 max-w-sm">{description}</p>}
-      </div>
+        {selectedFiles.length > 0 && (
+          <p className="mt-3 max-w-sm truncate text-[10px] font-bold text-zinc-500 dark:text-zinc-300" title={selectedFiles.map((file) => file.name).join(", ")}>
+            {selectedFiles.map((file) => file.name).join(", ")}
+          </p>
+        )}
+        <input
+          id={inputId}
+          type="file"
+          accept={accept}
+          multiple={multiple}
+          className="sr-only"
+          onChange={handleInputChange}
+        />
+      </label>
     </div>
   );
 }

@@ -19,7 +19,7 @@ export type ClerkEmailSignUpAdapter = {
   };
 };
 
-export type EmailAuthMissingDetails = "login" | "signup";
+type EmailAuthMissingDetails = "login" | "signup";
 
 export type EmailAuthResult =
   | { status: "authenticated" }

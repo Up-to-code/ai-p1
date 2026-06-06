@@ -44,7 +44,8 @@ Scopes: calendar:read client:create client:read client:update media:read organiz
 ## Backend start route
 
 ```ts
-import { buildQentrahAuthorizeUrl, createPkcePair } from "./oauth-url";
+import { buildQentrahAuthorizeUrl } from "./oauth-url";
+import { createPkcePair } from "./pkce";
 import { localDemoRegistration } from "./local-demo-registration";
 
 export async function GET() {

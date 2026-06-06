@@ -8,11 +8,6 @@ export const companyInfoSchema = z.object({
   hqCity: z.string().optional(),
 });
 
-export const legalDocsSchema = z.object({
-  authName: z.string().optional(),
-  authTitle: z.string().optional(),
-});
-
 export const brandSetupSchema = z.object({
   brandColor: z.string().trim().regex(/^#[0-9A-Fa-f]{6}$/, "Use a valid hex color."),
 });
@@ -23,6 +18,5 @@ export const teamInviteSchema = z.object({
 });
 
 export type CompanyInfoInput = z.input<typeof companyInfoSchema>;
-export type LegalDocsInput = z.input<typeof legalDocsSchema>;
 export type BrandSetupInput = z.input<typeof brandSetupSchema>;
 export type TeamInviteInput = z.input<typeof teamInviteSchema>;

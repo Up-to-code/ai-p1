@@ -51,7 +51,7 @@ export function clientToFormValues(client: Client): ClientFormValues {
   };
 }
 
-export function formText(formData: FormData, key: string) {
+function formText(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
 }
 
@@ -75,7 +75,7 @@ export function clientValuesFromFormData(formData: FormData): ClientFormValues {
   };
 }
 
-export function dateInputToTimestamp(value: string) {
+function dateInputToTimestamp(value: string) {
   if (!value) return undefined;
   const timestamp = new Date(`${value}T12:00:00`).getTime();
   return Number.isFinite(timestamp) ? timestamp : undefined;

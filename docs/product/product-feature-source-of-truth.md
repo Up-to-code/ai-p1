@@ -19,7 +19,7 @@ The workspace data model remains the AI's tool substrate. Projects, units, clien
 
 Primary code evidence:
 
-- AI chat UI: `apps/workspace/src/components/dashboard/dashboard-chat.tsx`
+- AI chat UI: `apps/workspace/src/components/dashboard/dashboard-chat.tsx`, `apps/workspace/src/components/layout/sidebar.tsx`
 - AI chat client: `apps/workspace/src/domains/agents/api/chat.ts`
 - AI chat handler: `apps/workspace/src/server/domains/agents/handlers/chat.ts`
 - AI orchestrator: `apps/workspace/src/server/domains/agents/services/orchestrator.ts`
@@ -36,7 +36,7 @@ Primary code evidence:
 
 | Surface | Product role | Current code evidence |
 | --- | --- | --- |
-| In-workspace assistant | AI mode inside the authenticated dashboard, with persistent threads and streaming responses. | `DashboardChat`, `/api/v1/organizations/:organizationId/agents/chat`. |
+| In-workspace assistant | AI mode inside the authenticated dashboard, with per-user persistent threads and streaming responses. | `DashboardChat`, `/api/v1/organizations/:organizationId/agents/chat`. |
 | Agent run ledger | Records user message, run, phases, tool calls, assistant response, summary, facts, status, model, and error state. | Convex `agentThreads`, `agentMessages`, `agentRuns`, `agentRunSteps`, `agentToolCalls`, `agentMemorySummaries`, `agentMemoryFacts`. |
 | Tool execution layer | Lets the model call real estate workspace operations behind permission and schema checks. | `tool-adapter.ts`, `apps/workspace/convex/mcp/tools.ts`. |
 | Safety policy | Blocks dangerous organization actions before tool use. | `risk-policy.ts`. |
@@ -50,7 +50,7 @@ Primary code evidence:
 | User story | Current product behavior |
 | --- | --- |
 | Ask about workspace data | Dashboard AI can stream responses and use tools when current workspace data is needed. |
-| Continue a thread | Chat stores thread ID in the URL and reads previous messages from Convex. |
+| Continue a thread | Chat stores thread ID in the URL and reads previous messages from Convex only when the thread belongs to the current organization user. |
 | Search operational records | Agent tools can list/search clients, properties, projects, tasks, calendar, media, and organization context. |
 | Create operational records | Tools exist for creating clients, properties, projects, calendar events, tasks, and URL-backed media metadata when permissions allow. |
 | Update operational records | Tools exist for updating clients, properties, projects, calendar events, tasks, and completing tasks. |
@@ -72,24 +72,25 @@ The dashboard has two product modes:
 The chat UI:
 
 - Reads `threadId` from the URL.
-- Lists agent threads for the current organization.
+- Lists agent threads created by the current user in the current organization.
 - Loads up to 80 persisted messages for a selected thread.
 - Creates optimistic local user/assistant messages while a response streams.
 - Streams server-sent events from `/api/v1/organizations/:organizationId/agents/chat`.
 - Handles event types: `meta`, `status`, `text`, `ag_ui`, `done`, and `error`.
 - Updates the URL to keep the active AI thread shareable within the app session.
+- Lets the creator delete a thread from the sidebar/history; deletion hard-deletes the thread, messages, runs, tool calls, confirmations, and memory records.
 - Tracks first status and first token performance marks.
 - Renders Markdown responses.
 - Can render AG UI turns through `AgUiTurnRenderer`.
 
-The assistant is organization-scoped. If no organization is ready, chat requests are skipped or blocked by workspace auth state.
+The assistant is organization-scoped and creator-private. Organization membership is required, but one member cannot list, open, continue, or delete another member's AI thread. If no organization is ready, chat requests are skipped or blocked by workspace auth state.
 
 ## Agent Request Lifecycle
 
 The current server flow is:
 
 1. Validate request body with `agentChatSchema`.
-2. Start or reuse an `agentThread`.
+2. Start a new `agentThread`, or reuse an existing thread only if it belongs to the current authenticated user.
 3. Insert the user message as encrypted/redacted organization text.
 4. Create an `agentRun` with status `running`.
 5. Record an `understand` step.
@@ -295,7 +296,7 @@ The AI run ledger exists to make agent behavior inspectable.
 
 Tables:
 
-- `agentThreads`: one conversation thread per organization and creator.
+- `agentThreads`: one conversation thread per organization and creator; thread reads and continuation are creator-private.
 - `agentMessages`: user, assistant, system, and tool messages.
 - `agentRuns`: one model execution/run, with status `running`, `completed`, `failed`, or `blocked`.
 - `agentRunSteps`: phase-level audit.
@@ -495,4 +496,3 @@ Qentrah's AI product is best described as:
 An organization-scoped real estate operations agent that works inside Qentrah and through external MCP links. It can read and act on approved workspace records, keeps a persistent and auditable run history, uses explicit permission boundaries, encrypts/redacts sensitive agent data, and blocks high-risk organization governance actions.
 
 The non-AI workspace remains essential: it is the human control plane and source of truth for the AI's tools, permissions, and business context.
-

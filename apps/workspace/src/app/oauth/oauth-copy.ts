@@ -1,6 +1,6 @@
 import type { OAuthLocale } from "./oauth-locale";
 
-export const oauthCopy = {
+const oauthCopy = {
   en: {
     eyebrow: "Partner authorization",
     consentTitle: "Authorize app access",

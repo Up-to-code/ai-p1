@@ -1,16 +1,16 @@
 import { expect, type APIRequestContext, type Page } from "@playwright/test";
 
-export const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${process.env.PORT ?? 3000}`;
+const baseURL = process.env.E2E_BASE_URL ?? `http://localhost:${process.env.PORT ?? 3000}`;
 
 export function uniqueName(prefix: string) {
   return `${prefix} ${Date.now()} ${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function uniqueEmail(prefix: string) {
+function uniqueEmail(prefix: string) {
   return `${prefix}.${Date.now()}.${Math.random().toString(36).slice(2, 8)}@example.com`;
 }
 
-export async function authPost<T>(request: APIRequestContext, path: string, data: unknown) {
+async function authPost<T>(request: APIRequestContext, path: string, data: unknown) {
   const response = await request.post(path, {
     data,
     headers: { origin: baseURL },
@@ -20,7 +20,7 @@ export async function authPost<T>(request: APIRequestContext, path: string, data
   return payload;
 }
 
-export async function signUp(request: APIRequestContext, email: string) {
+async function signUp(request: APIRequestContext, email: string) {
   await authPost(request, "/api/auth/sign-up/email", {
     email,
     password: "Password12345!",
@@ -32,7 +32,7 @@ export async function signUp(request: APIRequestContext, email: string) {
   });
 }
 
-export async function createOrganization(request: APIRequestContext, name = uniqueName("E2E Org")) {
+async function createOrganization(request: APIRequestContext, name = uniqueName("E2E Org")) {
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
   const payload = await authPost<{ id?: string; data?: { id?: string } }>(request, "/api/auth/organization/create", {
     name,
@@ -129,7 +129,7 @@ export async function updateProperty(
   return jsonOrThrow<{ property: { id: string } }>(response);
 }
 
-export function clientPayload(name = uniqueName("E2E Client")) {
+function clientPayload(name = uniqueName("E2E Client")) {
   return {
     name,
     type: "Buyer",

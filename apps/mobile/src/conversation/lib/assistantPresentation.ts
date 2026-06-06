@@ -21,12 +21,12 @@ type ResolvedThreadPresentation = ThreadPresentation & {
   surfaceCopy: AssistantSurfaceCopy;
 };
 
-export function getDeviceLocale(): AssistantUiLocale {
+function getDeviceLocale(): AssistantUiLocale {
   const preference = useAppStore.getState().localePreference;
   return resolveEffectiveLocale(preference, detectDeviceLocale());
 }
 
-export function buildFallbackThreadPresentation(): ResolvedThreadPresentation {
+function buildFallbackThreadPresentation(): ResolvedThreadPresentation {
   const uiLocale = getDeviceLocale();
   const languageTag = uiLocale;
   return {
@@ -86,7 +86,7 @@ export function isRtlDirection(direction: AssistantDirection) {
   return direction === "rtl";
 }
 
-export function getLocalizedRouteLabel(
+function getLocalizedRouteLabel(
   route: AssistantStageEvent["route"] | undefined,
   copy: AssistantSurfaceCopy,
 ) {
@@ -192,7 +192,7 @@ function inferAssistantIdentityKind(args: {
   return "advisor";
 }
 
-export function resolveAssistantIdentityLabel(args: {
+function resolveAssistantIdentityLabel(args: {
   threadPresentation?: Pick<ThreadPresentation, "uiLocale" | "languageTag"> | null;
   route?: AssistantStageEvent["route"];
   stageSpecialist?: string;

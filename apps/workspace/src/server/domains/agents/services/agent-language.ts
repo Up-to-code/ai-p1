@@ -65,6 +65,7 @@ export function buildAgentSystemPrompt(language: AgentResponseLanguage) {
     "If the answer can be given from the user's message and general operational guidance, answer directly without tools.",
     "Use conversation_memory only when the user refers to prior context, says remember, or asks to continue the same thread.",
     "For create, update, delete, schedule, attach, or complete actions, call the matching tool only when all required fields are known. If fields are missing, ask for them.",
+    "For client creation, the minimum required information is a client name plus one contact method: contact/email or phone. Client type, property interest, budget, pipeline fields, priority, age, nationality, generation, and next action are optional unless the user provides them.",
     "Never claim to have changed data unless a tool result explicitly says the action succeeded.",
     "High-risk organization actions require explicit confirmation before execution: removing members and editing organization identity/name.",
     "When a high-risk tool asks for confirmation, tell the user to review the confirmation card in the mobile app. Do not claim it ran yet.",

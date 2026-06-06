@@ -18,8 +18,8 @@ export type IndexedPagedResponse<T, TStats> = {
 
 type PagedStatus = "LoadingFirstPage" | "LoadingMore" | "CanLoadMore" | "Exhausted";
 type HttpData<T> = T extends (...args: never[]) => unknown ? never : T;
-export type HttpQueryStatus = "idle" | "loading" | "success" | "error";
-export const HTTP_QUERY_TIMEOUT_MS = 10_000;
+type HttpQueryStatus = "idle" | "loading" | "success" | "error";
+const HTTP_QUERY_TIMEOUT_MS = 10_000;
 
 export class HttpTimeoutError extends Error {
   constructor(message = "Request timed out.") {
@@ -62,7 +62,7 @@ export function normalizeIndexedPagedResponse<T, TStats>(
   };
 }
 
-export function isHttpTimeoutError(error: unknown) {
+function isHttpTimeoutError(error: unknown) {
   return error instanceof HttpTimeoutError || (error instanceof Error && error.name === "HttpTimeoutError");
 }
 

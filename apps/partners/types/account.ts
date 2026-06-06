@@ -1,4 +1,4 @@
-export type PartnerProfileView = {
+type PartnerProfileView = {
   id: string;
   authSubject: string;
   name: string | null;
@@ -7,7 +7,7 @@ export type PartnerProfileView = {
   updatedAt: number;
 };
 
-export type ProgrammerOrganizationView = {
+type ProgrammerOrganizationView = {
   id: string;
   ownerAuthSubject: string;
   tenantOrganizationId: string | null;
@@ -18,7 +18,7 @@ export type ProgrammerOrganizationView = {
   updatedAt: number;
 };
 
-export type PartnerIdentityView = {
+type PartnerIdentityView = {
   subject: string;
   name?: string;
   email?: string;

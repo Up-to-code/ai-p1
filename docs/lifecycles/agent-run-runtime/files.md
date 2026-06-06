@@ -11,11 +11,15 @@
 - `apps/workspace/src/server/domains/agents/policies/tool-policy.ts`: shared Agent tool policy gateway for adapter, permission, risk, approval, and deny-by-default decisions.
 - `apps/workspace/src/domains/agents/conversation-runtime.ts`: Client conversation runtime Module for agent attachments and visible message reconciliation.
 - `apps/workspace/src/domains/agents/api/agent-chat-request.ts`: Browser Agent chat request Module for stream request construction, SSE chunk parsing, and HTTP error mapping.
+- `apps/workspace/src/components/layout/sidebar.tsx`: Workspace sidebar thread history surface for creator-private Agent thread navigation and deletion.
+- `apps/workspace/src/server/domains/agents/handlers/read.ts`: Hono Agent read/write handler boundary for thread lists, message lists, and thread deletion.
+- `apps/workspace/src/server/domains/organization/routing/router.ts`: Organization API router exposing Agent chat, confirmation, thread read, and thread delete routes.
 - `apps/mobile/src/conversation/lib/agentAttachmentPresentation.ts`: Mobile Agent attachment presentation Module for composer and sent-message attachment limits, merge/dedupe, progress projection, removal, upload transition, and failure state.
 - `apps/mobile/src/persistence/api/agentAttachmentFileMapping.ts`: Mobile Agent attachment file-mapping Module for picker asset normalization, MIME-kind inference, upload identity matching, and typed upload result projection.
 - `apps/mobile/src/persistence/api/agentAttachments.ts`: Mobile Agent attachment picker/upload Adapter that delegates file mapping and progress rules to deeper Modules.
 - `apps/mobile/src/conversation/lib/composerDockLayout.ts`: Mobile composer dock layout Module for input height bounds, line-count, expansion state, scroll threshold, edit gap, and measured-height updates.
 - `apps/mobile/src/conversation/lib/threadHistoryPresentation.ts`: Mobile thread history presentation Module for title fallback and thread date labels.
+- `apps/mobile/src/conversation/lib/threadScope.ts`: Mobile thread scope Module for clearing persisted Agent thread selection when the selected Workspace organization changes or first resolves.
 - `apps/mobile/src/voice/lib/voiceComposerState.ts`: Mobile Voice Composer State Module for audio normalization, recognition result projection, and fixed unavailable/error copy.
 - `apps/mobile/src/voice/hooks/useVoiceComposer.ts`: Mobile voice hook that wires native speech Adapter events to store updates through the Voice Composer State Module.
 - `apps/mobile/src/persistence/api/conversationDataMapping.ts`: Mobile Conversation Data Mapping Module for Agent thread sorting, Agent message projection, source/property extraction, and chronological message ordering.

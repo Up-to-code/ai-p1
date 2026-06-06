@@ -6,11 +6,6 @@ import type {
 import { validateJsonBody } from "@/server/utils/request/json-body";
 import { inboundWebhookSchema } from "../validation/partner-app.schema";
 import {
-  acceptInboundWebhook,
-} from "../services/resources";
-import {
-  isPartnerApiKeyAccess,
-  isPartnerOAuthAccess,
   partnerResourceAccessError,
   partnerResourceAccessIdentity,
   readAuthorizedPartnerResource,
@@ -105,19 +100,8 @@ export async function handlePartnerInboundWebhook(c: Context) {
   if (!parsed.ok) return parsed.response;
 
   try {
-    const access = await requirePartnerResourceAccess(c, "client", "create");
-    if (isPartnerApiKeyAccess(access)) {
-      return c.json({ error: "API keys cannot call inbound webhook endpoints." }, 403);
-    }
-    if (!isPartnerOAuthAccess(access)) {
-      return c.json({ error: "Partner access denied." }, 401);
-    }
-    return c.json({
-      result: await acceptInboundWebhook(access, {
-        ...parsed.data,
-        idempotencyKey: c.req.header("idempotency-key") ?? undefined,
-      }),
-    });
+    await requirePartnerResourceAccess(c, "client", "create");
+    return c.json({ error: "API keys cannot call inbound webhook endpoints." }, 403);
   } catch (error) {
     return partnerResourceAccessError(error);
   }

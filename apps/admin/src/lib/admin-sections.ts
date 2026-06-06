@@ -166,15 +166,6 @@ export const adminSections: AdminSection[] = [
   },
 ];
 
-export const adminPrimaryNav = [
-  { label: "Overview", href: "/", icon: Activity },
-  ...adminSections.map((section) => ({
-    label: section.title,
-    href: section.href,
-    icon: section.icon,
-  })),
-];
-
 const arabicSectionCopy: Record<AdminSectionId, Pick<AdminSection, "title" | "eyebrow" | "description" | "controls" | "risk">> = {
   security: {
     title: "نظرة الأمان",
@@ -262,7 +253,7 @@ const arabicSectionCopy: Record<AdminSectionId, Pick<AdminSection, "title" | "ey
   },
 };
 
-export function getAdminSections(locale: AdminLocale = "en") {
+function getAdminSections(locale: AdminLocale = "en") {
   if (locale === "en") return adminSections;
   return adminSections.map((section) => ({ ...section, ...arabicSectionCopy[section.id] }));
 }
@@ -281,23 +272,4 @@ export function getAdminPrimaryNav(locale: AdminLocale = "en") {
 export function findAdminSection(idOrPath: string, locale: AdminLocale = "en") {
   const normalized = idOrPath.replace(/^\//u, "");
   return getAdminSections(locale).find((section) => section.id === normalized || section.href.replace(/^\//u, "") === normalized);
-}
-
-export const workspaceDataFamilies = [
-  { label: "Projects", icon: FolderKanban },
-  { label: "Properties", icon: Building2 },
-  { label: "Clients", icon: UsersRound },
-  { label: "Calendar", icon: CalendarDays },
-  { label: "Tasks", icon: Activity },
-];
-
-export function getWorkspaceDataFamilies(locale: AdminLocale = "en") {
-  if (locale === "en") return workspaceDataFamilies;
-  return [
-    { label: "المشاريع", icon: FolderKanban },
-    { label: "العقارات", icon: Building2 },
-    { label: "العملاء", icon: UsersRound },
-    { label: "التقويم", icon: CalendarDays },
-    { label: "المهام", icon: Activity },
-  ];
 }

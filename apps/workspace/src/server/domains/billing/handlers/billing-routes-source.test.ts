@@ -6,6 +6,7 @@ describe("billing routes", () => {
     const source = readFileSync("src/server/domains/organization/routing/router.ts", "utf8");
 
     expect(source).toContain("/:organizationId/billing/subscription");
+    expect(source).toContain("/:organizationId/billing/usage");
     expect(source).toContain("/:organizationId/billing/tamara/checkout");
     expect(source).toContain("/:organizationId/billing/tamara/orders/:orderId");
   });

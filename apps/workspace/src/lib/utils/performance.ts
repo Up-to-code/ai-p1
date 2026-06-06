@@ -22,12 +22,3 @@ export function markAppPerformance(name: string, detail?: PerformanceDetail) {
     console.debug("[qentrah:perf]", name, detail ?? "");
   }
 }
-
-export function measureAppPerformance(name: string, startMark: string, endMark?: string) {
-  if (!isPerformanceDebugEnabled()) return;
-  try {
-    performance.measure(`qentrah:${name}`, `qentrah:${startMark}`, endMark ? `qentrah:${endMark}` : undefined);
-  } catch {
-    // Marks are best-effort diagnostics and should never affect app behavior.
-  }
-}

@@ -2,7 +2,7 @@ import type { Context } from "hono";
 import { z } from "zod";
 import type { Id, TableNames } from "@convex/_generated/dataModel";
 
-export const WORKSPACE_READ_TIMEOUT_MS = 10_000;
+const WORKSPACE_READ_TIMEOUT_MS = 10_000;
 const MAX_CURSOR_LENGTH = 4_000;
 const MAX_SEARCH_LENGTH = 160;
 

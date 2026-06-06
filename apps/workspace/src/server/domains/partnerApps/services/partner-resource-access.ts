@@ -3,7 +3,6 @@ import type {
   PartnerPermissionAction,
   PartnerPermissionResource,
 } from "@qentrah/partner-auth-core";
-import { authorizePartnerResourceRequest, partnerAccessError, type PartnerAccessContext } from "./access-token";
 import {
   isOrganizationApiKeyToken,
   organizationApiKeyAccessError,
@@ -12,12 +11,10 @@ import {
 } from "./organization-api-key-access";
 import {
   readOrganizationApiKeyResource,
-  readPartnerResource,
   writeOrganizationApiKeyResource,
-  writePartnerResource,
 } from "./resources";
 
-export type PartnerResourceAccessContext = PartnerAccessContext | OrganizationApiKeyAccessContext;
+export type PartnerResourceAccessContext = OrganizationApiKeyAccessContext;
 
 function routeOrganizationId(c: Context) {
   const organizationId = c.req.param("organizationId");
@@ -35,16 +32,21 @@ function authorizationBearerToken(c: Context) {
   return authorization?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim() ?? "";
 }
 
-export function isPartnerApiKeyAccess(
-  access: PartnerResourceAccessContext,
-): access is OrganizationApiKeyAccessContext {
-  return access.type === "apiKey";
+function assertNoQueryBearerToken(c: Context) {
+  const url = new URL(c.req.url);
+  if (url.searchParams.has("access_token") || url.searchParams.has("token")) {
+    throw new Response(JSON.stringify({ error: "Bearer tokens must use the Authorization header." }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }
 
-export function isPartnerOAuthAccess(
-  access: PartnerResourceAccessContext,
-): access is PartnerAccessContext {
-  return access.type === "oauth";
+function rejectUnsupportedPartnerBearer(): never {
+  throw new Response(JSON.stringify({ error: "Legacy partner OAuth bearer tokens are no longer supported." }), {
+    status: 410,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 export async function requirePartnerResourceAccess(
@@ -52,23 +54,21 @@ export async function requirePartnerResourceAccess(
   resource: PartnerPermissionResource,
   action: PartnerPermissionAction,
 ): Promise<PartnerResourceAccessContext> {
+  assertNoQueryBearerToken(c);
   const organizationId = routeOrganizationId(c);
   const token = authorizationBearerToken(c);
   if (isOrganizationApiKeyToken(token)) {
     return requireOrganizationApiKeyAccess(c, organizationId, resource, action);
   }
-  return authorizePartnerResourceRequest(c, organizationId, resource, action);
+  return rejectUnsupportedPartnerBearer();
 }
 
 export function partnerResourceAccessError(error: unknown) {
-  if (error instanceof Response) return organizationApiKeyAccessError(error);
-  return partnerAccessError(error);
+  return organizationApiKeyAccessError(error);
 }
 
 export function partnerResourceAccessIdentity(access: PartnerResourceAccessContext) {
-  return isPartnerApiKeyAccess(access)
-    ? { apiKeyId: access.apiKeyId, keyId: access.keyId, appName: access.name }
-    : { partnerAppId: access.partnerAppId, connectionId: access.connectionId, appName: access.appName };
+  return { apiKeyId: access.apiKeyId, keyId: access.keyId, appName: access.name };
 }
 
 export function readAuthorizedPartnerResource(
@@ -76,9 +76,7 @@ export function readAuthorizedPartnerResource(
   resource: PartnerPermissionResource,
   input?: unknown,
 ) {
-  return isPartnerApiKeyAccess(access)
-    ? readOrganizationApiKeyResource(access.organizationId, resource, input)
-    : readPartnerResource(access.organizationId, resource, input);
+  return readOrganizationApiKeyResource(access.organizationId, resource, input);
 }
 
 export function writeAuthorizedPartnerResource(
@@ -87,7 +85,5 @@ export function writeAuthorizedPartnerResource(
   action: Exclude<PartnerPermissionAction, "read">,
   input?: unknown,
 ) {
-  return isPartnerApiKeyAccess(access)
-    ? writeOrganizationApiKeyResource(access, resource, action, input)
-    : writePartnerResource(access, resource, action, input);
+  return writeOrganizationApiKeyResource(access, resource, action, input);
 }

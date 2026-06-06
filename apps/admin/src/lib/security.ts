@@ -1,5 +1,5 @@
-export const PRODUCTION_WORKSPACE_ORIGIN = "https://app.qentrah.com";
-export const PRODUCTION_ADMIN_ORIGIN = "https://admin.qentrah.com";
+const PRODUCTION_WORKSPACE_ORIGIN = "https://app.qentrah.com";
+const PRODUCTION_ADMIN_ORIGIN = "https://admin.qentrah.com";
 
 const LOCAL_TRUSTED_ORIGINS = ["http://localhost:3000", "http://localhost:3003"];
 
@@ -56,15 +56,6 @@ export function adminSecurityConfig(env: Record<string, string | undefined> = pr
     adminSessionEncryptionKeyValid: adminSessionEncryptionKey.length === 0 || adminSessionEncryptionKey.length >= 32,
     platformAdminEmails: parseCsv(env.PLATFORM_ADMIN_EMAILS).map((email) => email.toLowerCase()),
   };
-}
-
-export function assertAdminSecurityConfig(env: Record<string, string | undefined> = process.env) {
-  const config = adminSecurityConfig(env);
-  if (!config.hasAdminServiceToken) throw new Error("WORKSPACE_ADMIN_SERVICE_TOKEN is required.");
-  if (!config.adminSessionEncryptionKeyValid) {
-    throw new Error("ADMIN_SESSION_ENCRYPTION_KEY must be at least 32 characters when configured.");
-  }
-  return config;
 }
 
 export function redactSecret(value: string | null | undefined) {

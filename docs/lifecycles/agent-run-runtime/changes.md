@@ -1,5 +1,16 @@
 # Changes
 
+## 2026-06-06 Creator-Private Agent Threads
+
+- Made Workspace Agent threads creator-private within each organization: thread list, message reads, context reads, and chat continuation now require the authenticated user to match `agentThreads.createdByUserId`.
+- Added hard deletion for user-owned Agent threads through the organization API, cascading messages, runs, run steps, tool calls, confirmations, memory summaries, and memory facts while rejecting deletion during running runs.
+- Added sidebar and thread history delete controls that confirm before deletion, clear the active `threadId` URL when needed, and rely on Convex thread queries as the source of truth.
+
+## 2026-06-06 Mobile Agent Thread Scope Reset
+
+- Added a Mobile thread scope Module so persisted Agent thread selection is cleared when the first Workspace organization resolves or when the user switches organizations.
+- Kept Workspace as the Agent thread source of truth while making the mobile reset decision testable outside the native conversation controller.
+
 ## 2026-06-04 Mobile Clerk Workspace Auth
 
 - Replaced the Mobile Better Auth client seam with a Clerk Expo facade backed by SecureStore token cache.

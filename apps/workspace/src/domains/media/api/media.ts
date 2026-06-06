@@ -52,17 +52,6 @@ export function useResourceMediaQuery(
   );
 }
 
-export function useResourceMediaFoldersQuery(
-  organizationId: string | undefined,
-  resourceType: MediaResourceType,
-  resourceId: string | undefined,
-) {
-  return useQuery(
-    api.media.read.listFoldersForResource,
-    organizationId && resourceId ? { organizationId, resourceType, resourceId } : "skip",
-  );
-}
-
 export async function attachUploadedMedia(params: {
   organizationId: string;
   resourceType: MediaResourceType;
@@ -187,6 +176,3 @@ export async function deleteMediaFolderRequest(organizationId: string, folderId:
     "Media request failed.",
   );
 }
-
-export type MediaAssetId = Id<"mediaAssets">;
-export type MediaFolderId = Id<"mediaFolders">;

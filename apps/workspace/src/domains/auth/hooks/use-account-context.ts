@@ -24,6 +24,18 @@ type AccountContextValue = {
     email: string;
     image: string | null;
     initials: string;
+    profile: {
+      phone: string;
+      role: string;
+      language: "en" | "ar";
+      timezone: string;
+      notifications: {
+        product: boolean;
+        approvals: boolean;
+        billing: boolean;
+        security: boolean;
+      };
+    };
   };
   organization: {
     id: string | null;
@@ -44,6 +56,13 @@ type AccountContextValue = {
 };
 
 const AccountContext = createContext<AccountContextValue | null>(null);
+
+const defaultNotifications = {
+  product: true,
+  approvals: true,
+  billing: false,
+  security: true,
+};
 
 function getInitials(value: string) {
   return value
@@ -102,6 +121,7 @@ function useAccountContextValue(): AccountContextValue {
     const clerkUser = userQuery.user;
     const clerkOrganization = organizationQuery.organization;
     const userName =
+      userProfile?.name?.trim() ||
       clerkUser?.fullName?.trim() ||
       clerkUser?.username?.trim() ||
       clerkUser?.primaryEmailAddress?.emailAddress ||
@@ -129,6 +149,13 @@ function useAccountContextValue(): AccountContextValue {
         email: userEmail,
         image: userProfile?.avatarUrl ?? clerkUser?.imageUrl ?? null,
         initials: getInitials(userName),
+        profile: {
+          phone: userProfile?.phone ?? "",
+          role: userProfile?.role ?? "Workspace Owner",
+          language: userProfile?.language ?? "en",
+          timezone: userProfile?.timezone ?? "Africa/Cairo",
+          notifications: userProfile?.notifications ?? defaultNotifications,
+        },
       },
       organization: {
         id: organizationId,

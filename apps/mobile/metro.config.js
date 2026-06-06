@@ -107,7 +107,6 @@ config.watchFolders = [
 config.resolver.alias = {
   ...(config.resolver.alias ?? {}),
   "@": path.resolve(projectRoot, "src"),
-  "@zayon/assistant-protocol": path.resolve(workspaceRoot, "packages/zayon-assistant-protocol/src/index.ts"),
   react: resolveSingletonPath("react"),
   "react/jsx-runtime": resolveSingletonPath("react/jsx-runtime"),
   "react/jsx-dev-runtime": resolveSingletonPath("react/jsx-dev-runtime"),

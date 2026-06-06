@@ -1,9 +1,8 @@
 import { expectTypeOf, describe, it } from "vitest";
-import type { AgUiConversationTurn } from "../protocol";
-import type { QentrahProUiTurn } from "../../../../apps/web/server/contracts/qentrahPro";
+import type { AgUiConversationTurn, agUiConversationTurnSchema } from "../protocol";
 
 describe("AG UI contract", () => {
-  it("keeps QentrahProUiTurn assignable to the package conversation turn", () => {
-    expectTypeOf<QentrahProUiTurn>().toMatchTypeOf<AgUiConversationTurn>();
+  it("keeps the schema-inferred turn assignable to the public package turn", () => {
+    expectTypeOf<typeof agUiConversationTurnSchema._type>().toMatchTypeOf<AgUiConversationTurn>();
   });
 });

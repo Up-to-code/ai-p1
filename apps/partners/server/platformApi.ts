@@ -4,7 +4,6 @@ import {
 import { prisma } from "@/lib/prisma";
 import { normalizeScopes } from "@/server/partnerAppPolicies";
 import { toPublishedPartnerApp } from "@/server/partnerAppCatalog";
-export { assertPlatformServiceToken, platformServiceTokenFromEnv } from "@/server/serviceTokens";
 
 type PublishedListInput = { limit?: number; cursor?: string; updatedSince?: number };
 type PublishedListResult = Awaited<ReturnType<typeof readPublishedAppsFromDatabase>>;

@@ -26,7 +26,6 @@ Exports:
 
 - `AgUiTurnRenderer`
 - `AG_UI_COMPONENT_REGISTRY`
-- `DEFAULT_AG_UI_COMPONENT_REGISTRY`
 - `mergeAgUiComponentRegistry`
 - `createAgUiComponentRegistry`
 
@@ -43,14 +42,3 @@ Exports:
 2. `byName[actionName]`
 3. `byActionId[actionId]`
 4. `onAction`
-
-## `@qentrah/ag-ui/qentrah`
-
-Exports:
-
-- `AgPropertyForm`
-- `ProjectFormData`
-- `AgRichTextEditor`
-- `AgDeleteConfirmModal`
-
-These exports are intentionally adapter-scoped and may depend on Qentrah workspace infrastructure.

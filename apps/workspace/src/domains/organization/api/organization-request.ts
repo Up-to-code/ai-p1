@@ -3,8 +3,12 @@
 export type OrganizationApiMethod = "GET" | "POST" | "PATCH" | "DELETE";
 
 export async function readOrganizationJsonResponse<T>(response: Response, fallback: string): Promise<T> {
-  const payload = await response.json().catch(() => ({})) as { error?: string };
+  const payload = await response.json().catch(() => ({ error: fallback })) as { error?: string };
   if (!response.ok) {
+    throw new Error(payload.error ?? fallback);
+  }
+
+  if ("error" in payload && Object.keys(payload).length === 1) {
     throw new Error(payload.error ?? fallback);
   }
 

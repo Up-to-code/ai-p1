@@ -23,7 +23,7 @@ export async function requireDemoSession() {
   return { session };
 }
 
-export function limitFromRequest(request: Request) {
+function limitFromRequest(request: Request) {
   const value = Number(new URL(request.url).searchParams.get("limit") ?? "25");
   return Number.isFinite(value) ? Math.max(1, Math.min(100, Math.floor(value))) : 25;
 }
