@@ -7,7 +7,7 @@ import {
 } from "../conversation/lib/threadSelection";
 import { shouldResetConversationForOrganizationScope } from "../conversation/lib/threadScope";
 
-test("resolveActiveConversationThreadId falls back when saved thread no longer exists", () => {
+test("resolveActiveConversationThreadId clears when saved thread no longer exists", () => {
   const resolvedThreadId = resolveActiveConversationThreadId({
     activeThreadId: "thread-missing",
     isCreatingThread: false,
@@ -15,7 +15,18 @@ test("resolveActiveConversationThreadId falls back when saved thread no longer e
     threadsLoaded: true,
   });
 
-  assert.equal(resolvedThreadId, "thread-latest");
+  assert.equal(resolvedThreadId, null);
+});
+
+test("resolveActiveConversationThreadId keeps explicit new thread selection null", () => {
+  const resolvedThreadId = resolveActiveConversationThreadId({
+    activeThreadId: null,
+    isCreatingThread: false,
+    threads: [{ _id: "thread-latest" }, { _id: "thread-older" }],
+    threadsLoaded: true,
+  });
+
+  assert.equal(resolvedThreadId, null);
 });
 
 test("resolveActiveConversationThreadId keeps null when thread list is loaded but empty", () => {
@@ -23,6 +34,17 @@ test("resolveActiveConversationThreadId keeps null when thread list is loaded bu
     activeThreadId: "thread-missing",
     isCreatingThread: false,
     threads: [],
+    threadsLoaded: true,
+  });
+
+  assert.equal(resolvedThreadId, null);
+});
+
+test("resolveActiveConversationThreadId preserves selection while creating a thread", () => {
+  const resolvedThreadId = resolveActiveConversationThreadId({
+    activeThreadId: null,
+    isCreatingThread: true,
+    threads: [{ _id: "thread-latest" }],
     threadsLoaded: true,
   });
 

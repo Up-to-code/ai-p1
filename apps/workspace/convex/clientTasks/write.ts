@@ -5,6 +5,7 @@ import type { MutationCtx } from "../_generated/server";
 import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { assertPlatformAdmin } from "../platform/access";
+import { cancelQueuedJobsForSource, scheduleTaskReminders } from "../notifications/helpers";
 import { clientTaskInputValidator, clientTaskValidator } from "./validators";
 
 function presentTask<TTask extends { _id: string; visibility?: "private" | "public" }>(task: TTask) {
@@ -70,6 +71,7 @@ export const createFromHono = mutation({
 
     const task = await ctx.db.get(id);
     if (!task) throw new Error("Task could not be created.");
+    await scheduleTaskReminders(ctx, task);
     return presentTask(task);
   },
 });
@@ -107,6 +109,7 @@ export const updateFromHono = mutation({
 
     const task = await ctx.db.get(args.taskId);
     if (!task) throw new Error("Task was not found.");
+    await scheduleTaskReminders(ctx, task);
     return presentTask(task);
   },
 });
@@ -121,6 +124,7 @@ export const deleteFromHono = mutation({
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Task was not found.");
     const now = Date.now();
     await ctx.db.patch(args.taskId, { deletedAt: now, updatedAt: now });
+    await cancelQueuedJobsForSource(ctx, args.organizationId, "task", args.taskId);
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
       actorUserId: user._id,

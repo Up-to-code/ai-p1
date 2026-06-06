@@ -37,11 +37,9 @@ export default function ThreadsScreen() {
     const isFavorite = favoriteThreadIds.includes(item._id);
     const thread = presentThreadHistoryItem(item, { untitledLabel: t.menu.untitledSearch });
     return (
-      <View style={styles.threadCard}>
+      <View style={styles.threadRow}>
         <Pressable style={styles.threadPress} onPress={() => openThread(item._id)}>
-          <View style={styles.itemIconBox}>
-            <Clock size={18} color={colors.textPrimary} />
-          </View>
+          <Clock size={22} color={colors.textPrimary} />
           <View style={styles.threadMeta}>
             <Text style={styles.threadTitle} numberOfLines={1}>
               {thread.title}
@@ -50,7 +48,7 @@ export default function ThreadsScreen() {
               {thread.dateLabel}
             </Text>
           </View>
-          <ChevronRight size={14} color={colors.textMuted} style={mirrorIcon(isRTL)} />
+          <ChevronRight size={16} color={colors.textMuted} style={mirrorIcon(isRTL)} />
         </Pressable>
         <Pressable
           accessibilityLabel={t.common.save}
@@ -137,56 +135,37 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     gap: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
     paddingBottom: theme.spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
     backgroundColor: colors.background,
   },
   headerBtn: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: colors.surface,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: colors.divider,
   },
   headerTitle: {
     flex: 1,
     color: colors.textPrimary,
     fontFamily: "Manrope_800ExtraBold",
-    fontSize: 17,
+    fontSize: 22,
     textAlign: isRTL ? "right" : "left",
   },
   listContent: {
     paddingHorizontal: theme.spacing.lg,
-    gap: theme.spacing.sm,
+    gap: 2,
   },
-  threadCard: {
-    minHeight: 68,
-    borderRadius: theme.radii.md,
-    borderWidth: 1,
-    borderColor: colors.divider,
-    backgroundColor: colors.surface,
+  threadRow: {
+    minHeight: 64,
     flexDirection: isRTL ? "row-reverse" : "row",
     alignItems: "center",
-    paddingHorizontal: theme.spacing.sm,
   },
   threadPress: {
     flex: 1,
     flexDirection: isRTL ? "row-reverse" : "row",
     alignItems: "center",
     gap: theme.spacing.md,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.sm,
-  },
-  itemIconBox: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: colors.surfaceRaised,
-    alignItems: "center",
-    justifyContent: "center",
+    paddingVertical: 12,
   },
   threadMeta: {
     flex: 1,
@@ -196,7 +175,8 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
   threadTitle: {
     color: colors.textPrimary,
     fontFamily: "Manrope_800ExtraBold",
-    fontSize: 14,
+    fontSize: 20,
+    lineHeight: 27,
     textAlign: isRTL ? "right" : "left",
   },
   threadDate: {
@@ -209,7 +189,6 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     borderRadius: 19,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.surfaceRaised,
   },
   centerState: {
     flex: 1,

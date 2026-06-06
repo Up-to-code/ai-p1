@@ -1,5 +1,6 @@
 import { authClient } from "@/auth/authClient";
 import { resetE2EAuthState } from "@/e2e/store";
+import { unregisterCurrentDeviceForPush } from "@/notifications/mobilePushNotifications";
 import { useAppStore } from "@/store";
 
 export async function signOutForAccountSwitch() {
@@ -12,6 +13,7 @@ export async function signOutForAccountSwitch() {
   }
 
   state.setE2EForceAuthScreen(true);
+  await unregisterCurrentDeviceForPush().catch(() => undefined);
   await authClient.signOut().catch(() => undefined);
 }
 

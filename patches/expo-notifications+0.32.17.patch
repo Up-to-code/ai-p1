@@ -1,0 +1,44 @@
+diff --git a/node_modules/expo-notifications/ios/EXNotifications/Badge/BadgeModule.swift b/node_modules/expo-notifications/ios/EXNotifications/Badge/BadgeModule.swift
+index 7a289c4..ab369cf 100644
+--- a/node_modules/expo-notifications/ios/EXNotifications/Badge/BadgeModule.swift
++++ b/node_modules/expo-notifications/ios/EXNotifications/Badge/BadgeModule.swift
+@@ -8,7 +8,7 @@ public class BadgeModule: Module {
+     Name("ExpoBadgeModule")
+ 
+     AsyncFunction("getBadgeCountAsync") { () -> Int in
+-      return EXSharedApplication().applicationIconBadgeNumber
++      return UIApplication.shared.applicationIconBadgeNumber
+     }
+     .runOnQueue(.main)
+ 
+@@ -22,7 +22,7 @@ public class BadgeModule: Module {
+           try await center.setBadgeCount(badgeCount)
+         } else {
+           await MainActor.run {
+-            EXSharedApplication().applicationIconBadgeNumber = badgeCount
++            UIApplication.shared.applicationIconBadgeNumber = badgeCount
+           }
+         }
+         return true
+diff --git a/node_modules/expo-notifications/ios/EXNotifications/Permissions/PermissionsModule.swift b/node_modules/expo-notifications/ios/EXNotifications/Permissions/PermissionsModule.swift
+index 8630945..c30c305 100644
+--- a/node_modules/expo-notifications/ios/EXNotifications/Permissions/PermissionsModule.swift
++++ b/node_modules/expo-notifications/ios/EXNotifications/Permissions/PermissionsModule.swift
+@@ -23,7 +23,7 @@ public class PermissionsModule: Module {
+         .permissions?
+         .getPermissionUsingRequesterClass(
+           EXUserFacingNotificationsPermissionsRequester.self,
+-          resolve: promise.resolver,
++          resolve: promise.legacyResolver,
+           reject: promise.legacyRejecter
+         )
+     }
+@@ -38,7 +38,7 @@ public class PermissionsModule: Module {
+         .permissions?
+         .askForPermission(
+           usingRequesterClass: EXUserFacingNotificationsPermissionsRequester.self,
+-          resolve: promise.resolver,
++          resolve: promise.legacyResolver,
+           reject: promise.legacyRejecter
+         )
+     }

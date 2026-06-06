@@ -7,6 +7,12 @@ const path = require("node:path");
 
 let workspaceServer = null;
 
+function getDesktopIconPath() {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, "standalone", "apps", "workspace", "public", "app-icon-512.png")
+    : path.join(__dirname, "..", "public", "app-icon-512.png");
+}
+
 function getFreePort() {
   return new Promise((resolve, reject) => {
     const server = net.createServer();
@@ -93,9 +99,7 @@ async function getWorkspaceUrl() {
 
 async function createWindow() {
   const workspaceUrl = await getWorkspaceUrl();
-  const iconPath = app.isPackaged
-    ? path.join(process.resourcesPath, "standalone", "apps", "workspace", "public", "app-icon-512.png")
-    : path.join(__dirname, "..", "public", "app-icon-512.png");
+  const iconPath = getDesktopIconPath();
   const mainWindow = new BrowserWindow({
     width: 1440,
     height: 960,
@@ -122,6 +126,10 @@ async function createWindow() {
 }
 
 app.whenReady().then(() => {
+  if (process.platform === "darwin" && app.dock) {
+    app.dock.setIcon(getDesktopIconPath());
+  }
+
   createWindow().catch((error) => {
     console.error(error);
     app.quit();

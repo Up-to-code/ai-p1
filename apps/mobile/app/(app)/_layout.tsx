@@ -38,6 +38,8 @@ export default function AppLayout() {
       <Stack.Screen name="organization" />
       <Stack.Screen name="threads" />
       <Stack.Screen name="language" />
+      <Stack.Screen name="appearance" />
+      <Stack.Screen name="notifications" />
     </Stack>
   );
 }

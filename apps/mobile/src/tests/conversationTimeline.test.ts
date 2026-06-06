@@ -6,6 +6,7 @@ import {
   buildConversationTimeline,
   createLocalTurnId,
   createStreamingAssistantTurn,
+  isTechnicalStreamingStatus,
   shouldShowEmptyConversationWelcome,
   shouldKeepPreviousMessagesOnThreadValidation,
   type DraftConversationTurn,
@@ -86,6 +87,21 @@ test("text appends to the same assistant row and removes pending copy", () => {
   assert.equal(second?.message.id, streamTurn.message.id);
   assert.equal(second?.message.text, "Hello");
   assert.equal(second?.receivedText, true);
+});
+
+test("technical streaming statuses keep curated pending copy before answer text", () => {
+  const streamTurn = createStreamingAssistantTurn({
+    localTurnId: "local-turn-1",
+    threadId: "thread_1",
+    startedAt: 1,
+    pendingText: "Thinking through your request...",
+  });
+
+  const updated = applyStreamEvent(streamTurn, { type: "status", message: "Streaming the answer" });
+
+  assert.equal(updated?.message.text, "Thinking through your request...");
+  assert.equal(isTechnicalStreamingStatus("streaming response"), true);
+  assert.equal(isTechnicalStreamingStatus("Preparing answer"), false);
 });
 
 test("done keeps completed assistant row until persisted messages reconcile", () => {

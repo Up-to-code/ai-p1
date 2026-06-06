@@ -21,14 +21,13 @@ export function resolveActiveConversationThreadId({
     return activeThreadId;
   }
 
-  const fallbackThreadId = threads[0]?._id ?? null;
   if (!activeThreadId) {
-    return fallbackThreadId;
+    return null;
   }
 
   return threads.some((thread) => thread._id === activeThreadId)
     ? activeThreadId
-    : fallbackThreadId;
+    : null;
 }
 
 export function canQueryConversationThread({

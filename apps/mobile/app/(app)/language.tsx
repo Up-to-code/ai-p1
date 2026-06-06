@@ -33,14 +33,14 @@ export default function LanguageScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + theme.spacing.xl }]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.optionGroup}>
+        <View style={styles.optionList}>
           {options.map((option) => {
             const selected = option.value === localePreference;
             return (
               <Pressable
                 key={option.value}
                 testID={`language.option.${option.value}`}
-                style={[styles.optionCard, selected && styles.optionCardSelected]}
+                style={[styles.optionRow, selected && styles.optionRowSelected]}
                 onPress={() => setLocalePreference(option.value)}
               >
                 <View style={styles.optionText}>
@@ -72,19 +72,14 @@ const createStyles = (colors: AppColors, isRTL: boolean) =>
       gap: theme.spacing.md,
       paddingHorizontal: theme.spacing.lg,
       paddingBottom: theme.spacing.sm,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.divider,
       backgroundColor: colors.background,
     },
     headerBtn: {
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: colors.surface,
       justifyContent: "center",
       alignItems: "center",
-      borderWidth: 1,
-      borderColor: colors.divider,
     },
     headerTitle: {
       flex: 1,
@@ -96,23 +91,18 @@ const createStyles = (colors: AppColors, isRTL: boolean) =>
       paddingHorizontal: theme.spacing.lg,
       paddingTop: theme.spacing.lg,
     },
-    optionGroup: {
-      borderRadius: theme.radii.lg,
-      borderWidth: 1,
-      borderColor: colors.divider,
-      overflow: "hidden",
-      backgroundColor: colors.surface,
+    optionList: {
+      gap: 8,
     },
-    optionCard: {
+    optionRow: {
       flexDirection: isRTL ? "row-reverse" : "row",
       alignItems: "center",
       backgroundColor: "transparent",
-      minHeight: 58,
-      paddingHorizontal: theme.spacing.lg,
+      minHeight: 64,
       paddingVertical: theme.spacing.md,
     },
-    optionCardSelected: {
-      backgroundColor: colors.surfaceRaised,
+    optionRowSelected: {
+      opacity: 1,
     },
     optionText: {
       flex: 1,
@@ -121,6 +111,8 @@ const createStyles = (colors: AppColors, isRTL: boolean) =>
     optionTitle: {
       fontWeight: "800",
       fontFamily: "Manrope_800ExtraBold",
+      fontSize: 21,
+      lineHeight: 28,
     },
     checkWrap: {
       width: 24,

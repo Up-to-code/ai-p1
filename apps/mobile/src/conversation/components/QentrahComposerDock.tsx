@@ -111,7 +111,7 @@ export function QentrahComposerDock({
     inputScrollable,
     handleContentSizeChange,
     resetComposerState,
-  } = useComposerState(draftText);
+  } = useComposerState(draftText, { isEditing });
 
   const isNewThread = messageCount === 0;
   const isRecording =
@@ -728,14 +728,18 @@ const createStyles = (colors: AppColors, insets: EdgeInsets, isRtl: boolean) => 
     fontSize: 16,
     lineHeight: 22,
     backgroundColor: "transparent",
+    paddingTop: 0,
+    paddingBottom: 0,
+    paddingVertical: 0,
+    includeFontPadding: false,
   },
   inputCompact: {
-    paddingTop: Platform.OS === "ios" ? 7 : 3,
-    paddingBottom: Platform.OS === "ios" ? 7 : 3,
+    paddingTop: 0,
+    paddingBottom: 0,
   },
   inputExpanded: {
-    paddingTop: 6,
-    paddingBottom: 6,
+    paddingTop: 0,
+    paddingBottom: 0,
     paddingRight: 2,
   },
   inputFadeTop: {

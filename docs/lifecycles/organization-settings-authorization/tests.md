@@ -2,6 +2,10 @@
 
 ## Checks For This Change
 
+- Run `npm --workspace @qentrah/workspace test -- convex/notifications/helpers.test.ts src/server/domains/notifications/validation/notification.schema.test.ts src/domains/profile/profile-view-model.test.ts src/domains/organization/settings-view-model.test.ts`.
+- Run `npm --workspace @qentrah/workspace run typecheck`.
+- Run `npm --workspace @qentrah/mobile run typecheck`.
+- Manually confirm owners/admins or roles with organization update plus calendar update can save organization notification policy, and other roles see the no-access notification state.
 - Confirmed no organization settings write path calls `requirePlatformAdmin` or `assertPlatformAdmin`.
 - Ran `npm --workspace @qentrah/workspace test -- src/server/domains/organization/services/actions.test.ts src/server/domains/organization/services/access-policy.test.ts src/server/domains/organization/validation/api-key.schema.test.ts src/server/protocols/mcp/transports/agent-link.test.ts src/server/protocols/mcp/tools/catalog.test.ts`.
 - Ran `npm --workspace @qentrah/workspace run typecheck`.

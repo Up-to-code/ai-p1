@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  Bell,
   Briefcase,
   CheckCircle2,
+  Clock,
   HelpCircle,
   Loader2,
   Lock,
@@ -11,11 +13,13 @@ import {
   Phone,
   Save,
   ShieldCheck,
+  Smartphone,
   Upload,
   User,
 } from "lucide-react";
 import { type UseFormRegisterReturn, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAccountContext } from "@/domains/auth";
 import {
   profileSchema,
@@ -41,21 +45,60 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  defaultNotificationPreference,
+  getMyNotificationPreferences,
+  getPushDeviceStatus,
+  updateMyNotificationPreferences,
+  type NotificationCategory,
+  type NotificationPreference,
+} from "@/domains/notifications/api/notifications";
 
 const tabIcons = {
   profile: User,
   account: Briefcase,
+  notifications: Bell,
   security: Lock,
 } satisfies Record<(typeof profileTabs)[number]["icon"], typeof User>;
 
 export function ProfileSettingsScreen() {
   const t = useTranslations("Profile");
   const account = useAccountContext();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<ProfileTab>("profile");
+  const organizationId = account.organization.id ?? "";
   const formValues = useMemo(
     () => profileFormValues(account.user),
     [account.user],
   );
+  const pushDeviceQuery = useQuery({
+    queryKey: ["profile", "push-devices"],
+    queryFn: getPushDeviceStatus,
+  });
+  const notificationSettingsQuery = useQuery({
+    queryKey: ["notification-settings", organizationId, "me"],
+    queryFn: () => getMyNotificationPreferences(organizationId),
+    enabled: Boolean(organizationId),
+  });
+  const notificationPreference = useMemo<NotificationPreference>(() => {
+    return notificationSettingsQuery.data?.preference ?? {
+      ...defaultNotificationPreference,
+      organizationId,
+      principalType: "user",
+      principalKey: `user:${account.user.id}`,
+      principalUserId: account.user.id,
+    };
+  }, [account.user.id, notificationSettingsQuery.data?.preference, organizationId]);
+  const updateNotificationsMutation = useMutation({
+    mutationFn: (input: NotificationPreference) => updateMyNotificationPreferences(organizationId, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notification-settings", organizationId, "me"] });
+    },
+  });
+  const saveNotificationPreference = (next: NotificationPreference) => {
+    if (!organizationId) return;
+    updateNotificationsMutation.mutate(next);
+  };
 
   const {
     register,
@@ -331,6 +374,106 @@ export function ProfileSettingsScreen() {
           </div>
         )}
 
+        {/* NOTIFICATIONS TAB */}
+        {activeTab === "notifications" && (
+          <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_360px]">
+            <Section
+              title={t("sections.mobileNotifications")}
+              description={t("sections.mobileNotificationsDesc")}
+            >
+              <div className="divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-white/[0.06] dark:border-white/[0.06]">
+                <NotificationSwitchRow
+                  icon={Bell}
+                  label={t("notifications.enabled")}
+                  note={t("notifications.enabledHelp")}
+                  enabled={notificationPreference.enabled}
+                  pending={updateNotificationsMutation.isPending || notificationSettingsQuery.isLoading}
+                  onToggle={() =>
+                    saveNotificationPreference({
+                      ...notificationPreference,
+                      enabled: !notificationPreference.enabled,
+                    })
+                  }
+                />
+                {(["calendar", "task", "manual", "organization"] as NotificationCategory[]).map((category) => (
+                  <NotificationSwitchRow
+                    key={category}
+                    icon={category === "calendar" ? Clock : Bell}
+                    label={t(`notifications.categories.${category}`)}
+                    note={t(`notifications.categoryHelp.${category}`)}
+                    enabled={notificationPreference.categories[category]}
+                    pending={updateNotificationsMutation.isPending || notificationSettingsQuery.isLoading}
+                    onToggle={() =>
+                      saveNotificationPreference({
+                        ...notificationPreference,
+                        categories: {
+                          ...notificationPreference.categories,
+                          [category]: !notificationPreference.categories[category],
+                        },
+                      })
+                    }
+                  />
+                ))}
+              </div>
+            </Section>
+
+            <div className="space-y-8 border-t border-zinc-200 pt-8 dark:border-white/[0.06] xl:border-t-0 xl:border-s xl:pt-0 xl:ps-8">
+              <Section
+                title={t("sections.mobileDevice")}
+                description={t("sections.mobileDeviceDesc")}
+              >
+                <div className="border-y border-zinc-200 py-5 dark:border-white/[0.06]">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5">
+                        <Smartphone className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-zinc-900 dark:text-white">
+                          {pushDeviceQuery.data?.hasActiveDevice ? t("notifications.deviceConnected") : t("notifications.deviceMissing")}
+                        </p>
+                        <p className="mt-1 text-[10px] font-medium text-zinc-400">
+                          {pushDeviceQuery.data?.hasActiveDevice
+                            ? t("notifications.deviceConnectedHelp")
+                            : t("notifications.deviceMissingHelp")}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={cn(
+                      "shrink-0 rounded-full border px-2.5 py-1 text-[9px] font-black uppercase tracking-widest",
+                      pushDeviceQuery.data?.hasActiveDevice
+                        ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"
+                        : "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400",
+                    )}>
+                      {pushDeviceQuery.data?.hasActiveDevice ? t("notifications.on") : t("notifications.off")}
+                    </span>
+                  </div>
+                </div>
+              </Section>
+              <Section
+                title={t("sections.defaultReminders")}
+                description={t("sections.defaultRemindersDesc")}
+              >
+                <div className="flex flex-wrap gap-2 border-y border-zinc-200 py-5 dark:border-white/[0.06]">
+                  {notificationPreference.reminderRules.map((rule) => (
+                    <span
+                      key={rule.id}
+                      className={cn(
+                        "rounded-full border px-3 py-1 text-[10px] font-bold",
+                        rule.enabled
+                          ? "border-zinc-200 text-zinc-700 dark:border-white/[0.08] dark:text-zinc-300"
+                          : "border-zinc-200 text-zinc-300 line-through dark:border-white/[0.06] dark:text-zinc-600",
+                      )}
+                    >
+                      {rule.sourceType === "calendarEvent" ? t("notifications.calendarRule") : t("notifications.taskRule")} · {rule.trigger === "at_start" ? t("notifications.atStart") : `${rule.offsetMinutes}m`}
+                    </span>
+                  ))}
+                </div>
+              </Section>
+            </div>
+          </div>
+        )}
+
         {/* SECURITY TAB */}
         {activeTab === "security" && (
           <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_420px]">
@@ -593,6 +736,62 @@ function RolePermissionsList({
         </div>
       </div>
       <p className="text-[9px] font-medium text-zinc-400">{adminNote}</p>
+    </div>
+  );
+}
+
+function NotificationSwitchRow({
+  icon: Icon,
+  label,
+  note,
+  enabled,
+  pending,
+  onToggle,
+}: {
+  icon: typeof User;
+  label: string;
+  note: string;
+  enabled: boolean;
+  pending: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="py-5">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 dark:bg-white/5 dark:text-zinc-400">
+            <Icon className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-zinc-900 dark:text-white">
+              {label}
+            </p>
+            <p className="mt-1 text-[10px] font-medium text-zinc-400">
+              {note}
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={enabled}
+          disabled={pending}
+          onClick={onToggle}
+          className={cn(
+            "relative h-7 w-12 shrink-0 rounded-full border transition-colors disabled:opacity-60",
+            enabled
+              ? "border-zinc-900 bg-zinc-900 dark:border-white dark:bg-white"
+              : "border-zinc-200 bg-zinc-100 dark:border-white/[0.08] dark:bg-white/[0.04]",
+          )}
+        >
+          <span
+            className={cn(
+              "absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform dark:bg-zinc-900",
+              enabled ? "translate-x-5" : "translate-x-1",
+            )}
+          />
+        </button>
+      </div>
     </div>
   );
 }

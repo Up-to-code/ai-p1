@@ -18,8 +18,9 @@ const INPUT_MIN_HEIGHT = COMPOSER_INPUT_MIN_HEIGHT;
 const INPUT_LINE_HEIGHT = COMPOSER_INPUT_LINE_HEIGHT;
 const INPUT_MAX_HEIGHT = COMPOSER_INPUT_MAX_HEIGHT;
 
-export function useComposerState(draftText: string) {
+export function useComposerState(draftText: string, options: { isEditing?: boolean } = {}) {
   const [measuredContentHeight, setMeasuredContentHeight] = useState(INPUT_MIN_HEIGHT);
+  const isEditing = Boolean(options.isEditing);
 
   useEffect(() => {
     if (!draftText.trim()) {
@@ -28,11 +29,13 @@ export function useComposerState(draftText: string) {
   }, [draftText]);
 
   const resolvedContentHeight = resolveComposerMeasuredHeight(draftText, measuredContentHeight);
-  const inputHeight = clampComposerInputHeight(resolvedContentHeight);
+  const inputHeight = isEditing && draftText.trim()
+    ? INPUT_MAX_HEIGHT
+    : clampComposerInputHeight(resolvedContentHeight);
   const measuredLineCount = composerMeasuredLineCount(inputHeight);
   const inputExpanded = isComposerInputExpanded(inputHeight, draftText);
   const showExpandComposer = shouldShowComposerExpansion(inputHeight);
-  const inputScrollable = shouldScrollComposerInput(resolvedContentHeight);
+  const inputScrollable = isEditing || shouldScrollComposerInput(resolvedContentHeight);
 
   const handleContentSizeChange = (
     event: NativeSyntheticEvent<TextInputContentSizeChangeEventData>,

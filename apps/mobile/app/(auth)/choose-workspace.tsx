@@ -81,7 +81,7 @@ export default function ChooseWorkspaceScreen() {
       title={t.workspaceAccess.title}
       body={t.workspaceAccess.body}
       showTopBar={false}
-      cardPresentation="cards"
+      cardPresentation="grouped"
       footer={(
         <View style={styles.footerActions}>
           {activeOrganization?.id ? (
@@ -134,9 +134,8 @@ export default function ChooseWorkspaceScreen() {
               {workspace.organizations.map((organization, index) => (
                 <Animated.View key={organization.id} entering={FadeInDown.delay(index * 30).duration(160)} layout={LinearTransition.duration(180)}>
                   <WorkspaceAccessRow
-                    card
                     testID={`workspace.option.${organization.id}`}
-                    icon={busyId === organization.id ? <CheckCircle2 size={20} color={colors.textPrimary} /> : <Building2 size={20} color={colors.textPrimary} />}
+                    icon={busyId === organization.id ? <CheckCircle2 size={24} color={colors.textPrimary} /> : <Building2 size={24} color={colors.textPrimary} />}
                     title={organization.name ?? t.workspaceAccess.untitledWorkspace}
                     meta={organization.slug ?? organization.id}
                     disabled={actionDisabled}
@@ -152,9 +151,8 @@ export default function ChooseWorkspaceScreen() {
           <Text style={[styles.sectionLabel, isRTL && styles.rtlText]}>{t.workspaceAccess.setupAccess}</Text>
           <View style={styles.cardStack}>
             <WorkspaceAccessRow
-              card
               testID="workspace.create"
-              icon={<Plus size={20} color={colors.textPrimary} />}
+              icon={<Plus size={24} color={colors.textPrimary} />}
               title={t.workspaceAccess.createTitle}
               body={t.workspaceAccess.createBody}
               selected={choice === "create"}
@@ -225,16 +223,10 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
   },
   inlinePanel: {
     gap: theme.spacing.md,
-    padding: theme.spacing.lg,
-    borderWidth: 1,
-    borderRadius: 18,
-    borderBottomWidth: 1,
-    borderColor: colors.divider,
-    borderBottomColor: colors.divider,
-    backgroundColor: colors.surface,
+    paddingVertical: theme.spacing.md,
   },
   cardStack: {
-    gap: theme.spacing.sm,
+    gap: 8,
   },
   sectionBlock: {
     gap: theme.spacing.sm,
@@ -252,9 +244,6 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     flexDirection: isRTL ? "row-reverse" : "row",
     alignItems: "center",
     gap: theme.spacing.md,
-    borderWidth: 1,
-    borderColor: colors.divider,
-    borderRadius: 18,
     paddingHorizontal: theme.spacing.lg,
     backgroundColor: colors.surface,
   },

@@ -118,6 +118,7 @@ const config: ExpoConfig = {
     "expo-apple-authentication",
     "expo-image",
     "expo-secure-store",
+    "expo-notifications",
     [
       "expo-splash-screen",
       {

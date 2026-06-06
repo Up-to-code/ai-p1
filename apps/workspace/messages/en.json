@@ -1875,6 +1875,7 @@
       "members": "Members",
       "agentLinks": "Agent links",
       "apiKeys": "API keys",
+      "notifications": "Notifications",
       "invites": "Invites",
       "roles": "Work roles"
     },
@@ -2331,7 +2332,37 @@
       "roleSavedTitle": "Work role saved",
       "roleSavedDesc": "The work role was saved.",
       "roleDeletedTitle": "Work role deleted",
-      "roleDeletedDesc": "The custom work role was deleted."
+      "roleDeletedDesc": "The custom work role was deleted.",
+      "notificationSettingsSavedTitle": "Notifications saved",
+      "notificationSettingsSavedDesc": "Organization reminder policy was updated."
+    },
+    "notifications": {
+      "title": "Mobile push policy",
+      "description": "Set the organization defaults for calendar, task, manual, and organization reminder pushes. Personal opt-out and quiet hours still take priority.",
+      "noAccessTitle": "No access",
+      "noAccessDescription": "Your work role cannot manage organization notification policy.",
+      "loading": "Loading notification policy...",
+      "enabled": "Organization reminders",
+      "enabledHelp": "Use this policy for team-level mobile reminder defaults.",
+      "categories": {
+        "calendar": "Calendar events",
+        "task": "Tasks",
+        "manual": "Manual schedules",
+        "organization": "Organization updates"
+      },
+      "categoryHelp": {
+        "calendar": "Allow event reminders created from organization calendar changes.",
+        "task": "Allow due-time and completion follow-up reminders for client work.",
+        "manual": "Allow user-created or AI-created reminder schedules.",
+        "organization": "Allow organization policy reminders for selected team work."
+      },
+      "defaultsTitle": "Default timing",
+      "defaultsDescription": "Calendar reminders default to 30 minutes before, 5 minutes before, and at start. Tasks default to 30 minutes before due time.",
+      "personalOverride": "Individual settings, opt-out, and quiet hours are checked before every mobile push.",
+      "calendarRule": "Calendar",
+      "taskRule": "Task",
+      "atStart": "At start",
+      "minutesBefore": "{minutes}m before"
     },
     "acceptInvite": {
       "loadingTitle": "Accepting invite",
@@ -3102,6 +3133,12 @@
       "timezoneDesc": "All dates and times will be displayed in this timezone.",
       "notifPrefs": "Notification Preferences",
       "notifPrefsDesc": "Choose what you get notified about. Changes are saved with your profile.",
+      "mobileNotifications": "Mobile Notifications",
+      "mobileNotificationsDesc": "Control push reminders sent to your Qentrah mobile app.",
+      "mobileDevice": "Mobile Device",
+      "mobileDeviceDesc": "Push delivery starts after the mobile app registers this account.",
+      "defaultReminders": "Default Reminders",
+      "defaultRemindersDesc": "Current reminder rules used for calendar events and tasks.",
       "accountIdentity": "Account Identity",
       "accountIdentityDesc": "Core credentials tied to your account.",
       "accessSecurity": "Access & Security",
@@ -3143,6 +3180,27 @@
       "approvals": "Approvals",
       "billing": "Billing",
       "security": "Security",
+      "enabled": "Push reminders",
+      "enabledHelp": "Master switch for mobile reminders in this workspace.",
+      "deviceConnected": "Mobile device connected",
+      "deviceConnectedHelp": "At least one active mobile device can receive push reminders.",
+      "deviceMissing": "No mobile device",
+      "deviceMissingHelp": "Open the mobile app and enable notifications to register a device.",
+      "calendarRule": "Calendar",
+      "taskRule": "Task",
+      "atStart": "Start",
+      "categories": {
+        "calendar": "Calendar",
+        "task": "Tasks",
+        "manual": "Manual schedules",
+        "organization": "Organization"
+      },
+      "categoryHelp": {
+        "calendar": "Visits, calls, meetings, and event timing reminders.",
+        "task": "Client task due dates and completion follow-ups.",
+        "manual": "Reminders created directly by you or the assistant.",
+        "organization": "Team-level reminders configured by organization managers."
+      },
       "on": "On",
       "off": "Off",
       "enabledNote": "Enabled · You will receive these alerts",

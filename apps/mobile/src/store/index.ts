@@ -35,7 +35,6 @@ export const useAppStore = create<AppStore>()(
         favoriteThreadIds: state.favoriteThreadIds,
         appearanceMode: state.appearanceMode,
         localePreference: state.localePreference,
-        activeThreadId: state.activeThreadId,
       }),
       migrate: migratePersistedAppStore,
       onRehydrateStorage: () => (state) => { state?.setHydrationComplete(true); },

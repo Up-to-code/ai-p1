@@ -70,7 +70,7 @@ const baseCapabilities: OrganizationCapabilities = {
 
 describe("organization settings permission view model", () => {
   it("keeps the primary organization tabs complete", () => {
-    expect(organizationSettingsTabs).toEqual(["profile", "members", "agentLinks", "apiKeys"]);
+    expect(organizationSettingsTabs).toEqual(["profile", "members", "agentLinks", "apiKeys", "notifications"]);
   });
 
   it("normalizes stale role tab URLs back to members", () => {

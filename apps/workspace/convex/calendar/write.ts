@@ -4,6 +4,7 @@ import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
+import { cancelQueuedJobsForSource, scheduleCalendarEventReminders } from "../notifications/helpers";
 import { calendarEventInputValidator, calendarEventValidator } from "./validators";
 
 function isoDate(timestamp: number) {
@@ -83,6 +84,7 @@ export const createFromHono = mutation({
 
     const event = await ctx.db.get(id);
     if (!event) throw new Error("Calendar event could not be created.");
+    await scheduleCalendarEventReminders(ctx, event);
     return presentEvent(event);
   },
 });
@@ -114,6 +116,7 @@ export const updateFromHono = mutation({
 
     const event = await ctx.db.get(args.eventId);
     if (!event) throw new Error("Calendar event was not found.");
+    await scheduleCalendarEventReminders(ctx, event);
     return presentEvent(event);
   },
 });
@@ -128,6 +131,7 @@ export const deleteFromHono = mutation({
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Calendar event was not found.");
     const now = Date.now();
     await ctx.db.patch(args.eventId, { deletedAt: now, updatedAt: now });
+    await cancelQueuedJobsForSource(ctx, args.organizationId, "calendarEvent", args.eventId);
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
       actorUserId: user._id,

@@ -156,6 +156,18 @@ export const taskInputSchema = z.object({
   calendarEventId: stringId.optional(),
   notes: optionalText,
 }).passthrough();
+export const notificationScheduleInputSchema = z.object({
+  title: z.string().trim().min(1),
+  body: z.string().trim().min(1),
+  category: z.enum(["calendar", "task", "manual", "organization"]).default("manual"),
+  scheduledAt: z.number(),
+  timezone: optionalText,
+  recurrence: z.object({
+    frequency: z.enum(["daily", "weekly", "monthly"]),
+    interval: z.number().int().min(1).max(30),
+    untilAt: z.number().optional(),
+  }).optional(),
+}).passthrough();
 
 export function cleanInput<T extends z.ZodRawShape>(schema: z.ZodObject<T>, value: unknown) {
   return schema.strip().parse(value);
@@ -233,6 +245,9 @@ export const toolInputSchemas: Record<string, z.ZodTypeAny> = {
   calendar_create: calendarInputSchema,
   calendar_update: calendarInputSchema.partial().extend({ eventId: stringId }).passthrough(),
   calendar_delete: z.object({ eventId: stringId }).passthrough(),
+  notifications_schedule: notificationScheduleInputSchema,
+  notifications_update_schedule: notificationScheduleInputSchema.extend({ scheduleId: stringId }).passthrough(),
+  notifications_cancel_schedule: z.object({ scheduleId: stringId }).passthrough(),
   tasks_list: z.object({ clientId: stringId.optional(), limit: z.number().int().min(1).max(50).optional(), search: z.string().trim().max(160).optional(), cursor: z.string().nullable().optional() }).passthrough(),
   tasks_get: z.object({ taskId: stringId }).passthrough(),
   tasks_create: taskInputSchema,

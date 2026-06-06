@@ -14,14 +14,12 @@ const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
 type SplashLoadingLogoProps = {
   baseColor?: string;
-  edgeColor?: string;
   size?: number;
   waveColor?: string;
 };
 
 export function SplashLoadingLogo({
   baseColor = "#E0E3E7",
-  edgeColor = "#111111",
   size = 28,
   waveColor = "#111111",
 }: SplashLoadingLogoProps) {
@@ -54,7 +52,6 @@ export function SplashLoadingLogo({
         </LinearGradient>
       </Defs>
       <Path d={LOGO_PATH} fill={baseColor} />
-      <Path d={LOGO_PATH} fill="none" stroke={edgeColor} strokeOpacity="0.16" strokeWidth="10" />
       <G mask="url(#qentrah-loading-logo-mask)" transform="rotate(-18 338 383)">
         <AnimatedRect
           animatedProps={animatedProps}

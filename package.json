@@ -15,14 +15,17 @@
     "dev:admin": "npm --workspace @qentrah/admin-review run dev",
     "dev:demo": "npm --workspace @qentrah/demo-partner-app run dev",
     "dev:marketing": "npm --workspace @qentrah/marketing run dev",
+    "brand:assets": "node scripts/brand-assets.mjs",
     "brand:scan": "node scripts/brand-scan.mjs",
     "brand:sync": "node scripts/brand-sync.mjs",
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present"
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "postinstall": "patch-package"
   },
   "devDependencies": {
-    "effect": "^3.21.2"
+    "effect": "^3.21.2",
+    "patch-package": "^8.0.1"
   },
   "overrides": {
     "effect": "$effect",

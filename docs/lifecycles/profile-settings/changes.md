@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-06 Mobile Push Notification Settings
+
+- Added the real Profile Notifications tab for mobile push status, personal reminder defaults, category opt-out, and mobile-device readiness.
+- Added Workspace notification device and preference API wrappers so the web profile screen configures mobile reminders without adding browser push in v1.
+- Preserved existing profile tabs, profile form behavior, avatar behavior, and local profile preference store behavior.
+
 ## 2026-05-28 Profile Settings View-Model Depth
 
 - Added the Profile settings view-model Module so profile screens no longer own tab vocabulary, account-to-form projection, role permission presentation, initials, or notification entry normalization inline.

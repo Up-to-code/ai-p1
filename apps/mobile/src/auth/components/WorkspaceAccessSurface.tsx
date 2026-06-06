@@ -81,7 +81,7 @@ export function WorkspaceAccessSurface({
           {body ? <Text tone="secondary" style={styles.body}>{body}</Text> : null}
         </View>
 
-        <View style={cardPresentation === "cards" ? styles.cardList : styles.card}>{children}</View>
+        <View style={cardPresentation === "cards" ? styles.cardList : styles.plainList}>{children}</View>
         {footer ? <View style={styles.footer}>{footer}</View> : null}
       </ScrollView>
     </View>
@@ -149,9 +149,6 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: colors.divider,
-    backgroundColor: colors.surface,
   },
   brandDot: {
     width: 10,
@@ -162,7 +159,7 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
   hero: {
     paddingTop: theme.spacing.xl,
     paddingBottom: theme.spacing.xl,
-    gap: theme.spacing.xs,
+    gap: 2,
     alignItems: isRTL ? "flex-end" : "flex-start",
   },
   eyebrow: {
@@ -181,17 +178,10 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     textAlign: isRTL ? "right" : "left",
   },
   body: {
-    maxWidth: 340,
-    fontSize: 14,
-    lineHeight: 21,
-    textAlign: isRTL ? "right" : "left",
+    display: "none",
   },
-  card: {
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.divider,
-    backgroundColor: colors.surface,
-    overflow: "hidden",
+  plainList: {
+    gap: theme.spacing.sm,
   },
   cardList: {
     gap: theme.spacing.sm,
@@ -206,40 +196,29 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     flexDirection: isRTL ? "row-reverse" : "row",
     alignItems: "center",
     gap: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
+    paddingHorizontal: 0,
     paddingVertical: theme.spacing.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.divider,
   },
   rowCard: {
-    borderWidth: 1,
-    borderColor: colors.divider,
-    borderRadius: 18,
-    borderBottomWidth: 1,
-    backgroundColor: colors.surface,
-    overflow: "hidden",
+    borderBottomWidth: 0,
   },
   rowPressed: {
     opacity: 0.78,
   },
   rowSelected: {
-    backgroundColor: colors.backgroundSoft,
+    opacity: 1,
   },
   rowDisabled: {
     opacity: 0.56,
   },
   rowIcon: {
-    width: 44,
+    width: 36,
     height: 44,
-    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: colors.divider,
-    backgroundColor: colors.background,
   },
   rowIconSelected: {
-    borderColor: colors.textPrimary,
+    opacity: 1,
   },
   rowText: {
     flex: 1,
@@ -248,20 +227,18 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
   },
   rowTitle: {
     color: colors.textPrimary,
-    fontSize: 15,
-    lineHeight: 21,
+    fontSize: 21,
+    lineHeight: 28,
     fontFamily: "Manrope_800ExtraBold",
     textAlign: isRTL ? "right" : "left",
   },
   rowBody: {
-    fontSize: 12,
-    lineHeight: 18,
-    textAlign: isRTL ? "right" : "left",
+    display: "none",
   },
   rowMeta: {
-    fontSize: 11,
-    lineHeight: 16,
-    fontFamily: "Manrope_700Bold",
+    fontSize: 13,
+    lineHeight: 18,
+    fontFamily: "Manrope_500Medium",
     textAlign: isRTL ? "right" : "left",
   },
 });

@@ -60,5 +60,20 @@ test("store migration backfills locale preference for older state", () => {
 
   assert.equal(migrated.localePreference, "system");
   assert.deepEqual(migrated.favoriteThreadIds, []);
-  assert.equal(migrated.activeThreadId, "thread-1");
+  assert.equal("activeThreadId" in migrated, false);
+});
+
+test("store migration drops persisted thread selection from version 5", () => {
+  const migrated = migratePersistedAppStore(
+    {
+      localePreference: "system",
+      favoriteThreadIds: ["thread-1"],
+      activeThreadId: "thread-1",
+    },
+    5,
+  ) as Record<string, unknown>;
+
+  assert.equal(migrated.localePreference, "system");
+  assert.deepEqual(migrated.favoriteThreadIds, ["thread-1"]);
+  assert.equal("activeThreadId" in migrated, false);
 });

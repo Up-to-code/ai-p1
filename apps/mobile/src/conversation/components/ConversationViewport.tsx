@@ -7,6 +7,7 @@ import { ConversationStatusBanner } from "@/conversation/components/Conversation
 import { EdgeFade } from "@/conversation/components/EdgeFade";
 import { QentrahComposerDock } from "@/conversation/components/QentrahComposerDock";
 import { useConversationController } from "@/conversation/hooks/useConversationController";
+import { useComposerMode } from "@/conversation/hooks/useComposerMode";
 import { getLocalizedRuntimeMessage, resolveThreadPresentationState } from "@/conversation/lib/assistantPresentation";
 import { useKeyboardDock } from "@/conversation/hooks/useKeyboardDock";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
@@ -47,6 +48,7 @@ export function ConversationViewport() {
   } = useConversationController();
   const threadPresentation = useThreadPresentation(activeThreadId ?? null);
   const resolvedPresentation = resolveThreadPresentationState(threadPresentation);
+  const composerMode = useComposerMode(Boolean(editingMessage));
   const insets = useSafeAreaInsets();
   const { dockBottomOffset, listBottomPadding, scrollButtonBottomOffset, keyboardVisible } = useKeyboardDock({
     bottomInset: insets.bottom,
@@ -102,10 +104,9 @@ export function ConversationViewport() {
           isLoading={isThreadLoading}
           isStreaming={isStreaming}
           bottomContentInset={listBottomPadding}
-          scrollButtonBottomOffset={scrollButtonBottomOffset}
+          scrollButtonBottomOffset={scrollButtonBottomOffset + composerMode.scrollButtonExtraOffset}
           errorMessage={threadLoadError}
           onRetryLoad={retryThreadLoad}
-          loadingLabel={resolvedPresentation.surfaceCopy.runtimeChecking}
           onDismissKeyboard={dismissComposerKeyboard}
         />
       </View>
@@ -132,7 +133,7 @@ export function ConversationViewport() {
           surfaceCopy={resolvedPresentation.surfaceCopy}
           direction={resolvedPresentation.direction}
           uiLocale={resolvedPresentation.uiLocale}
-          isEditing={Boolean(editingMessage)}
+          isEditing={composerMode.isEditing}
           onCancelEdit={cancelComposerEdit}
         />
       </View>

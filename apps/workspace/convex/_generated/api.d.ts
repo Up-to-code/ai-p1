@@ -35,6 +35,7 @@ import type * as clientTasks_write from "../clientTasks/write.js";
 import type * as clients_read from "../clients/read.js";
 import type * as clients_validators from "../clients/validators.js";
 import type * as clients_write from "../clients/write.js";
+import type * as crons from "../crons.js";
 import type * as dashboard_read from "../dashboard/read.js";
 import type * as http from "../http.js";
 import type * as mcp_connectionLifecycle from "../mcp/connectionLifecycle.js";
@@ -52,6 +53,12 @@ import type * as media_read from "../media/read.js";
 import type * as media_resourcePolicy from "../media/resourcePolicy.js";
 import type * as media_validators from "../media/validators.js";
 import type * as media_write from "../media/write.js";
+import type * as notifications_dispatch from "../notifications/dispatch.js";
+import type * as notifications_helpers from "../notifications/helpers.js";
+import type * as notifications_push from "../notifications/push.js";
+import type * as notifications_read from "../notifications/read.js";
+import type * as notifications_validators from "../notifications/validators.js";
+import type * as notifications_write from "../notifications/write.js";
 import type * as organizationApiKeyLifecycle from "../organizationApiKeyLifecycle.js";
 import type * as organizationApiKeys from "../organizationApiKeys.js";
 import type * as organizations_audit_data from "../organizations/audit/data.js";
@@ -132,6 +139,7 @@ declare const fullApi: ApiFromModules<{
   "clients/read": typeof clients_read;
   "clients/validators": typeof clients_validators;
   "clients/write": typeof clients_write;
+  crons: typeof crons;
   "dashboard/read": typeof dashboard_read;
   http: typeof http;
   "mcp/connectionLifecycle": typeof mcp_connectionLifecycle;
@@ -149,6 +157,12 @@ declare const fullApi: ApiFromModules<{
   "media/resourcePolicy": typeof media_resourcePolicy;
   "media/validators": typeof media_validators;
   "media/write": typeof media_write;
+  "notifications/dispatch": typeof notifications_dispatch;
+  "notifications/helpers": typeof notifications_helpers;
+  "notifications/push": typeof notifications_push;
+  "notifications/read": typeof notifications_read;
+  "notifications/validators": typeof notifications_validators;
+  "notifications/write": typeof notifications_write;
   organizationApiKeyLifecycle: typeof organizationApiKeyLifecycle;
   organizationApiKeys: typeof organizationApiKeys;
   "organizations/audit/data": typeof organizations_audit_data;
@@ -224,4 +238,5 @@ export declare const internal: FilterApi<
 
 export declare const components: {
   apiKeys: import("convex-api-keys/_generated/component.js").ComponentApi<"apiKeys">;
+  pushNotifications: import("@convex-dev/expo-push-notifications/_generated/component.js").ComponentApi<"pushNotifications">;
 };

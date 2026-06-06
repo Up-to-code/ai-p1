@@ -9,10 +9,7 @@ import {
   type TextStyle,
 } from "react-native";
 import React, { useMemo } from "react";
-import Animated, {
-  FadeIn,
-  FadeInDown,
-} from "react-native-reanimated";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import { Check, Copy, FileText, Image as ImageIcon, Pencil, Video, X } from "lucide-react-native";
@@ -26,12 +23,10 @@ import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { useAppStore } from "@/store";
 import {
   getLocalizedStageMessage,
-  resolveAssistantDirection,
   resolveThreadPresentationState,
 } from "@/conversation/lib/assistantPresentation";
 import { getVisibleMessageAttachments } from "@/conversation/lib/agentAttachmentPresentation";
 import {
-  detectAssistantMessageDirection,
   detectTextBlockDirection,
   getDirectionalTextAnchor,
   resolveUserBubbleDirection,
@@ -515,6 +510,8 @@ export function MessageBubble({
   const localePreference = useAppStore((state) => state.localePreference);
   const isUser = message.role === "user";
   const isStreaming = message.streamState === "streaming";
+  const hasCopyableText = message.text.trim().length > 0;
+  const canCopyUserMessage = isUser && hasCopyableText;
   const resolvedThreadPresentation = resolveThreadPresentationState(threadPresentation);
   const pendingAssistantText = resolvedThreadPresentation.surfaceCopy.pendingAssistantText;
   const isPending =
@@ -524,19 +521,12 @@ export function MessageBubble({
       || message.text === LEGACY_PENDING_PLACEHOLDER
       || message.text === pendingAssistantText
     );
-  const assistantDirection = isPending
-    ? resolveAssistantDirection({
-        turnPresentation: message.uiTurn?.presentation,
-        threadPresentation: resolvedThreadPresentation,
-        fallbackText: message.text,
-      })
-    : detectAssistantMessageDirection(message.text);
   const localizedStageText = latestStageEvent
     ? getLocalizedStageMessage(latestStageEvent, resolvedThreadPresentation.surfaceCopy)
     : null;
   const copyMessage = () => {
     onDismissActions?.();
-    void Clipboard.setStringAsync(message.text);
+    void Clipboard.setStringAsync(message.text.trim());
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
   const editMessage = () => {
@@ -555,94 +545,79 @@ export function MessageBubble({
     const userDirection = resolveUserBubbleDirection(localePreference, resolvedThreadPresentation);
     const isUserRtl = userDirection === "rtl";
     return (
-      <Animated.View
-        entering={FadeIn.duration(200)}
-        style={[styles.row, styles.physicalMessageRow, styles.userPhysicalRow, { marginTop: 32 }]}
-      >
+      <View style={[styles.row, styles.physicalMessageRow, styles.userPhysicalRow, { marginTop: 32 }]}>
         <View style={[styles.messageStack, styles.userStack]}>
-        <Pressable
-          onLongPress={showActions}
-          delayLongPress={360}
-          onPress={() => actionsVisible ? onDismissActions?.() : undefined}
-        >
-          <View style={styles.userBubble}>
-            {message.text ? (
-              <Text
-                tone="primary"
-                selectable={true}
-                style={[
-                  styles.userText,
-                  isUserRtl && { textAlign: "right", writingDirection: "rtl" },
-                ]}
-              >
-                {message.text}
-              </Text>
-            ) : null}
-            <MessageAttachmentPreview
-              attachments={message.attachments}
-              styles={styles}
-              iconColor={colors.textPrimary}
+          <Pressable
+            onLongPress={showActions}
+            delayLongPress={360}
+            onPress={() => actionsVisible ? onDismissActions?.() : showActions()}
+          >
+            <View style={styles.userBubble}>
+              {message.text ? (
+                <Text
+                  tone="primary"
+                  selectable={true}
+                  style={[
+                    styles.userText,
+                    isUserRtl && { textAlign: "right", writingDirection: "rtl" },
+                  ]}
+                >
+                  {message.text}
+                </Text>
+              ) : null}
+              <MessageAttachmentPreview
+                attachments={message.attachments}
+                styles={styles}
+                iconColor={colors.textPrimary}
+              />
+            </View>
+          </Pressable>
+          {actionsVisible && canCopyUserMessage ? (
+            <InlineMessageActions
+              align="end"
+              canEdit={actionsVisible && Boolean(onEditMessage)}
+              direction={userDirection}
+              uiLocale={isUserRtl ? "ar" : resolvedThreadPresentation.uiLocale}
+              onCopy={copyMessage}
+              onEdit={editMessage}
             />
-          </View>
-        </Pressable>
-        {actionsVisible ? (
-          <InlineMessageActions
-            align="end"
-            canEdit={Boolean(onEditMessage)}
-            direction={userDirection}
-            uiLocale={isUserRtl ? "ar" : resolvedThreadPresentation.uiLocale}
-            onCopy={copyMessage}
-            onEdit={editMessage}
-          />
-        ) : null}
+          ) : null}
         </View>
-      </Animated.View>
+      </View>
     );
   }
 
   return (
-    <Animated.View
-      entering={FadeIn.duration(250)}
-      style={[styles.row, styles.physicalMessageRow, styles.assistantPhysicalRow, styles.assistantRow]}
-    >
+    <View style={[styles.row, styles.physicalMessageRow, styles.assistantPhysicalRow, styles.assistantRow]}>
       <View style={[styles.messageStack, styles.assistantStack]}>
-      {localizedStageText && isPending && (
-        <View style={styles.statusLine}>
-          <View style={styles.statusDot} />
-          <Text style={styles.statusText}>
-            {localizedStageText}
-          </Text>
-        </View>
-      )}
+        {localizedStageText && isPending && (
+          <View style={styles.statusLine}>
+            <View style={styles.statusDot} />
+            <Text style={styles.statusText}>
+              {localizedStageText}
+            </Text>
+          </View>
+        )}
 
-      <View>
-        <StreamingText
-          text={message.text}
-          isStreaming={isStreaming}
-          maxContentWidth={maxContentWidth}
-          style={[
-            styles.assistantText,
-          ]}
-        />
+        <View>
+          <StreamingText
+            text={message.text}
+            isStreaming={isStreaming}
+            maxContentWidth={maxContentWidth}
+            style={[
+              styles.assistantText,
+            ]}
+          />
+        </View>
+        {message.turnMeta?.confirmation ? (
+          <ConfirmationCard
+            confirmation={message.turnMeta.confirmation}
+            onApprove={onApproveConfirmation}
+            onCancel={onCancelConfirmation}
+          />
+        ) : null}
       </View>
-      {actionsVisible ? (
-        <InlineMessageActions
-          align="start"
-          canEdit={false}
-          direction={assistantDirection}
-          uiLocale={message.uiTurn?.presentation?.uiLocale ?? resolvedThreadPresentation.uiLocale}
-          onCopy={copyMessage}
-        />
-      ) : null}
-      {message.turnMeta?.confirmation ? (
-        <ConfirmationCard
-          confirmation={message.turnMeta.confirmation}
-          onApprove={onApproveConfirmation}
-          onCancel={onCancelConfirmation}
-        />
-      ) : null}
-      </View>
-    </Animated.View>
+    </View>
   );
 }
 

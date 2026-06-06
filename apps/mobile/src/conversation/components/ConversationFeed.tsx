@@ -17,6 +17,7 @@ import { useSafeAreaInsets, type EdgeInsets } from "react-native-safe-area-conte
 import { findLastIndex } from "@/foundation/utils/findLastIndex";
 import { shouldShowEmptyConversationWelcome } from "@/conversation/lib/conversationTimeline";
 import { logAgentDebug } from "@/conversation/lib/agentDebug";
+import { SplashLoadingLogo } from "@/shell/components/SplashLoadingLogo";
 import type { ConversationMessage, ConversationRunStage, ConversationTurnAction } from "@/types/domain";
 
 type ConversationFeedProps = {
@@ -33,7 +34,6 @@ type ConversationFeedProps = {
   bottomContentInset?: number;
   scrollButtonBottomOffset?: number;
   isLoading?: boolean;
-  loadingLabel?: string;
   errorMessage?: string | null;
   onRetryLoad?: () => void;
   onDismissKeyboard?: () => void;
@@ -76,26 +76,21 @@ function ScrollToLatestButton({
   );
 }
 
-function ThreadLoadingSkeleton({ label }: { label: string }) {
+function ThreadLoadingState() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = useMemo(
     () => createStyles(colors, insets, 120, 120),
     [colors, insets],
   );
+  const isDark = colors.background === "#000000";
+  const logoColors = isDark
+    ? { base: "#2A2A2A", wave: "#FFFFFF" }
+    : { base: "#E0E3E7", wave: "#111111" };
 
   return (
-    <View style={styles.skeletonWrap}>
-      <View style={styles.skeletonBlockWide} />
-      <View style={styles.skeletonBlockMedium} />
-      <View style={styles.skeletonUserRow}>
-        <View style={styles.skeletonUserBubble} />
-      </View>
-      <View style={styles.skeletonAssistantBlock} />
-      <View style={styles.skeletonAssistantLine} />
-      <Text tone="muted" style={styles.skeletonLabel}>
-        {label}
-      </Text>
+    <View style={styles.threadLoadingWrap}>
+      <SplashLoadingLogo baseColor={logoColors.base} waveColor={logoColors.wave} />
     </View>
   );
 }
@@ -166,7 +161,6 @@ export function ConversationFeed({
   bottomContentInset = 40,
   scrollButtonBottomOffset = bottomContentInset,
   isLoading = false,
-  loadingLabel = "Loading",
   errorMessage,
   onRetryLoad,
   onDismissKeyboard,
@@ -347,7 +341,7 @@ export function ConversationFeed({
   if (isLoading && canShowBlockingState) {
     return (
       <View style={styles.container}>
-        <ThreadLoadingSkeleton label={loadingLabel} />
+        <ThreadLoadingState />
       </View>
     );
   }
@@ -469,55 +463,12 @@ const createStyles = (
     bottom: Math.max(scrollButtonBottomOffset, insets.bottom + theme.spacing.xxl),
     zIndex: 12,
   },
-  skeletonWrap: {
+  threadLoadingWrap: {
     flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing.sm,
     paddingHorizontal: theme.spacing.lg,
-    paddingTop: insets.top + 92,
-    gap: 18,
-  },
-  skeletonBlockWide: {
-    alignSelf: "stretch",
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: colors.surfaceRaised,
-    opacity: 0.62,
-  },
-  skeletonBlockMedium: {
-    width: "68%",
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: colors.surfaceRaised,
-    opacity: 0.48,
-  },
-  skeletonUserRow: {
-    alignItems: "flex-end",
-    paddingTop: 12,
-  },
-  skeletonUserBubble: {
-    width: 92,
-    height: 52,
-    borderRadius: 26,
-    borderTopRightRadius: 10,
-    backgroundColor: colors.surfaceRaised,
-    opacity: 0.72,
-  },
-  skeletonAssistantBlock: {
-    width: "86%",
-    height: 92,
-    borderRadius: 24,
-    backgroundColor: colors.surfaceRaised,
-    opacity: 0.5,
-  },
-  skeletonAssistantLine: {
-    width: "54%",
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: colors.surfaceRaised,
-    opacity: 0.38,
-  },
-  skeletonLabel: {
-    marginTop: 4,
-    fontSize: 13,
-    lineHeight: 18,
+    paddingBottom: insets.bottom + 96,
   },
 });

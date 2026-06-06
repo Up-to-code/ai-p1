@@ -109,7 +109,7 @@ function stableHash(value: string) {
   return `v1_${(hash >>> 0).toString(36)}`;
 }
 
-async function getStoredInstallationId() {
+export async function getStoredInstallationId() {
   if (fallbackInstallationId) return fallbackInstallationId;
 
   if (isNativeRuntime()) {

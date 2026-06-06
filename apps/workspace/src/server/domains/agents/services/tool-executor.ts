@@ -28,6 +28,7 @@ import {
   memberRemoveInputSchema,
   memberRoleInputSchema,
   monthRange,
+  notificationScheduleInputSchema,
   organizationIdentityInputSchema,
   organizationProfileInputSchema,
   pagination,
@@ -278,6 +279,24 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
     }
     case "calendar_delete":
       return fetchAuthMutation(api.calendar.write.deleteFromHono, { organizationId, eventId: input.eventId as Id<"calendarEvents"> });
+    case "notifications_schedule":
+      return fetchAuthMutation(api.notifications.write.createSchedule, {
+        organizationId,
+        input: cleanInput(notificationScheduleInputSchema, input) as never,
+      });
+    case "notifications_update_schedule": {
+      const parsed = cleanInput(notificationScheduleInputSchema, input);
+      return fetchAuthMutation(api.notifications.write.updateSchedule, {
+        organizationId,
+        scheduleId: input.scheduleId as Id<"notificationSchedules">,
+        input: parsed as never,
+      });
+    }
+    case "notifications_cancel_schedule":
+      return fetchAuthMutation(api.notifications.write.cancelSchedule, {
+        organizationId,
+        scheduleId: input.scheduleId as Id<"notificationSchedules">,
+      });
     case "tasks_list": {
       const tasks = await fetchAuthQuery(api.clientTasks.read.list, {
         organizationId,

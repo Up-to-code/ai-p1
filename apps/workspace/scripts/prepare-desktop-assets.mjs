@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import path from "node:path";
@@ -6,7 +7,9 @@ import sharp from "sharp";
 const appRoot = process.cwd();
 const buildDir = path.join(appRoot, "build");
 const iconsetDir = path.join(buildDir, "icon.iconset");
-const sourceIcon = path.join(appRoot, "public", "app-icon-512.png");
+const sourceIcon1024 = path.join(appRoot, "public", "app-icon-1024.png");
+const sourceIcon512 = path.join(appRoot, "public", "app-icon-512.png");
+const sourceIcon = existsSync(sourceIcon1024) ? sourceIcon1024 : sourceIcon512;
 const dmgBackgroundSvg = path.join(buildDir, "dmg-background.svg");
 const dmgBackgroundPng = path.join(buildDir, "dmg-background.png");
 
@@ -39,7 +42,7 @@ const iconSizes = [
   ["256", "256", "icon_256x256.png"],
   ["512", "512", "icon_256x256@2x.png"],
   ["512", "512", "icon_512x512.png"],
-  ["512", "512", "icon_512x512@2x.png"],
+  ["1024", "1024", "icon_512x512@2x.png"],
 ];
 
 for (const [height, width, filename] of iconSizes) {

@@ -1,8 +1,9 @@
-import { Image, Platform, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
+import { Image, Platform, Pressable, StyleSheet, useWindowDimensions, View, type StyleProp, type ViewStyle } from "react-native";
 import { useRouter } from "expo-router";
 import { Menu } from "lucide-react-native";
+import { DrawerLayout } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useCallback, useRef } from "react";
 
 import { ConversationViewport } from "@/conversation/components/ConversationViewport";
 import { useAppLocalization } from "@/foundation/localization";
@@ -11,7 +12,7 @@ import { Text } from "@/foundation/primitives/Text";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { useAuthSession } from "@/auth/useAuthSession";
 import { EdgeFade } from "@/conversation/components/EdgeFade";
-import { ChatDrawer } from "@/shell/components/ChatDrawer";
+import { ChatDrawerContent } from "@/shell/components/ChatDrawer";
 import { userAvatarPresentation } from "@/auth/userPresentation";
 
 export default function HomeScreen() {
@@ -19,69 +20,101 @@ export default function HomeScreen() {
   const { colors, resolvedColorScheme } = useTheme();
   const { t } = useAppLocalization();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const { user } = useAuthSession();
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const drawerRef = useRef<DrawerLayout>(null);
   const { avatarUrl, initials } = userAvatarPresentation(user);
+  const drawerWidth = width;
+  const openDrawer = useCallback(() => drawerRef.current?.openDrawer(), []);
+  const closeDrawer = useCallback(() => drawerRef.current?.closeDrawer(), []);
 
   return (
     <Screen safe={false}>
-      <View style={styles.flex}>
-        <ConversationViewport />
-      </View>
-
-      <View
-        style={[
-          styles.floatingHeader,
-          {
-            paddingTop: insets.top + 8,
-          },
-        ]}
+      <DrawerLayout
+        ref={drawerRef}
+        drawerPosition="left"
+        drawerType="back"
+        drawerWidth={drawerWidth}
+        drawerBackgroundColor={colors.background}
+        overlayColor="rgba(0,0,0,0.48)"
+        edgeWidth={52}
+        minSwipeDistance={8}
+        keyboardDismissMode="on-drag"
+        renderNavigationView={() => (
+          <View
+            style={[
+              styles.drawerPanel,
+              {
+                width: drawerWidth,
+                paddingTop: insets.top,
+                paddingBottom: insets.bottom,
+                backgroundColor: colors.background,
+                borderRightColor: colors.divider,
+              },
+            ]}
+          >
+            <ChatDrawerContent
+              onClose={closeDrawer}
+              onNavigateProfile={() => {
+                closeDrawer();
+                router.navigate("/(app)/profile");
+              }}
+              onOpenFullHistory={() => {
+                closeDrawer();
+                router.navigate("/(app)/threads" as never);
+              }}
+              topInset={0}
+              bottomInset={0}
+              showClose={false}
+            />
+          </View>
+        )}
       >
-        <View pointerEvents="none" style={[styles.headerBackdrop, { height: insets.top + 96 }]}>
-          <EdgeFade color={colors.background} placement="top" startOpacity={1} midOpacity={0.22} />
+        <View style={styles.flex}>
+          <ConversationViewport />
         </View>
 
-        <Pressable
-          style={[styles.navBtn, { backgroundColor: colors.surface, borderColor: colors.divider }]}
-          onPress={() => router.navigate("/(app)/profile")}
-          accessibilityLabel={t.common.profile}
+        <View
+          style={[
+            styles.floatingHeader,
+            {
+              paddingTop: insets.top + 8,
+            },
+          ]}
         >
-          {avatarUrl ? (
-            <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
-          ) : (
-            <Text style={[styles.avatarText, { color: colors.textPrimary }]}>{initials || "Q"}</Text>
-          )}
-        </Pressable>
+          <View pointerEvents="none" style={[styles.headerBackdrop, { height: insets.top + 96 }]}>
+            <EdgeFade color={colors.background} placement="top" startOpacity={1} midOpacity={0.22} />
+          </View>
 
-        <Pressable
-          testID="app.open_menu"
-          style={[styles.navBtn, { backgroundColor: colors.surface, borderColor: colors.divider }]}
-          onPress={() => setIsDrawerOpen(true)}
-          accessibilityLabel={t.menu.title}
-        >
-          <HomeMenuAction
-            colorScheme={resolvedColorScheme}
-            fallbackIconColor={colors.textPrimary}
-            label={t.menu.title}
-            onPress={() => setIsDrawerOpen(true)}
-            style={styles.nativeMenuAction}
-            tintColor={colors.textPrimary}
-          />
-        </Pressable>
-      </View>
+          <Pressable
+            testID="app.open_menu"
+            style={styles.menuBtn}
+            onPress={openDrawer}
+            accessibilityLabel={t.menu.title}
+          >
+            <HomeMenuAction
+              colorScheme={resolvedColorScheme}
+              fallbackIconColor={colors.textPrimary}
+              label={t.menu.title}
+              onPress={openDrawer}
+              style={styles.nativeMenuAction}
+              tintColor={colors.textPrimary}
+            />
+          </Pressable>
 
-      <ChatDrawer
-        visible={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-        onNavigateProfile={() => {
-          setIsDrawerOpen(false);
-          router.navigate("/(app)/profile");
-        }}
-        onOpenFullHistory={() => {
-          setIsDrawerOpen(false);
-          router.navigate("/(app)/threads" as never);
-        }}
-      />
+          <Pressable
+            style={[styles.avatarBtn, { backgroundColor: colors.surface, borderColor: colors.divider }]}
+            onPress={() => router.navigate("/(app)/profile")}
+            accessibilityLabel={t.common.profile}
+          >
+            {avatarUrl ? (
+              <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
+            ) : (
+              <Text style={[styles.avatarText, { color: colors.textPrimary }]}>{initials || "Q"}</Text>
+            )}
+          </Pressable>
+        </View>
+      </DrawerLayout>
     </Screen>
   );
 }
@@ -116,7 +149,8 @@ function HomeMenuAction({ colorScheme, fallbackIconColor, label, onPress, style,
             modifiers.controlSize("regular"),
             modifiers.labelStyle("iconOnly"),
             modifiers.tint(tintColor),
-            modifiers.frame({ width: 30, height: 30 }),
+            modifiers.frame({ width: 36, height: 36 }),
+            modifiers.scaleEffect(1.18),
             modifiers.accessibilityLabel(label),
           ]}
         />
@@ -124,7 +158,7 @@ function HomeMenuAction({ colorScheme, fallbackIconColor, label, onPress, style,
     );
   }
 
-  return <Menu size={16} color={fallbackIconColor} />;
+  return <Menu size={19} color={fallbackIconColor} />;
 }
 
 function getAvailableExpoSwiftUI(): ExpoSwiftUI | null {
@@ -152,6 +186,10 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
+  drawerPanel: {
+    flex: 1,
+    borderRightWidth: StyleSheet.hairlineWidth,
+  },
   floatingHeader: {
     position: "absolute",
     top: 0,
@@ -170,7 +208,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
   },
-  navBtn: {
+  avatarBtn: {
     width: 34,
     height: 34,
     borderRadius: 17,
@@ -179,9 +217,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     overflow: "hidden",
   },
+  menuBtn: {
+    width: 44,
+    height: 44,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   nativeMenuAction: {
-    width: 30,
-    height: 30,
+    width: 36,
+    height: 36,
   },
   avatarImage: {
     width: 28,

@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useQuery as useConvexQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
-import { Bot, Building2, CalendarDays, Check, CheckCircle2, Copy, FileText, HelpCircle, Home, KeyRound, LinkIcon, Loader2, Mail, PauseCircle, Plus, RefreshCcw, Save, ShieldCheck, Trash2, UserRoundCog, Users } from "lucide-react";
+import { Bell, Bot, Building2, CalendarDays, Check, CheckCircle2, Clock, Copy, FileText, HelpCircle, Home, KeyRound, LinkIcon, Loader2, Mail, PauseCircle, Plus, RefreshCcw, Save, ShieldCheck, Trash2, UserRoundCog, Users } from "lucide-react";
 import { type UseFormRegisterReturn, useForm } from "react-hook-form";
 import { useAccountContext } from "@/domains/auth";
 import { cn } from "@/lib/utils";
@@ -63,6 +63,13 @@ import {
   type OrganizationRole,
 } from "../api/clerk-organization-api";
 import { OrganizationLogoUploader } from "./organization-logo-uploader";
+import {
+  defaultNotificationPreference,
+  getOrganizationNotificationPreferences,
+  updateOrganizationNotificationPreferences,
+  type NotificationCategory,
+  type NotificationPreference,
+} from "@/domains/notifications/api/notifications";
 import {
   advancedActionColumns,
   advancedWorkAreas,
@@ -147,6 +154,15 @@ export function OrganizationScreen() {
     queryFn: () => getOrganizationCapabilities(organizationId),
     enabled: Boolean(organizationId),
   });
+  const organizationNotificationQuery = useQuery({
+    queryKey: ["organization-notification-settings", organizationId],
+    queryFn: () => getOrganizationNotificationPreferences(organizationId),
+    enabled: Boolean(
+      organizationId &&
+      capabilitiesQuery.data?.canUpdateOrganization &&
+      capabilitiesQuery.data?.canUpdateCalendarEvents,
+    ),
+  });
   const inviteLinks = useConvexQuery(
     api.organizations.inviteLinks.read.listPending,
     organizationId ? { organizationId } : "skip",
@@ -175,6 +191,17 @@ export function OrganizationScreen() {
   const canCreateApiKeys = capabilities?.canCreateApiKeys ?? false;
   const canUpdateApiKeys = capabilities?.canUpdateApiKeys ?? false;
   const canDeleteApiKeys = capabilities?.canDeleteApiKeys ?? false;
+  const canManageOrganizationNotifications = Boolean(
+    capabilities?.canUpdateOrganization && capabilities.canUpdateCalendarEvents,
+  );
+  const organizationNotificationPreference = useMemo<NotificationPreference>(() => {
+    return organizationNotificationQuery.data?.preference ?? {
+      ...defaultNotificationPreference,
+      organizationId,
+      principalType: "organization",
+      principalKey: "organization",
+    };
+  }, [organizationId, organizationNotificationQuery.data?.preference]);
   const canOpenCustomPermissions =
     !membersQuery.isLoading &&
     !capabilitiesQuery.isLoading &&
@@ -247,6 +274,14 @@ export function OrganizationScreen() {
       setMemberAction(null);
       queryClient.invalidateQueries({ queryKey: ["organization-members", organizationId] });
       toast({ title: t("toasts.memberRemovedTitle"), description: t("toasts.memberRemovedDesc"), type: "success" });
+    },
+    onError: (error) => toast({ title: t("toasts.actionFailed"), description: error.message, type: "error" }),
+  });
+  const updateOrganizationNotificationsMutation = useMutation({
+    mutationFn: (input: NotificationPreference) => updateOrganizationNotificationPreferences(organizationId, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["organization-notification-settings", organizationId] });
+      toast({ title: t("toasts.notificationSettingsSavedTitle"), description: t("toasts.notificationSettingsSavedDesc"), type: "success" });
     },
     onError: (error) => toast({ title: t("toasts.actionFailed"), description: error.message, type: "error" }),
   });
@@ -332,6 +367,7 @@ export function OrganizationScreen() {
     { id: "members", label: t("tabs.members"), icon: Users },
     { id: "agentLinks", label: t("tabs.agentLinks"), icon: Bot },
     { id: "apiKeys", label: t("tabs.apiKeys"), icon: KeyRound },
+    { id: "notifications", label: t("tabs.notifications"), icon: Bell },
   ];
 
   function setActiveOrganizationTab(tab: Tab) {
@@ -654,6 +690,16 @@ export function OrganizationScreen() {
             grantablePermissions={grantableApiKeyPermissions(capabilities)}
           />
         )}
+
+        {activeTab === "notifications" && (
+          <OrganizationNotificationsPanel
+            preference={organizationNotificationPreference}
+            canManage={canManageOrganizationNotifications}
+            loading={organizationNotificationQuery.isLoading || capabilitiesQuery.isLoading}
+            saving={updateOrganizationNotificationsMutation.isPending}
+            onSave={(next) => updateOrganizationNotificationsMutation.mutate(next)}
+          />
+        )}
       </div>
 
       <Dialog open={inviteDialogOpen} onOpenChange={handleInviteDialogOpenChange}>
@@ -884,6 +930,150 @@ const agentPresets: Array<{ id: AgentPresetId; permissions: McpConnectionPermiss
     ],
   },
 ];
+
+const notificationCategories: NotificationCategory[] = ["calendar", "task", "manual", "organization"];
+
+function OrganizationNotificationsPanel({
+  preference,
+  canManage,
+  loading,
+  saving,
+  onSave,
+}: {
+  preference: NotificationPreference;
+  canManage: boolean;
+  loading: boolean;
+  saving: boolean;
+  onSave: (preference: NotificationPreference) => void;
+}) {
+  const t = useTranslations("Organization.notifications");
+  const disabled = !canManage || loading || saving;
+
+  function save(next: NotificationPreference) {
+    if (!canManage) return;
+    onSave(next);
+  }
+
+  return (
+    <div className="space-y-6">
+      <Section title={t("title")} description={t("description")}>
+        <div className="space-y-5">
+          {!canManage && <EmptyState title={t("noAccessTitle")} description={t("noAccessDescription")} />}
+          {canManage && loading && <LoadingCardGrid label={t("loading")} />}
+          {canManage && !loading && (
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="space-y-3">
+                <NotificationPolicyRow
+                  icon={Bell}
+                  label={t("enabled")}
+                  note={t("enabledHelp")}
+                  enabled={preference.enabled}
+                  disabled={disabled}
+                  onToggle={() => save({ ...preference, enabled: !preference.enabled })}
+                />
+                {notificationCategories.map((category) => (
+                  <NotificationPolicyRow
+                    key={category}
+                    icon={category === "calendar" ? CalendarDays : category === "task" ? CheckCircle2 : category === "organization" ? Building2 : Clock}
+                    label={t(`categories.${category}`)}
+                    note={t(`categoryHelp.${category}`)}
+                    enabled={preference.categories[category]}
+                    disabled={disabled || !preference.enabled}
+                    onToggle={() => save({
+                      ...preference,
+                      categories: {
+                        ...preference.categories,
+                        [category]: !preference.categories[category],
+                      },
+                    })}
+                  />
+                ))}
+              </div>
+
+              <div className="rounded-2xl border border-zinc-100 bg-white p-4 dark:border-white/[0.06] dark:bg-[#111]">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700 dark:bg-white/5 dark:text-zinc-200">
+                    <Clock className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-widest text-zinc-900 dark:text-white">{t("defaultsTitle")}</p>
+                    <p className="mt-1 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">{t("defaultsDescription")}</p>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {preference.reminderRules.map((rule) => (
+                    <span
+                      key={rule.id}
+                      className={cn(
+                        "rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest",
+                        rule.enabled
+                          ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900"
+                          : "border-zinc-200 bg-zinc-50 text-zinc-400 dark:border-white/10 dark:bg-white/[0.03]",
+                      )}
+                    >
+                      {rule.sourceType === "calendarEvent" ? t("calendarRule") : t("taskRule")}{" "}
+                      {rule.trigger === "at_start" ? t("atStart") : t("minutesBefore", { minutes: rule.offsetMinutes })}
+                    </span>
+                  ))}
+                </div>
+                <p className="mt-4 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">{t("personalOverride")}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </Section>
+    </div>
+  );
+}
+
+function NotificationPolicyRow({
+  icon: Icon,
+  label,
+  note,
+  enabled,
+  disabled,
+  onToggle,
+}: {
+  icon: typeof Bell;
+  label: string;
+  note: string;
+  enabled: boolean;
+  disabled: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onToggle}
+      className="flex w-full items-center justify-between gap-4 rounded-2xl border border-zinc-100 bg-white p-4 text-start transition-colors hover:border-zinc-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/[0.06] dark:bg-[#111] dark:hover:border-white/10"
+    >
+      <span className="flex min-w-0 items-start gap-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700 dark:bg-white/5 dark:text-zinc-200">
+          <Icon className="h-4 w-4" />
+        </span>
+        <span className="min-w-0">
+          <span className="block text-sm font-black text-zinc-900 dark:text-white">{label}</span>
+          <span className="mt-1 block text-xs leading-5 text-zinc-500 dark:text-zinc-400">{note}</span>
+        </span>
+      </span>
+      <span
+        aria-hidden="true"
+        className={cn(
+          "flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition-colors",
+          enabled ? "bg-zinc-900 dark:bg-white" : "bg-zinc-200 dark:bg-white/10",
+        )}
+      >
+        <span
+          className={cn(
+            "h-5 w-5 rounded-full bg-white shadow-sm transition-transform dark:bg-zinc-950",
+            enabled && "translate-x-5",
+          )}
+        />
+      </span>
+    </button>
+  );
+}
 
 function AgentLinksPanel({
   organizationId,

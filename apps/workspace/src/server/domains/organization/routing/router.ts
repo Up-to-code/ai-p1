@@ -80,6 +80,16 @@ import {
   handleUpdateCalendarEvent,
 } from "@/server/domains/calendar/handlers/calendar";
 import {
+  handleCancelNotificationSchedule,
+  handleCreateNotificationSchedule,
+  handleGetMyNotificationPreferences,
+  handleGetOrganizationNotificationPreferences,
+  handleListNotificationSchedules,
+  handleUpdateMyNotificationPreferences,
+  handleUpdateNotificationSchedule,
+  handleUpdateOrganizationNotificationPreferences,
+} from "@/server/domains/notifications/handlers/notifications";
+import {
   handleAttachMedia,
   handleCreateMediaFolder,
   handleDeleteMedia,
@@ -190,6 +200,14 @@ organizationRouter.get("/:organizationId/read/calendar", handleReadCalendarEvent
 organizationRouter.get("/:organizationId/read/calendar/stats", handleReadCalendarStats);
 organizationRouter.get("/:organizationId/read/calendar/upcoming", handleReadUpcomingCalendarEvents);
 organizationRouter.get("/:organizationId/read/calendar/index", handleReadCalendarIndex);
+organizationRouter.get("/:organizationId/notification-settings/me", handleGetMyNotificationPreferences);
+organizationRouter.patch("/:organizationId/notification-settings/me", handleUpdateMyNotificationPreferences);
+organizationRouter.get("/:organizationId/notification-settings/organization", handleGetOrganizationNotificationPreferences);
+organizationRouter.patch("/:organizationId/notification-settings/organization", handleUpdateOrganizationNotificationPreferences);
+organizationRouter.get("/:organizationId/notification-schedules", handleListNotificationSchedules);
+organizationRouter.post("/:organizationId/notification-schedules", handleCreateNotificationSchedule);
+organizationRouter.patch("/:organizationId/notification-schedules/:scheduleId", handleUpdateNotificationSchedule);
+organizationRouter.delete("/:organizationId/notification-schedules/:scheduleId", handleCancelNotificationSchedule);
 organizationRouter.get("/:organizationId/read/tasks/options", handleReadTaskOptions);
 organizationRouter.get("/:organizationId/read/activity", handleReadActivity);
 organizationRouter.get("/:organizationId/read/activity/stats", handleReadActivityStats);

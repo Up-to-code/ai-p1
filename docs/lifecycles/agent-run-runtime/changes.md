@@ -6,6 +6,13 @@
 - Added hard deletion for user-owned Agent threads through the organization API, cascading messages, runs, run steps, tool calls, confirmations, memory summaries, and memory facts while rejecting deletion during running runs.
 - Added sidebar and thread history delete controls that confirm before deletion, clear the active `threadId` URL when needed, and rely on Convex thread queries as the source of truth.
 
+## 2026-06-06 Mobile Composer Edit Mode Clearance
+
+- Added a Mobile composer mode hook so edit-mode projection is shared by the composer dock and feed controls.
+- Raised the scroll-to-latest button above the floating edit strip only while editing a message.
+- Kept message copy/edit actions on demand instead of rendering persistent copy pills over conversation text, while preserving selectable assistant response text.
+- Expanded edit-mode composer text to a three-line scrollable input so long prompts remain editable inside the dock.
+
 ## 2026-06-06 Mobile Agent Thread Scope Reset
 
 - Added a Mobile thread scope Module so persisted Agent thread selection is cleared when the first Workspace organization resolves or when the user switches organizations.

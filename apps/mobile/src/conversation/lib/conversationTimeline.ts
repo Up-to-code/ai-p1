@@ -132,6 +132,7 @@ export function applyStreamEvent(
 
   if (event.type === "status") {
     if (turn.receivedText) return turn;
+    if (isTechnicalStreamingStatus(event.message)) return turn;
     return {
       ...turn,
       message: {
@@ -182,6 +183,11 @@ export function applyStreamEvent(
   }
 
   return turn;
+}
+
+export function isTechnicalStreamingStatus(message: string | undefined) {
+  if (!message) return false;
+  return /\bstream(?:ing|ed|s)?\b/i.test(message);
 }
 
 export function shouldKeepPreviousMessagesOnThreadValidation(args: {

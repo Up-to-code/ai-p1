@@ -1,12 +1,12 @@
 import type { ProfileSettings } from "./store/profile.types";
 import type { ProfileFormValues } from "./validation/profile.schema";
 
-export type ProfileTab = "profile" | "account" | "security";
+export type ProfileTab = "profile" | "account" | "notifications" | "security";
 
 export type ProfileTabSpec = {
   id: ProfileTab;
-  labelKey: "tabs.profile" | "tabs.account" | "tabs.security";
-  icon: "profile" | "account" | "security";
+  labelKey: "tabs.profile" | "tabs.account" | "tabs.notifications" | "tabs.security";
+  icon: "profile" | "account" | "notifications" | "security";
 };
 
 export type ProfileRolePresentation = {
@@ -64,6 +64,7 @@ const roleI18nKeys: Record<string, string> = {
 export const profileTabs: ProfileTabSpec[] = [
   { id: "profile", labelKey: "tabs.profile", icon: "profile" },
   { id: "account", labelKey: "tabs.account", icon: "account" },
+  { id: "notifications", labelKey: "tabs.notifications", icon: "notifications" },
   { id: "security", labelKey: "tabs.security", icon: "security" },
 ];
 

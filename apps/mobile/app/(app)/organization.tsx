@@ -1,8 +1,8 @@
 import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "expo-router";
 import * as Clipboard from "expo-clipboard";
-import { BriefcaseBusiness, ChevronLeft, ChevronRight, Link, RefreshCw } from "lucide-react-native";
+import { BriefcaseBusiness, CheckCircle2, ChevronLeft, ChevronRight, Link } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Screen } from "@/foundation/primitives/Screen";
@@ -11,8 +11,9 @@ import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useAppLocalization } from "@/foundation/localization";
 import { useWorkspaceAccess } from "@/auth/useWorkspaceAccess";
-import { workspaceOrganizationLabel } from "@/auth/workspaceAccess";
+import { shouldResetThreadForOrganizationSwitch, workspaceOrganizationLabel } from "@/auth/workspaceAccess";
 import { mirrorIcon } from "@/foundation/utils/layoutDirection";
+import { useAppStore } from "@/store";
 
 export default function OrganizationScreen() {
   const router = useRouter();
@@ -22,6 +23,8 @@ export default function OrganizationScreen() {
   const workspace = useWorkspaceAccess();
   const styles = useMemo(() => createStyles(colors, isRTL), [colors, isRTL]);
   const BackIcon = isRTL ? ChevronRight : ChevronLeft;
+  const [busyId, setBusyId] = useState("");
+  const resetConversationState = useAppStore((state) => state.resetConversationState);
   const activeWorkspaceName = workspaceOrganizationLabel(
     workspace.activeOrganization,
     t.workspaceAccess.untitledWorkspace,
@@ -51,6 +54,21 @@ export default function OrganizationScreen() {
     }
   };
 
+  const selectOrganization = async (organizationId: string) => {
+    if (organizationId === workspace.organizationId || busyId) return;
+    setBusyId(organizationId);
+    try {
+      await workspace.selectOrganization(organizationId);
+      if (shouldResetThreadForOrganizationSwitch(workspace.organizationId, organizationId)) {
+        resetConversationState();
+      }
+    } catch (error) {
+      Alert.alert(t.workspaceAccess.errorTitle, error instanceof Error ? error.message : t.workspaceAccess.errorBody);
+    } finally {
+      setBusyId("");
+    }
+  };
+
   return (
     <Screen safe={false}>
       <View style={[styles.header, { paddingTop: insets.top + theme.spacing.sm }]}>
@@ -64,40 +82,49 @@ export default function OrganizationScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.hero}>
-          <Text variant="caption" tone="muted" style={styles.eyebrow}>{t.workspaceAccess.eyebrow}</Text>
           <Text variant="display" style={styles.title}>{t.workspaceAccess.organizationSettingsTitle}</Text>
           <Text tone="secondary" style={styles.body}>{activeWorkspaceName}</Text>
         </View>
 
-        <View style={styles.card}>
+        <View style={styles.list}>
           <ActionRow
             testID="organization.active"
-            icon={<BriefcaseBusiness size={18} color={colors.textPrimary} />}
+            icon={<BriefcaseBusiness size={24} color={colors.textPrimary} />}
             title={t.workspaceAccess.activeWorkspace}
             description={activeWorkspaceName}
             colors={colors}
             isRTL={isRTL}
           />
-          <View style={styles.divider} />
           <ActionRow
             testID="organization.invite"
-            icon={<Link size={18} color={colors.textPrimary} />}
+            icon={<Link size={24} color={colors.textPrimary} />}
             title={t.workspaceAccess.createInviteLink}
             description={t.workspaceAccess.organizationSettingsBody}
             colors={colors}
             isRTL={isRTL}
             onPress={() => void handleCreateInviteLink()}
           />
-          <View style={styles.divider} />
-          <ActionRow
-            testID="organization.switch"
-            icon={<RefreshCw size={18} color={colors.textPrimary} />}
-            title={t.workspaceAccess.switchWorkspace}
-            description={t.workspaceAccess.yourWorkspaces}
-            colors={colors}
-            isRTL={isRTL}
-            onPress={() => router.push("/(auth)/choose-workspace" as never)}
-          />
+        </View>
+
+        <View style={styles.section}>
+          <Text variant="caption" tone="muted" style={styles.sectionLabel}>{t.workspaceAccess.yourWorkspaces}</Text>
+          <View style={styles.list}>
+            {workspace.organizations.map((organization) => {
+              const selected = organization.id === workspace.organizationId;
+              return (
+                <ActionRow
+                  key={organization.id}
+                  testID={`organization.switch.${organization.id}`}
+                  icon={selected ? <CheckCircle2 size={24} color={colors.textPrimary} /> : <BriefcaseBusiness size={24} color={colors.textPrimary} />}
+                  title={organization.name ?? t.workspaceAccess.untitledWorkspace}
+                  description={organization.slug ?? organization.id}
+                  colors={colors}
+                  isRTL={isRTL}
+                  onPress={selected ? undefined : () => void selectOrganization(organization.id)}
+                />
+              );
+            })}
+          </View>
         </View>
       </ScrollView>
     </Screen>
@@ -125,13 +152,13 @@ function ActionRow({
   return (
     <Pressable testID={testID} disabled={!onPress} style={styles.row} onPress={onPress}>
       <View style={styles.rowMain}>
-        <View style={styles.iconBox}>{icon}</View>
+        <View style={styles.iconSlot}>{icon}</View>
         <View style={styles.rowText}>
           <Text style={styles.rowTitle}>{title}</Text>
           {description ? <Text tone="muted" style={styles.rowDescription}>{description}</Text> : null}
         </View>
       </View>
-      {onPress ? <ChevronRight size={14} color={colors.textMuted} style={mirrorIcon(isRTL)} /> : null}
+      {onPress ? <ChevronRight size={16} color={colors.textMuted} style={mirrorIcon(isRTL)} /> : null}
     </Pressable>
   );
 }
@@ -143,15 +170,14 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     right: 0,
     zIndex: 100,
     paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.sm,
     alignItems: isRTL ? "flex-end" : "flex-start",
+    backgroundColor: colors.background,
   },
   headerButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.divider,
-    backgroundColor: colors.surface,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -159,8 +185,8 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
   },
   hero: {
-    gap: theme.spacing.xs,
-    marginBottom: theme.spacing.xl,
+    gap: 2,
+    marginBottom: 30,
     alignItems: isRTL ? "flex-end" : "flex-start",
   },
   eyebrow: {
@@ -170,8 +196,8 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
   },
   title: {
     color: colors.textPrimary,
-    fontSize: 32,
-    lineHeight: 38,
+    fontSize: 34,
+    lineHeight: 42,
     fontWeight: "800",
     textAlign: isRTL ? "right" : "left",
   },
@@ -180,19 +206,24 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     lineHeight: 22,
     textAlign: isRTL ? "right" : "left",
   },
-  card: {
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.divider,
-    backgroundColor: colors.surface,
-    overflow: "hidden",
+  list: {
+    gap: 12,
+  },
+  section: {
+    marginTop: 34,
+    gap: 10,
+  },
+  sectionLabel: {
+    paddingHorizontal: 4,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    fontWeight: "800",
   },
   row: {
-    minHeight: 72,
+    minHeight: 68,
     flexDirection: isRTL ? "row-reverse" : "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.md,
     gap: theme.spacing.md,
   },
@@ -202,13 +233,9 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     alignItems: "center",
     gap: theme.spacing.md,
   },
-  iconBox: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.divider,
-    backgroundColor: colors.background,
+  iconSlot: {
+    width: 36,
+    height: 44,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -219,19 +246,14 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
   },
   rowTitle: {
     color: colors.textPrimary,
-    fontSize: 15,
-    lineHeight: 21,
+    fontSize: 21,
+    lineHeight: 28,
     fontWeight: "800",
     textAlign: isRTL ? "right" : "left",
   },
   rowDescription: {
-    fontSize: 12,
+    fontSize: 13,
     lineHeight: 18,
     textAlign: isRTL ? "right" : "left",
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.divider,
-    marginHorizontal: theme.spacing.lg,
   },
 });

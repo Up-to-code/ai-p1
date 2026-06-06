@@ -1,6 +1,8 @@
 # Risks
 
 - Removing platform-admin gates is correct for organization-owned settings, but it increases reliance on WorkOS role permissions and the Convex projection being accurate.
+- Organization notification policy writes now affect team reminder behavior; keep the UI capability gate, Hono service check, and Convex delivery opt-out checks aligned.
+- Mobile push delivery depends on Expo project id, EAS push token setup, and real-device registration; browser push is intentionally out of scope for v1.
 - Custom roles with broad permissions can manage sensitive settings; keep UI and Convex permission checks aligned.
 - Some settings create secrets or one-time links; failed refresh after creation can feel like a failed save even when the secret was created.
 - Platform-only admin routes must remain separate from organization routes.

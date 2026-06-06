@@ -8,6 +8,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { AuthProvider } from "@/auth/AuthProvider";
 import { LocalizationProvider } from "@/foundation/localization";
 import { ThemeProvider, useTheme } from "@/foundation/theme/ThemeProvider";
+import { useMobilePushNotificationRouting } from "@/notifications/mobilePushNotifications";
 import { SessionTracker } from "@/persistence/analytics/SessionTracker";
 import { useAppStore } from "@/store";
 import { appFonts } from "./appFonts";
@@ -29,6 +30,7 @@ function ThemedAppChrome({ children }: PropsWithChildren) {
   const { resolvedColorScheme, colors } = useTheme();
   const hydrationComplete = useAppStore((state) => state.hydrationComplete);
   const setHydrationComplete = useAppStore((state) => state.setHydrationComplete);
+  useMobilePushNotificationRouting();
 
   useEffect(() => { if (!hydrationComplete) setHydrationComplete(true); }, [hydrationComplete, setHydrationComplete]);
 

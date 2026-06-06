@@ -28,6 +28,7 @@ describe("profile view model", () => {
     expect(profileTabs).toEqual([
       { id: "profile", labelKey: "tabs.profile", icon: "profile" },
       { id: "account", labelKey: "tabs.account", icon: "account" },
+      { id: "notifications", labelKey: "tabs.notifications", icon: "notifications" },
       { id: "security", labelKey: "tabs.security", icon: "security" },
     ]);
   });

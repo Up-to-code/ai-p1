@@ -104,9 +104,40 @@ export type MobileDictionary = {
     memoryPrivacy: string;
     subscription: string;
     marketAlerts: string;
+    notifications: string;
+    notificationsDescription: string;
     logInToSync: string;
     resetSession: string;
     signOut: string;
+  };
+  notifications: {
+    title: string;
+    subtitle: string;
+    checking: string;
+    enabled: string;
+    disabled: string;
+    deviceToken: string;
+    deviceReady: string;
+    deviceMissing: string;
+    enable: string;
+    disable: string;
+    defaultsTitle: string;
+    defaultsBody: string;
+    calendar30: string;
+    calendar5: string;
+    calendarStart: string;
+    task30: string;
+    loadFailed: string;
+    permissionDeniedTitle: string;
+    permissionDeniedBody: string;
+    unsupportedTitle: string;
+    unsupportedBody: string;
+    setupMissingTitle: string;
+    setupMissingBody: string;
+    enableFailedTitle: string;
+    enableFailedBody: string;
+    disableFailedTitle: string;
+    disableFailedBody: string;
   };
   saved: {
     title: string;
@@ -409,9 +440,40 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       memoryPrivacy: "Memory & privacy",
       subscription: "Subscription",
       marketAlerts: "Market alerts",
+      notifications: "Notifications",
+      notificationsDescription: "Mobile reminders for calendar events, tasks, and AI schedules",
       logInToSync: "Log in to sync research",
       resetSession: "Reset session",
       signOut: "Sign out",
+    },
+    notifications: {
+      title: "Notifications",
+      subtitle: "Register this phone for mobile reminders from your workspace calendar, tasks, and AI schedules.",
+      checking: "Checking device status",
+      enabled: "Mobile push enabled",
+      disabled: "Mobile push disabled",
+      deviceToken: "Device connected. Token ends {last4}.",
+      deviceReady: "This phone is connected to Qentrah reminders.",
+      deviceMissing: "Enable notifications to receive reminders on this phone.",
+      enable: "Enable notifications",
+      disable: "Disable notifications",
+      defaultsTitle: "Default reminder timing",
+      defaultsBody: "Your workspace sends calendar reminders 30 minutes before, 5 minutes before, and at start. Tasks remind 30 minutes before due time.",
+      calendar30: "Calendar 30m",
+      calendar5: "Calendar 5m",
+      calendarStart: "At start",
+      task30: "Task 30m",
+      loadFailed: "Unable to load notification status.",
+      permissionDeniedTitle: "Permission denied",
+      permissionDeniedBody: "Allow notifications in system settings to receive mobile reminders.",
+      unsupportedTitle: "Development build required",
+      unsupportedBody: "Mobile push registration works on iOS and Android app builds.",
+      setupMissingTitle: "Project setup missing",
+      setupMissingBody: "Expo project id is required before push tokens can be created.",
+      enableFailedTitle: "Could not enable notifications",
+      enableFailedBody: "Try again after checking your network connection.",
+      disableFailedTitle: "Could not disable notifications",
+      disableFailedBody: "Try again after checking your network connection.",
     },
     saved: {
       title: "Favorites",
@@ -715,9 +777,40 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       memoryPrivacy: "الذاكرة والخصوصية",
       subscription: "الاشتراك",
       marketAlerts: "تنبيهات السوق",
+      notifications: "الإشعارات",
+      notificationsDescription: "تذكيرات الجوال لأحداث التقويم والمهام وجداول الذكاء الاصطناعي",
       logInToSync: "سجل الدخول لمزامنة البحث",
       resetSession: "إعادة ضبط الجلسة",
       signOut: "تسجيل الخروج",
+    },
+    notifications: {
+      title: "الإشعارات",
+      subtitle: "سجل هذا الهاتف لتلقي تذكيرات الجوال من تقويم مساحة العمل والمهام وجداول الذكاء الاصطناعي.",
+      checking: "جار فحص حالة الجهاز",
+      enabled: "إشعارات الجوال مفعلة",
+      disabled: "إشعارات الجوال معطلة",
+      deviceToken: "الجهاز متصل. ينتهي الرمز بـ {last4}.",
+      deviceReady: "هذا الهاتف متصل بتذكيرات قنطرة.",
+      deviceMissing: "فعّل الإشعارات لتلقي التذكيرات على هذا الهاتف.",
+      enable: "تفعيل الإشعارات",
+      disable: "تعطيل الإشعارات",
+      defaultsTitle: "توقيت التذكير الافتراضي",
+      defaultsBody: "ترسل مساحة العمل تذكيرات التقويم قبل 30 دقيقة، وقبل 5 دقائق، وعند البداية. المهام تذكر قبل موعد الاستحقاق بـ 30 دقيقة.",
+      calendar30: "تقويم 30د",
+      calendar5: "تقويم 5د",
+      calendarStart: "عند البداية",
+      task30: "مهمة 30د",
+      loadFailed: "تعذر تحميل حالة الإشعارات.",
+      permissionDeniedTitle: "تم رفض الصلاحية",
+      permissionDeniedBody: "اسمح بالإشعارات من إعدادات النظام لتلقي تذكيرات الجوال.",
+      unsupportedTitle: "يلزم إصدار تطبيق",
+      unsupportedBody: "تسجيل إشعارات الجوال يعمل على إصدارات تطبيق iOS وAndroid.",
+      setupMissingTitle: "إعداد المشروع غير مكتمل",
+      setupMissingBody: "معرف مشروع Expo مطلوب قبل إنشاء رموز الإشعارات.",
+      enableFailedTitle: "تعذر تفعيل الإشعارات",
+      enableFailedBody: "أعد المحاولة بعد التحقق من اتصال الشبكة.",
+      disableFailedTitle: "تعذر تعطيل الإشعارات",
+      disableFailedBody: "أعد المحاولة بعد التحقق من اتصال الشبكة.",
     },
     saved: {
       title: "المفضلة",
@@ -1021,9 +1114,40 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       memoryPrivacy: "Mémoire et confidentialité",
       subscription: "Abonnement",
       marketAlerts: "Alertes marché",
+      notifications: "Notifications",
+      notificationsDescription: "Rappels mobiles pour le calendrier, les tâches et les plannings IA",
       logInToSync: "Se connecter pour synchroniser la recherche",
       resetSession: "Réinitialiser la session",
       signOut: "Se déconnecter",
+    },
+    notifications: {
+      title: "Notifications",
+      subtitle: "Enregistrez ce téléphone pour recevoir les rappels mobiles du calendrier, des tâches et des plannings IA.",
+      checking: "Vérification de l’appareil",
+      enabled: "Notifications mobiles activées",
+      disabled: "Notifications mobiles désactivées",
+      deviceToken: "Appareil connecté. Le jeton se termine par {last4}.",
+      deviceReady: "Ce téléphone est connecté aux rappels Qentrah.",
+      deviceMissing: "Activez les notifications pour recevoir les rappels sur ce téléphone.",
+      enable: "Activer les notifications",
+      disable: "Désactiver les notifications",
+      defaultsTitle: "Timing par défaut",
+      defaultsBody: "L’espace envoie les rappels calendrier 30 minutes avant, 5 minutes avant et au début. Les tâches rappellent 30 minutes avant l’échéance.",
+      calendar30: "Calendrier 30m",
+      calendar5: "Calendrier 5m",
+      calendarStart: "Au début",
+      task30: "Tâche 30m",
+      loadFailed: "Impossible de charger l’état des notifications.",
+      permissionDeniedTitle: "Autorisation refusée",
+      permissionDeniedBody: "Autorisez les notifications dans les réglages système pour recevoir les rappels mobiles.",
+      unsupportedTitle: "Build d’application requis",
+      unsupportedBody: "L’enregistrement push fonctionne sur les builds iOS et Android.",
+      setupMissingTitle: "Configuration incomplète",
+      setupMissingBody: "L’identifiant de projet Expo est requis pour créer les jetons push.",
+      enableFailedTitle: "Impossible d’activer",
+      enableFailedBody: "Réessayez après avoir vérifié votre connexion réseau.",
+      disableFailedTitle: "Impossible de désactiver",
+      disableFailedBody: "Réessayez après avoir vérifié votre connexion réseau.",
     },
     saved: {
       title: "Favoris",

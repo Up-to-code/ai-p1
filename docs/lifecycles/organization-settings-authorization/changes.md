@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-06 Organization Mobile Push Policy
+
+- Added the Organization Notifications tab for mobile push policy defaults and category-level organization reminder controls.
+- Treated organization notification policy updates as organization settings writes, requiring organization update plus calendar update capability in both UI gating and server service checks.
+- Added server routes under organization notification settings and notification schedules while keeping personal opt-out and quiet hours as the final delivery gate.
+
 ## 2026-06-02 WorkOS Organization Settings Migration
 
 - Replaced organization settings identity, invitation, member, and custom role actions with WorkOS SDK calls.
