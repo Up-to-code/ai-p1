@@ -30,6 +30,10 @@
         "e2e/**/*.spec.ts",
         "scripts/check-production-env.mjs"
       ],
+      "ignoreDependencies": [
+        "@better-auth/core",
+        "better-call"
+      ],
       "ignoreBinaries": [
         "playwright"
       ]
