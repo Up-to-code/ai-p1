@@ -6,7 +6,7 @@
   "private": true,
   "main": "electron/main.cjs",
   "scripts": {
-    "dev": "npm --workspace @qentrah/location-map run build && npm --workspace @qentrah/domain-contracts run build && concurrently -n next,convex -c cyan,magenta \"next dev\" \"convex dev\"",
+    "dev": "npm --workspace @qentrah/location-map --include-workspace-root=false run build && npm --workspace @qentrah/domain-contracts --include-workspace-root=false run build && concurrently -n next,convex -c cyan,magenta \"next dev\" \"convex dev\"",
     "dev:stack": "concurrently -n next,convex -c cyan,magenta \"next dev\" \"convex dev\"",
     "desktop:dev": "concurrently -n next,convex,electron -c cyan,magenta,blue \"next dev\" \"convex dev\" \"electron .\"",
     "desktop:assets": "node scripts/prepare-desktop-assets.mjs",
@@ -19,7 +19,7 @@
     "dev:convex": "convex dev",
     "dev:convex:once": "convex dev --once",
     "codegen:convex": "convex codegen",
-    "build": "npm --workspace @qentrah/location-map run build && next build && node scripts/ensure-vercel-manifest.mjs",
+    "build": "npm --workspace @qentrah/location-map --include-workspace-root=false run build && next build && node scripts/ensure-vercel-manifest.mjs",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "lint": "eslint",

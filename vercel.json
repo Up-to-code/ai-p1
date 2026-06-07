@@ -3,5 +3,5 @@
   "framework": "nextjs",
   "installCommand": "npm ci --legacy-peer-deps --include=optional",
   "ignoreCommand": "node scripts/vercel-ignore.mjs --workspace @qentrah/workspace",
-  "buildCommand": "npm --workspace @qentrah/workspace run build"
+  "buildCommand": "npm --workspace @qentrah/workspace --include-workspace-root=false run build"
 }
