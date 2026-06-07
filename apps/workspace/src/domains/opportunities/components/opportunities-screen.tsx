@@ -10,6 +10,7 @@ import { useAccountContext } from "@/domains/auth";
 import { WorkspaceQueryState, StatusPill, EmptyWorkspace, DetailNotFoundState, FormActions, SelectField, TextInput } from "@/components/shared/crud-ui";
 import { useToast } from "@/components/ui/toast";
 import { Link, useRouter } from "@/i18n/routing";
+import { cn } from "@/lib/utils";
 import { WorkOsRecordDrawer } from "@/domains/work-os/components/work-os-record-drawer";
 import { WorkOsRecordPicker, type WorkOsPickerOption } from "@/domains/work-os/components/work-os-record-picker";
 import { useClientOptionsQuery } from "@/domains/clients/api/clients";
@@ -148,42 +149,122 @@ function OpportunityForm({
   );
 }
 
+function opportunityValuesForStage(opportunity: Opportunity, stage: OpportunityStage): OpportunityFormValues {
+  const values = formFromOpportunity(opportunity);
+  values.stage = stage;
+  if (stage === "won") values.status = "won";
+  else if (stage === "lost") values.status = "lost";
+  else if (values.status === "won" || values.status === "lost") values.status = "open";
+  return values;
+}
+
 function OpportunityBoard({
   opportunities,
   labels,
+  priorityLabels,
   onEdit,
   onDelete,
+  onMoveStage,
+  movingId,
 }: {
   opportunities: Opportunity[];
   labels: Record<OpportunityStage, string>;
+  priorityLabels: Record<OpportunityPriority, string>;
   onEdit: (opportunity: Opportunity) => void;
   onDelete: (opportunity: Opportunity) => void;
+  onMoveStage: (opportunity: Opportunity, stage: OpportunityStage) => void;
+  movingId: string | null;
 }) {
+  const t = useTranslations("Opportunities");
+  const common = useTranslations("Common");
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [dragOverStage, setDragOverStage] = useState<OpportunityStage | null>(null);
+
   return (
-    <div className="grid gap-4 xl:grid-cols-6">
+    <div className="-mx-1 flex gap-4 overflow-x-auto px-1 pb-2">
       {stages.map((stage) => {
         const rows = opportunities.filter((opportunity) => opportunity.stage === stage);
+        const isDragOver = dragOverStage === stage;
+
         return (
-          <section key={stage} className="min-h-52 rounded-2xl border border-zinc-100 bg-zinc-50/60 p-3 dark:border-white/5 dark:bg-white/[0.02]">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{labels[stage]}</h3>
-              <span className="text-[10px] font-black tabular-nums text-zinc-400">{rows.length}</span>
+          <section
+            key={stage}
+            className={cn(
+              "flex min-h-[420px] w-[min(100%,280px)] shrink-0 flex-col rounded-[28px] border p-3 transition-all duration-300",
+              isDragOver
+                ? "border-[#0B5CFF] bg-[#0B5CFF]/5 ring-4 ring-[#0B5CFF]/10"
+                : "border-zinc-100 bg-zinc-50/40 dark:border-white/5 dark:bg-white/[0.01]",
+            )}
+            onDragOver={(event) => {
+              event.preventDefault();
+              event.dataTransfer.dropEffect = "move";
+              if (dragOverStage !== stage) setDragOverStage(stage);
+            }}
+            onDragLeave={() => setDragOverStage(null)}
+            onDrop={(event) => {
+              event.preventDefault();
+              setDragOverStage(null);
+              const opportunityId = event.dataTransfer.getData("opportunityId") || draggedId;
+              if (!opportunityId) return;
+              const moving = opportunities.find((opportunity) => opportunity.id === opportunityId);
+              if (moving && moving.stage !== stage) onMoveStage(moving, stage);
+              setDraggedId(null);
+            }}
+          >
+            <div className="mb-4 flex items-center justify-between px-2">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">{labels[stage]}</h3>
+              <span className="text-[10px] font-black tabular-nums text-zinc-300">{String(rows.length).padStart(2, "0")}</span>
             </div>
-            <div className="space-y-3">
+            <div className="flex-1 space-y-3">
               {rows.map((opportunity) => (
-                <article key={opportunity.id} className="rounded-xl border border-zinc-200 bg-white p-3 dark:border-white/10 dark:bg-[#0A0A0A]">
+                <article
+                  key={opportunity.id}
+                  draggable={movingId !== opportunity.id}
+                  onDragStart={(event) => {
+                    setDraggedId(opportunity.id);
+                    event.dataTransfer.setData("opportunityId", opportunity.id);
+                    event.dataTransfer.effectAllowed = "move";
+                  }}
+                  onDragEnd={() => {
+                    setDraggedId(null);
+                    setDragOverStage(null);
+                  }}
+                  className={cn(
+                    "rounded-2xl border border-zinc-200 bg-white p-3 transition-all dark:border-white/10 dark:bg-[#0A0A0A]",
+                    draggedId === opportunity.id && "scale-[0.98] opacity-60",
+                    movingId === opportunity.id && "pointer-events-none opacity-50",
+                    movingId !== opportunity.id && "cursor-grab active:cursor-grabbing",
+                  )}
+                >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <h4 className="truncate text-sm font-black text-zinc-950 dark:text-white">{opportunity.title}</h4>
                       <p className="mt-1 text-xs font-bold text-zinc-400">{formatValue(opportunity)}</p>
                     </div>
-                    <StatusPill label={opportunity.priority} tone={priorityTone(opportunity.priority)} />
+                    <StatusPill label={priorityLabels[opportunity.priority]} tone={priorityTone(opportunity.priority)} />
                   </div>
-                  {opportunity.nextStep ? <p className="mt-3 line-clamp-2 text-xs font-medium leading-5 text-zinc-500">{opportunity.nextStep}</p> : null}
+                  {opportunity.nextStep ? (
+                    <p className="mt-3 line-clamp-2 text-xs font-medium leading-5 text-zinc-500">{opportunity.nextStep}</p>
+                  ) : null}
                   <div className="mt-4 flex justify-end gap-2">
-                    <Link href={`/opportunities/${opportunity.id}`} className="inline-flex h-8 items-center rounded-lg border border-zinc-200 px-3 text-[10px] font-bold text-zinc-700 hover:bg-zinc-50 dark:border-white/10 dark:text-zinc-200 dark:hover:bg-white/5">Open</Link>
-                    <Button type="button" variant="outline" className="h-8 rounded-lg px-3 text-[10px] font-bold" onClick={() => onEdit(opportunity)}>Edit</Button>
-                    <Button type="button" variant="outline" className="h-8 rounded-lg px-2 text-red-600" onClick={() => onDelete(opportunity)} aria-label="Delete opportunity">
+                    <Link
+                      href={`/opportunities/${opportunity.id}`}
+                      draggable={false}
+                      onClick={(event) => event.stopPropagation()}
+                      className="inline-flex h-8 items-center rounded-lg border border-zinc-200 px-3 text-[10px] font-bold text-zinc-700 hover:bg-zinc-50 dark:border-white/10 dark:text-zinc-200 dark:hover:bg-white/5"
+                    >
+                      {t("actions.open")}
+                    </Link>
+                    <Button type="button" variant="outline" className="h-8 rounded-lg px-3 text-[10px] font-bold" onClick={() => onEdit(opportunity)}>
+                      {common("edit")}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-8 rounded-lg px-2 text-red-600"
+                      onClick={() => onDelete(opportunity)}
+                      aria-label={t("actions.deleteOpportunity")}
+                    >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -307,6 +388,37 @@ export function OpportunitiesScreen() {
     }
   }
 
+  async function moveStage(opportunity: Opportunity, targetStage: OpportunityStage) {
+    if (!organizationId || opportunity.stage === targetStage) return;
+
+    const values = opportunityValuesForStage(opportunity, targetStage);
+    const previousEntries = queryClient.getQueriesData<Opportunity[]>({ queryKey: ["opportunities"] });
+
+    setBusyId(opportunity.id);
+    await queryClient.cancelQueries({ queryKey: ["opportunities"] });
+    queryClient.setQueriesData<Opportunity[]>({ queryKey: ["opportunities"] }, (current) => {
+      if (!current) return current;
+      return current.map((row) =>
+        row.id === opportunity.id ? { ...row, stage: targetStage, status: values.status } : row,
+      );
+    });
+
+    try {
+      await updateOpportunityRequest(organizationId, opportunity.id, values);
+      await queryClient.invalidateQueries({ queryKey: ["opportunities-stats"] });
+    } catch (error) {
+      previousEntries.forEach(([key, data]) => {
+        if (data !== undefined) queryClient.setQueryData(key, data);
+      });
+      toast({
+        title: error instanceof Error ? error.message : t("actions.saveFailed"),
+        type: "error",
+      });
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   const columns: AppDataTableColumn<Opportunity>[] = [
     { key: "title", header: t("table.opportunity"), render: (row) => <div className="min-w-0"><p className="truncate text-sm font-black text-zinc-950 dark:text-white">{row.title}</p><p className="mt-1 truncate text-xs font-bold text-zinc-400">{row.nextStep || row.source || t("table.noNextStep")}</p></div> },
     { key: "stage", header: t("table.stage"), render: (row) => <StatusPill label={opportunityStageLabels[row.stage]} tone={stageTone(row.stage)} /> },
@@ -355,7 +467,15 @@ export function OpportunitiesScreen() {
             {filteredOpportunities.length === 0 ? (
               <EmptyWorkspace icon={BriefcaseBusiness} title={t("empty.title")} description={t("empty.description")} />
             ) : view === "board" ? (
-              <OpportunityBoard opportunities={filteredOpportunities} labels={opportunityStageLabels} onEdit={openEditDrawer} onDelete={remove} />
+              <OpportunityBoard
+                opportunities={filteredOpportunities}
+                labels={opportunityStageLabels}
+                priorityLabels={opportunityPriorityLabels}
+                onEdit={openEditDrawer}
+                onDelete={remove}
+                onMoveStage={moveStage}
+                movingId={busyId}
+              />
             ) : (
               <AppDataTable columns={columns} data={filteredOpportunities} getRowKey={(row) => row.id} />
             )}
