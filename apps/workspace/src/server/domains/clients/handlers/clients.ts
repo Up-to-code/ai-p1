@@ -1,8 +1,8 @@
 import type { Context } from "hono";
 import { validateJsonBody } from "@/server/utils/request/json-body";
 import { actionErrorJson } from "@/server/utils/response/action-error";
-import { clientPayloadSchema, clientUnitLinkPayloadSchema } from "../validation/client.schema";
-import { createClient, deleteClient, linkClientUnit, unlinkClientUnit, updateClient } from "../services/clients";
+import { clientPayloadSchema, clientAssetLinkPayloadSchema } from "../validation/client.schema";
+import { createClient, deleteClient, linkClientAsset, unlinkClientAsset, updateClient } from "../services/clients";
 
 function handleError(c: Context, error: unknown) {
   return actionErrorJson(c, error, "Client action failed.");
@@ -50,31 +50,31 @@ export async function handleDeleteClient(c: Context) {
   }
 }
 
-export async function handleLinkClientUnit(c: Context) {
+export async function handleLinkClientAsset(c: Context) {
   const organizationId = c.req.param("organizationId");
   const clientId = c.req.param("clientId");
   if (!organizationId || !clientId) return c.json({ error: "Organization and client ids are required." }, 400);
-  const parsed = await validateJsonBody(c, clientUnitLinkPayloadSchema, "Invalid unit link payload.");
+  const parsed = await validateJsonBody(c, clientAssetLinkPayloadSchema, "Invalid asset link payload.");
   if (!parsed.ok) return parsed.response;
 
   try {
-    const link = await linkClientUnit(organizationId, clientId, parsed.data);
+    const link = await linkClientAsset(organizationId, clientId, parsed.data);
     return c.json({ link });
   } catch (error) {
     return handleError(c, error);
   }
 }
 
-export async function handleUnlinkClientUnit(c: Context) {
+export async function handleUnlinkClientAsset(c: Context) {
   const organizationId = c.req.param("organizationId");
   const clientId = c.req.param("clientId");
-  const propertyId = c.req.param("propertyId");
-  if (!organizationId || !clientId || !propertyId) {
-    return c.json({ error: "Organization, client, and property ids are required." }, 400);
+  const assetId = c.req.param("assetId");
+  if (!organizationId || !clientId || !assetId) {
+    return c.json({ error: "Organization, client, and asset ids are required." }, 400);
   }
 
   try {
-    const result = await unlinkClientUnit(organizationId, clientId, propertyId);
+    const result = await unlinkClientAsset(organizationId, clientId, assetId);
     return c.json(result);
   } catch (error) {
     return handleError(c, error);

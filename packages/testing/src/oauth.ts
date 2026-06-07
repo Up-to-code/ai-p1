@@ -17,7 +17,7 @@ export function buildOAuthAuthorizationPrompt(
     },
     state: "state",
     redirectUri: "https://external.test/callback",
-    requestedScopes: [{ id: "properties:read", label: "Read properties" }],
+    requestedScopes: [{ id: "assets:read", label: "Read assets" }],
     offlineAccess: false,
     organizations: [],
     selectedTenantOrgId: null,

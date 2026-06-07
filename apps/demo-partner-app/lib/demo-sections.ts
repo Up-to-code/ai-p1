@@ -45,7 +45,7 @@ const sectionIcons: Record<DemoSectionId, LucideIcon> = {
   credentials: KeyRound,
   organization: Building2,
   clients: UsersRound,
-  properties: WalletCards,
+  assets: WalletCards,
   projects: Database,
   tasks: ListChecks,
   calendar: CalendarDays,

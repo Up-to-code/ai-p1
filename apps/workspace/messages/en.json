@@ -2,13 +2,12 @@
   "Navigation": {
     "dashboard": "Dashboard",
     "projects": "Projects",
-    "properties": "Properties",
+    "assets": "Assets",
     "team": "Team",
     "integrations": "Web Apps",
     "activity": "Activity",
     "announcements": "Announcements",
     "settings": "Settings",
-    "units": "Units",
     "clients": "Clients",
     "organization": "Organization",
     "preferences": "Preferences",
@@ -18,9 +17,9 @@
     "expand": "Expand"
   },
   "AutoUi": {
-    "The Saudi Arabia Central Real Estate Data Synchronization Engine___": "The Saudi Arabia Central Real Estate Data Synchronization Engine",
+    "The Saudi Arabia Central Workspace Operating System___": "The Saudi Arabia Central Workspace Operating System",
     "© 2026 qentrah Platform___ All rights reserved___": "© 2026 qentrah Platform. All rights reserved.",
-    "Sign in to access your real estate data workspace___": "Sign in to access your real estate data workspace.",
+    "Sign in to access your workspace data workspace___": "Sign in to access your workspace.",
     "Min___ 8 characters": "Min. 8 characters",
     "Enter an invite code or use a shared link to join an existing workspace___": "Enter an invite code or use a shared link to join an existing workspace.",
     "Register your company and complete the setup wizard to start synchronizing data___": "Register your company and complete the setup wizard to start synchronizing data.",
@@ -28,7 +27,7 @@
     "Provide your company's registered legal information___": "Provide your company's registered legal information.",
     "Upload the required legal files and identify the authorized signer___": "Add legal files later when a workflow requires verification.",
     "Set your display identity for shared workspaces and approvals___": "Set your display identity for shared workspaces and approvals.",
-    "Invite teammates who should help manage listings, approvals, and integrations___": "Invite teammates who should help manage listings, approvals, and integrations."
+    "Invite teammates who should help manage listings, approvals, and integrations___": "Invite teammates who should help manage records, approvals, and integrations."
   },
   "Dashboard": {
     "title": "Follow-up dashboard",
@@ -38,7 +37,7 @@
     "stats": {
       "clients": "Clients",
       "projects": "Projects",
-      "units": "Units",
+      "assets": "Assets",
       "events": "Events"
     },
     "activity": {
@@ -49,12 +48,12 @@
       "title": "Upcoming Work"
     },
     "normal": {
-      "newProperties": "New properties",
+      "newAssets": "New assets",
       "newProjects": "Project updates",
       "latestClients": "Latest client updates",
       "upcomingMeeting": "Today’s appointments",
       "viewAll": "View all",
-      "noProperties": "No properties yet",
+      "noAssets": "No assets yet",
       "noProjects": "No projects yet",
       "noClients": "No clients yet",
       "noMeetings": "No meetings scheduled",
@@ -74,22 +73,22 @@
       "syncStatus": "Sync Status",
       "recentProjects": "Recent Projects",
       "viewAllProjects": "View All Projects",
-      "inventoryUnits": "Inventory Units",
-      "fullInventory": "Full Inventory",
+      "inventoryAssets": "Workspace assets",
+      "fullInventory": "Asset collection",
       "quickActions": "Quick Actions",
       "newProject": "New Project",
-      "addUnit": "Add Unit",
+      "addUnit": "Add Asset",
       "registerClient": "Register Client",
       "globalSearch": "Global Search",
       "searchPlaceholder": "Search anything...",
-      "searchDesc": "Quickly find projects, units, or legal files across the entire index."
+      "searchDesc": "Quickly find projects, assets, clients, or files across the entire index."
     },
     "signals": {
       "followUps": "Client follow-ups",
       "followUpsDetail": "{count} high-priority clients need care",
-      "viewings": "Viewings today",
-      "noViewings": "No booked visits",
-      "readyInventory": "Ready units",
+      "viewings": "Meetings today",
+      "noViewings": "No booked meetings",
+      "readyInventory": "Ready assets",
       "readyInventoryDetail": "{count} still need review",
       "blockedApprovals": "Blocked approvals",
       "blockedApprovalsDetail": "Clear data before launch"
@@ -118,24 +117,24 @@
     },
     "pipeline": {
       "title": "Market movement",
-      "description": "A compact read on demand, launch readiness, and units that can be shown now.",
+      "description": "A compact read on demand, launch readiness, and assets that can be shown now.",
       "qualifiedDemand": "Qualified demand",
       "qualifiedDemandHelper": "Clients ready for matching or negotiation",
       "launchReady": "Launch-ready projects",
       "launchReadyHelper": "Approved projects with synced data",
       "availableKeys": "Keys available",
-      "availableKeysHelper": "Units ready for viewing or offer"
+      "availableKeysHelper": "Assets ready for viewing or offer"
     },
     "actions": {
       "title": "Next useful actions",
       "description": "Only the essential moves, grouped by work role.",
       "logFollowUp": "Log client follow-up",
       "scheduleViewing": "Schedule viewing",
-      "addUnit": "Add marketable unit",
+      "addUnit": "Add marketable asset",
       "prepareProject": "Prepare project",
       "sales": "Sales",
       "coordinator": "Coordinator",
-      "inventory": "Inventory",
+      "inventory": "Resources",
       "admin": "Admin"
     },
     "chart": {
@@ -156,19 +155,19 @@
     },
     "search": {
       "title": "Find the deal context",
-      "description": "Search for a client, unit, project, budget range, or document before a call.",
-      "placeholder": "Client, unit, project, or budget..."
+      "description": "Search for a client, asset, project, budget range, or document before a call.",
+      "placeholder": "Client, asset, project, or budget..."
     },
     "inventory": {
       "title": "Inventory ready for action",
-      "description": "Units your team can discuss, review, or prepare for viewing.",
+      "description": "Assets your team can discuss, review, or prepare for viewing.",
       "open": "Open inventory"
     },
     "projects": {
       "title": "Project movement",
-      "description": "Launch state, unit volume, and market entry point for active projects.",
+      "description": "Launch state, asset volume, and market entry point for active projects.",
       "open": "Open projects",
-      "units": "Units",
+      "assets": "Assets",
       "market": "Market",
       "edit": "Edit",
       "deleteProject": "Delete {name}"
@@ -225,14 +224,17 @@
     },
     "dashboard": "Dashboard",
     "projects": "Projects",
-    "properties": "Properties",
-    "units": "Units",
+    "opportunities": "Opportunities",
+    "tasks": "Tasks",
+    "assets": "Assets",
     "clients": "Clients",
     "calendar": "Calendar",
     "organization": "Organization",
+    "automations": "Automations",
+    "team": "Team",
     "usage": "Usage",
     "billing": "Billing",
-    "integrations": "Web Apps",
+    "integrations": "Integrations",
     "components": "UI Components",
     "activity": "Activity Log",
     "comingSoon": "Coming soon",
@@ -251,7 +253,7 @@
       "home": "Home",
       "documentation": "Docs",
       "developers": "Developers",
-      "brokers": "Brokers",
+      "brokers": "Clients",
       "solutions": "Solutions",
       "pricing": "Pricing",
       "resources": "Resources",
@@ -269,21 +271,21 @@
     },
     "home": {
       "hero": {
-        "eyebrow": "B2B real estate clarity",
-        "title": "Real AI for real work.",
-        "description": "Introducing qentrah: the next generation of technology and work for institutional real estate teams.",
+        "eyebrow": "Workspace OS",
+        "title": "One desk for real work.",
+        "description": "Qentrah brings tasks, calendars, clients, funnels, projects, teams, and connected apps into one operating workspace.",
         "primary": "Enter workspace",
-        "secondary": "Partner with us",
+        "secondary": "Talk to us",
         "structure": [
           {
-            "label": "Market truth",
+            "label": "Work truth",
             "value": "01",
-            "helper": "Projects, units, media, and pricing reconciled before teams move."
+            "helper": "Projects, assets, files, and decisions stay close before teams move."
           },
           {
-            "label": "Partner motion",
+            "label": "Team motion",
             "value": "02",
-            "helper": "Developers, brokers, and operators share the same live context."
+            "helper": "Operators, managers, clients, and partners share the same live context."
           },
           {
             "label": "Workspace action",
@@ -295,9 +297,9 @@
       "signals": {
         "eyebrow": "Micro-proof near the decision point",
         "projects": {
-          "label": "Market data",
+          "label": "Work data",
           "value": "42",
-          "helper": "Projects, media, units, and pricing reconciled."
+          "helper": "Projects, records, media, and decisions reconciled."
         },
         "approvals": {
           "label": "Risk",
@@ -307,55 +309,55 @@
         "leads": {
           "label": "Demand",
           "value": "1.2k",
-          "helper": "Client intent connected to verified inventory."
+          "helper": "Client intent connected to verified workspace records."
         }
       },
       "preview": {
         "workspace": "Workspace overview",
         "work": "Work",
         "ai": "AI",
-        "activeListings": "Active listings",
+        "activeListings": "Active records",
         "pendingApprovals": "Pending approvals",
         "qualifiedLeads": "Qualified leads",
         "syncHealth": "Sync health",
         "actionRequired": "Action required",
         "today": "Today",
         "assistant": "Qentrah assistant",
-        "prompt": "Find ready waterfront units, prepare the broker context, and flag anything that blocks a viewing today.",
+        "prompt": "Find the ready client records, prepare the team context, and flag anything that blocks today's work.",
         "ready": "Ready",
         "tasks": [
           {
-            "title": "Approve Riyadh Heights units",
-            "meta": "24 units · developer submitted new pricing",
+            "title": "Approve client workspace records",
+            "meta": "24 records · team submitted new updates",
             "status": "Review"
           },
           {
-            "title": "Resolve duplicate listing claims",
-            "meta": "Palm Residence · 3 broker submissions",
+            "title": "Resolve duplicate record claims",
+            "meta": "Client workspace · 3 partner submissions",
             "status": "Blocked"
           },
           {
-            "title": "Publish verified waterfront units",
-            "meta": "12 units · ready for marketplace sync",
+            "title": "Publish verified workspace records",
+            "meta": "12 records · ready for sync",
             "status": "Ready"
           }
         ],
         "chips": [
           "Find client",
-          "Check inventory",
-          "Prepare viewing",
-          "Verify launch"
+          "Check assets",
+          "Prepare meeting",
+          "Verify handoff"
         ]
       },
       "partners": {
         "eyebrow": "Partner with us",
-        "title": "One infinity loop for the teams around every project.",
-        "description": "The platform is built for the movement between developer supply, broker demand, market signals, and workspace execution.",
+        "title": "One loop for the teams around every workflow.",
+        "description": "The platform is built for the movement between client demand, team execution, partner systems, and workspace decisions.",
         "items": [
-          { "name": "Developers", "label": "Launch" },
-          { "name": "Brokers", "label": "Demand" },
-          { "name": "Sales ops", "label": "Readiness" },
-          { "name": "Marketing", "label": "Media" },
+          { "name": "Projects", "label": "Plan" },
+          { "name": "Clients", "label": "Demand" },
+          { "name": "Operations", "label": "Readiness" },
+          { "name": "Teams", "label": "Handoff" },
           { "name": "Finance", "label": "Revenue" },
           { "name": "Legal", "label": "Approval" },
           { "name": "Web apps", "label": "Sync" }
@@ -364,29 +366,29 @@
       "audiences": {
         "eyebrow": "The problem is not data",
         "title": "Your data is not the problem. Your clarity is.",
-        "description": "Qentrah turns scattered project, inventory, broker, and client signals into a shared operating view.",
+        "description": "Qentrah turns scattered project, task, client, asset, and partner signals into a shared operating view.",
         "items": [
           {
-            "eyebrow": "For developers",
-            "title": "Control launch before it reaches the market.",
-            "description": "Track readiness, approvals, inventory, media, and broker access from one command surface.",
+            "eyebrow": "For operators",
+            "title": "Control the work before it reaches the client.",
+            "description": "Track readiness, approvals, assets, files, and partner access from one command surface.",
             "href": "/developer",
             "image": "/images/projects/business-park.png",
             "stats": [
               { "label": "Projects", "value": "Live" },
-              { "label": "Units", "value": "Synced" },
+              { "label": "Assets", "value": "Synced" },
               { "label": "Status", "value": "Clear" }
             ]
           },
           {
-            "eyebrow": "For brokers",
+            "eyebrow": "For client teams",
             "title": "Move from demand to action.",
-            "description": "Keep clients, available units, viewings, and developer context close enough to act immediately.",
+            "description": "Keep clients, records, meetings, and team context close enough to act immediately.",
             "href": "/broker",
             "image": "/images/projects/residential.png",
             "stats": [
               { "label": "Clients", "value": "Active" },
-              { "label": "Viewings", "value": "Ready" },
+              { "label": "Meetings", "value": "Ready" },
               { "label": "Context", "value": "Shared" }
             ]
           }
@@ -394,17 +396,17 @@
       },
       "city": {
         "eyebrow": "City area",
-        "title": "Keep the market photo close to the workflow.",
-        "description": "The visual layer stays grounded in the real project environment while every card explains what the team can do next."
+        "title": "Keep the operating picture close to the workflow.",
+        "description": "The visual layer stays grounded in real team work while every card explains what the team can do next."
       },
       "workflow": {
         "eyebrow": "One layer",
         "title": "Every metric. Always reconciled.",
-        "description": "Qentrah makes operational truth visible before the team makes a market move.",
+        "description": "Qentrah makes operational truth visible before the team makes a move.",
         "items": [
           {
             "title": "One source",
-            "description": "Projects, units, clients, and approvals stop living in separate stories."
+            "description": "Projects, assets, clients, and approvals stop living in separate stories."
           },
           {
             "title": "One status",
@@ -422,8 +424,8 @@
         "solutionTitle": "What becomes clear inside Qentrah",
         "problems": [
           {
-            "title": "Launch context is scattered",
-            "description": "Inventory, approvals, media, pricing, and broker access drift across separate tools."
+            "title": "Work context is scattered",
+            "description": "Assets, approvals, files, client notes, and partner access drift across separate tools."
           },
           {
             "title": "Teams cannot trust the same status",
@@ -431,43 +433,43 @@
           },
           {
             "title": "Demand loses its next step",
-            "description": "Clients, viewings, follow-ups, and available units are not connected tightly enough to move."
+            "description": "Clients, meetings, follow-ups, and available records are not connected tightly enough to move."
           }
         ],
         "solutions": [
           {
-            "title": "One project operating layer",
-            "description": "Every project has visible readiness, risk, and partner access before it reaches the market."
+            "title": "One workspace operating layer",
+            "description": "Every project has visible readiness, risk, ownership, and partner access before it moves."
           },
           {
             "title": "One shared language",
-            "description": "Developer and broker work uses the same status model: ready, blocked, synced, and action required."
+            "description": "Team and client work uses the same status model: ready, blocked, synced, and action required."
           },
           {
             "title": "One AI-assisted next action",
-            "description": "The workspace converts signals into follow-ups, viewing context, launch checks, and decision prompts."
+            "description": "The workspace converts signals into follow-ups, meeting context, checks, and decision prompts."
           }
         ]
       },
       "docsWorld": {
         "eyebrow": "Docs world",
         "title": "Read the system before you plug into it.",
-        "description": "The docs explain the operating model behind Qentrah: project readiness, inventory truth, partner access, AI workflows, and marketplace sync.",
+        "description": "The docs explain the operating model behind Qentrah: project readiness, asset truth, partner access, AI workflows, and app sync.",
         "primary": "Read the docs",
         "items": [
           {
             "title": "Operating model",
-            "description": "How Qentrah structures projects, units, statuses, and workspace decisions.",
+            "description": "How Qentrah structures projects, assets, statuses, and workspace decisions.",
             "href": "/docs"
           },
           {
             "title": "Developer workflow",
-            "description": "How launch readiness, approvals, media, and broker access become one view.",
+            "description": "How readiness, approvals, files, and partner access become one view.",
             "href": "/developer"
           },
           {
-            "title": "Broker workflow",
-            "description": "How clients, viewings, follow-ups, and verified inventory become one motion.",
+            "title": "Client workflow",
+            "description": "How clients, meetings, follow-ups, and verified records become one motion.",
             "href": "/broker"
           }
         ]
@@ -480,19 +482,19 @@
           {
             "eyebrow": "Launch command",
             "title": "Know what can go live.",
-            "description": "Project teams see unit readiness, missing approvals, media gaps, and partner access before release.",
+            "description": "Project teams see asset readiness, missing approvals, file gaps, and partner access before release.",
             "metric": "Ready / blocked"
           },
           {
-            "eyebrow": "Broker room",
+            "eyebrow": "Client room",
             "title": "Move clients with context.",
-            "description": "Brokers keep demand, availability, viewing plans, and developer notes in one workflow.",
+            "description": "Teams keep demand, availability, meeting plans, and project notes in one workflow.",
             "metric": "Client next step"
           },
           {
-            "eyebrow": "Inventory truth",
-            "title": "Stop selling stale data.",
-            "description": "Pricing, status, and availability stay tied to the same verified project record.",
+            "eyebrow": "Asset truth",
+            "title": "Stop moving stale data.",
+            "description": "Status, ownership, and availability stay tied to the same verified workspace record.",
             "metric": "Synced source"
           },
           {
@@ -504,24 +506,24 @@
         ]
       },
       "operations": {
-        "eyebrow": "Revenue health",
-        "title": "See the risk before it becomes a revenue event.",
+        "eyebrow": "Workspace health",
+        "title": "See the risk before it becomes a business event.",
         "description": "A B2B surface for teams that need clean status, not more screenshots.",
         "cards": {
           "inventory": {
-            "label": "Inventory",
+            "label": "Assets",
             "value": "Verified",
-            "helper": "Available units stay tied to project records and launch readiness."
+            "helper": "Available records stay tied to project readiness and ownership."
           },
           "calendar": {
             "label": "Calendar",
             "value": "Today",
-            "helper": "Viewing plans and follow-ups stay visible beside the work."
+            "helper": "Meeting plans and follow-ups stay visible beside the work."
           },
           "comms": {
             "label": "Context",
             "value": "Shared",
-            "helper": "Brokers and developers use the same operational language."
+            "helper": "Teams, clients, and partners use the same operational language."
           },
           "compliance": {
             "label": "Trust",
@@ -570,7 +572,7 @@
       },
       "animated": {
         "hero": {
-          "title": "The Single Source for Real Estate.",
+          "title": "The Single Source for Work.",
           "description": "Put your data in one place, and it automatically pushes everywhere.",
           "primary": "Start Syncing"
         },
@@ -604,26 +606,26 @@
       "cta": {
         "eyebrow": "Ready for the workspace",
         "title": "Start where the real work continues.",
-        "description": "Enter the workspace, or contact the team to map Qentrah to your developer or brokerage workflow.",
+        "description": "Enter the workspace, or contact the team to map Qentrah to your operating workflow.",
         "primary": "Enter workspace",
         "secondary": "Contact team"
       },
       "faq": {
         "eyebrow": "FAQ",
         "title": "Questions before your team moves in.",
-        "description": "Short answers for developers, brokers, and operators evaluating Qentrah as the shared workspace layer.",
+        "description": "Short answers for teams evaluating Qentrah as the shared workspace layer.",
         "items": [
           {
             "question": "Who is Qentrah built for?",
-            "answer": "Qentrah is built for real estate developers, brokerage teams, and operators who need one trusted workspace for projects, units, clients, approvals, and handoffs."
+            "answer": "Qentrah is built for teams that need one trusted workspace for projects, assets, tasks, clients, approvals, and handoffs."
           },
           {
             "question": "How does onboarding work?",
-            "answer": "Teams can start with the workspace, then map their project, inventory, client, and organization flows with the Qentrah team when deeper setup is needed."
+            "answer": "Teams can start with the workspace, then map their project, asset, client, calendar, and organization flows with the Qentrah team when deeper setup is needed."
           },
           {
-            "question": "Can developers and brokers work from the same data?",
-            "answer": "Yes. Qentrah is designed around shared project and inventory context so developers, brokers, and operations teams can act from the same verified records."
+            "question": "Can different teams work from the same data?",
+            "answer": "Yes. Qentrah is designed around shared project and asset context so operators, client teams, and partners can act from the same verified records."
           },
           {
             "question": "How is pricing handled?",
@@ -639,8 +641,8 @@
     "about": {
       "hero": {
         "eyebrow": "Our Vision",
-        "title": "A new era for real estate operations.",
-        "description": "We believe that clarity, trust, and shared operational truth are the foundation of a modern real estate market. Our mission is to build the infrastructure that empowers teams to move with confidence."
+        "title": "A new era for workspace operations.",
+        "description": "We believe that clarity, trust, and shared operational truth are the foundation of modern work. Our mission is to build the infrastructure that empowers teams to move with confidence."
       },
       "signals": {
         "source": {
@@ -651,7 +653,7 @@
         "roles": {
           "label": "Roles",
           "value": "Many",
-          "helper": "Developers, brokers, and operators see the context they need."
+          "helper": "Operators, client teams, and partners see the context they need."
         },
         "trust": {
           "label": "Trust",
@@ -670,7 +672,7 @@
           },
           {
             "title": "Shared context",
-            "description": "Developers and brokers work from the same project and inventory truth."
+            "description": "Teams and partners work from the same project and asset truth."
           },
           {
             "title": "Trust before motion",
@@ -686,7 +688,7 @@
       "cta": {
         "eyebrow": "Meet the workspace",
         "title": "See how Qentrah fits your operating model.",
-        "description": "Bring your project, brokerage, or integration workflow and we will map it into the workspace.",
+        "description": "Bring your project, client, or integration workflow and we will map it into the workspace.",
         "primary": "Enter workspace",
         "secondary": "Contact team"
       },
@@ -696,7 +698,7 @@
         "items": [
           {
             "title": "The Fragmented Reality",
-            "description": "Real estate was a world of silos. Developers, brokers, and clients were speaking different languages, relying on stale data and manual handoffs."
+            "description": "Work was split across silos. Teams, partners, and clients were speaking different languages, relying on stale data and manual handoffs."
           },
           {
             "title": "The Spark",
@@ -708,7 +710,7 @@
           },
           {
             "title": "The Result",
-            "description": "Today, Qentrah is the operating system for the next generation of institutional real estate teams."
+            "description": "Today, Qentrah is becoming the operating system for the next generation of workspace teams."
           }
         ]
       },
@@ -718,16 +720,16 @@
           {
             "name": "Ahmed",
             "role": "Technical Vision & Engineering",
-            "bio": "Ahmed leads the technical architecture and engineering direction of Qentrah, transforming complex real estate workflows into seamless digital systems.",
+            "bio": "Ahmed leads the technical architecture and engineering direction of Qentrah, transforming complex workflows into seamless digital systems.",
             "quote": "The best way to predict the future is to create it.",
             "author": "Peter Drucker"
           },
           {
             "name": "Abdulmonem",
-            "role": "Real Estate Expert",
-            "bio": "With deep roots in the real estate sector, Abdulmonem ensures that every feature in Qentrah is grounded in real-world expertise and institutional standards.",
-            "quote": "Real estate is the basis of all wealth.",
-            "author": "Theodore Roosevelt"
+            "role": "Operations Expert",
+            "bio": "With deep roots in operational work, Abdulmonem ensures that every feature in Qentrah is grounded in real-world expertise and institutional standards.",
+            "quote": "Clarity is the basis of execution.",
+            "author": "Qentrah"
           }
         ]
       }
@@ -787,15 +789,15 @@
       "hero": {
         "eyebrow": "Developer workspace",
         "title": "Control launch readiness from one operational surface.",
-        "description": "Qentrah helps development teams prepare projects, verify inventory, coordinate with brokers, and keep market-facing data clear before it moves.",
+        "description": "Qentrah helps operations teams prepare projects, verify records, coordinate with clients, and keep business data clear before it moves.",
         "primary": "Enter workspace",
         "secondary": "Contact team"
       },
       "signals": {
         "inventory": {
-          "label": "Inventory",
+          "label": "Records",
           "value": "Synced",
-          "helper": "Unit records, media, prices, and availability stay aligned."
+          "helper": "Company records, media, values, and status stay aligned."
         },
         "approvals": {
           "label": "Approvals",
@@ -810,16 +812,16 @@
         "market": {
           "label": "Market",
           "value": "Ready",
-          "helper": "Brokers receive context they can act on."
+          "helper": "Teams receive context they can act on."
         }
       },
       "panel": {
         "eyebrow": "Project command",
         "title": "See the project the way operations sees it.",
-        "description": "The developer route focuses on project state, available units, launch blockers, and the broker context needed to move inventory.",
+        "description": "The operations route focuses on project state, available assets, launch blockers, and the team context needed to move records.",
         "stats": {
           "projects": { "label": "Projects", "value": "42" },
-          "units": { "label": "Units", "value": "1.8k" },
+          "assets": { "label": "Assets", "value": "1.8k" },
           "health": { "label": "Health", "value": "99%" }
         }
       },
@@ -830,7 +832,7 @@
         "items": [
           {
             "title": "Prepare the project record",
-            "description": "Centralize project identity, media, unit counts, prices, and launch details."
+            "description": "Centralize project identity, media, asset counts, prices, and launch details."
           },
           {
             "title": "Resolve approval states",
@@ -838,23 +840,23 @@
           },
           {
             "title": "Share market-ready context",
-            "description": "Give brokers the verified information they need without fragmented handoffs."
+            "description": "Give teams the verified information they need without fragmented handoffs."
           }
         ]
       },
       "cta": {
         "eyebrow": "Developer onboarding",
         "title": "Bring your launch workflow into Qentrah.",
-        "description": "Start in the workspace or contact the team to map projects, units, and approvals.",
+        "description": "Start in the workspace or contact the team to map projects, assets, and approvals.",
         "primary": "Enter workspace",
         "secondary": "Contact team"
       }
     },
     "broker": {
       "hero": {
-        "eyebrow": "Broker workspace",
+        "eyebrow": "Team workspace",
         "title": "Turn client intent into the next clear action.",
-        "description": "Qentrah helps brokers organize follow-ups, inspect inventory, prepare viewings, and keep developer context close to the client conversation.",
+        "description": "Qentrah helps teams organize follow-ups, inspect assets, prepare meetings, and keep operational context close to the client conversation.",
         "primary": "Enter workspace",
         "secondary": "Contact team"
       },
@@ -862,7 +864,7 @@
         "clients": {
           "label": "Clients",
           "value": "Active",
-          "helper": "Buyer and investor context stays tied to next actions."
+          "helper": "Client and investor context stays tied to next actions."
         },
         "followups": {
           "label": "Follow-ups",
@@ -872,18 +874,18 @@
         "inventory": {
           "label": "Inventory",
           "value": "Clear",
-          "helper": "Available units and launch state are easier to trust."
+          "helper": "Available records and launch state are easier to trust."
         },
         "ready": {
           "label": "Viewings",
           "value": "Ready",
-          "helper": "Plans connect to verified project and unit context."
+          "helper": "Plans connect to verified project and record context."
         }
       },
       "panel": {
-        "eyebrow": "Broker desk",
-        "title": "Keep the client, inventory, and developer context together.",
-        "description": "The broker route focuses on practical movement: match the client, check availability, plan the viewing, and keep the team aligned.",
+        "eyebrow": "Operations desk",
+        "title": "Keep the client, asset, and operational context together.",
+        "description": "The team route focuses on practical movement: match the client, check availability, plan the meeting, and keep the team aligned.",
         "stats": {
           "matches": { "label": "Matches", "value": "Live" },
           "viewings": { "label": "Viewings", "value": "Today" },
@@ -891,40 +893,40 @@
         }
       },
       "workflow": {
-        "eyebrow": "Broker flow",
+        "eyebrow": "Team flow",
         "title": "Search, coordinate, follow through.",
-        "description": "The route explains the workspace through the broker's daily operating rhythm.",
+        "description": "The route explains the workspace through the team's daily operating rhythm.",
         "items": [
           {
-            "title": "Find the right inventory",
-            "description": "Start from current project and unit context instead of stale lists."
+            "title": "Find the right records",
+            "description": "Start from current project and asset context instead of stale lists."
           },
           {
             "title": "Coordinate with confidence",
-            "description": "Developer information, client notes, and availability sit in one place."
+            "description": "Operational information, client notes, and availability sit in one place."
           },
           {
             "title": "Plan the next follow-up",
-            "description": "Viewing plans and client actions stay visible beside the records they depend on."
+            "description": "Meeting plans and client actions stay visible beside the records they depend on."
           }
         ]
       },
       "cta": {
-        "eyebrow": "Broker onboarding",
+        "eyebrow": "Operations onboarding",
         "title": "Bring your follow-up flow into Qentrah.",
-        "description": "Start in the workspace or contact the team to map clients, inventory, and viewing work.",
+        "description": "Start in the workspace or contact the team to map clients, assets, and operational work.",
         "primary": "Enter workspace",
         "secondary": "Contact team"
       }
     },
     "footer": {
-      "description": "A workspace-native platform for property teams, project operations, broker coordination, and trusted real estate data.",
+      "description": "A workspace-native platform for projects, clients, teams, assets, calendars, and trusted business data.",
       "copyright": "2026 Qentrah Platform. All rights reserved.",
       "platform": "Platform",
       "workspace": "Workspace",
       "dashboard": "Workspace",
       "developers": "Developers",
-      "brokers": "Brokers",
+      "brokers": "Clients",
       "about": "About",
       "contact": "Contact",
       "documentation": "Docs",
@@ -932,7 +934,7 @@
       "legal": "Legal",
       "privacy": "Privacy",
       "terms": "Terms",
-      "tagline": "Workspace infrastructure for real estate teams",
+      "tagline": "Workspace infrastructure for operating teams",
       "developerReady": "Developer ready",
       "aiNative": "AI native",
       "verifiedOps": "Verified ops"
@@ -940,7 +942,7 @@
   },
   "signin": {
     "title": "Welcome Back",
-    "description": "Sign in to access your real estate data workspace.",
+    "description": "Sign in to access your workspace.",
     "google": "Sign in with Google",
     "apple": "Continue with Apple",
     "or": "or",
@@ -969,10 +971,10 @@
     "connectingEmail": "Checking account...",
     "verifyingCode": "Verifying code...",
     "createAccount": "Create an Account",
-    "createAccountDesc": "Join the central synchronization engine for Saudi real estate.",
-    "visualEyebrow": "Market truth, partner motion, workspace action",
-    "visualTitle": "One operating desk for the real estate day.",
-    "visualDescription": "Qentrah keeps the work close to the signal: inventory, clients, approvals, and the next move.",
+    "createAccountDesc": "Join the workspace operating system for connected teams.",
+    "visualEyebrow": "Work truth, team motion, workspace action",
+    "visualTitle": "One operating desk for the workday.",
+    "visualDescription": "Qentrah keeps the work close to the signal: assets, clients, approvals, and the next move.",
     "encrypted": "End-to-end encrypted",
     "clearTerms": "Clear legal terms",
     "agreementPrefix": "By continuing, you agree to our",
@@ -999,13 +1001,13 @@
     "viewProfile": "View Profile",
     "logout": "Logout",
     "logoutTitle": "Are you sure you want to logout?",
-    "logoutDescription": "You will need to sign in again to access your real estate data workspace.",
+    "logoutDescription": "You will need to sign in again to access your workspace data workspace.",
     "cancel": "Cancel"
   },
   "Assistant": {
     "placeholderDefault": "How can I help you today?",
     "placeholderDeveloper": "Ask about projects, synchronization, or legal files...",
-    "placeholderBroker": "Search units, verify claim status, or generate reports...",
+    "placeholderBroker": "Search assets, verify claim status, or generate reports...",
     "attach": "Attach",
     "voiceTitle": "Voice",
     "recordingNow": "Recording...",
@@ -1028,7 +1030,7 @@
     "suggestions": {
       "findClient": "Find client",
       "prepareViewing": "Plan viewing",
-      "checkInventory": "Check units",
+      "checkInventory": "Check assets",
       "verifyLaunch": "Launch check"
     }
   },
@@ -1039,6 +1041,10 @@
     "syncEfficiency": "The synchronization engine is running at 99.2% efficiency.",
     "actionRequired": "Action Required",
     "quickTools": "Quick Tools",
+    "create": "Create",
+    "createClient": "Client",
+    "createProject": "Project",
+    "createAsset": "Asset",
     "findData": "Find data",
     "newProject": "New Project",
     "searchAnything": "Search anything...",
@@ -1046,8 +1052,10 @@
     "searchTitle": "Workspace search",
     "searchNavigation": "Navigation",
     "searchProjects": "Projects",
-    "searchUnits": "Units",
+    "searchAssets": "Assets",
     "searchClients": "Clients",
+    "searchTasks": "Tasks",
+    "searchOpportunities": "Opportunities",
     "searchNoResults": "No matching records found.",
     "searchError": "Some results could not load. Navigation is still available."
   },
@@ -1068,7 +1076,7 @@
   "Projects": {
     "eyebrow": "Projects overview",
     "title": "Projects",
-    "subtitle": "Track project status, value, units, and recent records through clear manageable cards.",
+    "subtitle": "Track project status, value, assets, and recent records through clear manageable cards.",
     "add": "Add Project",
     "stats": {
       "size": "Portfolio Size",
@@ -1081,6 +1089,11 @@
       "newest": "Newest",
       "filters": {
         "all": "All",
+        "active": "Active",
+        "planned": "Planned",
+        "paused": "Paused",
+        "completed": "Completed",
+        "archived": "Archived",
         "approved": "Approved",
         "pending": "Pending",
         "draft": "Draft",
@@ -1088,8 +1101,17 @@
       }
     },
     "card": {
-      "units": "Units",
+      "assets": "Assets",
+      "assetCount": "assets",
       "value": "Value",
+      "owner": "Owner",
+      "resources": "Resources",
+      "openTasks": "Open tasks",
+      "due": "Due",
+      "progress": "Progress",
+      "unassigned": "Unassigned",
+      "noDue": "No date",
+      "noNextAction": "No next action written yet.",
       "edit": "Edit",
       "delete": "Delete",
       "actions": "Project actions"
@@ -1120,7 +1142,8 @@
         "updated": "Updated",
         "city": "City",
         "type": "Type",
-        "units": "Units",
+        "assets": "Assets",
+        "assetCount": "Assets",
         "value": "Value"
       },
       "docs": {
@@ -1143,7 +1166,7 @@
       "devLabel": "Developer",
       "cityLabel": "City",
       "areaLabel": "Area",
-      "unitsLabel": "Units",
+      "assetsLabel": "Assets",
       "priceLabel": "Price Range",
       "imageLabel": "Image URL",
       "typeLabel": "Project Type",
@@ -1214,8 +1237,8 @@
       "averagePriceHelp": "The main price shown when the project needs one clear market-facing value.",
       "averagePricePlaceholder": "EGP 7,350,000",
       "projectPricesLabel": "Prices inside this project",
-      "projectPricesHelp": "Add one row per unit type, release, phase, or custom price point inside the project.",
-      "projectPriceLabelPlaceholder": "Unit mix or release",
+      "projectPricesHelp": "Add one row per asset type, release, phase, or custom price point inside the project.",
+      "projectPriceLabelPlaceholder": "Asset mix or release",
       "projectPriceValuePlaceholder": "EGP 5.8M",
       "addProjectPrice": "Add price",
       "removeProjectPrice": "Remove price",
@@ -1230,14 +1253,19 @@
       "previewDocuments": "Documents"
     },
     "types": {
+      "workspace": "Workspace project",
       "Residential": "Residential",
       "Commercial": "Commercial",
       "Mixed Use": "Mixed Use",
+      "Workspace item": "Workspace item",
+      "Record": "Record",
+      "Asset": "Asset",
       "Apartment": "Apartment",
       "Studio": "Studio",
       "Villa": "Villa",
       "Townhouse": "Townhouse",
       "Penthouse": "Penthouse",
+      "Priority item": "Priority item",
       "Compound": "Compound",
       "Office": "Office",
       "Retail": "Retail"
@@ -1249,10 +1277,10 @@
       "attach": "Attach File"
     }
   },
-  "Properties": {
+  "Assets": {
     "eyebrow": "Inventory command center",
-    "title": "Properties",
-    "add": "Add Unit",
+    "title": "Assets",
+    "add": "Add Asset",
     "stats": {
       "size": "Inventory Size",
       "available": "Available",
@@ -1260,7 +1288,7 @@
       "drafts": "Drafts"
     },
     "toolbar": {
-      "search": "Search units…",
+      "search": "Search assets…",
       "priceHigh": "Price High",
       "filters": {
         "all": "All",
@@ -1268,43 +1296,47 @@
         "pending": "Pending",
         "reserved": "Reserved",
         "sold": "Sold",
-        "draft": "Draft"
+        "draft": "Draft",
+        "active": "Active",
+        "review": "In review",
+        "approved": "Approved",
+        "archived": "Archived"
       }
     },
     "card": {
       "area": "Area",
       "layout": "Layout",
-      "beds": "B",
-      "baths": "BA"
+      "beds": "Cap",
+      "baths": "Alloc"
     },
     "empty": {
-      "title": "No units found",
-      "desc": "Adjust filters or create the first property unit."
+      "title": "No assets found",
+      "desc": "Adjust filters or create the first asset."
     },
     "delete": {
-      "title": "Delete unit?",
+      "title": "Delete asset?",
       "desc": "This removes {name} from the mock inventory."
     },
     "detail": {
-      "loadingTitle": "Loading unit",
-      "loadingDesc": "Unit data is syncing from Convex.",
-      "notFound": "Unit not found",
-      "notFoundDesc": "The requested property unit was not found in the current workspace.",
-      "back": "Back to properties",
+      "loadingTitle": "Loading asset",
+      "loadingDesc": "Asset data is syncing from Convex.",
+      "notFound": "Asset not found",
+      "notFoundDesc": "The requested asset was not found in the current workspace.",
+      "back": "Back to assets",
       "edit": "Edit",
       "delete": "Delete",
-      "recordTitle": "Commercial Record",
-      "recordSubtitle": "Unit profile",
-      "valueTitle": "Asking price",
-      "valueDesc": "Commercial value shown to sales and client-facing workflows.",
+      "recordTitle": "Workspace record",
+      "recordSubtitle": "Resource profile",
+      "valueTitle": "Value",
+      "valueDesc": "Operational value shown to team and client-facing workflows.",
       "readinessTitle": "Record readiness",
-      "readinessScore": "Ready for sales",
-      "mediaTitle": "Unit media",
-      "mediaDesc": "Upload images and one overview video saved against this unit.",
+      "readinessScore": "Ready for work",
+      "mediaTitle": "Resource media",
+      "mediaDesc": "Upload images or one overview video saved against this record.",
       "mediaPick": "Choose media",
       "mediaUnsupported": "Only images and videos can be uploaded in Media.",
-      "filesTitle": "Unit files",
-      "filesDesc": "Upload PDF documents, contracts, and supporting files for this unit.",
+      "filesTitle": "Resource files",
+      "filesDesc": "Upload PDF documents, contracts, and supporting files for this record.",
       "filesPick": "Choose files",
       "filesUnsupported": "Only PDF documents can be uploaded in Files.",
       "tabs": {
@@ -1315,17 +1347,18 @@
       },
       "linkedClients": {
         "title": "Linked clients",
-        "subtitle": "Clients connected to this unit sales workflow",
+        "subtitle": "Clients connected to this resource workflow",
         "linkClient": "Link client",
         "emptyTitle": "No linked clients yet",
-        "emptyDesc": "Link a client to track interest, viewing, offer, or rejection status.",
+        "emptyDesc": "Link a client to track interest, review, proposal, or rejection status.",
         "unavailable": "Client unavailable",
         "unlink": "Unlink",
         "linked": "Client linked.",
         "unlinked": "Client unlinked.",
         "modalTitle": "Link client",
-        "modalDesc": "Search clients and choose the sales status for this unit.",
+        "modalDesc": "Search clients and choose the link status for this resource.",
         "search": "Search clients",
+        "client": "Client",
         "linkStatus": "Link status",
         "notes": "Notes",
         "noClients": "No clients are available.",
@@ -1337,8 +1370,8 @@
         "statuses": {
           "interested": "Interested",
           "shortlisted": "Shortlisted",
-          "viewing": "Viewing",
-          "offer": "Offer",
+          "review": "Review",
+          "proposal": "Proposal",
           "rejected": "Rejected"
         }
       },
@@ -1356,13 +1389,16 @@
       "readiness": {
         "media": "Cover media",
         "description": "Client description",
-        "commercial": "Price and area"
+        "commercial": "Scope and context"
       },
       "labels": {
         "project": "Project",
-        "area": "Area",
-        "beds": "Bedrooms",
-        "baths": "Bathrooms",
+        "area": "Scope",
+        "scope": "Scope",
+        "location": "Location",
+        "reference": "Reference",
+        "beds": "Capacity",
+        "baths": "Allocation",
         "city": "City",
         "type": "Type",
         "purpose": "Purpose",
@@ -1372,33 +1408,33 @@
       }
     },
     "form": {
-      "createTitle": "Create Unit",
-      "editTitle": "Edit Unit",
+      "createTitle": "Create Asset",
+      "editTitle": "Edit Asset",
       "eyebrow": "Inventory CRUD",
-      "subtitle": "Create a complete operational unit record backed by the workspace database.",
-      "nameLabel": "Unit Name",
+      "subtitle": "Create a complete operational asset record backed by the workspace database.",
+      "nameLabel": "Asset name",
       "projectLabel": "Project",
-      "projectHelp": "Choose the project that owns this unit so inventory, clients, and schedules stay connected.",
+      "projectHelp": "Choose the project that owns this asset so inventory, clients, and schedules stay connected.",
       "projectSearchLabel": "Search projects…",
       "projectPickerPlaceholder": "Select project",
       "projectPickerEmpty": "No projects are available.",
       "projectPickerNoResults": "No projects match your search.",
-      "projectPickerStandalone": "No project, standalone unit",
+      "projectPickerStandalone": "No project, standalone asset",
       "projectPickerLoading": "Loading projects…",
       "projectPickerError": "Projects could not be loaded.",
-      "standaloneProject": "Standalone unit",
+      "standaloneProject": "Standalone asset",
       "cityLabel": "City",
       "areaLabel": "Area",
-      "areaHelp": "Use the saleable or operational unit area shown to the team and clients.",
-      "priceLabel": "Price",
-      "priceHelp": "The asking price for this unit. It appears in sales and client-facing workflows.",
-      "bedsLabel": "Bedrooms",
-      "bathsLabel": "Bathrooms",
+      "areaHelp": "Use the operational asset area shown to the team and clients.",
+      "priceLabel": "Value",
+      "priceHelp": "The working value for this resource. It appears in team and client-facing workflows.",
+      "bedsLabel": "Capacity",
+      "bathsLabel": "Allocation",
       "imageLabel": "Image URL",
-      "typeLabel": "Unit Type",
-      "typeHelp": "Classifies the unit for inventory filters, matching, and client comparisons.",
+      "typeLabel": "Asset type",
+      "typeHelp": "Classifies the asset for inventory filters, matching, and client comparisons.",
       "purposeLabel": "Purpose",
-      "purposeHelp": "Marks whether this unit is offered for sale or rent.",
+      "purposeHelp": "Marks whether this asset is available for the selected workflow.",
       "statusLabel": "Status",
       "statusHelp": "Controls availability across inventory, project detail, and client workflows.",
       "visibilityLabel": "External visibility",
@@ -1406,31 +1442,31 @@
       "visibilityPrivate": "Private",
       "visibilityPublic": "Public",
       "descLabel": "Description",
-      "saveBtn": "Save Unit",
-      "createBtn": "Create Unit",
+      "saveBtn": "Save Asset",
+      "createBtn": "Create Asset",
       "stepInformation": "Information",
       "stepGallery": "Media",
       "stepDocuments": "Documents",
       "stepDetails": "Details",
-      "informationTitle": "Unit basics",
-      "informationDesc": "Connect this unit to a project, city, area, and commercial value before adding media.",
-      "galleryTitle": "Unit media",
-      "galleryDesc": "Add images and one overview video. New files are queued until the unit is saved.",
-      "documentsTitle": "Unit documents",
-      "documentsDesc": "Attach contracts, PDFs, and supporting files. Documents are optional during creation but available in the unit file tab.",
-      "detailsTitle": "Availability and layout",
-      "detailsDesc": "Set the unit layout, purpose, status, and the client-facing description.",
-      "galleryUploaderTitle": "Unit media",
-      "galleryUploaderDesc": "Add unit images and one overview video. The first image can become the cover.",
+      "informationTitle": "Asset basics",
+      "informationDesc": "Connect this asset to a project, city, area, and commercial value before adding media.",
+      "galleryTitle": "Asset media",
+      "galleryDesc": "Add images and one overview video. New files are queued until the asset is saved.",
+      "documentsTitle": "Asset documents",
+      "documentsDesc": "Attach contracts, PDFs, and supporting files. Documents are optional during creation but available in the asset file tab.",
+      "detailsTitle": "Availability and context",
+      "detailsDesc": "Set the resource context, purpose, status, and the client-facing description.",
+      "galleryUploaderTitle": "Asset media",
+      "galleryUploaderDesc": "Add asset images and one overview video. The first image can become the cover.",
       "galleryPick": "Choose media",
       "galleryQueued": "Queued media",
-      "galleryVideoLimit": "Only one overview video can be added to a unit.",
-      "galleryUnsupported": "Only images and videos are supported for unit media.",
-      "documentsUploaderTitle": "Unit documents",
+      "galleryVideoLimit": "Only one overview video can be added to an asset.",
+      "galleryUnsupported": "Only images and videos are supported for asset media.",
+      "documentsUploaderTitle": "Asset documents",
       "documentsUploaderDesc": "Attach PDF documents and supporting files for operations.",
       "documentsPick": "Choose documents",
       "documentsQueued": "Queued documents",
-      "documentsUnsupported": "Only PDF documents are supported for unit files.",
+      "documentsUnsupported": "Only PDF documents are supported for asset files.",
       "uploadMedia": "Upload media",
       "uploadDocuments": "Upload documents",
       "uploadStatusQueued": "Queued",
@@ -1439,20 +1475,25 @@
       "uploadStatusFailed": "Failed",
       "uploadRemove": "Remove",
       "uploadRetry": "Retry",
-      "previewTitle": "Unit preview",
-      "previewName": "Unit name",
+      "previewTitle": "Asset preview",
+      "previewName": "Asset name",
       "previewProject": "Project",
       "previewCity": "City",
-      "previewDescription": "The unit description will appear here as you write it.",
-      "previewChecklist": "Unit readiness",
+      "previewDescription": "The asset description will appear here as you write it.",
+      "previewChecklist": "Asset readiness",
       "previewMedia": "Media",
       "previewDocuments": "Documents"
     },
     "types": {
+      "Workspace item": "Workspace item",
+      "Record": "Record",
+      "Asset": "Asset",
+      "workspace-record": "Workspace record",
       "Apartment": "Apartment",
       "Studio": "Studio",
       "Villa": "Villa",
       "Penthouse": "Penthouse",
+      "Priority item": "Priority item",
       "Compound": "Compound",
       "Office": "Office",
       "Retail": "Retail"
@@ -1462,39 +1503,48 @@
       "rent": "Rent"
     },
     "gallery": {
-      "cover": "Cover"
+      "cover": "Cover",
+      "add": "Add media",
+      "emptyTitle": "No visual reference yet",
+      "emptyDesc": "Attach screenshots, files, or short media when this record needs visual context."
     }
   },
   "ProjectDetails": {
     "back": "Back to Portfolio",
-    "edit": "Edit Asset",
+    "edit": "Edit project",
     "share": "Share",
     "tabs": {
       "overview": "Overview",
       "details": "Details",
-      "inventory": "Inventory",
+      "inventory": "Resources",
       "documents": "Documents",
       "activity": "Activity",
-      "sales": "Sales"
+      "sales": "Workstreams"
     },
     "overview": {
-      "mediaTitle": "Media and units",
-      "mediaDesc": "Everything the team needs to understand the project visually and operationally in one place.",
-      "unitsTitle": "Unit summary",
-      "unitsDesc": "Inventory and readiness state without repeated cards or distraction.",
-      "registryTitle": "Core details"
+      "mediaTitle": "Project command",
+      "mediaDesc": "References, files, and signals the team needs before moving work forward.",
+      "assetsTitle": "Resource summary",
+      "assetsDesc": "Resources and readiness state without repeated cards or distraction.",
+      "registryTitle": "Project fields"
+    },
+    "work": {
+      "status": "Status",
+      "progress": "Progress",
+      "openTasks": "Open tasks",
+      "resources": "Resources"
     },
     "gallery": {
-      "label": "Primary Asset Visual",
+      "label": "Primary project reference",
       "perspective": "Exterior Perspective.",
-      "vault": "Media Vault",
-      "title": "Project gallery",
-      "description": "Images and video used by the sales team to understand the project quickly.",
+      "vault": "Reference vault",
+      "title": "Project references",
+      "description": "Screenshots, diagrams, files, or short media used by the team to understand the work quickly.",
       "add": "Add media",
-      "emptyTitle": "No gallery media yet",
-      "emptyDesc": "Add project images or one overview video when the visual package is ready.",
-      "uploadTitle": "Add project media",
-      "uploadDesc": "Upload images or video for this project gallery.",
+      "emptyTitle": "No project references yet",
+      "emptyDesc": "Add screenshots, diagrams, or one overview video when the reference package is ready.",
+      "uploadTitle": "Add project reference",
+      "uploadDesc": "Upload images or video for this project reference set.",
       "uploadPick": "Choose media",
       "cover": "Cover"
     },
@@ -1516,7 +1566,7 @@
       "retry": "Retry"
     },
     "narrative": {
-      "title": "Asset Narrative"
+      "title": "Project narrative"
     },
     "config": {
       "title": "Configuration"
@@ -1537,42 +1587,42 @@
       "paymentPlan": "Payment Plan"
     },
     "registry": {
-      "title": "Registry Data",
-      "planNo": "Plan No.",
-      "plotNo": "Plot No.",
-      "postalIdentity": "Postal Identity"
+      "title": "Workspace fields",
+      "planNo": "Plan reference",
+      "plotNo": "Record reference",
+      "postalIdentity": "External identity"
     },
     "rega": {
-      "title": "REGA License",
-      "authNo": "Authorization No.",
-      "expires": "Exp: {date}"
+      "title": "Authorization",
+      "authNo": "Authorization reference",
+      "expires": "Expires: {date}"
     },
     "inventory": {
-      "title": "Units Inventory.",
-      "subtitle": "Active units within the project portfolio",
-      "addUnit": "Add Unit",
+      "title": "Project resources",
+      "subtitle": "Active records, files, and assets connected to this project",
+      "addUnit": "Add resource",
       "cards": "Card view",
       "table": "Table view",
-      "emptyTitle": "No units linked",
-      "emptyDesc": "Create or connect units to make this project operational.",
+      "emptyTitle": "No resources linked",
+      "emptyDesc": "Create or connect resources to make this project operational.",
       "cols": {
         "ref": "Reference",
         "type": "Type",
         "status": "Status",
-        "price": "Price (SAR)",
+        "price": "Value",
         "area": "Area",
         "layout": "Layout",
         "updated": "Updated"
       }
     },
     "activity": {
-      "subtitle": "Chronological ledger of asset lifecycle events",
+      "subtitle": "Chronological ledger of project tasks, resource changes, and handoffs",
       "emptyTitle": "No project activity yet",
-      "emptyDesc": "Real project activity will appear here after saved changes, uploads, and unit operations."
+      "emptyDesc": "Real project activity will appear here after saved changes, uploads, and asset operations."
     },
     "documents": {
-      "title": "Asset Documents",
-      "subtitle": "Manage and verify official project documentation",
+      "title": "Project documents",
+      "subtitle": "Manage project files, decisions, and operational documents",
       "upload": "Upload Files",
       "uploadModalTitle": "Upload project documents",
       "uploadModalDesc": "Attach PDFs and supporting files to the project record.",
@@ -1588,11 +1638,11 @@
     },
     "actions": {
       "projectTitle": "Project Actions",
-      "unitTitle": "Unit Actions",
+      "unitTitle": "Resource actions",
       "docTitle": "Document Actions",
-      "edit": "Edit Asset",
+      "edit": "Edit project",
       "share": "Share Intelligence",
-      "archive": "Archive Asset",
+      "archive": "Archive project",
       "view": "View",
       "duplicate": "Duplicate",
       "delete": "Delete",
@@ -1601,20 +1651,20 @@
       "apply": "Apply Files"
     },
     "sales": {
-      "title": "Sales Performance",
-      "subtitle": "Inventory absorption and revenue metrics",
+      "title": "Work movement",
+      "subtitle": "Project flow and handoff metrics",
       "metrics": {
-        "totalUnits": "Live Units",
-        "availableUnits": "Available",
-        "reservedUnits": "Reserved",
-        "soldUnits": "Sold"
+        "totalAssets": "Live resources",
+        "availableAssets": "Available",
+        "reservedAssets": "Reserved",
+        "soldAssets": "Sold"
       },
-      "pipelineTitle": "Inventory movement",
-      "emptyTitle": "No sales movement yet",
-      "emptyDesc": "Add units and client links before using the sales workspace.",
-      "nextTitle": "Next useful action",
-      "nextDesc": "Review reserved and pending units first. They are the closest records to operational follow-up.",
-      "nextEmptyDesc": "Create units first. Sales movement needs real inventory.",
+      "pipelineTitle": "Project flow",
+      "emptyTitle": "No movement yet",
+      "emptyDesc": "Add resources, tasks, or client links before using the workstream view.",
+      "nextTitle": "Next project action",
+      "nextDesc": "Review pending records first. They are the closest items to operational follow-up.",
+      "nextEmptyDesc": "Create resources first. Project movement needs real connected records.",
       "status": {
         "available": "Available",
         "reserved": "Reserved",
@@ -1631,6 +1681,8 @@
       "total": "Total Clients",
       "active": "Active",
       "investors": "Investors",
+      "people": "People",
+      "organizations": "Organizations",
       "appointments": "Appointments"
     },
     "toolbar": {
@@ -1638,7 +1690,10 @@
       "newest": "Newest",
       "filters": {
         "all": "All",
+        "person": "People",
+        "organization": "Organizations",
         "Buyer": "Buyers",
+        "Client": "Clients",
         "Tenant": "Tenants",
         "Investor": "Investors",
         "Broker": "Brokers"
@@ -1694,7 +1749,7 @@
       "tabs": {
         "activity": "Activity",
         "documents": "Documents",
-        "units": "Units"
+        "assets": "Assets"
       },
       "activity": {
         "subtitle": "Interaction History",
@@ -1708,8 +1763,9 @@
         "priority": "Priority",
         "dueDate": "Due date",
         "noDate": "No date",
-        "unit": "Unit",
-        "noUnit": "No unit",
+        "unit": "Asset",
+        "noUnit": "No asset",
+        "noAsset": "No asset",
         "notes": "Notes",
         "save": "Save",
         "complete": "Complete",
@@ -1728,34 +1784,34 @@
           "canceled": "Canceled"
         }
       },
-      "units": {
-        "title": "Client units",
+      "assets": {
+        "title": "Client assets",
         "subtitle": "Manage linked inventory without loading the full catalog on the page.",
         "linkedCount": "linked",
-        "linkUnit": "Link unit",
-        "linkUnitDesc": "Open inventory search, choose a status, and attach a unit to this client.",
-        "modalTitle": "Link a unit",
-        "modalDesc": "Search available inventory and select the unit to attach.",
-        "search": "Search units",
+        "linkAsset": "Link asset",
+        "linkAssetDesc": "Open asset search, choose a status, and attach an asset to this client.",
+        "modalTitle": "Link an asset",
+        "modalDesc": "Search available assets and select the record to attach.",
+        "search": "Search assets",
         "linkStatus": "Link status",
         "notes": "Notes",
-        "available": "Available units",
+        "available": "Available assets",
         "showing": "Showing {shown} of {total}",
-        "noAvailable": "No available units to link.",
-        "noResults": "No units match your search.",
-        "unitUnavailable": "Unit unavailable",
+        "noAvailable": "No available assets to link.",
+        "noResults": "No assets match your search.",
+        "assetUnavailable": "Asset unavailable",
         "price": "Price",
         "area": "Area",
-        "openUnit": "Open unit",
+        "openAsset": "Open asset",
         "unlink": "Unlink",
         "link": "Link",
-        "linked": "Unit linked.",
-        "unlinked": "Unit unlinked.",
+        "linked": "Asset linked.",
+        "unlinked": "Asset unlinked.",
         "statuses": {
           "interested": "Interested",
           "shortlisted": "Shortlisted",
-          "viewing": "Viewing",
-          "offer": "Offer",
+          "review": "Review",
+          "proposal": "Proposal",
           "rejected": "Rejected"
         }
       },
@@ -1817,13 +1873,18 @@
       "createTitle": "Register Client",
       "editTitle": "Edit Client",
       "eyebrow": "Client Management",
-      "subtitle": "Create or update a CRM record in the mock Zustand store.",
+      "subtitle": "Create or update a workspace client record.",
       "nameLabel": "Full Name",
+      "namePlaceholder": "Client or company name",
       "emailLabel": "Email",
+      "emailPlaceholder": "work@example.com",
       "phoneLabel": "Phone",
+      "phonePlaceholder": "Phone number",
       "ageLabel": "Age",
       "budgetLabel": "Budget",
-      "interestLabel": "Property Interest",
+      "budgetPlaceholder": "Working range or value",
+      "interestLabel": "Interest",
+      "interestPlaceholder": "Need, product, service, or resource",
       "typeLabel": "Client Type",
       "statusLabel": "Status",
       "priorityLabel": "Priority",
@@ -1831,12 +1892,18 @@
       "visibilityLabel": "External visibility",
       "visibilityPrivate": "Private",
       "visibilityPublic": "Public",
+      "visibilityTeam": "Team",
+      "visibilityWorkspace": "Workspace",
       "actionLabel": "Next Action",
+      "actionPlaceholder": "Next follow-up or handoff",
       "issueLabel": "Open Issue",
       "saveBtn": "Save Client",
       "createBtn": "Create Client"
     },
     "types": {
+      "person": "Person",
+      "organization": "Organization",
+      "Client": "Client",
       "Buyer": "Buyer",
       "Tenant": "Tenant",
       "Investor": "Investor",
@@ -1848,13 +1915,16 @@
       "urgent": "Urgent"
     },
     "statuses": {
+      "new": "New",
+      "nurture": "Nurturing",
       "active": "Active",
-      "inactive": "Inactive"
+      "inactive": "Inactive",
+      "archived": "Archived"
     },
     "stages": {
       "new": "New",
       "qualified": "Qualified",
-      "viewing": "Viewing",
+      "review": "Review",
       "negotiation": "Negotiation",
       "closed": "Closed"
     }
@@ -2013,6 +2083,7 @@
         "canDoDescription": "The agent cannot work outside these permissions. Revoke this link or make a new one to change the allowed work.",
         "name": "Name",
         "startWith": "Start with",
+        "expiry": "Expires",
         "principal": "Runs as",
         "instructions": "What should this agent know?",
         "deleteConfirmation": "I understand this link can remove selected records, and I want to allow that work.",
@@ -2021,40 +2092,49 @@
       },
       "principal": {
         "user": {
-          "title": "My user",
-          "description": "The agent keeps my live permissions. If my access changes, the link is clamped."
+          "title": "Personal link",
+          "description": "Runs with your current role. If your access changes, this link is reduced automatically."
         },
         "organization": {
-          "title": "Organization",
-          "description": "The agent runs for this workspace and is visible to workspace members."
+          "title": "Workspace link",
+          "description": "Runs for the workspace and can be reviewed by organization managers."
         }
       },
       "defaults": {
-        "instructions": "Help the team manage clients, apartments, tasks, and calendar work inside this organization."
+        "instructions": "Help the team manage clients, assets, tasks, and calendar work inside this organization."
       },
       "presets": {
         "client": "Client operator",
-        "apartment": "Apartment operator",
-        "calendar": "Calendar assistant",
-        "full": "Full workspace",
-        "custom": "Custom"
+        "asset": "Asset operator",
+        "calendar": "Calendar coordinator",
+        "full": "Workspace operator",
+        "custom": "Manual selection"
+      },
+      "expiry": {
+        "5h": "5 hours",
+        "14d": "14 days",
+        "30d": "30 days",
+        "never": "Never"
       },
       "resources": {
         "organization": "Organization",
         "client": "Clients",
-        "property": "Apartments",
+        "property": "Assets",
+        "asset": "Assets",
         "project": "Projects",
         "calendar": "Calendar",
         "task": "Tasks",
         "media": "Documents"
       },
       "resourceHelp": {
-        "client": "Profiles, pipeline, links to apartments.",
-        "property": "Inventory, open apartment, specific field edits.",
-        "project": "Development context and project records.",
-        "calendar": "Today, month, scheduling and meeting changes.",
-        "task": "Client work, due dates, completion.",
-        "media": "List files and attach URL-backed documents."
+        "organization": "Read the workspace profile, identity, and basic operating context.",
+        "client": "Read and manage people or companies, relationship notes, pipeline state, and linked work.",
+        "property": "Read and manage assets, operational inventory, status, ownership context, and attached records.",
+        "asset": "Read and manage assets, operational inventory, status, ownership context, and attached records.",
+        "project": "Read and manage project records, delivery context, linked clients, assets, and team work.",
+        "calendar": "Read and manage meetings, deadlines, reminders, and scheduled team work.",
+        "task": "Read and manage tasks, assignees, due dates, status, and follow-up work.",
+        "media": "Read files and attach URL-backed documents to workspace records."
       },
       "actions": {
         "read": "View",
@@ -2148,7 +2228,7 @@
       "resources": {
         "organization": "Organization",
         "client": "Clients",
-        "property": "Apartments",
+        "property": "Workspace items",
         "project": "Projects",
         "calendar": "Calendar",
         "task": "Tasks",
@@ -2211,7 +2291,7 @@
       "lessIsMoreHint": "Less is more: invite people on the team table, create work roles here.",
       "manageWorkRoles": "Custom permissions",
       "templatesTitle": "Start from a work role",
-      "templatesDesc": "Choose a real estate operations template or start blank. Templates are copied into your new work role and never change the protected built-in roles.",
+      "templatesDesc": "Choose a workspace operations template or start blank. Templates are copied into your new work role and never change the protected built-in roles.",
       "templateSelect": "Start from",
       "templateBlank": "Blank custom work role",
       "defaultLabels": {
@@ -2223,18 +2303,18 @@
         "owner": "Owner",
         "operationsManager": "Operations Manager",
         "projectManager": "Project Manager",
-        "propertyManager": "Property Manager",
+        "propertyManager": "Asset Manager",
         "crmSales": "CRM / Sales",
         "calendarCoordinator": "Calendar Coordinator",
         "viewer": "Viewer"
       },
       "templateHelp": {
-        "owner": "Can run the organization, manage people, work roles, projects, properties, clients, calendar, integrations, API keys, and connected apps.",
-        "operationsManager": "Can manage daily operations across projects, properties, clients, calendar, people, and core integrations.",
-        "projectManager": "Can view, add, manage, and remove projects; can manage related properties, clients, and calendar work.",
-        "propertyManager": "Can view, add, manage, and remove properties; can coordinate projects, clients, and calendar work.",
-        "crmSales": "Can manage clients and sales work, view available projects and properties, and coordinate calendar activity.",
-        "calendarCoordinator": "Can manage schedules and view the people, projects, properties, and clients needed for appointments.",
+        "owner": "Can run the organization, manage people, work roles, projects, assets, clients, calendar, integrations, API keys, and connected apps.",
+        "operationsManager": "Can manage daily operations across projects, assets, clients, calendar, people, and core integrations.",
+        "projectManager": "Can view, add, manage, and remove projects; can manage related assets, clients, and calendar work.",
+        "propertyManager": "Can view, add, manage, and remove assets; can coordinate projects, clients, and calendar work.",
+        "crmSales": "Can manage clients and sales work, view available projects and assets, and coordinate calendar activity.",
+        "calendarCoordinator": "Can manage schedules and view the people, projects, assets, and clients needed for appointments.",
         "viewer": "Can view organization work without changing records."
       },
       "useTemplate": "Use template",
@@ -2267,7 +2347,7 @@
         "team": "Teams",
         "member": "People",
         "project": "Projects",
-        "property": "Properties",
+        "property": "Assets",
         "client": "Clients / CRM",
         "task": "Tasks",
         "calendar": "Calendar",
@@ -2282,8 +2362,8 @@
         "organization": "Company name, logo, workspace identity, and organization profile settings.",
         "team": "Internal teams and groups used to organize people.",
         "member": "People who can access this organization.",
-        "project": "Real estate projects, development pipelines, and project records.",
-        "property": "Property listings, units, inventory, and property records.",
+        "project": "Workspace projects, development pipelines, and project records.",
+        "property": "Workspace assets, inventory, and operational records.",
         "client": "Clients, leads, sales pipeline, and CRM records.",
         "task": "Client tasks, next actions, and follow-up work.",
         "calendar": "Appointments, site visits, reminders, and team schedules.",
@@ -2530,7 +2610,7 @@
       "appDetails": {
         "icloud": {
           "category": "Asset Storage & Synchronization",
-          "valueProp": "Seamlessly bind Apple iCloud Drive folders to your Qentrah listings. Upload floor plans, HD property photos, or contract PDFs on your Mac and see them sync instantly into the workspace pipeline.",
+          "valueProp": "Seamlessly bind Apple iCloud Drive folders to your Qentrah listings. Upload floor plans, HD asset photos, or contract PDFs on your Mac and see them sync instantly into the workspace pipeline.",
           "scopes": {
             "read": "Allows Qentrah to read listing media, PDF blueprints, and client-submitted photos directly from your iCloud folders.",
             "write": "Allows Qentrah to automatically back up signed sales contracts, brokerage disclosures, and invoices directly into your iCloud Drive directory."
@@ -2555,9 +2635,9 @@
           "valueProp": "Automatically sync showing slots, client viewing appointments, and open-house calendar events in Qentrah directly to your macOS Apple Calendar. Never double-book another listing showing.",
           "scopes": {
             "read": "Retrieve client bookings and personal appointments on your Apple Calendar to show precise availability slots on listing pages.",
-            "write": "Create, schedule, and update property inspection events and client showings directly into your Apple Calendar."
+            "write": "Create, schedule, and update workspace inspection events and client showings directly into your Apple Calendar."
           },
-          "videoTitle": "Demo: Real Estate Showing Schedules with iCloud Calendar",
+          "videoTitle": "Demo: Workspace Schedules with iCloud Calendar",
           "videoDuration": "1:55",
           "screenshotTitle": "iCloud Calendar Synced Showings Slots",
           "screenshot2Title": "iCloud Calendar Showing Slot Dispatcher",
@@ -2576,7 +2656,7 @@
         },
         "contacts": {
           "category": "CRM & Contacts",
-          "valueProp": "Bridge the gap between your real estate CRM database and your local macOS Contacts book. New customer leads added inside Qentrah will automatically populate in your contacts list with matching labels.",
+          "valueProp": "Bridge the gap between your workspace CRM database and your local macOS Contacts book. New customer leads added inside Qentrah will automatically populate in your contacts list with matching labels.",
           "scopes": {
             "read": "Enables reading client contact cards to quickly resolve CRM details or import phone number lists.",
             "write": "Enables pushing brokerage phone numbers, buyer/seller profiles, and showing lead contact sheets directly to your local Apple contacts directory."
@@ -2588,7 +2668,7 @@
           "screenshot": {
             "sync": "Address Book Synchronization",
             "pending": "Pending configuration",
-            "buyer": "Buyer Lead",
+            "buyer": "Client Lead",
             "tenant": "Tenant Lead",
             "syncRules": "Lead Synchronization Rules",
             "rule1": "Auto-assign to Riyadh Brokerage",
@@ -2597,9 +2677,9 @@
         },
         "spotlight": {
           "category": "System Indexing",
-          "valueProp": "Search your entire real estate listing portfolio, including active buildings, units, task descriptions, and clients, directly from your local Mac Spotlight search (Cmd + Space) using high-velocity local indexing.",
+          "valueProp": "Search your entire workspace listing portfolio, including active buildings, assets, task descriptions, and clients, directly from your local Mac Spotlight search (Cmd + Space) using high-velocity local indexing.",
           "scopes": {
-            "write": "Allows Qentrah to register lightning-fast local search descriptors for your property inventory and active clients directly into your Mac OS search catalog."
+            "write": "Allows Qentrah to register lightning-fast local search descriptors for your asset inventory and active clients directly into your Mac OS search catalog."
           },
           "videoTitle": "Demo: Local Spotlight Search for Qentrah Listings",
           "videoDuration": "1:40",
@@ -2612,11 +2692,11 @@
             "complex": "Al Manar Residential Complex",
             "complexDesc": "Qentrah Workspace Project • Riyadh",
             "apt": "Apt A-101 (Al Manar)",
-            "aptDesc": "Available Unit • 145 sqm • 3 Bed",
+            "aptDesc": "Available Asset • 145 sqm • 3 Bed",
             "open": "Open in Qentrah",
             "indexTelemetry": "Rebuild Telemetry",
             "rebuildTime": "Index rebuild: 12ms",
-            "totalIndexed": "1,240 Units • 42 Projects"
+            "totalIndexed": "1,240 Assets • 42 Projects"
           }
         },
         "default": {
@@ -2674,7 +2754,7 @@
             "author": "Abdulmonem A. (Developer)",
             "time": "3 weeks ago",
             "rating": 5,
-            "comment": "Searching active units directly from Mac Command+Space is incredibly fast. Very impressed."
+            "comment": "Searching active assets directly from Mac Command+Space is incredibly fast. Very impressed."
           }
         ],
         "writeTitle": "Write a Review",
@@ -2691,7 +2771,7 @@
       "crm": {
         "name": "Institutional CRM",
         "category": "CRM",
-        "desc": "Inbound webhook receiver for property and project draft claims."
+        "desc": "Inbound webhook receiver for asset and project draft claims."
       },
       "partner": {
         "name": "Partner API",
@@ -2725,7 +2805,7 @@
   },
   "CreateProject": {
     "title": "Create New Project",
-    "subtitle": "Begin by adding your real estate project data to the portfolio",
+    "subtitle": "Begin by adding your workspace project data to the portfolio",
     "back": "Back",
     "workflow": "Workflow",
     "progress": "Progress",
@@ -2738,11 +2818,11 @@
       "subheader": "Enter the primary identification details for the project",
       "nameLabel": "Project Name",
       "namePlaceholder": "e.g. Al Manar Residential Complex",
-      "developerLabel": "Real Estate Developer",
+      "developerLabel": "Business Operator",
       "developerPlaceholder": "Developer company name",
       "statusLabel": "Project Status",
       "statusPlaceholder": "Select status",
-      "useLabel": "Property Use",
+      "useLabel": "Asset use",
       "usePlaceholder": "Select use type",
       "residential": "Residential",
       "commercial": "Commercial",
@@ -2767,20 +2847,20 @@
       "mapDescription": "Click to precisely pinpoint the project location on the interactive map"
     },
     "products": {
-      "title": "Unit Types",
-      "header": "Unit Configuration",
-      "subheader": "Select the types of units available in this project",
+      "title": "Asset types",
+      "header": "Asset Configuration",
+      "subheader": "Select the types of assets available in this project",
       "types": {
-        "studio": "Studio",
+        "studio": "Record",
         "1bed": "1 Bedroom",
         "2bed": "2 Bedrooms",
-        "villa": "Villa",
+        "villa": "Asset",
         "townhouse": "Townhouse",
-        "penthouse": "Penthouse",
+        "penthouse": "Priority item",
         "duplex": "Duplex",
         "commercial": "Commercial Showroom"
       },
-      "dimensionHeader": "Unit Dimensions",
+      "dimensionHeader": "Asset Dimensions",
       "areaRangeLabel": "Area Range ({type})",
       "areaRangePlaceholder": "e.g. 120 - 250 m2"
     },
@@ -2812,7 +2892,7 @@
       "legalTitle": "Upload Deeds & Licenses",
       "legalMeta": "PDF Only",
       "complianceHeader": "Compliance & Licensing",
-      "complianceSub": "Real Estate Advertisement License Data",
+      "complianceSub": "Business Compliance Data",
       "validCredentials": "Verified Credentials",
       "licenseLabel": "Ad License Number",
       "licensePlaceholder": "Enter license number",
@@ -2841,25 +2921,25 @@
     }
   },
   "CreateProperty": {
-    "title": "Add Independent Unit",
-    "subtitle": "Add a certified unit record with specs, pricing, and evidence",
-    "back": "Back to Units",
+    "title": "Add Independent Asset",
+    "subtitle": "Add a certified asset record with specs, pricing, and evidence",
+    "back": "Back to Assets",
     "workflow": "Workflow",
     "identity": {
-      "title": "Unit Identity",
+      "title": "Asset Identity",
       "header": "Define Record",
-      "subheader": "Enter the name, location, and description to establish the unit record",
-      "nameLabel": "Unit Name",
-      "namePlaceholder": "e.g. Unit A-101",
-      "typeLabel": "Unit Type",
+      "subheader": "Enter the name, location, and description to establish the asset record",
+      "nameLabel": "Asset name",
+      "namePlaceholder": "e.g. Asset A-101",
+      "typeLabel": "Asset type",
       "purposeLabel": "Purpose",
       "descriptionLabel": "Description",
-      "descriptionPlaceholder": "Write a brief description of the unit as it should appear in the record"
+      "descriptionPlaceholder": "Write a brief description of the asset as it should appear in the record"
     },
     "specs": {
       "title": "Specifications",
       "header": "Inventory Specs",
-      "subheader": "These fields make the unit searchable, verifiable, and comparable",
+      "subheader": "These fields make the asset searchable, verifiable, and comparable",
       "areaLabel": "Area (sqm)",
       "areaPlaceholder": "e.g. 145",
       "roomsLabel": "Rooms",
@@ -2885,13 +2965,13 @@
     "evidence": {
       "title": "Evidence & Readiness",
       "header": "Attach Evidence",
-      "subheader": "Add unit status, license number, and supporting media for approval",
+      "subheader": "Add asset status, license number, and supporting media for approval",
       "statusLabel": "Status",
       "featuresLabel": "Features & Amenities",
       "notesLabel": "Expert Notes",
       "licenseLabel": "Ad License Number",
       "mediaHeader": "Media & Documents",
-      "photosTitle": "Upload Unit Photos",
+      "photosTitle": "Upload Asset Photos",
       "docsTitle": "Upload License Documents"
     }
   },
@@ -2952,7 +3032,7 @@
       "people": "People",
       "roles": "Work roles",
       "projects": "Projects",
-      "properties": "Units",
+      "assets": "Assets",
       "clients": "Clients",
       "calendar": "Calendar",
       "media": "Media",
@@ -2960,9 +3040,204 @@
     },
     "empty": {
       "title": "No activity yet",
-      "desc": "Nothing needs to be shown yet. When someone changes organization settings, invites a teammate, edits work roles, or creates projects, units, or media, the action will appear here automatically.",
+      "desc": "Nothing needs to be shown yet. When someone changes organization settings, invites a teammate, edits work roles, or creates projects, assets, or media, the action will appear here automatically.",
       "noOrgTitle": "No organization selected",
       "noOrgDesc": "Choose or create an organization to view its activity log."
+    }
+  },
+  "Opportunities": {
+    "eyebrow": "Pipeline",
+    "title": "Opportunities",
+    "subtitle": "Revenue, demand, and pipeline work before delivery starts.",
+    "workspaceView": "Workspace view",
+    "stats": {
+      "open": "Open",
+      "qualified": "Qualified",
+      "won": "Won",
+      "value": "Value"
+    },
+    "filters": {
+      "allStages": "All stages"
+    },
+    "actions": {
+      "new": "New opportunity",
+      "create": "Create opportunity",
+      "save": "Save opportunity",
+      "created": "Opportunity created.",
+      "saved": "Opportunity saved.",
+      "createFailed": "Could not create opportunity.",
+      "saveFailed": "Could not save opportunity.",
+      "open": "Open",
+      "deleteOpportunity": "Delete opportunity"
+    },
+    "drawer": {
+      "create": "New opportunity",
+      "edit": "Edit opportunity",
+      "description": "Capture the work signal without moving the workspace view."
+    },
+    "empty": {
+      "title": "No opportunities",
+      "description": "Create the first pipeline record."
+    },
+    "table": {
+      "opportunity": "Opportunity",
+      "stage": "Stage",
+      "priority": "Priority",
+      "context": "Context",
+      "value": "Value",
+      "close": "Close",
+      "noNextStep": "No next step",
+      "noContext": "No client or project",
+      "noDate": "No date"
+    },
+    "form": {
+      "title": "Title",
+      "stage": "Stage",
+      "status": "Status",
+      "priority": "Priority",
+      "value": "Value",
+      "currency": "Currency",
+      "closeDate": "Close date",
+      "client": "Client",
+      "project": "Project",
+      "source": "Source",
+      "tags": "Tags",
+      "nextStep": "Next step",
+      "clientPlaceholder": "Select client",
+      "projectPlaceholder": "Select project",
+      "searchClients": "Search clients",
+      "searchProjects": "Search projects",
+      "noClients": "No clients available",
+      "noProjects": "No projects available",
+      "noClient": "No client",
+      "noProject": "No project"
+    },
+    "stages": {
+      "new": "New",
+      "qualified": "Qualified",
+      "proposal": "Proposal",
+      "negotiation": "Negotiation",
+      "won": "Won",
+      "lost": "Lost"
+    },
+    "statuses": {
+      "open": "Open",
+      "paused": "Paused",
+      "won": "Won",
+      "lost": "Lost"
+    },
+    "priorities": {
+      "low": "Low",
+      "normal": "Normal",
+      "high": "High",
+      "urgent": "Urgent"
+    },
+    "detail": {
+      "eyebrow": "Opportunity detail",
+      "record": "Record",
+      "summary": "Summary",
+      "notFoundTitle": "Opportunity not found",
+      "notFoundDescription": "The opportunity was deleted or you do not have access.",
+      "backToOpportunities": "Back to opportunities"
+    }
+  },
+  "Tasks": {
+    "eyebrow": "Work queue",
+    "title": "Tasks",
+    "subtitle": "Standalone and linked work across the workspace.",
+    "workspaceView": "Workspace view",
+    "stats": {
+      "open": "Open",
+      "dueToday": "Due today",
+      "urgent": "Urgent",
+      "done": "Done"
+    },
+    "filters": {
+      "allStatuses": "All statuses",
+      "all": "All tasks",
+      "assignedToMe": "Assigned to me",
+      "sentByMe": "Sent by me"
+    },
+    "actions": {
+      "new": "New task",
+      "create": "Create task",
+      "save": "Save task",
+      "open": "Open",
+      "done": "Done",
+      "reopen": "Reopen",
+      "deleteTask": "Delete task"
+    },
+    "drawer": {
+      "create": "New task",
+      "edit": "Edit task",
+      "description": "Create or adjust work without leaving the queue."
+    },
+    "empty": {
+      "title": "No tasks",
+      "description": "Create the first work item."
+    },
+    "table": {
+      "task": "Task",
+      "status": "Status",
+      "priority": "Priority",
+      "assignee": "Assignee",
+      "sender": "Sent by",
+      "context": "Context",
+      "due": "Due",
+      "unassigned": "Unassigned",
+      "noContext": "No client or project",
+      "noDate": "No date",
+      "noDescription": "No description"
+    },
+    "form": {
+      "title": "Title",
+      "status": "Status",
+      "priority": "Priority",
+      "visibility": "Visibility",
+      "assignee": "Assign to",
+      "dueDate": "Due date",
+      "client": "Client",
+      "project": "Project",
+      "description": "Description",
+      "tags": "Tags",
+      "assigneePlaceholder": "Select teammate",
+      "clientPlaceholder": "Select client",
+      "projectPlaceholder": "Select project",
+      "searchPeople": "Search people",
+      "searchClients": "Search clients",
+      "searchProjects": "Search projects",
+      "noPeople": "No teammates available",
+      "noClients": "No clients available",
+      "noProjects": "No projects available",
+      "unassigned": "Unassigned",
+      "noClient": "No client",
+      "noProject": "No project"
+    },
+    "statuses": {
+      "todo": "To do",
+      "inProgress": "In progress",
+      "waiting": "Waiting",
+      "done": "Done",
+      "canceled": "Canceled"
+    },
+    "priorities": {
+      "low": "Low",
+      "normal": "Normal",
+      "high": "High",
+      "urgent": "Urgent"
+    },
+    "visibilities": {
+      "private": "Private",
+      "team": "Team",
+      "workspace": "Workspace"
+    },
+    "detail": {
+      "eyebrow": "Task detail",
+      "record": "Record",
+      "summary": "Summary",
+      "notFoundTitle": "Task not found",
+      "notFoundDescription": "The task was deleted or you do not have access.",
+      "backToTasks": "Back to tasks"
     }
   },
   "Calendar": {
@@ -3028,25 +3303,29 @@
       "titleOptionalLabel": "Event name (optional)",
       "ownerLabel": "Owner",
       "clientLabel": "Client context",
-      "unitLabel": "Unit context",
+      "assetLabel": "Asset context",
+      "unitLabel": "Asset context",
       "taskLabel": "Task context",
       "selectClient": "Select client",
-      "selectUnit": "Select unit",
+      "selectAsset": "Select asset",
+      "selectUnit": "Select asset",
       "selectTask": "Select task",
       "chooseClient": "Choose client",
-      "chooseUnit": "Choose unit",
+      "chooseAsset": "Choose asset",
+      "chooseUnit": "Choose asset",
       "chooseTask": "Choose task",
       "changeSelection": "Change",
       "clearSelection": "Clear",
       "noClientSelected": "No client selected",
-      "noUnitSelected": "No unit selected",
+      "noAssetSelected": "No asset selected",
+      "noUnitSelected": "No asset selected",
       "noTaskSelected": "No task selected",
       "otherContext": "Other",
       "otherContextDesc": "Use location or notes instead.",
       "useOther": "Use other",
       "search": "Search...",
       "noClients": "No clients are available yet.",
-      "noUnits": "No units are available yet.",
+      "noAssets": "No assets are available yet.",
       "noTasks": "No tasks are available yet.",
       "noPickerResults": "No matching results.",
       "closePicker": "Done",
@@ -3075,17 +3354,11 @@
       "cancel": "Cancel"
     },
     "types": {
-      "visit": "Visit",
-      "call": "Call",
       "meeting": "Meeting",
-      "client-visit": "Client Visit",
-      "site-viewing": "Site Viewing",
-      "appointment": "Appointment",
-      "signing": "Signing",
-      "follow-up": "Follow-up",
-      "handover": "Handover",
-      "audit": "Audit",
-      "custom": "Custom"
+      "deadline": "Deadline",
+      "reminder": "Reminder",
+      "milestone": "Milestone",
+      "focusBlock": "Focus block"
     },
     "statuses": {
       "confirmed": "Confirmed",
@@ -3318,7 +3591,7 @@
       "saveDraft": "Save Draft",
       "continue": "Continue to Step 2",
       "crTooltip": "Required for official government verification.",
-      "legalNamePlaceholder": "e.g. Acme Real Estate LLC",
+      "legalNamePlaceholder": "e.g. Acme Workspace LLC",
       "displayNamePlaceholder": "e.g. Acme",
       "crNumberPlaceholder": "1010XXXXXX",
       "cityPlaceholder": "e.g. Riyadh",
@@ -3408,7 +3681,7 @@
     "createTitle": "Create organization",
     "createDesc": "Start a new workspace.",
     "createNameLabel": "Organization Name",
-    "createNamePlaceholder": "e.g. Acme Real Estate",
+    "createNamePlaceholder": "e.g. Acme Workspace",
     "createBtn": "Start Setup",
     "creating": "Creating...",
     "existingTitle": "Organizations",

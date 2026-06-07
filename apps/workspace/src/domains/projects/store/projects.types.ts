@@ -9,13 +9,13 @@ export interface Project {
   city: string;
   area: string;
   type: string;
-  unitTypes?: string[];
+  assetTypes?: string[];
   image?: string;
   coverImageUrl?: string;
   status: ProjectStatus;
   visibility?: Visibility;
   syncState: "draft" | "blocked" | "synced";
-  units: number;
+  assetCount: number;
   priceRange: string;
   averagePrice?: string;
   projectPrices?: Array<{ id: string; label: string; price: string }>;

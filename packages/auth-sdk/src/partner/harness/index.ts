@@ -15,7 +15,7 @@ export type QentrahPartnerSectionId =
   | "credentials"
   | "organization"
   | "clients"
-  | "properties"
+  | "assets"
   | "projects"
   | "tasks"
   | "calendar"
@@ -169,13 +169,13 @@ export const qentrahPartnerSections: QentrahPartnerSectionConfig[] = [
     paginated: true,
   },
   {
-    id: "properties",
-    label: "Properties",
-    description: "Read property inventory visible to the partner app.",
-    requiredScopes: ["property:read"],
+    id: "assets",
+    label: "Assets",
+    description: "Read asset inventory visible to the partner app.",
+    requiredScopes: ["asset:read"],
     operations: ["read"],
-    emptyState: "No properties loaded yet.",
-    endpoint: "/api/qentrah/properties",
+    emptyState: "No assets loaded yet.",
+    endpoint: "/api/qentrah/assets",
     paginated: true,
   },
   {
@@ -350,12 +350,12 @@ export function qentrahPartnerResponseMessage(value: unknown) {
 }
 
 export function qentrahPartnerFilterKey(sectionId: QentrahPartnerSectionId) {
-  return ["properties", "projects"].includes(sectionId) ? "status" : "type";
+  return ["assets", "projects"].includes(sectionId) ? "status" : "type";
 }
 
 export function qentrahPartnerFilterPlaceholder(sectionId: QentrahPartnerSectionId) {
   if (sectionId === "clients") return "Buyer, Tenant, Investor";
-  if (sectionId === "properties") return "available, reserved, sold";
+  if (sectionId === "assets") return "available, reserved, sold";
   if (sectionId === "projects") return "pending, approved";
   return "custom type";
 }

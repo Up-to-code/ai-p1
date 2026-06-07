@@ -55,7 +55,7 @@ const errorStates: ErrorStateDefinition[] = [
     eyebrow: "Missing route",
     code: "404",
     title: "This page is not in the portfolio.",
-    body: "The link may be old, mistyped, or pointing to a property view that is no longer available.",
+    body: "The link may be old, mistyped, or pointing to a asset view that is no longer available.",
     signal: "AI history and favorite chats are still available from home.",
     technicalNote: "Use this for unknown routes, deleted records, and stale deep links.",
     Icon: FileQuestion,

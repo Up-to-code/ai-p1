@@ -28,7 +28,7 @@ describe("normalizeQueryDebugDetails", () => {
 
   it("marks absent ids as missing instead of leaking unrelated state", () => {
     const details = normalizeQueryDebugDetails({
-      resourceType: "property",
+      resourceType: "asset",
       resourceId: undefined,
       organizationId: null,
       workspaceStatus: "convexAuthLoading",

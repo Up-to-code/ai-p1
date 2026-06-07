@@ -3,7 +3,7 @@ export type AuditCategory =
   | "people"
   | "roles"
   | "projects"
-  | "properties"
+  | "assets"
   | "clients"
   | "calendar"
   | "media"
@@ -29,7 +29,7 @@ export type AuditStats = {
 export function activityCategoryTone(
   category: AuditCategory,
 ): "success" | "warning" | "danger" | "neutral" | "info" {
-  if (category === "projects" || category === "properties") return "success";
+  if (category === "projects" || category === "assets") return "success";
   if (category === "clients" || category === "calendar" || category === "media") return "info";
   if (category === "invites") return "warning";
   if (category === "people" || category === "roles") return "danger";

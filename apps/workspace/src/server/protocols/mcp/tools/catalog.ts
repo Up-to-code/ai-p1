@@ -13,7 +13,7 @@ export type McpPermissionResource =
   | "member"
   | "role"
   | "client"
-  | "property"
+  | "asset"
   | "project"
   | "calendar"
   | "task"
@@ -45,6 +45,16 @@ const timestamp = z.number();
 const listLimit = z.number().int().min(1).max(50).optional();
 const listSearch = z.string().trim().max(160).optional();
 const listCursor = z.string().nullable().optional();
+const clientType = z.enum(["person", "organization"]).optional();
+const clientStatus = z.enum(["new", "active", "nurture", "inactive", "archived"]).optional();
+const assetStatus = z.enum(["draft", "active", "review", "approved", "archived"]).optional();
+const projectStatus = z.enum(["planned", "active", "paused", "completed", "archived"]).optional();
+const projectHealth = z.enum(["onTrack", "atRisk", "blocked"]).optional();
+const calendarType = z.enum(["meeting", "deadline", "reminder", "milestone", "focusBlock"]).optional();
+const calendarStatus = z.enum(["confirmed", "pending", "draft"]).optional();
+const taskStatus = z.enum(["todo", "inProgress", "waiting", "done", "canceled"]).optional();
+const priority = z.enum(["low", "normal", "high", "urgent"]).optional();
+const mediaKind = z.enum(["image", "video", "document"]).optional();
 
 const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approvalRequirement" | "dataSensitivity">> = [
   {
@@ -151,16 +161,21 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
   {
     name: "clients_create",
     title: "Create client",
-    description: "Create a client profile. Required: name and either contact/email or phone. Type, property interest, budget, pipeline fields, priority, age, nationality, generation, and next action are optional.",
+    description: "Create a workspace client profile. Required: name. Optional contact fields include email, phone, company, contactName, website, source, notes, type, and status.",
     resource: "client",
     action: "create",
     inputSchema: {
       name: id,
-      contact: maybeText,
+      type: clientType,
+      status: clientStatus,
+      source: maybeText,
+      company: maybeText,
+      contactName: maybeText,
       email: maybeText,
+      contact: maybeText,
       phone: maybeText,
-      type: z.enum(["Buyer", "Tenant", "Investor", "Broker"]).optional(),
-      propertyInterest: maybeText,
+      website: maybeText,
+      notes: maybeText,
     },
   },
   {
@@ -169,7 +184,20 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     description: "Update a client profile.",
     resource: "client",
     action: "update",
-    inputSchema: { clientId: id },
+    inputSchema: {
+      clientId: id,
+      name: maybeText,
+      type: clientType,
+      status: clientStatus,
+      source: maybeText,
+      company: maybeText,
+      contactName: maybeText,
+      email: maybeText,
+      contact: maybeText,
+      phone: maybeText,
+      website: maybeText,
+      notes: maybeText,
+    },
   },
   {
     name: "clients_delete",
@@ -181,75 +209,95 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     destructive: true,
   },
   {
-    name: "clients_link_unit",
-    title: "Link client to apartment",
-    description: "Connect a client with a specific apartment.",
+    name: "clients_link_asset",
+    title: "Link client to asset",
+    description: "Connect a client with a specific asset.",
     resource: "client",
     action: "update",
-    inputSchema: { clientId: id, propertyId: id, status: z.string().optional(), notes: maybeText },
+    inputSchema: { clientId: id, assetId: id, status: z.string().optional(), notes: maybeText },
   },
   {
-    name: "clients_unlink_unit",
-    title: "Unlink client from apartment",
-    description: "Remove a client-apartment link.",
+    name: "clients_unlink_asset",
+    title: "Unlink client from asset",
+    description: "Remove a client-asset link.",
     resource: "client",
     action: "update",
-    inputSchema: { clientId: id, propertyId: id },
+    inputSchema: { clientId: id, assetId: id },
   },
   {
-    name: "properties_list",
-    title: "List apartments",
-    description: "List active apartments.",
-    resource: "property",
+    name: "assets_list",
+    title: "List assets",
+    description: "List active assets.",
+    resource: "asset",
     action: "read",
     inputSchema: { limit: listLimit, search: listSearch, cursor: listCursor },
   },
   {
-    name: "properties_get",
-    title: "Get apartment",
-    description: "Get one apartment.",
-    resource: "property",
+    name: "assets_get",
+    title: "Get asset",
+    description: "Get one asset.",
+    resource: "asset",
     action: "read",
-    inputSchema: { propertyId: id },
+    inputSchema: { assetId: id },
   },
   {
-    name: "properties_open",
-    title: "Open apartment",
-    description: "Get apartment details plus the app URL.",
-    resource: "property",
+    name: "assets_open",
+    title: "Open asset",
+    description: "Get asset details plus the app URL.",
+    resource: "asset",
     action: "read",
-    inputSchema: { propertyId: id },
+    inputSchema: { assetId: id },
   },
   {
-    name: "properties_create",
-    title: "Create apartment",
-    description: "Create a new apartment.",
-    resource: "property",
+    name: "assets_create",
+    title: "Create asset",
+    description: "Create a new asset.",
+    resource: "asset",
     action: "create",
+    inputSchema: {
+      name: maybeText,
+      title: maybeText,
+      type: id,
+      status: assetStatus,
+      url: maybeText,
+      fileId: maybeText,
+      description: maybeText,
+      projectId: maybeText,
+    },
   },
   {
-    name: "properties_update",
-    title: "Update apartment",
-    description: "Update an apartment.",
-    resource: "property",
+    name: "assets_update",
+    title: "Update asset",
+    description: "Update an asset.",
+    resource: "asset",
     action: "update",
-    inputSchema: { propertyId: id },
+    inputSchema: {
+      assetId: id,
+      name: maybeText,
+      title: maybeText,
+      type: maybeText,
+      status: assetStatus,
+      url: maybeText,
+      fileId: maybeText,
+      description: maybeText,
+      projectId: maybeText,
+    },
   },
   {
-    name: "properties_update_field",
-    title: "Update one apartment field",
-    description: "Edit a specific point in an apartment record.",
-    resource: "property",
+    name: "assets_update_field",
+    title: "Update one asset field",
+    description: "Edit a specific point in an asset record.",
+    resource: "asset",
     action: "update",
-    inputSchema: { propertyId: id, field: z.string().min(1), value: z.union([z.string(), z.number(), z.boolean()]) },
+    inputSchema: { assetId: id, field: z.string().min(1), value: z.union([z.string(), z.number(), z.boolean()]) },
   },
   {
-    name: "properties_delete",
-    title: "Delete apartment",
-    description: "Soft delete an apartment.",
-    resource: "property",
+    name: "assets_delete",
+    title: "Delete asset",
+    description: "Soft delete an asset.",
+    resource: "asset",
     action: "delete",
-    inputSchema: { propertyId: id },
+    inputSchema: { assetId: id },
     destructive: true,
   },
   {
@@ -274,6 +322,14 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     description: "Create a project.",
     resource: "project",
     action: "create",
+    inputSchema: {
+      name: id,
+      status: projectStatus,
+      health: projectHealth,
+      budget: z.number().optional(),
+      currency: maybeText,
+      description: maybeText,
+    },
   },
   {
     name: "projects_update",
@@ -281,7 +337,15 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     description: "Update a project.",
     resource: "project",
     action: "update",
-    inputSchema: { projectId: id },
+    inputSchema: {
+      projectId: id,
+      name: maybeText,
+      status: projectStatus,
+      health: projectHealth,
+      budget: z.number().optional(),
+      currency: maybeText,
+      description: maybeText,
+    },
   },
   {
     name: "projects_delete",
@@ -327,9 +391,20 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
   {
     name: "calendar_create",
     title: "Create calendar event",
-    description: "Schedule time with client, apartment, project, or task context.",
+    description: "Schedule time with client, asset, project, or task context.",
     resource: "calendar",
     action: "create",
+    inputSchema: {
+      title: id,
+      ownerUserId: maybeText,
+      startAt: timestamp,
+      endAt: timestamp.optional(),
+      type: calendarType,
+      status: calendarStatus,
+      location: maybeText,
+      meetingUrl: maybeText,
+      notes: maybeText,
+    },
   },
   {
     name: "calendar_update",
@@ -337,7 +412,18 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     description: "Update a calendar event.",
     resource: "calendar",
     action: "update",
-    inputSchema: { eventId: id },
+    inputSchema: {
+      eventId: id,
+      title: maybeText,
+      ownerUserId: maybeText,
+      startAt: timestamp.optional(),
+      endAt: timestamp.optional(),
+      type: calendarType,
+      status: calendarStatus,
+      location: maybeText,
+      meetingUrl: maybeText,
+      notes: maybeText,
+    },
   },
   {
     name: "calendar_delete",
@@ -399,15 +485,15 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
   {
     name: "tasks_list",
     title: "List tasks",
-    description: "List client tasks.",
+    description: "List workspace tasks.",
     resource: "task",
     action: "read",
-    inputSchema: { clientId: id.optional(), limit: listLimit, search: listSearch, cursor: listCursor },
+    inputSchema: { limit: listLimit, search: listSearch, cursor: listCursor },
   },
   {
     name: "tasks_get",
     title: "Get task",
-    description: "Get one client task.",
+    description: "Get one workspace task.",
     resource: "task",
     action: "read",
     inputSchema: { taskId: id },
@@ -415,17 +501,35 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
   {
     name: "tasks_create",
     title: "Create task",
-    description: "Create a task for a client.",
+    description: "Create a workspace task.",
     resource: "task",
     action: "create",
+    inputSchema: {
+      title: id,
+      status: taskStatus,
+      priority,
+      assigneeUserId: maybeText,
+      dueDate: maybeText,
+      description: maybeText,
+      notes: maybeText,
+    },
   },
   {
     name: "tasks_update",
     title: "Update task",
-    description: "Update a client task.",
+    description: "Update a workspace task.",
     resource: "task",
     action: "update",
-    inputSchema: { taskId: id },
+    inputSchema: {
+      taskId: id,
+      title: maybeText,
+      status: taskStatus,
+      priority,
+      assigneeUserId: maybeText,
+      dueDate: maybeText,
+      description: maybeText,
+      notes: maybeText,
+    },
   },
   {
     name: "tasks_complete",
@@ -438,7 +542,7 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
   {
     name: "tasks_delete",
     title: "Delete task",
-    description: "Soft delete a client task.",
+    description: "Soft delete a workspace task.",
     resource: "task",
     action: "delete",
     inputSchema: { taskId: id },
@@ -458,6 +562,15 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     description: "Attach URL-backed file metadata to a workspace object.",
     resource: "media",
     action: "create",
+    inputSchema: {
+      resourceType: z.enum(["project", "asset", "client", "calendarEvent", "task"]),
+      resourceId: id,
+      name: id,
+      url: id,
+      mimeType: maybeText,
+      size: z.number().optional(),
+      kind: mediaKind,
+    },
   },
 ];
 

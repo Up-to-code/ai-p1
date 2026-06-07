@@ -15,11 +15,11 @@ export function assertActiveWorkspaceRecord<T extends { organizationId: string; 
   return doc;
 }
 
-export function isPublicWorkspaceRecord(doc: { visibility?: "private" | "public" }) {
-  return (doc.visibility ?? "private") === "public";
+export function isPublicWorkspaceRecord(doc: { visibility?: "private" | "team" | "workspace" }) {
+  return (doc.visibility ?? "private") === "workspace";
 }
 
-export function assertPublicWorkspaceRecord<T extends { visibility?: "private" | "public" }>(doc: T, label: string) {
+export function assertPublicWorkspaceRecord<T extends { visibility?: "private" | "team" | "workspace" }>(doc: T, label: string) {
   if (!isPublicWorkspaceRecord(doc)) {
     throw new Error(`${label} was not found.`);
   }

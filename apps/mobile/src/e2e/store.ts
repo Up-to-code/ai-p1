@@ -75,7 +75,7 @@ export function appendE2EUserPrompt(threadId: string, prompt: string, createdAt:
     kind: "text",
     text: prompt,
     streamState: "complete",
-    relatedPropertyIds: [],
+    relatedAssetIds: [],
     createdAt,
     sourceMetadata: [],
   };
@@ -97,9 +97,9 @@ export function completeE2EPrompt(threadId: string, prompt: string, createdAt: n
     kind: "assistant_turn",
     text: scenario.assistantText,
     streamState: "complete",
-    relatedPropertyIds: scenario.turn.blocks.flatMap((block) => {
-      if (block.type === "property_list" || block.type === "comparison") {
-        return block.propertyIds;
+    relatedAssetIds: scenario.turn.blocks.flatMap((block) => {
+      if (block.type === "asset_list" || block.type === "comparison") {
+        return block.assetIds;
       }
 
       return [];

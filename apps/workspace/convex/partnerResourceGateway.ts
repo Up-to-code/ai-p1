@@ -77,27 +77,22 @@ function limitFromInput(input: Input, defaultLimit: number) {
 function clientPatch(input: Input) {
   return {
     ...(optionalString(input, "name") ? { name: optionalString(input, "name")! } : {}),
-    ...(optionalString(input, "type") ? { type: optionalString(input, "type") as "Buyer" | "Tenant" | "Investor" | "Broker" } : {}),
-    ...(optionalString(input, "contact") ? { contact: optionalString(input, "contact")! } : {}),
+    ...(optionalString(input, "type") ? { type: optionalString(input, "type") as "person" | "organization" } : {}),
+    ...(optionalString(input, "company") ? { company: optionalString(input, "company")! } : {}),
+    ...(optionalString(input, "contactName") ? { contactName: optionalString(input, "contactName")! } : {}),
+    ...(optionalString(input, "email") || optionalString(input, "contact") ? { email: (optionalString(input, "email") ?? optionalString(input, "contact"))! } : {}),
     ...(optionalString(input, "phone") ? { phone: optionalString(input, "phone")! } : {}),
-    ...(optionalNumber(input, "age") !== undefined ? { age: optionalNumber(input, "age")! } : {}),
-    ...(optionalString(input, "nationality") ? { nationality: optionalString(input, "nationality")! } : {}),
-    ...(optionalString(input, "generation") ? { generation: optionalString(input, "generation")! } : {}),
-    ...(optionalString(input, "budget") ? { budget: optionalString(input, "budget")! } : {}),
-    ...(optionalString(input, "propertyInterest") ? { propertyInterest: optionalString(input, "propertyInterest")! } : {}),
-    ...(optionalString(input, "status") ? { status: optionalString(input, "status") as "active" | "inactive" } : {}),
-    ...(optionalString(input, "pipelineStage") ? { pipelineStage: optionalString(input, "pipelineStage") as "new" | "qualified" | "viewing" | "negotiation" | "closed" } : {}),
-    ...(optionalNumber(input, "pipelineOrder") !== undefined ? { pipelineOrder: optionalNumber(input, "pipelineOrder")! } : {}),
-    ...(optionalString(input, "priority") ? { priority: optionalString(input, "priority") as "normal" | "high" | "urgent" } : {}),
-    ...(optionalString(input, "nextAction") ? { nextAction: optionalString(input, "nextAction")! } : {}),
-    ...(optionalString(input, "issue") ? { issue: optionalString(input, "issue")! } : {}),
+    ...(optionalString(input, "website") ? { website: optionalString(input, "website")! } : {}),
+    ...(optionalString(input, "notes") ? { notes: optionalString(input, "notes")! } : {}),
+    ...(optionalString(input, "source") ? { source: optionalString(input, "source")! } : {}),
+    ...(optionalString(input, "status") ? { status: optionalString(input, "status") as "new" | "active" | "nurture" | "inactive" | "archived" } : {}),
   };
 }
 
 async function listTable(
   ctx: QueryCtx,
   organizationId: string,
-  table: "clients" | "propertyUnits" | "projects" | "clientTasks" | "calendarEvents",
+  table: "clients" | "assets" | "projects" | "tasks" | "calendarEvents",
   input: Input,
   defaultLimit: number,
 ) {
@@ -106,7 +101,7 @@ async function listTable(
     .withIndex("by_organization_id", (q) => q.eq("organizationId", organizationId))
     .take(limitFromInput(input, defaultLimit));
 
-  return rows.filter((row: { deletedAt?: number }) => !row.deletedAt).map(present);
+  return rows.filter((row) => !("deletedAt" in row) || !row.deletedAt).map(present);
 }
 
 async function enqueueOutbound(
@@ -225,14 +220,14 @@ export async function readPartnerResourceThroughGateway(ctx: QueryCtx, args: Rea
     return listTable(ctx, args.organizationId, "clients", input, args.defaultLimit);
   }
 
-  if (args.resource === "property") {
-    const propertyId = optionalString(input, "propertyId");
-    if (propertyId) {
-      const property = await ctx.db.get(propertyId as Id<"propertyUnits">);
-      if (!property || property.organizationId !== args.organizationId || property.deletedAt) return null;
-      return present(property);
+  if (args.resource === "asset") {
+    const assetId = optionalString(input, "assetId");
+    if (assetId) {
+      const asset = await ctx.db.get(assetId as Id<"assets">);
+      if (!asset || asset.organizationId !== args.organizationId || asset.deletedAt) return null;
+      return present(asset);
     }
-    return listTable(ctx, args.organizationId, "propertyUnits", input, args.defaultLimit);
+    return listTable(ctx, args.organizationId, "assets", input, args.defaultLimit);
   }
 
   if (args.resource === "project") {
@@ -248,11 +243,11 @@ export async function readPartnerResourceThroughGateway(ctx: QueryCtx, args: Rea
   if (args.resource === "task") {
     const taskId = optionalString(input, "taskId");
     if (taskId) {
-      const task = await ctx.db.get(taskId as Id<"clientTasks">);
+      const task = await ctx.db.get(taskId as Id<"tasks">);
       if (!task || task.organizationId !== args.organizationId || task.deletedAt) return null;
       return present(task);
     }
-    return listTable(ctx, args.organizationId, "clientTasks", input, args.defaultLimit);
+    return listTable(ctx, args.organizationId, "tasks", input, args.defaultLimit);
   }
 
   if (args.resource === "calendar") {
@@ -274,7 +269,7 @@ export async function readPartnerResourceThroughGateway(ctx: QueryCtx, args: Rea
       .withIndex("by_organization_resource", (q) =>
         q
           .eq("organizationId", args.organizationId)
-          .eq("resourceType", resourceType as "project" | "property" | "client" | "calendarEvent" | "task")
+          .eq("resourceType", resourceType as "project" | "asset" | "client" | "calendarEvent" | "task")
           .eq("resourceId", resourceId),
       )
       .take(limitFromInput(input, args.defaultLimit));
@@ -293,28 +288,24 @@ export async function writePartnerResourceThroughGateway(ctx: MutationCtx, args:
 
   if (args.action === "create") {
     const pii = {
-      contact: requiredString(input, "contact", optionalString(input, "name") ?? defaults.defaultName),
-      phone: requiredString(input, "phone", ""),
-      nationality: requiredString(input, "nationality", ""),
-      budget: requiredString(input, "budget", ""),
+      email: optionalString(input, "email") ?? optionalString(input, "contact"),
+      phone: optionalString(input, "phone"),
     };
     const id = await ctx.db.insert("clients", {
       organizationId: args.organizationId,
       name: requiredString(input, "name", defaults.defaultName),
-      type: (optionalString(input, "type") ?? "Buyer") as "Buyer" | "Tenant" | "Investor" | "Broker",
+      type: (optionalString(input, "type") ?? "person") as "person" | "organization",
       ...pii,
-      age: optionalNumber(input, "age") ?? 0,
-      generation: requiredString(input, "generation", ""),
       ...await protectClientPii(args.organizationId, pii),
-      propertyInterest: requiredString(input, "propertyInterest", ""),
-      status: (optionalString(input, "status") ?? "active") as "active" | "inactive",
+      source: requiredString(input, "source", "partner"),
+      ownerUserId: defaults.createdByUserId,
+      company: optionalString(input, "company"),
+      contactName: optionalString(input, "contactName"),
+      website: optionalString(input, "website"),
+      notes: optionalString(input, "notes"),
+      status: (optionalString(input, "status") ?? "new") as "new" | "active" | "nurture" | "inactive" | "archived",
       visibility: "private",
       isDeleted: false,
-      pipelineStage: (optionalString(input, "pipelineStage") ?? "new") as "new" | "qualified" | "viewing" | "negotiation" | "closed",
-      ...(optionalNumber(input, "pipelineOrder") !== undefined ? { pipelineOrder: optionalNumber(input, "pipelineOrder")! } : {}),
-      priority: (optionalString(input, "priority") ?? "normal") as "normal" | "high" | "urgent",
-      nextAction: requiredString(input, "nextAction", ""),
-      issue: optionalString(input, "issue"),
       createdByUserId: defaults.createdByUserId,
       createdAt: now,
       updatedAt: now,
@@ -334,12 +325,10 @@ export async function writePartnerResourceThroughGateway(ctx: MutationCtx, args:
 
   if (args.action === "update") {
     const revealed = await revealClientPii(existing);
-    const piiPatch = ["contact", "phone", "nationality", "budget"].some((key) => optionalString(input, key))
+    const piiPatch = ["email", "contact", "phone"].some((key) => optionalString(input, key))
       ? await protectClientPii(args.organizationId, {
-        contact: optionalString(input, "contact") ?? revealed.contact,
+        email: optionalString(input, "email") ?? optionalString(input, "contact") ?? revealed.email,
         phone: optionalString(input, "phone") ?? revealed.phone,
-        nationality: optionalString(input, "nationality") ?? revealed.nationality,
-        budget: optionalString(input, "budget") ?? revealed.budget,
       })
       : {};
     await ctx.db.patch(clientId, { ...clientPatch(input), ...piiPatch, updatedAt: now });

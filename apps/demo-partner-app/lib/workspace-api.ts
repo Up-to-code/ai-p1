@@ -57,10 +57,10 @@ export function loadQentrahClients(session: TokenSession, optionsOrFetcher?: Col
   return qentrahClient(session, fetcher).listClients({ organizationId: requireOrganizationId(session), options }).catch(mapWorkspaceError);
 }
 
-export function loadQentrahProperties(session: TokenSession, optionsOrFetcher?: CollectionOptions | typeof fetch, maybeFetcher?: typeof fetch) {
+export function loadQentrahAssets(session: TokenSession, optionsOrFetcher?: CollectionOptions | typeof fetch, maybeFetcher?: typeof fetch) {
   const options = typeof optionsOrFetcher === "function" ? {} : optionsOrFetcher;
   const fetcher = typeof optionsOrFetcher === "function" ? optionsOrFetcher : maybeFetcher;
-  return qentrahClient(session, fetcher).listProperties({ organizationId: requireOrganizationId(session), options }).catch(mapWorkspaceError);
+  return qentrahClient(session, fetcher).listAssets({ organizationId: requireOrganizationId(session), options }).catch(mapWorkspaceError);
 }
 
 export function loadQentrahProjects(session: TokenSession, optionsOrFetcher?: CollectionOptions | typeof fetch, maybeFetcher?: typeof fetch) {

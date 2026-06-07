@@ -1,32 +1,31 @@
 import type { ClientTaskPayload } from "@/domains/clients/api/client-tasks";
-import type { PropertyStatus } from "@/domains/properties";
+import type { AssetStatus } from "@/domains/assets";
 import type { Client, ClientType } from "./store/clients.types";
 import type { ClientFormValues } from "./validation/client.schema";
 
-export const pipelineStages = ["new", "qualified", "viewing", "negotiation", "closed"] as const;
-export const activePipelineStages = ["new", "qualified", "viewing", "negotiation"] as const;
-export const clientFilters = ["all", "Buyer", "Tenant", "Investor", "Broker"] as const;
+export const pipelineStages = ["new", "qualified", "review", "negotiation", "closed"] as const;
+export const activePipelineStages = ["new", "qualified", "review", "negotiation"] as const;
+export const clientFilters = ["all", "person", "organization"] as const;
 export const clientViews = ["pipeline", "list", "calendar"] as const;
 export const clientStageFilters = ["all", "active", "closed"] as const;
-export const clientTypes = ["Buyer", "Tenant", "Investor", "Broker"] as const;
-export const clientStatuses = ["active", "inactive"] as const;
+export const clientTypes = ["person", "organization"] as const;
+export const clientStatuses = ["new", "active", "nurture", "inactive", "archived"] as const;
 export const clientPriorities = ["normal", "high", "urgent"] as const;
-export const unitLinkStatuses = ["interested", "shortlisted", "viewing", "offer", "rejected"] as const;
+export const clientAssetLinkStatuses = ["interested", "shortlisted", "review", "proposal", "rejected"] as const;
 
 export type StatusPillTone = "danger" | "info" | "neutral" | "success" | "warning";
 export type PipelineStage = (typeof pipelineStages)[number];
 
-export function unitStatusTone(status: PropertyStatus): StatusPillTone {
+export function assetStatusTone(status: AssetStatus): StatusPillTone {
   if (status === "available") return "success";
   if (status === "pending" || status === "reserved") return "warning";
   if (status === "sold") return "info";
   return "neutral";
 }
 
+
 export function typeTone(type: ClientType): StatusPillTone {
-  if (type === "Investor") return "success";
-  if (type === "Broker") return "warning";
-  if (type === "Tenant") return "info";
+  if (type === "organization") return "info";
   return "neutral";
 }
 
@@ -40,7 +39,7 @@ export function clientToFormValues(client: Client): ClientFormValues {
     nationality: client.nationality,
     generation: client.generation,
     budget: client.budget,
-    propertyInterest: client.propertyInterest,
+    assetInterest: client.assetInterest,
     status: client.status,
     visibility: client.visibility ?? "private",
     pipelineStage: client.pipelineStage,
@@ -65,14 +64,27 @@ export function clientValuesFromFormData(formData: FormData): ClientFormValues {
     nationality: formText(formData, "nationality"),
     generation: formText(formData, "generation"),
     budget: formText(formData, "budget"),
-    propertyInterest: formText(formData, "propertyInterest"),
+    assetInterest: formText(formData, "assetInterest"),
     status: formText(formData, "status") as ClientFormValues["status"],
     visibility: (formText(formData, "visibility") || "private") as ClientFormValues["visibility"],
-    pipelineStage: formText(formData, "pipelineStage") as ClientFormValues["pipelineStage"],
+    pipelineStage: normalizeClientPipelineStage(formText(formData, "pipelineStage")),
     priority: formText(formData, "priority") as ClientFormValues["priority"],
     nextAction: formText(formData, "nextAction"),
     issue: formText(formData, "issue"),
   };
+}
+
+export function normalizeClientPipelineStage(stage: string): PipelineStage {
+  if (stage === "viewing") return "review";
+  return pipelineStages.includes(stage as PipelineStage) ? stage as PipelineStage : "new";
+}
+
+export function normalizeClientAssetLinkStatus(status: string): (typeof clientAssetLinkStatuses)[number] {
+  if (status === "viewing") return "review";
+  if (status === "offer") return "proposal";
+  return clientAssetLinkStatuses.includes(status as (typeof clientAssetLinkStatuses)[number])
+    ? status as (typeof clientAssetLinkStatuses)[number]
+    : "shortlisted";
 }
 
 function dateInputToTimestamp(value: string) {
@@ -81,16 +93,21 @@ function dateInputToTimestamp(value: string) {
   return Number.isFinite(timestamp) ? timestamp : undefined;
 }
 
-export function taskPayloadFromFormData(formData: FormData, clientId: string): ClientTaskPayload {
+function dateInputToDate(value: string) {
+  if (!value) return undefined;
+  const timestamp = dateInputToTimestamp(value);
+  return timestamp ? new Date(timestamp).toISOString().slice(0, 10) : undefined;
+}
+
+export function taskPayloadFromFormData(formData: FormData, _clientId: string): ClientTaskPayload {
+  void _clientId;
   return {
-    clientId,
     title: formText(formData, "title"),
     status: formText(formData, "status") as ClientTaskPayload["status"],
     visibility: (formText(formData, "visibility") || "private") as ClientTaskPayload["visibility"],
     priority: formText(formData, "priority") as ClientTaskPayload["priority"],
-    dueAt: dateInputToTimestamp(formText(formData, "dueAt")),
-    propertyId: formText(formData, "propertyId") || undefined,
-    notes: formText(formData, "notes") || undefined,
+    dueDate: dateInputToDate(formText(formData, "dueAt")),
+    description: formText(formData, "notes") || undefined,
   };
 }
 
@@ -100,28 +117,22 @@ type ClientTaskUpdateSource = {
   visibility?: ClientTaskPayload["visibility"];
   priority?: ClientTaskPayload["priority"];
   dueAt?: number;
-  propertyId?: string;
-  projectId?: string;
-  calendarEventId?: string;
-  notes?: string;
+  dueDate?: string;
+  description?: string;
 };
 
 export function clientTaskUpdatePayload(
   task: ClientTaskUpdateSource,
-  clientId: string,
+  _clientId: string,
   patch: Partial<ClientTaskPayload> = {},
 ): ClientTaskPayload {
   return {
-    clientId,
     title: task.title,
     status: task.status,
     visibility: task.visibility ?? "private",
     priority: task.priority,
-    dueAt: task.dueAt,
-    propertyId: task.propertyId,
-    projectId: task.projectId,
-    calendarEventId: task.calendarEventId,
-    notes: task.notes,
+    dueDate: task.dueDate,
+    description: task.description,
     ...patch,
   };
 }
@@ -140,13 +151,13 @@ export function clientTaskStatusTone(status: string): StatusPillTone {
 }
 
 export function clientTaskActivityRows<
-  TTask extends { dueAt?: number; propertyId?: string; status: string },
-  TUnit extends { id: string },
->(tasks: TTask[], units: TUnit[], locale: string, emptyDateLabel: string) {
-  const unitById = new Map(units.map((unit) => [unit.id, unit]));
+  TTask extends { dueAt?: number; assetId?: string; status: string },
+  TAsset extends { id: string },
+>(tasks: TTask[], assets: TAsset[], locale: string, emptyDateLabel: string) {
+  const assetById = new Map(assets.map((asset) => [asset.id, asset]));
   return tasks.map((task) => ({
     task,
-    linkedUnit: task.propertyId ? unitById.get(task.propertyId) : undefined,
+    linkedAsset: task.assetId ? assetById.get(task.assetId) : undefined,
     isDone: task.status === "done",
     statusTone: clientTaskStatusTone(task.status),
     dueDateLabel: clientTaskDueDateLabel(task.dueAt, locale, emptyDateLabel),
@@ -154,19 +165,19 @@ export function clientTaskActivityRows<
 }
 
 export function matchesClientSearch(
-  client: { name: string; contact: string; propertyInterest: string; budget: string },
+  client: { name: string; contact: string; assetInterest: string; budget: string },
   search: string,
 ) {
   const q = search.trim().toLowerCase();
-  return !q || [client.name, client.contact, client.propertyInterest, client.budget].some((value) => value.toLowerCase().includes(q));
+  return !q || [client.name, client.contact, client.assetInterest, client.budget].some((value) => value.toLowerCase().includes(q));
 }
 
 export function isActivePipelineStage(stage: string): stage is (typeof activePipelineStages)[number] {
-  return activePipelineStages.includes(stage as (typeof activePipelineStages)[number]);
+  return activePipelineStages.includes(normalizeClientPipelineStage(stage) as (typeof activePipelineStages)[number]);
 }
 
 export function clientPipelineStageIndex(stage: string) {
-  return Math.max(0, pipelineStages.indexOf(stage as PipelineStage));
+  return Math.max(0, pipelineStages.indexOf(normalizeClientPipelineStage(stage)));
 }
 
 export function activeJourneyClients<TClient extends { pipelineStage: string }>(clients: TClient[]) {
@@ -178,7 +189,7 @@ export function clientsForStageFilter<TClient extends { pipelineStage: string }>
   stageFilter: (typeof clientStageFilters)[number],
 ) {
   if (stageFilter === "active") return activeJourneyClients(clients);
-  if (stageFilter === "closed") return clients.filter((client) => client.pipelineStage === "closed");
+  if (stageFilter === "closed") return clients.filter((client) => normalizeClientPipelineStage(client.pipelineStage) === "closed");
   return clients;
 }
 
@@ -200,16 +211,16 @@ export function calendarEventsForClients<TEvent extends { clientId?: string | nu
   return events.filter((event) => !event.clientId || clientIds.has(event.clientId));
 }
 
-export function availableClientUnits<TUnit extends { id: string }, TLink extends { link: { propertyId: string } }>(
-  units: TUnit[],
-  linkedUnits: TLink[],
+export function availableClientAssets<TAsset extends { id: string }, TLink extends { link: { assetId: string } }>(
+  assets: TAsset[],
+  linkedAssets: TLink[],
 ) {
-  const linkedUnitIds = new Set(linkedUnits.map(({ link }) => link.propertyId));
-  return units.filter((unit) => !linkedUnitIds.has(unit.id));
+  const linkedAssetIds = new Set(linkedAssets.map(({ link }) => link.assetId));
+  return assets.filter((asset) => !linkedAssetIds.has(asset.id));
 }
 
-export function matchesClientUnitSearch(
-  unit: {
+export function matchesClientAssetSearch(
+  asset: {
     title: string;
     project: string;
     price: string;
@@ -220,51 +231,55 @@ export function matchesClientUnitSearch(
   search: string,
 ) {
   const q = search.trim().toLowerCase();
-  return !q || [unit.title, unit.project, unit.price, unit.area, unit.status, unit.reference]
+  return !q || [asset.title, asset.project, asset.price, asset.area, asset.status, asset.reference]
     .some((value) => String(value ?? "").toLowerCase().includes(q));
 }
 
-export function clientUnitPickerResults<TUnit extends {
+export function clientAssetPickerResults<TAsset extends {
   id: string;
   title: string;
   project: string;
   price: string;
   area: string;
-  status: PropertyStatus;
+  status: AssetStatus;
   reference: string;
+  bedrooms: string | number;
+  bathrooms: number;
 }>(
-  units: TUnit[],
-  linkedUnits: Array<{ link: { propertyId: string } }>,
-  statusFilter: "all" | PropertyStatus,
+  assets: TAsset[],
+  linkedAssets: Array<{ link: { assetId: string } }>,
+  statusFilter: "all" | AssetStatus,
   search: string,
   limit = 36,
 ) {
-  return clientUnitPickerProjection(units, linkedUnits, statusFilter, search, limit).visibleAvailableUnits;
+  return clientAssetPickerProjection(assets, linkedAssets, statusFilter, search, limit).visibleAvailableAssets;
 }
 
-export function clientUnitPickerProjection<TUnit extends {
+export function clientAssetPickerProjection<TAsset extends {
   id: string;
   title: string;
   project: string;
   price: string;
   area: string;
-  status: PropertyStatus;
+  status: AssetStatus;
   reference: string;
+  bedrooms: string | number;
+  bathrooms: number;
 }>(
-  units: TUnit[],
-  linkedUnits: Array<{ link: { propertyId: string } }>,
-  statusFilter: "all" | PropertyStatus,
+  assets: TAsset[],
+  linkedAssets: Array<{ link: { assetId: string } }>,
+  statusFilter: "all" | AssetStatus,
   search: string,
   limit = 36,
 ) {
-  const availableUnits = availableClientUnits(units, linkedUnits);
-  const filteredAvailableUnits = availableUnits
-    .filter((unit) => statusFilter === "all" || unit.status === statusFilter)
-    .filter((unit) => matchesClientUnitSearch(unit, search));
+  const availableAssets = availableClientAssets(assets, linkedAssets);
+  const filteredAvailableAssets = availableAssets
+    .filter((asset) => statusFilter === "all" || asset.status === statusFilter)
+    .filter((asset) => matchesClientAssetSearch(asset, search));
 
   return {
-    availableUnits,
-    filteredAvailableUnits,
-    visibleAvailableUnits: filteredAvailableUnits.slice(0, limit),
+    availableAssets,
+    filteredAvailableAssets,
+    visibleAvailableAssets: filteredAvailableAssets.slice(0, limit),
   };
 }

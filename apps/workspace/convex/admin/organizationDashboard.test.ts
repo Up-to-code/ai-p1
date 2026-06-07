@@ -5,7 +5,7 @@ describe("Admin organization dashboard projection", () => {
   it("collects unique member ids from activity, access, partner, and invite records", () => {
     expect(adminOrganizationMemberIds({
       projects: [{ createdByUserId: "user_1" }],
-      properties: [{ createdByUserId: "user_2" }],
+      assets: [{ createdByUserId: "user_2" }],
       clients: [{ createdByUserId: "user_1" }],
       tasks: [{ createdByUserId: undefined }],
       calendar: [{ createdByUserId: "user_3" }],
@@ -22,7 +22,7 @@ describe("Admin organization dashboard projection", () => {
 
     expect(adminOrganizationMemberIds({
       projects,
-      properties: [],
+      assets: [],
       clients: [],
       tasks: [],
       calendar: [],

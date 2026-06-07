@@ -1,10 +1,10 @@
 import type { SyncState } from "@/types/common.types";
 
-export type ClientType = "Buyer" | "Tenant" | "Investor" | "Broker";
-export type ClientStatus = "active" | "inactive";
-export type PipelineStage = "new" | "qualified" | "viewing" | "negotiation" | "closed";
+export type ClientType = "person" | "organization";
+export type ClientStatus = "new" | "active" | "nurture" | "inactive" | "archived";
+export type PipelineStage = "new" | "qualified" | "review" | "negotiation" | "closed";
 export type Priority = "normal" | "high" | "urgent";
-export type Visibility = "private" | "public";
+export type Visibility = "private" | "team" | "workspace";
 
 export interface Client {
   _id?: string;
@@ -18,7 +18,7 @@ export interface Client {
   nationality: string;
   generation: string;
   budget: string;
-  propertyInterest: string;
+  assetInterest: string;
   status: ClientStatus;
   visibility?: Visibility;
   added: string;
@@ -35,13 +35,13 @@ export interface Client {
   updatedAt?: number;
 }
 
-export type ClientUnitLinkStatus = "interested" | "shortlisted" | "viewing" | "offer" | "rejected";
+export type ClientAssetLinkStatus = "interested" | "shortlisted" | "review" | "proposal" | "rejected";
 
-export interface ClientUnitLink {
+export interface ClientAssetLink {
   id: string;
   clientId: string;
-  propertyId: string;
-  status: ClientUnitLinkStatus;
+  assetId: string;
+  status: ClientAssetLinkStatus;
   notes?: string;
 }
 
@@ -55,7 +55,7 @@ export interface ClientTask {
   visibility?: Visibility;
   priority: Priority;
   dueAt?: number;
-  propertyId?: string;
+  assetId?: string;
   projectId?: string;
   calendarEventId?: string;
   notes?: string;

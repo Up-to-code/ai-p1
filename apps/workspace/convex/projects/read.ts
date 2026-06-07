@@ -60,10 +60,11 @@ export const listPaged = query({
     organizationId: v.string(),
     paginationOpts: paginationOptsValidator,
     status: v.optional(v.union(
-      v.literal("draft"),
-      v.literal("pending"),
-      v.literal("approved"),
-      v.literal("rejected"),
+      v.literal("planned"),
+      v.literal("active"),
+      v.literal("paused"),
+      v.literal("completed"),
+      v.literal("archived"),
     )),
     search: v.optional(v.string()),
   },
@@ -81,7 +82,7 @@ export const listPaged = query({
         search,
         status: args.status,
         getStatus: (project) => project.status,
-        searchValues: (project) => [project.name, project.reference, project.city, project.developer],
+        searchValues: (project) => [project.name, project.description, project.currency],
       });
 
       return {
@@ -113,10 +114,14 @@ export const stats = query({
   args: { organizationId: v.string() },
   returns: v.object({
     total: v.number(),
-    approved: v.number(),
-    pending: v.number(),
-    draft: v.number(),
-    rejected: v.number(),
+    planned: v.number(),
+    active: v.number(),
+    paused: v.number(),
+    completed: v.number(),
+    archived: v.number(),
+    onTrack: v.number(),
+    atRisk: v.number(),
+    blocked: v.number(),
   }),
   handler: async (ctx, args) => {
     await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "read");

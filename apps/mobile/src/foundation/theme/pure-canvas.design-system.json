@@ -250,7 +250,7 @@
         "rtlTextAlign": "right"
       }
     },
-    "propertyCard": {
+    "assetCard": {
       "heartIcon": "top-right absolute",
       "priceAlignment": "flex-start",
       "specAlignment": "flex-start",

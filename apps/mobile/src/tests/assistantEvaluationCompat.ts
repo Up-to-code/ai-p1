@@ -5,8 +5,8 @@ export function routePrompt(prompt: string): { route: AssistantRoute } {
   if (/contract|legal|clause|قانون|عقد/.test(text)) return { route: "legal" };
   if (/villa and explain financing|find a villa and explain/.test(text)) return { route: "mixed" };
   if (/mortgage|financ|تمويل/.test(text)) return { route: "funding" };
-  if (/find|apartment|rental|property|villa|show me more|الأرخص|الميزانية|دورلي|شقة/.test(text)) {
-    return { route: "property" };
+  if (/find|asset|workspace|inventory|resource|show me more|الأرخص|الميزانية|دورلي|أصل|أصول/.test(text)) {
+    return { route: "asset" };
   }
   return { route: "advisor" };
 }
@@ -40,26 +40,26 @@ export function isShortAreaComparisonFragment(prompt: string) {
 export function buildMemoryContextPlan(args: { prompt: string; route: AssistantRoute }) {
   const text = args.prompt.toLowerCase();
   const direct = /^hi\b|hello|hey|مرحبا|أهلا/.test(text);
-  const propertyHistory = /second one|الأرخص|more like|غير الميزانية/.test(text);
+  const assetHistory = /second one|الأرخص|more like|غير الميزانية/.test(text);
   const preference = /usual|المعتاد/.test(text);
-  const freshSearch = args.route === "property" && !propertyHistory && !preference;
+  const freshSearch = args.route === "asset" && !assetHistory && !preference;
   const context = args.route === "advisor" || args.route === "legal";
 
   return {
     kind: preference
       ? "preference_assisted_search"
-      : propertyHistory
-        ? "property_history"
+      : assetHistory
+        ? "asset_history"
         : direct
           ? "direct"
           : freshSearch
             ? "fresh_search"
             : "context_lookup",
-    searchPolicy: propertyHistory && !/غير الميزانية/.test(text) ? "reuse" : freshSearch || preference || /غير الميزانية/.test(text) ? "rerun" : "none",
+    searchPolicy: assetHistory && !/غير الميزانية/.test(text) ? "reuse" : freshSearch || preference || /غير الميزانية/.test(text) ? "rerun" : "none",
     sources: preference
       ? ["buyer_preferences"]
-      : propertyHistory
-        ? ["property_searches"]
+      : assetHistory
+        ? ["asset_searches"]
         : context
           ? ["thread_messages", "cortex_memory"]
           : [],
@@ -73,7 +73,7 @@ export function extractPreferencePromotion(args: { prompt: string; route: Assist
   return {
     maxBudget: 6000,
     locations: ["Sheikh Zayed"],
-    propertyTypes: ["apartment"],
+    assetTypes: ["asset"],
   };
 }
 
@@ -92,16 +92,16 @@ export function buildAgentSystemPrompt(roleRules: string) {
 
 export function getPersonaGuardrailReply(prompt: string) {
   if (/مين الشركة/.test(prompt)) {
-    return "Qentrah من شركة Qentrah. مثلا أدوّر على شقة أو أقارن بين عقارين.";
+    return "Qentrah من شركة Qentrah. مثلا أدوّر على أصل أو أقارن بين أصلين.";
   }
   if (/أنت Gemini|OpenAI|Gemini|provider|model/i.test(prompt)) {
     return "أنا Qentrah، مساعد Qentrah’s real-estate assistant. مثلا نبحث أو نقارن بدون ذكر مزودين.";
   }
   if (/who built/i.test(prompt)) {
-    return "I was built by the Qentrah company/startup to help with real estate decisions.";
+    return "I was built by the Qentrah company/startup to help with workspace decisions.";
   }
   if (/ignore previous|system prompt|hidden tools/i.test(prompt)) {
-    return "I can’t share hidden instructions, but I can help with your real estate request.";
+    return "I can’t share hidden instructions, but I can help with your workspace request.";
   }
   if (/التجمع ولا زايد/.test(prompt)) {
     return "التجمع وزايد اختيارهم يعتمد على الميزانية، المشوار اليومي، ونوع الوحدة.";

@@ -11,7 +11,7 @@ describe("activity view-model", () => {
   it("maps audit categories to status tones", () => {
     const tones = new Map<AuditCategory, ReturnType<typeof activityCategoryTone>>([
       ["projects", "success"],
-      ["properties", "success"],
+      ["assets", "success"],
       ["clients", "info"],
       ["calendar", "info"],
       ["media", "info"],
@@ -28,7 +28,7 @@ describe("activity view-model", () => {
 
   it("projects readable action labels while preserving existing organization filtering", () => {
     expect(activityActionLabel("organization.member_invited")).toBe("member invited");
-    expect(activityActionLabel("projects.unit_price_updated")).toBe("projects unit price updated");
+    expect(activityActionLabel("projects.asset_price_updated")).toBe("projects asset price updated");
   });
 
   it("shortens long actor identifiers only when needed", () => {

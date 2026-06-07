@@ -26,14 +26,14 @@ describe("WorkOS partner key auth helpers", () => {
       key: "sk_live_partner",
       key_id: "key_123",
       key_last4: "abcd",
-      scopes: "client:read property:read",
+      scopes: "client:read asset:read",
       expires_at: "1790000000000",
     })).toEqual({
       organizationId: "org_123",
       partnerKey: "sk_live_partner",
       keyId: "key_123",
       keyLast4: "abcd",
-      scope: "client:read property:read",
+      scope: "client:read asset:read",
       expiresAt: 1790000000000,
     });
   });

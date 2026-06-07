@@ -875,14 +875,14 @@ const agentPermissionAreas: Array<{
   actions: McpPermissionAction[];
 }> = [
   { resource: "client", icon: Users, actions: ["read", "create", "update", "delete"] },
-  { resource: "property", icon: Home, actions: ["read", "create", "update", "delete"] },
+  { resource: "asset", icon: Home, actions: ["read", "create", "update", "delete"] },
   { resource: "project", icon: Building2, actions: ["read", "create", "update", "delete"] },
   { resource: "calendar", icon: CalendarDays, actions: ["read", "create", "update", "delete"] },
   { resource: "task", icon: CheckCircle2, actions: ["read", "create", "update", "delete"] },
   { resource: "media", icon: FileText, actions: ["read", "create"] },
 ];
 
-type AgentPresetId = "client" | "apartment" | "calendar" | "full";
+type AgentPresetId = "client" | "asset" | "calendar" | "full";
 
 const agentPresets: Array<{ id: AgentPresetId; permissions: McpConnectionPermission[] }> = [
   {
@@ -890,18 +890,18 @@ const agentPresets: Array<{ id: AgentPresetId; permissions: McpConnectionPermiss
     permissions: [
       { resource: "organization", actions: ["read"] },
       { resource: "client", actions: ["read", "create", "update"] },
-      { resource: "property", actions: ["read"] },
+      { resource: "asset", actions: ["read"] },
       { resource: "calendar", actions: ["read", "create", "update"] },
       { resource: "task", actions: ["read", "create", "update"] },
       { resource: "media", actions: ["read", "create"] },
     ],
   },
   {
-    id: "apartment",
+    id: "asset",
     permissions: [
       { resource: "organization", actions: ["read"] },
       { resource: "client", actions: ["read", "update"] },
-      { resource: "property", actions: ["read", "create", "update"] },
+      { resource: "asset", actions: ["read", "create", "update"] },
       { resource: "project", actions: ["read", "update"] },
       { resource: "media", actions: ["read", "create"] },
     ],
@@ -911,7 +911,7 @@ const agentPresets: Array<{ id: AgentPresetId; permissions: McpConnectionPermiss
     permissions: [
       { resource: "organization", actions: ["read"] },
       { resource: "client", actions: ["read"] },
-      { resource: "property", actions: ["read"] },
+      { resource: "asset", actions: ["read"] },
       { resource: "project", actions: ["read"] },
       { resource: "calendar", actions: ["read", "create", "update"] },
       { resource: "task", actions: ["read", "update"] },
@@ -922,7 +922,7 @@ const agentPresets: Array<{ id: AgentPresetId; permissions: McpConnectionPermiss
     permissions: [
       { resource: "organization", actions: ["read"] },
       { resource: "client", actions: ["read", "create", "update", "delete"] },
-      { resource: "property", actions: ["read", "create", "update", "delete"] },
+      { resource: "asset", actions: ["read", "create", "update", "delete"] },
       { resource: "project", actions: ["read", "create", "update", "delete"] },
       { resource: "calendar", actions: ["read", "create", "update", "delete"] },
       { resource: "task", actions: ["read", "create", "update", "delete"] },
@@ -1099,6 +1099,7 @@ function AgentLinksPanel({
   const [instructions, setInstructions] = useState(() => t("defaults.instructions"));
   const [presetId, setPresetId] = useState<AgentPresetId | "custom">("client");
   const [principalType, setPrincipalType] = useState<OrganizationMcpConnection["principalType"]>("user");
+  const [agentExpiry, setAgentExpiry] = useState<OrganizationApiKeyExpiry>("30d");
   const [permissions, setPermissions] = useState<McpConnectionPermission[]>(cloneAgentPermissions(agentPresets[0].permissions));
   const [allowDelete, setAllowDelete] = useState(false);
   const [oneTimeLink, setOneTimeLink] = useState("");
@@ -1119,6 +1120,7 @@ function AgentLinksPanel({
       instructions,
       principalType,
       permissions: selectedGrantablePermissions,
+      expiresAt: expiryTimestamp(agentExpiry),
     }),
     onSuccess: async (result) => {
       setOneTimeLink(result.agentLink);
@@ -1180,6 +1182,7 @@ function AgentLinksPanel({
     setEditingConnection(null);
     setPresetId(defaultPreset.id);
     setPrincipalType("user");
+    setAgentExpiry("30d");
     setPermissions(clampAgentPermissionsToGrantable(cloneAgentPermissions(defaultPreset.permissions), grantablePermissions));
     setAgentName(t(`presets.${defaultPreset.id}`));
     setInstructions(t("defaults.instructions"));
@@ -1193,6 +1196,7 @@ function AgentLinksPanel({
     setEditingConnection(connection);
     setPresetId("custom");
     setPrincipalType(connection.principalType);
+    setAgentExpiry(connection.expiresAt ? "30d" : "never");
     setPermissions(clampAgentPermissionsToGrantable(cloneAgentPermissions(connection.permissions), grantablePermissions));
     setAgentName(connection.name);
     setInstructions(connection.instructions ?? "");
@@ -1427,47 +1431,47 @@ function AgentLinksPanel({
             </div>
           ) : (
             <div className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="agentName" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.name")}</Label>
                   <Input id="agentName" value={agentName} onChange={(event) => setAgentName(event.target.value)} className="h-11 rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="agentPreset" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.startWith")}</Label>
-                  <select id="agentPreset" value={presetId} onChange={(event) => applyPreset(event.target.value)} className="h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm font-bold dark:border-white/10 dark:bg-[#111]">
-                    {agentPresets.map((preset) => <option key={preset.id} value={preset.id}>{t(`presets.${preset.id}`)}</option>)}
-                    <option value="custom">{t("presets.custom")}</option>
-                  </select>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.startWith")}</Label>
+                  <Select value={presetId} onValueChange={(value) => {
+                    if (value) applyPreset(value);
+                  }}>
+                    <SelectTrigger className="h-11 rounded-xl border-zinc-200 bg-white text-sm font-bold dark:border-white/10 dark:bg-[#111]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent align="end" className="rounded-xl">
+                      {agentPresets.map((preset) => (
+                        <SelectItem key={preset.id} value={preset.id}>
+                          {t(`presets.${preset.id}`)}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="custom">{t("presets.custom")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.expiry")}</Label>
+                  <Select value={agentExpiry} onValueChange={(value) => {
+                    if (value) setAgentExpiry(value);
+                  }}>
+                    <SelectTrigger className="h-11 rounded-xl border-zinc-200 bg-white text-sm font-bold dark:border-white/10 dark:bg-[#111]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent align="end" className="rounded-xl">
+                      {apiKeyExpiryOptions.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {t(`expiry.${option}`)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-              {!isEditing && (
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.principal")}</Label>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {(["user", "organization"] as const).map((type) => (
-                      <button
-                        key={type}
-                        type="button"
-                        onClick={() => setPrincipalType(type)}
-                        className={cn(
-                          "rounded-xl border px-4 py-3 text-start transition-colors",
-                          principalType === type
-                            ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-950"
-                            : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 dark:border-white/10 dark:bg-[#111] dark:text-zinc-200",
-                        )}
-                      >
-                        <span className="block text-xs font-black">{t(`principal.${type}.title`)}</span>
-                        <span className={cn(
-                          "mt-1 block text-[11px] leading-5",
-                          principalType === type ? "text-white/70 dark:text-zinc-600" : "text-zinc-500 dark:text-zinc-400",
-                        )}>
-                          {t(`principal.${type}.description`)}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
               <div className="space-y-2">
                 <Label htmlFor="agentInstructions" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.instructions")}</Label>
                 <textarea
@@ -1550,6 +1554,7 @@ function AgentLinksPanel({
                           name: agentName,
                           instructions,
                           permissions: selectedGrantablePermissions,
+                          expiresAt: agentExpiry === "never" ? null : expiryTimestamp(agentExpiry),
                         },
                       });
                       return;
@@ -1577,7 +1582,7 @@ const apiKeyPermissionAreas: Array<{
 }> = [
   { resource: "organization", icon: Building2, actions: ["read", "create", "update", "delete"] },
   { resource: "client", icon: Users, actions: ["read", "create", "update", "delete"] },
-  { resource: "property", icon: Home, actions: ["read", "create", "update", "delete"] },
+  { resource: "asset", icon: Home, actions: ["read", "create", "update", "delete"] },
   { resource: "project", icon: Building2, actions: ["read", "create", "update", "delete"] },
   { resource: "calendar", icon: CalendarDays, actions: ["read", "create", "update", "delete"] },
   { resource: "task", icon: CheckCircle2, actions: ["read", "create", "update", "delete"] },
@@ -1585,6 +1590,14 @@ const apiKeyPermissionAreas: Array<{
 ];
 
 const apiKeyExpiryOptions: OrganizationApiKeyExpiry[] = ["5h", "14d", "30d", "never"];
+
+function expiryTimestamp(expiry: OrganizationApiKeyExpiry) {
+  if (expiry === "never") return undefined;
+  const now = Date.now();
+  if (expiry === "5h") return now + 5 * 60 * 60 * 1000;
+  if (expiry === "14d") return now + 14 * 24 * 60 * 60 * 1000;
+  return now + 30 * 24 * 60 * 60 * 1000;
+}
 
 function organizationApiBaseUrl(organizationId: string) {
   const origin = typeof window === "undefined" ? "" : window.location.origin;
@@ -2503,7 +2516,7 @@ function workAreaIcon(resource: PermissionResource) {
     team: Users,
     member: Users,
     project: Building2,
-    property: Home,
+    asset: Home,
     client: Users,
     task: CheckCircle2,
     calendar: CalendarDays,

@@ -1,8 +1,7 @@
 "use client";
 
-import Image from "next/image";
-import { useEffect, useMemo } from "react";
-import { ArrowRight, Building2, CalendarClock, Landmark, MapPin } from "lucide-react";
+import { useEffect, useMemo, type ReactNode } from "react";
+import { ArrowRight, Building2, CalendarClock, FileText, FolderOpen, Landmark, Layers3, MapPin, Package, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { AppPageHeader, AppPageShell, AppSection } from "@/components/shared";
 import { HttpQueryState, WorkspaceQueryState, StatusPill } from "@/components/shared/crud-ui";
@@ -12,6 +11,9 @@ import { cn } from "@/lib/utils";
 import { useAccountContext } from "@/domains/auth";
 import { useClientsIndexQuery } from "@/domains/clients/api/clients";
 import type { Client } from "@/domains/clients/store/clients.types";
+import { useAssetsIndexQuery } from "@/domains/assets/api/assets";
+import type { WorkspaceAsset } from "@/domains/assets/store/assets.types";
+import { formatSAR, statusTone } from "@/domains/assets/asset-view-model";
 import {
   compactEventType,
   compactScheduleTitle,
@@ -24,6 +26,7 @@ import {
 import { parseWorkspaceMode, useWorkspaceStore } from "@/domains/dashboard/store/dashboard.store";
 import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
 import type { Project } from "@/domains/projects/store/projects.types";
+import { statusTone as projectStatusTone } from "@/domains/projects/project-view-model";
 import { useWorkspaceResourceResult } from "@/domains/resources/workspace-resource-request";
 import { useSearchParams } from "next/navigation";
 
@@ -50,9 +53,11 @@ export function DashboardScreen() {
   );
   const clientsQuery = useClientsIndexQuery(workspaceOrganizationId);
   const projectsQuery = useProjectsIndexQuery(workspaceOrganizationId);
+  const assetsQuery = useAssetsIndexQuery(workspaceOrganizationId);
   const overview = overviewQuery.data;
   const clients = useMemo(() => clientsQuery.results as Client[], [clientsQuery.results]);
   const projects = useMemo(() => projectsQuery.results as Project[], [projectsQuery.results]);
+  const assets = useMemo(() => assetsQuery.results as WorkspaceAsset[], [assetsQuery.results]);
   const isLoading = isWorkspaceReady && overviewQuery.queryStatus === "loading";
   const isQueryBlocked = isLoading || overviewQuery.queryStatus === "error";
 
@@ -69,6 +74,15 @@ export function DashboardScreen() {
   const latestProjects = useMemo(() => {
     return latestDashboardProjects(projects);
   }, [projects]);
+  const latestAssets = useMemo(() => {
+    return [...assets]
+      .sort((left, right) => {
+        const leftTime = left.updatedAt ?? left.createdAt ?? Date.parse(left.updated ?? "") ?? 0;
+        const rightTime = right.updatedAt ?? right.createdAt ?? Date.parse(right.updated ?? "") ?? 0;
+        return rightTime - leftTime;
+      })
+      .slice(0, 6);
+  }, [assets]);
 
   const aiPanel = useMemo(
     () => <DashboardChat organizationId={workspaceOrganizationId} />,
@@ -90,6 +104,19 @@ export function DashboardScreen() {
         ) : (
           <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
             <div className="space-y-6">
+              <WorkspaceOpsStrip
+                assetStats={assetsQuery.stats}
+                clientCount={clients.length}
+                eventCount={desk.todayEvents.length}
+                projectCount={projects.length}
+              />
+              <LatestAssetsBoard
+                assets={latestAssets}
+                emptyLabel={t("normal.noAssets")}
+                loading={isWorkspaceReady && assetsQuery.queryStatus === "loading"}
+                title={t("normal.newAssets")}
+                viewAllLabel={t("normal.viewAll")}
+              />
               <NewProjectsCard
                 emptyLabel={t("normal.noProjects")}
                 loading={isWorkspaceReady && projectsQuery.queryStatus === "loading"}
@@ -114,7 +141,7 @@ export function DashboardScreen() {
         )}
       </AppPageShell>
     ),
-    [clientsQuery.queryStatus, desk, isQueryBlocked, isWorkspaceReady, latestClients, latestProjects, overviewQuery, projectsQuery.queryStatus, t, workspaceStatus],
+    [assetsQuery.queryStatus, assetsQuery.stats, clients.length, clientsQuery.queryStatus, desk, isQueryBlocked, isWorkspaceReady, latestAssets, latestClients, latestProjects, overviewQuery, projects.length, projectsQuery.queryStatus, t, workspaceStatus],
   );
 
   return (
@@ -131,6 +158,40 @@ export function DashboardScreen() {
 
 const dashboardActionLinkClassName =
   "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold text-[#0B5CFF] transition hover:bg-[#0B5CFF]/5 hover:text-[#084AD6] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0B5CFF]/10 dark:text-blue-300 dark:hover:bg-blue-400/10 dark:hover:text-blue-200";
+
+function WorkspaceOpsStrip({
+  assetStats,
+  clientCount,
+  eventCount,
+  projectCount,
+}: {
+  assetStats?: { total?: number; available?: number; pending?: number };
+  clientCount: number;
+  eventCount: number;
+  projectCount: number;
+}) {
+  const t = useTranslations("Dashboard");
+  const items = [
+    { label: t("stats.projects"), value: projectCount, icon: Building2 },
+    { label: t("stats.assets"), value: assetStats?.total ?? 0, icon: Package },
+    { label: t("stats.clients"), value: clientCount, icon: UserRound },
+    { label: t("stats.events"), value: eventCount, icon: CalendarClock },
+  ];
+
+  return (
+    <section className="grid gap-3 md:grid-cols-4">
+      {items.map(({ icon: Icon, label, value }) => (
+        <div key={label} className="flex min-h-20 items-center justify-between gap-3 rounded-2xl border border-zinc-200/80 bg-white px-4 py-3 dark:border-white/10 dark:bg-[#0A0A0A]">
+          <div className="min-w-0">
+            <p className="truncate text-[10px] font-black uppercase text-zinc-400">{label}</p>
+            <p className="mt-2 text-2xl font-black text-zinc-950 dark:text-white">{value}</p>
+          </div>
+          <Icon className="h-4 w-4 shrink-0 text-zinc-300 dark:text-zinc-600" />
+        </div>
+      ))}
+    </section>
+  );
+}
 
 function ModePanel({ active, children }: { active: boolean; children: React.ReactNode }) {
   return (
@@ -248,14 +309,17 @@ function NewProjectsCard({
         </Link>
       }
     >
-      <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
         {loading ? (
-          Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="h-[232px] animate-pulse rounded-[22px] bg-zinc-50 dark:bg-white/[0.02]" />
+          Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="space-y-0">
+              <div className="ms-5 h-4 w-[38%] animate-pulse rounded-t-xl bg-zinc-100 dark:bg-[#121212]" />
+              <div className="h-[148px] animate-pulse rounded-[18px] rounded-tl-md border border-zinc-200/80 bg-white dark:border-white/10 dark:bg-[#0A0A0A]" />
+            </div>
           ))
         ) : projects.length > 0 ? (
-          projects.slice(0, 3).map((project) => (
-            <DashboardProjectTile key={project.id} project={project} />
+          projects.slice(0, 4).map((project) => (
+            <DashboardProjectFolder key={project.id} project={project} />
           ))
         ) : (
           <div className="col-span-full flex min-h-32 items-center justify-center rounded-2xl border border-dashed border-zinc-200 text-center dark:border-white/10">
@@ -267,63 +331,155 @@ function NewProjectsCard({
   );
 }
 
-function DashboardProjectTile({ project }: { project: Project }) {
+function LatestAssetsBoard({
+  assets,
+  emptyLabel,
+  loading,
+  title,
+  viewAllLabel,
+}: {
+  assets: WorkspaceAsset[];
+  emptyLabel: string;
+  loading: boolean;
+  title: string;
+  viewAllLabel: string;
+}) {
+  const visibleAssets = loading ? [] : assets;
+
+  return (
+    <AppSection
+      title={title}
+      actions={
+        <Link href="/assets" className={dashboardActionLinkClassName}>
+          {viewAllLabel}
+          <ArrowRight className="h-3 w-3 rtl:rotate-180" />
+        </Link>
+      }
+    >
+      {loading ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="min-h-[132px] animate-pulse rounded-md border border-zinc-200/80 bg-white dark:border-white/10 dark:bg-[#0A0A0A]" />
+          ))}
+        </div>
+      ) : visibleAssets.length > 0 ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {visibleAssets.map((asset) => <DashboardAssetFile key={asset.id} asset={asset} />)}
+        </div>
+      ) : (
+        <div className="flex min-h-32 items-center justify-center rounded-2xl border border-dashed border-zinc-200 text-center dark:border-white/10">
+          <p className="text-xs font-bold text-zinc-400">{emptyLabel}</p>
+        </div>
+      )}
+    </AppSection>
+  );
+}
+
+function DashboardFolderShell({
+  href,
+  label,
+  children,
+}: {
+  href: string;
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-label={label}
+      className="group block text-start focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#121212]/10 dark:focus-visible:ring-white/10"
+    >
+      <div className="relative pt-4">
+        <div
+          aria-hidden="true"
+          className="absolute start-5 top-0 z-10 h-4 w-[42%] max-w-[108px] rounded-t-[14px] border border-b-0 border-zinc-200/80 bg-[#FAFAFA] transition-colors group-hover:border-zinc-300 dark:border-white/10 dark:bg-[#121212] dark:group-hover:border-white/20"
+        />
+        <div className="relative -mt-px overflow-hidden rounded-[18px] rounded-tl-md border border-zinc-200/80 bg-white transition duration-300 group-hover:border-zinc-300 dark:border-white/10 dark:bg-[#0A0A0A] dark:group-hover:border-white/20">
+          {children}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function DashboardProjectFolder({ project }: { project: Project }) {
   const t = useTranslations("Projects");
-  const image = project.coverImageUrl || project.image;
+  const location = project.city || project.area || "—";
+
+  return (
+    <DashboardFolderShell href={`/projects/${project.id}`} label={project.name}>
+      <div className="flex min-h-[148px] flex-col p-4">
+        <div className="flex items-start justify-between gap-2">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-[#121212] transition-colors group-hover:bg-zinc-950 group-hover:text-white dark:bg-white/[0.06] dark:text-white dark:group-hover:bg-white dark:group-hover:text-[#121212]">
+            <FolderOpen className="h-4 w-4" />
+          </span>
+          <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={projectStatusTone(project.status)} />
+        </div>
+        <div className="mt-3 min-w-0 flex-1">
+          <p className="truncate text-[10px] font-black uppercase tracking-[0.12em] text-zinc-400">{project.reference}</p>
+          <h3 className="mt-1 line-clamp-2 text-sm font-black leading-tight text-[#121212] dark:text-white">{project.name}</h3>
+          <p className="mt-2 flex min-w-0 items-center gap-1.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+            <MapPin className="h-3 w-3 shrink-0" />
+            <span className="truncate">{location}</span>
+          </p>
+        </div>
+        <div className="mt-3 flex items-center justify-between gap-2 border-t border-zinc-100 pt-3 text-[10px] font-bold text-zinc-500 dark:border-white/[0.06] dark:text-zinc-400">
+          <span className="inline-flex min-w-0 items-center gap-1.5">
+            <Landmark className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{project.developer || project.type}</span>
+          </span>
+          <span className="shrink-0 truncate text-end font-black text-[#121212] dark:text-white">
+            {project.priceRange || `${project.assetCount} ${t("card.assetCount")}`}
+          </span>
+        </div>
+      </div>
+    </DashboardFolderShell>
+  );
+}
+
+function DashboardAssetFile({ asset }: { asset: WorkspaceAsset }) {
+  const assetsT = useTranslations("Assets");
 
   return (
     <Link
-      href={`/projects/${project.id}`}
-      className="group block overflow-hidden rounded-[22px] border border-zinc-100 bg-white transition-colors hover:border-zinc-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-zinc-900/10 dark:border-white/5 dark:bg-[#0A0A0A] dark:focus-visible:ring-white/10"
+      href={`/assets/${asset.id}`}
+      aria-label={asset.title}
+      className="group relative block min-h-[132px] overflow-hidden rounded-md border border-zinc-200/80 bg-white text-start transition-colors hover:border-zinc-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#121212]/10 dark:border-white/10 dark:bg-[#0A0A0A] dark:hover:border-white/20 dark:focus-visible:ring-white/10"
     >
-      <div className="relative h-[232px] overflow-hidden bg-zinc-100 text-start dark:bg-white/5">
-        {image ? (
-          <Image
-            src={image}
-            alt={project.name}
-            fill
-            sizes="(max-width: 768px) 100vw, 360px"
-            className="object-cover opacity-85 grayscale transition duration-500 group-hover:scale-[1.025] group-hover:opacity-100 group-hover:grayscale-0"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-300 dark:bg-white/5 dark:text-white/20">
-            <Building2 className="h-8 w-8" />
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/70 via-zinc-950/12 to-transparent transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 md:opacity-55" />
-        <div className="pointer-events-none absolute -end-14 -top-14 h-36 w-36 rounded-full bg-[#0B5CFF]/25 opacity-35 blur-3xl transition-opacity duration-300 group-hover:opacity-90 group-focus-visible:opacity-90" />
-        <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-[#8AB2FF]/80 to-transparent opacity-40 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100" />
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute end-0 top-0 border-s-[30px] border-s-transparent border-t-[30px] border-t-zinc-200 dark:border-t-zinc-700"
+      />
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute end-0 top-0 border-s-[26px] border-s-transparent border-t-[26px] border-t-[#FAFAFA] dark:border-t-[#121212]"
+      />
 
-        <div className="absolute inset-x-0 bottom-0 p-4">
-          <div className="flex min-w-0 items-end justify-between gap-4">
-            <div className="min-w-0 opacity-0 translate-y-2 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
-              <h3 className="line-clamp-2 text-base font-black leading-tight text-white">
-                {project.name}
-              </h3>
-              <p className="mt-2 flex min-w-0 items-center gap-1.5 text-[10px] font-bold text-white/65">
-                <MapPin className="h-3 w-3 shrink-0" />
-                <span className="truncate">{project.city || project.area || "—"}</span>
-              </p>
-            </div>
-            <div className="shrink-0 text-end transition duration-300 md:translate-y-7 md:group-hover:translate-y-0 md:group-focus-visible:translate-y-0">
-              <p className="text-[9px] font-black uppercase tracking-[0.14em] text-white/50">
-                {t("card.value")}
-              </p>
-              <p className="mt-1 max-w-32 truncate text-sm font-black text-white">
-                {project.priceRange}
-              </p>
-            </div>
-          </div>
+      <div className="relative flex h-full flex-col p-4 pe-8">
+        <div className="flex items-start justify-between gap-2">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-zinc-200/80 bg-zinc-50 text-[#121212] dark:border-white/10 dark:bg-white/[0.04] dark:text-white">
+            <FileText className="h-4 w-4" />
+          </span>
+          <StatusPill label={assetsT(`toolbar.filters.${asset.status}`)} tone={statusTone(asset.status)} />
+        </div>
 
-          <div className="mt-4 flex translate-y-2 items-center justify-between border-t border-white/10 pt-3 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
-            <div className="flex min-w-0 items-center gap-2 text-[10px] font-bold text-white/60">
-              <Landmark className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{project.developer || project.type}</span>
-            </div>
-            <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.12em] text-white/75">
-              {project.units} {t("card.units")}
-            </span>
+        <div className="mt-3 min-w-0 flex-1">
+          <p className="truncate font-mono text-[10px] font-bold uppercase tracking-wide text-zinc-400">{asset.reference}</p>
+          <h3 className="mt-1 line-clamp-2 text-sm font-black leading-tight text-[#121212] dark:text-white">{asset.title}</h3>
+          <div className="mt-3 space-y-1.5">
+            <span className="block h-px w-full bg-zinc-100 dark:bg-white/[0.06]" />
+            <span className="block h-px w-[88%] bg-zinc-100 dark:bg-white/[0.06]" />
+            <span className="block h-px w-[62%] bg-zinc-100 dark:bg-white/[0.04]" />
           </div>
+        </div>
+
+        <div className="mt-3 flex items-center justify-between gap-2 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
+          <span className="inline-flex min-w-0 items-center gap-1">
+            <Layers3 className="h-3 w-3 shrink-0" />
+            <span className="truncate">{asset.area}</span>
+          </span>
+          <span className="shrink-0 font-black text-[#121212] dark:text-white">{formatSAR(asset.price)}</span>
         </div>
       </div>
     </Link>
@@ -371,7 +527,7 @@ function LatestClientsList({
               <span className="min-w-0">
                 <span className="block truncate text-xs font-black text-zinc-950 dark:text-zinc-50">{client.name}</span>
                 <span className="mt-1 block truncate text-[10px] font-semibold text-zinc-400 dark:text-zinc-500">
-                  {client.propertyInterest || client.nextAction || client.contact}
+                  {client.assetInterest || client.nextAction || client.contact}
                 </span>
               </span>
 

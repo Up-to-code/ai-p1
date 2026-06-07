@@ -1,4 +1,4 @@
-export const ORGANIZATION_API_KEY_RESOURCES = ["clients", "properties", "deals", "brokers"] as const;
+export const ORGANIZATION_API_KEY_RESOURCES = ["clients", "assets", "deals", "brokers"] as const;
 export const ORGANIZATION_API_KEY_ACTIONS = ["read", "create", "update", "delete"] as const;
 
 export type OrganizationApiKeyResource = (typeof ORGANIZATION_API_KEY_RESOURCES)[number];
@@ -10,7 +10,7 @@ export type OrganizationApiKeyPermission = {
 
 export const ORGANIZATION_API_KEY_RESOURCE_CATALOG = [
   { resource: "clients", label: "Clients", arabicLabel: "العملاء" },
-  { resource: "properties", label: "Properties", arabicLabel: "العقارات" },
+  { resource: "assets", label: "Assets", arabicLabel: "الأصول" },
   { resource: "deals", label: "Deals", arabicLabel: "الصفقات" },
   { resource: "brokers", label: "Brokers", arabicLabel: "الوسطاء" },
 ] as const satisfies ReadonlyArray<{
@@ -35,10 +35,10 @@ export const ORGANIZATION_API_KEY_ALLOWED_PERMISSIONS = [
   { resource: "clients", action: "create" },
   { resource: "clients", action: "update" },
   { resource: "clients", action: "delete" },
-  { resource: "properties", action: "read" },
-  { resource: "properties", action: "create" },
-  { resource: "properties", action: "update" },
-  { resource: "properties", action: "delete" },
+  { resource: "assets", action: "read" },
+  { resource: "assets", action: "create" },
+  { resource: "assets", action: "update" },
+  { resource: "assets", action: "delete" },
   { resource: "deals", action: "read" },
   { resource: "deals", action: "create" },
   { resource: "deals", action: "update" },

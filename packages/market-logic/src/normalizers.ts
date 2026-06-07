@@ -44,9 +44,9 @@ const MARKET_STOPWORDS = new Set([
   "saudi",
   "arabia",
   "ksa",
-  "العقاري",
-  "عقار",
-  "عقارات",
+  "الأصول",
+  "أصل",
+  "اصول",
   "للبيع",
   "للايجار",
   "للإيجار",
@@ -56,11 +56,11 @@ const MARKET_STOPWORDS = new Set([
   "villas",
   "apartment",
   "apartments",
-  "property",
-  "properties",
+  "asset",
+  "assets",
 ]);
 
-const PROPERTY_TYPE_PATTERNS: Array<{ label: string; patterns: RegExp[] }> = [
+const ASSET_TYPE_PATTERNS: Array<{ label: string; patterns: RegExp[] }> = [
   { label: "شقق", patterns: [/\bapartment\b/i, /\bapartments\b/i, /شقة/u, /شقق/u] },
   { label: "فلل", patterns: [/\bvilla\b/i, /\bvillas\b/i, /فيلا/u, /فلل/u] },
   { label: "أراضٍ", patterns: [/\bland\b/i, /\bplot\b/i, /أرض/u, /ارضي/u, /أراضي/u] },
@@ -195,9 +195,9 @@ export function parseSaudiGeography(args: {
   return city ? { city } : {};
 }
 
-export function inferPropertyTypeLabel(value?: string | null): string | undefined {
+export function inferAssetTypeLabel(value?: string | null): string | undefined {
   if (!value) return undefined;
-  for (const entry of PROPERTY_TYPE_PATTERNS) {
+  for (const entry of ASSET_TYPE_PATTERNS) {
     if (entry.patterns.some((pattern) => pattern.test(value))) {
       return entry.label;
     }

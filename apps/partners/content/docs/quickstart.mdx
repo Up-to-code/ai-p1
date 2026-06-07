@@ -55,7 +55,7 @@ const handlers = createQentrahPartnerAuthHandlers({
   workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL!,
   clientId: process.env.QENTRAH_CLIENT_ID!,
   redirectUri: "https://partner.example.com/api/qentrah/oauth/callback",
-  scopes: ["organization:read", "client:read", "property:read"],
+  scopes: ["organization:read", "client:read", "asset:read"],
   sessionStore,
   tokenStore,
 });

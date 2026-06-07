@@ -18,7 +18,7 @@ describe("agent risk policy", () => {
   });
 
   it("allows ordinary client and calendar requests", () => {
-    expect(evaluateAgentRequestRisk("find client Ahmed and schedule a viewing").state).toBe("allowed");
+    expect(evaluateAgentRequestRisk("find client Ahmed and schedule a meeting").state).toBe("allowed");
     expect(evaluateAgentToolRisk({ resource: "calendar", action: "create" }).state).toBe("allowed");
   });
 });

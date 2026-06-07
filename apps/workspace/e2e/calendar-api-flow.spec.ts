@@ -4,10 +4,10 @@ import {
   createClient,
   createClientTask,
   createProject,
-  createProperty,
+  createAsset,
   prepareOwner,
   projectPayload,
-  propertyPayload,
+  assetPayload,
   uniqueName,
 } from "./helpers";
 
@@ -53,12 +53,12 @@ test.describe("calendar and API error flows", () => {
     const { organizationId } = await prepareOwner(page, "api-negative");
     const projectName = uniqueName("API Project");
     const project = await createProject(page.request, organizationId, projectPayload(projectName));
-    const propertyName = uniqueName("API Unit");
-    const property = await createProperty(
+    const assetName = uniqueName("API Asset");
+    const asset = await createAsset(
       page.request,
       organizationId,
       { id: project.project.id, name: projectName },
-      propertyPayload({ id: project.project.id, name: projectName }, propertyName),
+      assetPayload({ id: project.project.id, name: projectName }, assetName),
     );
     const clientName = uniqueName("API Client");
     const client = await createClient(page.request, organizationId, {
@@ -70,7 +70,7 @@ test.describe("calendar and API error flows", () => {
       nationality: "Saudi",
       generation: "Millennial",
       budget: "900K - 1.2M SAR",
-      propertyInterest: "2BR apartment in Riyadh",
+      assetInterest: "2BR apartment in Riyadh",
       status: "active",
       visibility: "private",
       pipelineStage: "new",
@@ -81,7 +81,7 @@ test.describe("calendar and API error flows", () => {
     const event = await createCalendarEvent(page.request, organizationId, {
       title: uniqueName("API Event"),
       clientId: client.client.id,
-      unitId: property.property.id,
+      assetId: asset.asset.id,
       taskId: task.task.id,
     });
 
@@ -92,12 +92,12 @@ test.describe("calendar and API error flows", () => {
     expect(invalidProject.status()).toBe(400);
     await expect(invalidProject.json()).resolves.toMatchObject({ error: "Invalid project payload." });
 
-    const invalidClientLink = await page.request.post(`/api/v1/organizations/${organizationId}/clients/${client.client.id}/units`, {
-      data: { propertyId: "", status: "not-a-status" },
+    const invalidClientLink = await page.request.post(`/api/v1/organizations/${organizationId}/clients/${client.client.id}/assets`, {
+      data: { assetId: "", status: "not-a-status" },
       headers: { "content-type": "application/json" },
     });
     expect(invalidClientLink.status()).toBe(400);
-    await expect(invalidClientLink.json()).resolves.toMatchObject({ error: "Invalid unit link payload." });
+    await expect(invalidClientLink.json()).resolves.toMatchObject({ error: "Invalid asset link payload." });
 
     const unauthenticatedDelete = await page.context().request.delete(
       `/api/v1/organizations/${organizationId}/calendar-events/${event.event.id}`,

@@ -48,9 +48,9 @@ describe("dashboard view-model", () => {
   it("compacts schedule titles and event types", () => {
     expect(compactScheduleTitle("call 12 - Follow up with client")).toBe("Follow up with client");
     expect(compactEventType(
-      { id: "1", date: "2026-05-28", time: "09:00", title: "anything", owner: "A", type: "site_viewing", priority: "normal" },
+      { id: "1", date: "2026-05-28", time: "09:00", title: "anything", owner: "A", type: "meeting", priority: "normal" },
       (type) => `translated:${type}`,
-    )).toBe("translated:site-viewing");
+    )).toBe("translated:meeting");
     expect(compactEventType(
       { id: "2", date: "2026-05-28", time: "09:00", title: "customThing 123", owner: "A", type: "customThing", priority: "normal" },
       (type) => `translated:${type}`,

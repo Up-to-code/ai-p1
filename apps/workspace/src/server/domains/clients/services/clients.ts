@@ -1,10 +1,9 @@
 import { api } from "@convex/_generated/api";
 import { fetchAuthMutation } from "@/server/auth/clerk-convex";
-import type { ClientPayload, ClientUnitLinkPayload } from "../validation/client.schema";
+import type { ClientPayload, ClientAssetLinkPayload } from "../validation/client.schema";
 
 function toConvexInput(input: ClientPayload) {
-  const { issue, ...required } = input;
-  return { ...required, ...(issue ? { issue } : {}) };
+  return input;
 }
 
 export async function createClient(organizationId: string, input: ClientPayload) {
@@ -29,22 +28,22 @@ export async function deleteClient(organizationId: string, clientId: string) {
   });
 }
 
-export async function linkClientUnit(organizationId: string, clientId: string, input: ClientUnitLinkPayload) {
-  return fetchAuthMutation(api.clients.write.linkUnitFromHono, {
+export async function linkClientAsset(organizationId: string, clientId: string, input: ClientAssetLinkPayload) {
+  return fetchAuthMutation(api.clients.write.linkAssetFromHono, {
     organizationId,
     input: {
       clientId: clientId as never,
-      propertyId: input.propertyId as never,
+      assetId: input.assetId as never,
       status: input.status,
       ...(input.notes ? { notes: input.notes } : {}),
     },
   });
 }
 
-export async function unlinkClientUnit(organizationId: string, clientId: string, propertyId: string) {
-  return fetchAuthMutation(api.clients.write.unlinkUnitFromHono, {
+export async function unlinkClientAsset(organizationId: string, clientId: string, assetId: string) {
+  return fetchAuthMutation(api.clients.write.unlinkAssetFromHono, {
     organizationId,
     clientId: clientId as never,
-    propertyId: propertyId as never,
+    assetId: assetId as never,
   });
 }

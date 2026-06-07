@@ -93,7 +93,7 @@ export type PartnerPlatformWebhookEvent = z.infer<typeof partnerPlatformWebhookE
 
 const legacyWorkspaceScopeMap: Record<string, string | null> = {
   "clients:read_own": "client:read",
-  "properties:read_own": "property:read",
+  "assets:read_own": "asset:read",
   "organization:read_own": "organization:read",
   openid: null,
   profile: null,

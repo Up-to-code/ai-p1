@@ -1,7 +1,7 @@
 export type WorkspacePersonCardType = "broker" | "client";
 export type WorkspacePersonBadge = "verified" | "vip";
 
-export type WorkspaceUnitReference = {
+export type WorkspaceAssetReference = {
   id: string;
   label: string;
 };
@@ -14,7 +14,7 @@ export type WorkspaceProjectReference = {
 
 export type WorkspacePersonRelation = {
   project: WorkspaceProjectReference | null;
-  unit: WorkspaceUnitReference | null;
+  asset: WorkspaceAssetReference | null;
   stageLabel?: string;
   summary?: string;
 };

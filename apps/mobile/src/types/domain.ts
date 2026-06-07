@@ -65,7 +65,7 @@ export type ConversationMessage = {
   kind: ConversationKind;
   text: string;
   streamState: StreamState;
-  relatedPropertyIds: string[];
+  relatedAssetIds: string[];
   attachments?: UploadedAgentAttachment[];
   createdAt: number;
   runId?: string;

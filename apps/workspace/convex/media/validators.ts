@@ -8,7 +8,7 @@ export const mediaKindValidator = v.union(
 
 export const mediaResourceTypeValidator = v.union(
   v.literal("project"),
-  v.literal("property"),
+  v.literal("asset"),
   v.literal("client"),
   v.literal("calendarEvent"),
   v.literal("task"),

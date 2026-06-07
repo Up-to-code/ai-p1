@@ -79,9 +79,9 @@ import {
   visibleCalendarRange,
   type CalendarView,
 } from "@/domains/calendar/calendar-view-model";
-import { useClientOptionsQuery, useClientQuery, useClientUnitLinksQuery } from "@/domains/clients/api/clients";
+import { useClientOptionsQuery, useClientQuery, useClientAssetLinksQuery } from "@/domains/clients/api/clients";
 import { useClientTaskOptionsQuery } from "@/domains/clients/api/client-tasks";
-import { usePropertyOptionsQuery, usePropertyQuery } from "@/domains/properties/api/properties";
+import { useAssetOptionsQuery, useAssetQuery } from "@/domains/assets/api/assets";
 import {
   createCalendarEventRequest,
   deleteCalendarEventRequest,
@@ -119,7 +119,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 
-type PickerKind = "client" | "unit" | "task";
+type PickerKind = "client" | "asset" | "task";
 
 /* ── Main ── */
 export function CalendarScreen() {
@@ -157,12 +157,12 @@ export function CalendarScreen() {
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const shouldLoadPickerOptions = isCreateOpen || Boolean(editingEvent);
   const clientsQuery = useClientOptionsQuery(workspaceOrganizationId, { enabled: shouldLoadPickerOptions });
-  const unitsQuery = usePropertyOptionsQuery(workspaceOrganizationId, { enabled: shouldLoadPickerOptions });
+  const assetsQuery = useAssetOptionsQuery(workspaceOrganizationId, { enabled: shouldLoadPickerOptions });
   const tasksQuery = useClientTaskOptionsQuery(workspaceOrganizationId, { enabled: shouldLoadPickerOptions });
   const clients = clientsQuery ?? [];
-  const units = unitsQuery ?? [];
+  const assets = assetsQuery ?? [];
   const tasks = tasksQuery ?? [];
-  const isContextLoading = shouldLoadPickerOptions && Boolean(workspaceOrganizationId) && (!clientsQuery || !unitsQuery || !tasksQuery);
+  const isContextLoading = shouldLoadPickerOptions && Boolean(workspaceOrganizationId) && (!clientsQuery || !assetsQuery || !tasksQuery);
   const deleteOperation = useOperationState({
     errorMessage: "Event delete failed.",
   });
@@ -326,10 +326,10 @@ export function CalendarScreen() {
             onOpenChange={setIsCreateOpen}
             organizationId={workspaceOrganizationId}
             clients={clients}
-            units={units}
+            assets={assets}
             tasks={tasks}
             clientsLoading={isContextLoading && !clientsQuery}
-            unitsLoading={isContextLoading && !unitsQuery}
+            assetsLoading={isContextLoading && !assetsQuery}
             tasksLoading={isContextLoading && !tasksQuery}
           />
           {editingEvent && (
@@ -342,10 +342,10 @@ export function CalendarScreen() {
               event={editingEvent}
               organizationId={workspaceOrganizationId}
               clients={clients}
-              units={units}
+              assets={assets}
               tasks={tasks}
               clientsLoading={isContextLoading && !clientsQuery}
-              unitsLoading={isContextLoading && !unitsQuery}
+              assetsLoading={isContextLoading && !assetsQuery}
               tasksLoading={isContextLoading && !tasksQuery}
             />
           )}
@@ -718,11 +718,11 @@ function CalendarEventChip({
     <AriaButton
       onPress={() => onClick(event)}
       className={cn(
-        "block w-full rounded-xl border text-start transition hover:brightness-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+        "block w-full rounded-xl border text-start shadow-sm transition hover:brightness-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
         calendarEventTypeClassName(event.type),
         variant === "compact"
-          ? "px-2 py-1 text-[10px] font-bold"
-          : "px-3 py-2.5",
+          ? "min-h-8 px-2.5 py-1.5 text-xs font-black leading-4"
+          : "px-3 py-3",
       )}
     >
       {variant === "compact" ? (
@@ -731,13 +731,13 @@ function CalendarEventChip({
         </span>
       ) : (
         <span className="block min-w-0">
-          <span className="block text-[10px] font-black uppercase tracking-widest opacity-80">
+          <span className="block text-[10px] font-black opacity-80">
             {event.time}
           </span>
-          <span className="mt-1 block truncate text-xs font-bold">
+          <span className="mt-1 block truncate text-sm font-black">
             {event.title}
           </span>
-          <span className="mt-1 block truncate text-[10px] font-bold opacity-60">
+          <span className="mt-1 block truncate text-xs font-bold opacity-70">
             {event.owner}
           </span>
         </span>
@@ -868,7 +868,7 @@ function EventDetailDialog({
   const t = useTranslations("Calendar");
   const locale = useLocale();
   const eventDate = new Date(event.date + "T00:00:00");
-  const [quickViewEntity, setQuickViewEntity] = useState<{ id: string; type: "client" | "unit" | "task"; title: string } | null>(null);
+  const [quickViewEntity, setQuickViewEntity] = useState<{ id: string; type: "client" | "asset" | "task"; title: string } | null>(null);
   const closeEventDialog = () => {
     setQuickViewEntity(null);
     onClose();
@@ -951,15 +951,15 @@ function EventDetailDialog({
             </PropertyRow>
           )}
 
-          {(event.unitTitle || event.unitId) && (
-            <PropertyRow icon={<Building2 className="h-4 w-4" />} label={t("form.unitLabel")}>
+          {(event.assetTitle || event.assetId) && (
+            <PropertyRow icon={<Building2 className="h-4 w-4" />} label={t("form.assetLabel")}>
               <button 
                 type="button"
-                onClick={() => setQuickViewEntity({ id: event.unitId || event.propertyId || "", type: "unit", title: event.unitTitle || event.unitId || "" })}
+                onClick={() => setQuickViewEntity({ id: event.assetId || "", type: "asset", title: event.assetTitle || event.assetId || "" })}
                 className="flex w-full items-start gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-3 text-zinc-900 dark:border-white/10 dark:bg-white/[0.02] dark:text-white hover:bg-zinc-100 dark:hover:bg-white/[0.05] transition-colors text-start"
               >
                 <span className="flex-1 whitespace-pre-wrap break-words text-xs font-black uppercase tracking-widest leading-relaxed">
-                  {event.unitTitle ?? event.unitId}
+                  {event.assetTitle ?? event.assetId}
                 </span>
                 <Eye className="h-3.5 w-3.5 text-zinc-400 mt-0.5" />
               </button>
@@ -1037,10 +1037,10 @@ function BusinessScheduleDialog({
   event,
   organizationId,
   clients,
-  units,
+  assets,
   tasks,
   clientsLoading,
-  unitsLoading,
+  assetsLoading,
   tasksLoading,
 }: {
   mode: "create" | "edit";
@@ -1049,10 +1049,10 @@ function BusinessScheduleDialog({
   event?: CalendarEvent;
   organizationId?: string;
   clients: Array<{ id: string; name: string }>;
-  units: Array<{ id: string; title: string }>;
+  assets: Array<{ id: string; title: string }>;
   tasks: Array<{ id: string; title: string; clientId: string }>;
   clientsLoading: boolean;
-  unitsLoading: boolean;
+  assetsLoading: boolean;
   tasksLoading: boolean;
 }) {
   const t = useTranslations("Calendar");
@@ -1063,10 +1063,10 @@ function BusinessScheduleDialog({
     owner: event?.owner ?? "Team",
     date: event?.date ?? defaultDate,
     time: event?.time ?? "10:00",
-    type: event?.type ?? "visit",
+    type: event?.type ?? "meeting",
     status: event?.status ?? "confirmed",
     clientId: event?.clientId ?? "",
-    unitId: event?.unitId ?? event?.propertyId ?? "",
+    assetId: event?.assetId ?? "",
     taskId: event?.taskId ?? "",
     location: event?.location ?? "",
     notes: event?.notes ?? "",
@@ -1097,7 +1097,7 @@ function BusinessScheduleDialog({
   ) as Record<keyof CalendarEventFormValues, string | undefined>;
 
   const selectedClient = clients.find((client) => client.id === form.clientId);
-  const selectedUnit = units.find((unit) => unit.id === (form.unitId || form.propertyId));
+  const selectedAsset = assets.find((asset) => asset.id === (form.assetId));
   const selectedTask = tasks.find((task) => task.id === form.taskId);
   const filteredTasks = calendarTasksForClient(tasks, form.clientId);
   const dateOptions = useMemo(() => {
@@ -1116,12 +1116,12 @@ function BusinessScheduleDialog({
           options: clients.map((client) => ({ id: client.id, label: client.name, icon: <User className="h-4 w-4" /> })),
           selectedId: form.clientId ?? "",
         },
-        unit: {
-          title: t("form.chooseUnit"),
-          empty: t("form.noUnits"),
-          loading: unitsLoading,
-          options: units.map((unit) => ({ id: unit.id, label: unit.title, icon: <Building2 className="h-4 w-4" /> })),
-          selectedId: form.unitId || form.propertyId || "",
+        asset: {
+          title: t("form.chooseAsset"),
+          empty: t("form.noAssets"),
+          loading: assetsLoading,
+          options: assets.map((asset) => ({ id: asset.id, label: asset.title, icon: <Building2 className="h-4 w-4" /> })),
+          selectedId: form.assetId || "",
         },
         task: {
           title: t("form.chooseTask"),
@@ -1162,9 +1162,8 @@ function BusinessScheduleDialog({
     if (picker === "client") {
       updateField("clientId", id);
     }
-    if (picker === "unit") {
-      updateField("unitId", id);
-      updateField("propertyId", id);
+    if (picker === "asset") {
+      updateField("assetId", id);
     }
     if (picker === "task") {
       const task = tasks.find((item) => item.id === id);
@@ -1176,16 +1175,15 @@ function BusinessScheduleDialog({
 
   function clearPickerValue(kind: PickerKind) {
     if (kind === "client") updateField("clientId", "");
-    if (kind === "unit") {
-      updateField("unitId", "");
-      updateField("propertyId", "");
+    if (kind === "asset") {
+      updateField("assetId", "");
     }
     if (kind === "task") updateField("taskId", "");
   }
 
   function generatedTitle(values: CalendarEventFormValues) {
-    const typeLabel = t(`types.${values.type || "visit"}`);
-    const context = selectedClient?.name || selectedUnit?.title || values.location?.trim();
+    const typeLabel = t(`types.${values.type || "meeting"}`);
+    const context = selectedClient?.name || selectedAsset?.title || values.location?.trim();
     return calendarScheduleTitle(typeLabel, context);
   }
 
@@ -1317,13 +1315,13 @@ function BusinessScheduleDialog({
                   />
                 </PropertyRow>
 
-                <PropertyRow icon={<Building2 className="h-4 w-4" />} label={t("form.unitLabel")}>
+                <PropertyRow icon={<Building2 className="h-4 w-4" />} label={t("form.assetLabel")}>
                   <TicketPickerButton
-                    label={t("form.unitLabel")}
-                    value={selectedUnit?.title}
+                    label={t("form.assetLabel")}
+                    value={selectedAsset?.title}
                     icon={<Building2 className="h-4 w-4" />}
-                    onClick={() => openPicker("unit")}
-                    onClear={form.unitId || form.propertyId ? () => clearPickerValue("unit") : undefined}
+                    onClick={() => openPicker("asset")}
+                    onClear={form.assetId ? () => clearPickerValue("asset") : undefined}
                   />
                 </PropertyRow>
 
@@ -1538,7 +1536,7 @@ function EntityQuickViewDialog({
   entity,
   onClose,
 }: {
-  entity: { id: string; type: "client" | "unit" | "task"; title: string };
+  entity: { id: string; type: "client" | "asset" | "task"; title: string };
   onClose: () => void;
 }) {
   return (
@@ -1550,7 +1548,7 @@ function EntityQuickViewDialog({
         className="z-[80] flex max-h-[min(86vh,720px)] w-[min(94vw,560px)] max-w-none flex-col overflow-hidden rounded-[22px] border-zinc-200 bg-zinc-50 p-0 text-zinc-950 shadow-none dark:border-white/10 dark:bg-[#111111] dark:text-white"
       >
         {entity.type === "client" && <ClientQuickView clientId={entity.id} onClose={onClose} />}
-        {entity.type === "unit" && <UnitQuickView propertyId={entity.id} onClose={onClose} />}
+        {entity.type === "asset" && <AssetQuickView assetId={entity.id} onClose={onClose} />}
         {entity.type === "task" && (
           <div className="p-5 text-center">
             <button onClick={onClose} className="mb-5 flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-400 transition hover:bg-white hover:text-zinc-900 dark:border-white/10 dark:hover:bg-white/5 dark:hover:text-white">
@@ -1574,7 +1572,7 @@ function ClientQuickView({ clientId, onClose }: { clientId: string; onClose: () 
   const locale = useLocale();
   const router = useRouter();
   const client = useClientQuery(organizationId, clientId);
-  const unitLinks = useClientUnitLinksQuery(organizationId, clientId);
+  const assetLinks = useClientAssetLinksQuery(organizationId, clientId);
 
   if (!client) {
     return (
@@ -1587,7 +1585,7 @@ function ClientQuickView({ clientId, onClose }: { clientId: string; onClose: () 
   const stageColors: Record<string, string> = {
     new: "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800",
     qualified: "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800",
-    viewing: "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800",
+    review: "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800",
     negotiation: "bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800",
     closed: "bg-zinc-100 text-zinc-600 border-zinc-300 dark:bg-white/5 dark:text-zinc-400 dark:border-white/10",
   };
@@ -1639,20 +1637,20 @@ function ClientQuickView({ clientId, onClose }: { clientId: string; onClose: () 
         <div className="min-w-0 px-4 py-3">
           <Building2 className="h-4 w-4 text-zinc-400" />
           <p className="mt-2 text-[8px] font-black uppercase tracking-widest text-zinc-400">Interest</p>
-          <p className="mt-1 truncate text-xs font-bold text-zinc-950 dark:text-white">{client.propertyInterest || "—"}</p>
+          <p className="mt-1 truncate text-xs font-bold text-zinc-950 dark:text-white">{client.assetInterest || "—"}</p>
         </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
-        <p className="mb-3 text-[9px] font-black uppercase tracking-[0.25em] text-zinc-400">Linked Properties</p>
-        {!unitLinks || unitLinks.length === 0 ? (
+        <p className="mb-3 text-[9px] font-black uppercase tracking-[0.25em] text-zinc-400">Linked Assets</p>
+        {!assetLinks || assetLinks.length === 0 ? (
           <div className="flex h-20 items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-white text-xs font-bold text-zinc-400 dark:border-white/10 dark:bg-white/[0.02]">
-            No linked properties
+            No linked assets
           </div>
         ) : (
           <div className="space-y-2">
-            {unitLinks.map((entry) => (
-              <LinkedUnitCard key={entry.link._id || entry.link.propertyId} propertyId={entry.link.propertyId} status={entry.link.status} locale={locale} />
+            {assetLinks.map((entry) => (
+              <LinkedAssetCard key={entry.link._id || entry.link.assetId} assetId={entry.link.assetId} status={entry.link.status} locale={locale} />
             ))}
           </div>
         )}
@@ -1671,13 +1669,13 @@ function ClientQuickView({ clientId, onClose }: { clientId: string; onClose: () 
   );
 }
 
-/* ── Linked Unit Mini Card ── */
-function LinkedUnitCard({ propertyId, status, locale }: { propertyId: string; status: string; locale: string }) {
+/* ── Linked Asset Mini Card ── */
+function LinkedAssetCard({ assetId, status, locale }: { assetId: string; status: string; locale: string }) {
   const account = useAccountContext();
   const organizationId = (account.workspace.status === "ready" && account.workspace.organizationId) || undefined;
-  const property = usePropertyQuery(organizationId, propertyId);
+  const asset = useAssetQuery(organizationId, assetId);
 
-  if (!property) {
+  if (!asset) {
     return (
       <div className="flex h-16 items-center justify-center rounded-2xl border border-zinc-100 bg-zinc-50/50 dark:border-white/5 dark:bg-white/[0.02]">
         <Loader2 className="h-4 w-4 animate-spin text-zinc-300" />
@@ -1688,19 +1686,19 @@ function LinkedUnitCard({ propertyId, status, locale }: { propertyId: string; st
   const statusColors: Record<string, string> = {
     interested: "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
     shortlisted: "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400",
-    viewing: "bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400",
-    offer: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400",
+    review: "bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400",
+    proposal: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400",
     rejected: "bg-red-50 text-red-500 dark:bg-red-900/20 dark:text-red-400",
   };
 
   return (
     <Link
-      href={`/${locale}/properties/${property.reference || propertyId}`}
+      href={`/${locale}/assets/${asset.reference || assetId}`}
       className="group flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-3 transition-colors hover:border-zinc-300 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-white/15"
     >
       <div className="relative h-12 w-14 shrink-0 overflow-hidden rounded-xl bg-zinc-100 dark:bg-white/5">
-        {property.coverImageUrl ? (
-          <img src={property.coverImageUrl} alt={property.title} className="h-full w-full object-cover" />
+        {asset.coverImageUrl ? (
+          <img src={asset.coverImageUrl} alt={asset.title} className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
             <Building2 className="h-5 w-5 text-zinc-300 dark:text-zinc-600" />
@@ -1708,14 +1706,14 @@ function LinkedUnitCard({ propertyId, status, locale }: { propertyId: string; st
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-black text-zinc-900 dark:text-white truncate">{property.title}</p>
-        <p className="text-[10px] font-bold text-zinc-400 truncate mt-0.5">{property.project} · {property.city}</p>
+        <p className="text-xs font-black text-zinc-900 dark:text-white truncate">{asset.title}</p>
+        <p className="text-[10px] font-bold text-zinc-400 truncate mt-0.5">{asset.project} · {asset.city}</p>
         <div className="flex items-center gap-2 mt-1.5">
           <span className={cn("rounded-md px-1.5 py-px text-[8px] font-black uppercase tracking-widest", statusColors[status] || statusColors.interested)}>
             {status}
           </span>
-          {property.price && (
-            <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">EGP {property.price}</span>
+          {asset.price && (
+            <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">EGP {asset.price}</span>
           )}
         </div>
       </div>
@@ -1724,15 +1722,15 @@ function LinkedUnitCard({ propertyId, status, locale }: { propertyId: string; st
   );
 }
 
-/* ── Unit/Property Quick View ── */
-function UnitQuickView({ propertyId, onClose }: { propertyId: string; onClose: () => void }) {
+/* ── Asset Quick View ── */
+function AssetQuickView({ assetId, onClose }: { assetId: string; onClose: () => void }) {
   const account = useAccountContext();
   const organizationId = (account.workspace.status === "ready" && account.workspace.organizationId) || undefined;
   const locale = useLocale();
   const router = useRouter();
-  const property = usePropertyQuery(organizationId, propertyId);
+  const asset = useAssetQuery(organizationId, assetId);
 
-  if (!property) {
+  if (!asset) {
     return (
       <div className="flex h-64 items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-zinc-300" />
@@ -1752,21 +1750,21 @@ function UnitQuickView({ propertyId, onClose }: { propertyId: string; onClose: (
     <>
       <div className="flex items-start gap-4 border-b border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-[#111111]">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-zinc-100 dark:bg-white/5">
-          {property.coverImageUrl ? (
-            <img src={property.coverImageUrl} alt={property.title} className="h-full w-full object-cover" />
+          {asset.coverImageUrl ? (
+            <img src={asset.coverImageUrl} alt={asset.title} className="h-full w-full object-cover" />
           ) : (
             <Building2 className="h-6 w-6 text-zinc-300 dark:text-zinc-600" />
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="mb-1 text-[9px] font-black uppercase tracking-[0.25em] text-zinc-400">Property</p>
-          <h2 className="text-base font-black leading-tight text-zinc-950 dark:text-white">{property.title}</h2>
+          <p className="mb-1 text-[9px] font-black uppercase tracking-[0.25em] text-zinc-400">Asset</p>
+          <h2 className="text-base font-black leading-tight text-zinc-950 dark:text-white">{asset.title}</h2>
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span className={cn("rounded-lg border px-2 py-0.5 text-[9px] font-black uppercase tracking-widest", statusColors[property.status] || statusColors.draft)}>
-              {property.status}
+            <span className={cn("rounded-lg border px-2 py-0.5 text-[9px] font-black uppercase tracking-widest", statusColors[asset.status] || statusColors.draft)}>
+              {asset.status}
             </span>
             <span className="rounded-lg border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400">
-              {property.purpose}
+              {asset.purpose}
             </span>
           </div>
         </div>
@@ -1779,22 +1777,22 @@ function UnitQuickView({ propertyId, onClose }: { propertyId: string; onClose: (
         <div className="min-w-0 border-e border-b border-zinc-100 px-4 py-3 dark:border-white/5 sm:border-b-0">
           <DollarSign className="h-4 w-4 text-zinc-400 mb-1" />
           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Price</p>
-          <p className="mt-1 truncate text-xs font-black text-zinc-950 dark:text-white">{property.price || "—"}</p>
+          <p className="mt-1 truncate text-xs font-black text-zinc-950 dark:text-white">{asset.price || "—"}</p>
         </div>
         <div className="min-w-0 border-b border-zinc-100 px-4 py-3 dark:border-white/5 sm:border-e sm:border-b-0">
           <Ruler className="h-4 w-4 text-zinc-400 mb-1" />
           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Area</p>
-          <p className="mt-1 truncate text-xs font-black text-zinc-950 dark:text-white">{property.area || "—"}</p>
+          <p className="mt-1 truncate text-xs font-black text-zinc-950 dark:text-white">{asset.area || "—"}</p>
         </div>
         <div className="min-w-0 border-e border-zinc-100 px-4 py-3 dark:border-white/5">
           <BedDouble className="h-4 w-4 text-zinc-400 mb-1" />
           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Beds</p>
-          <p className="mt-1 truncate text-xs font-black text-zinc-950 dark:text-white">{property.bedrooms || "—"}</p>
+          <p className="mt-1 truncate text-xs font-black text-zinc-950 dark:text-white">{asset.bedrooms || "—"}</p>
         </div>
         <div className="min-w-0 px-4 py-3">
           <MapPin className="h-4 w-4 text-zinc-400 mb-1" />
           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">City</p>
-          <p className="mt-1 truncate text-xs font-black text-zinc-950 dark:text-white">{property.city || "—"}</p>
+          <p className="mt-1 truncate text-xs font-black text-zinc-950 dark:text-white">{asset.city || "—"}</p>
         </div>
       </div>
 
@@ -1803,13 +1801,13 @@ function UnitQuickView({ propertyId, onClose }: { propertyId: string; onClose: (
           <Building2 className="h-4 w-4 text-zinc-400" />
           <div className="min-w-0">
             <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Project</p>
-            <p className="truncate text-xs font-bold text-zinc-950 dark:text-white">{property.project || "—"}</p>
+            <p className="truncate text-xs font-bold text-zinc-950 dark:text-white">{asset.project || "—"}</p>
           </div>
         </div>
-        {property.description && (
+        {asset.description && (
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.25em] text-zinc-400 mb-2">Description</p>
-            <p className="whitespace-pre-wrap text-xs font-bold leading-5 text-zinc-600 dark:text-zinc-300">{property.description}</p>
+            <p className="whitespace-pre-wrap text-xs font-bold leading-5 text-zinc-600 dark:text-zinc-300">{asset.description}</p>
           </div>
         )}
       </div>
@@ -1817,10 +1815,10 @@ function UnitQuickView({ propertyId, onClose }: { propertyId: string; onClose: (
       <div className="border-t border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-[#111111]">
         <AppPrimaryButton
           className="h-12 w-full rounded-2xl text-xs font-black uppercase tracking-widest shadow-none"
-          onClick={() => { onClose(); router.push(`/${locale}/properties/${property.reference || propertyId}`); }}
+          onClick={() => { onClose(); router.push(`/${locale}/assets/${asset.reference || assetId}`); }}
         >
           <ExternalLink className="me-2 h-4 w-4" />
-          Open Full Property
+          Open Full Asset
         </AppPrimaryButton>
       </div>
     </>

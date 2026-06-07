@@ -11,7 +11,7 @@ Goal:
 - Add organization-level OAuth with Qentrah.
 - Keep all token exchange, token refresh, and token storage on the server.
 - Use @qentrah/auth-sdk for the frontend button, OAuth routes, webhook route, and service-app API calls.
-- After authorization, call Qentrah Workspace partner APIs for organization, clients, and properties.
+- After authorization, call Qentrah Workspace partner APIs for organization, clients, and assets.
 
 Use these existing environment variables:
 - QENTRAH_WORKSPACE_API_URL: Qentrah Workspace base URL, for example http://localhost:3000 locally or the hosted Qentrah workspace URL in production
@@ -65,7 +65,7 @@ Security rules:
 Acceptance criteria:
 - A user can click "Authorize with Qentrah", consent in Qentrah, and return to the partner app.
 - The backend stores the organization id and tokens server-side.
-- The app can load organization, clients, and properties through Workspace APIs.
+- The app can load organization, clients, and assets through Workspace APIs.
 - The app can receive and verify Qentrah webhooks.
 - Missing/expired connection states prompt the user to authorize or reconnect.
 - Typecheck and build pass.`;

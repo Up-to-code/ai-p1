@@ -10,19 +10,19 @@ function readSource(path: string) {
 }
 
 describe("detail loading states", () => {
-  it("uses the shared timed loading state for client, project, and property resource details", () => {
+  it("uses the shared timed loading state for client, project, and asset resource details", () => {
     const clients = readSource("src/domains/clients/components/clients-screens.tsx");
     const projects = readSource("src/domains/projects/components/projects-screens.tsx");
-    const properties = readSource("src/domains/properties/components/properties-screens.tsx");
+    const assets = readSource("src/domains/assets/components/assets-screens.tsx");
 
-    for (const source of [clients, projects, properties]) {
+    for (const source of [clients, projects, assets]) {
       expect(source).toContain("workspaceStatus !== \"ready\"");
       expect(source).toContain("ProgressiveLoadingState");
       expect(source).toContain("debug={queryDebug}");
       expect(source).toContain('variant="detail"');
       expect(source).not.toContain('title="Loading client"');
       expect(source).not.toContain('title="Loading project"');
-      expect(source).not.toContain('title="Loading unit"');
+      expect(source).not.toContain('title="Loading asset"');
     }
   });
 });

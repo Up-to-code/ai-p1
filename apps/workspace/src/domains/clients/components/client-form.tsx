@@ -2,11 +2,15 @@
 
 import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery as useReactQuery } from "@tanstack/react-query";
+import { useQueryClient, useQuery as useReactQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useAccountContext } from "@/domains/auth";
 import { getOrganizationCapabilities } from "@/domains/organization/api/clerk-organization-api";
-import { createClientRequest, updateClientRequest } from "@/domains/clients/api/clients";
+import {
+  clientsIndexQueryBaseKey,
+  updateClientRequest,
+  useCreateClientOptimisticMutation,
+} from "@/domains/clients/api/clients";
 import type { Client, ClientType, PipelineStage } from "../store/clients.types";
 import { clientSchema, type ClientFormValues } from "../validation/client.schema";
 import { useOperationState } from "@/lib/utils/operation-state";
@@ -14,15 +18,18 @@ import { SelectField, SegmentedControl, FormActions, FormErrorSummary, TextInput
 
 interface ClientFormProps {
   existing?: Client;
+  indexQueryKey?: readonly unknown[];
   onSuccess?: (id: string) => void;
   onCancel?: () => void;
 }
 
-const pipelineStages = ["new", "qualified", "viewing", "negotiation", "closed"] as const;
+const pipelineStages = ["new", "qualified", "review", "negotiation", "closed"] as const;
 
-export function ClientForm({ existing, onSuccess, onCancel }: ClientFormProps) {
+export function ClientForm({ existing, indexQueryKey, onSuccess, onCancel }: ClientFormProps) {
   const t = useTranslations('Clients');
   const account = useAccountContext();
+  const queryClient = useQueryClient();
+  const createClientMutation = useCreateClientOptimisticMutation(indexQueryKey);
   const capabilitiesQuery = useReactQuery({
     queryKey: ["organization-capabilities", account.organization.id],
     queryFn: () => getOrganizationCapabilities(account.organization.id!),
@@ -34,15 +41,15 @@ export function ClientForm({ existing, onSuccess, onCancel }: ClientFormProps) {
     resolver: zodResolver(clientSchema) as Resolver<ClientFormValues>,
     defaultValues: {
       name: existing?.name ?? "",
-      type: existing?.type ?? "Buyer" as ClientType,
+      type: existing?.type ?? "person" as ClientType,
       contact: existing?.contact ?? "",
       phone: existing?.phone ?? "",
       age: String(existing?.age ?? 30),
       nationality: existing?.nationality ?? "Saudi",
       generation: existing?.generation ?? "Millennial",
       budget: existing?.budget ?? "",
-      propertyInterest: existing?.propertyInterest ?? "",
-      status: existing?.status ?? "active" as Client["status"],
+      assetInterest: existing?.assetInterest ?? "",
+      status: existing?.status ?? "new" as Client["status"],
       visibility: existing?.visibility ?? "private",
       pipelineStage: existing?.pipelineStage ?? "new" as PipelineStage,
       priority: existing?.priority ?? "normal" as Client["priority"],
@@ -60,16 +67,24 @@ export function ClientForm({ existing, onSuccess, onCancel }: ClientFormProps) {
   };
 
   const onSubmit = handleSubmit((data) => {
-    void saveOperation.run(async () => {
-      if (!account.organization.id) throw new Error("Select an organization first.");
-      const result = existing
-        ? await updateClientRequest(account.organization.id, existing.id, data)
-        : await createClientRequest(account.organization.id, data);
-      return result.client.id;
-    }, {
-      successMessage: existing ? "Client saved." : "Client created.",
-      onSuccess: (nextId) => onSuccess?.(nextId),
-    });
+    if (!account.organization.id) return;
+
+    if (existing) {
+      void saveOperation.run(async () => {
+        const result = await updateClientRequest(account.organization.id!, existing.id, data);
+        await queryClient.invalidateQueries({ queryKey: clientsIndexQueryBaseKey(account.organization.id ?? undefined) });
+        return result.client.id;
+      }, {
+        successMessage: "Client saved.",
+        onSuccess: (nextId) => onSuccess?.(nextId),
+      });
+      return;
+    }
+
+    createClientMutation.mutate(
+      { organizationId: account.organization.id, values: data },
+      { onSuccess: (result) => onSuccess?.(result.client.id) },
+    );
   });
 
   return (
@@ -78,20 +93,20 @@ export function ClientForm({ existing, onSuccess, onCancel }: ClientFormProps) {
         <FormErrorSummary errors={fieldErrors} />
         
         <div className="grid gap-8">
-          <TextInput name="name" label={t('form.nameLabel')} value={form.name} onChange={(value) => setField("name", value)} placeholder="Example: Abdullah Al-Faisal…" autoComplete="name" error={fieldErrors.name} />
+          <TextInput name="name" label={t('form.nameLabel')} value={form.name} onChange={(value) => setField("name", value)} placeholder={t("form.namePlaceholder")} autoComplete="name" error={fieldErrors.name} />
           
           <div className="grid gap-6 md:grid-cols-2">
-            <TextInput name="contact" label={t('form.emailLabel')} type="email" value={form.contact} onChange={(value) => setField("contact", value)} placeholder="nt@example.com…" error={fieldErrors.contact} />
-            <TextInput name="phone" label={t('form.phoneLabel')} type="tel" value={form.phone} onChange={(value) => setField("phone", value)} placeholder="+966 5XX…" error={fieldErrors.phone} />
+            <TextInput name="contact" label={t('form.emailLabel')} type="email" value={form.contact} onChange={(value) => setField("contact", value)} placeholder={t("form.emailPlaceholder")} error={fieldErrors.contact} />
+            <TextInput name="phone" label={t('form.phoneLabel')} type="tel" value={form.phone} onChange={(value) => setField("phone", value)} placeholder={t("form.phonePlaceholder")} error={fieldErrors.phone} />
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
             <TextInput name="age" label={t('form.ageLabel')} type="number" value={form.age} onChange={(value) => setField("age", value)} error={fieldErrors.age} />
-            <TextInput name="budget" label={t('form.budgetLabel')} value={form.budget} onChange={(value) => setField("budget", value)} placeholder="900K - 1.2M SAR…" error={fieldErrors.budget} />
+            <TextInput name="budget" label={t('form.budgetLabel')} value={form.budget} onChange={(value) => setField("budget", value)} placeholder={t("form.budgetPlaceholder")} error={fieldErrors.budget} />
           </div>
           
-          <TextInput name="propertyInterest" label={t('form.interestLabel')} value={form.propertyInterest} onChange={(value) => setField("propertyInterest", value)} placeholder="...2BR apartment, Riyadh" error={fieldErrors.propertyInterest} />
-          <TextInput name="nextAction" label={t('form.actionLabel')} value={form.nextAction} onChange={(value) => setField("nextAction", value)} placeholder="Schedule viewing…" error={fieldErrors.nextAction} />
+          <TextInput name="assetInterest" label={t('form.interestLabel')} value={form.assetInterest} onChange={(value) => setField("assetInterest", value)} placeholder={t("form.interestPlaceholder")} error={fieldErrors.assetInterest} />
+          <TextInput name="nextAction" label={t('form.actionLabel')} value={form.nextAction} onChange={(value) => setField("nextAction", value)} placeholder={t("form.actionPlaceholder")} error={fieldErrors.nextAction} />
         </div>
 
         <div className="grid gap-8">
@@ -102,9 +117,8 @@ export function ClientForm({ existing, onSuccess, onCancel }: ClientFormProps) {
               value={form.type}
               onChange={(value) => setField("type", value)}
               options={[
-                { value: "Buyer", label: t('types.Buyer') },
-                { value: "Tenant", label: t('types.Tenant') },
-                { value: "Investor", label: t('types.Investor') },
+                { value: "person", label: t('types.person') },
+                { value: "organization", label: t('types.organization') },
               ]}
               error={fieldErrors.type}
             />
@@ -139,7 +153,8 @@ export function ClientForm({ existing, onSuccess, onCancel }: ClientFormProps) {
               onChange={(value) => setField("visibility", value)}
               options={[
                 { value: "private", label: t("form.visibilityPrivate") },
-                { value: "public", label: t("form.visibilityPublic") },
+                { value: "team", label: t("form.visibilityTeam") },
+                { value: "workspace", label: t("form.visibilityWorkspace") },
               ]}
               error={fieldErrors.visibility}
             />
@@ -149,7 +164,7 @@ export function ClientForm({ existing, onSuccess, onCancel }: ClientFormProps) {
 
       <div className="mt-12 border-t border-zinc-100 pt-8 dark:border-white/5">
         <FormActions 
-          isSubmitting={saveOperation.isRunning || isSubmitting} 
+          isSubmitting={saveOperation.isRunning || createClientMutation.isPending || isSubmitting} 
           onCancel={onCancel || (() => {})} 
           submitLabel={existing ? t('form.saveBtn') : t('form.createBtn')} 
         />

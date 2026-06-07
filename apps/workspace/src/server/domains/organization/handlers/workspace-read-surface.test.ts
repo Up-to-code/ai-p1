@@ -87,11 +87,11 @@ describe("workspace read surface module", () => {
   it("runs indexed reads with list and stats sharing the same parsed query", async () => {
     const response = await workspaceIndexedListReadJson(fakeContext({
       params: { organizationId: "org_1" },
-      query: { limit: "10", type: "Buyer" },
+      query: { limit: "10", type: "person" },
     }), {
       label: "clients index",
       filterName: "type",
-      allowedFilters: ["Buyer", "Tenant"] as const,
+      allowedFilters: ["person", "organization"] as const,
       readList: async (organizationId, query) => ({ organizationId, query }),
       readStats: async (organizationId) => ({ organizationId, total: 1 }),
     });
@@ -102,7 +102,7 @@ describe("workspace read surface module", () => {
         organizationId: "org_1",
         query: {
           paginationOpts: { numItems: 10, cursor: null },
-          filter: "Buyer",
+          filter: "person",
           search: undefined,
         },
       },

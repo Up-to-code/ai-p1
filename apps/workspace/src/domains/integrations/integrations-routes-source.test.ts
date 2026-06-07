@@ -17,19 +17,20 @@ function getValueAtPath(value: unknown, path: string) {
 }
 
 describe("web apps route aliases", () => {
-  it("keeps web apps and legacy integrations routes unavailable while the surface is coming soon", () => {
-    expect(readSource("src/app/[locale]/(app)/web-apps/page.tsx")).toContain('redirect(`/${locale}/dashboard`)');
-    expect(readSource("src/app/[locale]/(app)/web-apps/[id]/page.tsx")).toContain('redirect(`/${locale}/dashboard`)');
+  it("renders web apps routes while keeping legacy integrations aliases unavailable", () => {
+    expect(readSource("src/app/[locale]/(app)/web-apps/page.tsx")).toContain("<IntegrationsScreen />");
+    expect(readSource("src/app/[locale]/(app)/web-apps/[id]/page.tsx")).toContain("<IntegrationDetailScreen id={id} />");
     expect(readSource("src/app/[locale]/(app)/integrations/page.tsx")).toContain('redirect(`/${locale}/dashboard`)');
     expect(readSource("src/app/[locale]/(app)/integrations/[id]/page.tsx")).toContain('redirect(`/${locale}/dashboard`)');
   });
 
-  it("keeps sidebar copy for web apps but marks the item as coming soon", () => {
-    expect(readSource("src/components/layout/sidebar.tsx")).toContain('{ name: "integrations", href: "/web-apps", icon: Plug, disabled: true, badge: "comingSoon" }');
-    expect(readSource("messages/en.json")).toContain('"integrations": "Web Apps"');
+  it("keeps sidebar integrations route active and labeled by the Work OS module", () => {
+    const sidebar = readSource("src/components/layout/sidebar.tsx");
+
+    expect(sidebar).toContain('{ name: "integrations", href: "/web-apps", icon: Plug }');
+    expect(sidebar).not.toContain('disabled: true, badge: "comingSoon"');
+    expect(readSource("messages/en.json")).toContain('"integrations": "Integrations"');
     expect(readSource("messages/ar.json")).toContain('"integrations": "تطبيقات الويب"');
-    expect(readSource("messages/en.json")).toContain('"comingSoon": "Coming soon"');
-    expect(readSource("messages/ar.json")).toContain('"comingSoon": "قريباً"');
   });
 
   it("keeps literal integration screen message keys available in English and Arabic", () => {

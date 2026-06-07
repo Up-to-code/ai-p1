@@ -8,15 +8,14 @@ export interface CalendarEvent {
   endAt?: number;
   date: string;
   time: string;
-  type: "visit" | "call" | "meeting" | "client-visit" | "site-viewing" | "appointment" | "signing" | "follow-up" | "handover" | "audit" | "custom";
+  type: "meeting" | "deadline" | "reminder" | "milestone" | "focusBlock";
   status: "confirmed" | "pending" | "draft";
   clientId?: string;
-  unitId?: string;
-  propertyId?: string;
+  assetId?: string;
   projectId?: string;
   taskId?: string;
   clientName?: string;
-  unitTitle?: string;
+  assetTitle?: string;
   location?: string;
   notes?: string;
   customFields?: Array<{ label: string; value: string }>;

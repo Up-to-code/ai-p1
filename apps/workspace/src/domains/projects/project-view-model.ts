@@ -20,11 +20,11 @@ function toProjectPriceRows(project?: Project | null): ProjectFormValues["projec
   return [{ id: projectPriceId(), label: "", price: "" }];
 }
 
-export function toggleProjectUnitType(
-  unitTypes: ProjectFormValues["unitTypes"] | undefined,
-  value: ProjectFormValues["unitTypes"][number],
+export function toggleProjectAssetType(
+  assetTypes: ProjectFormValues["assetTypes"] | undefined,
+  value: ProjectFormValues["assetTypes"][number],
 ) {
-  const current = unitTypes ?? [];
+  const current = assetTypes ?? [];
   return current.includes(value) ? current.filter((item) => item !== value) : [...current, value];
 }
 
@@ -64,9 +64,9 @@ function projectFormType(project?: Project | null): ProjectFormValues["type"] {
     : "Residential";
 }
 
-function projectFormUnitTypes(project?: Project | null): ProjectFormValues["unitTypes"] {
-  return (project?.unitTypes ?? []).filter((type): type is ProjectFormValues["unitTypes"][number] =>
-    projectOfferingTypes.includes(type as ProjectFormValues["unitTypes"][number]),
+function projectFormAssetTypes(project?: Project | null): ProjectFormValues["assetTypes"] {
+  return (project?.assetTypes ?? []).filter((type): type is ProjectFormValues["assetTypes"][number] =>
+    projectOfferingTypes.includes(type as ProjectFormValues["assetTypes"][number]),
   );
 }
 
@@ -77,10 +77,10 @@ export function projectFormDefaults(project?: Project | null): ProjectFormValues
     city: project?.city ?? "",
     area: project?.area ?? "",
     type: projectFormType(project),
-    unitTypes: projectFormUnitTypes(project),
+    assetTypes: projectFormAssetTypes(project),
     status: project?.status ?? "draft" as ProjectStatus,
     visibility: project?.visibility ?? "private",
-    units: String(project?.units ?? 0),
+    assetCount: String(project?.assetCount ?? 0),
     averagePrice: project?.averagePrice ?? project?.priceRange ?? "",
     projectPrices: toProjectPriceRows(project),
     priceRange: project?.priceRange ?? "",
@@ -152,18 +152,18 @@ export function projectLocationLabel(project: Pick<Project, "city" | "area">) {
   return [project.city, project.area].filter(Boolean).join(" · ");
 }
 
-export function projectInventoryMetrics<TUnit extends { status?: string }>(units: TUnit[], plannedUnits = 0) {
+export function projectInventoryMetrics<TAsset extends { status?: string }>(assets: TAsset[], plannedAssets = 0) {
   const countByStatus = (status: string) =>
-    units.filter((unit) => String(unit.status).toLowerCase() === status).length;
+    assets.filter((asset) => String(asset.status).toLowerCase() === status).length;
 
   return {
-    plannedUnits,
-    liveUnitCount: units.length,
-    inventoryCoverage: plannedUnits > 0 ? Math.min(100, Math.round((units.length / plannedUnits) * 100)) : 0,
-    availableUnits: countByStatus("available"),
-    reservedUnits: countByStatus("reserved"),
-    soldUnits: countByStatus("sold"),
-    pendingUnits: countByStatus("pending"),
+    plannedAssets,
+    liveAssetCount: assets.length,
+    inventoryCoverage: plannedAssets > 0 ? Math.min(100, Math.round((assets.length / plannedAssets) * 100)) : 0,
+    availableAssets: countByStatus("available"),
+    reservedAssets: countByStatus("reserved"),
+    soldAssets: countByStatus("sold"),
+    pendingAssets: countByStatus("pending"),
   };
 }
 

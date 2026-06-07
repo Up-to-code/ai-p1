@@ -16,7 +16,9 @@ describe("calendar schedule drawer redesign", () => {
     expect(source).toContain("ContextPickerOverlay");
     expect(source).toContain("form.showAdvancedDetails");
     expect(source).toContain("form.scheduleName");
+    expect(source).toContain("min-h-8 px-2.5 py-1.5 text-xs font-black leading-4");
+    expect(source).toContain("mt-1 block truncate text-sm font-black");
     expect(source).not.toContain("calendar-client-context");
-    expect(source).not.toContain("calendar-unit-context");
+    expect(source).not.toContain("calendar-asset-context");
   });
 });

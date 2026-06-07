@@ -1,11 +1,9 @@
 "use client";
-
-import Image from "next/image";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useForm, useWatch, type FieldErrors, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery as useReactQuery } from "@tanstack/react-query";
-import { BarChart3, Building2, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, CircleHelp, Copy, Edit, FileText, FolderOpen, History, Landmark, Layers3, LayoutGrid, List, Loader2, MapPin, MoreHorizontal, Plus, Trash2, TrendingUp } from "lucide-react";
+import { BarChart3, Building2, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, CircleHelp, Copy, Edit, FileText, FolderOpen, History, Landmark, Layers3, LayoutGrid, List, Loader2, MapPin, MoreHorizontal, Plus, Trash2, TrendingUp, UserRound, type LucideIcon } from "lucide-react";
 import {
   AppDataTable,
   AppPageHeader,
@@ -49,127 +47,140 @@ import {
   projectWeekdayLabels,
   removeProjectPriceRow,
   statusTone,
-  toggleProjectUnitType,
+  toggleProjectAssetType,
   updateProjectPriceRow,
   weekdayFormatter,
 } from "../project-view-model";
 import { createProjectRequest, deleteProjectRequest, PROJECTS_PAGE_SIZE, updateProjectRequest, useProjectQuery, useProjectsIndexQuery } from "../api/projects";
-import { useProjectPropertiesQuery } from "@/domains/properties/api/properties";
+import { useProjectAssetsQuery } from "@/domains/assets/api/assets";
 import { ResourceMediaUploader } from "@/domains/media/components/resource-media-uploader";
 import { ResourceMediaBrowser } from "@/domains/media/components/resource-media-browser";
 import { uploadAndAttachMedia, useResourceMediaQuery } from "@/domains/media/api/media";
+import { useTasksQuery } from "@/domains/tasks/api/tasks";
+import type { TaskRecord } from "@/domains/tasks/tasks.types";
 import { useOperationState } from "@/lib/utils/operation-state";
 import { SearchBox, StatusPill, TextInput, DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, FormErrorSummary, HttpQueryState, ProgressiveLoadingState, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { useUrlListState } from "@/components/shared/use-url-list-state";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
-function ProjectTile({ project, onDelete }: { project: Project; onDelete: (project: Project) => void }) {
+const workspaceProjectTypes = ["Residential", "Commercial", "Mixed Use", "Workspace item", "Record", "Asset", "Apartment", "Studio", "Villa", "Townhouse", "Penthouse", "Priority item", "Compound", "Office", "Retail", "workspace"] as const;
+
+function projectTypeLabel(t: ReturnType<typeof useTranslations<"Projects">>, type: string | null | undefined) {
+  if (!type || type === "undefined") return t("types.workspace");
+  return workspaceProjectTypes.includes(type as (typeof workspaceProjectTypes)[number]) ? t(`types.${type}`) : type;
+}
+
+function ProjectTile({
+  project,
+  onDelete,
+  openTaskCount,
+}: {
+  project: Project;
+  onDelete: (project: Project) => void;
+  openTaskCount: number;
+}) {
   const t = useTranslations('Projects');
-  const image = project.coverImageUrl || project.image;
   const [menuOpen, setMenuOpen] = useState(false);
+  const typeLabel = projectTypeLabel(t, project.type);
+  const ownerLabel = project.developer || t("card.unassigned");
+  const nextAction = project.description || t("card.noNextAction");
+  const dueLabel = project.regaExpiresAt ? projectDateDisplayLabel(project.regaExpiresAt, t("card.noDue")) : t("card.noDue");
+  const progress = project.status === "approved" ? 100 : project.status === "pending" ? 62 : project.status === "rejected" ? 20 : 34;
 
   return (
-    <article className="group relative w-full max-w-[360px] overflow-hidden rounded-[22px] border border-zinc-100 bg-white transition-colors hover:border-zinc-300 dark:border-white/5 dark:bg-[#0A0A0A] sm:w-[min(100%,360px)]">
+    <article className="group relative w-full max-w-[420px] overflow-hidden rounded-[18px] border border-zinc-200 bg-white p-4 text-start transition-colors hover:border-zinc-300 dark:border-white/10 dark:bg-[#0A0A0A] dark:hover:border-white/20 sm:w-[min(100%,420px)]">
       <Link
         href={`/projects/${project.id}`}
         className="block focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-zinc-900/10 dark:focus-visible:ring-white/10"
       >
-        <div className="relative aspect-[1.05] min-h-[280px] overflow-hidden bg-zinc-100 text-start dark:bg-white/5">
-          {image ? (
-            <Image
-              src={image}
-              alt={project.name}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover opacity-85 grayscale transition duration-500 group-hover:scale-[1.025] group-hover:opacity-100 group-hover:grayscale-0"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-300 dark:bg-white/5 dark:text-white/20">
-              <Building2 className="h-8 w-8" />
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
+              <span className="rounded-full border border-zinc-200 px-2.5 py-1 text-[10px] font-black text-zinc-500 dark:border-white/10 dark:text-zinc-400">{typeLabel}</span>
             </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/75 via-zinc-950/18 to-transparent transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 md:opacity-65" />
-          <div className="pointer-events-none absolute -end-14 -top-14 h-36 w-36 rounded-full bg-[#0B5CFF]/25 opacity-35 blur-3xl transition-opacity duration-300 group-hover:opacity-90 group-focus-visible:opacity-90" />
-          <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-[#8AB2FF]/80 to-transparent opacity-40 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100" />
-          <div className="absolute right-4 top-4">
-            <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
+            <h3 className="mt-4 line-clamp-2 text-base font-black leading-tight text-zinc-950 dark:text-white">{project.name}</h3>
+            <p className="mt-2 truncate text-[10px] font-black uppercase tracking-[0.16em] text-zinc-400">{project.reference}</p>
           </div>
-
-          <div className="absolute inset-x-0 bottom-0 p-4">
-            <div className="flex min-w-0 items-end justify-between gap-4 transition duration-300 group-hover:-translate-y-8 group-focus-visible:-translate-y-8">
-              <div className="min-w-0">
-                <p className="text-[9px] font-black uppercase tracking-[0.14em] text-white/50">{project.reference}</p>
-                <h3 className="mt-2 line-clamp-2 text-lg font-black leading-tight text-white">{project.name}</h3>
-                <p className="mt-2 flex min-w-0 items-center gap-1.5 text-[10px] font-bold text-white/65">
-                  <MapPin className="h-3 w-3 shrink-0" />
-                  <span className="truncate">{project.city || project.area || "—"}</span>
-                </p>
-              </div>
-              <div className="shrink-0 text-end">
-                <p className="text-[9px] font-black uppercase tracking-[0.14em] text-white/50">{t("card.value")}</p>
-                <p className="mt-1 max-w-36 truncate text-sm font-black text-white">{project.priceRange}</p>
-              </div>
-            </div>
-
-            <div className="mt-4 flex translate-y-3 items-center justify-between border-t border-white/10 pt-3 opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
-              <div className="flex min-w-0 items-center gap-2 text-[10px] font-bold text-white/60">
-                <Landmark className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">{project.developer || t(`types.${project.type}`)}</span>
-              </div>
-              <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.12em] text-white/75">
-                {project.units} {t("card.units")}
-              </span>
-            </div>
-          </div>
-        </div>
-      </Link>
-
-      <div className="absolute left-4 top-4 z-20" dir="ltr">
-        <button
-          type="button"
-          aria-expanded={menuOpen}
-          aria-label={t("card.actions")}
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            setMenuOpen((value) => !value);
-          }}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-zinc-950/35 text-white shadow-none backdrop-blur-md transition hover:bg-zinc-950/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </button>
-
-        {menuOpen && (
-          <div className="mt-2 w-36 overflow-hidden rounded-2xl border border-white/15 bg-zinc-950/70 p-1 text-white shadow-none backdrop-blur-xl" dir="rtl">
-            <Link
-              href={`/projects/${project.id}/edit`}
-              className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold transition hover:bg-white/10"
-              onClick={(event) => {
-                event.stopPropagation();
-                setMenuOpen(false);
-              }}
-            >
-              <Edit className="h-3.5 w-3.5" />
-              {t("card.edit")}
-            </Link>
+          <div className="relative z-20 shrink-0" dir="ltr">
             <button
               type="button"
-              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-start text-xs font-bold text-red-200 transition hover:bg-red-500/15 hover:text-red-100"
+              aria-expanded={menuOpen}
+              aria-label={t("card.actions")}
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                setMenuOpen(false);
-                onDelete(project);
+                setMenuOpen((value) => !value);
               }}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-zinc-50 text-zinc-500 transition hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300 dark:hover:bg-white/[0.08]"
             >
-              <Trash2 className="h-3.5 w-3.5" />
-              {t("card.delete")}
+              <MoreHorizontal className="h-4 w-4" />
             </button>
+
+            {menuOpen && (
+              <div className="absolute end-0 mt-2 w-36 overflow-hidden rounded-2xl border border-zinc-200 bg-white p-1 text-zinc-900 shadow-lg dark:border-white/10 dark:bg-zinc-950 dark:text-white" dir="rtl">
+                <Link
+                  href={`/projects/${project.id}/edit`}
+                  className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold transition hover:bg-zinc-100 dark:hover:bg-white/10"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setMenuOpen(false);
+                  }}
+                >
+                  <Edit className="h-3.5 w-3.5" />
+                  {t("card.edit")}
+                </Link>
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-start text-xs font-bold text-red-500 transition hover:bg-red-50 dark:hover:bg-red-950/30"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setMenuOpen(false);
+                    onDelete(project);
+                  }}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  {t("card.delete")}
+                </button>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+
+        <p className="mt-4 line-clamp-2 min-h-10 text-xs font-semibold leading-5 text-zinc-500 dark:text-zinc-400">{nextAction}</p>
+
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          <ProjectCardFact icon={UserRound} label={t("card.owner")} value={ownerLabel} />
+          <ProjectCardFact icon={Layers3} label={t("card.resources")} value={project.assetCount} />
+          <ProjectCardFact icon={List} label={t("card.openTasks")} value={openTaskCount} />
+          <ProjectCardFact icon={CalendarDays} label={t("card.due")} value={dueLabel} />
+        </div>
+
+        <div className="mt-5">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t("card.progress")}</span>
+            <span className="text-[10px] font-black tabular-nums text-zinc-600 dark:text-zinc-300">{progress}%</span>
+          </div>
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-zinc-100 dark:bg-white/10">
+            <div className="h-full rounded-full bg-zinc-900 dark:bg-white" style={{ width: `${progress}%` }} />
+          </div>
+        </div>
+      </Link>
     </article>
+  );
+}
+
+function ProjectCardFact({ icon: Icon, label, value }: { icon: LucideIcon; label: ReactNode; value: ReactNode }) {
+  return (
+    <div className="min-w-0 rounded-xl bg-zinc-50 px-3 py-2 dark:bg-white/[0.035]">
+      <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-zinc-400">
+        <Icon className="h-3 w-3 shrink-0" />
+        <span className="truncate">{label}</span>
+      </span>
+      <p className="mt-1.5 truncate text-xs font-black text-zinc-900 dark:text-white">{value}</p>
+    </div>
   );
 }
 
@@ -242,6 +253,18 @@ export function ProjectsWorkspace() {
   const projects = useMemo(() => projectsQuery.results as Project[], [projectsQuery.results]);
   const isLoading = isWorkspaceReady && projectsQuery.queryStatus === "loading";
   const isQueryBlocked = isLoading || projectsQuery.queryStatus === "error";
+  const rawProjectTasks = useTasksQuery(workspaceOrganizationId, { status: "all", search: "" });
+  const projectTasks = useMemo(() => rawProjectTasks ?? [], [rawProjectTasks]);
+  const openTaskCountByProjectId = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const task of projectTasks) {
+      if (!task.projectId || task.status === "done" || task.status === "canceled") {
+        continue;
+      }
+      counts[task.projectId] = (counts[task.projectId] ?? 0) + 1;
+    }
+    return counts;
+  }, [projectTasks]);
 
   const filteredProjects = useMemo(() => projects.filter((project) => matchesProjectSearch(project, search)), [projects, search]);
 
@@ -255,8 +278,12 @@ export function ProjectsWorkspace() {
     },
     { key: "reference", header: t('detail.labels.ref') },
     { key: "status", header: t('form.statusLabel'), render: (project) => <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} /> },
-    { key: "type", header: t('detail.labels.type'), render: (project) => t(`types.${project.type}`) },
-    { key: "units", header: t('detail.labels.units') },
+    {
+      key: "type",
+      header: t('detail.labels.type'),
+      render: (project) => projectTypeLabel(t, project.type),
+    },
+    { key: "assetCount", header: t('detail.labels.assetCount') },
     { key: "priceRange", header: t('detail.labels.value') },
     {
       key: "actions",
@@ -302,7 +329,14 @@ export function ProjectsWorkspace() {
         <HttpQueryState query={projectsQuery} variant={view === "grid" ? "grid" : "table"} />
       ) : view === "grid" ? (
         <div className="flex flex-wrap gap-4">
-          {filteredProjects.map((project) => <ProjectTile key={project.id} project={project} onDelete={setDeleting} />)}
+          {filteredProjects.map((project) => (
+            <ProjectTile
+              key={project.id}
+              project={project}
+              onDelete={setDeleting}
+              openTaskCount={openTaskCountByProjectId[project.id] ?? 0}
+            />
+          ))}
         </div>
       ) : (
         <AppDataTable columns={columns} data={filteredProjects} getRowKey={(project) => project.id} />
@@ -351,13 +385,15 @@ export function ProjectDetailScreen({ id }: { id: string }) {
   const isWorkspaceReady = workspaceStatus === "ready";
   const workspaceOrganizationId = isWorkspaceReady ? account.workspace.organizationId ?? undefined : undefined;
   const project = useProjectQuery(workspaceOrganizationId, id) as Project | null | undefined;
-  const unitsQuery = useProjectPropertiesQuery(workspaceOrganizationId, project ? id : undefined);
-  const units = useMemo(() => unitsQuery ?? [], [unitsQuery]);
+  const assetsQuery = useProjectAssetsQuery(workspaceOrganizationId, project ? id : undefined);
+  const assets = useMemo(() => assetsQuery ?? [], [assetsQuery]);
   const mediaQuery = useResourceMediaQuery(workspaceOrganizationId, "project", project?.id);
   const projectMedia = useMemo(() => mediaQuery ?? [], [mediaQuery]);
   const documentAssets = useMemo(() => projectDocumentAssets(projectMedia), [projectMedia]);
+  const projectTaskRows = useTasksQuery(workspaceOrganizationId, { status: "all", search: "" });
+  const projectTasks = useMemo(() => (projectTaskRows ?? []).filter((task) => task.projectId === id), [id, projectTaskRows]);
   const [inventoryView, setInventoryView] = useState<"cards" | "table">("cards");
-  const unitColumns = useMemo((): AppDataTableColumn<(typeof units)[0]>[] => [
+  const assetColumns = useMemo((): AppDataTableColumn<(typeof assets)[0]>[] => [
     { key: "reference", header: td('inventory.cols.ref') },
     { key: "type", header: td('inventory.cols.type') },
     { key: "status", header: td('inventory.cols.status'), render: (u) => <StatusPill label={u.status} tone={u.status === "available" ? "success" : "warning"} /> },
@@ -365,22 +401,22 @@ export function ProjectDetailScreen({ id }: { id: string }) {
     { key: "area", header: td('inventory.cols.area') },
     { key: "updated", header: td('inventory.cols.updated') },
   ], [td]);
-  const inventoryMetrics = useMemo(() => projectInventoryMetrics(units, project?.units ?? 0), [project?.units, units]);
+  const inventoryMetrics = useMemo(() => projectInventoryMetrics(assets, project?.assetCount ?? 0), [project?.assetCount, assets]);
   const {
-    plannedUnits,
+    plannedAssets,
     inventoryCoverage,
-    availableUnits,
-    reservedUnits,
-    soldUnits,
-    pendingUnits,
-    liveUnitCount,
+    availableAssets,
+    reservedAssets,
+    soldAssets,
+    pendingAssets,
+    liveAssetCount,
   } = inventoryMetrics;
   const salesStats = useMemo(() => [
-    { label: td('sales.metrics.totalUnits'), value: liveUnitCount, icon: Layers3 },
-    { label: td('sales.metrics.availableUnits'), value: availableUnits, icon: Landmark, iconClassName: "text-emerald-500" },
-    { label: td('sales.metrics.reservedUnits'), value: reservedUnits, icon: TrendingUp, iconClassName: "text-blue-500" },
-    { label: td('sales.metrics.soldUnits'), value: soldUnits, icon: BarChart3 },
-  ], [availableUnits, liveUnitCount, reservedUnits, soldUnits, td]);
+    { label: td('sales.metrics.totalAssets'), value: liveAssetCount, icon: Layers3 },
+    { label: td('sales.metrics.availableAssets'), value: availableAssets, icon: Landmark, iconClassName: "text-emerald-500" },
+    { label: td('sales.metrics.reservedAssets'), value: reservedAssets, icon: TrendingUp, iconClassName: "text-blue-500" },
+    { label: td('sales.metrics.soldAssets'), value: soldAssets, icon: BarChart3 },
+  ], [availableAssets, liveAssetCount, reservedAssets, soldAssets, td]);
   
   const [deleting, setDeleting] = useState(false);
   const router = useRouter();
@@ -407,8 +443,11 @@ export function ProjectDetailScreen({ id }: { id: string }) {
   }
 
   const locationLabel = projectLocationLabel(project);
+  const projectType = projectTypeLabel(t, project.type);
+  const projectProgress = project.status === "approved" ? 100 : project.status === "pending" ? 62 : project.status === "rejected" ? 20 : 34;
+  const openProjectTasks = projectTasks.filter((task) => task.status !== "done" && task.status !== "canceled").length;
   const optionalCoreDetailRows: Array<[ReactNode, ReactNode | null | undefined | ""]> = [
-    [t('detail.labels.type'), t(`types.${project.type}`)],
+    [t('detail.labels.type'), projectType],
     [t('detail.labels.developer'), project.developer],
     [t('detail.labels.city'), project.city],
     [t('detail.labels.area'), project.area],
@@ -429,13 +468,12 @@ export function ProjectDetailScreen({ id }: { id: string }) {
                 <StatusPill label={t(`toolbar.filters.${project.status}`)} tone={statusTone(project.status)} />
                 {locationLabel && <ProjectMetaPill icon={MapPin}>{locationLabel}</ProjectMetaPill>}
                 {project.developer && <ProjectMetaPill icon={Building2}>{project.developer}</ProjectMetaPill>}
-                <ProjectMetaPill icon={Layers3}>{t(`types.${project.type}`)}</ProjectMetaPill>
+                <ProjectMetaPill icon={Layers3}>{projectType}</ProjectMetaPill>
               </div>
               <h1 className="mt-4 max-w-4xl text-2xl font-black leading-tight text-zinc-950 dark:text-white md:text-4xl">{project.name}</h1>
               <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px] font-black uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
                 <span>{project.reference}</span>
-                <span>{project.units} {t('card.units')}</span>
-                {project.priceRange && <span>{project.priceRange}</span>}
+                <span>{project.assetCount} {t('card.assetCount')}</span>
                 {project.regaAuthorizationNo && <span>{project.regaAuthorizationNo}</span>}
               </div>
               <p className="mt-3 max-w-3xl text-sm font-medium leading-6 text-zinc-600 dark:text-zinc-300">{project.description}</p>
@@ -468,6 +506,12 @@ export function ProjectDetailScreen({ id }: { id: string }) {
         </section>
 
         <TabsContent value="overview" className="space-y-6">
+          <AppStatsGrid stats={[
+            { label: td("work.status"), value: t(`toolbar.filters.${project.status}`), icon: CheckCircle2 },
+            { label: td("work.progress"), value: `${projectProgress}%`, icon: TrendingUp },
+            { label: td("work.openTasks"), value: openProjectTasks, icon: List },
+            { label: td("work.resources"), value: project.assetCount, icon: Layers3 },
+          ]} />
           <section className="grid gap-6 text-start xl:grid-cols-[minmax(0,1fr)_380px]">
             <AppSection
               tone="muted"
@@ -523,7 +567,7 @@ export function ProjectDetailScreen({ id }: { id: string }) {
                 <Button type="button" variant={inventoryView === "table" ? "default" : "outline"} size="icon" onClick={() => setInventoryView("table")} className="h-9 w-9 rounded-xl" aria-label={td('inventory.table')}>
                   <List className="h-3.5 w-3.5" />
                 </Button>
-                <Link href="/properties/create">
+                <Link href="/assets/create">
                   <AppPrimaryButton><Plus className="me-2 h-3.5 w-3.5" />{td('inventory.addUnit')}</AppPrimaryButton>
                 </Link>
               </div>
@@ -532,13 +576,13 @@ export function ProjectDetailScreen({ id }: { id: string }) {
             <div className="mb-5 max-w-sm">
               <ReadinessBar label={td('metrics.inventoryCoverage')} value={inventoryCoverage} />
             </div>
-            {units.length === 0 ? (
+            {assets.length === 0 ? (
               <EmptyWorkspace icon={Layers3} title={td('inventory.emptyTitle')} description={td('inventory.emptyDesc')} />
             ) : inventoryView === "table" ? (
-              <AppDataTable columns={unitColumns} data={units} getRowKey={(u) => u.id} />
+              <AppDataTable columns={assetColumns} data={assets} getRowKey={(asset) => asset.id} />
             ) : (
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {units.map((unit) => <ProjectUnitCard key={unit.id} unit={unit} />)}
+                {assets.map((asset) => <ProjectAssetCard key={asset.id} asset={asset} />)}
               </div>
             )}
           </AppSection>
@@ -578,7 +622,7 @@ export function ProjectDetailScreen({ id }: { id: string }) {
             title={td('sales.title')}
             description={td('sales.pipelineTitle')}
             actions={(
-              <Link href="/properties/create" className="inline-flex h-9 items-center rounded-lg bg-zinc-950 px-3 text-[10px] font-black uppercase tracking-widest text-white dark:bg-white dark:text-zinc-950">
+              <Link href="/assets/create" className="inline-flex h-9 items-center rounded-lg bg-zinc-950 px-3 text-[10px] font-black uppercase tracking-widest text-white dark:bg-white dark:text-zinc-950">
                 <Plus className="me-2 h-3.5 w-3.5" />
                 {td('inventory.addUnit')}
               </Link>
@@ -592,28 +636,28 @@ export function ProjectDetailScreen({ id }: { id: string }) {
             }))} />
           </AppSection>
 
-          {units.length === 0 ? (
+          {assets.length === 0 ? (
             <EmptyWorkspace icon={BarChart3} title={td('sales.emptyTitle')} description={td('sales.emptyDesc')} />
           ) : (
             <AppSection contentClassName="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
               <div className="space-y-4">
                 <div className="flex items-center justify-between gap-4">
                   <h2 className="text-base font-black text-zinc-950 dark:text-white">{td('sales.pipelineTitle')}</h2>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{liveUnitCount} / {plannedUnits}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{liveAssetCount} / {plannedAssets}</span>
                 </div>
                 <div className="space-y-2">
-                  <MiniMovement label={td('sales.status.available')} value={availableUnits} total={liveUnitCount} className="bg-emerald-500" />
-                  <MiniMovement label={td('sales.status.reserved')} value={reservedUnits} total={liveUnitCount} className="bg-blue-500" />
-                  <MiniMovement label={td('sales.status.sold')} value={soldUnits} total={liveUnitCount} className="bg-zinc-400" />
-                  <MiniMovement label={td('sales.status.pending')} value={pendingUnits} total={liveUnitCount} className="bg-amber-500" />
+                  <MiniMovement label={td('sales.status.available')} value={availableAssets} total={liveAssetCount} className="bg-emerald-500" />
+                  <MiniMovement label={td('sales.status.reserved')} value={reservedAssets} total={liveAssetCount} className="bg-blue-500" />
+                  <MiniMovement label={td('sales.status.sold')} value={soldAssets} total={liveAssetCount} className="bg-zinc-400" />
+                  <MiniMovement label={td('sales.status.pending')} value={pendingAssets} total={liveAssetCount} className="bg-amber-500" />
                 </div>
               </div>
               <aside className="border-t border-zinc-100 pt-5 dark:border-white/5 lg:border-s lg:border-t-0 lg:ps-5 lg:pt-0">
                 <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{td('sales.nextTitle')}</p>
                 <p className="mt-3 text-sm font-semibold leading-6 text-zinc-500 dark:text-zinc-400">{td('sales.nextDesc')}</p>
                 <div className="mt-5 grid grid-cols-2 gap-px overflow-hidden bg-zinc-200/70 dark:bg-white/10">
-                  <CompactFact label={td('sales.status.reserved')} value={reservedUnits} />
-                  <CompactFact label={td('sales.status.pending')} value={pendingUnits} />
+                  <CompactFact label={td('sales.status.reserved')} value={reservedAssets} />
+                  <CompactFact label={td('sales.status.pending')} value={pendingAssets} />
                 </div>
               </aside>
             </AppSection>
@@ -622,7 +666,13 @@ export function ProjectDetailScreen({ id }: { id: string }) {
 
         <TabsContent value="activity" className="space-y-6">
           <AppSection tone="muted">
-            <EmptyWorkspace icon={History} title={td('activity.emptyTitle')} description={td('activity.emptyDesc')} />
+            {projectTasks.length === 0 ? (
+              <EmptyWorkspace icon={History} title={td('activity.emptyTitle')} description={td('activity.emptyDesc')} />
+            ) : (
+              <div className="grid gap-3">
+                {projectTasks.map((task) => <ProjectTaskRow key={task.id} task={task} />)}
+              </div>
+            )}
           </AppSection>
         </TabsContent>
       </Tabs>
@@ -652,6 +702,21 @@ export function ProjectDetailScreen({ id }: { id: string }) {
   );
 }
 
+function ProjectTaskRow({ task }: { task: TaskRecord }) {
+  return (
+    <Link href={`/tasks/${task.id}`} className="flex min-w-0 items-center justify-between gap-4 rounded-2xl border border-zinc-200 bg-white p-4 text-start transition-colors hover:border-zinc-300 dark:border-white/10 dark:bg-[#0A0A0A] dark:hover:border-white/20">
+      <div className="min-w-0">
+        <p className="truncate text-sm font-black text-zinc-950 dark:text-white">{task.title}</p>
+        <p className="mt-1 truncate text-xs font-semibold text-zinc-500 dark:text-zinc-400">{task.description || task.assigneeUserId || task.createdByUserId}</p>
+      </div>
+      <div className="flex shrink-0 items-center gap-2">
+        <StatusPill label={task.status} tone={task.status === "done" ? "success" : task.status === "waiting" ? "warning" : "info"} />
+        <span className="text-[10px] font-black text-zinc-400">{task.dueDate || "No date"}</span>
+      </div>
+    </Link>
+  );
+}
+
 function ProjectMetaPill({ icon: Icon, children }: { icon: typeof Building2; children: ReactNode }) {
   return (
     <span className="inline-flex h-8 min-w-0 max-w-full items-center gap-2 rounded-full bg-zinc-100 px-3 text-xs font-bold text-zinc-600 dark:bg-white/[0.06] dark:text-zinc-300">
@@ -661,41 +726,41 @@ function ProjectMetaPill({ icon: Icon, children }: { icon: typeof Building2; chi
   );
 }
 
-function ProjectUnitCard({ unit }: { unit: { id: string; title: string; reference: string; type: string; status: string; price: string; area: string; bedrooms?: number | string; bathrooms?: number | string; city?: string; image?: string; coverImageUrl?: string } }) {
-  const rooms = [unit.bedrooms, unit.bathrooms].filter((value) => typeof value === "number").join(" / ");
+function ProjectAssetCard({ asset }: { asset: { id: string; title: string; reference: string; type: string; status: string; price: string; area: string; bedrooms?: number | string; bathrooms?: number | string; city?: string; image?: string; coverImageUrl?: string } }) {
+  const rooms = [asset.bedrooms, asset.bathrooms].filter((value) => typeof value === "number").join(" / ");
 
   return (
     <Link
-      href={`/properties/${unit.id}`}
+      href={`/assets/${asset.id}`}
       className="block rounded-[18px] border border-zinc-200 bg-white p-4 text-start shadow-none transition-colors hover:border-zinc-300 hover:bg-zinc-50/50 dark:border-white/5 dark:bg-[#0A0A0A] dark:hover:border-white/15 dark:hover:bg-white/[0.025]"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-[10px] font-black uppercase tracking-[0.16em] text-zinc-400">{unit.reference}</p>
-          <h3 className="mt-2 line-clamp-2 text-sm font-black leading-snug text-zinc-950 dark:text-white">{unit.title}</h3>
+          <p className="truncate text-[10px] font-black uppercase tracking-[0.16em] text-zinc-400">{asset.reference}</p>
+          <h3 className="mt-2 line-clamp-2 text-sm font-black leading-snug text-zinc-950 dark:text-white">{asset.title}</h3>
           <p className="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
             <MapPin className="h-3 w-3 shrink-0" />
-            <span className="truncate">{unit.city || unit.reference}</span>
+            <span className="truncate">{asset.city || asset.reference}</span>
           </p>
         </div>
         <div className="shrink-0">
-          <StatusPill label={unit.status} tone={unit.status === "available" ? "success" : unit.status === "sold" ? "neutral" : "warning"} />
+          <StatusPill label={asset.status} tone={asset.status === "available" ? "success" : asset.status === "sold" ? "neutral" : "warning"} />
         </div>
       </div>
 
       <div className="mt-4 border-t border-zinc-100 pt-4 dark:border-white/5">
-        <p className="truncate text-sm font-black text-zinc-950 dark:text-white">{unit.price}</p>
+        <p className="truncate text-sm font-black text-zinc-950 dark:text-white">{asset.price}</p>
         <div className="mt-3 grid grid-cols-3 gap-3">
-          <UnitMiniFact label="Type" value={unit.type} />
-          <UnitMiniFact label="Area" value={unit.area} />
-          <UnitMiniFact label="Rooms" value={rooms || "—"} />
+          <AssetMiniFact label="Type" value={asset.type} />
+          <AssetMiniFact label="Area" value={asset.area} />
+          <AssetMiniFact label="Rooms" value={rooms || "—"} />
         </div>
       </div>
     </Link>
   );
 }
 
-function UnitMiniFact({ label, value }: { label: string; value: ReactNode }) {
+function AssetMiniFact({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="min-w-0 space-y-1">
       <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">{label}</p>
@@ -805,9 +870,9 @@ export function ProjectFormScreen({ id }: { id?: string }) {
     saveOperation.clearError();
   };
 
-  const toggleUnitType = (value: ProjectFormValues["unitTypes"][number]) => {
-    const next = toggleProjectUnitType(form.unitTypes, value);
-    setValue("unitTypes", next, { shouldDirty: true, shouldValidate: Boolean(fieldErrors.unitTypes) });
+  const toggleAssetType = (value: ProjectFormValues["assetTypes"][number]) => {
+    const next = toggleProjectAssetType(form.assetTypes, value);
+    setValue("assetTypes", next, { shouldDirty: true, shouldValidate: Boolean(fieldErrors.assetTypes) });
     saveOperation.clearError();
   };
 
@@ -828,7 +893,7 @@ export function ProjectFormScreen({ id }: { id?: string }) {
   };
 
   const stepForProjectError = (key: keyof ProjectFormValues) => {
-    if (["name", "developer", "city", "area", "units", "averagePrice", "projectPrices", "priceRange"].includes(key)) return 1;
+    if (["name", "developer", "city", "area", "assetCount", "averagePrice", "projectPrices", "priceRange"].includes(key)) return 1;
     if (["regaAuthorizationNo", "regaExpiresAt", "planNumber", "plotNumber", "postalIdentity"].includes(key)) return 3;
     return 5;
   };
@@ -919,7 +984,7 @@ export function ProjectFormScreen({ id }: { id?: string }) {
                     <TextInput name="developer" label={t("form.devLabel")} value={form.developer} onChange={(value) => setField("developer", value)} placeholder="Acme Development…" error={fieldErrors.developer} />
                     <TextInput name="city" label={t("form.cityLabel")} value={form.city} onChange={(value) => setField("city", value)} placeholder="Riyadh…" error={fieldErrors.city} />
                     <TextInput name="area" label={t("form.areaLabel")} value={form.area} onChange={(value) => setField("area", value)} placeholder="Al Malqa…" error={fieldErrors.area} />
-                    <TextInput name="units" label={t("form.unitsLabel")} type="number" inputMode="numeric" value={form.units} onChange={(value) => setField("units", value)} error={fieldErrors.units} />
+                    <TextInput name="assetCount" label={t("form.assetCountLabel")} type="number" inputMode="numeric" value={form.assetCount} onChange={(value) => setField("assetCount", value)} error={fieldErrors.assetCount} />
                     <ProjectPricingSection
                       averagePrice={form.averagePrice}
                       rows={form.projectPrices ?? []}
@@ -1043,7 +1108,7 @@ export function ProjectFormScreen({ id }: { id?: string }) {
                       options={[{ value: "Residential", label: t("types.Residential") }, { value: "Commercial", label: t("types.Commercial") }, { value: "Mixed Use", label: t("types.Mixed Use") }]}
                       error={fieldErrors.type}
                     />
-                    <OfferingMixGrid value={form.unitTypes ?? []} onToggle={toggleUnitType} label={t("form.offeringMixLabel")} />
+                    <OfferingMixGrid value={form.assetTypes ?? []} onToggle={toggleAssetType} label={t("form.offeringMixLabel")} />
                     <ProjectInlineChoice
                       id="status"
                       label={t("form.statusLabel")}
@@ -1438,8 +1503,8 @@ function OfferingMixGrid({
   onToggle,
   label,
 }: {
-  value: ProjectFormValues["unitTypes"];
-  onToggle: (value: ProjectFormValues["unitTypes"][number]) => void;
+  value: ProjectFormValues["assetTypes"];
+  onToggle: (value: ProjectFormValues["assetTypes"][number]) => void;
   label: string;
 }) {
   const t = useTranslations("Projects");

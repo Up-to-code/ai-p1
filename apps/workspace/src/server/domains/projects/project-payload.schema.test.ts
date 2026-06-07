@@ -3,17 +3,11 @@ import { projectPayloadSchema } from "./validation/project.schema";
 
 const validProjectPayload = {
   name: "Test project",
-  developer: "Developer",
-  city: "Riyadh",
-  area: "Al Malqa",
-  type: "Residential",
-  unitTypes: ["Apartment"],
-  status: "draft",
+  status: "planned",
+  health: "onTrack",
   visibility: "private",
-  units: 0,
-  averagePrice: "100",
-  projectPrices: [],
-  priceRange: "100",
+  budget: 100,
+  currency: "USD",
   description: "test",
 };
 
@@ -22,9 +16,12 @@ describe("project payload schema", () => {
     expect(projectPayloadSchema.safeParse(validProjectPayload).success).toBe(true);
   });
 
-  it("still rejects blank descriptions", () => {
+  it("normalizes blank optional descriptions", () => {
     const result = projectPayloadSchema.safeParse({ ...validProjectPayload, description: "   " });
 
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.description).toBeUndefined();
+    }
   });
 });

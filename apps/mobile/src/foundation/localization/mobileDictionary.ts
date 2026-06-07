@@ -17,8 +17,8 @@ export type MobileDictionary = {
     appearance: string;
     profile: string;
     loading: string;
-    propertyUnavailableTitle: string;
-    propertyUnavailableBody: string;
+    assetUnavailableTitle: string;
+    assetUnavailableBody: string;
     noAmenitiesTitle: string;
     noAmenitiesBody: string;
   };
@@ -40,20 +40,20 @@ export type MobileDictionary = {
     syncingSavedTitle: string;
     syncingSavedBody: string;
   };
-  propertyCard: {
+  assetCard: {
     topMatch: string;
     verified: string;
     viewDetails: string;
     previousImage: string;
     nextImage: string;
-    saveProperty: string;
-    removeSavedProperty: string;
+    saveAsset: string;
+    removeSavedAsset: string;
     whatsapp: string;
     call: string;
     bed: string;
     bath: string;
     sqft: string;
-    apartment: string;
+    asset: string;
     villa: string;
     studio: string;
     forSale: string;
@@ -87,7 +87,7 @@ export type MobileDictionary = {
     startConversation: string;
     untitledSearch: string;
     fullHistory: string;
-    savedProperties: string;
+    savedAssets: string;
     favoriteChats: string;
     userSettings: string;
     errorScreens: string;
@@ -153,7 +153,7 @@ export type MobileDictionary = {
     filterButton: string;
     mapButton: string;
     listButton: string;
-    openProperty: string;
+    openAsset: string;
     browseArea: string;
     mapTitle: string;
     mapSubtitle: string;
@@ -179,7 +179,7 @@ export type MobileDictionary = {
     minPricePlaceholder: string;
     maxPricePlaceholder: string;
     locationTitle: string;
-    propertyTypeTitle: string;
+    assetTypeTitle: string;
     bedroomsTitle: string;
     bathroomsTitle: string;
     anyOption: string;
@@ -191,7 +191,7 @@ export type MobileDictionary = {
       forSale: string;
       forRent: string;
       villas: string;
-      apartments: string;
+      assets: string;
       studios: string;
     };
     stillConnectingTitle: string;
@@ -321,7 +321,7 @@ export type MobileDictionary = {
     listTitle: string;
     listBody: string;
   };
-  property: {
+  asset: {
     [key: string]: any;
     locationMap: string;
     locationUnavailable: string;
@@ -353,13 +353,13 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       appearance: "Appearance",
       profile: "Profile",
       loading: "Loading",
-      propertyUnavailableTitle: "Property unavailable",
-      propertyUnavailableBody: "This property could not be loaded or is no longer available.",
+      assetUnavailableTitle: "Asset unavailable",
+      assetUnavailableBody: "This asset could not be loaded or is no longer available.",
       noAmenitiesTitle: "No amenities listed",
-      noAmenitiesBody: "This property does not have live amenities data yet.",
+      noAmenitiesBody: "This asset does not have live amenities data yet.",
     },
     homeSearch: {
-      placeholder: "Search areas, compounds, and property ideas...",
+      placeholder: "Search areas, compounds, and asset ideas...",
       buy: "BUY",
       rent: "RENT",
       ready: "Ready",
@@ -368,28 +368,28 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       topMatchesSubtitle: "Ranked for your current preferences.",
       searchTitle: "Explore listings",
       searchSubtitle: "Browse the live market with quick filters.",
-      savedTitle: "Saved properties",
+      savedTitle: "Saved assets",
       savedSubtitle: "Your shortlist stays ready to revisit.",
       viewAll: "View all",
-      emptySavedTitle: "No saved properties yet",
-      emptySavedBody: "Save a property to keep it close for later comparison.",
+      emptySavedTitle: "No saved assets yet",
+      emptySavedBody: "Save a asset to keep it close for later comparison.",
       syncingSavedTitle: "Refreshing saved homes",
       syncingSavedBody: "Your shortlist is syncing in the background.",
     },
-    propertyCard: {
+    assetCard: {
       topMatch: "Top Match",
       verified: "Verified",
       viewDetails: "View Details",
-      previousImage: "Previous property image",
-      nextImage: "Next property image",
-      saveProperty: "Save property",
-      removeSavedProperty: "Remove property from favorites",
+      previousImage: "Previous asset image",
+      nextImage: "Next asset image",
+      saveAsset: "Save asset",
+      removeSavedAsset: "Remove asset from favorites",
       whatsapp: "WhatsApp",
       call: "Call",
       bed: "bed",
       bath: "bath",
       sqft: "sqft",
-      apartment: "Apartment",
+      asset: "Asset",
       villa: "Villa",
       studio: "Studio",
       forSale: "For sale",
@@ -423,7 +423,7 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       startConversation: "New conversation",
       untitledSearch: "Untitled search",
       fullHistory: "View full history",
-      savedProperties: "Saved properties",
+      savedAssets: "Saved assets",
       favoriteChats: "Favorite chats",
       userSettings: "Workspace settings",
       errorScreens: "Error screens",
@@ -489,7 +489,7 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       filterButton: "Filters",
       mapButton: "Map",
       listButton: "List",
-      openProperty: "Open property",
+      openAsset: "Open asset",
       browseArea: "Browse area",
       mapTitle: "Explore on the map",
       mapSubtitle: "Tap a pin to preview a listing near that area.",
@@ -515,7 +515,7 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       minPricePlaceholder: "Min price",
       maxPricePlaceholder: "Max price",
       locationTitle: "Locations",
-      propertyTypeTitle: "Property type",
+      assetTypeTitle: "Asset type",
       bedroomsTitle: "Bedrooms",
       bathroomsTitle: "Bathrooms",
       anyOption: "Any",
@@ -527,14 +527,14 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
         forSale: "For sale",
         forRent: "For rent",
         villas: "Villas",
-        apartments: "Apartments",
+        assets: "Assets",
         studios: "Studios",
       },
       stillConnectingTitle: "Still connecting",
       stillConnectingBody: "We are waiting for your live listings to load.",
-      emptyTitle: "No properties yet",
+      emptyTitle: "No assets yet",
       emptyBody: "Listings will appear here once your live inventory is available.",
-      noResultsTitle: "No properties found",
+      noResultsTitle: "No assets found",
       noResultsBody: "Try a different search or filter to see more homes.",
     },
     theories: {
@@ -549,7 +549,7 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       landingPhrases: [
         "Your agency runs from chat.",
         "Search, follow up, and close from your phone.",
-        "Smarter real estate work, no desk required.",
+        "Smarter workspace work, no desk required.",
       ],
       legalNotice: "By continuing, you agree to",
       termsOfService: "Terms",
@@ -652,7 +652,7 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       budgetTitle: "Scope",
       budgetBody: "What is your desired investment budget? Select a baseline.",
       typesTitle: "Architecture",
-      typesBody: "Select the property types that match your architectural taste.",
+      typesBody: "Select the asset types that match your architectural taste.",
       completeJourney: "Complete journey",
       currency: "EGP",
     },
@@ -661,7 +661,7 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       listTitle: "Error screens",
       listBody: "Preview recovery states for broken drafts, crashes, missing routes, network loss, and service windows.",
     },
-    property: {
+    asset: {
       locationMap: "LOCATION",
       locationUnavailable: "LOCATION UNAVAILABLE",
       openMapView: "VIEW ON MAP",
@@ -690,43 +690,43 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       appearance: "المظهر",
       profile: "الملف الشخصي",
       loading: "جارٍ التحميل",
-      propertyUnavailableTitle: "العقار غير متاح",
-      propertyUnavailableBody: "تعذّر تحميل هذا العقار أو لم يعد متاحًا.",
+      assetUnavailableTitle: "الأصل غير متاح",
+      assetUnavailableBody: "تعذّر تحميل هذا الأصل أو لم يعد متاحًا.",
       noAmenitiesTitle: "لا توجد مرافق مسجلة",
-      noAmenitiesBody: "لا توجد بيانات مرافق مباشرة لهذا العقار حتى الآن.",
+      noAmenitiesBody: "لا توجد بيانات مرافق مباشرة لهذا الأصل حتى الآن.",
     },
     homeSearch: {
-      placeholder: "ابحث عن مناطق وكمبوندات وأفكار عقارية...",
+      placeholder: "ابحث عن مناطق وكمبوندات وأفكار أصلية...",
       buy: "شراء",
       rent: "إيجار",
       ready: "جاهز",
       projects: "مشروعات",
       topMatchesTitle: "أفضل التطابقات",
       topMatchesSubtitle: "مرتبة حسب تفضيلاتك الحالية.",
-      searchTitle: "استكشف العقارات",
+      searchTitle: "استكشف الأصول",
       searchSubtitle: "تصفح السوق المباشر مع فلاتر سريعة.",
-      savedTitle: "العقارات المحفوظة",
+      savedTitle: "الأصول المحفوظة",
       savedSubtitle: "قائمتك المختصرة جاهزة للرجوع إليها.",
       viewAll: "عرض الكل",
-      emptySavedTitle: "لا توجد عقارات محفوظة بعد",
-      emptySavedBody: "احفظ أي عقار ليبقى قريبًا منك للمقارنة لاحقًا.",
-      syncingSavedTitle: "جارٍ تحديث العقارات المحفوظة",
+      emptySavedTitle: "لا توجد أصول محفوظة بعد",
+      emptySavedBody: "احفظ أي أصل ليبقى قريبًا منك للمقارنة لاحقًا.",
+      syncingSavedTitle: "جارٍ تحديث الأصول المحفوظة",
       syncingSavedBody: "قائمتك المختصرة تتم مزامنتها في الخلفية.",
     },
-    propertyCard: {
+    assetCard: {
       topMatch: "أفضل تطابق",
       verified: "موثّق",
       viewDetails: "عرض التفاصيل",
-      previousImage: "الصورة السابقة للعقار",
-      nextImage: "الصورة التالية للعقار",
-      saveProperty: "حفظ العقار",
-      removeSavedProperty: "إزالة العقار من المفضلة",
+      previousImage: "الصورة السابقة للأصل",
+      nextImage: "الصورة التالية للأصل",
+      saveAsset: "حفظ الأصل",
+      removeSavedAsset: "إزالة الأصل من المفضلة",
       whatsapp: "واتساب",
       call: "اتصال",
       bed: "غرف",
       bath: "حمام",
       sqft: "قدم²",
-      apartment: "شقة",
+      asset: "أصل",
       villa: "فيلا",
       studio: "استوديو",
       forSale: "للبيع",
@@ -760,7 +760,7 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       startConversation: "محادثة جديدة",
       untitledSearch: "بحث بدون عنوان",
       fullHistory: "عرض السجل الكامل",
-      savedProperties: "العقارات المحفوظة",
+      savedAssets: "الأصول المحفوظة",
       favoriteChats: "المحادثات المفضلة",
       userSettings: "إعدادات المساحة",
       errorScreens: "شاشات الأخطاء",
@@ -826,15 +826,15 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       filterButton: "الفلاتر",
       mapButton: "الخريطة",
       listButton: "القائمة",
-      openProperty: "فتح العقار",
+      openAsset: "فتح الأصل",
       browseArea: "تصفّح المنطقة",
       mapTitle: "استكشف على الخريطة",
-      mapSubtitle: "اضغط على أي علامة لمعاينة العقار في تلك المنطقة.",
-      mapSelectedLabel: "العقار المحدد",
+      mapSubtitle: "اضغط على أي علامة لمعاينة الأصل في تلك المنطقة.",
+      mapSelectedLabel: "الأصل المحدد",
       mapUnavailableTitle: "الخريطة غير متاحة هنا",
-      mapUnavailableBody: "افتح هذه الشاشة على نسخة تطوير iOS أو Android لتصفّح العقارات على الخريطة.",
+      mapUnavailableBody: "افتح هذه الشاشة على نسخة تطوير iOS أو Android لتصفّح الأصول على الخريطة.",
       mapTokenMissingTitle: "رمز Mapbox غير موجود",
-      mapTokenMissingBody: "أضف EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN لتشغيل خريطة العقارات في نسخة التطوير.",
+      mapTokenMissingBody: "أضف EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN لتشغيل خريطة الأصول في نسخة التطوير.",
       mapSettingsTitle: "إعدادات الخريطة",
       mapTypeTitle: "نوع الخريطة",
       mapStandard: "قياسية",
@@ -846,32 +846,32 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       hospitalsBody: "إظهار المراكز الطبية",
       retailTitle: "متاجر وبقالة",
       retailBody: "إظهار مراكز التسوق والأسواق",
-      filterTitle: "فلترة العقارات",
+      filterTitle: "فلترة الأصول",
       filterSubtitle: "حدّد الميزانية والموقع والتفاصيل الأساسية قبل التصفح.",
       priceTitle: "نطاق السعر",
       minPricePlaceholder: "أقل سعر",
       maxPricePlaceholder: "أعلى سعر",
       locationTitle: "المواقع",
-      propertyTypeTitle: "نوع العقار",
+      assetTypeTitle: "نوع الأصل",
       bedroomsTitle: "غرف النوم",
       bathroomsTitle: "الحمامات",
       anyOption: "أي عدد",
       resetFilters: "إعادة ضبط",
       applyFilters: "عرض النتائج",
-      resultsSummary: "صفِّ النتائج حسب السعر والمواقع وتفاصيل العقار.",
+      resultsSummary: "صفِّ النتائج حسب السعر والمواقع وتفاصيل الأصل.",
       filters: {
         all: "الكل",
         forSale: "للبيع",
         forRent: "للإيجار",
         villas: "فلل",
-        apartments: "شقق",
+        assets: "أصول",
         studios: "استوديوهات",
       },
       stillConnectingTitle: "ما زلنا نتصل",
-      stillConnectingBody: "ننتظر تحميل العقارات المباشرة الخاصة بك.",
-      emptyTitle: "لا توجد عقارات بعد",
-      emptyBody: "ستظهر العقارات هنا عندما تصبح القائمة المباشرة متاحة.",
-      noResultsTitle: "لم نجد عقارات",
+      stillConnectingBody: "ننتظر تحميل الأصول المباشرة الخاصة بك.",
+      emptyTitle: "لا توجد أصول بعد",
+      emptyBody: "ستظهر الأصول هنا عندما تصبح القائمة المباشرة متاحة.",
+      noResultsTitle: "لم نجد أصول",
       noResultsBody: "جرّب بحثًا أو فلترًا مختلفًا لرؤية خيارات أكثر.",
     },
     theories: {
@@ -884,7 +884,7 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
     auth: {
       wordmark: "كانترا",
       landingPhrases: [
-        "كل شغلك العقاري في محادثة واحدة.",
+        "كل شغلك الأصلي في محادثة واحدة.",
         "ابحث وتابع عملاءك من هاتفك.",
         "كانترا تقرّب القرار وتختصر الطريق.",
       ],
@@ -988,8 +988,8 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       locationsBody: "أين تبحث للشراء أو الاستثمار؟ اختر كل ما ينطبق.",
       budgetTitle: "الميزانية",
       budgetBody: "ما هي ميزانية الاستثمار المناسبة لك؟ اختر نطاقًا أساسيًا.",
-      typesTitle: "نوع العقار",
-      typesBody: "اختر أنواع العقارات التي تناسب ذوقك المعماري.",
+      typesTitle: "نوع الأصل",
+      typesBody: "اختر أنواع الأصول التي تناسب ذوقك المعماري.",
       completeJourney: "إكمال الرحلة",
       currency: "جنيه",
     },
@@ -998,7 +998,7 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       listTitle: "شاشات الأخطاء",
       listBody: "استعرض حالات الاستعادة للمسودات المعطلة والانهيارات والروابط المفقودة وانقطاع الشبكة ونوافذ الخدمة.",
     },
-    property: {
+    asset: {
       locationMap: "الموقع",
       locationUnavailable: "الموقع غير متاح",
       openMapView: "عرض على الخريطة",
@@ -1027,10 +1027,10 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       appearance: "Apparence",
       profile: "Profil",
       loading: "Chargement",
-      propertyUnavailableTitle: "Bien indisponible",
-      propertyUnavailableBody: "Ce bien n’a pas pu être chargé ou n’est plus disponible.",
+      assetUnavailableTitle: "Actif indisponible",
+      assetUnavailableBody: "Ce actif n’a pas pu être chargé ou n’est plus disponible.",
       noAmenitiesTitle: "Aucun équipement indiqué",
-      noAmenitiesBody: "Ce bien n’a pas encore de données d’équipements en direct.",
+      noAmenitiesBody: "Ce actif n’a pas encore de données d’équipements en direct.",
     },
     homeSearch: {
       placeholder: "Recherchez des zones, compounds et idées immobilières...",
@@ -1040,30 +1040,30 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       projects: "Projets",
       topMatchesTitle: "Meilleures correspondances",
       topMatchesSubtitle: "Classées selon vos préférences actuelles.",
-      searchTitle: "Explorer les biens",
+      searchTitle: "Explorer les actifs",
       searchSubtitle: "Parcourez le marché en direct avec des filtres rapides.",
-      savedTitle: "Biens enregistrés",
+      savedTitle: "Actifs enregistrés",
       savedSubtitle: "Votre sélection reste prête à être revisitée.",
       viewAll: "Voir tout",
-      emptySavedTitle: "Aucun bien enregistré",
-      emptySavedBody: "Enregistrez un bien pour le garder à portée de comparaison.",
-      syncingSavedTitle: "Actualisation des biens enregistrés",
+      emptySavedTitle: "Aucun actif enregistré",
+      emptySavedBody: "Enregistrez un actif pour le garder à portée de comparaison.",
+      syncingSavedTitle: "Actualisation des actifs enregistrés",
       syncingSavedBody: "Votre sélection se synchronise en arrière-plan.",
     },
-    propertyCard: {
+    assetCard: {
       topMatch: "Top match",
       verified: "Vérifié",
       viewDetails: "Voir les détails",
-      previousImage: "Image précédente du bien",
-      nextImage: "Image suivante du bien",
-      saveProperty: "Enregistrer le bien",
-      removeSavedProperty: "Retirer le bien des favoris",
+      previousImage: "Image précédente du actif",
+      nextImage: "Image suivante du actif",
+      saveAsset: "Enregistrer le actif",
+      removeSavedAsset: "Retirer le actif des favoris",
       whatsapp: "WhatsApp",
       call: "Appeler",
       bed: "ch",
       bath: "sdb",
       sqft: "pi²",
-      apartment: "Appartement",
+      asset: "Actif",
       villa: "Villa",
       studio: "Studio",
       forSale: "À vendre",
@@ -1097,7 +1097,7 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       startConversation: "Nouvelle conversation",
       untitledSearch: "Recherche sans titre",
       fullHistory: "Voir tout l’historique",
-      savedProperties: "Biens enregistrés",
+      savedAssets: "Actifs enregistrés",
       favoriteChats: "Chats favoris",
       userSettings: "Paramètres de l’espace",
       errorScreens: "Écrans d’erreur",
@@ -1163,15 +1163,15 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       filterButton: "Filtres",
       mapButton: "Carte",
       listButton: "Liste",
-      openProperty: "Ouvrir le bien",
+      openAsset: "Ouvrir le actif",
       browseArea: "Voir la zone",
       mapTitle: "Explorer sur la carte",
-      mapSubtitle: "Touchez un repère pour prévisualiser un bien dans cette zone.",
-      mapSelectedLabel: "Bien sélectionné",
+      mapSubtitle: "Touchez un repère pour prévisualiser un actif dans cette zone.",
+      mapSelectedLabel: "Actif sélectionné",
       mapUnavailableTitle: "Carte indisponible ici",
-      mapUnavailableBody: "Ouvrez cet écran sur une build de développement iOS ou Android pour parcourir les biens sur la carte.",
+      mapUnavailableBody: "Ouvrez cet écran sur une build de développement iOS ou Android pour parcourir les actifs sur la carte.",
       mapTokenMissingTitle: "Jeton Mapbox manquant",
-      mapTokenMissingBody: "Ajoutez EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN pour charger la carte des biens dans les builds de développement.",
+      mapTokenMissingBody: "Ajoutez EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN pour charger la carte des actifs dans les builds de développement.",
       mapSettingsTitle: "Paramètres de carte",
       mapTypeTitle: "Type de carte",
       mapStandard: "Standard",
@@ -1183,32 +1183,32 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       hospitalsBody: "Afficher les centres médicaux",
       retailTitle: "Commerces et épiceries",
       retailBody: "Afficher les centres commerciaux et marchés",
-      filterTitle: "Filtrer les biens",
+      filterTitle: "Filtrer les actifs",
       filterSubtitle: "Affinez par budget, emplacement et besoins avant d’explorer davantage.",
       priceTitle: "Fourchette de prix",
       minPricePlaceholder: "Prix min",
       maxPricePlaceholder: "Prix max",
       locationTitle: "Emplacements",
-      propertyTypeTitle: "Type de bien",
+      assetTypeTitle: "Type de actif",
       bedroomsTitle: "Chambres",
       bathroomsTitle: "Salles de bain",
       anyOption: "Peu importe",
       resetFilters: "Réinitialiser",
       applyFilters: "Afficher les résultats",
-      resultsSummary: "Affinez par prix, emplacements et détails du bien.",
+      resultsSummary: "Affinez par prix, emplacements et détails du actif.",
       filters: {
         all: "Tout",
         forSale: "À vendre",
         forRent: "À louer",
         villas: "Villas",
-        apartments: "Appartements",
+        assets: "Actifs",
         studios: "Studios",
       },
       stillConnectingTitle: "Connexion en cours",
       stillConnectingBody: "Nous attendons le chargement de vos annonces en direct.",
-      emptyTitle: "Aucun bien pour l’instant",
-      emptyBody: "Les biens apparaîtront ici quand votre inventaire sera disponible.",
-      noResultsTitle: "Aucun bien trouvé",
+      emptyTitle: "Aucun actif pour l’instant",
+      emptyBody: "Les actifs apparaîtront ici quand votre inventaire sera disponible.",
+      noResultsTitle: "Aucun actif trouvé",
       noResultsBody: "Essayez une autre recherche ou un autre filtre.",
     },
     theories: {
@@ -1223,7 +1223,7 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       landingPhrases: [
         "Votre agence travaille depuis le chat.",
         "Cherchez, suivez et avancez depuis votre téléphone.",
-        "Un immobilier plus intelligent, sans bureau.",
+        "Un espace de travail plus intelligent, sans bureau.",
       ],
       legalNotice: "En continuant, vous acceptez les",
       termsOfService: "Conditions",
@@ -1326,7 +1326,7 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       budgetTitle: "Budget",
       budgetBody: "Quel est votre budget d’investissement souhaité ? Choisissez une base.",
       typesTitle: "Architecture",
-      typesBody: "Sélectionnez les types de biens qui correspondent à votre goût.",
+      typesBody: "Sélectionnez les types de actifs qui correspondent à votre goût.",
       completeJourney: "Terminer le parcours",
       currency: "EGP",
     },
@@ -1335,7 +1335,7 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       listTitle: "Écrans d'erreur",
       listBody: "Aperçu des états de récupération pour les brouillons cassés, les plantages, les routes manquantes, les pertes de réseau et les fenêtres de service.",
     },
-    property: {
+    asset: {
       locationMap: "LOCALISATION",
       locationUnavailable: "LOCALISATION INDISPONIBLE",
       openMapView: "VOIR SUR LA CARTE",

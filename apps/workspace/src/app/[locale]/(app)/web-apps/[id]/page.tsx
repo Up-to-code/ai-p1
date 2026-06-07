@@ -1,6 +1,6 @@
-import { redirect } from "next/navigation";
+import { IntegrationDetailScreen } from "@/domains/integrations";
 
-export default async function WebAppDetailsPage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
-  redirect(`/${locale}/dashboard`);
+export default async function WebAppDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <IntegrationDetailScreen id={id} />;
 }

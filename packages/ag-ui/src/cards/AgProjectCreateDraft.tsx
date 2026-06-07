@@ -7,21 +7,19 @@ import AgEntityDraftCard from "./AgEntityDraftCard";
  */
 export default function AgProjectCreateDraft({
   name,
-  city,
-  district,
-  price,
-  brokerFee,
-  rooms,
-  bathrooms,
+  owner,
+  workspace,
+  budget,
+  timeline,
+  resources,
   summary,
 }: {
   name: string;
-  city: string;
-  district: string;
-  price: string;
-  brokerFee: string;
-  rooms: string;
-  bathrooms: string;
+  owner: string;
+  workspace: string;
+  budget: string;
+  timeline: string;
+  resources: string;
   summary: string;
 }) {
   return (
@@ -30,11 +28,11 @@ export default function AgProjectCreateDraft({
       title={name}
       subtitle="المساعد جمع هذه البيانات من المحادثة ليجهز إنشاء المشروع."
       fields={[
-        { label: "المدينة", value: city },
-        { label: "الحي", value: district },
-        { label: "السعر المبدئي", value: price, emphasized: true },
-        { label: "عمولة الوسيط", value: brokerFee },
-        { label: "الغرف / الحمامات", value: `${rooms} غرف - ${bathrooms} حمامات` },
+        { label: "المالك", value: owner },
+        { label: "المساحة", value: workspace },
+        { label: "الميزانية", value: budget, emphasized: true },
+        { label: "الجدول الزمني", value: timeline },
+        { label: "الأصول", value: resources },
         { label: "الوصف", value: summary },
       ]}
     />

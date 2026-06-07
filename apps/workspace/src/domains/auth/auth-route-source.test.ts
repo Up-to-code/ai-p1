@@ -38,6 +38,7 @@ describe("Workspace auth route source", () => {
     expect(signUp).toContain("AuthEntryClient");
     expect(authScreen).toContain("onCredentialsSubmit");
     expect(authScreen).toContain("onSocialSignIn");
+    expect(authScreen).toContain('id="clerk-captcha"');
     expect(authEntry).toContain("useAuth");
     expect(authEntry).toContain('router.replace(hasActiveOrganization ? "/dashboard" : "/choose-org")');
     expect(authFlow).toContain("useSignIn");

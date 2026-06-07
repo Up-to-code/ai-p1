@@ -4,11 +4,11 @@ export const QENTRAH_OAUTH_SCOPES = [
   "clients:create",
   "clients:update_own",
   "clients:read_own",
-  "properties:read",
-  "properties:create_own",
-  "properties:update_own",
-  "properties:delete_own",
-  "properties:read_own",
+  "assets:read",
+  "assets:create_own",
+  "assets:update_own",
+  "assets:delete_own",
+  "assets:read_own",
 ] as const;
 
 export type QentrahOAuthScope = (typeof QENTRAH_OAUTH_SCOPES)[number];

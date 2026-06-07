@@ -3,20 +3,20 @@ import { fetchAuthMutation } from "@/server/auth/clerk-convex";
 import { floatingDateTimeToTimestamp, type CalendarEventPayload } from "../validation/calendar.schema";
 
 function toConvexInput(input: CalendarEventPayload) {
-  const propertyId = input.propertyId ?? input.unitId;
+  const startAt = floatingDateTimeToTimestamp(input.date, input.time);
   return {
     title: input.title,
-    owner: input.owner,
-    startAt: floatingDateTimeToTimestamp(input.date, input.time),
+    ownerUserId: input.ownerUserId,
+    startAt,
+    endAt: startAt + input.durationMinutes * 60_000,
     type: input.type,
     status: input.status,
-    ...(input.clientId ? { clientId: input.clientId as never } : {}),
-    ...(propertyId ? { propertyId: propertyId as never } : {}),
-    ...(input.projectId ? { projectId: input.projectId as never } : {}),
-    ...(input.taskId ? { taskId: input.taskId as never } : {}),
+    ...(input.attendeeUserIds ? { attendeeUserIds: input.attendeeUserIds } : {}),
+    ...(input.externalAttendees ? { externalAttendees: input.externalAttendees } : {}),
     ...(input.location ? { location: input.location } : {}),
+    ...(input.meetingUrl ? { meetingUrl: input.meetingUrl } : {}),
     ...(input.notes ? { notes: input.notes } : {}),
-    ...(input.customFields ? { customFields: input.customFields } : {}),
+    ...(input.tags ? { tags: input.tags } : {}),
   };
 }
 

@@ -18,7 +18,7 @@ describe("partner OAuth examples", () => {
       workspaceBaseUrl: "http://localhost:3000/",
       clientId: "partners_client_123",
       redirectUri: "https://pdf.example.com/api/auth/qentrah/callback",
-      scopes: ["organization:read", "client:read", "property:read"],
+      scopes: ["organization:read", "client:read", "asset:read"],
       state: "state-123",
       codeChallenge: "challenge-123",
       organizationId: "org_123",
@@ -28,7 +28,7 @@ describe("partner OAuth examples", () => {
     expect(url.pathname).toBe("/oauth/authorize");
     expect(url.searchParams.get("response_type")).toBe("code");
     expect(url.searchParams.get("client_id")).toBe("partners_client_123");
-    expect(url.searchParams.get("scope")).toBe("organization:read client:read property:read");
+    expect(url.searchParams.get("scope")).toBe("organization:read client:read asset:read");
     expect(url.searchParams.get("resource")).toBe("http://localhost:3000/api/v1/partner");
     expect(url.searchParams.get("code_challenge_method")).toBe("S256");
     expect(url.searchParams.get("organization_id")).toBe("org_123");
@@ -56,7 +56,7 @@ describe("partner OAuth examples", () => {
       "media:read",
       "organization:read",
       "project:read",
-      "property:read",
+      "asset:read",
       "task:read",
     ].join(" "));
   });

@@ -22,7 +22,7 @@ const ACCESS_TOKEN_TTL_MS = 60 * 60 * 1000;
 const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const AUTH_CODE_TTL_MS = 10 * 60 * 1000;
 
-const sandboxResourceTypes = ["organization", "client", "property", "project", "task", "calendar", "media"] as const;
+const sandboxResourceTypes = ["organization", "client", "asset", "project", "task", "calendar", "media"] as const;
 const sandboxActions = ["read", "create", "update", "delete"] as const;
 const sandboxScopes = sandboxResourceTypes.flatMap((resource) => sandboxActions.map((action) => `${resource}:${action}`));
 
@@ -90,11 +90,11 @@ async function seedSandbox(app: { id: string; partnerAuthSubject: string; name: 
   const now = new Date();
   const seeds: Array<{ resourceType: SandboxResourceType; data: Record<string, unknown> }> = [
     { resourceType: "client", data: { name: "Sandbox Buyer", email: "buyer@sandbox.local", status: "active" } },
-    { resourceType: "property", data: { title: "Sandbox Property", city: "Riyadh", price: "850000" } },
+    { resourceType: "asset", data: { title: "Sandbox Asset", city: "Riyadh", price: "850000" } },
     { resourceType: "project", data: { name: "Sandbox Project", stage: "planning" } },
     { resourceType: "task", data: { title: "Follow up with sandbox lead", status: "open" } },
     { resourceType: "calendar", data: { title: "Sandbox showing", startsAt: new Date(Date.now() + 86_400_000).toISOString() } },
-    { resourceType: "media", data: { name: "sandbox-brochure.pdf", resourceType: "property", url: "https://partners.qentrah.local/sandbox/media/demo.pdf" } },
+    { resourceType: "media", data: { name: "sandbox-brochure.pdf", resourceType: "asset", url: "https://partners.qentrah.local/sandbox/media/demo.pdf" } },
   ];
 
   await prisma.sandboxResource.createMany({

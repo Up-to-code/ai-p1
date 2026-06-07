@@ -10,11 +10,15 @@ import {
 
 export const WORKSPACE_BASE_ZONE_KEYS = ["overview", "settings"] as const satisfies readonly WorkspaceZoneKey[];
 export const WORKSPACE_BUSINESS_ZONE_KEYS = [
-  "market",
+  "clients",
+  "opportunities",
   "projects",
-  "offers",
-  "crm",
-  "inbox",
+  "tasks",
+  "calendar",
+  "assets",
+  "automations",
+  "integrations",
+  "team",
 ] as const satisfies readonly WorkspaceZoneKey[];
 
 export type WorkspaceZoneDescriptor = {
@@ -24,11 +28,15 @@ export type WorkspaceZoneDescriptor = {
 
 export const WORKSPACE_ZONE_DESCRIPTORS: readonly WorkspaceZoneDescriptor[] = [
   { key: "overview", requiresBusinessAudience: false },
-  { key: "market", requiresBusinessAudience: true },
+  { key: "clients", requiresBusinessAudience: true },
+  { key: "opportunities", requiresBusinessAudience: true },
   { key: "projects", requiresBusinessAudience: true },
-  { key: "offers", requiresBusinessAudience: true },
-  { key: "crm", requiresBusinessAudience: true },
-  { key: "inbox", requiresBusinessAudience: true },
+  { key: "tasks", requiresBusinessAudience: true },
+  { key: "calendar", requiresBusinessAudience: true },
+  { key: "assets", requiresBusinessAudience: true },
+  { key: "automations", requiresBusinessAudience: true },
+  { key: "integrations", requiresBusinessAudience: true },
+  { key: "team", requiresBusinessAudience: true },
   { key: "settings", requiresBusinessAudience: false },
 ];
 
@@ -40,6 +48,6 @@ export function getWorkspaceCapabilitiesForAudience(audience: WorkspaceAudience)
   return resolveWorkspaceCapabilities(getWorkspaceZoneKeysForAudience(audience));
 }
 
-export function isBusinessWorkspaceAudience(audience: WorkspaceAudience): audience is "broker" | "developer" {
-  return audience === "broker" || audience === "developer";
+export function isBusinessWorkspaceAudience(audience: WorkspaceAudience): audience is "workspace" {
+  return audience === "workspace";
 }

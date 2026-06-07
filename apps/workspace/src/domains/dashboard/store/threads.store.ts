@@ -19,10 +19,10 @@ interface ThreadsState {
 }
 
 export const useThreadsStore = create<ThreadsState>((set) => ({
-  threads: [
-    { id: "1", title: "Riyadh Heights claim analysis", date: "2m ago" },
-    { id: "2", title: "Broker commission audit", date: "1h ago" },
-    { id: "3", title: "Unit pricing strategy 2026", date: "3h ago" },
+	  threads: [
+	    { id: "1", title: "North Gate claim analysis", date: "2m ago" },
+	    { id: "2", title: "Partner agreement audit", date: "1h ago" },
+	    { id: "3", title: "Asset pricing strategy 2026", date: "3h ago" },
     { id: "4", title: "Drafting purchase agreement", date: "5h ago" },
     { id: "5", title: "Marketing campaign overview", date: "1d ago" },
   ],

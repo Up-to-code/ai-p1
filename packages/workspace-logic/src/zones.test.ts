@@ -12,10 +12,10 @@ describe("@qentrah/workspace-logic zones", () => {
     expect(getWorkspaceCapabilitiesForAudience("none").canManageProjects).toBe(false);
   });
 
-  it("enables business zones for broker/developer audiences", () => {
-    expect(getWorkspaceZoneKeysForAudience("broker")).toContain("crm");
-    expect(getWorkspaceCapabilitiesForAudience("developer").canUseInbox).toBe(true);
-    expect(WORKSPACE_BUSINESS_ZONE_KEYS).toContain("offers");
-    expect(isBusinessWorkspaceAudience("broker")).toBe(true);
+  it("enables Work OS zones for workspace audiences", () => {
+    expect(getWorkspaceZoneKeysForAudience("workspace")).toContain("opportunities");
+    expect(getWorkspaceCapabilitiesForAudience("workspace").canManageAutomations).toBe(true);
+    expect(WORKSPACE_BUSINESS_ZONE_KEYS).toContain("tasks");
+    expect(isBusinessWorkspaceAudience("workspace")).toBe(true);
   });
 });

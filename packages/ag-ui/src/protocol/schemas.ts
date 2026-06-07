@@ -5,7 +5,7 @@ export const agUiComponentIdSchema = z.enum([
   "offer_publish_draft",
   "offer_send_draft",
   "thread_update",
-  "project_unit_selector",
+  "project_asset_selector",
   "person_relation",
   "approval_footer",
   "execution_result",
@@ -74,12 +74,12 @@ export const agUiDraftStateSchema = z.object({
           summary: z.string().optional(),
         })
         .nullable(),
-      unit: z
+      asset: z
         .object({
           id: z.string(),
           label: z.string(),
-          bedrooms: z.number().optional(),
-          bathrooms: z.number().optional(),
+          category: z.string().optional(),
+          owner: z.string().optional(),
           area: z.string().optional(),
           priceLabel: z.string().optional(),
         })

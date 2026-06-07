@@ -10,7 +10,7 @@ export default function AgThreadUpdateCard({
   sender,
   recipient,
   project,
-  unit,
+  asset,
   status,
   update,
 }: {
@@ -18,7 +18,7 @@ export default function AgThreadUpdateCard({
   sender: string;
   recipient: string;
   project: string;
-  unit?: string;
+  asset?: string;
   status: string;
   update: string;
 }) {
@@ -46,7 +46,7 @@ export default function AgThreadUpdateCard({
         <div className="rounded-xl border border-[color:var(--workspace-border)] bg-[var(--workspace-elevated)] px-3 py-3">
           <div className="text-[10px] font-black tracking-[0.22em] text-[var(--workspace-muted)]">السياق</div>
           <div className="mt-1">{project}</div>
-          <div className="mt-1 text-xs text-[var(--workspace-muted)]">{unit ?? "على مستوى المشروع"}</div>
+          <div className="mt-1 text-xs text-[var(--workspace-muted)]">{asset ?? "على مستوى المشروع"}</div>
         </div>
       </div>
 

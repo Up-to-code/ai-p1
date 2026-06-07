@@ -98,22 +98,30 @@ export function compactScheduleTitle(value: string) {
 }
 
 const knownCalendarTypes = new Set([
-  "visit",
-  "call",
   "meeting",
-  "client-visit",
-  "site-viewing",
-  "appointment",
-  "signing",
-  "follow-up",
-  "handover",
-  "audit",
+  "deadline",
+  "reminder",
+  "milestone",
+  "focusBlock",
   "custom",
 ]);
+
+const legacyCalendarTypeAliases: Record<string, string> = {
+  visit: "meeting",
+  call: "meeting",
+  "client-visit": "meeting",
+  "site-viewing": "milestone",
+  appointment: "reminder",
+  signing: "deadline",
+  "follow-up": "reminder",
+  handover: "milestone",
+  audit: "focusBlock",
+};
 
 export function compactEventType(event: DashboardEvent, translateType: (type: string) => string) {
   const rawType = event.type || event.title.match(/^\s*([a-z]+)/i)?.[1] || "";
   const normalized = rawType.replace(/_/g, "-").trim().toLowerCase();
+  if (legacyCalendarTypeAliases[normalized]) return translateType(legacyCalendarTypeAliases[normalized]);
   if (knownCalendarTypes.has(normalized)) return translateType(normalized);
 
   const fallback = normalized.replace(/-/g, " ").split(/\s+/).filter(Boolean)[0];

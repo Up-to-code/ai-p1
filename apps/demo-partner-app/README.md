@@ -11,7 +11,7 @@ It demonstrates:
 - Workspace organization grant handoff
 - server-side storage for a Workspace-issued WorkOS partner API key
 - encrypted HttpOnly cookie session storage for demo use
-- Workspace resource API calls for organization, clients, and properties
+- Workspace resource API calls for organization, clients, and assets
 - safe server-side create/update calls through Workspace APIs
 
 Production partner apps should store WorkOS partner API keys in a durable
@@ -49,7 +49,7 @@ Open the app, unlock with `DEMO_ACCESS_TOKEN`, then click `Authorize with Qentra
 | `app/api/qentrah/me/route.ts` | Organization/account resource call |
 | `app/api/qentrah/clients/route.ts` | Client list/create proxy |
 | `app/api/qentrah/clients/[clientId]/route.ts` | Client update proxy |
-| `app/api/qentrah/properties/route.ts` | Property list proxy |
+| `app/api/qentrah/assets/route.ts` | Asset list proxy |
 | `lib/partner-key-auth.ts` | WorkOS partner key callback helpers |
 | `lib/workspace-api.ts` | Workspace resource API client |
 | `lib/config.ts` | Environment loading |
@@ -91,7 +91,7 @@ Use these values when creating the app in Qentrah Partners:
   - `media:read`
   - `organization:read`
   - `project:read`
-  - `property:read`
+  - `asset:read`
   - `task:read`
 
 After review approval, copy the issued partner client ID into

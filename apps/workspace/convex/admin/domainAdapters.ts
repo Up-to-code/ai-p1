@@ -57,17 +57,17 @@ export type AdminRecord =
   | Doc<"agentRuns">
   | Doc<"organizationAuditEvents">
   | Doc<"projects">
-  | Doc<"propertyUnits">
+  | Doc<"assets">
   | Doc<"clients">
-  | Doc<"clientTasks">
+  | Doc<"tasks">
   | Doc<"calendarEvents">
   | Doc<"mediaAssets">;
 
 type WorkspaceRecord =
   | Doc<"projects">
-  | Doc<"propertyUnits">
+  | Doc<"assets">
   | Doc<"clients">
-  | Doc<"clientTasks">
+  | Doc<"tasks">
   | Doc<"calendarEvents">
   | Doc<"mediaAssets">;
 
@@ -291,7 +291,7 @@ async function organizationDashboard(ctx: QueryCtx, org: Doc<"organizations">) {
   const organizationId = org.organizationId;
   const [
     projects,
-    properties,
+    assets,
     clients,
     tasks,
     calendar,
@@ -303,9 +303,9 @@ async function organizationDashboard(ctx: QueryCtx, org: Doc<"organizations">) {
     invites,
   ] = await Promise.all([
     ctx.db.query("projects").withIndex("by_organization_updated", (q) => q.eq("organizationId", organizationId)).order("desc").take(6),
-    ctx.db.query("propertyUnits").withIndex("by_organization_updated", (q) => q.eq("organizationId", organizationId)).order("desc").take(6),
+    ctx.db.query("assets").withIndex("by_organization_updated", (q) => q.eq("organizationId", organizationId)).order("desc").take(6),
     ctx.db.query("clients").withIndex("by_organization_updated", (q) => q.eq("organizationId", organizationId)).order("desc").take(6),
-    ctx.db.query("clientTasks").withIndex("by_organization_id", (q) => q.eq("organizationId", organizationId)).take(6),
+    ctx.db.query("tasks").withIndex("by_organization_id", (q) => q.eq("organizationId", organizationId)).take(6),
     ctx.db.query("calendarEvents").withIndex("by_organization_id", (q) => q.eq("organizationId", organizationId)).take(6),
     ctx.db.query("mediaAssets").withIndex("by_organization_id", (q) => q.eq("organizationId", organizationId)).take(6),
     ctx.db.query("organizationApiKeys").withIndex("by_organization_id", (q) => q.eq("organizationId", organizationId)).take(6),
@@ -317,7 +317,7 @@ async function organizationDashboard(ctx: QueryCtx, org: Doc<"organizations">) {
 
   const memberIds = adminOrganizationMemberIds({
     projects,
-    properties,
+    assets,
     clients,
     tasks,
     calendar,
@@ -375,11 +375,11 @@ async function organizationDashboard(ctx: QueryCtx, org: Doc<"organizations">) {
     {
       id: "business",
       title: "Business data",
-      description: "Projects, units, clients, tasks, bookings, and media owned by this organization.",
+      description: "Projects, assets, clients, tasks, bookings, and media owned by this organization.",
       href: `/organizations/${org._id}?tab=business`,
       rows: [
         ...projects.map(workspaceSummary),
-        ...properties.map(workspaceSummary),
+        ...assets.map(workspaceSummary),
         ...clients.map(workspaceSummary),
         ...tasks.map(workspaceSummary),
         ...calendar.map(workspaceSummary),
@@ -412,26 +412,26 @@ async function withPage<T>(
 async function listWorkspaceData(ctx: QueryCtx, args: AdminListInput) {
   const family = typeof args.filters?.family === "string" ? args.filters.family : "projects";
   const paginationOpts = boundedAdminPaginationOpts(args.paginationOpts);
-  if (family === "properties") {
-    return withPage(ctx.db.query("propertyUnits").withIndex("by_updated").order("desc").paginate(paginationOpts), workspaceSummary, args.search, (record) => [record.title, record.reference, record.organizationId, record.status]);
+  if (family === "assets") {
+    return withPage(ctx.db.query("assets").withIndex("by_updated").order("desc").paginate(paginationOpts), workspaceSummary, args.search, (record) => [record.name, record.type, record.organizationId, record.status]);
   }
   if (family === "clients") {
-    return withPage(ctx.db.query("clients").withIndex("by_updated").order("desc").paginate(paginationOpts), workspaceSummary, args.search, (record) => [record.name, record.contact, record.organizationId, record.status]);
+    return withPage(ctx.db.query("clients").withIndex("by_updated").order("desc").paginate(paginationOpts), workspaceSummary, args.search, (record) => [record.name, record.email, record.phone, record.organizationId, record.status]);
   }
   if (family === "tasks") {
-    return withPage(ctx.db.query("clientTasks").withIndex("by_updated").order("desc").paginate(paginationOpts), workspaceSummary, args.search, (record) => [record.title, record.organizationId, record.status]);
+    return withPage(ctx.db.query("tasks").withIndex("by_updated").order("desc").paginate(paginationOpts), workspaceSummary, args.search, (record) => [record.title, record.organizationId, record.status]);
   }
   if (family === "calendar") {
-    return withPage(ctx.db.query("calendarEvents").withIndex("by_updated").order("desc").paginate(paginationOpts), workspaceSummary, args.search, (record) => [record.title, record.owner, record.organizationId, record.status]);
+    return withPage(ctx.db.query("calendarEvents").withIndex("by_updated").order("desc").paginate(paginationOpts), workspaceSummary, args.search, (record) => [record.title, record.ownerUserId, record.organizationId, record.status]);
   }
   if (family === "media") {
     return withPage(ctx.db.query("mediaAssets").withIndex("by_updated").order("desc").paginate(paginationOpts), workspaceSummary, args.search, (record) => [record.name, record.key, record.organizationId, record.kind]);
   }
-  return withPage(ctx.db.query("projects").withIndex("by_updated").order("desc").paginate(paginationOpts), workspaceSummary, args.search, (record) => [record.name, record.reference, record.organizationId, record.status]);
+  return withPage(ctx.db.query("projects").withIndex("by_updated").order("desc").paginate(paginationOpts), workspaceSummary, args.search, (record) => [record.name, record.organizationId, record.status, record.health]);
 }
 
 async function findWorkspaceRecord(ctx: QueryCtx, id: string) {
-  const tables = ["projects", "propertyUnits", "clients", "clientTasks", "calendarEvents", "mediaAssets"] as const;
+  const tables = ["projects", "assets", "clients", "tasks", "calendarEvents", "mediaAssets"] as const;
   for (const table of tables) {
     const normalized = ctx.db.normalizeId(table, id);
     if (normalized) {

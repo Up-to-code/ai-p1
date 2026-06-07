@@ -65,12 +65,12 @@ const permissionMeta: Record<string, { icon: LucideIcon; en: string; ar: string;
     detailEn: "Read client records connected to this workspace.",
     detailAr: "قراءة سجلات العملاء المرتبطة بمساحة العمل.",
   },
-  "property:read": {
+  "asset:read": {
     icon: Home,
-    en: "Properties",
-    ar: "العقارات",
-    detailEn: "Read property records and related listing details.",
-    detailAr: "قراءة سجلات العقارات وتفاصيل العروض المرتبطة.",
+    en: "Assets",
+    ar: "الأصول",
+    detailEn: "Read asset records and related workspace details.",
+    detailAr: "قراءة سجلات الأصول والتفاصيل المرتبطة بمساحة العمل.",
   },
   offline_access: {
     icon: RefreshCw,

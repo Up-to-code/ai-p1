@@ -33,7 +33,7 @@ import {
   organizationProfileInputSchema,
   pagination,
   projectInputSchema,
-  propertyInputSchema,
+  assetInputSchema,
   roleCreateInputSchema,
   roleUpdateInputSchema,
   startOfToday,
@@ -45,10 +45,13 @@ import {
 type AgentToolExecutionRuntime = {
   honoContext?: Context;
   organizationId: string;
-  threadId: Id<"agentThreads">;
+  threadId?: Id<"agentThreads">;
 };
 
 export async function readAgentConversationMemory(runtime: AgentToolExecutionRuntime) {
+  if (!runtime.threadId) {
+    throw new Error("Conversation memory requires an agent thread.");
+  }
   return fetchAuthQuery(api.agents.read.getThreadContext, {
     organizationId: runtime.organizationId,
     threadId: runtime.threadId,
@@ -153,59 +156,59 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
     }
     case "clients_delete":
       return fetchAuthMutation(api.clients.write.deleteFromHono, { organizationId, clientId: input.clientId as Id<"clients"> });
-    case "clients_link_unit":
-      return fetchAuthMutation(api.clients.write.linkUnitFromHono, {
+    case "clients_link_asset":
+      return fetchAuthMutation(api.clients.write.linkAssetFromHono, {
         organizationId,
         input: {
           clientId: input.clientId as Id<"clients">,
-          propertyId: input.propertyId as Id<"propertyUnits">,
+          assetId: input.assetId as Id<"assets">,
           status: ((input.status as string | undefined) ?? "interested") as never,
           notes: input.notes as string | undefined,
         },
       });
-    case "clients_unlink_unit":
-      return fetchAuthMutation(api.clients.write.unlinkUnitFromHono, {
+    case "clients_unlink_asset":
+      return fetchAuthMutation(api.clients.write.unlinkAssetFromHono, {
         organizationId,
         clientId: input.clientId as Id<"clients">,
-        propertyId: input.propertyId as Id<"propertyUnits">,
+        assetId: input.assetId as Id<"assets">,
       });
-    case "properties_list":
-      return fetchAuthQuery(api.properties.read.listPaged, {
+    case "assets_list":
+      return fetchAuthQuery(api.assets.read.listPaged, {
         organizationId,
         paginationOpts: pagination(input),
         search: input.search as string | undefined,
       });
-    case "properties_get":
-    case "properties_open": {
-      const property = await fetchAuthQuery(api.properties.read.get, { organizationId, propertyId: input.propertyId as Id<"propertyUnits"> });
-      if (tool.name === "properties_get") return property;
-      return { property, appUrl: property ? `/properties/${property.id}` : undefined };
+    case "assets_get":
+    case "assets_open": {
+      const asset = await fetchAuthQuery(api.assets.read.get, { organizationId, assetId: input.assetId as Id<"assets"> });
+      if (tool.name === "assets_get") return asset;
+      return { asset, appUrl: asset ? `/assets/${asset.id}` : undefined };
     }
-    case "properties_create":
-      return fetchAuthMutation(api.properties.write.createFromHono, {
+    case "assets_create":
+      return fetchAuthMutation(api.assets.write.createFromHono, {
         organizationId,
-        input: cleanInput(propertyInputSchema, input) as never,
+        input: cleanInput(assetInputSchema, input) as never,
       });
-    case "properties_update":
-    case "properties_update_field": {
-      const existing = await fetchAuthQuery(api.properties.read.get, { organizationId, propertyId: input.propertyId as Id<"propertyUnits"> });
-      if (!existing) throw new Error("Property unit was not found.");
+    case "assets_update":
+    case "assets_update_field": {
+      const existing = await fetchAuthQuery(api.assets.read.get, { organizationId, assetId: input.assetId as Id<"assets"> });
+      if (!existing) throw new Error("Asset was not found.");
       const { field, value } = input;
       const patch = { ...input };
-      delete patch.propertyId;
+      delete patch.assetId;
       delete patch.field;
       delete patch.value;
-      const merged = tool.name === "properties_update_field"
+      const merged = tool.name === "assets_update_field"
         ? { ...existing, [String(field)]: value }
         : { ...existing, ...patch };
-      return fetchAuthMutation(api.properties.write.updateFromHono, {
+      return fetchAuthMutation(api.assets.write.updateFromHono, {
         organizationId,
-        propertyId: input.propertyId as Id<"propertyUnits">,
-        input: cleanInput(propertyInputSchema, stripPresentedDatabaseFields(merged as Record<string, unknown>)) as never,
+        assetId: input.assetId as Id<"assets">,
+        input: cleanInput(assetInputSchema, stripPresentedDatabaseFields(merged as Record<string, unknown>)) as never,
       });
     }
-    case "properties_delete":
-      return fetchAuthMutation(api.properties.write.deleteFromHono, { organizationId, propertyId: input.propertyId as Id<"propertyUnits"> });
+    case "assets_delete":
+      return fetchAuthMutation(api.assets.write.deleteFromHono, { organizationId, assetId: input.assetId as Id<"assets"> });
     case "projects_list":
       return fetchAuthQuery(api.projects.read.listPaged, {
         organizationId,
@@ -300,7 +303,7 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
     case "tasks_list": {
       const tasks = await fetchAuthQuery(api.clientTasks.read.list, {
         organizationId,
-        clientId: input.clientId as Id<"clients"> | undefined,
+        assigneeUserId: input.assigneeUserId as string | undefined,
       });
       return compact(taskToolSearchResults(tasks, input.search), limit(input));
     }
@@ -321,7 +324,7 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
       delete patch.taskId;
       return fetchAuthMutation(api.clientTasks.write.updateFromHono, {
         organizationId,
-        taskId: input.taskId as Id<"clientTasks">,
+        taskId: input.taskId as Id<"tasks">,
         input: cleanInput(taskInputSchema, {
           ...stripPresentedDatabaseFields(existing as Record<string, unknown>),
           ...stripPresentedDatabaseFields(patch),
@@ -334,7 +337,7 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
       if (!existing) throw new Error("Task was not found.");
       return fetchAuthMutation(api.clientTasks.write.updateFromHono, {
         organizationId,
-        taskId: input.taskId as Id<"clientTasks">,
+        taskId: input.taskId as Id<"tasks">,
         input: cleanInput(taskInputSchema, {
           ...stripPresentedDatabaseFields(existing as Record<string, unknown>),
           status: "done",
@@ -342,11 +345,11 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
       });
     }
     case "tasks_delete":
-      return fetchAuthMutation(api.clientTasks.write.deleteFromHono, { organizationId, taskId: input.taskId as Id<"clientTasks"> });
+      return fetchAuthMutation(api.clientTasks.write.deleteFromHono, { organizationId, taskId: input.taskId as Id<"tasks"> });
     case "media_list":
       return compact(await fetchAuthQuery(api.media.read.listForResource, {
         organizationId,
-        resourceType: input.resourceType as "project" | "property" | "client" | "calendarEvent" | "task",
+        resourceType: input.resourceType as "project" | "asset" | "client" | "calendarEvent" | "task",
         resourceId: input.resourceId as string,
       }), limit(input));
     case "media_attach_url":
@@ -359,7 +362,7 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
           mimeType: (input.mimeType as string | undefined) ?? "application/octet-stream",
           size: (input.size as number | undefined) ?? 0,
           kind: mediaKind(input as { kind?: "image" | "document" | "video"; mimeType?: string }),
-          resourceType: input.resourceType as "project" | "property" | "client" | "calendarEvent" | "task",
+          resourceType: input.resourceType as "project" | "asset" | "client" | "calendarEvent" | "task",
           resourceId: input.resourceId as string,
           isCover: input.isCover as boolean | undefined,
         },

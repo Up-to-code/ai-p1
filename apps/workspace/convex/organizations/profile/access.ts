@@ -12,7 +12,7 @@ type OrganizationPermissionResource =
   | "client"
   | "task"
   | "project"
-  | "property"
+  | "asset"
   | "calendar"
   | "media"
   | "visibility"
@@ -121,7 +121,7 @@ export const canUseResourceAction = query({
       v.literal("client"),
       v.literal("task"),
       v.literal("project"),
-      v.literal("property"),
+      v.literal("asset"),
       v.literal("calendar"),
       v.literal("media"),
       v.literal("visibility"),

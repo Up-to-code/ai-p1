@@ -20,26 +20,23 @@ describe("agent tool inputs", () => {
       email: "mona@example.com",
     })).toMatchObject({
       name: "Mona Saleh",
-      type: "Buyer",
-      contact: "mona@example.com",
-      phone: "",
-      age: 0,
-      propertyInterest: "",
-      pipelineStage: "new",
-      priority: "normal",
-      nextAction: "Follow up",
+      type: "person",
+      email: "mona@example.com",
+      source: "agent",
+      status: "new",
     });
 
     expect(clientCreateInputSchema.parse({
       name: "Mona Saleh",
       phone: "+20 100 000 0000",
     })).toMatchObject({
-      contact: "+20 100 000 0000",
       phone: "+20 100 000 0000",
+      type: "person",
+      source: "agent",
     });
   });
 
   it("rejects sparse client create input without a contact method", () => {
-    expect(() => clientCreateInputSchema.parse({ name: "Mona Saleh" })).toThrow("Provide either contact/email or phone");
+    expect(() => clientCreateInputSchema.parse({ name: "Mona Saleh" })).toThrow("Provide either email or phone for the client.");
   });
 });

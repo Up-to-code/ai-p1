@@ -135,7 +135,7 @@ describe("MCP agent link transport", () => {
     expect(names).toContain("clients_get");
     expect(names).toContain("tools_allowed");
     expect(names).not.toContain("clients_create");
-    expect(names).not.toContain("properties_list");
+    expect(names).not.toContain("assets_list");
   });
 
   it("returns text content for successful tool calls", async () => {

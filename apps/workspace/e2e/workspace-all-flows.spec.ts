@@ -4,10 +4,10 @@ import {
   createClient,
   createClientTask,
   createProject,
-  createProperty,
+  createAsset,
   prepareOwner,
   projectPayload,
-  propertyPayload,
+  assetPayload,
   uniqueName,
 } from "./helpers";
 
@@ -24,12 +24,12 @@ test.describe("workspace all-flow smoke coverage", () => {
     const { organizationId } = await prepareOwner(page, "all-flows");
     const projectName = uniqueName("All Flows Project");
     const project = await createProject(page.request, organizationId, projectPayload(projectName));
-    const unitTitle = uniqueName("All Flows Unit");
-    const property = await createProperty(
+    const assetTitle = uniqueName("All Flows Asset");
+    const asset = await createAsset(
       page.request,
       organizationId,
       { id: project.project.id, name: projectName },
-      propertyPayload({ id: project.project.id, name: projectName }, unitTitle),
+      assetPayload({ id: project.project.id, name: projectName }, assetTitle),
     );
     const clientName = uniqueName("All Flows Client");
     const client = await createClient(page.request, organizationId, {
@@ -41,7 +41,7 @@ test.describe("workspace all-flow smoke coverage", () => {
       nationality: "Saudi",
       generation: "Millennial",
       budget: "900K - 1.2M SAR",
-      propertyInterest: "2BR apartment in Riyadh",
+      assetInterest: "2BR apartment in Riyadh",
       status: "active",
       visibility: "private",
       pipelineStage: "new",
@@ -52,7 +52,7 @@ test.describe("workspace all-flow smoke coverage", () => {
     const event = await createCalendarEvent(page.request, organizationId, {
       title: uniqueName("All Flows Event"),
       clientId: client.client.id,
-      unitId: property.property.id,
+      assetId: asset.asset.id,
       taskId: task.task.id,
     });
 
@@ -60,8 +60,8 @@ test.describe("workspace all-flow smoke coverage", () => {
       "/en/dashboard",
       "/en/projects",
       `/en/projects/${project.project.id}`,
-      "/en/properties",
-      `/en/properties/${property.property.id}`,
+      "/en/assets",
+      `/en/assets/${asset.asset.id}`,
       "/en/clients",
       `/en/clients/${client.client.id}`,
       "/en/calendar",
@@ -74,8 +74,8 @@ test.describe("workspace all-flow smoke coverage", () => {
 
     await page.goto("/en/projects");
     await expect(page.getByText(projectName)).toBeVisible();
-    await page.goto("/en/properties");
-    await expect(page.getByText(unitTitle)).toBeVisible();
+    await page.goto("/en/assets");
+    await expect(page.getByText(assetTitle)).toBeVisible();
     await page.goto("/en/clients");
     await expect(page.getByText(clientName)).toBeVisible();
     await page.goto("/en/calendar");

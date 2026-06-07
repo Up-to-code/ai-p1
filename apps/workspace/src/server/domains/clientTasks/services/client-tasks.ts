@@ -3,17 +3,7 @@ import { fetchAuthMutation } from "@/server/auth/clerk-convex";
 import type { ClientTaskPayload } from "../validation/client-task.schema";
 
 function toConvexInput(input: ClientTaskPayload) {
-  return {
-    clientId: input.clientId as never,
-    title: input.title,
-    status: input.status,
-    priority: input.priority,
-    ...(input.dueAt ? { dueAt: input.dueAt } : {}),
-    ...(input.propertyId ? { propertyId: input.propertyId as never } : {}),
-    ...(input.projectId ? { projectId: input.projectId as never } : {}),
-    ...(input.calendarEventId ? { calendarEventId: input.calendarEventId as never } : {}),
-    ...(input.notes ? { notes: input.notes } : {}),
-  };
+  return input;
 }
 
 export async function createClientTask(organizationId: string, input: ClientTaskPayload) {

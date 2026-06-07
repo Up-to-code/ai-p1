@@ -8,7 +8,7 @@ import {
   handleReadCalendarIndex,
   handleReadClientsIndex,
   handleReadProjectsIndex,
-  handleReadPropertiesIndex,
+  handleReadAssetsIndex,
 } from "./workspace-read";
 
 function fakeContext(input: {
@@ -27,7 +27,7 @@ function fakeContext(input: {
 describe("workspace read index handlers", () => {
   it.each([
     ["projects", handleReadProjectsIndex],
-    ["properties", handleReadPropertiesIndex],
+    ["assets", handleReadAssetsIndex],
     ["clients", handleReadClientsIndex],
     ["activity", handleReadActivityIndex],
   ])("rejects invalid pagination for %s index", async (_name, handler) => {

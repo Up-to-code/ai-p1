@@ -25,7 +25,7 @@ describe("project flow source", () => {
     for (const value of ['value: "overview"', 'value: "inventory"', 'value: "documents"', 'value: "sales"', 'value: "activity"']) {
       expect(source).toContain(value);
     }
-    expect(source).toContain("projectInventoryMetrics(units, project?.units ?? 0)");
+    expect(source).toContain("projectInventoryMetrics(assets, project?.assetCount ?? 0)");
     expect(source).toContain("projectDocumentAssets(projectMedia)");
     expect(source).toContain("compactProjectDetailRows(optionalCoreDetailRows)");
     expect(source).toContain("projectLocationLabel(project)");

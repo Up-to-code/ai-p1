@@ -2,12 +2,12 @@ import { expect, test, type Page } from "@playwright/test";
 import {
   createClient,
   createProject,
-  createProperty,
+  createAsset,
   expectGoneFromList,
   prepareOwner,
   projectPayload,
-  propertyPayload,
-  updateProperty,
+  assetPayload,
+  updateAsset,
   uniqueName,
 } from "./helpers";
 
@@ -29,7 +29,7 @@ async function createProjectThroughUi(page: Page, organizationId: string, name: 
   await page.getByLabel("Developer").fill("Codex Development");
   await page.getByLabel("City").fill("Riyadh");
   await page.getByLabel("Area").fill("Al Malqa");
-  await page.getByLabel("Units").fill("12");
+  await page.getByLabel("Assets").fill("12");
   await page.getByLabel("Price Range").fill("850K SAR");
   await page.getByRole("button", { name: "Next", exact: true }).click();
 
@@ -71,16 +71,16 @@ async function createProjectThroughUi(page: Page, organizationId: string, name: 
   return page.url().match(/\/projects\/([^/?#]+)/)?.[1] ?? "";
 }
 
-async function createPropertyThroughUi(
+async function createAssetThroughUi(
   page: Page,
   organizationId: string,
   project: { id: string; name: string },
   title: string,
 ) {
-  await page.goto("/en/properties/create");
-  await expect(page.getByRole("heading", { name: "Create Unit" })).toBeVisible();
+  await page.goto("/en/assets/create");
+  await expect(page.getByRole("heading", { name: "Create Asset" })).toBeVisible();
 
-  await page.getByLabel("Unit Name").fill(title);
+  await page.getByLabel("Asset Name").fill(title);
   await expect(page.locator("select#project")).toContainText(project.name);
   await page.locator("select#project").selectOption({ label: project.name });
   await page.getByLabel("City").fill("Riyadh");
@@ -89,13 +89,13 @@ async function createPropertyThroughUi(
   await finishWizard(page);
 
   try {
-    await expect(page).toHaveURL(/\/en\/properties\/(?!create$)[^/]+$/, { timeout: 5_000 });
+    await expect(page).toHaveURL(/\/en\/assets\/(?!create$)[^/]+$/, { timeout: 5_000 });
   } catch {
-    const seeded = await createProperty(page.request, organizationId, project, propertyPayload(project, title));
-    await page.goto(`/en/properties/${seeded.property.id}`);
+    const seeded = await createAsset(page.request, organizationId, project, assetPayload(project, title));
+    await page.goto(`/en/assets/${seeded.asset.id}`);
   }
   await expect(page.getByRole("heading", { name: title }).first()).toBeVisible();
-  return page.url().match(/\/properties\/([^/?#]+)/)?.[1] ?? "";
+  return page.url().match(/\/assets\/([^/?#]+)/)?.[1] ?? "";
 }
 
 async function createClientThroughUi(page: Page, name: string) {
@@ -107,7 +107,7 @@ async function createClientThroughUi(page: Page, name: string) {
   await page.getByLabel("Phone").fill("+966555000111");
   await page.getByRole("spinbutton", { name: "Age" }).fill("34");
   await page.getByLabel("Budget").fill("900K - 1.2M SAR");
-  await page.getByLabel("Property Interest").fill("2BR apartment in Riyadh");
+  await page.getByLabel("Asset Interest").fill("2BR apartment in Riyadh");
   await page.getByLabel("Next Action").fill("Schedule viewing");
   await page.getByRole("button", { name: "Create Client" }).click();
 
@@ -117,12 +117,12 @@ async function createClientThroughUi(page: Page, name: string) {
 }
 
 test.describe("workspace CRUD and linking flows", () => {
-  test("creates, reads, updates, searches, and deletes projects and properties through the UI", async ({ page }) => {
+  test("creates, reads, updates, searches, and deletes projects and assets through the UI", async ({ page }) => {
     const { organizationId } = await prepareOwner(page, "workspace-crud");
     const projectName = uniqueName("E2E Project");
     const updatedProjectName = `${projectName} Updated`;
-    const unitTitle = uniqueName("E2E Unit");
-    const updatedUnitTitle = `${unitTitle} Updated`;
+    const assetTitle = uniqueName("E2E Asset");
+    const updatedAssetTitle = `${assetTitle} Updated`;
 
     const projectId = await createProjectThroughUi(page, organizationId, projectName);
     expect(projectId).toBeTruthy();
@@ -137,39 +137,39 @@ test.describe("workspace CRUD and linking flows", () => {
     await page.getByLabel("Search projects").fill(updatedProjectName);
     await expect(page.getByText(updatedProjectName)).toBeVisible();
 
-    const propertyId = await createPropertyThroughUi(
+    const assetId = await createAssetThroughUi(
       page,
       organizationId,
       { id: projectId, name: updatedProjectName },
-      unitTitle,
+      assetTitle,
     );
-    expect(propertyId).toBeTruthy();
+    expect(assetId).toBeTruthy();
 
-    await page.goto(`/en/properties/${propertyId}/edit`);
-    if (await page.getByRole("heading", { name: "Edit Unit" }).isVisible().catch(() => false)) {
-      await page.getByLabel("Unit Name").fill(updatedUnitTitle);
+    await page.goto(`/en/assets/${assetId}/edit`);
+    if (await page.getByRole("heading", { name: "Edit Asset" }).isVisible().catch(() => false)) {
+      await page.getByLabel("Asset Name").fill(updatedAssetTitle);
       await finishWizard(page);
     }
-    await updateProperty(
+    await updateAsset(
       page.request,
       organizationId,
-      propertyId,
+      assetId,
       { id: projectId, name: updatedProjectName },
-      propertyPayload({ id: projectId, name: updatedProjectName }, updatedUnitTitle),
+      assetPayload({ id: projectId, name: updatedProjectName }, updatedAssetTitle),
     );
-    await page.goto(`/en/properties/${propertyId}`);
-    await expect(page.getByRole("heading", { name: updatedUnitTitle }).first()).toBeVisible();
+    await page.goto(`/en/assets/${assetId}`);
+    await expect(page.getByRole("heading", { name: updatedAssetTitle }).first()).toBeVisible();
 
-    await page.goto("/en/properties");
-    await page.getByLabel("Search units").fill(updatedUnitTitle);
-    await expect(page.getByText(updatedUnitTitle)).toBeVisible();
+    await page.goto("/en/assets");
+    await page.getByLabel("Search assets").fill(updatedAssetTitle);
+    await expect(page.getByText(updatedAssetTitle)).toBeVisible();
 
-    await page.goto(`/en/properties/${propertyId}`);
+    await page.goto(`/en/assets/${assetId}`);
     await page.getByRole("button", { name: "Delete" }).click();
     await confirmDelete(page);
-    await expect(page).toHaveURL(/\/en\/properties$/);
-    await page.getByLabel("Search units").fill(updatedUnitTitle);
-    await expectGoneFromList(page, updatedUnitTitle);
+    await expect(page).toHaveURL(/\/en\/assets$/);
+    await page.getByLabel("Search assets").fill(updatedAssetTitle);
+    await expectGoneFromList(page, updatedAssetTitle);
 
     await page.goto(`/en/projects/${projectId}`);
     await page.getByRole("button", { name: "Delete" }).click();
@@ -179,21 +179,24 @@ test.describe("workspace CRUD and linking flows", () => {
     await expectGoneFromList(page, updatedProjectName);
   });
 
-  test("creates a client, links and unlinks a unit, manages tasks, and deletes the client", async ({ page }) => {
+  test("creates a client, links and unlinks an asset, manages tasks, and deletes the client", async ({ page }) => {
     const { organizationId } = await prepareOwner(page, "client-flow");
     const seededProjectName = uniqueName("Link Project");
     const seededProject = await createProject(page.request, organizationId, projectPayload(seededProjectName));
-    const seededUnitTitle = uniqueName("Link Unit");
-    const seededProperty = await createProperty(
+    const seededAssetTitle = uniqueName("Link Asset");
+    const seededAsset = await createAsset(
       page.request,
       organizationId,
       { id: seededProject.project.id, name: seededProjectName },
-      propertyPayload({ id: seededProject.project.id, name: seededProjectName }, seededUnitTitle),
+      assetPayload({ id: seededProject.project.id, name: seededProjectName }, seededAssetTitle),
     );
 
     const clientName = uniqueName("E2E Client");
     const updatedClientName = `${clientName} Updated`;
     const clientId = await createClientThroughUi(page, clientName);
+
+    await page.goto("/en/clients");
+    await expect(page.getByText(clientName)).toBeVisible();
 
     await page.goto(`/en/clients/${clientId}/edit`);
     await expect(page.getByRole("heading", { name: "Edit Client." })).toBeVisible();
@@ -201,15 +204,15 @@ test.describe("workspace CRUD and linking flows", () => {
     await page.getByRole("button", { name: "Save Client" }).click();
     await expect(page.getByRole("heading", { name: updatedClientName })).toBeVisible();
 
-    await page.getByRole("tab", { name: "Units" }).click();
-    await page.getByRole("button", { name: "Link unit" }).first().click();
-    const unitDialog = page.getByRole("dialog", { name: "Link a unit" });
-    await expect(unitDialog).toBeVisible();
-    await unitDialog.getByPlaceholder("Search units").fill(seededUnitTitle);
-    await unitDialog.locator("article").filter({ hasText: seededUnitTitle }).getByRole("button", { name: "Link" }).click();
-    await expect(page.getByText(seededUnitTitle)).toBeVisible();
+    await page.getByRole("tab", { name: "Assets" }).click();
+    await page.getByRole("button", { name: "Link asset" }).first().click();
+    const assetDialog = page.getByRole("dialog", { name: "Link an asset" });
+    await expect(assetDialog).toBeVisible();
+    await assetDialog.getByPlaceholder("Search assets").fill(seededAssetTitle);
+    await assetDialog.locator("article").filter({ hasText: seededAssetTitle }).getByRole("button", { name: "Link" }).click();
+    await expect(page.getByText(seededAssetTitle)).toBeVisible();
 
-    await page.goto(`/en/properties/${seededProperty.property.id}`);
+    await page.goto(`/en/assets/${seededAsset.asset.id}`);
     await page.getByRole("tab", { name: "Linked clients" }).click();
     await expect(page.getByText(updatedClientName)).toBeVisible();
     await page.getByRole("button", { name: "Unlink" }).click();

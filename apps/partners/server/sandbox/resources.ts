@@ -1,9 +1,9 @@
-export type SandboxResource = "organization" | "client" | "property" | "project" | "task" | "calendar" | "media";
+export type SandboxResource = "organization" | "client" | "asset" | "project" | "task" | "calendar" | "media";
 export type SandboxAction = "read" | "create" | "update" | "delete";
 
 const collectionToResource = {
   clients: "client",
-  properties: "property",
+  assets: "asset",
   projects: "project",
   tasks: "task",
   calendar: "calendar",

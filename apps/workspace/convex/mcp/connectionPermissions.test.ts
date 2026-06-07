@@ -28,13 +28,13 @@ describe("MCP connection permissions", () => {
 
   it("preserves default role permissions before custom role permissions", () => {
     const custom = new Map([
-      ["custom", parseMcpCustomPermission(JSON.stringify({ property: ["read"] }))],
-      ["member", parseMcpCustomPermission(JSON.stringify({ property: ["delete"] }))],
+      ["custom", parseMcpCustomPermission(JSON.stringify({ asset: ["read"] }))],
+      ["member", parseMcpCustomPermission(JSON.stringify({ asset: ["delete"] }))],
     ]);
 
-    expect(mcpRoleCanUseAction("owner", custom, "property", "delete")).toBe(true);
-    expect(mcpRoleCanUseAction("custom", custom, "property", "read")).toBe(true);
-    expect(mcpRoleCanUseAction("member", custom, "property", "delete")).toBe(false);
+    expect(mcpRoleCanUseAction("owner", custom, "asset", "delete")).toBe(true);
+    expect(mcpRoleCanUseAction("custom", custom, "asset", "read")).toBe(true);
+    expect(mcpRoleCanUseAction("member", custom, "asset", "delete")).toBe(false);
   });
 
   it("treats malformed custom permission JSON as empty", () => {

@@ -28,7 +28,7 @@ Good for a custom cloud workflow that needs the same approved Qentrah tools.
 ```json
 {
   "model": "grok-4.3",
-  "input": "Summarize available apartments for this client.",
+  "input": "Summarize available assets for this client.",
   "tools": [
     {
       "type": "mcp",

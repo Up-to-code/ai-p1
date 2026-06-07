@@ -314,7 +314,7 @@ describe("@qentrah/auth-sdk partner harness", () => {
       "credentials",
       "organization",
       "clients",
-      "properties",
+      "assets",
       "projects",
       "tasks",
       "calendar",

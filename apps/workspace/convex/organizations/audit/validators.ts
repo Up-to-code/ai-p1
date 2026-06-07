@@ -5,7 +5,7 @@ export const organizationAuditCategoryValidator = v.union(
   v.literal("people"),
   v.literal("roles"),
   v.literal("projects"),
-  v.literal("properties"),
+  v.literal("assets"),
   v.literal("clients"),
   v.literal("calendar"),
   v.literal("media"),

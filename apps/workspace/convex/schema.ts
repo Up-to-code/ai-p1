@@ -1,6 +1,81 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
+const workOsRecordResourceValidator = v.union(
+  v.literal("client"),
+  v.literal("opportunity"),
+  v.literal("project"),
+  v.literal("task"),
+  v.literal("calendarEvent"),
+  v.literal("asset"),
+);
+
+const workOsCustomFieldTypeValidator = v.union(
+  v.literal("text"),
+  v.literal("longText"),
+  v.literal("number"),
+  v.literal("currency"),
+  v.literal("date"),
+  v.literal("dateTime"),
+  v.literal("select"),
+  v.literal("multiSelect"),
+  v.literal("boolean"),
+  v.literal("user"),
+  v.literal("url"),
+);
+
+const workOsCustomFieldOptionValidator = v.object({
+  id: v.string(),
+  label: v.string(),
+  color: v.optional(v.string()),
+  order: v.number(),
+  archivedAt: v.optional(v.number()),
+});
+
+const workOsCustomFieldDefinitionValidator = v.object({
+  id: v.optional(v.string()),
+  organizationId: v.optional(v.string()),
+  workspaceId: v.optional(v.string()),
+  templateId: v.optional(v.string()),
+  key: v.string(),
+  label: v.string(),
+  description: v.optional(v.string()),
+  type: workOsCustomFieldTypeValidator,
+  required: v.boolean(),
+  options: v.optional(v.array(workOsCustomFieldOptionValidator)),
+  appliesTo: v.array(workOsRecordResourceValidator),
+  defaultValue: v.optional(v.any()),
+  display: v.optional(v.object({
+    formSection: v.optional(v.string()),
+    tableVisible: v.boolean(),
+    boardVisible: v.boolean(),
+    detailVisible: v.boolean(),
+    requiredOnCreate: v.boolean(),
+  })),
+  order: v.optional(v.number()),
+  archivedAt: v.optional(v.number()),
+  createdAt: v.optional(v.number()),
+  updatedAt: v.optional(v.number()),
+});
+
+const workOsCustomFieldValueValidator = v.object({
+  fieldDefinitionId: v.optional(v.string()),
+  fieldKey: v.string(),
+  recordType: v.optional(workOsRecordResourceValidator),
+  recordId: v.optional(v.string()),
+  type: workOsCustomFieldTypeValidator,
+  textValue: v.optional(v.string()),
+  numberValue: v.optional(v.number()),
+  currencyValue: v.optional(v.number()),
+  booleanValue: v.optional(v.boolean()),
+  dateValue: v.optional(v.string()),
+  dateTimeValue: v.optional(v.string()),
+  selectValue: v.optional(v.string()),
+  multiSelectValue: v.optional(v.array(v.string())),
+  userValue: v.optional(v.string()),
+  urlValue: v.optional(v.string()),
+});
+
 // App tables are organization-scoped so user identity never owns business data directly.
 export default defineSchema({
   organizations: defineTable({
@@ -147,7 +222,7 @@ export default defineSchema({
     target: v.union(
       v.literal("clientsDeletedFlag"),
       v.literal("projectsDeletedFlag"),
-      v.literal("propertiesDeletedFlag"),
+      v.literal("assetsDeletedFlag"),
       v.literal("clientPii"),
       v.literal("webhookDeliveries"),
       v.literal("inboundEvents"),
@@ -190,6 +265,7 @@ export default defineSchema({
         v.literal("organization"),
         v.literal("client"),
         v.literal("property"),
+        v.literal("asset"),
         v.literal("project"),
         v.literal("calendar"),
         v.literal("task"),
@@ -228,7 +304,7 @@ export default defineSchema({
       resource: v.union(
         v.literal("organization"),
         v.literal("client"),
-        v.literal("property"),
+        v.literal("asset"),
         v.literal("project"),
         v.literal("calendar"),
         v.literal("task"),
@@ -335,7 +411,7 @@ export default defineSchema({
     partnerAppId: v.string(),
     resourceType: v.union(
       v.literal("client"),
-      v.literal("property"),
+      v.literal("asset"),
       v.literal("project"),
       v.literal("calendar"),
       v.literal("task"),
@@ -645,29 +721,26 @@ export default defineSchema({
   projects: defineTable({
     organizationId: v.string(),
     name: v.string(),
-    reference: v.string(),
-    developer: v.string(),
-    city: v.string(),
-    area: v.string(),
-    type: v.string(),
-    unitTypes: v.optional(v.array(v.string())),
-    status: v.union(v.literal("draft"), v.literal("pending"), v.literal("approved"), v.literal("rejected")),
-    visibility: v.optional(v.union(v.literal("private"), v.literal("public"))),
-    syncState: v.union(v.literal("draft"), v.literal("blocked"), v.literal("synced")),
-    units: v.number(),
-    priceRange: v.string(),
-    averagePrice: v.optional(v.string()),
-    projectPrices: v.optional(v.array(v.object({
-      id: v.string(),
-      label: v.string(),
-      price: v.string(),
-    }))),
-    regaAuthorizationNo: v.optional(v.string()),
-    regaExpiresAt: v.optional(v.string()),
-    planNumber: v.optional(v.string()),
-    plotNumber: v.optional(v.string()),
-    postalIdentity: v.optional(v.string()),
-    description: v.string(),
+    clientId: v.optional(v.id("clients")),
+    opportunityId: v.optional(v.id("opportunities")),
+    ownerUserId: v.string(),
+    teamMemberIds: v.optional(v.array(v.string())),
+    status: v.union(
+      v.literal("planned"),
+      v.literal("active"),
+      v.literal("paused"),
+      v.literal("completed"),
+      v.literal("archived"),
+    ),
+    health: v.union(v.literal("onTrack"), v.literal("atRisk"), v.literal("blocked")),
+    visibility: v.optional(v.union(v.literal("private"), v.literal("team"), v.literal("workspace"))),
+    startDate: v.optional(v.string()),
+    endDate: v.optional(v.string()),
+    budget: v.optional(v.number()),
+    currency: v.optional(v.string()),
+    description: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
+    customFields: v.optional(v.array(workOsCustomFieldValueValidator)),
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -676,26 +749,39 @@ export default defineSchema({
   })
     .index("by_organization_id", ["organizationId"])
     .index("by_organization_status", ["organizationId", "status"])
+    .index("by_organization_health", ["organizationId", "health"])
+    .index("by_organization_owner", ["organizationId", "ownerUserId"])
     .index("by_organization_deleted_updated", ["organizationId", "isDeleted", "updatedAt"])
     .index("by_organization_deleted_status_updated", ["organizationId", "isDeleted", "status", "updatedAt"])
+    .index("by_client", ["organizationId", "clientId"])
+    .index("by_opportunity", ["organizationId", "opportunityId"])
     .index("by_organization_updated", ["organizationId", "updatedAt"])
     .index("by_updated", ["updatedAt"]),
-  propertyUnits: defineTable({
+  assets: defineTable({
     organizationId: v.string(),
-    title: v.string(),
-    reference: v.string(),
+    name: v.string(),
     projectId: v.optional(v.id("projects")),
-    project: v.string(),
-    city: v.string(),
+    project: v.optional(v.string()),
     type: v.string(),
-    status: v.union(v.literal("available"), v.literal("sold"), v.literal("reserved"), v.literal("pending"), v.literal("draft")),
-    visibility: v.optional(v.union(v.literal("private"), v.literal("public"))),
-    purpose: v.union(v.literal("sale"), v.literal("rent")),
-    price: v.string(),
-    area: v.string(),
-    bedrooms: v.number(),
-    bathrooms: v.number(),
-    description: v.string(),
+    status: v.union(
+      v.literal("available"),
+      v.literal("pending"),
+      v.literal("reserved"),
+      v.literal("sold"),
+      v.literal("draft"),
+      v.literal("active"),
+      v.literal("review"),
+      v.literal("approved"),
+      v.literal("archived"),
+    ),
+    ownerUserId: v.string(),
+    visibility: v.optional(v.union(v.literal("private"), v.literal("team"), v.literal("workspace"))),
+    fileId: v.optional(v.string()),
+    url: v.optional(v.string()),
+    description: v.optional(v.string()),
+    metadata: v.optional(v.any()),
+    tags: v.optional(v.array(v.string())),
+    customFields: v.optional(v.array(workOsCustomFieldValueValidator)),
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -704,40 +790,39 @@ export default defineSchema({
   })
     .index("by_organization_id", ["organizationId"])
     .index("by_organization_status", ["organizationId", "status"])
+    .index("by_organization_type", ["organizationId", "type"])
+    .index("by_organization_owner", ["organizationId", "ownerUserId"])
     .index("by_organization_deleted_updated", ["organizationId", "isDeleted", "updatedAt"])
     .index("by_organization_deleted_status_updated", ["organizationId", "isDeleted", "status", "updatedAt"])
     .index("by_organization_updated", ["organizationId", "updatedAt"])
-    .index("by_project_id", ["projectId"])
     .index("by_updated", ["updatedAt"]),
   clients: defineTable({
     organizationId: v.string(),
     name: v.string(),
-    type: v.union(v.literal("Buyer"), v.literal("Tenant"), v.literal("Investor"), v.literal("Broker")),
-    contact: v.string(),
-    phone: v.string(),
-    age: v.number(),
-    nationality: v.string(),
-    generation: v.string(),
-    budget: v.string(),
-    encryptedContact: v.optional(v.string()),
-    encryptedPhone: v.optional(v.string()),
-    encryptedNationality: v.optional(v.string()),
-    encryptedBudget: v.optional(v.string()),
-    piiEncryptedAt: v.optional(v.number()),
-    propertyInterest: v.string(),
-    status: v.union(v.literal("active"), v.literal("inactive")),
-    visibility: v.optional(v.union(v.literal("private"), v.literal("public"))),
-    pipelineStage: v.union(
+    type: v.union(v.literal("person"), v.literal("organization")),
+    ownerUserId: v.string(),
+    status: v.union(v.literal("new"), v.literal("active"), v.literal("nurture"), v.literal("inactive"), v.literal("archived")),
+    pipelineStage: v.optional(v.union(
       v.literal("new"),
       v.literal("qualified"),
-      v.literal("viewing"),
+      v.literal("review"),
       v.literal("negotiation"),
       v.literal("closed"),
-    ),
+    )),
     pipelineOrder: v.optional(v.number()),
-    priority: v.union(v.literal("normal"), v.literal("high"), v.literal("urgent")),
-    nextAction: v.string(),
-    issue: v.optional(v.string()),
+    source: v.string(),
+    company: v.optional(v.string()),
+    contactName: v.optional(v.string()),
+    email: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    website: v.optional(v.string()),
+    notes: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
+    customFields: v.optional(v.array(workOsCustomFieldValueValidator)),
+    encryptedEmail: v.optional(v.string()),
+    encryptedPhone: v.optional(v.string()),
+    piiEncryptedAt: v.optional(v.number()),
+    visibility: v.optional(v.union(v.literal("private"), v.literal("team"), v.literal("workspace"))),
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -746,45 +831,207 @@ export default defineSchema({
   })
     .index("by_organization_id", ["organizationId"])
     .index("by_organization_type", ["organizationId", "type"])
-    .index("by_organization_stage", ["organizationId", "pipelineStage"])
+    .index("by_organization_status", ["organizationId", "status"])
+    .index("by_organization_owner", ["organizationId", "ownerUserId"])
     .index("by_organization_deleted_updated", ["organizationId", "isDeleted", "updatedAt"])
     .index("by_organization_deleted_type_updated", ["organizationId", "isDeleted", "type", "updatedAt"])
     .index("by_organization_updated", ["organizationId", "updatedAt"])
     .index("by_updated", ["updatedAt"]),
-  clientUnitLinks: defineTable({
+  opportunities: defineTable({
     organizationId: v.string(),
-    clientId: v.id("clients"),
-    propertyId: v.id("propertyUnits"),
-    status: v.union(
-      v.literal("interested"),
-      v.literal("shortlisted"),
-      v.literal("viewing"),
-      v.literal("offer"),
-      v.literal("rejected"),
+    title: v.string(),
+    clientId: v.optional(v.id("clients")),
+    projectId: v.optional(v.id("projects")),
+    stage: v.union(
+      v.literal("new"),
+      v.literal("qualified"),
+      v.literal("proposal"),
+      v.literal("negotiation"),
+      v.literal("won"),
+      v.literal("lost"),
     ),
-    notes: v.optional(v.string()),
+    status: v.union(
+      v.literal("open"),
+      v.literal("won"),
+      v.literal("lost"),
+      v.literal("paused"),
+    ),
+    value: v.optional(v.number()),
+    currency: v.optional(v.string()),
+    source: v.optional(v.string()),
+    priority: v.union(v.literal("low"), v.literal("normal"), v.literal("high"), v.literal("urgent")),
+    closeDate: v.optional(v.string()),
+    nextStep: v.optional(v.string()),
+    ownerUserId: v.string(),
+    tags: v.optional(v.array(v.string())),
+    customFields: v.optional(v.array(workOsCustomFieldValueValidator)),
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    closedAt: v.optional(v.number()),
+    deletedAt: v.optional(v.number()),
+    isDeleted: v.optional(v.boolean()),
+  })
+    .index("by_organization_id", ["organizationId"])
+    .index("by_organization_stage", ["organizationId", "stage"])
+    .index("by_organization_status", ["organizationId", "status"])
+    .index("by_organization_owner", ["organizationId", "ownerUserId"])
+    .index("by_organization_deleted_updated", ["organizationId", "isDeleted", "updatedAt"])
+    .index("by_client", ["organizationId", "clientId"])
+    .index("by_project", ["organizationId", "projectId"])
+    .index("by_updated", ["updatedAt"]),
+  customFieldDefinitions: defineTable({
+    organizationId: v.string(),
+    workspaceId: v.optional(v.string()),
+    templateId: v.optional(v.string()),
+    key: v.string(),
+    label: v.string(),
+    description: v.optional(v.string()),
+    type: workOsCustomFieldTypeValidator,
+    required: v.boolean(),
+    options: v.optional(v.array(workOsCustomFieldOptionValidator)),
+    appliesTo: v.array(workOsRecordResourceValidator),
+    defaultValue: v.optional(v.any()),
+    display: v.optional(v.object({
+      formSection: v.optional(v.string()),
+      tableVisible: v.boolean(),
+      boardVisible: v.boolean(),
+      detailVisible: v.boolean(),
+      requiredOnCreate: v.boolean(),
+    })),
+    order: v.number(),
+    archivedAt: v.optional(v.number()),
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
     deletedAt: v.optional(v.number()),
   })
     .index("by_organization_id", ["organizationId"])
-    .index("by_client", ["organizationId", "clientId"])
-    .index("by_property", ["organizationId", "propertyId"])
-    .index("by_client_property", ["organizationId", "clientId", "propertyId"])
+    .index("by_organization_key", ["organizationId", "key"])
+    .index("by_organization_template", ["organizationId", "templateId"])
     .index("by_updated", ["updatedAt"]),
-  clientTasks: defineTable({
+  customFieldValues: defineTable({
     organizationId: v.string(),
-    clientId: v.id("clients"),
+    fieldDefinitionId: v.id("customFieldDefinitions"),
+    fieldKey: v.string(),
+    recordType: workOsRecordResourceValidator,
+    recordId: v.string(),
+    type: workOsCustomFieldTypeValidator,
+    textValue: v.optional(v.string()),
+    numberValue: v.optional(v.number()),
+    currencyValue: v.optional(v.number()),
+    booleanValue: v.optional(v.boolean()),
+    dateValue: v.optional(v.string()),
+    dateTimeValue: v.optional(v.string()),
+    selectValue: v.optional(v.string()),
+    multiSelectValue: v.optional(v.array(v.string())),
+    userValue: v.optional(v.string()),
+    urlValue: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_organization_record", ["organizationId", "recordType", "recordId"])
+    .index("by_organization_field", ["organizationId", "fieldDefinitionId"])
+    .index("by_organization_field_record", ["organizationId", "fieldDefinitionId", "recordType", "recordId"])
+    .index("by_updated", ["updatedAt"]),
+  recordLinks: defineTable({
+    organizationId: v.string(),
+    linkType: v.union(
+      v.literal("related"),
+      v.literal("owns"),
+      v.literal("dependsOn"),
+      v.literal("blocks"),
+      v.literal("createdFrom"),
+      v.literal("attachedTo"),
+    ),
+    sourceRecordType: workOsRecordResourceValidator,
+    sourceRecordId: v.string(),
+    targetRecordType: workOsRecordResourceValidator,
+    targetRecordId: v.string(),
+    label: v.optional(v.string()),
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_organization_id", ["organizationId"])
+    .index("by_source", ["organizationId", "sourceRecordType", "sourceRecordId"])
+    .index("by_target", ["organizationId", "targetRecordType", "targetRecordId"])
+    .index("by_type", ["organizationId", "linkType"]),
+  workspaceTemplates: defineTable({
+    organizationId: v.optional(v.string()),
+    key: v.union(
+      v.literal("custom"),
+      v.literal("sales_crm"),
+      v.literal("agency_marketing"),
+      v.literal("consulting_services"),
+      v.literal("operations"),
+      v.literal("real_estate_legacy"),
+    ),
+    name: v.string(),
+    category: v.string(),
+    description: v.optional(v.string()),
+    version: v.string(),
+    status: v.union(v.literal("draft"), v.literal("active"), v.literal("archived")),
+    recordLabels: v.optional(v.any()),
+    recordStatuses: v.optional(v.any()),
+    opportunityStages: v.optional(v.array(v.string())),
+    customFieldDefinitions: v.optional(v.array(workOsCustomFieldDefinitionValidator)),
+    automationRecipes: v.optional(v.array(v.string())),
+    views: v.optional(v.array(v.object({
+      recordType: workOsRecordResourceValidator,
+      type: v.union(v.literal("table"), v.literal("board"), v.literal("calendar"), v.literal("detail")),
+      name: v.string(),
+    }))),
+    createdByUserId: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_key", ["key"])
+    .index("by_organization_key", ["organizationId", "key"])
+    .index("by_updated", ["updatedAt"]),
+  automations: defineTable({
+    organizationId: v.string(),
+    name: v.string(),
+    description: v.optional(v.string()),
+    enabled: v.boolean(),
+    trigger: v.any(),
+    conditions: v.optional(v.array(v.any())),
+    conditionMode: v.optional(v.union(v.literal("all"), v.literal("any"))),
+    actions: v.array(v.any()),
+    ownerUserId: v.optional(v.string()),
+    lastRunAt: v.optional(v.number()),
+    lastRunStatus: v.optional(v.union(v.literal("success"), v.literal("failed"), v.literal("skipped"))),
+    lastRunSummary: v.optional(v.string()),
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_organization_id", ["organizationId"])
+    .index("by_organization_enabled", ["organizationId", "enabled"])
+    .index("by_organization_owner", ["organizationId", "ownerUserId"])
+    .index("by_updated", ["updatedAt"]),
+  tasks: defineTable({
+    organizationId: v.string(),
     title: v.string(),
-    status: v.union(v.literal("open"), v.literal("done"), v.literal("canceled")),
-    visibility: v.optional(v.union(v.literal("private"), v.literal("public"))),
-    priority: v.union(v.literal("normal"), v.literal("high"), v.literal("urgent")),
-    dueAt: v.optional(v.number()),
-    propertyId: v.optional(v.id("propertyUnits")),
-    projectId: v.optional(v.id("projects")),
-    calendarEventId: v.optional(v.id("calendarEvents")),
-    notes: v.optional(v.string()),
+    status: v.union(v.literal("todo"), v.literal("inProgress"), v.literal("waiting"), v.literal("done"), v.literal("canceled")),
+    pipelineOrder: v.optional(v.number()),
+    priority: v.union(v.literal("low"), v.literal("normal"), v.literal("high"), v.literal("urgent")),
+    assigneeUserId: v.optional(v.string()),
+    clientId: v.optional(v.string()),
+    projectId: v.optional(v.string()),
+    dueDate: v.optional(v.string()),
+    description: v.optional(v.string()),
+    checklist: v.optional(v.array(v.object({
+      id: v.string(),
+      title: v.string(),
+      done: v.boolean(),
+    }))),
+    tags: v.optional(v.array(v.string())),
+    customFields: v.optional(v.array(workOsCustomFieldValueValidator)),
+    visibility: v.optional(v.union(v.literal("private"), v.literal("team"), v.literal("workspace"))),
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -792,47 +1039,40 @@ export default defineSchema({
     deletedAt: v.optional(v.number()),
   })
     .index("by_organization_id", ["organizationId"])
-    .index("by_client", ["organizationId", "clientId"])
-    .index("by_client_status", ["organizationId", "clientId", "status"])
-    .index("by_due", ["organizationId", "dueAt"])
+    .index("by_organization_status", ["organizationId", "status"])
+    .index("by_organization_assignee", ["organizationId", "assigneeUserId"])
+    .index("by_organization_client", ["organizationId", "clientId"])
+    .index("by_organization_project", ["organizationId", "projectId"])
+    .index("by_due", ["organizationId", "dueDate"])
     .index("by_updated", ["updatedAt"]),
   calendarEvents: defineTable({
     organizationId: v.string(),
     title: v.string(),
-    owner: v.string(),
+    ownerUserId: v.optional(v.string()),
     startAt: v.number(),
-    endAt: v.optional(v.number()),
+    endAt: v.number(),
     type: v.union(
-      v.literal("visit"),
-      v.literal("call"),
       v.literal("meeting"),
-      v.literal("client-visit"),
-      v.literal("site-viewing"),
-      v.literal("appointment"),
-      v.literal("signing"),
-      v.literal("follow-up"),
-      v.literal("handover"),
-      v.literal("audit"),
-      v.literal("custom"),
+      v.literal("deadline"),
+      v.literal("reminder"),
+      v.literal("milestone"),
+      v.literal("focusBlock"),
     ),
     status: v.union(v.literal("confirmed"), v.literal("pending"), v.literal("draft")),
-    clientId: v.optional(v.id("clients")),
-    propertyId: v.optional(v.id("propertyUnits")),
-    projectId: v.optional(v.id("projects")),
-    taskId: v.optional(v.id("clientTasks")),
+    attendeeUserIds: v.optional(v.array(v.string())),
+    externalAttendees: v.optional(v.array(v.string())),
     location: v.optional(v.string()),
+    meetingUrl: v.optional(v.string()),
     notes: v.optional(v.string()),
-    customFields: v.optional(v.array(v.object({
-      label: v.string(),
-      value: v.string(),
-    }))),
+    tags: v.optional(v.array(v.string())),
+    customFields: v.optional(v.array(workOsCustomFieldValueValidator)),
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
     deletedAt: v.optional(v.number()),
   })
     .index("by_organization_id", ["organizationId"])
-    .index("by_client", ["organizationId", "clientId"])
+    .index("by_organization_owner", ["organizationId", "ownerUserId"])
     .index("by_start", ["organizationId", "startAt"])
     .index("by_updated", ["updatedAt"]),
   mediaAssets: defineTable({
@@ -845,7 +1085,7 @@ export default defineSchema({
     kind: v.union(v.literal("image"), v.literal("video"), v.literal("document")),
     resourceType: v.union(
       v.literal("project"),
-      v.literal("property"),
+      v.literal("asset"),
       v.literal("client"),
       v.literal("calendarEvent"),
       v.literal("task"),
@@ -869,7 +1109,7 @@ export default defineSchema({
     organizationId: v.string(),
     resourceType: v.union(
       v.literal("project"),
-      v.literal("property"),
+      v.literal("asset"),
       v.literal("client"),
       v.literal("calendarEvent"),
       v.literal("task"),

@@ -40,7 +40,7 @@ const copy = {
       eyebrow: "Works with",
       title: "The tools your team already uses.",
       description:
-        "Connect Claude, ChatGPT, Codex, Cursor, and more directly to your live workspace data. Your AI assistant searches units, drafts messages, and books tours — without switching tabs.",
+        "Connect Claude, ChatGPT, Codex, Cursor, and more directly to your live workspace data. Your AI assistant searches assets, drafts messages, and plans calendar actions without switching tabs.",
       tools: [
         { name: "ChatGPT", url: "https://chatgpt.com" },
         { name: "Claude", url: "https://claude.ai" },
@@ -76,7 +76,7 @@ const copy = {
       },
       {
         heading: "برنامج الشركاء",
-        body: "انضم إلى منظومة كانترا واطرح حلولك للمطورين والشركات العقارية عبر تطبيقات قابلة للتفعيل داخل مساحة العمل.",
+        body: "انضم إلى منظومة كانترا واطرح حلولك للفرق والشركات عبر تطبيقات قابلة للتفعيل داخل مساحة العمل.",
         cta: "انضم كشريك",
         href: "/partners",
       },

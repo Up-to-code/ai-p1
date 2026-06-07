@@ -5,31 +5,41 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
-import { assertPlatformAdmin } from "../platform/access";
 import { protectClientPii, revealClientPii } from "../security/clientPii";
-import { clientInputValidator, clientUnitLinkInputValidator, clientUnitLinkValidator, clientValidator } from "./validators";
+import { clientInputValidator, clientValidator, resolveClientPipelineStage } from "./validators";
 
 function isoDate(timestamp: number) {
   return new Date(timestamp).toISOString().slice(0, 10);
 }
 
-async function presentClient(client: Doc<"clients">) {
-  const { deletedAt: _deletedAt, isDeleted: _isDeleted, encryptedContact: _encryptedContact, encryptedPhone: _encryptedPhone, encryptedNationality: _encryptedNationality, encryptedBudget: _encryptedBudget, piiEncryptedAt: _piiEncryptedAt, ...safeClient } = client;
-  return {
-    ...safeClient,
-    ...await revealClientPii(client),
-    id: client._id,
-    visibility: client.visibility ?? "private",
-    nextActionDate: "This week",
-    appointmentTime: "10:00",
-    added: isoDate(client.createdAt),
-    lastContact: isoDate(client.updatedAt),
-    syncState: client.issue ? ("blocked" as const) : ("draft" as const),
-  };
+function withoutPrivateClientFields(client: Doc<"clients">) {
+  const safeClient = { ...client };
+  delete safeClient.deletedAt;
+  delete safeClient.isDeleted;
+  delete safeClient.encryptedEmail;
+  delete safeClient.encryptedPhone;
+  delete safeClient.piiEncryptedAt;
+  return safeClient;
 }
 
-function presentLink(link: Doc<"clientUnitLinks">) {
-  return { ...link, id: link._id };
+async function presentClient(client: Doc<"clients">) {
+  const safeClient = withoutPrivateClientFields(client);
+  const pii = await revealClientPii(client);
+  return {
+    ...safeClient,
+    ...pii,
+    id: client._id,
+    visibility: client.visibility ?? "private",
+    phone: pii.phone ?? client.phone ?? "",
+    contact: pii.email ?? client.email ?? client.phone ?? client.company ?? "",
+    priority: "normal" as const,
+    budget: "",
+    assetInterest: client.notes ?? client.source,
+    pipelineStage: resolveClientPipelineStage(client),
+    pipelineOrder: client.pipelineOrder,
+    added: isoDate(client.createdAt),
+    lastContact: isoDate(client.updatedAt),
+  };
 }
 
 async function assertClient(ctx: MutationCtx, organizationId: string, clientId: Id<"clients">) {
@@ -38,14 +48,6 @@ async function assertClient(ctx: MutationCtx, organizationId: string, clientId: 
     throw new Error("Client was not found.");
   }
   return client;
-}
-
-async function assertUnit(ctx: MutationCtx, organizationId: string, propertyId: Id<"propertyUnits">) {
-  const property = await ctx.db.get(propertyId);
-  if (!property || property.organizationId !== organizationId || property.deletedAt) {
-    throw new Error("Property unit was not found.");
-  }
-  return property;
 }
 
 async function enqueueClientWebhook(
@@ -73,14 +75,14 @@ export const createFromHono = mutation({
   handler: async (ctx, args) => {
     const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "create");
-    if ((args.input.visibility ?? "private") === "public") {
-      await assertPlatformAdmin(ctx);
-    }
     const now = Date.now();
     const id = await ctx.db.insert("clients", {
       organizationId: args.organizationId,
       ...args.input,
       ...await protectClientPii(args.organizationId, args.input),
+      ownerUserId: args.input.ownerUserId ?? user._id,
+      pipelineStage: args.input.pipelineStage ?? "new",
+      source: args.input.source ?? "manual",
       visibility: args.input.visibility ?? "private",
       isDeleted: false,
       createdByUserId: user._id,
@@ -117,13 +119,12 @@ export const updateFromHono = mutation({
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const existing = await assertClient(ctx, args.organizationId, args.clientId);
     const nextVisibility = args.input.visibility ?? (existing.visibility ?? "private");
-    if (nextVisibility !== (existing.visibility ?? "private")) {
-      await assertPlatformAdmin(ctx);
-    }
     const now = Date.now();
     await ctx.db.patch(args.clientId, {
       ...args.input,
       ...await protectClientPii(args.organizationId, args.input),
+      ownerUserId: args.input.ownerUserId ?? existing.ownerUserId,
+      source: args.input.source ?? existing.source,
       visibility: nextVisibility,
       updatedAt: now,
     });
@@ -174,87 +175,91 @@ export const deleteFromHono = mutation({
   },
 });
 
-export const linkUnitFromHono = mutation({
+export const linkAssetFromHono = mutation({
   args: {
     organizationId: v.string(),
-    input: clientUnitLinkInputValidator,
+    input: v.object({
+      clientId: v.id("clients"),
+      assetId: v.id("assets"),
+      status: v.optional(v.string()),
+      notes: v.optional(v.string()),
+    }),
   },
-  returns: clientUnitLinkValidator,
+  returns: v.any(),
   handler: async (ctx, args) => {
     const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     await assertClient(ctx, args.organizationId, args.input.clientId);
-    const property = await assertUnit(ctx, args.organizationId, args.input.propertyId);
+    const asset = await ctx.db.get(args.input.assetId);
+    if (!asset || asset.organizationId !== args.organizationId || asset.deletedAt) {
+      throw new Error("Asset was not found.");
+    }
+
     const now = Date.now();
     const existing = await ctx.db
-      .query("clientUnitLinks")
-      .withIndex("by_client_property", (q) =>
-        q.eq("organizationId", args.organizationId).eq("clientId", args.input.clientId).eq("propertyId", args.input.propertyId),
+      .query("recordLinks")
+      .withIndex("by_source", (q) =>
+        q.eq("organizationId", args.organizationId).eq("sourceRecordType", "client").eq("sourceRecordId", args.input.clientId),
       )
       .first();
 
-    if (existing && !existing.deletedAt) {
-      await ctx.db.patch(existing._id, {
-        status: args.input.status,
-        notes: args.input.notes,
-        updatedAt: now,
-      });
-      const updated = await ctx.db.get(existing._id);
-      if (!updated) throw new Error("Client unit link was not found.");
-      return presentLink(updated);
+    if (existing && !existing.deletedAt && existing.targetRecordType === "asset" && existing.targetRecordId === args.input.assetId) {
+      return { ...existing, id: existing._id };
     }
 
-    const id = await ctx.db.insert("clientUnitLinks", {
+    const id = await ctx.db.insert("recordLinks", {
       organizationId: args.organizationId,
-      ...args.input,
+      linkType: "related",
+      sourceRecordType: "client",
+      sourceRecordId: args.input.clientId,
+      targetRecordType: "asset",
+      targetRecordId: args.input.assetId,
+      label: args.input.notes ?? args.input.status,
       createdByUserId: user._id,
       createdAt: now,
-      updatedAt: now,
     });
 
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
       actorUserId: user._id,
-      action: "client.unit.link",
+      action: "client.asset.link",
       target: args.input.clientId,
-      summary: `Linked ${property.title} to a client.`,
+      summary: `Linked ${asset.name} to a client.`,
       createdAt: now,
     });
 
     const link = await ctx.db.get(id);
-    if (!link) throw new Error("Client unit link could not be created.");
-    return presentLink(link);
+    if (!link) throw new Error("Client asset link could not be created.");
+    return { ...link, id: link._id };
   },
 });
 
-export const unlinkUnitFromHono = mutation({
+export const unlinkAssetFromHono = mutation({
   args: {
     organizationId: v.string(),
     clientId: v.id("clients"),
-    propertyId: v.id("propertyUnits"),
+    assetId: v.id("assets"),
   },
   returns: v.object({ removed: v.boolean() }),
   handler: async (ctx, args) => {
     const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     await assertClient(ctx, args.organizationId, args.clientId);
-    await assertUnit(ctx, args.organizationId, args.propertyId);
-    const existing = await ctx.db
-      .query("clientUnitLinks")
-      .withIndex("by_client_property", (q) =>
-        q.eq("organizationId", args.organizationId).eq("clientId", args.clientId).eq("propertyId", args.propertyId),
-      )
-      .first();
-    if (!existing || existing.deletedAt) return { removed: true };
-
     const now = Date.now();
-    await ctx.db.patch(existing._id, { deletedAt: now, updatedAt: now });
+    const links = await ctx.db
+      .query("recordLinks")
+      .withIndex("by_source", (q) => q.eq("organizationId", args.organizationId).eq("sourceRecordType", "client").eq("sourceRecordId", args.clientId))
+      .take(100);
+    await Promise.all(links
+      .filter((link) => !link.deletedAt && link.targetRecordType === "asset" && link.targetRecordId === args.assetId)
+      .map((link) => ctx.db.patch(link._id, { deletedAt: now })));
+
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
       actorUserId: user._id,
-      action: "client.unit.unlink",
+      action: "client.asset.unlink",
       target: args.clientId,
-      summary: "Unlinked a unit from a client.",
+      summary: "Unlinked an asset from a client.",
       createdAt: now,
     });
 

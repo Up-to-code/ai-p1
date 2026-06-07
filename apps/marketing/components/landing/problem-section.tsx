@@ -12,7 +12,7 @@ const copy = {
       items: [
         {
           title: "Scattered Data",
-          desc: "Pricing and data live in disconnected WhatsApp chats, Excel spreadsheets, and old CRMs, leading to manual copying errors and constant unit pricing mismatches."
+          desc: "Pricing and data live in disconnected WhatsApp chats, Excel spreadsheets, and old CRMs, leading to manual copying errors and constant asset pricing mismatches."
         },
         {
           title: "Slow Execution",
@@ -20,7 +20,7 @@ const copy = {
         },
         {
           title: "Lost Opportunities",
-          desc: "Qualified client requests expire or buyers go to faster competitors because brokers lack instant, updated access to property availability and inventory data."
+          desc: "Qualified client requests expire or buyers go to faster competitors because brokers lack instant, updated access to asset availability and inventory data."
         }
       ]
     },
@@ -35,7 +35,7 @@ const copy = {
         },
         {
           title: "2.4-Second Pipeline",
-          desc: "AI verifies unit details in real-time and dispatches agreements directly to clients via WhatsApp for e-signature within seconds."
+          desc: "AI verifies asset details in real-time and dispatches agreements directly to clients via WhatsApp for e-signature within seconds."
         },
         {
           title: "Zero Lead Leakage",

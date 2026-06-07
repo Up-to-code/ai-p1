@@ -158,7 +158,7 @@ export const adminSections: AdminSection[] = [
     id: "workspace-data",
     title: "Workspace data",
     eyebrow: "Operations",
-    description: "Projects, properties, clients, calendar, tasks, media, and soft-delete review.",
+    description: "Projects, assets, clients, calendar, tasks, media, and soft-delete review.",
     href: "/workspace-data",
     icon: FolderKanban,
     controls: ["Review records", "Restore soft delete", "Suspend visibility", "Inspect ownership"],

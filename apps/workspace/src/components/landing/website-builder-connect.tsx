@@ -33,12 +33,12 @@ const copy = {
   en: {
     eyebrow: "Website builders",
     title: "Build anywhere. Connect to Qentrah.",
-    description: "Use Claude, v0, Replit, Bolt, or your current website. Share your workspace ID and API key, and your listings, leads, and forms sync.",
+    description: "Use Claude, v0, Replit, Bolt, or your current website. Share your workspace ID and API key, and your assets, clients, and forms sync.",
   },
   ar: {
     eyebrow: "منشئ المواقع",
     title: "ابنِ واجهتك بأي أداة، واربطها بكانترا",
-    description: "استخدم أدوات بناء المواقع التي تفضلها، واربطها بمساحة عملك في كانترا عبر واجهات API؛ لتعرض المشاريع، الوحدات، الأسعار، والعملاء من مصدر واحد ومحدّث دائمًا.",
+    description: "استخدم أدوات بناء المواقع التي تفضلها، واربطها بمساحة عملك في كانترا عبر واجهات API؛ لتعرض المشاريع، الأصول، والعملاء من مصدر واحد ومحدّث دائمًا.",
   },
 };
 

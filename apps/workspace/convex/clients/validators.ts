@@ -1,50 +1,61 @@
 import { v } from "convex/values";
 
 export const clientTypeValidator = v.union(
-  v.literal("Buyer"),
-  v.literal("Tenant"),
-  v.literal("Investor"),
-  v.literal("Broker"),
+  v.literal("person"),
+  v.literal("organization"),
 );
 
 export const clientStatusValidator = v.union(
-  v.literal("active"),
-  v.literal("inactive"),
-);
-
-export const clientPipelineStageValidator = v.union(
   v.literal("new"),
-  v.literal("qualified"),
-  v.literal("viewing"),
-  v.literal("negotiation"),
-  v.literal("closed"),
+  v.literal("active"),
+  v.literal("nurture"),
+  v.literal("inactive"),
+  v.literal("archived"),
 );
 
 export const clientPriorityValidator = v.union(
+  v.literal("low"),
   v.literal("normal"),
   v.literal("high"),
   v.literal("urgent"),
 );
 
-export const visibilityValidator = v.union(v.literal("private"), v.literal("public"));
+export const visibilityValidator = v.union(v.literal("private"), v.literal("team"), v.literal("workspace"));
+
+export const clientPipelineStageValidator = v.union(
+  v.literal("new"),
+  v.literal("qualified"),
+  v.literal("review"),
+  v.literal("negotiation"),
+  v.literal("closed"),
+);
+
+export type ClientPipelineStage = "new" | "qualified" | "review" | "negotiation" | "closed";
+
+export function resolveClientPipelineStage(client: {
+  status: "new" | "active" | "nurture" | "inactive" | "archived";
+  pipelineStage?: ClientPipelineStage;
+}): ClientPipelineStage {
+  if (client.status === "archived") return "closed";
+  return client.pipelineStage ?? "new";
+}
 
 export const clientInputValidator = v.object({
   name: v.string(),
   type: clientTypeValidator,
-  contact: v.string(),
-  phone: v.string(),
-  age: v.number(),
-  nationality: v.string(),
-  generation: v.string(),
-  budget: v.string(),
-  propertyInterest: v.string(),
+  ownerUserId: v.optional(v.string()),
   status: clientStatusValidator,
-  visibility: v.optional(visibilityValidator),
-  pipelineStage: clientPipelineStageValidator,
+  pipelineStage: v.optional(clientPipelineStageValidator),
   pipelineOrder: v.optional(v.number()),
-  priority: clientPriorityValidator,
-  nextAction: v.string(),
-  issue: v.optional(v.string()),
+  source: v.optional(v.string()),
+  visibility: v.optional(visibilityValidator),
+  company: v.optional(v.string()),
+  contactName: v.optional(v.string()),
+  email: v.optional(v.string()),
+  phone: v.optional(v.string()),
+  website: v.optional(v.string()),
+  notes: v.optional(v.string()),
+  tags: v.optional(v.array(v.string())),
 });
 
 export const clientValidator = v.object({
@@ -54,54 +65,26 @@ export const clientValidator = v.object({
   organizationId: v.string(),
   name: v.string(),
   type: clientTypeValidator,
-  contact: v.string(),
-  phone: v.string(),
-  age: v.number(),
-  nationality: v.string(),
-  generation: v.string(),
-  budget: v.string(),
-  propertyInterest: v.string(),
+  ownerUserId: v.string(),
   status: clientStatusValidator,
+  source: v.string(),
   visibility: visibilityValidator,
+  company: v.optional(v.string()),
+  contactName: v.optional(v.string()),
+  email: v.optional(v.string()),
+  phone: v.optional(v.string()),
+  contact: v.string(),
+  website: v.optional(v.string()),
+  notes: v.optional(v.string()),
+  priority: v.union(v.literal("normal"), v.literal("high"), v.literal("urgent")),
+  budget: v.string(),
+  assetInterest: v.string(),
   pipelineStage: clientPipelineStageValidator,
   pipelineOrder: v.optional(v.number()),
-  priority: clientPriorityValidator,
-  nextAction: v.string(),
-  nextActionDate: v.string(),
-  appointmentTime: v.string(),
+  tags: v.optional(v.array(v.string())),
+  customFields: v.optional(v.array(v.any())),
   added: v.string(),
   lastContact: v.string(),
-  syncState: v.union(v.literal("draft"), v.literal("eligible"), v.literal("synced"), v.literal("blocked"), v.literal("failed")),
-  issue: v.optional(v.string()),
-  createdByUserId: v.string(),
-  createdAt: v.number(),
-  updatedAt: v.number(),
-});
-
-export const clientUnitLinkStatusValidator = v.union(
-  v.literal("interested"),
-  v.literal("shortlisted"),
-  v.literal("viewing"),
-  v.literal("offer"),
-  v.literal("rejected"),
-);
-
-export const clientUnitLinkInputValidator = v.object({
-  clientId: v.id("clients"),
-  propertyId: v.id("propertyUnits"),
-  status: clientUnitLinkStatusValidator,
-  notes: v.optional(v.string()),
-});
-
-export const clientUnitLinkValidator = v.object({
-  _id: v.id("clientUnitLinks"),
-  _creationTime: v.number(),
-  id: v.string(),
-  organizationId: v.string(),
-  clientId: v.id("clients"),
-  propertyId: v.id("propertyUnits"),
-  status: clientUnitLinkStatusValidator,
-  notes: v.optional(v.string()),
   createdByUserId: v.string(),
   createdAt: v.number(),
   updatedAt: v.number(),

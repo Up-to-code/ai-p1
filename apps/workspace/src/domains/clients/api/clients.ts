@@ -14,8 +14,10 @@ import {
 import type { Client, ClientType } from "../store/clients.types";
 import type { ClientFormValues } from "../validation/client.schema";
 import {
+  addClientToIndexData,
   clientFormValuesForPipeline,
   patchClientInIndexData,
+  provisionalClientFromFormValues,
   removeClientFromIndexData,
   type ActiveClientPipelineStage,
   type ClientStats,
@@ -27,6 +29,57 @@ export const CLIENTS_PAGE_SIZE = 50;
 
 export function clientsIndexQueryBaseKey(organizationId?: string) {
   return ["clients-index", organizationId] as const;
+}
+
+export function useCreateClientOptimisticMutation(queryKey: QueryKey | undefined) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({
+      organizationId,
+      values,
+    }: {
+      organizationId: string;
+      values: ClientFormValues;
+    }) => createClientRequest(organizationId, values),
+    onMutate: async (variables) => {
+      if (!queryKey) return { previousData: undefined, optimisticId: undefined };
+
+      await queryClient.cancelQueries({ queryKey });
+      const previousData = queryClient.getQueryData<ClientsIndexData>(queryKey);
+      const optimisticClient = provisionalClientFromFormValues(variables.values);
+
+      queryClient.setQueryData<ClientsIndexData>(
+        queryKey,
+        (data) => addClientToIndexData(data, optimisticClient),
+      );
+
+      return { previousData, optimisticId: optimisticClient.id };
+    },
+    onError: (_error, variables, context) => {
+      if (queryKey && context?.previousData) {
+        queryClient.setQueryData(queryKey, context.previousData);
+      }
+      toast({ title: "Client create failed. Reverted.", type: "error" });
+      void queryClient.invalidateQueries({ queryKey: clientsIndexQueryBaseKey(variables.organizationId) });
+    },
+    onSuccess: (result, variables, context) => {
+      if (queryKey && context?.optimisticId) {
+        queryClient.setQueryData<ClientsIndexData>(
+          queryKey,
+          (data) => patchClientInIndexData(data, context.optimisticId!, { ...result.client, id: result.client.id }),
+        );
+      } else if (queryKey) {
+        queryClient.setQueryData<ClientsIndexData>(
+          queryKey,
+          (data) => addClientToIndexData(data, result.client, { bumpStats: true }),
+        );
+      }
+      toast({ title: "Client created.", type: "success" });
+      void queryClient.invalidateQueries({ queryKey: clientsIndexQueryBaseKey(variables.organizationId) });
+    },
+  });
 }
 
 export function useUpdateClientOptimisticMutation(queryKey: QueryKey | undefined) {
@@ -205,44 +258,52 @@ export function useClientQuery(organizationId: string | undefined, clientId: str
   );
 }
 
-export function useClientUnitLinksQuery(organizationId: string | undefined, clientId: string | undefined) {
+export function useClientAssetLinksQuery(organizationId: string | undefined, clientId: string | undefined) {
   return useQuery(
-    api.clients.read.listUnitLinks,
+    api.clients.read.listAssetLinks,
     organizationId && clientId ? { organizationId, clientId: clientId as Id<"clients"> } : "skip",
   );
 }
 
-export function usePropertyClientLinksQuery(organizationId: string | undefined, propertyId: string | undefined) {
-  const shouldRead = organizationId && propertyId && !propertyId.startsWith("UNT-");
+export function useAssetClientLinksQuery(organizationId: string | undefined, assetId: string | undefined) {
+  const shouldRead = organizationId && assetId && !assetId.startsWith("AST-");
   return useQuery(
-    api.clients.read.listUnitLinksForProperty,
-    shouldRead ? { organizationId, propertyId: propertyId as Id<"propertyUnits"> } : "skip",
+    api.clients.read.listAssetLinksForAsset,
+    shouldRead ? { organizationId, assetId: assetId as Id<"assets"> } : "skip",
   );
 }
 
 export function clientPayloadFromForm(values: ClientFormValues) {
+  const legacyTypeMap = {
+    Buyer: "person",
+    Tenant: "person",
+    Investor: "person",
+    Broker: "organization",
+  } as const;
+  const type = values.type in legacyTypeMap
+    ? legacyTypeMap[values.type as keyof typeof legacyTypeMap]
+    : values.type;
+  const rawVisibility = values.visibility as string | undefined;
+  const visibility = rawVisibility === "public" ? "workspace" : values.visibility;
+
   return {
     name: values.name,
-    type: values.type,
-    contact: values.contact,
+    type,
+    email: values.contact,
     phone: values.phone,
-    age: Number(values.age || 0),
-    nationality: values.nationality,
-    generation: values.generation,
-    budget: values.budget,
-    propertyInterest: values.propertyInterest,
+    source: values.assetInterest || "manual",
     status: values.status,
-    visibility: values.visibility ?? "private",
+    visibility: visibility ?? "private",
     pipelineStage: values.pipelineStage,
-    ...(typeof values.pipelineOrder === "number" ? { pipelineOrder: values.pipelineOrder } : {}),
-    priority: values.priority,
-    nextAction: values.nextAction,
-    issue: values.issue || undefined,
+    pipelineOrder: typeof values.pipelineOrder === "number" && Number.isFinite(values.pipelineOrder)
+      ? values.pipelineOrder
+      : undefined,
+    notes: [values.nextAction, values.issue].filter(Boolean).join("\n") || values.assetInterest || undefined,
   };
 }
 
 export async function createClientRequest(organizationId: string, values: ClientFormValues) {
-  return workspaceMutation<{ client: { id: string } }>(organizationId, "clients", {
+  return workspaceMutation<{ client: Client }>(organizationId, "clients", {
     method: "POST",
     body: clientPayloadFromForm(values),
     fallbackMessage: "Client request failed.",
@@ -264,16 +325,16 @@ export async function deleteClientRequest(organizationId: string, clientId: stri
   });
 }
 
-export async function linkClientUnitRequest(organizationId: string, clientId: string, propertyId: string, status = "interested", notes?: string) {
-  return workspaceMutation(organizationId, `clients/${clientId}/units`, {
+export async function linkClientAssetRequest(organizationId: string, clientId: string, assetId: string, status = "interested", notes?: string) {
+  return workspaceMutation(organizationId, `clients/${clientId}/assets`, {
     method: "POST",
-    body: { propertyId, status, notes: notes?.trim() || undefined },
+    body: { assetId, status, notes: notes?.trim() || undefined },
     fallbackMessage: "Client request failed.",
   });
 }
 
-export async function unlinkClientUnitRequest(organizationId: string, clientId: string, propertyId: string) {
-  return workspaceMutation(organizationId, `clients/${clientId}/units/${propertyId}`, {
+export async function unlinkClientAssetRequest(organizationId: string, clientId: string, assetId: string) {
+  return workspaceMutation(organizationId, `clients/${clientId}/assets/${assetId}`, {
     method: "DELETE",
     fallbackMessage: "Client request failed.",
   });

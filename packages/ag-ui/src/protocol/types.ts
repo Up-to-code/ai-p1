@@ -5,7 +5,7 @@ export type AgUiComponentId =
   | "offer_publish_draft"
   | "offer_send_draft"
   | "thread_update"
-  | "project_unit_selector"
+  | "project_asset_selector"
   | "person_relation"
   | "approval_footer"
   | "execution_result"
@@ -41,11 +41,11 @@ export type AgUiActionDefinition = {
 
 export type AgUiExecutionState = "draft" | "collecting" | "ready" | "executing" | "completed" | "failed";
 
-export type AgUiUnitReference = {
+export type AgUiAssetReference = {
   id: string;
   label: string;
-  bedrooms?: number;
-  bathrooms?: number;
+  category?: string;
+  owner?: string;
   area?: string;
   priceLabel?: string;
 };
@@ -63,7 +63,7 @@ export type AgUiPersonBadge = "verified" | "vip";
 
 export type AgUiPersonRelation = {
   project: AgUiProjectReference | null;
-  unit: AgUiUnitReference | null;
+  asset: AgUiAssetReference | null;
   stageLabel?: string;
   summary?: string;
 };

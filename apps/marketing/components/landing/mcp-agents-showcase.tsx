@@ -76,7 +76,7 @@ const copy = {
   en: {
     title: "The tools your team uses, connected.",
     description:
-      "Keep the tools your team already knows. Qentrah connects them to your live workspace so projects, units, clients, and calendars stay in sync.",
+      "Keep the tools your team already knows. Qentrah connects them to your live workspace so projects, assets, clients, and calendars stay in sync.",
   },
   ar: {
     title: "أدوات فريقك، متصلة بمنظومة واحدة",

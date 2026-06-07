@@ -39,11 +39,11 @@ describe("Qentrah Workspace registration config", () => {
     expect(normalizeWorkspaceScopes([
       "openid",
       "clients:read_own",
-      "properties:read_own",
+      "assets:read_own",
       "organization:read_own",
       "client:read",
       "offline_access",
-    ])).toEqual(["client:read", "property:read", "organization:read"]);
+    ])).toEqual(["client:read", "asset:read", "organization:read"]);
   });
 
   it("syncs approved partner apps to the Workspace OAuth runtime endpoint", async () => {
@@ -76,7 +76,7 @@ describe("Qentrah Workspace registration config", () => {
       workspaceSyncStatus: "pending",
       workspaceSyncError: null,
       redirectUris: ["https://partner.example.com/oauth/callback"],
-      allowedScopes: ["openid", "organization:read_own", "client:read", "property:read"],
+      allowedScopes: ["openid", "organization:read_own", "client:read", "asset:read"],
       authorizationExpiresAfterDays: 14,
       reviewNotes: null,
       submittedAt: Date.UTC(2026, 4, 14),
@@ -110,7 +110,7 @@ describe("Qentrah Workspace registration config", () => {
       homepageUrl: "https://partner.example.com",
       logoUrl: "https://partner.example.com/icon.png",
       redirectUris: ["https://partner.example.com/oauth/callback"],
-      allowedScopes: ["organization:read", "client:read", "property:read"],
+      allowedScopes: ["organization:read", "client:read", "asset:read"],
       clientType: "confidential",
       status: "approved",
     });

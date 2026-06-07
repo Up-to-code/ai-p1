@@ -1,6 +1,6 @@
 import { normalizeQentrahBaseUrl } from "../core.js";
 
-export type QentrahPartnerResource = "organization" | "client" | "property" | "project" | "calendar" | "task" | "media";
+export type QentrahPartnerResource = "organization" | "client" | "asset" | "project" | "calendar" | "task" | "media";
 export type QentrahPartnerAction = "read" | "create" | "update" | "delete";
 export type QentrahPartnerResourceRequestOptions = {
   limit?: number;
@@ -74,7 +74,7 @@ function collectionQuery(options: QentrahPartnerResourceRequestOptions = {}) {
 
 function collectionPath(resource: QentrahPartnerResource) {
   if (resource === "organization") return "/me";
-  if (resource === "property") return "/properties";
+  if (resource === "asset") return "/assets";
   if (resource === "calendar") return "/calendar";
   if (resource === "media") return "/media";
   return `/${resource}s`;
@@ -144,8 +144,8 @@ export function createQentrahServiceAppClient(options: QentrahServiceAppClientOp
     async listClients(input: { organizationId: string; options?: QentrahPartnerResourceRequestOptions }) {
       return listResource({ organizationId: input.organizationId, resource: "client", options: input.options });
     },
-    async listProperties(input: { organizationId: string; options?: QentrahPartnerResourceRequestOptions }) {
-      return listResource({ organizationId: input.organizationId, resource: "property", options: input.options });
+    async listAssets(input: { organizationId: string; options?: QentrahPartnerResourceRequestOptions }) {
+      return listResource({ organizationId: input.organizationId, resource: "asset", options: input.options });
     },
     async listProjects(input: { organizationId: string; options?: QentrahPartnerResourceRequestOptions }) {
       return listResource({ organizationId: input.organizationId, resource: "project", options: input.options });

@@ -1,7 +1,13 @@
 "use client";
 
-import { Bell, Bot, LayoutDashboard, Moon, Sun } from "lucide-react";
+import { Bell, Bot, BriefcaseBusiness, ChevronDown, LayoutDashboard, Moon, Package, Plus, Sun, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ProfileMenu } from "@/components/layout/profile-menu";
 import { WorkspaceGlobalSearch } from "@/components/layout/workspace-global-search";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
@@ -29,8 +35,13 @@ export function Topbar() {
   const setActiveAiThreadId = useWorkspaceStore((state) => state.setActiveAiThreadId);
   const setMode = useWorkspaceStore((state) => state.setMode);
   const mode = pathname === "/dashboard" ? parseWorkspaceMode(searchParams.get("mode")) : storedMode;
-  const activeToggleClassName = "text-zinc-900 dark:text-zinc-900";
-  const inactiveToggleClassName = "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white";
+  const activeToggleClassName = "text-background";
+  const inactiveToggleClassName = "text-text-muted hover:text-text-primary";
+  const createActions = [
+    { label: tWorkspace("createClient"), href: "/clients/create", icon: UserPlus },
+    { label: tWorkspace("createProject"), href: "/projects/create", icon: BriefcaseBusiness },
+    { label: tWorkspace("createAsset"), href: "/assets/create", icon: Package },
+  ];
 
   useEffect(() => {
     const threadId = searchParams.get("threadId")?.trim();
@@ -44,7 +55,7 @@ export function Topbar() {
 
   return (
     <header className={cn(
-      "flex h-[var(--topbar-height)] items-center gap-4 border-b border-zinc-100 bg-white/70 px-8 backdrop-blur-md transition-all duration-300 dark:border-white/5 dark:bg-[#0A0A0A]/70",
+      "flex h-[var(--topbar-height)] items-center gap-4 border-b border-[var(--color-divider)] bg-background/95 px-8 transition-all duration-300",
       isRtl && "font-cairo"
     )}>
 
@@ -60,7 +71,33 @@ export function Topbar() {
 
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1">
-          <div className="hidden items-center rounded-full border border-zinc-100 bg-zinc-100 p-1 dark:border-white/10 dark:bg-white/5 md:flex">
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <button
+                  type="button"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-text-primary px-3 text-[11px] font-black uppercase tracking-wider text-background transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 sm:px-4"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">{tWorkspace("create")}</span>
+                  <ChevronDown className="hidden h-3.5 w-3.5 opacity-70 sm:block" />
+                </button>
+              }
+            />
+            <DropdownMenuContent align="end" className="min-w-48 rounded-2xl border-[var(--color-divider)] p-1.5">
+              {createActions.map((action) => (
+                <DropdownMenuItem
+                  key={action.href}
+                  onClick={() => router.push(action.href)}
+                  className="cursor-pointer rounded-xl px-2.5 py-2 text-sm font-bold"
+                >
+                  <action.icon className="h-4 w-4 text-text-muted" />
+                  {action.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <div className="hidden items-center rounded-full border border-[var(--color-divider)] bg-transparent p-1 md:flex">
             <button
               type="button"
               onClick={() => selectMode("ws")}
@@ -100,7 +137,7 @@ export function Topbar() {
               </motion.span>
             </button>
           </div>
-          <div className="flex items-center rounded-full border border-zinc-100 bg-zinc-100 p-1 dark:border-white/10 dark:bg-white/5">
+          <div className="flex items-center rounded-full border border-[var(--color-divider)] bg-transparent p-1">
             <button
               type="button"
               onClick={() => setTheme("light")}
@@ -142,13 +179,13 @@ export function Topbar() {
           </div>
           <LanguageSwitcher className="hidden sm:inline-flex opacity-70 hover:opacity-100" />
           
-          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-zinc-400 shadow-none transition-all hover:bg-zinc-50 hover:text-zinc-900 dark:hover:bg-white/5 dark:hover:text-white">
+          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full border border-transparent text-text-muted shadow-none transition-all hover:border-[var(--color-divider)] hover:bg-transparent hover:text-text-primary">
             <Bell className="h-5 w-5" />
             <span className="sr-only">{t('live')}</span>
           </Button>
         </div>
 
-        <div className="ms-2 border-l border-zinc-100 ps-4 dark:border-white/10">
+        <div className="ms-2 border-l border-[var(--color-divider)] ps-4">
           <ProfileMenu />
         </div>
       </div>
@@ -160,7 +197,7 @@ function ToggleHighlight({ layoutId }: { layoutId: string }) {
   return (
     <motion.span
       layoutId={layoutId}
-      className="absolute inset-0 rounded-full bg-white shadow-none dark:bg-white"
+      className="absolute inset-0 rounded-full bg-text-primary shadow-none"
       transition={{ type: "spring", stiffness: 500, damping: 38, mass: 0.7 }}
     />
   );

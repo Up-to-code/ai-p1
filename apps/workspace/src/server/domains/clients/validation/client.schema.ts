@@ -4,40 +4,34 @@ const optionalTrimmedText = z.string().trim().optional().transform((value) => va
 
 export const clientPayloadSchema = z.object({
   name: z.string().trim().min(1),
-  type: z.enum(["Buyer", "Tenant", "Investor", "Broker"]).default("Buyer"),
-  contact: optionalTrimmedText,
+  type: z.enum(["person", "organization"]).default("person"),
+  email: optionalTrimmedText,
   phone: optionalTrimmedText,
-  age: z.coerce.number().int().min(0).max(120).default(0),
-  nationality: z.string().trim().default(""),
-  generation: z.string().trim().default(""),
-  budget: z.string().trim().default(""),
-  propertyInterest: z.string().trim().default(""),
-  status: z.enum(["active", "inactive"]).default("active"),
-  visibility: z.enum(["private", "public"]).optional(),
-  pipelineStage: z.enum(["new", "qualified", "viewing", "negotiation", "closed"]).default("new"),
+  status: z.enum(["new", "active", "nurture", "inactive", "archived"]).default("new"),
+  pipelineStage: z.enum(["new", "qualified", "review", "negotiation", "closed"]).optional(),
   pipelineOrder: z.number().finite().optional(),
-  priority: z.enum(["normal", "high", "urgent"]).default("normal"),
-  nextAction: z.string().trim().default("Follow up"),
-  issue: optionalTrimmedText,
+  visibility: z.enum(["private", "team", "workspace"]).optional(),
+  source: z.string().trim().default("manual"),
+  company: optionalTrimmedText,
+  contactName: optionalTrimmedText,
+  website: optionalTrimmedText,
+  notes: optionalTrimmedText,
+  tags: z.array(z.string().trim()).optional(),
 }).superRefine((value, context) => {
-  if (!value.contact && !value.phone) {
+  if (!value.email && !value.phone) {
     context.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "Provide either contact/email or phone for the client.",
-      path: ["contact"],
+      message: "Provide either email or phone for the client.",
+      path: ["email"],
     });
   }
-}).transform((value) => ({
-  ...value,
-  contact: value.contact ?? value.phone ?? "",
-  phone: value.phone ?? "",
-}));
+});
 
-export const clientUnitLinkPayloadSchema = z.object({
-  propertyId: z.string().trim().min(1),
-  status: z.enum(["interested", "shortlisted", "viewing", "offer", "rejected"]).default("interested"),
+export const clientAssetLinkPayloadSchema = z.object({
+  assetId: z.string().trim().min(1),
+  status: z.enum(["interested", "shortlisted", "review", "proposal", "rejected"]).default("interested"),
   notes: z.string().trim().optional().transform((value) => value || undefined),
 });
 
 export type ClientPayload = z.infer<typeof clientPayloadSchema>;
-export type ClientUnitLinkPayload = z.infer<typeof clientUnitLinkPayloadSchema>;
+export type ClientAssetLinkPayload = z.infer<typeof clientAssetLinkPayloadSchema>;

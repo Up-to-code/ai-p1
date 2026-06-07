@@ -306,7 +306,7 @@ export function ResourceConsole({ runtime }: { runtime: RuntimeSnapshot }) {
         {activeSection.id === "credentials" ? (
           <Credentials runtime={runtime} />
         ) : null}
-        {["organization", "clients", "properties", "projects", "tasks", "calendar", "media", "webhooks"].includes(activeSection.id) ? (
+        {["organization", "clients", "assets", "projects", "tasks", "calendar", "media", "webhooks"].includes(activeSection.id) ? (
           <ResourceSection
             sectionId={activeSection.id}
             state={activeState}
@@ -503,7 +503,7 @@ function ResourceSection({
               <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="name, email, title" />
             </label>
             <label className="field inline-field">
-              <span>{["properties", "projects"].includes(section.id) ? "Status" : "Type"}</span>
+              <span>{["assets", "projects"].includes(section.id) ? "Status" : "Type"}</span>
               <input value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} placeholder={qentrahPartnerFilterPlaceholder(section.id)} />
             </label>
             <label className="field inline-field compact-field">
@@ -533,7 +533,7 @@ function ResourceSection({
             <label className="field inline-field">
               <span>Resource type</span>
               <select value={mediaResourceType} onChange={(event) => setMediaResourceType(event.target.value)}>
-                {["client", "property", "project", "task", "calendarEvent"].map((item) => <option key={item}>{item}</option>)}
+                {["client", "asset", "project", "task", "calendarEvent"].map((item) => <option key={item}>{item}</option>)}
               </select>
             </label>
             <label className="field inline-field">

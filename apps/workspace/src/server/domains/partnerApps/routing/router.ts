@@ -40,8 +40,8 @@ partnerResourceRouter.get("/organizations/:organizationId/clients/:clientId", (c
 partnerResourceRouter.patch("/organizations/:organizationId/clients/:clientId", (c) => handlePartnerClientWrite(c, "update"));
 partnerResourceRouter.delete("/organizations/:organizationId/clients/:clientId", (c) => handlePartnerClientWrite(c, "delete"));
 
-partnerResourceRouter.get("/organizations/:organizationId/properties", (c) => handlePartnerReadCollection(c, "property"));
-partnerResourceRouter.get("/organizations/:organizationId/properties/:propertyId", (c) => handlePartnerReadById(c, "property", "propertyId"));
+partnerResourceRouter.get("/organizations/:organizationId/assets", (c) => handlePartnerReadCollection(c, "asset"));
+partnerResourceRouter.get("/organizations/:organizationId/assets/:assetId", (c) => handlePartnerReadById(c, "asset", "assetId"));
 partnerResourceRouter.get("/organizations/:organizationId/projects", (c) => handlePartnerReadCollection(c, "project"));
 partnerResourceRouter.get("/organizations/:organizationId/projects/:projectId", (c) => handlePartnerReadById(c, "project", "projectId"));
 partnerResourceRouter.get("/organizations/:organizationId/tasks", (c) => handlePartnerReadCollection(c, "task"));
