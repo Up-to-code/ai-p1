@@ -208,7 +208,7 @@ export type OrganizationPublicOffer = {
   price: number;
   status: string;
   description?: string;
-  property: {
+  asset: {
     id: string;
     title: string;
     address: string;

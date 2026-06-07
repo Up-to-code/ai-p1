@@ -264,7 +264,7 @@ export async function scheduleCalendarEventReminders(
 
 export async function scheduleTaskReminders(
   ctx: MutationCtx,
-  task: Doc<"clientTasks">,
+  task: Doc<"tasks">,
 ) {
   await cancelQueuedJobsForSource(ctx, task.organizationId, "task", task._id);
   if (task.deletedAt || task.status === "canceled") return;
@@ -273,7 +273,8 @@ export async function scheduleTaskReminders(
   const rules = normalizeReminderRules(preference.reminderRules as ReminderRule[])
     .filter((rule) => rule.enabled && rule.sourceType === "task");
   for (const rule of rules) {
-    const anchorAt = rule.trigger === "after_complete" ? task.completedAt : task.dueAt;
+    const dueAt = task.dueDate ? Date.parse(task.dueDate) : undefined;
+    const anchorAt = rule.trigger === "after_complete" ? task.completedAt : dueAt;
     if (!anchorAt) continue;
     const scheduledAt = scheduledAtForRule(anchorAt, task.completedAt, rule);
     if (scheduledAt === null) continue;

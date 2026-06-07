@@ -34,21 +34,17 @@ export function optionalNumber(input: Input, key: string) {
 function clientFields(input: Input) {
   return {
     name: optionalString(input, "name") ?? "Partner client",
-    type: (optionalString(input, "type") ?? "Buyer") as "Buyer" | "Tenant" | "Investor" | "Broker",
-    contact: optionalString(input, "contact") ?? optionalString(input, "name") ?? "Partner client",
-    phone: optionalString(input, "phone") ?? "",
-    age: optionalNumber(input, "age") ?? 0,
-    nationality: optionalString(input, "nationality") ?? "",
-    generation: optionalString(input, "generation") ?? "",
-    budget: optionalString(input, "budget") ?? "",
-    propertyInterest: optionalString(input, "propertyInterest") ?? "",
-    status: (optionalString(input, "status") ?? "active") as "active" | "inactive",
+    type: (optionalString(input, "type") ?? "person") as "person" | "organization",
+    email: optionalString(input, "email") ?? optionalString(input, "contact"),
+    phone: optionalString(input, "phone"),
+    company: optionalString(input, "company"),
+    contactName: optionalString(input, "contactName"),
+    website: optionalString(input, "website"),
+    notes: optionalString(input, "notes"),
+    source: optionalString(input, "source") ?? "partner",
+    ownerUserId: optionalString(input, "ownerUserId") ?? "partner",
+    status: (optionalString(input, "status") ?? "new") as "new" | "active" | "nurture" | "inactive" | "archived",
     visibility: "private" as const,
-    pipelineStage: (optionalString(input, "pipelineStage") ?? "new") as "new" | "qualified" | "viewing" | "negotiation" | "closed",
-    ...(optionalNumber(input, "pipelineOrder") !== undefined ? { pipelineOrder: optionalNumber(input, "pipelineOrder")! } : {}),
-    priority: (optionalString(input, "priority") ?? "normal") as "normal" | "high" | "urgent",
-    nextAction: optionalString(input, "nextAction") ?? "",
-    issue: optionalString(input, "issue"),
   };
 }
 

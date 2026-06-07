@@ -3,12 +3,7 @@ import { mutation } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
 import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
-import { assertPlatformAdmin } from "../platform/access";
 import { projectInputValidator, projectValidator } from "./validators";
-
-function projectReference(now: number) {
-  return `PRJ-${now.toString(36).toUpperCase().slice(-6)}`;
-}
 
 function presentProject(project: Doc<"projects">) {
   const { deletedAt: _deletedAt, isDeleted: _isDeleted, ...safeProject } = project;
@@ -29,16 +24,12 @@ export const createFromHono = mutation({
   handler: async (ctx, args) => {
     const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "create");
-    if ((args.input.visibility ?? "private") === "public") {
-      await assertPlatformAdmin(ctx);
-    }
     const now = Date.now();
     const id = await ctx.db.insert("projects", {
       organizationId: args.organizationId,
       ...args.input,
+      ownerUserId: user._id,
       visibility: args.input.visibility ?? "private",
-      reference: projectReference(now),
-      syncState: args.input.status === "approved" ? "synced" : "draft",
       isDeleted: false,
       createdByUserId: user._id,
       createdAt: now,
@@ -76,14 +67,10 @@ export const updateFromHono = mutation({
     }
 
     const nextVisibility = args.input.visibility ?? (existing.visibility ?? "private");
-    if (nextVisibility !== (existing.visibility ?? "private")) {
-      await assertPlatformAdmin(ctx);
-    }
     const now = Date.now();
     await ctx.db.patch(args.projectId, {
       ...args.input,
       visibility: nextVisibility,
-      syncState: args.input.status === "approved" ? "synced" : "draft",
       updatedAt: now,
     });
 

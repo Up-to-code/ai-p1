@@ -4,24 +4,23 @@ const rootUrl = brandDomainUrl("root");
 const workspaceUrl = brandDomainUrl("workspace");
 const logoUrl = `${workspaceUrl}/app-icon-512.png`;
 const trustedKeywords = [
-  "مساحة عمل عقارية",
-  "CRM عقاري",
-  "إدارة المشاريع العقارية",
-  "إدارة المخزون العقاري",
-  "إدارة العملاء العقاريين",
-  "المعاينات العقارية",
-  "المطورون العقاريون",
-  "الوسطاء العقاريون",
-  "بيانات عقارية موثوقة",
-  "Saudi real estate workspace",
-  "verified inventory",
-  "broker coordination",
-  "developer workflow",
+  "مساحة عمل تشغيلية",
+  "إدارة العملاء",
+  "إدارة المشاريع",
+  "إدارة الأصول",
+  "إدارة المهام",
+  "تقويم الأعمال",
+  "مسارات العملاء",
+  "تكاملات الذكاء الاصطناعي",
+  "workspace operating system",
+  "client operations",
+  "asset management",
+  "project workflow",
 ];
 const primaryLinks = [
   {
     name: "Qentrah Workspace",
-    description: "Enter the public Qentrah Workspace overview for Saudi real estate operations.",
+    description: "Enter the public Qentrah Workspace overview for business operations.",
     url: workspaceUrl,
   },
   {
@@ -41,7 +40,7 @@ const primaryLinks = [
   },
   {
     name: "Contact",
-    description: "Contact Qentrah to map your real estate workspace workflow.",
+    description: "Contact Qentrah to map your workspace workflow.",
     url: `${workspaceUrl}/en/contact`,
   },
 ] as const;
@@ -67,7 +66,7 @@ export function WorkspacePublicJsonLd() {
     url: workspaceUrl,
     image: logoUrl,
     inLanguage: ["ar-SA", "en-SA"],
-    description: "مساحة عمل عقارية سعودية لإدارة العملاء والمشاريع والمخزون العقاري والمعاينات وعمليات CRM من مصدر واحد موثوق للمطورين والوسطاء.",
+    description: "مساحة عمل تشغيلية لإدارة العملاء والمشاريع والأصول والتقويم والمهام من مصدر واحد موثوق.",
     keywords: trustedKeywords,
     areaServed: {
       "@type": "Country",
@@ -143,8 +142,8 @@ export function WorkspaceDocsJsonLd({ locale }: { locale: string }) {
     "@id": `${docsUrl}#techarticle`,
     headline: isArabic ? "توثيق وكلاء MCP في كانترا" : "Qentrah MCP agent documentation",
     description: isArabic
-      ? "توثيق عام لربط وكلاء الذكاء الاصطناعي بمساحة عمل كانترا العقارية في السعودية."
-      : "Public documentation for connecting AI agents to Qentrah real estate workspace data in Saudi Arabia.",
+      ? "توثيق عام لربط وكلاء الذكاء الاصطناعي بمساحة عمل كانترا في السعودية."
+      : "Public documentation for connecting AI agents to Qentrah workspace data.",
     url: docsUrl,
     image: logoUrl,
     inLanguage: isArabic ? "ar-SA" : "en-SA",

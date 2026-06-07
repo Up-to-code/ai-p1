@@ -1,5 +1,6 @@
 import {
   assistantTurnSchema,
+  extractTurnAssetIds,
   extractTurnSources,
 } from "@/conversation/assistantProtocol";
 import type { AgentMessage, AgentThread } from "@/persistence/api/conversationApi";
@@ -23,12 +24,7 @@ export function agentMessageToConversationMessage(
     kind: uiTurn ? "assistant_turn" : "text",
     text: message.content,
     streamState: "complete",
-    relatedPropertyIds: uiTurn ? uiTurn.blocks.flatMap((block) => {
-      if (block.type === "property_list" || block.type === "comparison") {
-        return block.propertyIds;
-      }
-      return [];
-    }) : [],
+    relatedAssetIds: uiTurn ? extractTurnAssetIds(uiTurn) : [],
     attachments: message.attachments,
     createdAt: message.createdAt ?? message._creationTime,
     runId: message.runId ? String(message.runId) : undefined,

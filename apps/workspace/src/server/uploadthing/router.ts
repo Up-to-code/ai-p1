@@ -27,9 +27,9 @@ const uploadRouter = {
     .input(organizationUploadInputSchema)
     .middleware(({ req, input }) => requireOrganizationMediaUploadAccess(req, input, "project"))
     .onUploadComplete(({ file, metadata }) => uploadedResourceMedia(file, metadata)),
-  propertyMedia: f(mediaUploadPolicy)
+  assetMedia: f(mediaUploadPolicy)
     .input(organizationUploadInputSchema)
-    .middleware(({ req, input }) => requireOrganizationMediaUploadAccess(req, input, "property"))
+    .middleware(({ req, input }) => requireOrganizationMediaUploadAccess(req, input, "asset"))
     .onUploadComplete(({ file, metadata }) => uploadedResourceMedia(file, metadata)),
   clientMedia: f(mediaUploadPolicy)
     .input(organizationUploadInputSchema)

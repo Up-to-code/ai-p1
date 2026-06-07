@@ -152,7 +152,7 @@ const config: ExpoConfig = {
     mobileEnvironment: mobileEnvironment.environment,
     brand: {
       name: brandName,
-      tagline: "The intelligent center of real estate.",
+      tagline: "The intelligent center of operations.",
     },
   },
 };

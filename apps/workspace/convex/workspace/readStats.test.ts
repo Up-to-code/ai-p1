@@ -5,7 +5,7 @@ import {
   calendarStats,
   clientStats,
   projectStats,
-  propertyStats,
+  assetStats,
 } from "./readStats";
 import type { Doc } from "../_generated/dataModel";
 
@@ -17,8 +17,8 @@ function project(input: Partial<Doc<"projects">>) {
   return input as Doc<"projects">;
 }
 
-function unit(input: Partial<Doc<"propertyUnits">>) {
-  return input as Doc<"propertyUnits">;
+function asset(input: Partial<Doc<"assets">>) {
+  return input as Doc<"assets">;
 }
 
 function calendarEvent(input: Partial<Doc<"calendarEvents">>) {
@@ -34,68 +34,68 @@ describe("Workspace Convex read stats", () => {
     expect(activeRows([{ id: 1 }, { id: 2, deletedAt: 123 }])).toEqual([{ id: 1 }]);
   });
 
-  it("counts active clients by status, type, and pipeline stage", () => {
+  it("counts active clients by status and client kind", () => {
     expect(clientStats([
-      client({ status: "active", type: "Buyer", pipelineStage: "new" }),
-      client({ status: "inactive", type: "Tenant", pipelineStage: "viewing" }),
-      client({ status: "active", type: "Investor", pipelineStage: "closed" }),
-      client({ status: "active", type: "Broker", pipelineStage: "qualified", deletedAt: 1 }),
-    ])).toEqual({
-      total: 3,
-      active: 2,
-      inactive: 1,
-      buyers: 1,
-      tenants: 1,
-      investors: 1,
-      brokers: 0,
-      stages: {
-        new: 1,
-        qualified: 0,
-        viewing: 1,
-        negotiation: 0,
-        closed: 1,
-      },
-    });
-  });
-
-  it("counts active projects by review status", () => {
-    expect(projectStats([
-      project({ status: "approved" }),
-      project({ status: "pending" }),
-      project({ status: "draft" }),
-      project({ status: "rejected", deletedAt: 1 }),
-    ])).toEqual({
-      total: 3,
-      approved: 1,
-      pending: 1,
-      draft: 1,
-      rejected: 0,
-    });
-  });
-
-  it("counts active properties by availability status", () => {
-    expect(propertyStats([
-      unit({ status: "available" }),
-      unit({ status: "pending" }),
-      unit({ status: "reserved" }),
-      unit({ status: "sold" }),
-      unit({ status: "draft", deletedAt: 1 }),
+      client({ status: "new", type: "person" }),
+      client({ status: "active", type: "organization" }),
+      client({ status: "nurture", type: "person" }),
+      client({ status: "inactive", type: "organization" }),
+      client({ status: "archived", type: "person", deletedAt: 1 }),
     ])).toEqual({
       total: 4,
-      available: 1,
-      pending: 1,
-      reserved: 1,
-      sold: 1,
-      draft: 0,
+      new: 1,
+      active: 1,
+      nurture: 1,
+      inactive: 1,
+      archived: 0,
+      people: 2,
+      organizations: 2,
+    });
+  });
+
+  it("counts active projects by lifecycle status and health", () => {
+    expect(projectStats([
+      project({ status: "planned", health: "onTrack" }),
+      project({ status: "active", health: "atRisk" }),
+      project({ status: "paused", health: "blocked" }),
+      project({ status: "completed", health: "onTrack" }),
+      project({ status: "archived", health: "blocked", deletedAt: 1 }),
+    ])).toEqual({
+      total: 4,
+      planned: 1,
+      active: 1,
+      paused: 1,
+      completed: 1,
+      archived: 0,
+      onTrack: 2,
+      atRisk: 1,
+      blocked: 1,
+    });
+  });
+
+  it("counts active assets by generic workflow status", () => {
+    expect(assetStats([
+      asset({ status: "draft" }),
+      asset({ status: "active" }),
+      asset({ status: "review" }),
+      asset({ status: "approved" }),
+      asset({ status: "archived", deletedAt: 1 }),
+    ])).toEqual({
+      total: 4,
+      draft: 1,
+      active: 1,
+      review: 1,
+      approved: 1,
+      archived: 0,
     });
   });
 
   it("counts active calendar events by status and owner", () => {
     expect(calendarStats([
-      calendarEvent({ status: "confirmed", owner: "A" }),
-      calendarEvent({ status: "pending", owner: "A" }),
-      calendarEvent({ status: "draft", owner: "B" }),
-      calendarEvent({ status: "confirmed", owner: "C", deletedAt: 1 }),
+      calendarEvent({ status: "confirmed", ownerUserId: "A" }),
+      calendarEvent({ status: "pending", ownerUserId: "A" }),
+      calendarEvent({ status: "draft", ownerUserId: "B" }),
+      calendarEvent({ status: "confirmed", ownerUserId: "C", deletedAt: 1 }),
     ])).toEqual({
       total: 3,
       confirmed: 1,

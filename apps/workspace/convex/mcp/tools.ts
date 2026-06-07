@@ -30,7 +30,6 @@ import {
   assertTaskLinks,
   calendarInput,
   clientInput,
-  clientUnitStatus,
   inputObject,
   listCursor,
   listLimit,
@@ -38,9 +37,8 @@ import {
   optionalNumber,
   optionalString,
   projectInput,
-  projectStatus,
-  propertyFieldPatch,
-  propertyInput,
+  assetFieldPatch,
+  assetInput,
   requiredNumber,
   requiredString,
   searchTerm,
@@ -54,30 +52,30 @@ export const mcpReadToolNames = readTools;
 
 const TOOL_SCAN_LIMIT = 200;
 
-const clientSearchValues = (client: { name: string; contact: string; propertyInterest: string; budget: string }) => [
+const clientSearchValues = (client: { name: string; email?: string; phone?: string; company?: string; source: string }) => [
   client.name,
-  client.contact,
-  client.propertyInterest,
-  client.budget,
+  client.email ?? "",
+  client.phone ?? "",
+  client.company ?? "",
+  client.source,
 ];
 
-const propertySearchValues = (unit: { title: string; project: string; city: string; reference: string }) => [
-  unit.title,
-  unit.project,
-  unit.city,
-  unit.reference,
+const assetSearchValues = (asset: { name: string; type: string; description?: string }) => [
+  asset.name,
+  asset.type,
+  asset.description ?? "",
 ];
 
-const projectSearchValues = (project: { name: string; reference: string; city: string; developer: string }) => [
+const projectSearchValues = (project: { name: string; description?: string; status: string; health: string }) => [
   project.name,
-  project.reference,
-  project.city,
-  project.developer,
+  project.description ?? "",
+  project.status,
+  project.health,
 ];
 
-const taskSearchValues = (task: { title: string; notes?: string }) => [
+const taskSearchValues = (task: { title: string; description?: string }) => [
   task.title,
-  task.notes ?? "",
+  task.description ?? "",
 ];
 
 function hasConnectionPermission(
@@ -107,7 +105,7 @@ function assertConnectionPermission(
 }
 
 function mediaResourcePermission(
-  resourceType: "project" | "property" | "client" | "calendarEvent" | "task",
+  resourceType: "project" | "asset" | "client" | "calendarEvent" | "task",
 ) {
   if (resourceType === "calendarEvent") return "calendar";
   return resourceType;
@@ -203,35 +201,35 @@ export const readTool = internalQuery({
       return presentWorkspaceRecord(assertPublicWorkspaceRecord(assertActiveWorkspaceRecord(client, args.organizationId, "Client"), "Client"));
     }
 
-    if (args.tool === "properties_list") {
+    if (args.tool === "assets_list") {
       const limit = listLimit(input);
       const search = searchTerm(input);
       if (!search) {
         const page = await ctx.db
-          .query("propertyUnits")
+          .query("assets")
           .withIndex("by_organization_updated", (q) => q.eq("organizationId", args.organizationId))
           .order("desc")
           .paginate({ numItems: limit, cursor: listCursor(input) });
         return mcpPublicWorkspacePage(page);
       }
-      const units = await ctx.db
-        .query("propertyUnits")
+      const assets = await ctx.db
+        .query("assets")
         .withIndex("by_organization_updated", (q) => q.eq("organizationId", args.organizationId))
         .order("desc")
         .take(TOOL_SCAN_LIMIT);
-      return mcpPublicWorkspaceSearchResult(units, {
+      return mcpPublicWorkspaceSearchResult(assets, {
         search,
         limit,
-        searchValues: propertySearchValues,
+        searchValues: assetSearchValues,
       });
     }
 
-    if (args.tool === "properties_get" || args.tool === "properties_open") {
-      const propertyId = requiredString(input, "propertyId");
-      const property = await ctx.db.get(propertyId as Id<"propertyUnits">);
-      const result = presentWorkspaceRecord(assertPublicWorkspaceRecord(assertActiveWorkspaceRecord(property, args.organizationId, "Property unit"), "Property unit"));
-      return args.tool === "properties_open"
-        ? { ...result, appUrl: `${args.appBaseUrl ?? ""}/properties/${propertyId}` }
+    if (args.tool === "assets_get" || args.tool === "assets_open") {
+      const assetId = requiredString(input, "assetId");
+      const asset = await ctx.db.get(assetId as Id<"assets">);
+      const result = presentWorkspaceRecord(assertPublicWorkspaceRecord(assertActiveWorkspaceRecord(asset, args.organizationId, "Asset"), "Asset"));
+      return args.tool === "assets_open"
+        ? { ...result, appUrl: `${args.appBaseUrl ?? ".."}/assets/${assetId}` }
         : result;
     }
 
@@ -288,48 +286,36 @@ export const readTool = internalQuery({
     }
 
     if (args.tool === "tasks_list") {
-      const clientId = optionalString(input, "clientId");
       const limit = listLimit(input);
       const search = searchTerm(input);
       if (!search) {
-        const page = clientId
-          ? await ctx.db
-              .query("clientTasks")
-              .withIndex("by_client", (q) => q.eq("organizationId", args.organizationId).eq("clientId", clientId as Id<"clients">))
-              .order("desc")
-              .paginate({ numItems: limit, cursor: listCursor(input) })
-          : await ctx.db
-              .query("clientTasks")
-              .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
-              .order("desc")
-              .paginate({ numItems: limit, cursor: listCursor(input) });
+        const page = await ctx.db
+          .query("tasks")
+          .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
+          .order("desc")
+          .paginate({ numItems: limit, cursor: listCursor(input) });
         return mcpPublicWorkspacePage(page);
       }
-      const tasks = clientId
-        ? await ctx.db
-            .query("clientTasks")
-            .withIndex("by_client", (q) => q.eq("organizationId", args.organizationId).eq("clientId", clientId as Id<"clients">))
-            .take(TOOL_SCAN_LIMIT)
-        : await ctx.db
-            .query("clientTasks")
-            .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
-            .take(TOOL_SCAN_LIMIT);
+      const tasks = await ctx.db
+        .query("tasks")
+        .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
+        .take(TOOL_SCAN_LIMIT);
       return mcpPublicWorkspaceSearchResult(tasks, {
         search,
         limit,
         searchValues: taskSearchValues,
-        sort: (a, b) => (a.dueAt ?? 0) - (b.dueAt ?? 0),
+        sort: (a, b) => Date.parse(a.dueDate ?? "") - Date.parse(b.dueDate ?? ""),
       });
     }
 
     if (args.tool === "tasks_get") {
-      const task = await ctx.db.get(requiredString(input, "taskId") as Id<"clientTasks">);
+      const task = await ctx.db.get(requiredString(input, "taskId") as Id<"tasks">);
       return presentWorkspaceRecord(assertPublicWorkspaceRecord(assertActiveWorkspaceRecord(task, args.organizationId, "Task"), "Task"));
     }
 
     if (args.tool === "media_list") {
       const limit = listLimit(input);
-      const resourceType = requiredString(input, "resourceType") as "project" | "property" | "client" | "calendarEvent" | "task";
+      const resourceType = requiredString(input, "resourceType") as "project" | "asset" | "client" | "calendarEvent" | "task";
       assertConnectionPermission(args.permissions, mediaResourcePermission(resourceType), "read");
       const page = await ctx.db
         .query("mediaAssets")
@@ -370,6 +356,7 @@ export const writeTool = internalMutation({
         organizationId: args.organizationId,
         ...client,
         ...await protectClientPii(args.organizationId, client),
+        ownerUserId: actorId,
         isDeleted: false,
         createdByUserId: actorId,
         createdAt: now,
@@ -397,80 +384,81 @@ export const writeTool = internalMutation({
       return { removed: true };
     }
 
-    if (args.tool === "clients_link_unit") {
+    if (args.tool === "clients_link_asset") {
       const clientId = requiredString(input, "clientId") as Id<"clients">;
-      const propertyId = requiredString(input, "propertyId") as Id<"propertyUnits">;
+      const assetId = requiredString(input, "assetId") as Id<"assets">;
       assertActiveWorkspaceRecord(await ctx.db.get(clientId), args.organizationId, "Client");
-      assertActiveWorkspaceRecord(await ctx.db.get(propertyId), args.organizationId, "Property unit");
+      assertActiveWorkspaceRecord(await ctx.db.get(assetId), args.organizationId, "Asset");
       const existing = await ctx.db
-        .query("clientUnitLinks")
-        .withIndex("by_client_property", (q) => q.eq("organizationId", args.organizationId).eq("clientId", clientId).eq("propertyId", propertyId))
+        .query("recordLinks")
+        .withIndex("by_source", (q) => q.eq("organizationId", args.organizationId).eq("sourceRecordType", "client").eq("sourceRecordId", clientId))
         .first();
-      const status = clientUnitStatus(input);
       if (existing && !existing.deletedAt) {
-        await ctx.db.patch(existing._id, { status, notes: optionalString(input, "notes"), updatedAt: now });
-        await audit(ctx, args.organizationId, args.connectionId, "client.unit.link", clientId, "Updated a client apartment link.");
+        await audit(ctx, args.organizationId, args.connectionId, "client.asset.link", clientId, "Updated a client asset link.");
         return presentWorkspaceRecord((await ctx.db.get(existing._id))!);
       }
-      const id = await ctx.db.insert("clientUnitLinks", {
+      const id = await ctx.db.insert("recordLinks", {
         organizationId: args.organizationId,
-        clientId,
-        propertyId,
-        status,
-        notes: optionalString(input, "notes"),
+        linkType: "related",
+        sourceRecordType: "client",
+        sourceRecordId: clientId,
+        targetRecordType: "asset",
+        targetRecordId: assetId,
+        label: optionalString(input, "notes"),
         createdByUserId: actorId,
         createdAt: now,
-        updatedAt: now,
       });
-      await audit(ctx, args.organizationId, args.connectionId, "client.unit.link", clientId, "Linked a client to an apartment.");
+      await audit(ctx, args.organizationId, args.connectionId, "client.asset.link", clientId, "Linked a client to an asset.");
       return presentWorkspaceRecord((await ctx.db.get(id))!);
     }
 
-    if (args.tool === "clients_unlink_unit") {
+    if (args.tool === "clients_unlink_asset") {
       const clientId = requiredString(input, "clientId") as Id<"clients">;
-      const propertyId = requiredString(input, "propertyId") as Id<"propertyUnits">;
+      const assetId = requiredString(input, "assetId") as Id<"assets">;
       const existing = await ctx.db
-        .query("clientUnitLinks")
-        .withIndex("by_client_property", (q) => q.eq("organizationId", args.organizationId).eq("clientId", clientId).eq("propertyId", propertyId))
+        .query("recordLinks")
+        .withIndex("by_source", (q) => q.eq("organizationId", args.organizationId).eq("sourceRecordType", "client").eq("sourceRecordId", clientId))
         .first();
-      if (existing && !existing.deletedAt) await ctx.db.patch(existing._id, { deletedAt: now, updatedAt: now });
-      await audit(ctx, args.organizationId, args.connectionId, "client.unit.unlink", clientId, "Unlinked a client from an apartment.");
+      if (existing && !existing.deletedAt && existing.targetRecordType === "asset" && existing.targetRecordId === assetId) {
+        await ctx.db.patch(existing._id, { deletedAt: now });
+      }
+      await audit(ctx, args.organizationId, args.connectionId, "client.asset.unlink", clientId, "Unlinked a client from an asset.");
       return { removed: true };
     }
 
-    if (args.tool === "properties_create") {
+    if (args.tool === "assets_create") {
       await assertOptionalProject(ctx, args.organizationId, optionalString(input, "projectId"));
-      const id = await ctx.db.insert("propertyUnits", {
+      const id = await ctx.db.insert("assets", {
         organizationId: args.organizationId,
-        ...propertyInput(input),
-        reference: workspaceReference("UNT", now),
+        ...assetInput(input),
+        ownerUserId: actorId,
         createdByUserId: actorId,
         createdAt: now,
         updatedAt: now,
       });
-      await audit(ctx, args.organizationId, args.connectionId, "property.create", id, `Created apartment ${requiredString(input, "title")}.`);
+      await audit(ctx, args.organizationId, args.connectionId, "asset.create", id, `Created asset ${optionalString(input, "name") ?? requiredString(input, "title")}.`);
       return presentWorkspaceRecord((await ctx.db.get(id))!);
     }
 
-    if (args.tool === "properties_update" || args.tool === "properties_update_field") {
-      const propertyId = requiredString(input, "propertyId") as Id<"propertyUnits">;
-      const existing = assertActiveWorkspaceRecord(await ctx.db.get(propertyId), args.organizationId, "Property unit");
-      const patch = args.tool === "properties_update_field"
-        ? propertyFieldPatch(input)
-        : propertyInput({ ...existing, ...input });
-      if (args.tool === "properties_update") {
+    if (args.tool === "assets_update" || args.tool === "assets_update_field") {
+      const assetId = requiredString(input, "assetId") as Id<"assets">;
+      const existing = assertActiveWorkspaceRecord(await ctx.db.get(assetId), args.organizationId, "Asset");
+      const patch = args.tool === "assets_update_field"
+        ? assetFieldPatch(input)
+        : assetInput({ ...existing, ...input });
+      if (args.tool === "assets_update") {
         await assertOptionalProject(ctx, args.organizationId, optionalString({ ...existing, ...input }, "projectId"));
       }
-      await ctx.db.patch(propertyId, { ...patch, updatedAt: now });
-      await audit(ctx, args.organizationId, args.connectionId, "property.update", propertyId, `Updated apartment ${existing.title}.`);
-      return presentWorkspaceRecord((await ctx.db.get(propertyId))!);
+      await ctx.db.patch(assetId, { ...patch, updatedAt: now });
+      await audit(ctx, args.organizationId, args.connectionId, "asset.update", assetId, `Updated asset ${existing.name}.`);
+      return presentWorkspaceRecord((await ctx.db.get(assetId))!);
     }
 
-    if (args.tool === "properties_delete") {
-      const propertyId = requiredString(input, "propertyId") as Id<"propertyUnits">;
-      const existing = assertActiveWorkspaceRecord(await ctx.db.get(propertyId), args.organizationId, "Property unit");
-      await ctx.db.patch(propertyId, { deletedAt: now, updatedAt: now });
-      await audit(ctx, args.organizationId, args.connectionId, "property.delete", propertyId, `Deleted apartment ${existing.title}.`);
+    if (args.tool === "assets_delete") {
+      const assetId = requiredString(input, "assetId") as Id<"assets">;
+      const existing = assertActiveWorkspaceRecord(await ctx.db.get(assetId), args.organizationId, "Asset");
+      await ctx.db.patch(assetId, { deletedAt: now, updatedAt: now });
+      await audit(ctx, args.organizationId, args.connectionId, "asset.delete", assetId, `Deleted asset ${existing.name}.`);
       return { removed: true };
     }
 
@@ -478,8 +466,7 @@ export const writeTool = internalMutation({
       const id = await ctx.db.insert("projects", {
         organizationId: args.organizationId,
         ...projectInput(input),
-        reference: workspaceReference("PRJ", now),
-        syncState: projectStatus(input) === "approved" ? "synced" : "draft",
+        ownerUserId: actorId,
         createdByUserId: actorId,
         createdAt: now,
         updatedAt: now,
@@ -492,7 +479,7 @@ export const writeTool = internalMutation({
       const projectId = requiredString(input, "projectId") as Id<"projects">;
       const existing = assertActiveWorkspaceRecord(await ctx.db.get(projectId), args.organizationId, "Project");
       const patch = projectInput({ ...existing, ...input });
-      await ctx.db.patch(projectId, { ...patch, syncState: patch.status === "approved" ? "synced" : "draft", updatedAt: now });
+      await ctx.db.patch(projectId, { ...patch, updatedAt: now });
       await audit(ctx, args.organizationId, args.connectionId, "project.update", projectId, `Updated project ${existing.name}.`);
       return presentWorkspaceRecord((await ctx.db.get(projectId))!);
     }
@@ -537,10 +524,8 @@ export const writeTool = internalMutation({
     }
 
     if (args.tool === "tasks_create") {
-      const clientId = requiredString(input, "clientId") as Id<"clients">;
-      assertActiveWorkspaceRecord(await ctx.db.get(clientId), args.organizationId, "Client");
       await assertTaskLinks(ctx, args.organizationId, taskInput(input));
-      const id = await ctx.db.insert("clientTasks", {
+      const id = await ctx.db.insert("tasks", {
         organizationId: args.organizationId,
         ...taskInput(input),
         createdByUserId: actorId,
@@ -548,12 +533,12 @@ export const writeTool = internalMutation({
         updatedAt: now,
         ...(taskStatus(input) === "done" ? { completedAt: now } : {}),
       });
-      await audit(ctx, args.organizationId, args.connectionId, "client.task.create", clientId, `Created task ${requiredString(input, "title")}.`);
+      await audit(ctx, args.organizationId, args.connectionId, "client.task.create", id, `Created task ${requiredString(input, "title")}.`);
       return presentWorkspaceRecord((await ctx.db.get(id))!);
     }
 
     if (args.tool === "tasks_update" || args.tool === "tasks_complete") {
-      const taskId = requiredString(input, "taskId") as Id<"clientTasks">;
+      const taskId = requiredString(input, "taskId") as Id<"tasks">;
       const existing = assertActiveWorkspaceRecord(await ctx.db.get(taskId), args.organizationId, "Task");
       const patch = args.tool === "tasks_complete"
         ? { status: "done" as const, completedAt: existing.completedAt ?? now }
@@ -567,7 +552,7 @@ export const writeTool = internalMutation({
     }
 
     if (args.tool === "tasks_delete") {
-      const taskId = requiredString(input, "taskId") as Id<"clientTasks">;
+      const taskId = requiredString(input, "taskId") as Id<"tasks">;
       const existing = assertActiveWorkspaceRecord(await ctx.db.get(taskId), args.organizationId, "Task");
       await ctx.db.patch(taskId, { deletedAt: now, updatedAt: now });
       await audit(ctx, args.organizationId, args.connectionId, "client.task.delete", taskId, `Deleted task ${existing.title}.`);
@@ -576,7 +561,7 @@ export const writeTool = internalMutation({
 
     if (args.tool === "media_attach_url") {
       await assertMediaResource(ctx, args.organizationId, input);
-      const resourceType = requiredString(input, "resourceType") as "project" | "property" | "client" | "calendarEvent" | "task";
+      const resourceType = requiredString(input, "resourceType") as "project" | "asset" | "client" | "calendarEvent" | "task";
       assertConnectionPermission(args.permissions, mediaResourcePermission(resourceType), "update");
       const resourceId = requiredString(input, "resourceId");
       const existing = await ctx.db

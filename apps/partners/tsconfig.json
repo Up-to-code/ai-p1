@@ -155,12 +155,6 @@
       "@qentrah/domain-contracts/profiles": [
         "../../packages/domain-contracts/src/profiles.ts"
       ],
-      "@qentrah/domain-contracts/projects": [
-        "../../packages/domain-contracts/src/projects.ts"
-      ],
-      "@qentrah/domain-contracts/properties": [
-        "../../packages/domain-contracts/src/properties.ts"
-      ],
       "@qentrah/domain-contracts/session": [
         "../../packages/domain-contracts/src/session.ts"
       ],

@@ -14,7 +14,7 @@ import {
   AgOfferSendDraft,
   AgPersonRelationCard,
   AgProjectCreateDraft,
-  AgProjectUnitSelector,
+  AgProjectAssetSelector,
   AgTargetSummary,
   AgThreadUpdateCard,
 } from "../cards";
@@ -24,7 +24,7 @@ export const AG_UI_COMPONENT_REGISTRY: Record<string, AgUiRegisteredComponent> =
   offer_publish_draft: AgOfferPublishDraft as AgUiRegisteredComponent,
   offer_send_draft: AgOfferSendDraft as AgUiRegisteredComponent,
   thread_update: AgThreadUpdateCard as AgUiRegisteredComponent,
-  project_unit_selector: AgProjectUnitSelector as AgUiRegisteredComponent,
+  project_asset_selector: AgProjectAssetSelector as AgUiRegisteredComponent,
   person_relation: AgPersonRelationCard as AgUiRegisteredComponent,
   approval_footer: AgApprovalFooter as AgUiRegisteredComponent,
   execution_result: AgExecutionResultCard as AgUiRegisteredComponent,

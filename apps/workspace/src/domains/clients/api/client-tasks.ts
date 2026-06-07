@@ -2,7 +2,6 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
-import type { Id } from "@convex/_generated/dataModel";
 import {
   organizationApiPath,
   requestOrganizationAction,
@@ -10,16 +9,14 @@ import {
 import { useWorkspaceResource } from "@/domains/resources/workspace-resource-request";
 
 export type ClientTaskPayload = {
-  clientId: string;
   title: string;
-  status?: "open" | "done" | "canceled";
-  visibility?: "private" | "public";
-  priority?: "normal" | "high" | "urgent";
-  dueAt?: number;
-  propertyId?: string;
-  projectId?: string;
-  calendarEventId?: string;
-  notes?: string;
+  status?: "todo" | "inProgress" | "waiting" | "done" | "canceled";
+  visibility?: "private" | "team" | "workspace";
+  priority?: "low" | "normal" | "high" | "urgent";
+  assigneeUserId?: string;
+  dueDate?: string;
+  description?: string;
+  tags?: string[];
 };
 
 type ClientTaskOption = {
@@ -28,10 +25,10 @@ type ClientTaskOption = {
   clientId: string;
 };
 
-export function useClientTasksQuery(organizationId: string | undefined, clientId?: string) {
+export function useClientTasksQuery(organizationId: string | undefined, assigneeUserId?: string) {
   return useQuery(
     api.clientTasks.read.list,
-    organizationId ? { organizationId, clientId: clientId ? (clientId as Id<"clients">) : undefined } : "skip",
+    organizationId ? { organizationId, assigneeUserId } : "skip",
   );
 }
 

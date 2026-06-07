@@ -12,6 +12,12 @@ This file gives architecture skills a shared domain language for Qentrah. Use th
 
 ## Source Of Truth
 
+- **Work OS core records**: Workspace-owned business records for clients, opportunities, projects, tasks, calendar events, assets, automations, templates, and agents. These are the default product model across UI, APIs, MCP tools, partner resources, and AI context.
+- **Workspace template**: Workspace-owned preset that applies labels, stages, statuses, views, custom fields, and automation recipes to core records. Real estate is a workspace template, not the default product model.
+- **Custom field definition**: Template-scoped input definition with key, label, type, requirement state, options, applicable core records, and template id.
+- **Custom field value**: Typed stored value for a custom field. Exactly one typed value channel should carry the value for the declared field type.
+- **Record link**: Typed relationship between Work OS core records. Used to connect clients, opportunities, projects, tasks, calendar events, and assets without making every table know every other table.
+- **Automation rule**: Workspace-owned rule that reacts to record creation, stage changes, due dates, or status changes and creates a task, schedules an event, sends a notification, or updates a field.
 - **Partners app catalog**: partner app metadata, client id, redirect URIs, allowed scopes, publisher identity, review notes, and published status. Owned by Partners.
 - **Partner app integration profile**: Partners-owned app information that explains what the app does and where it is in the integrate/debug/sandbox/workspace/production path. Includes category, description, support contact, webhook endpoint, policy links, and current integration mode.
 - **Partner key projection**: Convex `workosPartnerApiKeys` state binding a WorkOS API key id to `partner_id`, Partners client id, Workspace organization, approved connection, permissions, status, expiry, and key metadata. Owned by Workspace.

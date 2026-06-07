@@ -52,7 +52,7 @@ const workspaceLegal = {
     privacy: [
       block("1. Introduction", "Qentrah Workspace operates a real estate workspace and data synchronization platform for teams in Saudi Arabia. This policy explains how we collect, use, disclose, and protect information when you use the platform."),
       block("2. Information We Collect", "We collect information you provide directly, including name, email, phone, organization details, commercial registration information, and documents submitted during onboarding. We may also collect device, IP, browser, and usage information."),
-      block("3. How We Use Information", "We use information to verify organizations, manage accounts, support workspace features, synchronize property data, operate integrations, provide support, and meet applicable Saudi regulatory and compliance requirements."),
+      block("3. How We Use Information", "We use information to verify organizations, manage accounts, support workspace features, synchronize asset data, operate integrations, provide support, and meet applicable Saudi regulatory and compliance requirements."),
       block("4. Data Sharing", "We share data only with authorized users, service providers, and connected platforms you approve. We do not sell personal data."),
       block("5. Data Security", "We use reasonable security measures, including access controls, encryption, audit logging, and secure integration handling."),
       block("6. Data Retention", "We retain data while your account is active or as needed for service, security, legal, and compliance purposes."),
@@ -61,7 +61,7 @@ const workspaceLegal = {
       block("1. Acceptance of Terms", "By accessing or using the platform, you agree to these Terms of Service. If you use the platform for an organization, you confirm that you are authorized to bind that organization."),
       block("2. Platform Description", "The platform provides real estate workspace, data management, synchronization, and integration tools for authorized developers, brokers, operators, and partners."),
       block("3. Account Responsibilities", "You are responsible for account credentials, accurate onboarding information, and lawful use of the platform. Fraudulent or misleading information may result in suspension or termination."),
-      block("4. Data Accuracy", "Organizations are responsible for the accuracy of project, property, client, and operational data submitted to the platform."),
+      block("4. Data Accuracy", "Organizations are responsible for the accuracy of project, asset, client, and operational data submitted to the platform."),
       block("5. Integrations", "Connected tools and partner integrations are subject to approval, scoped access, and security requirements. We may suspend integrations that misuse data or violate platform rules."),
       block("6. Limitation of Liability", "The platform is provided as is to the extent permitted by law. We are not liable for indirect or consequential damages arising from use of the platform."),
       block("7. Governing Law", "These Terms are governed by the laws of the Kingdom of Saudi Arabia. Disputes are resolved by the competent courts of Riyadh."),

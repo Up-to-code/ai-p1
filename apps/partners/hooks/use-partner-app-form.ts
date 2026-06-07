@@ -5,7 +5,7 @@ import type { PartnerAppSummary } from "@/server/partnerApps";
 
 export function usePartnerAppForm(app?: PartnerAppSummary) {
   const initialScopes = useMemo(
-    () => app?.allowedScopes ?? ["organization:read", "client:read", "property:read"],
+    () => app?.allowedScopes ?? ["organization:read", "client:read", "asset:read"],
     [app?.allowedScopes],
   );
 

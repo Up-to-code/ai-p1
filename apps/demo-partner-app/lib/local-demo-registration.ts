@@ -15,7 +15,7 @@ export const localDemoRegistration = {
     "media:read",
     "organization:read",
     "project:read",
-    "property:read",
+    "asset:read",
     "task:read",
   ],
 } as const;

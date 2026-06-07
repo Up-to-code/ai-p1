@@ -12,7 +12,7 @@ import {
   projectWeekdayLabels,
   nextProjectCalendarMonth,
   removeProjectPriceRow,
-  toggleProjectUnitType,
+  toggleProjectAssetType,
   updateProjectPriceRow,
 } from "./project-view-model";
 
@@ -25,7 +25,7 @@ describe("project view model", () => {
     ])).toEqual([{ id: "doc_1", kind: "document" }]);
   });
 
-  it("calculates inventory metrics from project units", () => {
+  it("calculates inventory metrics from project assetCount", () => {
     expect(projectInventoryMetrics([
       { status: "available" },
       { status: "reserved" },
@@ -33,13 +33,13 @@ describe("project view model", () => {
       { status: "pending" },
       { status: "AVAILABLE" },
     ], 10)).toEqual({
-      plannedUnits: 10,
-      liveUnitCount: 5,
+      plannedAssets: 10,
+      liveAssetCount: 5,
       inventoryCoverage: 50,
-      availableUnits: 2,
-      reservedUnits: 1,
-      soldUnits: 1,
-      pendingUnits: 1,
+      availableAssets: 2,
+      reservedAssets: 1,
+      soldAssets: 1,
+      pendingAssets: 1,
     });
   });
 
@@ -50,12 +50,12 @@ describe("project view model", () => {
   });
 
   it("formats location and removes empty detail rows", () => {
-    expect(projectLocationLabel({ city: "Riyadh", area: "Malqa" })).toBe("Riyadh · Malqa");
+    expect(projectLocationLabel({ city: "Remote", area: "Support" })).toBe("Remote · Support");
     expect(compactProjectDetailRows([
-      ["city", "Riyadh"],
+      ["city", "Remote"],
       ["area", ""],
       ["plan", undefined],
-    ])).toEqual([["city", "Riyadh"]]);
+    ])).toEqual([["city", "Remote"]]);
   });
 
   it("projects project date picker labels and month navigation", () => {
@@ -66,24 +66,24 @@ describe("project view model", () => {
   });
 
   it("matches project search across public project fields", () => {
-    const project = { name: "North Gate", reference: "PRJ-1", city: "Riyadh", developer: "Qentrah" };
+    const project = { name: "North Gate", reference: "PRJ-1", city: "Remote", developer: "Qentrah" };
 
     expect(matchesProjectSearch(project, " north ")).toBe(true);
     expect(matchesProjectSearch(project, "qent")).toBe(true);
-    expect(matchesProjectSearch(project, "jeddah")).toBe(false);
+    expect(matchesProjectSearch(project, "south")).toBe(false);
   });
 
   it("projects stable form defaults from an existing project", () => {
     const defaults = projectFormDefaults({
       name: "North",
       developer: "Qentrah",
-      city: "Riyadh",
-      area: "Malqa",
+      city: "Remote",
+      area: "Support",
       type: "Unknown",
-      unitTypes: ["Apartment", "Other"],
+      assetTypes: ["Office", "Other"],
       status: "approved",
       visibility: "public",
-      units: 12,
+      assetCount: 12,
       averagePrice: "",
       priceRange: "1M",
       projectPrices: [{ id: "price_1", label: "A", price: "1M" }],
@@ -98,19 +98,19 @@ describe("project view model", () => {
     expect(defaults).toMatchObject({
       name: "North",
       type: "Residential",
-      unitTypes: ["Apartment"],
-      units: "12",
+      assetTypes: ["Office"],
+      assetCount: "12",
       averagePrice: "",
       projectPrices: [{ id: "price_1", label: "A", price: "1M" }],
     });
   });
 
   it("updates offering mix without mutating the current list", () => {
-    const current = ["Apartment"] as const;
+    const current = ["Office"] as const;
 
-    expect(toggleProjectUnitType([...current], "Villa")).toEqual(["Apartment", "Villa"]);
-    expect(toggleProjectUnitType([...current], "Apartment")).toEqual([]);
-    expect(current).toEqual(["Apartment"]);
+    expect(toggleProjectAssetType([...current], "Retail")).toEqual(["Office", "Retail"]);
+    expect(toggleProjectAssetType([...current], "Office")).toEqual([]);
+    expect(current).toEqual(["Office"]);
   });
 
   it("applies project price row commands", () => {

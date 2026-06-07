@@ -63,7 +63,7 @@ export const createDealInputSchema = z.object({
   stage: dealStageSchema,
   contactName: z.string().trim().min(1).max(120).optional(),
   contactPhone: z.string().trim().min(1).max(40).optional(),
-  propertyId: z.string().optional(),
+  assetId: z.string().optional(),
   relationType: dealRelationTypeSchema,
   crmClientId: z.string().optional(),
   relatedBrokerId: z.string().optional(),
@@ -94,8 +94,8 @@ export const addDealDocumentInputSchema = z.object({
   document: uploadedFileReferenceSchema,
 });
 
-export const propertyDealsInputSchema = z.object({
-  propertyId: z.string(),
+export const assetDealsInputSchema = z.object({
+  assetId: z.string(),
 });
 
 export const archiveDealInputSchema = z.object({
@@ -108,7 +108,7 @@ export type UpdateDealStageInput = z.infer<typeof updateDealStageInputSchema>;
 export type UpdateDealNotesInput = z.infer<typeof updateDealNotesInputSchema>;
 export type UpdateDealFollowUpInput = z.infer<typeof updateDealFollowUpInputSchema>;
 export type AddDealDocumentInput = z.infer<typeof addDealDocumentInputSchema>;
-export type PropertyDealsInput = z.infer<typeof propertyDealsInputSchema>;
+export type AssetDealsInput = z.infer<typeof assetDealsInputSchema>;
 export type ArchiveDealInput = z.infer<typeof archiveDealInputSchema>;
 export type DealRelationType = z.infer<typeof dealRelationTypeSchema>;
 export type DealClientPreview = z.infer<typeof dealClientPreviewSchema>;
@@ -130,7 +130,7 @@ export type DealSummary = {
   relatedBrokerId?: string;
   brokerId?: string;
   redId?: string;
-  propertyId?: string;
+  assetId?: string;
   offerId?: string;
   notes?: string;
   contactName?: string;

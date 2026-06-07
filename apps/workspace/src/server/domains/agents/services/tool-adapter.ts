@@ -8,6 +8,7 @@ import type { MobileRequestContext } from "@/server/middleware/mobile-request-co
 import {
   allowedMcpTools,
   agentToolCatalog,
+  getMcpToolDefinition,
   type McpToolDefinition,
 } from "@/server/protocols/mcp/tools/catalog";
 import {
@@ -105,6 +106,30 @@ export async function executeConfirmedAgentTool(runtime: AgentToolRuntime, toolN
   const tool = agentToolCatalog.find((item) => item.name === toolName);
   if (!tool) {
     throw new Error("Agent confirmation tool was not found.");
+  }
+
+  await runtime.onStatus?.(tool.title);
+  try {
+    const output = await executeWorkspaceTool(runtime, tool, input);
+    const result = { tool, status: "allowed" as const, input, output };
+    await runtime.onToolResult?.(result);
+    return { ok: true, tool: tool.name, data: output };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Tool failed.";
+    const result = { tool, status: "failed" as const, input, error: message };
+    await runtime.onToolResult?.(result);
+    return { ok: false, tool: tool.name, error: message };
+  }
+}
+
+export async function executeConfirmedMcpTool(
+  runtime: Omit<AgentToolRuntime, "threadId" | "runId">,
+  toolName: string,
+  input: unknown,
+) {
+  const tool = getMcpToolDefinition(toolName, { adapter: "mcp" });
+  if (!tool) {
+    throw new Error("MCP confirmation tool was not found.");
   }
 
   await runtime.onStatus?.(tool.title);

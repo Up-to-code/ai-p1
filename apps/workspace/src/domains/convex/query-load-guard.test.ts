@@ -11,7 +11,7 @@ function read(path: string) {
 
 const hotReadFiles = [
   "convex/projects/read.ts",
-  "convex/properties/read.ts",
+  "convex/assets/read.ts",
   "convex/clients/read.ts",
   "convex/dashboard/read.ts",
   "convex/organizations/audit/read.ts",
@@ -27,14 +27,14 @@ describe("Convex query load guards", () => {
   });
 
   it("keeps growing workspace lists paginated", () => {
-    for (const file of ["convex/projects/read.ts", "convex/properties/read.ts", "convex/clients/read.ts", "convex/organizations/audit/read.ts"]) {
+    for (const file of ["convex/projects/read.ts", "convex/assets/read.ts", "convex/clients/read.ts", "convex/organizations/audit/read.ts"]) {
       expect(read(file), `${file} should expose paginated reads`).toContain(".paginate(args.paginationOpts)");
     }
   });
 
-  it("keeps project and property list cards backed by selected cover media", () => {
+  it("keeps project and asset list cards backed by selected cover media", () => {
     expect(read("convex/projects/read.ts")).toMatch(/function presentProjectListItem[\s\S]*coverImageUrl: selectCoverUrl\(media\)/);
-    expect(read("convex/properties/read.ts")).toMatch(/function presentPropertyListItem[\s\S]*coverImageUrl: selectCoverUrl\(media\)/);
+    expect(read("convex/assets/read.ts")).toMatch(/function presentAssetListItem[\s\S]*const coverImageUrl = selectCoverUrl\(media\) \?\? asset\.url \?\? ""/);
   });
 
   it("keeps bulk client lists free of per-client work fan-out", () => {
@@ -43,28 +43,51 @@ describe("Convex query load guards", () => {
     expect(clientsRead).not.toContain("return Promise.all(active.map((client) => presentClient(ctx, client)))");
   });
 
-  it("keeps project detail and property forms on scoped reads", () => {
+  it("keeps project detail and asset forms on scoped reads", () => {
     const router = read("src/server/domains/organization/routing/router.ts");
     expect(read("convex/projects/read.ts")).toContain("export const options");
-    expect(read("convex/properties/read.ts")).toContain("export const listByProject");
+    expect(read("convex/assets/read.ts")).toContain("export const listByProject");
     expect(router).toContain('"/:organizationId/read/projects/options"');
-    expect(router).toContain('"/:organizationId/read/properties/by-project/:projectId"');
-    expect(read("src/domains/projects/components/projects-screens.tsx")).toContain("useProjectPropertiesQuery");
-    expect(read("src/domains/properties/components/properties-screens.tsx")).toContain("useProjectOptionsQuery");
+    expect(router).toContain('"/:organizationId/read/assets/by-project/:projectId"');
+    expect(read("src/domains/projects/components/projects-screens.tsx")).toContain("useProjectAssetsQuery");
+    expect(read("src/domains/assets/components/assets-screens.tsx")).toContain("useProjectOptionsQuery");
   });
 
-  it("resolves public property references before strict property-unit link reads", () => {
-    const propertiesRead = read("convex/properties/read.ts");
+  it("keeps asset ids strict and asset links on recordLinks indexes", () => {
+    const assetsRead = read("convex/assets/read.ts");
     const workspaceRead = read("src/server/domains/organization/handlers/workspace-read.ts");
-    const propertyScreen = read("src/domains/properties/components/properties-screens.tsx");
+    const assetScreen = read("src/domains/assets/components/assets-screens.tsx");
     const clientsApi = read("src/domains/clients/api/clients.ts");
 
-    expect(propertiesRead).toContain("propertyId: v.string()");
-    expect(propertiesRead).toContain('ctx.db.normalizeId("propertyUnits", identifier)');
-    expect(propertiesRead).toContain('q.field("reference")');
-    expect(workspaceRead).toContain('const propertyId = readParam(c, "propertyId", "Property id")');
-    expect(propertyScreen).toContain("usePropertyClientLinksQuery(workspaceOrganizationId, unit?.id)");
-    expect(clientsApi).toContain('!propertyId.startsWith("UNT-")');
+    expect(assetsRead).toContain("assetId: v.string()");
+    expect(assetsRead).toContain('ctx.db.normalizeId("assets", identifier)');
+    expect(assetsRead).toContain('.withIndex("by_source"');
+    expect(assetsRead).toContain('eq("sourceRecordType", "project")');
+    expect(assetsRead).toContain('link.targetRecordType === "asset"');
+    expect(read("convex/clients/read.ts")).toContain('.withIndex("by_target"');
+    expect(read("convex/clients/read.ts")).toContain('eq("targetRecordType", "asset")');
+    expect(workspaceRead).toContain('const assetId = readParam(c, "assetId", "Asset id")');
+    expect(assetScreen).toContain("useAssetClientLinksQuery(workspaceOrganizationId, asset?.id)");
+    expect(clientsApi).toContain('!assetId.startsWith("AST-")');
+  });
+
+  it("keeps Work OS core read indexes declared in schema", () => {
+    const schema = read("convex/schema.ts");
+    for (const index of [
+      '.index("by_organization_updated", ["organizationId", "updatedAt"])',
+      '.index("by_organization_deleted_status_updated", ["organizationId", "isDeleted", "status", "updatedAt"])',
+      '.index("by_organization_deleted_type_updated", ["organizationId", "isDeleted", "type", "updatedAt"])',
+      '.index("by_organization_assignee", ["organizationId", "assigneeUserId"])',
+      '.index("by_due", ["organizationId", "dueDate"])',
+      '.index("by_start", ["organizationId", "startAt"])',
+      '.index("by_source", ["organizationId", "sourceRecordType", "sourceRecordId"])',
+      '.index("by_target", ["organizationId", "targetRecordType", "targetRecordId"])',
+      '.index("by_organization_record", ["organizationId", "recordType", "recordId"])',
+      '.index("by_organization_key", ["organizationId", "key"])',
+      '.index("by_organization_enabled", ["organizationId", "enabled"])',
+    ]) {
+      expect(schema).toContain(index);
+    }
   });
 
   it("keeps calendar-heavy supporting reads lazy or bounded", () => {
@@ -79,7 +102,7 @@ describe("Convex query load guards", () => {
     const router = read("src/server/domains/organization/routing/router.ts");
     for (const route of [
       '"/:organizationId/read/projects/index"',
-      '"/:organizationId/read/properties/index"',
+      '"/:organizationId/read/assets/index"',
       '"/:organizationId/read/clients/index"',
       '"/:organizationId/read/activity/index"',
       '"/:organizationId/read/calendar/index"',
@@ -89,7 +112,7 @@ describe("Convex query load guards", () => {
     }
 
     expect(read("src/domains/projects/components/projects-screens.tsx")).toContain("useProjectsIndexQuery");
-    expect(read("src/domains/properties/components/properties-screens.tsx")).toContain("usePropertiesIndexQuery");
+    expect(read("src/domains/assets/components/assets-screens.tsx")).toContain("useAssetsIndexQuery");
     expect(read("src/domains/clients/components/clients-screens.tsx")).toContain("useClientsIndexQuery");
     expect(read("src/domains/activity/components/activity-screen.tsx")).toContain("useWorkspaceIndexedResource");
     expect(read("src/domains/calendar/components/calendar-screen.tsx")).toContain("useCalendarIndexRangeQueryResult");

@@ -7,12 +7,12 @@ const copy = {
   en: {
     painPoints: {
       eyebrow: "The Pain Points",
-      title: "Real estate shouldn't be this hard.",
+      title: "Business operations shouldn't be this hard.",
       description: "Manual processes, scattered data, and slow execution are costing you growth. Fragmented workflows are the invisible tax on your business.",
       items: [
         {
           title: "Scattered Data",
-          desc: "Pricing and data live in disconnected WhatsApp chats, Excel spreadsheets, and old CRMs, leading to manual copying errors and constant unit pricing mismatches."
+          desc: "Work data lives in disconnected chats, spreadsheets, and old CRMs, creating manual copying errors and stale decisions."
         },
         {
           title: "Slow Execution",
@@ -20,7 +20,7 @@ const copy = {
         },
         {
           title: "Lost Opportunities",
-          desc: "Qualified client requests expire or buyers go to faster competitors because brokers lack instant, updated access to property availability and inventory data."
+          desc: "Qualified client requests expire because teams lack instant access to updated assets, calendars, and responsibilities."
         }
       ]
     },
@@ -31,15 +31,15 @@ const copy = {
       items: [
         {
           title: "One Source of Truth",
-          desc: "All inventory and client data are synchronized in real-time. Double-copy errors are zero, and pricing is locked and continuously updated for everyone."
+          desc: "Assets, clients, projects, and calendars stay synchronized in real time so every team works from the same record."
         },
         {
           title: "2.4-Second Pipeline",
-          desc: "AI verifies unit details in real-time and dispatches agreements directly to clients via WhatsApp for e-signature within seconds."
+          desc: "AI checks workspace context, drafts the next action, and moves routine work forward from the same operating layer."
         },
         {
           title: "Zero Lead Leakage",
-          desc: "Clients receive interactive brochures automatically within 30 seconds—even outside business hours—with instant tour booking to secure deals immediately."
+          desc: "Clients receive fast follow-up, clear next steps, and calendar-ready actions without waiting for manual handoffs."
         }
       ]
     }
@@ -47,7 +47,7 @@ const copy = {
   ar: {
     painPoints: {
       eyebrow: "التحديات التشغيلية",
-      title: "التشغيل العقاري لا ينبغي أن يُدار بالتعقيد",
+      title: "التشغيل لا ينبغي أن يُدار بالتعقيد",
       description: "تعدد الأدوات، وتشتت البيانات، وبطء الإجراءات يرفع التكلفة ويضعف الكفاءة. مع كانترا، تتحول العمليات إلى لمسة ذكية واحدة تُسرّع القرار وترفع جودة الأداء.",
       items: [
         {
@@ -60,18 +60,18 @@ const copy = {
         },
         {
           title: "فرص جاهزة تضيع",
-          desc: "تتأخر الاستجابة للعميل المؤهل بسبب غياب البيانات المحدثة عن الوحدات والمخزون؛ فتضعف فرصة الإغلاق ويتجه العميل لمنافس أسرع."
+          desc: "تتأخر الاستجابة للعميل المؤهل بسبب غياب البيانات المحدثة عن الأصول والمهام؛ فتضعف فرصة الإنجاز ويتجه العميل لمنافس أسرع."
         }
       ]
     },
     fix: {
       eyebrow: "الحل مع كانترا",
       title: "مع كانترا.. تتحول الفوضى الى تشغيل ذكي",
-      description: "منصة موحدة تضع المشاريع، العملاء، الوسطاء والبيانات في مساحة واحدة؛ لتسريع البيع، توحيد القرار، ورفع كفاءة التشغيل من أول تواصل حتى إغلاق الصفقة.",
+      description: "منصة موحدة تضع المشاريع، العملاء، الفرق والبيانات في مساحة واحدة؛ لتسريع التنفيذ، توحيد القرار، ورفع كفاءة التشغيل.",
       items: [
         {
           title: "المصدر الوحيد للحقيقة",
-          desc: "جميع بيانات الوحدات والعملاء متزامنة لحظياً وبشكل موحد. خطأ في النقل المزدوج يساوي صفراً، والأسعار مقفلة ومحدثة باستمرار للجميع."
+          desc: "جميع بيانات الأصول والعملاء متزامنة لحظياً وبشكل موحد. خطأ النقل المزدوج يساوي صفراً، والسجلات محدثة باستمرار للجميع."
         },
         {
           title: "إجراءات أسرع… وبيع أكثر انضباطًا",
@@ -79,7 +79,7 @@ const copy = {
         },
         {
           title: "الاستجابة الفورية لكل عميل",
-          desc: "العملاء خارج أوقات العمل يتلقون بروشوراً تفاعلياً خلال ٣٠ ثانية ويحجزون المعاينة فوراً لتأمين وإغلاق الصفقات العقارية دون أي تسريب للفرص."
+          desc: "العملاء خارج أوقات العمل يتلقون متابعة واضحة وخطوة قادمة جاهزة دون انتظار التسليم اليدوي بين الفرق."
         }
       ]
     }

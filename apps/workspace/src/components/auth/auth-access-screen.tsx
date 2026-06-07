@@ -183,6 +183,7 @@ export function AuthAccessScreen({
               </span>
               <span className="h-px flex-1 bg-border" />
             </div>
+            <div id="clerk-captcha" className="empty:hidden" />
 
             {phase === "credentials" ? (
               <form className="space-y-4" onSubmit={handleCredentialsSubmit}>

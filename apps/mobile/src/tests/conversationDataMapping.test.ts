@@ -18,10 +18,10 @@ test("conversation data mapping projects agent messages into timeline messages",
     runId: "run_1",
     agUiTurn: {
       version: "assistant_turn.v1",
-      route: "property",
+      route: "asset",
       status: "completed",
       blocks: [
-        { type: "property_list", id: "properties", propertyIds: ["property_1", "property_2"] },
+        { type: "asset_list", id: "assets", assetIds: ["asset_1", "asset_2"] },
         {
           type: "sources",
           id: "sources",
@@ -29,7 +29,7 @@ test("conversation data mapping projects agent messages into timeline messages",
         },
       ],
       actions: [],
-      motion: { preset: "property" },
+      motion: { preset: "asset" },
     },
   };
 
@@ -38,7 +38,7 @@ test("conversation data mapping projects agent messages into timeline messages",
   assert.equal(mapped.id, "msg_1");
   assert.equal(mapped.sessionId, "thread_1");
   assert.equal(mapped.kind, "assistant_turn");
-  assert.deepEqual(mapped.relatedPropertyIds, ["property_1", "property_2"]);
+  assert.deepEqual(mapped.relatedAssetIds, ["asset_1", "asset_2"]);
   assert.deepEqual(mapped.sourceMetadata, [{ title: "MLS", url: "https://example.com", snippet: "Listing source" }]);
   assert.equal(mapped.turnMeta?.runId, "run_1");
 });

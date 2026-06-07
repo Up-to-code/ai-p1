@@ -14,6 +14,7 @@ type WorkspaceChronologicalRow = WorkspaceReadRow & {
 
 type WorkspaceDueRow = WorkspaceReadRow & {
   dueAt?: number;
+  dueDate?: string;
 };
 
 export function activeWorkspaceRows<TRow extends WorkspaceReadRow>(rows: TRow[]) {
@@ -30,8 +31,14 @@ export function activeChronologicalWorkspaceRows<TRow extends WorkspaceChronolog
 
 export function activeDueWorkspaceRows<TRow extends WorkspaceDueRow>(rows: TRow[]) {
   return activeWorkspaceRows(rows).sort(
-    (a, b) => (a.dueAt ?? Number.MAX_SAFE_INTEGER) - (b.dueAt ?? Number.MAX_SAFE_INTEGER),
+    (a, b) => dueSortValue(a) - dueSortValue(b),
   );
+}
+
+function dueSortValue(row: WorkspaceDueRow) {
+  if (row.dueAt) return row.dueAt;
+  if (row.dueDate) return Date.parse(row.dueDate);
+  return Number.MAX_SAFE_INTEGER;
 }
 
 export function boundedWorkspaceReadLimit(limit: number | undefined, fallback: number, max: number) {
@@ -44,14 +51,14 @@ export function workspaceSearchRows<TRow extends WorkspaceReadRow, TStatus exten
     search: string;
     status?: TStatus;
     getStatus: (row: TRow) => string;
-    searchValues: (row: TRow) => string[];
+    searchValues: (row: TRow) => Array<string | undefined>;
     limit?: number;
   },
 ) {
   const search = params.search.trim().toLowerCase();
   return activeWorkspaceRows(rows)
     .filter((row) => !params.status || params.getStatus(row) === params.status)
-    .filter((row) => params.searchValues(row).some((value) => value.toLowerCase().includes(search)))
+    .filter((row) => params.searchValues(row).some((value) => value?.toLowerCase().includes(search)))
     .slice(0, params.limit ?? 100);
 }
 

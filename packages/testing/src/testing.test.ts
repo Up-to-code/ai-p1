@@ -13,7 +13,7 @@ describe("@qentrah/testing", () => {
   });
 
   it("builds OAuth prompt fixtures", () => {
-    expect(buildOAuthAuthorizationPrompt().requestedScopes[0]?.id).toBe("properties:read");
+    expect(buildOAuthAuthorizationPrompt().requestedScopes[0]?.id).toBe("assets:read");
   });
 
   it("provides route helpers", async () => {

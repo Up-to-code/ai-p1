@@ -10,7 +10,7 @@ type OrganizationResource =
   | "client"
   | "task"
   | "project"
-  | "property"
+  | "asset"
   | "calendar"
   | "media"
   | "visibility"

@@ -16,8 +16,8 @@ export const overview = query({
   returns: v.object({
     counts: v.object({
       dueToday: v.number(),
-      availableUnits: v.number(),
-      reviewUnits: v.number(),
+      availableAssets: v.number(),
+      reviewAssets: v.number(),
       readyProjects: v.number(),
       blockedProjects: v.number(),
       totalProjects: v.number(),
@@ -25,11 +25,9 @@ export const overview = query({
     projects: v.array(v.object({
       id: v.string(),
       name: v.string(),
-      reference: v.string(),
-      city: v.string(),
       status: v.string(),
-      units: v.number(),
-      priceRange: v.string(),
+      health: v.string(),
+      budget: v.optional(v.number()),
     })),
     weekEvents: v.array(v.object({
       id: v.string(),
@@ -37,7 +35,6 @@ export const overview = query({
       date: v.string(),
       time: v.string(),
       owner: v.string(),
-      clientName: v.optional(v.string()),
       priority: v.union(v.literal("normal"), v.literal("high"), v.literal("urgent")),
       type: v.string(),
     })),
@@ -47,11 +44,11 @@ export const overview = query({
     const [
       displayProjects,
       allProjects,
-      approvedProjects,
-      pendingProjects,
-      availableUnits,
-      pendingUnits,
-      draftUnits,
+      activeProjects,
+      blockedProjects,
+      approvedAssets,
+      reviewAssets,
+      draftAssets,
       tasks,
       events,
     ] = await Promise.all([
@@ -66,27 +63,27 @@ export const overview = query({
         .take(MAX_DASHBOARD_COUNT_SCAN),
       ctx.db
         .query("projects")
-        .withIndex("by_organization_status", (q) => q.eq("organizationId", args.organizationId).eq("status", "approved"))
+        .withIndex("by_organization_status", (q) => q.eq("organizationId", args.organizationId).eq("status", "active"))
         .take(MAX_DASHBOARD_COUNT_SCAN),
       ctx.db
         .query("projects")
-        .withIndex("by_organization_status", (q) => q.eq("organizationId", args.organizationId).eq("status", "pending"))
+        .withIndex("by_organization_health", (q) => q.eq("organizationId", args.organizationId).eq("health", "blocked"))
         .take(MAX_DASHBOARD_COUNT_SCAN),
       ctx.db
-        .query("propertyUnits")
-        .withIndex("by_organization_status", (q) => q.eq("organizationId", args.organizationId).eq("status", "available"))
+        .query("assets")
+        .withIndex("by_organization_status", (q) => q.eq("organizationId", args.organizationId).eq("status", "approved"))
         .take(MAX_DASHBOARD_COUNT_SCAN),
       ctx.db
-        .query("propertyUnits")
-        .withIndex("by_organization_status", (q) => q.eq("organizationId", args.organizationId).eq("status", "pending"))
+        .query("assets")
+        .withIndex("by_organization_status", (q) => q.eq("organizationId", args.organizationId).eq("status", "review"))
         .take(MAX_DASHBOARD_COUNT_SCAN),
       ctx.db
-        .query("propertyUnits")
+        .query("assets")
         .withIndex("by_organization_status", (q) => q.eq("organizationId", args.organizationId).eq("status", "draft"))
         .take(MAX_DASHBOARD_COUNT_SCAN),
       ctx.db
-        .query("clientTasks")
-        .withIndex("by_due", (q) => q.eq("organizationId", args.organizationId).gte("dueAt", args.startAt).lte("dueAt", args.endAt))
+        .query("tasks")
+        .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
         .take(MAX_DASHBOARD_RANGE_ITEMS),
       ctx.db
         .query("calendarEvents")
@@ -98,11 +95,11 @@ export const overview = query({
       {
         displayProjects,
         allProjects,
-        approvedProjects,
-        pendingProjects,
-        availableUnits,
-        pendingUnits,
-        draftUnits,
+        activeProjects,
+        blockedProjects,
+        approvedAssets,
+        reviewAssets,
+        draftAssets,
         tasks,
         events,
       },

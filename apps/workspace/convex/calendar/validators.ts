@@ -1,17 +1,11 @@
 import { v } from "convex/values";
 
 export const calendarEventTypeValidator = v.union(
-  v.literal("visit"),
-  v.literal("call"),
   v.literal("meeting"),
-  v.literal("client-visit"),
-  v.literal("site-viewing"),
-  v.literal("appointment"),
-  v.literal("signing"),
-  v.literal("follow-up"),
-  v.literal("handover"),
-  v.literal("audit"),
-  v.literal("custom"),
+  v.literal("deadline"),
+  v.literal("reminder"),
+  v.literal("milestone"),
+  v.literal("focusBlock"),
 );
 
 export const calendarEventStatusValidator = v.union(
@@ -22,21 +16,17 @@ export const calendarEventStatusValidator = v.union(
 
 export const calendarEventInputValidator = v.object({
   title: v.string(),
-  owner: v.string(),
+  ownerUserId: v.optional(v.string()),
   startAt: v.number(),
-  endAt: v.optional(v.number()),
+  endAt: v.number(),
   type: calendarEventTypeValidator,
   status: calendarEventStatusValidator,
-  clientId: v.optional(v.id("clients")),
-  propertyId: v.optional(v.id("propertyUnits")),
-  projectId: v.optional(v.id("projects")),
-  taskId: v.optional(v.id("clientTasks")),
+  attendeeUserIds: v.optional(v.array(v.string())),
+  externalAttendees: v.optional(v.array(v.string())),
   location: v.optional(v.string()),
+  meetingUrl: v.optional(v.string()),
   notes: v.optional(v.string()),
-  customFields: v.optional(v.array(v.object({
-    label: v.string(),
-    value: v.string(),
-  }))),
+  tags: v.optional(v.array(v.string())),
 });
 
 export const calendarEventValidator = v.object({
@@ -45,26 +35,20 @@ export const calendarEventValidator = v.object({
   id: v.string(),
   organizationId: v.string(),
   title: v.string(),
-  owner: v.string(),
+  ownerUserId: v.optional(v.string()),
   startAt: v.number(),
-  endAt: v.optional(v.number()),
+  endAt: v.number(),
   date: v.string(),
   time: v.string(),
   type: calendarEventTypeValidator,
   status: calendarEventStatusValidator,
-  clientId: v.optional(v.id("clients")),
-  unitId: v.optional(v.id("propertyUnits")),
-  propertyId: v.optional(v.id("propertyUnits")),
-  projectId: v.optional(v.id("projects")),
-  taskId: v.optional(v.id("clientTasks")),
-  clientName: v.optional(v.string()),
-  unitTitle: v.optional(v.string()),
+  attendeeUserIds: v.optional(v.array(v.string())),
+  externalAttendees: v.optional(v.array(v.string())),
   location: v.optional(v.string()),
+  meetingUrl: v.optional(v.string()),
   notes: v.optional(v.string()),
-  customFields: v.optional(v.array(v.object({
-    label: v.string(),
-    value: v.string(),
-  }))),
+  tags: v.optional(v.array(v.string())),
+  customFields: v.optional(v.array(v.any())),
   createdByUserId: v.string(),
   createdAt: v.number(),
   updatedAt: v.number(),

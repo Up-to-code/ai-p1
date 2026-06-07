@@ -24,10 +24,10 @@ describe("@qentrah/crm-logic mappers", () => {
       },
       {
         broker: { _id: "b1", name: "Broker" },
-        property: { _id: "p1", title: "Project", price: 1200000 },
+        asset: { _id: "a1", title: "Asset", price: 1200000 },
       },
     );
     expect(deal.linkedBroker?.stateLabel).toBe("يدار عبر وسيط");
-    expect(deal.project?.priceLabel).toBe("1,200,000 ر.س");
+    expect(deal.asset?.priceLabel).toBe("1,200,000 ر.س");
   });
 });

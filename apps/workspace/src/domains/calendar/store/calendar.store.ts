@@ -15,16 +15,16 @@ interface CalendarState {
 }
 
 const events: CalendarEvent[] = [
-  { id: "cal-1", title: "Waterfront villa viewing", owner: "Fahad Al-Saud", date: "2026-05-07", time: "10:30", type: "site-viewing", status: "confirmed", clientId: "cl-4", unitId: "unt-3", location: "KAFD District" },
-  { id: "cal-2", title: "Budget allocation audit", owner: "Capital Ventures", date: "2026-05-08", time: "13:00", type: "audit", status: "pending", clientId: "cl-3" },
-  { id: "cal-3", title: "Broker handover sync", owner: "Sara Al-Rashid", date: "2026-05-09", time: "15:15", type: "handover", status: "draft", clientId: "cl-2" },
-  { id: "cal-4", title: "Unit A-101 inspection", owner: "Abdullah Al-Faisal", date: "2026-05-10", time: "09:00", type: "site-viewing", status: "confirmed", clientId: "cl-1", unitId: "unt-1", location: "Al Madinah Residences" },
-  { id: "cal-5", title: "Mortgage paperwork follow-up", owner: "Abdullah Al-Faisal", date: "2026-05-10", time: "14:00", type: "follow-up", status: "pending", clientId: "cl-1" },
-  { id: "cal-6", title: "Penthouse B-301 tour", owner: "Capital Ventures", date: "2026-05-12", time: "11:00", type: "client-visit", status: "confirmed", clientId: "cl-3", unitId: "unt-2", location: "Jeddah Corniche" },
-  { id: "cal-7", title: "Al Madinah handover", owner: "Fahad Al-Saud", date: "2026-05-15", time: "10:00", type: "handover", status: "pending", clientId: "cl-4" },
-  { id: "cal-8", title: "Contract signing - Villa 12", owner: "Capital Ventures", date: "2026-05-18", time: "09:30", type: "signing", status: "draft", clientId: "cl-3", notes: "Bring 3 copies of the contract" },
-  { id: "cal-9", title: "Jeddah site visit", owner: "Sara Al-Rashid", date: "2026-05-22", time: "08:00", type: "appointment", status: "confirmed", clientId: "cl-2", location: "Jeddah North" },
-  { id: "cal-10", title: "Contract renewal follow-up", owner: "Abdullah Al-Faisal", date: "2026-05-25", time: "16:00", type: "follow-up", status: "pending", clientId: "cl-1" },
+  { id: "cal-1", title: "Client onboarding kickoff", owner: "Fahad Al-Saud", date: "2026-05-07", time: "10:30", type: "meeting", status: "confirmed", clientId: "cl-4", assetId: "ast-3", location: "Workspace HQ" },
+  { id: "cal-2", title: "Budget allocation audit", owner: "Capital Ventures", date: "2026-05-08", time: "13:00", type: "focusBlock", status: "pending", clientId: "cl-3" },
+  { id: "cal-3", title: "Implementation sync", owner: "Sara Al-Rashid", date: "2026-05-09", time: "15:15", type: "meeting", status: "draft", clientId: "cl-2" },
+  { id: "cal-4", title: "Asset A-101 review", owner: "Abdullah Al-Faisal", date: "2026-05-10", time: "09:00", type: "meeting", status: "confirmed", clientId: "cl-1", assetId: "ast-1", location: "Operations Hub" },
+  { id: "cal-5", title: "Proposal paperwork reminder", owner: "Abdullah Al-Faisal", date: "2026-05-10", time: "14:00", type: "reminder", status: "pending", clientId: "cl-1" },
+  { id: "cal-6", title: "Resource B-301 review", owner: "Capital Ventures", date: "2026-05-12", time: "11:00", type: "meeting", status: "confirmed", clientId: "cl-3", assetId: "ast-2", location: "Operations Hub" },
+  { id: "cal-7", title: "Milestone readiness check", owner: "Fahad Al-Saud", date: "2026-05-15", time: "10:00", type: "milestone", status: "pending", clientId: "cl-4" },
+  { id: "cal-8", title: "Agreement approval deadline", owner: "Capital Ventures", date: "2026-05-18", time: "09:30", type: "deadline", status: "draft", clientId: "cl-3", notes: "Bring 3 copies of the agreement" },
+  { id: "cal-9", title: "Field operations checkpoint", owner: "Sara Al-Rashid", date: "2026-05-22", time: "08:00", type: "meeting", status: "confirmed", clientId: "cl-2", location: "North Office" },
+  { id: "cal-10", title: "Contract renewal follow-up", owner: "Abdullah Al-Faisal", date: "2026-05-25", time: "16:00", type: "reminder", status: "pending", clientId: "cl-1" },
 ];
 
 export const useCalendarStore = create<CalendarState>((set, get) => ({

@@ -1,7 +1,7 @@
 {
   "name": "@qentrah/workspace",
   "version": "0.1.0",
-  "description": "Qentrah Workspace desktop app for real estate operations and partner authorization.",
+  "description": "Qentrah Workspace desktop app for workspace operations and partner authorization.",
   "author": "Qentrah",
   "private": true,
   "main": "electron/main.cjs",

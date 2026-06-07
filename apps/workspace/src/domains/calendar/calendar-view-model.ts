@@ -6,17 +6,11 @@ export type CalendarView = "month" | "week" | "day";
 export type CalendarStatusTone = "neutral" | "success" | "warning";
 
 export const customEventTypeValues: CalendarEventFormValues["type"][] = [
-  "visit",
-  "call",
   "meeting",
-  "follow-up",
-  "client-visit",
-  "site-viewing",
-  "appointment",
-  "signing",
-  "handover",
-  "audit",
-  "custom",
+  "deadline",
+  "reminder",
+  "milestone",
+  "focusBlock",
 ];
 
 function addCalendarDays(date: Date, days: number) {
@@ -65,26 +59,16 @@ export function calendarEventTone(status: CalendarEvent["status"]): CalendarStat
 }
 
 export function calendarEventTypeClassName(type: string) {
-  if (type === "visit")
-    return "bg-cyan-50 border-cyan-200 text-cyan-800 dark:bg-cyan-400/10 dark:border-cyan-400/20 dark:text-cyan-300";
-  if (type === "call")
-    return "bg-fuchsia-50 border-fuchsia-200 text-fuchsia-800 dark:bg-fuchsia-400/10 dark:border-fuchsia-400/20 dark:text-fuchsia-300";
   if (type === "meeting")
     return "bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-400/10 dark:border-amber-400/20 dark:text-amber-300";
-  if (type === "client-visit")
-    return "bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300";
-  if (type === "site-viewing")
-    return "bg-indigo-50 border-indigo-200 text-indigo-800 dark:bg-indigo-900/20 dark:border-indigo-800 dark:text-indigo-300";
-  if (type === "appointment")
-    return "bg-violet-50 border-violet-200 text-violet-800 dark:bg-violet-900/20 dark:border-violet-800 dark:text-violet-300";
-  if (type === "signing")
+  if (type === "deadline")
     return "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-300";
-  if (type === "follow-up")
+  if (type === "reminder")
     return "bg-sky-50 border-sky-200 text-sky-800 dark:bg-sky-900/20 dark:border-sky-800 dark:text-sky-300";
-  if (type === "handover")
+  if (type === "milestone")
     return "bg-teal-50 border-teal-200 text-teal-800 dark:bg-teal-900/20 dark:border-teal-800 dark:text-teal-300";
-  if (type === "audit")
-    return "bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-300";
+  if (type === "focusBlock")
+    return "bg-violet-50 border-violet-200 text-violet-800 dark:bg-violet-900/20 dark:border-violet-800 dark:text-violet-300";
   return "bg-zinc-50 border-zinc-200 text-zinc-800 dark:bg-zinc-800/40 dark:border-zinc-700 dark:text-zinc-300";
 }
 

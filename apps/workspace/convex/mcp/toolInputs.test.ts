@@ -8,14 +8,10 @@ describe("MCP tool inputs", () => {
       email: "mona@example.com",
     })).toMatchObject({
       name: "Mona Saleh",
-      type: "Buyer",
-      contact: "mona@example.com",
-      phone: "",
-      age: 0,
-      propertyInterest: "",
-      pipelineStage: "new",
-      priority: "normal",
-      nextAction: "Follow up",
+      type: "person",
+      status: "new",
+      source: "mcp",
+      email: "mona@example.com",
     });
   });
 
@@ -24,12 +20,22 @@ describe("MCP tool inputs", () => {
       name: "Mona Saleh",
       phone: "+20 100 000 0000",
     })).toMatchObject({
-      contact: "+20 100 000 0000",
+      type: "person",
+      status: "new",
+      source: "mcp",
       phone: "+20 100 000 0000",
     });
   });
 
-  it("rejects client input without a contact method", () => {
-    expect(() => clientInput({ name: "Mona Saleh" })).toThrow("Provide either contact/email or phone");
+  it("creates an organization client without forcing contact data", () => {
+    expect(clientInput({
+      name: "Acme Operations",
+      type: "organization",
+    })).toMatchObject({
+      name: "Acme Operations",
+      type: "organization",
+      status: "new",
+      source: "mcp",
+    });
   });
 });

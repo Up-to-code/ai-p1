@@ -17,7 +17,7 @@ const RETRY_DELAY_MS = 5_000;
 const targetValidator = v.union(
   v.literal("clientsDeletedFlag"),
   v.literal("projectsDeletedFlag"),
-  v.literal("propertiesDeletedFlag"),
+  v.literal("assetsDeletedFlag"),
   v.literal("clientPii"),
   v.literal("webhookDeliveries"),
   v.literal("inboundEvents"),

@@ -1,0 +1,916 @@
+{
+  "competitors": [
+    {
+      "id": "clickup",
+      "name": "ClickUp",
+      "color": "#7c5cfc"
+    },
+    {
+      "id": "asana",
+      "name": "Asana",
+      "color": "#f06a6a"
+    },
+    {
+      "id": "monday",
+      "name": "Monday.com",
+      "color": "#f65b3e"
+    },
+    {
+      "id": "notion",
+      "name": "Notion",
+      "color": "#a8b3cf"
+    },
+    {
+      "id": "jira",
+      "name": "Jira",
+      "color": "#2684ff"
+    },
+    {
+      "id": "trello",
+      "name": "Trello",
+      "color": "#0079bf"
+    },
+    {
+      "id": "wrike",
+      "name": "Wrike",
+      "color": "#05c875"
+    }
+  ],
+  "categories": [
+    {
+      "id": "task",
+      "name": "Task Management",
+      "icon": "✅",
+      "features": [
+        {
+          "name": "Subtasks",
+          "scores": {
+            "clickup": 3,
+            "asana": 2,
+            "monday": 2,
+            "notion": 1,
+            "jira": 3,
+            "trello": 2,
+            "wrike": 3
+          },
+          "notes": {
+            "clickup": "Nested subtasks, unlimited depth",
+            "asana": "Subtasks supported, 1 level",
+            "monday": "Subitems per row",
+            "notion": "Via linked databases only",
+            "jira": "Sub-tasks & issue hierarchy",
+            "trello": "Checklist items only",
+            "wrike": "Full subtask hierarchy"
+          }
+        },
+        {
+          "name": "Custom Fields",
+          "scores": {
+            "clickup": 3,
+            "asana": 3,
+            "monday": 3,
+            "notion": 3,
+            "jira": 3,
+            "trello": 1,
+            "wrike": 3
+          },
+          "notes": {
+            "clickup": "Unlimited custom fields any type",
+            "asana": "Rich custom fields on paid",
+            "monday": "Columns as fields, very flexible",
+            "notion": "Database properties = custom fields",
+            "jira": "Highly configurable custom fields",
+            "trello": "Only via Power-Ups",
+            "wrike": "Custom fields on Business+"
+          }
+        },
+        {
+          "name": "Task Dependencies",
+          "scores": {
+            "clickup": 3,
+            "asana": 2,
+            "monday": 2,
+            "notion": 0,
+            "jira": 3,
+            "trello": 0,
+            "wrike": 3
+          },
+          "notes": {
+            "clickup": "Blocking, waiting-on dependencies",
+            "asana": "Dependencies on paid plans",
+            "monday": "Dependency column available",
+            "notion": "Not natively supported",
+            "jira": "Blocks/is-blocked-by full dependency",
+            "trello": "No native dependencies",
+            "wrike": "Full dependency management"
+          }
+        },
+        {
+          "name": "Task Priorities",
+          "scores": {
+            "clickup": 3,
+            "asana": 2,
+            "monday": 2,
+            "notion": 1,
+            "jira": 3,
+            "trello": 1,
+            "wrike": 2
+          },
+          "notes": {
+            "clickup": "4-level priority + custom",
+            "asana": "Urgent/High/Medium/Low",
+            "monday": "Priority column (customizable)",
+            "notion": "Manual via property only",
+            "jira": "Configurable priority levels",
+            "trello": "Labels as priorities",
+            "wrike": "Priority field built-in"
+          }
+        },
+        {
+          "name": "Recurring Tasks",
+          "scores": {
+            "clickup": 3,
+            "asana": 2,
+            "monday": 2,
+            "notion": 0,
+            "jira": 1,
+            "trello": 0,
+            "wrike": 2
+          },
+          "notes": {
+            "clickup": "Full recurrence rules",
+            "asana": "Recurring tasks on any plan",
+            "monday": "Recurring items available",
+            "notion": "Not natively supported",
+            "jira": "Via plugins only",
+            "trello": "Not native",
+            "wrike": "Recurring tasks on paid"
+          }
+        },
+        {
+          "name": "Multi-Assignee",
+          "scores": {
+            "clickup": 3,
+            "asana": 1,
+            "monday": 2,
+            "notion": 1,
+            "jira": 1,
+            "trello": 1,
+            "wrike": 2
+          },
+          "notes": {
+            "clickup": "Multiple assignees natively",
+            "asana": "Single assignee per task (limitation)",
+            "monday": "Multiple people column",
+            "notion": "Assign via property",
+            "jira": "Single assignee per issue",
+            "trello": "Multiple members per card",
+            "wrike": "Multiple assignees supported"
+          }
+        }
+      ]
+    },
+    {
+      "id": "views",
+      "name": "Project Views",
+      "icon": "👁️",
+      "features": [
+        {
+          "name": "Kanban Board",
+          "scores": {
+            "clickup": 3,
+            "asana": 2,
+            "monday": 3,
+            "notion": 2,
+            "jira": 3,
+            "trello": 3,
+            "wrike": 2
+          },
+          "notes": {
+            "clickup": "Full board with swimlanes",
+            "asana": "Board view on all plans",
+            "monday": "Boards are the core UI",
+            "notion": "Kanban via database view",
+            "jira": "Scrum & Kanban native",
+            "trello": "Kanban is the core product",
+            "wrike": "Board view available"
+          }
+        },
+        {
+          "name": "Gantt / Timeline",
+          "scores": {
+            "clickup": 3,
+            "asana": 3,
+            "monday": 3,
+            "notion": 0,
+            "jira": 2,
+            "trello": 0,
+            "wrike": 3
+          },
+          "notes": {
+            "clickup": "Full Gantt with dependencies",
+            "asana": "Timeline view on paid",
+            "monday": "Timeline view on Standard+",
+            "notion": "No Gantt view",
+            "jira": "Basic roadmap, Advanced on Premium",
+            "trello": "No native Gantt",
+            "wrike": "Interactive Gantt charts"
+          }
+        },
+        {
+          "name": "Calendar View",
+          "scores": {
+            "clickup": 3,
+            "asana": 2,
+            "monday": 2,
+            "notion": 2,
+            "jira": 1,
+            "trello": 1,
+            "wrike": 2
+          },
+          "notes": {
+            "clickup": "Full calendar view",
+            "asana": "Calendar view available",
+            "monday": "Calendar view Standard+",
+            "notion": "Calendar view in databases",
+            "jira": "Basic sprint calendar",
+            "trello": "Calendar Power-Up",
+            "wrike": "Calendar view available"
+          }
+        },
+        {
+          "name": "List / Table View",
+          "scores": {
+            "clickup": 3,
+            "asana": 3,
+            "monday": 3,
+            "notion": 3,
+            "jira": 2,
+            "trello": 1,
+            "wrike": 3
+          },
+          "notes": {
+            "clickup": "Highly customizable list & table",
+            "asana": "List view is primary view",
+            "monday": "Grid/table is primary",
+            "notion": "Table is primary database view",
+            "jira": "Backlog list view",
+            "trello": "Basic list only",
+            "wrike": "Table view with sorting"
+          }
+        },
+        {
+          "name": "Workload View",
+          "scores": {
+            "clickup": 3,
+            "asana": 3,
+            "monday": 2,
+            "notion": 0,
+            "jira": 1,
+            "trello": 0,
+            "wrike": 3
+          },
+          "notes": {
+            "clickup": "Workload with capacity mgmt",
+            "asana": "Workload on Advanced+",
+            "monday": "Workload on Pro+",
+            "notion": "Not available",
+            "jira": "Basic via reports only",
+            "trello": "Not available",
+            "wrike": "Resource workload charts"
+          }
+        },
+        {
+          "name": "Mind Map",
+          "scores": {
+            "clickup": 3,
+            "asana": 0,
+            "monday": 0,
+            "notion": 0,
+            "jira": 0,
+            "trello": 0,
+            "wrike": 0
+          },
+          "notes": {
+            "clickup": "Native mind map view",
+            "asana": "Not available",
+            "monday": "Not available",
+            "notion": "Not available",
+            "jira": "Not available",
+            "trello": "Not available",
+            "wrike": "Not available"
+          }
+        }
+      ]
+    },
+    {
+      "id": "collab",
+      "name": "Collaboration",
+      "icon": "🤝",
+      "features": [
+        {
+          "name": "Real-time Editing",
+          "scores": {
+            "clickup": 2,
+            "asana": 2,
+            "monday": 3,
+            "notion": 3,
+            "jira": 2,
+            "trello": 2,
+            "wrike": 3
+          },
+          "notes": {
+            "clickup": "Collaborative docs & comments",
+            "asana": "Comment threads on tasks",
+            "monday": "Live board updates",
+            "notion": "Real-time collaborative editing (best)",
+            "jira": "Comments & issue updates",
+            "trello": "Card activity live",
+            "wrike": "Live editing in docs"
+          }
+        },
+        {
+          "name": "Built-in Chat",
+          "scores": {
+            "clickup": 3,
+            "asana": 0,
+            "monday": 1,
+            "notion": 0,
+            "jira": 0,
+            "trello": 0,
+            "wrike": 0
+          },
+          "notes": {
+            "clickup": "Native Chat with threads",
+            "asana": "No chat — use integrations",
+            "monday": "Updates feed, no true chat",
+            "notion": "No chat feature",
+            "jira": "No chat — Slack/Teams needed",
+            "trello": "No chat",
+            "wrike": "No native chat"
+          }
+        },
+        {
+          "name": "@Mentions",
+          "scores": {
+            "clickup": 3,
+            "asana": 3,
+            "monday": 3,
+            "notion": 3,
+            "jira": 3,
+            "trello": 3,
+            "wrike": 3
+          },
+          "notes": {
+            "clickup": "Tasks, docs, comments",
+            "asana": "Comments & tasks",
+            "monday": "Updates & comments",
+            "notion": "Pages & comments",
+            "jira": "Issue comments",
+            "trello": "Card comments",
+            "wrike": "Comments & tasks"
+          }
+        },
+        {
+          "name": "File Sharing",
+          "scores": {
+            "clickup": 2,
+            "asana": 2,
+            "monday": 2,
+            "notion": 3,
+            "jira": 2,
+            "trello": 2,
+            "wrike": 2
+          },
+          "notes": {
+            "clickup": "Attach to tasks & docs",
+            "asana": "File attachments per task",
+            "monday": "File uploads per item",
+            "notion": "Embedded files in pages",
+            "jira": "Attachments per issue",
+            "trello": "Attachments per card",
+            "wrike": "File attachments & versioning"
+          }
+        },
+        {
+          "name": "Guest Access",
+          "scores": {
+            "clickup": 2,
+            "asana": 2,
+            "monday": 2,
+            "notion": 3,
+            "jira": 2,
+            "trello": 2,
+            "wrike": 2
+          },
+          "notes": {
+            "clickup": "Guests on paid plans",
+            "asana": "Limited guest permissions",
+            "monday": "Guests with view/edit control",
+            "notion": "Unlimited free guests",
+            "jira": "External collaborators on Standard+",
+            "trello": "Card-level guests",
+            "wrike": "External collaborators"
+          }
+        },
+        {
+          "name": "Proofing & Approval",
+          "scores": {
+            "clickup": 2,
+            "asana": 2,
+            "monday": 1,
+            "notion": 0,
+            "jira": 1,
+            "trello": 0,
+            "wrike": 3
+          },
+          "notes": {
+            "clickup": "Image/PDF markup & comments",
+            "asana": "Approvals workflow on paid",
+            "monday": "Approval columns only",
+            "notion": "No proofing",
+            "jira": "No native proofing",
+            "trello": "Via PageProof Power-Up",
+            "wrike": "Best-in-class proofing & approvals"
+          }
+        }
+      ]
+    },
+    {
+      "id": "docs",
+      "name": "Docs & Knowledge",
+      "icon": "📄",
+      "features": [
+        {
+          "name": "Built-in Docs",
+          "scores": {
+            "clickup": 3,
+            "asana": 1,
+            "monday": 1,
+            "notion": 3,
+            "jira": 0,
+            "trello": 1,
+            "wrike": 2
+          },
+          "notes": {
+            "clickup": "Full doc editor linked to tasks",
+            "asana": "Basic task descriptions only",
+            "monday": "Simple update text fields",
+            "notion": "Docs are the core product — best",
+            "jira": "Confluence is separate ($)",
+            "trello": "Card descriptions only",
+            "wrike": "Rich text documents"
+          }
+        },
+        {
+          "name": "Wiki / Knowledge Base",
+          "scores": {
+            "clickup": 2,
+            "asana": 0,
+            "monday": 0,
+            "notion": 3,
+            "jira": 0,
+            "trello": 0,
+            "wrike": 1
+          },
+          "notes": {
+            "clickup": "Docs can serve as wikis",
+            "asana": "No wiki feature",
+            "monday": "No wiki",
+            "notion": "Purpose-built wiki — best-in-class",
+            "jira": "Confluence needed (paid add-on)",
+            "trello": "No wiki",
+            "wrike": "Basic knowledge folders"
+          }
+        },
+        {
+          "name": "Forms / Intake",
+          "scores": {
+            "clickup": 3,
+            "asana": 3,
+            "monday": 3,
+            "notion": 1,
+            "jira": 2,
+            "trello": 0,
+            "wrike": 3
+          },
+          "notes": {
+            "clickup": "Custom intake forms → tasks",
+            "asana": "Forms create tasks directly",
+            "monday": "Forms create board items",
+            "notion": "Limited via databases",
+            "jira": "Request forms on JSM",
+            "trello": "No native forms",
+            "wrike": "Request forms → tasks"
+          }
+        },
+        {
+          "name": "Whiteboard",
+          "scores": {
+            "clickup": 3,
+            "asana": 0,
+            "monday": 1,
+            "notion": 0,
+            "jira": 1,
+            "trello": 0,
+            "wrike": 2
+          },
+          "notes": {
+            "clickup": "Native whiteboards with task linking",
+            "asana": "No whiteboard",
+            "monday": "Whiteboard view (basic)",
+            "notion": "No whiteboard",
+            "jira": "Basic via Confluence",
+            "trello": "No whiteboard",
+            "wrike": "Interactive whiteboards"
+          }
+        }
+      ]
+    },
+    {
+      "id": "automation",
+      "name": "Automation & Integrations",
+      "icon": "⚡",
+      "features": [
+        {
+          "name": "Native Automations",
+          "scores": {
+            "clickup": 3,
+            "asana": 3,
+            "monday": 3,
+            "notion": 1,
+            "jira": 3,
+            "trello": 2,
+            "wrike": 3
+          },
+          "notes": {
+            "clickup": "100–250K runs/mo by plan",
+            "asana": "Unlimited rules on Starter+",
+            "monday": "250–25K actions/mo by plan",
+            "notion": "Very limited automations",
+            "jira": "Automation on Standard (limited)",
+            "trello": "Butler automations included",
+            "wrike": "Advanced automation engine"
+          }
+        },
+        {
+          "name": "Zapier / Make",
+          "scores": {
+            "clickup": 3,
+            "asana": 3,
+            "monday": 3,
+            "notion": 3,
+            "jira": 3,
+            "trello": 3,
+            "wrike": 3
+          },
+          "notes": {
+            "clickup": "Full Zapier & Make support",
+            "asana": "Full integration",
+            "monday": "Full integration",
+            "notion": "Full integration",
+            "jira": "Full integration",
+            "trello": "Full integration",
+            "wrike": "Full integration + 400+ integrations"
+          }
+        },
+        {
+          "name": "API Access",
+          "scores": {
+            "clickup": 3,
+            "asana": 3,
+            "monday": 3,
+            "notion": 3,
+            "jira": 3,
+            "trello": 2,
+            "wrike": 3
+          },
+          "notes": {
+            "clickup": "REST API on all plans",
+            "asana": "Full REST API",
+            "monday": "GraphQL API",
+            "notion": "Public API",
+            "jira": "Robust REST & webhook API",
+            "trello": "REST API",
+            "wrike": "REST API + Webhooks"
+          }
+        },
+        {
+          "name": "Native Integrations",
+          "scores": {
+            "clickup": 3,
+            "asana": 3,
+            "monday": 3,
+            "notion": 2,
+            "jira": 3,
+            "trello": 2,
+            "wrike": 3
+          },
+          "notes": {
+            "clickup": "1000+ integrations",
+            "asana": "200+ integrations",
+            "monday": "200+ integrations",
+            "notion": "Limited native, relies on Zapier",
+            "jira": "3000+ Marketplace apps",
+            "trello": "Power-Ups (paid for key ones)",
+            "wrike": "400+ integrations"
+          }
+        }
+      ]
+    },
+    {
+      "id": "reporting",
+      "name": "Reporting & Analytics",
+      "icon": "📊",
+      "features": [
+        {
+          "name": "Dashboards",
+          "scores": {
+            "clickup": 3,
+            "asana": 3,
+            "monday": 3,
+            "notion": 2,
+            "jira": 2,
+            "trello": 0,
+            "wrike": 3
+          },
+          "notes": {
+            "clickup": "Custom widgets & cross-project",
+            "asana": "Project dashboards on Starter+",
+            "monday": "Highly visual dashboards",
+            "notion": "Database views as dashboards",
+            "jira": "Board reports & velocity charts",
+            "trello": "Dashboard view (Premium)",
+            "wrike": "Custom dashboards"
+          }
+        },
+        {
+          "name": "Time Tracking",
+          "scores": {
+            "clickup": 3,
+            "asana": 2,
+            "monday": 2,
+            "notion": 0,
+            "jira": 1,
+            "trello": 0,
+            "wrike": 3
+          },
+          "notes": {
+            "clickup": "Native time tracking all plans",
+            "asana": "Native on Advanced plan",
+            "monday": "Time tracking on Pro+",
+            "notion": "Not available natively",
+            "jira": "Basic via Tempo (paid add-on)",
+            "trello": "No time tracking",
+            "wrike": "Built-in time tracking"
+          }
+        },
+        {
+          "name": "Portfolio / Goals",
+          "scores": {
+            "clickup": 3,
+            "asana": 3,
+            "monday": 2,
+            "notion": 1,
+            "jira": 2,
+            "trello": 0,
+            "wrike": 2
+          },
+          "notes": {
+            "clickup": "Goals & portfolios built-in",
+            "asana": "Goals & Portfolios (Advanced+)",
+            "monday": "Workdocs portfolio views",
+            "notion": "Manual OKR tracking only",
+            "jira": "Roadmap on Premium",
+            "trello": "No portfolio features",
+            "wrike": "Portfolio dashboard on Business+"
+          }
+        },
+        {
+          "name": "Sprint / Agile Reports",
+          "scores": {
+            "clickup": 3,
+            "asana": 1,
+            "monday": 1,
+            "notion": 0,
+            "jira": 3,
+            "trello": 1,
+            "wrike": 2
+          },
+          "notes": {
+            "clickup": "Sprint reports, velocity, burndown",
+            "asana": "Basic sprint support",
+            "monday": "Sprint management add-on",
+            "notion": "No agile reporting",
+            "jira": "Best-in-class agile reporting",
+            "trello": "Basic via Butler & Power-Ups",
+            "wrike": "Sprint tracking on Business"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ai",
+      "name": "AI Features",
+      "icon": "🤖",
+      "features": [
+        {
+          "name": "AI Writing / Summarize",
+          "scores": {
+            "clickup": 3,
+            "asana": 2,
+            "monday": 2,
+            "notion": 3,
+            "jira": 2,
+            "trello": 1,
+            "wrike": 2
+          },
+          "notes": {
+            "clickup": "Brain AI: write, summarize, generate",
+            "asana": "AI writing on Starter+",
+            "monday": "AI text generation included",
+            "notion": "Notion AI: best-in-class writing",
+            "jira": "Atlassian Intelligence (Premium)",
+            "trello": "AI on Premium (basic)",
+            "wrike": "AI content assist (Business+)"
+          }
+        },
+        {
+          "name": "AI Task Automation",
+          "scores": {
+            "clickup": 3,
+            "asana": 2,
+            "monday": 2,
+            "notion": 0,
+            "jira": 2,
+            "trello": 0,
+            "wrike": 2
+          },
+          "notes": {
+            "clickup": "Super Agents, AI autopilot",
+            "asana": "AI Studio workflow automation",
+            "monday": "AI automation blocks",
+            "notion": "No AI automation",
+            "jira": "Automation AI suggestions",
+            "trello": "No AI automation",
+            "wrike": "AI-powered automation rules"
+          }
+        },
+        {
+          "name": "AI Search",
+          "scores": {
+            "clickup": 3,
+            "asana": 2,
+            "monday": 1,
+            "notion": 3,
+            "jira": 2,
+            "trello": 0,
+            "wrike": 1
+          },
+          "notes": {
+            "clickup": "Semantic search across workspace",
+            "asana": "AI search on paid",
+            "monday": "Basic AI search",
+            "notion": "AI Q&A over workspace",
+            "jira": "Atlassian Intelligence search",
+            "trello": "No AI search",
+            "wrike": "Basic search, limited AI"
+          }
+        },
+        {
+          "name": "AI Meeting Notes",
+          "scores": {
+            "clickup": 3,
+            "asana": 0,
+            "monday": 0,
+            "notion": 1,
+            "jira": 0,
+            "trello": 0,
+            "wrike": 0
+          },
+          "notes": {
+            "clickup": "AI Notetaker (add-on, $12/mo)",
+            "asana": "Not available",
+            "monday": "Not available",
+            "notion": "Basic via integrations",
+            "jira": "Not available",
+            "trello": "Not available",
+            "wrike": "Not available"
+          }
+        },
+        {
+          "name": "AI Cost",
+          "scores": {
+            "clickup": 1,
+            "asana": 3,
+            "monday": 3,
+            "notion": 2,
+            "jira": 2,
+            "trello": 2,
+            "wrike": 2
+          },
+          "notes": {
+            "clickup": "Extra: +$7–9/user/mo (Brain AI)",
+            "asana": "Included in Starter+",
+            "monday": "Bundled in Standard+ (credits)",
+            "notion": "Bundled in Business, extra on Plus",
+            "jira": "Included in Premium+",
+            "trello": "Included in Premium",
+            "wrike": "Included in Business+"
+          }
+        }
+      ]
+    },
+    {
+      "id": "security",
+      "name": "Security & Admin",
+      "icon": "🔒",
+      "features": [
+        {
+          "name": "SSO / SAML",
+          "scores": {
+            "clickup": 2,
+            "asana": 2,
+            "monday": 2,
+            "notion": 2,
+            "jira": 2,
+            "trello": 2,
+            "wrike": 2
+          },
+          "notes": {
+            "clickup": "SSO on Enterprise",
+            "asana": "SAML on Enterprise",
+            "monday": "SAML SSO on Enterprise",
+            "notion": "SAML on Business+",
+            "jira": "SAML on all cloud plans",
+            "trello": "SSO on Enterprise",
+            "wrike": "SAML on Business+"
+          }
+        },
+        {
+          "name": "Permissions / Roles",
+          "scores": {
+            "clickup": 3,
+            "asana": 2,
+            "monday": 3,
+            "notion": 2,
+            "jira": 3,
+            "trello": 1,
+            "wrike": 3
+          },
+          "notes": {
+            "clickup": "Granular custom roles",
+            "asana": "Role-based on paid plans",
+            "monday": "Custom roles & column permissions",
+            "notion": "Page-level permissions",
+            "jira": "Project & issue-level roles",
+            "trello": "Basic workspace roles",
+            "wrike": "Role-based access control"
+          }
+        },
+        {
+          "name": "Audit Logs",
+          "scores": {
+            "clickup": 2,
+            "asana": 2,
+            "monday": 2,
+            "notion": 2,
+            "jira": 3,
+            "trello": 2,
+            "wrike": 2
+          },
+          "notes": {
+            "clickup": "Audit log on Enterprise",
+            "asana": "Audit API on Enterprise",
+            "monday": "Activity log on Enterprise",
+            "notion": "Audit log on Enterprise",
+            "jira": "Comprehensive audit logging",
+            "trello": "Activity history",
+            "wrike": "Audit reports"
+          }
+        },
+        {
+          "name": "2FA / MFA",
+          "scores": {
+            "clickup": 3,
+            "asana": 3,
+            "monday": 3,
+            "notion": 3,
+            "jira": 3,
+            "trello": 3,
+            "wrike": 3
+          },
+          "notes": {
+            "clickup": "2FA on all plans",
+            "asana": "2FA available",
+            "monday": "2FA available",
+            "notion": "2FA available",
+            "jira": "MFA supported",
+            "trello": "2FA via Atlassian account",
+            "wrike": "2FA on all plans"
+          }
+        }
+      ]
+    }
+  ]
+}

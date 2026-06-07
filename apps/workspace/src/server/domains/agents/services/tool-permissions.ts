@@ -64,7 +64,7 @@ export function agentToolPermissionsFromCapabilities(capabilities: AgentOrganiza
       capabilities.canUpdateClients && "update",
       capabilities.canDeleteClients && "delete",
     ],
-    property: [
+    asset: [
       capabilities.canReadProperties && "read",
       capabilities.canCreateProperties && "create",
       capabilities.canUpdateProperties && "update",

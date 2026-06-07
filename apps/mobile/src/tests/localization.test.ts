@@ -71,10 +71,10 @@ test("auth landing copy is localized for first-launch phone language", () => {
   assert.deepEqual(getMobileDictionary("en").auth.landingPhrases, [
     "Your agency runs from chat.",
     "Search, follow up, and close from your phone.",
-    "Smarter real estate work, no desk required.",
+    "Smarter workspace work, no desk required.",
   ]);
-  assert.equal(getMobileDictionary("ar").auth.landingPhrases[0], "كل شغلك العقاري في محادثة واحدة.");
-  assert.equal(getMobileDictionary("fr").auth.landingPhrases[2], "Un immobilier plus intelligent, sans bureau.");
+  assert.equal(getMobileDictionary("ar").auth.landingPhrases[0], "كل شغلك الأصلي في محادثة واحدة.");
+  assert.equal(getMobileDictionary("fr").auth.landingPhrases[2], "Un espace de travail plus intelligent, sans bureau.");
   assert.equal(getMobileDictionary("ar").auth.privacyPolicy, "سياسة الخصوصية");
   assert.equal(getMobileDictionary("fr").auth.termsOfService, "Conditions");
 });

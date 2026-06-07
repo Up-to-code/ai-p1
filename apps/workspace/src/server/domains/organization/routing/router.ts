@@ -38,17 +38,24 @@ import {
   handleReadClientStats,
   handleReadDashboardIndex,
   handleReadDashboardOverview,
+  handleReadOpportunities,
+  handleReadOpportunity,
+  handleReadOpportunityOptions,
+  handleReadOpportunityStats,
   handleReadProject,
   handleReadProjectOptions,
   handleReadProjectStats,
   handleReadProjectsIndex,
   handleReadProjects,
-  handleReadPropertiesByProject,
-  handleReadProperty,
-  handleReadPropertiesIndex,
-  handleReadProperties,
-  handleReadPropertyOptions,
-  handleReadPropertyStats,
+  handleReadTask,
+  handleReadTaskStats,
+  handleReadTasks,
+  handleReadAssetsByProject,
+  handleReadAsset,
+  handleReadAssetsIndex,
+  handleReadAssets,
+  handleReadAssetOptions,
+  handleReadAssetStats,
   handleReadTaskOptions,
   handleReadUpcomingCalendarEvents,
 } from "../handlers/workspace-read";
@@ -58,15 +65,20 @@ import {
   handleUpdateProject,
 } from "@/server/domains/projects/handlers/projects";
 import {
-  handleCreateProperty,
-  handleDeleteProperty,
-  handleUpdateProperty,
-} from "@/server/domains/properties/handlers/properties";
+  handleCreateOpportunity,
+  handleDeleteOpportunity,
+  handleUpdateOpportunity,
+} from "@/server/domains/opportunities/handlers/opportunities";
+import {
+  handleCreateAsset,
+  handleDeleteAsset,
+  handleUpdateAsset,
+} from "@/server/domains/assets/handlers/assets";
 import {
   handleCreateClient,
   handleDeleteClient,
-  handleLinkClientUnit,
-  handleUnlinkClientUnit,
+  handleLinkClientAsset,
+  handleUnlinkClientAsset,
   handleUpdateClient,
 } from "@/server/domains/clients/handlers/clients";
 import {
@@ -182,16 +194,23 @@ organizationRouter.delete(
 );
 
 organizationRouter.get("/:organizationId/read/projects", handleReadProjects);
+organizationRouter.get("/:organizationId/read/opportunities", handleReadOpportunities);
+organizationRouter.get("/:organizationId/read/opportunities/stats", handleReadOpportunityStats);
+organizationRouter.get("/:organizationId/read/opportunities/options", handleReadOpportunityOptions);
+organizationRouter.get("/:organizationId/read/opportunities/:opportunityId", handleReadOpportunity);
+organizationRouter.get("/:organizationId/read/tasks", handleReadTasks);
+organizationRouter.get("/:organizationId/read/tasks/stats", handleReadTaskStats);
+organizationRouter.get("/:organizationId/read/tasks/:taskId", handleReadTask);
 organizationRouter.get("/:organizationId/read/projects/stats", handleReadProjectStats);
 organizationRouter.get("/:organizationId/read/projects/options", handleReadProjectOptions);
 organizationRouter.get("/:organizationId/read/projects/index", handleReadProjectsIndex);
 organizationRouter.get("/:organizationId/read/projects/:projectId", handleReadProject);
-organizationRouter.get("/:organizationId/read/properties", handleReadProperties);
-organizationRouter.get("/:organizationId/read/properties/stats", handleReadPropertyStats);
-organizationRouter.get("/:organizationId/read/properties/options", handleReadPropertyOptions);
-organizationRouter.get("/:organizationId/read/properties/index", handleReadPropertiesIndex);
-organizationRouter.get("/:organizationId/read/properties/by-project/:projectId", handleReadPropertiesByProject);
-organizationRouter.get("/:organizationId/read/properties/:propertyId", handleReadProperty);
+organizationRouter.get("/:organizationId/read/assets", handleReadAssets);
+organizationRouter.get("/:organizationId/read/assets/stats", handleReadAssetStats);
+organizationRouter.get("/:organizationId/read/assets/options", handleReadAssetOptions);
+organizationRouter.get("/:organizationId/read/assets/index", handleReadAssetsIndex);
+organizationRouter.get("/:organizationId/read/assets/by-project/:projectId", handleReadAssetsByProject);
+organizationRouter.get("/:organizationId/read/assets/:assetId", handleReadAsset);
 organizationRouter.get("/:organizationId/read/clients", handleReadClients);
 organizationRouter.get("/:organizationId/read/clients/stats", handleReadClientStats);
 organizationRouter.get("/:organizationId/read/clients/options", handleReadClientOptions);
@@ -265,6 +284,21 @@ organizationRouter.delete(
 );
 
 organizationRouter.post(
+  "/:organizationId/opportunities",
+  handleCreateOpportunity,
+);
+
+organizationRouter.patch(
+  "/:organizationId/opportunities/:opportunityId",
+  handleUpdateOpportunity,
+);
+
+organizationRouter.delete(
+  "/:organizationId/opportunities/:opportunityId",
+  handleDeleteOpportunity,
+);
+
+organizationRouter.post(
   "/:organizationId/projects",
   handleCreateProject,
 );
@@ -280,18 +314,18 @@ organizationRouter.delete(
 );
 
 organizationRouter.post(
-  "/:organizationId/properties",
-  handleCreateProperty,
+  "/:organizationId/assets",
+  handleCreateAsset,
 );
 
 organizationRouter.patch(
-  "/:organizationId/properties/:propertyId",
-  handleUpdateProperty,
+  "/:organizationId/assets/:assetId",
+  handleUpdateAsset,
 );
 
 organizationRouter.delete(
-  "/:organizationId/properties/:propertyId",
-  handleDeleteProperty,
+  "/:organizationId/assets/:assetId",
+  handleDeleteAsset,
 );
 
 organizationRouter.post(
@@ -310,13 +344,28 @@ organizationRouter.delete(
 );
 
 organizationRouter.post(
-  "/:organizationId/clients/:clientId/units",
-  handleLinkClientUnit,
+  "/:organizationId/clients/:clientId/assets",
+  handleLinkClientAsset,
 );
 
 organizationRouter.delete(
-  "/:organizationId/clients/:clientId/units/:propertyId",
-  handleUnlinkClientUnit,
+  "/:organizationId/clients/:clientId/assets/:assetId",
+  handleUnlinkClientAsset,
+);
+
+organizationRouter.post(
+  "/:organizationId/tasks",
+  handleCreateClientTask,
+);
+
+organizationRouter.patch(
+  "/:organizationId/tasks/:taskId",
+  handleUpdateClientTask,
+);
+
+organizationRouter.delete(
+  "/:organizationId/tasks/:taskId",
+  handleDeleteClientTask,
 );
 
 organizationRouter.post(

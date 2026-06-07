@@ -68,7 +68,7 @@ export async function requireSignedInUploadUser(req: Request) {
 export async function requireOrganizationMediaUploadAccess(
   req: Request,
   input: OrganizationUploadInput,
-  resource: "project" | "property" | "client",
+  resource: "project" | "asset" | "client",
 ) {
   await requireSignedInUploadUser(req);
 

@@ -12,7 +12,7 @@ export function auditCategoryForAction(action: string): AuditCategory {
   if (action.startsWith("client.")) return "clients";
   if (action.startsWith("calendar.")) return "calendar";
   if (action.startsWith("project.")) return "projects";
-  if (action.startsWith("property.")) return "properties";
+  if (action.startsWith("asset.") || action.startsWith("assets.")) return "assets";
   return "organization";
 }
 

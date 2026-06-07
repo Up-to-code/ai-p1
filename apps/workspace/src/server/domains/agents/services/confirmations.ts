@@ -3,7 +3,7 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { fetchAuthMutation } from "@/server/auth/clerk-convex";
 import { getMobileRequestContext } from "@/server/middleware/mobile-request-context";
-import { executeConfirmedAgentTool, type AgentToolResult } from "./tool-adapter";
+import { executeConfirmedAgentTool, executeConfirmedMcpTool, type AgentToolResult } from "./tool-adapter";
 
 async function recordConfirmedTool(
   organizationId: string,
@@ -31,16 +31,33 @@ export async function approveAgentConfirmation(c: Context, organizationId: strin
     confirmationId: confirmationId as Id<"agentConfirmations">,
   });
 
-  if (!approved.confirmation.threadId || !approved.confirmation.runId) {
-    return {
-      confirmation: approved.confirmation,
-      result: {
-        ok: false,
-        tool: approved.confirmation.tool,
-        approvalOnly: true,
-        message: "Approval recorded. External MCP execution is intentionally not replayed from this endpoint.",
-      },
+  if (approved.confirmation.adapter === "mcp") {
+    const runtime = {
+      honoContext: c,
+      organizationId,
+      requestContext: getMobileRequestContext(c),
     };
+
+    const result = await executeConfirmedMcpTool(runtime, approved.confirmation.tool, approved.input);
+    if (!result.ok) {
+      await fetchAuthMutation(api.agents.confirmations.markFailedFromHono, {
+        organizationId,
+        confirmationId: confirmationId as Id<"agentConfirmations">,
+        error: result.error ?? "Confirmed MCP action failed.",
+      }).catch(() => undefined);
+      throw new Error(result.error ?? "Confirmed MCP action failed.");
+    }
+
+    const confirmation = await fetchAuthMutation(api.agents.confirmations.markExecutedFromHono, {
+      organizationId,
+      confirmationId: confirmationId as Id<"agentConfirmations">,
+    });
+
+    return { confirmation, result };
+  }
+
+  if (!approved.confirmation.threadId || !approved.confirmation.runId) {
+    throw new Error("Agent confirmation is missing its run context.");
   }
 
   const threadId = approved.confirmation.threadId;

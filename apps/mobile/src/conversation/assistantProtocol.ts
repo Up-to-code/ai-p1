@@ -1,11 +1,11 @@
 export type AssistantDirection = "ltr" | "rtl";
 export type AssistantUiLocale = "ar" | "en" | "fr";
-export type AssistantRoute = "advisor" | "property" | "funding" | "legal" | "mixed";
+export type AssistantRoute = "advisor" | "asset" | "funding" | "legal" | "mixed";
 
 export type AssistantSurfaceCopy = {
   [key: string]: string;
   routeAdvisor: string;
-  routeProperty: string;
+  routeAsset: string;
   routeFunding: string;
   routeLegal: string;
   routeMixed: string;
@@ -44,10 +44,10 @@ export type AssistantAction = {
   title: string;
   name:
     | "open_search"
-    | "open_property"
+    | "open_asset"
     | "contact_agent"
     | "schedule_visit"
-    | "save_property"
+    | "save_asset"
     | "continue_thread"
     | string;
   payload: any;
@@ -62,8 +62,8 @@ type BaseBlock = {
 
 export type AssistantBlock =
   | (BaseBlock & { type: "text"; body: string })
-  | (BaseBlock & { type: "property_list"; propertyIds: string[]; searchQuery?: string; querySummary?: string })
-  | (BaseBlock & { type: "comparison"; propertyIds: string[]; points: string[] })
+  | (BaseBlock & { type: "asset_list"; assetIds: string[]; searchQuery?: string; querySummary?: string })
+  | (BaseBlock & { type: "comparison"; assetIds: string[]; points: string[] })
   | (BaseBlock & { type: "sources"; sources: AssistantSource[] })
   | (BaseBlock & { type: "followup"; prompt: string })
   | (BaseBlock & { type: "funding_options"; summary: string; options: string[]; disclaimers?: string[] })
@@ -103,7 +103,7 @@ export type AssistantTurn = {
     [key: string]: any;
   };
   motion: {
-    preset: "assistant" | "advisor" | "property" | "funding" | "legal" | "mixed";
+    preset: "assistant" | "advisor" | "asset" | "funding" | "legal" | "mixed";
     [key: string]: any;
   };
   presentation?: ThreadPresentation | null;
@@ -113,7 +113,7 @@ export type AssistantTurn = {
 const surfaceCopy: Record<AssistantUiLocale, AssistantSurfaceCopy> = {
   ar: {
     routeAdvisor: "مستشار",
-    routeProperty: "عقارات",
+    routeAsset: "أصول",
     routeFunding: "تمويل",
     routeLegal: "قانوني",
     routeMixed: "بحث وتمويل",
@@ -134,7 +134,7 @@ const surfaceCopy: Record<AssistantUiLocale, AssistantSurfaceCopy> = {
   },
   en: {
     routeAdvisor: "Advisor",
-    routeProperty: "Property",
+    routeAsset: "Assets",
     routeFunding: "Funding",
     routeLegal: "Legal",
     routeMixed: "Search + funding",
@@ -155,7 +155,7 @@ const surfaceCopy: Record<AssistantUiLocale, AssistantSurfaceCopy> = {
   },
   fr: {
     routeAdvisor: "Conseil",
-    routeProperty: "Bien",
+    routeAsset: "Actifs",
     routeFunding: "Financement",
     routeLegal: "Juridique",
     routeMixed: "Recherche + financement",
@@ -202,9 +202,9 @@ export function resolveAssistantSurfaceCopy(presentation?: Pick<ThreadPresentati
   return surfaceCopy[locale];
 }
 
-export function extractTurnPropertyIds(turn: Partial<Pick<AssistantTurn, "blocks">>) {
+export function extractTurnAssetIds(turn: Partial<Pick<AssistantTurn, "blocks">>) {
   return (turn.blocks ?? []).flatMap((block) =>
-    block.type === "property_list" || block.type === "comparison" ? block.propertyIds : [],
+    block.type === "asset_list" || block.type === "comparison" ? block.assetIds : [],
   );
 }
 
@@ -223,8 +223,8 @@ export const assistantTurnSchema = {
   parse(value: AssistantTurn) {
     const actions = value.actions ?? [];
     for (const action of actions) {
-      if (action.name === "open_property" && typeof action.payload?.propertyId !== "string") {
-        throw new Error("open_property actions require payload.propertyId");
+      if (action.name === "open_asset" && typeof action.payload?.assetId !== "string") {
+        throw new Error("open_asset actions require payload.assetId");
       }
     }
     return value;

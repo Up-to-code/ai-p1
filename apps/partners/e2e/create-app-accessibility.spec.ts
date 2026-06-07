@@ -61,7 +61,7 @@ test("create app flow keeps fields, mode controls, and validation accessible", a
   await page.getByLabel("Publisher").fill("Qentrah E2E");
   await page.getByLabel("Support email").fill("support@partner.example.com");
   await page.getByLabel("Partner app URL").fill("https://partner.example.com");
-  await page.getByLabel("Description").fill("Sync sandbox buyer and property records into Qentrah Workspace with scoped OAuth.");
+  await page.getByLabel("Description").fill("Sync sandbox buyer and asset records into Qentrah Workspace with scoped OAuth.");
   await page.getByRole("button", { name: "Continue" }).click();
 
   await page.getByLabel("Redirect URIs").fill("http://localhost:3003/api/qentrah/oauth/callback");
@@ -69,7 +69,7 @@ test("create app flow keeps fields, mode controls, and validation accessible", a
   await expect(page.getByRole("heading", { name: "Scopes and events" })).toBeVisible();
   await expect(page.getByLabel("Read organization profile")).toBeChecked();
   await expect(page.getByLabel("Read clients")).toBeChecked();
-  await expect(page.getByLabel("Read properties")).toBeChecked();
+  await expect(page.getByLabel("Read assets")).toBeChecked();
 
   await page.getByRole("button", { name: "Continue" }).click();
   await expect(page.getByRole("heading", { name: "Review package" })).toBeVisible();

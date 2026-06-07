@@ -7,7 +7,7 @@ import {
   loadQentrahClients,
   loadQentrahMedia,
   loadQentrahProjects,
-  loadQentrahProperties,
+  loadQentrahAssets,
   loadQentrahTasks,
   sendQentrahWebhook,
   updateQentrahClient,
@@ -48,13 +48,13 @@ describe("Workspace Hono API wrappers", () => {
   it("builds read URLs for every resource section", async () => {
     const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => jsonResponse({ data: [] }));
 
-    await loadQentrahProperties(session, { limit: 25 }, fetcher);
+    await loadQentrahAssets(session, { limit: 25 }, fetcher);
     await loadQentrahProjects(session, { limit: 25 }, fetcher);
     await loadQentrahTasks(session, { limit: 25 }, fetcher);
     await loadQentrahCalendar(session, { limit: 25 }, fetcher);
     await loadQentrahMedia(session, { limit: 25, resourceType: "client", resourceId: "client_1" }, fetcher);
 
-    expect(String(fetcher.mock.calls[0][0])).toBe("http://localhost:3000/api/v1/partner/organizations/org_123/properties?limit=25");
+    expect(String(fetcher.mock.calls[0][0])).toBe("http://localhost:3000/api/v1/partner/organizations/org_123/assets?limit=25");
     expect(String(fetcher.mock.calls[1][0])).toBe("http://localhost:3000/api/v1/partner/organizations/org_123/projects?limit=25");
     expect(String(fetcher.mock.calls[2][0])).toBe("http://localhost:3000/api/v1/partner/organizations/org_123/tasks?limit=25");
     expect(String(fetcher.mock.calls[3][0])).toBe("http://localhost:3000/api/v1/partner/organizations/org_123/calendar?limit=25");

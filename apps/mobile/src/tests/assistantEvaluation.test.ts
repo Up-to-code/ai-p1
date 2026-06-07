@@ -29,7 +29,7 @@ import {
 
 type PromptExpectation = {
   prompt: string;
-  route: "advisor" | "property" | "funding" | "legal" | "mixed";
+  route: "advisor" | "asset" | "funding" | "legal" | "mixed";
   reason: string;
 };
 
@@ -50,19 +50,19 @@ const routingCases: PromptExpectation[] = [
     reason: "Market feasibility question should be answered as text unless the user asks for listings.",
   },
   {
-    prompt: "Find apartments near the Grand Egyptian Museum for tonight, max 5000 EGP.",
-    route: "property",
-    reason: "Fresh property request should go through property search.",
+    prompt: "Find assets near the Grand Egyptian Museum for tonight, max 5000 EGP.",
+    route: "asset",
+    reason: "Fresh asset request should go through asset search.",
   },
   {
-    prompt: "Compare the first and third apartments.",
-    route: "property",
-    reason: "Reference to previous listed properties should route to property/memory flow.",
+    prompt: "Compare the first and third assets.",
+    route: "asset",
+    reason: "Reference to previous listed assets should route to asset/memory flow.",
   },
   {
-    prompt: "I need a furnished 2-bedroom rental in Sheikh Zayed around 6000 EGP.",
-    route: "property",
-    reason: "Specific rental brief should search and rank property candidates.",
+    prompt: "I need a furnished workspace asset in Sheikh Zayed around 6000 EGP.",
+    route: "asset",
+    reason: "Specific rental brief should search and rank asset candidates.",
   },
   {
     prompt: "Help me understand mortgage options for a 5000000 EGP home.",
@@ -77,7 +77,7 @@ const routingCases: PromptExpectation[] = [
   {
     prompt: "Find a villa and explain financing tradeoffs.",
     route: "mixed",
-    reason: "Property plus financing intent should use both specialists.",
+    reason: "Asset plus financing intent should use both specialists.",
   },
 ];
 
@@ -147,8 +147,8 @@ test("Qentrah brand activity stays quiet after a completed advisor reply", () =>
 test("Qentrah brand activity shows localized active labels while working", () => {
   const arabicSearchState = resolveAssistantBrandActivity({
     threadPresentation: { languageTag: "ar", uiLocale: "ar" } as any,
-    route: "property",
-    stageSpecialist: "property",
+    route: "asset",
+    stageSpecialist: "asset",
     phase: "specialist_started",
     stageStatus: "running",
     streamState: "streaming",
@@ -242,16 +242,16 @@ test("Qentrah renders UI for Workspace action chips", () => {
   assert.equal(shouldRenderAssistantTurnUi(turn), true);
 });
 
-test("Qentrah does not render UI for property cards alone", () => {
+test("Qentrah does not render UI for asset cards alone", () => {
   const turn = makeBaseTurn({
-    route: "property",
-    motion: { preset: "property" },
+    route: "asset",
+    motion: { preset: "asset" },
     blocks: [
       {
-        type: "property_list",
-        id: "property-list",
+        type: "asset_list",
+        id: "asset-list",
         title: "Best matches",
-        propertyIds: ["property-1", "property-2"],
+        assetIds: ["asset-1", "asset-2"],
       },
     ],
     actions: [],
@@ -298,7 +298,7 @@ test("Qentrah uses the Arabic-facing name and natural Egyptian tone", () => {
   assert.match(builderReply, /Qentrah من شركة Qentrah/);
   assert.match(providerReply, /أنا Qentrah/);
   assert.match(builderReply, /مثلًا|مثلا/);
-  assert.match(builderReply, /أدوّر على شقة|أقارن بين عقارين/);
+  assert.match(builderReply, /أدوّر على أصل|أقارن بين أصلين/);
   assert.match(providerReply, /مثلًا|مثلا/);
   assert.equal(builderReply.startsWith("أنا Qentrah"), false);
   assert.doesNotMatch(`${builderReply} ${providerReply}`, /Qentrah_؟|طبقة المساعد الخاصة بـ|العميل|قرارات في السوق العقاري\./);
@@ -329,7 +329,7 @@ test("Qentrah answers common Egyptian area comparisons from context instead of p
 type MemoryCase = {
   name: string;
   prompt: string;
-  expectedRoute: "advisor" | "property" | "funding" | "legal" | "mixed";
+  expectedRoute: "advisor" | "asset" | "funding" | "legal" | "mixed";
   expectsUi: boolean;
   expectedMemoryKind?: ReturnType<typeof buildMemoryContextPlan>["kind"];
   expectedSearchPolicy?: ReturnType<typeof buildMemoryContextPlan>["searchPolicy"];
@@ -347,9 +347,9 @@ const memoryCases: MemoryCase[] = [
     expectedSources: [],
   },
   {
-    name: "specific property ask stays text-only on mobile",
-    prompt: "Find apartments near the Grand Egyptian Museum for tonight, max 5000 EGP.",
-    expectedRoute: "property",
+    name: "specific asset ask stays text-only on mobile",
+    prompt: "Find assets near the Grand Egyptian Museum for tonight, max 5000 EGP.",
+    expectedRoute: "asset",
     expectsUi: false,
     expectedMemoryKind: "fresh_search",
     expectedSearchPolicy: "rerun",
@@ -383,36 +383,36 @@ const memoryCases: MemoryCase[] = [
     expectedSources: ["thread_messages", "cortex_memory"],
   },
   {
-    name: "history reference routes to property memory flow",
+    name: "history reference routes to asset memory flow",
     prompt: "Show me more like the second one.",
-    expectedRoute: "property",
+    expectedRoute: "asset",
     expectsUi: false,
-    expectedMemoryKind: "property_history",
+    expectedMemoryKind: "asset_history",
     expectedSearchPolicy: "reuse",
-    expectedSources: ["property_searches"],
+    expectedSources: ["asset_searches"],
   },
   {
-    name: "Arabic cheapest reference reuses property history",
+    name: "Arabic cheapest reference reuses asset history",
     prompt: "الأرخص فيهم؟",
-    expectedRoute: "property",
+    expectedRoute: "asset",
     expectsUi: false,
-    expectedMemoryKind: "property_history",
+    expectedMemoryKind: "asset_history",
     expectedSearchPolicy: "reuse",
-    expectedSources: ["property_searches"],
+    expectedSources: ["asset_searches"],
   },
   {
     name: "changed budget reruns search",
     prompt: "غير الميزانية لـ 7000",
-    expectedRoute: "property",
+    expectedRoute: "asset",
     expectsUi: false,
-    expectedMemoryKind: "property_history",
+    expectedMemoryKind: "asset_history",
     expectedSearchPolicy: "rerun",
-    expectedSources: ["property_searches"],
+    expectedSources: ["asset_searches"],
   },
   {
     name: "usual preference search loads buyer preferences",
     prompt: "دورلي على حاجة زي المعتاد بتاعي",
-    expectedRoute: "property",
+    expectedRoute: "asset",
     expectsUi: false,
     expectedMemoryKind: "preference_assisted_search",
     expectedSearchPolicy: "rerun",
@@ -433,13 +433,13 @@ function makeMemoryTurn(route: MemoryCase["expectedRoute"], expectsUi: boolean):
   if (expectsUi) {
     return makeBaseTurn({
       route,
-      motion: { preset: route === "funding" ? "funding" : route === "legal" ? "advisor" : "property" },
+      motion: { preset: route === "funding" ? "funding" : route === "legal"  ? "advisor" : "asset" },
       blocks: [
         {
-          type: "property_list",
-          id: "memory-property-list",
+          type: "asset_list",
+          id: "memory-asset-list",
           title: "Matches",
-          propertyIds: ["property-1", "property-2"],
+          assetIds: ["asset-1", "asset-2"],
         },
       ],
       actions: [],
@@ -490,18 +490,18 @@ test("Qentrah memory planner scores route, UI policy, consistency, and context l
 
 test("Qentrah preference promotion saves only explicit high-confidence buyer preferences", () => {
   const explicitPreference = extractPreferencePromotion({
-    prompt: "I usually prefer Sheikh Zayed apartments under 6000 EGP.",
-    route: "property",
+    prompt: "I usually prefer Sheikh Zayed assets under 6000 EGP.",
+    route: "asset",
   });
   const oneOffSearch = extractPreferencePromotion({
-    prompt: "Find apartments in Sheikh Zayed under 6000 EGP tonight.",
-    route: "property",
+    prompt: "Find assets in Sheikh Zayed under 6000 EGP tonight.",
+    route: "asset",
   });
 
   assert.ok(explicitPreference);
   assert.equal(explicitPreference.maxBudget, 6000);
   assert.deepEqual(explicitPreference.locations, ["Sheikh Zayed"]);
-  assert.deepEqual(explicitPreference.propertyTypes, ["apartment"]);
+  assert.deepEqual(explicitPreference.assetTypes, ["asset"]);
   assert.equal(oneOffSearch, null);
 });
 

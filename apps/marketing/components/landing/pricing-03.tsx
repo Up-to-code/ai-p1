@@ -62,7 +62,7 @@ const planCopy = {
       logoSrc: "/Tamara Media Kit/Logos/Tamara Logos-01.png",
     },
     tooltips: {
-      sync: "Keeps projects, units, media, pricing, and availability aligned across teams.",
+      sync: "Keeps projects, assets, media, pricing, and availability aligned across teams.",
       ai: "AI assists with triage, drafting, summaries, and repetitive operational work.",
       governance: "Controls roles, approvals, audit trails, and trusted organization access.",
     },
@@ -78,7 +78,7 @@ const planCopy = {
         href: "/billing?plan=good_monthly",
         features: [
           { title: "Project management", tooltip: "sync" },
-          { title: "Unit management" },
+          { title: "Asset management" },
           { title: "Client management" },
           { title: "Calendar management" },
           { title: "Limited apps and integrations" },
@@ -132,7 +132,7 @@ const planCopy = {
         href: "/billing?plan=good_yearly",
         features: [
           { title: "Project management", tooltip: "sync" },
-          { title: "Unit management" },
+          { title: "Asset management" },
           { title: "Client management" },
           { title: "Calendar management" },
           { title: "Limited apps and integrations" },

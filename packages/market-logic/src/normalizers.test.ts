@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  inferPropertyTypeLabel,
+  inferAssetTypeLabel,
   normalizeMarketArea,
   normalizeSaudiCity,
   normalizeSellingFeature,
@@ -18,7 +18,7 @@ describe("@qentrah/market-logic normalizers", () => {
   });
 
   it("normalizes product and selling feature labels", () => {
-    expect(inferPropertyTypeLabel("Luxury villa with pool")).toBe("فلل");
+    expect(inferAssetTypeLabel("Operations office with private parking")).toBe("مكاتب");
     expect(normalizeSellingFeature("private parking")).toBe("مواقف خاصة");
   });
 });

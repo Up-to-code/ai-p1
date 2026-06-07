@@ -2,7 +2,7 @@ import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 
 import type { AssistantAction } from "@/conversation/assistantProtocol";
-import { assistantTurnSchema, extractTurnPropertyIds, extractTurnSources } from "@/conversation/assistantProtocol";
+import { assistantTurnSchema, extractTurnAssetIds, extractTurnSources } from "@/conversation/assistantProtocol";
 import { getLocalizedRuntimeMessage, resolveThreadPresentationState } from "@/conversation/lib/assistantPresentation";
 import {
   logAgentDebug,
@@ -370,7 +370,7 @@ export function useConversationController() {
                 ...turn.message,
                 kind: "assistant_turn",
                 text: uiTurn.assistantText ?? turn.message.text,
-                relatedPropertyIds: extractTurnPropertyIds(uiTurn),
+                relatedAssetIds: extractTurnAssetIds(uiTurn),
                 sourceMetadata: extractTurnSources(uiTurn),
                 uiTurn,
                 turnMeta: {
@@ -598,7 +598,7 @@ export function useConversationController() {
       actionName: action.name,
       runId: message.turnMeta?.runId,
       messageId: message.id,
-      propertyId: "propertyId" in action.payload ? action.payload.propertyId : undefined,
+      assetId: "assetId" in action.payload ? action.payload.assetId : undefined,
     };
 
     if (action.name === "open_search") {

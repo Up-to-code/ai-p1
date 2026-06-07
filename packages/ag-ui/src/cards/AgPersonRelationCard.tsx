@@ -20,8 +20,8 @@ function StatusBadges({ badges }: { badges: Array<"verified" | "vip"> }) {
 }
 
 /**
- * WHY:   Many agent turns need to anchor a person to a project or unit context using a consistent summary card.
- * WHAT:  Displays a person, role, summary, relation, and project/unit context with optional badges.
+ * WHY:   Many agent turns need to anchor a person to a project or asset context using a consistent summary card.
+ * WHAT:  Displays a person, role, summary, relation, and project/asset context with optional badges.
  * HOW:   Renders the person metadata in a compact profile header followed by relation detail cells.
  */
 export default function AgPersonRelationCard({
@@ -30,7 +30,7 @@ export default function AgPersonRelationCard({
   summary,
   relation,
   project,
-  unit,
+  asset,
   badges = [],
 }: {
   name: string;
@@ -38,7 +38,7 @@ export default function AgPersonRelationCard({
   summary: string;
   relation: string;
   project: string;
-  unit?: string;
+  asset?: string;
   badges?: Array<"verified" | "vip">;
 }) {
   return (
@@ -60,7 +60,7 @@ export default function AgPersonRelationCard({
         <div className="rounded-xl border border-[color:var(--workspace-border)] bg-[var(--workspace-elevated)] px-3 py-2">{relation}</div>
         <div className="rounded-xl border border-[color:var(--workspace-border)] bg-[var(--workspace-elevated)] px-3 py-2">
           {project}
-          {unit ? <span className="mr-2 text-[var(--workspace-muted)]">/ {unit}</span> : null}
+          {asset ? <span className="mr-2 text-[var(--workspace-muted)]">/ {asset}</span> : null}
         </div>
       </div>
     </section>

@@ -6,7 +6,7 @@ export function shouldRenderAssistantTurnUi(turn: AssistantTurn) {
       return block.points.length > 0;
     }
 
-    if (block.type === "property_list") {
+    if (block.type === "asset_list") {
       return Boolean(block.querySummary || block.searchQuery || block.suggestions?.length);
     }
 

@@ -15,7 +15,7 @@ const protectedRouteSegments = new Set([
   "organization",
   "profile",
   "projects",
-  "properties",
+  "assets",
   "settings",
   "team",
   "usage",

@@ -371,19 +371,13 @@ describe("agent orchestrator stream", () => {
       lastContact: "2026-05-10",
       syncState: "draft",
       name: "Salma Samir 500",
-      type: "Broker",
-      contact: "etjah.seed.500@example.com",
+      type: "person",
+      email: "etjah.seed.500@example.com",
       phone: "2010111222333",
-      age: 47,
-      nationality: "Saudi",
-      generation: "Millennial",
-      budget: "EGP 10,650,000 - 14,100,000",
-      propertyInterest: "4 bedroom primary home in Maadi",
       status: "active",
       visibility: "private",
-      pipelineStage: "closed",
-      priority: "high",
-      nextAction: "Follow up after call",
+      source: "agent",
+      notes: "Follow up after call",
     };
     vi.mocked(fetchAuthQuery).mockImplementation(async (...callArgs) => {
       const payload = callArgs[1] as Record<string, unknown>;
@@ -417,10 +411,9 @@ describe("agent orchestrator stream", () => {
     expect(updatePayload?.input).toMatchObject({
       name: "Salma Samir 500",
       phone: "2010111222333",
-      type: "Broker",
-      pipelineStage: "closed",
-      priority: "high",
+      type: "person",
       status: "active",
+      source: "agent",
     });
     expect(updatePayload?.input).not.toHaveProperty("_creationTime");
     expect(updatePayload?.input).not.toHaveProperty("_id");

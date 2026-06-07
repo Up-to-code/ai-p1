@@ -4,23 +4,27 @@ import { useSearchParams } from "next/navigation";
 import { Link, usePathname } from "@/i18n/routing";
 import {
   Building2,
-  House,
+  BriefcaseBusiness,
+  LayoutDashboard,
   UserRound,
-  Landmark,
   Plug,
   History as HistoryIcon,
-  Building,
+  Package,
   CalendarDays,
-  Gauge,
+  KanbanSquare,
+  ListTodo,
   MessageSquareText,
   MoreHorizontal,
   Menu,
   Mail,
   Loader2,
   Plus,
+  Workflow,
   Search,
   ShieldCheck,
+  Settings,
   Trash2,
+  UsersRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -72,25 +76,27 @@ const navigationGroups = [
   {
     label: "workspace",
     items: [
-      { name: "dashboard", href: "/dashboard", icon: House },
+      { name: "dashboard", href: "/dashboard", icon: LayoutDashboard },
     ],
   },
   {
     label: "operations",
     items: [
-      { name: "projects", href: "/projects", icon: Building2 },
-      { name: "units", href: "/properties", icon: Building },
       { name: "clients", href: "/clients", icon: UserRound },
+      { name: "opportunities", href: "/opportunities", icon: KanbanSquare },
+      { name: "projects", href: "/projects", icon: BriefcaseBusiness },
+      { name: "tasks", href: "/tasks", icon: ListTodo },
       { name: "calendar", href: "/calendar", icon: CalendarDays },
+      { name: "assets", href: "/assets", icon: Package },
     ],
   },
   {
     label: "administration",
     items: [
-      { name: "organization", href: "/settings/organization", icon: Landmark },
-      { name: "usage", href: "/usage", icon: Gauge },
-      { name: "activity", href: "/activity", icon: HistoryIcon },
-      { name: "integrations", href: "/web-apps", icon: Plug, disabled: true, badge: "comingSoon" },
+      { name: "automations", href: "/automations", icon: Workflow },
+      { name: "team", href: "/team", icon: UsersRound },
+      { name: "integrations", href: "/web-apps", icon: Plug },
+      { name: "settings", href: "/settings/organization", icon: Settings },
     ],
   },
 ];
@@ -150,6 +156,7 @@ export function Sidebar() {
     (!isGeneratedOrganizationName(account.organization.name) ? account.organization.name : locale === "ar" ? "المؤسسة" : "Organization");
   const organizationsLabel = locale === "ar" ? "مساحات العمل" : "Workspaces";
   const currentLabel = locale === "ar" ? "الحالية" : "Current";
+  const workspaceHomeLabel = locale === "ar" ? "مساحة العمل" : "Workspace";
   const threadsLabel = locale === "ar" ? "المحادثات" : "Threads";
   const newThreadLabel = locale === "ar" ? "جديد" : "New";
   const historyLabel = locale === "ar" ? "السجل" : "History";
@@ -222,27 +229,54 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "flex flex-col h-screen transition-all duration-300 relative shrink-0 overflow-hidden border-e shadow-none",
-        isDarkMode 
-          ? "bg-[#0F0F0F] border-white/5" 
-          : "bg-white border-zinc-200",
+        "relative flex h-screen shrink-0 flex-col overflow-hidden border-e bg-background shadow-none transition-all duration-300",
+        isDarkMode ? "border-white/[0.08]" : "border-black/[0.08]",
         isCollapsed ? "w-[var(--sidebar-width-collapsed)]" : "w-[var(--sidebar-width-expanded)]",
         isRtl && "font-cairo"
       )}
     >
-      {/* Header */}
       <div className={cn(
-        "flex h-14 items-center px-4 gap-4 border-b shrink-0",
-        isDarkMode ? "border-white/5" : "border-zinc-100"
+        "flex h-16 shrink-0 items-center gap-3 border-b px-3",
+        isDarkMode ? "border-white/[0.08]" : "border-black/[0.08]"
       )}>
-        <button 
+        {!isCollapsed && (
+          <Link
+            href={workspaceModeHref("ws")}
+            className={cn(
+              "flex min-w-0 flex-1 items-center gap-2.5 rounded-xl px-2 py-2 text-start transition-colors",
+              isDarkMode ? "hover:bg-white/[0.04]" : "hover:bg-zinc-100"
+            )}
+          >
+            <span className={cn(
+              "flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl text-[10px] font-black uppercase",
+              isDarkMode ? "bg-white text-zinc-950" : "bg-zinc-950 text-white"
+            )}>
+              {account.organization.logo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={account.organization.logo} alt="" className="h-full w-full object-cover" />
+              ) : (
+                account.organization.initials || getInitials(organizationDisplayName)
+              )}
+            </span>
+            <span className="min-w-0">
+              <span className={cn("block truncate text-[13px] font-black leading-tight", isDarkMode ? "text-white" : "text-zinc-950")}>
+                {organizationDisplayName}
+              </span>
+              <span className={cn("mt-0.5 block truncate text-[10px] font-bold uppercase", isDarkMode ? "text-zinc-500" : "text-zinc-400")}>
+                {workspaceHomeLabel}
+              </span>
+            </span>
+          </Link>
+        )}
+        <button
           onClick={toggleCollapsed}
+          aria-label={workspaceHomeLabel}
           className={cn(
-            "p-2 rounded-full transition-all",
-            isDarkMode ? "text-zinc-400 hover:text-white hover:bg-white/5" : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100"
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-all",
+            isDarkMode ? "border-white/[0.08] text-zinc-400 hover:border-white/20 hover:text-white" : "border-black/[0.08] text-zinc-500 hover:border-black/20 hover:text-black"
           )}
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-4 w-4" />
         </button>
       </div>
 
@@ -252,60 +286,36 @@ export function Sidebar() {
           <div key={group.label} className="space-y-0.5">
             {!isCollapsed && (
               <h4 className={cn(
-                "px-3 text-[10px] font-black uppercase tracking-[0.2em] mb-2",
+                "mb-2 px-3 text-[10px] font-black uppercase tracking-[0.2em]",
                 isDarkMode ? "text-zinc-600" : "text-zinc-400"
               )}>{t(`groups.${group.label}`)}</h4>
             )}
             {group.items.map((item) => {
               const itemHref = item.href === "/dashboard" ? workspaceModeHref("ws") : item.href;
-              const isDisabled = Boolean(item.disabled);
-              const isActive = !isDisabled && pathname.startsWith(item.href);
+              const isActive = pathname.startsWith(item.href);
               const itemName = t(item.name);
 
               const content = (
                 <>
                   <item.icon className={cn(
                     "h-[18px] w-[18px] transition-all",
-                    isActive ? (isDarkMode ? "text-white" : "text-zinc-900") : !isDisabled && "group-hover:text-zinc-900 dark:group-hover:text-white"
+                    isActive ? (isDarkMode ? "text-white" : "text-black") : "group-hover:text-black dark:group-hover:text-white"
                   )} />
                   {!isCollapsed && (
-                    <>
-                      <span className="ms-4 min-w-0 flex-1 truncate text-[13px] font-bold tracking-tight transition-all">
-                        {itemName}
-                      </span>
-                      {item.badge === "comingSoon" && (
-                        <span className="ms-2 shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-sky-700 dark:bg-sky-400/10 dark:text-sky-200">
-                          {t("comingSoon")}
-                        </span>
-                      )}
-                    </>
+                    <span className="ms-4 min-w-0 flex-1 truncate text-[13px] font-bold tracking-tight transition-all">
+                      {itemName}
+                    </span>
                   )}
                 </>
               );
 
               const className = cn(
-                "group relative flex h-10 items-center rounded-xl px-3 transition-all duration-200",
-                isDisabled
-                  ? (isDarkMode ? "cursor-not-allowed text-zinc-600" : "cursor-not-allowed text-zinc-400")
-                  : isActive
-                    ? (isDarkMode ? "bg-white/10 text-white" : "bg-zinc-100 text-zinc-900")
-                    : (isDarkMode ? "text-zinc-500 hover:bg-white/5 hover:text-white" : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"),
+                "group relative flex h-10 items-center rounded-xl border px-3 transition-all duration-200",
+                isActive
+                  ? (isDarkMode ? "border-white/10 bg-white/[0.07] text-white" : "border-zinc-200 bg-zinc-100 text-black")
+                  : (isDarkMode ? "border-transparent text-zinc-500 hover:border-white/[0.08] hover:text-white" : "border-transparent text-zinc-500 hover:border-black/[0.08] hover:text-black"),
                 isCollapsed && "mx-auto w-10 justify-center px-0"
               );
-
-              if (isDisabled) {
-                return (
-                  <div
-                    key={item.name}
-                    aria-disabled="true"
-                    aria-label={isCollapsed ? `${itemName}, ${t("comingSoon")}` : undefined}
-                    title={isCollapsed ? `${itemName} - ${t("comingSoon")}` : undefined}
-                    className={className}
-                  >
-                    {content}
-                  </div>
-                );
-              }
 
               return (
                 <Link
@@ -326,7 +336,7 @@ export function Sidebar() {
       {/* Pinned Section */}
       <div className={cn(
         "mt-auto border-t bg-inherit",
-        isDarkMode ? "border-white/5" : "border-zinc-100"
+        isDarkMode ? "border-white/[0.08]" : "border-black/[0.08]"
       )}>
 
         <div className="space-y-3 p-3 pt-3">
@@ -355,8 +365,8 @@ export function Sidebar() {
                       className={cn(
                         "flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-start transition-all",
                         isActive
-                          ? isDarkMode ? "bg-white/[0.08] text-white" : "bg-zinc-100 text-zinc-950"
-                          : isDarkMode ? "text-zinc-500 hover:bg-white/5 hover:text-white" : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-950",
+                          ? isDarkMode ? "text-white" : "text-black"
+                          : isDarkMode ? "text-zinc-500 hover:text-white" : "text-zinc-500 hover:text-black",
                         "disabled:cursor-default disabled:opacity-100"
                       )}
                       title={organizationName}
@@ -364,8 +374,8 @@ export function Sidebar() {
                       <span className={cn(
                         "flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-lg text-[9px] font-black uppercase",
                         isActive
-                          ? isDarkMode ? "bg-white/15 text-white" : "bg-white text-zinc-950"
-                          : isDarkMode ? "bg-white/10 text-zinc-300" : "bg-zinc-100 text-zinc-600"
+                          ? isDarkMode ? "border border-white text-white" : "border border-black text-black"
+                          : isDarkMode ? "border border-white/[0.08] text-zinc-300" : "border border-black/[0.08] text-zinc-600"
                       )}>
                         {organization.logo ? (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -403,8 +413,8 @@ export function Sidebar() {
                 <Link
                   href={workspaceModeHref("ai")}
                   className={cn(
-                    "inline-flex h-6 items-center gap-1 rounded-full px-2 text-[9px] font-black uppercase tracking-wider transition-all",
-                    isDarkMode ? "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white" : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-900"
+                      "inline-flex h-6 items-center gap-1 rounded-full px-2 text-[9px] font-black uppercase tracking-wider transition-all",
+                    isDarkMode ? "border border-white/[0.08] text-zinc-400 hover:border-white/20 hover:text-white" : "border border-black/[0.08] text-zinc-500 hover:border-black/20 hover:text-black"
                   )}
                 >
                   <Plus className="h-3 w-3" />
@@ -423,8 +433,8 @@ export function Sidebar() {
                         className={cn(
                           "group/thread flex min-h-9 items-center gap-1 rounded-xl transition-all",
                           isActive
-                            ? isDarkMode ? "bg-primary/20 text-white" : "bg-primary/10 text-zinc-950"
-                            : isDarkMode ? "text-zinc-500 hover:bg-white/5 hover:text-white" : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-950"
+                            ? isDarkMode ? "border border-white text-white" : "border border-black text-black"
+                            : isDarkMode ? "border border-transparent text-zinc-500 hover:border-white/[0.08] hover:text-white" : "border border-transparent text-zinc-500 hover:border-black/[0.08] hover:text-black"
                         )}
                       >
                         <Link
@@ -470,7 +480,7 @@ export function Sidebar() {
                     onClick={() => setThreadHistoryOpen(true)}
                     className={cn(
                       "flex h-8 w-full items-center justify-center gap-2 rounded-xl px-2 text-[10px] font-black uppercase tracking-wider transition-all",
-                      isDarkMode ? "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white" : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-900"
+                      isDarkMode ? "border border-white/[0.08] text-zinc-400 hover:border-white/20 hover:text-white" : "border border-black/[0.08] text-zinc-500 hover:border-black/20 hover:text-black"
                     )}
                   >
                     <HistoryIcon className="h-3.5 w-3.5" />
@@ -492,13 +502,13 @@ export function Sidebar() {
                 href="/settings/organization"
                 className={cn(
                   "mb-2 block rounded-2xl border p-3 transition-all",
-                  isDarkMode ? "border-white/10 bg-zinc-900/40 hover:bg-white/5" : "border-zinc-200 bg-white hover:bg-zinc-50"
+                  isDarkMode ? "border-white/[0.08] bg-transparent hover:border-white/20" : "border-black/[0.08] bg-transparent hover:border-black/20"
                 )}
               >
                 <div className="flex items-start gap-2.5">
                   <div className={cn(
                     "flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl text-[10px] font-black uppercase",
-                    isDarkMode ? "bg-white/10 text-white" : "bg-zinc-100 text-zinc-900"
+                    isDarkMode ? "border border-white/[0.08] text-white" : "border border-black/[0.08] text-black"
                   )}>
                     {account.organization.logo ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -544,7 +554,7 @@ export function Sidebar() {
               title={isCollapsed ? account.user.name : undefined}
               className={cn(
                 "group flex items-center gap-3 rounded-2xl transition-all",
-                isDarkMode ? "hover:bg-white/5" : "hover:bg-zinc-50",
+                isDarkMode ? "hover:text-white" : "hover:text-black",
                 isCollapsed ? "justify-center" : "px-1.5 py-1.5"
               )}
             >

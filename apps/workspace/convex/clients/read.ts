@@ -2,115 +2,86 @@ import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
 import { query } from "../_generated/server";
 import type { Doc, Id } from "../_generated/dataModel";
-import type { QueryCtx } from "../_generated/server";
-import { listResourceMedia, selectCoverUrl } from "../media/data";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { revealClientPii } from "../security/clientPii";
 import {
-  activeChronologicalWorkspaceRows,
-  activeDueWorkspaceRows,
   activeUpdatedWorkspaceRows,
   activeWorkspaceRows,
   boundedWorkspaceReadLimit,
   presentActiveWorkspacePage,
 } from "../workspace/readSurface";
 import { clientStats } from "../workspace/readStats";
-import { propertyUnitValidator } from "../properties/validators";
-import { clientTypeValidator, clientUnitLinkValidator, clientValidator } from "./validators";
+import { clientTypeValidator, clientValidator, resolveClientPipelineStage } from "./validators";
 
 const MAX_LIST_ITEMS = 300;
-const MAX_CLIENT_WORK_ITEMS = 50;
 const MAX_SEARCH_SCAN_ITEMS = 500;
 const MAX_STATS_SCAN_ITEMS = 2_000;
-const MAX_LINK_ITEMS = 100;
+const assetLinkStatuses = ["interested", "shortlisted", "review", "proposal", "rejected"] as const;
+
+function withoutPrivateClientFields(client: Doc<"clients">) {
+  const safeClient = { ...client };
+  delete safeClient.deletedAt;
+  delete safeClient.isDeleted;
+  delete safeClient.encryptedEmail;
+  delete safeClient.encryptedPhone;
+  delete safeClient.piiEncryptedAt;
+  return safeClient;
+}
 
 function isoDate(timestamp: number) {
   return new Date(timestamp).toISOString().slice(0, 10);
 }
 
-function isoTime(timestamp: number) {
-  return new Date(timestamp).toISOString().slice(11, 16);
-}
-
-async function nextClientWork(ctx: QueryCtx, organizationId: string, client: Doc<"clients">) {
-  const now = Date.now();
-  const tasks = await ctx.db
-    .query("clientTasks")
-    .withIndex("by_client_status", (q) => q.eq("organizationId", organizationId).eq("clientId", client._id).eq("status", "open"))
-    .take(MAX_CLIENT_WORK_ITEMS);
-  const events = await ctx.db
-    .query("calendarEvents")
-    .withIndex("by_client", (q) => q.eq("organizationId", organizationId).eq("clientId", client._id))
-    .take(MAX_CLIENT_WORK_ITEMS);
-
-  const nextTask = activeDueWorkspaceRows(tasks)[0];
-  const nextEvent = activeChronologicalWorkspaceRows(events.filter((event) => event.startAt >= now))[0];
-
-  if (nextTask?.dueAt && (!nextEvent || nextTask.dueAt <= nextEvent.startAt)) {
-    return {
-      action: nextTask.title,
-      date: isoDate(nextTask.dueAt),
-      time: isoTime(nextTask.dueAt),
-      syncState: "eligible" as const,
-    };
-  }
-
-  if (nextEvent) {
-    return {
-      action: nextEvent.title,
-      date: isoDate(nextEvent.startAt),
-      time: isoTime(nextEvent.startAt),
-      syncState: nextEvent.status === "confirmed" ? ("synced" as const) : ("eligible" as const),
-    };
-  }
-
-  return {
-    action: client.nextAction,
-    date: "This week",
-    time: "10:00",
-    syncState: client.issue ? ("blocked" as const) : ("draft" as const),
-  };
-}
-
-async function presentClient(ctx: QueryCtx, client: Doc<"clients">) {
-  const next = await nextClientWork(ctx, client.organizationId, client);
-  const { deletedAt: _deletedAt, isDeleted: _isDeleted, encryptedContact: _encryptedContact, encryptedPhone: _encryptedPhone, encryptedNationality: _encryptedNationality, encryptedBudget: _encryptedBudget, piiEncryptedAt: _piiEncryptedAt, ...safeClient } = client;
+async function presentClient(client: Doc<"clients">) {
+  const safeClient = withoutPrivateClientFields(client);
+  const pii = await revealClientPii(client);
   return {
     ...safeClient,
-    ...await revealClientPii(client),
+    ...pii,
     id: client._id,
     visibility: client.visibility ?? "private",
-    nextAction: next.action,
-    nextActionDate: next.date,
-    appointmentTime: next.time,
+    phone: pii.phone ?? client.phone ?? "",
+    contact: pii.email ?? client.email ?? client.phone ?? client.company ?? "",
+    priority: "normal" as const,
+    budget: "",
+    assetInterest: client.notes ?? client.source,
+    pipelineStage: resolveClientPipelineStage(client),
+    pipelineOrder: client.pipelineOrder,
     added: isoDate(client.createdAt),
     lastContact: isoDate(client.updatedAt),
-    syncState: next.syncState,
   };
 }
 
 async function presentClientListItem(client: Doc<"clients">) {
-  const { deletedAt: _deletedAt, isDeleted: _isDeleted, encryptedContact: _encryptedContact, encryptedPhone: _encryptedPhone, encryptedNationality: _encryptedNationality, encryptedBudget: _encryptedBudget, piiEncryptedAt: _piiEncryptedAt, ...safeClient } = client;
+  const safeClient = withoutPrivateClientFields(client);
+  const pii = await revealClientPii(client);
   return {
     ...safeClient,
-    ...await revealClientPii(client),
+    ...pii,
     id: client._id,
     visibility: client.visibility ?? "private",
-    nextActionDate: "This week",
-    appointmentTime: "10:00",
+    phone: pii.phone ?? client.phone ?? "",
+    contact: pii.email ?? client.email ?? client.phone ?? client.company ?? "",
+    priority: "normal" as const,
+    budget: "",
+    assetInterest: client.notes ?? client.source,
+    pipelineStage: resolveClientPipelineStage(client),
+    pipelineOrder: client.pipelineOrder,
     added: isoDate(client.createdAt),
     lastContact: isoDate(client.updatedAt),
-    syncState: client.issue ? ("blocked" as const) : ("draft" as const),
   };
 }
 
-async function presentProperty(ctx: QueryCtx, property: Doc<"propertyUnits">) {
-  const media = await listResourceMedia(ctx, property.organizationId, "property", property._id);
+function presentClientAssetLink(link: Doc<"recordLinks">) {
+  const legacyStatus = link.label === "viewing" ? "review" : link.label === "offer" ? "proposal" : link.label;
+  const status = assetLinkStatuses.find((candidate) => candidate === legacyStatus) ?? "shortlisted";
   return {
-    ...property,
-    id: property._id,
-    visibility: property.visibility ?? "private",
-    coverImageUrl: selectCoverUrl(media),
+    ...link,
+    id: link._id,
+    clientId: link.sourceRecordId,
+    assetId: link.targetRecordId,
+    status,
+    notes: link.label && link.label !== status ? link.label : undefined,
   };
 }
 
@@ -151,7 +122,14 @@ export const listPaged = query({
         .filter((client) => !args.type || client.type === args.type)
         .map(presentClientListItem));
       const matches = presented
-        .filter((client) => !search || [client.name, client.contact, client.propertyInterest, client.budget].some((value) => value.toLowerCase().includes(search)))
+        .filter((client) => !search || [
+          client.name,
+          client.email,
+          client.phone,
+          client.company,
+          client.contactName,
+          client.source,
+        ].some((value) => value?.toLowerCase().includes(search)))
         .slice(0, 100);
 
       return {
@@ -183,19 +161,13 @@ export const stats = query({
   args: { organizationId: v.string() },
   returns: v.object({
     total: v.number(),
+    new: v.number(),
     active: v.number(),
+    nurture: v.number(),
     inactive: v.number(),
-    buyers: v.number(),
-    tenants: v.number(),
-    investors: v.number(),
-    brokers: v.number(),
-    stages: v.object({
-      new: v.number(),
-      qualified: v.number(),
-      viewing: v.number(),
-      negotiation: v.number(),
-      closed: v.number(),
-    }),
+    archived: v.number(),
+    people: v.number(),
+    organizations: v.number(),
   }),
   handler: async (ctx, args) => {
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
@@ -233,64 +205,72 @@ export const get = query({
       return null;
     }
 
-    return presentClient(ctx, client);
+    return presentClient(client);
   },
 });
 
-export const listUnitLinks = query({
+export const listAssetLinks = query({
   args: { organizationId: v.string(), clientId: v.id("clients") },
-  returns: v.array(v.object({
-    link: clientUnitLinkValidator,
-    unit: v.union(propertyUnitValidator, v.null()),
-  })),
+  returns: v.array(v.object({ link: v.any(), asset: v.any() })),
   handler: async (ctx, args) => {
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
     const client = await ctx.db.get(args.clientId);
     if (!client || client.organizationId !== args.organizationId || client.deletedAt) return [];
-
     const links = await ctx.db
-      .query("clientUnitLinks")
-      .withIndex("by_client", (q) => q.eq("organizationId", args.organizationId).eq("clientId", args.clientId))
-      .take(MAX_LINK_ITEMS);
+      .query("recordLinks")
+      .withIndex("by_source", (q) => q.eq("organizationId", args.organizationId).eq("sourceRecordType", "client").eq("sourceRecordId", args.clientId))
+      .take(100);
 
-    return Promise.all(
-      activeUpdatedWorkspaceRows(links)
-        .map(async (link) => {
-          const unit = await ctx.db.get(link.propertyId as Id<"propertyUnits">);
-          return {
-            link: { ...link, id: link._id },
-            unit: unit && unit.organizationId === args.organizationId && !unit.deletedAt ? await presentProperty(ctx, unit) : null,
-          };
-        }),
-    );
+    return Promise.all(links
+      .filter((link) => !link.deletedAt && link.targetRecordType === "asset")
+      .map(async (link) => {
+        const asset = await ctx.db.get(link.targetRecordId as Id<"assets">);
+        return {
+          link: presentClientAssetLink(link),
+          asset: asset && asset.organizationId === args.organizationId && !asset.deletedAt
+            ? {
+              ...asset,
+              id: asset._id,
+              coverImageUrl: asset.url ?? "",
+              title: asset.name,
+              project: asset.type,
+              price: asset.status,
+              area: asset.visibility ?? "private",
+              reference: asset._id,
+              bedrooms: 0,
+              bathrooms: 0,
+            }
+            : null,
+        };
+      }));
   },
 });
 
-export const listUnitLinksForProperty = query({
-  args: { organizationId: v.string(), propertyId: v.id("propertyUnits") },
-  returns: v.array(v.object({
-    link: clientUnitLinkValidator,
-    client: v.union(clientValidator, v.null()),
-  })),
+export const listAssetLinksForAsset = query({
+  args: { organizationId: v.string(), assetId: v.id("assets") },
+  returns: v.array(v.object({ link: v.any(), client: v.any() })),
   handler: async (ctx, args) => {
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
-    const property = await ctx.db.get(args.propertyId);
-    if (!property || property.organizationId !== args.organizationId || property.deletedAt) return [];
-
+    const asset = await ctx.db.get(args.assetId);
+    if (!asset || asset.organizationId !== args.organizationId || asset.deletedAt) return [];
     const links = await ctx.db
-      .query("clientUnitLinks")
-      .withIndex("by_property", (q) => q.eq("organizationId", args.organizationId).eq("propertyId", args.propertyId))
-      .take(MAX_LINK_ITEMS);
+      .query("recordLinks")
+      .withIndex("by_target", (q) => q.eq("organizationId", args.organizationId).eq("targetRecordType", "asset").eq("targetRecordId", args.assetId))
+      .take(100);
 
-    return Promise.all(
-      activeUpdatedWorkspaceRows(links)
-        .map(async (link) => {
-          const client = await ctx.db.get(link.clientId as Id<"clients">);
-          return {
-            link: { ...link, id: link._id },
-            client: client && client.organizationId === args.organizationId && !client.deletedAt ? await presentClient(ctx, client) : null,
-          };
-        }),
-    );
+    return Promise.all(links
+      .filter((link) => !link.deletedAt && link.sourceRecordType === "client")
+      .map(async (link) => {
+        const client = await ctx.db.get(link.sourceRecordId as Id<"clients">);
+        return {
+          link: presentClientAssetLink(link),
+          client: client && client.organizationId === args.organizationId && !client.deletedAt
+            ? {
+              ...await presentClientListItem(client),
+              contact: client.email ?? client.phone ?? client.company ?? "",
+            }
+            : null,
+        };
+      }));
   },
 });

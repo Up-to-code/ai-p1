@@ -122,7 +122,7 @@ function defaultValues(app?: PartnerAppSummary): PartnerAppFormValues {
     termsOfServiceUrl: app?.termsOfServiceUrl ?? "",
     clientType: app?.clientType ?? "public",
     redirectUris: app?.redirectUris.join("\n") ?? "",
-    allowedScopes: app?.allowedScopes.join("\n") ?? "organization:read\nclient:read\nproperty:read",
+    allowedScopes: app?.allowedScopes.join("\n") ?? "organization:read\nclient:read\nasset:read",
   };
 }
 

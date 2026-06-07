@@ -25,12 +25,12 @@ export const metadata: Metadata = {
     default: brandProductName("platform", "en"),
     template: `%s | ${brandProductName("workspace", "en")}`,
   },
-  description: "Saudi Arabia central real estate workspace for projects, clients, units, and partner authorization.",
+  description: "Saudi Arabia central workspace workspace for projects, clients, assets, and partner authorization.",
   keywords: [
     "Qentrah",
-    "real estate workspace",
-    "Saudi real estate",
-    "property CRM",
+    "workspace workspace",
+    "Saudi workspace",
+    "work management",
     "partner authorization",
   ],
   authors: [{ name: brandLabel("en") }],
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     url: "/",
     siteName: brandProductName("workspace", "en"),
     title: brandProductName("platform", "en"),
-    description: "Manage Qentrah real estate operations, client workflows, units, and partner access.",
+    description: "Manage Qentrah workspace operations, client workflows, assets, and partner access.",
     images: [
       {
         url: "/app-icon-512.png",
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary",
     title: brandProductName("platform", "en"),
-    description: "Qentrah workspace for real estate operations and partner authorization.",
+    description: "Qentrah workspace for workspace operations and partner authorization.",
     images: ["/app-icon-512.png"],
   },
 };

@@ -1,6 +1,12 @@
 import type { Doc } from "../_generated/dataModel";
+import type { McpAction, McpPermission, McpResource } from "./validators";
 
 export type McpConnectionPrincipalType = "user" | "organization";
+
+type StoredMcpPermission = {
+  resource: McpResource | "property";
+  actions: McpAction[];
+};
 
 export function mcpConnectionTtlMs(expiresAt: number | undefined, now = Date.now()) {
   return expiresAt ? Math.max(expiresAt - now, 0) : null;
@@ -8,6 +14,17 @@ export function mcpConnectionTtlMs(expiresAt: number | undefined, now = Date.now
 
 export function mcpConnectionPrincipalType(connection: Doc<"organizationMcpConnections">): McpConnectionPrincipalType {
   return connection.principalType ?? "user";
+}
+
+function normalizeMcpResource(resource: McpResource | "property"): McpResource {
+  return resource === "property" ? "asset" : resource;
+}
+
+export function normalizeMcpPermissions(permissions: StoredMcpPermission[]): McpPermission[] {
+  return permissions.map((permission) => ({
+    resource: normalizeMcpResource(permission.resource),
+    actions: permission.actions,
+  }));
 }
 
 export function presentMcpConnection(connection: Doc<"organizationMcpConnections">) {
@@ -22,7 +39,7 @@ export function presentMcpConnection(connection: Doc<"organizationMcpConnections
     keyLast4: connection.keyLast4,
     name: connection.name,
     instructions: connection.instructions,
-    permissions: connection.permissions,
+    permissions: normalizeMcpPermissions(connection.permissions),
     status: connection.status,
     principalType,
     principalUserId: principalType === "user"

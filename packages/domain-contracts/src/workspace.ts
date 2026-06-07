@@ -3,11 +3,11 @@ import type { ProfileSummary } from "./profiles";
 import type { SessionContext, SessionUser } from "./session";
 
 /**
- * WHY:   The web workspace needs one normalized audience model instead of leaking legacy role labels into the UI.
- * WHAT:  `WorkspaceAudience` captures the broker/developer/none behavior modes used by the workspace gateway.
+ * WHY:   The web workspace needs one normalized audience model instead of leaking vertical role labels into the UI.
+ * WHAT:  `WorkspaceAudience` captures whether the user has an operating workspace or only a neutral setup shell.
  * HOW:   It normalizes session roles plus linked organizations into one small union that the frontend can trust.
  */
-export type WorkspaceAudience = "broker" | "developer" | "none";
+export type WorkspaceAudience = "workspace" | "none";
 
 /**
  * WHY:   The server gateway should expose stable workspace navigation identifiers without importing frontend modules.
@@ -16,11 +16,15 @@ export type WorkspaceAudience = "broker" | "developer" | "none";
  */
 export type WorkspaceZoneKey =
   | "overview"
-  | "market"
+  | "clients"
+  | "opportunities"
   | "projects"
-  | "offers"
-  | "crm"
-  | "inbox"
+  | "tasks"
+  | "calendar"
+  | "assets"
+  | "automations"
+  | "integrations"
+  | "team"
   | "settings";
 
 export type WorkspaceOwnerContext =
@@ -29,11 +33,15 @@ export type WorkspaceOwnerContext =
   | null;
 
 export type WorkspaceCapabilities = {
-  canAccessMarket: boolean;
+  canManageClients: boolean;
+  canManageOpportunities: boolean;
   canManageProjects: boolean;
-  canManageOffers: boolean;
-  canManageCrm: boolean;
-  canUseInbox: boolean;
+  canManageTasks: boolean;
+  canManageCalendar: boolean;
+  canManageAssets: boolean;
+  canManageAutomations: boolean;
+  canManageIntegrations: boolean;
+  canManageTeam: boolean;
   canManageOrganization: boolean;
 };
 
@@ -68,30 +76,32 @@ export function resolveWorkspaceAudience(args: {
   organizationType?: OrganizationSummary["type"] | null;
   requestedRole?: string | null;
 }): WorkspaceAudience {
-  if (args.organizationType === "broker") return "broker";
-  if (args.organizationType === "red") return "developer";
+  if (args.organizationType) return "workspace";
 
   const normalizedRole = (args.role ?? "").toLowerCase();
   const normalizedRequestedRole = (args.requestedRole ?? "").toLowerCase();
 
-  if (normalizedRole === "broker") return "broker";
-  if (normalizedRole === "developer") return "developer";
-  if (normalizedRequestedRole === "broker") return "broker";
-  if (normalizedRequestedRole === "developer") return "developer";
+  if (["owner", "admin", "member", "workspace", "operator", "broker", "developer"].includes(normalizedRole)) {
+    return "workspace";
+  }
+  if (["owner", "admin", "member", "workspace", "operator", "broker", "developer"].includes(normalizedRequestedRole)) {
+    return "workspace";
+  }
   return "none";
 }
 
 /**
- * WHY:   The onboarding UI should not force a broker/developer chooser when the backend can infer a safe default.
+ * WHY:   The onboarding UI should not force a vertical chooser when the backend can infer a safe default.
  * WHAT:  Returns the internal organization type to create when the user has no linked organization yet.
- * HOW:   Reuses the normalized audience and defaults neutral accounts to broker during the current migration.
+ * HOW:   Keeps the legacy storage type stable until the organization schema reset replaces it.
  */
 export function resolveSuggestedOrganizationType(args: {
   role?: string | null;
   requestedRole?: string | null;
   organizationType?: OrganizationSummary["type"] | null;
 }): "broker" | "red" {
-  return resolveWorkspaceAudience(args) === "developer" ? "red" : "broker";
+  void args;
+  return "broker";
 }
 
 /**
@@ -126,14 +136,26 @@ export function getOrganizationOwnerContext(
 /**
  * WHY:   The UI should render zones from server-approved capabilities instead of ad hoc client-side role branching.
  * WHAT:  Returns the visible workspace zone keys for the normalized audience.
- * HOW:   Starts from the shared workspace overview/settings baseline and adds business zones for broker/developer audiences.
+ * HOW:   Starts from the shared workspace overview/settings baseline and adds Work OS zones for workspace audiences.
  */
 export function resolveVisibleZoneKeys(audience: WorkspaceAudience): WorkspaceZoneKey[] {
   if (audience === "none") {
     return ["overview", "settings"];
   }
 
-  return ["overview", "market", "projects", "offers", "crm", "inbox", "settings"];
+  return [
+    "overview",
+    "clients",
+    "opportunities",
+    "projects",
+    "tasks",
+    "calendar",
+    "assets",
+    "automations",
+    "integrations",
+    "team",
+    "settings",
+  ];
 }
 
 /**
@@ -147,11 +169,15 @@ export function resolveWorkspaceCapabilities(
   const zoneSet = new Set(visibleZoneKeys);
 
   return {
-    canAccessMarket: zoneSet.has("market"),
+    canManageClients: zoneSet.has("clients"),
+    canManageOpportunities: zoneSet.has("opportunities"),
     canManageProjects: zoneSet.has("projects"),
-    canManageOffers: zoneSet.has("offers"),
-    canManageCrm: zoneSet.has("crm"),
-    canUseInbox: zoneSet.has("inbox"),
+    canManageTasks: zoneSet.has("tasks"),
+    canManageCalendar: zoneSet.has("calendar"),
+    canManageAssets: zoneSet.has("assets"),
+    canManageAutomations: zoneSet.has("automations"),
+    canManageIntegrations: zoneSet.has("integrations"),
+    canManageTeam: zoneSet.has("team"),
     canManageOrganization: zoneSet.has("settings"),
   };
 }

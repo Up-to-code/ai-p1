@@ -67,10 +67,11 @@ export function projectPayload(name = uniqueName("E2E Project")) {
     city: "Riyadh",
     area: "Al Malqa",
     type: "Residential",
-    unitTypes: ["Apartment"],
+    assetTypes: ["Apartment"],
     status: "draft",
     visibility: "private",
-    units: 12,
+    assetCount: 12,
+    averagePrice: "850K SAR",
     priceRange: "850K SAR",
     description: "A complete end to end project record for automated browser coverage.",
   };
@@ -84,7 +85,7 @@ export async function createProject(request: APIRequestContext, organizationId: 
   return jsonOrThrow<{ project: { id: string } }>(response);
 }
 
-export function propertyPayload(project: { id: string; name: string }, title = uniqueName("E2E Unit")) {
+export function assetPayload(project: { id: string; name: string }, title = uniqueName("E2E Asset")) {
   return {
     title,
     projectId: project.id,
@@ -98,35 +99,35 @@ export function propertyPayload(project: { id: string; name: string }, title = u
     area: "120 m2",
     bedrooms: 2,
     bathrooms: 2,
-    description: "A complete property unit record for automated browser coverage.",
+    description: "A complete asset record for automated browser coverage.",
   };
 }
 
-export async function createProperty(
+export async function createAsset(
   request: APIRequestContext,
   organizationId: string,
   project: { id: string; name: string },
-  input = propertyPayload(project),
+  input = assetPayload(project),
 ) {
-  const response = await request.post(`/api/v1/organizations/${organizationId}/properties`, {
+  const response = await request.post(`/api/v1/organizations/${organizationId}/assets`, {
     data: input,
     headers: { "content-type": "application/json" },
   });
-  return jsonOrThrow<{ property: { id: string } }>(response);
+  return jsonOrThrow<{ asset: { id: string } }>(response);
 }
 
-export async function updateProperty(
+export async function updateAsset(
   request: APIRequestContext,
   organizationId: string,
-  propertyId: string,
+  assetId: string,
   project: { id: string; name: string },
-  input = propertyPayload(project),
+  input = assetPayload(project),
 ) {
-  const response = await request.patch(`/api/v1/organizations/${organizationId}/properties/${propertyId}`, {
+  const response = await request.patch(`/api/v1/organizations/${organizationId}/assets/${assetId}`, {
     data: input,
     headers: { "content-type": "application/json" },
   });
-  return jsonOrThrow<{ property: { id: string } }>(response);
+  return jsonOrThrow<{ asset: { id: string } }>(response);
 }
 
 function clientPayload(name = uniqueName("E2E Client")) {
@@ -139,7 +140,7 @@ function clientPayload(name = uniqueName("E2E Client")) {
     nationality: "Saudi",
     generation: "Millennial",
     budget: "900K - 1.2M SAR",
-    propertyInterest: "2BR apartment in Riyadh",
+    assetInterest: "2BR apartment in Riyadh",
     status: "active",
     visibility: "private",
     pipelineStage: "new",
@@ -176,7 +177,7 @@ export async function createCalendarEvent(
   input: {
     title: string;
     clientId?: string;
-    unitId?: string;
+    assetId?: string;
     taskId?: string;
     date?: string;
     time?: string;
@@ -191,7 +192,7 @@ export async function createCalendarEvent(
       type: "visit",
       status: "confirmed",
       clientId: input.clientId,
-      unitId: input.unitId,
+      assetId: input.assetId,
       taskId: input.taskId,
       location: "Riyadh",
       notes: "Created by E2E coverage.",

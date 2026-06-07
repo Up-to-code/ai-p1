@@ -14,7 +14,7 @@ describe("workspace dashboard localization", () => {
     const source = readSource("domains/dashboard/components/dashboard-screen.tsx");
 
     for (const hardcodedLabel of [
-      '"New properties"',
+      '"New assets"',
       '"New projects"',
       '"Latest clients"',
       '"Upcoming meeting"',

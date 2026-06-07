@@ -186,7 +186,7 @@ export default function AuthScreen() {
   const [busyProvider, setBusyProvider] = useState<"apple" | "google" | null>(null);
   const [emailSheetMode, setEmailSheetMode] = useState<"login" | "signup" | null>(null);
   const [sessionHandoffPending, setSessionHandoffPending] = useState(false);
-  const headlineWords = useMemo(() => ["AI for real estate", "Shared team work", "Deals in motion", "Listings to action"], []);
+  const headlineWords = useMemo(() => ["AI for operations", "Shared team work", "Deals in motion", "Records to action"], []);
   const [headlineIndex, setHeadlineIndex] = useState(0);
   const [headlinePhase, setHeadlinePhase] = useState<HeadlineMotionPhase>("typing");
   const [typedHeadline, setTypedHeadline] = useState("");

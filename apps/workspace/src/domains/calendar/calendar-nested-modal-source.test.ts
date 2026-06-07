@@ -33,10 +33,10 @@ describe("calendar nested detail modal source", () => {
     expect(source).toContain("aria-hidden={Boolean(quickViewEntity)}");
   });
 
-  it("keeps full navigation actions for client and unit quick views", () => {
+  it("keeps full navigation actions for client and asset quick views", () => {
     expect(source).toContain("router.push(`/${locale}/clients/${clientId}`)");
-    expect(source).toContain("router.push(`/${locale}/properties/${property.reference || propertyId}`)");
+    expect(source).toContain("router.push(`/${locale}/assets/${asset.reference || assetId}`)");
     expect(source).toContain("Open Full Profile");
-    expect(source).toContain("Open Full Property");
+    expect(source).toContain("Open Full Asset");
   });
 });

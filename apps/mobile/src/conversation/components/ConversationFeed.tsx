@@ -269,7 +269,7 @@ export function ConversationFeed({
     latestAssistantMessage?.id,
     latestAssistantMessage?.streamState,
     latestAssistantMessage?.text,
-    latestAssistantMessage?.relatedPropertyIds.length,
+    latestAssistantMessage?.relatedAssetIds.length,
   ]);
 
   const keyExtractor = useCallback((item: ConversationMessage) => item.id, []);

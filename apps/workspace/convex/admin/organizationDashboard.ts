@@ -35,7 +35,7 @@ function isString(value: string | undefined): value is string {
 
 export function adminOrganizationMemberIds(records: {
   projects: CreatedByRecord[];
-  properties: CreatedByRecord[];
+  assets: CreatedByRecord[];
   clients: CreatedByRecord[];
   tasks: CreatedByRecord[];
   calendar: CreatedByRecord[];
@@ -47,7 +47,7 @@ export function adminOrganizationMemberIds(records: {
 }) {
   return Array.from(new Set([
     ...records.projects.map((record) => record.createdByUserId),
-    ...records.properties.map((record) => record.createdByUserId),
+    ...records.assets.map((record) => record.createdByUserId),
     ...records.clients.map((record) => record.createdByUserId),
     ...records.tasks.map((record) => record.createdByUserId),
     ...records.calendar.map((record) => record.createdByUserId),

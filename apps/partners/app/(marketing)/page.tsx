@@ -13,7 +13,7 @@ export const handlers = createQentrahPartnerAuthHandlers({
   workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL,
   appBaseUrl: process.env.PARTNER_APP_URL,
   redirectUri: \`\${process.env.PARTNER_APP_URL}${oauthCallbackPath}\`,
-  scopes: ["client:read", "property:read", "task:create"],
+  scopes: ["client:read", "asset:read", "task:create"],
   tokenStore
 });
 
@@ -30,7 +30,7 @@ const platformPillars = [
 export const handlers = createQentrahPartnerAuthHandlers({
   clientId: process.env.QENTRAH_CLIENT_ID,
   workspaceBaseUrl: process.env.QENTRAH_WORKSPACE_API_URL,
-  scopes: ["client:read", "property:read"],
+  scopes: ["client:read", "asset:read"],
   tokenStore,
 });`,
   },
@@ -65,7 +65,7 @@ const clients = await qentrah.read({
   {
     eyebrow: "04 / Event Outbox",
     title: "Verified webhook handlers",
-    description: "Receive Qentrah events through a raw-body verified webhook route. Payload signatures are checked before JSON parsing so partner apps can safely react to client and property changes.",
+    description: "Receive Qentrah events through a raw-body verified webhook route. Payload signatures are checked before JSON parsing so partner apps can safely react to client and asset changes.",
     bullets: ["Raw-body verification", "Signed delivery headers", "Backend event handling"],
     code: `import { createQentrahWebhookHandler } from "@qentrah/auth-sdk/partner/webhooks";
 

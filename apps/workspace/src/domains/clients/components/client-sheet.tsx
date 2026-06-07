@@ -9,10 +9,11 @@ interface ClientSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   existing?: Client;
+  indexQueryKey?: readonly unknown[];
   onSuccess?: (id: string) => void;
 }
 
-export function ClientSheet({ open, onOpenChange, existing, onSuccess }: ClientSheetProps) {
+export function ClientSheet({ open, onOpenChange, existing, indexQueryKey, onSuccess }: ClientSheetProps) {
   const t = useTranslations('Clients');
   
   return (
@@ -33,8 +34,9 @@ export function ClientSheet({ open, onOpenChange, existing, onSuccess }: ClientS
           </SheetHeader>
           
           <div className="flex-1 overflow-y-auto p-8">
-            <ClientForm 
-              existing={existing} 
+            <ClientForm
+              existing={existing}
+              indexQueryKey={indexQueryKey}
               onSuccess={(id) => {
                 onSuccess?.(id);
                 onOpenChange(false);

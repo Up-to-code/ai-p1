@@ -52,9 +52,9 @@ export function searchTerm(input: Input) {
   return value?.trim().toLowerCase();
 }
 
-export function matchesSearch(search: string | undefined, values: string[]) {
+export function matchesSearch(search: string | undefined, values: Array<string | undefined>) {
   if (!search) return true;
-  return values.some((value) => value.toLowerCase().includes(search));
+  return values.some((value) => value?.toLowerCase().includes(search));
 }
 
 export function requiredNumber(input: Input, key: string) {
@@ -87,141 +87,89 @@ function oneOf<T extends string>(value: unknown, allowed: readonly T[], fallback
 }
 
 export function clientInput(input: Input) {
-  const phone = optionalString(input, "phone") ?? "";
-  const contact = optionalString(input, "contact") ?? optionalString(input, "email") ?? phone;
-  if (!contact && !phone) {
-    throw new Error("Provide either contact/email or phone for the client.");
-  }
-
   return {
     name: requiredString(input, "name"),
-    type: oneOf(input.type, ["Buyer", "Tenant", "Investor", "Broker"] as const, "Buyer"),
-    contact: contact ?? "",
-    phone,
-    age: optionalNumber(input, "age") ?? 0,
-    nationality: optionalString(input, "nationality") ?? "",
-    generation: optionalString(input, "generation") ?? "",
-    budget: optionalString(input, "budget") ?? "",
-    propertyInterest: optionalString(input, "propertyInterest") ?? "",
-    status: oneOf(input.status, ["active", "inactive"] as const, "active"),
-    pipelineStage: oneOf(input.pipelineStage, ["new", "qualified", "viewing", "negotiation", "closed"] as const, "new"),
-    ...(optionalNumber(input, "pipelineOrder") !== undefined ? { pipelineOrder: optionalNumber(input, "pipelineOrder")! } : {}),
-    priority: priority(input),
-    nextAction: optionalString(input, "nextAction") ?? "Follow up",
-    issue: optionalString(input, "issue"),
+    type: oneOf(input.type, ["person", "organization"] as const, "person"),
+    status: oneOf(input.status, ["new", "active", "nurture", "inactive", "archived"] as const, "new"),
+    source: optionalString(input, "source") ?? "mcp",
+    company: optionalString(input, "company"),
+    contactName: optionalString(input, "contactName"),
+    email: optionalString(input, "email") ?? optionalString(input, "contact"),
+    phone: optionalString(input, "phone"),
+    website: optionalString(input, "website"),
+    notes: optionalString(input, "notes"),
   };
 }
 
-export function propertyInput(input: Input) {
+export function assetInput(input: Input) {
   return {
-    title: requiredString(input, "title"),
-    projectId: optionalString(input, "projectId") as Id<"projects"> | undefined,
-    project: optionalString(input, "project") ?? "",
-    city: requiredString(input, "city"),
+    name: optionalString(input, "name") ?? requiredString(input, "title"),
     type: requiredString(input, "type"),
-    status: oneOf(input.status, ["available", "sold", "reserved", "pending", "draft"] as const, "draft"),
-    purpose: oneOf(input.purpose, ["sale", "rent"] as const, "sale"),
-    price: requiredString(input, "price"),
-    area: requiredString(input, "area"),
-    bedrooms: optionalNumber(input, "bedrooms") ?? 0,
-    bathrooms: optionalNumber(input, "bathrooms") ?? 0,
-    description: optionalString(input, "description") ?? "",
+    status: oneOf(input.status, ["draft", "active", "review", "approved", "archived"] as const, "draft"),
+    url: optionalString(input, "url"),
+    fileId: optionalString(input, "fileId"),
+    description: optionalString(input, "description"),
   };
 }
 
-export function propertyFieldPatch(input: Input) {
+export function assetFieldPatch(input: Input) {
   const field = requiredString(input, "field");
-  const allowed = new Set(["title", "project", "city", "type", "status", "purpose", "price", "area", "bedrooms", "bathrooms", "description"]);
-  if (!allowed.has(field)) throw new Error("This apartment field cannot be edited by MCP.");
+  const allowed = new Set(["name", "type", "status", "url", "fileId", "description"]);
+  if (!allowed.has(field)) throw new Error("This asset field cannot be edited by MCP.");
   return { [field]: input.value };
 }
 
 export function projectStatus(input: Input) {
-  return oneOf(input.status, ["draft", "pending", "approved", "rejected"] as const, "draft");
+  return oneOf(input.status, ["planned", "active", "paused", "completed", "archived"] as const, "planned");
 }
 
 export function projectInput(input: Input) {
-  const projectPrices = Array.isArray(input.projectPrices)
-    ? input.projectPrices
-        .filter((item): item is Record<string, unknown> => item !== null && typeof item === "object")
-        .map((item, index) => ({
-          id: optionalString(item, "id") ?? `price-${index + 1}`,
-          label: optionalString(item, "label") ?? "",
-          price: optionalString(item, "price") ?? "",
-        }))
-    : undefined;
-  const averagePrice = optionalString(input, "averagePrice") ?? optionalString(input, "priceRange") ?? "";
-  const projectPriceDisplay = projectPrices?.map((item) => item.price).filter(Boolean).join(" - ");
-  const priceRange = projectPriceDisplay || averagePrice;
-
   return {
     name: requiredString(input, "name"),
-    developer: requiredString(input, "developer"),
-    city: requiredString(input, "city"),
-    area: requiredString(input, "area"),
-    type: requiredString(input, "type"),
-    unitTypes: Array.isArray(input.unitTypes) ? input.unitTypes.filter((value) => typeof value === "string") : undefined,
     status: projectStatus(input),
-    units: optionalNumber(input, "units") ?? 0,
-    averagePrice,
-    projectPrices,
-    priceRange,
-    regaAuthorizationNo: optionalString(input, "regaAuthorizationNo"),
-    regaExpiresAt: optionalString(input, "regaExpiresAt"),
-    planNumber: optionalString(input, "planNumber"),
-    plotNumber: optionalString(input, "plotNumber"),
-    postalIdentity: optionalString(input, "postalIdentity"),
-    description: optionalString(input, "description") ?? "",
+    health: oneOf(input.health, ["onTrack", "atRisk", "blocked"] as const, "onTrack"),
+    budget: optionalNumber(input, "budget"),
+    currency: optionalString(input, "currency"),
+    description: optionalString(input, "description"),
   };
 }
 
 export function calendarInput(input: Input) {
   return {
     title: requiredString(input, "title"),
-    owner: optionalString(input, "owner") ?? "Agent",
+    ownerUserId: optionalString(input, "ownerUserId"),
     startAt: requiredNumber(input, "startAt"),
-    endAt: optionalNumber(input, "endAt"),
-    type: oneOf(input.type, ["visit", "call", "meeting", "client-visit", "site-viewing", "appointment", "signing", "follow-up", "handover", "audit", "custom"] as const, "meeting"),
+    endAt: optionalNumber(input, "endAt") ?? requiredNumber(input, "startAt"),
+    type: oneOf(input.type, ["meeting", "deadline", "reminder", "milestone", "focusBlock"] as const, "meeting"),
     status: oneOf(input.status, ["confirmed", "pending", "draft"] as const, "confirmed"),
-    clientId: optionalString(input, "clientId") as Id<"clients"> | undefined,
-    propertyId: optionalString(input, "propertyId") as Id<"propertyUnits"> | undefined,
-    projectId: optionalString(input, "projectId") as Id<"projects"> | undefined,
-    taskId: optionalString(input, "taskId") as Id<"clientTasks"> | undefined,
     location: optionalString(input, "location"),
+    meetingUrl: optionalString(input, "meetingUrl"),
     notes: optionalString(input, "notes"),
-    customFields: Array.isArray(input.customFields)
-      ? input.customFields
-          .filter((field): field is { label: unknown; value: unknown } => Boolean(field) && typeof field === "object")
-          .map((field) => ({ label: String(field.label ?? "").trim(), value: String(field.value ?? "").trim() }))
-          .filter((field) => field.label || field.value)
-      : undefined,
   };
 }
 
 function priority(input: Input) {
-  return oneOf(input.priority, ["normal", "high", "urgent"] as const, "normal");
+  return oneOf(input.priority, ["low", "normal", "high", "urgent"] as const, "normal");
 }
 
 export function taskStatus(input: Input) {
-  return oneOf(input.status, ["open", "done", "canceled"] as const, "open");
+  return oneOf(input.status, ["todo", "inProgress", "waiting", "done", "canceled"] as const, "todo");
 }
 
 export function taskInput(input: Input) {
   return {
-    clientId: requiredString(input, "clientId") as Id<"clients">,
     title: requiredString(input, "title"),
     status: taskStatus(input),
     priority: priority(input),
-    dueAt: optionalNumber(input, "dueAt"),
-    propertyId: optionalString(input, "propertyId") as Id<"propertyUnits"> | undefined,
-    projectId: optionalString(input, "projectId") as Id<"projects"> | undefined,
-    calendarEventId: optionalString(input, "calendarEventId") as Id<"calendarEvents"> | undefined,
-    notes: optionalString(input, "notes"),
+    assigneeUserId: optionalString(input, "assigneeUserId"),
+    dueDate: optionalString(input, "dueDate"),
+    description: optionalString(input, "description") ?? optionalString(input, "notes"),
   };
 }
 
-export function clientUnitStatus(input: Input) {
-  return oneOf(input.status, ["interested", "shortlisted", "viewing", "offer", "rejected"] as const, "interested");
+export function clientAssetStatus(input: Input) {
+  const status = typeof input.status === "string" && input.status === "viewing" ? "review" : typeof input.status === "string" && input.status === "offer" ? "proposal" : input.status;
+  return oneOf(status, ["interested", "shortlisted", "review", "proposal", "rejected"] as const, "interested");
 }
 
 export function mediaKind(input: Input) {
@@ -236,10 +184,10 @@ export async function assertMediaResource(
   const resourceType = requiredString(input, "resourceType");
   const resourceId = requiredString(input, "resourceId");
   if (resourceType === "project") return assertActiveWorkspaceRecord(await ctx.db.get(resourceId as Id<"projects">), organizationId, "Project");
-  if (resourceType === "property") return assertActiveWorkspaceRecord(await ctx.db.get(resourceId as Id<"propertyUnits">), organizationId, "Property unit");
+  if (resourceType === "asset") return assertActiveWorkspaceRecord(await ctx.db.get(resourceId as Id<"assets">), organizationId, "Asset");
   if (resourceType === "client") return assertActiveWorkspaceRecord(await ctx.db.get(resourceId as Id<"clients">), organizationId, "Client");
   if (resourceType === "calendarEvent") return assertActiveWorkspaceRecord(await ctx.db.get(resourceId as Id<"calendarEvents">), organizationId, "Calendar event");
-  if (resourceType === "task") return assertActiveWorkspaceRecord(await ctx.db.get(resourceId as Id<"clientTasks">), organizationId, "Task");
+  if (resourceType === "task") return assertActiveWorkspaceRecord(await ctx.db.get(resourceId as Id<"tasks">), organizationId, "Task");
   throw new Error("Unsupported media resource type.");
 }
 
@@ -253,10 +201,7 @@ export async function assertCalendarLinks(
   organizationId: string,
   input: ReturnType<typeof calendarInput>,
 ) {
-  if (input.clientId) assertActiveWorkspaceRecord(await ctx.db.get(input.clientId), organizationId, "Client");
-  if (input.propertyId) assertActiveWorkspaceRecord(await ctx.db.get(input.propertyId), organizationId, "Property unit");
-  if (input.projectId) assertActiveWorkspaceRecord(await ctx.db.get(input.projectId), organizationId, "Project");
-  if (input.taskId) assertActiveWorkspaceRecord(await ctx.db.get(input.taskId), organizationId, "Task");
+  return;
 }
 
 export async function assertTaskLinks(
@@ -264,9 +209,5 @@ export async function assertTaskLinks(
   organizationId: string,
   input: ReturnType<typeof taskInput> | { status: "done"; completedAt: number },
 ) {
-  if (!("clientId" in input)) return;
-  assertActiveWorkspaceRecord(await ctx.db.get(input.clientId), organizationId, "Client");
-  if (input.propertyId) assertActiveWorkspaceRecord(await ctx.db.get(input.propertyId), organizationId, "Property unit");
-  if (input.projectId) assertActiveWorkspaceRecord(await ctx.db.get(input.projectId), organizationId, "Project");
-  if (input.calendarEventId) assertActiveWorkspaceRecord(await ctx.db.get(input.calendarEventId), organizationId, "Calendar event");
+  return;
 }

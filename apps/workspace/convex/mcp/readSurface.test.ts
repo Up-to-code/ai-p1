@@ -15,10 +15,10 @@ const pageBase = {
 describe("MCP read surface", () => {
   it("filters workspace records to active public rows and optional search matches", () => {
     const records = [
-      { _id: "public-match", visibility: "public" as const, deletedAt: undefined, name: "Noura" },
+      { _id: "public-match", visibility: "workspace" as const, deletedAt: undefined, name: "Noura" },
       { _id: "private", visibility: "private" as const, deletedAt: undefined, name: "Noura" },
-      { _id: "deleted", visibility: "public" as const, deletedAt: 123, name: "Noura" },
-      { _id: "miss", visibility: "public" as const, deletedAt: undefined, name: "Omar" },
+      { _id: "deleted", visibility: "workspace" as const, deletedAt: 123, name: "Noura" },
+      { _id: "miss", visibility: "workspace" as const, deletedAt: undefined, name: "Omar" },
     ];
 
     expect(
@@ -30,7 +30,7 @@ describe("MCP read surface", () => {
     const result = mcpPublicWorkspacePage({
       ...pageBase,
       page: [
-        { _id: "public", visibility: "public" as const },
+        { _id: "public", visibility: "workspace" as const },
         { _id: "private", visibility: "private" as const },
       ],
     });
@@ -38,16 +38,16 @@ describe("MCP read surface", () => {
     expect(result).toEqual({
       isDone: true,
       continueCursor: "",
-      items: [{ _id: "public", visibility: "public", id: "public" }],
+      items: [{ _id: "public", visibility: "workspace", id: "public" }],
     });
   });
 
   it("returns capped search results after filtering and optional sorting", () => {
     const records = [
-      { _id: "later", visibility: "public" as const, deletedAt: undefined, title: "Call", dueAt: 20 },
+      { _id: "later", visibility: "workspace" as const, deletedAt: undefined, title: "Call", dueAt: 20 },
       { _id: "private", visibility: "private" as const, deletedAt: undefined, title: "Call", dueAt: 1 },
-      { _id: "first", visibility: "public" as const, deletedAt: undefined, title: "Call", dueAt: 10 },
-      { _id: "miss", visibility: "public" as const, deletedAt: undefined, title: "Email", dueAt: 5 },
+      { _id: "first", visibility: "workspace" as const, deletedAt: undefined, title: "Call", dueAt: 10 },
+      { _id: "miss", visibility: "workspace" as const, deletedAt: undefined, title: "Email", dueAt: 5 },
     ];
 
     expect(
@@ -60,7 +60,7 @@ describe("MCP read surface", () => {
     ).toEqual({
       isDone: true,
       continueCursor: "",
-      items: [{ _id: "first", visibility: "public", deletedAt: undefined, title: "Call", dueAt: 10, id: "first" }],
+      items: [{ _id: "first", visibility: "workspace", deletedAt: undefined, title: "Call", dueAt: 10, id: "first" }],
     });
   });
 

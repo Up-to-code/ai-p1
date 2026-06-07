@@ -18,20 +18,20 @@ export const orgApiClientUpdateInputSchema = orgApiClientInputSchema.partial().r
   "Provide at least one client field to update",
 );
 
-export const orgApiPropertyInputSchema = z.object({
-  title: z.string().trim().min(1, "Property title must be at least 1 character").max(200),
-  address: z.string().trim().min(1, "Property address must be at least 1 character").max(300),
+export const orgApiAssetInputSchema = z.object({
+  title: z.string().trim().min(1, "Asset title must be at least 1 character").max(200),
+  address: z.string().trim().min(1, "Asset address must be at least 1 character").max(300),
   price: z.number().finite().nonnegative(),
   beds: z.number().int().nonnegative(),
   baths: z.number().int().nonnegative(),
-  description: z.string().trim().min(1, "Property description must be at least 1 character").max(5000),
+  description: z.string().trim().min(1, "Asset description must be at least 1 character").max(5000),
   area: z.string().trim().max(200).optional(),
   location: z.string().trim().max(200).optional(),
 }).merge(externalReferenceSchema);
 
-export const orgApiPropertyUpdateInputSchema = orgApiPropertyInputSchema.partial().refine(
+export const orgApiAssetUpdateInputSchema = orgApiAssetInputSchema.partial().refine(
   (value) => Object.values(value).some((entry) => entry !== undefined),
-  "Provide at least one property field to update",
+  "Provide at least one asset field to update",
 );
 
 export const orgApiDealStageSchema = z.enum(["new", "contacted", "negotiation", "won", "lost"]);
@@ -59,8 +59,8 @@ export const orgApiDealUpdateInputSchema = orgApiDealInputSchema.partial().refin
 
 export type OrgApiClientInput = z.infer<typeof orgApiClientInputSchema>;
 export type OrgApiClientUpdateInput = z.infer<typeof orgApiClientUpdateInputSchema>;
-export type OrgApiPropertyInput = z.infer<typeof orgApiPropertyInputSchema>;
-export type OrgApiPropertyUpdateInput = z.infer<typeof orgApiPropertyUpdateInputSchema>;
+export type OrgApiAssetInput = z.infer<typeof orgApiAssetInputSchema>;
+export type OrgApiAssetUpdateInput = z.infer<typeof orgApiAssetUpdateInputSchema>;
 export type OrgApiDealInput = z.infer<typeof orgApiDealInputSchema>;
 export type OrgApiDealUpdateInput = z.infer<typeof orgApiDealUpdateInputSchema>;
 
@@ -80,7 +80,7 @@ export type OrgApiClientRecord = {
   updatedAt: number;
 };
 
-export type OrgApiPropertyRecord = {
+export type OrgApiAssetRecord = {
   id: string;
   title: string;
   address: string;

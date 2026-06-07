@@ -50,8 +50,8 @@ export function billingScreenCopy(locale: BillingLocale, isYearly: boolean) {
         starting: "جاري إنشاء الدفع...",
         secure: isYearly ? "يتم الدفع في صفحة تمارا الآمنة، ثم تعود إلى كانترا بعد الانتهاء." : "تمارا متاحة فقط لخيار الدفع السنوي بنظام اشتر الآن وادفع لاحقاً.",
         included: isYearly
-          ? ["مساحة المشاريع والوحدات والعملاء", "دفع سنوي عبر تمارا", "مرحلة إعداد مجانية", "دعم الأدوار الأساسية"]
-          : ["مساحة المشاريع والوحدات والعملاء", "مرحلة إعداد مجانية", "دعم الأدوار الأساسية", "تجديد يدوي كل 30 يوم"],
+          ? ["مساحة المشاريع والأصول والعملاء", "دفع سنوي عبر تمارا", "مرحلة إعداد مجانية", "دعم الأدوار الأساسية"]
+          : ["مساحة المشاريع والأصول والعملاء", "مرحلة إعداد مجانية", "دعم الأدوار الأساسية", "تجديد يدوي كل 30 يوم"],
       }
     : {
         eyebrow: "Billing",
@@ -67,8 +67,8 @@ export function billingScreenCopy(locale: BillingLocale, isYearly: boolean) {
         starting: "Creating checkout...",
         secure: isYearly ? "Payment happens on Tamara's secure checkout, then you return to Qentrah when it is complete." : "Tamara is available only for the annual buy-now-pay-later option.",
         included: isYearly
-          ? ["Project, unit, and client workspace", "Annual payment through Tamara", "Free setup phase included", "Core organization roles"]
-          : ["Project, unit, and client workspace", "Free setup phase included", "Core organization roles", "Manual renewal every 30 days"],
+          ? ["Project, asset, and client workspace", "Annual payment through Tamara", "Free setup phase included", "Core organization roles"]
+          : ["Project, asset, and client workspace", "Free setup phase included", "Core organization roles", "Manual renewal every 30 days"],
       };
 }
 

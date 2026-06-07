@@ -7,7 +7,7 @@ const logoUrl = `${partnersUrl}/app-icon-512.png`;
 const trustedKeywords = [
   "Saudi real estate workspace",
   "real estate CRM",
-  "property inventory management",
+  "asset inventory management",
   "project readiness",
   "broker coordination",
   "developer workflow",

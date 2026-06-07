@@ -54,7 +54,7 @@ describe("demo config", () => {
       "media:read",
       "organization:read",
       "project:read",
-      "property:read",
+      "asset:read",
       "task:read",
     ]);
   });

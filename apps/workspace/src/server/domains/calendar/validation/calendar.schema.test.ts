@@ -2,29 +2,28 @@ import { describe, expect, it } from "vitest";
 import { calendarEventPayloadSchema, floatingDateTimeToTimestamp } from "./calendar.schema";
 
 describe("calendar validation", () => {
-  it("accepts client-linked event context", () => {
+  it("accepts workspace event context", () => {
     const parsed = calendarEventPayloadSchema.parse({
-      title: "Unit viewing",
-      owner: "Abdullah Al-Faisal",
+      title: "Asset review",
+      ownerUserId: "user_123",
       date: "2026-05-10",
       time: "14:30",
-      type: "site-viewing",
+      type: "meeting",
       status: "confirmed",
-      clientId: "client_123",
-      unitId: "unit_123",
-      taskId: "",
+      durationMinutes: 45,
+      tags: ["review"],
     });
 
-    expect(parsed.clientId).toBe("client_123");
-    expect(parsed.unitId).toBe("unit_123");
-    expect(parsed.taskId).toBeUndefined();
+    expect(parsed.ownerUserId).toBe("user_123");
+    expect(parsed.durationMinutes).toBe(45);
+    expect(parsed.tags).toEqual(["review"]);
   });
 
   it("accepts business event types", () => {
-    for (const type of ["visit", "call", "meeting", "follow-up"] as const) {
+    for (const type of ["meeting", "deadline", "reminder", "milestone", "focusBlock"] as const) {
       const parsed = calendarEventPayloadSchema.parse({
         title: "Client work",
-        owner: "Abdullah Al-Faisal",
+        ownerUserId: "user_123",
         date: "2026-05-10",
         time: "14:30",
         type,
@@ -35,35 +34,32 @@ describe("calendar validation", () => {
     }
   });
 
-  it("trims and removes empty custom fields", () => {
+  it("trims and removes empty tags", () => {
     const parsed = calendarEventPayloadSchema.parse({
       title: "Client call",
-      owner: "Abdullah Al-Faisal",
+      ownerUserId: "user_123",
       date: "2026-05-10",
       time: "14:30",
-      type: "call",
+      type: "meeting",
       status: "confirmed",
-      customFields: [
-        { label: " Channel ", value: " WhatsApp " },
-        { label: " ", value: "" },
-      ],
+      tags: [" Channel ", " "],
     });
 
-    expect(parsed.customFields).toEqual([{ label: "Channel", value: "WhatsApp" }]);
+    expect(parsed.tags).toEqual(["Channel"]);
   });
 
-  it("allows missing custom fields and legacy event types", () => {
+  it("allows missing tags and workspace event types", () => {
     const parsed = calendarEventPayloadSchema.parse({
-      title: "Unit viewing",
-      owner: "Abdullah Al-Faisal",
+      title: "Asset review",
+      ownerUserId: "user_123",
       date: "2026-05-10",
       time: "14:30",
-      type: "site-viewing",
+      type: "deadline",
       status: "confirmed",
     });
 
-    expect(parsed.customFields).toBeUndefined();
-    expect(parsed.type).toBe("site-viewing");
+    expect(parsed.tags).toBeUndefined();
+    expect(parsed.type).toBe("deadline");
   });
 
   it("stores floating workspace date/time without timezone drift", () => {

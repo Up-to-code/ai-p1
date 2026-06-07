@@ -1,7 +1,7 @@
 # Projects Backend Domain
 
 ## Purpose
-Owns backend contracts and future Hono implementation units for the projects bounded context.
+Owns backend contracts and future Hono implementation assetCount for the projects bounded context.
 
 ## What Belongs Here
 - Domain route placeholders

@@ -18,12 +18,12 @@ describe("MCP tool catalog", () => {
     expect(tools.map((tool) => tool.name)).not.toContain("calendar_create");
   });
 
-  it("maps destructive apartment tools to delete permission only", () => {
-    const tool = getMcpToolDefinition("properties_delete");
+  it("maps destructive asset tools to delete permission only", () => {
+    const tool = getMcpToolDefinition("assets_delete");
 
-    expect(tool).toMatchObject({ resource: "property", action: "delete", destructive: true });
-    expect(canUseMcpTool([{ resource: "property", actions: ["read", "update"] }], tool!)).toBe(false);
-    expect(canUseMcpTool([{ resource: "property", actions: ["delete"] }], tool!)).toBe(true);
+    expect(tool).toMatchObject({ resource: "asset", action: "delete", destructive: true });
+    expect(canUseMcpTool([{ resource: "asset", actions: ["read", "update"] }], tool!)).toBe(false);
+    expect(canUseMcpTool([{ resource: "asset", actions: ["delete"] }], tool!)).toBe(true);
   });
 
   it("validates create connection payloads", () => {
@@ -58,6 +58,18 @@ describe("MCP tool catalog", () => {
     expect(z.safeParse(mediaLimit, 25).success).toBe(true);
   });
 
+  it("publishes workspace-native client input schema", () => {
+    const clientsCreate = getMcpToolDefinition("clients_create");
+    const clientType = clientsCreate?.inputSchema?.type;
+
+    expect(clientType).toBeDefined();
+    if (!clientType) throw new Error("Client create type schema is missing.");
+
+    expect(z.safeParse(clientType, "person").success).toBe(true);
+    expect(z.safeParse(clientType, "organization").success).toBe(true);
+    expect(z.safeParse(clientType, "Buyer").success).toBe(false);
+  });
+
   it("keeps shared agent risk policy in front of future dangerous MCP tools", () => {
     expect(
       canUseMcpTool(
@@ -90,7 +102,7 @@ describe("MCP tool catalog", () => {
     expect(writeToolNames).toEqual(
       expect.arrayContaining([
         "clients_create",
-        "properties_update",
+        "assets_update",
         "projects_delete",
         "calendar_create",
         "tasks_complete",

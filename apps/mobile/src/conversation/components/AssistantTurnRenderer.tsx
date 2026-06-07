@@ -116,7 +116,7 @@ function RenderBlock({
           {renderBlockSuggestions(block, onSuggestionPress, false, isAr)}
         </Section>
       );
-    case "property_list":
+    case "asset_list":
       return (
         <Section tone={turn.motion.preset} isAr={isAr} cardless>
           {block.title || block.querySummary || block.searchQuery ? (
@@ -275,7 +275,7 @@ export function AssistantTurnRenderer({
     <View style={styles.container}>
       {turn.blocks.map((block) => {
         const blockTestID =
-          block.type === "property_list" || block.type === "comparison"
+          block.type === "asset_list" || block.type === "comparison"
             ? "chat.result.bundle"
             : block.type === "sources"
               ? "chat.result.sources"
@@ -389,7 +389,7 @@ const createStyles = (colors: AppColors) => {
       borderColor: colors.border,
       backgroundColor: colors.surfaceRaised,
     },
-    card_property: {
+    card_asset: {
       borderColor: colors.border,
       backgroundColor: colors.surfaceRaised,
     },

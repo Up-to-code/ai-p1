@@ -646,7 +646,7 @@ function WebhooksTelemetryDashboard() {
       name: t('webhooks.endpointsData.aqar.name'),
       url: "https://api.aqar.sa/v1/webhooks/qentrah-sync",
       secret: "whsec_aqar_928173902183098213",
-      events: ["property.published", "property.updated", "property.deleted"],
+      events: ["asset.published", "asset.updated", "asset.deleted"],
       status: isAr ? "نشط" : "active",
       created: "2026-04-12"
     },
@@ -673,7 +673,7 @@ function WebhooksTelemetryDashboard() {
     },
     {
       id: "del_3f4e5d6c",
-      event: "property.published",
+      event: "asset.published",
       target: "https://api.aqar.sa/...",
       status: 200,
       statusText: "200 OK",
@@ -691,7 +691,7 @@ function WebhooksTelemetryDashboard() {
     },
     {
       id: "del_8h9i0j1k",
-      event: "property.updated",
+      event: "asset.updated",
       target: "https://api.aqar.sa/...",
       status: 500,
       statusText: "500 Error",
@@ -700,7 +700,7 @@ function WebhooksTelemetryDashboard() {
     },
     {
       id: "del_7y8u9i0o",
-      event: "property.updated",
+      event: "asset.updated",
       target: "https://api.aqar.sa/...",
       status: 200,
       statusText: "200 OK",

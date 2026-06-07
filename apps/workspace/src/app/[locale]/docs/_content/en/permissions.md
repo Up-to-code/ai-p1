@@ -12,7 +12,7 @@ Permissions are plain switches. A switch can allow the agent to read, create, up
 | :--- | :--- | :--- |
 | **Organization** | Let the agent know which company it is helping | `read` |
 | **Clients** | Find leads, summarize client needs, prepare follow-ups | `read`, `create`, `update`, `delete` |
-| **Properties** | Search available units and explain options to a client | `read`, `create`, `update`, `delete` |
+| **Assets** | Search available workspace assets and explain options to a client | `read`, `create`, `update`, `delete` |
 | **Projects** | Answer project questions and compare inventory | `read`, `create`, `update`, `delete` |
 | **Calendar** | View meetings or schedule appointments | `read`, `create`, `update`, `delete` |
 | **Tasks** | Create work for the team after a conversation | `read`, `create`, `update`, `delete` |

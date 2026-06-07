@@ -2,15 +2,19 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Building,
   Building2,
   CalendarDays,
-  Gauge,
-  History,
-  Landmark,
+  BriefcaseBusiness,
+  KanbanSquare,
   Loader2,
+  ListTodo,
+  Package,
+  Plug,
   Search,
+  Settings,
   UserRound,
+  UsersRound,
+  Workflow,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -21,8 +25,8 @@ import { useClientsPagedQuery } from "@/domains/clients/api/clients";
 import type { Client } from "@/domains/clients/store/clients.types";
 import { useProjectsPagedQuery } from "@/domains/projects/api/projects";
 import type { Project } from "@/domains/projects/store/projects.types";
-import { usePropertiesPagedQuery } from "@/domains/properties/api/properties";
-import type { PropertyUnit } from "@/domains/properties/store/properties.types";
+import { useAssetsPagedQuery } from "@/domains/assets/api/assets";
+import type { WorkspaceAsset } from "@/domains/assets/store/assets.types";
 import { useDebouncedValue } from "@/components/shared/use-http-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -30,7 +34,7 @@ const SEARCH_PAGE_SIZE_HINT = 5;
 
 type SearchResult = {
   id: string;
-  type: "project" | "unit" | "client";
+  type: "project" | "asset" | "client";
   title: string;
   description: string;
   href: string;
@@ -74,19 +78,22 @@ export function WorkspaceGlobalSearch() {
 
   const searchOrganizationId = hasQuery ? organizationId : undefined;
   const projectsQuery = useProjectsPagedQuery(searchOrganizationId, { search: debouncedQuery });
-  const unitsQuery = usePropertiesPagedQuery(searchOrganizationId, { search: debouncedQuery });
+  const assetsQuery = useAssetsPagedQuery(searchOrganizationId, { search: debouncedQuery });
   const clientsQuery = useClientsPagedQuery(searchOrganizationId, { search: debouncedQuery });
 
   const navigationActions = useMemo<NavigationAction[]>(
     () => [
       { id: "dashboard", label: tSidebar("dashboard"), href: "/dashboard", icon: Building2 },
-      { id: "projects", label: tSidebar("projects"), href: "/projects", icon: Building2 },
-      { id: "units", label: tSidebar("units"), href: "/properties", icon: Building },
       { id: "clients", label: tSidebar("clients"), href: "/clients", icon: UserRound },
+      { id: "opportunities", label: tSidebar("opportunities"), href: "/opportunities", icon: KanbanSquare },
+      { id: "projects", label: tSidebar("projects"), href: "/projects", icon: BriefcaseBusiness },
+      { id: "tasks", label: tSidebar("tasks"), href: "/tasks", icon: ListTodo },
       { id: "calendar", label: tSidebar("calendar"), href: "/calendar", icon: CalendarDays },
-      { id: "usage", label: tSidebar("usage"), href: "/usage", icon: Gauge },
-      { id: "organization", label: tSidebar("organization"), href: "/settings/organization", icon: Landmark },
-      { id: "activity", label: tSidebar("activity"), href: "/activity", icon: History },
+      { id: "assets", label: tSidebar("assets"), href: "/assets", icon: Package },
+      { id: "automations", label: tSidebar("automations"), href: "/automations", icon: Workflow },
+      { id: "team", label: tSidebar("team"), href: "/team", icon: UsersRound },
+      { id: "integrations", label: tSidebar("integrations"), href: "/web-apps", icon: Plug },
+      { id: "settings", label: tSidebar("settings"), href: "/settings/organization", icon: Settings },
     ],
     [tSidebar],
   );
@@ -100,9 +107,9 @@ export function WorkspaceGlobalSearch() {
     () => (projectsQuery.results as Project[]).slice(0, SEARCH_PAGE_SIZE_HINT).map(projectResult),
     [projectsQuery.results],
   );
-  const unitResults = useMemo(
-    () => (unitsQuery.results as PropertyUnit[]).slice(0, SEARCH_PAGE_SIZE_HINT).map(unitResult),
-    [unitsQuery.results],
+  const assetResults = useMemo(
+    () => (assetsQuery.results as WorkspaceAsset[]).slice(0, SEARCH_PAGE_SIZE_HINT).map(assetResult),
+    [assetsQuery.results],
   );
   const clientResults = useMemo(
     () => clientsQuery.results.slice(0, SEARCH_PAGE_SIZE_HINT).map(clientResult),
@@ -111,11 +118,11 @@ export function WorkspaceGlobalSearch() {
 
   const isSearching =
     hasQuery &&
-    [projectsQuery.queryStatus, unitsQuery.queryStatus, clientsQuery.queryStatus].some((status) => status === "loading");
+    [projectsQuery.queryStatus, assetsQuery.queryStatus, clientsQuery.queryStatus].some((status) => status === "loading");
   const hasSearchError =
     hasQuery &&
-    [projectsQuery.queryStatus, unitsQuery.queryStatus, clientsQuery.queryStatus].some((status) => status === "error");
-  const hasResults = projectResults.length > 0 || unitResults.length > 0 || clientResults.length > 0;
+    [projectsQuery.queryStatus, assetsQuery.queryStatus, clientsQuery.queryStatus].some((status) => status === "error");
+  const hasResults = projectResults.length > 0 || assetResults.length > 0 || clientResults.length > 0;
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -152,11 +159,11 @@ export function WorkspaceGlobalSearch() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group flex min-w-0 items-center gap-2 rounded-xl px-3 py-2 text-start text-zinc-400 transition-all hover:bg-zinc-50 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/10 dark:hover:bg-white/5 dark:hover:text-white dark:focus-visible:ring-white/10"
+        className="group flex min-w-0 items-center gap-2 rounded-[18px] border border-transparent px-3 py-2 text-start text-text-muted transition-all hover:border-[var(--color-divider)] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
       >
         <Search className="h-4 w-4 shrink-0" />
         <span className="hidden truncate text-sm font-medium md:inline-block">{t("searchAnything")}</span>
-        <span className="hidden rounded-md border border-zinc-200 px-1.5 py-0.5 text-[10px] font-bold text-zinc-400 dark:border-white/10 dark:text-zinc-500 lg:inline-block">
+        <span className="hidden rounded-md border border-[var(--color-divider)] px-1.5 py-0.5 text-[10px] font-bold text-text-muted lg:inline-block">
           {t("searchShortcut")}
         </span>
       </button>
@@ -164,7 +171,7 @@ export function WorkspaceGlobalSearch() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
           className={cn(
-            "max-w-2xl gap-0 overflow-hidden rounded-2xl border-zinc-200 bg-white p-0 text-zinc-950 shadow-none dark:border-white/10 dark:bg-[#0A0A0A] dark:text-white",
+            "max-w-2xl gap-0 overflow-hidden rounded-[24px] border-[var(--color-divider)] bg-background p-0 text-text-primary shadow-none",
             isRtl && "font-cairo",
           )}
           containerClassName="items-start pt-[12vh]"
@@ -174,16 +181,16 @@ export function WorkspaceGlobalSearch() {
           <DialogHeader className="sr-only">
             <DialogTitle>{t("searchTitle")}</DialogTitle>
           </DialogHeader>
-          <div className="flex items-center gap-3 border-b border-zinc-100 px-4 py-3 dark:border-white/10">
-            <Search className="h-5 w-5 shrink-0 text-zinc-400" />
+          <div className="flex items-center gap-3 border-b border-[var(--color-divider)] px-4 py-3">
+            <Search className="h-5 w-5 shrink-0 text-text-muted" />
             <input
               ref={inputRef}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder={t("searchAnything")}
-              className="h-10 min-w-0 flex-1 bg-transparent text-sm font-bold text-zinc-950 outline-none placeholder:text-zinc-400 dark:text-white"
+              className="h-10 min-w-0 flex-1 bg-transparent text-sm font-bold text-text-primary outline-none placeholder:text-text-muted"
             />
-            {isSearching && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-zinc-400" />}
+            {isSearching && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-text-muted" />}
           </div>
 
           <div className="max-h-[62vh] overflow-y-auto p-2">
@@ -202,7 +209,7 @@ export function WorkspaceGlobalSearch() {
             {hasQuery && (
               <>
                 {hasSearchError && (
-                  <p className="mx-2 my-2 rounded-xl bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-700 dark:text-amber-300">
+                  <p className="mx-2 my-2 rounded-xl border border-amber-500/30 px-3 py-2 text-xs font-bold text-amber-700 dark:text-amber-300">
                     {t("searchError")}
                   </p>
                 )}
@@ -211,8 +218,8 @@ export function WorkspaceGlobalSearch() {
                     <SearchResultRow key={result.id} result={result} onSelect={goTo} />
                   ))}
                 </SearchGroup>
-                <SearchGroup title={t("searchUnits")}>
-                  {unitResults.map((result) => (
+                <SearchGroup title={t("searchAssets")}>
+                  {assetResults.map((result) => (
                     <SearchResultRow key={result.id} result={result} onSelect={goTo} />
                   ))}
                 </SearchGroup>
@@ -222,7 +229,7 @@ export function WorkspaceGlobalSearch() {
                   ))}
                 </SearchGroup>
                 {!isSearching && !hasResults && !hasSearchError && (
-                  <p className="px-4 py-8 text-center text-sm font-bold text-zinc-400">{t("searchNoResults")}</p>
+                  <p className="px-4 py-8 text-center text-sm font-bold text-text-muted">{t("searchNoResults")}</p>
                 )}
               </>
             )}
@@ -238,7 +245,7 @@ function SearchGroup({ title, children }: { title: string; children: React.React
 
   return (
     <section className="py-2">
-      <h3 className="px-3 pb-2 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-400">{title}</h3>
+      <h3 className="px-3 pb-2 text-[10px] font-black uppercase tracking-[0.18em] text-text-muted">{title}</h3>
       <div className="space-y-1">{children}</div>
     </section>
   );
@@ -270,14 +277,14 @@ function SearchRow({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start transition hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/10 dark:hover:bg-white/5 dark:focus-visible:ring-white/10"
+      className="flex w-full items-center gap-3 rounded-[18px] border border-transparent px-3 py-2.5 text-start transition hover:border-[var(--color-divider)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 dark:bg-white/5 dark:text-zinc-400">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--color-divider)] text-text-secondary">
         <Icon className="h-4 w-4" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-black text-zinc-950 dark:text-white">{title}</span>
-        <span className="mt-0.5 block truncate text-xs font-semibold text-zinc-500">{description}</span>
+        <span className="block truncate text-sm font-black text-text-primary">{title}</span>
+        <span className="mt-0.5 block truncate text-xs font-semibold text-text-secondary">{description}</span>
       </span>
     </button>
   );
@@ -294,14 +301,14 @@ function projectResult(project: Project): SearchResult {
   };
 }
 
-function unitResult(unit: PropertyUnit): SearchResult {
+function assetResult(asset: WorkspaceAsset): SearchResult {
   return {
-    id: `unit:${unit.id}`,
-    type: "unit",
-    title: unit.title,
-    description: [unit.reference, unit.project, unit.status].filter(Boolean).join(" · "),
-    href: `/properties/${unit.id}`,
-    icon: Building,
+    id: `asset:${asset.id}`,
+    type: "asset",
+    title: asset.title,
+    description: [asset.reference, asset.project, asset.status].filter(Boolean).join(" · "),
+    href: `/assets/${asset.id}`,
+    icon: Package,
   };
 }
 
@@ -310,7 +317,7 @@ function clientResult(client: Client): SearchResult {
     id: `client:${client.id}`,
     type: "client",
     title: client.name,
-    description: [client.contact || client.phone, client.propertyInterest, client.pipelineStage].filter(Boolean).join(" · "),
+    description: [client.contact || client.phone, client.assetInterest, client.pipelineStage].filter(Boolean).join(" · "),
     href: `/clients/${client.id}`,
     icon: UserRound,
   };

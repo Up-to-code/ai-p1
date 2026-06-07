@@ -1,7 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
-import type { Id } from "../_generated/dataModel";
-import type { MutationCtx } from "../_generated/server";
+import type { Doc } from "../_generated/dataModel";
 import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { cancelQueuedJobsForSource, scheduleCalendarEventReminders } from "../notifications/helpers";
@@ -15,42 +14,13 @@ function isoTime(timestamp: number) {
   return new Date(timestamp).toISOString().slice(11, 16);
 }
 
-function presentEvent<TEvent extends { _id: Id<"calendarEvents">; propertyId?: Id<"propertyUnits">; startAt: number }>(event: TEvent) {
+function presentEvent(event: Doc<"calendarEvents">) {
   return {
     ...event,
     id: event._id,
     date: isoDate(event.startAt),
     time: isoTime(event.startAt),
-    unitId: event.propertyId,
   };
-}
-
-async function assertOptionalLinks(
-  ctx: MutationCtx,
-  organizationId: string,
-  input: {
-    clientId?: Id<"clients">;
-    propertyId?: Id<"propertyUnits">;
-    projectId?: Id<"projects">;
-    taskId?: Id<"clientTasks">;
-  },
-) {
-  if (input.clientId) {
-    const client = await ctx.db.get(input.clientId);
-    if (!client || client.organizationId !== organizationId || client.deletedAt) throw new Error("Client was not found.");
-  }
-  if (input.propertyId) {
-    const property = await ctx.db.get(input.propertyId);
-    if (!property || property.organizationId !== organizationId || property.deletedAt) throw new Error("Property unit was not found.");
-  }
-  if (input.projectId) {
-    const project = await ctx.db.get(input.projectId);
-    if (!project || project.organizationId !== organizationId || project.deletedAt) throw new Error("Project was not found.");
-  }
-  if (input.taskId) {
-    const task = await ctx.db.get(input.taskId);
-    if (!task || task.organizationId !== organizationId || task.deletedAt) throw new Error("Task was not found.");
-  }
 }
 
 export const createFromHono = mutation({
@@ -59,7 +29,6 @@ export const createFromHono = mutation({
   handler: async (ctx, args) => {
     const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "calendar", "create");
-    await assertOptionalLinks(ctx, args.organizationId, args.input);
     const now = Date.now();
     const id = await ctx.db.insert("calendarEvents", {
       organizationId: args.organizationId,
@@ -68,10 +37,6 @@ export const createFromHono = mutation({
       createdAt: now,
       updatedAt: now,
     });
-
-    if (args.input.taskId) {
-      await ctx.db.patch(args.input.taskId, { calendarEventId: id, updatedAt: now });
-    }
 
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,
@@ -97,13 +62,8 @@ export const updateFromHono = mutation({
     await assertOrganizationResourcePermission(ctx, args.organizationId, "calendar", "update");
     const existing = await ctx.db.get(args.eventId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Calendar event was not found.");
-    await assertOptionalLinks(ctx, args.organizationId, args.input);
     const now = Date.now();
     await ctx.db.patch(args.eventId, { ...args.input, updatedAt: now });
-
-    if (args.input.taskId) {
-      await ctx.db.patch(args.input.taskId, { calendarEventId: args.eventId, updatedAt: now });
-    }
 
     await ctx.db.insert("organizationAuditEvents", {
       organizationId: args.organizationId,

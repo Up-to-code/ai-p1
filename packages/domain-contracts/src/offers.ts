@@ -53,7 +53,7 @@ export const offerClientContextSchema = z.object({
 });
 
 export const createOfferInputSchema = z.object({
-  propertyId: z.string().min(1).optional(),
+  assetId: z.string().min(1).optional(),
   price: z.number().finite(),
   message: z.string().trim().min(1).optional(),
   description: z.string().trim().min(1).optional(),
@@ -85,7 +85,7 @@ export const publishConversationOfferInputSchema = z.object({
 export const updateOfferDraftInputSchema = z.object({
   id: z.string().min(1),
   conversationId: z.string().min(1).optional(),
-  propertyId: z.string().min(1).optional(),
+  assetId: z.string().min(1).optional(),
   price: z.number().finite(),
   message: z.string().trim().min(1).optional(),
   description: z.string().trim().min(1).optional(),
@@ -118,7 +118,7 @@ export const advanceOfferCaseStageInputSchema = z.object({
 
 export const offerPushStatusSchema = z.enum(["pending", "sent", "failed", "skipped"]);
 
-export type OfferPropertySummary = {
+export type OfferAssetSummary = {
   id: string;
   title: string;
   address: string;
@@ -183,16 +183,16 @@ export type OfferSummary = {
   status: z.infer<typeof offerStatusSchema>;
   publicationState: z.infer<typeof offerPublicationStateSchema>;
   visibility: z.infer<typeof offerVisibilitySchema>;
-  propertyId: string | null;
+  assetId: string | null;
   price: number;
   message: string;
   description: string | null;
   senderName: string | null;
   recipientAuthUserId: string | null;
   sourceConversationId: string | null;
-  property: OfferPropertySummary | null;
-  propertyGallery: string[];
-  propertySummary: string | null;
+  asset: OfferAssetSummary | null;
+  assetGallery: string[];
+  assetSummary: string | null;
   commissionText: string | null;
   permitStatus: string | null;
   productStatus: string | null;
@@ -221,9 +221,9 @@ export type OfferAllowedActions = {
 };
 
 export type OfferLiveState = OfferSummary & {
-  propertyTitle: string;
-  propertyAddress: string;
-  propertyImageUrl?: string | null;
+  assetTitle: string;
+  assetAddress: string;
+  assetImageUrl?: string | null;
   isOwner: boolean;
   isRecipient: boolean;
   canEditDraft: boolean;

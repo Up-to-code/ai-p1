@@ -13,6 +13,6 @@ export { default as AgOfferPublishDraft } from "./AgOfferPublishDraft";
 export { default as AgOfferSendDraft } from "./AgOfferSendDraft";
 export { default as AgPersonRelationCard } from "./AgPersonRelationCard";
 export { default as AgProjectCreateDraft } from "./AgProjectCreateDraft";
-export { default as AgProjectUnitSelector } from "./AgProjectUnitSelector";
+export { default as AgProjectAssetSelector } from "./AgProjectAssetSelector";
 export { default as AgTargetSummary } from "./AgTargetSummary";
 export { default as AgThreadUpdateCard } from "./AgThreadUpdateCard";

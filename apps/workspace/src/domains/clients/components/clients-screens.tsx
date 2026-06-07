@@ -24,12 +24,13 @@ import { useAccountContext } from "@/domains/auth";
 import {
   CLIENTS_PAGE_SIZE,
   deleteClientRequest,
-  linkClientUnitRequest,
-  unlinkClientUnitRequest,
+  linkClientAssetRequest,
+  clientsIndexQueryBaseKey,
+  unlinkClientAssetRequest,
   updateClientRequest,
   useClientQuery,
   useClientsIndexQuery,
-  useClientUnitLinksQuery,
+  useClientAssetLinksQuery,
   useDeleteClientOptimisticMutation,
   useMoveClientInPipelineMutation,
   useUpdateClientOptimisticMutation,
@@ -42,7 +43,7 @@ import {
   type ClientTaskPayload,
 } from "@/domains/clients/api/client-tasks";
 import { useCalendarEventsQuery, useUpcomingCalendarEventsQuery } from "@/domains/calendar/api/calendar";
-import { usePropertiesQuery } from "@/domains/properties/api/properties";
+import { useAssetsQuery } from "@/domains/assets/api/assets";
 import { getOrganizationCapabilities } from "@/domains/organization/api/clerk-organization-api";
 import { ClientDocumentsManager } from "@/domains/media/components/client-documents-manager";
 import type { Client, ClientType } from "../store/clients.types";
@@ -58,7 +59,7 @@ import {
   clientTaskActivityRows,
   clientTaskUpdatePayload,
   clientToFormValues,
-  clientUnitPickerProjection,
+  clientAssetPickerProjection,
   clientTypes,
   clientValuesFromFormData,
   clientViews,
@@ -68,8 +69,8 @@ import {
   pipelineStages,
   taskPayloadFromFormData,
   typeTone,
-  unitLinkStatuses,
-  unitStatusTone,
+  clientAssetLinkStatuses,
+  assetStatusTone,
   type PipelineStage,
 } from "../client-view-model";
 import { useOperationState } from "@/lib/utils/operation-state";
@@ -79,9 +80,53 @@ import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { ClientForm } from "./client-form";
 import { ClientSheet } from "./client-sheet";
-import type { PropertyStatus } from "@/domains/properties";
-import type { ClientFormValues } from "../validation/client.schema";
+import type { AssetStatus } from "@/domains/assets";
 import { sortPipelineClients } from "@/domains/clients/pipeline-order";
+
+const clientTypeValuesForTranslation = new Set(["person", "organization", "Client", "Buyer", "Tenant", "Investor", "Broker"]);
+const clientStatusValuesForTranslation = new Set(["new", "active", "nurture", "inactive", "archived"]);
+const clientStageValuesForTranslation = new Set(["new", "qualified", "review", "negotiation", "closed"]);
+const clientPriorityValuesForTranslation = new Set(["normal", "high", "urgent"]);
+
+function fallbackLabel(value: string | null | undefined) {
+  const source = String(value ?? "").trim();
+  if (!source || source === "undefined") {
+    return "—";
+  }
+  return source
+    .split(/[\s_-]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function translateClientLabel(
+  t: ReturnType<typeof useTranslations<"Clients">>,
+  namespace: "types" | "statuses" | "stages" | "priorities",
+  value: string | null | undefined,
+  validValues: ReadonlySet<string>,
+) {
+  if (value && validValues.has(value)) {
+    return t(`${namespace}.${value}`);
+  }
+  return fallbackLabel(value);
+}
+
+function translateClientType(t: ReturnType<typeof useTranslations<"Clients">>, value: string | null | undefined) {
+  return translateClientLabel(t, "types", value, clientTypeValuesForTranslation);
+}
+
+function translateClientStatus(t: ReturnType<typeof useTranslations<"Clients">>, value: string | null | undefined) {
+  return translateClientLabel(t, "statuses", value, clientStatusValuesForTranslation);
+}
+
+function translateClientStage(t: ReturnType<typeof useTranslations<"Clients">>, value: string | null | undefined) {
+  return translateClientLabel(t, "stages", value, clientStageValuesForTranslation);
+}
+
+function translateClientPriority(t: ReturnType<typeof useTranslations<"Clients">>, value: string | null | undefined) {
+  return translateClientLabel(t, "priorities", value, clientPriorityValuesForTranslation);
+}
 
 function ClientDetailField({
   label,
@@ -168,19 +213,19 @@ function CompactClientFact({ label, value }: { label: ReactNode; value: ReactNod
   );
 }
 
-function ClientLinkedUnitCard({
-  unit,
+function ClientLinkedAssetCard({
+  asset,
   linkStatus,
   notes,
 }: {
-  unit: {
+  asset: {
     id: string;
     title: string;
     reference: string;
     project: string;
     coverImageUrl?: string;
     image?: string;
-    status: PropertyStatus;
+    status: AssetStatus;
     price: string;
     area: string;
     bedrooms: number | string;
@@ -190,39 +235,39 @@ function ClientLinkedUnitCard({
   linkStatus?: string;
   notes?: string | null;
 }) {
-  const t = useTranslations('Properties');
+  const t = useTranslations("Assets");
   const tc = useTranslations('Clients');
-  const image = unit.coverImageUrl ?? unit.image;
+  const image = asset.coverImageUrl ?? asset.image;
 
   return (
     <article className="group overflow-hidden rounded-[24px] border border-zinc-100 bg-white transition-colors hover:border-zinc-300 dark:border-white/5 dark:bg-[#0A0A0A]">
-      <Link href={`/properties/${unit.id}`} className="relative block h-32 w-full overflow-hidden bg-zinc-100 text-start focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:bg-white/5">
+      <Link href={`/assets/${asset.id}`} className="relative block h-32 w-full overflow-hidden bg-zinc-100 text-start focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:bg-white/5">
         {image ? (
-          <Image src={image} alt={unit.title} fill sizes="(max-width: 768px) 100vw, 360px" className="object-cover opacity-80 grayscale transition-transform duration-700 group-hover:scale-105 group-hover:grayscale-0" />
+          <Image src={image} alt={asset.title} fill sizes="(max-width: 768px) 100vw, 360px" className="object-cover opacity-80 grayscale transition-transform duration-700 group-hover:scale-105 group-hover:grayscale-0" />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-300 dark:bg-white/5 dark:text-white/20">
             <Building className="h-8 w-8" />
           </div>
         )}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-          <h3 className="truncate text-sm font-black uppercase tracking-tight text-white">{unit.title}</h3>
-          <p className="mt-1 text-[9px] font-black uppercase tracking-widest text-white/60">{unit.project}</p>
+          <h3 className="truncate text-sm font-black uppercase tracking-tight text-white">{asset.title}</h3>
+          <p className="mt-1 text-[9px] font-black uppercase tracking-widest text-white/60">{asset.project}</p>
         </div>
       </Link>
       <div className="space-y-3 p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <StatusPill label={t(`toolbar.filters.${unit.status}`)} tone={unitStatusTone(unit.status)} />
-          {linkStatus && <StatusPill label={tc(`detail.units.statuses.${linkStatus}`)} tone="info" />}
-          <span className="ms-auto text-[9px] font-black uppercase tracking-widest text-zinc-300">{unit.reference}</span>
+          <StatusPill label={t(`toolbar.filters.${asset.status}`)} tone={assetStatusTone(asset.status)} />
+          {linkStatus && <StatusPill label={tc(`detail.assets.statuses.${linkStatus}`)} tone="info" />}
+          <span className="ms-auto text-[9px] font-black uppercase tracking-widest text-zinc-300">{asset.reference}</span>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <CompactClientFact label={t('card.area')} value={unit.area} />
-          <CompactClientFact label={t('card.layout')} value={`${unit.bedrooms}${t('card.beds')} / ${unit.bathrooms}${t('card.baths')}`} />
+          <CompactClientFact label={t('card.area')} value={asset.area} />
+          <CompactClientFact label={t('card.layout')} value={`${asset.bedrooms}${t('card.beds')} / ${asset.bathrooms}${t('card.baths')}`} />
         </div>
         {notes && <p className="line-clamp-2 rounded-xl bg-zinc-50 p-3 text-xs font-semibold leading-5 text-zinc-500 dark:bg-white/[0.03] dark:text-zinc-400">{notes}</p>}
         <div className="flex items-center justify-between border-t border-zinc-100 pt-3 dark:border-white/5">
-          <p className="text-sm font-black uppercase text-zinc-900 dark:text-white">{unit.price}</p>
-          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{unit.updated ?? ""}</p>
+          <p className="text-sm font-black uppercase text-zinc-900 dark:text-white">{asset.price}</p>
+          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{asset.updated ?? ""}</p>
         </div>
       </div>
     </article>
@@ -265,8 +310,8 @@ function ClientMiniCard({
       </div>
 
       <div className="mt-5 flex flex-wrap gap-2">
-        <StatusPill label={t(`types.${client.type}`)} tone={typeTone(client.type)} />
-        <StatusPill label={t(`priorities.${client.priority}`)} tone={client.priority === "urgent" ? "danger" : client.priority === "high" ? "warning" : "neutral"} />
+        <StatusPill label={translateClientType(t, client.type)} tone={typeTone(client.type)} />
+        <StatusPill label={translateClientPriority(t, client.priority)} tone={client.priority === "urgent" ? "danger" : client.priority === "high" ? "warning" : "neutral"} />
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-3 border-t border-zinc-100 pt-4 dark:border-white/5">
@@ -380,6 +425,14 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
         ...clientToFormValues(client),
         pipelineStage: "closed",
       },
+    }, {
+      onSuccess: () => {
+        setSearch("");
+        setStageFilter("all");
+        setDraggedId(null);
+        setDragOverStage(null);
+        setDragOverIndex(null);
+      },
     });
   };
 
@@ -401,9 +454,9 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
         </Link>
       ),
     },
-    { key: "type", header: t('detail.labels.type'), render: (client) => <StatusPill label={t(`types.${client.type}`)} tone={typeTone(client.type)} /> },
+    { key: "type", header: t('detail.labels.type'), render: (client) => <StatusPill label={translateClientType(t, client.type)} tone={typeTone(client.type)} /> },
     { key: "budget", header: t('detail.labels.budget') },
-    { key: "pipelineStage", header: t('form.stageLabel'), render: (client) => t(`stages.${client.pipelineStage}`) },
+    { key: "pipelineStage", header: t('form.stageLabel'), render: (client) => translateClientStage(t, client.pipelineStage) },
     { key: "nextAction", header: t('form.actionLabel') },
     {
       key: "actions",
@@ -447,16 +500,14 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
       <AppStatsGrid stats={[
         { label: t("stats.total"), value: stats?.total ?? "...", icon: Users },
         { label: t("stats.active"), value: stats?.active ?? "...", dotClassName: "bg-emerald-500" },
-        { label: t("stats.investors"), value: stats?.investors ?? "...", dotClassName: "bg-blue-500" },
+        { label: t("stats.organizations"), value: stats?.organizations ?? "...", dotClassName: "bg-blue-500" },
         { label: t("stats.appointments"), value: view === "calendar" ? calendarEvents.length : "...", icon: Copy },
       ]} />
       <AppToolbar
         filters={[
           { value: "all", label: t("toolbar.filters.all") },
-          { value: "Buyer", label: t("toolbar.filters.Buyer") },
-          { value: "Tenant", label: t("toolbar.filters.Tenant") },
-          { value: "Investor", label: t("toolbar.filters.Investor") },
-          { value: "Broker", label: t("toolbar.filters.Broker") },
+          { value: "person", label: t("toolbar.filters.person") },
+          { value: "organization", label: t("toolbar.filters.organization") },
         ]}
         activeFilter={filter}
         onFilterChange={(next) => setFilter(next as "all" | ClientType)}
@@ -538,8 +589,8 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
                 }}
               >
                 <div className="mb-4 flex items-center justify-between px-2">
-                  <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">{t(`stages.${stage}`)}</h2>
-                  <span className="text-[10px] font-black text-zinc-300">{String(stats?.stages[stage] ?? stageClients.length).padStart(2, "0")}</span>
+            <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">{translateClientStage(t, stage)}</h2>
+                  <span className="text-[10px] font-black text-zinc-300">{String(stats?.stages?.[stage] ?? stageClients.length).padStart(2, "0")}</span>
                 </div>
                 <div className="space-y-3">
                   {stageClients.map((client, index) => {
@@ -636,40 +687,50 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
         }}
       />
 
-      <ClientSheet open={isCreateOpen} onOpenChange={setIsCreateOpen} />
+      <ClientSheet
+        open={isCreateOpen}
+        indexQueryKey={clientsQuery.queryKey}
+        onOpenChange={(open) => {
+          setIsCreateOpen(open);
+          if (!open) setSearch("");
+        }}
+        onSuccess={() => {
+          setSearch("");
+          setStageFilter("all");
+        }}
+      />
     </AppPageShell>
   );
 }
 
 export function ClientDetailScreen({ id }: { id: string }) {
   const t = useTranslations('Clients');
-  const propertyT = useTranslations('Properties');
+  const assetT = useTranslations("Assets");
   const locale = useLocale();
   const account = useAccountContext();
   const workspaceStatus = account.workspace.status;
   const isWorkspaceReady = workspaceStatus === "ready";
   const workspaceOrganizationId = isWorkspaceReady ? account.workspace.organizationId ?? undefined : undefined;
   const client = useClientQuery(workspaceOrganizationId, id) as Client | null | undefined;
-  const linkedUnitsQuery = useClientUnitLinksQuery(workspaceOrganizationId, id);
-  const linkedUnits = useMemo(() => linkedUnitsQuery ?? [], [linkedUnitsQuery]);
-  const units = useMemo(() => linkedUnits.flatMap((row) => (row.unit ? [row.unit] : [])), [linkedUnits]);
+  const linkedAssetsQuery = useClientAssetLinksQuery(workspaceOrganizationId, id);
+  const linkedAssets = useMemo(() => linkedAssetsQuery ?? [], [linkedAssetsQuery]);
+  const assets = useMemo(() => linkedAssets.flatMap((row) => (row.asset ? [row.asset] : [])), [linkedAssets]);
   const tasks = useClientTasksQuery(workspaceOrganizationId, id) ?? [];
   const events = useCalendarEventsQuery(workspaceOrganizationId, id) ?? [];
   const [taskTitle, setTaskTitle] = useState("");
-  const [unitLinkStatus, setUnitLinkStatus] = useState<(typeof unitLinkStatuses)[number]>("shortlisted");
-  const [unitLinkNotes, setUnitLinkNotes] = useState("");
-  const [isUnitPickerOpen, setIsUnitPickerOpen] = useState(false);
-  const [unitSearch, setUnitSearch] = useState("");
-  const [unitStatusFilter, setUnitStatusFilter] = useState<"all" | PropertyStatus>("all");
-  const allUnitsQuery = usePropertiesQuery(workspaceOrganizationId, { enabled: isUnitPickerOpen });
-  const allUnits = allUnitsQuery ?? [];
+  const [assetLinkStatus, setAssetLinkStatus] = useState<(typeof clientAssetLinkStatuses)[number]>("shortlisted");
+  const [assetLinkNotes, setAssetLinkNotes] = useState("");
+  const [isAssetPickerOpen, setIsAssetPickerOpen] = useState(false);
+  const [assetSearch, setAssetSearch] = useState("");
+  const [assetStatusFilter, setAssetStatusFilter] = useState<"all" | AssetStatus>("all");
+  const allAssetsQuery = useAssetsQuery(workspaceOrganizationId, { enabled: isAssetPickerOpen });
+  const allAssets = allAssetsQuery ?? [];
   const [deleting, setDeleting] = useState(false);
   const router = useRouter();
   const profileOperation = useOperationState({ errorMessage: "Client update failed." });
   const deleteOperation = useOperationState({ errorMessage: "Client delete failed." });
-  const closeOperation = useOperationState({ errorMessage: "Client close failed." });
   const taskOperation = useOperationState({ errorMessage: "Task action failed." });
-  const linkOperation = useOperationState({ errorMessage: "Unit link failed." });
+  const linkOperation = useOperationState({ errorMessage: "Asset link failed." });
   const queryDebug = {
     resourceType: "client",
     resourceId: id,
@@ -684,6 +745,9 @@ export function ClientDetailScreen({ id }: { id: string }) {
     enabled: Boolean(workspaceOrganizationId),
   });
   const canManageVisibility = capabilitiesQuery.data?.canManageVisibility ?? false;
+  const clientCloseMutation = useUpdateClientOptimisticMutation(
+    clientsIndexQueryBaseKey(workspaceOrganizationId),
+  );
 
   if (workspaceStatus !== "ready") {
     return <AppPageShell><WorkspaceQueryState status={workspaceStatus} variant="detail" /></AppPageShell>;
@@ -702,33 +766,32 @@ export function ClientDetailScreen({ id }: { id: string }) {
   }
 
   const currentStageIndex = clientPipelineStageIndex(client.pipelineStage);
-  const { availableUnits, filteredAvailableUnits, visibleAvailableUnits } = clientUnitPickerProjection(
-    allUnits,
-    linkedUnits,
-    unitStatusFilter,
-    unitSearch,
+  const { availableAssets, filteredAvailableAssets, visibleAvailableAssets } = clientAssetPickerProjection(
+    allAssets,
+    linkedAssets,
+    assetStatusFilter,
+    assetSearch,
   );
-  const isUnitCatalogLoading = allUnitsQuery === undefined;
-  const linkUnit = (propertyId: string) => {
+  const isAssetCatalogLoading = allAssetsQuery === undefined;
+  const linkAsset = (assetId: string) => {
     void linkOperation.run(async () => {
       if (!workspaceOrganizationId) throw new Error("Select an organization first.");
-      await linkClientUnitRequest(workspaceOrganizationId, client.id, propertyId, unitLinkStatus, unitLinkNotes);
-      setUnitLinkNotes("");
-      setUnitSearch("");
-      setIsUnitPickerOpen(false);
-    }, { successMessage: t("detail.units.linked") });
+      await linkClientAssetRequest(workspaceOrganizationId, client.id, assetId, assetLinkStatus, assetLinkNotes);
+      setAssetLinkNotes("");
+      setAssetSearch("");
+      setIsAssetPickerOpen(false);
+    }, { successMessage: t("detail.assets.linked") });
   };
   const markClosed = () => {
-    void closeOperation.run(
-      () => {
-        if (!workspaceOrganizationId) throw new Error("Select an organization first.");
-        return updateClientRequest(workspaceOrganizationId, client.id, {
-          ...clientToFormValues(client),
-          pipelineStage: "closed",
-        });
+    if (!workspaceOrganizationId) return;
+    clientCloseMutation.mutate({
+      organizationId: workspaceOrganizationId,
+      client,
+      values: {
+        ...clientToFormValues(client),
+        pipelineStage: "closed",
       },
-      { successMessage: t("actions.closed") },
-    );
+    });
   };
 
   return (
@@ -765,7 +828,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
             {client.pipelineStage !== "closed" && (
               <Button
                 type="button"
-                disabled={closeOperation.isRunning}
+                disabled={clientCloseMutation.isPending}
                 onClick={markClosed}
                 variant="outline"
                 className="h-10 rounded-xl px-4 text-xs font-bold"
@@ -795,7 +858,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
                 >
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <span className="min-w-0 truncate text-xs font-black">{t(`stages.${stage}`)}</span>
+                <span className="min-w-0 truncate text-xs font-black">{translateClientStage(t, stage)}</span>
               </div>
             ))}
           </div>
@@ -806,7 +869,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
         <AppTabsList tabs={[
           { value: "overview", label: t('views.pipeline'), icon: LayoutDashboard },
           { value: "profile", label: t('detail.recordTitle'), icon: User },
-          { value: "units", label: t('detail.tabs.units'), icon: Building },
+          { value: "assets", label: t('detail.tabs.assets'), icon: Building },
           { value: "docs", label: t('detail.tabs.documents'), icon: DocsIcon },
           { value: "activity", label: t('detail.tabs.activity'), icon: ActivityIcon },
         ]} />
@@ -817,17 +880,17 @@ export function ClientDetailScreen({ id }: { id: string }) {
               title={t('detail.recordTitle')}
               actions={(
                 <div className="flex flex-wrap items-center gap-2">
-                  <StatusPill label={t(`stages.${client.pipelineStage}`)} tone={client.pipelineStage === "closed" ? "success" : "info"} />
-                  <StatusPill label={t(`types.${client.type}`)} tone={typeTone(client.type)} />
-                  <StatusPill label={t(`statuses.${client.status}`)} tone={client.status === "active" ? "success" : "neutral"} />
-                  <StatusPill label={t(`priorities.${client.priority}`)} tone={client.priority === "urgent" ? "danger" : client.priority === "high" ? "warning" : "neutral"} />
+                  <StatusPill label={translateClientStage(t, client.pipelineStage)} tone={client.pipelineStage === "closed" ? "success" : "info"} />
+                  <StatusPill label={translateClientType(t, client.type)} tone={typeTone(client.type)} />
+                  <StatusPill label={translateClientStatus(t, client.status)} tone={client.status === "active" ? "success" : "neutral"} />
+                  <StatusPill label={translateClientPriority(t, client.priority)} tone={client.priority === "urgent" ? "danger" : client.priority === "high" ? "warning" : "neutral"} />
                 </div>
               )}
             >
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 <CompactClientFact label={t('detail.labels.budget')} value={client.budget} />
                 <CompactClientFact label={t('detail.nextTitle')} value={client.nextAction} />
-                <ClientInfoRow icon={Search} label={t('detail.labels.interest')} value={client.propertyInterest} />
+                <ClientInfoRow icon={Search} label={t('detail.labels.interest')} value={client.assetInterest} />
                 <div className="grid gap-3 md:col-span-2 xl:col-span-3 xl:grid-cols-3">
                   <ClientInfoRow icon={Mail} label={t('detail.labels.email')} value={client.contact} />
                   <ClientInfoRow icon={Phone} label={t('detail.labels.phone')} value={client.phone} />
@@ -837,17 +900,17 @@ export function ClientDetailScreen({ id }: { id: string }) {
             </AppSection>
 
             <AppSection
-              title={t('detail.tabs.units')}
-              actions={<span className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-bold text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">{linkedUnits.length} {t("detail.units.linkedCount")}</span>}
+              title={t('detail.tabs.assets')}
+              actions={<span className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-bold text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">{linkedAssets.length} {t("detail.assets.linkedCount")}</span>}
             >
-              {linkedUnits.length === 0 ? (
+              {linkedAssets.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-zinc-200 p-6 text-sm font-bold text-zinc-400 dark:border-white/10">
-                  {t("detail.units.linkUnitDesc")}
+                  {t("detail.assets.linkAssetDesc")}
                 </div>
               ) : (
                 <div className="grid max-w-6xl grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3">
-                  {linkedUnits.map(({ link, unit }) => unit ? (
-                    <ClientLinkedUnitCard key={link.id} unit={unit} linkStatus={link.status} notes={link.notes} />
+                  {linkedAssets.map(({ link, asset }) => asset ? (
+                    <ClientLinkedAssetCard key={link.id} asset={asset} linkStatus={link.status} notes={link.notes} />
                   ) : null)}
                 </div>
               )}
@@ -877,13 +940,23 @@ export function ClientDetailScreen({ id }: { id: string }) {
                 <ClientDetailField label={t('detail.labels.phone')} name="phone" defaultValue={client.phone} />
                 <ClientDetailField label={t('form.ageLabel')} name="age" type="number" defaultValue={String(client.age)} />
                 <ClientDetailField label={t('form.budgetLabel')} name="budget" defaultValue={client.budget} />
-                <ClientDetailField label={t('form.interestLabel')} name="propertyInterest" defaultValue={client.propertyInterest} />
+                <ClientDetailField label={t('form.interestLabel')} name="assetInterest" defaultValue={client.assetInterest} />
                 <ClientDetailField label={t('form.actionLabel')} name="nextAction" defaultValue={client.nextAction} className="lg:col-span-2" />
                 <ClientDetailField label={t('form.issueLabel')} name="issue" defaultValue={client.issue ?? ""} />
                 <ClientDetailField label="Nationality" name="nationality" defaultValue={client.nationality} />
                 <ClientDetailField label="Generation" name="generation" defaultValue={client.generation} />
-                <ClientDetailSelect label={t('form.typeLabel')} name="type" defaultValue={client.type} options={clientTypes.map((value) => ({ value, label: t(`types.${value}`) }))} />
-                <ClientDetailSelect label={t('form.statusLabel')} name="status" defaultValue={client.status} options={clientStatuses.map((value) => ({ value, label: t(`statuses.${value}`) }))} />
+                <ClientDetailSelect
+                  label={t('form.typeLabel')}
+                  name="type"
+                  defaultValue={client.type}
+                  options={clientTypes.map((value) => ({ value, label: translateClientType(t, value) }))}
+                />
+                <ClientDetailSelect
+                  label={t('form.statusLabel')}
+                  name="status"
+                  defaultValue={client.status}
+                  options={clientStatuses.map((value) => ({ value, label: translateClientStatus(t, value) }))}
+                />
                 {canManageVisibility ? (
                   <ClientDetailSelect
                     label={t("form.visibilityLabel")}
@@ -897,8 +970,18 @@ export function ClientDetailScreen({ id }: { id: string }) {
                 ) : (
                   <input type="hidden" name="visibility" value={client.visibility ?? "private"} />
                 )}
-                <ClientDetailSelect label={t('form.priorityLabel')} name="priority" defaultValue={client.priority} options={clientPriorities.map((value) => ({ value, label: t(`priorities.${value}`) }))} />
-                <ClientDetailSelect label={t('form.stageLabel')} name="pipelineStage" defaultValue={client.pipelineStage} options={pipelineStages.map((value) => ({ value, label: t(`stages.${value}`) }))} />
+                <ClientDetailSelect
+                  label={t('form.priorityLabel')}
+                  name="priority"
+                  defaultValue={client.priority}
+                  options={clientPriorities.map((value) => ({ value, label: translateClientPriority(t, value) }))}
+                />
+                <ClientDetailSelect
+                  label={t('form.stageLabel')}
+                  name="pipelineStage"
+                  defaultValue={client.pipelineStage}
+                  options={pipelineStages.map((value) => ({ value, label: translateClientStage(t, value) }))}
+                />
               </div>
 
               {profileOperation.error && <p className="text-xs font-bold text-red-500">{profileOperation.error}</p>}
@@ -912,17 +995,17 @@ export function ClientDetailScreen({ id }: { id: string }) {
           </AppSection>
         </TabsContent>
 
-        <TabsContent value="units">
+        <TabsContent value="assets">
           <div className="space-y-5">
             <AppSection
-              title={t("detail.units.title")}
-              description={t("detail.units.subtitle")}
+              title={t("detail.assets.title")}
+              description={t("detail.assets.subtitle")}
               contentClassName="space-y-4"
               actions={(
                 <>
-                  <span className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-bold text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">{linkedUnits.length} {t("detail.units.linkedCount")}</span>
-                  <Button type="button" onClick={() => setIsUnitPickerOpen(true)} className="h-10 rounded-xl px-4 text-xs font-bold">
-                    <Plus className="me-2 h-3.5 w-3.5" />{t("detail.units.linkUnit")}
+                  <span className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-bold text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">{linkedAssets.length} {t("detail.assets.linkedCount")}</span>
+                  <Button type="button" onClick={() => setIsAssetPickerOpen(true)} className="h-10 rounded-xl px-4 text-xs font-bold">
+                    <Plus className="me-2 h-3.5 w-3.5" />{t("detail.assets.linkAsset")}
                   </Button>
                 </>
               )}
@@ -933,24 +1016,24 @@ export function ClientDetailScreen({ id }: { id: string }) {
               <div className="grid max-w-6xl grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3">
                 <button
                   type="button"
-                  onClick={() => setIsUnitPickerOpen(true)}
+                  onClick={() => setIsAssetPickerOpen(true)}
                   className="flex min-h-[316px] items-center gap-4 rounded-[24px] border border-dashed border-zinc-200 bg-zinc-50 p-5 text-start transition hover:bg-zinc-100 dark:border-white/10 dark:bg-white/[0.02] dark:hover:bg-white/[0.04]"
                 >
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950">
                     <Plus className="h-5 w-5" />
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-sm font-black text-zinc-950 dark:text-zinc-50">{t("detail.units.linkUnit")}</span>
-                    <span className="mt-1 block max-w-sm text-xs font-semibold leading-5 text-zinc-500 dark:text-zinc-400">{t("detail.units.linkUnitDesc")}</span>
+                    <span className="block text-sm font-black text-zinc-950 dark:text-zinc-50">{t("detail.assets.linkAsset")}</span>
+                    <span className="mt-1 block max-w-sm text-xs font-semibold leading-5 text-zinc-500 dark:text-zinc-400">{t("detail.assets.linkAssetDesc")}</span>
                   </span>
                 </button>
 
-                {linkedUnits.map(({ link, unit }) => unit ? (
+                {linkedAssets.map(({ link, asset }) => asset ? (
                   <div key={link.id} className="rounded-[24px] border border-zinc-100 bg-white p-3 dark:border-white/5 dark:bg-[#0B0B0B]">
-                    <ClientLinkedUnitCard unit={unit} linkStatus={link.status} notes={link.notes} />
+                    <ClientLinkedAssetCard asset={asset} linkStatus={link.status} notes={link.notes} />
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Link href={`/properties/${unit.id}`} className="inline-flex h-9 items-center justify-center rounded-xl border border-zinc-200 px-3 text-xs font-bold text-zinc-900 transition hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-950">
-                        <ArrowUpRight className="me-2 h-3.5 w-3.5" />{t("detail.units.openUnit")}
+                      <Link href={`/assets/${asset.id}`} className="inline-flex h-9 items-center justify-center rounded-xl border border-zinc-200 px-3 text-xs font-bold text-zinc-900 transition hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-950">
+                        <ArrowUpRight className="me-2 h-3.5 w-3.5" />{t("detail.assets.openAsset")}
                       </Link>
                         <Button
                           type="button"
@@ -958,11 +1041,11 @@ export function ClientDetailScreen({ id }: { id: string }) {
                           disabled={linkOperation.isRunning}
                           onClick={() => void linkOperation.run(() => {
                             if (!workspaceOrganizationId) throw new Error("Select an organization first.");
-                            return unlinkClientUnitRequest(workspaceOrganizationId, client.id, link.propertyId);
-                          }, { successMessage: t("detail.units.unlinked") })}
+                            return unlinkClientAssetRequest(workspaceOrganizationId, client.id, link.assetId);
+                          }, { successMessage: t("detail.assets.unlinked") })}
                           className="h-9 rounded-xl px-3 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
                         >
-                          <Trash2 className="me-2 h-3.5 w-3.5" />{t("detail.units.unlink")}
+                          <Trash2 className="me-2 h-3.5 w-3.5" />{t("detail.assets.unlink")}
                         </Button>
                     </div>
                   </div>
@@ -970,27 +1053,27 @@ export function ClientDetailScreen({ id }: { id: string }) {
               </div>
             </AppSection>
 
-            <Dialog open={isUnitPickerOpen} onOpenChange={(open) => {
-              setIsUnitPickerOpen(open);
+            <Dialog open={isAssetPickerOpen} onOpenChange={(open) => {
+              setIsAssetPickerOpen(open);
               if (!open) {
-                setUnitSearch("");
-                setUnitStatusFilter("all");
+                setAssetSearch("");
+                setAssetStatusFilter("all");
               }
             }}>
               <DialogContent className="max-h-[88vh] max-w-5xl overflow-hidden rounded-[24px] border-zinc-200 bg-white p-0 text-zinc-950 shadow-none dark:border-zinc-800 dark:bg-[#0B0B0B] dark:text-zinc-50">
                 <DialogHeader className="border-b border-zinc-100 p-5 pe-14 text-start dark:border-zinc-800">
-                  <DialogTitle className="text-xl font-black text-zinc-950 dark:text-zinc-50">{t("detail.units.modalTitle")}</DialogTitle>
-                  <DialogDescription className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">{t("detail.units.modalDesc")}</DialogDescription>
+                  <DialogTitle className="text-xl font-black text-zinc-950 dark:text-zinc-50">{t("detail.assets.modalTitle")}</DialogTitle>
+                  <DialogDescription className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">{t("detail.assets.modalDesc")}</DialogDescription>
                 </DialogHeader>
 
                 <div className="sticky top-0 z-10 space-y-4 border-b border-zinc-100 bg-white p-5 dark:border-zinc-800 dark:bg-[#0B0B0B]">
                   <label className="relative block">
-                    <span className="sr-only">{t("detail.units.search")}</span>
+                    <span className="sr-only">{t("detail.assets.search")}</span>
                     <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
                     <input
-                      value={unitSearch}
-                      onChange={(event) => setUnitSearch(event.target.value)}
-                      placeholder={t("detail.units.search")}
+                      value={assetSearch}
+                      onChange={(event) => setAssetSearch(event.target.value)}
+                      placeholder={t("detail.assets.search")}
                       className="h-11 w-full rounded-xl border border-zinc-200 bg-zinc-50 ps-10 pe-3 text-sm font-bold text-zinc-950 outline-none transition focus:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-600"
                     />
                   </label>
@@ -999,35 +1082,35 @@ export function ClientDetailScreen({ id }: { id: string }) {
                       <button
                         key={status}
                         type="button"
-                        onClick={() => setUnitStatusFilter(status)}
+                        onClick={() => setAssetStatusFilter(status)}
                         className={cn(
                           "h-9 rounded-xl border px-3 text-[10px] font-black uppercase tracking-widest transition",
-                          unitStatusFilter === status
+                          assetStatusFilter === status
                             ? "border-zinc-950 bg-zinc-950 text-white dark:border-white dark:bg-white dark:text-zinc-950"
                             : "border-zinc-200 text-zinc-500 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-white/[0.04]",
                         )}
                       >
-                        {status === "all" ? t("stageFilters.all") : propertyT(`toolbar.filters.${status}`)}
+                        {status === "all" ? t("stageFilters.all") : assetT(`toolbar.filters.${status}`)}
                       </button>
                     ))}
                   </div>
                   <div className="grid gap-3 md:grid-cols-[220px_minmax(0,1fr)]">
                     <label className="block text-start">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t("detail.units.linkStatus")}</span>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t("detail.assets.linkStatus")}</span>
                       <select
-                        value={unitLinkStatus}
-                        onChange={(event) => setUnitLinkStatus(event.target.value as (typeof unitLinkStatuses)[number])}
+                        value={assetLinkStatus}
+                        onChange={(event) => setAssetLinkStatus(event.target.value as (typeof clientAssetLinkStatuses)[number])}
                         className="mt-1 h-11 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-sm font-bold text-zinc-950 outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50"
                       >
-                        {unitLinkStatuses.map((status) => <option key={status} value={status}>{t(`detail.units.statuses.${status}`)}</option>)}
+                        {clientAssetLinkStatuses.map((status) => <option key={status} value={status}>{t(`detail.assets.statuses.${status}`)}</option>)}
                       </select>
                     </label>
                     <label className="block text-start">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t("detail.units.notes")}</span>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t("detail.assets.notes")}</span>
                       <input
-                        value={unitLinkNotes}
-                        onChange={(event) => setUnitLinkNotes(event.target.value)}
-                        placeholder={t("detail.units.notes")}
+                        value={assetLinkNotes}
+                        onChange={(event) => setAssetLinkNotes(event.target.value)}
+                        placeholder={t("detail.assets.notes")}
                         className="mt-1 h-11 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-sm font-bold text-zinc-950 outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50"
                       />
                     </label>
@@ -1036,29 +1119,29 @@ export function ClientDetailScreen({ id }: { id: string }) {
 
                 <div className="max-h-[54vh] overflow-y-auto p-5">
                   <div className="mb-4 flex items-center justify-between gap-4">
-                    <h3 className="text-sm font-black text-zinc-950 dark:text-zinc-50">{t("detail.units.available")}</h3>
+                    <h3 className="text-sm font-black text-zinc-950 dark:text-zinc-50">{t("detail.assets.available")}</h3>
                     <span className="text-xs font-bold text-zinc-400">
-                      {t("detail.units.showing", { shown: visibleAvailableUnits.length, total: filteredAvailableUnits.length })}
+                      {t("detail.assets.showing", { shown: visibleAvailableAssets.length, total: filteredAvailableAssets.length })}
                     </span>
                   </div>
 
-                  {isUnitCatalogLoading ? (
+                  {isAssetCatalogLoading ? (
                     <div className="grid gap-3 md:grid-cols-2">
                       {Array.from({ length: 4 }).map((_, index) => (
                         <div key={index} className="h-28 animate-pulse rounded-2xl bg-zinc-100 dark:bg-zinc-950" />
                       ))}
                     </div>
-                  ) : availableUnits.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-zinc-200 p-8 text-center text-sm font-bold text-zinc-400 dark:border-zinc-800">{t("detail.units.noAvailable")}</div>
-                  ) : filteredAvailableUnits.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-zinc-200 p-8 text-center text-sm font-bold text-zinc-400 dark:border-zinc-800">{t("detail.units.noResults")}</div>
+                  ) : availableAssets.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-zinc-200 p-8 text-center text-sm font-bold text-zinc-400 dark:border-zinc-800">{t("detail.assets.noAvailable")}</div>
+                  ) : filteredAvailableAssets.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-zinc-200 p-8 text-center text-sm font-bold text-zinc-400 dark:border-zinc-800">{t("detail.assets.noResults")}</div>
                   ) : (
                     <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3">
-                      {visibleAvailableUnits.map((unit) => (
-                        <div key={unit.id} className="rounded-[24px] border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950/50">
-                          <ClientLinkedUnitCard unit={unit} />
-                            <Button type="button" disabled={linkOperation.isRunning} onClick={() => linkUnit(unit.id)} className="mt-3 h-9 w-full rounded-xl text-xs font-bold">
-                              <Plus className="me-2 h-3.5 w-3.5" />{t("detail.units.link")}
+                      {visibleAvailableAssets.map((asset) => (
+                        <div key={asset.id} className="rounded-[24px] border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950/50">
+                          <ClientLinkedAssetCard asset={asset} />
+                            <Button type="button" disabled={linkOperation.isRunning} onClick={() => linkAsset(asset.id)} className="mt-3 h-9 w-full rounded-xl text-xs font-bold">
+                              <Plus className="me-2 h-3.5 w-3.5" />{t("detail.assets.link")}
                             </Button>
                         </div>
                       ))}
@@ -1105,7 +1188,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
                 }, { successMessage: t('detail.activity.added') });
               }}
             >
-              <input type="hidden" name="status" value="open" />
+              <input type="hidden" name="status" value="todo" />
               {canManageVisibility ? (
                 <select name="visibility" defaultValue="private" className="h-10 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-bold text-zinc-700 outline-none dark:border-zinc-800 dark:bg-[#0B0B0B] dark:text-zinc-100">
                   <option value="private">{t("form.visibilityPrivate")}</option>
@@ -1122,12 +1205,12 @@ export function ClientDetailScreen({ id }: { id: string }) {
                 className="h-10 min-w-0 rounded-xl border border-zinc-200 bg-white px-3 text-sm font-bold text-zinc-950 outline-none transition focus:border-zinc-400 dark:border-zinc-800 dark:bg-[#0B0B0B] dark:text-zinc-50 dark:focus:border-zinc-600"
               />
               <select name="priority" defaultValue={client.priority} className="h-10 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-bold text-zinc-700 outline-none dark:border-zinc-800 dark:bg-[#0B0B0B] dark:text-zinc-100">
-                {clientPriorities.map((value) => <option key={value} value={value}>{t(`priorities.${value}`)}</option>)}
+                {clientPriorities.map((value) => <option key={value} value={value}>{translateClientPriority(t, value)}</option>)}
               </select>
               <input name="dueAt" type="date" className="h-10 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-bold text-zinc-700 outline-none dark:border-zinc-800 dark:bg-[#0B0B0B] dark:text-zinc-100" />
-              <select name="propertyId" defaultValue="" className="h-10 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-bold text-zinc-700 outline-none dark:border-zinc-800 dark:bg-[#0B0B0B] dark:text-zinc-100">
-                <option value="">{t('detail.activity.noUnit')}</option>
-                {units.map((unit) => <option key={unit.id} value={unit.id}>{unit.title}</option>)}
+              <select name="assetId" defaultValue="" className="h-10 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-bold text-zinc-700 outline-none dark:border-zinc-800 dark:bg-[#0B0B0B] dark:text-zinc-100">
+                <option value="">{t('detail.activity.noAsset')}</option>
+                {assets.map((asset) => <option key={asset.id} value={asset.id}>{asset.title}</option>)}
               </select>
               <Button type="submit" disabled={!taskTitle.trim() || taskOperation.isRunning} className="h-10 rounded-xl px-5 text-xs font-black">
                 {t('detail.activity.add')}
@@ -1143,13 +1226,13 @@ export function ClientDetailScreen({ id }: { id: string }) {
                 </div>
               ) : null}
 
-              {clientTaskActivityRows(tasks, units, locale, t('detail.activity.noDate')).map(({ task, linkedUnit, isDone, statusTone, dueDateLabel }) => {
+              {clientTaskActivityRows(tasks, assets, locale, t('detail.activity.noDate')).map(({ task, linkedAsset, isDone, statusTone, dueDateLabel }) => {
                 return (
                   <article key={task.id} className="grid gap-4 rounded-[20px] border border-zinc-100 bg-white p-4 dark:border-white/5 dark:bg-[#0A0A0A] md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <StatusPill label={t(`detail.activity.taskStatuses.${task.status}`)} tone={statusTone} />
-                        <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t(`priorities.${task.priority}`)}</span>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{translateClientPriority(t, task.priority)}</span>
                         <span className="text-[10px] font-bold text-zinc-400">{dueDateLabel}</span>
                       </div>
                       <p className={cn("mt-2 truncate text-sm font-black text-zinc-950 dark:text-zinc-50", isDone && "text-zinc-400 line-through dark:text-zinc-500")}>
@@ -1157,10 +1240,10 @@ export function ClientDetailScreen({ id }: { id: string }) {
                       </p>
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] font-bold text-zinc-400">
                         <span>{t('detail.activity.tasks')}</span>
-                        {linkedUnit && (
+                        {linkedAsset && (
                           <>
                             <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-                            <span>{linkedUnit.title}</span>
+                            <span>{linkedAsset.title}</span>
                           </>
                         )}
                       </div>
@@ -1181,7 +1264,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
                           className="h-9 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-bold text-zinc-700 outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
                         >
                           <option value="private">{t("form.visibilityPrivate")}</option>
-                          <option value="public">{t("form.visibilityPublic")}</option>
+                          <option value="workspace">{t("form.visibilityPublic")}</option>
                         </select>
                       )}
                       <Button
@@ -1194,7 +1277,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
                           return updateClientTaskRequest(
                             workspaceOrganizationId,
                             task.id,
-                            clientTaskUpdatePayload(task, client.id, { status: isDone ? "open" : "done" }),
+                            clientTaskUpdatePayload(task, client.id, { status: isDone ? "todo" : "done" }),
                           );
                         }, { successMessage: t('detail.activity.saved') })}
                         className="h-9 rounded-xl text-xs font-bold"

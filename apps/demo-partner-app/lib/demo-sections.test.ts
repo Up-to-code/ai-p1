@@ -15,7 +15,7 @@ describe("demo section registry", () => {
       "credentials",
       "organization",
       "clients",
-      "properties",
+      "assets",
       "projects",
       "tasks",
       "calendar",

@@ -13,12 +13,12 @@ const teamCopy = {
     metrics: [
       { icon: UsersRound, label: "Operating model", value: "Lean", helper: "Product, engineering, and market operations stay close to the workflow.", tone: "blue" as const },
       { icon: ShieldCheck, label: "Trust layer", value: "Verified", helper: "Data quality, approvals, and workspace access are treated as core product.", tone: "green" as const },
-      { icon: Sparkles, label: "Focus", value: "Real work", helper: "Built around practical property workflows rather than generic dashboards.", tone: "amber" as const },
+      { icon: Sparkles, label: "Focus", value: "Real work", helper: "Built around practical workspace workflows rather than generic dashboards.", tone: "amber" as const },
     ],
     leadership: {
       eyebrow: "Leadership",
       title: "Small team, clear ownership.",
-      description: "Each function owns the details that keep the platform useful, trusted, and fast for real estate operators.",
+      description: "Each function owns the details that keep the platform useful, trusted, and fast for workspace operators.",
     },
     members: [
       { name: "Ahmed Mansour", role: "Founder & CEO", initials: "AM" },
@@ -36,12 +36,12 @@ const teamCopy = {
     metrics: [
       { icon: UsersRound, label: "نموذج التشغيل", value: "رشيق", helper: "يبقى المنتج والهندسة وعمليات السوق قريبين من سير العمل اليومي.", tone: "blue" as const },
       { icon: ShieldCheck, label: "طبقة الثقة", value: "موثقة", helper: "جودة البيانات والموافقات وصلاحيات مساحة العمل جزء أساسي من المنتج.", tone: "green" as const },
-      { icon: Sparkles, label: "التركيز", value: "عمل حقيقي", helper: "مبني حول سير عمل عقاري عملي، لا لوحات عامة بلا سياق.", tone: "amber" as const },
+      { icon: Sparkles, label: "التركيز", value: "عمل حقيقي", helper: "مبني حول سير عمل عملي، لا لوحات عامة بلا سياق.", tone: "amber" as const },
     ],
     leadership: {
       eyebrow: "القيادة",
       title: "فريق صغير، ملكية واضحة.",
-      description: "كل وظيفة تملك التفاصيل التي تجعل المنصة مفيدة، موثوقة، وسريعة لفرق العقار.",
+      description: "كل وظيفة تملك التفاصيل التي تجعل المنصة مفيدة، موثوقة، وسريعة لفرق التشغيل.",
     },
     members: [
       { name: "أحمد منصور", role: "المؤسس والرئيس التنفيذي", initials: "AM" },
@@ -52,7 +52,7 @@ const teamCopy = {
     principles: [
       { title: "انضباط المنتج", description: "كل سطح مصمم حول نقرات أقل، ملكية أوضح، وتسليمات تشغيلية أنظف.", icon: Sparkles },
       { title: "ثقة تشغيلية", description: "الموافقات وسجلات التدقيق وسلامة البيانات جزء من سير العمل اليومي، وليست تفاصيل لاحقة.", icon: ShieldCheck },
-      { title: "قرب من السوق", description: "يبقى الفريق قريبًا من المطورين والوسطاء والمشغلين الذين يستخدمون مساحة العمل كل يوم.", icon: UsersRound },
+      { title: "قرب من السوق", description: "يبقى الفريق قريبًا من الفرق والمشغلين الذين يستخدمون مساحة العمل كل يوم.", icon: UsersRound },
     ],
   },
 };

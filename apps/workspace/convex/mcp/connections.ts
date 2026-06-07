@@ -25,6 +25,7 @@ import {
 import {
   mcpConnectionPrincipalType,
   mcpConnectionTtlMs,
+  normalizeMcpPermissions,
   presentMcpConnection,
   visibleMcpConnections,
 } from "./connectionLifecycle";
@@ -430,9 +431,10 @@ export const validateConnection = query({
     }
     const principalType = mcpConnectionPrincipalType(connection);
     const principalUserId = connection.principalUserId ?? connection.createdByUserId;
+    const storedPermissions = normalizeMcpPermissions(connection.permissions);
     const livePermissions = principalType === "organization"
-      ? connection.permissions
-      : await filterLivePermissions(ctx, connection.organizationId, principalUserId, connection.permissions);
+      ? storedPermissions
+      : await filterLivePermissions(ctx, connection.organizationId, principalUserId, storedPermissions);
     if (args.resource && args.action && !hasMcpPermission(livePermissions, args.resource, args.action)) {
       return { ok: false, reason: "permission_denied" };
     }

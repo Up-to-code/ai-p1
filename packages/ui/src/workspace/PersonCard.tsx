@@ -10,7 +10,7 @@ import type {
 
 /**
  * WHY:   Offers and CRM now need one primary person card instead of overloading project cards for every relationship.
- * WHAT:  Renders a compact broker/client card with badges, stage, and linked project or unit context.
+ * WHAT:  Renders a compact broker/client card with badges, stage, and linked project or asset context.
  * HOW:   Accepts a serializable person payload so both server pages and client boards can reuse the same card shell.
  */
 const PersonCardComponent = function PersonCard({
@@ -82,7 +82,7 @@ const PersonCardComponent = function PersonCard({
             <div className="mt-1 text-sm font-medium text-foreground">
               {person.relation?.project?.title ?? "بدون مشروع"}
             </div>
-            <div className="mt-1 text-sm text-muted-foreground">{person.relation?.unit?.label ?? "على مستوى المشروع"}</div>
+            <div className="mt-1 text-sm text-muted-foreground">{person.relation?.asset?.label ?? "على مستوى المشروع"}</div>
             {person.relation?.stageLabel ? (
               <div className="mt-1 text-[11px] font-bold text-blue-700">{person.relation.stageLabel}</div>
             ) : null}
@@ -108,7 +108,7 @@ const PersonCardComponent = function PersonCard({
 /**
  * WHY:   Existing broker presence data should be promotable into a full person card without repeating field mapping everywhere.
  * WHAT:  Converts a broker-presence chip payload into a `PersonCard`-compatible object.
- * HOW:   Uses optional relation fields when available and falls back to the legacy project title fields.
+ * HOW:   Uses optional relation fields when available and falls back to the project title fields.
  */
 export function brokerPresenceToPersonCard(broker: BrokerPresence) {
   return {
@@ -127,7 +127,7 @@ export function brokerPresenceToPersonCard(broker: BrokerPresence) {
         project: broker.projectTitle
           ? { id: broker.projectTitle, title: broker.projectTitle, location: broker.city ?? "الرياض" }
           : null,
-        unit: broker.unitLabel ? { id: broker.unitLabel, label: broker.unitLabel } : null,
+        asset: broker.assetLabel ? { id: broker.assetLabel, label: broker.assetLabel } : null,
       },
   };
 }

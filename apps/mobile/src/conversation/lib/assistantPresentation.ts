@@ -91,8 +91,8 @@ function getLocalizedRouteLabel(
   copy: AssistantSurfaceCopy,
 ) {
   switch (route) {
-    case "property":
-      return copy.routeProperty;
+    case "asset":
+      return copy.routeAsset;
     case "funding":
       return copy.routeFunding;
     case "legal":
@@ -168,11 +168,11 @@ function inferAssistantIdentityKind(args: {
       .filter((block) => block.type === "actions")
       .flatMap((block) => block.actionIds) ?? [],
   );
-  if (turn?.actions.some((action) => action.name === "save_property" && actionIds.has(action.id))) {
+  if (turn?.actions.some((action) => action.name === "save_asset" && actionIds.has(action.id))) {
     return "save";
   }
 
-  if (turn?.blocks.some((block) => block.type === "property_list")) {
+  if (turn?.blocks.some((block) => block.type === "asset_list")) {
     return "search";
   }
 
@@ -186,7 +186,7 @@ function inferAssistantIdentityKind(args: {
   if (route === "mixed") {
     return "mixed";
   }
-  if (route === "property" || args.stageSpecialist === "property") {
+  if (route === "asset" || args.stageSpecialist === "asset") {
     return "search";
   }
   return "advisor";
@@ -271,7 +271,7 @@ function inferAssistantBrandActivityKind(args: {
       .filter((block) => block.type === "actions")
       .flatMap((block) => block.actionIds) ?? [],
   );
-  if (turn?.actions.some((action) => action.name === "save_property" && actionIds.has(action.id))) {
+  if (turn?.actions.some((action) => action.name === "save_asset" && actionIds.has(action.id))) {
     return "saving";
   }
 
@@ -284,10 +284,10 @@ function inferAssistantBrandActivityKind(args: {
   }
 
   if (
-    args.stageSpecialist === "property"
-    || turn?.route === "property"
+    args.stageSpecialist === "asset"
+    || turn?.route === "asset"
     || turn?.route === "mixed"
-    || args.route === "property"
+    || args.route === "asset"
     || args.route === "mixed"
   ) {
     return "searching";

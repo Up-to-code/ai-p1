@@ -164,10 +164,10 @@ function sandboxAuthorizeUrl(app: PartnerAppSummary) {
     "client:create",
     "client:update",
     "client:delete",
-    "property:read",
-    "property:create",
-    "property:update",
-    "property:delete",
+    "asset:read",
+    "asset:create",
+    "asset:update",
+    "asset:delete",
     "project:read",
     "project:create",
     "project:update",
@@ -615,7 +615,7 @@ function ApiExplorerTab({ sandbox }: { sandbox: SandboxInfo | null }) {
           <label className="grid gap-1 text-xs font-bold text-foreground">
             Resource
             <select value={resource} onChange={(event) => setResource(event.target.value)} className="h-10 rounded-[6px] border border-input bg-card px-3 text-sm">
-              {["me", "clients", "properties", "projects", "tasks", "calendar", "media"].map((item) => <option key={item}>{item}</option>)}
+              {["me", "clients", "assets", "projects", "tasks", "calendar", "media"].map((item) => <option key={item}>{item}</option>)}
             </select>
           </label>
         </div>

@@ -16,10 +16,10 @@ export const projectSchema = z.object({
   city: requiredText("City"),
   area: requiredText("Area"),
   type: z.enum(projectCategories),
-  unitTypes: z.array(z.enum(projectOfferingTypes)),
+  assetTypes: z.array(z.enum(projectOfferingTypes)),
   status: z.enum(["draft", "pending", "approved", "rejected"]),
   visibility: z.enum(["private", "public"]).optional(),
-  units: nonNegativeIntegerText("Units"),
+  assetCount: nonNegativeIntegerText("Assets"),
   averagePrice: requiredText("Average price"),
   projectPrices: z.array(projectPriceItemSchema).optional().default([]),
   priceRange: z.string().trim().optional(),
@@ -37,10 +37,10 @@ export interface ProjectFormValues {
   city: string;
   area: string;
   type: (typeof projectCategories)[number];
-  unitTypes: (typeof projectOfferingTypes)[number][];
+  assetTypes: (typeof projectOfferingTypes)[number][];
   status: "draft" | "pending" | "approved" | "rejected";
   visibility?: "private" | "public";
-  units: string;
+  assetCount: string;
   averagePrice: string;
   projectPrices: Array<{ id: string; label: string; price: string }>;
   priceRange?: string;

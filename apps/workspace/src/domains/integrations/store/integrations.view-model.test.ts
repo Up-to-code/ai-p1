@@ -73,10 +73,10 @@ describe("integrations view model", () => {
   it("filters catalog cards by query and connection state", () => {
     const cards = buildPartnerCatalogCards([
       app,
-      { ...app, id: "partners_app_2", name: "Listings Portal", allowedScopes: ["property:read"] },
+      { ...app, id: "partners_app_2", name: "Assets Portal", allowedScopes: ["asset:read"] },
     ], [connection]);
 
-    expect(filterPartnerCatalogCards(cards, "property", "all").map((card) => card.app.id)).toEqual(["partners_app_2"]);
+    expect(filterPartnerCatalogCards(cards, "assets", "all").map((card) => card.app.id)).toEqual(["partners_app_2"]);
     expect(filterPartnerCatalogCards(cards, "", "connected").map((card) => card.app.id)).toEqual(["partners_app_1"]);
     expect(filterPartnerCatalogCards(cards, "", "available").map((card) => card.app.id)).toEqual(["partners_app_2"]);
   });

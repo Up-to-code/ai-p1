@@ -28,7 +28,7 @@ description: "استخدم نفس رابط مؤسسة كانترا مع الوك
 ```json
 {
   "model": "grok-4.3",
-  "input": "Summarize available apartments for this client.",
+  "input": "Summarize available assets for this client.",
   "tools": [
     {
       "type": "mcp",

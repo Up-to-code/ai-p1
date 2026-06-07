@@ -4,12 +4,12 @@ import { activeRows } from "./readStats";
 export type DashboardOverviewRows = {
   displayProjects: Doc<"projects">[];
   allProjects: Doc<"projects">[];
-  approvedProjects: Doc<"projects">[];
-  pendingProjects: Doc<"projects">[];
-  availableUnits: Doc<"propertyUnits">[];
-  pendingUnits: Doc<"propertyUnits">[];
-  draftUnits: Doc<"propertyUnits">[];
-  tasks: Doc<"clientTasks">[];
+  activeProjects: Doc<"projects">[];
+  blockedProjects: Doc<"projects">[];
+  approvedAssets: Doc<"assets">[];
+  reviewAssets: Doc<"assets">[];
+  draftAssets: Doc<"assets">[];
+  tasks: Doc<"tasks">[];
   events: Doc<"calendarEvents">[];
 };
 
@@ -17,12 +17,12 @@ type ClientLookup = (clientId: Id<"clients">) => Promise<Doc<"clients"> | null>;
 type DashboardActiveRows = {
   displayProjects: Doc<"projects">[];
   allProjects: Doc<"projects">[];
-  approvedProjects: Doc<"projects">[];
-  pendingProjects: Doc<"projects">[];
-  availableUnits: Doc<"propertyUnits">[];
-  pendingUnits: Doc<"propertyUnits">[];
-  draftUnits: Doc<"propertyUnits">[];
-  openTasks: Doc<"clientTasks">[];
+  activeProjects: Doc<"projects">[];
+  blockedProjects: Doc<"projects">[];
+  approvedAssets: Doc<"assets">[];
+  reviewAssets: Doc<"assets">[];
+  draftAssets: Doc<"assets">[];
+  openTasks: Doc<"tasks">[];
   events: Doc<"calendarEvents">[];
 };
 
@@ -38,12 +38,12 @@ function activeDashboardRows(rows: DashboardOverviewRows): DashboardActiveRows {
   return {
     displayProjects: activeRows(rows.displayProjects),
     allProjects: activeRows(rows.allProjects),
-    approvedProjects: activeRows(rows.approvedProjects),
-    pendingProjects: activeRows(rows.pendingProjects),
-    availableUnits: activeRows(rows.availableUnits),
-    pendingUnits: activeRows(rows.pendingUnits),
-    draftUnits: activeRows(rows.draftUnits),
-    openTasks: activeRows(rows.tasks).filter((task) => task.status === "open"),
+    activeProjects: activeRows(rows.activeProjects),
+    blockedProjects: activeRows(rows.blockedProjects),
+    approvedAssets: activeRows(rows.approvedAssets),
+    reviewAssets: activeRows(rows.reviewAssets),
+    draftAssets: activeRows(rows.draftAssets),
+    openTasks: activeRows(rows.tasks).filter((task) => task.status !== "done" && task.status !== "canceled"),
     events: activeRows(rows.events),
   };
 }
@@ -56,17 +56,12 @@ function dashboardEndOfDay(now: number) {
 
 function dashboardCounts(active: DashboardActiveRows, now: number) {
   const todayEnd = dashboardEndOfDay(now);
-  const blockedProjectIds = new Set([
-    ...active.pendingProjects.map((project) => project._id),
-    ...active.allProjects.filter((project) => project.syncState === "blocked").map((project) => project._id),
-  ]);
-
   return {
-    dueToday: active.openTasks.filter((task) => task.dueAt && task.dueAt <= todayEnd).length,
-    availableUnits: active.availableUnits.length,
-    reviewUnits: active.pendingUnits.length + active.draftUnits.length,
-    readyProjects: active.approvedProjects.filter((project) => project.syncState === "synced").length,
-    blockedProjects: blockedProjectIds.size,
+    dueToday: active.openTasks.filter((task) => task.dueDate && Date.parse(task.dueDate) <= todayEnd).length,
+    availableAssets: active.approvedAssets.length,
+    reviewAssets: active.reviewAssets.length + active.draftAssets.length,
+    readyProjects: active.activeProjects.length,
+    blockedProjects: active.blockedProjects.length,
     totalProjects: active.allProjects.length,
   };
 }
@@ -75,11 +70,9 @@ function dashboardProjectCards(active: DashboardActiveRows) {
   return active.displayProjects.map((project) => ({
     id: project._id,
     name: project.name,
-    reference: project.reference,
-    city: project.city,
     status: project.status,
-    units: project.units,
-    priceRange: project.priceRange,
+    health: project.health,
+    budget: project.budget,
   }));
 }
 
@@ -89,16 +82,13 @@ async function dashboardWeekEvents(active: DashboardActiveRows, getClient: Clien
       .sort((a, b) => a.startAt - b.startAt)
       .slice(0, 20)
       .map(async (event) => {
-        const client = event.clientId ? await getClient(event.clientId) : null;
-        const linkedTask = active.openTasks.find((task) => task.calendarEventId === event._id);
         return {
           id: event._id,
           title: event.title,
           date: isoDate(event.startAt),
           time: isoTime(event.startAt),
-          owner: event.owner,
-          clientName: client && !client.deletedAt ? client.name : undefined,
-          priority: linkedTask?.priority ?? ("normal" as const),
+          owner: event.ownerUserId ?? event.createdByUserId,
+          priority: "normal" as const,
           type: event.type,
         };
       }),

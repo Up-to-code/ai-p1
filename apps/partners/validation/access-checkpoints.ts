@@ -15,7 +15,7 @@ export const COMMON_PERMISSION_GROUPS = [
     description: "Access organization records required by the app workflow.",
     scopes: [
       { value: "client:read", label: "Read clients" },
-      { value: "property:read", label: "Read properties" },
+      { value: "asset:read", label: "Read assets" },
       { value: "project:read", label: "Read projects" },
       { value: "calendar:read", label: "Read calendar" },
       { value: "task:read", label: "Read tasks" },

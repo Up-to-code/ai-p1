@@ -11,11 +11,11 @@ export const OAUTH_SCOPE_CATALOG = [
   { id: "clients:create", label: "Create clients for the connected organization" },
   { id: "clients:update_own", label: "Update clients that belong to the connected organization" },
   { id: "clients:read_own", label: "Read clients that belong to the connected organization" },
-  { id: "properties:read", label: "Read properties available to the connected organization" },
-  { id: "properties:create_own", label: "Create properties for the connected organization" },
-  { id: "properties:update_own", label: "Update properties that belong to the connected organization" },
-  { id: "properties:delete_own", label: "Delete properties that belong to the connected organization" },
-  { id: "properties:read_own", label: "Read properties that belong to the connected organization" },
+  { id: "assets:read", label: "Read assets available to the connected organization" },
+  { id: "assets:create_own", label: "Create assets for the connected organization" },
+  { id: "assets:update_own", label: "Update assets that belong to the connected organization" },
+  { id: "assets:delete_own", label: "Delete assets that belong to the connected organization" },
+  { id: "assets:read_own", label: "Read assets that belong to the connected organization" },
 ] as const;
 
 export type OAuthScopeId = (typeof OAUTH_SCOPE_CATALOG)[number]["id"];

@@ -3,21 +3,21 @@ import assert from "node:assert/strict";
 
 import {
   assistantTurnSchema,
-  extractTurnPropertyIds,
+  extractTurnAssetIds,
 } from "@/conversation/assistantProtocol";
 
-test("assistant turn schema accepts a property response", () => {
+test("assistant turn schema accepts an asset response", () => {
   const turn = assistantTurnSchema.parse({
     version: "assistant_turn.v1",
-    route: "property",
+    route: "asset",
     status: "completed",
     assistantText: "I shortlisted the strongest matches for you.",
     blocks: [
       {
-        type: "property_list",
+        type: "asset_list",
         id: "shortlist-1",
         title: "Best matches",
-        propertyIds: ["prop-1", "prop-2"],
+        assetIds: ["prop-1", "prop-2"],
       },
       {
         type: "actions",
@@ -28,29 +28,29 @@ test("assistant turn schema accepts a property response", () => {
     actions: [
       {
         id: "open-1",
-        title: "Open property",
-        name: "open_property",
-        payload: { propertyId: "prop-1" },
+        title: "Open asset",
+        name: "open_asset",
+        payload: { assetId: "prop-1" },
       },
     ],
     agent: {
-      primaryAgent: "property",
-      participatingAgents: ["orchestrator", "property", "summary"],
+      primaryAgent: "asset",
+      participatingAgents: ["orchestrator", "asset", "summary"],
       handoffs: [],
     },
     motion: {
-      preset: "property",
+      preset: "asset",
     },
   });
 
-  assert.deepEqual(extractTurnPropertyIds(turn), ["prop-1", "prop-2"]);
+  assert.deepEqual(extractTurnAssetIds(turn), ["prop-1", "prop-2"]);
 });
 
 test("assistant turn schema rejects invalid action payloads", () => {
   assert.throws(() =>
     assistantTurnSchema.parse({
       version: "assistant_turn.v1",
-      route: "property",
+      route: "asset",
       status: "completed",
       assistantText: "Broken",
       blocks: [
@@ -64,24 +64,24 @@ test("assistant turn schema rejects invalid action payloads", () => {
         {
           id: "bad-1",
           title: "Bad action",
-          name: "open_property",
+          name: "open_asset",
           payload: { brokerId: "broker-1" },
         },
       ],
       agent: {
-        primaryAgent: "property",
-        participatingAgents: ["property"],
+        primaryAgent: "asset",
+        participatingAgents: ["asset"],
         handoffs: [],
       },
       motion: {
-        preset: "property",
+        preset: "asset",
       },
     }));
 });
 
-test("extractTurnPropertyIds tolerates malformed persisted turns", () => {
+test("extractTurnAssetIds tolerates malformed persisted turns", () => {
   assert.deepEqual(
-    extractTurnPropertyIds({ actions: [] } as any),
+    extractTurnAssetIds({ actions: [] } as any),
     [],
   );
 });

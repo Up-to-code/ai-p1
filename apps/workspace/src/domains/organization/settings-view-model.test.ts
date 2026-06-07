@@ -123,7 +123,7 @@ describe("organization settings permission view model", () => {
     expect(grantableAgentPermissions(baseCapabilities)).toEqual([
       { resource: "organization", actions: ["read"] },
       { resource: "client", actions: ["read", "create", "update"] },
-      { resource: "property", actions: ["read", "create"] },
+      { resource: "asset", actions: ["read", "create"] },
       { resource: "project", actions: ["read", "update"] },
       { resource: "calendar", actions: ["read", "create"] },
       { resource: "task", actions: ["read"] },
@@ -159,7 +159,7 @@ describe("organization settings permission view model", () => {
     expect(grantable).toEqual([
       { resource: "organization", actions: ["read"] },
       { resource: "client", actions: ["read", "create", "update"] },
-      { resource: "property", actions: ["read"] },
+      { resource: "asset", actions: ["read"] },
       { resource: "project", actions: ["read"] },
       { resource: "calendar", actions: ["read"] },
       { resource: "task", actions: ["read"] },
@@ -168,7 +168,7 @@ describe("organization settings permission view model", () => {
     expect(defaultApiKeyPermissions(grantable)).toEqual([
       { resource: "organization", actions: ["read"] },
       { resource: "client", actions: ["read"] },
-      { resource: "property", actions: ["read"] },
+      { resource: "asset", actions: ["read"] },
       { resource: "project", actions: ["read"] },
       { resource: "calendar", actions: ["read"] },
       { resource: "task", actions: ["read"] },

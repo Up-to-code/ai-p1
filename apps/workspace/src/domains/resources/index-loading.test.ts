@@ -14,7 +14,7 @@ describe("index HTTP loading states", () => {
     const sources = [
       "src/domains/clients/components/clients-screens.tsx",
       "src/domains/projects/components/projects-screens.tsx",
-      "src/domains/properties/components/properties-screens.tsx",
+      "src/domains/assets/components/assets-screens.tsx",
       "src/domains/calendar/components/calendar-screen.tsx",
       "src/domains/activity/components/activity-screen.tsx",
       "src/domains/dashboard/components/dashboard-screen.tsx",
@@ -29,7 +29,7 @@ describe("index HTTP loading states", () => {
   it("uses contextual skeleton variants instead of one generic page loader", () => {
     const expectations = [
       ["src/domains/projects/components/projects-screens.tsx", 'variant={view === "grid" ? "grid" : "table"}'],
-      ["src/domains/properties/components/properties-screens.tsx", 'variant={view === "grid" ? "grid" : "table"}'],
+      ["src/domains/assets/components/assets-screens.tsx", 'variant={view === "grid" ? "grid" : "table"}'],
       ["src/domains/clients/components/clients-screens.tsx", 'variant={view === "pipeline" ? "pipeline" : view === "calendar" ? "calendar" : "table"}'],
       ["src/domains/calendar/components/calendar-screen.tsx", 'variant="calendar"'],
       ["src/domains/activity/components/activity-screen.tsx", 'variant="activity"'],

@@ -40,7 +40,7 @@ const copy = {
       eyebrow: "Works with",
       title: "The tools your team already uses.",
       description:
-        "Connect Claude, ChatGPT, Codex, Cursor, and more directly to your live workspace data. Your AI assistant searches units, drafts messages, and books tours — without switching tabs.",
+        "Connect Claude, ChatGPT, Codex, Cursor, and more directly to your live workspace data. Your AI assistant searches assets, drafts messages, and books tours — without switching tabs.",
       tools: [
         { name: "ChatGPT", url: "https://chatgpt.com" },
         { name: "Claude", url: "https://claude.ai" },

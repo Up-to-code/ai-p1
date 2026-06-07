@@ -5,17 +5,17 @@ const numericText = (label: string) => z.string().trim().regex(/^\d+$/, `${label
 
 export const clientSchema = z.object({
   name: requiredText("Full name"),
-  type: z.enum(["Buyer", "Tenant", "Investor", "Broker"]),
+  type: z.enum(["person", "organization"]),
   contact: z.string().trim().email("Enter a valid email address."),
   phone: requiredText("Phone", 7),
   age: numericText("Age").refine((value) => Number(value) >= 18, "Age must be 18 or higher.").refine((value) => Number(value) <= 120, "Age must be realistic."),
   nationality: requiredText("Nationality"),
   generation: requiredText("Generation"),
   budget: requiredText("Budget"),
-  propertyInterest: requiredText("Property interest"),
-  status: z.enum(["active", "inactive"]),
-  visibility: z.enum(["private", "public"]).optional(),
-  pipelineStage: z.enum(["new", "qualified", "viewing", "negotiation", "closed"]),
+  assetInterest: requiredText("Asset interest"),
+  status: z.enum(["new", "active", "nurture", "inactive", "archived"]),
+  visibility: z.enum(["private", "team", "workspace"]).optional(),
+  pipelineStage: z.enum(["new", "qualified", "review", "negotiation", "closed"]),
   pipelineOrder: z.number().finite().optional(),
   priority: z.enum(["normal", "high", "urgent"]),
   nextAction: requiredText("Next action"),
@@ -24,17 +24,17 @@ export const clientSchema = z.object({
 
 export interface ClientFormValues {
   name: string;
-  type: "Buyer" | "Tenant" | "Investor" | "Broker";
+  type: "person" | "organization";
   contact: string;
   phone: string;
   age: string;
   nationality: string;
   generation: string;
   budget: string;
-  propertyInterest: string;
-  status: "active" | "inactive";
-  visibility?: "private" | "public";
-  pipelineStage: "new" | "qualified" | "viewing" | "negotiation" | "closed";
+  assetInterest: string;
+  status: "new" | "active" | "nurture" | "inactive" | "archived";
+  visibility?: "private" | "team" | "workspace";
+  pipelineStage: "new" | "qualified" | "review" | "negotiation" | "closed";
   pipelineOrder?: number;
   priority: "normal" | "high" | "urgent";
   nextAction: string;

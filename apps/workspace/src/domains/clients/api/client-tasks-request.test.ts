@@ -7,9 +7,8 @@ import {
 } from "./client-tasks";
 
 const payload: ClientTaskPayload = {
-  clientId: "client 1",
   title: "Call client",
-  status: "open",
+  status: "todo",
 };
 
 function okResponse(body: unknown = { task: { id: "task_1" } }) {

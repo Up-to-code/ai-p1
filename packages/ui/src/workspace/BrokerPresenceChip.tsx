@@ -19,7 +19,7 @@ export type BrokerPresence = {
   title?: string;
   city?: string;
   projectTitle?: string | null;
-  unitLabel?: string | null;
+  assetLabel?: string | null;
   clientName?: string | null;
   summary?: string;
   relation?: WorkspacePersonRelation | null;
@@ -74,8 +74,8 @@ export default function BrokerPresenceChip({
         <span className="min-w-0">
           <span className="block truncate text-xs font-black text-slate-950 dark:text-slate-100">{broker.name}</span>
           <span className="block truncate text-[11px] font-bold text-slate-500 dark:text-slate-400">
-            {broker.relation?.unit?.label
-              ? `الوحدة: ${broker.relation.unit.label}`
+            {broker.relation?.asset?.label
+              ? `الأصل: ${broker.relation.asset.label}`
               : broker.clientName
                 ? `عميل: ${broker.clientName}`
                 : "بدون عميل"}
@@ -111,7 +111,7 @@ export default function BrokerPresenceChip({
         </div>
         <div className="mt-4 grid gap-2 text-sm font-medium leading-6 text-slate-600 dark:text-slate-300">
           <div>المشروع: {broker.relation?.project?.title ?? broker.projectTitle ?? "غير مرتبط"}</div>
-          <div>الوحدة: {broker.relation?.unit?.label ?? broker.unitLabel ?? "على مستوى المشروع"}</div>
+          <div>الأصل: {broker.relation?.asset?.label ?? broker.assetLabel ?? "على مستوى المشروع"}</div>
           <div>العميل: {broker.clientName ?? "غير مرتبط"}</div>
           <div>{broker.summary ?? "يراجع فرص المشروع الحالية وحالة العميل المرتبط."}</div>
         </div>

@@ -15,7 +15,7 @@ describe("partner portal schemas", () => {
       webhookUrl: "https://partner.example.com/api/qentrah/webhooks",
       clientType: "public",
       redirectUris: "https://app.example.com/oauth/callback\nhttp://localhost:3000/callback",
-      allowedScopes: "client:read\nproperty:read",
+      allowedScopes: "client:read\nasset:read",
     });
 
     expect(parsed.redirectUris).toEqual([
@@ -27,7 +27,7 @@ describe("partner portal schemas", () => {
     expect(parsed.integrationMode).toBe("debug");
     expect(parsed.supportEmail).toBe("support@partner.example.com");
     expect(parsed.webhookUrl).toBe("https://partner.example.com/api/qentrah/webhooks");
-    expect(parsed.allowedScopes).toEqual(["client:read", "property:read"]);
+    expect(parsed.allowedScopes).toEqual(["client:read", "asset:read"]);
   });
 
   it("rejects insecure redirect URIs and malformed scopes", () => {

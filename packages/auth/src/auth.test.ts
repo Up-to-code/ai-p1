@@ -6,17 +6,17 @@ import { AuthError } from "./types";
 
 describe("@qentrah/auth", () => {
   it("normalizes supported OAuth scopes", () => {
-    expect(normalizeRequestedScopes("email openid properties:read nope properties:read")).toEqual([
+    expect(normalizeRequestedScopes("email openid assets:read nope assets:read")).toEqual([
+      "assets:read",
       "email",
       "openid",
-      "properties:read",
     ]);
   });
 
   it("projects OIDC claims into an auth context", () => {
     const context = authContextFromClaims({
       sub: "user-1",
-      scope: "openid properties:read",
+      scope: "openid assets:read",
       role: "broker",
       org_id: "org-1",
       broker_id: "broker-1",
@@ -29,7 +29,7 @@ describe("@qentrah/auth", () => {
       brokerId: "broker-1",
       ownerType: "broker",
       ownerId: "broker-1",
-      scopes: ["openid", "properties:read"],
+      scopes: ["assets:read", "openid"],
     });
     expect(context.entitlements).toContain("workspace:broker");
     expect(context.entitlements).toContain("clients:read");
@@ -38,17 +38,17 @@ describe("@qentrah/auth", () => {
   it("enforces scopes, entitlements, organizations, and resource ownership", () => {
     const context = authContextFromClaims({
       sub: "user-1",
-      scope: "properties:read",
+      scope: "assets:read",
       entitlements: ["platform:admin"],
       org_id: "org-1",
       broker_id: "broker-1",
     });
 
-    expect(requireScopes(context, ["properties:read"])).toBe(context);
+    expect(requireScopes(context, ["assets:read"])).toBe(context);
     expect(requireEntitlement(context, "platform:admin")).toBe(context);
     expect(requireOrganization(context, "org-1")).toBe(context);
     expect(requireResourceOwner(context, { brokerId: "broker-1" })).toBe(context);
-    expect(() => requireScopes(context, ["properties:create_own"])).toThrow(AuthError);
+    expect(() => requireScopes(context, ["assets:create_own"])).toThrow(AuthError);
     expect(() => requireOrganization(context, "org-2")).toThrow(AuthError);
   });
 });

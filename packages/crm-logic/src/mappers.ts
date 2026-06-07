@@ -27,7 +27,7 @@ export type DealRecordLike = {
   relatedBrokerId?: unknown;
   brokerId?: unknown;
   REDId?: unknown;
-  propertyId?: unknown;
+  assetId?: unknown;
   offerId?: unknown;
   notes?: string;
   contactName?: string;
@@ -36,7 +36,7 @@ export type DealRecordLike = {
   documents?: unknown;
 };
 
-type PropertyLike = {
+type AssetLike = {
   _id?: unknown;
   title?: string;
   heroImage?: { url?: string };
@@ -56,7 +56,7 @@ type BrokerLike = {
   isVerified?: boolean;
 };
 
-const DEFAULT_PROPERTY_IMAGE =
+const DEFAULT_ASSET_IMAGE =
   "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80";
 
 function formatPriceLabel(value?: number) {
@@ -64,26 +64,26 @@ function formatPriceLabel(value?: number) {
   return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value)} ر.س`;
 }
 
-function resolvePropertySummary(property: PropertyLike) {
-  const presentation = property.body?.presentation;
+function resolveAssetSummary(asset: AssetLike) {
+  const presentation = asset.body?.presentation;
   if (presentation?.descriptionShort?.trim()) {
     return presentation.descriptionShort.trim();
   }
-  if (property.description?.trim()) {
-    return property.description.trim();
+  if (asset.description?.trim()) {
+    return asset.description.trim();
   }
-  return "نبذة المشروع غير متاحة بعد.";
+  return "نبذة الأصل غير متاحة بعد.";
 }
 
-function mapPropertyPreview(property: PropertyLike | null | undefined) {
-  if (!property) return null;
+function mapAssetPreview(asset: AssetLike | null | undefined) {
+  if (!asset) return null;
   return {
-    id: String(property._id),
-    title: property.title,
-    image: property.heroImage?.url ?? property.media?.[0]?.url ?? DEFAULT_PROPERTY_IMAGE,
-    location: property.location ?? property.address ?? "غير محدد",
-    priceLabel: formatPriceLabel(property.price),
-    summary: resolvePropertySummary(property),
+    id: String(asset._id),
+    title: asset.title,
+    image: asset.heroImage?.url ?? asset.media?.[0]?.url ?? DEFAULT_ASSET_IMAGE,
+    location: asset.location ?? asset.address ?? "غير محدد",
+    priceLabel: formatPriceLabel(asset.price),
+    summary: resolveAssetSummary(asset),
   };
 }
 
@@ -120,7 +120,7 @@ export function mapDeal(
   args: {
     client?: ClientRecordLike | null;
     broker?: BrokerLike | null;
-    property?: PropertyLike | null;
+    asset?: AssetLike | null;
     brokerName?: string | null;
     redName?: string | null;
   } = {},
@@ -138,7 +138,7 @@ export function mapDeal(
     relatedBrokerId: deal.relatedBrokerId,
     brokerId: deal.brokerId,
     REDId: deal.REDId,
-    propertyId: deal.propertyId,
+    assetId: deal.assetId,
     offerId: deal.offerId,
     notes: deal.notes,
     contactName: deal.contactName,
@@ -148,7 +148,7 @@ export function mapDeal(
     redName: args.redName,
     client: mapClientPreview(args.client ?? null),
     linkedBroker: mapBrokerPreview(args.broker ?? null, deal.relationType),
-    project: mapPropertyPreview(args.property ?? null),
+    asset: mapAssetPreview(args.asset ?? null),
     documents: deal.documents,
   };
 }

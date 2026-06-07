@@ -52,7 +52,7 @@ export const offerEventMetadataSchema = z.object({
   contextType: z.literal("offer_card"),
   bootstrapSource: z.enum(["offer_send", "offer_apply", "offer_detail"]),
   offerId: z.string().min(1),
-  propertyId: z.string().min(1),
+  assetId: z.string().min(1),
   offerTitle: z.string().min(1),
   authorName: z.string().min(1),
   organizationName: z.string().min(1),
@@ -78,7 +78,7 @@ export const fileShareMetadataSchema = collaborationCardBaseSchema.extend({
 
 export const projectShareMetadataSchema = collaborationCardBaseSchema.extend({
   contextType: z.literal("project_share"),
-  propertyId: z.string().min(1),
+  assetId: z.string().min(1),
   location: z.string().nullable().optional(),
   imageUrl: z.string().url().nullable().optional(),
 });
@@ -88,7 +88,7 @@ export const dealShareMetadataSchema = collaborationCardBaseSchema.extend({
   dealId: z.string().min(1),
   stage: dealStageSchema,
   value: z.number().finite().nullable().optional(),
-  propertyId: z.string().nullable().optional(),
+  assetId: z.string().nullable().optional(),
 });
 
 export const inviteEventMetadataSchema = collaborationCardBaseSchema.extend({
@@ -253,7 +253,7 @@ export const shareFileInConversationInputSchema = z.object({
 
 export const shareProjectInConversationInputSchema = z.object({
   conversationId: z.string().min(1),
-  propertyId: z.string().min(1),
+  assetId: z.string().min(1),
   note: z.string().trim().min(1).optional(),
 });
 
@@ -265,7 +265,7 @@ export const shareDealInConversationInputSchema = z.object({
 
 export const createPrivateOfferInConversationInputSchema = z.object({
   conversationId: z.string().min(1),
-  propertyId: z.string().min(1),
+  assetId: z.string().min(1),
   price: z.number().finite(),
   message: z.string().trim().min(1).optional(),
   description: z.string().trim().min(1).optional(),
@@ -275,7 +275,7 @@ export const createPrivateOfferInConversationInputSchema = z.object({
 export const updatePrivateOfferDraftInConversationInputSchema = z.object({
   conversationId: z.string().min(1),
   offerId: z.string().min(1),
-  propertyId: z.string().min(1),
+  assetId: z.string().min(1),
   price: z.number().finite(),
   message: z.string().trim().min(1).optional(),
   description: z.string().trim().min(1).optional(),
