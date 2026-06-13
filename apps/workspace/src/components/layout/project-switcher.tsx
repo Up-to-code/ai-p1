@@ -21,7 +21,7 @@ export function ProjectSwitcher() {
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
 
   const account = useAccountContext();
-  const activeOrganizationId = account.workspace.status === "ready" ? account.workspace.organizationId : undefined;
+  const activeOrganizationId = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
   const projectsQuery = useProjectOptionsQueryResult(activeOrganizationId);
   const projects = projectsQuery.data ?? [];
 
