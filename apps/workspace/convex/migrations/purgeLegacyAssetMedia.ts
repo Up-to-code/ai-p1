@@ -1,8 +1,9 @@
 import { v } from "convex/values";
 import { internalMutation } from "../_generated/server";
 
+type StoredResource = "organization" | "client" | "project" | "calendar" | "task" | "media";
 type StoredPermission = {
-  resource: string;
+  resource: StoredResource;
   actions: Array<"read" | "create" | "update" | "delete">;
 };
 
@@ -11,11 +12,12 @@ function normalizeStoredPermissions(permissions: StoredPermission[]) {
   const seen = new Set<string>();
 
   for (const permission of permissions) {
-    if (permission.resource === "asset") {
+    const rawResource = permission.resource as string;
+    if (rawResource === "asset") {
       continue;
     }
 
-    const resource = permission.resource === "property" ? "project" : permission.resource;
+    const resource = (rawResource === "property" ? "project" : rawResource) as StoredResource;
     const key = `${resource}:${permission.actions.slice().sort().join(",")}`;
     if (seen.has(key)) {
       continue;
