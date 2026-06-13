@@ -875,14 +875,13 @@ const agentPermissionAreas: Array<{
   actions: McpPermissionAction[];
 }> = [
   { resource: "client", icon: Users, actions: ["read", "create", "update", "delete"] },
-  { resource: "asset", icon: Home, actions: ["read", "create", "update", "delete"] },
   { resource: "project", icon: Building2, actions: ["read", "create", "update", "delete"] },
   { resource: "calendar", icon: CalendarDays, actions: ["read", "create", "update", "delete"] },
   { resource: "task", icon: CheckCircle2, actions: ["read", "create", "update", "delete"] },
   { resource: "media", icon: FileText, actions: ["read", "create"] },
 ];
 
-type AgentPresetId = "client" | "asset" | "calendar" | "full";
+type AgentPresetId = "client" | "calendar" | "full";
 
 const agentPresets: Array<{ id: AgentPresetId; permissions: McpConnectionPermission[] }> = [
   {
@@ -890,19 +889,8 @@ const agentPresets: Array<{ id: AgentPresetId; permissions: McpConnectionPermiss
     permissions: [
       { resource: "organization", actions: ["read"] },
       { resource: "client", actions: ["read", "create", "update"] },
-      { resource: "asset", actions: ["read"] },
       { resource: "calendar", actions: ["read", "create", "update"] },
       { resource: "task", actions: ["read", "create", "update"] },
-      { resource: "media", actions: ["read", "create"] },
-    ],
-  },
-  {
-    id: "asset",
-    permissions: [
-      { resource: "organization", actions: ["read"] },
-      { resource: "client", actions: ["read", "update"] },
-      { resource: "asset", actions: ["read", "create", "update"] },
-      { resource: "project", actions: ["read", "update"] },
       { resource: "media", actions: ["read", "create"] },
     ],
   },
@@ -911,7 +899,6 @@ const agentPresets: Array<{ id: AgentPresetId; permissions: McpConnectionPermiss
     permissions: [
       { resource: "organization", actions: ["read"] },
       { resource: "client", actions: ["read"] },
-      { resource: "asset", actions: ["read"] },
       { resource: "project", actions: ["read"] },
       { resource: "calendar", actions: ["read", "create", "update"] },
       { resource: "task", actions: ["read", "update"] },
@@ -922,7 +909,6 @@ const agentPresets: Array<{ id: AgentPresetId; permissions: McpConnectionPermiss
     permissions: [
       { resource: "organization", actions: ["read"] },
       { resource: "client", actions: ["read", "create", "update", "delete"] },
-      { resource: "asset", actions: ["read", "create", "update", "delete"] },
       { resource: "project", actions: ["read", "create", "update", "delete"] },
       { resource: "calendar", actions: ["read", "create", "update", "delete"] },
       { resource: "task", actions: ["read", "create", "update", "delete"] },
@@ -990,34 +976,7 @@ function OrganizationNotificationsPanel({
                 ))}
               </div>
 
-              <div className="rounded-2xl border border-zinc-100 bg-white p-4 dark:border-white/[0.06] dark:bg-[#111]">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700 dark:bg-white/5 dark:text-zinc-200">
-                    <Clock className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-widest text-zinc-900 dark:text-white">{t("defaultsTitle")}</p>
-                    <p className="mt-1 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">{t("defaultsDescription")}</p>
-                  </div>
-                </div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {preference.reminderRules.map((rule) => (
-                    <span
-                      key={rule.id}
-                      className={cn(
-                        "rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest",
-                        rule.enabled
-                          ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900"
-                          : "border-zinc-200 bg-zinc-50 text-zinc-400 dark:border-white/10 dark:bg-white/[0.03]",
-                      )}
-                    >
-                      {rule.sourceType === "calendarEvent" ? t("calendarRule") : t("taskRule")}{" "}
-                      {rule.trigger === "at_start" ? t("atStart") : t("minutesBefore", { minutes: rule.offsetMinutes })}
-                    </span>
-                  ))}
-                </div>
-                <p className="mt-4 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">{t("personalOverride")}</p>
-              </div>
+
             </div>
           )}
         </div>
@@ -1582,7 +1541,6 @@ const apiKeyPermissionAreas: Array<{
 }> = [
   { resource: "organization", icon: Building2, actions: ["read", "create", "update", "delete"] },
   { resource: "client", icon: Users, actions: ["read", "create", "update", "delete"] },
-  { resource: "asset", icon: Home, actions: ["read", "create", "update", "delete"] },
   { resource: "project", icon: Building2, actions: ["read", "create", "update", "delete"] },
   { resource: "calendar", icon: CalendarDays, actions: ["read", "create", "update", "delete"] },
   { resource: "task", icon: CheckCircle2, actions: ["read", "create", "update", "delete"] },
@@ -2516,7 +2474,6 @@ function workAreaIcon(resource: PermissionResource) {
     team: Users,
     member: Users,
     project: Building2,
-    asset: Home,
     client: Users,
     task: CheckCircle2,
     calendar: CalendarDays,

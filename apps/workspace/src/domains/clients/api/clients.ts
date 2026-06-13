@@ -258,21 +258,6 @@ export function useClientQuery(organizationId: string | undefined, clientId: str
   );
 }
 
-export function useClientAssetLinksQuery(organizationId: string | undefined, clientId: string | undefined) {
-  return useQuery(
-    api.clients.read.listAssetLinks,
-    organizationId && clientId ? { organizationId, clientId: clientId as Id<"clients"> } : "skip",
-  );
-}
-
-export function useAssetClientLinksQuery(organizationId: string | undefined, assetId: string | undefined) {
-  const shouldRead = organizationId && assetId && !assetId.startsWith("AST-");
-  return useQuery(
-    api.clients.read.listAssetLinksForAsset,
-    shouldRead ? { organizationId, assetId: assetId as Id<"assets"> } : "skip",
-  );
-}
-
 export function clientPayloadFromForm(values: ClientFormValues) {
   const legacyTypeMap = {
     Buyer: "person",
@@ -320,21 +305,6 @@ export async function updateClientRequest(organizationId: string, clientId: stri
 
 export async function deleteClientRequest(organizationId: string, clientId: string) {
   return workspaceMutation(organizationId, `clients/${clientId}`, {
-    method: "DELETE",
-    fallbackMessage: "Client request failed.",
-  });
-}
-
-export async function linkClientAssetRequest(organizationId: string, clientId: string, assetId: string, status = "interested", notes?: string) {
-  return workspaceMutation(organizationId, `clients/${clientId}/assets`, {
-    method: "POST",
-    body: { assetId, status, notes: notes?.trim() || undefined },
-    fallbackMessage: "Client request failed.",
-  });
-}
-
-export async function unlinkClientAssetRequest(organizationId: string, clientId: string, assetId: string) {
-  return workspaceMutation(organizationId, `clients/${clientId}/assets/${assetId}`, {
     method: "DELETE",
     fallbackMessage: "Client request failed.",
   });

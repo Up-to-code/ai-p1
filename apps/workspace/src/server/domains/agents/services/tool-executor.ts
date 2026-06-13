@@ -33,7 +33,6 @@ import {
   organizationProfileInputSchema,
   pagination,
   projectInputSchema,
-  assetInputSchema,
   roleCreateInputSchema,
   roleUpdateInputSchema,
   startOfToday,
@@ -156,59 +155,6 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
     }
     case "clients_delete":
       return fetchAuthMutation(api.clients.write.deleteFromHono, { organizationId, clientId: input.clientId as Id<"clients"> });
-    case "clients_link_asset":
-      return fetchAuthMutation(api.clients.write.linkAssetFromHono, {
-        organizationId,
-        input: {
-          clientId: input.clientId as Id<"clients">,
-          assetId: input.assetId as Id<"assets">,
-          status: ((input.status as string | undefined) ?? "interested") as never,
-          notes: input.notes as string | undefined,
-        },
-      });
-    case "clients_unlink_asset":
-      return fetchAuthMutation(api.clients.write.unlinkAssetFromHono, {
-        organizationId,
-        clientId: input.clientId as Id<"clients">,
-        assetId: input.assetId as Id<"assets">,
-      });
-    case "assets_list":
-      return fetchAuthQuery(api.assets.read.listPaged, {
-        organizationId,
-        paginationOpts: pagination(input),
-        search: input.search as string | undefined,
-      });
-    case "assets_get":
-    case "assets_open": {
-      const asset = await fetchAuthQuery(api.assets.read.get, { organizationId, assetId: input.assetId as Id<"assets"> });
-      if (tool.name === "assets_get") return asset;
-      return { asset, appUrl: asset ? `/assets/${asset.id}` : undefined };
-    }
-    case "assets_create":
-      return fetchAuthMutation(api.assets.write.createFromHono, {
-        organizationId,
-        input: cleanInput(assetInputSchema, input) as never,
-      });
-    case "assets_update":
-    case "assets_update_field": {
-      const existing = await fetchAuthQuery(api.assets.read.get, { organizationId, assetId: input.assetId as Id<"assets"> });
-      if (!existing) throw new Error("Asset was not found.");
-      const { field, value } = input;
-      const patch = { ...input };
-      delete patch.assetId;
-      delete patch.field;
-      delete patch.value;
-      const merged = tool.name === "assets_update_field"
-        ? { ...existing, [String(field)]: value }
-        : { ...existing, ...patch };
-      return fetchAuthMutation(api.assets.write.updateFromHono, {
-        organizationId,
-        assetId: input.assetId as Id<"assets">,
-        input: cleanInput(assetInputSchema, stripPresentedDatabaseFields(merged as Record<string, unknown>)) as never,
-      });
-    }
-    case "assets_delete":
-      return fetchAuthMutation(api.assets.write.deleteFromHono, { organizationId, assetId: input.assetId as Id<"assets"> });
     case "projects_list":
       return fetchAuthQuery(api.projects.read.listPaged, {
         organizationId,
@@ -349,7 +295,7 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
     case "media_list":
       return compact(await fetchAuthQuery(api.media.read.listForResource, {
         organizationId,
-        resourceType: input.resourceType as "project" | "asset" | "client" | "calendarEvent" | "task",
+        resourceType: input.resourceType as "project" | "client" | "calendarEvent" | "task",
         resourceId: input.resourceId as string,
       }), limit(input));
     case "media_attach_url":
@@ -362,7 +308,7 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
           mimeType: (input.mimeType as string | undefined) ?? "application/octet-stream",
           size: (input.size as number | undefined) ?? 0,
           kind: mediaKind(input as { kind?: "image" | "document" | "video"; mimeType?: string }),
-          resourceType: input.resourceType as "project" | "asset" | "client" | "calendarEvent" | "task",
+          resourceType: input.resourceType as "project" | "client" | "calendarEvent" | "task",
           resourceId: input.resourceId as string,
           isCover: input.isCover as boolean | undefined,
         },

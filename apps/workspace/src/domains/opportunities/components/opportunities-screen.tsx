@@ -441,12 +441,7 @@ export function OpportunitiesScreen() {
         <WorkspaceQueryState status={workspaceStatus} variant="pipeline" />
       ) : (
         <>
-          <AppStatsGrid stats={[
-            { label: t("stats.open"), value: stats?.open ?? 0, icon: KanbanSquare },
-            { label: t("stats.qualified"), value: stats?.qualified ?? 0, icon: BriefcaseBusiness },
-            { label: t("stats.won"), value: stats?.won ?? 0, icon: CheckCircle2 },
-            { label: t("stats.value"), value: new Intl.NumberFormat("en", { notation: "compact" }).format(stats?.value ?? 0), icon: CalendarDays },
-          ]} />
+
           <AppSection
             title={t("workspaceView")}
             actions={(

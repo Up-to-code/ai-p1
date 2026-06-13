@@ -271,26 +271,26 @@
     },
     "home": {
       "hero": {
-        "eyebrow": "Workspace OS",
-        "title": "One desk for real work.",
-        "description": "Qentrah brings tasks, calendars, clients, funnels, projects, teams, and connected apps into one operating workspace.",
-        "primary": "Enter workspace",
-        "secondary": "Talk to us",
+        "eyebrow": "The Future of Work",
+        "title": "Your New AI Teammate.",
+        "description": "Say goodbye to the old way of working. Stop managing tasks and start directing outcomes. Your AI agent handles the chaos so you can focus on the vision.",
+        "primary": "Meet Your Agent",
+        "secondary": "Read the Manifesto",
         "structure": [
           {
-            "label": "Work truth",
+            "label": "AI-First",
             "value": "01",
-            "helper": "Projects, assets, files, and decisions stay close before teams move."
+            "helper": "Not just a tool, but a dedicated teammate."
           },
           {
-            "label": "Team motion",
+            "label": "Outcome Driven",
             "value": "02",
-            "helper": "Operators, managers, clients, and partners share the same live context."
+            "helper": "Focus on results, not processes."
           },
           {
-            "label": "Workspace action",
+            "label": "End of Sprawl",
             "value": "03",
-            "helper": "AI, follow-ups, and approvals turn clarity into the next step."
+            "helper": "One agent, one unified workspace."
           }
         ]
       },
@@ -604,11 +604,11 @@
         }
       },
       "cta": {
-        "eyebrow": "Ready for the workspace",
-        "title": "Start where the real work continues.",
-        "description": "Enter the workspace, or contact the team to map Qentrah to your operating workflow.",
-        "primary": "Enter workspace",
-        "secondary": "Contact team"
+        "eyebrow": "Ready to Leave the Old Work Behind?",
+        "title": "Meet Your Agent Today",
+        "description": "Join the forward-thinking teams who are already working alongside their AI agents.",
+        "primary": "Meet Your Agent",
+        "secondary": "Talk to the builder"
       },
       "faq": {
         "eyebrow": "FAQ",
@@ -641,8 +641,8 @@
     "about": {
       "hero": {
         "eyebrow": "Our Vision",
-        "title": "A new era for workspace operations.",
-        "description": "We believe that clarity, trust, and shared operational truth are the foundation of modern work. Our mission is to build the infrastructure that empowers teams to move with confidence."
+        "title": "We are building the future of work.",
+        "description": "I didn't want to build just another tool; I wanted to build a new paradigm. I'm excited to share this future with you."
       },
       "signals": {
         "source": {
@@ -715,21 +715,14 @@
         ]
       },
       "founders": {
-        "title": "Meet the founders",
+        "title": "Built by a Solo Maker",
         "items": [
           {
             "name": "Ahmed",
-            "role": "Technical Vision & Engineering",
-            "bio": "Ahmed leads the technical architecture and engineering direction of Qentrah, transforming complex workflows into seamless digital systems.",
-            "quote": "The best way to predict the future is to create it.",
-            "author": "Peter Drucker"
-          },
-          {
-            "name": "Abdulmonem",
-            "role": "Operations Expert",
-            "bio": "With deep roots in operational work, Abdulmonem ensures that every feature in Qentrah is grounded in real-world expertise and institutional standards.",
-            "quote": "Clarity is the basis of execution.",
-            "author": "Qentrah"
+            "role": "Founder & Builder",
+            "bio": "Hi, I’m Ahmed. I experienced the pain of the old system firsthand—drowning in SaaS tools and manual updates. I decided it was time for a radical shift. My mission is to give you an AI teammate so you can escape the busywork and start doing what humans do best: creating.",
+            "quote": "The old way of working is dead. The future belongs to small teams with massive leverage.",
+            "author": "Ahmed"
           }
         ]
       }
@@ -3142,6 +3135,9 @@
     }
   },
   "Tasks": {
+    "from": "From",
+    "to": "To",
+    "me": "ME",
     "eyebrow": "Work queue",
     "title": "Tasks",
     "subtitle": "Standalone and linked work across the workspace.",

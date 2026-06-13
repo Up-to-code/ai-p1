@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Bot, BriefcaseBusiness, ChevronDown, LayoutDashboard, Moon, Package, Plus, Sun, UserPlus } from "lucide-react";
+import { Bell, BriefcaseBusiness, ChevronDown, KanbanSquare, ListTodo, Moon, PanelLeft, Plus, Sun, UserPlus, UsersRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,50 +8,49 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Link } from "@/i18n/routing";
+
 import { ProfileMenu } from "@/components/layout/profile-menu";
 import { WorkspaceGlobalSearch } from "@/components/layout/workspace-global-search";
+import { ProjectSwitcher } from "@/components/layout/project-switcher";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
-import { BrandMark } from "@/components/logo";
+import { useSidebar } from "@/components/layout/sidebar-context";
 import { cn } from "@/lib/utils";
 import { useTranslations, useLocale } from 'next-intl';
 import { useTheme } from "@/components/providers/theme-provider";
-import { parseWorkspaceMode, useWorkspaceStore, workspaceModeHref, type WorkspaceMode } from "@/domains/dashboard/store/dashboard.store";
+import { useWorkspaceStore } from "@/domains/dashboard/store/dashboard.store";
 import { motion } from "framer-motion";
-import { usePathname, useRouter } from "@/i18n/routing";
+import { useRouter } from "@/i18n/routing";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 export function Topbar() {
   const t = useTranslations('Topbar');
   const tWorkspace = useTranslations('Workspace');
+  const tSidebar = useTranslations('Sidebar');
   const locale = useLocale();
   const isRtl = locale === 'ar';
-  const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isDark, setTheme } = useTheme();
-  const storedMode = useWorkspaceStore((state) => state.mode);
-  const activeAiThreadId = useWorkspaceStore((state) => state.activeAiThreadId);
+  const { isOpen, toggleSidebar } = useSidebar();
   const setActiveAiThreadId = useWorkspaceStore((state) => state.setActiveAiThreadId);
-  const setMode = useWorkspaceStore((state) => state.setMode);
-  const mode = pathname === "/dashboard" ? parseWorkspaceMode(searchParams.get("mode")) : storedMode;
   const activeToggleClassName = "text-background";
   const inactiveToggleClassName = "text-text-muted hover:text-text-primary";
+
   const createActions = [
+    { label: tSidebar("tasks"), href: "/tasks?new=true", icon: ListTodo },
+    { label: tSidebar("opportunities"), href: "/opportunities?new=true", icon: KanbanSquare },
     { label: tWorkspace("createClient"), href: "/clients/create", icon: UserPlus },
     { label: tWorkspace("createProject"), href: "/projects/create", icon: BriefcaseBusiness },
-    { label: tWorkspace("createAsset"), href: "/assets/create", icon: Package },
+    { label: tSidebar("team"), href: "/settings/organization/members?new=true", icon: UsersRound },
   ];
+
 
   useEffect(() => {
     const threadId = searchParams.get("threadId")?.trim();
     if (threadId) setActiveAiThreadId(threadId);
   }, [searchParams, setActiveAiThreadId]);
-
-  function selectMode(nextMode: WorkspaceMode) {
-    setMode(nextMode);
-    router.push(workspaceModeHref(nextMode, nextMode === "ai" ? activeAiThreadId : undefined));
-  }
 
   return (
     <header className={cn(
@@ -59,84 +58,57 @@ export function Topbar() {
       isRtl && "font-cairo"
     )}>
 
-      <div className="flex flex-1 items-center gap-6">
-        {mode === "ai" && (
-          <div className="flex items-center gap-2 text-zinc-950 dark:text-white">
-            <BrandMark className="h-6 w-6" priority />
-            <span className="hidden text-sm font-black md:inline-block">qentrah</span>
-          </div>
-        )}
+      <div className="flex flex-1 items-center gap-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleSidebar}
+          className="h-8 w-8 text-text-muted hover:bg-[var(--color-divider)] hover:text-text-primary"
+          aria-label={isOpen ? "Close sidebar" : "Open sidebar"}
+        >
+          <PanelLeft className="h-4 w-4" />
+        </Button>
+        <ProjectSwitcher />
         <WorkspaceGlobalSearch />
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2 me-2">
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <button
-                  type="button"
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-text-primary px-3 text-[11px] font-black uppercase tracking-wider text-background transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 sm:px-4"
-                >
+                <Button className="h-8 rounded-lg bg-[#5e5ce6] hover:bg-[#5e5ce6]/90 text-white px-3 text-xs font-semibold flex items-center gap-1.5 shadow-none border-0">
                   <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">{tWorkspace("create")}</span>
-                  <ChevronDown className="hidden h-3.5 w-3.5 opacity-70 sm:block" />
-                </button>
+                  <span>{tSidebar("tasks")}</span>
+                  <ChevronDown className="h-3.5 w-3.5 opacity-70 ms-0.5" />
+                </Button>
               }
             />
-            <DropdownMenuContent align="end" className="min-w-48 rounded-2xl border-[var(--color-divider)] p-1.5">
-              {createActions.map((action) => (
-                <DropdownMenuItem
-                  key={action.href}
-                  onClick={() => router.push(action.href)}
-                  className="cursor-pointer rounded-xl px-2.5 py-2 text-sm font-bold"
-                >
-                  <action.icon className="h-4 w-4 text-text-muted" />
-                  {action.label}
-                </DropdownMenuItem>
-              ))}
+            <DropdownMenuContent align="end" className="min-w-56 rounded-2xl border-[var(--color-divider)] p-1">
+              <div className="flex items-center justify-between px-3 py-2 text-xs">
+                <span className="font-semibold text-text-muted">Create</span>
+                <Link href="/settings/workspace" className="font-semibold text-[#5e5ce6] hover:text-[#5e5ce6]/80 transition-colors">
+                  Manage
+                </Link>
+              </div>
+              <div className="mb-1 h-px w-full bg-[var(--color-divider)]" />
+              <div className="space-y-0.5 p-1">
+                {createActions.map((action) => (
+                  <DropdownMenuItem
+                    key={action.href}
+                    onClick={() => router.push(action.href)}
+                    className="cursor-pointer rounded-xl px-2.5 py-2 text-sm font-semibold hover:bg-zinc-100 dark:hover:bg-white/5"
+                  >
+                    <action.icon className="me-2 h-4 w-4 text-text-muted" strokeWidth={2} />
+                    {action.label}
+                  </DropdownMenuItem>
+                ))}
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
-          <div className="hidden items-center rounded-full border border-[var(--color-divider)] bg-transparent p-1 md:flex">
-            <button
-              type="button"
-              onClick={() => selectMode("ws")}
-              aria-pressed={mode === "ws"}
-              className={cn(
-                "relative flex h-8 items-center gap-1.5 overflow-hidden rounded-full px-3 text-[10px] font-black uppercase tracking-widest transition-colors",
-                mode === "ws" ? activeToggleClassName : inactiveToggleClassName,
-              )}
-            >
-              {mode === "ws" && <ToggleHighlight layoutId="workspace-mode-highlight" />}
-              <motion.span
-                className="relative z-10 inline-flex items-center gap-1.5"
-                animate={{ y: mode === "ws" ? 0 : 1, scale: mode === "ws" ? 1 : 0.96 }}
-                transition={{ type: "spring", stiffness: 420, damping: 30 }}
-              >
-                <LayoutDashboard className="h-3.5 w-3.5" />
-                {tWorkspace("modeWs")}
-              </motion.span>
-            </button>
-            <button
-              type="button"
-              onClick={() => selectMode("ai")}
-              aria-pressed={mode === "ai"}
-              className={cn(
-                "relative flex h-8 items-center gap-1.5 overflow-hidden rounded-full px-3 text-[10px] font-black uppercase tracking-widest transition-colors",
-                mode === "ai" ? activeToggleClassName : inactiveToggleClassName,
-              )}
-            >
-              {mode === "ai" && <ToggleHighlight layoutId="workspace-mode-highlight" />}
-              <motion.span
-                className="relative z-10 inline-flex items-center gap-1.5"
-                animate={{ y: mode === "ai" ? 0 : 1, scale: mode === "ai" ? 1 : 0.96 }}
-                transition={{ type: "spring", stiffness: 420, damping: 30 }}
-              >
-                <Bot className="h-3.5 w-3.5" />
-                {locale === "ar" ? "الذكاء" : "AI"}
-              </motion.span>
-            </button>
-          </div>
+        </div>
+
+        <div className="flex items-center gap-1">
           <div className="flex items-center rounded-full border border-[var(--color-divider)] bg-transparent p-1">
             <button
               type="button"
@@ -178,7 +150,7 @@ export function Topbar() {
             </button>
           </div>
           <LanguageSwitcher className="hidden sm:inline-flex opacity-70 hover:opacity-100" />
-          
+
           <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full border border-transparent text-text-muted shadow-none transition-all hover:border-[var(--color-divider)] hover:bg-transparent hover:text-text-primary">
             <Bell className="h-5 w-5" />
             <span className="sr-only">{t('live')}</span>

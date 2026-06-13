@@ -1,0 +1,18 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "Qentrah",
+    "NSCameraUsageDescription": "اسمح لتطبيق Qentrah بالتقاط الصور لرسائل مساحة العمل.",
+    "NSMicrophoneUsageDescription": "اسمح لتطبيق Qentrah باستخدام الميكروفون لمطالبات الذكاء الاصطناعي.",
+    "NSPhotoLibraryUsageDescription": "اسمح لتطبيق Qentrah بإرفاق الصور والمستندات برسائل مساحة العمل.",
+    "NSSpeechRecognitionUsageDescription": "اسمح لتطبيق Qentrah بتحويل كلامك إلى مطالبات للذكاء الاصطناعي.",
+    "Localizable.strings": {
+      "APP_NAME": "Qentrah",
+      "APP_TAGLINE": "المركز الذكي للعمليات."
+    }
+  },
+  "android": {
+    "app_name": "Qentrah",
+    "APP_NAME": "Qentrah",
+    "APP_TAGLINE": "المركز الذكي للعمليات."
+  }
+}

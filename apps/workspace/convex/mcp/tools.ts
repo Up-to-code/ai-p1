@@ -105,7 +105,7 @@ function assertConnectionPermission(
 }
 
 function mediaResourcePermission(
-  resourceType: "project" | "asset" | "client" | "calendarEvent" | "task",
+  resourceType: "project" | "client" | "calendarEvent" | "task",
 ) {
   if (resourceType === "calendarEvent") return "calendar";
   return resourceType;
@@ -201,36 +201,12 @@ export const readTool = internalQuery({
       return presentWorkspaceRecord(assertPublicWorkspaceRecord(assertActiveWorkspaceRecord(client, args.organizationId, "Client"), "Client"));
     }
 
-    if (args.tool === "assets_list") {
-      const limit = listLimit(input);
-      const search = searchTerm(input);
-      if (!search) {
-        const page = await ctx.db
-          .query("assets")
-          .withIndex("by_organization_updated", (q) => q.eq("organizationId", args.organizationId))
-          .order("desc")
-          .paginate({ numItems: limit, cursor: listCursor(input) });
-        return mcpPublicWorkspacePage(page);
-      }
-      const assets = await ctx.db
-        .query("assets")
-        .withIndex("by_organization_updated", (q) => q.eq("organizationId", args.organizationId))
-        .order("desc")
-        .take(TOOL_SCAN_LIMIT);
-      return mcpPublicWorkspaceSearchResult(assets, {
-        search,
-        limit,
-        searchValues: assetSearchValues,
-      });
-    }
-
-    if (args.tool === "assets_get" || args.tool === "assets_open") {
-      const assetId = requiredString(input, "assetId");
-      const asset = await ctx.db.get(assetId as Id<"assets">);
-      const result = presentWorkspaceRecord(assertPublicWorkspaceRecord(assertActiveWorkspaceRecord(asset, args.organizationId, "Asset"), "Asset"));
-      return args.tool === "assets_open"
-        ? { ...result, appUrl: `${args.appBaseUrl ?? ".."}/assets/${assetId}` }
-        : result;
+    if (
+      args.tool === "assets_list"
+      || args.tool === "assets_get"
+      || args.tool === "assets_open"
+    ) {
+      throw new Error("Asset tools are no longer available in this workspace.");
     }
 
     if (args.tool === "projects_list") {
@@ -315,7 +291,7 @@ export const readTool = internalQuery({
 
     if (args.tool === "media_list") {
       const limit = listLimit(input);
-      const resourceType = requiredString(input, "resourceType") as "project" | "asset" | "client" | "calendarEvent" | "task";
+      const resourceType = requiredString(input, "resourceType") as "project" | "client" | "calendarEvent" | "task";
       assertConnectionPermission(args.permissions, mediaResourcePermission(resourceType), "read");
       const page = await ctx.db
         .query("mediaAssets")
@@ -384,82 +360,15 @@ export const writeTool = internalMutation({
       return { removed: true };
     }
 
-    if (args.tool === "clients_link_asset") {
-      const clientId = requiredString(input, "clientId") as Id<"clients">;
-      const assetId = requiredString(input, "assetId") as Id<"assets">;
-      assertActiveWorkspaceRecord(await ctx.db.get(clientId), args.organizationId, "Client");
-      assertActiveWorkspaceRecord(await ctx.db.get(assetId), args.organizationId, "Asset");
-      const existing = await ctx.db
-        .query("recordLinks")
-        .withIndex("by_source", (q) => q.eq("organizationId", args.organizationId).eq("sourceRecordType", "client").eq("sourceRecordId", clientId))
-        .first();
-      if (existing && !existing.deletedAt) {
-        await audit(ctx, args.organizationId, args.connectionId, "client.asset.link", clientId, "Updated a client asset link.");
-        return presentWorkspaceRecord((await ctx.db.get(existing._id))!);
-      }
-      const id = await ctx.db.insert("recordLinks", {
-        organizationId: args.organizationId,
-        linkType: "related",
-        sourceRecordType: "client",
-        sourceRecordId: clientId,
-        targetRecordType: "asset",
-        targetRecordId: assetId,
-        label: optionalString(input, "notes"),
-        createdByUserId: actorId,
-        createdAt: now,
-      });
-      await audit(ctx, args.organizationId, args.connectionId, "client.asset.link", clientId, "Linked a client to an asset.");
-      return presentWorkspaceRecord((await ctx.db.get(id))!);
-    }
-
-    if (args.tool === "clients_unlink_asset") {
-      const clientId = requiredString(input, "clientId") as Id<"clients">;
-      const assetId = requiredString(input, "assetId") as Id<"assets">;
-      const existing = await ctx.db
-        .query("recordLinks")
-        .withIndex("by_source", (q) => q.eq("organizationId", args.organizationId).eq("sourceRecordType", "client").eq("sourceRecordId", clientId))
-        .first();
-      if (existing && !existing.deletedAt && existing.targetRecordType === "asset" && existing.targetRecordId === assetId) {
-        await ctx.db.patch(existing._id, { deletedAt: now });
-      }
-      await audit(ctx, args.organizationId, args.connectionId, "client.asset.unlink", clientId, "Unlinked a client from an asset.");
-      return { removed: true };
-    }
-
-    if (args.tool === "assets_create") {
-      await assertOptionalProject(ctx, args.organizationId, optionalString(input, "projectId"));
-      const id = await ctx.db.insert("assets", {
-        organizationId: args.organizationId,
-        ...assetInput(input),
-        ownerUserId: actorId,
-        createdByUserId: actorId,
-        createdAt: now,
-        updatedAt: now,
-      });
-      await audit(ctx, args.organizationId, args.connectionId, "asset.create", id, `Created asset ${optionalString(input, "name") ?? requiredString(input, "title")}.`);
-      return presentWorkspaceRecord((await ctx.db.get(id))!);
-    }
-
-    if (args.tool === "assets_update" || args.tool === "assets_update_field") {
-      const assetId = requiredString(input, "assetId") as Id<"assets">;
-      const existing = assertActiveWorkspaceRecord(await ctx.db.get(assetId), args.organizationId, "Asset");
-      const patch = args.tool === "assets_update_field"
-        ? assetFieldPatch(input)
-        : assetInput({ ...existing, ...input });
-      if (args.tool === "assets_update") {
-        await assertOptionalProject(ctx, args.organizationId, optionalString({ ...existing, ...input }, "projectId"));
-      }
-      await ctx.db.patch(assetId, { ...patch, updatedAt: now });
-      await audit(ctx, args.organizationId, args.connectionId, "asset.update", assetId, `Updated asset ${existing.name}.`);
-      return presentWorkspaceRecord((await ctx.db.get(assetId))!);
-    }
-
-    if (args.tool === "assets_delete") {
-      const assetId = requiredString(input, "assetId") as Id<"assets">;
-      const existing = assertActiveWorkspaceRecord(await ctx.db.get(assetId), args.organizationId, "Asset");
-      await ctx.db.patch(assetId, { deletedAt: now, updatedAt: now });
-      await audit(ctx, args.organizationId, args.connectionId, "asset.delete", assetId, `Deleted asset ${existing.name}.`);
-      return { removed: true };
+    if (
+      args.tool === "clients_link_asset"
+      || args.tool === "clients_unlink_asset"
+      || args.tool === "assets_create"
+      || args.tool === "assets_update"
+      || args.tool === "assets_update_field"
+      || args.tool === "assets_delete"
+    ) {
+      throw new Error("Asset tools are no longer available in this workspace.");
     }
 
     if (args.tool === "projects_create") {
@@ -561,7 +470,7 @@ export const writeTool = internalMutation({
 
     if (args.tool === "media_attach_url") {
       await assertMediaResource(ctx, args.organizationId, input);
-      const resourceType = requiredString(input, "resourceType") as "project" | "asset" | "client" | "calendarEvent" | "task";
+      const resourceType = requiredString(input, "resourceType") as "project" | "client" | "calendarEvent" | "task";
       assertConnectionPermission(args.permissions, mediaResourcePermission(resourceType), "update");
       const resourceId = requiredString(input, "resourceId");
       const existing = await ctx.db

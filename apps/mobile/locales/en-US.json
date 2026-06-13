@@ -1,0 +1,18 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "Qentrah",
+    "NSCameraUsageDescription": "Allow Qentrah to capture photos for workspace messages.",
+    "NSMicrophoneUsageDescription": "Allow Qentrah to use the microphone for AI prompts.",
+    "NSPhotoLibraryUsageDescription": "Allow Qentrah to attach photos and documents to workspace messages.",
+    "NSSpeechRecognitionUsageDescription": "Allow Qentrah to transcribe your speech into AI prompts.",
+    "Localizable.strings": {
+      "APP_NAME": "Qentrah",
+      "APP_TAGLINE": "The intelligent center of operations."
+    }
+  },
+  "android": {
+    "app_name": "Qentrah",
+    "APP_NAME": "Qentrah",
+    "APP_TAGLINE": "The intelligent center of operations."
+  }
+}

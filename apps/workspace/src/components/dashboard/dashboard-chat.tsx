@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import AiComposer from "./ai-composer";
 import { BrandMark } from "@/components/logo";
 import { cn } from "@/lib/utils";
@@ -57,6 +57,13 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
   const [errorMessage, setErrorMessage] = useState<string>();
   const t = useTranslations('Assistant');
   const activeThreadId = selectedThreadId ?? requestedThreadId;
+
+  const pathname = usePathname();
+  const pathParts = pathname.split("/");
+  const projectsIndex = pathParts.indexOf("projects");
+  const activeProjectId = projectsIndex !== -1 && pathParts.length > projectsIndex + 1 
+    ? pathParts[projectsIndex + 1] 
+    : undefined;
 
   const messages = useMemo(() => visibleAgentConversationMessages({
     organizationId,
@@ -167,6 +174,7 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
       await sendAgentChatRequest({
         organizationId,
         threadId: activeThreadId,
+        projectId: activeProjectId,
         message: messageText,
         attachments,
         onEvent: (event) => {
@@ -290,7 +298,7 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
                 <motion.button
                   key={pill.label}
                   onClick={() => setInputValue(pill.label)}
-                  className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-[10px] font-black uppercase tracking-widest text-text-secondary transition-all hover:border-primary/30 hover:text-primary"
+                  className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-[10px] font-black uppercase tracking-widest text-text-secondary transition-all hover:border-zinc-300 hover:text-zinc-900 dark:hover:border-zinc-700 dark:hover:text-zinc-100"
                   variants={aiSuggestionVariants}
                   whileHover={reduceMotion ? undefined : { y: -1 }}
                   whileTap={reduceMotion ? undefined : { scale: 0.98 }}
@@ -328,7 +336,7 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
                       </span>
                       {msg.content && (
                         msg.role === "user" ? (
-                          <div className="rounded-[18px] border border-primary/15 bg-primary px-4 py-3 text-sm font-medium leading-relaxed text-primary-foreground shadow-none">
+                          <div className="rounded-[18px] border border-border bg-surface px-4 py-3 text-sm font-medium leading-relaxed text-text-primary shadow-none dark:border-white/10 dark:bg-[#111]">
                             {msg.content}
                           </div>
                         ) : (

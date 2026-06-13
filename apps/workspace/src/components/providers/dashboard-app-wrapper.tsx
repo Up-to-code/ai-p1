@@ -61,9 +61,7 @@ function DashboardAuthenticatedShell({ children }: { children: ReactNode }) {
     <ToastProvider>
       <SidebarProvider>
         <div className="flex h-full overflow-hidden bg-background text-text-primary">
-          <div className="hidden h-full lg:flex">
-            <Sidebar />
-          </div>
+          <Sidebar />
 
           <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background">
             {isPendingApproval && <PendingApprovalBanner />}

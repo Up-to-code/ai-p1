@@ -184,7 +184,6 @@ export async function assertMediaResource(
   const resourceType = requiredString(input, "resourceType");
   const resourceId = requiredString(input, "resourceId");
   if (resourceType === "project") return assertActiveWorkspaceRecord(await ctx.db.get(resourceId as Id<"projects">), organizationId, "Project");
-  if (resourceType === "asset") return assertActiveWorkspaceRecord(await ctx.db.get(resourceId as Id<"assets">), organizationId, "Asset");
   if (resourceType === "client") return assertActiveWorkspaceRecord(await ctx.db.get(resourceId as Id<"clients">), organizationId, "Client");
   if (resourceType === "calendarEvent") return assertActiveWorkspaceRecord(await ctx.db.get(resourceId as Id<"calendarEvents">), organizationId, "Calendar event");
   if (resourceType === "task") return assertActiveWorkspaceRecord(await ctx.db.get(resourceId as Id<"tasks">), organizationId, "Task");

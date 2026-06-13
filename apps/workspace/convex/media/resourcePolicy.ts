@@ -7,8 +7,8 @@ type MediaCtx = QueryCtx | MutationCtx;
 
 export function permissionResourceForMedia(resourceType: MediaResourceType) {
   if (resourceType === "project") return "project";
-  if (resourceType === "asset") return "asset";
   if (resourceType === "calendarEvent") return "calendar";
+  if (resourceType === "task") return "task";
   return "client";
 }
 
@@ -36,14 +36,6 @@ export async function assertMediaResourceExists(
     const project = await ctx.db.get(resourceId as Id<"projects">);
     if (!project || project.organizationId !== organizationId || project.deletedAt) {
       throw new Error("Project was not found.");
-    }
-    return;
-  }
-
-  if (resourceType === "asset") {
-    const asset = await ctx.db.get(resourceId as Id<"assets">);
-    if (!asset || asset.organizationId !== organizationId || asset.deletedAt) {
-      throw new Error("Asset was not found.");
     }
     return;
   }

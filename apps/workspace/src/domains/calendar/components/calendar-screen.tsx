@@ -49,6 +49,24 @@ import {
   calendarEventSchema,
   type CalendarEventFormValues,
 } from "../validation/calendar.schema";
+import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
+import { format, parse, startOfWeek, getDay } from 'date-fns';
+import enUS from 'date-fns/locale/en-US';
+import arSA from 'date-fns/locale/ar-SA';
+
+const locales = {
+  'en': enUS,
+  'ar': arSA,
+};
+
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales,
+});
+
 import { useAccountContext } from "@/domains/auth";
 import {
   calendarDateOptions,
@@ -79,9 +97,8 @@ import {
   visibleCalendarRange,
   type CalendarView,
 } from "@/domains/calendar/calendar-view-model";
-import { useClientOptionsQuery, useClientQuery, useClientAssetLinksQuery } from "@/domains/clients/api/clients";
+import { useClientOptionsQuery, useClientQuery } from "@/domains/clients/api/clients";
 import { useClientTaskOptionsQuery } from "@/domains/clients/api/client-tasks";
-import { useAssetOptionsQuery, useAssetQuery } from "@/domains/assets/api/assets";
 import {
   createCalendarEventRequest,
   deleteCalendarEventRequest,
@@ -157,12 +174,10 @@ export function CalendarScreen() {
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const shouldLoadPickerOptions = isCreateOpen || Boolean(editingEvent);
   const clientsQuery = useClientOptionsQuery(workspaceOrganizationId, { enabled: shouldLoadPickerOptions });
-  const assetsQuery = useAssetOptionsQuery(workspaceOrganizationId, { enabled: shouldLoadPickerOptions });
-  const tasksQuery = useClientTaskOptionsQuery(workspaceOrganizationId, { enabled: shouldLoadPickerOptions });
+    const tasksQuery = useClientTaskOptionsQuery(workspaceOrganizationId, { enabled: shouldLoadPickerOptions });
   const clients = clientsQuery ?? [];
-  const assets = assetsQuery ?? [];
   const tasks = tasksQuery ?? [];
-  const isContextLoading = shouldLoadPickerOptions && Boolean(workspaceOrganizationId) && (!clientsQuery || !assetsQuery || !tasksQuery);
+  const isContextLoading = shouldLoadPickerOptions && Boolean(workspaceOrganizationId) && (!clientsQuery || !tasksQuery);
   const deleteOperation = useOperationState({
     errorMessage: "Event delete failed.",
   });
@@ -326,10 +341,8 @@ export function CalendarScreen() {
             onOpenChange={setIsCreateOpen}
             organizationId={workspaceOrganizationId}
             clients={clients}
-            assets={assets}
             tasks={tasks}
             clientsLoading={isContextLoading && !clientsQuery}
-            assetsLoading={isContextLoading && !assetsQuery}
             tasksLoading={isContextLoading && !tasksQuery}
           />
           {editingEvent && (
@@ -342,10 +355,8 @@ export function CalendarScreen() {
               event={editingEvent}
               organizationId={workspaceOrganizationId}
               clients={clients}
-              assets={assets}
               tasks={tasks}
-              clientsLoading={isContextLoading && !clientsQuery}
-              assetsLoading={isContextLoading && !assetsQuery}
+            clientsLoading={isContextLoading && !clientsQuery}
               tasksLoading={isContextLoading && !tasksQuery}
             />
           )}
@@ -951,20 +962,7 @@ function EventDetailDialog({
             </PropertyRow>
           )}
 
-          {(event.assetTitle || event.assetId) && (
-            <PropertyRow icon={<Building2 className="h-4 w-4" />} label={t("form.assetLabel")}>
-              <button 
-                type="button"
-                onClick={() => setQuickViewEntity({ id: event.assetId || "", type: "asset", title: event.assetTitle || event.assetId || "" })}
-                className="flex w-full items-start gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-3 text-zinc-900 dark:border-white/10 dark:bg-white/[0.02] dark:text-white hover:bg-zinc-100 dark:hover:bg-white/[0.05] transition-colors text-start"
-              >
-                <span className="flex-1 whitespace-pre-wrap break-words text-xs font-black uppercase tracking-widest leading-relaxed">
-                  {event.assetTitle ?? event.assetId}
-                </span>
-                <Eye className="h-3.5 w-3.5 text-zinc-400 mt-0.5" />
-              </button>
-            </PropertyRow>
-          )}
+          
 
           {event.taskId && (
             <PropertyRow icon={<ClipboardList className="h-4 w-4" />} label={t("form.taskLabel")}>
@@ -1036,11 +1034,9 @@ function BusinessScheduleDialog({
   onOpenChange,
   event,
   organizationId,
-  clients,
-  assets,
-  tasks,
+  clients = [],
+  tasks = [],
   clientsLoading,
-  assetsLoading,
   tasksLoading,
 }: {
   mode: "create" | "edit";
@@ -1049,10 +1045,8 @@ function BusinessScheduleDialog({
   event?: CalendarEvent;
   organizationId?: string;
   clients: Array<{ id: string; name: string }>;
-  assets: Array<{ id: string; title: string }>;
   tasks: Array<{ id: string; title: string; clientId: string }>;
   clientsLoading: boolean;
-  assetsLoading: boolean;
   tasksLoading: boolean;
 }) {
   const t = useTranslations("Calendar");
@@ -1097,7 +1091,6 @@ function BusinessScheduleDialog({
   ) as Record<keyof CalendarEventFormValues, string | undefined>;
 
   const selectedClient = clients.find((client) => client.id === form.clientId);
-  const selectedAsset = assets.find((asset) => asset.id === (form.assetId));
   const selectedTask = tasks.find((task) => task.id === form.taskId);
   const filteredTasks = calendarTasksForClient(tasks, form.clientId);
   const dateOptions = useMemo(() => {
@@ -1115,13 +1108,6 @@ function BusinessScheduleDialog({
           loading: clientsLoading,
           options: clients.map((client) => ({ id: client.id, label: client.name, icon: <User className="h-4 w-4" /> })),
           selectedId: form.clientId ?? "",
-        },
-        asset: {
-          title: t("form.chooseAsset"),
-          empty: t("form.noAssets"),
-          loading: assetsLoading,
-          options: assets.map((asset) => ({ id: asset.id, label: asset.title, icon: <Building2 className="h-4 w-4" /> })),
-          selectedId: form.assetId || "",
         },
         task: {
           title: t("form.chooseTask"),
@@ -1183,7 +1169,7 @@ function BusinessScheduleDialog({
 
   function generatedTitle(values: CalendarEventFormValues) {
     const typeLabel = t(`types.${values.type || "meeting"}`);
-    const context = selectedClient?.name || selectedAsset?.title || values.location?.trim();
+    const context = selectedClient?.name || values.location?.trim();
     return calendarScheduleTitle(typeLabel, context);
   }
 
@@ -1312,16 +1298,6 @@ function BusinessScheduleDialog({
                     icon={<User className="h-4 w-4" />}
                     onClick={() => openPicker("client")}
                     onClear={form.clientId ? () => clearPickerValue("client") : undefined}
-                  />
-                </PropertyRow>
-
-                <PropertyRow icon={<Building2 className="h-4 w-4" />} label={t("form.assetLabel")}>
-                  <TicketPickerButton
-                    label={t("form.assetLabel")}
-                    value={selectedAsset?.title}
-                    icon={<Building2 className="h-4 w-4" />}
-                    onClick={() => openPicker("asset")}
-                    onClear={form.assetId ? () => clearPickerValue("asset") : undefined}
                   />
                 </PropertyRow>
 
@@ -1548,7 +1524,7 @@ function EntityQuickViewDialog({
         className="z-[80] flex max-h-[min(86vh,720px)] w-[min(94vw,560px)] max-w-none flex-col overflow-hidden rounded-[22px] border-zinc-200 bg-zinc-50 p-0 text-zinc-950 shadow-none dark:border-white/10 dark:bg-[#111111] dark:text-white"
       >
         {entity.type === "client" && <ClientQuickView clientId={entity.id} onClose={onClose} />}
-        {entity.type === "asset" && <AssetQuickView assetId={entity.id} onClose={onClose} />}
+        
         {entity.type === "task" && (
           <div className="p-5 text-center">
             <button onClick={onClose} className="mb-5 flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-400 transition hover:bg-white hover:text-zinc-900 dark:border-white/10 dark:hover:bg-white/5 dark:hover:text-white">
@@ -1641,20 +1617,7 @@ function ClientQuickView({ clientId, onClose }: { clientId: string; onClose: () 
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-4">
-        <p className="mb-3 text-[9px] font-black uppercase tracking-[0.25em] text-zinc-400">Linked Assets</p>
-        {!assetLinks || assetLinks.length === 0 ? (
-          <div className="flex h-20 items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-white text-xs font-bold text-zinc-400 dark:border-white/10 dark:bg-white/[0.02]">
-            No linked assets
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {assetLinks.map((entry) => (
-              <LinkedAssetCard key={entry.link._id || entry.link.assetId} assetId={entry.link.assetId} status={entry.link.status} locale={locale} />
-            ))}
-          </div>
-        )}
-      </div>
+
 
       <div className="border-t border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-[#111111]">
         <AppPrimaryButton
@@ -1670,161 +1633,6 @@ function ClientQuickView({ clientId, onClose }: { clientId: string; onClose: () 
 }
 
 /* ── Linked Asset Mini Card ── */
-function LinkedAssetCard({ assetId, status, locale }: { assetId: string; status: string; locale: string }) {
-  const account = useAccountContext();
-  const organizationId = (account.workspace.status === "ready" && account.workspace.organizationId) || undefined;
-  const asset = useAssetQuery(organizationId, assetId);
-
-  if (!asset) {
-    return (
-      <div className="flex h-16 items-center justify-center rounded-2xl border border-zinc-100 bg-zinc-50/50 dark:border-white/5 dark:bg-white/[0.02]">
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-300" />
-      </div>
-    );
-  }
-
-  const statusColors: Record<string, string> = {
-    interested: "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
-    shortlisted: "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400",
-    review: "bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400",
-    proposal: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400",
-    rejected: "bg-red-50 text-red-500 dark:bg-red-900/20 dark:text-red-400",
-  };
-
-  return (
-    <Link
-      href={`/${locale}/assets/${asset.reference || assetId}`}
-      className="group flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-3 transition-colors hover:border-zinc-300 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-white/15"
-    >
-      <div className="relative h-12 w-14 shrink-0 overflow-hidden rounded-xl bg-zinc-100 dark:bg-white/5">
-        {asset.coverImageUrl ? (
-          <img src={asset.coverImageUrl} alt={asset.title} className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <Building2 className="h-5 w-5 text-zinc-300 dark:text-zinc-600" />
-          </div>
-        )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-black text-zinc-900 dark:text-white truncate">{asset.title}</p>
-        <p className="text-[10px] font-bold text-zinc-400 truncate mt-0.5">{asset.project} · {asset.city}</p>
-        <div className="flex items-center gap-2 mt-1.5">
-          <span className={cn("rounded-md px-1.5 py-px text-[8px] font-black uppercase tracking-widest", statusColors[status] || statusColors.interested)}>
-            {status}
-          </span>
-          {asset.price && (
-            <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400">EGP {asset.price}</span>
-          )}
-        </div>
-      </div>
-      <ArrowUpRight className="h-4 w-4 shrink-0 text-zinc-300 transition-colors group-hover:text-zinc-600 dark:group-hover:text-zinc-300" />
-    </Link>
-  );
-}
-
-/* ── Asset Quick View ── */
-function AssetQuickView({ assetId, onClose }: { assetId: string; onClose: () => void }) {
-  const account = useAccountContext();
-  const organizationId = (account.workspace.status === "ready" && account.workspace.organizationId) || undefined;
-  const locale = useLocale();
-  const router = useRouter();
-  const asset = useAssetQuery(organizationId, assetId);
-
-  if (!asset) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-zinc-300" />
-      </div>
-    );
-  }
-
-  const statusColors: Record<string, string> = {
-    available: "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800",
-    sold: "bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800",
-    reserved: "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800",
-    pending: "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800",
-    draft: "bg-zinc-100 text-zinc-500 border-zinc-200 dark:bg-white/5 dark:text-zinc-400 dark:border-white/10",
-  };
-
-  return (
-    <>
-      <div className="flex items-start gap-4 border-b border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-[#111111]">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-zinc-100 dark:bg-white/5">
-          {asset.coverImageUrl ? (
-            <img src={asset.coverImageUrl} alt={asset.title} className="h-full w-full object-cover" />
-          ) : (
-            <Building2 className="h-6 w-6 text-zinc-300 dark:text-zinc-600" />
-          )}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="mb-1 text-[9px] font-black uppercase tracking-[0.25em] text-zinc-400">Asset</p>
-          <h2 className="text-base font-black leading-tight text-zinc-950 dark:text-white">{asset.title}</h2>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span className={cn("rounded-lg border px-2 py-0.5 text-[9px] font-black uppercase tracking-widest", statusColors[asset.status] || statusColors.draft)}>
-              {asset.status}
-            </span>
-            <span className="rounded-lg border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400">
-              {asset.purpose}
-            </span>
-          </div>
-        </div>
-        <button onClick={onClose} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-200 text-zinc-400 transition hover:bg-zinc-50 hover:text-zinc-950 dark:border-white/10 dark:hover:bg-white/5 dark:hover:text-white">
-          <X className="h-4 w-4" />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-2 border-b border-zinc-200 bg-white dark:border-white/10 dark:bg-[#111111] sm:grid-cols-4">
-        <div className="min-w-0 border-e border-b border-zinc-100 px-4 py-3 dark:border-white/5 sm:border-b-0">
-          <DollarSign className="h-4 w-4 text-zinc-400 mb-1" />
-          <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Price</p>
-          <p className="mt-1 truncate text-xs font-black text-zinc-950 dark:text-white">{asset.price || "—"}</p>
-        </div>
-        <div className="min-w-0 border-b border-zinc-100 px-4 py-3 dark:border-white/5 sm:border-e sm:border-b-0">
-          <Ruler className="h-4 w-4 text-zinc-400 mb-1" />
-          <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Area</p>
-          <p className="mt-1 truncate text-xs font-black text-zinc-950 dark:text-white">{asset.area || "—"}</p>
-        </div>
-        <div className="min-w-0 border-e border-zinc-100 px-4 py-3 dark:border-white/5">
-          <BedDouble className="h-4 w-4 text-zinc-400 mb-1" />
-          <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Beds</p>
-          <p className="mt-1 truncate text-xs font-black text-zinc-950 dark:text-white">{asset.bedrooms || "—"}</p>
-        </div>
-        <div className="min-w-0 px-4 py-3">
-          <MapPin className="h-4 w-4 text-zinc-400 mb-1" />
-          <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">City</p>
-          <p className="mt-1 truncate text-xs font-black text-zinc-950 dark:text-white">{asset.city || "—"}</p>
-        </div>
-      </div>
-
-      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
-        <div className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.02]">
-          <Building2 className="h-4 w-4 text-zinc-400" />
-          <div className="min-w-0">
-            <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Project</p>
-            <p className="truncate text-xs font-bold text-zinc-950 dark:text-white">{asset.project || "—"}</p>
-          </div>
-        </div>
-        {asset.description && (
-          <div>
-            <p className="text-[9px] font-black uppercase tracking-[0.25em] text-zinc-400 mb-2">Description</p>
-            <p className="whitespace-pre-wrap text-xs font-bold leading-5 text-zinc-600 dark:text-zinc-300">{asset.description}</p>
-          </div>
-        )}
-      </div>
-
-      <div className="border-t border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-[#111111]">
-        <AppPrimaryButton
-          className="h-12 w-full rounded-2xl text-xs font-black uppercase tracking-widest shadow-none"
-          onClick={() => { onClose(); router.push(`/${locale}/assets/${asset.reference || assetId}`); }}
-        >
-          <ExternalLink className="me-2 h-4 w-4" />
-          Open Full Asset
-        </AppPrimaryButton>
-      </div>
-    </>
-  );
-}
-
 function LocationPickerModal({
   closeLabel,
   confirmLabel,
@@ -2003,5 +1811,134 @@ function ContextPickerOverlay({
         </div>
       </div>
     </div>
+  );
+}
+
+
+function BigCalendarSurface({
+  currentDate,
+  events,
+  locale,
+  onDateClick,
+  onEventClick,
+  onNavigate,
+  onToday,
+  onViewChange,
+  view,
+}: {
+  currentDate: Date;
+  events: CalendarEvent[];
+  locale: string;
+  onDateClick: (date: Date) => void;
+  onEventClick: (event: CalendarEvent) => void;
+  onNavigate: (direction: 1 | -1) => void;
+  onToday: () => void;
+  onViewChange: (view: CalendarView) => void;
+  view: CalendarView;
+}) {
+  const mappedEvents = events.map(e => ({
+    ...e,
+    start: new Date(e.startAt),
+    end: new Date(e.endAt),
+  }));
+
+  const viewMap: Record<CalendarView, any> = {
+    month: 'month',
+    week: 'week',
+    day: 'day',
+  };
+
+  return (
+    <section className="h-[calc(100vh-12rem)] min-h-[600px] overflow-hidden rounded-[24px] border border-zinc-200/80 bg-white text-zinc-950 dark:border-white/10 dark:bg-[#0A0A0A] dark:text-white">
+      <Calendar
+        localizer={localizer}
+        events={mappedEvents}
+        startAccessor="start"
+        endAccessor="end"
+        date={currentDate}
+        view={viewMap[view]}
+        culture={locale === 'ar' ? 'ar' : 'en'}
+        onNavigate={(newDate) => {
+           // We'll use our custom toolbar
+        }}
+        onView={() => {}}
+        onSelectEvent={(e) => onEventClick(e as any)}
+        onSelectSlot={(slotInfo) => onDateClick(slotInfo.start)}
+        selectable
+        components={{
+          event: ({ event }) => (
+            <CalendarEventChip
+              event={event as any}
+              onClick={() => onEventClick(event as any)}
+              variant="compact"
+            />
+          ),
+          toolbar: (toolbarProps) => {
+            const { onNavigate: rbcNavigate, onView: rbcView, label, view: currentView } = toolbarProps;
+            return (
+              <div className="flex flex-col gap-5 border-b border-zinc-100 p-4 dark:border-white/5 lg:flex-row lg:items-center lg:justify-between lg:p-5">
+                <div className="flex min-w-0 items-center gap-4">
+                  <div className="hidden h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl border border-zinc-200 bg-zinc-50 text-center dark:border-white/10 dark:bg-white/[0.03] sm:flex">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                      {calendarShortMonthLabel(currentDate, locale)}
+                    </span>
+                    <span className="text-xl font-black leading-none text-zinc-950 dark:text-white">
+                      {currentDate.getDate()}
+                    </span>
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="truncate text-lg font-black uppercase tracking-normal text-zinc-950 dark:text-white">
+                      {label}
+                    </h2>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:justify-end">
+                  <div className="inline-flex w-fit items-center gap-1 rounded-xl border border-zinc-200 bg-zinc-50 p-1 dark:border-white/10 dark:bg-white/[0.03]">
+                    <AriaButton
+                      aria-label="Previous calendar period"
+                      onPress={() => { rbcNavigate('PREV'); onNavigate(-1); }}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-white hover:text-zinc-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:bg-white/10 dark:hover:text-white rtl:rotate-180"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </AriaButton>
+                    <AriaButton
+                      onPress={() => { rbcNavigate('TODAY'); onToday(); }}
+                      className="h-8 rounded-lg bg-zinc-950 px-3 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+                    >
+                      Today
+                    </AriaButton>
+                    <AriaButton
+                      aria-label="Next calendar period"
+                      onPress={() => { rbcNavigate('NEXT'); onNavigate(1); }}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-white hover:text-zinc-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:bg-white/10 dark:hover:text-white rtl:rotate-180"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </AriaButton>
+                  </div>
+
+                  <div className="grid w-full grid-cols-3 gap-1 rounded-xl border border-zinc-200 bg-zinc-50 p-1 dark:border-white/10 dark:bg-white/[0.03] sm:w-auto">
+                    {(["month", "week", "day"] as const).map((nextView) => (
+                      <AriaButton
+                        key={nextView}
+                        onPress={() => { rbcView(nextView); onViewChange(nextView); }}
+                        className={cn(
+                          "h-8 rounded-lg px-3 text-[10px] font-black uppercase tracking-widest transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+                          currentView === nextView
+                            ? "bg-white text-zinc-950 shadow-sm dark:bg-zinc-800 dark:text-white"
+                            : "text-zinc-500 hover:text-zinc-950 dark:hover:text-white",
+                        )}
+                      >
+                        {nextView}
+                      </AriaButton>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+        }}
+      />
+    </section>
   );
 }

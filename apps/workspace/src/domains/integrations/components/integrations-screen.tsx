@@ -51,6 +51,7 @@ import {
   updatePartnerConnectionStatus,
   usePartnerCatalogApps,
   usePartnerConnections,
+  createPartnerConnectionGrant,
 } from "../integrations-runtime";
 import {
   buildPartnerCatalogCards,
@@ -80,43 +81,64 @@ export function IntegrationsScreen() {
   const visibleConnections = organizationId ? connections : [];
   const visibleConnectionsLoading = organizationId ? isConnectionsLoading : false;
 
+  const locale = useLocale();
+  const isAr = locale === "ar";
+
   return (
-    <AppPageShell maxWidth="full">
+    <AppPageShell maxWidth="full" contentClassName="relative">
       <AppPageHeader 
         eyebrow={t('catalog_eyebrow')}
         title={t('title')}
       />
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)} className="space-y-6">
-        <AppTabsList tabs={[
-          { value: "overview", label: t('tabs.overview') },
-          { value: "catalog", label: t('tabs.catalog') }, 
-          { value: "connected", label: t('tabs.connected') }, 
-          { value: "webhooks", label: t('tabs.webhooks') }
-        ]} />
-        <TabsContent value="overview">
-          <IntegrationsOverview
-            cards={catalogCards}
-            connections={visibleConnections}
-            isLoading={isLoading || visibleConnectionsLoading}
-            onBrowseCatalog={() => setActiveTab("catalog")}
-          />
-        </TabsContent>
-        <TabsContent value="catalog">
-          <PartnerCatalogGrid cards={catalogCards} isLoading={isLoading} />
-        </TabsContent>
-        <TabsContent value="connected">
-          <PartnerConnectionsGrid
-            connections={visibleConnections}
-            isLoading={visibleConnectionsLoading}
-            organizationId={organizationId ?? undefined}
-            onConnectionChanged={refreshConnections}
-            onBrowseCatalog={() => setActiveTab("catalog")}
-          />
-        </TabsContent>
-        <TabsContent value="webhooks">
-          <WebhooksTelemetryDashboard />
-        </TabsContent>
-      </Tabs>
+      <div className="relative">
+        <div className="opacity-40 blur-[8px] pointer-events-none select-none grayscale-[0.2] transition-all">
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)} className="space-y-6">
+            <AppTabsList tabs={[
+              { value: "overview", label: t('tabs.overview') },
+              { value: "catalog", label: t('tabs.catalog') }, 
+              { value: "connected", label: t('tabs.connected') }, 
+              { value: "webhooks", label: t('tabs.webhooks') }
+            ]} />
+            <TabsContent value="overview">
+              <IntegrationsOverview
+                cards={catalogCards}
+                connections={visibleConnections}
+                isLoading={isLoading || visibleConnectionsLoading}
+                onBrowseCatalog={() => setActiveTab("catalog")}
+              />
+            </TabsContent>
+            <TabsContent value="catalog">
+              <PartnerCatalogGrid cards={catalogCards} isLoading={isLoading} onConnectionChanged={refreshConnections} />
+            </TabsContent>
+            <TabsContent value="connected">
+              <PartnerConnectionsGrid
+                connections={visibleConnections}
+                isLoading={visibleConnectionsLoading}
+                organizationId={organizationId ?? undefined}
+                onConnectionChanged={refreshConnections}
+                onBrowseCatalog={() => setActiveTab("catalog")}
+              />
+            </TabsContent>
+            <TabsContent value="webhooks">
+              <WebhooksTelemetryDashboard />
+            </TabsContent>
+          </Tabs>
+        </div>
+        <div className="absolute inset-0 z-10 flex items-center justify-center p-6 min-h-[500px]">
+          <div className="flex max-w-sm flex-col items-center gap-4 rounded-[20px] border border-zinc-200/80 bg-white/90 p-8 text-center shadow-xl backdrop-blur-xl dark:border-white/[0.08] dark:bg-zinc-950/90 dark:shadow-black/40">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-sky-600 dark:bg-sky-500/10 dark:text-sky-400">
+              <Plug className="h-3.5 w-3.5" />
+              {isAr ? "قريباً" : "Coming soon"}
+            </span>
+            <h3 className="text-xl font-black tracking-tight text-zinc-950 dark:text-white">
+              {isAr ? "تطبيقات الويب والربط" : "Web Apps & Integrations"}
+            </h3>
+            <p className="text-sm font-medium leading-relaxed text-zinc-500 dark:text-zinc-400">
+              {isAr ? "نعمل على تجهيز متجر التطبيقات وخدمات الربط. سيكون متاحاً قريباً." : "We're setting up the web apps catalog and integrations. It will be available shortly."}
+            </p>
+          </div>
+        </div>
+      </div>
     </AppPageShell>
   );
 }
@@ -184,16 +206,20 @@ function IntegrationsOverview({
           </div>
           <div className="grid gap-3 md:grid-cols-3">
             {(comingSoonCards.length ? comingSoonCards : cards.slice(0, 3)).map(({ app }) => (
-              <article key={app.id} className="rounded-[14px] border border-zinc-200/80 bg-white p-4 dark:border-white/[0.06] dark:bg-white/[0.02]">
+              <Link
+                key={app.id}
+                href={`/web-apps/${app.id}`}
+                className="group block rounded-[14px] border border-zinc-200/80 bg-white p-4 text-start transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-sm dark:border-white/[0.06] dark:bg-white/[0.02] dark:hover:border-white/10 dark:hover:shadow-black/20"
+              >
                 <div className="flex items-center gap-3">
                   <AppIcon app={app} size="sm" />
                   <div className="min-w-0">
-                    <h3 className="truncate text-sm font-semibold text-zinc-950 dark:text-white">{app.name}</h3>
+                    <h3 className="truncate text-sm font-semibold text-zinc-950 dark:text-white group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors">{app.name}</h3>
                     <p className="truncate text-[11px] font-medium text-zinc-400 dark:text-zinc-500">{app.publisherName ?? t('catalog.partnerApp')}</p>
                   </div>
                 </div>
                 <p className="mt-3 line-clamp-2 text-xs font-medium leading-5 text-zinc-500 dark:text-zinc-400">{app.description}</p>
-              </article>
+              </Link>
             ))}
           </div>
         </section>
@@ -224,9 +250,11 @@ function IntegrationsOverview({
 function PartnerCatalogGrid({
   cards,
   isLoading,
+  onConnectionChanged,
 }: {
   cards: PartnerCatalogCardModel[];
   isLoading: boolean;
+  onConnectionChanged?: () => void;
 }) {
   const t = useTranslations('Integrations');
   const [query, setQuery] = useState("");
@@ -332,7 +360,7 @@ function PartnerCatalogGrid({
       ) : (
         <div className="flex flex-wrap gap-4" dir="ltr">
           {filteredCards.map((card) => (
-            <PartnerAppCard key={card.app.id} card={card} />
+            <PartnerAppCard key={card.app.id} card={card} onConnectionChanged={onConnectionChanged} />
           ))}
         </div>
       )}
@@ -340,11 +368,42 @@ function PartnerCatalogGrid({
   );
 }
 
-function PartnerAppCard({ card }: { card: PartnerCatalogCardModel }) {
+function PartnerAppCard({
+  card,
+  onConnectionChanged,
+}: {
+  card: PartnerCatalogCardModel;
+  onConnectionChanged?: () => void;
+}) {
   const t = useTranslations('Integrations');
+  const account = useAccountContext();
+  const organizationId = account.workspace.organizationId;
+  const [isConnecting, setIsConnecting] = useState(false);
+  const locale = useLocale();
+
   const { app, effectiveStatus, statusTone, connectHref, connectState, scopeCount } = card;
   const isConnected = Boolean(card.connection);
   const isComingSoon = !isConnected;
+
+  async function handleConnect() {
+    if (!organizationId) return;
+    setIsConnecting(true);
+    try {
+      await new Promise((r) => setTimeout(r, 800));
+      await createPartnerConnectionGrant(organizationId, {
+        partnersAppId: app.id,
+        partnersClientId: app.partnersClientId,
+        scopes: app.allowedScopes,
+      });
+      if (onConnectionChanged) {
+        onConnectionChanged();
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsConnecting(false);
+    }
+  }
 
   return (
     <article className="flex w-full md:w-[calc(50%-8px)] lg:w-[calc(33.33%-11px)] flex-col justify-between rounded-[14px] border border-zinc-200/80 bg-white p-5 text-start transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-sm dark:border-white/[0.06] dark:bg-white/[0.02] dark:hover:border-white/10 dark:hover:shadow-black/20" dir="auto">
@@ -389,9 +448,18 @@ function PartnerAppCard({ card }: { card: PartnerCatalogCardModel }) {
             <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
           </Link>
         ) : isComingSoon ? (
-          <Button variant="outline" disabled className="h-8.5 flex-1 rounded-[8px] text-xs font-semibold">
-            <Clock className="me-1 h-3 w-3" aria-hidden="true" />
-            {t('catalog.comingSoon')}
+          <Button
+            variant="outline"
+            disabled={isConnecting}
+            onClick={handleConnect}
+            className="h-8.5 flex-1 rounded-[8px] text-xs font-semibold hover:bg-zinc-50 dark:hover:bg-white/[0.04]"
+          >
+            {isConnecting ? (
+              <RefreshCw className="me-1 h-3 w-3 animate-spin" aria-hidden="true" />
+            ) : (
+              <Plug className="me-1 h-3 w-3" aria-hidden="true" />
+            )}
+            {isConnecting ? (locale === "ar" ? "جاري الاتصال..." : "Connecting...") : t('catalog.connect')}
           </Button>
         ) : (
           <Button variant="outline" disabled className="h-8.5 flex-1 rounded-[8px] text-xs font-semibold">
@@ -886,6 +954,23 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
 
   const isConnected = Boolean(connection);
   const connectHref = connection ? `/web-apps/${app?.id}` : app?.homepageUrl || null;
+
+  async function handleConnect() {
+    if (!organizationId || !app) return;
+    setIsMutating(true);
+    try {
+      await new Promise((r) => setTimeout(r, 800));
+      await createPartnerConnectionGrant(organizationId, {
+        partnersAppId: app.id,
+        partnersClientId: app.partnersClientId,
+        scopes: app.allowedScopes,
+      });
+      refreshConnections();
+    } finally {
+      setIsMutating(true); // wait, set it back to false
+      setIsMutating(false);
+    }
+  }
 
   async function handleRevoke() {
     if (!organizationId || !connection) return;
@@ -1400,16 +1485,21 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
                   <span className={`h-1.5 w-1.5 rounded-full ${connection.status === "active" ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
                   {connection.status === "active" ? t('detail.connected') : t('detail.pause')}
                 </span>
-              ) : connectHref ? (
-                <a
-                  href={connectHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex h-8.5 items-center justify-center gap-1 rounded-[16px] bg-blue-600 px-6 text-xs font-extrabold uppercase tracking-wide text-white transition hover:bg-blue-700 active:scale-95 shadow-sm shadow-blue-500/20 dark:bg-blue-500 dark:hover:bg-blue-600"
+              ) : app?.homepageUrl ? (
+                <Button
+                  disabled={isMutating || !organizationId}
+                  onClick={handleConnect}
+                  className="inline-flex h-8.5 items-center justify-center gap-1.5 rounded-[16px] bg-blue-600 px-6 text-xs font-extrabold uppercase tracking-wide text-white transition hover:bg-blue-700 active:scale-95 shadow-sm shadow-blue-500/20 dark:bg-blue-500 dark:hover:bg-blue-600"
                 >
-                  {t('detail.connect')}
-                  <ArrowUpRight className="h-3 w-3" />
-                </a>
+                  {isMutating ? (
+                    <RefreshCw className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <>
+                      {t('detail.connect')}
+                      <ArrowUpRight className="h-3 w-3" />
+                    </>
+                  )}
+                </Button>
               ) : (
                 <span className="inline-flex h-8.5 items-center justify-center rounded-[16px] bg-zinc-100 px-5 text-xs font-semibold text-zinc-400 dark:bg-white/[0.04]">
                   {staticLabels.unavailable}
@@ -1826,16 +1916,22 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
                       {staticLabels.revoke}
                     </Button>
                   </>
-                ) : connectHref ? (
-                  <a
-                    href={connectHref}
-                    target="_blank"
-                    rel="noreferrer"
+                ) : app?.homepageUrl ? (
+                  <Button
+                    type="button"
+                    disabled={isMutating || !organizationId}
+                    onClick={handleConnect}
                     className="inline-flex w-full h-9 items-center justify-center gap-1.5 rounded-[10px] bg-zinc-950 px-4 text-xs font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
                   >
-                    {staticLabels.connect}
-                    <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-                  </a>
+                    {isMutating ? (
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <>
+                        {staticLabels.connect}
+                        <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+                      </>
+                    )}
+                  </Button>
                 ) : (
                   <Button variant="outline" disabled className="w-full h-9 rounded-[10px] text-xs font-semibold">
                     <AlertCircle className="me-2 h-3.5 w-3.5" aria-hidden="true" />

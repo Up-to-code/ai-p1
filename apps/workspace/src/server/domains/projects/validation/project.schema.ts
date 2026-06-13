@@ -16,6 +16,11 @@ export const projectPayloadSchema = z.object({
   currency: optionalTrimmedText,
   description: optionalTrimmedText,
   tags: z.array(z.string().trim()).optional(),
+  isStrict: z.boolean().optional(),
+  isRollupEnabled: z.boolean().optional(),
+  templateId: z.string().optional(),
+  customTabs: z.array(z.string()).optional(),
+  progress: z.number().optional(),
 });
 
 export type ProjectPayload = z.infer<typeof projectPayloadSchema>;

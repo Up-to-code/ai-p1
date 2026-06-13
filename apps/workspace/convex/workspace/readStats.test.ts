@@ -5,7 +5,6 @@ import {
   calendarStats,
   clientStats,
   projectStats,
-  assetStats,
 } from "./readStats";
 import type { Doc } from "../_generated/dataModel";
 
@@ -15,10 +14,6 @@ function client(input: Partial<Doc<"clients">>) {
 
 function project(input: Partial<Doc<"projects">>) {
   return input as Doc<"projects">;
-}
-
-function asset(input: Partial<Doc<"assets">>) {
-  return input as Doc<"assets">;
 }
 
 function calendarEvent(input: Partial<Doc<"calendarEvents">>) {
@@ -70,23 +65,6 @@ describe("Workspace Convex read stats", () => {
       onTrack: 2,
       atRisk: 1,
       blocked: 1,
-    });
-  });
-
-  it("counts active assets by generic workflow status", () => {
-    expect(assetStats([
-      asset({ status: "draft" }),
-      asset({ status: "active" }),
-      asset({ status: "review" }),
-      asset({ status: "approved" }),
-      asset({ status: "archived", deletedAt: 1 }),
-    ])).toEqual({
-      total: 4,
-      draft: 1,
-      active: 1,
-      review: 1,
-      approved: 1,
-      archived: 0,
     });
   });
 

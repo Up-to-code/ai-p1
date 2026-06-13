@@ -1,31 +1,21 @@
-export type ProjectStatus = "draft" | "pending" | "approved" | "rejected";
-export type Visibility = "private" | "public";
+export type ProjectStatus = "planned" | "active" | "paused" | "completed" | "archived";
+export type ProjectHealth = "onTrack" | "atRisk" | "blocked";
+export type Visibility = "private" | "team" | "workspace";
 
 export interface Project {
   id: string;
   name: string;
-  reference: string;
-  developer: string;
-  city: string;
-  area: string;
-  type: string;
-  assetTypes?: string[];
-  image?: string;
-  coverImageUrl?: string;
+  reference?: string;
+  clientId?: string;
+  opportunityId?: string;
   status: ProjectStatus;
+  health: ProjectHealth;
   visibility?: Visibility;
-  syncState: "draft" | "blocked" | "synced";
-  assetCount: number;
-  priceRange: string;
-  averagePrice?: string;
-  projectPrices?: Array<{ id: string; label: string; price: string }>;
-  regaAuthorizationNo?: string;
-  regaExpiresAt?: string;
-  planNumber?: string;
-  plotNumber?: string;
-  postalIdentity?: string;
-  updated?: string;
-  updatedAt?: number;
-  createdAt?: number;
-  description: string;
+  startDate?: string;
+  endDate?: string;
+  budget?: number;
+  description?: string;
+  templateId?: string;
+  _creationTime: number;
+  syncState?: "draft" | "blocked" | "synced";
 }

@@ -3,30 +3,26 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Link, usePathname } from "@/i18n/routing";
 import {
-  Building2,
   BriefcaseBusiness,
-  LayoutDashboard,
   UserRound,
   Plug,
   History as HistoryIcon,
-  Package,
   CalendarDays,
   KanbanSquare,
   ListTodo,
   MessageSquareText,
-  MoreHorizontal,
-  Menu,
-  Mail,
   Loader2,
   Plus,
   Workflow,
   Search,
-  ShieldCheck,
   Settings,
   Trash2,
+  Bot,
+  UserPlus,
   UsersRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,15 +36,16 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
-import { useTranslations, useLocale } from 'next-intl';
-import { useSidebar } from "./sidebar-context";
+import { useTranslations, useLocale } from "next-intl";
 import { useAccountContext } from "@/domains/auth";
 import { useTheme } from "@/components/providers/theme-provider";
 import { authClient } from "@/lib/auth-client";
 import { selectExistingOrganization, type AuthResult } from "@/domains/auth/organization-selection";
 import { writeAuthHandoff } from "@/domains/auth";
 import { deleteAgentThreadRequest, useAgentThreadsQuery } from "@/domains/agents";
+import { useSidebar } from "./sidebar-context";
 import { workspaceModeHref } from "@/domains/dashboard/store/dashboard.store";
+import { useRouter } from "@/i18n/routing";
 import { agentThreadUrl } from "@/domains/agents/conversation-runtime";
 
 type BetterAuthOrganization = {
@@ -72,118 +69,105 @@ type SidebarAuthClient = typeof authClient & {
 
 const organizationApi = authClient as SidebarAuthClient;
 
-const navigationGroups = [
-  {
-    label: "workspace",
-    items: [
-      { name: "dashboard", href: "/dashboard", icon: LayoutDashboard },
-    ],
-  },
-  {
-    label: "operations",
-    items: [
-      { name: "clients", href: "/clients", icon: UserRound },
-      { name: "opportunities", href: "/opportunities", icon: KanbanSquare },
-      { name: "projects", href: "/projects", icon: BriefcaseBusiness },
-      { name: "tasks", href: "/tasks", icon: ListTodo },
-      { name: "calendar", href: "/calendar", icon: CalendarDays },
-      { name: "assets", href: "/assets", icon: Package },
-    ],
-  },
-  {
-    label: "administration",
-    items: [
-      { name: "automations", href: "/automations", icon: Workflow },
-      { name: "team", href: "/team", icon: UsersRound },
-      { name: "integrations", href: "/web-apps", icon: Plug },
-      { name: "settings", href: "/settings/organization", icon: Settings },
-    ],
-  },
+// Primary nav items
+const primaryNav = [
+  { name: "dashboard", href: "/dashboard", icon: Bot, label: "AI Assistant" },
+  { name: "clients", href: "/clients", icon: UserRound, label: "Clients" },
+  { name: "opportunities", href: "/opportunities", icon: KanbanSquare, label: "Opportunities" },
+
+  { name: "tasks", href: "/tasks", icon: ListTodo, label: "Tasks" },
+  { name: "calendar", href: "/calendar", icon: CalendarDays, label: "Calendar" },
 ];
 
-function isGeneratedOrganizationName(value: string) {
-  const normalized = value.trim();
+// Secondary/bottom nav
+const secondaryNav = [
+  { name: "automations", href: "/automations", icon: Workflow, label: "Automations" },
+  { name: "integrations", href: "/web-apps", icon: Plug, label: "Integrations" },
+  { name: "organization", href: "/settings/organization", icon: Settings, label: "Settings" },
+];
 
+function getInitials(value: string) {
   return (
-    normalized.length > 18 &&
-    /^[a-z0-9_-]+$/i.test(normalized) &&
-    /[0-9]/.test(normalized)
+    value
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "AN"
   );
 }
 
-function getInitials(value: string) {
-  return value
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("") || "AN";
+function isGeneratedOrganizationName(value: string) {
+  const normalized = value.trim();
+  return normalized.length > 18 && /^[a-z0-9_-]+$/i.test(normalized) && /[0-9]/.test(normalized);
+}
+
+function NavTooltip({ label, disabled, children }: { label: string; disabled?: boolean; children: React.ReactNode }) {
+  if (disabled || !label) return <>{children}</>;
+  return (
+    <div className="group/tip relative flex items-center">
+      {children}
+      <div className="pointer-events-none absolute start-full ms-3 z-50 hidden min-w-max rounded-lg border border-border bg-background px-2.5 py-1.5 text-[11px] font-bold shadow-lg group-hover/tip:flex">
+        {label}
+      </div>
+    </div>
+  );
 }
 
 export function Sidebar() {
-  const t = useTranslations('Sidebar');
+  const t = useTranslations("Sidebar");
+  const tWorkspace = useTranslations("Workspace");
   const { toast } = useToast();
   const locale = useLocale();
-  const isRtl = locale === 'ar';
+  const isRtl = locale === "ar";
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const { isOpen } = useSidebar();
   const activeThreadId = searchParams.get("threadId")?.trim();
-  const { isCollapsed, toggleCollapsed } = useSidebar();
   const { isDark: isDarkMode } = useTheme();
   const account = useAccountContext();
-  const workspaceOrganizationId = account.workspace.status === "ready" ? account.workspace.organizationId : null;
+  const workspaceOrganizationId =
+    account.workspace.status === "ready" ? account.workspace.organizationId : null;
   const queriedAgentThreads = useAgentThreadsQuery(workspaceOrganizationId, {
     enabled: Boolean(workspaceOrganizationId),
     limit: 50,
   });
   const agentThreads = useMemo(() => queriedAgentThreads ?? [], [queriedAgentThreads]);
-  const visibleAgentThreads = agentThreads.slice(0, 3);
+  const visibleAgentThreads = agentThreads.slice(0, 5);
   const hasMoreAgentThreads = agentThreads.length > visibleAgentThreads.length;
   const organizationsQuery = authClient.useListOrganizations();
   const organizations = useMemo(
-    () => ((organizationsQuery.data ?? []) as BetterAuthOrganization[])
-      .filter((organization) => organization.id)
-      .slice(0, 4),
+    () =>
+      ((organizationsQuery.data ?? []) as BetterAuthOrganization[])
+        .filter((o) => o.id)
+        .slice(0, 4),
     [organizationsQuery.data],
   );
-  const [switchingOrganizationId, setSwitchingOrganizationId] = useState<string | null>(null);
+  
   const [threadHistoryOpen, setThreadHistoryOpen] = useState(false);
   const [threadSearch, setThreadSearch] = useState("");
   const [threadPendingDelete, setThreadPendingDelete] = useState<AgentThread | null>(null);
   const [deletingThreadId, setDeletingThreadId] = useState<string | null>(null);
+  const [switchingOrganizationId, setSwitchingOrganizationId] = useState<string | null>(null);
   const organizationDisplayName =
     account.organization.legalName?.trim() ||
-    (!isGeneratedOrganizationName(account.organization.name) ? account.organization.name : locale === "ar" ? "المؤسسة" : "Organization");
-  const organizationsLabel = locale === "ar" ? "مساحات العمل" : "Workspaces";
-  const currentLabel = locale === "ar" ? "الحالية" : "Current";
-  const workspaceHomeLabel = locale === "ar" ? "مساحة العمل" : "Workspace";
-  const threadsLabel = locale === "ar" ? "المحادثات" : "Threads";
-  const newThreadLabel = locale === "ar" ? "جديد" : "New";
-  const historyLabel = locale === "ar" ? "السجل" : "History";
-  const threadHistoryTitle = locale === "ar" ? "سجل المحادثات" : "Thread history";
-  const threadHistoryDescription = locale === "ar"
-    ? "ابحث في محادثات الذكاء لهذه المساحة."
-    : "Search AI threads for this workspace.";
-  const threadSearchPlaceholder = locale === "ar" ? "ابحث في المحادثات..." : "Search threads...";
-  const emptyThreadsLabel = locale === "ar" ? "لا توجد محادثات بعد" : "No threads yet";
-  const deleteThreadLabel = locale === "ar" ? "حذف المحادثة" : "Delete thread";
-  const deleteThreadTitle = locale === "ar" ? "حذف المحادثة؟" : "Delete this conversation?";
-  const deleteThreadDescription = locale === "ar"
-    ? "سيتم حذف هذه المحادثة ورسائلها وسجل تشغيل الذكاء نهائيا."
-    : "This permanently deletes the conversation, messages, and agent run history.";
-  const deleteThreadCancelLabel = locale === "ar" ? "إلغاء" : "Cancel";
-  const deleteThreadConfirmLabel = locale === "ar" ? "حذف" : "Delete";
-  const deleteThreadSuccessTitle = locale === "ar" ? "تم حذف المحادثة" : "Conversation deleted";
-  const deleteThreadFailedTitle = locale === "ar" ? "تعذر حذف المحادثة" : "Delete failed";
+    (!isGeneratedOrganizationName(account.organization.name)
+      ? account.organization.name
+      : locale === "ar"
+        ? "المؤسسة"
+        : "Organization");
+
   const filteredAgentThreads = useMemo(() => {
     const query = threadSearch.trim().toLowerCase();
     if (!query) return agentThreads;
     return agentThreads.filter((thread) => thread.title.toLowerCase().includes(query));
   }, [agentThreads, threadSearch]);
 
+
+
   async function switchOrganization(organizationId: string) {
     if (organizationId === account.organization.id || switchingOrganizationId) return;
-
     setSwitchingOrganizationId(organizationId);
     try {
       await selectExistingOrganization({
@@ -202,15 +186,16 @@ export function Sidebar() {
 
   async function deleteSelectedThread() {
     if (!workspaceOrganizationId || !threadPendingDelete || deletingThreadId) return;
-
     const thread = threadPendingDelete;
     setDeletingThreadId(thread.id);
     try {
       await deleteAgentThreadRequest(workspaceOrganizationId, thread.id);
       setThreadPendingDelete(null);
       setThreadHistoryOpen(false);
-      toast({ title: deleteThreadSuccessTitle, type: "success" });
-
+      toast({
+        title: locale === "ar" ? "تم حذف المحادثة" : "Conversation deleted",
+        type: "success",
+      });
       if (activeThreadId === thread.id) {
         window.history.replaceState(
           null,
@@ -220,399 +205,323 @@ export function Sidebar() {
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : undefined;
-      toast({ title: deleteThreadFailedTitle, description: message, type: "error" });
+      toast({
+        title: locale === "ar" ? "تعذر حذف المحادثة" : "Delete failed",
+        description: message,
+        type: "error",
+      });
     } finally {
       setDeletingThreadId(null);
     }
   }
 
   return (
-    <aside
-      className={cn(
-        "relative flex h-screen shrink-0 flex-col overflow-hidden border-e bg-background shadow-none transition-all duration-300",
-        isDarkMode ? "border-white/[0.08]" : "border-black/[0.08]",
-        isCollapsed ? "w-[var(--sidebar-width-collapsed)]" : "w-[var(--sidebar-width-expanded)]",
-        isRtl && "font-cairo"
-      )}
-    >
-      <div className={cn(
-        "flex h-16 shrink-0 items-center gap-3 border-b px-3",
-        isDarkMode ? "border-white/[0.08]" : "border-black/[0.08]"
-      )}>
-        {!isCollapsed && (
-          <Link
-            href={workspaceModeHref("ws")}
-            className={cn(
-              "flex min-w-0 flex-1 items-center gap-2.5 rounded-xl px-2 py-2 text-start transition-colors",
-              isDarkMode ? "hover:bg-white/[0.04]" : "hover:bg-zinc-100"
-            )}
-          >
-            <span className={cn(
-              "flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl text-[10px] font-black uppercase",
-              isDarkMode ? "bg-white text-zinc-950" : "bg-zinc-950 text-white"
-            )}>
-              {account.organization.logo ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={account.organization.logo} alt="" className="h-full w-full object-cover" />
-              ) : (
-                account.organization.initials || getInitials(organizationDisplayName)
-              )}
-            </span>
-            <span className="min-w-0">
-              <span className={cn("block truncate text-[13px] font-black leading-tight", isDarkMode ? "text-white" : "text-zinc-950")}>
-                {organizationDisplayName}
-              </span>
-              <span className={cn("mt-0.5 block truncate text-[10px] font-bold uppercase", isDarkMode ? "text-zinc-500" : "text-zinc-400")}>
-                {workspaceHomeLabel}
-              </span>
-            </span>
-          </Link>
+    <>
+      <aside
+        className={cn(
+          "relative flex h-screen shrink-0 flex-col overflow-hidden bg-background transition-all duration-300 ease-in-out border-e",
+          isOpen ? "w-64" : "w-14",
+          isDarkMode ? "border-white/[0.06]" : "border-black/[0.07]",
+          isRtl && "font-cairo",
         )}
-        <button
-          onClick={toggleCollapsed}
-          aria-label={workspaceHomeLabel}
-          className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-all",
-            isDarkMode ? "border-white/[0.08] text-zinc-400 hover:border-white/20 hover:text-white" : "border-black/[0.08] text-zinc-500 hover:border-black/20 hover:text-black"
-          )}
-        >
-          <Menu className="h-4 w-4" />
-        </button>
-      </div>
+      >
+        {/* Logo / Org Avatar */}
+        <div className={cn("flex h-14 shrink-0 items-center border-b border-inherit", isOpen ? "px-4" : "justify-center")}>
+          <NavTooltip label={organizationDisplayName} disabled={isOpen}>
+            <Link
+              href={workspaceModeHref("ws")}
+              className={cn(
+                "flex items-center rounded-xl transition-opacity hover:opacity-80 min-w-0",
+                isOpen ? "gap-2.5 w-full" : "justify-center",
+                isDarkMode ? "text-white" : "text-zinc-950",
+              )}
+            >
+              <div
+                className={cn(
+                  "flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl text-[10px] font-black uppercase",
+                  isDarkMode ? "bg-white text-zinc-950" : "bg-zinc-950 text-white",
+                )}
+              >
+                {account.organization.logo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={account.organization.logo} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  account.organization.initials || getInitials(organizationDisplayName)
+                )}
+              </div>
+              {isOpen && (
+                <span className="truncate text-sm font-black leading-tight flex-1 text-start">
+                  {organizationDisplayName}
+                </span>
+              )}
+            </Link>
+          </NavTooltip>
+        </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-6 scrollbar-none">
-        {navigationGroups.map((group) => (
-          <div key={group.label} className="space-y-0.5">
-            {!isCollapsed && (
-              <h4 className={cn(
-                "mb-2 px-3 text-[10px] font-black uppercase tracking-[0.2em]",
-                isDarkMode ? "text-zinc-600" : "text-zinc-400"
-              )}>{t(`groups.${group.label}`)}</h4>
-            )}
-            {group.items.map((item) => {
-              const itemHref = item.href === "/dashboard" ? workspaceModeHref("ws") : item.href;
-              const isActive = pathname.startsWith(item.href);
-              const itemName = t(item.name);
+        <nav className={cn("flex flex-1 flex-col overflow-y-auto py-3 scrollbar-none", isOpen ? "px-3 gap-0.5" : "items-center gap-0.5")}>
 
-              const content = (
-                <>
-                  <item.icon className={cn(
-                    "h-[18px] w-[18px] transition-all",
-                    isActive ? (isDarkMode ? "text-white" : "text-black") : "group-hover:text-black dark:group-hover:text-white"
-                  )} />
-                  {!isCollapsed && (
-                    <span className="ms-4 min-w-0 flex-1 truncate text-[13px] font-bold tracking-tight transition-all">
-                      {itemName}
-                    </span>
-                  )}
-                </>
-              );
+          {primaryNav.map((item) => {
 
-              const className = cn(
-                "group relative flex h-10 items-center rounded-xl border px-3 transition-all duration-200",
-                isActive
-                  ? (isDarkMode ? "border-white/10 bg-white/[0.07] text-white" : "border-zinc-200 bg-zinc-100 text-black")
-                  : (isDarkMode ? "border-transparent text-zinc-500 hover:border-white/[0.08] hover:text-white" : "border-transparent text-zinc-500 hover:border-black/[0.08] hover:text-black"),
-                isCollapsed && "mx-auto w-10 justify-center px-0"
-              );
+            const isActive =
+              item.href === "/dashboard"
+                ? pathname === "/dashboard" || pathname.startsWith("/dashboard")
+                : pathname.startsWith(item.href);
+            const label = item.name === "dashboard" ? "AI Assistant" : t(item.name);
+            const itemHref = item.href === "/dashboard" ? workspaceModeHref("ws") : item.href;
 
-              return (
+            return (
+              <NavTooltip key={item.name} label={label} disabled={isOpen}>
                 <Link
-                  key={item.name}
                   href={itemHref}
-                  aria-label={isCollapsed ? itemName : undefined}
-                  title={isCollapsed ? itemName : undefined}
-                  className={className}
-                >
-                  {content}
-                </Link>
-              );
-            })}
-          </div>
-        ))}
-      </nav>
-
-      {/* Pinned Section */}
-      <div className={cn(
-        "mt-auto border-t bg-inherit",
-        isDarkMode ? "border-white/[0.08]" : "border-black/[0.08]"
-      )}>
-
-        <div className="space-y-3 p-3 pt-3">
-          {!isCollapsed && organizations.length > 1 && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between px-1">
-                <p className={cn(
-                  "text-[10px] font-black uppercase tracking-[0.2em]",
-                  isDarkMode ? "text-zinc-600" : "text-zinc-400"
-                )}>
-                  {organizationsLabel}
-                </p>
-              </div>
-              <div className="space-y-1">
-                {organizations.map((organization) => {
-                  const isActive = organization.id === account.organization.id;
-                  const isSwitching = switchingOrganizationId === organization.id;
-                  const organizationName = organization.name?.trim() || (locale === "ar" ? "مؤسسة" : "Organization");
-
-                  return (
-                    <button
-                      key={organization.id}
-                      type="button"
-                      onClick={() => switchOrganization(organization.id)}
-                      disabled={isActive || Boolean(switchingOrganizationId)}
-                      className={cn(
-                        "flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-start transition-all",
-                        isActive
-                          ? isDarkMode ? "text-white" : "text-black"
-                          : isDarkMode ? "text-zinc-500 hover:text-white" : "text-zinc-500 hover:text-black",
-                        "disabled:cursor-default disabled:opacity-100"
-                      )}
-                      title={organizationName}
-                    >
-                      <span className={cn(
-                        "flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-lg text-[9px] font-black uppercase",
-                        isActive
-                          ? isDarkMode ? "border border-white text-white" : "border border-black text-black"
-                          : isDarkMode ? "border border-white/[0.08] text-zinc-300" : "border border-black/[0.08] text-zinc-600"
-                      )}>
-                        {organization.logo ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={organization.logo} alt="" className="h-full w-full object-cover" />
-                        ) : (
-                          getInitials(organizationName)
-                        )}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[12px] font-black leading-tight">{organizationName}</span>
-                        <span className={cn(
-                          "mt-0.5 block truncate text-[9px] font-bold uppercase tracking-wider",
-                          isActive ? "text-emerald-500" : isDarkMode ? "text-zinc-600" : "text-zinc-400"
-                        )}>
-                          {isActive ? currentLabel : organization.slug || organization.id}
-                        </span>
-                      </span>
-                      {isSwitching && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-primary" />}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {!isCollapsed && workspaceOrganizationId && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between px-1">
-                <p className={cn(
-                  "text-[10px] font-black uppercase tracking-[0.2em]",
-                  isDarkMode ? "text-zinc-600" : "text-zinc-400"
-                )}>
-                  {threadsLabel}
-                </p>
-                <Link
-                  href={workspaceModeHref("ai")}
+                  aria-label={label}
                   className={cn(
-                      "inline-flex h-6 items-center gap-1 rounded-full px-2 text-[9px] font-black uppercase tracking-wider transition-all",
-                    isDarkMode ? "border border-white/[0.08] text-zinc-400 hover:border-white/20 hover:text-white" : "border border-black/[0.08] text-zinc-500 hover:border-black/20 hover:text-black"
+                    "flex items-center rounded-xl transition-all",
+                    isOpen ? "h-9 w-full px-3 gap-3" : "h-9 w-9 justify-center",
+                    isActive
+                      ? isDarkMode
+                        ? "bg-white/10 text-white"
+                        : "bg-zinc-100 text-zinc-950"
+                      : isDarkMode
+                        ? "text-zinc-500 hover:bg-white/[0.06] hover:text-white"
+                        : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900",
                   )}
                 >
-                  <Plus className="h-3 w-3" />
-                  {newThreadLabel}
+                  <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={isActive ? 2.2 : 1.8} />
+                  {isOpen && <span className="truncate text-sm font-semibold">{label}</span>}
                 </Link>
-              </div>
-              <div className="space-y-1">
-                {visibleAgentThreads.length > 0 ? (
-                  visibleAgentThreads.map((thread) => {
-                    const isActive = activeThreadId === thread.id;
-                    const isDeleting = deletingThreadId === thread.id;
+              </NavTooltip>
+            );
+          })}
 
-                    return (
-                      <div
-                        key={thread.id}
+          {/* Divider */}
+          <div className={cn("my-2 h-px shrink-0", isOpen ? "w-full" : "w-6 self-center", isDarkMode ? "bg-white/[0.08]" : "bg-black/[0.08]")} />
+
+          {/* AI Threads */}
+          {workspaceOrganizationId && (
+            <>
+              {isOpen && (
+                <div className="px-3 pb-1 pt-2 flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">
+                    {locale === "ar" ? "المحادثات" : "Threads"}
+                  </span>
+                  <Link
+                    href={workspaceModeHref("ai")}
+                    className="text-text-muted hover:text-text-primary transition-colors"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Link>
+                </div>
+              )}
+              
+              {!isOpen && (
+                <NavTooltip label={locale === "ar" ? "محادثة جديدة" : "New thread"}>
+                  <Link
+                    href={workspaceModeHref("ai")}
+                    aria-label={locale === "ar" ? "محادثة جديدة" : "New thread"}
+                    className={cn(
+                      "flex h-9 w-9 items-center justify-center rounded-xl transition-all",
+                      isDarkMode
+                        ? "text-zinc-500 hover:bg-white/[0.06] hover:text-white"
+                        : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900",
+                    )}
+                  >
+                    <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} />
+                  </Link>
+                </NavTooltip>
+              )}
+
+              {visibleAgentThreads.map((thread) => {
+                const isActive = activeThreadId === thread.id;
+                const isDeleting = deletingThreadId === thread.id;
+
+                return (
+                  <NavTooltip key={thread.id} label={thread.title} disabled={isOpen}>
+                    <div className={cn("group/thread relative flex items-center min-w-0", isOpen && "w-full")}>
+                      <Link
+                        href={workspaceModeHref("ai", thread.id)}
+                        aria-label={thread.title}
                         className={cn(
-                          "group/thread flex min-h-9 items-center gap-1 rounded-xl transition-all",
+                          "flex items-center rounded-xl transition-all min-w-0",
+                          isOpen ? "h-9 w-full px-3 gap-3" : "h-9 w-9 justify-center",
                           isActive
-                            ? isDarkMode ? "border border-white text-white" : "border border-black text-black"
-                            : isDarkMode ? "border border-transparent text-zinc-500 hover:border-white/[0.08] hover:text-white" : "border border-transparent text-zinc-500 hover:border-black/[0.08] hover:text-black"
+                            ? isDarkMode
+                              ? "bg-white/10 text-white"
+                              : "bg-zinc-100 text-zinc-950"
+                            : isDarkMode
+                              ? "text-zinc-600 hover:bg-white/[0.06] hover:text-white"
+                              : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900",
                         )}
                       >
-                        <Link
-                          href={workspaceModeHref("ai", thread.id)}
-                          className="flex min-w-0 flex-1 items-center gap-2 px-2.5 py-2 text-start"
-                          title={thread.title}
-                        >
-                          <MessageSquareText className={cn(
-                            "h-3.5 w-3.5 shrink-0",
-                            isActive ? "text-primary" : isDarkMode ? "text-zinc-600" : "text-zinc-400"
-                          )} />
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-[11px] font-black leading-tight">{thread.title}</span>
-                          </span>
-                        </Link>
-                        <button
-                          type="button"
-                          aria-label={`${deleteThreadLabel}: ${thread.title}`}
-                          title={deleteThreadLabel}
-                          disabled={isDeleting}
-                          onClick={() => setThreadPendingDelete(thread)}
-                          className={cn(
-                            "me-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg opacity-0 transition-all focus-visible:opacity-100 disabled:opacity-60 group-hover/thread:opacity-100",
-                            isDarkMode ? "text-zinc-500 hover:bg-red-500/10 hover:text-red-300" : "text-zinc-400 hover:bg-red-50 hover:text-red-600",
-                          )}
-                        >
-                          {isDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-                        </button>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <p className={cn(
-                    "rounded-xl px-2.5 py-2 text-[11px] font-semibold",
-                    isDarkMode ? "text-zinc-600" : "text-zinc-400"
-                  )}>
-                    {emptyThreadsLabel}
-                  </p>
-                )}
-                {hasMoreAgentThreads && (
+                        {isDeleting && !isOpen ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <MessageSquareText className="h-[16px] w-[16px] shrink-0" strokeWidth={1.8} />
+                        )}
+                        {isOpen && <span className="truncate text-[13px] font-semibold">{thread.title}</span>}
+                      </Link>
+                      
+                      {/* delete on hover */}
+                      <button
+                        type="button"
+                        onClick={() => setThreadPendingDelete(thread)}
+                        aria-label={`Delete: ${thread.title}`}
+                        className={cn(
+                          "items-center justify-center transition-all",
+                          isOpen
+                            ? "absolute end-2 hidden h-6 w-6 rounded-md group-hover/thread:flex text-text-muted hover:bg-red-500/10 hover:text-red-500"
+                            : "absolute -end-1 -top-1 hidden h-4 w-4 rounded-full text-[8px] group-hover/thread:flex " + (isDarkMode ? "bg-zinc-800 text-zinc-400 hover:bg-red-900 hover:text-red-300" : "bg-zinc-200 text-zinc-500 hover:bg-red-100 hover:text-red-600")
+                        )}
+                      >
+                        {isDeleting && isOpen ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : isOpen ? <Trash2 className="h-3.5 w-3.5" /> : "×"}
+                      </button>
+                    </div>
+                  </NavTooltip>
+                );
+              })}
+
+              <div className="mt-2" />
+              {hasMoreAgentThreads && (
+                <NavTooltip label={locale === "ar" ? "السجل" : "History"} disabled={isOpen}>
                   <button
                     type="button"
                     onClick={() => setThreadHistoryOpen(true)}
                     className={cn(
-                      "flex h-8 w-full items-center justify-center gap-2 rounded-xl px-2 text-[10px] font-black uppercase tracking-wider transition-all",
-                      isDarkMode ? "border border-white/[0.08] text-zinc-400 hover:border-white/20 hover:text-white" : "border border-black/[0.08] text-zinc-500 hover:border-black/20 hover:text-black"
+                      "flex items-center rounded-xl transition-all",
+                      isOpen ? "h-9 w-full px-3 gap-3" : "h-9 w-9 justify-center",
+                      isDarkMode
+                        ? "text-zinc-600 hover:bg-white/[0.06] hover:text-white"
+                        : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900",
                     )}
                   >
-                    <HistoryIcon className="h-3.5 w-3.5" />
-                    {historyLabel}
+                    <HistoryIcon className="h-[16px] w-[16px] shrink-0" strokeWidth={1.8} />
+                    {isOpen && <span className="text-[13px] font-semibold">{locale === "ar" ? "السجل" : "History"}</span>}
                   </button>
-                )}
-              </div>
+                </NavTooltip>
+              )}
+            </>
+          )}
+        </nav>
+
+        {/* Bottom: secondary nav + user avatar */}
+        <div className={cn("flex flex-col border-t border-inherit py-3", isOpen ? "px-3 gap-0.5" : "items-center gap-0.5")}>
+          {secondaryNav.map((item) => {
+            const isActive = pathname.startsWith(item.href);
+            const label = item.name === "organization" ? (locale === "ar" ? "الإعدادات" : "Settings") : t(item.name);
+
+            return (
+              <NavTooltip key={item.name} label={label} disabled={isOpen}>
+                <Link
+                  href={item.href}
+                  aria-label={label}
+                  className={cn(
+                    "flex items-center rounded-xl transition-all",
+                    isOpen ? "h-9 w-full px-3 gap-3" : "h-9 w-9 justify-center",
+                    isActive
+                      ? isDarkMode
+                        ? "bg-white/10 text-white"
+                        : "bg-zinc-100 text-zinc-950"
+                      : isDarkMode
+                        ? "text-zinc-500 hover:bg-white/[0.06] hover:text-white"
+                        : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900",
+                  )}
+                >
+                  <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={isActive ? 2.2 : 1.8} />
+                  {isOpen && <span className="truncate text-sm font-semibold">{label}</span>}
+                </Link>
+              </NavTooltip>
+            );
+          })}
+
+          {/* Multi-org switcher */}
+          {organizations.length > 1 && (
+            <div className={cn("mt-4 flex", isOpen ? "flex-col gap-1 px-3" : "flex-col items-center gap-2")}>
+              {isOpen && <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted mb-1">{locale === "ar" ? "مساحات العمل" : "Workspaces"}</span>}
+              {organizations.map((org) => {
+                const isActive = org.id === account.organization.id;
+                const isSwitching = switchingOrganizationId === org.id;
+                return (
+                  <NavTooltip key={org.id} label={org.name} disabled={isOpen}>
+                    <button
+                      type="button"
+                      onClick={() => switchOrganization(org.id)}
+                      disabled={isActive || Boolean(switchingOrganizationId)}
+                      className={cn(
+                        "flex items-center transition-all disabled:cursor-default",
+                        isOpen ? "w-full gap-2 rounded-xl py-1.5 px-2 text-start" : "h-6 w-6 justify-center overflow-hidden rounded-lg",
+                        isActive
+                          ? isDarkMode
+                            ? isOpen ? "bg-white/10 text-white" : "border border-white text-white"
+                            : isOpen ? "bg-zinc-100 text-zinc-900" : "border border-zinc-900 text-zinc-900"
+                          : isDarkMode
+                            ? isOpen ? "text-zinc-500 hover:bg-white/[0.06] hover:text-white" : "border border-white/[0.08] text-zinc-500 hover:border-white/20 hover:text-white"
+                            : isOpen ? "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900" : "border border-black/[0.08] text-zinc-400 hover:border-black/20 hover:text-black",
+                      )}
+                    >
+                      <span className={cn("flex shrink-0 items-center justify-center overflow-hidden font-black uppercase", isOpen ? "h-6 w-6 rounded-lg text-[9px] border border-inherit" : "h-full w-full text-[8px]")}>
+                        {isSwitching && !isOpen ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : org.logo ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={org.logo} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          getInitials(org.name)
+                        )}
+                      </span>
+                      {isOpen && (
+                        <span className="min-w-0 flex-1 flex items-center justify-between gap-2">
+                          <span className="truncate text-xs font-bold">{org.name}</span>
+                          {isSwitching && <Loader2 className="h-3 w-3 animate-spin text-text-muted" />}
+                        </span>
+                      )}
+                    </button>
+                  </NavTooltip>
+                );
+              })}
             </div>
           )}
 
-          <div
-            className={cn(
-              "block rounded-2xl transition-all",
-              isCollapsed && "mx-auto flex h-10 w-10 items-center justify-center rounded-full"
-            )}
-          >
-            {!isCollapsed && (
-              <Link
-                href="/settings/organization"
-                className={cn(
-                  "mb-2 block rounded-2xl border p-3 transition-all",
-                  isDarkMode ? "border-white/[0.08] bg-transparent hover:border-white/20" : "border-black/[0.08] bg-transparent hover:border-black/20"
-                )}
-              >
-                <div className="flex items-start gap-2.5">
-                  <div className={cn(
-                    "flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl text-[10px] font-black uppercase",
-                    isDarkMode ? "border border-white/[0.08] text-white" : "border border-black/[0.08] text-black"
-                  )}>
-                    {account.organization.logo ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={account.organization.logo}
-                        alt={organizationDisplayName}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      account.organization.initials || <Building2 className="h-4 w-4" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className={cn(
-                        "truncate text-[13px] font-black tracking-tight",
-                        isDarkMode ? "text-white" : "text-zinc-900"
-                      )}
-                      title={organizationDisplayName}
-                    >
-                      {organizationDisplayName}
-                    </p>
-                    <div className="mt-1 flex items-center gap-1.5">
-                      <ShieldCheck className="h-3 w-3 shrink-0 text-emerald-500" />
-                      <span
-                        className={cn(
-                          "truncate text-[10px] font-bold uppercase tracking-wider",
-                          isDarkMode ? "text-zinc-500" : "text-zinc-400"
-                        )}
-                        title={locale === "ar" ? "إعدادات المؤسسة" : "Organization settings"}
-                      >
-                        {locale === "ar" ? "إعدادات المؤسسة" : "Organization settings"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            )}
-
+          {/* User Avatar */}
+          <NavTooltip label={account.user.name} disabled={isOpen}>
             <Link
               href="/profile/settings"
-              aria-label={isCollapsed ? account.user.name : undefined}
-              title={isCollapsed ? account.user.name : undefined}
-              className={cn(
-                "group flex items-center gap-3 rounded-2xl transition-all",
-                isDarkMode ? "hover:text-white" : "hover:text-black",
-                isCollapsed ? "justify-center" : "px-1.5 py-1.5"
-              )}
+              aria-label={account.user.name}
+              className={cn("mt-4 flex items-center transition-all hover:opacity-80", isOpen ? "gap-3 px-3 py-2 rounded-xl" : "")}
             >
               <IdentityAvatar
                 image={account.user.image}
                 initials={account.user.initials}
                 name={account.user.name}
                 isDarkMode={isDarkMode}
+                size={isOpen ? "md" : "sm"}
               />
-              {!isCollapsed && (
-                <>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <p className={cn(
-                        "max-w-[9.5rem] truncate text-sm font-black leading-tight",
-                        isDarkMode ? "text-white" : "text-zinc-900"
-                      )} title={account.user.name}>
-                        {account.user.name}
-                      </p>
-                      <span className={cn(
-                        "hidden max-w-[6.5rem] shrink-0 truncate rounded-full px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider sm:inline-flex",
-                        isDarkMode ? "bg-white/10 text-zinc-400" : "bg-zinc-100 text-zinc-500"
-                      )} title={organizationDisplayName}>
-                        {locale === "ar" ? "فريق" : "Team"}
-                      </span>
-                    </div>
-                    <div className="mt-1 flex min-w-0 items-center gap-1.5">
-                      <Mail className={cn(
-                        "h-3 w-3 shrink-0",
-                        isDarkMode ? "text-zinc-600" : "text-zinc-400"
-                      )} />
-                      <p className={cn(
-                        "max-w-[14rem] truncate text-[11px] font-semibold",
-                        isDarkMode ? "text-zinc-500" : "text-zinc-500"
-                      )} title={account.user.email}>
-                        {account.user.email}
-                      </p>
-                    </div>
-                  </div>
-                  <MoreHorizontal className="me-1 h-4 w-4 shrink-0 text-zinc-400 transition-colors group-hover:text-zinc-900 dark:group-hover:text-white" />
-                </>
+              {isOpen && (
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-black leading-tight text-text-primary">{account.user.name}</p>
+                  <p className="truncate text-[11px] font-semibold text-text-muted">{account.user.email}</p>
+                </div>
               )}
             </Link>
-          </div>
+          </NavTooltip>
         </div>
-      </div>
+      </aside>
+
+      {/* Thread History Dialog */}
       <Dialog open={threadHistoryOpen} onOpenChange={setThreadHistoryOpen}>
         <DialogContent className="max-w-lg gap-4 rounded-2xl p-5">
           <DialogHeader>
-            <DialogTitle>{threadHistoryTitle}</DialogTitle>
-            <DialogDescription>{threadHistoryDescription}</DialogDescription>
+            <DialogTitle>{locale === "ar" ? "سجل المحادثات" : "Thread history"}</DialogTitle>
+            <DialogDescription>
+              {locale === "ar"
+                ? "ابحث في محادثات الذكاء لهذه المساحة."
+                : "Search AI threads for this workspace."}
+            </DialogDescription>
           </DialogHeader>
           <div className="relative">
             <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
             <Input
               value={threadSearch}
-              onChange={(event) => setThreadSearch(event.target.value)}
-              placeholder={threadSearchPlaceholder}
+              onChange={(e) => setThreadSearch(e.target.value)}
+              placeholder={locale === "ar" ? "ابحث في المحادثات..." : "Search threads..."}
               className="rounded-xl ps-9"
             />
           </div>
@@ -621,7 +530,6 @@ export function Sidebar() {
               filteredAgentThreads.map((thread) => {
                 const isActive = activeThreadId === thread.id;
                 const isDeleting = deletingThreadId === thread.id;
-
                 return (
                   <div
                     key={thread.id}
@@ -629,7 +537,7 @@ export function Sidebar() {
                       "group/thread flex min-h-11 items-center gap-1 rounded-xl transition-all",
                       isActive
                         ? "bg-primary/10 text-zinc-950 dark:bg-primary/20 dark:text-white"
-                        : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white"
+                        : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white",
                     )}
                   >
                     <Link
@@ -638,18 +546,22 @@ export function Sidebar() {
                       className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2 text-start"
                       title={thread.title}
                     >
-                      <MessageSquareText className={cn("h-4 w-4 shrink-0", isActive ? "text-primary" : "text-zinc-400")} />
+                      <MessageSquareText
+                        className={cn("h-4 w-4 shrink-0", isActive ? "text-primary" : "text-zinc-400")}
+                      />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-black leading-tight">{thread.title}</span>
                         <span className="mt-1 block text-[10px] font-bold uppercase tracking-wider text-zinc-400">
-                          {new Date(thread.lastMessageAt).toLocaleDateString(locale, { month: "short", day: "numeric" })}
+                          {new Date(thread.lastMessageAt).toLocaleDateString(locale, {
+                            month: "short",
+                            day: "numeric",
+                          })}
                         </span>
                       </span>
                     </Link>
                     <button
                       type="button"
-                      aria-label={`${deleteThreadLabel}: ${thread.title}`}
-                      title={deleteThreadLabel}
+                      aria-label={`Delete: ${thread.title}`}
                       disabled={isDeleting}
                       onClick={() => setThreadPendingDelete(thread)}
                       className="me-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-zinc-400 opacity-0 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:opacity-100 disabled:opacity-60 group-hover/thread:opacity-100 dark:hover:bg-red-500/10 dark:hover:text-red-300"
@@ -661,41 +573,50 @@ export function Sidebar() {
               })
             ) : (
               <p className="rounded-xl bg-zinc-50 px-3 py-6 text-center text-sm font-semibold text-zinc-400 dark:bg-white/5">
-                {emptyThreadsLabel}
+                {locale === "ar" ? "لا توجد محادثات بعد" : "No threads yet"}
               </p>
             )}
           </div>
         </DialogContent>
       </Dialog>
-      <AlertDialog open={Boolean(threadPendingDelete)} onOpenChange={(open) => {
-        if (!open && !deletingThreadId) setThreadPendingDelete(null);
-      }}>
+
+      {/* Delete Thread Alert */}
+      <AlertDialog
+        open={Boolean(threadPendingDelete)}
+        onOpenChange={(open) => {
+          if (!open && !deletingThreadId) setThreadPendingDelete(null);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{deleteThreadTitle}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {locale === "ar" ? "حذف المحادثة؟" : "Delete this conversation?"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {deleteThreadDescription}
+              {locale === "ar"
+                ? "سيتم حذف هذه المحادثة ورسائلها وسجل تشغيل الذكاء نهائيا."
+                : "This permanently deletes the conversation, messages, and agent run history."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={Boolean(deletingThreadId)}>
-              {deleteThreadCancelLabel}
+              {locale === "ar" ? "إلغاء" : "Cancel"}
             </AlertDialogCancel>
             <AlertDialogAction
               disabled={Boolean(deletingThreadId)}
-              onClick={(event) => {
-                event.preventDefault();
+              onClick={(e) => {
+                e.preventDefault();
                 void deleteSelectedThread();
               }}
               className="bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500/20 dark:bg-red-500 dark:text-white dark:hover:bg-red-400"
             >
               {deletingThreadId ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-              {deleteThreadConfirmLabel}
+              {locale === "ar" ? "حذف" : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </aside>
+    </>
   );
 }
 
@@ -704,17 +625,22 @@ function IdentityAvatar({
   initials,
   name,
   isDarkMode,
+  size = "sm",
 }: {
   image: string | null;
   initials: string;
   name: string;
   isDarkMode: boolean;
+  size?: "sm" | "md";
 }) {
   return (
     <div
       className={cn(
-        "relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border text-[11px] font-black uppercase",
-        isDarkMode ? "border-white/10 bg-white/10 text-white" : "border-zinc-200 bg-zinc-100 text-zinc-700"
+        "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full border font-black uppercase transition-opacity",
+        isDarkMode
+          ? "border-white/10 bg-white/10 text-white"
+          : "border-zinc-200 bg-zinc-100 text-zinc-700",
+        size === "sm" ? "h-7 w-7 text-[10px]" : "h-9 w-9 text-xs"
       )}
     >
       {image ? (

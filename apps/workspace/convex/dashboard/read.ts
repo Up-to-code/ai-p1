@@ -46,9 +46,6 @@ export const overview = query({
       allProjects,
       activeProjects,
       blockedProjects,
-      approvedAssets,
-      reviewAssets,
-      draftAssets,
       tasks,
       events,
     ] = await Promise.all([
@@ -70,18 +67,6 @@ export const overview = query({
         .withIndex("by_organization_health", (q) => q.eq("organizationId", args.organizationId).eq("health", "blocked"))
         .take(MAX_DASHBOARD_COUNT_SCAN),
       ctx.db
-        .query("assets")
-        .withIndex("by_organization_status", (q) => q.eq("organizationId", args.organizationId).eq("status", "approved"))
-        .take(MAX_DASHBOARD_COUNT_SCAN),
-      ctx.db
-        .query("assets")
-        .withIndex("by_organization_status", (q) => q.eq("organizationId", args.organizationId).eq("status", "review"))
-        .take(MAX_DASHBOARD_COUNT_SCAN),
-      ctx.db
-        .query("assets")
-        .withIndex("by_organization_status", (q) => q.eq("organizationId", args.organizationId).eq("status", "draft"))
-        .take(MAX_DASHBOARD_COUNT_SCAN),
-      ctx.db
         .query("tasks")
         .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
         .take(MAX_DASHBOARD_RANGE_ITEMS),
@@ -97,9 +82,6 @@ export const overview = query({
         allProjects,
         activeProjects,
         blockedProjects,
-        approvedAssets,
-        reviewAssets,
-        draftAssets,
         tasks,
         events,
       },

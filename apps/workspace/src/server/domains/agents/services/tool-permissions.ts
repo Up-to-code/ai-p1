@@ -18,10 +18,6 @@ export type AgentOrganizationCapabilities = {
   canCreateClients: boolean;
   canUpdateClients: boolean;
   canDeleteClients: boolean;
-  canReadProperties: boolean;
-  canCreateProperties: boolean;
-  canUpdateProperties: boolean;
-  canDeleteProperties: boolean;
   canReadProjects: boolean;
   canCreateProjects: boolean;
   canUpdateProjects: boolean;
@@ -63,12 +59,6 @@ export function agentToolPermissionsFromCapabilities(capabilities: AgentOrganiza
       capabilities.canCreateClients && "create",
       capabilities.canUpdateClients && "update",
       capabilities.canDeleteClients && "delete",
-    ],
-    asset: [
-      capabilities.canReadProperties && "read",
-      capabilities.canCreateProperties && "create",
-      capabilities.canUpdateProperties && "update",
-      capabilities.canDeleteProperties && "delete",
     ],
     project: [
       capabilities.canReadProjects && "read",

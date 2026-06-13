@@ -70,7 +70,6 @@ export type OrganizationInviteLink = {
 export type McpPermissionResource =
   | "organization"
   | "client"
-  | "asset"
   | "project"
   | "calendar"
   | "task"
@@ -81,7 +80,6 @@ export type McpPermissionAction = "read" | "create" | "update" | "delete";
 export type OrganizationApiKeyResource =
   | "organization"
   | "client"
-  | "asset"
   | "project"
   | "calendar"
   | "task"

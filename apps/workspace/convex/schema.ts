@@ -7,7 +7,6 @@ const workOsRecordResourceValidator = v.union(
   v.literal("project"),
   v.literal("task"),
   v.literal("calendarEvent"),
-  v.literal("asset"),
 );
 
 const workOsCustomFieldTypeValidator = v.union(
@@ -222,7 +221,6 @@ export default defineSchema({
     target: v.union(
       v.literal("clientsDeletedFlag"),
       v.literal("projectsDeletedFlag"),
-      v.literal("assetsDeletedFlag"),
       v.literal("clientPii"),
       v.literal("webhookDeliveries"),
       v.literal("inboundEvents"),
@@ -253,6 +251,18 @@ export default defineSchema({
   })
     .index("by_job", ["jobId", "createdAt"])
     .index("by_target_created", ["target", "createdAt"]),
+  migrationArchives: defineTable({
+    organizationId: v.string(),
+    migrationKey: v.string(),
+    sourceTable: v.string(),
+    sourceId: v.string(),
+    payload: v.any(),
+    archivedByUserId: v.string(),
+    archivedAt: v.number(),
+  })
+    .index("by_migration", ["migrationKey", "archivedAt"])
+    .index("by_source", ["sourceTable", "sourceId"])
+    .index("by_organization_migration", ["organizationId", "migrationKey"]),
   organizationMcpConnections: defineTable({
     organizationId: v.string(),
     publicId: v.string(),
@@ -264,8 +274,6 @@ export default defineSchema({
       resource: v.union(
         v.literal("organization"),
         v.literal("client"),
-        v.literal("property"),
-        v.literal("asset"),
         v.literal("project"),
         v.literal("calendar"),
         v.literal("task"),
@@ -304,7 +312,6 @@ export default defineSchema({
       resource: v.union(
         v.literal("organization"),
         v.literal("client"),
-        v.literal("asset"),
         v.literal("project"),
         v.literal("calendar"),
         v.literal("task"),
@@ -411,7 +418,6 @@ export default defineSchema({
     partnerAppId: v.string(),
     resourceType: v.union(
       v.literal("client"),
-      v.literal("asset"),
       v.literal("project"),
       v.literal("calendar"),
       v.literal("task"),
@@ -741,6 +747,11 @@ export default defineSchema({
     description: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
     customFields: v.optional(v.array(workOsCustomFieldValueValidator)),
+    isStrict: v.optional(v.boolean()),
+    isRollupEnabled: v.optional(v.boolean()),
+    templateId: v.optional(v.string()),
+    customTabs: v.optional(v.array(v.string())),
+    progress: v.optional(v.number()),
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -755,45 +766,6 @@ export default defineSchema({
     .index("by_organization_deleted_status_updated", ["organizationId", "isDeleted", "status", "updatedAt"])
     .index("by_client", ["organizationId", "clientId"])
     .index("by_opportunity", ["organizationId", "opportunityId"])
-    .index("by_organization_updated", ["organizationId", "updatedAt"])
-    .index("by_updated", ["updatedAt"]),
-  assets: defineTable({
-    organizationId: v.string(),
-    name: v.string(),
-    projectId: v.optional(v.id("projects")),
-    project: v.optional(v.string()),
-    type: v.string(),
-    status: v.union(
-      v.literal("available"),
-      v.literal("pending"),
-      v.literal("reserved"),
-      v.literal("sold"),
-      v.literal("draft"),
-      v.literal("active"),
-      v.literal("review"),
-      v.literal("approved"),
-      v.literal("archived"),
-    ),
-    ownerUserId: v.string(),
-    visibility: v.optional(v.union(v.literal("private"), v.literal("team"), v.literal("workspace"))),
-    fileId: v.optional(v.string()),
-    url: v.optional(v.string()),
-    description: v.optional(v.string()),
-    metadata: v.optional(v.any()),
-    tags: v.optional(v.array(v.string())),
-    customFields: v.optional(v.array(workOsCustomFieldValueValidator)),
-    createdByUserId: v.string(),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-    deletedAt: v.optional(v.number()),
-    isDeleted: v.optional(v.boolean()),
-  })
-    .index("by_organization_id", ["organizationId"])
-    .index("by_organization_status", ["organizationId", "status"])
-    .index("by_organization_type", ["organizationId", "type"])
-    .index("by_organization_owner", ["organizationId", "ownerUserId"])
-    .index("by_organization_deleted_updated", ["organizationId", "isDeleted", "updatedAt"])
-    .index("by_organization_deleted_status_updated", ["organizationId", "isDeleted", "status", "updatedAt"])
     .index("by_organization_updated", ["organizationId", "updatedAt"])
     .index("by_updated", ["updatedAt"]),
   clients: defineTable({
@@ -1049,6 +1021,9 @@ export default defineSchema({
     organizationId: v.string(),
     title: v.string(),
     ownerUserId: v.optional(v.string()),
+    clientId: v.optional(v.string()),
+    projectId: v.optional(v.string()),
+    taskId: v.optional(v.string()),
     startAt: v.number(),
     endAt: v.number(),
     type: v.union(
@@ -1073,6 +1048,8 @@ export default defineSchema({
   })
     .index("by_organization_id", ["organizationId"])
     .index("by_organization_owner", ["organizationId", "ownerUserId"])
+    .index("by_organization_project", ["organizationId", "projectId"])
+    .index("by_organization_client", ["organizationId", "clientId"])
     .index("by_start", ["organizationId", "startAt"])
     .index("by_updated", ["updatedAt"]),
   mediaAssets: defineTable({
@@ -1085,7 +1062,6 @@ export default defineSchema({
     kind: v.union(v.literal("image"), v.literal("video"), v.literal("document")),
     resourceType: v.union(
       v.literal("project"),
-      v.literal("asset"),
       v.literal("client"),
       v.literal("calendarEvent"),
       v.literal("task"),
@@ -1109,7 +1085,6 @@ export default defineSchema({
     organizationId: v.string(),
     resourceType: v.union(
       v.literal("project"),
-      v.literal("asset"),
       v.literal("client"),
       v.literal("calendarEvent"),
       v.literal("task"),

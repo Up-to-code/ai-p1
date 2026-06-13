@@ -18,7 +18,6 @@ const DEFAULT_LIMIT = 100;
 const apiKeyResourceValidator = v.union(
   v.literal("organization"),
   v.literal("client"),
-  v.literal("asset"),
   v.literal("project"),
   v.literal("calendar"),
   v.literal("task"),

@@ -22,6 +22,9 @@ export interface AppToolbarFilter {
   value: string;
   label: string;
   icon?: LucideIcon;
+  emoji?: string;
+  /** Hex or CSS color applied to the icon and active underline */
+  iconColor?: string;
 }
 
 export interface AppDataTableColumn<T> {
@@ -462,16 +465,28 @@ export function AppThumbnailCell({ src, alt, title, meta }: AppThumbnailCellProp
 export function AppTabsList({ tabs, className }: AppTabsListProps) {
   return (
     <div className="border-b border-zinc-100 dark:border-white/5">
-      <TabsList className={cn("scrollbar-none h-10 w-full justify-start gap-10 overflow-x-auto rounded-none bg-transparent p-0", className)}>
+      <TabsList className={cn("scrollbar-none h-10 w-full justify-start gap-6 overflow-x-auto rounded-none bg-transparent p-0", className)}>
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
             <TabsTrigger
               key={tab.value}
               value={tab.value}
-              className="relative h-10 flex-none rounded-none border-0 bg-transparent px-0 text-[10px] font-black uppercase tracking-[0.35em] shadow-none transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-zinc-900 after:opacity-0 hover:text-zinc-600 data-active:bg-transparent data-active:text-zinc-900 data-active:after:opacity-100 dark:after:bg-white dark:data-active:bg-transparent dark:data-active:text-white dark:hover:text-zinc-300"
+              style={{ "--tab-color": tab.iconColor ?? "currentColor" } as React.CSSProperties}
+              className="group relative h-10 flex-none rounded-none border-0 bg-transparent px-0 text-sm font-medium shadow-none transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:opacity-0 after:transition-opacity text-[#787774] hover:text-[#37352F] data-active:bg-transparent data-active:text-[#37352F] data-active:after:opacity-100 dark:text-[#9B9A97] dark:data-active:text-[#FFFFFF] dark:hover:text-[#FFFFFF]"
             >
-              {Icon && <Icon className="me-2 h-3.5 w-3.5" />}
+              {/* Colored underline via inline var */}
+              <span
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-0.5 opacity-0 transition-opacity group-data-active:opacity-100"
+                style={{ backgroundColor: tab.iconColor ?? ("var(--foreground)") }}
+              />
+              {tab.emoji && <span className="me-1.5 text-base leading-none">{tab.emoji}</span>}
+              {Icon && !tab.emoji && (
+                <Icon
+                  className="me-1.5 h-3.5 w-3.5 transition-colors"
+                  style={{ color: tab.iconColor }}
+                />
+              )}
               {tab.label}
             </TabsTrigger>
           );

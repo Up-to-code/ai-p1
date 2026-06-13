@@ -149,6 +149,28 @@ export const options = query({
   },
 });
 
+export const listByClient = query({
+  args: {
+    organizationId: v.string(),
+    clientId: v.id("clients"),
+    limit: v.optional(v.number()),
+  },
+  returns: v.array(projectValidator),
+  handler: async (ctx, args) => {
+    await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "read");
+    const limit = boundedWorkspaceReadLimit(args.limit, 100, 200);
+    const client = await ctx.db.get(args.clientId);
+    if (!client || client.organizationId !== args.organizationId || client.deletedAt) return [];
+
+    const projects = await ctx.db
+      .query("projects")
+      .withIndex("by_client", (q) => q.eq("organizationId", args.organizationId).eq("clientId", args.clientId))
+      .take(limit);
+
+    return Promise.all(activeUpdatedWorkspaceRows(projects).map((project) => presentProjectListItem(ctx, project)));
+  },
+});
+
 export const get = query({
   args: { organizationId: v.string(), projectId: v.id("projects") },
   returns: v.union(projectValidator, v.null()),

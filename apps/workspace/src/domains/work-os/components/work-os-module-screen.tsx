@@ -2,8 +2,9 @@
 
 import { AppPageHeader, AppPageShell, AppSection, AppStatsGrid } from "@/components/shared";
 import { AppPrimaryButton } from "@/components/shared";
-import { CalendarDays, KanbanSquare, ListTodo, Package, Plus, Workflow } from "lucide-react";
+import { CalendarDays, KanbanSquare, ListTodo, Package, Plus, Workflow, Lock } from "lucide-react";
 import type { ComponentProps } from "react";
+import { useLocale } from "next-intl";
 
 type WorkOsModuleKind = "opportunities" | "tasks" | "automations";
 
@@ -61,9 +62,11 @@ const moduleIcons: Record<WorkOsModuleKind, ComponentProps<typeof AppStatsGrid>[
 export function WorkOsModuleScreen({ kind }: { kind: WorkOsModuleKind }) {
   const copy = moduleCopy[kind];
   const icons = moduleIcons[kind];
+  const locale = useLocale();
+  const isAr = locale === "ar";
 
   return (
-    <AppPageShell maxWidth="full" contentClassName="space-y-8">
+    <AppPageShell maxWidth="full" contentClassName="space-y-6">
       <AppPageHeader
         eyebrow={copy.eyebrow}
         title={copy.title}
@@ -75,17 +78,30 @@ export function WorkOsModuleScreen({ kind }: { kind: WorkOsModuleKind }) {
           </AppPrimaryButton>
         )}
       />
-      <AppStatsGrid
-        stats={copy.stats.map((stat, index) => ({
-          ...stat,
-          icon: icons[index],
-        }))}
-      />
-      <AppSection title="Workspace view" description="Table and board views will connect to the Work OS schema in the next backend pass.">
-        <div className="grid min-h-52 place-items-center rounded-2xl border border-dashed border-zinc-200 text-center dark:border-white/10">
-          <p className="text-xs font-bold text-zinc-400">No records yet</p>
+      <div className="relative">
+        <div className="opacity-40 blur-[8px] pointer-events-none select-none grayscale-[0.2] transition-all space-y-8">
+
+          <AppSection title="Workspace view" description="Table and board views will connect to the Work OS schema in the next backend pass.">
+            <div className="grid min-h-52 place-items-center rounded-2xl border border-dashed border-zinc-200 text-center dark:border-white/10">
+              <p className="text-xs font-bold text-zinc-400">No records yet</p>
+            </div>
+          </AppSection>
         </div>
-      </AppSection>
+        <div className="absolute inset-0 z-10 flex items-center justify-center p-6 min-h-[400px]">
+          <div className="flex max-w-sm flex-col items-center gap-4 rounded-[20px] border border-zinc-200/80 bg-white/90 p-8 text-center shadow-xl backdrop-blur-xl dark:border-white/[0.08] dark:bg-zinc-950/90 dark:shadow-black/40">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-sky-600 dark:bg-sky-500/10 dark:text-sky-400">
+              <Lock className="h-3.5 w-3.5" />
+              {isAr ? "قريباً" : "Coming soon"}
+            </span>
+            <h3 className="text-xl font-black tracking-tight text-zinc-950 dark:text-white">
+              {copy.title}
+            </h3>
+            <p className="text-sm font-medium leading-relaxed text-zinc-500 dark:text-zinc-400">
+              {isAr ? `نعمل على تجهيز ${copy.title}. سيكون متاحاً قريباً.` : `We're setting up ${copy.title}. It will be available shortly.`}
+            </p>
+          </div>
+        </div>
+      </div>
     </AppPageShell>
   );
 }

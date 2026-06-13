@@ -3,7 +3,6 @@ import { z } from "zod";
 const organizationApiKeyResourceSchema = z.enum([
   "organization",
   "client",
-  "asset",
   "project",
   "calendar",
   "task",

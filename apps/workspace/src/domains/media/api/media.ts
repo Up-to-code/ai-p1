@@ -10,7 +10,7 @@ import {
 } from "@/domains/organization/api/organization-request";
 
 export type MediaKind = "image" | "video" | "document";
-export type MediaResourceType = "project" | "asset" | "client" | "calendarEvent" | "task";
+export type MediaResourceType = "project" | "client" | "calendarEvent" | "task";
 export type MediaShareVisibility = "private" | "public";
 export type MediaAsset = {
   _id: Id<"mediaAssets">;
@@ -99,7 +99,7 @@ export async function uploadAndAttachMedia(params: {
 }) {
   if (params.files.length === 0) return [];
 
-  const endpoint = params.resourceType === "project" ? "projectMedia" : params.resourceType === "client" ? "clientMedia" : "assetMedia";
+  const endpoint = params.resourceType === "project" ? "projectMedia" : "clientMedia";
   const uploaded = await uploadFiles(endpoint, {
     files: params.files,
     input: { organizationId: params.organizationId },

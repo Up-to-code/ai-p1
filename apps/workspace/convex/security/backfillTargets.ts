@@ -10,7 +10,6 @@ import { protectClientPii } from "./clientPii";
 export const BACKFILL_TARGETS = [
   "clientsDeletedFlag",
   "projectsDeletedFlag",
-  "assetsDeletedFlag",
   "clientPii",
   "webhookDeliveries",
   "inboundEvents",
@@ -37,7 +36,6 @@ type BackfillTargetAdapter = {
   table:
     | "clients"
     | "projects"
-    | "assets"
     | "partnerWebhookDeliveries"
     | "partnerInboundEvents"
     | "agentMessages"
@@ -64,7 +62,6 @@ function deletedFlagAdapter(table: BackfillTargetAdapter["table"]): BackfillTarg
 const targetAdapters = {
   clientsDeletedFlag: deletedFlagAdapter("clients"),
   projectsDeletedFlag: deletedFlagAdapter("projects"),
-  assetsDeletedFlag: deletedFlagAdapter("assets"),
   clientPii: {
     table: "clients",
     isProtected: (row) => Boolean(row.encryptedEmail || row.encryptedPhone),

@@ -19,7 +19,12 @@
   "submit": {
     "production": {
       "ios": {
-        "ascAppId": "6774202692"
+        "ascAppId": "6774202692",
+        "appName": "Qentrah",
+        "bundleIdentifier": "com.qentrah.mobile",
+        "language": "en-US",
+        "metadataPath": "./store.config.json",
+        "sku": "qentrah-mobile"
       }
     }
   }

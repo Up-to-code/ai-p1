@@ -13,7 +13,6 @@ export type McpPermissionResource =
   | "member"
   | "role"
   | "client"
-  | "asset"
   | "project"
   | "calendar"
   | "task"
@@ -47,7 +46,6 @@ const listSearch = z.string().trim().max(160).optional();
 const listCursor = z.string().nullable().optional();
 const clientType = z.enum(["person", "organization"]).optional();
 const clientStatus = z.enum(["new", "active", "nurture", "inactive", "archived"]).optional();
-const assetStatus = z.enum(["draft", "active", "review", "approved", "archived"]).optional();
 const projectStatus = z.enum(["planned", "active", "paused", "completed", "archived"]).optional();
 const projectHealth = z.enum(["onTrack", "atRisk", "blocked"]).optional();
 const calendarType = z.enum(["meeting", "deadline", "reminder", "milestone", "focusBlock"]).optional();
@@ -209,98 +207,6 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     destructive: true,
   },
   {
-    name: "clients_link_asset",
-    title: "Link client to asset",
-    description: "Connect a client with a specific asset.",
-    resource: "client",
-    action: "update",
-    inputSchema: { clientId: id, assetId: id, status: z.string().optional(), notes: maybeText },
-  },
-  {
-    name: "clients_unlink_asset",
-    title: "Unlink client from asset",
-    description: "Remove a client-asset link.",
-    resource: "client",
-    action: "update",
-    inputSchema: { clientId: id, assetId: id },
-  },
-  {
-    name: "assets_list",
-    title: "List assets",
-    description: "List active assets.",
-    resource: "asset",
-    action: "read",
-    inputSchema: { limit: listLimit, search: listSearch, cursor: listCursor },
-  },
-  {
-    name: "assets_get",
-    title: "Get asset",
-    description: "Get one asset.",
-    resource: "asset",
-    action: "read",
-    inputSchema: { assetId: id },
-  },
-  {
-    name: "assets_open",
-    title: "Open asset",
-    description: "Get asset details plus the app URL.",
-    resource: "asset",
-    action: "read",
-    inputSchema: { assetId: id },
-  },
-  {
-    name: "assets_create",
-    title: "Create asset",
-    description: "Create a new asset.",
-    resource: "asset",
-    action: "create",
-    inputSchema: {
-      name: maybeText,
-      title: maybeText,
-      type: id,
-      status: assetStatus,
-      url: maybeText,
-      fileId: maybeText,
-      description: maybeText,
-      projectId: maybeText,
-    },
-  },
-  {
-    name: "assets_update",
-    title: "Update asset",
-    description: "Update an asset.",
-    resource: "asset",
-    action: "update",
-    inputSchema: {
-      assetId: id,
-      name: maybeText,
-      title: maybeText,
-      type: maybeText,
-      status: assetStatus,
-      url: maybeText,
-      fileId: maybeText,
-      description: maybeText,
-      projectId: maybeText,
-    },
-  },
-  {
-    name: "assets_update_field",
-    title: "Update one asset field",
-    description: "Edit a specific point in an asset record.",
-    resource: "asset",
-    action: "update",
-    inputSchema: { assetId: id, field: z.string().min(1), value: z.union([z.string(), z.number(), z.boolean()]) },
-  },
-  {
-    name: "assets_delete",
-    title: "Delete asset",
-    description: "Soft delete an asset.",
-    resource: "asset",
-    action: "delete",
-    inputSchema: { assetId: id },
-    destructive: true,
-  },
-  {
     name: "projects_list",
     title: "List projects",
     description: "List active projects.",
@@ -319,11 +225,13 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
   {
     name: "projects_create",
     title: "Create project",
-    description: "Create a project.",
+    description: "Create a client delivery project. Prefer setting clientId when the client is known.",
     resource: "project",
     action: "create",
     inputSchema: {
       name: id,
+      clientId: maybeText,
+      opportunityId: maybeText,
       status: projectStatus,
       health: projectHealth,
       budget: z.number().optional(),
@@ -340,6 +248,8 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     inputSchema: {
       projectId: id,
       name: maybeText,
+      clientId: maybeText,
+      opportunityId: maybeText,
       status: projectStatus,
       health: projectHealth,
       budget: z.number().optional(),
@@ -391,7 +301,7 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
   {
     name: "calendar_create",
     title: "Create calendar event",
-    description: "Schedule time with client, asset, project, or task context.",
+    description: "Schedule time with client, project, or task context.",
     resource: "calendar",
     action: "create",
     inputSchema: {
@@ -563,7 +473,7 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     resource: "media",
     action: "create",
     inputSchema: {
-      resourceType: z.enum(["project", "asset", "client", "calendarEvent", "task"]),
+      resourceType: z.enum(["project", "client", "calendarEvent", "task"]),
       resourceId: id,
       name: id,
       url: id,
