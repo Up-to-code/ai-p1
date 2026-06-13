@@ -55,7 +55,7 @@ export const purgeAllLegacyAssetMedia = internalMutation({
     const allMedia = await ctx.db.query("mediaAssets").collect();
     let deletedMediaAssets = 0;
     for (const media of allMedia) {
-      if (media.resourceType === "asset") {
+      if ((media.resourceType as string) === "asset") {
         await ctx.db.delete(media._id);
         deletedMediaAssets += 1;
       }
@@ -64,7 +64,7 @@ export const purgeAllLegacyAssetMedia = internalMutation({
     const allFolders = await ctx.db.query("mediaFolders").collect();
     let patchedMediaFolders = 0;
     for (const folder of allFolders) {
-      if (folder.resourceType === "asset" && !folder.deletedAt) {
+      if ((folder.resourceType as string) === "asset" && !folder.deletedAt) {
         await ctx.db.patch(folder._id, { deletedAt: now, updatedAt: now });
         patchedMediaFolders += 1;
       }
@@ -93,7 +93,7 @@ export const purgeAllLegacyAssetMedia = internalMutation({
     const recordLinks = await ctx.db.query("recordLinks").collect();
     let patchedRecordLinks = 0;
     for (const link of recordLinks) {
-      if (link.sourceRecordType === "asset" || link.targetRecordType === "asset") {
+      if ((link.sourceRecordType as string) === "asset" || (link.targetRecordType as string) === "asset") {
         await ctx.db.delete(link._id);
         patchedRecordLinks += 1;
       }
@@ -102,7 +102,7 @@ export const purgeAllLegacyAssetMedia = internalMutation({
     const customFieldDefinitions = await ctx.db.query("customFieldDefinitions").collect();
     let patchedCustomFieldDefinitions = 0;
     for (const definition of customFieldDefinitions) {
-      const appliesTo = definition.appliesTo.filter((recordType) => recordType !== "asset");
+      const appliesTo = definition.appliesTo.filter((recordType) => (recordType as string) !== "asset");
       if (appliesTo.length !== definition.appliesTo.length) {
         await ctx.db.patch(definition._id, { appliesTo, updatedAt: now });
         patchedCustomFieldDefinitions += 1;
@@ -112,7 +112,7 @@ export const purgeAllLegacyAssetMedia = internalMutation({
     const customFieldValues = await ctx.db.query("customFieldValues").collect();
     let patchedCustomFieldValues = 0;
     for (const value of customFieldValues) {
-      if (value.recordType === "asset") {
+      if ((value.recordType as string) === "asset") {
         await ctx.db.delete(value._id);
         patchedCustomFieldValues += 1;
       }
