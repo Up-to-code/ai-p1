@@ -117,7 +117,7 @@ export function InlineTaskCreator({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm prose-invert max-w-none min-h-[32px] py-1 px-0 focus:outline-none text-[15px] leading-relaxed text-[#E5E5E5] [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[32px] [&_.ProseMirror_p]:my-0.5 [&_.ProseMirror_h1]:text-xl [&_.ProseMirror_h1]:font-semibold [&_.ProseMirror_h2]:text-lg [&_.ProseMirror_h2]:font-semibold [&_.ProseMirror_h3]:text-base [&_.ProseMirror_h3]:font-semibold [&_.ProseMirror_pre]:bg-[#141414] [&_.ProseMirror_pre]:border [&_.ProseMirror_pre]:border-white/10 [&_.ProseMirror_pre]:rounded-lg [&_.ProseMirror_pre]:p-3 [&_.ProseMirror_pre]:my-2 [&_.ProseMirror_code]:text-[#E879F9] [&_.ProseMirror_code]:bg-white/5 [&_.ProseMirror_code]:px-1.5 [&_.ProseMirror_code]:py-0.5 [&_.ProseMirror_code]:rounded [&_.ProseMirror_code]:text-[13px] [&_.ProseMirror_pre_code]:bg-transparent [&_.ProseMirror_pre_code]:p-0 [&_.ProseMirror_pre_code]:text-inherit [&_.ProseMirror_blockquote]:border-l-2 [&_.ProseMirror_blockquote]:border-[#3D3D3D] [&_.ProseMirror_blockquote]:pl-3 [&_.ProseMirror_blockquote]:my-2 [&_.ProseMirror_blockquote]:text-[#A3A3A3] [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-4 [&_.ProseMirror_ul]:my-1 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-4 [&_.ProseMirror_ol]:my-1 [&_.ProseMirror_li]:my-0.5 [&_.ProseMirror_hr]:border-0 [&_.ProseMirror_hr]:border-t [&_.ProseMirror_hr]:border-white/10 [&_.ProseMirror_hr]:my-3",
+          "prose prose-sm prose-invert max-w-none min-h-[80px] py-1 px-0 focus:outline-none text-[15px] leading-relaxed text-[#E5E5E5] [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[80px] [&_.ProseMirror_p]:my-0.5 [&_.ProseMirror_h1]:text-xl [&_.ProseMirror_h1]:font-semibold [&_.ProseMirror_h1]:my-1 [&_.ProseMirror_h2]:text-lg [&_.ProseMirror_h2]:font-semibold [&_.ProseMirror_h2]:my-1 [&_.ProseMirror_h3]:text-base [&_.ProseMirror_h3]:font-semibold [&_.ProseMirror_h3]:my-1 [&_.ProseMirror_pre]:bg-[#141414] [&_.ProseMirror_pre]:border [&_.ProseMirror_pre]:border-white/10 [&_.ProseMirror_pre]:rounded-lg [&_.ProseMirror_pre]:p-3 [&_.ProseMirror_pre]:my-2 [&_.ProseMirror_code]:text-[#E879F9] [&_.ProseMirror_code]:bg-white/5 [&_.ProseMirror_code]:px-1.5 [&_.ProseMirror_code]:py-0.5 [&_.ProseMirror_code]:rounded [&_.ProseMirror_code]:text-[13px] [&_.ProseMirror_pre_code]:bg-transparent [&_.ProseMirror_pre_code]:p-0 [&_.ProseMirror_pre_code]:text-inherit [&_.ProseMirror_blockquote]:border-l-2 [&_.ProseMirror_blockquote]:border-[#3D3D3D] [&_.ProseMirror_blockquote]:pl-3 [&_.ProseMirror_blockquote]:my-2 [&_.ProseMirror_blockquote]:text-[#A3A3A3] [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-4 [&_.ProseMirror_ul]:my-1 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-4 [&_.ProseMirror_ol]:my-1 [&_.ProseMirror_li]:my-0.5 [&_.ProseMirror_hr]:border-0 [&_.ProseMirror_hr]:border-t [&_.ProseMirror_hr]:border-white/10 [&_.ProseMirror_hr]:my-3",
       },
     },
     onUpdate: ({ editor: e }) => {
@@ -127,12 +127,12 @@ export function InlineTaskCreator({
 
       if (textBefore.endsWith("/")) {
         setShowSlashMenu(true);
-        setSlashItems(getSlashCommandItems(e, () => setShowSlashMenu(false)));
+        setSlashItems(getSlashCommandItems());
       } else if (showSlashMenu) {
         const slashMatch = textBefore.match(/\/([a-zA-Z]*)$/);
         if (slashMatch) {
           const filter = slashMatch[1].toLowerCase();
-          const all = getSlashCommandItems(e, () => setShowSlashMenu(false));
+          const all = getSlashCommandItems();
           setSlashItems(
             all.filter(
               (item) =>
@@ -156,13 +156,21 @@ export function InlineTaskCreator({
       if (!editor) return;
       const { state } = editor;
       const { from } = state.selection;
-      const slashPos = from - 1;
-      editor
-        .chain()
-        .focus()
-        .deleteRange({ from: slashPos, to: from })
-        .run();
-      item.action();
+
+      // Find the position of "/" by scanning backwards
+      const textBefore = state.doc.textBetween(Math.max(0, from - 30), from, "\n");
+      const slashIndex = textBefore.lastIndexOf("/");
+      if (slashIndex === -1) {
+        setShowSlashMenu(false);
+        return;
+      }
+
+      const slashFrom = from - (textBefore.length - slashIndex);
+
+      // Single chain: delete the slash text, then apply the formatting
+      const chain = editor.chain().focus().deleteRange({ from: slashFrom, to: from });
+      item.chainCommands(chain).run();
+      setShowSlashMenu(false);
     },
     [editor],
   );
@@ -208,9 +216,9 @@ export function InlineTaskCreator({
       }}
       onKeyDown={handleKeyDown}
     >
-      <div className="relative w-full max-w-[600px] rounded-xl bg-[#1C1C1E] border border-[#2A2A2A] shadow-2xl">
+      <div className="relative flex w-full max-w-[720px] flex-col rounded-xl bg-[#1C1C1E] border border-[#2A2A2A] shadow-2xl max-h-[85vh]">
         {/* Top bar: project badge + expand + close */}
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between px-5 py-3 shrink-0">
           <div className="flex items-center gap-2">
             <span className="inline-flex h-5 items-center rounded bg-[#3B82F6]/20 px-1.5 text-[11px] font-semibold text-[#3B82F6]">
               QEN
@@ -237,37 +245,40 @@ export function InlineTaskCreator({
           </div>
         </div>
 
-        {/* Title */}
-        <div className="px-4 pt-0 pb-1">
-          <input
-            ref={titleRef}
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Issue title"
-            className="w-full bg-transparent text-[17px] font-medium text-white outline-none placeholder:text-[#525252]"
-          />
-        </div>
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto px-5 pb-2 min-h-0">
+          {/* Title */}
+          <div className="pb-2">
+            <input
+              ref={titleRef}
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Issue title"
+              className="w-full bg-transparent text-[17px] font-medium text-white outline-none placeholder:text-[#525252]"
+            />
+          </div>
 
-        {/* Description (Tiptap) */}
-        <div className="relative px-4 pb-4 min-h-[40px]">
-          {editor && showSlashMenu && (
-            <div className="absolute left-4 top-0 z-50">
-              <SlashCommandMenu
-                items={slashItems}
-                command={handleSlashCommand}
-                onClose={() => setShowSlashMenu(false)}
-              />
-            </div>
-          )}
-          <EditorContent editor={editor} />
+          {/* Description (Tiptap) */}
+          <div className="relative min-h-[100px] pb-2">
+            {editor && showSlashMenu && (
+              <div className="absolute left-0 top-0 z-50">
+                <SlashCommandMenu
+                  items={slashItems}
+                  command={handleSlashCommand}
+                  onClose={() => setShowSlashMenu(false)}
+                />
+              </div>
+            )}
+            <EditorContent editor={editor} />
+          </div>
         </div>
 
         {/* Divider */}
-        <div className="mx-4 h-px bg-[#2A2A2A]" />
+        <div className="mx-5 h-px bg-[#2A2A2A] shrink-0" />
 
         {/* Bottom toolbar */}
-        <div className="flex items-center gap-1.5 px-4 py-3">
+        <div className="flex flex-wrap items-center gap-1.5 px-5 py-3 shrink-0">
           {/* Status chip */}
           <Popover>
             <PopoverTrigger className="inline-flex h-7 items-center gap-1.5 rounded-full border border-[#2A2A2A] bg-transparent px-2.5 text-[12px] font-medium text-[#A3A3A3] hover:bg-white/5 transition-colors">
@@ -422,8 +433,11 @@ export function InlineTaskCreator({
           </button>
         </div>
 
+        {/* Divider */}
+        <div className="mx-5 h-px bg-[#2A2A2A] shrink-0" />
+
         {/* Bottom bar: create more + submit */}
-        <div className="flex items-center justify-between border-t border-[#2A2A2A] px-4 py-3">
+        <div className="flex items-center justify-between px-5 py-3 shrink-0">
           <button
             type="button"
             onClick={() => setCreateMore(!createMore)}

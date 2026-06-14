@@ -18,7 +18,7 @@ export interface SlashMenuItem {
   label: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
-  action: () => void;
+  chainCommands: (chain: any) => any;
 }
 
 interface SlashCommandMenuProps {
@@ -103,90 +103,63 @@ export function SlashCommandMenu({ items, command, onClose }: SlashCommandMenuPr
   );
 }
 
-export function getSlashCommandItems(
-  editor: { chain: () => any },
-  onClose: () => void,
-): SlashMenuItem[] {
+export function getSlashCommandItems(): SlashMenuItem[] {
   return [
     {
       id: "heading1",
       label: "Heading 1",
       description: "Large section heading",
       icon: Heading1,
-      action: () => {
-        editor.chain().focus().toggleHeading({ level: 1 }).run();
-        onClose();
-      },
+      chainCommands: (chain) => chain.toggleHeading({ level: 1 }),
     },
     {
       id: "heading2",
       label: "Heading 2",
       description: "Medium section heading",
       icon: Heading2,
-      action: () => {
-        editor.chain().focus().toggleHeading({ level: 2 }).run();
-        onClose();
-      },
+      chainCommands: (chain) => chain.toggleHeading({ level: 2 }),
     },
     {
       id: "heading3",
       label: "Heading 3",
       description: "Small section heading",
       icon: Heading3,
-      action: () => {
-        editor.chain().focus().toggleHeading({ level: 3 }).run();
-        onClose();
-      },
+      chainCommands: (chain) => chain.toggleHeading({ level: 3 }),
     },
     {
       id: "bullet-list",
       label: "Bullet List",
       description: "Create a simple bullet list",
       icon: List,
-      action: () => {
-        editor.chain().focus().toggleBulletList().run();
-        onClose();
-      },
+      chainCommands: (chain) => chain.toggleBulletList(),
     },
     {
       id: "ordered-list",
       label: "Numbered List",
       description: "Create a numbered list",
       icon: ListOrdered,
-      action: () => {
-        editor.chain().focus().toggleOrderedList().run();
-        onClose();
-      },
+      chainCommands: (chain) => chain.toggleOrderedList(),
     },
     {
       id: "code",
       label: "Code Block",
       description: "Insert a code block",
       icon: Code,
-      action: () => {
-        editor.chain().focus().toggleCodeBlock().run();
-        onClose();
-      },
+      chainCommands: (chain) => chain.toggleCodeBlock(),
     },
     {
       id: "blockquote",
       label: "Quote",
       description: "Add a blockquote",
       icon: Quote,
-      action: () => {
-        editor.chain().focus().toggleBlockquote().run();
-        onClose();
-      },
+      chainCommands: (chain) => chain.toggleBlockquote(),
     },
     {
       id: "horizontal-rule",
       label: "Divider",
       description: "Add a horizontal divider",
       icon: Minus,
-      action: () => {
-        editor.chain().focus().setHorizontalRule().run();
-        onClose();
-      },
+      chainCommands: (chain) => chain.setHorizontalRule(),
     },
   ];
 }
