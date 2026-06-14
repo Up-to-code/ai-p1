@@ -44,7 +44,7 @@ export function LanguageSwitcher({ className, compact = false }: LanguageSwitche
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {languages.map((lang) => (
-          <DropdownMenuItem key={lang.code} asChild>
+          <DropdownMenuItem key={lang.code}>
             <Link
               href={pathname}
               locale={lang.code}
