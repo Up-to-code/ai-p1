@@ -137,7 +137,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 
-type PickerKind = "client" | "asset" | "task";
+type PickerKind = "client" | "task";
 
 /* ── Main ── */
 export function CalendarScreen() {
@@ -880,7 +880,7 @@ function EventDetailDialog({
   const t = useTranslations("Calendar");
   const locale = useLocale();
   const eventDate = new Date(event.date + "T00:00:00");
-  const [quickViewEntity, setQuickViewEntity] = useState<{ id: string; type: "client" | "asset" | "task"; title: string } | null>(null);
+  const [quickViewEntity, setQuickViewEntity] = useState<{ id: string; type: "client" | "task"; title: string } | null>(null);
   const closeEventDialog = () => {
     setQuickViewEntity(null);
     onClose();
@@ -1149,9 +1149,6 @@ function BusinessScheduleDialog({
     if (picker === "client") {
       updateField("clientId", id);
     }
-    if (picker === "asset") {
-      updateField("assetId", id);
-    }
     if (picker === "task") {
       const task = tasks.find((item) => item.id === id);
       updateField("taskId", id);
@@ -1162,9 +1159,6 @@ function BusinessScheduleDialog({
 
   function clearPickerValue(kind: PickerKind) {
     if (kind === "client") updateField("clientId", "");
-    if (kind === "asset") {
-      updateField("assetId", "");
-    }
     if (kind === "task") updateField("taskId", "");
   }
 
@@ -1513,7 +1507,7 @@ function EntityQuickViewDialog({
   entity,
   onClose,
 }: {
-  entity: { id: string; type: "client" | "asset" | "task"; title: string };
+  entity: { id: string; type: "client" | "task"; title: string };
   onClose: () => void;
 }) {
   return (
