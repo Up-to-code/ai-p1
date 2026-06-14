@@ -23,10 +23,14 @@ const themeInitScript = `
     document.documentElement.classList.toggle("dark", theme === "dark");
     document.documentElement.style.colorScheme = theme;
     document.documentElement.style.backgroundColor = theme === "dark" ? "#000000" : "#FFFFFF";
+    document.body.style.backgroundColor = theme === "dark" ? "#000000" : "#FFFFFF";
+    document.body.style.color = theme === "dark" ? "#FFFFFF" : "#000000";
   } catch {
     document.documentElement.classList.remove("dark");
     document.documentElement.style.colorScheme = "light";
     document.documentElement.style.backgroundColor = "#FFFFFF";
+    document.body.style.backgroundColor = "#FFFFFF";
+    document.body.style.color = "#000000";
   }
 })();
 `;
@@ -37,8 +41,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${cairo.variable} h-full antialiased`}
       suppressHydrationWarning
+      style={{ backgroundColor: "#FFFFFF", colorScheme: "light" }}
     >
-      <body className="h-full flex flex-col bg-background text-text-primary" suppressHydrationWarning>
+      <body
+        className="h-full flex flex-col bg-background text-text-primary"
+        suppressHydrationWarning
+        style={{ backgroundColor: "#FFFFFF", color: "#000000" }}
+      >
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         {children}
       </body>
