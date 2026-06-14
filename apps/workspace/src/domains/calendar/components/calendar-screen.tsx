@@ -51,8 +51,8 @@ import {
 } from "../validation/calendar.schema";
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
-import enUS from 'date-fns/locale/en-US';
-import arSA from 'date-fns/locale/ar-SA';
+import { enUS } from 'date-fns/locale/en-US';
+import { arSA } from 'date-fns/locale/ar-SA';
 
 const locales = {
   'en': enUS,
