@@ -1543,7 +1543,6 @@ function ClientQuickView({ clientId, onClose }: { clientId: string; onClose: () 
   const locale = useLocale();
   const router = useRouter();
   const client = useClientQuery(organizationId, clientId);
-  const assetLinks = useClientAssetLinksQuery(organizationId, clientId);
 
   if (!client) {
     return (
