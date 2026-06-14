@@ -49,7 +49,7 @@ export function ProjectSwitcher() {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+      <PopoverTrigger>
         <button
           role="combobox"
           aria-expanded={open}
