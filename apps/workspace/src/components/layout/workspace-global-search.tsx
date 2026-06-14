@@ -281,7 +281,7 @@ function projectResult(project: Project): SearchResult {
     id: `project:${project.id}`,
     type: "project",
     title: project.name,
-    description: [project.reference, project.city, project.status].filter(Boolean).join(" · "),
+    description: [project.reference, project.status].filter(Boolean).join(" · "),
     href: `/projects/${project.id}`,
     icon: Building2,
   };

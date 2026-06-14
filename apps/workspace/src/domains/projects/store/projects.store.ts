@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type { ViewMode } from "@/types/common.types";
 import type { Project, ProjectStatus } from "./projects.types";
 
-type ProjectInput = Omit<Project, "id" | "reference" | "updated" | "syncState">;
+type ProjectInput = Omit<Project, "id" | "reference" | "syncState">;
 
 interface ProjectsState {
   projects: Project[];
@@ -19,57 +19,33 @@ interface ProjectsState {
 }
 
 const projects: Project[] = [
-	{
-	    id: "prj-1",
-	    name: "Client Onboarding System",
-	    reference: "PRJ-001",
-	    developer: "Operations Team",
-	    city: "Remote",
-	    area: "Customer Success",
-	    type: "Commercial",
-	    assetTypes: ["Office", "Retail"],
-    image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=800&auto=format&fit=crop",
-    status: "approved",
-    assetCount: 42,
+  {
+    id: "prj-1",
+    name: "Client Onboarding System",
+    reference: "PRJ-001",
+    status: "active",
+    health: "onTrack",
     syncState: "synced",
-	    priceRange: "25K USD",
-	    updated: "2h ago",
-	    description: "A verified onboarding project with approved resources and customer-ready media.",
-	  },
-	  {
-	    id: "prj-2",
-	    name: "Partner Portal Rollout",
-	    reference: "PRJ-002",
-	    developer: "Platform Team",
-	    city: "Remote",
-	    area: "Integrations",
-	    type: "Mixed Use",
-	    assetTypes: ["Office", "Retail"],
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop",
-    status: "pending",
-    assetCount: 18,
+    description: "A verified onboarding project with approved resources and customer-ready media.",
+  } as Project,
+  {
+    id: "prj-2",
+    name: "Partner Portal Rollout",
+    reference: "PRJ-002",
+    status: "active",
+    health: "onTrack",
     syncState: "blocked",
-	    priceRange: "80K USD",
-	    updated: "1d ago",
-	    description: "Mixed-use complex awaiting final data sync approval.",
-	  },
-	  {
-	    id: "prj-3",
-	    name: "Field Operations Launch",
-	    reference: "PRJ-003",
-	    developer: "Delivery Team",
-	    city: "Remote",
-	    area: "Operations",
-	    type: "Commercial",
-	    assetTypes: ["Office"],
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop",
-    status: "draft",
-    assetCount: 24,
+    description: "Mixed-use complex awaiting final data sync approval.",
+  } as Project,
+  {
+    id: "prj-3",
+    name: "Field Operations Launch",
+    reference: "PRJ-003",
+    status: "planned",
+    health: "onTrack",
     syncState: "draft",
-	    priceRange: "45K USD",
-	    updated: "3d ago",
-	    description: "Field operations workspace in draft preparation.",
-	  },
+    description: "Field operations workspace in draft preparation.",
+  } as Project,
 ];
 
 export const useProjectsStore = create<ProjectsState>((set, get) => ({
@@ -87,9 +63,9 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       ...input,
       id: `prj-${number}`,
       reference: `PRJ-${String(number).padStart(3, "0")}`,
-      updated: "Now",
       syncState: "draft",
-    };
+      _creationTime: Date.now(),
+    } as Project;
     set((state) => ({ projects: [next, ...state.projects] }));
     return next;
   },
