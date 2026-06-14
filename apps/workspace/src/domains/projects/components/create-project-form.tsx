@@ -36,7 +36,7 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
   const queryClient = useQueryClient();
 
   const form = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectSchema) as any,
+    resolver: zodResolver(projectSchema as any) as any,
     defaultValues: {
       name: "",
       clientId: "",
@@ -189,7 +189,7 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
                 <FormLabel className="text-xs font-bold uppercase tracking-wider text-text-secondary">Description</FormLabel>
                 <FormControl>
                   <TiptapEditor
-                    value={field.value}
+                    value={field.value ?? ""}
                     onChange={field.onChange}
                     className="min-h-[120px] bg-background/50 dark:bg-white/5"
                     disableImageUpload

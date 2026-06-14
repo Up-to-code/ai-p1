@@ -48,7 +48,7 @@ export function ClientPickerModal({
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
 
-  const clientsQuery = useClientsIndexQuery(organizationId, { search });
+  const clientsQuery = useClientsIndexQuery(organizationId ?? undefined, { search });
   const allClients = useMemo(() => (clientsQuery?.results ?? []) as Client[], [clientsQuery?.results]);
 
   // Client-side pagination over fetched results

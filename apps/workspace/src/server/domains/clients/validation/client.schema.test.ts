@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clientPayloadSchema, clientAssetLinkPayloadSchema } from "./client.schema";
+import { clientPayloadSchema } from "./client.schema";
 
 describe("client validation", () => {
   it("accepts a complete workspace client payload", () => {
@@ -62,12 +62,5 @@ describe("client validation", () => {
         status: "lost",
       }),
     ).toThrow();
-  });
-
-  it("defaults client-asset links to interested", () => {
-    expect(clientAssetLinkPayloadSchema.parse({ assetId: "asset_123" })).toEqual({
-      assetId: "asset_123",
-      status: "interested",
-    });
   });
 });

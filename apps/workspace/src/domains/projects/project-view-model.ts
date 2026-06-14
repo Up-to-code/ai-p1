@@ -18,7 +18,7 @@ export function toggleProjectAssetType(
 
 export function matchesProjectSearch(project: Pick<Project, "name" | "reference">, search: string) {
   const query = search.trim().toLowerCase();
-  return !query || [project.name, project.reference].some((value) => value.toLowerCase().includes(query));
+  return !query || [project.name, project.reference].some((value) => value?.toLowerCase().includes(query));
 }
 
 export function projectFormDefaults(project?: Project | null): ProjectFormValues {
@@ -27,6 +27,7 @@ export function projectFormDefaults(project?: Project | null): ProjectFormValues
     status: project?.status ?? "planned",
     health: project?.health ?? "onTrack",
     visibility: project?.visibility ?? "team",
+    useAiSetup: false,
     description: project?.description ?? "",
   };
 }
@@ -76,9 +77,9 @@ export function calendarDaysForMonth(month: Date) {
 }
 
 export function statusTone(status: ProjectStatus) {
-  if (status === "approved") return "success";
-  if (status === "pending") return "warning";
-  if (status === "rejected") return "danger";
+  if (status === "active") return "success";
+  if (status === "paused") return "warning";
+  if (status === "archived") return "danger";
   return "neutral";
 }
 

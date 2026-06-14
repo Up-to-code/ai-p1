@@ -17,7 +17,7 @@ export function ProjectListView() {
   const [search, setSearch] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   
-  const query = useProjectsIndexQuery(workspaceOrganizationId, { search });
+  const query = useProjectsIndexQuery(workspaceOrganizationId ?? undefined, { search });
   const projects = query.results ?? [];
   const stats = query.stats ?? { total: 0, approved: 0, pending: 0, draft: 0, rejected: 0 };
   
@@ -40,7 +40,7 @@ export function ProjectListView() {
       </div>
 
       {/* Grid */}
-      {query.isLoading ? (
+      {query.queryStatus === "loading" ? (
         <div className="flex h-48 items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-[3px] border-primary border-t-transparent" />
         </div>
