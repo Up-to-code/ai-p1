@@ -11,6 +11,9 @@ const cairo = Cairo({
 
 export const metadata: Metadata = {
   title: "Qentrah Platform",
+  other: {
+    "theme-color": "#FFFFFF",
+  },
 };
 
 const themeInitScript = `
@@ -19,9 +22,11 @@ const themeInitScript = `
     const theme = window.localStorage.getItem("${brandIdentity.themeStorageKey}") === "dark" ? "dark" : "light";
     document.documentElement.classList.toggle("dark", theme === "dark");
     document.documentElement.style.colorScheme = theme;
+    document.documentElement.style.backgroundColor = theme === "dark" ? "#000000" : "#FFFFFF";
   } catch {
     document.documentElement.classList.remove("dark");
     document.documentElement.style.colorScheme = "light";
+    document.documentElement.style.backgroundColor = "#FFFFFF";
   }
 })();
 `;

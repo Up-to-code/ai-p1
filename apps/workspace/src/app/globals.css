@@ -168,9 +168,16 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
+    background-color: var(--color-background);
   }
   html {
     @apply font-sans;
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    color-scheme: light;
+  }
+  .dark html {
+    color-scheme: dark;
   }
   html[dir="rtl"],
   html[dir="rtl"] body {
