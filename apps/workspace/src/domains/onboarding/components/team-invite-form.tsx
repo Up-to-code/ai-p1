@@ -59,7 +59,7 @@ export function TeamInviteForm({ organizationId, currentUserEmail, onBack, onFin
     control,
     formState: { errors },
   } = useForm<TeamInviteInput>({
-    resolver: zodResolver(teamInviteSchema),
+    resolver: zodResolver(teamInviteSchema as any),
     defaultValues: { inviteEmail: "", inviteRole: "member" },
   });
 

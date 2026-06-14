@@ -307,7 +307,7 @@ export function OrganizationScreen() {
   ]);
 
   const { register, handleSubmit, reset, getValues, formState: { dirtyFields, errors, isSubmitting } } = useForm<UpdateOrganizationProfileValues>({
-    resolver: zodResolver(updateOrganizationProfileSchema),
+    resolver: zodResolver(updateOrganizationProfileSchema as any),
     defaultValues: organizationFormValues,
   });
 

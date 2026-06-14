@@ -106,7 +106,7 @@ export function ProfileSettingsScreen() {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileSchema),
+    resolver: zodResolver(profileSchema as any),
     defaultValues: formValues,
   });
 
