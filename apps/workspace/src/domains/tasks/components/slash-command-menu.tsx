@@ -2,7 +2,6 @@
 
 import { useEffect, useCallback, useState, useRef } from "react";
 import {
-  Hash,
   List,
   ListOrdered,
   Code,
