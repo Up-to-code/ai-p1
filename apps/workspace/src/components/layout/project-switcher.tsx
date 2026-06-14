@@ -50,7 +50,7 @@ export function ProjectSwitcher() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger>
-        <button
+        <div
           role="combobox"
           aria-expanded={open}
           className="flex h-9 items-center justify-between gap-2 rounded-lg border border-[var(--color-divider)] bg-background px-3 text-sm font-semibold shadow-sm transition-colors hover:bg-zinc-100 dark:hover:bg-white/5 w-[220px]"
@@ -73,7 +73,7 @@ export function ProjectSwitcher() {
             )}
           </div>
           <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
-        </button>
+        </div>
       </PopoverTrigger>
       <PopoverContent className="w-[280px] p-2 shadow-xl rounded-xl" align="start">
         <div className="flex flex-col gap-1">
