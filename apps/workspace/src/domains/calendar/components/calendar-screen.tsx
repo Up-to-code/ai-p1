@@ -1832,8 +1832,8 @@ function BigCalendarSurface({
 }) {
   const mappedEvents = events.map(e => ({
     ...e,
-    start: new Date(e.startAt),
-    end: new Date(e.endAt),
+    start: new Date(e.startAt ?? Date.now()),
+    end: new Date(e.endAt ?? Date.now()),
   }));
 
   const viewMap: Record<CalendarView, any> = {
