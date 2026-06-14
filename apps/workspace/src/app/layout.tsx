@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { brandIdentity } from "@qentrah/brand-identity";
 import { Cairo } from "next/font/google";
+import { RouteTransitionOverlay } from "@/components/layout/route-transition-overlay";
 
 import "./globals.css";
 
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         suppressHydrationWarning
         style={{ backgroundColor: "#FFFFFF", color: "#000000" }}
       >
+        <RouteTransitionOverlay />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         {children}
       </body>
