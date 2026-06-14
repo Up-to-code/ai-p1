@@ -38,7 +38,7 @@ export function ClientForm({ existing, indexQueryKey, onSuccess, onCancel }: Cli
   const canManageVisibility = capabilitiesQuery.data?.canManageVisibility ?? false;
   
   const { control, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<ClientFormValues>({
-    resolver: zodResolver(clientSchema) as Resolver<ClientFormValues>,
+    resolver: zodResolver(clientSchema as any) as Resolver<ClientFormValues>,
     defaultValues: {
       name: existing?.name ?? "",
       type: existing?.type ?? "person" as ClientType,

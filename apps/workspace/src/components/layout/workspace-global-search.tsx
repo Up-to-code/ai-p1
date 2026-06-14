@@ -8,7 +8,6 @@ import {
   KanbanSquare,
   Loader2,
   ListTodo,
-  Package,
   Plug,
   Search,
   Settings,
@@ -25,8 +24,6 @@ import { useClientsPagedQuery } from "@/domains/clients/api/clients";
 import type { Client } from "@/domains/clients/store/clients.types";
 import { useProjectsPagedQuery } from "@/domains/projects/api/projects";
 import type { Project } from "@/domains/projects/store/projects.types";
-import { useAssetsPagedQuery } from "@/domains/assets/api/assets";
-import type { WorkspaceAsset } from "@/domains/assets/store/assets.types";
 import { useDebouncedValue } from "@/components/shared/use-http-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -34,7 +31,7 @@ const SEARCH_PAGE_SIZE_HINT = 5;
 
 type SearchResult = {
   id: string;
-  type: "project" | "asset" | "client";
+  type: "project" | "client";
   title: string;
   description: string;
   href: string;
@@ -78,7 +75,6 @@ export function WorkspaceGlobalSearch() {
 
   const searchOrganizationId = hasQuery ? organizationId : undefined;
   const projectsQuery = useProjectsPagedQuery(searchOrganizationId, { search: debouncedQuery });
-  const assetsQuery = useAssetsPagedQuery(searchOrganizationId, { search: debouncedQuery });
   const clientsQuery = useClientsPagedQuery(searchOrganizationId, { search: debouncedQuery });
 
   const navigationActions = useMemo<NavigationAction[]>(
@@ -89,7 +85,6 @@ export function WorkspaceGlobalSearch() {
       { id: "projects", label: tSidebar("projects"), href: "/projects", icon: BriefcaseBusiness },
       { id: "tasks", label: tSidebar("tasks"), href: "/tasks", icon: ListTodo },
       { id: "calendar", label: tSidebar("calendar"), href: "/calendar", icon: CalendarDays },
-      { id: "assets", label: tSidebar("assets"), href: "/assets", icon: Package },
       { id: "automations", label: tSidebar("automations"), href: "/automations", icon: Workflow },
       { id: "team", label: tSidebar("team"), href: "/team", icon: UsersRound },
       { id: "integrations", label: tSidebar("integrations"), href: "/web-apps", icon: Plug },
@@ -107,10 +102,6 @@ export function WorkspaceGlobalSearch() {
     () => (projectsQuery.results as Project[]).slice(0, SEARCH_PAGE_SIZE_HINT).map(projectResult),
     [projectsQuery.results],
   );
-  const assetResults = useMemo(
-    () => (assetsQuery.results as WorkspaceAsset[]).slice(0, SEARCH_PAGE_SIZE_HINT).map(assetResult),
-    [assetsQuery.results],
-  );
   const clientResults = useMemo(
     () => clientsQuery.results.slice(0, SEARCH_PAGE_SIZE_HINT).map(clientResult),
     [clientsQuery.results],
@@ -118,11 +109,11 @@ export function WorkspaceGlobalSearch() {
 
   const isSearching =
     hasQuery &&
-    [projectsQuery.queryStatus, assetsQuery.queryStatus, clientsQuery.queryStatus].some((status) => status === "loading");
+    [projectsQuery.queryStatus, clientsQuery.queryStatus].some((status) => status === "loading");
   const hasSearchError =
     hasQuery &&
-    [projectsQuery.queryStatus, assetsQuery.queryStatus, clientsQuery.queryStatus].some((status) => status === "error");
-  const hasResults = projectResults.length > 0 || assetResults.length > 0 || clientResults.length > 0;
+    [projectsQuery.queryStatus, clientsQuery.queryStatus].some((status) => status === "error");
+  const hasResults = projectResults.length > 0 || clientResults.length > 0;
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -218,11 +209,6 @@ export function WorkspaceGlobalSearch() {
                     <SearchResultRow key={result.id} result={result} onSelect={goTo} />
                   ))}
                 </SearchGroup>
-                <SearchGroup title={t("searchAssets")}>
-                  {assetResults.map((result) => (
-                    <SearchResultRow key={result.id} result={result} onSelect={goTo} />
-                  ))}
-                </SearchGroup>
                 <SearchGroup title={t("searchClients")}>
                   {clientResults.map((result) => (
                     <SearchResultRow key={result.id} result={result} onSelect={goTo} />
@@ -295,20 +281,9 @@ function projectResult(project: Project): SearchResult {
     id: `project:${project.id}`,
     type: "project",
     title: project.name,
-    description: [project.reference, project.city, project.status].filter(Boolean).join(" · "),
+    description: [project.reference, project.status].filter(Boolean).join(" · "),
     href: `/projects/${project.id}`,
     icon: Building2,
-  };
-}
-
-function assetResult(asset: WorkspaceAsset): SearchResult {
-  return {
-    id: `asset:${asset.id}`,
-    type: "asset",
-    title: asset.title,
-    description: [asset.reference, asset.project, asset.status].filter(Boolean).join(" · "),
-    href: `/assets/${asset.id}`,
-    icon: Package,
   };
 }
 

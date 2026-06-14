@@ -3,6 +3,9 @@ import { z } from "zod";
 export const calendarEventPayloadSchema = z.object({
   title: z.string().trim().min(1),
   ownerUserId: z.string().trim().optional().transform((value) => value || undefined),
+  clientId: z.string().trim().optional().transform((value) => value || undefined),
+  projectId: z.string().trim().optional().transform((value) => value || undefined),
+  taskId: z.string().trim().optional().transform((value) => value || undefined),
   date: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/),
   time: z.string().trim().regex(/^\d{2}:\d{2}$/),
   type: z.enum(["meeting", "deadline", "reminder", "milestone", "focusBlock"]),

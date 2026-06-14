@@ -1,0 +1,483 @@
+{
+  "$schema": "https://qentrah.com/design-system.schema.json",
+  "$version": "2.0.0",
+  "$updated": "2026-06-08",
+  "$description": "Qentrah unified design system — brand identity, color tokens, typography, spacing, layout roles, and UI patterns for workspace, mobile, and marketing apps. Merged from Brand/bund/design-rules.json + docs/design-system.json.",
+
+  "brand": {
+    "name": "Qentrah",
+
+    "assets": {
+      "logo":    "Brand/bund/@logo-blank.svg",
+      "iconPng": "Brand/bund/qentrah-icon-ios-rounded.png",
+      "iconSvg": "Brand/bund/qentrah-icon-ios-rounded.svg"
+    },
+
+    "icon": {
+      "canvas": {
+        "width":       1024,
+        "height":      1024,
+        "background":  "#FFFFFF",
+        "cornerRadius": 230,
+        "cornerStyle": "ios-rounded-square"
+      },
+      "mark": {
+        "color": {
+          "onLight": "#121212",
+          "onDark":  "#FFFFFF"
+        },
+        "sourceViewBox": { "width": 764, "height": 844 },
+        "targetHeight": 650,
+        "scale":  0.770142,
+        "position": { "x": 217.399, "y": 187 }
+      },
+      "clearSpace": {
+        "minimumCanvasPaddingPx": 187,
+        "preferredUse": "Keep the mark centered with generous white space around all edges.",
+        "doNot": [
+          "Do not crop the mark.",
+          "Do not stretch, skew, or rotate the mark.",
+          "Do not add shadows, gradients, textures, or decorative effects.",
+          "Do not place the mark over a busy image.",
+          "Do not add extra symbols inside the icon canvas."
+        ]
+      }
+    },
+
+    "identity": {
+      "presence":    "Use the Qentrah mark as a calm primary identifier, not as decoration.",
+      "voice":       "Restrained, spacious, precise. No decoration for decoration's sake.",
+      "antiCopy":    "https://openai.com/brand/ — referenced for clear-space and mark-integrity discipline.",
+      "markRules": [
+        "Use prescribed clear space. Let the mark breathe.",
+        "Use marks exactly as provided. Do not crop or alter.",
+        "Do not add unauthorized colors, effects, textures, or elements.",
+        "Do not imply endorsement or partnership unless explicitly approved."
+      ]
+    }
+  },
+
+  "color": {
+    "$comment": "All semantic tokens map to CSS custom properties in globals.css (:root = light, .dark = dark mode).",
+
+    "primitive": {
+      "blue":   { "500": "#0B5CFF", "600": "#084AD6", "700": "#063DAF" },
+      "green":  { "600": "#16A34A" },
+      "amber":  { "500": "#F59E0B" },
+      "red":    { "600": "#DC2626" },
+      "violet": { "500": "#8B5CF6" },
+      "orange": { "400": "#FB923C" },
+      "emerald":{ "500": "#10B981" },
+      "zinc": {
+        "50":  "#FAFAFA",
+        "100": "#F4F4F5",
+        "200": "#E4E4E7",
+        "300": "#D4D4D8",
+        "400": "#A1A1AA",
+        "500": "#71717A",
+        "600": "#52525B",
+        "700": "#3F3F46",
+        "800": "#27272A",
+        "900": "#18181B",
+        "950": "#09090B"
+      }
+    },
+
+    "semantic": {
+      "light": {
+        "background":        "#FFFFFF",
+        "backgroundSoft":    "#FAFAFA",
+        "surface":           "#F4F4F5",
+        "surfaceRaised":     "#F4F4F5",
+        "border":            "rgba(0,0,0,0.05)",
+        "divider":           "rgba(0,0,0,0.08)",
+        "textPrimary":       "#000000",
+        "textSecondary":     "#52525B",
+        "textMuted":         "#A1A1AA",
+        "selectionBg":       "#000000",
+        "selectionFg":       "#FFFFFF",
+        "primary":           "#0B5CFF",
+        "primaryHover":      "#084AD6",
+        "primaryPress":      "#063DAF",
+        "primaryForeground": "#FFFFFF",
+        "success":           "#16A34A",
+        "warning":           "#F59E0B",
+        "danger":            "#DC2626",
+        "draft":             "#2D8CFF",
+        "markColor":         "#121212"
+      },
+      "dark": {
+        "background":     "#000000",
+        "backgroundSoft": "#0A0A0A",
+        "surface":        "#121212",
+        "surfaceRaised":  "#1A1A1A",
+        "border":         "rgba(255,255,255,0.10)",
+        "divider":        "rgba(255,255,255,0.08)",
+        "textPrimary":    "#FFFFFF",
+        "textSecondary":  "#A3A3A3",
+        "textMuted":      "#737373",
+        "selectionBg":    "#FFFFFF",
+        "selectionFg":    "#000000",
+        "markColor":      "#FFFFFF"
+      }
+    },
+
+    "brandSurfaces": {
+      "$comment": "Rules for brand screens: sign-in, launch, onboarding, icon canvas.",
+      "signInScreen":   "White or near-white bg. Mark in #121212. No decorative color.",
+      "launchScreen":   "White bg. Mark centered in #121212. No gradient behind mark.",
+      "darkLaunch":     "#000000 bg. Mark in #FFFFFF. Same clear-space rules apply.",
+      "iconCanvas":     "#FFFFFF bg. Mark in #121212. Corner radius 230px (iOS rounded square)."
+    },
+
+    "statusColors": {
+      "$comment": "Kanban column headers, StatusPill, board dropzones.",
+      "todo":       { "dot": "#A1A1AA", "bg": "#FAFAFA",  "text": "#52525B",  "border": "#E4E4E7" },
+      "inProgress": { "dot": "#8B5CF6", "bg": "#F5F3FF",  "text": "#6D28D9",  "border": "#DDD6FE" },
+      "waiting":    { "dot": "#F59E0B", "bg": "#FFFBEB",  "text": "#B45309",  "border": "#FDE68A" },
+      "done":       { "dot": "#10B981", "bg": "#ECFDF5",  "text": "#065F46",  "border": "#A7F3D0" },
+      "canceled":   { "dot": "#D4D4D8", "bg": "#FAFAFA",  "text": "#71717A",  "border": "#F4F4F5" }
+    },
+
+    "priorityColors": {
+      "$comment": "Task priority pills on board cards and table rows.",
+      "urgent": { "dot": "#EF4444", "bg": "#FEF2F2", "text": "#B91C1C", "border": "#FECACA" },
+      "high":   { "dot": "#FB923C", "bg": "#FFF7ED", "text": "#C2410C", "border": "#FED7AA" },
+      "normal": { "dot": "#60A5FA", "bg": "#EFF6FF", "text": "#1D4ED8", "border": "#BFDBFE" },
+      "low":    { "dot": "#A1A1AA", "bg": "#F4F4F5", "text": "#71717A", "border": "#E4E4E7" }
+    }
+  },
+
+  "typography": {
+    "fonts": {
+      "sans":   "\"Manrope\", -apple-system, BlinkMacSystemFont, \"Helvetica Neue\", Arial, ui-sans-serif, system-ui, sans-serif",
+      "arabic": "\"Cairo\", \"Manrope\", -apple-system, BlinkMacSystemFont, \"Helvetica Neue\", Arial, ui-sans-serif, system-ui, sans-serif",
+      "mono":   "\"SF Mono\", ui-monospace, Menlo, Monaco, Consolas, \"Liberation Mono\", monospace"
+    },
+    "scale": {
+      "h1":        { "size": "30px", "compactSize": "24px", "weight": 900, "tracking": "tight"   },
+      "h2":        { "size": "20px",                        "weight": 800, "tracking": "tight"   },
+      "h3":        { "size": "18px",                        "weight": 700, "tracking": "tight"   },
+      "bodyLg":    { "size": "15px",                        "weight": 500                         },
+      "body":      { "size": "15px",                        "weight": 500                         },
+      "caption":   { "size": "12px",                        "weight": 600                         },
+      "captionLg": { "size": "13px",                        "weight": 600                         },
+      "label":     { "size": "10px",  "weight": 900, "transform": "UPPERCASE", "tracking": "widest" },
+      "micro":     { "size":  "9px",  "weight": 900, "transform": "UPPERCASE", "tracking": "widest" }
+    },
+    "lineHeight": {
+      "default":     1.46,
+      "comfortable": 1.52
+    },
+    "maxLineLength": "65ch",
+    "conventions": [
+      "page-title:      text-2xl font-black uppercase tracking-tight",
+      "section-eyebrow: text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400",
+      "section-title:   text-lg font-bold tracking-tight",
+      "card-title:      text-sm font-black text-zinc-950 dark:text-white",
+      "card-meta:       text-[10px] font-bold uppercase tracking-wider text-zinc-400",
+      "body-copy:       text-sm font-medium leading-6 text-zinc-500 dark:text-zinc-400",
+      "label-field:     text-[10px] font-black uppercase tracking-widest text-zinc-500"
+    ]
+  },
+
+  "spacing": {
+    "$comment": "4px base grid. Always use multiples of --space-* tokens. Never arbitrary px values.",
+    "scale": {
+      "1":  "4px",
+      "2":  "8px",
+      "3":  "12px",
+      "4":  "16px",
+      "5":  "20px",
+      "6":  "24px",
+      "8":  "32px",
+      "10": "40px",
+      "12": "48px",
+      "16": "64px",
+      "20": "80px"
+    },
+    "philosophy": "Vary spacing for rhythm. Identical padding everywhere is monotony. Tighter inside dense components, generous at page-section level."
+  },
+
+  "radius": {
+    "controlSm": "12px",
+    "control":   "18px",
+    "card":      "24px",
+    "modal":     "24px",
+    "container": "24px",
+    "pill":      "9999px",
+    "map": {
+      "tags":       "rounded-full",
+      "buttons":    "rounded-[8px] to rounded-[12px] (scales with height)",
+      "inputs":     "rounded-xl (12px)",
+      "cards":      "rounded-2xl (24px), rounded-[14px] for secondary/nested cards",
+      "modals":     "rounded-2xl (24px)",
+      "avatars":    "rounded-full (circle) or rounded-xl (square)",
+      "navItems":   "rounded-xl"
+    }
+  },
+
+  "shadows": {
+    "$comment": "Depth is expressed through border + background contrast, not box-shadow. Shadows are off by default.",
+    "card":    "none",
+    "popover": "none",
+    "modal":   "none",
+    "exceptions": [
+      "Dark-mode task board cards: shadow-sm dark:shadow-black/30 — used for separation from column bg.",
+      "Hovered task cards: hover:shadow-md — motion feedback only, not structural depth."
+    ]
+  },
+
+  "layout": {
+    "sidebar": {
+      "widthExpanded":  "264px",
+      "widthCollapsed": "64px",
+      "collapseMode":   "Manual toggle only — not auto-responsive"
+    },
+    "topbar": {
+      "height": "64px"
+    },
+    "topBanner": {
+      "height": "44px",
+      "use":    "Workspace status or alert banners above the topbar"
+    },
+    "pageMaxWidths": {
+      "narrow": "640px   — auth flows, single-column forms",
+      "normal": "896px   — default content pages",
+      "wide":   "1152px  — detail pages with aside panels",
+      "full":   "100%    — boards, tables, data-heavy views"
+    },
+    "contentPadding": {
+      "page":    "px-6 py-8",
+      "section": "p-5",
+      "card":    "p-3.5 to p-5"
+    },
+    "grid": {
+      "kanbanBoard": "xl:grid-cols-4 gap-3",
+      "statsGrid":   "sm:grid-cols-3 md:grid-cols-4 gap-3",
+      "cardGrid":    "flex flex-wrap gap-4 (fluid width, not fixed columns)",
+      "detailPage":  "lg:grid-cols-[minmax(0,1fr)_320px] gap-6"
+    }
+  },
+
+  "roles": {
+    "$comment": "Surface hierarchy. Each role defines what it can contain. Nesting outside these rules is a design violation.",
+
+    "page": {
+      "description": "Top-level route surface. Full viewport.",
+      "background":  "bg-background",
+      "canContain":  ["shell", "pageHeader", "section", "banner"]
+    },
+    "shell": {
+      "description": "App chrome: sidebar + topbar + scrollable content area.",
+      "canContain":  ["sidebar", "topbar", "contentArea"]
+    },
+    "sidebar": {
+      "description": "Collapsible left rail. Fixed height. Scrollable nav inside.",
+      "background":  "bg-background border-e",
+      "width":       "264px expanded / 64px collapsed",
+      "canContain":  ["navGroup", "orgSwitcher", "agentThreadList", "userProfile"]
+    },
+    "topbar": {
+      "description": "Fixed top bar, 64px. Breadcrumb, search, mode toggle.",
+      "background":  "bg-background border-b",
+      "canContain":  ["breadcrumb", "search", "modeToggle", "notificationBell"]
+    },
+    "contentArea": {
+      "description": "Scrollable main area. Holds AppPageShell which applies maxWidth + padding.",
+      "canContain":  ["pageHeader", "statsGrid", "section", "dataTable", "board", "drawer"]
+    },
+    "pageHeader": {
+      "description": "Eyebrow + title + subtitle + action slot. Always first inside contentArea.",
+      "component":   "AppPageHeader",
+      "canContain":  ["eyebrow", "title", "subtitle", "contextLink", "actionButton"]
+    },
+    "section": {
+      "description": "Named content block. Rounded-2xl bordered card with title + optional actions row.",
+      "component":   "AppSection",
+      "background":  "bg-white dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/[0.06] rounded-2xl p-5",
+      "canContain":  ["dataTable", "formGrid", "listRows", "emptyState", "statsRow"]
+    },
+    "card": {
+      "description": "Atomic content unit. Used in grids, boards, lists.",
+      "background":  "bg-white dark:bg-zinc-950/80 border border-zinc-200/80 dark:border-white/[0.07] rounded-xl p-3.5 shadow-sm",
+      "canContain":  ["cardHeader", "cardBody", "cardMeta", "cardActions"],
+      "rule":        "NEVER nest a card inside another card."
+    },
+    "drawer": {
+      "description": "Right-edge slide panel for create/edit forms.",
+      "component":   "WorkOsRecordDrawer",
+      "canContain":  ["drawerHeader", "form", "formActions"]
+    },
+    "modal": {
+      "description": "Blocking overlay for confirmations and short focused forms only.",
+      "component":   "Dialog / AlertDialog",
+      "maxWidth":    "max-w-lg",
+      "padding":     "p-6",
+      "canContain":  ["dialogHeader", "dialogBody", "dialogFooter"],
+      "rule":        "Modals are for confirmations and micro-forms (≤3 fields) only. Use drawer otherwise."
+    },
+    "statusPill": {
+      "description": "Read-only status badge. Inline in tables, cards, headers.",
+      "component":   "StatusPill",
+      "anatomy":     "text-[10px] font-black rounded-full px-2.5 py-0.5",
+      "tones":       ["success", "warning", "danger", "info", "neutral"]
+    },
+    "emptyState": {
+      "description": "No-data placeholder. Centered icon + title + description + primary action.",
+      "component":   "EmptyWorkspace",
+      "minHeight":   "min-h-52 or min-h-64",
+      "rule":        "Always provide a creation CTA where records can be created."
+    },
+    "formField": {
+      "description": "Label + input pair.",
+      "inputHeight": "44px",
+      "radius":      "rounded-xl (inputs, selects), rounded-[10px] (search bars)",
+      "labelStyle":  "text-[10px] font-black uppercase tracking-widest text-zinc-500"
+    }
+  },
+
+  "components": {
+    "button": {
+      "heights": {
+        "sm":   "h-7  28px — board card hover actions",
+        "md":   "h-9  36px — secondary actions",
+        "base": "h-10 40px — default",
+        "lg":   "h-11 44px — primary page CTA"
+      },
+      "variants": {
+        "default":  "bg-zinc-900 text-white hover:bg-black | dark: bg-white text-zinc-950",
+        "outline":  "border border-zinc-200/80 bg-white text-zinc-700 hover:bg-zinc-50 | dark: border-white/[0.06] bg-white/[0.02] text-zinc-300",
+        "ghost":    "bg-transparent hover:bg-zinc-50 | dark: hover:bg-white/[0.04]",
+        "primary":  "bg-primary text-white hover:bg-primary-hover  →  AppPrimaryButton",
+        "danger":   "text-red-600 hover:border-red-200 hover:bg-red-50 | dark: text-red-400"
+      },
+      "radius":     "rounded-[8px] default | rounded-xl tall buttons | rounded-2xl hero CTAs",
+      "typography": "text-[10px] font-black uppercase tracking-widest (primary) | text-xs font-semibold (secondary)"
+    },
+    "input": {
+      "height":     "44px",
+      "radius":     "rounded-xl",
+      "typography": "text-sm font-medium",
+      "border":     "border-zinc-200/80 | dark: border-white/[0.06]",
+      "focus":      "focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400"
+    },
+    "table": {
+      "rowHeight":   "48px",
+      "component":   "AppDataTable",
+      "headerStyle": "text-[10px] font-black uppercase tracking-widest text-zinc-400"
+    },
+    "tabs": {
+      "component":     "AppTabsList",
+      "activeStyle":   "border-b-2 border-zinc-900 dark:border-white",
+      "inactiveStyle": "border-b-2 border-transparent text-zinc-400 hover:text-zinc-600",
+      "typography":    "text-[10px] font-black uppercase tracking-widest"
+    },
+    "avatar": {
+      "sizes": {
+        "xs": "h-5 w-5   text-[8px]  rounded-full",
+        "sm": "h-7 w-7   text-[9px]  rounded-lg",
+        "md": "h-9 w-9   text-[11px] rounded-full",
+        "lg": "h-10 w-10 text-[12px] rounded-[10px]",
+        "xl": "h-14 w-14 text-[14px] rounded-[14px]"
+      },
+      "initials": "First 2 words, first character each, uppercased"
+    }
+  },
+
+  "motion": {
+    "philosophy": "Ease out with exponential curves. No bounce or elastic. Never animate layout properties (width, height, padding, margin).",
+    "durations": {
+      "micro":     "100–150ms — hover fills, opacity",
+      "quick":     "150–200ms — card lift, button press",
+      "moderate":  "200–300ms — sidebar, drawer slide",
+      "deliberate":"300–500ms — page transitions, skeletons"
+    },
+    "easings": {
+      "default": "ease-out",
+      "enter":   "cubic-bezier(0.16, 1, 0.3, 1)",
+      "exit":    "cubic-bezier(0.4, 0, 1, 1)"
+    },
+    "patterns": {
+      "cardHover":     "hover:-translate-y-0.5 hover:shadow-md transition-all duration-150",
+      "buttonPress":   "active:scale-[0.98] transition",
+      "sidebarToggle": "transition-all duration-300",
+      "dragGhost":     "scale-[0.97] opacity-50 transition-all duration-150",
+      "actionReveal":  "opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+    },
+    "bans": [
+      "Do not animate width, height, padding, or margin.",
+      "No bounce or elastic easing.",
+      "No auto-playing animations that cannot be paused."
+    ]
+  },
+
+  "accessibility": {
+    "tapTarget":     "Minimum 44×44px — matches --button-height-lg and brand rule.",
+    "focusRing":     "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+    "colorContrast": "4.5:1 body text, 3:1 UI controls",
+    "rtlSupport":    "All components use logical CSS properties (ps/pe, ms/me). Arabic locale switches to --font-arabic (Cairo).",
+    "aria": [
+      "All icon-only buttons must have aria-label.",
+      "All form inputs must have <label> or aria-label.",
+      "Decorative icons use aria-hidden='true'.",
+      "Do not rely on logo/mark alone to communicate an action."
+    ]
+  },
+
+  "i18n": {
+    "locales":       ["en", "ar"],
+    "defaultLocale": "en",
+    "rtlLocales":    ["ar"],
+    "files": {
+      "workspace": "apps/workspace/messages/{locale}.json"
+    },
+    "rule": "All UI strings must come from useTranslations(). No hardcoded English strings in TSX except debug output."
+  },
+
+  "antiPatterns": {
+    "$comment": "These patterns are banned across all Qentrah surfaces — workspace, mobile, and marketing.",
+    "banned": [
+      {
+        "pattern":     "Side-stripe borders",
+        "description": "border-left or border-right > 1px as a colored accent on cards, alerts, list items. Rewrite with full borders, background tints, or leading icons."
+      },
+      {
+        "pattern":     "Gradient text",
+        "description": "background-clip:text + gradient fill. Decorative and meaningless. Use solid color with weight or size emphasis."
+      },
+      {
+        "pattern":     "Glassmorphism as default",
+        "description": "backdrop-blur decorative cards everywhere. Allowed only for specific overlays (e.g. 'coming soon' blurs)."
+      },
+      {
+        "pattern":     "Hero-metric template",
+        "description": "Big number + small label + supporting stats + gradient accent. SaaS cliché. Forbidden."
+      },
+      {
+        "pattern":     "Identical card grids",
+        "description": "Same-size icon + heading + text cards repeated endlessly. Vary scale, weight, and grouping."
+      },
+      {
+        "pattern":     "Modal as first thought",
+        "description": "Modals are for confirmations and micro-forms only (≤3 fields). Use drawer for anything longer."
+      },
+      {
+        "pattern":     "Nested cards",
+        "description": "A card inside a card. Always wrong. Use rows, inline data, or sub-headers."
+      },
+      {
+        "pattern":     "Hardcoded hex in TSX",
+        "description": "Always use semantic tokens (--color-primary, etc.) or Tailwind classes. No raw hex in component files."
+      },
+      {
+        "pattern":     "Decorating the mark",
+        "description": "No shadows, gradients, textures, or extra symbols on or around the Qentrah logo/icon. Per brand/identity rules."
+      },
+      {
+        "pattern":     "Mark on busy backgrounds",
+        "description": "The Qentrah mark must only appear on clean, solid surfaces — white, near-white, or solid dark. Never over imagery."
+      }
+    ]
+  }
+}

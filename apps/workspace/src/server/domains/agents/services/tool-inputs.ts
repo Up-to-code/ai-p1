@@ -79,15 +79,6 @@ export const clientCreateInputSchema = z.object({
     });
   }
 });
-export const assetInputSchema = z.object({
-  name: z.string().min(1),
-  type: z.string(),
-  status: z.enum(["draft", "active", "review", "approved", "archived"]),
-  visibility: visibilitySchema,
-  fileId: optionalText,
-  url: optionalText,
-  description: optionalText,
-}).passthrough();
 export const projectInputSchema = z.object({
   name: z.string().min(1),
   clientId: stringId.optional(),
@@ -102,6 +93,9 @@ export const projectInputSchema = z.object({
 export const calendarInputSchema = z.object({
   title: z.string().min(1),
   ownerUserId: optionalText,
+  clientId: stringId.optional(),
+  projectId: stringId.optional(),
+  taskId: stringId.optional(),
   startAt: z.number(),
   endAt: z.number(),
   type: z.enum(["meeting", "deadline", "reminder", "milestone", "focusBlock"]),
@@ -117,6 +111,8 @@ export const taskInputSchema = z.object({
   visibility: visibilitySchema,
   priority: z.enum(["low", "normal", "high", "urgent"]),
   assigneeUserId: optionalText,
+  clientId: stringId.optional(),
+  projectId: stringId.optional(),
   dueDate: optionalText,
   description: optionalText,
 }).passthrough();
@@ -179,24 +175,6 @@ export const toolInputSchemas: Record<string, z.ZodTypeAny> = {
   clients_create: clientCreateInputSchema,
   clients_update: clientInputSchema.partial().extend({ clientId: stringId }).passthrough(),
   clients_delete: z.object({ clientId: stringId }).passthrough(),
-  clients_link_asset: z.object({
-    clientId: stringId,
-    assetId: stringId,
-    status: z.enum(["interested", "shortlisted", "review", "proposal", "rejected"]).optional(),
-    notes: optionalText,
-  }).passthrough(),
-  clients_unlink_asset: z.object({ clientId: stringId, assetId: stringId }).passthrough(),
-  assets_list: listSchema,
-  assets_get: z.object({ assetId: stringId }).passthrough(),
-  assets_open: z.object({ assetId: stringId }).passthrough(),
-  assets_create: assetInputSchema,
-  assets_update: assetInputSchema.partial().extend({ assetId: stringId }).passthrough(),
-  assets_update_field: z.object({
-    assetId: stringId,
-    field: z.string().min(1),
-    value: z.union([z.string(), z.number(), z.boolean()]),
-  }).passthrough(),
-  assets_delete: z.object({ assetId: stringId }).passthrough(),
   projects_list: listSchema,
   projects_get: z.object({ projectId: stringId }).passthrough(),
   projects_create: projectInputSchema,
@@ -218,9 +196,9 @@ export const toolInputSchemas: Record<string, z.ZodTypeAny> = {
   tasks_update: taskInputSchema.partial().extend({ taskId: stringId }).passthrough(),
   tasks_complete: z.object({ taskId: stringId }).passthrough(),
   tasks_delete: z.object({ taskId: stringId }).passthrough(),
-  media_list: z.object({ resourceType: z.enum(["project", "asset", "client", "calendarEvent", "task"]), resourceId: stringId, limit: z.number().int().min(1).max(50).optional(), cursor: z.string().nullable().optional() }).passthrough(),
+  media_list: z.object({ resourceType: z.enum(["project", "client", "calendarEvent", "task"]), resourceId: stringId, limit: z.number().int().min(1).max(50).optional(), cursor: z.string().nullable().optional() }).passthrough(),
   media_attach_url: z.object({
-    resourceType: z.enum(["project", "asset", "client", "calendarEvent", "task"]),
+    resourceType: z.enum(["project", "client", "calendarEvent", "task"]),
     resourceId: stringId,
     url: z.string().url(),
     name: z.string().min(1),

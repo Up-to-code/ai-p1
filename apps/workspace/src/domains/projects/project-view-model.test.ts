@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  addProjectPriceRow,
   compactProjectDetailRows,
   matchesProjectSearch,
   projectDocumentAssets,
@@ -11,9 +10,7 @@ import {
   projectMovementWidth,
   projectWeekdayLabels,
   nextProjectCalendarMonth,
-  removeProjectPriceRow,
   toggleProjectAssetType,
-  updateProjectPriceRow,
 } from "./project-view-model";
 
 describe("project view model", () => {
@@ -50,7 +47,8 @@ describe("project view model", () => {
   });
 
   it("formats location and removes empty detail rows", () => {
-    expect(projectLocationLabel({ city: "Remote", area: "Support" })).toBe("Remote · Support");
+    expect(projectLocationLabel({ reference: "PRJ-001" })).toBe("PRJ-001");
+    expect(projectLocationLabel({})).toBe("");
     expect(compactProjectDetailRows([
       ["city", "Remote"],
       ["area", ""],
@@ -66,72 +64,36 @@ describe("project view model", () => {
   });
 
   it("matches project search across public project fields", () => {
-    const project = { name: "North Gate", reference: "PRJ-1", city: "Remote", developer: "Qentrah" };
+    const project = { name: "North Gate", reference: "PRJ-1" };
 
     expect(matchesProjectSearch(project, " north ")).toBe(true);
-    expect(matchesProjectSearch(project, "qent")).toBe(true);
+    expect(matchesProjectSearch(project, "prj")).toBe(true);
     expect(matchesProjectSearch(project, "south")).toBe(false);
   });
 
   it("projects stable form defaults from an existing project", () => {
     const defaults = projectFormDefaults({
       name: "North",
-      developer: "Qentrah",
-      city: "Remote",
-      area: "Support",
-      type: "Unknown",
-      assetTypes: ["Office", "Other"],
-      status: "approved",
+      status: "active",
+      health: "onTrack",
       visibility: "public",
-      assetCount: 12,
-      averagePrice: "",
-      priceRange: "1M",
-      projectPrices: [{ id: "price_1", label: "A", price: "1M" }],
-      regaAuthorizationNo: "R",
-      regaExpiresAt: "2026-01-01",
-      planNumber: "P",
-      plotNumber: "PL",
-      postalIdentity: "PO",
       description: "Desc",
     } as never);
 
     expect(defaults).toMatchObject({
       name: "North",
-      type: "Residential",
-      assetTypes: ["Office"],
-      assetCount: "12",
-      averagePrice: "",
-      projectPrices: [{ id: "price_1", label: "A", price: "1M" }],
+      status: "active",
+      health: "onTrack",
+      visibility: "public",
+      description: "Desc",
     });
   });
 
   it("updates offering mix without mutating the current list", () => {
-    const current = ["Office"] as const;
+    const current = ["Office"];
 
     expect(toggleProjectAssetType([...current], "Retail")).toEqual(["Office", "Retail"]);
     expect(toggleProjectAssetType([...current], "Office")).toEqual([]);
     expect(current).toEqual(["Office"]);
-  });
-
-  it("applies project price row commands", () => {
-    const rows = [
-      { id: "one", label: "One", price: "1M" },
-      { id: "two", label: "Two", price: "2M" },
-    ];
-
-    expect(updateProjectPriceRow(rows, "two", "price", "2.5M")).toEqual([
-      { id: "one", label: "One", price: "1M" },
-      { id: "two", label: "Two", price: "2.5M" },
-    ]);
-    expect(addProjectPriceRow(rows, () => "three")).toEqual([
-      ...rows,
-      { id: "three", label: "", price: "" },
-    ]);
-    expect(removeProjectPriceRow(rows, "one", () => "fallback")).toEqual([
-      { id: "two", label: "Two", price: "2M" },
-    ]);
-    expect(removeProjectPriceRow([{ id: "one", label: "", price: "" }], "one", () => "fallback")).toEqual([
-      { id: "fallback", label: "", price: "" },
-    ]);
   });
 });

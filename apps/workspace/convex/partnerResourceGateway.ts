@@ -92,7 +92,7 @@ function clientPatch(input: Input) {
 async function listTable(
   ctx: QueryCtx,
   organizationId: string,
-  table: "clients" | "assets" | "projects" | "tasks" | "calendarEvents",
+  table: "clients" | "projects" | "tasks" | "calendarEvents",
   input: Input,
   defaultLimit: number,
 ) {
@@ -220,16 +220,6 @@ export async function readPartnerResourceThroughGateway(ctx: QueryCtx, args: Rea
     return listTable(ctx, args.organizationId, "clients", input, args.defaultLimit);
   }
 
-  if (args.resource === "asset") {
-    const assetId = optionalString(input, "assetId");
-    if (assetId) {
-      const asset = await ctx.db.get(assetId as Id<"assets">);
-      if (!asset || asset.organizationId !== args.organizationId || asset.deletedAt) return null;
-      return present(asset);
-    }
-    return listTable(ctx, args.organizationId, "assets", input, args.defaultLimit);
-  }
-
   if (args.resource === "project") {
     const projectId = optionalString(input, "projectId");
     if (projectId) {
@@ -269,7 +259,7 @@ export async function readPartnerResourceThroughGateway(ctx: QueryCtx, args: Rea
       .withIndex("by_organization_resource", (q) =>
         q
           .eq("organizationId", args.organizationId)
-          .eq("resourceType", resourceType as "project" | "asset" | "client" | "calendarEvent" | "task")
+          .eq("resourceType", resourceType as "project" | "client" | "calendarEvent" | "task")
           .eq("resourceId", resourceId),
       )
       .take(limitFromInput(input, args.defaultLimit));

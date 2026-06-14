@@ -6,80 +6,80 @@ import { Reveal } from "@/components/landing/cinematic-motion";
 const copy = {
   en: {
     painPoints: {
-      eyebrow: "The Pain Points",
-      title: "Real estate shouldn't be this hard.",
-      description: "Manual processes, scattered data, and slow execution are costing you growth. Fragmented workflows are the invisible tax on your business.",
+      eyebrow: "The Old Way of Working",
+      title: "The Old Way of Working is Broken.",
+      description: "You are a human doing machine work. Managing 10 different SaaS tools, chasing updates, and drowning in busywork. It's time to let it go.",
       items: [
         {
-          title: "Scattered Data",
-          desc: "Pricing and data live in disconnected WhatsApp chats, Excel spreadsheets, and old CRMs, leading to manual copying errors and constant asset pricing mismatches."
+          title: "The SaaS Trap",
+          desc: "You bought tools to save time, but now you spend all your time managing the tools. The context switching is destroying your focus."
         },
         {
-          title: "Slow Execution",
-          desc: "Contracts and agreements wait for manual signature, and price confirmations take days of redundant messaging, pending emails, and phone follow-ups."
+          title: "Manual Chaos",
+          desc: "Copy-pasting data, writing endless follow-ups, and updating statuses manually across disconnected systems."
         },
         {
-          title: "Lost Opportunities",
-          desc: "Qualified client requests expire or buyers go to faster competitors because brokers lack instant, updated access to asset availability and inventory data."
+          title: "Wasted Potential",
+          desc: "Your team's talent is buried under administrative overhead instead of driving creative and strategic outcomes."
         }
       ]
     },
     fix: {
-      eyebrow: "The Qentrah Resolution",
-      title: "How Qentrah Fixes It",
-      description: "A single platform of record, automated pipeline verification, and zero lead leakage. Run your operations with perfect speed and absolute trust.",
+      eyebrow: "The New Paradigm",
+      title: "Say Hello to Your New AI Teammate.",
+      description: "Qentrah isn't just software; it's an intelligent agent that actively works alongside you. You set the direction, the AI handles the execution.",
       items: [
         {
-          title: "One Source of Truth",
-          desc: "All inventory and client data are synchronized in real-time. Double-copy errors are zero, and pricing is locked and continuously updated for everyone."
+          title: "Autonomous Execution",
+          desc: "Hand off tasks and watch them get done. From organizing data to drafting communications, the agent handles the heavy lifting."
         },
         {
-          title: "2.4-Second Pipeline",
-          desc: "AI verifies asset details in real-time and dispatches agreements directly to clients via WhatsApp for e-signature within seconds."
+          title: "Unified Intelligence",
+          desc: "One brain that understands your clients, projects, and goals. No more siloed data or disjointed context."
         },
         {
-          title: "Zero Lead Leakage",
-          desc: "Clients receive interactive brochures automatically within 30 seconds—even outside business hours—with instant tour booking to secure deals immediately."
+          title: "Human Leverage",
+          desc: "Multiply your team's output without adding headcount. Let humans focus on strategy while the AI handles the operations."
         }
       ]
     }
   },
   ar: {
     painPoints: {
-      eyebrow: "التحديات التشغيلية",
-      title: "التشغيل العقاري لا ينبغي أن يُدار بالتعقيد",
-      description: "تعدد الأدوات، وتشتت البيانات، وبطء الإجراءات يرفع التكلفة ويضعف الكفاءة. مع كانترا، تتحول العمليات إلى لمسة ذكية واحدة تُسرّع القرار وترفع جودة الأداء.",
+      eyebrow: "طريقة العمل القديمة",
+      title: "العمل بالطريقة القديمة لم يعد مجدياً.",
+      description: "أنت إنسان تقوم بعمل الآلات. تدير 10 أدوات مختلفة، وتطارد التحديثات، وتغرق في العمل الروتيني. حان الوقت للتخلص من ذلك.",
       items: [
         {
-          title: "تشتت البيانات",
-          desc: "تتوزع البيانات والعملاء والطلبات بين المحادثات والجداول والأنظمة المختلفة، مما يضعف وضوح القرار ويزيد احتمالية الأخطاء في التسعير والمتابعة."
+          title: "فخ التطبيقات",
+          desc: "اشتريت أدوات لتوفير الوقت، لكنك الآن تقضي كل وقتك في إدارتها. التنقل بينها يدمر تركيزك."
         },
         {
-          title: "دورة بيع أطول من اللازم",
-          desc: "تأخر الموافقات، وتعدد المراسلات، والاعتماد اليدوي للاتفاقيات يحوّل كل فرصة بيعية إلى مسار بطيء يستهلك الوقت ويضعف سرعة الإغلاق."
+          title: "الفوضى اليدوية",
+          desc: "نسخ ولصق البيانات، كتابة رسائل متابعة لا تنتهي، وتحديث الحالات يدوياً عبر أنظمة منفصلة."
         },
         {
-          title: "فرص جاهزة تضيع",
-          desc: "تتأخر الاستجابة للعميل المؤهل بسبب غياب البيانات المحدثة عن الوحدات والمخزون؛ فتضعف فرصة الإغلاق ويتجه العميل لمنافس أسرع."
+          title: "إهدار الإمكانيات",
+          desc: "موهبة فريقك مدفونة تحت الأعباء الإدارية بدلاً من التركيز على النتائج الإبداعية والاستراتيجية."
         }
       ]
     },
     fix: {
-      eyebrow: "الحل مع كانترا",
-      title: "مع كانترا.. تتحول الفوضى الى تشغيل ذكي",
-      description: "منصة موحدة تضع المشاريع، العملاء، الوسطاء والبيانات في مساحة واحدة؛ لتسريع البيع، توحيد القرار، ورفع كفاءة التشغيل من أول تواصل حتى إغلاق الصفقة.",
+      eyebrow: "النموذج الجديد",
+      title: "رحب بزميلك الذكي الجديد.",
+      description: "كانترا ليست مجرد برنامج؛ إنها وكيل ذكي يعمل جنباً إلى جنب معك. أنت تحدد الاتجاه، والذكاء الاصطناعي يتولى التنفيذ.",
       items: [
         {
-          title: "المصدر الوحيد للحقيقة",
-          desc: "جميع بيانات الوحدات والعملاء متزامنة لحظياً وبشكل موحد. خطأ في النقل المزدوج يساوي صفراً، والأسعار مقفلة ومحدثة باستمرار للجميع."
+          title: "تنفيذ ذاتي",
+          desc: "سلم المهام وشاهدها تنجز. من تنظيم البيانات إلى صياغة الرسائل، الوكيل يتولى المهام الثقيلة."
         },
         {
-          title: "إجراءات أسرع… وبيع أكثر انضباطًا",
-          desc: "من تأهيل العميل إلى متابعة الطلب وإرسال العروض، تتحول الخطوات المتفرقة إلى مسار واضح يقلل التأخير ويرفع سرعة الإغلاق."
+          title: "ذكاء موحد",
+          desc: "عقل واحد يفهم عملاءك، مشاريعك، وأهدافك. لا مزيد من البيانات المعزولة أو السياق المشتت."
         },
         {
-          title: "الاستجابة الفورية لكل عميل",
-          desc: "العملاء خارج أوقات العمل يتلقون بروشوراً تفاعلياً خلال ٣٠ ثانية ويحجزون المعاينة فوراً لتأمين وإغلاق الصفقات العقارية دون أي تسريب للفرص."
+          title: "مضاعفة قدرات البشر",
+          desc: "ضاعف إنتاجية فريقك دون زيادة العدد. دع البشر يركزون على الاستراتيجية بينما يتولى الذكاء الاصطناعي العمليات."
         }
       ]
     }

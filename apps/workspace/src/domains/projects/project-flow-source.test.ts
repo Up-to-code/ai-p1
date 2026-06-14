@@ -12,26 +12,21 @@ function readSource(path: string) {
 describe("project flow source", () => {
   const source = readSource("src/domains/projects/components/projects-screens.tsx");
 
-  it("uses the project command detail header and tab spacing pattern", () => {
-    expect(source).toContain("<Tabs defaultValue=\"overview\" className=\"space-y-6\"");
-    expect(source).toContain("MiniMovement label={td('sales.status.available')}");
-    expect(source).toContain("<AppTabsList");
-    expect(source).toContain("className=\"gap-8\"");
-    expect(source).not.toContain("<TabsList");
-    expect(source).not.toContain("<TabsTrigger");
+  it("uses the simplified project detail layout", () => {
+    expect(source).toContain("CommandMetric label={td(\"work.status\")}");
+    expect(source).toContain("CommandMetric label={t(\"detail.labels.value\")}");
+    expect(source).toContain("ResourceMediaBrowser");
+    expect(source).not.toContain("MiniMovement");
+    expect(source).not.toContain("ReadinessBar");
+    expect(source).not.toContain("ProjectAssetCard");
+    expect(source).not.toContain("/assets/");
   });
 
-  it("keeps project-specific detail tabs and data surfaces", () => {
-    for (const value of ['value: "overview"', 'value: "inventory"', 'value: "documents"', 'value: "sales"', 'value: "activity"']) {
-      expect(source).toContain(value);
-    }
-    expect(source).toContain("projectInventoryMetrics(assets, project?.assetCount ?? 0)");
+  it("keeps project-specific detail data surfaces", () => {
     expect(source).toContain("projectDocumentAssets(projectMedia)");
     expect(source).toContain("compactProjectDetailRows(optionalCoreDetailRows)");
     expect(source).toContain("projectLocationLabel(project)");
     expect(source).toContain("ProjectMetaPill icon={Layers3}");
-    expect(source).toContain("ReadinessBar label={td('metrics.inventoryCoverage')}");
-    expect(source).toContain("ResourceMediaBrowser");
     expect(source).not.toContain("REGA-8829-01");
     expect(source).not.toContain("42.8M SAR");
   });

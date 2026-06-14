@@ -5,7 +5,6 @@ describe("Admin organization dashboard projection", () => {
   it("collects unique member ids from activity, access, partner, and invite records", () => {
     expect(adminOrganizationMemberIds({
       projects: [{ createdByUserId: "user_1" }],
-      assets: [{ createdByUserId: "user_2" }],
       clients: [{ createdByUserId: "user_1" }],
       tasks: [{ createdByUserId: undefined }],
       calendar: [{ createdByUserId: "user_3" }],
@@ -14,7 +13,7 @@ describe("Admin organization dashboard projection", () => {
       mcpConnections: [{ createdByUserId: "user_5" }],
       partnerConnections: [{ _id: "partner_1", partnersClientId: "client", status: "active", updatedAt: 1, authorizedByUserId: "user_6" }],
       invites: [{ createdByUserId: "user_7", usedByUserId: "user_8" }],
-    })).toEqual(["user_1", "user_2", "user_3", "user_4", "user_5", "user_6", "user_7", "user_8"]);
+    })).toEqual(["user_1", "user_3", "user_4", "user_5", "user_6", "user_7", "user_8"]);
   });
 
   it("caps member ids at twelve in discovery order", () => {
@@ -22,7 +21,6 @@ describe("Admin organization dashboard projection", () => {
 
     expect(adminOrganizationMemberIds({
       projects,
-      assets: [],
       clients: [],
       tasks: [],
       calendar: [],

@@ -21,7 +21,7 @@ export function CompanyInfoForm({ onNext, organizationName }: FormProps) {
   const t = useTranslations("Onboarding.company");
   const tc = useTranslations("Common");
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<CompanyInfoInput>({
-    resolver: zodResolver(companyInfoSchema),
+    resolver: zodResolver(companyInfoSchema as any),
     defaultValues: { legalName: organizationName, displayName: organizationName, crNumber: "", hqCity: "" },
   });
 

@@ -17,7 +17,7 @@ export function mcpConnectionPrincipalType(connection: Doc<"organizationMcpConne
 }
 
 function normalizeMcpResource(resource: McpResource | "property"): McpResource {
-  return resource === "property" ? "asset" : resource;
+  return resource === "property" ? "project" : resource;
 }
 
 export function normalizeMcpPermissions(permissions: StoredMcpPermission[]): McpPermission[] {

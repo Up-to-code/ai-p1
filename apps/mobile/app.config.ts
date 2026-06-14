@@ -9,6 +9,8 @@ const {
 const workspaceRoot = path.resolve(__dirname, "../..");
 const appRoot = __dirname;
 const brandName = "Qentrah";
+const brandDescription =
+  "AI workspace for real estate teams to manage conversations, tasks, properties, and operations from one mobile command center.";
 const brandPrimary = "#0b5cff";
 const splashBackground = "#FFFFFF";
 const splashDarkBackground = "#000000";
@@ -51,19 +53,30 @@ const config: ExpoConfig = {
   slug: "qentrah-mobile",
   scheme: "qentrah",
   version: "0.1.0",
+  description: brandDescription,
+  primaryColor: brandPrimary,
   orientation: "portrait",
   userInterfaceStyle: "automatic",
   icon: "./assets/brand/qentrah-mobile-icon.png",
+  locales: {
+    ar: "./locales/ar.json",
+    "en-US": "./locales/en-US.json",
+    "ar-SA": "./locales/ar-SA.json",
+    "fr-FR": "./locales/fr-FR.json",
+  },
   experiments: {
     typedRoutes: true,
   },
   ios: {
     supportsTablet: false,
     bundleIdentifier: "com.qentrah.mobile",
-    buildNumber: "7",
+    buildNumber: "8",
     usesAppleSignIn: true,
     associatedDomains: ["applinks:app.qentrah.com"],
     infoPlist: {
+      CFBundleAllowMixedLocalizations: true,
+      CFBundleDevelopmentRegion: "en",
+      CFBundleLocalizations: ["en", "ar", "fr"],
       ITSAppUsesNonExemptEncryption: false,
       NSPhotoLibraryUsageDescription:
         "Allow Qentrah to let you attach photos and documents to workspace messages.",
@@ -150,9 +163,12 @@ const config: ExpoConfig = {
     clerkPublishableKey: mobileEnvironment.clerkPublishableKey,
     workspaceApiUrl: mobileEnvironment.workspaceApiUrl,
     mobileEnvironment: mobileEnvironment.environment,
+    supportedLocales: ["en", "ar", "fr"],
+    supportsRTL: true,
     brand: {
       name: brandName,
       tagline: "The intelligent center of operations.",
+      description: brandDescription,
     },
   },
 };

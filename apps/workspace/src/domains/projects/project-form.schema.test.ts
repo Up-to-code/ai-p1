@@ -3,17 +3,9 @@ import { projectSchema } from "./validation/project.schema";
 
 const validProjectForm = {
   name: "Test project",
-  developer: "Operations team",
-  city: "Remote",
-  area: "Support",
-  type: "Commercial",
-  assetTypes: ["Office"],
-  status: "draft",
+  status: "planned",
+  health: "onTrack",
   visibility: "private",
-  assetCount: "0",
-  averagePrice: "100",
-  projectPrices: [],
-  priceRange: "",
   description: "test",
 };
 

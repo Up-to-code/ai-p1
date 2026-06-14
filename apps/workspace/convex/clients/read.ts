@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
 import { query } from "../_generated/server";
-import type { Doc, Id } from "../_generated/dataModel";
+import type { Doc } from "../_generated/dataModel";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { revealClientPii } from "../security/clientPii";
 import {
@@ -16,7 +16,6 @@ import { clientTypeValidator, clientValidator, resolveClientPipelineStage } from
 const MAX_LIST_ITEMS = 300;
 const MAX_SEARCH_SCAN_ITEMS = 500;
 const MAX_STATS_SCAN_ITEMS = 2_000;
-const assetLinkStatuses = ["interested", "shortlisted", "review", "proposal", "rejected"] as const;
 
 function withoutPrivateClientFields(client: Doc<"clients">) {
   const safeClient = { ...client };
@@ -69,19 +68,6 @@ async function presentClientListItem(client: Doc<"clients">) {
     pipelineOrder: client.pipelineOrder,
     added: isoDate(client.createdAt),
     lastContact: isoDate(client.updatedAt),
-  };
-}
-
-function presentClientAssetLink(link: Doc<"recordLinks">) {
-  const legacyStatus = link.label === "viewing" ? "review" : link.label === "offer" ? "proposal" : link.label;
-  const status = assetLinkStatuses.find((candidate) => candidate === legacyStatus) ?? "shortlisted";
-  return {
-    ...link,
-    id: link._id,
-    clientId: link.sourceRecordId,
-    assetId: link.targetRecordId,
-    status,
-    notes: link.label && link.label !== status ? link.label : undefined,
   };
 }
 
@@ -206,71 +192,5 @@ export const get = query({
     }
 
     return presentClient(client);
-  },
-});
-
-export const listAssetLinks = query({
-  args: { organizationId: v.string(), clientId: v.id("clients") },
-  returns: v.array(v.object({ link: v.any(), asset: v.any() })),
-  handler: async (ctx, args) => {
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
-    const client = await ctx.db.get(args.clientId);
-    if (!client || client.organizationId !== args.organizationId || client.deletedAt) return [];
-    const links = await ctx.db
-      .query("recordLinks")
-      .withIndex("by_source", (q) => q.eq("organizationId", args.organizationId).eq("sourceRecordType", "client").eq("sourceRecordId", args.clientId))
-      .take(100);
-
-    return Promise.all(links
-      .filter((link) => !link.deletedAt && link.targetRecordType === "asset")
-      .map(async (link) => {
-        const asset = await ctx.db.get(link.targetRecordId as Id<"assets">);
-        return {
-          link: presentClientAssetLink(link),
-          asset: asset && asset.organizationId === args.organizationId && !asset.deletedAt
-            ? {
-              ...asset,
-              id: asset._id,
-              coverImageUrl: asset.url ?? "",
-              title: asset.name,
-              project: asset.type,
-              price: asset.status,
-              area: asset.visibility ?? "private",
-              reference: asset._id,
-              bedrooms: 0,
-              bathrooms: 0,
-            }
-            : null,
-        };
-      }));
-  },
-});
-
-export const listAssetLinksForAsset = query({
-  args: { organizationId: v.string(), assetId: v.id("assets") },
-  returns: v.array(v.object({ link: v.any(), client: v.any() })),
-  handler: async (ctx, args) => {
-    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
-    const asset = await ctx.db.get(args.assetId);
-    if (!asset || asset.organizationId !== args.organizationId || asset.deletedAt) return [];
-    const links = await ctx.db
-      .query("recordLinks")
-      .withIndex("by_target", (q) => q.eq("organizationId", args.organizationId).eq("targetRecordType", "asset").eq("targetRecordId", args.assetId))
-      .take(100);
-
-    return Promise.all(links
-      .filter((link) => !link.deletedAt && link.sourceRecordType === "client")
-      .map(async (link) => {
-        const client = await ctx.db.get(link.sourceRecordId as Id<"clients">);
-        return {
-          link: presentClientAssetLink(link),
-          client: client && client.organizationId === args.organizationId && !client.deletedAt
-            ? {
-              ...await presentClientListItem(client),
-              contact: client.email ?? client.phone ?? client.company ?? "",
-            }
-            : null,
-        };
-      }));
   },
 });

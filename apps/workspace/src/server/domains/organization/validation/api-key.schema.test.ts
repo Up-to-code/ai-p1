@@ -24,7 +24,7 @@ describe("organization API key validation", () => {
     ]);
 
     expect(() => normalizeOrganizationApiKeyPermissions([
-      { resource: "asset", actions: ["read", "update"] },
+      { resource: "media", actions: ["read", "update"] },
     ])).toThrow("Only client API keys can create, update, or delete records in v1.");
   });
 });

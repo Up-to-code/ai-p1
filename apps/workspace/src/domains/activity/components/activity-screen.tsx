@@ -103,14 +103,7 @@ export function ActivityScreen() {
         <>
           {isLoading ? (
             <ActivityLoadingSkeleton />
-          ) : (
-            <AppStatsGrid stats={[
-              { label: t("stats.total"), value: stats?.total ?? "...", icon: Activity },
-              { label: t("stats.people"), value: stats?.people ?? "...", icon: Users },
-              { label: t("stats.business"), value: stats?.business ?? "...", icon: Building2 },
-              { label: t("stats.latest"), value: latest, icon: Clock3 },
-            ]} />
-          )}
+          ) : null}
           {eventsQuery.queryStatus === "error" ? (
             <HttpQueryState query={eventsQuery} variant="activity" />
           ) : isLoading ? null : events.length === 0 ? (
@@ -139,19 +132,6 @@ export function ActivityScreen() {
 function ActivityLoadingSkeleton() {
   return (
     <div className="space-y-6" role="status" aria-label="Loading activity">
-      <div className="grid overflow-hidden rounded-[24px] border border-zinc-100 bg-white dark:border-white/5 dark:bg-[#0A0A0A] md:grid-cols-4">
-        {[0, 1, 2, 3].map((item) => (
-          <div key={item} className="border-b border-zinc-100 p-5 last:border-b-0 dark:border-white/5 md:border-b-0 md:border-e md:last:border-e-0">
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-4">
-                <Skeleton className="h-3 w-24 rounded-full" />
-                <Skeleton className="h-7 w-20 rounded-full" />
-              </div>
-              <Skeleton className="h-4 w-4 rounded-full" />
-            </div>
-          </div>
-        ))}
-      </div>
 
       <div className="overflow-hidden rounded-[24px] border border-zinc-100 bg-white dark:border-white/5 dark:bg-[#0A0A0A]">
         <div className="grid grid-cols-[0.8fr_1fr_0.8fr_1.4fr_0.7fr] gap-8 border-b border-zinc-100 px-5 py-4 dark:border-white/5">

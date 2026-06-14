@@ -18,7 +18,7 @@ export function ClientSheet({ open, onOpenChange, existing, indexQueryKey, onSuc
   
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:w-[32vw] sm:min-w-[450px] max-w-none sm:max-w-none border-none bg-[#FBFBFA] p-0 dark:bg-[#0A0A0A] shadow-2xl">
+      <SheetContent side="right" className="w-full sm:w-[45vw] sm:min-w-[600px] max-w-none sm:max-w-none border-none bg-[#FBFBFA] p-0 dark:bg-[#0A0A0A] shadow-2xl">
         <div className="flex h-full flex-col">
           <SheetHeader className="border-b border-zinc-100 bg-white p-10 dark:border-white/5 dark:bg-[#0A0A0A]">
             <div className="flex items-center gap-2">

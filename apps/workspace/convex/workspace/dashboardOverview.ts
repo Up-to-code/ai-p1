@@ -6,9 +6,6 @@ export type DashboardOverviewRows = {
   allProjects: Doc<"projects">[];
   activeProjects: Doc<"projects">[];
   blockedProjects: Doc<"projects">[];
-  approvedAssets: Doc<"assets">[];
-  reviewAssets: Doc<"assets">[];
-  draftAssets: Doc<"assets">[];
   tasks: Doc<"tasks">[];
   events: Doc<"calendarEvents">[];
 };
@@ -19,9 +16,6 @@ type DashboardActiveRows = {
   allProjects: Doc<"projects">[];
   activeProjects: Doc<"projects">[];
   blockedProjects: Doc<"projects">[];
-  approvedAssets: Doc<"assets">[];
-  reviewAssets: Doc<"assets">[];
-  draftAssets: Doc<"assets">[];
   openTasks: Doc<"tasks">[];
   events: Doc<"calendarEvents">[];
 };
@@ -40,9 +34,6 @@ function activeDashboardRows(rows: DashboardOverviewRows): DashboardActiveRows {
     allProjects: activeRows(rows.allProjects),
     activeProjects: activeRows(rows.activeProjects),
     blockedProjects: activeRows(rows.blockedProjects),
-    approvedAssets: activeRows(rows.approvedAssets),
-    reviewAssets: activeRows(rows.reviewAssets),
-    draftAssets: activeRows(rows.draftAssets),
     openTasks: activeRows(rows.tasks).filter((task) => task.status !== "done" && task.status !== "canceled"),
     events: activeRows(rows.events),
   };
@@ -58,8 +49,8 @@ function dashboardCounts(active: DashboardActiveRows, now: number) {
   const todayEnd = dashboardEndOfDay(now);
   return {
     dueToday: active.openTasks.filter((task) => task.dueDate && Date.parse(task.dueDate) <= todayEnd).length,
-    availableAssets: active.approvedAssets.length,
-    reviewAssets: active.reviewAssets.length + active.draftAssets.length,
+    availableAssets: 0,
+    reviewAssets: 0,
     readyProjects: active.activeProjects.length,
     blockedProjects: active.blockedProjects.length,
     totalProjects: active.allProjects.length,

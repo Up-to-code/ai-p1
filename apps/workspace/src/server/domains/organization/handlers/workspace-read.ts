@@ -2,9 +2,8 @@ import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
 import { fetchAuthQuery } from "@/server/auth/clerk-convex";
 import {
-  readOptionalNumberQuery,
   readPaginationQuery,
-  readParam,
+  readOptionalNumberQuery,
   readTimeRangeQuery,
 } from "./workspace-read-helper";
 import {
@@ -18,7 +17,6 @@ import {
 } from "./workspace-read-surface";
 
 const projectStatuses = ["planned", "active", "paused", "completed", "archived"] as const;
-const assetStatuses = ["available", "pending", "reserved", "sold", "draft", "active", "review", "approved", "archived"] as const;
 const clientTypes = ["person", "organization"] as const;
 const opportunityStages = ["new", "qualified", "proposal", "negotiation", "won", "lost"] as const;
 const taskStatuses = ["todo", "inProgress", "waiting", "done", "canceled"] as const;
@@ -60,17 +58,19 @@ export async function handleReadOpportunity(c: Context) {
 }
 
 export async function handleReadTasks(c: Context) {
-  return workspaceOrganizationReadJson(c, "tasks list", (organizationId) =>
-    fetchAuthQuery(api.clientTasks.read.list, {
-      organizationId,
-    }).then((tasks) => {
-      const status = c.req.query("status");
-      const search = c.req.query("search")?.trim().toLowerCase();
-      return tasks
-        .filter((task) => !taskStatuses.includes(status as never) || task.status === status)
-        .filter((task) => !search || [task.title, task.description, task.assigneeUserId, ...(task.tags ?? [])].some((value) => value?.toLowerCase().includes(search)));
-    }),
-  );
+  return workspaceOrganizationReadJson(c, "tasks list", async (organizationId) => {
+    const projectId = c.req.query("projectId");
+    const tasks = projectId 
+      ? await fetchAuthQuery(api.clientTasks.read.listByProject, { organizationId, projectId })
+      : await fetchAuthQuery(api.clientTasks.read.list, { organizationId });
+      
+    const status = c.req.query("status");
+    const search = c.req.query("search")?.trim().toLowerCase();
+    
+    return tasks
+      .filter((task) => !taskStatuses.includes(status as never) || task.status === status)
+      .filter((task) => !search || [task.title, task.description, task.assigneeUserId, ...(task.tags ?? [])].some((value) => value?.toLowerCase().includes(search)));
+  });
 }
 
 export async function handleReadTaskStats(c: Context) {
@@ -142,77 +142,6 @@ export async function handleReadProject(c: Context) {
     fetchAuthQuery(api.projects.read.get, {
       organizationId,
       projectId: projectId.data,
-    }),
-  );
-}
-
-export async function handleReadAssets(c: Context) {
-  return workspacePagedListReadJson(c, {
-    label: "assets list",
-    filterName: "status",
-    allowedFilters: assetStatuses,
-    read: (organizationId, query) => fetchAuthQuery(api.assets.read.listPaged, {
-      organizationId,
-      paginationOpts: query.paginationOpts,
-      status: query.filter,
-      search: query.search,
-    }),
-  });
-}
-
-export async function handleReadAssetStats(c: Context) {
-  return workspaceOrganizationReadJson(c, "asset stats", (organizationId) =>
-    fetchAuthQuery(api.assets.read.stats, { organizationId }),
-  );
-}
-
-export async function handleReadAssetsIndex(c: Context) {
-  return workspaceIndexedListReadJson(c, {
-    label: "assets index",
-    filterName: "status",
-    allowedFilters: assetStatuses,
-    readList: (organizationId, query) => fetchAuthQuery(api.assets.read.listPaged, {
-      organizationId,
-      paginationOpts: query.paginationOpts,
-      status: query.filter,
-      search: query.search,
-    }),
-    readStats: (organizationId) => fetchAuthQuery(api.assets.read.stats, { organizationId }),
-  });
-}
-
-export async function handleReadAssetOptions(c: Context) {
-  return workspaceOrganizationReadJson(c, "asset options", (organizationId) =>
-    fetchAuthQuery(api.assets.read.options, { organizationId, limit: 100 }),
-  );
-}
-
-export async function handleReadAssetsByProject(c: Context) {
-  const organizationId = readOrganizationId(c);
-  if (!organizationId.ok) return organizationId.response;
-  const projectId = readWorkspaceIdParam<"projects">(c, "projectId", "Project id");
-  if (!projectId.ok) return projectId.response;
-  const limit = readBoundedOptionalLimit(c, 200);
-  if (!limit.ok) return limit.response;
-
-  return workspaceReadJsonForOrganization(c, "project assets", organizationId.data, (organizationId) =>
-    fetchAuthQuery(api.assets.read.listByProject, {
-      organizationId,
-      projectId: projectId.data,
-      limit: limit.data,
-    }),
-  );
-}
-
-export async function handleReadAsset(c: Context) {
-  const organizationId = readOrganizationId(c);
-  if (!organizationId.ok) return organizationId.response;
-  const assetId = readParam(c, "assetId", "Asset id");
-  if (!assetId.ok) return assetId.response;
-  return workspaceReadJsonForOrganization(c, "asset detail", organizationId.data, (organizationId) =>
-    fetchAuthQuery(api.assets.read.get, {
-      organizationId,
-      assetId: assetId.data,
     }),
   );
 }

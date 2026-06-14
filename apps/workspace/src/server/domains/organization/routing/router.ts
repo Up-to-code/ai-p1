@@ -50,12 +50,6 @@ import {
   handleReadTask,
   handleReadTaskStats,
   handleReadTasks,
-  handleReadAssetsByProject,
-  handleReadAsset,
-  handleReadAssetsIndex,
-  handleReadAssets,
-  handleReadAssetOptions,
-  handleReadAssetStats,
   handleReadTaskOptions,
   handleReadUpcomingCalendarEvents,
 } from "../handlers/workspace-read";
@@ -70,15 +64,8 @@ import {
   handleUpdateOpportunity,
 } from "@/server/domains/opportunities/handlers/opportunities";
 import {
-  handleCreateAsset,
-  handleDeleteAsset,
-  handleUpdateAsset,
-} from "@/server/domains/assets/handlers/assets";
-import {
   handleCreateClient,
   handleDeleteClient,
-  handleLinkClientAsset,
-  handleUnlinkClientAsset,
   handleUpdateClient,
 } from "@/server/domains/clients/handlers/clients";
 import {
@@ -200,17 +187,12 @@ organizationRouter.get("/:organizationId/read/opportunities/options", handleRead
 organizationRouter.get("/:organizationId/read/opportunities/:opportunityId", handleReadOpportunity);
 organizationRouter.get("/:organizationId/read/tasks", handleReadTasks);
 organizationRouter.get("/:organizationId/read/tasks/stats", handleReadTaskStats);
+organizationRouter.get("/:organizationId/read/tasks/options", handleReadTaskOptions);
 organizationRouter.get("/:organizationId/read/tasks/:taskId", handleReadTask);
 organizationRouter.get("/:organizationId/read/projects/stats", handleReadProjectStats);
 organizationRouter.get("/:organizationId/read/projects/options", handleReadProjectOptions);
 organizationRouter.get("/:organizationId/read/projects/index", handleReadProjectsIndex);
 organizationRouter.get("/:organizationId/read/projects/:projectId", handleReadProject);
-organizationRouter.get("/:organizationId/read/assets", handleReadAssets);
-organizationRouter.get("/:organizationId/read/assets/stats", handleReadAssetStats);
-organizationRouter.get("/:organizationId/read/assets/options", handleReadAssetOptions);
-organizationRouter.get("/:organizationId/read/assets/index", handleReadAssetsIndex);
-organizationRouter.get("/:organizationId/read/assets/by-project/:projectId", handleReadAssetsByProject);
-organizationRouter.get("/:organizationId/read/assets/:assetId", handleReadAsset);
 organizationRouter.get("/:organizationId/read/clients", handleReadClients);
 organizationRouter.get("/:organizationId/read/clients/stats", handleReadClientStats);
 organizationRouter.get("/:organizationId/read/clients/options", handleReadClientOptions);
@@ -227,7 +209,6 @@ organizationRouter.get("/:organizationId/notification-schedules", handleListNoti
 organizationRouter.post("/:organizationId/notification-schedules", handleCreateNotificationSchedule);
 organizationRouter.patch("/:organizationId/notification-schedules/:scheduleId", handleUpdateNotificationSchedule);
 organizationRouter.delete("/:organizationId/notification-schedules/:scheduleId", handleCancelNotificationSchedule);
-organizationRouter.get("/:organizationId/read/tasks/options", handleReadTaskOptions);
 organizationRouter.get("/:organizationId/read/activity", handleReadActivity);
 organizationRouter.get("/:organizationId/read/activity/stats", handleReadActivityStats);
 organizationRouter.get("/:organizationId/read/activity/index", handleReadActivityIndex);
@@ -314,21 +295,6 @@ organizationRouter.delete(
 );
 
 organizationRouter.post(
-  "/:organizationId/assets",
-  handleCreateAsset,
-);
-
-organizationRouter.patch(
-  "/:organizationId/assets/:assetId",
-  handleUpdateAsset,
-);
-
-organizationRouter.delete(
-  "/:organizationId/assets/:assetId",
-  handleDeleteAsset,
-);
-
-organizationRouter.post(
   "/:organizationId/clients",
   handleCreateClient,
 );
@@ -341,16 +307,6 @@ organizationRouter.patch(
 organizationRouter.delete(
   "/:organizationId/clients/:clientId",
   handleDeleteClient,
-);
-
-organizationRouter.post(
-  "/:organizationId/clients/:clientId/assets",
-  handleLinkClientAsset,
-);
-
-organizationRouter.delete(
-  "/:organizationId/clients/:clientId/assets/:assetId",
-  handleUnlinkClientAsset,
 );
 
 organizationRouter.post(

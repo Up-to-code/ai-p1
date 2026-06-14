@@ -25,6 +25,11 @@ export const projectInputValidator = v.object({
   currency: v.optional(v.string()),
   description: v.optional(v.string()),
   tags: v.optional(v.array(v.string())),
+  isStrict: v.optional(v.boolean()),
+  isRollupEnabled: v.optional(v.boolean()),
+  templateId: v.optional(v.string()),
+  customTabs: v.optional(v.array(v.string())),
+  progress: v.optional(v.number()),
 });
 
 export const projectValidator = v.object({
@@ -48,6 +53,11 @@ export const projectValidator = v.object({
   tags: v.optional(v.array(v.string())),
   customFields: v.optional(v.array(v.any())),
   coverImageUrl: v.optional(v.string()),
+  isStrict: v.optional(v.boolean()),
+  isRollupEnabled: v.optional(v.boolean()),
+  templateId: v.optional(v.string()),
+  customTabs: v.optional(v.array(v.string())),
+  progress: v.optional(v.number()),
   createdByUserId: v.string(),
   createdAt: v.number(),
   updatedAt: v.number(),

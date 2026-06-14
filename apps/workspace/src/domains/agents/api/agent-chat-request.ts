@@ -5,6 +5,7 @@ import type { AgentChatAttachment, AgentChatEvent } from "./chat";
 type SendAgentChatRequestInput = {
   organizationId: string;
   threadId?: string;
+  projectId?: string;
   message: string;
   attachments?: AgentChatAttachment[];
   onEvent: (event: AgentChatEvent) => void;
@@ -45,6 +46,7 @@ export async function sendAgentChatRequest(input: SendAgentChatRequestInput) {
     body: JSON.stringify({
       message: input.message,
       threadId: input.threadId,
+      projectId: input.projectId,
       attachments: input.attachments?.length ? input.attachments : undefined,
     }),
   });

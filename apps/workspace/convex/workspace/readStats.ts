@@ -70,30 +70,6 @@ export function projectStats(projects: Doc<"projects">[]) {
   };
 }
 
-export function assetStats(assets: Doc<"assets">[]) {
-  const active = activeRows(assets);
-  const statuses = countFieldValues(active, (asset) => asset.status, [
-    "available",
-    "pending",
-    "reserved",
-    "sold",
-    "draft",
-    "active",
-    "review",
-    "approved",
-    "archived",
-  ] as const);
-
-  return {
-    total: active.length,
-    available: statuses.available + statuses.active + statuses.approved,
-    pending: statuses.pending + statuses.review,
-    reserved: statuses.reserved,
-    sold: statuses.sold,
-    draft: statuses.draft,
-  };
-}
-
 export function calendarStats(events: Doc<"calendarEvents">[]) {
   const active = activeRows(events);
   const statuses = countFieldValues(active, (event) => event.status, ["confirmed", "pending", "draft"] as const);

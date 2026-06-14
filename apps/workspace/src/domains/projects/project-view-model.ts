@@ -1,7 +1,6 @@
 "use client";
 
 import type { Project, ProjectStatus } from "./store/projects.types";
-import { projectCategories, projectOfferingTypes } from "./validation/project.schema";
 import type { ProjectFormValues } from "./validation/project.schema";
 
 export const projectFilters = ["all", "approved", "pending", "draft", "rejected"] as const;
@@ -9,86 +8,26 @@ export const projectViews = ["grid", "list"] as const;
 export const monthFormatter = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" });
 export const weekdayFormatter = new Intl.DateTimeFormat("en-US", { weekday: "short" });
 
-function projectPriceId() {
-  return `price-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
-}
-
-function toProjectPriceRows(project?: Project | null): ProjectFormValues["projectPrices"] {
-  if (project?.projectPrices?.length) {
-    return project.projectPrices.map((item) => ({ id: item.id, label: item.label, price: item.price }));
-  }
-  return [{ id: projectPriceId(), label: "", price: "" }];
-}
-
 export function toggleProjectAssetType(
-  assetTypes: ProjectFormValues["assetTypes"] | undefined,
-  value: ProjectFormValues["assetTypes"][number],
+  assetTypes: string[] | undefined,
+  value: string,
 ) {
   const current = assetTypes ?? [];
   return current.includes(value) ? current.filter((item) => item !== value) : [...current, value];
 }
 
-export function updateProjectPriceRow(
-  rows: ProjectFormValues["projectPrices"] | undefined,
-  rowId: string,
-  key: "label" | "price",
-  value: string,
-) {
-  return (rows ?? []).map((item) => item.id === rowId ? { ...item, [key]: value } : item);
-}
-
-export function addProjectPriceRow(
-  rows: ProjectFormValues["projectPrices"] | undefined,
-  createId = projectPriceId,
-) {
-  return [...(rows ?? []), { id: createId(), label: "", price: "" }];
-}
-
-export function removeProjectPriceRow(
-  rows: ProjectFormValues["projectPrices"] | undefined,
-  rowId: string,
-  createId = projectPriceId,
-) {
-  const next = (rows ?? []).filter((item) => item.id !== rowId);
-  return next.length ? next : [{ id: createId(), label: "", price: "" }];
-}
-
-export function matchesProjectSearch(project: Pick<Project, "name" | "reference" | "city" | "developer">, search: string) {
+export function matchesProjectSearch(project: Pick<Project, "name" | "reference">, search: string) {
   const query = search.trim().toLowerCase();
-  return !query || [project.name, project.reference, project.city, project.developer].some((value) => value.toLowerCase().includes(query));
-}
-
-function projectFormType(project?: Project | null): ProjectFormValues["type"] {
-  return projectCategories.includes(project?.type as ProjectFormValues["type"])
-    ? project?.type as ProjectFormValues["type"]
-    : "Residential";
-}
-
-function projectFormAssetTypes(project?: Project | null): ProjectFormValues["assetTypes"] {
-  return (project?.assetTypes ?? []).filter((type): type is ProjectFormValues["assetTypes"][number] =>
-    projectOfferingTypes.includes(type as ProjectFormValues["assetTypes"][number]),
-  );
+  return !query || [project.name, project.reference].some((value) => value?.toLowerCase().includes(query));
 }
 
 export function projectFormDefaults(project?: Project | null): ProjectFormValues {
   return {
     name: project?.name ?? "",
-    developer: project?.developer ?? "",
-    city: project?.city ?? "",
-    area: project?.area ?? "",
-    type: projectFormType(project),
-    assetTypes: projectFormAssetTypes(project),
-    status: project?.status ?? "draft" as ProjectStatus,
-    visibility: project?.visibility ?? "private",
-    assetCount: String(project?.assetCount ?? 0),
-    averagePrice: project?.averagePrice ?? project?.priceRange ?? "",
-    projectPrices: toProjectPriceRows(project),
-    priceRange: project?.priceRange ?? "",
-    regaAuthorizationNo: project?.regaAuthorizationNo ?? "",
-    regaExpiresAt: project?.regaExpiresAt ?? "",
-    planNumber: project?.planNumber ?? "",
-    plotNumber: project?.plotNumber ?? "",
-    postalIdentity: project?.postalIdentity ?? "",
+    status: project?.status ?? "planned",
+    health: project?.health ?? "onTrack",
+    visibility: project?.visibility ?? "team",
+    useAiSetup: false,
     description: project?.description ?? "",
   };
 }
@@ -138,9 +77,9 @@ export function calendarDaysForMonth(month: Date) {
 }
 
 export function statusTone(status: ProjectStatus) {
-  if (status === "approved") return "success";
-  if (status === "pending") return "warning";
-  if (status === "rejected") return "danger";
+  if (status === "active") return "success";
+  if (status === "paused") return "warning";
+  if (status === "archived") return "danger";
   return "neutral";
 }
 
@@ -148,8 +87,8 @@ export function projectDocumentAssets<TAsset extends { kind: string }>(media: TA
   return media.filter((asset) => asset.kind === "document");
 }
 
-export function projectLocationLabel(project: Pick<Project, "city" | "area">) {
-  return [project.city, project.area].filter(Boolean).join(" · ");
+export function projectLocationLabel(project: { reference?: string }) {
+  return project.reference ?? "";
 }
 
 export function projectInventoryMetrics<TAsset extends { status?: string }>(assets: TAsset[], plannedAssets = 0) {

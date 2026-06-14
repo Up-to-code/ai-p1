@@ -60,35 +60,18 @@ export function useProjectQuery(organizationId: string | undefined, projectId: s
 }
 
 function projectPayloadFromForm(values: ProjectFormValues) {
-  const projectPrices = (values.projectPrices ?? [])
-    .map((item) => ({
-      id: item.id,
-      label: item.label.trim(),
-      price: item.price.trim(),
-    }))
-    .filter((item) => item.label || item.price);
-  const projectPriceDisplay = projectPrices.map((item) => item.price).filter(Boolean).join(" - ");
-  const priceRange = projectPriceDisplay || values.averagePrice.trim();
-
   return {
     name: values.name,
-    developer: values.developer,
-    city: values.city,
-    area: values.area,
-    type: values.type,
-    assetTypes: values.assetTypes,
+    clientId: values.clientId || undefined,
+    opportunityId: values.opportunityId || undefined,
     status: values.status,
-    visibility: values.visibility ?? "private",
-    assetCount: Number(values.assetCount || 0),
-    averagePrice: values.averagePrice,
-    projectPrices,
-    priceRange,
-    regaAuthorizationNo: values.regaAuthorizationNo || undefined,
-    regaExpiresAt: values.regaExpiresAt || undefined,
-    planNumber: values.planNumber || undefined,
-    plotNumber: values.plotNumber || undefined,
-    postalIdentity: values.postalIdentity || undefined,
-    description: values.description,
+    health: values.health,
+    visibility: values.visibility,
+    startDate: values.startDate || undefined,
+    endDate: values.endDate || undefined,
+    budget: values.budget ? Number(values.budget) : undefined,
+    description: values.description || undefined,
+    templateId: values.templateId || undefined,
   };
 }
 

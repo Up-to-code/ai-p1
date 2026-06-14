@@ -27,11 +27,4 @@ export const clientPayloadSchema = z.object({
   }
 });
 
-export const clientAssetLinkPayloadSchema = z.object({
-  assetId: z.string().trim().min(1),
-  status: z.enum(["interested", "shortlisted", "review", "proposal", "rejected"]).default("interested"),
-  notes: z.string().trim().optional().transform((value) => value || undefined),
-});
-
 export type ClientPayload = z.infer<typeof clientPayloadSchema>;
-export type ClientAssetLinkPayload = z.infer<typeof clientAssetLinkPayloadSchema>;

@@ -7,14 +7,15 @@ import {
 } from "@/domains/organization/api/organization-request";
 import type { TaskFormValues, TaskRecord, TaskStats } from "../tasks.types";
 
-export function useTasksQuery(organizationId?: string, options?: { status?: TaskRecord["status"] | "all"; search?: string }) {
+export function useTasksQuery(organizationId?: string, options?: { status?: TaskRecord["status"] | "all"; search?: string; projectId?: string | null }) {
   return useWorkspaceResource<TaskRecord[]>(
-    ["tasks", organizationId, options?.status, options?.search],
+    ["tasks", organizationId, options?.status, options?.search, options?.projectId],
     organizationId,
     "tasks",
     {
       status: options?.status === "all" ? undefined : options?.status,
       search: options?.search,
+      projectId: options?.projectId ?? undefined,
     },
   );
 }

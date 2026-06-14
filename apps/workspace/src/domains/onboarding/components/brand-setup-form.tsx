@@ -24,7 +24,7 @@ export function BrandSetupForm({ onNext, onBack }: FormProps) {
   const tc = useTranslations("Common");
   const defaultBrandColor = brandIdentity.colors.primary;
   const { register, handleSubmit, formState: { errors } } = useForm<BrandSetupInput>({
-    resolver: zodResolver(brandSetupSchema),
+    resolver: zodResolver(brandSetupSchema as any),
     defaultValues: { brandColor: defaultBrandColor },
   });
   

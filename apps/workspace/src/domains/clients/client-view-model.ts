@@ -1,7 +1,8 @@
 import type { ClientTaskPayload } from "@/domains/clients/api/client-tasks";
-import type { AssetStatus } from "@/domains/assets";
 import type { Client, ClientType } from "./store/clients.types";
 import type { ClientFormValues } from "./validation/client.schema";
+
+export type AssetStatus = "available" | "reserved" | "pending" | "sold" | "draft";
 
 export const pipelineStages = ["new", "qualified", "review", "negotiation", "closed"] as const;
 export const activePipelineStages = ["new", "qualified", "review", "negotiation"] as const;

@@ -18,14 +18,6 @@ describe("MCP tool catalog", () => {
     expect(tools.map((tool) => tool.name)).not.toContain("calendar_create");
   });
 
-  it("maps destructive asset tools to delete permission only", () => {
-    const tool = getMcpToolDefinition("assets_delete");
-
-    expect(tool).toMatchObject({ resource: "asset", action: "delete", destructive: true });
-    expect(canUseMcpTool([{ resource: "asset", actions: ["read", "update"] }], tool!)).toBe(false);
-    expect(canUseMcpTool([{ resource: "asset", actions: ["delete"] }], tool!)).toBe(true);
-  });
-
   it("validates create connection payloads", () => {
     const result = createMcpConnectionSchema.safeParse({
       name: "Client operator",
@@ -102,7 +94,6 @@ describe("MCP tool catalog", () => {
     expect(writeToolNames).toEqual(
       expect.arrayContaining([
         "clients_create",
-        "assets_update",
         "projects_delete",
         "calendar_create",
         "tasks_complete",

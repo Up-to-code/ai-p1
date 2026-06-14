@@ -120,9 +120,9 @@ export default function AiComposer({
         className={cn(
           "relative flex flex-col overflow-hidden rounded-[22px] border bg-surface shadow-none transition-all duration-300",
           "border-border text-text-primary",
-          "focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10",
-          "dark:bg-[#111] dark:focus-within:border-primary/60",
-          isDraggingFiles && "border-primary/70 bg-primary/5",
+          "focus-within:border-zinc-300 focus-within:ring-2 focus-within:ring-zinc-900/5",
+          "dark:bg-[#111] dark:focus-within:border-white/20 dark:focus-within:ring-white/5",
+          isDraggingFiles && "border-zinc-400 bg-zinc-50 dark:border-white/30 dark:bg-white/5",
         )}
       >
         <input
@@ -146,9 +146,9 @@ export default function AiComposer({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 z-20 flex items-center justify-center bg-primary/5 backdrop-blur-[1px]"
+              className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-50/50 backdrop-blur-[1px] dark:bg-zinc-950/50"
             >
-              <div className="rounded-full border border-primary/20 bg-surface px-5 py-2 text-[11px] font-black uppercase tracking-wider text-primary shadow-none">
+              <div className="rounded-full border border-zinc-200 bg-surface px-5 py-2 text-[11px] font-black uppercase tracking-wider text-zinc-900 shadow-none dark:border-zinc-700 dark:text-zinc-100">
                 {t("attach")}
               </div>
             </motion.div>
@@ -181,7 +181,7 @@ export default function AiComposer({
                 disabled={isSending}
                 aria-label={t("attach")}
                 title={t("attach")}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-text-secondary transition-all hover:border-primary/30 hover:text-primary active:scale-95 disabled:opacity-50"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-text-secondary transition-all hover:border-zinc-300 hover:text-zinc-900 active:scale-95 disabled:opacity-50 dark:hover:border-zinc-600 dark:hover:text-zinc-100"
               >
                 <Paperclip className="h-3.5 w-3.5" />
               </button>
@@ -195,8 +195,8 @@ export default function AiComposer({
                 className={cn(
                   "flex h-9 w-9 items-center justify-center rounded-full border text-[12px] font-bold transition-all active:scale-95 disabled:opacity-50",
                   isRecording 
-                    ? "border-primary/30 bg-primary/10 text-primary" 
-                    : "border-border bg-background text-text-secondary hover:border-primary/30 hover:text-primary",
+                    ? "border-zinc-300 bg-zinc-100 text-zinc-900 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100" 
+                    : "border-border bg-background text-text-secondary hover:border-zinc-300 hover:text-zinc-900 dark:hover:border-zinc-600 dark:hover:text-zinc-100",
                 )}
               >
                 {isRecording ? (
@@ -221,8 +221,8 @@ export default function AiComposer({
                 className={cn(
                   "flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 active:scale-90",
                   isTyping
-                    ? "bg-primary text-primary-foreground hover:bg-primary-hover"
-                    : "bg-border text-text-muted",
+                    ? "bg-zinc-900 text-white hover:bg-black dark:bg-white dark:text-zinc-950"
+                    : "bg-surface border border-border text-text-muted dark:bg-[#111]",
                 )}
               >
                 {isSending ? (

@@ -6,10 +6,6 @@ function project(input: Record<string, unknown>) {
   return input as unknown as Doc<"projects">;
 }
 
-function asset(input: Record<string, unknown>) {
-  return input as unknown as Doc<"assets">;
-}
-
 function task(input: Record<string, unknown>) {
   return input as unknown as Doc<"tasks">;
 }
@@ -24,9 +20,6 @@ function rows(input: Partial<DashboardOverviewRows>): DashboardOverviewRows {
     allProjects: [],
     activeProjects: [],
     blockedProjects: [],
-    approvedAssets: [],
-    reviewAssets: [],
-    draftAssets: [],
     tasks: [],
     events: [],
     ...input,
@@ -52,9 +45,6 @@ describe("Workspace dashboard overview", () => {
         blockedProjects: [
           project({ _id: "project_2", status: "paused", health: "blocked" }),
         ],
-        approvedAssets: [asset({ _id: "asset_1" })],
-        reviewAssets: [asset({ _id: "asset_2" })],
-        draftAssets: [asset({ _id: "asset_3" }), asset({ _id: "asset_deleted", deletedAt: 1 })],
         tasks: [
           task({ _id: "task_1", status: "todo", dueDate: "2023-11-14", priority: "urgent" }),
           task({ _id: "task_done", status: "done", dueDate: "2023-11-14" }),
@@ -70,8 +60,8 @@ describe("Workspace dashboard overview", () => {
 
     expect(overview.counts).toEqual({
       dueToday: 1,
-      availableAssets: 1,
-      reviewAssets: 2,
+      availableAssets: 0,
+      reviewAssets: 0,
       readyProjects: 1,
       blockedProjects: 1,
       totalProjects: 2,

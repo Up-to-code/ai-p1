@@ -90,34 +90,6 @@ export default function AboutPage() {
 
       <FounderSection />
 
-      <PublicSection muted className="border-t border-zinc-100 dark:border-white/10">
-        <div className="grid gap-4 sm:grid-cols-3">
-          {team.metrics.map((metric) => (
-            <MetricCard key={metric.label} {...metric} />
-          ))}
-        </div>
-
-        <div className="mt-14 space-y-10">
-          <SectionHeader {...team.leadership} />
-          <div className="grid gap-4 sm:grid-cols-2">
-            {team.members.map((member) => (
-              <article key={member.name} className="flex items-center gap-5 rounded-3xl border border-zinc-200 bg-white p-6 shadow-[0_24px_90px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.04]">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-zinc-950 text-sm font-black text-white dark:bg-white dark:text-zinc-950">
-                  {member.initials}
-                </div>
-                <div>
-                  <h3 className="text-lg font-black tracking-tight text-zinc-950 dark:text-white">{member.name}</h3>
-                  <p className="mt-1 text-sm font-semibold text-zinc-500 dark:text-zinc-400">{member.role}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </PublicSection>
-
-      <PublicSection>
-        <FeatureGrid items={team.principles} />
-      </PublicSection>
     </div>
   );
 }

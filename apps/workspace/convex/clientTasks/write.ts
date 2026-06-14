@@ -4,6 +4,7 @@ import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { cancelQueuedJobsForSource, scheduleTaskReminders } from "../notifications/helpers";
 import { clientTaskInputValidator, clientTaskValidator } from "./validators";
+import { validateStrictTaskDates, updateProjectRollup } from "../projects/rollup";
 
 function presentTask<TTask extends { _id: string; visibility?: "private" | "team" | "workspace" }>(task: TTask) {
   return { ...task, id: task._id, visibility: task.visibility ?? "private" };
@@ -15,6 +16,12 @@ export const createFromHono = mutation({
   handler: async (ctx, args) => {
     const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
+    
+    // Strict dates check
+    if (args.input.projectId) {
+      await validateStrictTaskDates(ctx.db, args.input.projectId, args.input.dueDate);
+    }
+    
     const now = Date.now();
     const id = await ctx.db.insert("tasks", {
       organizationId: args.organizationId,
@@ -35,6 +42,11 @@ export const createFromHono = mutation({
       createdAt: now,
     });
 
+    // Rollup progress
+    if (args.input.projectId) {
+      await updateProjectRollup(ctx.db, args.input.projectId);
+    }
+
     const task = await ctx.db.get(id);
     if (!task) throw new Error("Task could not be created.");
     await scheduleTaskReminders(ctx, task);
@@ -50,6 +62,12 @@ export const updateFromHono = mutation({
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
     const existing = await ctx.db.get(args.taskId);
     if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Task was not found.");
+    
+    // Strict dates check
+    if (args.input.projectId) {
+      await validateStrictTaskDates(ctx.db, args.input.projectId, args.input.dueDate);
+    }
+
     const nextVisibility = args.input.visibility ?? (existing.visibility ?? "private");
     const now = Date.now();
     await ctx.db.patch(args.taskId, {
@@ -67,6 +85,14 @@ export const updateFromHono = mutation({
       summary: `Updated task ${args.input.title}.`,
       createdAt: now,
     });
+
+    // Rollup progress updates
+    if (args.input.projectId) {
+      await updateProjectRollup(ctx.db, args.input.projectId);
+    }
+    if (existing.projectId && existing.projectId !== args.input.projectId) {
+      await updateProjectRollup(ctx.db, existing.projectId);
+    }
 
     const task = await ctx.db.get(args.taskId);
     if (!task) throw new Error("Task was not found.");
@@ -94,6 +120,12 @@ export const deleteFromHono = mutation({
       summary: `Deleted task ${existing.title}.`,
       createdAt: now,
     });
+
+    // Rollup progress updates on deletion
+    if (existing.projectId) {
+      await updateProjectRollup(ctx.db, existing.projectId);
+    }
+
     return { removed: true };
   },
 });
