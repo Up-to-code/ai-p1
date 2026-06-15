@@ -1,11 +1,9 @@
 import { Image, Modal, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
 import {
-  AlertCircle,
   Bell,
   ChevronRight,
   Clock,
   Plus,
-  RotateCcw,
   Search,
   Settings,
   Star,
@@ -35,7 +33,7 @@ import { useMobileSystemUi, type MobileDrawerMetrics } from "@/foundation/system
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import type { AppColors } from "@/foundation/theme/tokens";
 import { mirrorIcon } from "@/foundation/utils/layoutDirection";
-import { usePaginatedAgentThreads } from "@/persistence/api/conversationData";
+import { useGlobalThreads, useOrganizationProfile } from "@/persistence/api/conversationData";
 import { useAppStore } from "@/store";
 
 type ChatDrawerProps = {
@@ -124,15 +122,17 @@ export function ChatDrawerContent({
   const e2eQaMode = useAppStore((state) => state.e2eQaMode);
   const favoriteThreadIds = useAppStore((state) => state.favoriteThreadIds);
   const toggleFavoriteThread = useAppStore((state) => state.toggleFavoriteThread);
-  const threadHistory = usePaginatedAgentThreads(10);
+  const threadHistory = useGlobalThreads(10);
+  const profile = useOrganizationProfile();
   const { user } = useAuthSession();
   const workspace = useWorkspaceAccess();
 
   const { displayName, avatarUrl, initials } = userAvatarPresentation(user);
-  const activeWorkspaceName = workspaceOrganizationLabel(
-    workspace.activeOrganization,
-    t.workspaceAccess.untitledWorkspace,
-  );
+  const activeWorkspaceName = profile?.name?.trim()
+    || workspaceOrganizationLabel(
+      workspace.activeOrganization,
+      t.workspaceAccess.untitledWorkspace,
+    );
   const inverseBackground = resolvedColorScheme === "dark" ? "#FFFFFF" : "#000000";
   const inverseForeground = resolvedColorScheme === "dark" ? "#000000" : "#FFFFFF";
 
@@ -229,17 +229,8 @@ export function ChatDrawerContent({
             </Pressable>
           </View>
 
-          {threadHistory.isLoading ? (
+          {!threadHistory.isLoaded ? (
             <ThreadSkeletonRows />
-          ) : threadHistory.error ? (
-            <Pressable style={styles.errorRow} onPress={threadHistory.refresh}>
-              <AlertCircle size={metrics.seriesIcon} color={colors.danger} />
-              <View style={styles.itemTextBlock}>
-                <Text variant="body" style={styles.itemLabel}>{t.menu.loadConversationsError}</Text>
-                <Text variant="caption" tone="muted" style={styles.itemSubLabel}>{t.menu.retry}</Text>
-              </View>
-              <RotateCcw size={metrics.seriesIcon - 4} color={colors.textMuted} style={mirrorIcon(isRTL)} />
-            </Pressable>
           ) : null}
 
           {threadHistory.threads.map((thread) => {
@@ -276,7 +267,7 @@ export function ChatDrawerContent({
             );
           })}
 
-          {threadHistory.hasMore ? (
+          {threadHistory.threads.length >= 10 ? (
             <Pressable
               testID="menu.full_history"
               style={styles.seriesRow}

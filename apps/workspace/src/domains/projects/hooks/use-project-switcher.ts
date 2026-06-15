@@ -60,6 +60,10 @@ export function useProjectSwitcher() {
     }
   }, [pathname, activeProjectId, setActiveProjectId]);
 
+  const refetchProjects = useCallback(() => {
+    projectsQuery.refetch();
+  }, [projectsQuery]);
+
   return {
     projects,
     activeProject,
@@ -68,5 +72,6 @@ export function useProjectSwitcher() {
     isLoading,
     switchProject,
     switchToGlobal,
+    refetchProjects,
   };
 }

@@ -14,6 +14,7 @@ import { useWorkspaceAccess } from "@/auth/useWorkspaceAccess";
 import { shouldResetThreadForOrganizationSwitch, workspaceOrganizationLabel } from "@/auth/workspaceAccess";
 import { mirrorIcon } from "@/foundation/utils/layoutDirection";
 import { useAppStore } from "@/store";
+import { useOrganizationProfile } from "@/persistence/api/conversationData";
 
 export default function OrganizationScreen() {
   const router = useRouter();
@@ -25,10 +26,12 @@ export default function OrganizationScreen() {
   const BackIcon = isRTL ? ChevronRight : ChevronLeft;
   const [busyId, setBusyId] = useState("");
   const resetConversationState = useAppStore((state) => state.resetConversationState);
-  const activeWorkspaceName = workspaceOrganizationLabel(
-    workspace.activeOrganization,
-    t.workspaceAccess.untitledWorkspace,
-  );
+  const profile = useOrganizationProfile();
+  const activeWorkspaceName = profile?.name?.trim()
+    || workspaceOrganizationLabel(
+      workspace.activeOrganization,
+      t.workspaceAccess.untitledWorkspace,
+    );
 
   const handleCreateInviteLink = async () => {
     if (!workspace.organizationId) {
@@ -62,6 +65,7 @@ export default function OrganizationScreen() {
       if (shouldResetThreadForOrganizationSwitch(workspace.organizationId, organizationId)) {
         resetConversationState();
       }
+      router.replace("/(app)");
     } catch (error) {
       Alert.alert(t.workspaceAccess.errorTitle, error instanceof Error ? error.message : t.workspaceAccess.errorBody);
     } finally {
@@ -115,9 +119,10 @@ export default function OrganizationScreen() {
                 <ActionRow
                   key={organization.id}
                   testID={`organization.switch.${organization.id}`}
-                  icon={selected ? <CheckCircle2 size={24} color={colors.textPrimary} /> : <BriefcaseBusiness size={24} color={colors.textPrimary} />}
+                  icon={selected ? <CheckCircle2 size={24} color={colors.accent} /> : <BriefcaseBusiness size={24} color={colors.textPrimary} />}
                   title={organization.name ?? t.workspaceAccess.untitledWorkspace}
                   description={organization.slug ?? organization.id}
+                  badge={selected ? t.workspaceAccess.activeBadge : undefined}
                   colors={colors}
                   isRTL={isRTL}
                   onPress={selected ? undefined : () => void selectOrganization(organization.id)}
@@ -136,6 +141,7 @@ function ActionRow({
   icon,
   title,
   description,
+  badge,
   colors,
   isRTL,
   onPress,
@@ -144,6 +150,7 @@ function ActionRow({
   icon: React.ReactNode;
   title: string;
   description?: string;
+  badge?: string;
   colors: AppColors;
   isRTL: boolean;
   onPress?: () => void;
@@ -157,6 +164,7 @@ function ActionRow({
           <Text style={styles.rowTitle}>{title}</Text>
           {description ? <Text tone="muted" style={styles.rowDescription}>{description}</Text> : null}
         </View>
+        {badge ? <Text tone="muted" style={styles.badge}>{badge}</Text> : null}
       </View>
       {onPress ? <ChevronRight size={16} color={colors.textMuted} style={mirrorIcon(isRTL)} /> : null}
     </Pressable>
@@ -254,6 +262,18 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
   rowDescription: {
     fontSize: 13,
     lineHeight: 18,
+    textAlign: isRTL ? "right" : "left",
+  },
+  badge: {
+    fontSize: 11,
+    lineHeight: 16,
+    fontFamily: "Manrope_600SemiBold",
+    color: colors.accent,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    overflow: "hidden",
+    backgroundColor: `${colors.accent}18`,
     textAlign: isRTL ? "right" : "left",
   },
 });

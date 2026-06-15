@@ -36,7 +36,7 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
   const queryClient = useQueryClient();
 
   const form = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectSchema as any) as any,
+    resolver: zodResolver(projectSchema),
     defaultValues: {
       name: "",
       clientId: "",
@@ -68,7 +68,7 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
       onSuccess?.();
       
       // Fallback in case response shape differs
-      const newProjectId = response?.project?.id || (response as any)?.id || (response as any)?.project?._id;
+      const newProjectId = response?.project?.id || (response as Record<string, unknown>)?.id || (response as Record<string, unknown>)?.project?._id;
       if (newProjectId) {
         router.push(`/projects/${newProjectId}/overview`);
       } else {
@@ -83,7 +83,7 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit as any)} className="relative overflow-hidden rounded-[2rem] border border-border bg-surface p-8 dark:border-white/5 dark:bg-[#0a0a0a]">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="relative overflow-hidden rounded-[2rem] border border-border bg-surface p-8 dark:border-white/5 dark:bg-[#0a0a0a]">
         
         {/* Subtle background glow */}
         <div className="pointer-events-none absolute -inset-px opacity-50 transition duration-300 group-hover:opacity-100" style={{ background: "radial-gradient(600px circle at 50% -20%, rgba(99,102,241,0.1), transparent 40%)" }} />

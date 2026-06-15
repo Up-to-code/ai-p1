@@ -300,3 +300,28 @@ export async function cancelAgentConfirmation(organizationId: string, confirmati
   );
   return readJson(response, "Unable to cancel this action.");
 }
+
+export type OrganizationProfile = {
+  organizationId: string;
+  name: string;
+  legalName: string;
+  type: string;
+  email: string;
+  phone: string;
+  website: string;
+  address: string;
+  logo?: string;
+  updatedAt: number;
+};
+
+export async function fetchOrganizationProfile(organizationId: string): Promise<OrganizationProfile | null> {
+  try {
+    const response = await workspaceApiFetch(
+      `/api/v1/organizations/${encodeURIComponent(organizationId)}/profile`,
+    );
+    const payload = await readJson<{ profile?: OrganizationProfile }>(response, "Unable to load organization profile.");
+    return payload.profile ?? null;
+  } catch {
+    return null;
+  }
+}

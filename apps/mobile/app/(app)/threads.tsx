@@ -11,7 +11,7 @@ import { Text } from "@/foundation/primitives/Text";
 import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { mirrorIcon } from "@/foundation/utils/layoutDirection";
-import { usePaginatedAgentThreads } from "@/persistence/api/conversationData";
+import { useGlobalThreads } from "@/persistence/api/conversationData";
 import type { AgentThread } from "@/persistence/api/conversationApi";
 import { useAppStore } from "@/store";
 import { presentThreadHistoryItem } from "@/conversation/lib/threadHistoryPresentation";
@@ -23,7 +23,7 @@ export default function ThreadsScreen() {
   const { t, isRTL } = useAppLocalization();
   const styles = useMemo(() => createStyles(colors, isRTL), [colors, isRTL]);
   const BackIcon = isRTL ? ChevronRight : ChevronLeft;
-  const threadHistory = usePaginatedAgentThreads(10);
+  const threadHistory = useGlobalThreads(50);
   const setActiveThreadId = useAppStore((state) => state.setActiveThreadId);
   const favoriteThreadIds = useAppStore((state) => state.favoriteThreadIds);
   const toggleFavoriteThread = useAppStore((state) => state.toggleFavoriteThread);
@@ -86,16 +86,9 @@ export default function ThreadsScreen() {
         <Text style={styles.headerTitle}>{t.menu.fullHistory}</Text>
       </View>
 
-      {threadHistory.isLoading ? (
+      {!threadHistory.isLoaded ? (
         <View style={styles.centerState}>
           <ActivityIndicator size="small" color={colors.accent} />
-        </View>
-      ) : threadHistory.error ? (
-        <View style={styles.centerState}>
-          <Text tone="muted" style={styles.centerText}>{threadHistory.error}</Text>
-          <Pressable style={styles.retryButton} onPress={threadHistory.refresh}>
-            <Text style={styles.retryText}>{t.common.retry}</Text>
-          </Pressable>
         </View>
       ) : (
         <FlashList
@@ -106,17 +99,6 @@ export default function ThreadsScreen() {
             styles.listContent,
             { paddingTop: insets.top + 72, paddingBottom: insets.bottom + theme.spacing.xl },
           ]}
-          onEndReached={() => {
-            if (threadHistory.hasMore && !threadHistory.isLoadingMore) void threadHistory.loadMore();
-          }}
-          onEndReachedThreshold={0.35}
-          ListFooterComponent={
-            threadHistory.isLoadingMore ? (
-              <View style={styles.footerLoader}>
-                <ActivityIndicator size="small" color={colors.accent} />
-              </View>
-            ) : null
-          }
         />
       )}
     </Screen>

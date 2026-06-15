@@ -229,8 +229,7 @@ async function startRunWithRetry(input: {
 
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     try {
-      /// TODO: add retry logic here
-      /// startRunFromHono is a Convex mutation that starts a new agent run
+      // startRunFromHono is a Convex mutation that starts a new agent run
       return await fetchAuthMutation(api.agents.write.startRunFromHono, {
         organizationId: input.organizationId,
         threadId: input.threadId as Id<"agentThreads"> | undefined,
