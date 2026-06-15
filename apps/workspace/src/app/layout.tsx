@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { brandIdentity } from "@qentrah/brand-identity";
 import { Cairo } from "next/font/google";
 import { RouteTransitionOverlay } from "@/components/layout/route-transition-overlay";
@@ -13,7 +14,7 @@ const cairo = Cairo({
 export const metadata: Metadata = {
   title: "Qentrah Platform",
   other: {
-    "theme-color": "#FFFFFF",
+    "theme-color": "#000000",
   },
 };
 
@@ -42,15 +43,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${cairo.variable} h-full antialiased`}
       suppressHydrationWarning
-      style={{ backgroundColor: "#FFFFFF", colorScheme: "light" }}
     >
+      <head>
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+        />
+      </head>
       <body
         className="h-full flex flex-col bg-background text-text-primary"
         suppressHydrationWarning
-        style={{ backgroundColor: "#FFFFFF", color: "#000000" }}
       >
         <RouteTransitionOverlay />
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         {children}
       </body>
     </html>

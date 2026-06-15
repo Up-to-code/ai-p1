@@ -1,7 +1,8 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { brandIdentity } from "@qentrah/brand-identity";
 
 /**
  * Shows a full-screen overlay matching the body background during route transitions.
@@ -13,6 +14,22 @@ export function RouteTransitionOverlay() {
   const [visible, setVisible] = useState(false);
   const prevPathname = useRef(pathname);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isDarkRef = useRef(false);
+
+  // Read theme once on mount and keep it in sync
+  useEffect(() => {
+    function readTheme() {
+      try {
+        isDarkRef.current =
+          window.localStorage.getItem(brandIdentity.themeStorageKey) === "dark";
+      } catch {
+        isDarkRef.current = false;
+      }
+    }
+    readTheme();
+    window.addEventListener("storage", readTheme);
+    return () => window.removeEventListener("storage", readTheme);
+  }, []);
 
   useEffect(() => {
     if (pathname !== prevPathname.current) {
@@ -23,7 +40,7 @@ export function RouteTransitionOverlay() {
       timeoutRef.current = setTimeout(() => {
         setVisible(false);
         timeoutRef.current = null;
-      }, 300);
+      }, 400);
     }
 
     return () => {
@@ -33,10 +50,12 @@ export function RouteTransitionOverlay() {
 
   if (!visible) return null;
 
+  const bgColor = isDarkRef.current ? "#000000" : "#FFFFFF";
+
   return (
     <div
-      className="fixed inset-0 z-[9999] bg-background pointer-events-none"
-      style={{ backgroundColor: "var(--color-background)" }}
+      className="fixed inset-0 z-[9999] pointer-events-none"
+      style={{ backgroundColor: bgColor }}
       aria-hidden="true"
     />
   );
