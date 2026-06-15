@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import {
   List,
   ListOrdered,
@@ -25,43 +25,15 @@ interface SlashCommandMenuProps {
   items: SlashMenuItem[];
   command: (item: SlashMenuItem) => void;
   onClose: () => void;
+  selectedIndex?: number;
 }
 
-export function SlashCommandMenu({ items, command, onClose }: SlashCommandMenuProps) {
-  const [selectedIndex, setSelectedIndex] = useState(0);
+export function SlashCommandMenu({ items, command, onClose, selectedIndex = 0 }: SlashCommandMenuProps) {
   const listRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [items]);
 
   useEffect(() => {
     listRef.current?.children[selectedIndex]?.scrollIntoView({ block: "nearest" });
   }, [selectedIndex]);
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setSelectedIndex((i) => (i + 1) % items.length);
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setSelectedIndex((i) => (i - 1 + items.length) % items.length);
-      } else if (e.key === "Enter") {
-        e.preventDefault();
-        command(items[selectedIndex]);
-      } else if (e.key === "Escape") {
-        e.preventDefault();
-        onClose();
-      }
-    },
-    [items, selectedIndex, command, onClose],
-  );
-
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [handleKeyDown]);
 
   if (items.length === 0) return null;
 
@@ -87,7 +59,7 @@ export function SlashCommandMenu({ items, command, onClose }: SlashCommandMenuPr
               e.preventDefault();
               command(item);
             }}
-            onMouseEnter={() => setSelectedIndex(index)}
+            onMouseEnter={() => {}}
           >
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white/5 border border-white/10">
               <Icon className="h-4 w-4 text-white/50" />

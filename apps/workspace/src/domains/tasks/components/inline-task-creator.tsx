@@ -13,6 +13,7 @@ import {
   UserRound,
   X,
 } from "lucide-react";
+import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -94,9 +95,17 @@ export function InlineTaskCreator({
   const [tags, setTags] = useState("");
   const [showSlashMenu, setShowSlashMenu] = useState(false);
   const [slashItems, setSlashItems] = useState<SlashMenuItem[]>([]);
+  const [slashFrom, setSlashFrom] = useState(0);
+  const showSlashMenuRef = useRef(false);
+  const slashFromRef = useRef(0);
   const [createMore, setCreateMore] = useState(false);
   const [assigneeSearch, setAssigneeSearch] = useState("");
   const [showMentionMenu, setShowMentionMenu] = useState(false);
+
+  const slashSelectedIndexRef = useRef(0);
+  const slashItemsRef = useRef<SlashMenuItem[]>([]);
+  const editorContainerRef = useRef<HTMLDivElement>(null);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
 
   const editor = useEditor({
     extensions: [
@@ -193,32 +202,83 @@ export function InlineTaskCreator({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm prose-invert max-w-none min-h-[80px] py-1 px-0 focus:outline-none text-[15px] leading-relaxed text-[#E5E5E5] [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[80px] [&_.ProseMirror_p]:my-0.5",
+          "min-h-[80px] py-1 px-0 focus:outline-none text-[15px] leading-relaxed text-[#E5E5E5] [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[80px] [&_.ProseMirror]:focus:outline-none [&_.ProseMirror_p]:my-1 [&_.ProseMirror_h1]:text-2xl [&_.ProseMirror_h1]:font-bold [&_.ProseMirror_h1]:text-white [&_.ProseMirror_h1]:my-3 [&_.ProseMirror_h2]:text-xl [&_.ProseMirror_h2]:font-semibold [&_.ProseMirror_h2]:text-white [&_.ProseMirror_h2]:my-2 [&_.ProseMirror_h3]:text-lg [&_.ProseMirror_h3]:font-semibold [&_.ProseMirror_h3]:text-white [&_.ProseMirror_h3]:my-2 [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-6 [&_.ProseMirror_ul]:my-1 [&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-6 [&_.ProseMirror_ol]:my-1 [&_.ProseMirror_li]:my-0.5 [&_.ProseMirror_li]:text-[#E5E5E5] [&_.ProseMirror_pre]:bg-[#141414] [&_.ProseMirror_pre]:border [&_.ProseMirror_pre]:border-white/10 [&_.ProseMirror_pre]:rounded-lg [&_.ProseMirror_pre]:p-4 [&_.ProseMirror_pre]:my-3 [&_.ProseMirror_code]:text-[#E879F9] [&_.ProseMirror_code]:bg-white/10 [&_.ProseMirror_code]:px-1.5 [&_.ProseMirror_code]:py-0.5 [&_.ProseMirror_code]:rounded-md [&_.ProseMirror_code]:text-[13px] [&_.ProseMirror_pre_code]:bg-transparent [&_.ProseMirror_pre_code]:p-0 [&_.ProseMirror_pre_code]:text-[#E5E5E5] [&_.ProseMirror_blockquote]:border-l-3 [&_.ProseMirror_blockquote]:border-[#5E6AD2] [&_.ProseMirror_blockquote]:pl-4 [&_.ProseMirror_blockquote]:my-3 [&_.ProseMirror_blockquote]:text-[#A3A3A3] [&_.ProseMirror_blockquote]:italic [&_.ProseMirror_hr]:border-0 [&_.ProseMirror_hr]:border-t [&_.ProseMirror_hr]:border-[#2A2A2A] [&_.ProseMirror_hr]:my-4 [&_.ProseMirror strong]:text-white [&_.ProseMirror strong]:font-semibold [&_.ProseMirror em]:italic [&_.ProseMirror s]:line-through [&_.ProseMirror s]:text-[#6B6B6B]",
+      },
+      handleKeyDown: (_view, event) => {
+        if (!showSlashMenuRef.current) return false;
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          const items = slashItemsRef.current;
+          slashSelectedIndexRef.current = (slashSelectedIndexRef.current + 1) % items.length;
+          setSlashItems([...items]);
+          return true;
+        }
+        if (event.key === "ArrowUp") {
+          event.preventDefault();
+          const items = slashItemsRef.current;
+          slashSelectedIndexRef.current = (slashSelectedIndexRef.current - 1 + items.length) % items.length;
+          setSlashItems([...items]);
+          return true;
+        }
+        if (event.key === "Enter") {
+          event.preventDefault();
+          const items = slashItemsRef.current;
+          if (items.length > 0) {
+            handleSlashCommand(items[slashSelectedIndexRef.current]);
+          }
+          return true;
+        }
+        if (event.key === "Escape") {
+          event.preventDefault();
+          showSlashMenuRef.current = false;
+          setShowSlashMenu(false);
+          return true;
+        }
+        return false;
       },
     },
     onUpdate: ({ editor: e }) => {
       const { state } = e;
       const { from } = state.selection;
-      const textBefore = state.doc.textBetween(Math.max(0, from - 20), from, "\n");
+      const textBefore = state.doc.textBetween(Math.max(0, from - 30), from, "\n");
 
-      if (textBefore.endsWith("/")) {
-        setShowSlashMenu(true);
-        setSlashItems(getSlashCommandItems());
-      } else if (showSlashMenu) {
-        const slashMatch = textBefore.match(/\/([a-zA-Z]*)$/);
-        if (slashMatch) {
-          const filter = slashMatch[1].toLowerCase();
-          const all = getSlashCommandItems();
-          setSlashItems(
-            all.filter(
-              (item) =>
-                item.label.toLowerCase().includes(filter) ||
-                item.description.toLowerCase().includes(filter),
-            ),
-          );
-        } else {
-          setShowSlashMenu(false);
+      const slashMatch = textBefore.match(/\/([a-zA-Z0-9]*)$/);
+      if (slashMatch) {
+        const pos = from - slashMatch[0].length;
+        if (!showSlashMenuRef.current) {
+          slashFromRef.current = pos;
+          slashSelectedIndexRef.current = 0;
+          setSlashFrom(pos);
+          setSlashItems(getSlashCommandItems());
+          showSlashMenuRef.current = true;
+          setShowSlashMenu(true);
         }
+        const filter = slashMatch[1].toLowerCase();
+        const all = getSlashCommandItems();
+        const filtered = all.filter(
+          (item) =>
+            item.label.toLowerCase().includes(filter) ||
+            item.description.toLowerCase().includes(filter),
+        );
+        setSlashItems(filtered);
+        if (slashSelectedIndexRef.current >= filtered.length) {
+          slashSelectedIndexRef.current = 0;
+        }
+        // Calculate menu position from cursor
+        if (editorContainerRef.current) {
+          const editorView = (e as any).view;
+          if (editorView) {
+            const coords = editorView.coordsAtPos(from);
+            const containerRect = editorContainerRef.current.getBoundingClientRect();
+            setMenuPosition({
+              top: coords.bottom - containerRect.top + 4,
+              left: coords.left - containerRect.left,
+            });
+          }
+        }
+      } else if (showSlashMenuRef.current) {
+        showSlashMenuRef.current = false;
+        setShowSlashMenu(false);
       }
     },
   });
@@ -230,19 +290,31 @@ export function InlineTaskCreator({
   const handleSlashCommand = useCallback(
     (item: SlashMenuItem) => {
       if (!editor) return;
+      const slashStart = slashFromRef.current;
       const { state } = editor;
-      const { from } = state.selection;
 
-      const textBefore = state.doc.textBetween(Math.max(0, from - 30), from, "\n");
-      const slashIndex = textBefore.lastIndexOf("/");
-      if (slashIndex === -1) {
-        setShowSlashMenu(false);
-        return;
+      // Find end of slash text in the document
+      let slashEnd = slashStart;
+      const textFromSlash = state.doc.textBetween(slashStart, Math.min(slashStart + 50, state.doc.content.size), "\n");
+      for (let i = 1; i < textFromSlash.length; i++) {
+        if (/[a-zA-Z0-9]/.test(textFromSlash[i])) {
+          slashEnd = slashStart + i + 1;
+        } else {
+          break;
+        }
       }
 
-      const slashFrom = from - (textBefore.length - slashIndex);
-      const chain = editor.chain().focus().deleteRange({ from: slashFrom, to: from });
-      item.chainCommands(chain).run();
+      // First delete the slash text, then apply the formatting
+      editor.chain()
+        .focus()
+        .deleteRange({ from: slashStart, to: slashEnd })
+        .run();
+
+      // Apply the block command
+      item.chainCommands(editor.chain().focus()).run();
+
+      showSlashMenuRef.current = false;
+      slashSelectedIndexRef.current = 0;
       setShowSlashMenu(false);
     },
     [editor],
@@ -289,6 +361,10 @@ export function InlineTaskCreator({
       )
     : assigneeOptions;
 
+  useEffect(() => {
+    slashItemsRef.current = slashItems;
+  }, [slashItems]);
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
@@ -297,7 +373,7 @@ export function InlineTaskCreator({
       }}
       onKeyDown={handleKeyDown}
     >
-      <div className="relative w-full max-w-[800px] mx-4 flex flex-col rounded-2xl bg-[#1C1C1E] border border-[#2A2A2A] shadow-2xl max-h-[85vh] overflow-hidden">
+      <div className="relative w-full max-w-[800px] mx-4 flex flex-col rounded-2xl bg-[#1A1A1C] border border-[#2A2A2E] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] max-h-[85vh] overflow-hidden">
         {/* Top bar: project badge + close */}
         <div className="flex items-center justify-between px-5 py-3 shrink-0 border-b border-[#2A2A2A]">
           <div className="flex items-center gap-2">
@@ -332,19 +408,29 @@ export function InlineTaskCreator({
           </div>
 
           {/* Description (Tiptap) */}
-          <div className="relative min-h-[100px] pb-4">
-            {editor && showSlashMenu && (
-              <div className="absolute left-0 top-0 z-50">
-                <SlashCommandMenu
-                  items={slashItems}
-                  command={handleSlashCommand}
-                  onClose={() => setShowSlashMenu(false)}
-                />
-              </div>
-            )}
+          <div ref={editorContainerRef} className="relative min-h-[100px] pb-4 overflow-visible">
             <EditorContent editor={editor} />
           </div>
         </div>
+
+        {/* Slash menu portal - rendered outside overflow containers */}
+        {editor && showSlashMenu && createPortal(
+          <div
+            className="fixed z-[100]"
+            style={{ top: menuPosition.top, left: menuPosition.left }}
+          >
+            <SlashCommandMenu
+              items={slashItems}
+              command={handleSlashCommand}
+              onClose={() => {
+                showSlashMenuRef.current = false;
+                setShowSlashMenu(false);
+              }}
+              selectedIndex={slashSelectedIndexRef.current}
+            />
+          </div>,
+          document.body
+        )}
 
         {/* Divider */}
         <div className="h-px bg-[#2A2A2A] shrink-0" />
