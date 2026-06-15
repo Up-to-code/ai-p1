@@ -36,7 +36,7 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
   const queryClient = useQueryClient();
 
   const form = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectSchema),
+    resolver: (zodResolver as any)(projectSchema),
     defaultValues: {
       name: "",
       clientId: "",
@@ -68,7 +68,7 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
       onSuccess?.();
       
       // Fallback in case response shape differs
-      const newProjectId = response?.project?.id || (response as Record<string, unknown>)?.id || (response as Record<string, unknown>)?.project?._id;
+      const newProjectId = response?.project?.id || (response as Record<string, unknown>)?.id || ((response as Record<string, unknown>)?.project as Record<string, unknown> | undefined)?._id;
       if (newProjectId) {
         router.push(`/projects/${newProjectId}/overview`);
       } else {
