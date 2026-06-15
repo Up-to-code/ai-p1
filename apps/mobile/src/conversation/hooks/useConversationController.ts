@@ -63,6 +63,7 @@ export function useConversationController() {
   const e2eQaMode = useAppStore((state) => state.e2eQaMode);
   const setActiveThreadId = useAppStore((state) => state.setActiveThreadId);
   const setActiveRunId = useAppStore((state) => state.setActiveRunId);
+  const prependThread = useAppStore((state) => state.prependThread);
   const beginEditingMessage = useAppStore((state) => state.beginEditingMessage);
   const cancelEditingMessage = useAppStore((state) => state.cancelEditingMessage);
   const setPendingPrompt = useAppStore((state) => state.setPendingPrompt);
@@ -337,6 +338,15 @@ export function useConversationController() {
             setActiveRunId(event.runId);
             setDraftTurn((turn) => turn ? { ...turn, threadId: event.threadId } : turn);
             setStreamTurn((turn) => applyStreamEvent(turn, event));
+            prependThread({
+              _id: event.threadId,
+              _creationTime: Date.now(),
+              organizationId: workspace.organizationId ?? undefined,
+              title: prompt.substring(0, 56),
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+              lastMessageAt: Date.now(),
+            });
             return;
           }
 

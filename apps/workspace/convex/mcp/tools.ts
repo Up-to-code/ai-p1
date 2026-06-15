@@ -332,6 +332,7 @@ export const writeTool = internalMutation({
         organizationId: args.organizationId,
         ...client,
         ...await protectClientPii(args.organizationId, client),
+        visibility: "workspace",
         ownerUserId: actorId,
         isDeleted: false,
         createdByUserId: actorId,
@@ -375,6 +376,7 @@ export const writeTool = internalMutation({
       const id = await ctx.db.insert("projects", {
         organizationId: args.organizationId,
         ...projectInput(input),
+        visibility: "workspace",
         ownerUserId: actorId,
         createdByUserId: actorId,
         createdAt: now,
@@ -437,6 +439,7 @@ export const writeTool = internalMutation({
       const id = await ctx.db.insert("tasks", {
         organizationId: args.organizationId,
         ...taskInput(input),
+        visibility: "workspace",
         createdByUserId: actorId,
         createdAt: now,
         updatedAt: now,
@@ -496,6 +499,66 @@ export const writeTool = internalMutation({
       });
       await audit(ctx, args.organizationId, args.connectionId, `${resourceType}.media.attach`, resourceId, `Attached ${requiredString(input, "name")}.`);
       return (await ctx.db.get(id))!;
+    }
+
+    if (args.tool === "notifications_schedule") {
+      const input = inputObject(args.input);
+      const id = await ctx.db.insert("notificationSchedules", {
+        organizationId: args.organizationId,
+        ownerUserId: actorId,
+        title: requiredString(input, "title"),
+        body: requiredString(input, "body"),
+        category: (optionalString(input, "category") as "calendar" | "task" | "manual" | "organization") ?? "manual",
+        scheduledAt: requiredNumber(input, "scheduledAt"),
+        timezone: optionalString(input, "timezone"),
+        recurrence: input.recurrence as { frequency: "daily" | "weekly" | "monthly"; interval: number; untilAt?: number } | undefined,
+        status: "active",
+        createdByUserId: actorId,
+        updatedByUserId: actorId,
+        createdAt: now,
+        updatedAt: now,
+      });
+      await audit(ctx, args.organizationId, args.connectionId, "notification.schedule", id, `Scheduled notification: ${requiredString(input, "title")}.`);
+      return (await ctx.db.get(id))!;
+    }
+
+    if (args.tool === "notifications_update_schedule") {
+      const input = inputObject(args.input);
+      const scheduleId = requiredString(input, "scheduleId") as Id<"notificationSchedules">;
+      const existing = await ctx.db.get(scheduleId);
+      if (!existing || existing.organizationId !== args.organizationId) {
+        throw new Error("Notification schedule was not found.");
+      }
+      await ctx.db.patch(scheduleId, {
+        title: optionalString(input, "title") ?? existing.title,
+        body: optionalString(input, "body") ?? existing.body,
+        category: (optionalString(input, "category") as "calendar" | "task" | "manual" | "organization") ?? existing.category,
+        scheduledAt: optionalNumber(input, "scheduledAt") ?? existing.scheduledAt,
+        timezone: optionalString(input, "timezone") ?? existing.timezone,
+        recurrence: (input.recurrence as typeof existing.recurrence) ?? existing.recurrence,
+        status: "active",
+        updatedByUserId: actorId,
+        updatedAt: now,
+      });
+      await audit(ctx, args.organizationId, args.connectionId, "notification.schedule.update", scheduleId, `Updated notification schedule.`);
+      return (await ctx.db.get(scheduleId))!;
+    }
+
+    if (args.tool === "notifications_cancel_schedule") {
+      const input = inputObject(args.input);
+      const scheduleId = requiredString(input, "scheduleId") as Id<"notificationSchedules">;
+      const existing = await ctx.db.get(scheduleId);
+      if (!existing || existing.organizationId !== args.organizationId) {
+        throw new Error("Notification schedule was not found.");
+      }
+      await ctx.db.patch(scheduleId, {
+        status: "canceled",
+        updatedByUserId: actorId,
+        updatedAt: now,
+        canceledAt: now,
+      });
+      await audit(ctx, args.organizationId, args.connectionId, "notification.schedule.cancel", scheduleId, `Canceled notification schedule.`);
+      return { canceled: true };
     }
 
     throw new Error("Unsupported write tool.");

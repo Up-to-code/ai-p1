@@ -7,7 +7,9 @@ import {
   listAgentMessages,
   listAgentThreadsPage,
   listAgentThreads,
+  fetchOrganizationProfile,
   type AgentThread,
+  type OrganizationProfile,
 } from "@/persistence/api/conversationApi";
 import {
   agentMessageToConversationMessage,
@@ -20,6 +22,120 @@ import type {
   ConversationMessage,
   ConversationRunStage,
 } from "@/types/domain";
+
+export function useGlobalThreads(limit = 50) {
+  const workspace = useWorkspaceIdentity();
+  const e2eQaMode = useAppStore((state) => state.e2eQaMode);
+  const e2eThreads = useAppStore((state) => state.e2eThreads);
+  const threads = useAppStore((state) => state.threads);
+  const threadsLoaded = useAppStore((state) => state.threadsLoaded);
+  const setThreads = useAppStore((state) => state.setThreads);
+  const setThreadsLoaded = useAppStore((state) => state.setThreadsLoaded);
+  const setThreadsRefreshing = useAppStore((state) => state.setThreadsRefreshing);
+  const previousOrganizationIdRef = useRef<string | null>(null);
+
+  const refresh = useCallback(() => {
+    if (!workspace.organizationId || e2eQaMode) return;
+
+    let cancelled = false;
+    setThreadsRefreshing(true);
+    listAgentThreads(workspace.organizationId, limit)
+      .then((rows) => {
+        if (!cancelled) {
+          setThreads(rows);
+          setThreadsLoaded(true);
+          setThreadsRefreshing(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setThreadsLoaded(true);
+          setThreadsRefreshing(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [e2eQaMode, limit, setThreads, setThreadsLoaded, setThreadsRefreshing, workspace.organizationId]);
+
+  useEffect(() => {
+    const cleanup = refresh();
+    return cleanup;
+  }, [refresh]);
+
+  useEffect(() => {
+    const previousOrganizationId = previousOrganizationIdRef.current;
+    const nextOrganizationId = workspace.organizationId ?? null;
+    previousOrganizationIdRef.current = nextOrganizationId;
+
+    if (previousOrganizationId && nextOrganizationId && previousOrganizationId !== nextOrganizationId) {
+      setThreads([]);
+      setThreadsLoaded(false);
+      refresh();
+    }
+  }, [refresh, setThreads, setThreadsLoaded, workspace.organizationId]);
+
+  if (e2eQaMode) {
+    return {
+      threads: e2eThreads,
+      isLoaded: true,
+      refresh,
+    };
+  }
+
+  const isReadyWithoutOrg = workspace.status !== "ready";
+  return {
+    threads: isReadyWithoutOrg ? [] : threads,
+    isLoaded: isReadyWithoutOrg ? workspace.status !== "loading" : threadsLoaded,
+    refresh,
+  };
+}
+
+const organizationProfileCache = new Map<string, OrganizationProfile | null>();
+
+export function useOrganizationProfile() {
+  const workspace = useWorkspaceIdentity();
+  const e2eQaMode = useAppStore((state) => state.e2eQaMode);
+  const [profile, setProfile] = useState<OrganizationProfile | null>(() => {
+    const id = workspace.organizationId;
+    if (!id) return null;
+    return organizationProfileCache.has(id) ? (organizationProfileCache.get(id) ?? null) : null;
+  });
+  const fetchedForRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const organizationId = workspace.organizationId;
+    if (!organizationId || e2eQaMode) {
+      setProfile(null);
+      fetchedForRef.current = null;
+      return;
+    }
+
+    if (fetchedForRef.current === organizationId) return;
+
+    if (organizationProfileCache.has(organizationId)) {
+      setProfile(organizationProfileCache.get(organizationId) ?? null);
+      fetchedForRef.current = organizationId;
+      return;
+    }
+
+    let cancelled = false;
+    fetchedForRef.current = organizationId;
+    fetchOrganizationProfile(organizationId).then((result) => {
+      if (!cancelled) {
+        organizationProfileCache.set(organizationId, result);
+        setProfile(result);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [e2eQaMode, workspace.organizationId]);
+
+  return profile;
+}
 
 export function useAgentRuntimeHealth(): AgentRuntimeHealth {
   const e2eQaMode = useAppStore((state) => state.e2eQaMode);
@@ -111,34 +227,37 @@ export function useThreadsState() {
   const workspace = useWorkspaceIdentity();
   const e2eQaMode = useAppStore((state) => state.e2eQaMode);
   const e2eThreads = useAppStore((state) => state.e2eThreads);
-  const [threads, setThreads] = useState<AgentThread[]>([]);
-  const [loaded, setLoaded] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const threads = useAppStore((state) => state.threads);
+  const threadsLoaded = useAppStore((state) => state.threadsLoaded);
+  const threadsRefreshing = useAppStore((state) => state.threadsRefreshing);
+  const setThreads = useAppStore((state) => state.setThreads);
+  const setThreadsLoaded = useAppStore((state) => state.setThreadsLoaded);
+  const setThreadsRefreshing = useAppStore((state) => state.setThreadsRefreshing);
 
   const refresh = useCallback(() => {
     if (!workspace.organizationId || e2eQaMode) return;
 
     let cancelled = false;
-    setRefreshing(true);
+    setThreadsRefreshing(true);
     listAgentThreads(workspace.organizationId, 50)
       .then((rows) => {
         if (!cancelled) {
-          setThreads(sortAgentThreadsByActivity(rows));
-          setLoaded(true);
-          setRefreshing(false);
+          setThreads(rows);
+          setThreadsLoaded(true);
+          setThreadsRefreshing(false);
         }
       })
       .catch(() => {
         if (!cancelled) {
-          setLoaded(true);
-          setRefreshing(false);
+          setThreadsLoaded(true);
+          setThreadsRefreshing(false);
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [e2eQaMode, workspace.organizationId]);
+  }, [e2eQaMode, setThreads, setThreadsLoaded, setThreadsRefreshing, workspace.organizationId]);
 
   useEffect(() => {
     const cleanup = refresh();
@@ -159,10 +278,10 @@ export function useThreadsState() {
   const isReadyWithoutOrg = workspace.status !== "ready";
   return {
     threads: isReadyWithoutOrg ? [] : threads,
-    isLoaded: isReadyWithoutOrg ? workspace.status !== "loading" : loaded,
+    isLoaded: isReadyWithoutOrg ? workspace.status !== "loading" : threadsLoaded,
     serverThreads: isReadyWithoutOrg ? [] : threads,
-    serverLoaded: isReadyWithoutOrg ? workspace.status !== "loading" : loaded,
-    serverRefreshing: isReadyWithoutOrg ? false : refreshing,
+    serverLoaded: isReadyWithoutOrg ? workspace.status !== "loading" : threadsLoaded,
+    serverRefreshing: isReadyWithoutOrg ? false : threadsRefreshing,
     refreshThreads: refresh,
   };
 }

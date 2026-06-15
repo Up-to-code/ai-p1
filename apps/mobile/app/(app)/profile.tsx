@@ -25,6 +25,7 @@ import { formatLanguagePreferenceLabel } from "@/foundation/localization/languag
 import { mirrorIcon } from "@/foundation/utils/layoutDirection";
 import { workspaceOrganizationLabel } from "@/auth/workspaceAccess";
 import { userAvatarPresentation } from "@/auth/userPresentation";
+import { useOrganizationProfile } from "@/persistence/api/conversationData";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -56,10 +57,12 @@ export default function ProfileScreen() {
 
   const { displayName, avatarUrl, initials } = userAvatarPresentation(user);
   const languageSummary = formatLanguagePreferenceLabel(t, localePreference);
-  const activeWorkspaceName = workspaceOrganizationLabel(
-    workspace.activeOrganization,
-    t.workspaceAccess.untitledWorkspace,
-  );
+  const orgProfile = useOrganizationProfile();
+  const activeWorkspaceName = orgProfile?.name?.trim()
+    || workspaceOrganizationLabel(
+      workspace.activeOrganization,
+      t.workspaceAccess.untitledWorkspace,
+    );
   const menuGroups: {
     label: string;
     items: {
