@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Script from "next/script";
+import { cookies } from "next/headers";
 import { brandIdentity } from "@qentrah/brand-identity";
 import { Cairo } from "next/font/google";
 import { RouteTransitionOverlay } from "@/components/layout/route-transition-overlay";
@@ -37,25 +37,29 @@ const themeInitScript = `
 })();
 `;
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const cookieStore = await cookies();
+  const themeCookie = cookieStore.get("qentrah-theme");
+  const isDark = themeCookie?.value === "dark";
+
   return (
     <html
       lang="en"
-      className={`${cairo.variable} h-full antialiased`}
+      className={`${cairo.variable} h-full antialiased${isDark ? " dark" : ""}`}
       suppressHydrationWarning
+      style={isDark ? { colorScheme: "dark" } : undefined}
     >
-      <head>
-        <Script
-          id="theme-init"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: themeInitScript }}
-        />
-      </head>
       <body
         className="h-full flex flex-col bg-background text-text-primary"
         suppressHydrationWarning
+        style={
+          isDark
+            ? { backgroundColor: "#000000", color: "#FFFFFF" }
+            : { backgroundColor: "#FFFFFF", color: "#000000" }
+        }
       >
         <RouteTransitionOverlay />
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         {children}
       </body>
     </html>
