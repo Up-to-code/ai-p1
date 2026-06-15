@@ -5,111 +5,73 @@ import { useEffect, useState, useRef } from "react";
 import { brandIdentity } from "@qentrah/brand-identity";
 
 /**
- * Shows a full-screen overlay matching the body background during route transitions.
- * Uses both pathname change detection AND DOM mutation observer to ensure the overlay
- * stays visible until the new page content is actually rendered.
+ * Prevents flash of white body background during client-side navigation.
+ * Instead of covering the page, this component forces the body background
+ * to the correct dark/light color at the CSS level during route transitions.
  */
 export function RouteTransitionOverlay() {
   const pathname = usePathname();
-  const [visible, setVisible] = useState(false);
   const prevPathname = useRef(pathname);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const observerRef = useRef<MutationObserver | null>(null);
-  const isDarkRef = useRef(false);
-  const fadeRef = useRef(false);
-  const [fading, setFading] = useState(false);
 
-  useEffect(() => {
-    function readTheme() {
-      try {
-        isDarkRef.current =
-          window.localStorage.getItem(brandIdentity.themeStorageKey) === "dark";
-      } catch {
-        isDarkRef.current = false;
-      }
+  function getThemeBg(): string {
+    try {
+      return window.localStorage.getItem(brandIdentity.themeStorageKey) === "dark"
+        ? "#000000"
+        : "#FFFFFF";
+    } catch {
+      return "#FFFFFF";
     }
-    readTheme();
-    window.addEventListener("storage", readTheme);
-    return () => window.removeEventListener("storage", readTheme);
+  }
+
+  function getThemeColor(): string {
+    try {
+      return window.localStorage.getItem(brandIdentity.themeStorageKey) === "dark"
+        ? "#FFFFFF"
+        : "#000000";
+    } catch {
+      return "#000000";
+    }
+  }
+
+  // Force body background on mount
+  useEffect(() => {
+    const bg = getThemeBg();
+    const color = getThemeColor();
+    document.documentElement.style.backgroundColor = bg;
+    document.documentElement.style.colorScheme = bg === "#000000" ? "dark" : "light";
+    document.body.style.backgroundColor = bg;
+    document.body.style.color = color;
   }, []);
 
+  // On pathname change: force body bg, then let CSS take over after paint
   useEffect(() => {
-    if (pathname !== prevPathname.current) {
-      prevPathname.current = pathname;
-      setVisible(true);
-      setFading(false);
+    if (pathname === prevPathname.current) return;
+    prevPathname.current = pathname;
 
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-        observerRef.current = null;
-      }
+    const bg = getThemeBg();
+    const color = getThemeColor();
 
-      // Observe DOM mutations - when the page content changes, start fading
-      const body = document.body;
-      let mutationCount = 0;
-      observerRef.current = new MutationObserver(() => {
-        mutationCount++;
-        // After a few mutations, the new page content is likely rendered
-        if (mutationCount >= 3) {
-          startFadeOut();
-        }
-      });
-      observerRef.current.observe(body, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-      });
+    // Force inline styles so background is always correct
+    document.documentElement.style.backgroundColor = bg;
+    document.documentElement.style.colorScheme = bg === "#000000" ? "dark" : "light";
+    document.body.style.backgroundColor = bg;
+    document.body.style.color = color;
 
-      // Fallback: force hide after 1.5s no matter what
-      timeoutRef.current = setTimeout(() => {
-        startFadeOut();
-      }, 1500);
-    }
+    // After page settles, let CSS variables take over
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      document.documentElement.style.removeProperty("background-color");
+      document.documentElement.style.removeProperty("color-scheme");
+      document.body.style.removeProperty("background-color");
+      document.body.style.removeProperty("color");
+    }, 500);
 
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-        observerRef.current = null;
-      }
     };
   }, [pathname]);
 
-  function startFadeOut() {
-    if (fadeRef.current) return;
-    fadeRef.current = true;
-
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-      observerRef.current = null;
-    }
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-
-    setFading(true);
-    setTimeout(() => {
-      setVisible(false);
-      setFading(false);
-      fadeRef.current = false;
-    }, 200);
-  }
-
-  if (!visible) return null;
-
-  const bgColor = isDarkRef.current ? "#000000" : "#FFFFFF";
-
-  return (
-    <div
-      className="fixed inset-0 z-[9999] pointer-events-none"
-      style={{
-        backgroundColor: bgColor,
-        opacity: fading ? 0 : 1,
-        transition: "opacity 200ms ease-out",
-      }}
-      aria-hidden="true"
-    />
-  );
+  // No visible overlay - this component only manipulates body styles
+  return null;
 }
