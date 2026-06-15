@@ -21,19 +21,13 @@ export const metadata: Metadata = {
 const themeInitScript = `
 (() => {
   try {
-    const theme = window.localStorage.getItem("${brandIdentity.themeStorageKey}") === "dark" ? "dark" : "light";
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    document.documentElement.style.colorScheme = theme;
-    document.documentElement.style.backgroundColor = theme === "dark" ? "#000000" : "#FFFFFF";
-    document.body.style.backgroundColor = theme === "dark" ? "#000000" : "#FFFFFF";
-    document.body.style.color = theme === "dark" ? "#FFFFFF" : "#000000";
-  } catch {
-    document.documentElement.classList.remove("dark");
-    document.documentElement.style.colorScheme = "light";
-    document.documentElement.style.backgroundColor = "#FFFFFF";
-    document.body.style.backgroundColor = "#FFFFFF";
-    document.body.style.color = "#000000";
-  }
+    var t = localStorage.getItem("${brandIdentity.themeStorageKey}") === "dark" ? "dark" : "light";
+    document.documentElement.classList.toggle("dark", t === "dark");
+    document.documentElement.style.colorScheme = t;
+    document.documentElement.style.backgroundColor = t === "dark" ? "#000000" : "#FFFFFF";
+    document.body.style.backgroundColor = t === "dark" ? "#000000" : "#FFFFFF";
+    document.body.style.color = t === "dark" ? "#FFFFFF" : "#000000";
+  } catch(e) {}
 })();
 `;
 
