@@ -1,6 +1,6 @@
-import { httpRouter } from "convex/server";
 import { createDodoWebhookHandler } from "@dodopayments/convex";
-import { internal } from "./_generated/api";
+import { httpRouter } from "convex/server";
+import { internal } from "../_generated/api";
 
 const http = httpRouter();
 
@@ -19,7 +19,7 @@ http.route({
       console.log("Amount:", payload.data.total_amount, payload.data.currency);
 
       // Persist payment data to database
-      await ctx.runMutation(internal.billing.webhookMutations.recordPayment, {
+      await ctx.runMutation(internal.billing.webhooks.recordPayment, {
         paymentId: payload.data.payment_id,
         dodoCustomerId: payload.data.customer_id,
         customerEmail: payload.data.customer?.email || "",
@@ -36,7 +36,7 @@ http.route({
       console.log("Payment ID:", payload.data.payment_id);
       console.log("Failure Reason:", payload.data.failure_reason);
 
-      await ctx.runMutation(internal.billing.webhookMutations.recordPaymentFailure, {
+      await ctx.runMutation(internal.billing.webhooks.recordPaymentFailure, {
         paymentId: payload.data.payment_id,
         dodoCustomerId: payload.data.customer_id,
         failureReason: payload.data.failure_reason || "Unknown error",
@@ -49,7 +49,7 @@ http.route({
       console.log("Subscription ID:", payload.data.subscription_id);
       console.log("Plan ID:", payload.data.plan_id);
 
-      await ctx.runMutation(internal.billing.webhookMutations.recordSubscription, {
+      await ctx.runMutation(internal.billing.webhooks.recordSubscription, {
         subscriptionId: payload.data.subscription_id,
         dodoCustomerId: payload.data.customer_id,
         planId: payload.data.plan_id,
@@ -64,7 +64,7 @@ http.route({
       console.log("❌ Subscription Canceled!");
       console.log("Subscription ID:", payload.data.subscription_id);
 
-      await ctx.runMutation(internal.billing.webhookMutations.recordSubscription, {
+      await ctx.runMutation(internal.billing.webhooks.recordSubscription, {
         subscriptionId: payload.data.subscription_id,
         dodoCustomerId: payload.data.customer_id,
         planId: payload.data.plan_id,
@@ -79,7 +79,7 @@ http.route({
       console.log("🔄 Subscription Updated!");
       console.log("Subscription ID:", payload.data.subscription_id);
 
-      await ctx.runMutation(internal.billing.webhookMutations.recordSubscription, {
+      await ctx.runMutation(internal.billing.webhooks.recordSubscription, {
         subscriptionId: payload.data.subscription_id,
         dodoCustomerId: payload.data.customer_id,
         planId: payload.data.plan_id,

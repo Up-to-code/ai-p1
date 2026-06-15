@@ -1099,4 +1099,46 @@ export default defineSchema({
     .index("by_organization_resource", ["organizationId", "resourceType", "resourceId"])
     .index("by_organization_resource_name", ["organizationId", "resourceType", "resourceId", "name"])
     .index("by_updated", ["updatedAt"]),
+  // DodoPayments Integration Tables
+  dodoCustomers: defineTable({
+    authId: v.string(),
+    email: v.string(),
+    dodoCustomerId: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_auth_id", ["authId"])
+    .index("by_dodo_customer_id", ["dodoCustomerId"])
+    .index("by_email", ["email"]),
+  dodoPayments: defineTable({
+    paymentId: v.string(),
+    dodoCustomerId: v.string(),
+    customerEmail: v.string(),
+    amount: v.number(),
+    currency: v.string(),
+    status: v.string(),
+    productIds: v.array(v.string()),
+    failureReason: v.optional(v.string()),
+    metadata: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_payment_id", ["paymentId"])
+    .index("by_dodo_customer_id", ["dodoCustomerId"])
+    .index("by_status", ["status"])
+    .index("by_created", ["createdAt"]),
+  dodoSubscriptions: defineTable({
+    subscriptionId: v.string(),
+    dodoCustomerId: v.string(),
+    planId: v.string(),
+    status: v.string(),
+    currentPeriodStart: v.optional(v.number()),
+    currentPeriodEnd: v.optional(v.number()),
+    metadata: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_subscription_id", ["subscriptionId"])
+    .index("by_dodo_customer_id", ["dodoCustomerId"])
+    .index("by_status", ["status"])
+    .index("by_updated", ["updatedAt"]),
 });

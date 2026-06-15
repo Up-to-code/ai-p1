@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name,
     short_name: "Qentrah",
-    description: `${brandLabel("en")} workspace for projects, clients, teams, assets, calendars, and partner authorization.`,
+    description: "AI-powered workspace for real estate teams to manage conversations, tasks, properties, clients, and operations.",
     start_url: "/",
     scope: "/",
     display: "standalone",
