@@ -166,7 +166,7 @@ export function taskInput(input: Input) {
     projectId: optionalString(input, "projectId"),
     dueDate: optionalString(input, "dueDate"),
     description: optionalString(input, "description") ?? optionalString(input, "notes"),
-    visibility: oneOf(input.visibility, ["private", "team", "workspace"] as const, undefined),
+    visibility: oneOf(input.visibility, ["private", "team", "workspace"] as const, "workspace"),
   };
 }
 
