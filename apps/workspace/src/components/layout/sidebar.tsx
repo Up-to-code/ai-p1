@@ -258,7 +258,7 @@ export function Sidebar() {
           </NavTooltip>
         </div>
 
-        <nav className={cn("flex flex-1 flex-col overflow-y-auto py-3 scrollbar-none", isOpen ? "px-3 gap-0.5" : "items-center gap-0.5")}>
+        <nav className={cn("flex flex-1 flex-col overflow-y-auto py-3 scrollbar-none", isOpen ? "px-3 gap-1" : "items-center gap-1")}>
 
           {primaryNav.map((item) => {
 
@@ -403,7 +403,7 @@ export function Sidebar() {
         </nav>
 
         {/* Bottom: secondary nav + user avatar */}
-        <div className={cn("flex flex-col border-t border-inherit py-3", isOpen ? "px-3 gap-0.5" : "items-center gap-0.5")}>
+        <div className={cn("flex flex-col border-t border-inherit py-3", isOpen ? "px-3 gap-1" : "items-center gap-1")}>
           {secondaryNav.map((item) => {
             const isActive = pathname.startsWith(item.href);
             const label = item.name === "organization" ? (locale === "ar" ? "الإعدادات" : "Settings") : t(item.name);
@@ -485,7 +485,7 @@ export function Sidebar() {
             <Link
               href="/profile/settings"
               aria-label={account.user.name}
-              className={cn("mt-4 flex items-center transition-all hover:opacity-80", isOpen ? "gap-3 px-3 py-2 rounded-xl" : "")}
+              className={cn("mt-2 flex items-center transition-all hover:opacity-80", isOpen ? "gap-3 px-3 py-2 rounded-xl" : "")}
             >
               <IdentityAvatar
                 image={account.user.image}

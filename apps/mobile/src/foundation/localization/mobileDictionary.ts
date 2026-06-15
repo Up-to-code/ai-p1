@@ -305,6 +305,7 @@ export type MobileDictionary = {
     switchWorkspace: string;
     continueWorkspace: string;
     useAnotherAccount: string;
+    activeBadge: string;
   };
   onboarding: {
     locationsTitle: string;
@@ -645,6 +646,7 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       switchWorkspace: "Switch",
       continueWorkspace: "Continue",
       useAnotherAccount: "Use another account",
+      activeBadge: "Active",
     },
     onboarding: {
       locationsTitle: "Personalize",
@@ -982,6 +984,7 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       switchWorkspace: "تبديل",
       continueWorkspace: "متابعة",
       useAnotherAccount: "استخدام حساب آخر",
+      activeBadge: "الحالية",
     },
     onboarding: {
       locationsTitle: "خصّص تجربتك",
@@ -1319,6 +1322,7 @@ const dictionaries: Record<AppLocale, MobileDictionary> = {
       switchWorkspace: "Changer",
       continueWorkspace: "Continuer",
       useAnotherAccount: "Utiliser un autre compte",
+      activeBadge: "Actif",
     },
     onboarding: {
       locationsTitle: "Personnaliser",

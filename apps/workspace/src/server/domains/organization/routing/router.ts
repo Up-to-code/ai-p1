@@ -24,6 +24,7 @@ import {
   handleUpdateOrganizationMemberRole,
   handleUpdateOrganizationRole,
 } from "../handlers/actions";
+import { handleGetOrganizationProfile } from "../handlers/get-profile";
 import { handleUpdateOrganizationProfile } from "../handlers/update-profile";
 import {
   handleReadActivity,
@@ -148,6 +149,11 @@ organizationRouter.post(
 organizationRouter.delete(
   "/:organizationId/invite-links/:inviteLinkId",
   handleCancelOrganizationInviteLink,
+);
+
+organizationRouter.get(
+  "/:organizationId/profile",
+  handleGetOrganizationProfile,
 );
 
 organizationRouter.patch(

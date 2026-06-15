@@ -19,6 +19,7 @@ import {
 import { Link, useRouter } from "@/i18n/routing";
 import { WorkOsRecordDrawer } from "@/domains/work-os/components/work-os-record-drawer";
 import { WorkOsRecordPicker, type WorkOsPickerOption } from "@/domains/work-os/components/work-os-record-picker";
+import { InlineTaskCreator } from "./inline-task-creator";
 import { TaskGroupedList } from "./task-grouped-list";
 import { useClientOptionsQuery } from "@/domains/clients/api/clients";
 import { useProjectOptionsQueryResult } from "@/domains/projects/api/projects";
@@ -171,7 +172,7 @@ export function TasksScreen({ hideShell }: { hideShell?: boolean } = {}) {
   const [editing, setEditing] = useState<TaskRecord | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const { activeProjectId } = useWorkspaceStore();
-  const isFormDrawerOpen = isCreateOpen || Boolean(editing);
+  const isFormDrawerOpen = Boolean(editing);
   const queriedTasks = useTasksQuery(organizationId, { status: "all", search, projectId: activeProjectId });
   const tasks = useMemo(() => queriedTasks ?? [], [queriedTasks]);
   const rawClientOptions = useClientOptionsQuery(organizationId, { enabled: Boolean(organizationId) });
@@ -308,6 +309,15 @@ export function TasksScreen({ hideShell }: { hideShell?: boolean } = {}) {
             </div>
 
             {/* Board */}
+            {isCreateOpen && (
+              <InlineTaskCreator
+                onSubmit={create}
+                onCancel={closeFormDrawer}
+                isSubmitting={busyId === "create"}
+                assigneeOptions={taskAssigneeOptions}
+                defaultProjectId={activeProjectId ?? undefined}
+              />
+            )}
             {filteredTasks.length === 0 ? (
               <EmptyWorkspace icon={ListTodo} title={t("empty.title")} description={t("empty.description")} />
             ) : (

@@ -162,8 +162,11 @@ export function taskInput(input: Input) {
     status: taskStatus(input),
     priority: priority(input),
     assigneeUserId: optionalString(input, "assigneeUserId"),
+    clientId: optionalString(input, "clientId"),
+    projectId: optionalString(input, "projectId"),
     dueDate: optionalString(input, "dueDate"),
     description: optionalString(input, "description") ?? optionalString(input, "notes"),
+    visibility: oneOf(input.visibility, ["private", "team", "workspace"] as const, "workspace"),
   };
 }
 

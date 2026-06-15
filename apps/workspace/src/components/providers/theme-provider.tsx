@@ -13,12 +13,17 @@ type ThemeContextValue = {
 };
 
 const THEME_STORAGE_KEY = brandIdentity.themeStorageKey;
+const COOKIE_NAME = "qentrah-theme";
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function applyTheme(theme: Theme) {
   const root = document.documentElement;
   root.classList.toggle("dark", theme === "dark");
   root.style.colorScheme = theme;
+}
+
+function setThemeCookie(theme: Theme) {
+  document.cookie = `${COOKIE_NAME}=${theme}; path=/; max-age=31536000; SameSite=Lax`;
 }
 
 function readStoredTheme(): Theme {
@@ -31,12 +36,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     applyTheme(theme);
+    setThemeCookie(theme);
   }, [theme]);
 
   const value = useMemo<ThemeContextValue>(() => {
     function setTheme(nextTheme: Theme) {
       setThemeState(nextTheme);
       window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+      setThemeCookie(nextTheme);
     }
 
     return {

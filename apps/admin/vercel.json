@@ -1,7 +1,0 @@
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "nextjs",
-  "installCommand": "cd ../.. && npm ci --legacy-peer-deps --include=optional",
-  "ignoreCommand": "node ../../scripts/vercel-ignore.mjs --workspace @qentrah/admin-review",
-  "buildCommand": "cd ../.. && npm --workspace @qentrah/admin-review run build"
-}

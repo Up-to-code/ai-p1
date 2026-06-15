@@ -178,7 +178,9 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     textAlign: isRTL ? "right" : "left",
   },
   body: {
-    display: "none",
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: isRTL ? "right" : "left",
   },
   plainList: {
     gap: theme.spacing.sm,
@@ -233,7 +235,10 @@ const createStyles = (colors: AppColors, isRTL: boolean) => StyleSheet.create({
     textAlign: isRTL ? "right" : "left",
   },
   rowBody: {
-    display: "none",
+    fontSize: 13,
+    lineHeight: 18,
+    fontFamily: "Manrope_500Medium",
+    textAlign: isRTL ? "right" : "left",
   },
   rowMeta: {
     fontSize: 13,

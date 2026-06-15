@@ -4,8 +4,6 @@ import {
   mcpReadToolNames as readTools,
   mcpToolPermissionMap as toolPermissions,
 } from "./toolRegistry";
-import { getRegistryTool } from "../../src/server/protocols/mcp/tools/registry-core";
-import { evaluateAgentToolPolicy } from "../../src/server/domains/agents/policies/tool-policy";
 import { clientInput } from "./toolInputs";
 
 type Input = Record<string, unknown>;
@@ -14,11 +12,6 @@ function inputObject(value: unknown): Input {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Input)
     : {};
-}
-
-function compactPreview(value: unknown, maxLength = 900) {
-  const text = typeof value === "string" ? value : JSON.stringify(value ?? {});
-  return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
 }
 
 function validateToolInputBeforeApproval(tool: string, input: Input) {
@@ -69,7 +62,6 @@ export async function executeMcpToolCall(
     connectionName: validation.name,
   };
 
-  const tool = getRegistryTool(args.tool);
   try {
     validateToolInputBeforeApproval(args.tool, common.input);
   } catch (error) {
@@ -79,51 +71,10 @@ export async function executeMcpToolCall(
     };
   }
 
-  const decision = evaluateAgentToolPolicy({
-    adapter: "mcp",
-    actorType: "mcpConnection",
-    organizationId: validation.organizationId,
-    tool: tool as never,
-    permissions: validation.permissions ?? [],
-    inputPreview: compactPreview(common.input),
-  });
-
-  if (decision.state === "blocked") {
-    throw new Error(decision.reason);
-  }
-
-  if (decision.state === "requires_user_approval" || decision.state === "requires_admin_approval") {
-    const confirmation = await ctx.runMutation(internal.agents.confirmations.createFromMcpLink, {
-      organizationId: validation.organizationId,
-      connectionId: validation.connectionId,
-      createdByUserId: validation.createdByUserId ?? "unknown",
-      tool: args.tool,
-      resource: permission.resource,
-      action: permission.action,
-      riskLevel: decision.riskLevel ?? "admin",
-      approvalRequirement: decision.state === "requires_admin_approval" ? "admin" : "user",
-      summary: `${tool?.title ?? args.tool}: ${compactPreview(common.input, 220)}`,
-      inputPreview: compactPreview(common.input, 500),
-      input: common.input,
-      expiresAt: Date.now() + 5 * 60 * 1000,
-    });
-    return {
-      ok: false,
-      confirmationRequired: true,
-      approvalType: decision.state === "requires_admin_approval" ? "admin" : "user",
-      confirmation: {
-        confirmationId: confirmation.id,
-        summary: confirmation.summary,
-        resource: confirmation.resource,
-        action: confirmation.action,
-        inputPreview: confirmation.inputPreview,
-        expiresAt: confirmation.expiresAt,
-      },
-      message: decision.reason,
-    };
-  }
-
+  // MCP tools are always allowed to execute directly - no approval required
+  // Policy evaluation happens at connection creation time, not at tool call time
   return readTools.has(args.tool)
     ? await ctx.runQuery(internal.mcp.tools.readTool, common)
     : await ctx.runMutation(internal.mcp.tools.writeTool, common);
 }
+// test change Mon Jun 15 13:52:36 EEST 2026

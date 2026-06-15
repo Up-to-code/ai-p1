@@ -1,156 +1,246 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronsUpDown, FolderGit2, Globe, Plus } from "lucide-react";
+import { Check, ChevronsUpDown, FolderGit2, Globe, Plus, Trash2, Loader2 } from "lucide-react";
+import { createPortal } from "react-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { CreateProjectForm } from "@/domains/projects/components/create-project-form";
-
-import { useRouter } from "@/i18n/routing";
-import { useParams, usePathname } from "next/navigation";
-import { useWorkspaceStore } from "@/domains/dashboard/store/dashboard.store";
-import { useProjectOptionsQueryResult } from "@/domains/projects/api/projects";
+import { useProjectSwitcher } from "@/domains/projects/hooks/use-project-switcher";
+import { deleteProjectRequest } from "@/domains/projects/api/projects";
 import { useAccountContext } from "@/domains/auth";
+import { useWorkspaceStore } from "@/domains/dashboard/store/dashboard.store";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { useRouter } from "@/i18n/routing";
 
 export function ProjectSwitcher() {
   const router = useRouter();
-  const params = useParams();
-  const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
+  const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number; project: { id: string; name: string } } | null>(null);
+  const [deleteModal, setDeleteModal] = React.useState<{ project: { id: string; name: string } } | null>(null);
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
   const account = useAccountContext();
-  const activeOrganizationId = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
-  const projectsQuery = useProjectOptionsQueryResult(activeOrganizationId);
-  const projects = projectsQuery.data ?? [];
+  const activeOrganizationId =
+    account.workspace.status === "ready"
+      ? account.workspace.organizationId ?? undefined
+      : undefined;
+  const { setActiveProjectId } = useWorkspaceStore();
 
-  const { activeProjectId, setActiveProjectId } = useWorkspaceStore();
+  const {
+    projects,
+    activeProject,
+    activeProjectId,
+    isGlobalMode,
+    isLoading,
+    switchProject,
+    switchToGlobal,
+    refetchProjects,
+  } = useProjectSwitcher();
 
-  const activeProject = React.useMemo(() => {
-    return projects.find((p) => p.id === activeProjectId);
-  }, [projects, activeProjectId]);
+  const handleContextMenu = React.useCallback((e: React.MouseEvent, project: { id: string; name: string }) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({ x: e.clientX, y: e.clientY, project });
+  }, []);
 
-  // Sync state if URL specifies a project but store doesn't (deep link)
-  React.useEffect(() => {
-    const pathParts = pathname.split("/");
-    const projectsIndex = pathParts.indexOf("projects");
-    if (projectsIndex !== -1 && pathParts.length > projectsIndex + 1) {
-      const idInUrl = pathParts[projectsIndex + 1];
-      if (idInUrl !== "create" && idInUrl !== "index" && idInUrl !== activeProjectId) {
-        setActiveProjectId(idInUrl);
+  const handleDelete = React.useCallback(async () => {
+    if (!deleteModal || !activeOrganizationId || isDeleting) return;
+    setIsDeleting(true);
+    try {
+      await deleteProjectRequest(activeOrganizationId, deleteModal.project.id);
+      if (activeProjectId === deleteModal.project.id) {
+        setActiveProjectId(null);
       }
-    } else if (activeProjectId && !pathname.includes("/projects")) {
-      // Keep it in store, no need to clear it, this allows "Global Zone vs Project Zone" paradigm.
+      setDeleteModal(null);
+      setContextMenu(null);
+      refetchProjects();
+      router.push("/dashboard");
+    } catch {
+    } finally {
+      setIsDeleting(false);
     }
-  }, [pathname, activeProjectId, setActiveProjectId]);
+  }, [deleteModal, activeOrganizationId, activeProjectId, isDeleting, setActiveProjectId, router, refetchProjects]);
 
-  const isGlobalMode = !activeProjectId;
+  React.useEffect(() => {
+    if (!contextMenu) return;
+    const handleClick = () => setContextMenu(null);
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setContextMenu(null);
+    };
+    document.addEventListener("click", handleClick);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("click", handleClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [contextMenu]);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger>
-        <button
-          role="combobox"
-          aria-expanded={open}
-          className="flex h-9 items-center justify-between gap-2 rounded-lg border border-[var(--color-divider)] bg-background px-3 text-sm font-semibold shadow-sm transition-colors hover:bg-zinc-100 dark:hover:bg-white/5 w-[220px]"
-        >
-          <div className="flex items-center gap-2 truncate">
-            {isGlobalMode || !activeProject ? (
-              <>
-                <div className="flex h-5 w-5 items-center justify-center rounded bg-zinc-100 text-zinc-600 dark:bg-white/10 dark:text-zinc-400">
-                  <Globe className="h-3.5 w-3.5" />
-                </div>
-                <span className="truncate">Global Workspace</span>
-              </>
-            ) : (
-              <>
-                <div className="flex h-5 w-5 items-center justify-center rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-                  <FolderGit2 className="h-3.5 w-3.5" />
-                </div>
-                <span className="truncate">{activeProject.name}</span>
-              </>
-            )}
-          </div>
-          <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[280px] p-2 shadow-xl rounded-xl" align="start">
-        <div className="flex flex-col gap-1">
-          <button
-            onClick={() => {
-              setActiveProjectId(null);
-              if (pathname.includes("/projects/")) {
-                router.push("/dashboard");
-              }
-              setOpen(false);
-            }}
-            className="flex w-full items-center px-2 py-1.5 text-sm font-medium rounded-md hover:bg-zinc-100 dark:hover:bg-white/10 transition-colors"
+    <>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger>
+          <div
+            role="combobox"
+            aria-expanded={open}
+            className="flex h-9 items-center justify-between gap-2 rounded-lg border border-[var(--color-divider)] bg-background px-3 text-sm font-semibold transition-colors hover:bg-zinc-100 dark:hover:bg-white/5 w-[220px]"
           >
-            <Globe className="mr-2 h-4 w-4 text-zinc-500" />
-            Global Workspace
-            {isGlobalMode && <Check className="ml-auto h-4 w-4" />}
-          </button>
-
-          <div className="h-px bg-zinc-200 dark:bg-white/10 my-1" />
-
-          <div className="px-2 py-1 text-xs font-medium text-zinc-500">Active Projects</div>
-          {projects.length === 0 && (
-            <div className="px-2 py-2 text-sm text-zinc-500">No project found.</div>
-          )}
-          {projects.map((project) => (
+            <div className="flex items-center gap-2 truncate">
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-5 w-5 rounded shrink-0" />
+                  <Skeleton className="h-4 w-24 rounded-full" />
+                </>
+              ) : isGlobalMode || !activeProject ? (
+                <>
+                  <div className="flex h-5 w-5 items-center justify-center rounded bg-zinc-100 text-zinc-600 dark:bg-white/10 dark:text-zinc-400">
+                    <Globe className="h-3.5 w-3.5" />
+                  </div>
+                  <span className="truncate">Global Workspace</span>
+                </>
+              ) : (
+                <>
+                  <div className="flex h-5 w-5 items-center justify-center rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                    <FolderGit2 className="h-3.5 w-3.5" />
+                  </div>
+                  <span className="truncate">{activeProject.name}</span>
+                </>
+              )}
+            </div>
+            <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
+          </div>
+        </PopoverTrigger>
+        <PopoverContent className="w-[280px] p-2 shadow-xl rounded-xl" align="start">
+          <div className="flex flex-col gap-0.5">
             <button
-              key={project.id}
               onClick={() => {
-                setActiveProjectId(project.id);
-                if (pathname.includes("/projects/")) {
-                  // If we are deep inside a project route, try to switch to the new project
-                  const pathParts = pathname.split("/");
-                  const projectsIndex = pathParts.indexOf("projects");
-                  const currentTab = pathParts[projectsIndex + 2] || "overview";
-                  router.push(`/projects/${project.id}/${currentTab}`);
-                }
+                switchToGlobal();
                 setOpen(false);
               }}
-              className="flex w-full items-center px-2 py-1.5 text-sm font-medium rounded-md hover:bg-zinc-100 dark:hover:bg-white/10 transition-colors"
+              className="flex w-full items-center px-2 py-1.5 text-sm font-medium rounded-lg hover:bg-[var(--color-divider)] transition-colors"
             >
-              <FolderGit2 className="mr-2 h-4 w-4 text-indigo-500" />
-              <span className="truncate">{project.name}</span>
-              {activeProjectId === project.id && <Check className="ml-auto h-4 w-4" />}
+              <Globe className="me-2 h-4 w-4 text-zinc-500" />
+              Global Workspace
+              {isGlobalMode && <Check className="ms-auto h-4 w-4" />}
             </button>
-          ))}
 
-          <div className="h-px bg-zinc-200 dark:bg-white/10 my-1" />
-          
+            <div className="h-px bg-[var(--color-divider)] my-1" />
+
+            <div className="px-2 pt-1 pb-1 text-xs font-medium text-text-muted">Active Projects</div>
+            {isLoading ? (
+              <div className="space-y-1 px-1">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="flex items-center gap-2 px-2 py-1.5">
+                    <Skeleton className="h-4 w-4 rounded shrink-0" />
+                    <Skeleton className="h-4 rounded-full" style={{ width: `${60 + i * 12}%` }} />
+                  </div>
+                ))}
+              </div>
+            ) : projects.length === 0 ? (
+              <div className="px-2 py-2 text-sm text-text-muted">No project found.</div>
+            ) : (
+              projects.map((project) => (
+                <button
+                  key={project.id}
+                  onClick={() => {
+                    switchProject(project.id);
+                    setOpen(false);
+                  }}
+                  onContextMenu={(e) => handleContextMenu(e, project)}
+                  className="flex w-full items-center px-2 py-1.5 text-sm font-medium rounded-lg hover:bg-[var(--color-divider)] transition-colors"
+                >
+                  <FolderGit2 className="me-2 h-4 w-4 text-indigo-500" />
+                  <span className="truncate">{project.name}</span>
+                  {activeProject?.id === project.id && <Check className="ms-auto h-4 w-4" />}
+                </button>
+              ))
+            )}
+
+            <div className="h-px bg-[var(--color-divider)] my-1" />
+
+            <button
+              onClick={() => {
+                setOpen(false);
+              }}
+              className="flex w-full items-center px-2 py-1.5 text-xs text-text-muted rounded-lg hover:bg-[var(--color-divider)] transition-colors"
+            >
+              View all projects
+            </button>
+            <button
+              onClick={() => {
+                setIsCreateModalOpen(true);
+                setOpen(false);
+              }}
+              className="flex w-full items-center px-2 py-1.5 text-xs text-primary rounded-lg hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors"
+            >
+              <Plus className="me-2 h-3.5 w-3.5" />
+              Create new project
+            </button>
+          </div>
+        </PopoverContent>
+
+        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+          <DialogContent className="max-w-2xl border-none bg-transparent p-0 shadow-none" showCloseButton={false}>
+            <DialogTitle className="sr-only">New Project</DialogTitle>
+            <DialogDescription className="sr-only">Create a new project</DialogDescription>
+            <CreateProjectForm onSuccess={() => setIsCreateModalOpen(false)} onCancel={() => setIsCreateModalOpen(false)} />
+          </DialogContent>
+        </Dialog>
+      </Popover>
+
+      {contextMenu && createPortal(
+        <div
+          className="fixed z-[100] min-w-[160px] rounded-lg bg-popover p-1 shadow-lg ring-1 ring-foreground/10 animate-in fade-in-0 zoom-in-95"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+        >
           <button
             onClick={() => {
-              router.push("/projects");
-              setOpen(false);
+              setDeleteModal({ project: contextMenu.project });
+              setContextMenu(null);
             }}
-            className="flex w-full items-center px-2 py-1.5 text-xs text-zinc-500 rounded-md hover:bg-zinc-100 dark:hover:bg-white/10 transition-colors"
+            className="flex w-full items-center gap-2 px-2 py-1.5 text-sm font-medium rounded-md text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 transition-colors"
           >
-            View all projects
+            <Trash2 className="h-4 w-4" />
+            Delete project
           </button>
-          <button
-            onClick={() => {
-              setIsCreateModalOpen(true);
-              setOpen(false);
-            }}
-            className="flex w-full items-center px-2 py-1.5 text-xs text-indigo-500 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
-          >
-            <Plus className="mr-2 h-3.5 w-3.5" />
-            Create new project
-          </button>
-        </div>
-      </PopoverContent>
+        </div>,
+        document.body
+      )}
 
-      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent className="max-w-2xl border-none bg-transparent p-0 shadow-none" showCloseButton={false}>
-          <DialogTitle className="sr-only">New Project</DialogTitle>
-          <DialogDescription className="sr-only">Create a new project</DialogDescription>
-          <CreateProjectForm onSuccess={() => setIsCreateModalOpen(false)} onCancel={() => setIsCreateModalOpen(false)} />
+      <Dialog open={!!deleteModal} onOpenChange={(isOpen) => { if (!isOpen) setDeleteModal(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogTitle>Delete project</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete <span className="font-medium text-foreground">{deleteModal?.project.name}</span>? This action cannot be undone.
+          </DialogDescription>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteModal(null)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Popover>
+    </>
   );
 }

@@ -9,10 +9,11 @@ import { createFavoriteThreadsSlice, type FavoriteThreadsSlice } from "@/store/s
 import { MOBILE_STORE_VERSION, migratePersistedAppStore } from "@/store/persistence";
 import { createPreferenceSlice, type PreferenceSlice } from "@/store/slices/preferenceSlice";
 import { createSessionSlice, type SessionSlice } from "@/store/slices/sessionSlice";
+import { createThreadsSlice, type ThreadsSlice } from "@/store/slices/threadsSlice";
 import { createUiSlice, type UiSlice } from "@/store/slices/uiSlice";
 import { createVoiceSlice, type VoiceSlice } from "@/store/slices/voiceSlice";
 
-export type AppStore = SessionSlice & E2ESlice & FavoriteThreadsSlice & ConversationSlice & ComposerSlice & VoiceSlice & PreferenceSlice & UiSlice;
+export type AppStore = SessionSlice & E2ESlice & FavoriteThreadsSlice & ConversationSlice & ThreadsSlice & ComposerSlice & VoiceSlice & PreferenceSlice & UiSlice;
 
 export const useAppStore = create<AppStore>()(
   persist(
@@ -21,6 +22,7 @@ export const useAppStore = create<AppStore>()(
       ...createE2ESlice(...args),
       ...createFavoriteThreadsSlice(...args),
       ...createConversationSlice(...args),
+      ...createThreadsSlice(...args),
       ...createComposerSlice(...args),
       ...createVoiceSlice(...args),
       ...createPreferenceSlice(...args),
