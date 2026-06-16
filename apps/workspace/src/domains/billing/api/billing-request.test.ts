@@ -20,10 +20,10 @@ describe("billing request wrappers", () => {
     vi.setSystemTime(new Date("2026-05-28T00:00:00.000Z"));
 
     expect(fallbackBillingOverview("org_1")).toMatchObject({
-      plan: { id: "saudi_monthly" },
+      plan: { id: "good_monthly" },
       subscription: {
         organizationId: "org_1",
-        planId: "saudi_monthly",
+        planId: "good_monthly",
         status: "inactive",
         createdAt: Date.parse("2026-05-28T00:00:00.000Z"),
         updatedAt: Date.parse("2026-05-28T00:00:00.000Z"),
@@ -36,7 +36,7 @@ describe("billing request wrappers", () => {
 
   it("builds zero-safe fallback usage data", () => {
     expect(fallbackBillingUsage("org_1")).toMatchObject({
-      overview: { plan: { id: "saudi_monthly" } },
+      overview: { plan: { id: "good_monthly" } },
       credits: {
         subscriptionCreditsGranted: 0,
         subscriptionCreditsUsed: 0,
@@ -51,16 +51,16 @@ describe("billing request wrappers", () => {
 
   it("uses shared encoded organization paths for billing requests", async () => {
     const fetcher = vi.fn(async (url: string) => {
-      if (url.includes("/usage")) return okResponse({ overview: { plan: { id: "saudi_monthly" }, subscription: null, latestPayment: null }, credits: {}, payments: [] });
+      if (url.includes("/usage")) return okResponse({ overview: { plan: { id: "good_monthly" }, subscription: null, latestPayment: null }, credits: {}, payments: [] });
       if (url.includes("/checkout")) return okResponse({ checkoutUrl: "https://pay.example", orderId: "order_1", status: "pending" });
       if (url.includes("/orders/")) return okResponse({ payment: null, tamaraError: null });
-      return okResponse({ plan: { id: "saudi_monthly" }, subscription: null, latestPayment: null });
+      return okResponse({ plan: { id: "good_monthly" }, subscription: null, latestPayment: null });
     });
     vi.stubGlobal("fetch", fetcher);
 
     await getBillingOverviewRequest("org 1");
     await getBillingUsageRequest("org 1");
-    await createTamaraCheckoutRequest({ organizationId: "org 1", locale: "ar" });
+    await createTamaraCheckoutRequest({ organizationId: "org 1", locale: "ar", planId: "good_monthly" });
     await getTamaraOrderStatusRequest({ organizationId: "org 1", orderId: "order/1" });
 
     expect(fetcher).toHaveBeenNthCalledWith(1, "/api/v1/organizations/org%201/billing/subscription", {
@@ -76,7 +76,7 @@ describe("billing request wrappers", () => {
     expect(fetcher).toHaveBeenNthCalledWith(3, "/api/v1/organizations/org%201/billing/tamara/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ planId: "saudi_monthly", locale: "ar" }),
+      body: JSON.stringify({ planId: "good_monthly", locale: "ar" }),
     });
     expect(fetcher).toHaveBeenNthCalledWith(4, "/api/v1/organizations/org%201/billing/tamara/orders/order%2F1", {
       method: "GET",

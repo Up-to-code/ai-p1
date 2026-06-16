@@ -1,22 +1,32 @@
 "use client";
 
 import NumberFlow from "@number-flow/react";
+import Image from "next/image";
 import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import type { Transition } from "framer-motion";
-import { ArrowRight, CalendarDays, CircleCheck, CircleX } from "lucide-react";
+import { ArrowRight, CalendarDays, CircleCheck, CircleX, Sparkles } from "lucide-react";
+import {
+  billingSelectionKey,
+  getMarketPricing,
+  resolveSubscriptionEntitlements,
+  type BillingCycle,
+  type SubscriptionEntitlements,
+  type SubscriptionPlanId,
+} from "@qentrah/domain-contracts/subscription-pricing";
 
 import { LandingButton, PublicSection } from "@/components/landing/public-landing-kit";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 type TooltipKey = "sync" | "ai" | "governance";
-type BillingCycle = "monthly" | "annual";
+type PricingCycle = "monthly" | "annual";
 
 type PricingPlan = {
-  id: "individual_monthly" | "individual_yearly" | "startup_monthly" | "startup_yearly" | "custom";
+  id: SubscriptionPlanId;
   name: string;
   price: number | "custom";
+  entitlements?: SubscriptionEntitlements;
   period?: "month" | "year";
   country?: string;
   description: string;
@@ -42,6 +52,16 @@ const planCopy = {
     perYear: "per year",
     customPrice: "Custom",
     annualBadge: "Annual access",
+    tamara: {
+      label: "Annual BNPL",
+      title: "Buy now, pay later with Tamara",
+      description: "Use Tamara for the yearly Qentrah plan only. Split the annual access payment while keeping monthly setup separate.",
+      cta: "Pay yearly with Tamara",
+      amount: "5,988 SAR",
+      note: "Hosted Tamara checkout",
+      logoAlt: "Tamara",
+      logoSrc: "/Tamara Media Kit/Logos/Tamara Logos-01.png",
+    },
     tooltips: {
       sync: "Keeps projects, assets, media, priorities, and availability aligned across teams.",
       ai: "AI assists with triage, drafting, summaries, and repetitive operational work.",
@@ -49,116 +69,108 @@ const planCopy = {
     },
     plans: [
       {
-        id: "individual_monthly",
-        name: "Individual",
-        price: 9,
+        id: "good",
+        name: "Good",
+        country: "Saudi Arabia",
+        price: "custom",
         period: "month",
-        description: "A one-person workspace for core business work: projects, assets, clients, and a basic calendar.",
-        buttonText: "Start individual",
-        href: "/billing?plan=individual_monthly",
+        description: "For teams that need the core workspace, light app access, and no bundled AI credit spend.",
+        buttonText: "Start setup",
+        href: "/billing?plan=good_monthly",
         features: [
-          { title: "1 user only" },
-          { title: "1 organization only" },
-          { title: "Project management" },
+          { title: "Project management", tooltip: "sync" },
           { title: "Asset management" },
           { title: "Client management" },
-          { title: "Basic calendar" },
+          { title: "Calendar management" },
+          { title: "Limited apps and integrations" },
+          { title: "Starter API access" },
           { included: false, title: "AI, MCP, and memberships" },
         ],
       },
       {
-        id: "startup_monthly",
-        name: "Startup",
-        price: 29,
+        id: "better",
+        name: "Better",
+        country: "Saudi Arabia",
+        price: "custom",
         period: "month",
-        description: "For a small organization that needs AI, MCP workflows, the mobile app, and shared work across up to five members.",
-        buttonText: "Start startup",
-        href: "/billing?plan=startup_monthly",
+        description: "For teams that want AI agents, higher usage budgets, and broader app access in daily operations.",
+        buttonText: "Start with AI",
+        href: "/billing?plan=better_monthly",
         isPopular: true,
         features: [
-          { title: "Everything in Individual" },
+          { title: "Everything in Good" },
           { title: "AI agents and workflows", tooltip: "ai" },
-          { title: "MCP tools" },
-          { title: "Up to 5 members", tooltip: "governance" },
-          { title: "One organization" },
-          { title: "Mobile app access" },
-          { title: "Mobile AI information" },
-          { title: "Notifications and scheduled times" },
+          { title: "3 included AI credit cards" },
+          { title: "Standard apps and integrations", tooltip: "sync" },
+          { title: "Higher API and agent-link quotas" },
+          { title: "Priority support", tooltip: "governance" },
         ],
       },
       {
         id: "custom",
         name: "Custom",
         price: "custom",
-        description: "For companies that need more members, heavier AI usage, custom organization setup, and private workflows.",
+        description: "For larger teams that need custom AI budgets, private workflows, custom apps, and dedicated onboarding.",
         buttonText: "Talk to Qentrah",
         href: "/contact",
         features: [
-          { title: "More than 5 members" },
-          { title: "Multiple organizations" },
-          { title: "Higher AI usage", tooltip: "ai" },
-          { title: "Custom organization configuration" },
-          { title: "Custom integrations", tooltip: "sync" },
-          { title: "Private MCP setup" },
-          { title: "Custom website and workflows" },
+          { title: "Custom AI credit cards", tooltip: "ai" },
+          { title: "Custom app and integration access", tooltip: "sync" },
+          { title: "Custom API and agent-link quotas" },
           { title: "Dedicated onboarding", tooltip: "governance" },
         ],
       },
     ],
     annualPlans: [
       {
-        id: "individual_yearly",
-        name: "Individual",
-        price: 108,
+        id: "good",
+        name: "Good",
+        country: "Saudi Arabia",
+        price: "custom",
         period: "year",
-        description: "Annual access for one person running core business work: projects, assets, clients, and a basic calendar.",
-        buttonText: "Start individual",
-        href: "/billing?plan=individual_yearly",
+        description: "Annual core workspace access for teams that want predictable operations without bundled AI credit spend.",
+        buttonText: "Start annual setup",
+        href: "/billing?plan=good_yearly",
         features: [
-          { title: "1 user only" },
-          { title: "1 organization only" },
-          { title: "Project management" },
+          { title: "Project management", tooltip: "sync" },
           { title: "Asset management" },
           { title: "Client management" },
-          { title: "Basic calendar" },
+          { title: "Calendar management" },
+          { title: "Limited apps and integrations" },
+          { title: "Starter API access" },
           { included: false, title: "AI, MCP, and memberships" },
         ],
       },
       {
-        id: "startup_yearly",
-        name: "Startup",
-        price: 348,
+        id: "better",
+        name: "Better",
+        country: "Saudi Arabia",
+        price: "custom",
         period: "year",
-        description: "Annual access for a small organization using AI, MCP workflows, the mobile app, and shared work across up to five members.",
-        buttonText: "Start startup",
-        href: "/billing?plan=startup_yearly",
+        description: "Annual AI-enabled workspace access with included AI credit cards and broader app access.",
+        buttonText: "Start annual AI setup",
+        href: "/billing?plan=better_yearly",
         isPopular: true,
         features: [
-          { title: "Everything in Individual" },
+          { title: "Everything in Good" },
           { title: "AI agents and workflows", tooltip: "ai" },
-          { title: "MCP tools" },
-          { title: "Up to 5 members", tooltip: "governance" },
-          { title: "One organization" },
-          { title: "Mobile app access" },
-          { title: "Mobile AI information" },
-          { title: "Notifications and scheduled times" },
+          { title: "3 included AI credit cards" },
+          { title: "Standard apps and integrations", tooltip: "sync" },
+          { title: "Higher API and agent-link quotas" },
+          { title: "Priority support", tooltip: "governance" },
         ],
       },
       {
         id: "custom",
         name: "Custom",
         price: "custom",
-        description: "For companies that need more members, heavier AI usage, custom organization setup, and private workflows.",
+        description: "For larger teams that need custom AI budgets, private workflows, custom apps, and dedicated onboarding.",
         buttonText: "Talk to Qentrah",
         href: "/contact",
         features: [
-          { title: "More than 5 members" },
-          { title: "Multiple organizations" },
-          { title: "Higher AI usage", tooltip: "ai" },
-          { title: "Custom organization configuration" },
-          { title: "Custom integrations", tooltip: "sync" },
-          { title: "Private MCP setup" },
-          { title: "Custom website and workflows" },
+          { title: "Custom AI credit cards", tooltip: "ai" },
+          { title: "Custom app and integration access", tooltip: "sync" },
+          { title: "Custom API and agent-link quotas" },
           { title: "Dedicated onboarding", tooltip: "governance" },
         ],
       },
@@ -175,6 +187,16 @@ const planCopy = {
     perYear: "سنوياً",
     customPrice: "مخصص",
     annualBadge: "وصول سنوي",
+    tamara: {
+      label: "تقسيط سنوي",
+      title: "اشتر الآن وادفع لاحقاً مع تمارا",
+      description: "استخدم تمارا للخطة السنوية فقط. قسّط دفع الوصول السنوي مع بقاء الإعداد الشهري منفصلاً.",
+      cta: "ادفع سنوياً مع تمارا",
+      amount: "5,988 ر.س",
+      note: "دفع آمن عبر تمارا",
+      logoAlt: "تمارا",
+      logoSrc: "/Tamara Media Kit/Logos/Tamara Logos-04.png",
+    },
     tooltips: {
       sync: "يحافظ على توافق المشاريع والأصول والوسائط والأولويات والتوفر بين الفرق.",
       ai: "يساعد الذكاء الاصطناعي في الفرز، الصياغة، التلخيص، والعمل التشغيلي المتكرر.",
@@ -182,116 +204,104 @@ const planCopy = {
     },
     plans: [
       {
-        id: "individual_monthly",
-        name: "فردي",
-        price: 9,
+        id: "good",
+        name: "Good",
+        price: 499,
         period: "month",
-        description: "مساحة عمل لشخص واحد لإدارة العمل الأساسي: المشاريع، الأصول، العملاء، وتقويم بسيط.",
-        buttonText: "ابدأ الفردي",
-        href: "/billing?plan=individual_monthly",
+        description: "للفرق التي تحتاج مساحة عمل أساسية، وصول تطبيقات محدود، بدون رصيد ذكاء اصطناعي.",
+        buttonText: "ابدأ الإعداد",
+        href: "/billing?plan=good_monthly",
         features: [
-          { title: "مستخدم واحد فقط" },
-          { title: "منظمة واحدة فقط" },
-          { title: "إدارة المشاريع" },
+          { title: "إدارة المشاريع", tooltip: "sync" },
           { title: "إدارة الأصول" },
           { title: "إدارة العملاء" },
-          { title: "تقويم أساسي" },
+          { title: "إدارة التقويم" },
+          { title: "تكاملات محدودة" },
+          { title: "وصول API أساسي" },
           { included: false, title: "الذكاء الاصطناعي وMCP والعضويات" },
         ],
       },
       {
-        id: "startup_monthly",
-        name: "Startup",
-        price: 29,
+        id: "better",
+        name: "Better",
+        price: "custom",
         period: "month",
-        description: "لمنظمة صغيرة تحتاج الذكاء الاصطناعي، أدوات MCP، تطبيق الجوال، والعمل المشترك حتى خمسة أعضاء.",
-        buttonText: "ابدأ Startup",
-        href: "/billing?plan=startup_monthly",
+        description: "للفرق التي تريد وكلاء ذكاء اصطناعي، رصيد استخدام أعلى، ووصولاً أوسع للتطبيقات.",
+        buttonText: "ابدأ مع الذكاء الاصطناعي",
+        href: "/billing?plan=better_monthly",
         isPopular: true,
         features: [
-          { title: "كل ما في الفردي" },
+          { title: "كل مزايا Good" },
           { title: "وكلاء الذكاء الاصطناعي وسير العمل", tooltip: "ai" },
-          { title: "أدوات MCP" },
-          { title: "حتى 5 أعضاء", tooltip: "governance" },
-          { title: "منظمة واحدة" },
-          { title: "تطبيق الجوال" },
-          { title: "معلومات ذكية في الجوال" },
-          { title: "الإشعارات والمواعيد المجدولة" },
+          { title: "3 بطاقات رصيد ذكاء اصطناعي" },
+          { title: "تكاملات وتطبيقات أوسع", tooltip: "sync" },
+          { title: "حصص أعلى للـ API وروابط الوكلاء" },
+          { title: "دعم ذو أولوية", tooltip: "governance" },
         ],
       },
       {
         id: "custom",
         name: "باقة مخصصة",
         price: "custom",
-        description: "للشركات التي تحتاج أعضاء أكثر، استخدام ذكاء اصطناعي أعلى، إعداد منظمة مخصص، وسير عمل خاص.",
+        description: "للفرق الأكبر التي تحتاج رصيد ذكاء اصطناعي مخصص، تطبيقات خاصة، وتهيئة مخصصة.",
         buttonText: "تحدث مع كانترا",
         href: "/contact",
         features: [
-          { title: "أكثر من 5 أعضاء" },
-          { title: "منظمات متعددة" },
-          { title: "استخدام ذكاء اصطناعي أعلى", tooltip: "ai" },
-          { title: "تخصيص إعدادات المنظمة" },
-          { title: "تكاملات مخصصة", tooltip: "sync" },
-          { title: "إعداد MCP خاص" },
-          { title: "موقع وسير عمل مخصص" },
+          { title: "بطاقات رصيد ذكاء اصطناعي مخصصة", tooltip: "ai" },
+          { title: "تطبيقات وتكاملات مخصصة", tooltip: "sync" },
+          { title: "حصص API وروابط وكلاء مخصصة" },
           { title: "تهيئة مخصصة", tooltip: "governance" },
         ],
       },
     ],
     annualPlans: [
       {
-        id: "individual_yearly",
-        name: "فردي",
-        price: 108,
+        id: "good",
+        name: "Good",
+        price: 5988,
         period: "year",
-        description: "وصول سنوي لشخص واحد يدير العمل الأساسي: المشاريع، الأصول، العملاء، وتقويم بسيط.",
-        buttonText: "ابدأ الفردي",
-        href: "/billing?plan=individual_yearly",
+        description: "وصول سنوي لمساحة عمل أساسية للفرق التي تريد عمليات متوقعة بدون رصيد ذكاء اصطناعي.",
+        buttonText: "ابدأ الإعداد السنوي",
+        href: "/billing?plan=good_yearly",
         features: [
-          { title: "مستخدم واحد فقط" },
-          { title: "منظمة واحدة فقط" },
-          { title: "إدارة المشاريع" },
+          { title: "إدارة المشاريع", tooltip: "sync" },
           { title: "إدارة الأصول" },
           { title: "إدارة العملاء" },
-          { title: "تقويم أساسي" },
+          { title: "إدارة التقويم" },
+          { title: "تكاملات محدودة" },
+          { title: "وصول API أساسي" },
           { included: false, title: "الذكاء الاصطناعي وMCP والعضويات" },
         ],
       },
       {
-        id: "startup_yearly",
-        name: "Startup",
-        price: 348,
+        id: "better",
+        name: "Better",
+        price: "custom",
         period: "year",
-        description: "وصول سنوي لمنظمة صغيرة تستخدم الذكاء الاصطناعي، أدوات MCP، تطبيق الجوال، والعمل المشترك حتى خمسة أعضاء.",
-        buttonText: "ابدأ Startup",
-        href: "/billing?plan=startup_yearly",
+        description: "وصول سنوي لمساحة عمل مدعومة بالذكاء الاصطناعي مع بطاقات رصيد مضمّنة وتكاملات أوسع.",
+        buttonText: "ابدأ الإعداد السنوي للذكاء الاصطناعي",
+        href: "/billing?plan=better_yearly",
         isPopular: true,
         features: [
-          { title: "كل ما في الفردي" },
+          { title: "كل مزايا Good" },
           { title: "وكلاء الذكاء الاصطناعي وسير العمل", tooltip: "ai" },
-          { title: "أدوات MCP" },
-          { title: "حتى 5 أعضاء", tooltip: "governance" },
-          { title: "منظمة واحدة" },
-          { title: "تطبيق الجوال" },
-          { title: "معلومات ذكية في الجوال" },
-          { title: "الإشعارات والمواعيد المجدولة" },
+          { title: "3 بطاقات رصيد ذكاء اصطناعي" },
+          { title: "تكاملات وتطبيقات أوسع", tooltip: "sync" },
+          { title: "حصص أعلى للـ API وروابط الوكلاء" },
+          { title: "دعم ذو أولوية", tooltip: "governance" },
         ],
       },
       {
         id: "custom",
         name: "باقة مخصصة",
         price: "custom",
-        description: "للشركات التي تحتاج أعضاء أكثر، استخدام ذكاء اصطناعي أعلى، إعداد منظمة مخصص، وسير عمل خاص.",
+        description: "للفرق الأكبر التي تحتاج رصيد ذكاء اصطناعي مخصص، تطبيقات خاصة، وتهيئة مخصصة.",
         buttonText: "تحدث مع كانترا",
         href: "/contact",
         features: [
-          { title: "أكثر من 5 أعضاء" },
-          { title: "منظمات متعددة" },
-          { title: "استخدام ذكاء اصطناعي أعلى", tooltip: "ai" },
-          { title: "تخصيص إعدادات المنظمة" },
-          { title: "تكاملات مخصصة", tooltip: "sync" },
-          { title: "إعداد MCP خاص" },
-          { title: "موقع وسير عمل مخصص" },
+          { title: "بطاقات رصيد ذكاء اصطناعي مخصصة", tooltip: "ai" },
+          { title: "تطبيقات وتكاملات مخصصة", tooltip: "sync" },
+          { title: "حصص API وروابط وكلاء مخصصة" },
           { title: "تهيئة مخصصة", tooltip: "governance" },
         ],
       },
@@ -301,12 +311,22 @@ const planCopy = {
   "en" | "ar",
   {
     eyebrow: string;
-    tabs: Record<BillingCycle, string>;
+    tabs: Record<PricingCycle, string>;
     popular: string;
     perMonth: string;
     perYear: string;
     customPrice: string;
     annualBadge: string;
+    tamara: {
+      label: string;
+      title: string;
+      description: string;
+      cta: string;
+      amount: string;
+      note: string;
+      logoAlt: string;
+      logoSrc: string;
+    };
     tooltips: Record<string, string>;
     plans: PricingPlan[];
     annualPlans: PricingPlan[];
@@ -315,8 +335,8 @@ const planCopy = {
 
 export function Pricing03({ locale }: { locale: string }) {
   const copy = locale === "ar" ? planCopy.ar : planCopy.en;
-  const [billingCycle, setBillingCycle] = useState<BillingCycle>("annual");
-  const activePlans = billingCycle === "monthly" ? copy.plans : copy.annualPlans;
+  const [billingCycle, setBillingCycle] = useState<PricingCycle>("annual");
+  const activePlans = hydratePlans(billingCycle === "monthly" ? copy.plans : copy.annualPlans, billingCycle === "monthly" ? "monthly" : "yearly");
   const shouldReduceMotion = useReducedMotion();
   const panelTransition: Transition = shouldReduceMotion ? { duration: 0 } : { duration: 0.34, ease: [0.22, 1, 0.36, 1] };
   const indicatorTransition: Transition = shouldReduceMotion ? { duration: 0 } : { duration: 0.32, ease: [0.22, 1, 0.36, 1] };
@@ -382,9 +402,100 @@ export function Pricing03({ locale }: { locale: string }) {
               </motion.div>
             ))}
           </div>
+          <motion.div
+            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 14 }}
+            key="tamara-annual-banner"
+            transition={{
+              ...panelTransition,
+              delay: shouldReduceMotion ? 0 : 0.08,
+            }}
+          >
+            <TamaraAnnualBanner copy={copy} />
+          </motion.div>
         </motion.div>
       </div>
     </PublicSection>
+  );
+}
+
+function hydratePlans(plans: PricingPlan[], cycle: BillingCycle): PricingPlan[] {
+  return plans.map((plan) => {
+    const marketPricing = getMarketPricing({ marketId: "sa", planId: plan.id, cycle });
+    return {
+      ...plan,
+      price: marketPricing.amount ?? "custom",
+      period: cycle === "yearly" ? "year" : "month",
+      href: plan.id === "custom" ? plan.href : `/billing?plan=${billingSelectionKey({ planId: plan.id, cycle })}`,
+      entitlements: resolveSubscriptionEntitlements(plan.id),
+      isPopular: marketPricing.publicFeatureFlags.highlighted,
+    };
+  });
+}
+
+function TamaraAnnualBanner({ copy }: { copy: (typeof planCopy)["en"] | (typeof planCopy)["ar"] }) {
+  return (
+    <aside
+      className="relative mt-5 overflow-hidden rounded-[1.5rem] border border-[#D7C8FF] bg-[#F2E8FF] p-5 text-start text-[#16181D] transition duration-300 hover:bg-[#F5EDFF] dark:border-[#C9B8FF]/60 dark:bg-[#F2E8FF] md:p-6"
+      data-testid="pricing-banner-tamara"
+    >
+      <div className="absolute inset-x-8 top-0 h-1 rounded-b-full bg-[#9600F1]" />
+
+      <div className="grid items-center gap-6 md:grid-cols-[180px_minmax(0,1fr)] lg:grid-cols-[200px_minmax(0,1fr)_240px]">
+        <div className="flex items-center">
+          <Image
+            alt={copy.tamara.logoAlt}
+            className="h-auto w-40 object-contain md:w-44"
+            height={687}
+            priority={false}
+            src={copy.tamara.logoSrc}
+            width={1354}
+          />
+        </div>
+
+        <div className="min-w-0">
+          <Badge className="bg-[#9600F1] text-white dark:bg-[#9600F1] dark:text-white">
+            {copy.tamara.label}
+          </Badge>
+          <h3 className="mt-3 text-2xl font-black tracking-tight md:text-3xl rtl:leading-[1.25]">{copy.tamara.title}</h3>
+          <p className="mt-3 max-w-2xl text-sm font-semibold leading-7 text-[#5A4A72]">
+            {copy.tamara.description}
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-[#D7C8FF] bg-white/55 p-4 md:col-span-2 lg:col-span-1">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#9600F1]">{copy.tamara.note}</p>
+              <p className="mt-2 text-2xl font-black tracking-tight">{copy.tamara.amount}</p>
+            </div>
+            <Sparkles className="mt-1 h-5 w-5 shrink-0 text-[#9600F1]" />
+          </div>
+          <LandingButton
+            href="/billing?plan=good_yearly"
+            className="mt-4 h-11 w-full rounded-full border-[#9600F1] bg-[#9600F1] text-white hover:bg-[#7E00CA] dark:border-[#9600F1] dark:bg-[#9600F1] dark:text-white"
+            variant="secondary"
+          >
+            {copy.tamara.cta}
+            <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+          </LandingButton>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function formatQuota(value: number) {
+  if (value >= 1_000_000) return "Custom";
+  return value.toLocaleString();
+}
+
+function PlanLimit({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 dark:border-white/10 dark:bg-white/[0.045]">
+      <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{label}</p>
+      <p className="mt-1 truncate text-xs font-black capitalize text-zinc-900 dark:text-white">{value}</p>
+    </div>
   );
 }
 
@@ -401,7 +512,7 @@ function PlanCard({
     <article
       className={cn(
         "relative flex min-h-[520px] w-full flex-col overflow-hidden rounded-[1.25rem] border border-zinc-200 bg-white p-5 text-start transition duration-300 hover:border-zinc-300 hover:bg-zinc-50/40 dark:border-white/10 dark:bg-[#171717] dark:hover:border-white/20 dark:hover:bg-[#1b1b1b] md:p-6",
-          plan.isPopular && "border-zinc-950 bg-zinc-50 text-zinc-950 hover:border-zinc-950 hover:bg-zinc-100/70 dark:border-white/60 dark:bg-[#202020] dark:text-white dark:hover:bg-[#242424]",
+        plan.isPopular && "border-zinc-950 bg-zinc-50 text-zinc-950 hover:border-zinc-950 hover:bg-zinc-100/70 dark:border-white/60 dark:bg-[#202020] dark:text-white dark:hover:bg-[#242424]",
       )}
       data-testid={`pricing-card-${plan.id}`}
     >
@@ -426,11 +537,17 @@ function PlanCard({
           <p className="flex min-h-[52px] flex-wrap items-end gap-2">
             {typeof plan.price === "number" ? (
               <>
-                <span className="pb-1 text-2xl font-black md:text-3xl">$</span>
                 <NumberFlow
                   className="text-4xl font-black tracking-tight"
                   transformTiming={{ duration: 900, easing: "ease-out" }}
                   value={plan.price}
+                />
+                <Image
+                  alt={periodLabel}
+                  className="mb-1 h-7 w-auto dark:invert md:h-9"
+                  height={36}
+                  src="/saudi-riyal-symbol.svg"
+                  width={36}
                 />
                 <span className="pb-1 text-sm font-bold text-zinc-500 dark:text-zinc-400">
                   {periodLabel}
@@ -443,6 +560,14 @@ function PlanCard({
             )}
           </p>
         </div>
+        {plan.entitlements && (
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <PlanLimit label="AI credits" value={plan.entitlements.aiAccess ? plan.entitlements.includedCredits.toLocaleString() : "None"} />
+            <PlanLimit label="Apps" value={plan.entitlements.appAccessLevel} />
+            <PlanLimit label="API calls" value={formatQuota(plan.entitlements.apiKeyQuota)} />
+            <PlanLimit label="Agent links" value={formatQuota(plan.entitlements.agentLinkQuota)} />
+          </div>
+        )}
       </div>
 
       <LandingButton

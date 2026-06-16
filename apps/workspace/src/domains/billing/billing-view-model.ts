@@ -1,4 +1,4 @@
-import type { BillingPlan } from "./api/billing";
+import type { BillingPlan, BillingPlanId } from "./api/billing";
 
 export type BillingLocale = "en" | "ar";
 export type TamaraReturnStatus = "success" | "cancel" | "failure";
@@ -27,6 +27,7 @@ export function tamaraReturnTone(status: TamaraReturnStatus, paymentStatus?: str
 }
 
 export function billingPriceLabel(plan: BillingPlan, locale: BillingLocale) {
+  if (plan.amount === null) return "Custom";
   return new Intl.NumberFormat(locale === "ar" ? "ar-SA" : "en-US", {
     style: "currency",
     currency: plan.currency,
@@ -34,41 +35,93 @@ export function billingPriceLabel(plan: BillingPlan, locale: BillingLocale) {
   }).format(plan.amount);
 }
 
-export function billingScreenCopy(locale: BillingLocale, isYearly: boolean) {
+function planLabel(planId: BillingPlanId, locale: BillingLocale): string {
+  const labels: Record<BillingPlanId, { en: string; ar: string }> = {
+    good_monthly: { en: "Good plan", ar: "خطة Good" },
+    good_yearly: { en: "Good plan (annual)", ar: "خطة Good (سنوية)" },
+    better_monthly: { en: "Better plan", ar: "خطة Better" },
+    better_yearly: { en: "Better plan (annual)", ar: "خطة Better (سنوية)" },
+    custom_monthly: { en: "Custom plan", ar: "خطة مخصصة" },
+    custom_yearly: { en: "Custom plan (annual)", ar: "خطة مخصصة (سنوية)" },
+  };
+  return labels[planId]?.[locale] ?? "Plan";
+}
+
+function planIncluded(planId: BillingPlanId, locale: BillingLocale): string[] {
+  const isGood = planId.startsWith("good");
+  const isBetter = planId.startsWith("better");
+  const isCustom = planId.startsWith("custom");
+
+  if (locale === "ar") {
+    if (isGood) return ["مساحة المشاريع والأصول والعملاء", "مرحلة إعداد مجانية", "دعم الأدوار الأساسية", "تكاملات محدودة"];
+    if (isBetter) return ["كل مزايا Good", "وكلاء الذكاء الاصطناعي وسير العمل", "3 بطاقات رصيد ذكاء اصطناعي", "دعم ذو أولوية"];
+    return ["بطاقات رصيد مخصصة", "تكاملات خاصة", "تهيئة مخصصة", "دعم مخصص"];
+  }
+
+  if (isGood) return ["Project, asset, and client workspace", "Free setup phase included", "Core organization roles", "Limited apps and integrations"];
+  if (isBetter) return ["Everything in Good", "AI agents and workflows", "3 included AI credit cards", "Priority support"];
+  return ["Custom AI credit cards", "Custom integrations", "Custom organization setup", "Dedicated onboarding"];
+}
+
+export function billingScreenCopy(locale: BillingLocale, isYearly: boolean, planId: BillingPlanId) {
+  const planLabel_ = planLabel(planId, locale);
+  const included = planIncluded(planId, locale);
+  const isContactSales = planId.startsWith("custom");
+
   return locale === "ar"
     ? {
         eyebrow: "الفوترة",
         title: "اشتراك كانترا",
-        subtitle: isYearly ? "ادفع السنة عبر تمارا بنظام اشتر الآن وادفع لاحقاً. يتم التفعيل بعد تأكيد تمارا." : "الخطة الشهرية لا تستخدم تمارا. أكمل الإعداد الشهري من مساحة العمل.",
-        plan: "خطة السعودية",
+        subtitle: isContactSales
+          ? "تواصل مع فريق المبيعات لتخصيص باقتك."
+          : isYearly
+            ? "ادفع السنة عبر تمارا بنظام اشتر الآن وادفع لاحقاً. يتم التفعيل بعد تأكيد تمارا."
+            : "الخطة الشهرية لا تستخدم تمارا. أكمل الإعداد الشهري من مساحة العمل.",
+        plan: planLabel_,
         monthly: "شهرياً",
         yearly: "سنوياً",
         activeUntil: "نشط حتى",
         status: "الحالة",
         latest: "آخر دفعة",
-        pay: isYearly ? "اشتر الآن وادفع لاحقاً مع تمارا" : "متابعة الإعداد",
+        pay: isContactSales
+          ? "تحدث مع المبيعات"
+          : isYearly
+            ? "اشتر الآن وادفع لاحقاً مع تمارا"
+            : "متابعة الإعداد",
         starting: "جاري إنشاء الدفع...",
-        secure: isYearly ? "يتم الدفع في صفحة تمارا الآمنة، ثم تعود إلى كانترا بعد الانتهاء." : "تمارا متاحة فقط لخيار الدفع السنوي بنظام اشتر الآن وادفع لاحقاً.",
-        included: isYearly
-          ? ["مساحة المشاريع والأصول والعملاء", "دفع سنوي عبر تمارا", "مرحلة إعداد مجانية", "دعم الأدوار الأساسية"]
-          : ["مساحة المشاريع والأصول والعملاء", "مرحلة إعداد مجانية", "دعم الأدوار الأساسية", "تجديد يدوي كل 30 يوم"],
+        secure: isContactSales
+          ? "يمكنك تخصيص الخطة وفقاً لاحتياجات فريقك."
+          : isYearly
+            ? "يتم الدفع في صفحة تمارا الآمنة، ثم تعود إلى كانترا بعد الانتهاء."
+            : "تمارا متاحة فقط لخيار الدفع السنوي بنظام اشتر الآن وادفع لاحقاً.",
+        included,
       }
     : {
         eyebrow: "Billing",
         title: "Qentrah subscription",
-        subtitle: isYearly ? "Pay the year with Tamara buy now, pay later. Your subscription activates after Tamara confirms payment." : "The monthly plan does not use Tamara. Continue setup from your workspace.",
-        plan: "Saudi Arabia plan",
+        subtitle: isContactSales
+          ? "Talk to our sales team to customize your plan."
+          : isYearly
+            ? "Pay the year with Tamara buy now, pay later. Your subscription activates after Tamara confirms payment."
+            : "The monthly plan does not use Tamara. Continue setup from your workspace.",
+        plan: planLabel_,
         monthly: "per month",
         yearly: "per year",
         activeUntil: "Active until",
         status: "Status",
         latest: "Latest payment",
-        pay: isYearly ? "Buy now, pay later with Tamara" : "Continue setup",
+        pay: isContactSales
+          ? "Talk to sales"
+          : isYearly
+            ? "Buy now, pay later with Tamara"
+            : "Continue setup",
         starting: "Creating checkout...",
-        secure: isYearly ? "Payment happens on Tamara's secure checkout, then you return to Qentrah when it is complete." : "Tamara is available only for the annual buy-now-pay-later option.",
-        included: isYearly
-          ? ["Project, asset, and client workspace", "Annual payment through Tamara", "Free setup phase included", "Core organization roles"]
-          : ["Project, asset, and client workspace", "Free setup phase included", "Core organization roles", "Manual renewal every 30 days"],
+        secure: isContactSales
+          ? "You can customize the plan based on your team's needs."
+          : isYearly
+            ? "Payment happens on Tamara's secure checkout, then you return to Qentrah when it is complete."
+            : "Tamara is available only for the annual buy-now-pay-later option.",
+        included,
       };
 }
 

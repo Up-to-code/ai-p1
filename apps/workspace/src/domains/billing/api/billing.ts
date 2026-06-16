@@ -6,14 +6,15 @@ import {
   requestOrganizationAction,
 } from "@/domains/organization/api/organization-request";
 
-export type BillingPlanId = "saudi_monthly" | "saudi_yearly";
+export type BillingPlanId = "good_monthly" | "good_yearly" | "better_monthly" | "better_yearly" | "custom_monthly" | "custom_yearly";
 
 export type BillingPlan = {
   id: BillingPlanId;
   name: string;
-  amount: number;
+  amount: number | null;
   currency: string;
   periodDays: number;
+  checkoutMode: "provider" | "contact_sales";
 };
 
 type BillingSubscription = {
@@ -70,26 +71,79 @@ export type BillingUsageState =
 
 type InternalBillingUsageState = BillingUsageState & { organizationId?: string };
 
-const SAUDI_MONTHLY_PLAN: BillingPlan = {
-  id: "saudi_monthly",
-  name: "Qentrah Saudi Arabia",
-  amount: 499,
-  currency: "SAR",
-  periodDays: 30,
+const BILLING_PLANS_CATALOG: Record<BillingPlanId, BillingPlan> = {
+  good_monthly: {
+    id: "good_monthly",
+    name: "Qentrah Good",
+    amount: 499,
+    currency: "SAR",
+    periodDays: 30,
+    checkoutMode: "provider",
+  },
+  good_yearly: {
+    id: "good_yearly",
+    name: "Qentrah Good Annual",
+    amount: 5_988,
+    currency: "SAR",
+    periodDays: 365,
+    checkoutMode: "provider",
+  },
+  better_monthly: {
+    id: "better_monthly",
+    name: "Qentrah Better",
+    amount: 899,
+    currency: "SAR",
+    periodDays: 30,
+    checkoutMode: "provider",
+  },
+  better_yearly: {
+    id: "better_yearly",
+    name: "Qentrah Better Annual",
+    amount: 9_588,
+    currency: "SAR",
+    periodDays: 365,
+    checkoutMode: "provider",
+  },
+  custom_monthly: {
+    id: "custom_monthly",
+    name: "Qentrah Custom",
+    amount: null,
+    currency: "SAR",
+    periodDays: 30,
+    checkoutMode: "contact_sales",
+  },
+  custom_yearly: {
+    id: "custom_yearly",
+    name: "Qentrah Custom Annual",
+    amount: null,
+    currency: "SAR",
+    periodDays: 365,
+    checkoutMode: "contact_sales",
+  },
 };
 
-const SAUDI_YEARLY_PLAN: BillingPlan = {
-  id: "saudi_yearly",
-  name: "Qentrah Saudi Arabia Annual",
-  amount: 5988,
-  currency: "SAR",
-  periodDays: 365,
-};
+export const BILLING_PLANS = BILLING_PLANS_CATALOG;
 
-export const BILLING_PLANS: Record<BillingPlanId, BillingPlan> = {
-  saudi_monthly: SAUDI_MONTHLY_PLAN,
-  saudi_yearly: SAUDI_YEARLY_PLAN,
-};
+export function normalizePlanId(raw?: string | null): BillingPlanId {
+  if (raw && raw in BILLING_PLANS_CATALOG) return raw as BillingPlanId;
+  return "good_monthly";
+}
+
+export function getPlanById(planId: BillingPlanId): BillingPlan {
+  return BILLING_PLANS_CATALOG[planId];
+}
+
+export function isYearlyPlan(planId: BillingPlanId): boolean {
+  return planId.endsWith("_yearly");
+}
+
+export function isContactSales(planId: BillingPlanId): boolean {
+  return BILLING_PLANS_CATALOG[planId].checkoutMode === "contact_sales";
+}
+
+export function planDisplayName(planId: BillingPlanId): string {
+  return BILLING_PLANS_CATALOG[planId].name;
+}
 
 export function useBillingOverview(organizationId?: string | null) {
   const [overview, setOverview] = useState<BillingOverview | undefined>();
@@ -158,10 +212,10 @@ export function useBillingUsage(organizationId?: string | null): BillingUsageSta
 
 export function fallbackBillingOverview(organizationId: string): BillingOverview {
   return {
-    plan: SAUDI_MONTHLY_PLAN,
+    plan: BILLING_PLANS_CATALOG.good_monthly,
     subscription: {
       organizationId,
-      planId: "saudi_monthly",
+      planId: "good_monthly",
       status: "inactive",
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -206,12 +260,12 @@ export function getBillingUsageRequest(organizationId: string) {
 export async function createTamaraCheckoutRequest(input: {
   organizationId: string;
   locale: "en" | "ar";
-  planId?: BillingPlanId;
+  planId: BillingPlanId;
 }) {
   return requestOrganizationAction<{ checkoutUrl: string; orderId: string; status: string }>(
     organizationApiPath(input.organizationId, "billing", "tamara", "checkout"),
     "POST",
-    { planId: input.planId ?? "saudi_monthly", locale: input.locale },
+    { planId: input.planId, locale: input.locale },
     "Billing request failed.",
   );
 }

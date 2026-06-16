@@ -9,7 +9,15 @@ import { LoadingState, StatusPill, WorkspaceQueryState } from "@/components/shar
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { useAccountContext } from "@/domains/auth";
-import { BILLING_PLANS, createTamaraCheckoutRequest, useBillingOverview } from "../api/billing";
+import {
+  BILLING_PLANS,
+  createTamaraCheckoutRequest,
+  normalizePlanId,
+  isYearlyPlan,
+  isContactSales,
+  planDisplayName,
+  useBillingOverview,
+} from "../api/billing";
 import type { BillingPlanId } from "../api/billing";
 import { billingDateLabel, billingPriceLabel, billingScreenCopy, subscriptionTone } from "../billing-view-model";
 
@@ -22,10 +30,12 @@ export function BillingScreen() {
   const overview = useBillingOverview(organizationId);
   const [isStartingCheckout, setIsStartingCheckout] = useState(false);
   const isAr = locale === "ar";
-  const requestedPlanId: BillingPlanId = searchParams.get("plan") === "saudi_yearly" ? "saudi_yearly" : "saudi_monthly";
-  const selectedPlan = requestedPlanId === "saudi_yearly" ? BILLING_PLANS.saudi_yearly : overview?.plan ?? BILLING_PLANS.saudi_monthly;
-  const isYearly = selectedPlan.id === "saudi_yearly";
-  const copy = billingScreenCopy(locale, isYearly);
+
+  const requestedPlanId: BillingPlanId = normalizePlanId(searchParams.get("plan"));
+  const selectedPlan = BILLING_PLANS[requestedPlanId];
+  const yearly = isYearlyPlan(requestedPlanId);
+  const contactSales = isContactSales(requestedPlanId);
+  const copy = billingScreenCopy(locale, yearly, requestedPlanId);
 
   const statusLabel = overview?.subscription?.status ?? "inactive";
   const latestPaymentLabel = overview?.latestPayment
@@ -36,13 +46,20 @@ export function BillingScreen() {
 
   async function startCheckout() {
     if (!organizationId || isStartingCheckout) return;
-    if (!isYearly) {
+
+    if (contactSales) {
+      window.location.assign(`/${locale}/contact`);
+      return;
+    }
+
+    if (!yearly) {
       window.location.assign(`/${locale}/dashboard`);
       return;
     }
+
     setIsStartingCheckout(true);
     try {
-      const checkout = await createTamaraCheckoutRequest({ organizationId, locale, planId: selectedPlan.id });
+      const checkout = await createTamaraCheckoutRequest({ organizationId, locale, planId: requestedPlanId });
       window.location.assign(checkout.checkoutUrl);
     } catch (error) {
       toast({
@@ -82,7 +99,7 @@ export function BillingScreen() {
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-300">{copy.plan}</p>
                     <h2 className="mt-3 text-3xl font-black tracking-tight text-zinc-950 dark:text-white">{price}</h2>
-                    <p className="mt-1 text-xs font-bold uppercase tracking-widest text-zinc-400">{isYearly ? copy.yearly : copy.monthly}</p>
+                    <p className="mt-1 text-xs font-bold uppercase tracking-widest text-zinc-400">{yearly ? copy.yearly : copy.monthly}</p>
                   </div>
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-zinc-100 bg-zinc-50 dark:border-white/10 dark:bg-white/[0.03]">
                     <CreditCard className="h-5 w-5 text-zinc-500 dark:text-zinc-300" />
