@@ -114,6 +114,7 @@
         "@base-ui/react": "^1.4.1",
         "@clerk/nextjs": "^7.4.3",
         "@convex-dev/expo-push-notifications": "0.3.1",
+        "@dodopayments/convex": "^0.2.12",
         "@hello-pangea/dnd": "^18.0.1",
         "@hookform/resolvers": "^5.4.0",
         "@modelcontextprotocol/sdk": "^1.29.0",
@@ -736,6 +737,10 @@
     "@date-fns/tz": ["@date-fns/tz@1.5.0", "", {}, "sha512-lwYN/vDPeNRULcepoE/LO2Pgx+7/RV+S9ARfbc9lr2DtGkOD7pAiruHvbR1RX3Qyf6ja47EWJDMsNK5vK08DJg=="],
 
     "@develar/schema-utils": ["@develar/schema-utils@2.6.5", "", { "dependencies": { "ajv": "^6.12.0", "ajv-keywords": "^3.4.1" } }, "sha512-0cp4PsWQ/9avqTVMCtZ+GirikIA36ikvjtHweU4/j8yLtgObI0+JUPhYFScgwlteveGB1rt3Cm8UhN04XayDig=="],
+
+    "@dodopayments/convex": ["@dodopayments/convex@0.2.12", "", { "dependencies": { "@dodopayments/core": "^0.3.10" }, "peerDependencies": { "convex": "^1.26.0", "zod": "^3.25.0 || ^4.0.0" } }, "sha512-CiQ6tVfzbbY/QwUvDxfmBUI+XjCs9DXnR4/kh2x4cykItbtbc8HyBbav0PY3ZkIYk3M/AjrkrgO21zeLVRn6gg=="],
+
+    "@dodopayments/core": ["@dodopayments/core@0.3.12", "", { "dependencies": { "dodopayments": "^2.31.2", "standardwebhooks": "^1.0.0" }, "peerDependencies": { "zod": "^3.25.0 || ^4.0.0" } }, "sha512-cahX0AmZI9QN6PhXDE24vUa/UBD4qU21iCgyJRC0L7jxX3dQNMwQSfP2ow9xovnrBQxrsebnwwlDoKi5wl20dA=="],
 
     "@dotenvx/dotenvx": ["@dotenvx/dotenvx@1.65.0", "", { "dependencies": { "commander": "^11.1.0", "dotenv": "^17.2.1", "eciesjs": "^0.4.10", "execa": "^5.1.1", "fdir": "^6.2.0", "ignore": "^5.3.0", "object-treeify": "1.1.33", "picomatch": "^4.0.4", "which": "^4.0.0", "yocto-spinner": "^1.1.0" }, "bin": { "dotenvx": "src/cli/dotenvx.js" } }, ""],
 
@@ -2226,6 +2231,8 @@
     "dnssd-advertise": ["dnssd-advertise@1.1.4", "", {}, "sha512-AmGyK9WpNf06WeP5TjHZq/wNzP76OuEeaiTlKr9E/EEelYLczywUKoqRz+DPRq/ErssjT4lU+/W7wzJW+7K/ZA=="],
 
     "doctrine": ["doctrine@2.1.0", "", { "dependencies": { "esutils": "^2.0.2" } }, ""],
+
+    "dodopayments": ["dodopayments@2.38.1", "", { "dependencies": { "standardwebhooks": "^1.0.0" }, "bin": { "dodopayments": "bin/cli" } }, "sha512-OjrwIjPG/k1W7SApH/E5uKMZSm/7jqjZTGZAdvHX9FKMN9tQf0lbT4thDw5i9Q/C0IVsr/5ZKEWjW7GNeyv1hA=="],
 
     "dom-accessibility-api": ["dom-accessibility-api@0.6.3", "", {}, "sha512-7ZgogeTnjuHbo+ct10G9Ffp0mif17idi0IyWNVA/wcwcm7NPOD/WEHVP3n7n3MhXqxoIYm8d6MuZohYWIZ4T3w=="],
 
