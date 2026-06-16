@@ -1,11 +1,10 @@
 "use client";
 
 import NumberFlow from "@number-flow/react";
-import Image from "next/image";
 import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import type { Transition } from "framer-motion";
-import { ArrowRight, CalendarDays, CircleCheck, CircleX, Sparkles } from "lucide-react";
+import { ArrowRight, CalendarDays, CircleCheck, CircleX } from "lucide-react";
 import {
   billingSelectionKey,
   getMarketPricing,
@@ -28,7 +27,6 @@ type PricingPlan = {
   price: number | "custom";
   entitlements?: SubscriptionEntitlements;
   period?: "month" | "year";
-  country?: string;
   description: string;
   buttonText: string;
   href: string;
@@ -48,20 +46,10 @@ const planCopy = {
       annual: "Annually",
     },
     popular: "Most useful",
-    perMonth: "per month",
-    perYear: "per year",
+    perMonth: "per user / month",
+    perYear: "per user / year",
     customPrice: "Custom",
-    annualBadge: "Annual access",
-    tamara: {
-      label: "Annual BNPL",
-      title: "Buy now, pay later with Tamara",
-      description: "Use Tamara for the yearly Qentrah plan only. Split the annual access payment while keeping monthly setup separate.",
-      cta: "Pay yearly with Tamara",
-      amount: "5,988 SAR",
-      note: "Hosted Tamara checkout",
-      logoAlt: "Tamara",
-      logoSrc: "/Tamara Media Kit/Logos/Tamara Logos-01.png",
-    },
+    annualBadge: "Save 17%",
     tooltips: {
       sync: "Keeps projects, assets, media, priorities, and availability aligned across teams.",
       ai: "AI assists with triage, drafting, summaries, and repetitive operational work.",
@@ -71,10 +59,9 @@ const planCopy = {
       {
         id: "good",
         name: "Good",
-        country: "Saudi Arabia",
         price: "custom",
         period: "month",
-        description: "For teams that need the core workspace, light app access, and no bundled AI credit spend.",
+        description: "For small teams that need the core workspace with project, asset, and client management.",
         buttonText: "Start setup",
         href: "/billing?plan=good_monthly",
         features: [
@@ -90,10 +77,9 @@ const planCopy = {
       {
         id: "better",
         name: "Better",
-        country: "Saudi Arabia",
         price: "custom",
         period: "month",
-        description: "For teams that want AI agents, higher usage budgets, and broader app access in daily operations.",
+        description: "For growing teams that want AI agents, higher usage budgets, and broader app access.",
         buttonText: "Start with AI",
         href: "/billing?plan=better_monthly",
         isPopular: true,
@@ -110,7 +96,7 @@ const planCopy = {
         id: "custom",
         name: "Custom",
         price: "custom",
-        description: "For larger teams that need custom AI budgets, private workflows, custom apps, and dedicated onboarding.",
+        description: "For larger organizations that need custom AI budgets, private workflows, and dedicated onboarding.",
         buttonText: "Talk to Qentrah",
         href: "/contact",
         features: [
@@ -125,10 +111,9 @@ const planCopy = {
       {
         id: "good",
         name: "Good",
-        country: "Saudi Arabia",
         price: "custom",
         period: "year",
-        description: "Annual core workspace access for teams that want predictable operations without bundled AI credit spend.",
+        description: "Annual core workspace for teams that want predictable operations without bundled AI credit spend.",
         buttonText: "Start annual setup",
         href: "/billing?plan=good_yearly",
         features: [
@@ -144,10 +129,9 @@ const planCopy = {
       {
         id: "better",
         name: "Better",
-        country: "Saudi Arabia",
         price: "custom",
         period: "year",
-        description: "Annual AI-enabled workspace access with included AI credit cards and broader app access.",
+        description: "Annual AI-enabled workspace with included credit cards and broader app access.",
         buttonText: "Start annual AI setup",
         href: "/billing?plan=better_yearly",
         isPopular: true,
@@ -164,7 +148,7 @@ const planCopy = {
         id: "custom",
         name: "Custom",
         price: "custom",
-        description: "For larger teams that need custom AI budgets, private workflows, custom apps, and dedicated onboarding.",
+        description: "For larger organizations that need custom AI budgets, private workflows, and dedicated onboarding.",
         buttonText: "Talk to Qentrah",
         href: "/contact",
         features: [
@@ -183,20 +167,10 @@ const planCopy = {
       annual: "سنوي",
     },
     popular: "الأكثر استخداماً",
-    perMonth: "شهرياً",
-    perYear: "سنوياً",
+    perMonth: "لكل مستخدم / شهرياً",
+    perYear: "لكل مستخدم / سنوياً",
     customPrice: "مخصص",
-    annualBadge: "وصول سنوي",
-    tamara: {
-      label: "تقسيط سنوي",
-      title: "اشتر الآن وادفع لاحقاً مع تمارا",
-      description: "استخدم تمارا للخطة السنوية فقط. قسّط دفع الوصول السنوي مع بقاء الإعداد الشهري منفصلاً.",
-      cta: "ادفع سنوياً مع تمارا",
-      amount: "5,988 ر.س",
-      note: "دفع آمن عبر تمارا",
-      logoAlt: "تمارا",
-      logoSrc: "/Tamara Media Kit/Logos/Tamara Logos-04.png",
-    },
+    annualBadge: "وفّر 17%",
     tooltips: {
       sync: "يحافظ على توافق المشاريع والأصول والوسائط والأولويات والتوفر بين الفرق.",
       ai: "يساعد الذكاء الاصطناعي في الفرز، الصياغة، التلخيص، والعمل التشغيلي المتكرر.",
@@ -206,9 +180,9 @@ const planCopy = {
       {
         id: "good",
         name: "Good",
-        price: 499,
+        price: "custom",
         period: "month",
-        description: "للفرق التي تحتاج مساحة عمل أساسية، وصول تطبيقات محدود، بدون رصيد ذكاء اصطناعي.",
+        description: "للفرق الصغيرة التي تحتاج مساحة عمل أساسية لإدارة المشاريع والأصول والعملاء.",
         buttonText: "ابدأ الإعداد",
         href: "/billing?plan=good_monthly",
         features: [
@@ -226,7 +200,7 @@ const planCopy = {
         name: "Better",
         price: "custom",
         period: "month",
-        description: "للفرق التي تريد وكلاء ذكاء اصطناعي، رصيد استخدام أعلى، ووصولاً أوسع للتطبيقات.",
+        description: "للرق�� التي نمو وتريد وكلاء ذكاء اصطناعي، رصيد استخدام أعلى، ووصولاً أوسع للتطبيقات.",
         buttonText: "ابدأ مع الذكاء الاصطناعي",
         href: "/billing?plan=better_monthly",
         isPopular: true,
@@ -258,7 +232,7 @@ const planCopy = {
       {
         id: "good",
         name: "Good",
-        price: 5988,
+        price: "custom",
         period: "year",
         description: "وصول سنوي لمساحة عمل أساسية للفرق التي تريد عمليات متوقعة بدون رصيد ذكاء اصطناعي.",
         buttonText: "ابدأ الإعداد السنوي",
@@ -317,16 +291,6 @@ const planCopy = {
     perYear: string;
     customPrice: string;
     annualBadge: string;
-    tamara: {
-      label: string;
-      title: string;
-      description: string;
-      cta: string;
-      amount: string;
-      note: string;
-      logoAlt: string;
-      logoSrc: string;
-    };
     tooltips: Record<string, string>;
     plans: PricingPlan[];
     annualPlans: PricingPlan[];
@@ -335,7 +299,7 @@ const planCopy = {
 
 export function Pricing03({ locale }: { locale: string }) {
   const copy = locale === "ar" ? planCopy.ar : planCopy.en;
-  const [billingCycle, setBillingCycle] = useState<PricingCycle>("annual");
+  const [billingCycle, setBillingCycle] = useState<PricingCycle>("monthly");
   const activePlans = hydratePlans(billingCycle === "monthly" ? copy.plans : copy.annualPlans, billingCycle === "monthly" ? "monthly" : "yearly");
   const shouldReduceMotion = useReducedMotion();
   const panelTransition: Transition = shouldReduceMotion ? { duration: 0 } : { duration: 0.34, ease: [0.22, 1, 0.36, 1] };
@@ -402,17 +366,6 @@ export function Pricing03({ locale }: { locale: string }) {
               </motion.div>
             ))}
           </div>
-          <motion.div
-            animate={{ opacity: 1, y: 0 }}
-            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 14 }}
-            key="tamara-annual-banner"
-            transition={{
-              ...panelTransition,
-              delay: shouldReduceMotion ? 0 : 0.08,
-            }}
-          >
-            <TamaraAnnualBanner copy={copy} />
-          </motion.div>
         </motion.div>
       </div>
     </PublicSection>
@@ -421,7 +374,7 @@ export function Pricing03({ locale }: { locale: string }) {
 
 function hydratePlans(plans: PricingPlan[], cycle: BillingCycle): PricingPlan[] {
   return plans.map((plan) => {
-    const marketPricing = getMarketPricing({ marketId: "sa", planId: plan.id, cycle });
+    const marketPricing = getMarketPricing({ planId: plan.id, cycle });
     return {
       ...plan,
       price: marketPricing.amount ?? "custom",
@@ -431,58 +384,6 @@ function hydratePlans(plans: PricingPlan[], cycle: BillingCycle): PricingPlan[] 
       isPopular: marketPricing.publicFeatureFlags.highlighted,
     };
   });
-}
-
-function TamaraAnnualBanner({ copy }: { copy: (typeof planCopy)["en"] | (typeof planCopy)["ar"] }) {
-  return (
-    <aside
-      className="relative mt-5 overflow-hidden rounded-[1.5rem] border border-[#D7C8FF] bg-[#F2E8FF] p-5 text-start text-[#16181D] transition duration-300 hover:bg-[#F5EDFF] dark:border-[#C9B8FF]/60 dark:bg-[#F2E8FF] md:p-6"
-      data-testid="pricing-banner-tamara"
-    >
-      <div className="absolute inset-x-8 top-0 h-1 rounded-b-full bg-[#9600F1]" />
-
-      <div className="grid items-center gap-6 md:grid-cols-[180px_minmax(0,1fr)] lg:grid-cols-[200px_minmax(0,1fr)_240px]">
-        <div className="flex items-center">
-          <Image
-            alt={copy.tamara.logoAlt}
-            className="h-auto w-40 object-contain md:w-44"
-            height={687}
-            priority={false}
-            src={copy.tamara.logoSrc}
-            width={1354}
-          />
-        </div>
-
-        <div className="min-w-0">
-          <Badge className="bg-[#9600F1] text-white dark:bg-[#9600F1] dark:text-white">
-            {copy.tamara.label}
-          </Badge>
-          <h3 className="mt-3 text-2xl font-black tracking-tight md:text-3xl rtl:leading-[1.25]">{copy.tamara.title}</h3>
-          <p className="mt-3 max-w-2xl text-sm font-semibold leading-7 text-[#5A4A72]">
-            {copy.tamara.description}
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-[#D7C8FF] bg-white/55 p-4 md:col-span-2 lg:col-span-1">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-[#9600F1]">{copy.tamara.note}</p>
-              <p className="mt-2 text-2xl font-black tracking-tight">{copy.tamara.amount}</p>
-            </div>
-            <Sparkles className="mt-1 h-5 w-5 shrink-0 text-[#9600F1]" />
-          </div>
-          <LandingButton
-            href="/billing?plan=good_yearly"
-            className="mt-4 h-11 w-full rounded-full border-[#9600F1] bg-[#9600F1] text-white hover:bg-[#7E00CA] dark:border-[#9600F1] dark:bg-[#9600F1] dark:text-white"
-            variant="secondary"
-          >
-            {copy.tamara.cta}
-            <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-          </LandingButton>
-        </div>
-      </div>
-    </aside>
-  );
 }
 
 function formatQuota(value: number) {
@@ -525,11 +426,6 @@ function PlanCard({
 
       <div>
         <h3 className={cn("text-2xl font-black tracking-tight", plan.isPopular && "pe-28")}>{plan.name}</h3>
-        {plan.country && (
-          <p className="mt-2 text-xs font-black uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
-            {plan.country}
-          </p>
-        )}
         <p className="mt-4 min-h-[72px] text-sm font-medium leading-7 text-zinc-500 dark:text-zinc-400">
           {plan.description}
         </p>
@@ -537,17 +433,11 @@ function PlanCard({
           <p className="flex min-h-[52px] flex-wrap items-end gap-2">
             {typeof plan.price === "number" ? (
               <>
+                <span className="pb-1 text-2xl font-black md:text-3xl">$</span>
                 <NumberFlow
                   className="text-4xl font-black tracking-tight"
                   transformTiming={{ duration: 900, easing: "ease-out" }}
                   value={plan.price}
-                />
-                <Image
-                  alt={periodLabel}
-                  className="mb-1 h-7 w-auto dark:invert md:h-9"
-                  height={36}
-                  src="/saudi-riyal-symbol.svg"
-                  width={36}
                 />
                 <span className="pb-1 text-sm font-bold text-zinc-500 dark:text-zinc-400">
                   {periodLabel}
