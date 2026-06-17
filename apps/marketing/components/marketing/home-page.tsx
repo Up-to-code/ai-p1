@@ -8,7 +8,6 @@ import { AnimatedHomeHero } from "@/components/landing/animated-home-hero";
 import { AppsPlatform } from "@/components/landing/apps-platform";
 import { Faq02 } from "@/components/landing/faq-02";
 import { McpAgentsShowcase } from "@/components/landing/mcp-agents-showcase";
-import { Pricing03 } from "@/components/landing/pricing-03";
 import { ProblemSection } from "@/components/landing/problem-section";
 
 export function HomePage() {
@@ -34,8 +33,6 @@ export function HomePage() {
       <AppsPlatform locale={locale} />
 
       <McpAgentsShowcase locale={locale} />
-
-      <Pricing03 locale={locale} />
 
       <Faq02 />
 
