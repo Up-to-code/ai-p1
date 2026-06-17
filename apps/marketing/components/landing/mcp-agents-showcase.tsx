@@ -89,7 +89,7 @@ function AgentCard({ agent, isAr }: { agent: AgentItem; isAr: boolean }) {
   const descText = isAr ? agent.desc.ar : agent.desc.en;
 
   return (
-    <div className="flex items-center gap-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white p-4 shadow-sm dark:bg-zinc-800 hover:border-blue-500/50 dark:hover:border-blue-500/50 transition duration-300 w-full">
+    <div className="flex items-center gap-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white p-4 shadow-sm dark:bg-zinc-800 hover:border-[var(--q-user-bubble)]/50 dark:hover:border-[var(--q-user-bubble)]/50 transition duration-300 w-full">
       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900">
         <Image
           alt=""

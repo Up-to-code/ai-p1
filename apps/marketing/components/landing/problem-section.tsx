@@ -98,8 +98,8 @@ export function ProblemSection({ locale }: { locale: string }) {
           <Reveal>
             <div className="max-w-4xl space-y-5">
               <div className="flex items-center gap-3">
-                <span className="h-px w-8 bg-red-500/30" />
-                <span className="text-[10px] font-black uppercase tracking-[0.35em] text-red-600 dark:text-red-400">{pLabels.eyebrow}</span>
+                <span className="h-px w-8 bg-[var(--q-user-bubble)]/30" />
+                <span className="text-[10px] font-black uppercase tracking-[0.35em] text-[var(--q-user-bubble)] dark:text-[var(--q-user-bubble)]">{pLabels.eyebrow}</span>
               </div>
               <h2 className="text-4xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-6xl rtl:leading-[1.25]">
                 {pLabels.title}
@@ -115,7 +115,7 @@ export function ProblemSection({ locale }: { locale: string }) {
               <Reveal key={i} delay={i * 0.1}>
                 <div className="space-y-4">
                   <h3 className="text-xl font-bold text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-red-500 shrink-0" />
+                    <span className="h-2 w-2 rounded-full bg-[var(--q-user-bubble)] shrink-0" />
                     {item.title}
                   </h3>
                   <p className="text-sm font-semibold leading-relaxed text-zinc-600 dark:text-zinc-400 md:text-base rtl:leading-[1.7]">
@@ -133,8 +133,8 @@ export function ProblemSection({ locale }: { locale: string }) {
           <Reveal>
             <div className="max-w-4xl space-y-5">
               <div className="flex items-center gap-3">
-                <span className="h-px w-8 bg-emerald-500/30" />
-                <span className="text-[10px] font-black uppercase tracking-[0.35em] text-emerald-600 dark:text-emerald-400">{fLabels.eyebrow}</span>
+                <span className="h-px w-8 bg-[var(--q-accent)]/30" />
+                <span className="text-[10px] font-black uppercase tracking-[0.35em] text-[var(--q-accent)] dark:text-[var(--q-accent)]">{fLabels.eyebrow}</span>
               </div>
               <h2 className="text-4xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-6xl rtl:leading-[1.25]">
                 {fLabels.title}
@@ -150,7 +150,7 @@ export function ProblemSection({ locale }: { locale: string }) {
               <Reveal key={i} delay={i * 0.1}>
                 <div className="space-y-4">
                   <h3 className="text-xl font-bold text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
+                    <span className="h-2 w-2 rounded-full bg-[var(--q-accent)] shrink-0" />
                     {item.title}
                   </h3>
                   <p className="text-sm font-semibold leading-relaxed text-zinc-600 dark:text-zinc-400 md:text-base rtl:leading-[1.7]">

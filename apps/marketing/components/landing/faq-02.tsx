@@ -29,8 +29,8 @@ export function Faq02() {
       <Reveal>
         <div className="max-w-xl space-y-6">
           <div className="flex items-center gap-3">
-            <span className="h-px w-8 bg-blue-500/25 dark:bg-blue-500/45" />
-            <span className="text-[10px] font-black uppercase tracking-[0.35em] text-blue-600 dark:text-blue-400">
+            <span className="h-px w-8 bg-[var(--q-user-bubble)]/25 dark:bg-[var(--q-user-bubble)]/45" />
+            <span className="text-[10px] font-black uppercase tracking-[0.35em] text-[var(--q-user-bubble)] dark:text-[var(--q-user-bubble)]">
               {t("eyebrow")}
             </span>
           </div>
@@ -54,7 +54,7 @@ export function Faq02() {
               value={`item-${index}`}
               className="border-b border-[var(--q-border)] dark:border-white/10 px-2 transition-colors duration-300 hover:bg-zinc-50/50 dark:hover:bg-white/[0.02]"
             >
-              <AccordionTrigger className="text-start py-6 text-base md:text-lg font-semibold text-zinc-900 dark:text-zinc-100 transition-all duration-300 hover:text-blue-600 dark:hover:text-blue-400 hover:no-underline">
+              <AccordionTrigger className="text-start py-6 text-base md:text-lg font-semibold text-zinc-900 dark:text-zinc-100 transition-all duration-300 hover:text-[var(--q-user-bubble)] dark:hover:text-[var(--q-user-bubble)] hover:no-underline">
                 {item.question}
               </AccordionTrigger>
               <AccordionContent className="text-sm md:text-base font-medium text-zinc-500 dark:text-zinc-400 leading-relaxed pb-6">

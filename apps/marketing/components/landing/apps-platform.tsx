@@ -105,7 +105,7 @@ const copy = {
 
 function ToolPill({ tool }: { tool: { name: string; url: string } }) {
   return (
-    <span className="flex h-12 items-center gap-3 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 text-sm font-bold text-zinc-700 dark:text-zinc-200 shadow-sm transition-colors duration-200 hover:border-blue-500/50 dark:hover:border-blue-500/50">
+    <span className="flex h-12 items-center gap-3 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 text-sm font-bold text-zinc-700 dark:text-zinc-200 shadow-sm transition-colors duration-200 hover:border-[var(--q-user-bubble)]/50 dark:hover:border-[var(--q-user-bubble)]/50">
       <span className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900">
         <Image
           alt=""
@@ -137,11 +137,12 @@ export function AppsPlatform({ locale }: { locale: string }) {
           <Reveal>
             <div className="space-y-4 text-start">
               <div className="flex items-center gap-3">
-                <span className="h-px w-8 bg-blue-500/30" />
-                <BrandMark className="h-4.5 w-4.5 text-blue-600 dark:text-blue-400" />
-                <span className="text-[10px] font-black uppercase tracking-[0.35em] text-blue-600 dark:text-blue-400">
+                <span className="h-px w-8 bg-[var(--q-user-bubble)]/30" />
+                <BrandMark className="h-4.5 w-4.5 text-[var(--q-user-bubble)] dark:text-[var(--q-user-bubble)]" />
+                <span className="text-[10px] font-black uppercase tracking-[0.35em] text-[var(--q-user-bubble)] dark:text-[var(--q-user-bubble)]">
                   {labels.eyebrow}
                 </span>
+              </div>
               </div>
               <h2 className="text-3xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-5xl rtl:leading-[1.3]">
                 {labels.title}
