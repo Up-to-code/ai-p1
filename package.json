@@ -29,12 +29,6 @@
   },
   "overrides": {
     "effect": "$effect",
-    "uploadthing": {
-      "effect": "$effect"
-    },
-    "@uploadthing/shared": {
-      "effect": "$effect"
-    },
     "postcss": "8.5.14"
   },
   "optionalDependencies": {
