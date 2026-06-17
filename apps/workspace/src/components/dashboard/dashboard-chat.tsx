@@ -346,7 +346,7 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
                       </span>
                       {msg.content && (
                         msg.role === "user" ? (
-                          <div className="rounded-[18px] border border-border bg-surface px-4 py-3 text-sm font-medium leading-relaxed text-text-primary shadow-none">
+                          <div className="rounded-[18px] border border-color-user-bubble bg-color-user-bubble px-4 py-3 text-sm font-medium leading-relaxed text-white shadow-md shadow-color-user-bubble/20">
                             {msg.content}
                           </div>
                         ) : (

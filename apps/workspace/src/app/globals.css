@@ -36,6 +36,10 @@
   --color-surface: #e4e0d6;
   --color-surface-elevated: #faf9f5;
 
+  /* ── Third color (user message bubble) ── */
+  --color-user-bubble: #1565c0;
+  --color-user-bubble-light: #1e88e5;
+
   /* ── Typography ── */
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, ui-sans-serif, system-ui, sans-serif;
 
@@ -79,6 +83,10 @@
   --q-note: #7c3aed;
   --q-note-bg: #f5f3ff;
 
+  /* ── Third color (user message bubble) ── */
+  --q-user-bubble: #1565c0;
+  --q-user-bubble-light: #1e88e5;
+
   /* Selection */
   --color-selection-bg: #1a1a18;
   --color-selection-fg: #ffffff;
@@ -120,6 +128,10 @@
   --color-surface: #181818;
   --color-surface-elevated: #1c1c1c;
 
+  /* ── Third color (user message bubble - darker in dark mode) ── */
+  --color-user-bubble: #42a5f5;
+  --color-user-bubble-light: #64b5f6;
+
   /* ── Qentrah Custom Properties (Dark) ── */
   --q-bg: #0e0e0e;
   --q-sidebar: #181818;
@@ -150,6 +162,10 @@
   --q-info-bg: #091a28;
   --q-note: #a78bfa;
   --q-note-bg: #160f28;
+
+  /* ── Third color (user message bubble - darker in dark mode) ── */
+  --q-user-bubble: #42a5f5;
+  --q-user-bubble-light: #64b5f6;
 }
 
 @layer base {
