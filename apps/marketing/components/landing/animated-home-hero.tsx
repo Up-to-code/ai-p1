@@ -43,8 +43,8 @@ function HeroLink({
       href={href}
       className={
         secondary
-          ? "inline-flex h-12 items-center justify-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--hero-text)_15%,transparent)] bg-[color-mix(in_srgb,var(--hero-bg)_70%,transparent)] px-6 text-sm font-bold text-[var(--hero-text)] backdrop-blur-xl transition hover:bg-[var(--hero-bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--q-accent)]"
-          : "inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--hero-text)] px-7 text-sm font-bold text-[var(--hero-bg)] transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--q-accent)]"
+          ? "inline-flex h-12 items-center justify-center gap-2 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-6 text-sm font-bold text-zinc-900 dark:text-white backdrop-blur-xl transition hover:bg-zinc-50 dark:hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--q-accent)]"
+          : "inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--q-accent)] px-7 text-sm font-bold text-white transition hover:bg-[var(--q-accent-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--q-accent)]"
       }
     >
       {label}
@@ -80,7 +80,7 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
   }, [revealDelay]);
 
   return (
-    <section className="relative min-h-screen overflow-hidden border-b border-[color-mix(in_srgb,var(--hero-text)_10%,transparent)] bg-[var(--hero-bg)] text-[var(--hero-text)] [--hero-bg:var(--q-bg)] [--hero-text:var(--q-text-primary)] dark:[--hero-bg:var(--q-bg)] dark:[--hero-text:var(--q-text-primary)]">
+    <section className="relative min-h-screen overflow-hidden border-b border-zinc-200/80 bg-[var(--q-bg)] text-[var(--q-text-primary)] dark:border-zinc-800/80 dark:bg-[var(--q-bg)] dark:text-[var(--q-text-primary)]">
       <IntroAnimation label={introLabel} onDone={handleIntroDone} />
 
       <video
@@ -101,7 +101,7 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
         style={{
           height: "65%",
           background:
-            "linear-gradient(to top, var(--hero-bg) 0%, var(--hero-bg) 18%, color-mix(in srgb, var(--hero-bg) 86%, transparent) 36%, color-mix(in srgb, var(--hero-bg) 50%, transparent) 56%, color-mix(in srgb, var(--hero-bg) 15%, transparent) 76%, transparent 100%)",
+            "linear-gradient(to top, var(--q-bg) 0%, var(--q-bg) 18%, color-mix(in srgb, var(--q-bg) 86%, transparent) 36%, color-mix(in srgb, var(--q-bg) 50%, transparent) 56%, color-mix(in srgb, var(--q-bg) 15%, transparent) 76%, transparent 100%)",
         }}
       />
       <div
@@ -139,7 +139,7 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
         <div className="grid w-full max-w-7xl gap-8 lg:grid-cols-[minmax(0,0.86fr)_minmax(260px,0.34fr)] lg:items-end">
           <div className="max-w-4xl">
             <p
-              className="mb-5 inline-flex rounded-full border border-[color-mix(in_srgb,var(--hero-text)_10%,transparent)] bg-[color-mix(in_srgb,var(--hero-bg)_70%,transparent)] px-4 py-2 text-[10px] font-black uppercase text-[var(--q-accent)] backdrop-blur-xl dark:text-blue-200"
+              className="mb-5 inline-flex rounded-full border border-[var(--q-accent-border)] bg-[var(--q-accent-muted)] px-4 py-2 text-[10px] font-black uppercase text-[var(--q-accent)] backdrop-blur-xl transition-colors duration-300 hover:bg-[var(--q-accent)] hover:text-[var(--q-text-primary)]"
               style={{
                 opacity: heroReady ? 1 : 0,
                 filter: heroReady ? "blur(0px)" : "blur(14px)",
@@ -150,7 +150,7 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
               {eyebrow}
             </p>
             <h1
-              className="max-w-4xl text-5xl font-light leading-none text-[var(--hero-text)] sm:text-6xl md:text-7xl lg:text-8xl rtl:leading-[1.14]"
+              className="max-w-4xl text-5xl font-light leading-none text-[var(--q-text-primary)] sm:text-6xl md:text-7xl lg:text-8xl rtl:leading-[1.14]"
               style={{
                 opacity: heroReady ? 1 : 0,
                 filter: heroReady ? "blur(0px)" : "blur(24px)",
@@ -161,7 +161,7 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
               {title}
             </h1>
             <p
-              className="mt-6 max-w-2xl text-base font-medium leading-8 text-[color-mix(in_srgb,var(--hero-text)_62%,transparent)] md:text-lg"
+              className="mt-6 max-w-2xl text-base font-medium leading-8 text-[var(--q-text-secondary)] md:text-lg"
               style={{
                 opacity: heroReady ? 1 : 0,
                 filter: heroReady ? "blur(0px)" : "blur(16px)",
@@ -197,8 +197,8 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
                   transition: `opacity 0.8s cubic-bezier(0.16,1,0.3,1) ${220 + index * 80}ms, filter 0.8s cubic-bezier(0.16,1,0.3,1) ${220 + index * 80}ms, transform 0.8s cubic-bezier(0.16,1,0.3,1) ${220 + index * 80}ms`,
                 }}
               >
-                <div className="truncate text-2xl font-light leading-none text-[var(--hero-text)] sm:text-3xl md:text-4xl">{stat.value}</div>
-                <div className="mt-2 text-[10px] font-black uppercase leading-4 text-[color-mix(in_srgb,var(--hero-text)_42%,transparent)] sm:text-xs">{stat.label}</div>
+                <div className="truncate text-2xl font-light leading-none text-[var(--q-text-primary)] sm:text-3xl md:text-4xl">{stat.value}</div>
+                <div className="mt-2 text-[10px] font-black uppercase leading-4 text-[var(--q-text-secondary)] sm:text-xs">{stat.label}</div>
               </div>
             ))}
           </div>
