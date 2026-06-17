@@ -246,26 +246,26 @@ export function ResourceMediaUploader({
   const uploadQueueItems = immediate ? uploadQueue.queue : pendingPreviews;
 
   return (
-    <section className={cn("rounded-[28px] border border-zinc-100 bg-white p-4 dark:border-white/10 dark:bg-[#0A0A0A] md:p-5", className)}>
+    <section className={cn("rounded-[28px] border border-border bg-card p-4 md:p-5", className)}>
       {!copy.hideHeader && (
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h3 className="text-sm font-black uppercase tracking-tight text-zinc-900 dark:text-white">{copy.title}</h3>
+            <h3 className="text-sm font-black uppercase tracking-tight text-foreground">{copy.title}</h3>
             <p className="mt-1 max-w-xl text-xs font-semibold leading-relaxed text-zinc-400">{copy.description}</p>
           </div>
         </div>
       )}
 
       <label className={cn(
-        "flex cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-zinc-200 bg-zinc-50/70 p-6 text-center transition-all hover:border-zinc-300 hover:bg-zinc-50 dark:border-white/[0.06] dark:bg-white/[0.015] dark:hover:border-white/[0.12] dark:hover:bg-white/[0.03]",
+        "flex cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border bg-muted/70 p-6 text-center transition-all hover:border-border hover:bg-muted",
         !copy.hideHeader && "mt-4",
         variant === "review" ? "min-h-28" : "min-h-32",
         (operation.isRunning || uploadQueue.isUploading) && "pointer-events-none opacity-60",
       )}>
-        <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white text-zinc-900 shadow-sm shadow-zinc-950/[0.04] dark:bg-white/10 dark:text-white dark:shadow-none">
+        <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-card text-foreground shadow-sm shadow-zinc-950/[0.04] dark:shadow-none">
           <UploadCloud className="h-5 w-5" />
         </span>
-        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-900 dark:text-white">{copy.pick}</span>
+        <span className="text-[10px] font-black uppercase tracking-widest text-foreground">{copy.pick}</span>
         {!copy.hideDropDescription && <span className="max-w-md text-xs font-semibold leading-relaxed text-zinc-400">{copy.description}</span>}
         <input
           type="file"
@@ -277,7 +277,7 @@ export function ResourceMediaUploader({
       </label>
 
       {uploadQueueItems.length > 0 && (
-        <div className="mt-4 border border-zinc-100 bg-zinc-50/50 p-3 dark:border-white/10 dark:bg-white/[0.025]">
+        <div className="mt-4 border border-border bg-muted/50 p-3">
           <div className="flex items-center justify-between gap-3">
             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{copy.queued}</p>
             {canUpload && !immediate && (
@@ -294,8 +294,8 @@ export function ResourceMediaUploader({
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {uploadQueueItems.map((preview, index) => (
               <div key={preview.id} className={cn(
-                "group relative overflow-hidden border bg-white transition-colors dark:bg-[#0A0A0A]",
-                "border-zinc-100 dark:border-white/10",
+                "group relative overflow-hidden border bg-card transition-colors",
+                "border-border",
                 preview.status === "uploading" && "border-blue-400/30 bg-blue-50/30 dark:border-blue-400/30 dark:bg-blue-500/[0.04]",
                 preview.status === "failed" && "border-amber-400/35 bg-amber-50/30 dark:border-amber-400/25 dark:bg-amber-500/[0.035]",
                 preview.status === "uploaded" && "border-emerald-400/30 bg-emerald-50/30 dark:border-emerald-400/30 dark:bg-emerald-500/[0.04]",
@@ -307,7 +307,7 @@ export function ResourceMediaUploader({
                     <span className="block h-full w-1/2 animate-[upload-slide_1.1s_ease-in-out_infinite] bg-blue-500" />
                   </span>
                 )}
-                <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-zinc-100 text-zinc-400 dark:bg-white/[0.05]">
+                <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-muted text-zinc-400">
                   {preview.previewUrl && preview.kind === "image" ? (
                     <Image src={preview.previewUrl} alt={preview.file.name} fill sizes="180px" className="object-cover" />
                   ) : preview.previewUrl && preview.kind === "video" ? (
@@ -358,8 +358,8 @@ export function ResourceMediaUploader({
       {!hideExisting && visibleMedia && visibleMedia.length > 0 && (
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {visibleMedia.map((asset) => (
-            <article key={asset._id} className="overflow-hidden rounded-2xl border border-zinc-100 bg-zinc-50 dark:border-white/10 dark:bg-white/[0.03]">
-              <div className="relative flex aspect-video items-center justify-center bg-zinc-100 text-zinc-400 dark:bg-black/30">
+            <article key={asset._id} className="overflow-hidden rounded-2xl border border-border bg-muted">
+              <div className="relative flex aspect-video items-center justify-center bg-muted text-zinc-400">
                 {asset.kind === "image" ? (
                   <Image src={asset.url} alt={asset.name} fill sizes="300px" className="object-cover" />
                 ) : (
@@ -373,10 +373,10 @@ export function ResourceMediaUploader({
                 )}
               </div>
               <div className="flex items-center justify-between gap-3 p-3">
-                <p className="min-w-0 truncate text-xs font-black text-zinc-700 dark:text-zinc-200">{asset.name}</p>
+                <p className="min-w-0 truncate text-xs font-black text-foreground">{asset.name}</p>
                 <div className="flex shrink-0 items-center gap-1">
                   {asset.kind === "image" && !asset.isCover && (
-                    <button type="button" className="p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-white" onClick={() => operation.run(() => setMediaCoverRequest(asset.organizationId, asset._id), { successMessage: "Cover updated." })} aria-label={copy.setCover}>
+                    <button type="button" className="p-2 text-zinc-400 hover:text-foreground" onClick={() => operation.run(() => setMediaCoverRequest(asset.organizationId, asset._id), { successMessage: "Cover updated." })} aria-label={copy.setCover}>
                       <Star className="h-3.5 w-3.5" />
                     </button>
                   )}

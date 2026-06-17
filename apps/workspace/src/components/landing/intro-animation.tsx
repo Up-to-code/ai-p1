@@ -51,7 +51,7 @@ export function IntroAnimation({ label, onDone }: { label: string; onDone: () =>
   return (
     <div className="fixed inset-0 z-[70] pointer-events-none" aria-hidden="true">
       <div
-        className="absolute inset-x-0 top-0 bg-[#f5f4f1] dark:bg-[#050505]"
+        className="absolute inset-x-0 top-0 bg-[var(--q-bg)] dark:bg-[var(--q-bg)]"
         style={{
           bottom: curtainUp ? "100%" : "0%",
           transition: curtainUp ? "bottom 1.3s cubic-bezier(0.76, 0, 0.24, 1)" : "none",
@@ -75,7 +75,7 @@ export function IntroAnimation({ label, onDone }: { label: string; onDone: () =>
             return (
               <span
                 key={`${letter}-${index}`}
-                className="select-none text-5xl font-bold leading-none text-[#111111] dark:text-white sm:text-7xl md:text-8xl lg:text-9xl"
+                className="select-none text-5xl font-bold leading-none text-[var(--q-text-primary)] dark:text-white sm:text-7xl md:text-8xl lg:text-9xl"
                 style={{
                   opacity,
                   filter: `blur(${blur}px)`,

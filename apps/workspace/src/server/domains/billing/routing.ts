@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { handleTamaraWebhook } from "./handlers/billing";
+import { handleDodoWebhook } from "./handlers/billing";
 
 export const billingRouter = new Hono();
 
-billingRouter.post("/tamara/webhook", handleTamaraWebhook);
+billingRouter.post("/dodo/webhook", handleDodoWebhook);

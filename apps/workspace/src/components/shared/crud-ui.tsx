@@ -49,7 +49,7 @@ export function StatusPill({
     warning: "border-sky-500/20 bg-sky-500/10 text-sky-600 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-400",
     danger: "border-rose-500/20 bg-rose-500/10 text-rose-600 dark:border-rose-400/20 dark:bg-rose-400/10 dark:text-rose-400",
     info: "border-indigo-500/20 bg-indigo-500/10 text-indigo-600 dark:border-indigo-400/20 dark:bg-indigo-400/10 dark:text-indigo-400",
-    neutral: "border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-white/10 dark:bg-white/5",
+    neutral: "border-border bg-muted text-zinc-500",
   }[tone];
 
   return (
@@ -76,7 +76,7 @@ export function SearchBox({
 }) {
   const t = useTranslations("Common");
   return (
-    <div className={cn("flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 focus-within:ring-2 focus-within:ring-zinc-900/10 dark:border-white/5 dark:bg-white/[0.02] dark:focus-within:ring-white/10", className)}>
+    <div className={cn("flex items-center gap-2 rounded-xl border border-border bg-muted px-3 focus-within:ring-2 focus-within:ring-ring", className)}>
       <Search className="h-3.5 w-3.5 text-zinc-400" aria-hidden="true" />
       <input
         aria-label={ariaLabel || t('searchAriaLabel')}
@@ -103,7 +103,7 @@ export function EmptyWorkspace({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-64 flex-col items-center justify-center rounded-[24px] border border-dashed border-zinc-200 p-10 text-center dark:border-white/10">
+    <div className="flex min-h-64 flex-col items-center justify-center rounded-[24px] border border-dashed border-border p-10 text-center">
       <Icon className="h-8 w-8 text-zinc-200" />
       <h3 className="mt-5 text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">{title}</h3>
       <p className="mt-2 max-w-md text-xs font-medium uppercase leading-relaxed tracking-tight text-zinc-500">{description}</p>
@@ -149,7 +149,7 @@ export function ProgressiveLoadingState({
     <div className="space-y-4">
       <ResourceLoadingSkeleton variant={variant} />
       {isStalled && (
-        <div className="rounded-[24px] border border-zinc-100 bg-white p-4 text-start dark:border-white/5 dark:bg-[#0A0A0A]">
+        <div className="rounded-[24px] border border-border bg-card p-4 text-start">
           <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">
             {t("loadingStillTitle")}
           </h3>
@@ -165,13 +165,13 @@ export function ProgressiveLoadingState({
             {t("refresh")}
           </Button>
           {shouldShowDebug && (
-            <details className="mt-5 w-full max-w-xl rounded-2xl border border-zinc-200 bg-white/70 p-4 text-start dark:border-white/10 dark:bg-white/[0.03]">
+            <details className="mt-5 w-full max-w-xl rounded-2xl border border-border bg-card/70 p-4 text-start">
               <summary className="cursor-pointer text-[10px] font-black uppercase tracking-widest text-zinc-500">
                 {t("debugDetails")}
               </summary>
               <dl className="mt-4 grid gap-2 text-[11px] font-medium text-zinc-500 sm:grid-cols-2">
                 {debugDetails.map((item) => (
-                  <div key={item.label} className="min-w-0 rounded-xl bg-zinc-50 px-3 py-2 dark:bg-white/[0.03]">
+                  <div key={item.label} className="min-w-0 rounded-xl bg-muted px-3 py-2">
                     <dt className="truncate text-[9px] font-black uppercase tracking-widest text-zinc-400">{item.label}</dt>
                     <dd className="mt-1 break-all font-mono text-[10px] text-zinc-700 dark:text-zinc-200">{item.value}</dd>
                   </div>
@@ -252,13 +252,13 @@ function QueryDebugDetails({
   const debugDetails = normalizeQueryDebugDetails(debug, { timedOut });
 
   return (
-    <details className="mt-4 w-full max-w-xl rounded-2xl border border-zinc-200 bg-white/70 p-4 text-start dark:border-white/10 dark:bg-white/[0.03]">
+    <details className="mt-4 w-full max-w-xl rounded-2xl border border-border bg-card/70 p-4 text-start">
       <summary className="cursor-pointer text-[10px] font-black uppercase tracking-widest text-zinc-500">
         {t("debugDetails")}
       </summary>
       <dl className="mt-4 grid gap-2 text-[11px] font-medium text-zinc-500 sm:grid-cols-2">
         {debugDetails.map((item) => (
-          <div key={item.label} className="min-w-0 rounded-xl bg-zinc-50 px-3 py-2 dark:bg-white/[0.03]">
+          <div key={item.label} className="min-w-0 rounded-xl bg-muted px-3 py-2">
             <dt className="truncate text-[9px] font-black uppercase tracking-widest text-zinc-400">{item.label}</dt>
             <dd className="mt-1 break-all font-mono text-[10px] text-zinc-700 dark:text-zinc-200">{item.value}</dd>
           </div>
@@ -318,7 +318,7 @@ function ResourceLoadingSkeleton({ variant }: { variant: LoadingSkeletonVariant 
     return (
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-hidden="true">
         {[0, 1, 2, 3].map((item) => (
-          <article key={item} className="overflow-hidden rounded-[24px] border border-zinc-100 bg-white dark:border-white/5 dark:bg-[#0A0A0A]">
+          <article key={item} className="overflow-hidden rounded-[24px] border border-border bg-card">
             <Skeleton className="h-44 rounded-none" />
             <div className="space-y-4 p-4">
               <div className="flex items-center justify-between gap-3">
@@ -329,7 +329,7 @@ function ResourceLoadingSkeleton({ variant }: { variant: LoadingSkeletonVariant 
                 <Skeleton className="h-16 rounded-xl" />
                 <Skeleton className="h-16 rounded-xl" />
               </div>
-              <div className="flex items-center justify-between border-t border-zinc-100 pt-4 dark:border-white/5">
+              <div className="flex items-center justify-between border-t border-border pt-4">
                 <Skeleton className="h-4 w-24 rounded-full" />
                 <Skeleton className="h-7 w-7 rounded-xl" />
               </div>
@@ -344,14 +344,14 @@ function ResourceLoadingSkeleton({ variant }: { variant: LoadingSkeletonVariant 
     return (
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3 xl:grid-cols-5" aria-hidden="true">
         {[0, 1, 2, 3, 4].map((column) => (
-          <section key={column} className="min-h-[420px] rounded-[28px] border border-zinc-100 bg-zinc-50/40 p-3 dark:border-white/5 dark:bg-white/[0.01]">
+          <section key={column} className="min-h-[420px] rounded-[28px] border border-border bg-muted/40 p-3">
             <div className="mb-4 flex items-center justify-between px-2">
               <Skeleton className="h-3 w-20 rounded-full" />
               <Skeleton className="h-5 w-5 rounded-full" />
             </div>
             <div className="space-y-3">
               {[0, 1, 2].map((card) => (
-                <div key={card} className="rounded-[20px] border border-zinc-100 bg-white p-4 dark:border-white/5 dark:bg-[#0A0A0A]">
+                <div key={card} className="rounded-[20px] border border-border bg-card p-4">
                   <div className="flex items-start gap-3">
                     <Skeleton className="h-10 w-10 rounded-2xl" />
                     <div className="min-w-0 flex-1 space-y-2">
@@ -371,8 +371,8 @@ function ResourceLoadingSkeleton({ variant }: { variant: LoadingSkeletonVariant 
 
   if (variant === "calendar") {
     return (
-      <div className="overflow-hidden rounded-[24px] border border-zinc-100 bg-white dark:border-white/5 dark:bg-[#0A0A0A]" aria-hidden="true">
-        <div className="flex items-center justify-between border-b border-zinc-100 p-5 dark:border-white/5">
+      <div className="overflow-hidden rounded-[24px] border border-border bg-card" aria-hidden="true">
+        <div className="flex items-center justify-between border-b border-border p-5">
           <Skeleton className="h-6 w-36 rounded-full" />
           <div className="flex gap-2">
             <Skeleton className="h-9 w-9 rounded-xl" />
@@ -380,16 +380,16 @@ function ResourceLoadingSkeleton({ variant }: { variant: LoadingSkeletonVariant 
             <Skeleton className="h-9 w-9 rounded-xl" />
           </div>
         </div>
-        <div className="grid grid-cols-7 border-b border-zinc-100 dark:border-white/5">
+        <div className="grid grid-cols-7 border-b border-border">
           {[0, 1, 2, 3, 4, 5, 6].map((day) => (
-            <div key={day} className="border-e border-zinc-100 p-3 last:border-e-0 dark:border-white/5">
+            <div key={day} className="border-e border-border p-3 last:border-e-0">
               <Skeleton className="mx-auto h-3 w-12 rounded-full" />
             </div>
           ))}
         </div>
         <div className="grid grid-cols-7">
           {Array.from({ length: 35 }).map((_, day) => (
-            <div key={day} className="min-h-24 border-e border-t border-zinc-100 p-3 last:border-e-0 dark:border-white/5">
+            <div key={day} className="min-h-24 border-e border-t border-border p-3 last:border-e-0">
               <Skeleton className="h-4 w-5 rounded-full" />
               {day % 3 === 0 && <Skeleton className="mt-4 h-6 rounded-lg" />}
             </div>
@@ -403,7 +403,7 @@ function ResourceLoadingSkeleton({ variant }: { variant: LoadingSkeletonVariant 
     return (
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]" aria-hidden="true">
         <div className="space-y-6">
-          <div className="rounded-[24px] border border-zinc-100 bg-white p-5 dark:border-white/5 dark:bg-[#0A0A0A]">
+          <div className="rounded-[24px] border border-border bg-card p-5">
             <div className="mb-5 flex items-center justify-between">
               <Skeleton className="h-5 w-32 rounded-full" />
               <Skeleton className="h-9 w-20 rounded-full" />
@@ -414,7 +414,7 @@ function ResourceLoadingSkeleton({ variant }: { variant: LoadingSkeletonVariant 
           </div>
           <TableLoadingSkeleton rows={4} />
         </div>
-        <div className="rounded-[24px] border border-zinc-100 bg-white p-5 dark:border-white/5 dark:bg-[#0A0A0A]">
+        <div className="rounded-[24px] border border-border bg-card p-5">
           <Skeleton className="h-5 w-32 rounded-full" />
           <div className="mt-5 space-y-3">
             {[0, 1, 2, 3].map((item) => <Skeleton key={item} className="h-16 rounded-2xl" />)}
@@ -427,8 +427,8 @@ function ResourceLoadingSkeleton({ variant }: { variant: LoadingSkeletonVariant 
   if (variant === "detail") {
     return (
       <div className="space-y-6" aria-hidden="true">
-        <section className="rounded-[28px] border border-zinc-100 bg-white p-5 dark:border-white/5 dark:bg-[#0A0A0A] md:p-6">
-          <div className="flex flex-col gap-4 border-b border-zinc-100 pb-5 dark:border-white/5 lg:flex-row lg:items-start lg:justify-between">
+        <section className="rounded-[28px] border border-border bg-card p-5 md:p-6">
+          <div className="flex flex-col gap-4 border-b border-border pb-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-3">
               <Skeleton className="h-3 w-32 rounded-full" />
               <Skeleton className="h-9 w-80 max-w-full rounded-xl" />
@@ -456,14 +456,14 @@ function ResourceLoadingSkeleton({ variant }: { variant: LoadingSkeletonVariant 
 
 function TableLoadingSkeleton({ rows }: { rows: number }) {
   return (
-    <div className="overflow-hidden rounded-[24px] border border-zinc-100 bg-white dark:border-white/5 dark:bg-[#0A0A0A]" aria-hidden="true">
-      <div className="flex items-center gap-10 border-b border-zinc-100 bg-zinc-50/50 p-4 dark:border-white/5 dark:bg-white/[0.02]">
+    <div className="overflow-hidden rounded-[24px] border border-border bg-card" aria-hidden="true">
+      <div className="flex items-center gap-10 border-b border-border bg-muted/50 p-4">
         {[0, 1, 2, 3].map((cell) => (
           <Skeleton key={cell} className="h-3 w-20 rounded-full" />
         ))}
       </div>
       {Array.from({ length: rows }).map((_, row) => (
-        <div key={row} className="grid grid-cols-[minmax(0,1.4fr)_0.8fr_0.7fr_0.5fr] items-center gap-8 border-b border-zinc-100 p-4 last:border-b-0 dark:border-white/5">
+        <div key={row} className="grid grid-cols-[minmax(0,1.4fr)_0.8fr_0.7fr_0.5fr] items-center gap-8 border-b border-border p-4 last:border-b-0">
           <div className="flex items-center gap-3">
             <Skeleton className="h-10 w-10 rounded-xl" />
             <div className="min-w-0 flex-1 space-y-2">
@@ -535,7 +535,7 @@ export function DetailNotFoundState({
   const t = useTranslations('Common');
   return (
     <EmptyWorkspace icon={AlertTriangle} title={title} description={description}>
-      <Link href={backHref} className="mt-6 inline-flex h-10 items-center justify-center rounded-xl border border-zinc-100 px-5 text-[10px] font-black uppercase tracking-widest text-zinc-900 transition-colors hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:border-white/10 dark:text-white dark:hover:bg-white/5">
+      <Link href={backHref} className="mt-6 inline-flex h-10 items-center justify-center rounded-xl border border-border px-5 text-[10px] font-black uppercase tracking-widest text-zinc-900 transition-colors hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:text-white dark:hover:bg-white/5">
         <ArrowLeft className="me-2 h-3.5 w-3.5" aria-hidden="true" />
         {backLabel || t('backToList')}
       </Link>
@@ -563,7 +563,7 @@ export function DeleteRecordDialog({
   const t = useTranslations('Common');
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="rounded-[28px] border-zinc-100 bg-white p-6 shadow-none dark:border-white/5 dark:bg-[#0A0A0A]">
+      <AlertDialogContent className="rounded-[28px] border-border bg-card p-6 shadow-none">
         <AlertDialogHeader>
           <AlertDialogMedia className="bg-red-50 text-red-600">
             <AlertTriangle className="h-5 w-5" />
@@ -659,7 +659,7 @@ export function TextInput({
         aria-describedby={error ? `${inputId}-error` : undefined}
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
-        className="h-12 rounded-2xl border-zinc-100 bg-zinc-50/50 px-4 text-sm font-black uppercase tracking-tight shadow-none transition-all focus:border-zinc-900/10 focus:bg-white focus:ring-4 focus:ring-zinc-900/5 dark:border-white/5 dark:bg-white/[0.02] dark:focus:border-white/10 dark:focus:bg-white/[0.04] dark:focus:ring-white/5 rtl:text-right"
+        className="h-12 rounded-2xl border-border bg-muted/50 px-4 text-sm font-black uppercase tracking-tight shadow-none transition-all focus:border-ring focus:bg-card focus:ring-4 focus:ring-ring rtl:text-right"
       />
     </FormField>
   );
@@ -699,7 +699,7 @@ function WizardActions({
           type="button"
           variant="ghost" 
           onClick={onBack} 
-          className="h-12 w-full rounded-[20px] text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 hover:bg-zinc-50 hover:text-zinc-900 transition-all dark:hover:bg-white/5 dark:hover:text-white"
+          className="h-12 w-full rounded-[20px] text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:bg-zinc-50 hover:text-foreground transition-all dark:hover:bg-white/5"
         >
           {backLabel || t('back')}
         </Button>
@@ -745,7 +745,7 @@ function ChoiceGrid<TValue extends string>({
                 "flex min-h-24 flex-col items-center justify-center gap-3 rounded-2xl border p-4 text-[10px] font-black uppercase tracking-widest transition-colors focus-visible:ring-2 focus-visible:ring-zinc-900/15",
                 isActive
                   ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900"
-                  : "border-zinc-100 bg-zinc-50/50 text-zinc-400 hover:border-zinc-300 hover:text-zinc-900 dark:border-white/5 dark:bg-white/[0.02] dark:hover:text-white",
+                  : "border-border bg-muted/50 text-muted-foreground hover:border-border hover:text-foreground",
               )}
             >
               {Icon && <Icon className="h-5 w-5" aria-hidden="true" />}
@@ -777,7 +777,7 @@ export function FormActions({
         type="button" 
         variant="ghost" 
         onClick={onCancel} 
-        className="h-11 rounded-xl px-8 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 hover:bg-zinc-50 hover:text-zinc-900 dark:hover:bg-white/5 dark:hover:text-white transition-all"
+        className="h-11 rounded-xl px-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:bg-zinc-50 hover:text-foreground transition-all dark:hover:bg-white/5"
       >
         {t('cancel')}
       </Button>
@@ -833,10 +833,10 @@ export function SelectField<TValue extends string>({
   return (
     <FormField id={id} label={label} error={error} className={className}>
       <Select value={value} onValueChange={(val) => onChange(val as TValue)}>
-        <SelectTrigger id={id} className="h-11 rounded-xl border-zinc-100 bg-zinc-50/50 px-4 text-sm font-bold shadow-none transition-all focus:border-zinc-300 focus:bg-white focus:ring-4 focus:ring-zinc-900/5 dark:border-white/5 dark:bg-white/[0.02] dark:focus:border-white/10 dark:focus:bg-white/[0.04] dark:focus:ring-white/5 rtl:text-right">
+        <SelectTrigger id={id} className="h-11 rounded-xl border-border bg-muted/50 px-4 text-sm font-bold shadow-none transition-all focus:border-ring focus:bg-card focus:ring-4 focus:ring-ring rtl:text-right">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        <SelectContent align="start" className="rounded-xl border-zinc-100 dark:border-white/5">
+        <SelectContent align="start" className="rounded-xl border-border">
           {options.map((option) => (
             <SelectItem key={option.value} value={option.value} className="py-3 px-4 rounded-xl text-xs font-bold">
               <div className="flex items-center gap-2">
@@ -870,7 +870,7 @@ export function SegmentedControl<TValue extends string>({
 }) {
   return (
     <FormField id={id} label={label} error={error} className={className}>
-      <div className="flex h-11 w-full gap-1 rounded-xl border border-zinc-100 bg-zinc-50/50 p-1 dark:border-white/5 dark:bg-white/[0.02]">
+      <div className="flex h-11 w-full gap-1 rounded-xl border border-border bg-muted/50 p-1">
         {options.map((option) => {
           const isActive = option.value === value;
           const Icon = option.icon;

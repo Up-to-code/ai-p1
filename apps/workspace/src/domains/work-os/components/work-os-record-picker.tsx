@@ -90,9 +90,9 @@ export function WorkOsRecordPicker({
     <div
       ref={rootRef}
       style={menuStyle}
-      className="overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-2xl dark:border-white/10 dark:bg-[#101010]"
+      className="overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
     >
-      <div className="flex h-11 items-center gap-2 border-b border-zinc-100 px-3 dark:border-white/10">
+      <div       className="flex h-11 items-center gap-2 border-b border-border px-3">
         <Search className="h-4 w-4 shrink-0 text-zinc-400" />
         <Input
           value={search}
@@ -112,8 +112,8 @@ export function WorkOsRecordPicker({
             setOpen(false);
           }}
           className={cn(
-            "mb-1 flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-start text-xs font-bold transition hover:bg-zinc-50 dark:hover:bg-white/5 rtl:text-right",
-            !value ? "text-zinc-950 dark:text-white" : "text-zinc-500",
+            "mb-1 flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-start text-xs font-bold transition hover:bg-muted rtl:text-right",
+            !value ? "text-foreground" : "text-zinc-500",
           )}
         >
           <span className="min-w-0 truncate">{clearLabel}</span>
@@ -133,18 +133,18 @@ export function WorkOsRecordPicker({
                 setSearch("");
                 setOpen(false);
               }}
-              className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-start transition hover:bg-zinc-50 dark:hover:bg-white/5 rtl:text-right"
+              className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-start transition hover:bg-muted rtl:text-right"
             >
               <span className="min-w-0">
-                <span className="block truncate text-xs font-black text-zinc-900 dark:text-white">{option.label}</span>
+                <span className="block truncate text-xs font-black text-foreground">{option.label}</span>
                 {option.helper ? <span className="mt-1 block truncate text-[10px] font-bold text-zinc-400">{option.helper}</span> : null}
               </span>
-              {option.id === value ? <CheckCircle2 className="h-4 w-4 shrink-0 text-zinc-900 dark:text-white" /> : null}
+              {option.id === value ? <CheckCircle2 className="h-4 w-4 shrink-0 text-foreground" /> : null}
             </button>
           ))
         )}
       </div>
-      <div className="border-t border-zinc-100 p-2 dark:border-white/10">
+      <div className="border-t border-border p-2">
         <Button type="button" variant="ghost" className="h-9 w-full rounded-xl text-[10px] font-black uppercase tracking-widest" onClick={() => setOpen(false)}>
           {closeLabel}
         </Button>
@@ -164,7 +164,7 @@ export function WorkOsRecordPicker({
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
         className={cn(
-          "flex h-12 w-full items-center justify-between gap-3 rounded-2xl border border-zinc-100 bg-zinc-50/50 px-4 text-sm font-black tracking-tight text-zinc-900 outline-none transition-all focus:border-zinc-900/10 focus:bg-white focus:ring-4 focus:ring-zinc-900/5 dark:border-white/5 dark:bg-white/[0.02] dark:text-white dark:focus:border-white/10 dark:focus:bg-white/[0.04] dark:focus:ring-white/5 rtl:text-right",
+          "flex h-12 w-full items-center justify-between gap-3 rounded-2xl border border-border bg-muted/50 px-4 text-sm font-black tracking-tight text-foreground outline-none transition-all focus:border-ring focus:bg-card focus:ring-4 focus:ring-ring rtl:text-right",
           !selected && "text-zinc-400 dark:text-zinc-500",
         )}
       >

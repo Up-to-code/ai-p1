@@ -105,7 +105,7 @@ export default defineSchema({
     ),
     currentPeriodStartAt: v.optional(v.number()),
     currentPeriodEndAt: v.optional(v.number()),
-    latestPaymentId: v.optional(v.id("tamaraPayments")),
+    latestPaymentId: v.optional(v.id("dodoPayments")),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -160,24 +160,18 @@ export default defineSchema({
     .index("by_organization_created", ["organizationId", "createdAt"])
     .index("by_organization_kind_created", ["organizationId", "kind", "createdAt"])
     .index("by_agent_run", ["organizationId", "agentRunId"]),
-  tamaraPayments: defineTable({
+  dodoPayments: defineTable({
     organizationId: v.string(),
     planId: v.string(),
-    orderReferenceId: v.string(),
-    orderNumber: v.string(),
-    tamaraOrderId: v.optional(v.string()),
-    tamaraCheckoutId: v.optional(v.string()),
+    orderId: v.string(),
+    dodoPaymentId: v.optional(v.string()),
     amount: v.number(),
     currency: v.string(),
     status: v.union(
       v.literal("pending"),
-      v.literal("new"),
-      v.literal("approved"),
-      v.literal("authorised"),
-      v.literal("captured"),
+      v.literal("succeeded"),
       v.literal("failed"),
       v.literal("canceled"),
-      v.literal("expired"),
     ),
     checkoutUrl: v.optional(v.string()),
     failureReason: v.optional(v.string()),
@@ -187,21 +181,20 @@ export default defineSchema({
     expiresAt: v.optional(v.number()),
   })
     .index("by_organization_id", ["organizationId"])
-    .index("by_order_reference", ["orderReferenceId"])
-    .index("by_tamara_order", ["tamaraOrderId"])
+    .index("by_order_id", ["orderId"])
+    .index("by_dodo_payment", ["dodoPaymentId"])
     .index("by_status_updated", ["status", "updatedAt"]),
-  tamaraWebhookEvents: defineTable({
+  dodoWebhookEvents: defineTable({
     eventKey: v.string(),
     eventType: v.string(),
-    tamaraOrderId: v.optional(v.string()),
-    orderReferenceId: v.optional(v.string()),
+    dodoPaymentId: v.optional(v.string()),
+    orderId: v.optional(v.string()),
     status: v.union(v.literal("processed"), v.literal("duplicate"), v.literal("failed")),
     error: v.optional(v.string()),
     receivedAt: v.number(),
     processedAt: v.optional(v.number()),
   })
     .index("by_event_key", ["eventKey"])
-    .index("by_tamara_order", ["tamaraOrderId"])
     .index("by_received", ["receivedAt"]),
   organizationAuditEvents: defineTable({
     organizationId: v.string(),
@@ -1110,22 +1103,6 @@ export default defineSchema({
     .index("by_auth_id", ["authId"])
     .index("by_dodo_customer_id", ["dodoCustomerId"])
     .index("by_email", ["email"]),
-  dodoPayments: defineTable({
-    paymentId: v.string(),
-    dodoCustomerId: v.string(),
-    customerEmail: v.string(),
-    amount: v.number(),
-    currency: v.string(),
-    status: v.string(),
-    productIds: v.array(v.string()),
-    failureReason: v.optional(v.string()),
-    metadata: v.string(),
-    createdAt: v.number(),
-  })
-    .index("by_payment_id", ["paymentId"])
-    .index("by_dodo_customer_id", ["dodoCustomerId"])
-    .index("by_status", ["status"])
-    .index("by_created", ["createdAt"]),
   dodoSubscriptions: defineTable({
     subscriptionId: v.string(),
     dodoCustomerId: v.string(),

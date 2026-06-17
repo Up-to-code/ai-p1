@@ -1,4 +1,4 @@
-const brandPrimary = "#0b5cff";
+const brandPrimary = "#0066cc";
 
 export const darkColors = {
   background: "#000000",

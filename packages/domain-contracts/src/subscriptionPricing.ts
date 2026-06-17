@@ -6,13 +6,11 @@ import {
 } from "./subscriptionPricingConfig";
 
 export type SubscriptionPlanId = "good" | "better" | "custom";
-export type MarketId = "sa";
 export type BillingCycle = "monthly" | "yearly";
 export type CreditPackId = "starter" | "growth" | "scale";
 export type AiModelClass = "small" | "standard" | "premium" | "fallback";
 export type UsageMeterKind = "ai_chat" | "agent_link_call" | "api_key_call" | "app_access";
-export type BillingProviderId = "tamara" | "manual";
-export type LegacyBillingPlanId = "saudi_monthly" | "saudi_yearly";
+export type BillingProviderId = "dodo" | "manual";
 
 export type SubscriptionEntitlements = {
   aiAccess: boolean;
@@ -27,18 +25,17 @@ export type SubscriptionEntitlements = {
 export type GlobalSubscriptionPlan = {
   id: SubscriptionPlanId;
   rank: number;
+  pricePerUser: number;
   entitlements: SubscriptionEntitlements;
   supportedCycles: BillingCycle[];
 };
 
 export type MarketBillingVariant = {
-  marketId: MarketId;
   planId: SubscriptionPlanId;
   cycle: BillingCycle;
-  legacyPlanId?: LegacyBillingPlanId;
   name: string;
   amount: number | null;
-  currency: "SAR";
+  currency: "USD";
   periodDays: number;
   providerEligibility: BillingProviderId[];
   checkoutMode: "provider" | "contact_sales";
@@ -52,7 +49,7 @@ export type CreditPack = {
   id: CreditPackId;
   credits: number;
   amount: number;
-  currency: "SAR";
+  currency: "USD";
   rollover: "billing_window" | "never_expires";
 };
 
@@ -88,6 +85,7 @@ const GLOBAL_PLANS = {
   good: {
     id: "good",
     rank: 10,
+    pricePerUser: 7,
     supportedCycles: ["monthly", "yearly"],
     entitlements: {
       aiAccess: false,
@@ -102,6 +100,7 @@ const GLOBAL_PLANS = {
   better: {
     id: "better",
     rank: 20,
+    pricePerUser: 19,
     supportedCycles: ["monthly", "yearly"],
     entitlements: {
       aiAccess: true,
@@ -116,6 +115,7 @@ const GLOBAL_PLANS = {
   custom: {
     id: "custom",
     rank: 30,
+    pricePerUser: 0,
     supportedCycles: ["monthly", "yearly"],
     entitlements: {
       aiAccess: true,
@@ -129,84 +129,75 @@ const GLOBAL_PLANS = {
   },
 } satisfies Record<SubscriptionPlanId, GlobalSubscriptionPlan>;
 
-const SAUDI_MARKET_PRICING = [
+const PLAN_PRICING: MarketBillingVariant[] = [
   {
-    marketId: "sa",
     planId: "good",
     cycle: "monthly",
-    legacyPlanId: "saudi_monthly",
     name: "Qentrah Good",
-    amount: 499,
-    currency: "SAR",
+    amount: 7,
+    currency: "USD",
     periodDays: 30,
-    providerEligibility: ["manual"],
+    providerEligibility: ["dodo"],
     checkoutMode: "provider",
     publicFeatureFlags: {},
   },
   {
-    marketId: "sa",
     planId: "good",
     cycle: "yearly",
-    legacyPlanId: "saudi_yearly",
     name: "Qentrah Good Annual",
-    amount: 5_988,
-    currency: "SAR",
+    amount: 70,
+    currency: "USD",
     periodDays: 365,
-    providerEligibility: ["tamara"],
+    providerEligibility: ["dodo"],
     checkoutMode: "provider",
     publicFeatureFlags: {},
   },
   {
-    marketId: "sa",
     planId: "better",
     cycle: "monthly",
     name: "Qentrah Better",
-    amount: 899,
-    currency: "SAR",
+    amount: 19,
+    currency: "USD",
     periodDays: 30,
-    providerEligibility: ["manual"],
+    providerEligibility: ["dodo"],
     checkoutMode: "provider",
     publicFeatureFlags: { highlighted: true },
   },
   {
-    marketId: "sa",
     planId: "better",
     cycle: "yearly",
     name: "Qentrah Better Annual",
-    amount: 9_588,
-    currency: "SAR",
+    amount: 190,
+    currency: "USD",
     periodDays: 365,
-    providerEligibility: ["tamara"],
+    providerEligibility: ["dodo"],
     checkoutMode: "provider",
     publicFeatureFlags: { highlighted: true },
   },
   {
-    marketId: "sa",
     planId: "custom",
     cycle: "monthly",
     name: "Qentrah Custom",
     amount: null,
-    currency: "SAR",
+    currency: "USD",
     periodDays: 30,
     providerEligibility: ["manual"],
     checkoutMode: "contact_sales",
     publicFeatureFlags: { contactSales: true },
   },
   {
-    marketId: "sa",
     planId: "custom",
     cycle: "yearly",
     name: "Qentrah Custom Annual",
     amount: null,
-    currency: "SAR",
+    currency: "USD",
     periodDays: 365,
     providerEligibility: ["manual"],
     checkoutMode: "contact_sales",
     publicFeatureFlags: { contactSales: true },
   },
-] satisfies MarketBillingVariant[];
+];
 
-export const DEFAULT_MARKET_ID: MarketId = "sa";
 export const DEFAULT_SUBSCRIPTION_PLAN_ID: SubscriptionPlanId = "good";
 export const DEFAULT_BILLING_CYCLE: BillingCycle = "monthly";
 
@@ -219,25 +210,18 @@ export function listGlobalPlans() {
 }
 
 export function getMarketPricing(input: {
-  marketId?: MarketId | string;
   planId: SubscriptionPlanId;
   cycle: BillingCycle;
 }): MarketBillingVariant {
-  if (input.marketId !== DEFAULT_MARKET_ID && input.marketId !== undefined) {
-    return contactSalesPricing(input.planId, input.cycle);
-  }
-
-  return SAUDI_MARKET_PRICING.find((variant) => variant.planId === input.planId && variant.cycle === input.cycle)
+  return PLAN_PRICING.find((variant) => variant.planId === input.planId && variant.cycle === input.cycle)
     ?? contactSalesPricing(input.planId, input.cycle);
 }
 
-export function getCreditPack(input: { marketId?: MarketId | string; packId: CreditPackId }) {
-  if (input.marketId !== DEFAULT_MARKET_ID && input.marketId !== undefined) return null;
+export function getCreditPack(input: { packId: CreditPackId }) {
   return CREDIT_PACKS[input.packId];
 }
 
-export function listCreditPacks(marketId: MarketId | string = DEFAULT_MARKET_ID) {
-  if (marketId !== DEFAULT_MARKET_ID) return [];
+export function listCreditPacks() {
   return Object.values(CREDIT_PACKS);
 }
 
@@ -254,39 +238,25 @@ export function canAddCreditCardsToPlan(planId: SubscriptionPlanId) {
   return getGlobalPlan(planId).id !== "custom";
 }
 
-export function listAddOnCreditCards(input: { marketId?: MarketId | string; planId: SubscriptionPlanId }) {
+export function listAddOnCreditCards(input: { planId: SubscriptionPlanId }) {
   if (!canAddCreditCardsToPlan(input.planId)) return [];
-  return listCreditPacks(input.marketId);
+  return listCreditPacks();
 }
 
 export function resolveSubscriptionEntitlements(planId: SubscriptionPlanId) {
   return { ...getGlobalPlan(planId).entitlements };
 }
 
-export function mapLegacyBillingPlanId(planId: LegacyBillingPlanId) {
-  if (planId === "saudi_yearly") return { planId: "good" as const, cycle: "yearly" as const, marketId: DEFAULT_MARKET_ID };
-  return { planId: "good" as const, cycle: "monthly" as const, marketId: DEFAULT_MARKET_ID };
-}
-
-export function isLegacyBillingPlanId(value: string): value is LegacyBillingPlanId {
-  return value === "saudi_monthly" || value === "saudi_yearly";
-}
-
 export function normalizeBillingSelection(input?: string | null) {
-  if (input && isLegacyBillingPlanId(input)) return mapLegacyBillingPlanId(input);
   const [plan, cycle] = (input ?? "").split("_");
   if (isSubscriptionPlanId(plan) && isBillingCycle(cycle)) {
-    return { planId: plan, cycle, marketId: DEFAULT_MARKET_ID };
+    return { planId: plan, cycle };
   }
-  return { planId: DEFAULT_SUBSCRIPTION_PLAN_ID, cycle: DEFAULT_BILLING_CYCLE, marketId: DEFAULT_MARKET_ID };
+  return { planId: DEFAULT_SUBSCRIPTION_PLAN_ID, cycle: DEFAULT_BILLING_CYCLE };
 }
 
 export function billingSelectionKey(input: { planId: SubscriptionPlanId; cycle: BillingCycle }) {
   return `${input.planId}_${input.cycle}`;
-}
-
-export function isTamaraEligible(variant: Pick<MarketBillingVariant, "providerEligibility">) {
-  return variant.providerEligibility.includes("tamara");
 }
 
 export function aiModelClass(modelId?: string): AiModelClass {
@@ -347,12 +317,11 @@ export function applyUsageToCreditBalance(input: CreditBalance & { requestedCred
 
 function contactSalesPricing(planId: SubscriptionPlanId, cycle: BillingCycle): MarketBillingVariant {
   return {
-    marketId: DEFAULT_MARKET_ID,
     planId,
     cycle,
     name: `${getGlobalPlan(planId).id} custom pricing`,
     amount: null,
-    currency: "SAR",
+    currency: "USD",
     periodDays: cycle === "yearly" ? 365 : 30,
     providerEligibility: ["manual"],
     checkoutMode: "contact_sales",

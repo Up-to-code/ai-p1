@@ -28,25 +28,22 @@ type BillingSubscription = {
   updatedAt: number;
 };
 
-export type TamaraPayment = {
+export type Payment = {
   id: string;
   organizationId: string;
   planId: BillingPlanId;
-  orderReferenceId: string;
-  orderNumber: string;
-  tamaraOrderId?: string;
+  orderId: string;
   amount: number;
   currency: string;
-  status: "pending" | "new" | "approved" | "authorised" | "captured" | "failed" | "canceled" | "expired";
+  status: "pending" | "succeeded" | "failed" | "canceled";
   checkoutUrl?: string;
-  failureReason?: string;
   updatedAt: number;
 };
 
 export type BillingOverview = {
   plan: BillingPlan;
   subscription: BillingSubscription | null;
-  latestPayment: TamaraPayment | null;
+  latestPayment: Payment | null;
 };
 
 export type OrganizationBillingUsage = {
@@ -61,7 +58,7 @@ export type OrganizationBillingUsage = {
     currentPeriodStartAt?: number;
     currentPeriodEndAt?: number;
   };
-  payments: TamaraPayment[];
+  payments: Payment[];
 };
 
 export type BillingUsageState =
@@ -74,49 +71,49 @@ type InternalBillingUsageState = BillingUsageState & { organizationId?: string }
 const BILLING_PLANS_CATALOG: Record<BillingPlanId, BillingPlan> = {
   good_monthly: {
     id: "good_monthly",
-    name: "Qentrah Good",
-    amount: 499,
-    currency: "SAR",
+    name: "Good",
+    amount: 7,
+    currency: "USD",
     periodDays: 30,
     checkoutMode: "provider",
   },
   good_yearly: {
     id: "good_yearly",
-    name: "Qentrah Good Annual",
-    amount: 5_988,
-    currency: "SAR",
+    name: "Good Annual",
+    amount: 70,
+    currency: "USD",
     periodDays: 365,
     checkoutMode: "provider",
   },
   better_monthly: {
     id: "better_monthly",
-    name: "Qentrah Better",
-    amount: 899,
-    currency: "SAR",
+    name: "Better",
+    amount: 19,
+    currency: "USD",
     periodDays: 30,
     checkoutMode: "provider",
   },
   better_yearly: {
     id: "better_yearly",
-    name: "Qentrah Better Annual",
-    amount: 9_588,
-    currency: "SAR",
+    name: "Better Annual",
+    amount: 190,
+    currency: "USD",
     periodDays: 365,
     checkoutMode: "provider",
   },
   custom_monthly: {
     id: "custom_monthly",
-    name: "Qentrah Custom",
+    name: "Custom",
     amount: null,
-    currency: "SAR",
+    currency: "USD",
     periodDays: 30,
     checkoutMode: "contact_sales",
   },
   custom_yearly: {
     id: "custom_yearly",
-    name: "Qentrah Custom Annual",
+    name: "Custom Annual",
     amount: null,
-    currency: "SAR",
+    currency: "USD",
     periodDays: 365,
     checkoutMode: "contact_sales",
   },
@@ -257,25 +254,25 @@ export function getBillingUsageRequest(organizationId: string) {
   );
 }
 
-export async function createTamaraCheckoutRequest(input: {
+export async function createCheckoutRequest(input: {
   organizationId: string;
-  locale: "en" | "ar";
   planId: BillingPlanId;
+  returnUrl: string;
 }) {
-  return requestOrganizationAction<{ checkoutUrl: string; orderId: string; status: string }>(
-    organizationApiPath(input.organizationId, "billing", "tamara", "checkout"),
+  return requestOrganizationAction<{ checkoutUrl: string; orderId: string }>(
+    organizationApiPath(input.organizationId, "billing", "checkout"),
     "POST",
-    { planId: input.planId, locale: input.locale },
+    { planId: input.planId, returnUrl: input.returnUrl },
     "Billing request failed.",
   );
 }
 
-export async function getTamaraOrderStatusRequest(input: {
+export async function getPaymentStatusRequest(input: {
   organizationId: string;
   orderId: string;
 }) {
-  return requestOrganizationAction<{ payment: TamaraPayment | null; tamaraError: string | null }>(
-    organizationApiPath(input.organizationId, "billing", "tamara", "orders", input.orderId),
+  return requestOrganizationAction<{ payment: Payment | null }>(
+    organizationApiPath(input.organizationId, "billing", "payments", input.orderId),
     "GET",
     undefined,
     "Billing request failed.",

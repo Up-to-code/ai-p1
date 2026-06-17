@@ -40,8 +40,8 @@ export function WizardStepper({ currentStep }: WizardStepperProps) {
                     status === "complete" 
                       ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900" 
                       : status === "current"
-                      ? "border-zinc-900 bg-white dark:border-white dark:bg-[#0A0A0A]"
-                      : "border-zinc-200 bg-white dark:border-white/10 dark:bg-[#0A0A0A]"
+                      ? "border-primary bg-card"
+                      : "border-border bg-card"
                   )}
                   aria-current={status === "current" ? "step" : undefined}
                 >

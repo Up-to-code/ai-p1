@@ -192,7 +192,7 @@ export function OAuthConsentClient({ locale }: { locale: OAuthLocale }) {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={partnerApp.logoUrl} alt="" className="h-full w-full object-cover" />
               ) : (
-                <KeyRound className="h-6 w-6 text-[#0b5cff]" aria-hidden="true" />
+                <KeyRound className="h-6 w-6 text-[var(--q-accent)]" aria-hidden="true" />
               )}
             </span>
           </div>

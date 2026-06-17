@@ -1,9 +1,9 @@
 import type { AiModelClass, CreditPack, CreditPackId } from "./subscriptionPricing";
 
 export const CREDIT_PACKS = {
-  starter: { id: "starter", credits: 4_000, amount: 99, currency: "SAR", rollover: "billing_window" },
-  growth: { id: "growth", credits: 12_000, amount: 249, currency: "SAR", rollover: "billing_window" },
-  scale: { id: "scale", credits: 40_000, amount: 699, currency: "SAR", rollover: "billing_window" },
+  starter: { id: "starter", credits: 4_000, amount: 27, currency: "USD", rollover: "billing_window" },
+  growth: { id: "growth", credits: 12_000, amount: 67, currency: "USD", rollover: "billing_window" },
+  scale: { id: "scale", credits: 40_000, amount: 189, currency: "USD", rollover: "billing_window" },
 } satisfies Record<CreditPackId, CreditPack>;
 
 export const MODEL_CLASS_CONFIG = {

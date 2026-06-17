@@ -386,7 +386,7 @@ export function AuthAccessScreen({
 
           <div className="max-w-xl pb-6">
             {t("visualEyebrow") ? (
-              <p className="mb-5 max-w-sm text-[10px] font-black uppercase leading-5 tracking-[0.08em] text-[#0b5cff]">
+              <p className="mb-5 max-w-sm text-[10px] font-black uppercase leading-5 tracking-[0.08em] text-[var(--q-accent)]">
                 {t("visualEyebrow")}
               </p>
             ) : null}

@@ -2,17 +2,17 @@ import { v } from "convex/values";
 import { query } from "../_generated/server";
 import type { QueryCtx } from "../_generated/server";
 import { assertOrganizationPermission } from "../organizations/profile/access";
-import { billingOverviewValidator, billingUsageOverviewValidator, tamaraPaymentValidator } from "./validators";
+import { billingOverviewValidator, billingUsageOverviewValidator, paymentValidator } from "./validators";
 import { presentPayment } from "./data";
-import type { StoredSubscription, StoredTamaraPayment } from "./data";
+import type { StoredSubscription, StoredPayment } from "./data";
 import {
   creditUsageSummary,
   includedCreditsForBillingPlan,
   type StoredCreditBalance,
 } from "./creditSurface";
-import { billingSubscriptionOverview, latestTamaraPayment } from "./readSurface";
+import { billingSubscriptionOverview, latestPayment } from "./readSurface";
 
-type BillingRecord = StoredSubscription | StoredTamaraPayment | StoredCreditBalance;
+type BillingRecord = StoredSubscription | StoredPayment | StoredCreditBalance;
 
 type BillingQueryBuilder = {
   eq(field: string, value: unknown): unknown;
@@ -43,18 +43,18 @@ async function getSubscription(ctx: QueryCtx, organizationId: string) {
 
 async function getLatestPayment(ctx: QueryCtx, organizationId: string) {
   const payments = await billingDb(ctx)
-    .query("tamaraPayments")
+    .query("dodoPayments")
     .withIndex("by_organization_id", (q) => q.eq("organizationId", organizationId))
-    .take(25) as StoredTamaraPayment[];
+    .take(25) as StoredPayment[];
 
-  return latestTamaraPayment(payments);
+  return latestPayment(payments);
 }
 
 async function getPayments(ctx: QueryCtx, organizationId: string) {
   const payments = await billingDb(ctx)
-    .query("tamaraPayments")
+    .query("dodoPayments")
     .withIndex("by_organization_id", (q) => q.eq("organizationId", organizationId))
-    .take(50) as StoredTamaraPayment[];
+    .take(50) as StoredPayment[];
 
   return payments.sort((left, right) => right.updatedAt - left.updatedAt);
 }
@@ -72,17 +72,17 @@ export const getSubscriptionOverview = query({
   handler: async (ctx, args) => {
     await assertOrganizationPermission(ctx, args.organizationId, "read");
     const subscription = await getSubscription(ctx, args.organizationId);
-    const latestPayment = subscription?.latestPaymentId
-      ? await billingDb(ctx).get(subscription.latestPaymentId) as StoredTamaraPayment | null
+    const latestPayment_ = subscription?.latestPaymentId
+      ? await billingDb(ctx).get(subscription.latestPaymentId) as StoredPayment | null
       : await getLatestPayment(ctx, args.organizationId);
 
-    return billingSubscriptionOverview(subscription, latestPayment);
+    return billingSubscriptionOverview(subscription, latestPayment_);
   },
 });
 
 export const listPayments = query({
   args: { organizationId: v.string() },
-  returns: v.array(tamaraPaymentValidator),
+  returns: v.array(paymentValidator),
   handler: async (ctx, args) => {
     await assertOrganizationPermission(ctx, args.organizationId, "read");
     const payments = await getPayments(ctx, args.organizationId);
@@ -97,10 +97,10 @@ export const getUsageOverview = query({
     await assertOrganizationPermission(ctx, args.organizationId, "read");
     const subscription = await getSubscription(ctx, args.organizationId);
     const payments = await getPayments(ctx, args.organizationId);
-    const latestPayment = subscription?.latestPaymentId
-      ? await billingDb(ctx).get(subscription.latestPaymentId) as StoredTamaraPayment | null
-      : latestTamaraPayment(payments);
-    const overview = billingSubscriptionOverview(subscription, latestPayment);
+    const latestPayment_ = subscription?.latestPaymentId
+      ? await billingDb(ctx).get(subscription.latestPaymentId) as StoredPayment | null
+      : latestPayment(payments);
+    const overview = billingSubscriptionOverview(subscription, latestPayment_);
     const balance = await getCreditBalance(ctx, args.organizationId);
 
     return {
@@ -116,22 +116,18 @@ export const getUsageOverview = query({
   },
 });
 
-export const getTamaraPaymentByOrder = query({
+export const getPaymentByOrder = query({
   args: {
     organizationId: v.string(),
     orderId: v.string(),
   },
-  returns: v.union(tamaraPaymentValidator, v.null()),
+  returns: v.union(paymentValidator, v.null()),
   handler: async (ctx, args) => {
     await assertOrganizationPermission(ctx, args.organizationId, "read");
-    const byTamaraOrder = await billingDb(ctx)
-      .query("tamaraPayments")
-      .withIndex("by_tamara_order", (q) => q.eq("tamaraOrderId", args.orderId))
-      .first() as StoredTamaraPayment | null;
-    const payment = byTamaraOrder ?? await billingDb(ctx)
-      .query("tamaraPayments")
-      .withIndex("by_order_reference", (q) => q.eq("orderReferenceId", args.orderId))
-      .first() as StoredTamaraPayment | null;
+    const payment = await billingDb(ctx)
+      .query("dodoPayments")
+      .withIndex("by_order_id", (q) => q.eq("orderId", args.orderId))
+      .first() as StoredPayment | null;
 
     if (!payment || payment.organizationId !== args.organizationId) return null;
     return presentPayment(payment);

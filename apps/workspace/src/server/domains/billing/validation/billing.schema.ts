@@ -1,22 +1,33 @@
 import { z } from "zod";
 
 export const billingCheckoutSchema = z.object({
-  planId: z.enum(["saudi_monthly", "saudi_yearly"]).default("saudi_monthly"),
+  planId: z.enum([
+    "good_monthly",
+    "good_yearly",
+    "better_monthly",
+    "better_yearly",
+    "custom_monthly",
+    "custom_yearly",
+  ]).default("good_monthly"),
   locale: z.enum(["en", "ar"]).default("en"),
-  discount: z.object({
-    name: z.string().trim().min(1),
-    amount: z.number().positive(),
-    currency: z.literal("SAR").default("SAR"),
-  }).optional(),
+  returnUrl: z.string().optional(),
 });
 
-export const tamaraWebhookSchema = z.object({
-  order_id: z.string().trim().min(1).optional(),
-  order_reference_id: z.string().trim().min(1).optional(),
-  order_number: z.string().trim().optional(),
+export const dodoWebhookSchema = z.object({
   event_type: z.string().trim().min(1),
-  data: z.array(z.unknown()).optional().default([]),
+  data: z.object({
+    payment_id: z.string().optional(),
+    subscription_id: z.string().optional(),
+    customer_id: z.string().optional(),
+    status: z.string().optional(),
+    total_amount: z.number().optional(),
+    currency: z.string().optional(),
+    failure_reason: z.string().optional(),
+    plan_id: z.string().optional(),
+    current_period_start: z.number().optional(),
+    current_period_end: z.number().optional(),
+  }).passthrough(),
 });
 
 export type BillingCheckoutPayload = z.infer<typeof billingCheckoutSchema>;
-export type TamaraWebhookPayload = z.infer<typeof tamaraWebhookSchema>;
+export type DodoWebhookPayload = z.infer<typeof dodoWebhookSchema>;

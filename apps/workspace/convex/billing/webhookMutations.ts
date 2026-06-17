@@ -1,9 +1,6 @@
 import { internalMutation } from "../_generated/server";
 import { v } from "convex/values";
 
-/**
- * Record successful payment in database
- */
 export const recordPayment = internalMutation({
   args: {
     paymentId: v.string(),
@@ -17,22 +14,19 @@ export const recordPayment = internalMutation({
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("dodoPayments", {
-      paymentId: args.paymentId,
-      dodoCustomerId: args.dodoCustomerId,
-      customerEmail: args.customerEmail,
+      orderId: args.paymentId,
+      dodoPaymentId: args.paymentId,
+      organizationId: "",
+      planId: args.productIds[0] || "good_monthly",
       amount: args.amount,
       currency: args.currency,
-      status: args.status,
-      productIds: args.productIds,
-      metadata: args.metadata,
+      status: "succeeded",
       createdAt: Date.now(),
+      updatedAt: Date.now(),
     });
   },
 });
 
-/**
- * Record failed payment in database
- */
 export const recordPaymentFailure = internalMutation({
   args: {
     paymentId: v.string(),
@@ -42,23 +36,20 @@ export const recordPaymentFailure = internalMutation({
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("dodoPayments", {
-      paymentId: args.paymentId,
-      dodoCustomerId: args.dodoCustomerId,
-      customerEmail: "",
+      orderId: args.paymentId,
+      dodoPaymentId: args.paymentId,
+      organizationId: "",
+      planId: "good_monthly",
       amount: 0,
       currency: "USD",
       status: "failed",
-      productIds: [],
       failureReason: args.failureReason,
-      metadata: args.metadata,
       createdAt: Date.now(),
+      updatedAt: Date.now(),
     });
   },
 });
 
-/**
- * Record subscription event in database
- */
 export const recordSubscription = internalMutation({
   args: {
     subscriptionId: v.string(),
@@ -70,7 +61,6 @@ export const recordSubscription = internalMutation({
     metadata: v.string(),
   },
   handler: async (ctx, args) => {
-    // Check if subscription already exists
     const existing = await ctx.db
       .query("dodoSubscriptions")
       .withIndex("by_subscription_id", (q) =>

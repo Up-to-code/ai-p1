@@ -90,9 +90,9 @@ export function AcceptInviteScreen() {
   const currentInvitePath = `/${locale}/accept-invite?${inviteToken ? `inviteToken=${encodeURIComponent(inviteToken)}` : `invitationId=${encodeURIComponent(invitationId ?? "")}`}`;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-50 px-6 py-12 dark:bg-[#0A0A0A]">
-      <section className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-8 text-center dark:border-white/10 dark:bg-[#111]">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-600 dark:bg-white/5 dark:text-zinc-300">
+    <main className="flex min-h-screen items-center justify-center bg-muted px-6 py-12">
+      <section className="w-full max-w-md rounded-3xl border border-border bg-card p-8 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
           {status === "accepted" ? (
             <CheckCircle2 className="h-6 w-6 text-emerald-500" />
           ) : status === "error" || isMissingInvite ? (
@@ -101,15 +101,15 @@ export function AcceptInviteScreen() {
             <Loader2 className="h-6 w-6 animate-spin" />
           )}
         </div>
-        <h1 className="mt-6 text-2xl font-black uppercase tracking-tight text-zinc-900 dark:text-white">
+        <h1 className="mt-6 text-2xl font-black uppercase tracking-tight text-foreground">
           {isMissingInvite ? t("missingTitle") : isSignedOut ? t("signInTitle") : status === "accepted" ? t("acceptedTitle") : status === "error" ? t("errorTitle") : t("loadingTitle")}
         </h1>
-        <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+        <p className="mt-3 text-sm leading-6 text-muted-foreground">
           {isMissingInvite ? t("missingDesc") : isSignedOut ? t("signInDesc") : status === "accepted" ? t("acceptedDesc") : status === "error" ? error : t("loadingDesc")}
         </p>
         {isSignedOut && (
           <Button
-            className="mt-6 h-11 rounded-2xl bg-zinc-900 px-6 text-white hover:bg-black"
+            className="mt-6 h-11 rounded-2xl bg-primary px-6 text-primary-foreground hover:bg-black"
             onClick={() => router.push(`/${locale}/sign-in?callbackURL=${encodeURIComponent(currentInvitePath)}`)}
           >
             <LogIn className="me-2 h-4 w-4" />

@@ -177,7 +177,7 @@ function ReviewInput({
       </h3>
 
       {/* Card */}
-      <div className="rounded-[16px] border border-zinc-200/80 bg-white dark:border-white/[0.06] dark:bg-white/[0.02] overflow-hidden">
+      <div className="rounded-[16px] border border-border bg-card overflow-hidden">
         {/* Top: User info + Star picker */}
         <div className="flex items-center gap-3 px-4 pt-4 pb-3">
           <Avatar className="h-8 w-8 shrink-0">
@@ -219,7 +219,7 @@ function ReviewInput({
         </div>
 
         {/* Bottom Toolbar */}
-        <div className="flex items-center justify-between px-3 py-2.5 border-t border-zinc-100 dark:border-white/[0.04] bg-zinc-50/50 dark:bg-white/[0.01]">
+        <div className="flex items-center justify-between px-3 py-2.5 border-t border-border bg-muted/50">
           {/* Formatting Actions */}
           <div className="flex items-center gap-0.5">
             {formatActions.map((fmt) => (
@@ -241,7 +241,7 @@ function ReviewInput({
               </button>
             ))}
 
-            <div className="w-px h-4 bg-zinc-200/80 dark:bg-white/[0.06] mx-1" />
+            <div className="w-px h-4 bg-border mx-1" />
 
             <button
               type="button"
@@ -274,7 +274,7 @@ function ReviewInput({
 
       {/* Hint */}
       <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium">
-        Press <kbd className="px-1 py-0.5 rounded bg-zinc-100 dark:bg-white/[0.06] text-zinc-500 dark:text-zinc-400 font-mono text-[9px]">⌘ Enter</kbd> to submit
+        Press <kbd className="px-1 py-0.5 rounded bg-muted text-muted-foreground font-mono text-[9px]">⌘ Enter</kbd> to submit
       </p>
     </div>
   );

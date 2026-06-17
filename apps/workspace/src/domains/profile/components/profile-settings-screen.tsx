@@ -149,9 +149,9 @@ export function ProfileSettingsScreen() {
   );
 
   return (
-    <div className="min-h-screen bg-zinc-50/50 dark:bg-[#0A0A0A]">
+    <div className="min-h-screen bg-background">
       {/* ── Hero Header ─────────────────────────────────────────────── */}
-      <div className="border-b border-zinc-200 dark:border-white/[0.06] bg-white dark:bg-[#111111]">
+      <div className="border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-6 py-10">
           {/* Top Row: avatar + identity + save */}
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -182,7 +182,7 @@ export function ProfileSettingsScreen() {
 
             {/* Identity */}
             <div className="flex-1 min-w-0 space-y-2">
-              <h1 className="text-2xl font-black uppercase tracking-tight text-zinc-900 dark:text-white truncate">
+              <h1 className="text-2xl font-black uppercase tracking-tight text-foreground truncate">
                 {account.user.name}
               </h1>
               <div className="flex flex-wrap items-center gap-2">
@@ -197,7 +197,7 @@ export function ProfileSettingsScreen() {
                   {t(`roles.${roleKey}`)}
                 </span>
                 {/* Email */}
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
                   <Mail className="h-3 w-3" />
                   <span
                     className="max-w-[16rem] truncate"
@@ -207,7 +207,7 @@ export function ProfileSettingsScreen() {
                   </span>
                 </span>
                 {/* Org */}
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
                   <Briefcase className="h-3 w-3" />
                   <span
                     className="max-w-[16rem] truncate"
@@ -223,7 +223,7 @@ export function ProfileSettingsScreen() {
                 {permissionKeys.map((pk) => (
                   <span
                     key={pk}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-zinc-100 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.06] text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-muted dark:bg-muted border border-border dark:border-border text-[9px] font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground"
                   >
                     <CheckCircle2 className="h-2.5 w-2.5 text-emerald-500 shrink-0" />
                     {t(`permissions.${pk}`)}
@@ -236,7 +236,7 @@ export function ProfileSettingsScreen() {
             <Button
               onClick={saveProfile}
               disabled={saveOperation.isRunning || isSubmitting}
-              className="shrink-0 h-11 px-6 rounded-[22px] bg-zinc-900 text-white hover:bg-black font-black uppercase tracking-widest text-[10px] dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 transition-all active:scale-[0.98] disabled:opacity-50"
+              className="shrink-0 h-11 px-6 rounded-[22px] bg-foreground text-background hover:opacity-90 font-black uppercase tracking-widest text-[10px] dark:bg-white dark:text-zinc-900 dark:hover:bg-muted transition-all active:scale-[0.98] disabled:opacity-50"
             >
               {saveOperation.isRunning ? (
                 <Loader2 className="me-2 h-3.5 w-3.5 animate-spin" />
@@ -248,13 +248,13 @@ export function ProfileSettingsScreen() {
           </div>
 
           {/* Photo upload hint */}
-          <p className="mt-4 text-[9px] font-bold uppercase tracking-widest text-zinc-400">
+          <p className="mt-4 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
             <Upload className="inline h-2.5 w-2.5 me-1" />
             {t("form.avatarUpload")} · {t("form.avatarDesc")}
           </p>
 
           {/* Tabs */}
-          <div className="-mb-px mt-8 flex items-center gap-1 overflow-x-auto border-b border-zinc-200 dark:border-white/[0.06]">
+          <div className="-mb-px mt-8 flex items-center gap-1 overflow-x-auto border-b border-border dark:border-border">
             {profileTabs.map((tab) => {
               const TabIcon = tabIcons[tab.icon];
               return (
@@ -265,8 +265,8 @@ export function ProfileSettingsScreen() {
                   className={cn(
                     "flex items-center gap-2 px-4 py-3 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all duration-150",
                     activeTab === tab.id
-                      ? "border-zinc-900 text-zinc-900 dark:border-white dark:text-white"
-                      : "border-transparent text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300",
+                      ? "border-foreground text-foreground dark:border-foreground text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-secondary-foreground dark:hover:text-muted-foreground",
                   )}
                 >
                   <TabIcon className="h-3 w-3" />
@@ -315,7 +315,7 @@ export function ProfileSettingsScreen() {
               </Section>
             </div>
 
-            <div className="space-y-8 border-t border-zinc-200 pt-8 dark:border-white/[0.06] xl:border-t-0 xl:border-s xl:pt-0 xl:ps-8">
+            <div className="space-y-8 border-t border-border pt-8 dark:border-border xl:border-t-0 xl:border-s xl:pt-0 xl:ps-8">
               <Section
                 title={t("sections.rolePerms")}
                 description={t("sections.rolePermsDesc")}
@@ -343,7 +343,7 @@ export function ProfileSettingsScreen() {
               title={t("sections.accountData")}
               description={t("sections.accountDataDesc")}
             >
-              <div className="divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-white/[0.06] dark:border-white/[0.06]">
+              <div className="divide-y divide-border border-y border-border dark:divide-border dark:border-border">
                 <AccountDataRow
                   icon={User}
                   label={t("account.name")}
@@ -381,7 +381,7 @@ export function ProfileSettingsScreen() {
               title={t("sections.mobileNotifications")}
               description={t("sections.mobileNotificationsDesc")}
             >
-              <div className="divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-white/[0.06] dark:border-white/[0.06]">
+              <div className="divide-y divide-border border-y border-border dark:divide-border dark:border-border">
                 <NotificationSwitchRow
                   icon={Bell}
                   label={t("notifications.enabled")}
@@ -417,22 +417,22 @@ export function ProfileSettingsScreen() {
               </div>
             </Section>
 
-            <div className="space-y-8 border-t border-zinc-200 pt-8 dark:border-white/[0.06] xl:border-t-0 xl:border-s xl:pt-0 xl:ps-8">
+            <div className="space-y-8 border-t border-border pt-8 dark:border-border xl:border-t-0 xl:border-s xl:pt-0 xl:ps-8">
               <Section
                 title={t("sections.mobileDevice")}
                 description={t("sections.mobileDeviceDesc")}
               >
-                <div className="border-y border-zinc-200 py-5 dark:border-white/[0.06]">
+                <div className="border-y border-border py-5 dark:border-border">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5">
-                        <Smartphone className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted dark:bg-muted">
+                        <Smartphone className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-zinc-900 dark:text-white">
+                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-foreground dark:text-foreground">
                           {pushDeviceQuery.data?.hasActiveDevice ? t("notifications.deviceConnected") : t("notifications.deviceMissing")}
                         </p>
-                        <p className="mt-1 text-[10px] font-medium text-zinc-400">
+                        <p className="mt-1 text-[10px] font-medium text-muted-foreground">
                           {pushDeviceQuery.data?.hasActiveDevice
                             ? t("notifications.deviceConnectedHelp")
                             : t("notifications.deviceMissingHelp")}
@@ -454,15 +454,15 @@ export function ProfileSettingsScreen() {
                 title={t("sections.defaultReminders")}
                 description={t("sections.defaultRemindersDesc")}
               >
-                <div className="flex flex-wrap gap-2 border-y border-zinc-200 py-5 dark:border-white/[0.06]">
+                <div className="flex flex-wrap gap-2 border-y border-border py-5 dark:border-border">
                   {notificationPreference.reminderRules.map((rule) => (
                     <span
                       key={rule.id}
                       className={cn(
                         "rounded-full border px-3 py-1 text-[10px] font-bold",
                         rule.enabled
-                          ? "border-zinc-200 text-zinc-700 dark:border-white/[0.08] dark:text-zinc-300"
-                          : "border-zinc-200 text-zinc-300 line-through dark:border-white/[0.06] dark:text-zinc-600",
+                          ? "border-border text-secondary-foreground dark:border-border dark:text-muted-foreground"
+                          : "border-border text-muted-foreground line-through dark:border-border dark:text-muted-foreground",
                       )}
                     >
                       {rule.sourceType === "calendarEvent" ? t("notifications.calendarRule") : t("notifications.taskRule")} · {rule.trigger === "at_start" ? t("notifications.atStart") : `${rule.offsetMinutes}m`}
@@ -481,7 +481,7 @@ export function ProfileSettingsScreen() {
               title={t("sections.accountIdentity")}
               description={t("sections.accountIdentityDesc")}
             >
-              <div className="divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-white/[0.06] dark:border-white/[0.06]">
+              <div className="divide-y divide-border border-y border-border dark:divide-border dark:border-border">
                 <SecurityRow
                   icon={User}
                   label={t("security.fullName")}
@@ -502,7 +502,7 @@ export function ProfileSettingsScreen() {
                 />
               </div>
             </Section>
-            <div className="space-y-8 border-t border-zinc-200 pt-8 dark:border-white/[0.06] xl:border-t-0 xl:border-s xl:pt-0 xl:ps-8">
+            <div className="space-y-8 border-t border-border pt-8 dark:border-border xl:border-t-0 xl:border-s xl:pt-0 xl:ps-8">
               <Section
                 title={t("sections.accessSecurity")}
                 description={t("sections.accessSecurityDesc")}
@@ -536,12 +536,12 @@ export function ProfileSettingsScreen() {
                 title={t("sections.activeSessions")}
                 description={t("sections.activeSessionsDesc")}
               >
-                <div className="flex items-center justify-between gap-4 border-y border-zinc-200 py-4 dark:border-white/[0.06]">
+                <div className="flex items-center justify-between gap-4 border-y border-border py-4 dark:border-border">
                   <div className="min-w-0">
-                    <p className="text-[10px] font-black uppercase tracking-[0.15em] text-zinc-900 dark:text-white">
+                    <p className="text-[10px] font-black uppercase tracking-[0.15em] text-foreground dark:text-foreground">
                       {t("security.thisDevice")}
                     </p>
-                    <p className="mt-0.5 text-[9px] font-medium text-zinc-400">
+                    <p className="mt-0.5 text-[9px] font-medium text-muted-foreground">
                       {t("security.deviceDetail")}
                     </p>
                   </div>
@@ -572,11 +572,11 @@ function Section({
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-zinc-900 dark:text-white">
+        <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-foreground dark:text-foreground">
           {title}
         </h2>
         {description && (
-          <p className="mt-1 text-[10px] font-medium text-zinc-400">
+          <p className="mt-1 text-[10px] font-medium text-muted-foreground">
             {description}
           </p>
         )}
@@ -599,7 +599,7 @@ function LockedProfileField({
     <div className="space-y-2">
       <Label
         htmlFor={id}
-        className="text-[10px] font-black uppercase tracking-widest text-zinc-500"
+        className="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
       >
         {label}
       </Label>
@@ -609,7 +609,7 @@ function LockedProfileField({
         value={value}
         disabled
         aria-readonly="true"
-        className="h-12 cursor-not-allowed rounded-xl border-zinc-200 bg-zinc-50 font-medium text-zinc-500 disabled:opacity-100 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-400"
+        className="h-12 cursor-not-allowed rounded-xl border-border bg-muted font-medium text-muted-foreground disabled:opacity-100 dark:border-border dark:bg-muted dark:text-muted-foreground"
       />
     </div>
   );
@@ -642,14 +642,14 @@ function ProfileField({
       <div className="flex items-center gap-1">
         <Label
           htmlFor={id}
-          className="text-[10px] font-black uppercase tracking-widest text-zinc-500"
+          className="text-[10px] font-black uppercase tracking-widest text-muted-foreground"
         >
           {label}
         </Label>
         {tooltip && (
           <Tooltip>
             <TooltipTrigger className="inline-flex cursor-help">
-              <HelpCircle className="w-3 h-3 text-zinc-400 hover:text-zinc-700 transition-colors" />
+              <HelpCircle className="w-3 h-3 text-muted-foreground hover:text-secondary-foreground transition-colors" />
             </TooltipTrigger>
             <TooltipContent side="top">
               <p>{tooltip}</p>
@@ -661,7 +661,7 @@ function ProfileField({
         id={id}
         type={type}
         autoComplete={autoComplete}
-        className="h-12 rounded-xl border-zinc-200 bg-white font-medium focus-visible:ring-blue-600/20 dark:border-white/10 dark:bg-[#111]"
+        className="h-12 rounded-xl border-border bg-card font-medium focus-visible:ring-blue-600/20 dark:border-border dark:bg-card"
         aria-invalid={Boolean(error)}
         readOnly={readOnly}
         disabled={disabled}
@@ -695,17 +695,17 @@ function RolePermissionsList({
   permissionLabels: string[];
 }) {
   return (
-    <div className="space-y-5 border-y border-zinc-200 py-5 dark:border-white/[0.06]">
+    <div className="space-y-5 border-y border-border py-5 dark:border-border">
       <div className="flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5">
-            <ShieldCheck className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted dark:bg-muted">
+            <ShieldCheck className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
           </div>
           <div className="min-w-0">
-            <p className="text-[9px] font-black uppercase tracking-[0.15em] text-zinc-400">
+            <p className="text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground">
               {currentRoleLabel}
             </p>
-            <p className="truncate text-sm font-black text-zinc-900 dark:text-white">
+            <p className="truncate text-sm font-black text-foreground dark:text-foreground">
               {roleLabel}
             </p>
           </div>
@@ -720,14 +720,14 @@ function RolePermissionsList({
         </span>
       </div>
       <div>
-        <p className="mb-3 text-[9px] font-black uppercase tracking-[0.15em] text-zinc-400">
+        <p className="mb-3 text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground">
           {permissionsLabel}
         </p>
         <div className="flex flex-wrap gap-2">
           {permissionLabels.map((label) => (
             <span
               key={label}
-              className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 px-3 py-1 text-[10px] font-bold text-zinc-600 dark:border-white/[0.08] dark:text-zinc-300"
+              className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-[10px] font-bold text-secondary-foreground dark:border-border dark:text-muted-foreground"
             >
               <CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-500" />
               {label}
@@ -735,7 +735,7 @@ function RolePermissionsList({
           ))}
         </div>
       </div>
-      <p className="text-[9px] font-medium text-zinc-400">{adminNote}</p>
+      <p className="text-[9px] font-medium text-muted-foreground">{adminNote}</p>
     </div>
   );
 }
@@ -759,14 +759,14 @@ function NotificationSwitchRow({
     <div className="py-5">
       <div className="flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 dark:bg-white/5 dark:text-zinc-400">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground">
             <Icon className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-zinc-900 dark:text-white">
+            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-foreground dark:text-foreground">
               {label}
             </p>
-            <p className="mt-1 text-[10px] font-medium text-zinc-400">
+            <p className="mt-1 text-[10px] font-medium text-muted-foreground">
               {note}
             </p>
           </div>
@@ -780,13 +780,13 @@ function NotificationSwitchRow({
           className={cn(
             "relative h-7 w-12 shrink-0 rounded-full border transition-colors disabled:opacity-60",
             enabled
-              ? "border-zinc-900 bg-zinc-900 dark:border-white dark:bg-white"
-              : "border-zinc-200 bg-zinc-100 dark:border-white/[0.08] dark:bg-white/[0.04]",
+              ? "border-foreground bg-foreground dark:border-foreground dark:bg-white"
+              : "border-border bg-muted dark:border-border dark:bg-muted",
           )}
         >
           <span
             className={cn(
-              "absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform dark:bg-zinc-900",
+              "absolute top-1 h-5 w-5 rounded-full bg-background shadow-sm transition-transform dark:bg-background",
               enabled ? "translate-x-5" : "translate-x-1",
             )}
           />
@@ -808,15 +808,15 @@ function AccountDataRow({
   return (
     <div className="py-5">
       <div className="flex items-center gap-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 dark:bg-white/5 dark:text-zinc-400">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground">
           <Icon className="h-4 w-4" />
         </div>
         <div className="min-w-0">
-          <p className="text-[9px] font-black uppercase tracking-[0.15em] text-zinc-400">
+          <p className="text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground">
             {label}
           </p>
           <p
-            className="mt-1 truncate text-sm font-black text-zinc-900 dark:text-white"
+            className="mt-1 truncate text-sm font-black text-foreground dark:text-foreground"
             title={value}
           >
             {value}
@@ -861,11 +861,11 @@ function BrandDataRow({
           )}
         </div>
         <div className="min-w-0">
-          <p className="text-[9px] font-black uppercase tracking-[0.15em] text-zinc-400">
+          <p className="text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground">
             {label}
           </p>
           <p
-            className="mt-1 truncate text-sm font-black text-zinc-900 dark:text-white"
+            className="mt-1 truncate text-sm font-black text-foreground dark:text-foreground"
             title={value}
           >
             {value}
@@ -900,20 +900,20 @@ function SecurityRow({
             "flex h-9 w-9 items-center justify-center rounded-xl",
             warn
               ? "bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400"
-              : "bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400",
+              : "bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground",
           )}
         >
           <Icon className="h-4 w-4" />
         </div>
         <div>
-          <p className="text-[9px] font-black uppercase tracking-[0.15em] text-zinc-400">
+          <p className="text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground">
             {label}
           </p>
-          <p className="mt-0.5 text-sm font-bold text-zinc-900 dark:text-white">
+          <p className="mt-0.5 text-sm font-bold text-foreground dark:text-foreground">
             {value}
           </p>
           {note && (
-            <p className="text-[9px] font-medium text-zinc-400 mt-0.5">
+            <p className="text-[9px] font-medium text-muted-foreground mt-0.5">
               {note}
             </p>
           )}
@@ -928,7 +928,7 @@ function SecurityRow({
             "h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
             warn
               ? "border-amber-200 dark:border-amber-500/20 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10"
-              : "border-zinc-200 dark:border-white/10 hover:border-zinc-900 dark:hover:border-white",
+              : "border-border dark:border-border hover:border-foreground dark:hover:border-foreground",
           )}
         >
           {action.label}

@@ -31,8 +31,8 @@ export default async function PublicFilePage({ params }: PublicFilePageProps) {
   const kind = fileKindLabel(asset.mimeType);
 
   return (
-    <main className="min-h-screen bg-zinc-50 text-zinc-950 dark:bg-[#050505] dark:text-white">
-      <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/85 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-[#050505]/85">
+    <main className="min-h-screen bg-background text-foreground">
+      <header className="sticky top-0 z-10 border-b border-border bg-card/85 px-4 py-3 backdrop-blur dark:bg-background/85">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 dark:bg-white/10 dark:text-zinc-300">

@@ -1,22 +1,22 @@
 import {
+  BILLING_PLANS,
   getBillingPlan,
   presentPayment,
   presentSubscription,
-  SAUDI_MONTHLY_PLAN,
   type StoredSubscription,
-  type StoredTamaraPayment,
+  type StoredPayment,
 } from "./data";
 
-export function latestTamaraPayment(payments: StoredTamaraPayment[]) {
+export function latestPayment(payments: StoredPayment[]) {
   return payments.sort((left, right) => right.updatedAt - left.updatedAt)[0] ?? null;
 }
 
 export function billingSubscriptionOverview(
   subscription: StoredSubscription | null,
-  latestPayment: StoredTamaraPayment | null,
+  latestPayment: StoredPayment | null,
 ) {
   return {
-    plan: subscription ? getBillingPlan(subscription.planId) : SAUDI_MONTHLY_PLAN,
+    plan: subscription ? getBillingPlan(subscription.planId) : BILLING_PLANS.good_monthly,
     subscription: subscription ? presentSubscription(subscription) : null,
     latestPayment: latestPayment ? presentPayment(latestPayment) : null,
   };

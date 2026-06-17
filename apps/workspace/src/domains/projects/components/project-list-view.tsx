@@ -62,7 +62,7 @@ export function ProjectListView() {
             <Link
               key={project.id}
               href={`/projects/${project.id}/overview`}
-              className="group relative flex flex-col justify-between overflow-hidden rounded-[2rem] border border-border bg-surface p-6 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 dark:border-white/5 dark:bg-[#0a0a0a]"
+              className="group relative flex flex-col justify-between overflow-hidden rounded-[2rem] border border-border bg-surface p-6 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5"
             >
               <div className="text-start">
                 <div className="flex items-center justify-between">

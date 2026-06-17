@@ -3,12 +3,12 @@ import { mutation } from "../_generated/server";
 import type { MutationCtx } from "../_generated/server";
 import { clerkAuthComponent } from "../auth";
 import { assertOrganizationPermission } from "../organizations/profile/access";
-import { billingPlanIdValidator, checkoutContextValidator, tamaraPaymentStatusValidator, tamaraPaymentValidator } from "./validators";
+import { billingPlanIdValidator, checkoutContextValidator, paymentStatusValidator, paymentValidator } from "./validators";
 import { getBillingPlan, presentPayment } from "./data";
 import type {
   StoredOrganizationProfile,
   StoredSubscription,
-  StoredTamaraPayment,
+  StoredPayment,
 } from "./data";
 import {
   applyCreditUsageToBalance,
@@ -17,13 +17,8 @@ import {
   type StoredCreditBalance,
   type StoredCreditLedger,
 } from "./creditSurface";
-import {
-  acceptTamaraWebhook,
-  markTamaraPaymentStatusFromWebhookEvent,
-  markTamaraWebhookFailed,
-} from "./webhookProcessing";
 
-type BillingRecord = StoredOrganizationProfile | StoredSubscription | StoredTamaraPayment | StoredCreditBalance | StoredCreditLedger | Record<string, unknown>;
+type BillingRecord = StoredOrganizationProfile | StoredSubscription | StoredPayment | StoredCreditBalance | StoredCreditLedger | Record<string, unknown>;
 
 type BillingQueryBuilder = {
   eq(field: string, value: unknown): BillingQueryBuilder;
@@ -87,7 +82,7 @@ function subscriptionPeriod(subscription: StoredSubscription | null, now: number
 
 async function ensureCreditBalance(ctx: MutationCtx, organizationId: string, now: number) {
   const subscription = await findSubscription(ctx, organizationId);
-  const planId = subscription?.planId ?? "saudi_monthly";
+  const planId = subscription?.planId ?? "good_monthly";
   const subscriptionCreditsGranted = includedCreditsForBillingPlan(planId);
   const period = subscriptionPeriod(subscription, now);
   const existing = await findCreditBalance(ctx, organizationId);
@@ -334,7 +329,7 @@ export const recordAgentCreditUsage = mutation({
   },
 });
 
-export const createPendingTamaraPaymentFromHono = mutation({
+export const createPendingPaymentFromHono = mutation({
   args: {
     organizationId: v.string(),
     input: v.object({ planId: billingPlanIdValidator }),
@@ -348,12 +343,11 @@ export const createPendingTamaraPaymentFromHono = mutation({
     const now = Date.now();
     const reference = orderReference(now);
     const profile = await findOrganizationProfile(ctx, args.organizationId);
-    const paymentId = await billingDb(ctx).insert("tamaraPayments", {
+    const paymentId = await billingDb(ctx).insert("dodoPayments", {
       organizationId: args.organizationId,
       planId: plan.id,
-      orderReferenceId: reference,
-      orderNumber: reference,
-      amount: plan.amount,
+      orderId: reference,
+      amount: plan.amount ?? 0,
       currency: plan.currency,
       status: "pending",
       createdByUserId: user._id,
@@ -364,8 +358,8 @@ export const createPendingTamaraPaymentFromHono = mutation({
 
     await upsertPendingSubscription(ctx, args.organizationId, paymentId, plan.id, now);
 
-    const payment = await billingDb(ctx).get(paymentId) as StoredTamaraPayment | null;
-    if (!payment) throw new Error("Tamara payment could not be created.");
+    const payment = await billingDb(ctx).get(paymentId) as StoredPayment | null;
+    if (!payment) throw new Error("Payment could not be created.");
 
     return {
       plan,
@@ -374,60 +368,58 @@ export const createPendingTamaraPaymentFromHono = mutation({
         name: profile?.name || "Qentrah Workspace",
         legalName: profile?.legalName || profile?.name || "Qentrah Workspace",
         email: profile?.email || user.email || "billing@qentrah.com",
-        phone: profile?.phone || "+966500000000",
-        address: profile?.address || "Saudi Arabia",
+        phone: profile?.phone || "",
+        address: profile?.address || "",
       },
     };
   },
 });
 
-export const attachTamaraCheckoutFromHono = mutation({
+export const attachCheckoutFromHono = mutation({
   args: {
     organizationId: v.string(),
     paymentId: v.string(),
     input: v.object({
-      tamaraOrderId: v.string(),
-      tamaraCheckoutId: v.string(),
+      dodoPaymentId: v.string(),
       checkoutUrl: v.string(),
       status: v.string(),
     }),
   },
-  returns: tamaraPaymentValidator,
+  returns: paymentValidator,
   handler: async (ctx, args) => {
     await assertOrganizationPermission(ctx, args.organizationId, "update");
-    const existing = await billingDb(ctx).get(args.paymentId) as StoredTamaraPayment | null;
+    const existing = await billingDb(ctx).get(args.paymentId) as StoredPayment | null;
     if (!existing || existing.organizationId !== args.organizationId) {
-      throw new Error("Tamara payment was not found.");
+      throw new Error("Payment was not found.");
     }
 
     const now = Date.now();
     await billingDb(ctx).patch(args.paymentId, {
-      tamaraOrderId: args.input.tamaraOrderId,
-      tamaraCheckoutId: args.input.tamaraCheckoutId,
+      dodoPaymentId: args.input.dodoPaymentId,
       checkoutUrl: args.input.checkoutUrl,
-      status: args.input.status === "new" ? "new" : "pending",
+      status: args.input.status === "succeeded" ? "succeeded" : "pending",
       updatedAt: now,
     });
     await upsertPendingSubscription(ctx, args.organizationId, args.paymentId, existing.planId, now);
 
-    const payment = await billingDb(ctx).get(args.paymentId) as StoredTamaraPayment | null;
-    if (!payment) throw new Error("Tamara payment was not found.");
+    const payment = await billingDb(ctx).get(args.paymentId) as StoredPayment | null;
+    if (!payment) throw new Error("Payment was not found.");
     return presentPayment(payment);
   },
 });
 
-export const markTamaraPaymentFailedFromHono = mutation({
+export const markPaymentFailedFromHono = mutation({
   args: {
     organizationId: v.string(),
     paymentId: v.string(),
     reason: v.string(),
   },
-  returns: tamaraPaymentValidator,
+  returns: paymentValidator,
   handler: async (ctx, args) => {
     await assertOrganizationPermission(ctx, args.organizationId, "update");
-    const existing = await billingDb(ctx).get(args.paymentId) as StoredTamaraPayment | null;
+    const existing = await billingDb(ctx).get(args.paymentId) as StoredPayment | null;
     if (!existing || existing.organizationId !== args.organizationId) {
-      throw new Error("Tamara payment was not found.");
+      throw new Error("Payment was not found.");
     }
 
     await billingDb(ctx).patch(args.paymentId, {
@@ -435,48 +427,65 @@ export const markTamaraPaymentFailedFromHono = mutation({
       failureReason: args.reason,
       updatedAt: Date.now(),
     });
-    const payment = await billingDb(ctx).get(args.paymentId) as StoredTamaraPayment | null;
-    if (!payment) throw new Error("Tamara payment was not found.");
+    const payment = await billingDb(ctx).get(args.paymentId) as StoredPayment | null;
+    if (!payment) throw new Error("Payment was not found.");
     return presentPayment(payment);
   },
 });
 
-export const acceptTamaraWebhookFromHono = mutation({
-  args: {
-    serverToken: v.string(),
-    input: v.object({
-      eventKey: v.string(),
-      eventType: v.string(),
-      tamaraOrderId: v.optional(v.string()),
-      orderReferenceId: v.optional(v.string()),
-    }),
-  },
-  returns: v.object({
-    duplicate: v.boolean(),
-    eventId: v.optional(v.string()),
-    payment: v.union(tamaraPaymentValidator, v.null()),
-  }),
-  handler: async (ctx, args) => acceptTamaraWebhook(ctx, args),
-});
-
-export const markTamaraWebhookFailedFromHono = mutation({
-  args: {
-    serverToken: v.string(),
-    eventId: v.string(),
-    error: v.string(),
-  },
-  returns: v.object({ recorded: v.boolean() }),
-  handler: async (ctx, args) => markTamaraWebhookFailed(ctx, args),
-});
-
-export const markTamaraPaymentStatusFromWebhook = mutation({
+export const markPaymentStatusFromWebhook = mutation({
   args: {
     serverToken: v.string(),
     paymentId: v.string(),
-    status: tamaraPaymentStatusValidator,
+    status: paymentStatusValidator,
     eventId: v.optional(v.string()),
     failureReason: v.optional(v.string()),
   },
-  returns: tamaraPaymentValidator,
-  handler: async (ctx, args) => markTamaraPaymentStatusFromWebhookEvent(ctx, args),
+  returns: paymentValidator,
+  handler: async (ctx, args) => {
+    const payment = await billingDb(ctx).get(args.paymentId) as StoredPayment | null;
+    if (!payment) throw new Error("Payment was not found.");
+    const now = Date.now();
+
+    await billingDb(ctx).patch(args.paymentId, {
+      status: args.status,
+      failureReason: args.failureReason,
+      updatedAt: now,
+    });
+
+    if (args.status === "succeeded") {
+      const subscription = await findSubscription(ctx, payment.organizationId);
+      const plan = getBillingPlan(payment.planId);
+      const periodMs = (plan.periodDays ?? 30) * 24 * 60 * 60 * 1000;
+      const startsAt = Math.max(now, subscription?.currentPeriodEndAt ?? 0);
+      const period = {
+        currentPeriodStartAt: startsAt,
+        currentPeriodEndAt: startsAt + periodMs,
+      };
+
+      if (subscription) {
+        await billingDb(ctx).patch(subscription._id, {
+          planId: plan.id,
+          status: "active",
+          latestPaymentId: args.paymentId,
+          ...period,
+          updatedAt: now,
+        });
+      } else {
+        await billingDb(ctx).insert("organizationSubscriptions", {
+          organizationId: payment.organizationId,
+          planId: plan.id,
+          status: "active",
+          latestPaymentId: args.paymentId,
+          ...period,
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+    }
+
+    const updated = await billingDb(ctx).get(args.paymentId) as StoredPayment | null;
+    if (!updated) throw new Error("Payment was not found.");
+    return presentPayment(updated);
+  },
 });

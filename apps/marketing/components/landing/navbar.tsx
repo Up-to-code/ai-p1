@@ -44,14 +44,14 @@ export function Navbar() {
               <ThemeToggle className="h-8 w-8 rounded-full border-none bg-white/80 shadow-none hover:bg-white dark:bg-white/10 dark:hover:bg-white/15" />
               <LanguageSwitcher className="h-8 min-w-24 rounded-full border-none bg-transparent px-3 text-[10px] font-black opacity-70 hover:bg-white/70 hover:opacity-100 dark:hover:bg-white/10" />
             </div>
-            <Link href="/dashboard" className="hidden h-10 items-center justify-center rounded-full bg-zinc-950 px-6 text-[11px] font-black uppercase tracking-widest text-white transition-all hover:bg-zinc-800 active:scale-95 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 md:inline-flex">
+            <Link href="/dashboard" className="hidden h-10 items-center justify-center rounded-full bg-[var(--q-text-primary)] px-6 text-[11px] font-black uppercase tracking-widest text-white transition-all hover:bg-zinc-800 active:scale-95 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 md:inline-flex">
               {t("dashboard")}
             </Link>
             <button
               type="button"
               aria-expanded={isMenuOpen}
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white/80 text-zinc-800 transition hover:bg-white md:hidden dark:border-white/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--q-border)] bg-white/80 text-zinc-800 transition hover:bg-[var(--q-card)] md:hidden dark:border-white/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
               onClick={() => setIsMenuOpen((open) => !open)}
             >
               {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -59,7 +59,7 @@ export function Navbar() {
           </div>
         </nav>
         {isMenuOpen ? (
-          <div className="absolute inset-x-0 top-full mt-2 rounded-[24px] border border-zinc-200 bg-background p-3 shadow-[0_22px_80px_rgba(15,23,42,0.16)] md:hidden dark:border-white/10">
+          <div className="absolute inset-x-0 top-full mt-2 rounded-[24px] border border-[var(--q-border)] bg-background p-3 shadow-[0_22px_80px_rgba(15,23,42,0.16)] md:hidden dark:border-white/10">
             <nav className="grid gap-1" aria-label={t("home")}>
               {mobileNavItems.map((item) => (
                 <Link
@@ -75,14 +75,14 @@ export function Navbar() {
             <div className="mt-2 grid gap-2">
               <Link
                 href="/dashboard"
-                className="inline-flex h-10 items-center justify-center rounded-full bg-zinc-950 px-5 text-[11px] font-black uppercase tracking-widest text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+                className="inline-flex h-10 items-center justify-center rounded-full bg-[var(--q-text-primary)] px-5 text-[11px] font-black uppercase tracking-widest text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t("dashboard")}
               </Link>
               <div className="flex items-center gap-2">
-                <ThemeToggle className="h-9 w-9 rounded-full border border-zinc-200 bg-white shadow-none dark:border-white/10 dark:bg-white/10" />
-                <LanguageSwitcher className="h-9 flex-1 rounded-full border border-zinc-200 bg-white px-3 text-[10px] font-black opacity-80 hover:opacity-100 dark:border-white/10 dark:bg-white/10" />
+                <ThemeToggle className="h-9 w-9 rounded-full border border-[var(--q-border)] bg-[var(--q-card)] shadow-none dark:border-white/10 dark:bg-white/10" />
+                <LanguageSwitcher className="h-9 flex-1 rounded-full border border-[var(--q-border)] bg-[var(--q-card)] px-3 text-[10px] font-black opacity-80 hover:opacity-100 dark:border-white/10 dark:bg-white/10" />
               </div>
             </div>
           </div>

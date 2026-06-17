@@ -404,14 +404,14 @@ function UntitledCalendarSurface({
   const selectedDayLabel = calendarDayMonthLabel(currentDate, locale);
 
   return (
-    <section className="overflow-hidden rounded-[24px] border border-zinc-200/80 bg-white text-zinc-950 dark:border-white/10 dark:bg-[#0A0A0A] dark:text-white">
-      <div className="flex flex-col gap-5 border-b border-zinc-100 p-4 dark:border-white/5 lg:flex-row lg:items-center lg:justify-between lg:p-5">
+    <section className="overflow-hidden rounded-[24px] border border-border bg-card text-foreground">
+      <div className="flex flex-col gap-5 border-b border-border p-4 lg:flex-row lg:items-center lg:justify-between lg:p-5">
         <div className="flex min-w-0 items-center gap-4">
-          <div className="hidden h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl border border-zinc-200 bg-zinc-50 text-center dark:border-white/10 dark:bg-white/[0.03] sm:flex">
+          <div className="hidden h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl border border-border bg-muted text-center sm:flex">
             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
               {calendarShortMonthLabel(currentDate, locale)}
             </span>
-            <span className="text-xl font-black leading-none text-zinc-950 dark:text-white">
+            <span className="text-xl font-black leading-none text-foreground">
               {currentDate.getDate()}
             </span>
           </div>
@@ -419,37 +419,37 @@ function UntitledCalendarSurface({
             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
               {viewLabels[view]}
             </p>
-            <h2 className="truncate text-lg font-black uppercase tracking-normal text-zinc-950 dark:text-white">
+            <h2 className="truncate text-lg font-black uppercase tracking-normal text-foreground">
               {headerLabel}
             </h2>
           </div>
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:justify-end">
-          <div className="inline-flex w-fit items-center gap-1 rounded-xl border border-zinc-200 bg-zinc-50 p-1 dark:border-white/10 dark:bg-white/[0.03]">
+          <div className="inline-flex w-fit items-center gap-1 rounded-xl border border-border bg-muted p-1">
             <AriaButton
               aria-label="Previous calendar period"
               onPress={() => onNavigate(-1)}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-white hover:text-zinc-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:bg-white/10 dark:hover:text-white rtl:rotate-180"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rtl:rotate-180"
             >
               <ChevronLeft className="h-4 w-4" />
             </AriaButton>
             <AriaButton
               onPress={onToday}
-              className="h-8 rounded-lg bg-zinc-950 px-3 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+              className="h-8 rounded-lg bg-primary px-3 text-[10px] font-black uppercase tracking-widest text-primary-foreground transition hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               {todayLabel}
             </AriaButton>
             <AriaButton
               aria-label="Next calendar period"
               onPress={() => onNavigate(1)}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-white hover:text-zinc-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:bg-white/10 dark:hover:text-white rtl:rotate-180"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rtl:rotate-180"
             >
               <ChevronRight className="h-4 w-4" />
             </AriaButton>
           </div>
 
-          <div className="grid w-full grid-cols-3 gap-1 rounded-xl border border-zinc-200 bg-zinc-50 p-1 dark:border-white/10 dark:bg-white/[0.03] sm:w-auto">
+          <div className="grid w-full grid-cols-3 gap-1 rounded-xl border border-border bg-muted p-1 sm:w-auto">
             {(["month", "week", "day"] as const).map((nextView) => (
               <AriaButton
                 key={nextView}
@@ -457,8 +457,8 @@ function UntitledCalendarSurface({
                 className={cn(
                   "h-8 rounded-lg px-3 text-[10px] font-black uppercase tracking-widest transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
                   view === nextView
-                    ? "bg-white text-zinc-950 shadow-sm dark:bg-zinc-800 dark:text-white"
-                    : "text-zinc-500 hover:text-zinc-950 dark:hover:text-white",
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {viewLabels[nextView]}
@@ -522,7 +522,7 @@ function CalendarMonthView({
   return (
     <div className="overflow-x-auto">
       <div className="min-w-[760px]">
-        <div className="grid grid-cols-7 border-b border-zinc-100 dark:border-white/5">
+        <div className="grid grid-cols-7 border-b border-border">
           {weekDayLabels.map((day) => (
             <div
               key={day}
@@ -543,8 +543,8 @@ function CalendarMonthView({
               <div
                 key={dateIso}
                 className={cn(
-                  "group relative min-h-[132px] border-b border-e border-zinc-100 bg-white p-2 text-start transition hover:bg-zinc-50 dark:border-white/[0.04] dark:bg-[#0A0A0A] dark:hover:bg-white/[0.03]",
-                  !isCurrentMonth && "bg-zinc-50/60 text-zinc-400 dark:bg-white/[0.01] dark:text-zinc-600",
+                  "group relative min-h-[132px] border-b border-e border-border bg-card p-2 text-start transition hover:bg-muted",
+                  !isCurrentMonth && "bg-muted/60 text-muted-foreground",
                 )}
               >
                 <AriaButton
@@ -557,7 +557,7 @@ function CalendarMonthView({
                   className={cn(
                     "relative z-10 inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-black transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
                     isToday
-                      ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950"
+                      ? "bg-primary text-primary-foreground"
                       : "text-zinc-700 group-hover:bg-zinc-100 dark:text-zinc-300 dark:group-hover:bg-white/10",
                   )}
                 >
@@ -575,7 +575,7 @@ function CalendarMonthView({
                   {dayEvents.length > 3 && (
                     <AriaButton
                       onPress={() => onDateClick(date)}
-                      className="w-full rounded-lg border border-dashed border-zinc-200 bg-zinc-100 px-2 py-1 text-center text-[10px] font-black uppercase tracking-widest text-zinc-500 transition hover:border-zinc-300 hover:text-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-400 dark:hover:border-white/20 dark:hover:text-white"
+                      className="w-full rounded-lg border border-dashed border-border bg-muted px-2 py-1 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground transition hover:border-border hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                       +{dayEvents.length - 3} {moreLabel}
                     </AriaButton>
@@ -609,18 +609,18 @@ function CalendarWeekView({
 
   return (
     <div className="overflow-x-auto">
-      <div className="grid min-w-[860px] grid-cols-7 divide-x divide-zinc-100 rtl:divide-x-reverse dark:divide-white/[0.05]">
+      <div className="grid min-w-[860px] grid-cols-7 divide-x divide-border rtl:divide-x-reverse">
         {getCalendarWeekDays(currentDate).map((date) => {
           const dayEvents = eventsForDate(date);
           const isToday = calendarIsoDate(date) === todayIso;
 
           return (
-            <div key={calendarIsoDate(date)} className="min-h-[560px] bg-white dark:bg-[#0A0A0A]">
+            <div key={calendarIsoDate(date)} className="min-h-[560px] bg-background">
               <AriaButton
                 onPress={() => onDateClick(date)}
                 className={cn(
-                  "flex w-full items-center justify-between border-b border-zinc-100 px-3 py-3 text-start transition hover:bg-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/[0.05] dark:hover:bg-white/[0.03]",
-                  isToday && "bg-zinc-950 text-white hover:bg-zinc-900 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200",
+                  "flex w-full items-center justify-between border-b border-border px-3 py-3 text-start transition hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+                  isToday && "bg-primary text-primary-foreground hover:bg-primary/90",
                 )}
               >
                 <span>
@@ -677,7 +677,7 @@ function CalendarDayView({
               </div>
               <div
                 className={cn(
-                  "min-h-[44px] border-t border-zinc-100 dark:border-white/[0.05]",
+                  "min-h-[44px] border-t border-border",
                   slotEvents.length > 0 && "space-y-2 py-2",
                 )}
               >
@@ -685,10 +685,10 @@ function CalendarDayView({
                   <AriaButton
                     key={event.id}
                     onPress={() => onEventClick(event)}
-                    className="flex w-full items-center justify-between gap-4 rounded-2xl border border-zinc-200 bg-white p-3 text-start transition hover:border-zinc-300 hover:bg-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-white/10 dark:bg-zinc-900 dark:hover:border-white/20 dark:hover:bg-zinc-800"
+                    className="flex w-full items-center justify-between gap-4 rounded-2xl border border-border bg-card p-3 text-start transition hover:border-border hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                   >
                     <span className="min-w-0">
-                      <span className="block truncate text-sm font-black uppercase tracking-normal text-zinc-950 dark:text-white">
+                      <span className="block truncate text-sm font-black uppercase tracking-normal text-foreground">
                         {event.title}
                       </span>
                       <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-bold text-zinc-400">
@@ -776,19 +776,19 @@ function DayDialog({
   const locale = useLocale();
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent showCloseButton={false} className="max-w-md p-0 overflow-hidden bg-white dark:bg-[#0A0A0A] border-zinc-100 dark:border-white/5 rounded-[32px] shadow-2xl">
-        <div className="flex items-center justify-between p-5 border-b border-zinc-100 dark:border-white/5">
+      <DialogContent showCloseButton={false} className="max-w-md p-0 overflow-hidden bg-card border-border rounded-[32px] shadow-2xl">
+        <div className="flex items-center justify-between p-5 border-b border-border">
           <div>
-            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
+            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
               {t("drawer.title")}
             </p>
-            <DialogTitle className="text-lg font-black uppercase tracking-tight text-zinc-900 dark:text-white mt-1">
+            <DialogTitle className="text-lg font-black uppercase tracking-tight text-foreground mt-1">
               {calendarLongDayLabel(date, locale)}
             </DialogTitle>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-all"
+            className="p-2 rounded-xl hover:bg-muted transition-all"
           >
             <X className="h-5 w-5 text-zinc-400" />
           </button>
@@ -808,7 +808,7 @@ function DayDialog({
                 .map((ev) => (
                   <div
                     key={ev.id}
-                    className="rounded-2xl border border-zinc-100 p-4 hover:border-zinc-300 cursor-pointer transition-all dark:border-white/5 dark:hover:border-white/10"
+                    className="rounded-2xl border border-border p-4 hover:border-border cursor-pointer transition-all"
                     onClick={() => {
                       onClose();
                       onEventClick(ev);
@@ -816,7 +816,7 @@ function DayDialog({
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-sm font-black uppercase text-zinc-900 dark:text-white">
+                        <p className="text-sm font-black uppercase text-foreground">
                           {ev.title}
                         </p>
                         <div className="flex items-center gap-3 mt-2">
@@ -835,7 +835,7 @@ function DayDialog({
                         tone={calendarEventTone(ev.status)}
                       />
                     </div>
-                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-zinc-50 dark:border-white/5">
+                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
                       <span
                         className={cn(
                           "rounded-lg border px-2 py-0.5 text-[9px] font-black uppercase tracking-widest",
@@ -889,7 +889,7 @@ function EventDetailDialog({
   return (
     <>
     <Dialog open onOpenChange={(open) => { if (!open) closeEventDialog(); }}>
-      <DialogContent showCloseButton={false} className="max-w-2xl w-[94vw] p-0 overflow-hidden bg-white dark:bg-[#0A0A0A] border-zinc-100 dark:border-white/5 rounded-[32px] shadow-2xl flex flex-col max-h-[90vh]">
+      <DialogContent showCloseButton={false} className="max-w-2xl w-[94vw] p-0 overflow-hidden bg-card border-border rounded-[32px] shadow-2xl flex flex-col max-h-[90vh]">
         <div
           aria-hidden={Boolean(quickViewEntity)}
           className={cn(
@@ -897,7 +897,7 @@ function EventDetailDialog({
             quickViewEntity && "pointer-events-none select-none opacity-35 blur-[1px]",
           )}
         >
-        <div className="p-5 border-b border-zinc-100 dark:border-white/5">
+        <div className="p-5 border-b border-border">
           <div className="flex items-center justify-between">
             <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
               {t("detail.eyebrow")}
@@ -905,12 +905,12 @@ function EventDetailDialog({
             <button
               onClick={closeEventDialog}
               disabled={Boolean(quickViewEntity)}
-              className="p-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-all"
+              className="p-2 rounded-xl hover:bg-muted transition-all"
             >
               <X className="h-5 w-5 text-zinc-400" />
             </button>
           </div>
-          <DialogTitle className="text-xl font-black uppercase tracking-tight text-zinc-900 dark:text-white mt-3">
+          <DialogTitle className="text-xl font-black uppercase tracking-tight text-foreground mt-3">
             {event.title}
           </DialogTitle>
           <div className="flex items-center gap-2 mt-3">
@@ -931,19 +931,19 @@ function EventDetailDialog({
 
         <div className="px-5 py-2 max-h-[60vh] overflow-y-auto">
           <PropertyRow icon={<User className="h-4 w-4" />} label={t("detail.owner")}>
-            <p className="text-xs font-black uppercase text-zinc-900 dark:text-white sm:mt-1.5">
+            <p className="text-xs font-black uppercase text-foreground sm:mt-1.5">
               {event.owner}
             </p>
           </PropertyRow>
           
           <PropertyRow icon={<CalendarDays className="h-4 w-4" />} label={t("detail.date")}>
-            <p className="text-xs font-black uppercase text-zinc-900 dark:text-white sm:mt-1.5">
+            <p className="text-xs font-black uppercase text-foreground sm:mt-1.5">
               {calendarLongDayYearLabel(eventDate, locale)}
             </p>
           </PropertyRow>
           
           <PropertyRow icon={<Clock className="h-4 w-4" />} label={t("detail.time")}>
-            <p className="text-xs font-black uppercase text-zinc-900 dark:text-white sm:mt-1.5">
+            <p className="text-xs font-black uppercase text-foreground sm:mt-1.5">
               {event.time}
             </p>
           </PropertyRow>
@@ -953,7 +953,7 @@ function EventDetailDialog({
               <button 
                 type="button"
                 onClick={() => setQuickViewEntity({ id: event.clientId || "", type: "client", title: event.clientName || event.clientId || "" })}
-                className="flex w-full items-start gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-3 text-zinc-900 dark:border-white/10 dark:bg-white/[0.02] dark:text-white hover:bg-zinc-100 dark:hover:bg-white/[0.05] transition-colors text-start"
+                className="flex w-full items-start gap-3 rounded-2xl border border-border bg-muted p-3 text-foreground hover:bg-muted transition-colors text-start"
               >
                 <span className="flex-1 whitespace-pre-wrap break-words text-xs font-black uppercase tracking-widest leading-relaxed">
                   {event.clientName ?? event.clientId}
@@ -970,7 +970,7 @@ function EventDetailDialog({
               <button 
                 type="button"
                 onClick={() => setQuickViewEntity({ id: event.taskId || "", type: "task", title: event.taskId || "" })}
-                className="flex w-full items-start gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-3 text-zinc-900 dark:border-white/10 dark:bg-white/[0.02] dark:text-white hover:bg-zinc-100 dark:hover:bg-white/[0.05] transition-colors text-start"
+                className="flex w-full items-start gap-3 rounded-2xl border border-border bg-muted p-3 text-foreground hover:bg-muted transition-colors text-start"
               >
                 <span className="flex-1 whitespace-pre-wrap break-words text-xs font-black uppercase tracking-widest leading-relaxed">
                   {event.taskId}
@@ -982,7 +982,7 @@ function EventDetailDialog({
 
           {event.location && (
             <PropertyRow icon={<MapPin className="h-4 w-4" />} label={t("form.locationLabel")}>
-              <p className="whitespace-pre-wrap break-words text-xs font-bold leading-5 text-zinc-900 dark:text-white sm:mt-1">
+              <p className="whitespace-pre-wrap break-words text-xs font-bold leading-5 text-foreground sm:mt-1">
                 {event.location}
               </p>
             </PropertyRow>
@@ -990,19 +990,19 @@ function EventDetailDialog({
 
           {event.notes && (
             <PropertyRow icon={<AlignLeft className="h-4 w-4" />} label={t("form.notesLabel")}>
-              <p className="whitespace-pre-wrap break-words text-xs font-bold leading-5 text-zinc-900 dark:text-white sm:mt-1">
+              <p className="whitespace-pre-wrap break-words text-xs font-bold leading-5 text-foreground sm:mt-1">
                 {event.notes}
               </p>
             </PropertyRow>
           )}
         </div>
 
-        <div className="p-5 border-t border-zinc-100 dark:border-white/5 space-y-3">
+        <div className="p-5 border-t border-border space-y-3">
             <Button
               variant="outline"
               onClick={() => onEditClick(event)}
               disabled={Boolean(quickViewEntity)}
-              className="w-full h-10 rounded-xl text-[10px] font-black uppercase tracking-widest border-zinc-100 dark:border-white/10"
+              className="w-full h-10 rounded-xl text-[10px] font-black uppercase tracking-widest border-border"
             >
             <Eye className="me-2 h-3.5 w-3.5" />
             {t("detail.edit") || "Edit"}
@@ -1200,20 +1200,20 @@ function BusinessScheduleDialog({
       <SheetContent
         side="right"
         showCloseButton={false}
-        className="z-[100] !w-[min(94vw,760px)] !max-w-[760px] gap-0 border-s border-zinc-200 bg-white p-0 text-zinc-950 dark:border-white/10 dark:bg-[#0A0A0A] dark:text-white sm:!max-w-[760px]"
+        className="z-[100] !w-[min(94vw,760px)] !max-w-[760px] gap-0 border-s border-border bg-card p-0 text-foreground sm:!max-w-[760px]"
       >
-        <div className="flex items-start justify-between gap-4 border-b border-zinc-100 p-5 dark:border-white/5">
+        <div className="flex items-start justify-between gap-4 border-b border-border p-5">
           <div className="min-w-0">
             <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-zinc-400">
               {t("form.basics")}
             </p>
-            <SheetTitle className="mt-1 text-2xl font-black leading-tight tracking-tight text-zinc-900 dark:text-white">
+            <SheetTitle className="mt-1 text-2xl font-black leading-tight tracking-tight text-foreground">
               {mode === "create" ? t("scheduleBusiness") : t("editSchedule")}
             </SheetTitle>
           </div>
           <button
             onClick={closeDrawer}
-            className="p-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-all"
+            className="p-2 rounded-xl hover:bg-muted transition-all"
           >
             <X className="h-5 w-5 text-zinc-400" />
           </button>
@@ -1284,7 +1284,7 @@ function BusinessScheduleDialog({
               </div>
             </section>
 
-            <section className="border-t border-zinc-100 pt-5 dark:border-white/5">
+            <section className="border-t border-border pt-5">
               <ContextActionCard ariaLabel={t("form.showAdvancedDetails")}>
                 <PropertyRow icon={<User className="h-4 w-4" />} label={t("form.clientLabel")}>
                   <TicketPickerButton
@@ -1321,7 +1321,7 @@ function BusinessScheduleDialog({
                     id="calendar-notes"
                     value={form.notes ?? ""}
                     onChange={(event) => updateField("notes", event.target.value)}
-                    className="min-h-[100px] w-full rounded-2xl border-zinc-200 bg-white transition-colors hover:border-zinc-300 focus:border-zinc-400 focus:ring-2 focus:ring-zinc-900/10 dark:border-white/10 dark:bg-[#0A0A0A] dark:hover:border-white/20 dark:focus:border-white/30 dark:focus:ring-white/10"
+                    className="min-h-[100px] w-full rounded-2xl border border-border bg-card transition-colors hover:border-border focus:border-border focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-white/10"
                   />
                 </PropertyRow>
               </ContextActionCard>
@@ -1329,7 +1329,7 @@ function BusinessScheduleDialog({
           </div>
         </div>
 
-        <div className="sticky bottom-0 flex items-center justify-end gap-3 border-t border-zinc-100 bg-zinc-50/95 p-5 backdrop-blur dark:border-white/5 dark:bg-[#0A0A0A]/95">
+        <div className="sticky bottom-0 flex items-center justify-end gap-3 border-t border-border bg-muted/95 p-5 backdrop-blur">
           <Button
             type="button"
             variant="outline"
@@ -1389,8 +1389,8 @@ function ScheduleSectionTitle({
   title: string;
 }) {
   return (
-    <div className="flex items-center gap-2 text-zinc-900 dark:text-white">
-      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-zinc-50 text-zinc-400 dark:bg-white/5">
+    <div className="flex items-center gap-2 text-foreground">
+      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-muted text-muted-foreground">
         {icon}
       </span>
       <p className="text-[10px] font-black uppercase tracking-[0.25em]">
@@ -1413,14 +1413,14 @@ function ScheduleSelect({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-300">
+      <span className="mb-2 block text-[9px] font-black uppercase tracking-widest text-muted-foreground">
         {label}
       </span>
       <Select value={value} onValueChange={(nextValue) => nextValue && onValueChange(nextValue)}>
-        <SelectTrigger className="h-12 rounded-2xl border-zinc-200 bg-zinc-50 px-4 text-xs font-black shadow-none transition focus:border-zinc-300 focus:bg-white dark:border-white/10 dark:bg-white/[0.04] dark:focus:border-white/20 dark:focus:bg-white/[0.07]">
+        <SelectTrigger className="h-12 rounded-2xl border-border bg-muted px-4 text-xs font-black shadow-none transition focus:border-border focus:bg-card">
           <SelectValue placeholder={label} />
         </SelectTrigger>
-        <SelectContent align="start" className="rounded-2xl border-zinc-200 dark:border-white/10">
+        <SelectContent align="start" className="rounded-2xl border-border">
           {options.map((option) => (
             <SelectItem key={option.value} value={option.value} className="rounded-xl px-3 py-2.5 text-xs font-bold">
               {option.label}
@@ -1436,7 +1436,7 @@ function ContextActionCard({ ariaLabel, children }: { ariaLabel: string; childre
   return (
     <div
       aria-label={ariaLabel}
-      className="divide-y divide-zinc-100 dark:divide-white/5"
+      className="divide-y divide-border"
     >
       {children}
     </div>
@@ -1446,8 +1446,8 @@ function ContextActionCard({ ariaLabel, children }: { ariaLabel: string; childre
 function PropertyRow({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
   return (
     <div className="grid gap-2 py-3 sm:grid-cols-[160px_minmax(0,1fr)] sm:items-center">
-      <div className="flex items-center gap-3 text-zinc-500 dark:text-zinc-400">
-        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-zinc-50 text-zinc-500 dark:bg-white/5 dark:text-zinc-300">
+      <div className="flex items-center gap-3 text-muted-foreground">
+        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-muted text-muted-foreground">
           {icon}
         </span>
         <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
@@ -1463,7 +1463,7 @@ function TicketPickerButton({ label, value, icon, onClick, onClear }: { label: s
   const active = Boolean(value);
   if (active) {
     return (
-      <div className="flex w-full items-start gap-3 rounded-2xl border border-zinc-900 bg-zinc-900 p-3 text-white shadow-sm transition-all hover:bg-zinc-800 dark:border-white dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100" role="button" tabIndex={0} onClick={onClick} onKeyDown={(e) => e.key === 'Enter' && onClick()}>
+      <div className="flex w-full items-start gap-3 rounded-2xl border border-primary bg-primary p-3 text-primary-foreground shadow-sm transition-all hover:bg-primary/90" role="button" tabIndex={0} onClick={onClick} onKeyDown={(e) => e.key === 'Enter' && onClick()}>
         <span className="mt-0.5 flex-shrink-0 opacity-70">{icon}</span>
         <span className="flex-1 whitespace-pre-wrap break-words text-xs font-black uppercase tracking-widest leading-relaxed text-start">
           {value}
@@ -1488,10 +1488,10 @@ function TicketPickerButton({ label, value, icon, onClick, onClear }: { label: s
     <button
       type="button"
       onClick={onClick}
-      className="group flex min-h-[44px] w-full max-w-sm items-center gap-3 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50/50 px-3.5 text-left transition-colors hover:border-zinc-400 hover:bg-zinc-100 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-white/20 dark:hover:bg-white/[0.04]"
+      className="group flex min-h-[44px] w-full max-w-sm items-center gap-3 rounded-2xl border border-dashed border-border bg-muted/50 px-3.5 text-left transition-colors hover:border-border hover:bg-muted"
     >
       <span className="flex-shrink-0 text-zinc-400 transition-colors group-hover:text-zinc-600 dark:group-hover:text-zinc-300">{icon}</span>
-      <span className="flex-1 truncate text-[10px] font-black uppercase tracking-widest text-zinc-500 transition-colors group-hover:text-zinc-700 dark:group-hover:text-zinc-300">
+      <span className="flex-1 truncate text-[10px] font-black uppercase tracking-widest text-muted-foreground transition-colors group-hover:text-zinc-700 dark:group-hover:text-zinc-300">
         {label}
       </span>
       <Plus className="ml-auto h-3.5 w-3.5 text-zinc-400 transition-colors group-hover:text-zinc-600 dark:group-hover:text-zinc-300" />
@@ -1516,19 +1516,19 @@ function EntityQuickViewDialog({
         showCloseButton={false}
         overlayClassName="z-[70] bg-black/55 supports-backdrop-filter:backdrop-blur-sm"
         containerClassName="z-[80] p-3 sm:p-4"
-        className="z-[80] flex max-h-[min(86vh,720px)] w-[min(94vw,560px)] max-w-none flex-col overflow-hidden rounded-[22px] border-zinc-200 bg-zinc-50 p-0 text-zinc-950 shadow-none dark:border-white/10 dark:bg-[#111111] dark:text-white"
+        className="z-[80] flex max-h-[min(86vh,720px)] w-[min(94vw,560px)] max-w-none flex-col overflow-hidden rounded-[22px] border-border bg-muted p-0 text-foreground shadow-none"
       >
         {entity.type === "client" && <ClientQuickView clientId={entity.id} onClose={onClose} />}
         
         {entity.type === "task" && (
           <div className="p-5 text-center">
-            <button onClick={onClose} className="mb-5 flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-400 transition hover:bg-white hover:text-zinc-900 dark:border-white/10 dark:hover:bg-white/5 dark:hover:text-white">
+            <button onClick={onClose} className="mb-5 flex h-9 w-9 items-center justify-center rounded-full border border-border text-zinc-400 transition hover:bg-muted hover:text-foreground">
               <X className="h-4 w-4" />
             </button>
-            <ClipboardList className="mx-auto mb-4 h-10 w-10 text-zinc-300 dark:text-zinc-600" />
+            <ClipboardList className="mx-auto mb-4 h-10 w-10 text-zinc-300 dark:text-muted-foreground" />
             <p className="mb-2 text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400">Task</p>
-            <h2 className="mb-6 text-xl font-black text-zinc-900 dark:text-white">{entity.title}</h2>
-            <button onClick={onClose} className="h-11 w-full rounded-2xl border border-zinc-200 bg-white text-xs font-black uppercase tracking-widest text-zinc-500 transition-colors hover:bg-zinc-100 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-400 dark:hover:bg-white/5">Close</button>
+            <h2 className="mb-6 text-xl font-black text-foreground">{entity.title}</h2>
+            <button onClick={onClose} className="h-11 w-full rounded-2xl border border-border bg-card text-xs font-black uppercase tracking-widest text-muted-foreground transition-colors hover:bg-muted">Close</button>
           </div>
         )}
       </DialogContent>
@@ -1557,23 +1557,23 @@ function ClientQuickView({ clientId, onClose }: { clientId: string; onClose: () 
     qualified: "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800",
     review: "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800",
     negotiation: "bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800",
-    closed: "bg-zinc-100 text-zinc-600 border-zinc-300 dark:bg-white/5 dark:text-zinc-400 dark:border-white/10",
+                    closed: "bg-zinc-100 text-zinc-600 border-zinc-300 dark:bg-muted dark:text-muted-foreground dark:border-border",
   };
 
   return (
     <>
-      <div className="flex items-start gap-4 border-b border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-[#111111]">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-950 text-lg font-black text-white dark:bg-white dark:text-zinc-950">
+      <div className="flex items-start gap-4 border-b border-border bg-card p-5">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-lg font-black text-primary-foreground">
           {client.name.charAt(0).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1">
           <p className="mb-1 text-[9px] font-black uppercase tracking-[0.25em] text-zinc-400">Client Profile</p>
-          <h2 className="truncate text-base font-black leading-tight text-zinc-950 dark:text-white">{client.name}</h2>
+          <h2 className="truncate text-base font-black leading-tight text-foreground">{client.name}</h2>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <span className={cn("rounded-lg border px-2 py-0.5 text-[9px] font-black uppercase tracking-widest", stageColors[client.pipelineStage] || stageColors.new)}>
               {client.pipelineStage}
             </span>
-            <span className="rounded-lg border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400">
+            <span className="rounded-lg border border-border bg-muted px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
               {client.type}
             </span>
             {client.priority !== "normal" && (
@@ -1583,37 +1583,37 @@ function ClientQuickView({ clientId, onClose }: { clientId: string; onClose: () 
             )}
           </div>
         </div>
-        <button onClick={onClose} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-200 text-zinc-400 transition hover:bg-zinc-50 hover:text-zinc-950 dark:border-white/10 dark:hover:bg-white/5 dark:hover:text-white">
+        <button onClick={onClose} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border text-zinc-400 transition hover:bg-muted hover:text-foreground">
           <X className="h-4 w-4" />
         </button>
       </div>
 
-      <div className="grid grid-cols-2 border-b border-zinc-200 bg-white dark:border-white/10 dark:bg-[#111111] sm:grid-cols-4">
-        <div className="min-w-0 border-e border-b border-zinc-100 px-4 py-3 dark:border-white/5 sm:border-b-0">
+      <div className="grid grid-cols-2 border-b border-border bg-card sm:grid-cols-4">
+        <div className="min-w-0 border-e border-b border-border px-4 py-3 sm:border-b-0">
           <Phone className="h-4 w-4 text-zinc-400" />
           <p className="mt-2 text-[8px] font-black uppercase tracking-widest text-zinc-400">Phone</p>
-          <p className="mt-1 truncate text-xs font-bold text-zinc-950 dark:text-white" dir="ltr">{client.phone || "—"}</p>
+          <p className="mt-1 truncate text-xs font-bold text-foreground" dir="ltr">{client.phone || "—"}</p>
         </div>
-        <div className="min-w-0 border-b border-zinc-100 px-4 py-3 dark:border-white/5 sm:border-e sm:border-b-0">
+        <div className="min-w-0 border-b border-border px-4 py-3 sm:border-e sm:border-b-0">
           <Mail className="h-4 w-4 text-zinc-400" />
           <p className="mt-2 text-[8px] font-black uppercase tracking-widest text-zinc-400">Email</p>
-          <p className="mt-1 truncate text-xs font-bold text-zinc-950 dark:text-white">{client.contact || "—"}</p>
+          <p className="mt-1 truncate text-xs font-bold text-foreground">{client.contact || "—"}</p>
         </div>
-        <div className="min-w-0 border-e border-zinc-100 px-4 py-3 dark:border-white/5">
+        <div className="min-w-0 border-e border-border px-4 py-3">
           <DollarSign className="h-4 w-4 text-zinc-400" />
           <p className="mt-2 text-[8px] font-black uppercase tracking-widest text-zinc-400">Budget</p>
-          <p className="mt-1 truncate text-xs font-bold text-zinc-950 dark:text-white">{client.budget || "—"}</p>
+          <p className="mt-1 truncate text-xs font-bold text-foreground">{client.budget || "—"}</p>
         </div>
         <div className="min-w-0 px-4 py-3">
           <Building2 className="h-4 w-4 text-zinc-400" />
           <p className="mt-2 text-[8px] font-black uppercase tracking-widest text-zinc-400">Interest</p>
-          <p className="mt-1 truncate text-xs font-bold text-zinc-950 dark:text-white">{client.assetInterest || "—"}</p>
+          <p className="mt-1 truncate text-xs font-bold text-foreground">{client.assetInterest || "—"}</p>
         </div>
       </div>
 
 
 
-      <div className="border-t border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-[#111111]">
+      <div className="border-t border-border bg-card p-4">
         <AppPrimaryButton
           className="h-12 w-full rounded-2xl text-xs font-black uppercase tracking-widest shadow-none"
           onClick={() => { onClose(); router.push(`/${locale}/clients/${clientId}`); }}
@@ -1650,18 +1650,18 @@ function LocationPickerModal({
 
   return (
     <div className="fixed inset-0 z-[320] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={title}>
-      <div className="flex max-h-[88vh] w-[min(94vw,720px)] flex-col overflow-hidden rounded-[28px] border border-zinc-200 bg-white text-zinc-950 dark:border-white/10 dark:bg-[#0A0A0A] dark:text-white">
+      <div className="flex max-h-[88vh] w-[min(94vw,720px)] flex-col overflow-hidden rounded-[28px] border border-border bg-card text-foreground">
         <div className="flex min-h-0 flex-col">
-          <div className="flex items-start justify-between gap-4 border-b border-zinc-100 p-5 dark:border-white/10">
+          <div className="flex items-start justify-between gap-4 border-b border-border p-5">
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{searchLabel}</p>
-              <h3 className="mt-2 text-xl font-black tracking-tight text-zinc-900 dark:text-white">{title}</h3>
+              <h3 className="mt-2 text-xl font-black tracking-tight text-foreground">{title}</h3>
             </div>
             <button
               type="button"
               onClick={onClose}
               aria-label={closeLabel}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 text-zinc-500 transition hover:bg-zinc-50 hover:text-zinc-900 dark:border-white/10 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-border text-zinc-500 transition hover:bg-muted hover:text-foreground"
             >
               <X className="h-4 w-4" aria-hidden="true" />
             </button>
@@ -1674,7 +1674,7 @@ function LocationPickerModal({
               placeholder={searchLabel}
             />
           </div>
-          <div className="mt-auto flex items-center justify-end gap-2 border-t border-zinc-100 p-4 dark:border-white/10">
+          <div className="mt-auto flex items-center justify-end gap-2 border-t border-border p-4">
             <Button type="button" variant="outline" onClick={onClose} className="h-10 rounded-xl px-4 text-[10px] font-black uppercase tracking-widest">
               {closeLabel}
             </Button>
@@ -1731,29 +1731,29 @@ function ContextPickerOverlay({
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={title}>
-      <div className="flex max-h-[82vh] w-full max-w-2xl flex-col overflow-hidden rounded-[28px] border border-zinc-200 bg-white shadow-none dark:border-white/10 dark:bg-[#0A0A0A]">
-        <div className="flex items-start justify-between gap-4 border-b border-zinc-100 p-5 dark:border-white/10">
+      <div className="flex max-h-[82vh] w-full max-w-2xl flex-col overflow-hidden rounded-[28px] border border-border bg-card shadow-none">
+        <div className="flex items-start justify-between gap-4 border-b border-border p-5">
           <div>
             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{searchLabel}</p>
-            <h3 className="mt-2 text-xl font-black tracking-tight text-zinc-900 dark:text-white">{title}</h3>
+            <h3 className="mt-2 text-xl font-black tracking-tight text-foreground">{title}</h3>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label={closeLabel}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 text-zinc-500 transition hover:bg-zinc-50 hover:text-zinc-900 dark:border-white/10 dark:text-zinc-300 dark:hover:bg-white/5 dark:hover:text-white"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-border text-zinc-500 transition hover:bg-muted hover:text-foreground"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
-        <div className="border-b border-zinc-100 p-4 dark:border-white/10">
+        <div className="border-b border-border p-4">
           <label className="relative block">
             <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" aria-hidden="true" />
             <input
               value={searchValue}
               onChange={(event) => onSearchChange(event.target.value)}
               placeholder={searchLabel}
-              className="h-12 w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-10 text-sm font-bold text-zinc-900 outline-none transition focus:border-zinc-400 focus:bg-white focus:ring-2 focus:ring-zinc-900/10 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:focus:border-white/30 dark:focus:bg-white/[0.07] dark:focus:ring-white/10"
+              className="h-12 w-full rounded-2xl border border-border bg-muted px-10 text-sm font-bold text-zinc-900 outline-none transition focus:border-border focus:bg-card focus:ring-2 focus:ring-zinc-900/10"
               autoFocus
             />
           </label>
@@ -1765,7 +1765,7 @@ function ContextPickerOverlay({
               {emptyLabel}
             </div>
           ) : visibleOptions.length === 0 ? (
-            <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-zinc-200 text-sm font-bold text-zinc-400 dark:border-white/10">
+            <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-border text-sm font-bold text-muted-foreground">
               {options.length === 0 ? emptyLabel : noResultsLabel}
             </div>
           ) : (
@@ -1780,11 +1780,11 @@ function ContextPickerOverlay({
                     className={cn(
                       "flex items-center gap-3 rounded-2xl border p-3 text-start transition focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/20 dark:focus-visible:ring-white/25",
                       active
-                        ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900"
-                        : "border-zinc-100 bg-white text-zinc-900 hover:border-zinc-300 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06]",
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-card text-foreground hover:border-border hover:bg-muted",
                     )}
                   >
-                    <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", active ? "bg-white/15 dark:bg-zinc-900/10" : "bg-zinc-100 text-zinc-500 dark:bg-white/10 dark:text-zinc-300")}>
+                    <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", active ? "bg-primary/15" : "bg-muted text-muted-foreground")}>
                       {option.icon}
                     </span>
                     <span className="min-w-0 flex-1 truncate text-sm font-black">{option.label}</span>
@@ -1795,7 +1795,7 @@ function ContextPickerOverlay({
             </div>
           )}
         </div>
-        <div className="flex items-center justify-end gap-2 border-t border-zinc-100 p-4 dark:border-white/10">
+        <div className="flex items-center justify-end gap-2 border-t border-border p-4">
           <Button type="button" variant="outline" onClick={onClear} className="h-10 rounded-xl px-4 text-[10px] font-black uppercase tracking-widest">
             {clearLabel}
           </Button>
@@ -1843,7 +1843,7 @@ function BigCalendarSurface({
   };
 
   return (
-    <section className="h-[calc(100vh-12rem)] min-h-[600px] overflow-hidden rounded-[24px] border border-zinc-200/80 bg-white text-zinc-950 dark:border-white/10 dark:bg-[#0A0A0A] dark:text-white">
+    <section className="h-[calc(100vh-12rem)] min-h-[600px] overflow-hidden rounded-[24px] border border-border bg-card text-foreground">
       <Calendar
         localizer={localizer}
         events={mappedEvents}
@@ -1870,48 +1870,48 @@ function BigCalendarSurface({
           toolbar: (toolbarProps) => {
             const { onNavigate: rbcNavigate, onView: rbcView, label, view: currentView } = toolbarProps;
             return (
-              <div className="flex flex-col gap-5 border-b border-zinc-100 p-4 dark:border-white/5 lg:flex-row lg:items-center lg:justify-between lg:p-5">
+              <div className="flex flex-col gap-5 border-b border-border p-4 lg:flex-row lg:items-center lg:justify-between lg:p-5">
                 <div className="flex min-w-0 items-center gap-4">
-                  <div className="hidden h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl border border-zinc-200 bg-zinc-50 text-center dark:border-white/10 dark:bg-white/[0.03] sm:flex">
+                  <div className="hidden h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl border border-border bg-muted text-center sm:flex">
                     <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
                       {calendarShortMonthLabel(currentDate, locale)}
                     </span>
-                    <span className="text-xl font-black leading-none text-zinc-950 dark:text-white">
+                    <span className="text-xl font-black leading-none text-foreground">
                       {currentDate.getDate()}
                     </span>
                   </div>
                   <div className="min-w-0">
-                    <h2 className="truncate text-lg font-black uppercase tracking-normal text-zinc-950 dark:text-white">
+                    <h2 className="truncate text-lg font-black uppercase tracking-normal text-foreground">
                       {label}
                     </h2>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:justify-end">
-                  <div className="inline-flex w-fit items-center gap-1 rounded-xl border border-zinc-200 bg-zinc-50 p-1 dark:border-white/10 dark:bg-white/[0.03]">
+                  <div className="inline-flex w-fit items-center gap-1 rounded-xl border border-border bg-muted p-1">
                     <AriaButton
                       aria-label="Previous calendar period"
                       onPress={() => { rbcNavigate('PREV'); onNavigate(-1); }}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-white hover:text-zinc-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:bg-white/10 dark:hover:text-white rtl:rotate-180"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rtl:rotate-180"
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </AriaButton>
                     <AriaButton
                       onPress={() => { rbcNavigate('TODAY'); onToday(); }}
-                      className="h-8 rounded-lg bg-zinc-950 px-3 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+                      className="h-8 rounded-lg bg-primary px-3 text-[10px] font-black uppercase tracking-widest text-primary-foreground transition hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                       Today
                     </AriaButton>
                     <AriaButton
                       aria-label="Next calendar period"
                       onPress={() => { rbcNavigate('NEXT'); onNavigate(1); }}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-white hover:text-zinc-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:bg-white/10 dark:hover:text-white rtl:rotate-180"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rtl:rotate-180"
                     >
                       <ChevronRight className="h-4 w-4" />
                     </AriaButton>
                   </div>
 
-                  <div className="grid w-full grid-cols-3 gap-1 rounded-xl border border-zinc-200 bg-zinc-50 p-1 dark:border-white/10 dark:bg-white/[0.03] sm:w-auto">
+                  <div className="grid w-full grid-cols-3 gap-1 rounded-xl border border-border bg-muted p-1 sm:w-auto">
                     {(["month", "week", "day"] as const).map((nextView) => (
                       <AriaButton
                         key={nextView}
@@ -1919,8 +1919,8 @@ function BigCalendarSurface({
                         className={cn(
                           "h-8 rounded-lg px-3 text-[10px] font-black uppercase tracking-widest transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
                           currentView === nextView
-                            ? "bg-white text-zinc-950 shadow-sm dark:bg-zinc-800 dark:text-white"
-                            : "text-zinc-500 hover:text-zinc-950 dark:hover:text-white",
+                            ? "bg-card text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground",
                         )}
                       >
                         {nextView}

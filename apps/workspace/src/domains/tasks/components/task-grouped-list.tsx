@@ -8,35 +8,35 @@ import type { TaskRecord, TaskStatus } from "../tasks.types";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 
 function getDueDateColor(dueDate?: string | null) {
-  if (!dueDate) return "text-zinc-500 dark:text-zinc-500";
+  if (!dueDate) return "text-muted-foreground";
   const date = new Date(dueDate);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   if (date < today) return "text-red-500";
   if (date.getTime() === today.getTime()) return "text-amber-500";
-  return "text-zinc-400 dark:text-zinc-500";
+  return "text-muted-foreground";
 }
 
 function getColumnBg(status: TaskStatus) {
-  if (status === "todo") return "dark:bg-stone-900";
-  if (status === "inProgress") return "dark:bg-orange-950/30";
-  if (status === "waiting") return "dark:bg-amber-950/30";
-  if (status === "done") return "dark:bg-emerald-950/20";
-  return "dark:bg-zinc-900";
+  if (status === "todo") return "bg-muted/30";
+  if (status === "inProgress") return "bg-blue-500/5 dark:bg-blue-500/10";
+  if (status === "waiting") return "bg-amber-500/5 dark:bg-amber-500/10";
+  if (status === "done") return "bg-emerald-500/5 dark:bg-emerald-500/10";
+  return "bg-muted/30";
 }
 
 function getPriorityColor(priority: string) {
   if (priority === "urgent") return "text-red-500";
   if (priority === "high") return "text-amber-500";
-  return "text-zinc-300 dark:text-zinc-600";
+  return "text-muted-foreground/50";
 }
 
 function getStatusDot(status: TaskStatus) {
   if (status === "done") return "bg-emerald-500";
   if (status === "inProgress") return "bg-blue-500";
   if (status === "waiting") return "bg-amber-500";
-  if (status === "canceled") return "bg-zinc-400";
-  return "bg-zinc-300 dark:bg-zinc-600";
+  if (status === "canceled") return "bg-muted-foreground";
+  return "bg-muted-foreground/50";
 }
 
 function getStatusLabel(status: TaskStatus) {
@@ -126,19 +126,19 @@ export function TaskGroupedList({
             <div
               key={status}
               className={cn(
-                "flex w-[300px] shrink-0 flex-col rounded-2xl border border-zinc-200/70 bg-zinc-50/50 dark:border-white/[0.06]",
+                "flex w-[300px] shrink-0 flex-col rounded-2xl border border-border",
                 getColumnBg(status)
               )}
             >
               {/* Column Header */}
-              <div className="flex items-center justify-between gap-2 border-b border-zinc-200/70 px-4 py-3 dark:border-white/[0.06]">
+              <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
                 <div className="flex items-center gap-2">
                   <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", getStatusDot(status))} />
-                  <span className="text-xs font-black uppercase tracking-widest text-zinc-700 dark:text-zinc-300">
+                  <span className="text-xs font-black uppercase tracking-widest text-foreground">
                     {t(`statuses.${status}`)}
                   </span>
                 </div>
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-200/80 text-[10px] font-black text-zinc-500 dark:bg-white/[0.08] dark:text-zinc-400">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-black text-muted-foreground">
                   {columnTasks.length}
                 </span>
               </div>
@@ -151,7 +151,7 @@ export function TaskGroupedList({
                     {...provided.droppableProps}
                     className={cn(
                       "flex flex-1 flex-col gap-2 p-2 min-h-[150px] transition-colors rounded-b-2xl",
-                      snapshot.isDraggingOver && "bg-zinc-100/50 dark:bg-zinc-800/50"
+                      snapshot.isDraggingOver && "bg-muted/50"
                     )}
                   >
                     {columnTasks.map((task, index) => (
@@ -162,22 +162,22 @@ export function TaskGroupedList({
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
                             className={cn(
-                              "group rounded-xl border border-zinc-200/80 bg-white p-3 shadow-none transition-shadow dark:border-white/[0.06] dark:bg-zinc-950",
+                              "group rounded-xl border border-border bg-card p-3 shadow-none transition-shadow",
                               snapshot.isDragging && "shadow-xl ring-2 ring-primary/20 opacity-90",
-                              !snapshot.isDragging && "hover:shadow-sm dark:hover:bg-zinc-900"
+                              !snapshot.isDragging && "hover:shadow-sm hover:bg-muted/30"
                             )}
                           >
                             {/* Title row */}
                             <div className="flex items-start gap-2">
-                              <button className="mt-0.5 shrink-0 text-zinc-300 transition-colors hover:text-emerald-500 dark:text-zinc-600 dark:hover:text-emerald-500">
+                              <button className="mt-0.5 shrink-0 text-muted-foreground/50 transition-colors hover:text-emerald-500">
                                 {status === "done"
                                   ? <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                                   : <Circle className="h-4 w-4" />
                                 }
                               </button>
                               <p className={cn(
-                                "min-w-0 flex-1 text-sm font-semibold leading-snug text-zinc-900 dark:text-white",
-                                status === "done" && "text-zinc-400 line-through dark:text-zinc-500"
+                                "min-w-0 flex-1 text-sm font-semibold leading-snug text-foreground",
+                                status === "done" && "text-muted-foreground line-through"
                               )}>
                                 {task.title}
                               </p>
@@ -200,11 +200,11 @@ export function TaskGroupedList({
                             </div>
 
                             {/* Assignee row - using justify-between (RTL friendly) and ps-6 */}
-                            <div className="mt-3 flex items-center justify-between border-t border-zinc-100 pt-3 dark:border-white/[0.06]">
+                            <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-3">
                               <div className="flex flex-col gap-0.5">
-                                <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">{t("from")}</span>
+                                <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t("from")}</span>
                                 <div className="flex items-center gap-1.5">
-                                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-200 text-[8px] font-black text-zinc-600 dark:bg-white/10 dark:text-zinc-400">
+                                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[8px] font-black text-muted-foreground">
                                     {t("me")}
                                   </div>
                                 </div>
@@ -212,7 +212,7 @@ export function TaskGroupedList({
                               
                               {task.assigneeUserId && (
                                 <div className="flex flex-col items-end gap-0.5">
-                                  <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">{t("to")}</span>
+                                  <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{t("to")}</span>
                                   <div className="flex items-center gap-1.5">
                                     <div className="flex h-5 w-5 items-center justify-center rounded-full bg-violet-500 text-[8px] font-black text-white">
                                       {getInitials(task.assigneeUserId)}
@@ -228,7 +228,7 @@ export function TaskGroupedList({
                     {provided.placeholder}
                     
                     {columnTasks.length === 0 && !snapshot.isDraggingOver && (
-                      <div className="flex h-20 items-center justify-center text-[11px] font-medium text-zinc-400 dark:text-zinc-600">
+                      <div className="flex h-20 items-center justify-center text-[11px] font-medium text-muted-foreground/50">
                         {t("empty.title")}
                       </div>
                     )}

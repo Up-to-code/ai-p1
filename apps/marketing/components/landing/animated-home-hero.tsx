@@ -43,8 +43,8 @@ function HeroLink({
       href={href}
       className={
         secondary
-          ? "inline-flex h-12 items-center justify-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--hero-text)_15%,transparent)] bg-[color-mix(in_srgb,var(--hero-bg)_70%,transparent)] px-6 text-sm font-bold text-[var(--hero-text)] backdrop-blur-xl transition hover:bg-[var(--hero-bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b5cff]"
-          : "inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--hero-text)] px-7 text-sm font-bold text-[var(--hero-bg)] transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b5cff]"
+          ? "inline-flex h-12 items-center justify-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--hero-text)_15%,transparent)] bg-[color-mix(in_srgb,var(--hero-bg)_70%,transparent)] px-6 text-sm font-bold text-[var(--hero-text)] backdrop-blur-xl transition hover:bg-[var(--hero-bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--q-accent)]"
+          : "inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--hero-text)] px-7 text-sm font-bold text-[var(--hero-bg)] transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--q-accent)]"
       }
     >
       {label}
@@ -80,7 +80,7 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
   }, [revealDelay]);
 
   return (
-    <section className="relative min-h-screen overflow-hidden border-b border-[color-mix(in_srgb,var(--hero-text)_10%,transparent)] bg-[var(--hero-bg)] text-[var(--hero-text)] [--hero-bg:#f5f4f0] [--hero-text:#111111] dark:[--hero-bg:#050505] dark:[--hero-text:#f8fafc]">
+    <section className="relative min-h-screen overflow-hidden border-b border-[color-mix(in_srgb,var(--hero-text)_10%,transparent)] bg-[var(--hero-bg)] text-[var(--hero-text)] [--hero-bg:var(--q-bg)] [--hero-text:var(--q-text-primary)] dark:[--hero-bg:var(--q-bg)] dark:[--hero-text:var(--q-text-primary)]">
       <IntroAnimation label={introLabel} onDone={handleIntroDone} />
 
       <video
@@ -139,7 +139,7 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
         <div className="grid w-full max-w-7xl gap-8 lg:grid-cols-[minmax(0,0.86fr)_minmax(260px,0.34fr)] lg:items-end">
           <div className="max-w-4xl">
             <p
-              className="mb-5 inline-flex rounded-full border border-[color-mix(in_srgb,var(--hero-text)_10%,transparent)] bg-[color-mix(in_srgb,var(--hero-bg)_70%,transparent)] px-4 py-2 text-[10px] font-black uppercase text-[#0b5cff] backdrop-blur-xl dark:text-blue-200"
+              className="mb-5 inline-flex rounded-full border border-[color-mix(in_srgb,var(--hero-text)_10%,transparent)] bg-[color-mix(in_srgb,var(--hero-bg)_70%,transparent)] px-4 py-2 text-[10px] font-black uppercase text-[var(--q-accent)] backdrop-blur-xl dark:text-blue-200"
               style={{
                 opacity: heroReady ? 1 : 0,
                 filter: heroReady ? "blur(0px)" : "blur(14px)",

@@ -1,6 +1,13 @@
 import { v } from "convex/values";
 
-export const billingPlanIdValidator = v.union(v.literal("saudi_monthly"), v.literal("saudi_yearly"));
+export const billingPlanIdValidator = v.union(
+  v.literal("good_monthly"),
+  v.literal("good_yearly"),
+  v.literal("better_monthly"),
+  v.literal("better_yearly"),
+  v.literal("custom_monthly"),
+  v.literal("custom_yearly"),
+);
 
 export const subscriptionStatusValidator = v.union(
   v.literal("inactive"),
@@ -10,23 +17,20 @@ export const subscriptionStatusValidator = v.union(
   v.literal("canceled"),
 );
 
-export const tamaraPaymentStatusValidator = v.union(
+export const paymentStatusValidator = v.union(
   v.literal("pending"),
-  v.literal("new"),
-  v.literal("approved"),
-  v.literal("authorised"),
-  v.literal("captured"),
+  v.literal("succeeded"),
   v.literal("failed"),
   v.literal("canceled"),
-  v.literal("expired"),
 );
 
 export const billingPlanValidator = v.object({
   id: billingPlanIdValidator,
   name: v.string(),
-  amount: v.number(),
+  amount: v.union(v.number(), v.null()),
   currency: v.string(),
   periodDays: v.number(),
+  checkoutMode: v.union(v.literal("provider"), v.literal("contact_sales")),
 });
 
 export const organizationSubscriptionValidator = v.object({
@@ -42,19 +46,17 @@ export const organizationSubscriptionValidator = v.object({
   updatedAt: v.number(),
 });
 
-export const tamaraPaymentValidator = v.object({
+export const paymentValidator = v.object({
   _id: v.string(),
   _creationTime: v.number(),
   id: v.string(),
   organizationId: v.string(),
   planId: billingPlanIdValidator,
-  orderReferenceId: v.string(),
-  orderNumber: v.string(),
-  tamaraOrderId: v.optional(v.string()),
-  tamaraCheckoutId: v.optional(v.string()),
+  orderId: v.string(),
+  dodoPaymentId: v.optional(v.string()),
   amount: v.number(),
   currency: v.string(),
-  status: tamaraPaymentStatusValidator,
+  status: paymentStatusValidator,
   checkoutUrl: v.optional(v.string()),
   failureReason: v.optional(v.string()),
   createdByUserId: v.optional(v.string()),
@@ -66,7 +68,7 @@ export const tamaraPaymentValidator = v.object({
 export const billingOverviewValidator = v.object({
   plan: billingPlanValidator,
   subscription: v.union(organizationSubscriptionValidator, v.null()),
-  latestPayment: v.union(tamaraPaymentValidator, v.null()),
+  latestPayment: v.union(paymentValidator, v.null()),
 });
 
 export const billingCreditUsageValidator = v.object({
@@ -83,12 +85,12 @@ export const billingCreditUsageValidator = v.object({
 export const billingUsageOverviewValidator = v.object({
   overview: billingOverviewValidator,
   credits: billingCreditUsageValidator,
-  payments: v.array(tamaraPaymentValidator),
+  payments: v.array(paymentValidator),
 });
 
 export const checkoutContextValidator = v.object({
   plan: billingPlanValidator,
-  payment: tamaraPaymentValidator,
+  payment: paymentValidator,
   organization: v.object({
     name: v.string(),
     legalName: v.string(),

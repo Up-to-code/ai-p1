@@ -93,7 +93,7 @@ export function ProblemSection({ locale }: { locale: string }) {
 
   return (
     <div className="w-full">
-      <PublicSection id="solutions" tone="muted" className="border-y border-zinc-200/50 dark:border-white/[0.04]">
+      <PublicSection id="solutions" tone="muted" className="border-y border-zinc-200/50 dark:border-border">
         <div className="space-y-16">
           <Reveal>
             <div className="max-w-4xl space-y-5">
@@ -101,24 +101,24 @@ export function ProblemSection({ locale }: { locale: string }) {
                 <span className="h-px w-8 bg-red-500/30" />
                 <span className="text-[10px] font-black uppercase tracking-[0.35em] text-red-600 dark:text-red-400">{pLabels.eyebrow}</span>
               </div>
-              <h2 className="text-4xl font-bold tracking-tight text-zinc-950 dark:text-white md:text-6xl rtl:leading-[1.25]">
+              <h2 className="text-4xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-white md:text-6xl rtl:leading-[1.25]">
                 {pLabels.title}
               </h2>
-              <p className="max-w-3xl text-base font-semibold leading-7 text-zinc-700 dark:text-zinc-300 md:text-lg rtl:leading-[1.8]">
+              <p className="max-w-3xl text-base font-semibold leading-7 text-secondary-foreground md:text-lg rtl:leading-[1.8]">
                 {pLabels.description}
               </p>
             </div>
           </Reveal>
 
-          <div className="grid gap-x-12 gap-y-10 md:grid-cols-3 border-t border-zinc-200/50 dark:border-white/[0.04] pt-12">
+          <div className="grid gap-x-12 gap-y-10 md:grid-cols-3 border-t border-zinc-200/50 dark:border-border pt-12">
             {pLabels.items.map((item, i) => (
               <Reveal key={i} delay={i * 0.1}>
                 <div className="space-y-4">
-                  <h3 className="text-xl font-bold text-zinc-950 dark:text-white flex items-center gap-2">
+                  <h3 className="text-xl font-bold text-[var(--q-text-primary)] dark:text-white flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-red-500 shrink-0" />
                     {item.title}
                   </h3>
-                  <p className="text-sm font-semibold leading-relaxed text-zinc-600 dark:text-zinc-400 md:text-base rtl:leading-[1.7]">
+                  <p className="text-sm font-semibold leading-relaxed text-secondary-foreground md:text-base rtl:leading-[1.7]">
                     {item.desc}
                   </p>
                 </div>
@@ -136,24 +136,24 @@ export function ProblemSection({ locale }: { locale: string }) {
                 <span className="h-px w-8 bg-emerald-500/30" />
                 <span className="text-[10px] font-black uppercase tracking-[0.35em] text-emerald-600 dark:text-emerald-400">{fLabels.eyebrow}</span>
               </div>
-              <h2 className="text-4xl font-bold tracking-tight text-zinc-950 dark:text-white md:text-6xl rtl:leading-[1.25]">
+              <h2 className="text-4xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-white md:text-6xl rtl:leading-[1.25]">
                 {fLabels.title}
               </h2>
-              <p className="max-w-3xl text-base font-semibold leading-7 text-zinc-700 dark:text-zinc-300 md:text-lg rtl:leading-[1.8]">
+              <p className="max-w-3xl text-base font-semibold leading-7 text-secondary-foreground md:text-lg rtl:leading-[1.8]">
                 {fLabels.description}
               </p>
             </div>
           </Reveal>
 
-          <div className="grid gap-x-12 gap-y-10 md:grid-cols-3 border-t border-zinc-200/50 dark:border-white/[0.04] pt-12">
+          <div className="grid gap-x-12 gap-y-10 md:grid-cols-3 border-t border-zinc-200/50 dark:border-border pt-12">
             {fLabels.items.map((item, i) => (
               <Reveal key={i} delay={i * 0.1}>
                 <div className="space-y-4">
-                  <h3 className="text-xl font-bold text-zinc-950 dark:text-white flex items-center gap-2">
+                  <h3 className="text-xl font-bold text-[var(--q-text-primary)] dark:text-white flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
                     {item.title}
                   </h3>
-                  <p className="text-sm font-semibold leading-relaxed text-zinc-600 dark:text-zinc-400 md:text-base rtl:leading-[1.7]">
+                  <p className="text-sm font-semibold leading-relaxed text-secondary-foreground md:text-base rtl:leading-[1.7]">
                     {item.desc}
                   </p>
                 </div>

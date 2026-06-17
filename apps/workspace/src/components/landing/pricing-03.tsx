@@ -308,21 +308,21 @@ export function Pricing03({ locale }: { locale: string }) {
   return (
     <PublicSection
       id="pricing"
-      className="relative bg-white py-20 dark:bg-[#080808] md:py-28"
+      className="relative bg-[var(--q-card)] py-20 dark:bg-[var(--q-bg)] md:py-28"
     >
       <div className="relative mx-auto max-w-7xl">
         <div className="sticky top-20 z-20 mb-10 flex justify-center py-2">
           <div
             aria-label={copy.eyebrow}
-            className="grid w-full max-w-sm grid-cols-2 rounded-full border border-zinc-200 bg-zinc-100/95 p-1 text-xs font-black uppercase tracking-widest shadow-sm shadow-zinc-200/50 backdrop-blur dark:border-white/10 dark:bg-white/[0.06] dark:shadow-none"
+            className="grid w-full max-w-sm grid-cols-2 rounded-full border border-[var(--q-border)] bg-muted/95 p-1 text-xs font-black uppercase tracking-widest shadow-sm shadow-zinc-200/50 backdrop-blur"
             role="tablist"
           >
             {(["monthly", "annual"] as const).map((cycle) => (
               <button
                 aria-selected={billingCycle === cycle}
                 className={cn(
-                  "relative isolate h-10 overflow-hidden rounded-full px-4 text-zinc-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:text-zinc-400 dark:focus-visible:ring-offset-zinc-950",
-                  billingCycle === cycle && "text-zinc-950 dark:text-zinc-950",
+                  "relative isolate h-10 overflow-hidden rounded-full px-4 text-[var(--q-text-secondary)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:text-[var(--q-text-muted)] dark:focus-visible:ring-offset-zinc-950",
+                  billingCycle === cycle && "text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)]",
                 )}
                 key={cycle}
                 onClick={() => setBillingCycle(cycle)}
@@ -331,7 +331,7 @@ export function Pricing03({ locale }: { locale: string }) {
               >
                 {billingCycle === cycle && (
                   <motion.span
-                    className="absolute inset-0 -z-10 rounded-full bg-white shadow-sm shadow-zinc-200/60 dark:bg-white dark:shadow-none"
+                    className="absolute inset-0 -z-10 rounded-full bg-[var(--q-card)] shadow-sm shadow-zinc-200/60"
                     layoutId="pricing-cycle-indicator"
                     transition={indicatorTransition}
                   />
@@ -393,9 +393,9 @@ function formatQuota(value: number) {
 
 function PlanLimit({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 dark:border-white/10 dark:bg-white/[0.045]">
-      <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{label}</p>
-      <p className="mt-1 truncate text-xs font-black capitalize text-zinc-900 dark:text-white">{value}</p>
+    <div className="rounded-xl border border-[var(--q-border)] bg-[var(--q-card-hover)] p-3">
+      <p className="text-[9px] font-black uppercase tracking-widest text-[var(--q-text-muted)]">{label}</p>
+      <p className="mt-1 truncate text-xs font-black capitalize text-zinc-900 dark:text-[var(--q-text-primary)]">{value}</p>
     </div>
   );
 }
@@ -412,24 +412,24 @@ function PlanCard({
   return (
     <article
       className={cn(
-        "relative flex min-h-[520px] w-full flex-col overflow-hidden rounded-[1.25rem] border border-zinc-200 bg-white p-5 text-start transition duration-300 hover:border-zinc-300 hover:bg-zinc-50/40 dark:border-white/10 dark:bg-[#171717] dark:hover:border-white/20 dark:hover:bg-[#1b1b1b] md:p-6",
-        plan.isPopular && "border-zinc-950 bg-zinc-50 text-zinc-950 hover:border-zinc-950 hover:bg-zinc-100/70 dark:border-white/60 dark:bg-[#202020] dark:text-white dark:hover:bg-[#242424]",
+        "relative flex min-h-[520px] w-full flex-col overflow-hidden rounded-[1.25rem] border border-[var(--q-border)] bg-[var(--q-card)] p-5 text-start transition duration-300 hover:border-zinc-300 hover:bg-[var(--q-card-hover)] dark:bg-[var(--q-card-hover)] dark:hover:bg-[var(--q-card-hover)] md:p-6",
+        plan.isPopular && "border-zinc-950 bg-[var(--q-card-hover)] text-[var(--q-text-primary)] hover:border-zinc-950 hover:bg-zinc-100/70 dark:border-white/60 dark:bg-[var(--q-card-hover)] dark:text-[var(--q-text-primary)] dark:hover:bg-[var(--q-card-hover)]",
       )}
       data-testid={`pricing-card-${plan.id}`}
     >
-      <div className={cn("absolute inset-x-8 top-0 h-px", plan.isPopular ? "bg-zinc-950 dark:bg-white" : "bg-zinc-200 dark:bg-white/15")} />
+      <div className={cn("absolute inset-x-8 top-0 h-px", plan.isPopular ? "bg-[var(--q-text-primary)] dark:bg-white/40" : "bg-zinc-200 dark:bg-white/10")} />
       {plan.isPopular && (
-        <Badge className="absolute end-6 top-5 rounded-full bg-zinc-950 px-3 text-white dark:bg-white dark:text-zinc-950">
+        <Badge className="absolute end-6 top-5 rounded-full bg-[var(--q-text-primary)] px-3 text-white dark:bg-white dark:text-zinc-950">
           {plan.period === "year" ? copy.annualBadge : copy.popular}
         </Badge>
       )}
 
       <div>
         <h3 className={cn("text-2xl font-black tracking-tight", plan.isPopular && "pe-28")}>{plan.name}</h3>
-        <p className="mt-4 min-h-[72px] text-sm font-medium leading-7 text-zinc-500 dark:text-zinc-400">
+        <p className="mt-4 min-h-[72px] text-sm font-medium leading-7 text-[var(--q-text-secondary)] dark:text-[var(--q-text-muted)]">
           {plan.description}
         </p>
-        <div className="mt-5 rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4 dark:border-white/10 dark:bg-white/[0.035]">
+        <div className="mt-5 rounded-2xl border border-[var(--q-border)] bg-[var(--q-card-hover)] p-4">
           <p className="flex min-h-[52px] flex-wrap items-end gap-2">
             {typeof plan.price === "number" ? (
               <>
@@ -439,7 +439,7 @@ function PlanCard({
                   transformTiming={{ duration: 900, easing: "ease-out" }}
                   value={plan.price}
                 />
-                <span className="pb-1 text-sm font-bold text-zinc-500 dark:text-zinc-400">
+                <span className="pb-1 text-sm font-bold text-[var(--q-text-secondary)] dark:text-[var(--q-text-muted)]">
                   {periodLabel}
                 </span>
               </>
@@ -465,8 +465,8 @@ function PlanCard({
         className={cn(
           "mt-4 h-10 w-full rounded-full",
           plan.isPopular
-            ? "bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
-            : "border border-zinc-200 bg-white text-zinc-950 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/[0.06] dark:text-white dark:hover:bg-white/10",
+            ? "bg-[var(--q-text-primary)] text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+            : "border border-[var(--q-border)] bg-[var(--q-card)] text-[var(--q-text-primary)] hover:bg-[var(--q-card-hover)]",
         )}
         variant="secondary"
       >
@@ -491,7 +491,7 @@ function PlanCard({
               <span
                 className={cn(
                   "text-[13px] font-bold leading-relaxed",
-                  isIncluded ? "text-zinc-800 dark:text-zinc-200" : "text-zinc-500 dark:text-zinc-500",
+                  isIncluded ? "text-zinc-800 dark:text-zinc-200" : "text-[var(--q-text-secondary)] dark:text-[var(--q-text-secondary)]",
                 )}
               >
                 {feature.title}

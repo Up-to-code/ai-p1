@@ -1,13 +1,13 @@
 import type { Context } from "hono";
 import { validateJsonBody } from "@/server/utils/request/json-body";
 import { actionErrorJson } from "@/server/utils/response/action-error";
-import { billingCheckoutSchema, tamaraWebhookSchema } from "../validation/billing.schema";
+import { billingCheckoutSchema, dodoWebhookSchema } from "../validation/billing.schema";
 import {
   createBillingCheckout,
   getBillingSubscription,
-  getBillingTamaraOrder,
+  getBillingPaymentStatus,
   getBillingUsage,
-  processTamaraWebhook,
+  processDodoWebhook,
 } from "../services/billing";
 
 function organizationId(c: Context) {
@@ -40,7 +40,7 @@ export async function handleGetBillingUsage(c: Context) {
   }
 }
 
-export async function handleCreateTamaraCheckout(c: Context) {
+export async function handleCreateCheckout(c: Context) {
   const id = organizationId(c);
   if (!id) return c.json({ error: "Organization id is required." }, 400);
   const parsed = await validateJsonBody(c, billingCheckoutSchema, "Invalid billing checkout payload.");
@@ -53,28 +53,28 @@ export async function handleCreateTamaraCheckout(c: Context) {
   }
 }
 
-export async function handleGetTamaraOrder(c: Context) {
+export async function handleGetPaymentStatus(c: Context) {
   const id = organizationId(c);
   const orderId = c.req.param("orderId");
   if (!id || !orderId) return c.json({ error: "Organization and order ids are required." }, 400);
 
   try {
-    return c.json(await getBillingTamaraOrder(id, orderId));
+    return c.json(await getBillingPaymentStatus(id, orderId));
   } catch (error) {
     return handleBillingError(c, error);
   }
 }
 
-export async function handleTamaraWebhook(c: Context) {
-  const parsed = await validateJsonBody(c, tamaraWebhookSchema, "Invalid Tamara webhook payload.");
+export async function handleDodoWebhook(c: Context) {
+  const parsed = await validateJsonBody(c, dodoWebhookSchema, "Invalid DodoPayments webhook payload.");
   if (!parsed.ok) return parsed.response;
 
   const tokenFromHeader = c.req.header("authorization")?.match(/^Bearer\s+(.+)$/iu)?.[1]?.trim();
-  const tokenFromQuery = c.req.query("tamaraToken")?.trim();
+  const tokenFromQuery = c.req.query("dodoToken")?.trim();
   const token = tokenFromHeader || tokenFromQuery || "";
 
   try {
-    return c.json(await processTamaraWebhook({ token, payload: parsed.data }));
+    return c.json(await processDodoWebhook({ token, payload: parsed.data }));
   } catch (error) {
     return handleBillingError(c, error);
   }

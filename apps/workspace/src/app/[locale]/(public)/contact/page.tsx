@@ -61,7 +61,7 @@ export default function ContactPage() {
         </div>
 
         <form
-          className="rounded-3xl border border-zinc-200 bg-zinc-50 p-5 dark:border-white/10 dark:bg-white/[0.04] md:p-6"
+          className="rounded-3xl border border-border bg-muted p-5 md:p-6"
           onSubmit={handleSubmit}
         >
           <div className="grid gap-5 md:grid-cols-2">

@@ -60,7 +60,7 @@ export function FileUploadZone({
         tabIndex={0}
         role="button"
         className={cn(
-          "border-2 border-dashed border-zinc-200 dark:border-white/10 rounded-2xl p-8 flex flex-col items-center justify-center text-center bg-zinc-50/50 dark:bg-white/[0.01] hover:bg-zinc-100 dark:hover:bg-white/[0.03] transition-all cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/20 focus-visible:ring-offset-2 dark:focus-visible:ring-blue-400/30 dark:focus-visible:ring-offset-zinc-950",
+          "border-2 border-dashed border-border rounded-2xl p-8 flex flex-col items-center justify-center text-center bg-muted/50 hover:bg-muted transition-all cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/20 focus-visible:ring-offset-2 dark:focus-visible:ring-blue-400/30 dark:focus-visible:ring-offset-background",
           className
         )}
         onDragOver={(e) => {
@@ -70,19 +70,19 @@ export function FileUploadZone({
         onDrop={handleDrop}
         onKeyDown={handleKeyDown}
       >
-        <div className="w-12 h-12 rounded-xl bg-white dark:bg-[#0A0A0A] border border-zinc-200 dark:border-white/10 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+        <div className="w-12 h-12 rounded-xl bg-card border border-border flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
           {selectedFiles.length > 0 ? (
             <CheckCircle2 className="w-5 h-5 text-emerald-600 transition-colors" />
           ) : (
-            <UploadCloud className="w-5 h-5 text-zinc-400 group-hover:text-blue-600 transition-colors" />
+            <UploadCloud className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
           )}
         </div>
-        <p className="text-[11px] font-black uppercase tracking-widest text-zinc-900 dark:text-white mb-2">
+        <p className="text-[11px] font-black uppercase tracking-widest text-foreground mb-2">
           {selectedFiles.length > 0 ? t("selectedFiles", { count: selectedFiles.length }) : t("uploadOrDrag")}
         </p>
-        {description && <p className="text-[10px] font-bold text-zinc-400 max-w-sm">{description}</p>}
+        {description && <p className="text-[10px] font-bold text-muted-foreground max-w-sm">{description}</p>}
         {selectedFiles.length > 0 && (
-          <p className="mt-3 max-w-sm truncate text-[10px] font-bold text-zinc-500 dark:text-zinc-300" title={selectedFiles.map((file) => file.name).join(", ")}>
+          <p className="mt-3 max-w-sm truncate text-[10px] font-bold text-muted-foreground" title={selectedFiles.map((file) => file.name).join(", ")}>
             {selectedFiles.map((file) => file.name).join(", ")}
           </p>
         )}

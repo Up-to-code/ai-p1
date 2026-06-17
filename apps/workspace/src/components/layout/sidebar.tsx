@@ -219,9 +219,8 @@ export function Sidebar() {
     <>
       <aside
         className={cn(
-          "relative flex h-screen shrink-0 flex-col overflow-hidden bg-background transition-all duration-300 ease-in-out border-e",
+          "relative flex h-screen shrink-0 flex-col overflow-hidden bg-secondary transition-all duration-300 ease-in-out border-e border-border",
           isOpen ? "w-64" : "w-14",
-          isDarkMode ? "border-white/[0.06]" : "border-black/[0.07]",
           isRtl && "font-cairo",
         )}
       >
@@ -233,13 +232,13 @@ export function Sidebar() {
               className={cn(
                 "flex items-center rounded-xl transition-opacity hover:opacity-80 min-w-0",
                 isOpen ? "gap-2.5 w-full" : "justify-center",
-                isDarkMode ? "text-white" : "text-zinc-950",
+                isDarkMode ? "text-background" : "text-foreground",
               )}
             >
               <div
                 className={cn(
                   "flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-xl text-[10px] font-black uppercase",
-                  isDarkMode ? "bg-white text-zinc-950" : "bg-zinc-950 text-white",
+                  isDarkMode ? "bg-card text-foreground" : "bg-foreground text-background",
                 )}
               >
                 {account.organization.logo ? (
@@ -278,12 +277,8 @@ export function Sidebar() {
                     "flex items-center rounded-xl transition-all",
                     isOpen ? "h-9 w-full px-3 gap-3" : "h-9 w-9 justify-center",
                     isActive
-                      ? isDarkMode
-                        ? "bg-white/10 text-white"
-                        : "bg-zinc-100 text-zinc-950"
-                      : isDarkMode
-                        ? "text-zinc-500 hover:bg-white/[0.06] hover:text-white"
-                        : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900",
+                        ? "bg-card text-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
                   )}
                 >
                   <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={isActive ? 2.2 : 1.8} />
@@ -294,7 +289,7 @@ export function Sidebar() {
           })}
 
           {/* Divider */}
-          <div className={cn("my-2 h-px shrink-0", isOpen ? "w-full" : "w-6 self-center", isDarkMode ? "bg-white/[0.08]" : "bg-black/[0.08]")} />
+          <div className={cn("my-2 h-px shrink-0", isOpen ? "w-full" : "w-6 self-center", "bg-border")} />
 
           {/* AI Threads */}
           {workspaceOrganizationId && (
@@ -321,8 +316,8 @@ export function Sidebar() {
                     className={cn(
                       "flex h-9 w-9 items-center justify-center rounded-xl transition-all",
                       isDarkMode
-                        ? "text-zinc-500 hover:bg-white/[0.06] hover:text-white"
-                        : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900",
+                        ? "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                   >
                     <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} />
@@ -343,13 +338,9 @@ export function Sidebar() {
                         className={cn(
                           "flex items-center rounded-xl transition-all min-w-0",
                           isOpen ? "h-9 w-full px-3 gap-3" : "h-9 w-9 justify-center",
-                          isActive
-                            ? isDarkMode
-                              ? "bg-white/10 text-white"
-                              : "bg-zinc-100 text-zinc-950"
-                            : isDarkMode
-                              ? "text-zinc-600 hover:bg-white/[0.06] hover:text-white"
-                              : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900",
+isActive
+                        ? "bg-card text-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
                         )}
                       >
                         {isDeleting && !isOpen ? (
@@ -369,7 +360,7 @@ export function Sidebar() {
                           "items-center justify-center transition-all",
                           isOpen
                             ? "absolute end-2 hidden h-6 w-6 rounded-md group-hover/thread:flex text-text-muted hover:bg-red-500/10 hover:text-red-500"
-                            : "absolute -end-1 -top-1 hidden h-4 w-4 rounded-full text-[8px] group-hover/thread:flex " + (isDarkMode ? "bg-zinc-800 text-zinc-400 hover:bg-red-900 hover:text-red-300" : "bg-zinc-200 text-zinc-500 hover:bg-red-100 hover:text-red-600")
+                            : "absolute -end-1 -top-1 hidden h-4 w-4 rounded-full text-[8px] group-hover/thread:flex bg-muted text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                         )}
                       >
                         {isDeleting && isOpen ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : isOpen ? <Trash2 className="h-3.5 w-3.5" /> : "×"}
@@ -389,8 +380,8 @@ export function Sidebar() {
                       "flex items-center rounded-xl transition-all",
                       isOpen ? "h-9 w-full px-3 gap-3" : "h-9 w-9 justify-center",
                       isDarkMode
-                        ? "text-zinc-600 hover:bg-white/[0.06] hover:text-white"
-                        : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900",
+                        ? "text-muted-foreground hover:bg-accent hover:text-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
                     )}
                   >
                     <HistoryIcon className="h-[16px] w-[16px] shrink-0" strokeWidth={1.8} />
@@ -417,12 +408,8 @@ export function Sidebar() {
                     "flex items-center rounded-xl transition-all",
                     isOpen ? "h-9 w-full px-3 gap-3" : "h-9 w-9 justify-center",
                     isActive
-                      ? isDarkMode
-                        ? "bg-white/10 text-white"
-                        : "bg-zinc-100 text-zinc-950"
-                      : isDarkMode
-                        ? "text-zinc-500 hover:bg-white/[0.06] hover:text-white"
-                        : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900",
+                        ? "bg-card text-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
                   )}
                 >
                   <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={isActive ? 2.2 : 1.8} />
@@ -450,11 +437,11 @@ export function Sidebar() {
                         isOpen ? "w-full gap-2 rounded-xl py-1.5 px-2 text-start" : "h-6 w-6 justify-center overflow-hidden rounded-lg",
                         isActive
                           ? isDarkMode
-                            ? isOpen ? "bg-white/10 text-white" : "border border-white text-white"
-                            : isOpen ? "bg-zinc-100 text-zinc-900" : "border border-zinc-900 text-zinc-900"
+                            ? isOpen ? "bg-muted text-background" : "border border-border text-background"
+                            : isOpen ? "bg-muted text-foreground" : "border border-border text-foreground"
                           : isDarkMode
-                            ? isOpen ? "text-zinc-500 hover:bg-white/[0.06] hover:text-white" : "border border-white/[0.08] text-zinc-500 hover:border-white/20 hover:text-white"
-                            : isOpen ? "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900" : "border border-black/[0.08] text-zinc-400 hover:border-black/20 hover:text-black",
+                            ? isOpen ? "text-muted-foreground hover:bg-muted hover:text-foreground" : "border border-border text-muted-foreground hover:border-border hover:text-foreground"
+                            : isOpen ? "text-muted-foreground hover:bg-muted hover:text-foreground" : "border border-border text-muted-foreground hover:border-border hover:text-foreground",
                       )}
                     >
                       <span className={cn("flex shrink-0 items-center justify-center overflow-hidden font-black uppercase", isOpen ? "h-6 w-6 rounded-lg text-[9px] border border-inherit" : "h-full w-full text-[8px]")}>
@@ -517,7 +504,7 @@ export function Sidebar() {
             </DialogDescription>
           </DialogHeader>
           <div className="relative">
-            <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+            <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={threadSearch}
               onChange={(e) => setThreadSearch(e.target.value)}
@@ -536,8 +523,8 @@ export function Sidebar() {
                     className={cn(
                       "group/thread flex min-h-11 items-center gap-1 rounded-xl transition-all",
                       isActive
-                        ? "bg-primary/10 text-zinc-950 dark:bg-primary/20 dark:text-white"
-                        : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white",
+                        ? "bg-primary/10 text-foreground dark:bg-primary/20"
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
                     )}
                   >
                     <Link
@@ -547,11 +534,11 @@ export function Sidebar() {
                       title={thread.title}
                     >
                       <MessageSquareText
-                        className={cn("h-4 w-4 shrink-0", isActive ? "text-primary" : "text-zinc-400")}
+                        className={cn("h-4 w-4 shrink-0", isActive ? "text-primary" : "text-muted-foreground")}
                       />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-black leading-tight">{thread.title}</span>
-                        <span className="mt-1 block text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                        <span className="mt-1 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                           {new Date(thread.lastMessageAt).toLocaleDateString(locale, {
                             month: "short",
                             day: "numeric",
@@ -564,7 +551,7 @@ export function Sidebar() {
                       aria-label={`Delete: ${thread.title}`}
                       disabled={isDeleting}
                       onClick={() => setThreadPendingDelete(thread)}
-                      className="me-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-zinc-400 opacity-0 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:opacity-100 disabled:opacity-60 group-hover/thread:opacity-100 dark:hover:bg-red-500/10 dark:hover:text-red-300"
+                      className="me-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground opacity-0 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:opacity-100 disabled:opacity-60 group-hover/thread:opacity-100 dark:hover:bg-red-500/10 dark:hover:text-red-300"
                     >
                       {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                     </button>
@@ -572,7 +559,7 @@ export function Sidebar() {
                 );
               })
             ) : (
-              <p className="rounded-xl bg-zinc-50 px-3 py-6 text-center text-sm font-semibold text-zinc-400 dark:bg-white/5">
+              <p className="rounded-xl bg-muted px-3 py-6 text-center text-sm font-semibold text-muted-foreground dark:bg-muted">
                 {locale === "ar" ? "لا توجد محادثات بعد" : "No threads yet"}
               </p>
             )}
@@ -637,9 +624,7 @@ function IdentityAvatar({
     <div
       className={cn(
         "relative flex shrink-0 items-center justify-center overflow-hidden rounded-full border font-black uppercase transition-opacity",
-        isDarkMode
-          ? "border-white/10 bg-white/10 text-white"
-          : "border-zinc-200 bg-zinc-100 text-zinc-700",
+        "border-border bg-muted text-foreground",
         size === "sm" ? "h-7 w-7 text-[10px]" : "h-9 w-9 text-xs"
       )}
     >

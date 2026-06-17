@@ -35,7 +35,7 @@ const INITIAL_COMPONENTS: Partial<Components> = {
         <span
           dir="auto"
           className={cn(
-            "rounded-md border border-zinc-200 bg-zinc-100 px-1.5 py-0.5 font-mono text-[0.9em] text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100",
+            "rounded-md border border-border bg-muted px-1.5 py-0.5 font-mono text-[0.9em] text-foreground",
             className
           )}
           {...props}
@@ -62,7 +62,7 @@ const INITIAL_COMPONENTS: Partial<Components> = {
     return (
       <div
         data-markdown-table-scroll=""
-        className="not-prose my-4 block w-full max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-zinc-200 bg-white shadow-sm shadow-zinc-950/[0.04] dark:border-zinc-800 dark:bg-zinc-950/70"
+        className="not-prose my-4 block w-full max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-border bg-card shadow-sm"
         tabIndex={0}
       >
         <table
@@ -85,7 +85,7 @@ const INITIAL_COMPONENTS: Partial<Components> = {
       <th
         dir="auto"
         className={cn(
-          "min-w-28 whitespace-nowrap border-b border-e border-zinc-200 bg-zinc-100 px-4 py-3 text-start text-xs font-black text-zinc-900 last:border-e-0 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100",
+          "min-w-28 whitespace-nowrap border-b border-e border-border bg-muted px-4 py-3 text-start text-xs font-black text-foreground last:border-e-0",
           className
         )}
         {...props}
@@ -101,7 +101,7 @@ const INITIAL_COMPONENTS: Partial<Components> = {
       <td
         dir="auto"
         className={cn(
-          "min-w-28 whitespace-nowrap border-b border-e border-zinc-200 px-4 py-3 align-top leading-6 text-zinc-700 last:border-e-0 dark:border-zinc-800 dark:text-zinc-200",
+          "min-w-28 whitespace-nowrap border-b border-e border-border px-4 py-3 align-top leading-6 text-foreground last:border-e-0",
           className
         )}
         {...props}

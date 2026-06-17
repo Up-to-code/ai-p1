@@ -228,7 +228,7 @@ export function ProfilePictureUploader({
           "relative shrink-0 h-24 w-24 rounded-[28px] border-2 border-dashed transition-all",
           isDragging
             ? "border-blue-400 bg-blue-50 dark:bg-blue-500/10"
-            : "border-zinc-200 bg-zinc-100 dark:border-white/10 dark:bg-zinc-800"
+            : "border-border bg-muted"
         )}
         onDragOver={(event) => {
           event.preventDefault();
@@ -254,7 +254,7 @@ export function ProfilePictureUploader({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="absolute -bottom-2 -end-2 flex h-8 w-8 items-center justify-center rounded-xl bg-zinc-900 transition-transform hover:scale-105 active:scale-95 dark:bg-white"
+          className="absolute -bottom-2 -end-2 flex h-8 w-8 items-center justify-center rounded-xl bg-card transition-transform hover:scale-105 active:scale-95"
           aria-label={uploadLabel}
         >
           <Camera className="h-3.5 w-3.5 text-white dark:text-zinc-900" />
@@ -264,7 +264,7 @@ export function ProfilePictureUploader({
             type="button"
             onClick={removeProfilePicture}
             disabled={isUploading}
-            className="absolute -top-2 -end-2 flex h-8 w-8 items-center justify-center rounded-xl bg-white text-zinc-500 ring-1 ring-zinc-200 transition-colors hover:text-red-600 disabled:opacity-50 dark:bg-zinc-900 dark:ring-white/10"
+            className="absolute -top-2 -end-2 flex h-8 w-8 items-center justify-center rounded-xl bg-card text-zinc-500 ring-1 ring-border transition-colors hover:text-red-600 disabled:opacity-50"
             aria-label={labels.remove}
           >
             {isUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
@@ -284,13 +284,13 @@ export function ProfilePictureUploader({
       </div>
 
       <Dialog open={Boolean(file)} onOpenChange={(open) => !open && closeCropper()}>
-        <DialogContent className="max-w-md rounded-[28px] border-zinc-100 bg-white p-6 shadow-none dark:border-white/10 dark:bg-[#111]">
+        <DialogContent className="max-w-md rounded-[28px] border-border bg-card p-6 shadow-none">
           <DialogHeader>
             <DialogTitle className="text-xl font-black uppercase tracking-tight">{cropTitle}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-5">
-            <div className="overflow-hidden rounded-[28px] border border-zinc-200 bg-zinc-100 dark:border-white/10 dark:bg-black">
+            <div className="overflow-hidden rounded-[28px] border border-border bg-muted">
               <div
                 className={cn(
                   "relative mx-auto aspect-square w-full max-w-sm overflow-hidden rounded-[28px] touch-none select-none",

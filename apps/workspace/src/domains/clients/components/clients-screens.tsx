@@ -138,7 +138,7 @@ function ClientDetailField({
         name={name}
         type={type}
         defaultValue={defaultValue}
-        className="mt-2 h-11 w-full rounded-xl border border-zinc-100 bg-white px-3 text-sm font-bold text-zinc-900 outline-none transition focus:border-zinc-300 dark:border-white/10 dark:bg-white/[0.03] dark:text-white"
+        className="mt-2 h-11 w-full rounded-xl border border-border bg-card px-3 text-sm font-bold text-foreground outline-none transition focus:border-zinc-300 focus:border-ring"
       />
     </label>
   );
@@ -163,7 +163,7 @@ function ClientDetailSelect({
       <select
         name={name}
         defaultValue={defaultValue}
-        className="mt-2 h-11 w-full rounded-xl border border-zinc-100 bg-white px-3 text-sm font-bold text-zinc-900 outline-none transition focus:border-zinc-300 dark:border-white/10 dark:bg-white/[0.03] dark:text-white"
+        className="mt-2 h-11 w-full rounded-xl border border-border bg-card px-3 text-sm font-bold text-foreground outline-none transition focus:border-ring"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>{option.label}</option>
@@ -175,7 +175,7 @@ function ClientDetailSelect({
 
 function ClientMetaPill({ icon: Icon, children }: { icon: LucideIcon; children: ReactNode }) {
   return (
-    <span className="inline-flex h-8 min-w-0 max-w-full items-center gap-2 rounded-full bg-zinc-100 px-3 text-xs font-bold text-zinc-600 dark:bg-white/[0.06] dark:text-zinc-300">
+    <span className="inline-flex h-8 min-w-0 max-w-full items-center gap-2 rounded-full bg-muted px-3 text-xs font-bold text-muted-foreground">
       <Icon className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
       <span className="truncate">{children}</span>
     </span>
@@ -184,21 +184,21 @@ function ClientMetaPill({ icon: Icon, children }: { icon: LucideIcon; children: 
 
 function ClientInfoRow({ icon: Icon, label, value }: { icon: LucideIcon; label: ReactNode; value: ReactNode }) {
   return (
-    <div className="min-w-0 rounded-2xl bg-zinc-50 p-4 dark:bg-white/[0.03]">
+    <div className="min-w-0 rounded-2xl bg-muted p-4">
       <span className="flex items-center gap-2 text-[11px] font-bold text-zinc-400">
         <Icon className="h-3.5 w-3.5 shrink-0" />
         <span className="truncate">{label}</span>
       </span>
-      <p className="mt-3 truncate text-sm font-black text-zinc-900 dark:text-white">{value}</p>
+      <p className="mt-3 truncate text-sm font-black text-foreground">{value}</p>
     </div>
   );
 }
 
 function CompactClientFact({ label, value }: { label: ReactNode; value: ReactNode }) {
   return (
-    <div className="min-w-0 rounded-2xl bg-zinc-50 p-4 dark:bg-white/[0.03]">
+    <div className="min-w-0 rounded-2xl bg-muted p-4">
       <p className="text-[11px] font-bold text-zinc-400">{label}</p>
-      <p className="mt-2 line-clamp-2 text-sm font-black leading-snug text-zinc-900 dark:text-white">{value}</p>
+      <p className="mt-2 line-clamp-2 text-sm font-black leading-snug text-foreground">{value}</p>
     </div>
   );
 }
@@ -217,7 +217,7 @@ function ClientMiniCard({
   const t = useTranslations('Clients');
   return (
     <article
-      className="group rounded-[24px] border border-zinc-100 bg-white p-5 transition-colors hover:border-zinc-300 dark:border-white/5 dark:bg-[#0A0A0A]"
+      className="group rounded-[24px] border border-border bg-card p-5 transition-colors hover:border-border"
     >
       <div className="flex items-start justify-between gap-4">
         <Link href={`/clients/${client.id}`} className="flex min-w-0 items-center gap-3 rounded-xl focus-visible:ring-2 focus-visible:ring-zinc-900/15">
@@ -225,14 +225,14 @@ function ClientMiniCard({
             {client.name.charAt(0)}
           </div>
           <div className="min-w-0 text-start">
-            <h3 className="truncate text-sm font-black uppercase tracking-tight text-zinc-900 dark:text-white">{client.name}</h3>
+            <h3 className="truncate text-sm font-black uppercase tracking-tight text-foreground">{client.name}</h3>
             <p className="mt-1 truncate text-[9px] font-black uppercase tracking-widest text-zinc-400">{client.contact}</p>
           </div>
         </Link>
         <Link
           href={`/clients/${client.id}/edit`}
           aria-label={`Edit ${client.name}`}
-          className="flex h-8 w-8 items-center justify-center rounded-xl text-zinc-300 opacity-0 transition-opacity hover:bg-zinc-50 hover:text-zinc-900 focus-visible:ring-2 focus-visible:ring-zinc-900/15 group-hover:opacity-100 dark:hover:bg-white/5 dark:hover:text-white"
+          className="flex h-8 w-8 items-center justify-center rounded-xl text-zinc-300 opacity-0 transition-opacity hover:bg-zinc-50 hover:text-zinc-900 focus-visible:ring-2 focus-visible:ring-zinc-900/15 group-hover:opacity-100 dark:hover:text-white"
         >
           <Edit className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>
@@ -243,14 +243,14 @@ function ClientMiniCard({
         <StatusPill label={translateClientPriority(t, client.priority)} tone={client.priority === "urgent" ? "danger" : client.priority === "high" ? "warning" : "neutral"} />
       </div>
 
-      <div className="mt-5 grid grid-cols-2 gap-3 border-t border-zinc-100 pt-4 dark:border-white/5">
+      <div className="mt-5 grid grid-cols-2 gap-3 border-t border-border pt-4">
         <div className="text-start">
           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{t('card.budget')}</p>
-          <p className="mt-1 truncate text-[11px] font-black uppercase text-zinc-900 dark:text-white">{client.budget}</p>
+          <p className="mt-1 truncate text-[11px] font-black uppercase text-foreground">{client.budget}</p>
         </div>
         <div className="text-start">
           <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{t('card.next')}</p>
-          <p className="mt-1 truncate text-[11px] font-black uppercase text-zinc-900 dark:text-white">{client.nextAction}</p>
+          <p className="mt-1 truncate text-[11px] font-black uppercase text-foreground">{client.nextAction}</p>
         </div>
       </div>
 
@@ -375,9 +375,9 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
           onClick={(event) => event.stopPropagation()}
           className="flex min-w-0 items-center gap-3 rounded-xl focus-visible:ring-2 focus-visible:ring-zinc-900/15"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-50 text-xs font-black dark:bg-white/5">{client.name.charAt(0)}</div>
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted text-xs font-black">{client.name.charAt(0)}</div>
           <div className="min-w-0 text-start">
-            <p className="truncate text-xs font-black uppercase text-zinc-900 dark:text-white">{client.name}</p>
+            <p className="truncate text-xs font-black uppercase text-foreground">{client.name}</p>
             <p className="mt-1 truncate text-[9px] font-black uppercase tracking-widest text-zinc-400">{client.contact}</p>
           </div>
         </Link>
@@ -445,7 +445,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
           </Button>
         ))}
         {view === "list" && (
-          <div className="ms-auto flex flex-wrap gap-1 rounded-full border border-zinc-100 bg-white p-1 dark:border-white/10 dark:bg-white/[0.03]">
+          <div className="ms-auto flex flex-wrap gap-1 rounded-full border border-border bg-card p-1">
             {clientStageFilters.map((stage) => (
               <button
                 key={stage}
@@ -482,7 +482,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
                   "min-h-[420px] rounded-[28px] border p-3 transition-all duration-300",
                   isDragOver
                     ? "border-primary bg-primary/5 ring-4 ring-primary/5"
-                    : "border-zinc-100 bg-zinc-50/40 dark:border-white/5 dark:bg-white/[0.01]"
+                    : "border-border bg-muted/40"
                 )}
                 onDragOver={(e) => {
                   e.preventDefault();
@@ -573,7 +573,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
             <AppSection key={event.id} title={`${event.date} · ${event.time}`} description={event.owner}>
               <div className="flex items-start justify-between gap-4">
                 <div className="text-start">
-                  <p className="text-sm font-black uppercase tracking-tight text-zinc-900 dark:text-white">{event.title}</p>
+                  <p className="text-sm font-black uppercase tracking-tight text-foreground">{event.title}</p>
                   <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-zinc-400">{event.clientName ?? event.location ?? "Workspace event"}</p>
                 </div>
                 <StatusPill label={event.status} tone="info" />
@@ -692,14 +692,14 @@ export function ClientDetailScreen({ id }: { id: string }) {
   return (
     <AppPageShell contentClassName="space-y-8 pb-16">
       <section className="space-y-5 text-start">
-        <div className="flex flex-col gap-4 border-b border-zinc-100 pb-6 dark:border-white/5 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex flex-col gap-4 border-b border-border pb-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-start gap-4">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-zinc-950 text-lg font-black uppercase text-white dark:bg-zinc-100 dark:text-zinc-950">
               {client.name.charAt(0)}
             </div>
             <div className="min-w-0">
               <p className="truncate text-[10px] font-black uppercase tracking-widest text-zinc-400">{client.id.toUpperCase()}</p>
-              <h1 className="mt-2 max-w-5xl text-3xl font-black leading-tight text-zinc-950 dark:text-zinc-50 md:text-[32px]">
+              <h1 className="mt-2 max-w-5xl text-3xl font-black leading-tight text-foreground md:text-[32px]">
                 {client.name}
               </h1>
               <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -735,7 +735,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
           </div>
         </div>
 
-        <div className="inline-flex max-w-full rounded-[24px] border border-zinc-100 bg-white p-3 dark:border-white/5 dark:bg-[#0A0A0A] md:p-4">
+        <div className="inline-flex max-w-full rounded-[24px] border border-border bg-card p-3 md:p-4">
           <div className="flex flex-wrap items-center gap-2">
             {pipelineStages.map((stage, i) => (
               <div
@@ -748,7 +748,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
                 <span
                   className={cn(
                     "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9px] font-black",
-                    i <= currentStageIndex ? "bg-white/15 text-current dark:bg-zinc-950/10" : "border border-zinc-200 dark:border-zinc-800"
+                    i <= currentStageIndex ? "bg-white/15 text-current dark:bg-zinc-950/10" : "border border-border"
                   )}
                 >
                   {String(i + 1).padStart(2, "0")}
@@ -888,14 +888,14 @@ export function ClientDetailScreen({ id }: { id: string }) {
             contentClassName="space-y-4"
             actions={(
               <>
-                <span className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-bold text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">{tasks.length} {t('detail.activity.tasks')}</span>
-                <span className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-bold text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">{events.length} {t('detail.activity.events')}</span>
+                <span className="rounded-full border border-border px-3 py-1.5 text-xs font-bold text-zinc-500">{tasks.length} {t('detail.activity.tasks')}</span>
+                <span className="rounded-full border border-border px-3 py-1.5 text-xs font-bold text-zinc-500">{events.length} {t('detail.activity.events')}</span>
               </>
             )}
           >
 
             <form
-              className="grid gap-2 rounded-[20px] bg-zinc-50 p-3 dark:bg-white/[0.03] md:grid-cols-[140px_minmax(220px,1fr)_132px_132px_156px_auto]"
+              className="grid gap-2 rounded-[20px] bg-muted p-3 md:grid-cols-[140px_minmax(220px,1fr)_132px_132px_156px_auto]"
               onSubmit={(event) => {
                 event.preventDefault();
                 const form = event.currentTarget;
@@ -910,7 +910,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
             >
               <input type="hidden" name="status" value="todo" />
               {canManageVisibility ? (
-                <select name="visibility" defaultValue="private" className="h-10 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-bold text-zinc-700 outline-none dark:border-zinc-800 dark:bg-[#0B0B0B] dark:text-zinc-100">
+                <select name="visibility" defaultValue="private" className="h-10 rounded-xl border border-border bg-card px-3 text-xs font-bold text-foreground outline-none">
                   <option value="private">{t("form.visibilityPrivate")}</option>
                   <option value="public">{t("form.visibilityPublic")}</option>
                 </select>
@@ -922,12 +922,12 @@ export function ClientDetailScreen({ id }: { id: string }) {
                 value={taskTitle}
                 onChange={(event) => setTaskTitle(event.target.value)}
                 placeholder={t('detail.activity.taskTitle')}
-                className="h-10 min-w-0 rounded-xl border border-zinc-200 bg-white px-3 text-sm font-bold text-zinc-950 outline-none transition focus:border-zinc-400 dark:border-zinc-800 dark:bg-[#0B0B0B] dark:text-zinc-50 dark:focus:border-zinc-600"
+                className="h-10 min-w-0 rounded-xl border border-border bg-card px-3 text-sm font-bold text-foreground outline-none transition focus:border-zinc-400 focus:border-ring"
               />
-              <select name="priority" defaultValue={client.priority} className="h-10 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-bold text-zinc-700 outline-none dark:border-zinc-800 dark:bg-[#0B0B0B] dark:text-zinc-100">
+              <select name="priority" defaultValue={client.priority} className="h-10 rounded-xl border border-border bg-card px-3 text-xs font-bold text-foreground outline-none">
                 {clientPriorities.map((value) => <option key={value} value={value}>{translateClientPriority(t, value)}</option>)}
               </select>
-              <input name="dueAt" type="date" className="h-10 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-bold text-zinc-700 outline-none dark:border-zinc-800 dark:bg-[#0B0B0B] dark:text-zinc-100" />
+              <input name="dueAt" type="date" className="h-10 rounded-xl border border-border bg-card px-3 text-xs font-bold text-foreground outline-none" />
               <input type="hidden" name="assetId" value="" />
               <Button type="submit" disabled={!taskTitle.trim() || taskOperation.isRunning} className="h-10 rounded-xl px-5 text-xs font-black">
                 {t('detail.activity.add')}
@@ -938,21 +938,21 @@ export function ClientDetailScreen({ id }: { id: string }) {
 
             <div className="grid gap-3">
               {tasks.length === 0 && events.length === 0 ? (
-                <div className="rounded-[20px] border border-dashed border-zinc-200 p-8 text-center text-sm font-bold text-zinc-400 dark:border-white/10">
+                <div className="rounded-[20px] border border-dashed border-border p-8 text-center text-sm font-bold text-zinc-400">
                   {t('detail.activity.emptyTasks')}
                 </div>
               ) : null}
 
               {clientTaskActivityRows(tasks, [] as Array<{ id: string; title: string }>, locale, t('detail.activity.noDate')).map(({ task, linkedAsset, isDone, statusTone, dueDateLabel }) => {
                 return (
-                  <article key={task.id} className="grid gap-4 rounded-[20px] border border-zinc-100 bg-white p-4 dark:border-white/5 dark:bg-[#0A0A0A] md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+                  <article key={task.id} className="grid gap-4 rounded-[20px] border border-border bg-card p-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <StatusPill label={t(`detail.activity.taskStatuses.${task.status}`)} tone={statusTone} />
                         <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{translateClientPriority(t, task.priority)}</span>
                         <span className="text-[10px] font-bold text-zinc-400">{dueDateLabel}</span>
                       </div>
-                      <p className={cn("mt-2 truncate text-sm font-black text-zinc-950 dark:text-zinc-50", isDone && "text-zinc-400 line-through dark:text-zinc-500")}>
+                      <p className={cn("mt-2 truncate text-sm font-black text-foreground", isDone && "text-zinc-400 line-through dark:text-zinc-500")}>
                         {task.title}
                       </p>
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] font-bold text-zinc-400">
@@ -978,7 +978,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
                               clientTaskUpdatePayload(task, client.id, { visibility: event.target.value as ClientTaskPayload["visibility"] }),
                             );
                           }, { successMessage: t("detail.activity.saved") })}
-                          className="h-9 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-bold text-zinc-700 outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+                          className="h-9 rounded-xl border border-border bg-card px-3 text-xs font-bold text-foreground outline-none"
                         >
                           <option value="private">{t("form.visibilityPrivate")}</option>
                           <option value="workspace">{t("form.visibilityPublic")}</option>
@@ -1019,16 +1019,16 @@ export function ClientDetailScreen({ id }: { id: string }) {
               })}
 
               {events.map((event) => (
-                <article key={event.id} className="grid gap-4 rounded-[20px] border border-zinc-100 bg-white p-4 dark:border-white/5 dark:bg-[#0A0A0A] md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+                <article key={event.id} className="grid gap-4 rounded-[20px] border border-border bg-card p-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <StatusPill label={event.status} tone="info" />
                       <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t('detail.activity.calendarEvents')}</span>
                       <span className="text-[10px] font-bold text-zinc-400">{event.date} · {event.time}</span>
                     </div>
-                    <p className="mt-2 truncate text-sm font-black text-zinc-950 dark:text-zinc-50">{event.title}</p>
+                    <p className="mt-2 truncate text-sm font-black text-foreground">{event.title}</p>
                   </div>
-                  <span className="inline-flex h-9 items-center justify-center rounded-xl border border-zinc-200 px-3 text-xs font-bold text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+                  <span className="inline-flex h-9 items-center justify-center rounded-xl border border-border px-3 text-xs font-bold text-zinc-500">
                     {t('detail.activity.events')}
                   </span>
                 </article>
@@ -1106,7 +1106,7 @@ export function ClientFormScreen({ id }: { id?: string }) {
         subtitle={t('form.subtitle')}
       />
 
-      <div className="rounded-[32px] border border-zinc-100 bg-white p-10 dark:border-white/5 dark:bg-[#0A0A0A]">
+      <div className="rounded-[32px] border border-border bg-card p-10">
         <ClientForm
           existing={existing ?? undefined}
           onSuccess={(nextId) => router.push(`/clients/${nextId}`)}

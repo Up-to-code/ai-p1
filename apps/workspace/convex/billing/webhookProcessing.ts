@@ -4,11 +4,11 @@ import { getBillingPlan, presentPayment } from "./data";
 import type {
   StoredOrganizationProfile,
   StoredSubscription,
-  StoredTamaraPayment,
-  TamaraPaymentStatus,
+  StoredPayment,
+  PaymentStatus,
 } from "./data";
 
-type BillingRecord = StoredOrganizationProfile | StoredSubscription | StoredTamaraPayment | Record<string, unknown>;
+type BillingRecord = StoredOrganizationProfile | StoredSubscription | StoredPayment | Record<string, unknown>;
 
 type BillingQueryBuilder = {
   eq(field: string, value: unknown): unknown;
@@ -47,28 +47,29 @@ async function findSubscription(ctx: MutationCtx, organizationId: string) {
 
 async function findPaymentForWebhook(
   ctx: MutationCtx,
-  input: { tamaraOrderId?: string; orderReferenceId?: string },
+  input: { dodoPaymentId?: string; orderId?: string },
 ) {
-  if (input.tamaraOrderId) {
+  if (input.dodoPaymentId) {
     const payment = await billingDb(ctx)
-      .query("tamaraPayments")
-      .withIndex("by_tamara_order", (q) => q.eq("tamaraOrderId", input.tamaraOrderId))
-      .first() as StoredTamaraPayment | null;
+      .query("dodoPayments")
+      .withIndex("by_dodo_payment", (q) => q.eq("dodoPaymentId", input.dodoPaymentId))
+      .first() as StoredPayment | null;
     if (payment) return payment;
   }
 
-  if (input.orderReferenceId) {
+  if (input.orderId) {
     return billingDb(ctx)
-      .query("tamaraPayments")
-      .withIndex("by_order_reference", (q) => q.eq("orderReferenceId", input.orderReferenceId))
-      .first() as Promise<StoredTamaraPayment | null>;
+      .query("dodoPayments")
+      .withIndex("by_order_id", (q) => q.eq("orderId", input.orderId))
+      .first() as Promise<StoredPayment | null>;
   }
 
   return null;
 }
 
 function activatedPeriod(existing: StoredSubscription | null, now: number, planId: string) {
-  const periodMs = getBillingPlan(planId).periodDays * 24 * 60 * 60 * 1000;
+  const plan = getBillingPlan(planId);
+  const periodMs = (plan.periodDays ?? 30) * 24 * 60 * 60 * 1000;
   const startsAt = Math.max(now, existing?.currentPeriodEndAt ?? 0);
   return {
     currentPeriodStartAt: startsAt,
@@ -76,31 +77,31 @@ function activatedPeriod(existing: StoredSubscription | null, now: number, planI
   };
 }
 
-export async function acceptTamaraWebhook(
+export async function acceptDodoWebhook(
   ctx: MutationCtx,
   args: {
     serverToken: string;
     input: {
       eventKey: string;
       eventType: string;
-      tamaraOrderId?: string;
-      orderReferenceId?: string;
+      dodoPaymentId?: string;
+      orderId?: string;
     };
   },
 ) {
   assertBridgeToken(args.serverToken);
   const existingEvent = await billingDb(ctx)
-    .query("tamaraWebhookEvents")
+    .query("dodoWebhookEvents")
     .withIndex("by_event_key", (q) => q.eq("eventKey", args.input.eventKey))
     .first();
   const payment = await findPaymentForWebhook(ctx, args.input);
 
   if (existingEvent) {
-    await billingDb(ctx).insert("tamaraWebhookEvents", {
+    await billingDb(ctx).insert("dodoWebhookEvents", {
       eventKey: args.input.eventKey,
       eventType: args.input.eventType,
-      tamaraOrderId: args.input.tamaraOrderId,
-      orderReferenceId: args.input.orderReferenceId,
+      dodoPaymentId: args.input.dodoPaymentId,
+      orderId: args.input.orderId,
       status: "duplicate",
       receivedAt: Date.now(),
     });
@@ -108,13 +109,13 @@ export async function acceptTamaraWebhook(
   }
 
   const receivedAt = Date.now();
-  const eventId = await billingDb(ctx).insert("tamaraWebhookEvents", {
+  const eventId = await billingDb(ctx).insert("dodoWebhookEvents", {
     eventKey: args.input.eventKey,
     eventType: args.input.eventType,
-    tamaraOrderId: args.input.tamaraOrderId,
-    orderReferenceId: args.input.orderReferenceId,
+    dodoPaymentId: args.input.dodoPaymentId,
+    orderId: args.input.orderId,
     status: payment ? "processed" : "failed",
-    error: payment ? undefined : "Tamara payment was not found.",
+    error: payment ? undefined : "Payment was not found.",
     receivedAt,
     processedAt: payment ? Date.now() : undefined,
   });
@@ -126,7 +127,7 @@ export async function acceptTamaraWebhook(
   };
 }
 
-export async function markTamaraWebhookFailed(
+export async function markDodoWebhookFailed(
   ctx: MutationCtx,
   args: { serverToken: string; eventId: string; error: string },
 ) {
@@ -139,19 +140,19 @@ export async function markTamaraWebhookFailed(
   return { recorded: true };
 }
 
-export async function markTamaraPaymentStatusFromWebhookEvent(
+export async function markPaymentStatusFromWebhookEvent(
   ctx: MutationCtx,
   args: {
     serverToken: string;
     paymentId: string;
-    status: TamaraPaymentStatus;
+    status: PaymentStatus;
     eventId?: string;
     failureReason?: string;
   },
 ) {
   assertBridgeToken(args.serverToken);
-  const payment = await billingDb(ctx).get(args.paymentId) as StoredTamaraPayment | null;
-  if (!payment) throw new Error("Tamara payment was not found.");
+  const payment = await billingDb(ctx).get(args.paymentId) as StoredPayment | null;
+  if (!payment) throw new Error("Payment was not found.");
   const now = Date.now();
 
   await billingDb(ctx).patch(args.paymentId, {
@@ -160,7 +161,7 @@ export async function markTamaraPaymentStatusFromWebhookEvent(
     updatedAt: now,
   });
 
-  if (args.status === "captured") {
+  if (args.status === "succeeded") {
     const subscription = await findSubscription(ctx, payment.organizationId);
     const plan = getBillingPlan(payment.planId);
     const period = activatedPeriod(subscription, now, plan.id);
@@ -192,7 +193,7 @@ export async function markTamaraPaymentStatusFromWebhookEvent(
     });
   }
 
-  const updated = await billingDb(ctx).get(args.paymentId) as StoredTamaraPayment | null;
-  if (!updated) throw new Error("Tamara payment was not found.");
+  const updated = await billingDb(ctx).get(args.paymentId) as StoredPayment | null;
+  if (!updated) throw new Error("Payment was not found.");
   return presentPayment(updated);
 }

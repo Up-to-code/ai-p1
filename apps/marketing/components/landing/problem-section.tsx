@@ -101,7 +101,7 @@ export function ProblemSection({ locale }: { locale: string }) {
                 <span className="h-px w-8 bg-red-500/30" />
                 <span className="text-[10px] font-black uppercase tracking-[0.35em] text-red-600 dark:text-red-400">{pLabels.eyebrow}</span>
               </div>
-              <h2 className="text-4xl font-bold tracking-tight text-zinc-950 dark:text-white md:text-6xl rtl:leading-[1.25]">
+              <h2 className="text-4xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-6xl rtl:leading-[1.25]">
                 {pLabels.title}
               </h2>
               <p className="max-w-3xl text-base font-semibold leading-7 text-zinc-700 dark:text-zinc-300 md:text-lg rtl:leading-[1.8]">
@@ -114,7 +114,7 @@ export function ProblemSection({ locale }: { locale: string }) {
             {pLabels.items.map((item, i) => (
               <Reveal key={i} delay={i * 0.1}>
                 <div className="space-y-4">
-                  <h3 className="text-xl font-bold text-zinc-950 dark:text-white flex items-center gap-2">
+                  <h3 className="text-xl font-bold text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-red-500 shrink-0" />
                     {item.title}
                   </h3>
@@ -136,7 +136,7 @@ export function ProblemSection({ locale }: { locale: string }) {
                 <span className="h-px w-8 bg-emerald-500/30" />
                 <span className="text-[10px] font-black uppercase tracking-[0.35em] text-emerald-600 dark:text-emerald-400">{fLabels.eyebrow}</span>
               </div>
-              <h2 className="text-4xl font-bold tracking-tight text-zinc-950 dark:text-white md:text-6xl rtl:leading-[1.25]">
+              <h2 className="text-4xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-6xl rtl:leading-[1.25]">
                 {fLabels.title}
               </h2>
               <p className="max-w-3xl text-base font-semibold leading-7 text-zinc-700 dark:text-zinc-300 md:text-lg rtl:leading-[1.8]">
@@ -149,7 +149,7 @@ export function ProblemSection({ locale }: { locale: string }) {
             {fLabels.items.map((item, i) => (
               <Reveal key={i} delay={i * 0.1}>
                 <div className="space-y-4">
-                  <h3 className="text-xl font-bold text-zinc-950 dark:text-white flex items-center gap-2">
+                  <h3 className="text-xl font-bold text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
                     {item.title}
                   </h3>

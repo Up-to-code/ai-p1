@@ -238,6 +238,7 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-background text-text-primary">
+      <TopAmbientGlow reduceMotion={reduceMotion} />
       <BottomAmbientLight reduceMotion={reduceMotion} />
       {isLoadingSelectedThread ? (
         <>
@@ -257,14 +258,17 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
       ) : messages.length === 0 ? (
         <div className="relative flex flex-1 flex-col items-center justify-center px-4 py-8">
           <motion.div
-            className="w-full max-w-3xl space-y-8 text-center"
+            className="w-full max-w-3xl space-y-0 text-center"
             initial={reduceMotion ? false : "hidden"}
             animate="show"
             variants={aiEmptyStateVariants}
           >
-            <motion.div className="space-y-3" variants={aiEmptyItemVariants}>
+            <motion.div
+              className="space-y-4 rounded-2xl border border-border/60 bg-secondary/60 px-6 py-10 backdrop-blur-sm sm:px-10"
+              variants={aiEmptyItemVariants}
+            >
               <motion.div
-                className="mx-auto flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface"
+                className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card"
                 variants={aiLogoVariants}
               >
                 <BrandMark className="h-6 w-6" priority />
@@ -276,7 +280,13 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
                 {t("inputPlaceholder")}
               </motion.p>
             </motion.div>
-            
+
+            <motion.div className="flex items-center justify-center gap-4 py-5" variants={aiEmptyItemVariants}>
+              <span className="h-px w-10 bg-border/40" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted">ask</span>
+              <span className="h-px w-10 bg-border/40" />
+            </motion.div>
+
             <motion.div className="relative group" variants={aiComposerVariants}>
               <AiComposer 
                 value={inputValue}
@@ -288,7 +298,7 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
               />
             </motion.div>
 
-            <motion.div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-4" variants={aiSuggestionGroupVariants}>
+            <motion.div className="grid grid-cols-2 gap-2 pt-2 sm:grid-cols-4" variants={aiSuggestionGroupVariants}>
               {[
                 { label: t("suggestions.findClient"), icon: Search },
                 { label: t("suggestions.prepareViewing"), icon: CalendarClock },
@@ -298,7 +308,7 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
                 <motion.button
                   key={pill.label}
                   onClick={() => setInputValue(pill.label)}
-                  className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-[10px] font-black uppercase tracking-widest text-text-secondary transition-all hover:border-zinc-300 hover:text-zinc-900 dark:hover:border-zinc-700 dark:hover:text-zinc-100"
+                  className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-[10px] font-black uppercase tracking-widest text-text-secondary transition-all hover:border-border hover:bg-surface-elevated hover:text-text-primary"
                   variants={aiSuggestionVariants}
                   whileHover={reduceMotion ? undefined : { y: -1 }}
                   whileTap={reduceMotion ? undefined : { scale: 0.98 }}
@@ -336,11 +346,11 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
                       </span>
                       {msg.content && (
                         msg.role === "user" ? (
-                          <div className="rounded-[18px] border border-border bg-surface px-4 py-3 text-sm font-medium leading-relaxed text-text-primary shadow-none dark:border-white/10 dark:bg-[#111]">
+                          <div className="rounded-[18px] border border-border bg-surface px-4 py-3 text-sm font-medium leading-relaxed text-text-primary shadow-none">
                             {msg.content}
                           </div>
                         ) : (
-                          <Markdown dir={assistantDirection ?? "auto"} className="w-full max-w-full text-start text-[15px] leading-7 text-zinc-800 dark:text-zinc-200 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_a]:font-semibold [&_a]:text-primary [&_a]:underline [&_blockquote]:my-4 [&_blockquote]:max-w-[min(720px,100%)] [&_blockquote]:border-s [&_blockquote]:border-zinc-200 [&_blockquote]:ps-4 [&_blockquote]:text-zinc-600 dark:[&_blockquote]:border-zinc-700 dark:[&_blockquote]:text-zinc-300 [&_code]:rounded-md [&_code]:bg-zinc-100 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.9em] [&_code]:text-zinc-900 dark:[&_code]:bg-zinc-900 dark:[&_code]:text-zinc-100 [&_h1]:mb-3 [&_h1]:mt-6 [&_h1]:max-w-[min(720px,100%)] [&_h1]:text-start [&_h1]:text-[1.35rem] [&_h1]:font-black [&_h1]:leading-tight [&_h1]:text-zinc-950 dark:[&_h1]:text-zinc-50 [&_h2]:mb-2.5 [&_h2]:mt-5 [&_h2]:max-w-[min(720px,100%)] [&_h2]:text-start [&_h2]:text-[1.15rem] [&_h2]:font-black [&_h2]:leading-snug [&_h2]:text-zinc-950 dark:[&_h2]:text-zinc-50 [&_h3]:mb-2 [&_h3]:mt-4 [&_h3]:max-w-[min(720px,100%)] [&_h3]:text-start [&_h3]:text-base [&_h3]:font-black [&_h3]:text-zinc-950 dark:[&_h3]:text-zinc-50 [&_li]:my-1 [&_li]:max-w-[min(720px,100%)] [&_li]:ps-0 [&_li>p]:my-0 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:ps-4 [&_p]:my-3 [&_p]:max-w-[min(720px,100%)] [&_p]:text-start [&_p]:leading-7 [&_strong]:font-black [&_strong]:text-zinc-950 dark:[&_strong]:text-zinc-50 [&_pre]:my-4 [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-zinc-200 [&_pre]:bg-zinc-950 [&_pre]:p-4 dark:[&_pre]:border-zinc-800 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-zinc-100 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:ps-4">
+                          <Markdown dir={assistantDirection ?? "auto"} className="w-full max-w-full text-start text-[15px] leading-7 text-foreground [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_a]:font-semibold [&_a]:text-primary [&_a]:underline [&_blockquote]:my-4 [&_blockquote]:max-w-[min(720px,100%)] [&_blockquote]:border-s [&_blockquote]:border-border [&_blockquote]:ps-4 [&_blockquote]:text-secondary-foreground [&_code]:rounded-md [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.9em] [&_code]:text-foreground [&_h1]:mb-3 [&_h1]:mt-6 [&_h1]:max-w-[min(720px,100%)] [&_h1]:text-start [&_h1]:text-[1.35rem] [&_h1]:font-black [&_h1]:leading-tight [&_h1]:text-foreground [&_h2]:mb-2.5 [&_h2]:mt-5 [&_h2]:max-w-[min(720px,100%)] [&_h2]:text-start [&_h2]:text-[1.15rem] [&_h2]:font-black [&_h2]:leading-snug [&_h2]:text-foreground [&_h3]:mb-2 [&_h3]:mt-4 [&_h3]:max-w-[min(720px,100%)] [&_h3]:text-start [&_h3]:text-base [&_h3]:font-black [&_h3]:text-foreground [&_li]:my-1 [&_li]:max-w-[min(720px,100%)] [&_li]:ps-0 [&_li>p]:my-0 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:ps-4 [&_p]:my-3 [&_p]:max-w-[min(720px,100%)] [&_p]:text-start [&_p]:leading-7 [&_strong]:font-black [&_strong]:text-foreground [&_pre]:my-4 [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-border [&_pre]:bg-foreground [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-background [&_ul]:my-3 [&_ul]:list-disc [&_ul]:ps-4">
                             {msg.content}
                           </Markdown>
                         )
@@ -378,7 +388,7 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
                     aria-label="Scroll to latest message"
                     title="Scroll to latest message"
                     dir="ltr"
-                    className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background text-text-secondary transition hover:border-primary/40 hover:bg-surface hover:text-primary dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:text-zinc-50 md:h-12 md:w-12"
+                    className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background text-text-secondary transition hover:border-primary/40 hover:bg-surface hover:text-primary md:h-12 md:w-12"
                   >
                     <ArrowDown className="h-5 w-5 stroke-[2.4px]" />
                   </button>
@@ -526,6 +536,28 @@ function BottomAmbientLight({ reduceMotion }: { reduceMotion: boolean | null }) 
   );
 }
 
+function TopAmbientGlow({ reduceMotion }: { reduceMotion: boolean | null }) {
+  const className =
+    "pointer-events-none absolute inset-x-[-12%] top-0 h-64 bg-[radial-gradient(ellipse_at_50%_0%,oklch(45%_0.18_265_/_0.12),transparent_62%)] dark:bg-[radial-gradient(ellipse_at_50%_0%,oklch(54%_0.17_265_/_0.12),transparent_62%)]";
+
+  if (reduceMotion) {
+    return <div aria-hidden="true" className={className} />;
+  }
+
+  return (
+    <motion.div
+      aria-hidden="true"
+      className={className}
+      animate={{ opacity: [0.5, 0.8, 0.5] }}
+      transition={{
+        duration: 6,
+        ease: "easeInOut",
+        repeat: Infinity,
+      }}
+    />
+  );
+}
+
 function ThinkingStatus({ reduceMotion }: { reduceMotion: boolean | null }) {
   return (
     <motion.div
@@ -539,7 +571,7 @@ function ThinkingStatus({ reduceMotion }: { reduceMotion: boolean | null }) {
       <span className="px-1 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">
         qentrah
       </span>
-      <span className="px-1 text-sm font-semibold text-text-secondary dark:text-zinc-300">
+      <span className="px-1 text-sm font-semibold text-text-secondary">
         <motion.span
           animate={reduceMotion ? undefined : { opacity: [0.55, 1, 0.55] }}
           transition={{ duration: 1.2, ease: "easeInOut", repeat: Infinity }}

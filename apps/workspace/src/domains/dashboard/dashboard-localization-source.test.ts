@@ -30,6 +30,6 @@ describe("workspace dashboard localization", () => {
 
     expect(source).toContain('t("normal.newProjects")');
     expect(source).toContain('tc(`stages.${client.pipelineStage}`)');
-    expect(source).toContain('text-[#0B5CFF]');
+    expect(source).toContain('text-[var(--q-accent)]');
   });
 });

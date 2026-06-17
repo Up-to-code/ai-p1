@@ -101,8 +101,8 @@ function AgentCard({ agent, isAr }: { agent: AgentItem; isAr: boolean }) {
         />
       </span>
       <div className="min-w-0 text-start">
-        <p className="text-sm font-bold text-zinc-900 dark:text-white leading-tight">{agent.name}</p>
-        <p className="mt-1 text-[11px] font-medium text-zinc-400 dark:text-zinc-500 leading-normal truncate">{descText}</p>
+        <p className="text-sm font-bold text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] leading-tight">{agent.name}</p>
+        <p className="mt-1 text-[11px] font-medium text-[var(--q-text-muted)] dark:text-zinc-500 leading-normal truncate">{descText}</p>
       </div>
     </div>
   );
@@ -116,11 +116,11 @@ export function McpAgentsShowcase({ locale }: { locale: string }) {
   const scrollingAgents = [...agentsList, ...agentsList, ...agentsList, ...agentsList];
 
   return (
-    <section className="w-full overflow-hidden border-y border-zinc-200/70 bg-white px-6 py-16 dark:border-white/[0.08] dark:bg-[#080808] md:py-24">
+    <section className="w-full overflow-hidden border-y border-zinc-200/70 bg-[var(--q-card)] px-6 py-16 dark:border-white/[0.08] dark:bg-[var(--q-bg)] md:py-24">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center" dir={isAr ? "rtl" : "ltr"}>
           <div className="flex flex-col space-y-6 text-start rtl:text-right ltr:text-left max-w-xl mx-auto lg:mx-0">
-            <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-zinc-950 dark:text-white md:text-4xl lg:text-5xl rtl:leading-[1.25]">
+            <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-4xl lg:text-5xl rtl:leading-[1.25]">
               {labels.title}
             </h2>
             <p className="text-base font-semibold leading-relaxed text-zinc-700 dark:text-zinc-300 md:text-lg rtl:leading-[1.7]">

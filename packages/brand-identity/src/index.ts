@@ -23,9 +23,9 @@ export const brandIdentity = {
     email: "hello@qentrah.com",
   },
   colors: {
-    primary: "#0b5cff",
-    primaryHover: "#084ad6",
-    primaryPress: "#063daf",
+    primary: "#0066cc",
+    primaryHover: "#0055aa",
+    primaryPress: "#004499",
     background: "#f7f9fc",
     surface: "#ffffff",
     border: "#e4eaf2",
@@ -35,7 +35,7 @@ export const brandIdentity = {
     success: "#22c55e",
     warning: "#f59e0b",
     danger: "#ef4444",
-    draft: "#2d8cff",
+    draft: "#0066cc",
   },
   products: {
     workspace: { en: "Workspace", ar: "مساحة العمل" },

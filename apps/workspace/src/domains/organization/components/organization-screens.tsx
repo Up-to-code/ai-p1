@@ -458,8 +458,8 @@ export function OrganizationScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50/50 dark:bg-[#0A0A0A]">
-      <div className="border-b border-zinc-200 bg-white dark:border-white/[0.06] dark:bg-[#111111]">
+    <div className="min-h-screen bg-background">
+      <div className="border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-6 py-10">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
             {organizationId ? (
@@ -485,26 +485,26 @@ export function OrganizationScreen() {
                 }}
               />
             ) : (
-              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-[28px] bg-zinc-100 text-2xl font-black text-zinc-400 dark:bg-zinc-800">
+              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-[28px] bg-card text-2xl font-black text-muted-foreground">
                 {initials}
               </div>
             )}
 
             <div className="min-w-0 flex-1 space-y-2">
-              <h1 className="truncate text-2xl font-black uppercase tracking-tight text-zinc-900 dark:text-white">
+              <h1 className="truncate text-2xl font-black uppercase tracking-tight text-foreground">
                 {account.organization.name}
               </h1>
               <div className="flex flex-wrap items-center gap-2">
                 <StatusPill label={account.organization.status || t("stats.verified")} tone="success" />
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
                   <Users className="h-3 w-3" />
                   {members.length} {t("stats.members")}
                 </span>
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
                   <Mail className="h-3 w-3" />
                   {pendingInvitationCount(invitationsQuery.data ?? [])} {t("stats.pendingInvites")}
                 </span>
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
                   <ShieldCheck className="h-3 w-3" />
                   {availableRoles.length} {t("stats.roles")}
                 </span>
@@ -514,7 +514,7 @@ export function OrganizationScreen() {
             <Button
               onClick={saveOrg}
               disabled={isBusy || !organizationId || !canUpdateOrganization}
-              className="h-11 shrink-0 rounded-[22px] bg-zinc-900 px-6 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-black active:scale-[0.98] disabled:opacity-50 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
+              className="h-11 shrink-0 rounded-[22px] bg-primary px-6 text-[10px] font-black uppercase tracking-widest text-primary-foreground transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
             >
               {isBusy ? <Loader2 className="me-2 h-3.5 w-3.5 animate-spin" /> : <Save className="me-2 h-3.5 w-3.5" />}
               {t("saveBtn")}
@@ -529,9 +529,9 @@ export function OrganizationScreen() {
                 onClick={() => setActiveOrganizationTab(tab.id)}
                 className={cn(
                   "flex items-center gap-2 rounded-t-xl border-b-2 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all duration-150",
-                  activeTab === tab.id
-                    ? "border-zinc-900 bg-zinc-50/80 text-zinc-900 dark:border-white dark:bg-white/[0.03] dark:text-white"
-                    : "border-transparent text-zinc-400 hover:bg-zinc-50 hover:text-zinc-600 dark:hover:bg-white/[0.02] dark:hover:text-zinc-300",
+                    activeTab === tab.id
+                      ? "border-primary bg-muted text-foreground"
+                      : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
                 <tab.icon className="h-3 w-3" />
@@ -556,7 +556,7 @@ export function OrganizationScreen() {
               </Section>
             </div>
 
-            <div className="border-t border-zinc-200/60 pt-8 dark:border-white/[0.06]">
+            <div className="border-t border-border/60 pt-8">
               <Section title={t("sections.contact")}>
                 <div className="grid gap-5 md:grid-cols-2">
                   <OrgField id="email" label={t("labels.email")} type="email" registration={register("email")} error={errors.email?.message} disabled={!canUpdateOrganization} />
@@ -574,7 +574,7 @@ export function OrganizationScreen() {
               title={t("members.title")}
               actions={(
                 <div className="flex flex-wrap gap-2 sm:justify-end">
-                  <Button disabled={!canInviteMembers} onClick={() => setInviteDialogOpen(true)} className="h-9.5 rounded-lg bg-zinc-900 text-[9px] font-black uppercase tracking-widest text-white hover:bg-black disabled:opacity-50">
+                  <Button disabled={!canInviteMembers} onClick={() => setInviteDialogOpen(true)} className="h-9.5 rounded-lg bg-primary text-[9px] font-black uppercase tracking-widest text-primary-foreground hover:bg-black disabled:opacity-50">
                     <Plus className="me-1.5 h-3.5 w-3.5" />
                     {t("invites.open")}
                   </Button>
@@ -591,7 +591,7 @@ export function OrganizationScreen() {
                 </div>
               )}
             >
-              <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-white/[0.06] dark:bg-[#111]">
+              <div className="overflow-hidden rounded-2xl border border-border bg-card">
                 {membersQuery.isLoading ? (
                   <div className="p-4">
                     <LoadingRow label={t("members.loading")} rows={3} />
@@ -601,7 +601,7 @@ export function OrganizationScreen() {
                     <EmptyState title={t("members.emptyTitle")} description={t("members.emptyDesc")} />
                   </div>
                 ) : (
-                  <div className="px-5 divide-y divide-zinc-100/60 dark:divide-white/[0.04]">
+                  <div className="px-5 divide-y divide-zinc-100/60">
                     {members.map((member) => (
                       <MemberRow
                         key={member.id}
@@ -631,7 +631,7 @@ export function OrganizationScreen() {
               {(invitationsQuery.data ?? []).length === 0 && pendingInviteLinks.length === 0 ? (
                 <EmptyState title={t("invites.emptyTitle")} description={t("invites.emptyDesc")} />
               ) : (
-                <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white px-5 divide-y divide-zinc-100/60 dark:border-white/[0.06] dark:bg-[#111] dark:divide-white/[0.04]">
+                <div className="overflow-hidden rounded-2xl border border-border bg-card px-5 divide-y divide-zinc-100/60">
                   {pendingInviteLinks.map((inviteLink) => (
                     <PendingInviteLinkRow
                       key={inviteLink.id}
@@ -705,10 +705,10 @@ export function OrganizationScreen() {
       <Dialog open={inviteDialogOpen} onOpenChange={handleInviteDialogOpenChange}>
         <DialogContent className="max-w-lg rounded-2xl p-6">
           <DialogHeader className="pe-8 text-start">
-            <DialogTitle className="text-lg font-black text-zinc-900 dark:text-white">{t("invites.createTitle")}</DialogTitle>
+            <DialogTitle className="text-lg font-black text-foreground">{t("invites.createTitle")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-5">
-            <div className="grid grid-cols-2 gap-2 rounded-2xl bg-zinc-100 p-1 dark:bg-white/5">
+            <div className="grid grid-cols-2 gap-2 rounded-2xl bg-muted p-1">
               {(["link", "email"] as InviteMode[]).map((mode) => (
                 <button
                   key={mode}
@@ -716,7 +716,7 @@ export function OrganizationScreen() {
                   onClick={() => changeInviteMode(mode)}
                   className={cn(
                     "rounded-xl px-3 py-2 text-[10px] font-black uppercase tracking-widest transition-colors",
-                    inviteMode === mode ? "bg-white text-zinc-900 dark:bg-zinc-900 dark:text-white" : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white",
+                    inviteMode === mode ? "bg-card text-foreground" : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {t(`invites.modes.${mode}`)}
@@ -726,18 +726,18 @@ export function OrganizationScreen() {
             {inviteMode === "link" && createdInviteUrl ? (
               <div className="space-y-3">
                 <div className="space-y-2">
-                  <Label htmlFor="generatedInviteUrl" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("invites.generatedLinkLabel")}</Label>
+                  <Label htmlFor="generatedInviteUrl" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("invites.generatedLinkLabel")}</Label>
                   <Input
                     id="generatedInviteUrl"
                     readOnly
                     dir="ltr"
                     value={createdInviteUrl}
-                    className="h-11 rounded-xl border-zinc-200 bg-zinc-50 text-left font-mono text-xs text-zinc-700 selection:bg-zinc-900 selection:text-white dark:border-white/10 dark:bg-white/5 dark:text-zinc-200"
+                    className="h-11 rounded-xl border-border bg-muted text-left font-mono text-xs text-muted-foreground selection:bg-primary selection:text-primary-foreground"
                   />
-                  <p className="text-xs leading-5 text-zinc-500 dark:text-zinc-400">{t("invites.generatedLinkHint")}</p>
+                  <p className="text-xs leading-5 text-muted-foreground">{t("invites.generatedLinkHint")}</p>
                 </div>
                 <DialogFooter className="mx-0 mb-0 mt-2 flex-row flex-wrap justify-start gap-2 rounded-none border-0 bg-transparent p-0 sm:justify-start">
-                  <Button type="button" onClick={copyGeneratedInviteLink} className="bg-zinc-900 text-white hover:bg-black">
+                  <Button type="button" onClick={copyGeneratedInviteLink} className="bg-primary text-primary-foreground hover:bg-black">
                     <Copy className="me-2 h-4 w-4" />
                     {copiedInviteId === (createdInviteLinkId ?? "created-link") ? t("invites.copied") : t("invites.copy")}
                   </Button>
@@ -749,20 +749,20 @@ export function OrganizationScreen() {
                 <>
                   {inviteMode === "email" && (
                     <div className="space-y-2">
-                      <Label htmlFor="inviteEmail" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("invites.emailLabel")}</Label>
+                      <Label htmlFor="inviteEmail" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("invites.emailLabel")}</Label>
                       <Input id="inviteEmail" type="email" required value={inviteEmail} onChange={(event) => setInviteEmail(event.target.value)} placeholder={t("invites.emailPlaceholder")} className="h-11 rounded-xl text-start" />
                     </div>
                   )}
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <Label htmlFor="inviteRole" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("invites.roleLabel")}</Label>
-                      <HelpCircle className="h-3.5 w-3.5 text-zinc-400" aria-label={t("invites.roleHint")} />
+                      <Label htmlFor="inviteRole" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("invites.roleLabel")}</Label>
+                      <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" aria-label={t("invites.roleHint")} />
                     </div>
                     <Select value={inviteRole} onValueChange={(value) => value && setInviteRole(value)}>
                       <SelectTrigger
                         id="inviteRole"
                         aria-label={t("invites.roleLabel")}
-                        className="h-11 rounded-xl border-zinc-200 bg-white text-sm font-bold dark:border-white/10 dark:bg-[#111]"
+                        className="h-11 rounded-xl border-border bg-card text-sm font-bold"
                       >
                         <SelectValue />
                       </SelectTrigger>
@@ -774,7 +774,7 @@ export function OrganizationScreen() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <p className="text-xs leading-5 text-zinc-500 dark:text-zinc-400">{t("invites.roleHint")}</p>
+                    <p className="text-xs leading-5 text-muted-foreground">{t("invites.roleHint")}</p>
                   </div>
                   {inviteMode === "link" ? (
                     <div className="space-y-2 pt-1">
@@ -782,7 +782,7 @@ export function OrganizationScreen() {
                         type="button"
                         onClick={generateInviteLink}
                         disabled={inviteLinkMutation.isPending || !canInviteMembers || !organizationId}
-                        className="h-11 w-full rounded-xl bg-zinc-900 text-[10px] font-black uppercase tracking-widest text-white hover:bg-black"
+                        className="h-11 w-full rounded-xl bg-primary text-[10px] font-black uppercase tracking-widest text-primary-foreground hover:bg-black"
                       >
                         {inviteLinkMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <LinkIcon className="me-2 h-4 w-4" />}
                         {t("invites.createLink")}
@@ -798,7 +798,7 @@ export function OrganizationScreen() {
                         type="button"
                         onClick={sendEmailInvite}
                         disabled={inviteMutation.isPending || !inviteEmail || !canInviteMembers}
-                        className="bg-zinc-900 text-white hover:bg-black"
+                        className="bg-primary text-primary-foreground hover:bg-black"
                       >
                         {inviteMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Mail className="me-2 h-4 w-4" />}
                         {t("invites.sendEmail")}
@@ -821,7 +821,7 @@ export function OrganizationScreen() {
           <DialogHeader>
             <DialogTitle>{memberAction?.type === "remove" ? t("members.removeTitle") : t("members.roleTitle")}</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted-foreground">
             {memberAction?.type === "remove"
               ? t("members.removeDesc", { name: memberAction ? memberName(memberAction.member) : "" })
               : t("members.roleDesc", { name: memberAction ? memberName(memberAction.member) : "", role: memberAction?.role ?? "" })}
@@ -829,7 +829,7 @@ export function OrganizationScreen() {
           <DialogFooter>
             <Button variant="ghost" onClick={() => setMemberAction(null)}>{t("common.cancel")}</Button>
             <Button
-              className="bg-zinc-900 text-white hover:bg-black"
+              className="bg-primary text-primary-foreground hover:bg-black"
               disabled={removeMemberMutation.isPending || memberRoleMutation.isPending}
               onClick={() => {
                 if (!memberAction) return;
@@ -1005,27 +1005,27 @@ function NotificationPolicyRow({
       type="button"
       disabled={disabled}
       onClick={onToggle}
-      className="flex w-full items-center justify-between gap-4 rounded-2xl border border-zinc-100 bg-white p-4 text-start transition-colors hover:border-zinc-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/[0.06] dark:bg-[#111] dark:hover:border-white/10"
+      className="flex w-full items-center justify-between gap-4 rounded-2xl border border-border bg-card p-4 text-start transition-colors hover:border-border disabled:cursor-not-allowed disabled:opacity-60"
     >
       <span className="flex min-w-0 items-start gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700 dark:bg-white/5 dark:text-zinc-200">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
           <Icon className="h-4 w-4" />
         </span>
         <span className="min-w-0">
-          <span className="block text-sm font-black text-zinc-900 dark:text-white">{label}</span>
-          <span className="mt-1 block text-xs leading-5 text-zinc-500 dark:text-zinc-400">{note}</span>
+          <span className="block text-sm font-black text-foreground">{label}</span>
+          <span className="mt-1 block text-xs leading-5 text-muted-foreground">{note}</span>
         </span>
       </span>
       <span
         aria-hidden="true"
         className={cn(
           "flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition-colors",
-          enabled ? "bg-zinc-900 dark:bg-white" : "bg-zinc-200 dark:bg-white/10",
+          enabled ? "bg-primary" : "bg-muted",
         )}
       >
         <span
           className={cn(
-            "h-5 w-5 rounded-full bg-white shadow-sm transition-transform dark:bg-zinc-950",
+            "h-5 w-5 rounded-full bg-white shadow-sm transition-transform",
             enabled && "translate-x-5",
           )}
         />
@@ -1197,24 +1197,24 @@ function AgentLinksPanel({
     const isDraft = connection.status === "draft";
 
     return (
-      <div key={connection.id} className={cn("rounded-2xl border border-zinc-100 bg-white p-4.5 transition-all dark:border-white/[0.04] dark:bg-[#111]", isDraft && "border-sky-200/60 bg-sky-500/5 dark:border-sky-500/10")}>
+      <div key={connection.id} className={cn("rounded-2xl border border-border bg-card p-4.5 transition-all", isDraft && "border-sky-200/60 bg-sky-500/5 dark:border-sky-500/10")}>
         <div className="flex h-full flex-col gap-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-1.5">
                 <StatusPill label={t(`status.${connection.status}`)} tone={connection.status === "active" ? "success" : connection.status === "paused" || isDraft ? "warning" : "neutral"} />
-                <span className="rounded-full bg-zinc-100 px-2 py-0.5 font-mono text-[9px] font-bold text-zinc-500 dark:bg-white/5">{t("labels.keyEnding", { last4: connection.keyLast4 })}</span>
-                <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[9px] font-black text-zinc-500 dark:bg-white/5">{t(`principal.${connection.principalType}.title`)}</span>
+                <span className="rounded-full bg-muted px-2 py-0.5 font-mono text-[9px] font-bold text-muted-foreground">{t("labels.keyEnding", { last4: connection.keyLast4 })}</span>
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[9px] font-black text-muted-foreground">{t(`principal.${connection.principalType}.title`)}</span>
               </div>
-              <p className="mt-2.5 truncate text-sm font-black text-zinc-800 dark:text-zinc-200">{connection.name}</p>
+              <p className="mt-2.5 truncate text-sm font-black text-foreground">{connection.name}</p>
             </div>
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-50 text-zinc-400 dark:bg-white/5 dark:text-zinc-500">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
               <Bot className="h-4 w-4" />
             </div>
           </div>
           
-          <div className="flex items-center gap-2 rounded-xl bg-zinc-50/50 px-2.5 py-1.5 dark:bg-white/[0.01]">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-zinc-100 text-[9px] font-black text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+          <div className="flex items-center gap-2 rounded-xl bg-muted/50 px-2.5 py-1.5">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-card text-[9px] font-black text-muted-foreground">
               {creatorImage ? (
                 <span
                   aria-label={creatorName}
@@ -1225,19 +1225,19 @@ function AgentLinksPanel({
               ) : getInitials(creatorName)}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-[10px] font-black text-zinc-900 dark:text-white">{creatorName}</p>
-              <p className="truncate text-[9px] font-bold text-zinc-400">{t("labels.createdBy", { email: creatorEmail })}</p>
+              <p className="truncate text-[10px] font-black text-foreground">{creatorName}</p>
+              <p className="truncate text-[9px] font-bold text-muted-foreground">{t("labels.createdBy", { email: creatorEmail })}</p>
             </div>
           </div>
           
-          <p className="line-clamp-2 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
+          <p className="line-clamp-2 text-[11px] leading-5 text-muted-foreground">
             {agentPermissionSummary(connection.permissions, {
               resource: (resource) => t(`resources.${resource}`),
               action: (action) => t(`actions.${action}`),
             }) || t("labels.noWork")}
           </p>
 
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[9px] font-bold text-zinc-400 uppercase tracking-wider">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
             <span>{t("labels.used", { count: connection.usageCount })}</span>
             <span className="h-0.5 w-0.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
             <span>{t("labels.created", { date: formatDate(connection.createdAt) })}</span>
@@ -1249,7 +1249,7 @@ function AgentLinksPanel({
             )}
           </div>
 
-          <div className="mt-auto flex flex-wrap gap-1.5 border-t border-zinc-100/60 pt-3 dark:border-white/[0.04]">
+          <div className="mt-auto flex flex-wrap gap-1.5 border-t border-border/60 pt-3">
             {connection.status !== "revoked" && (
               <Button
                 variant="outline"
@@ -1309,7 +1309,7 @@ function AgentLinksPanel({
           <Button
             disabled={!canCreate}
             onClick={openNewAgentLinkDialog}
-            className="h-10 rounded-lg bg-zinc-900 px-4 text-[9px] font-black uppercase tracking-widest text-white hover:bg-black"
+            className="h-10 rounded-lg bg-primary px-4 text-[9px] font-black uppercase tracking-widest text-primary-foreground hover:bg-black"
           >
             <Plus className="me-1.5 h-3.5 w-3.5" />
             {t("newButton")}
@@ -1317,12 +1317,12 @@ function AgentLinksPanel({
         )}
       >
         <div className="space-y-6">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-zinc-400">
-            <span>{t("stats.active")}: <strong className="text-zinc-700 dark:text-zinc-300">{agentStats.active}</strong></span>
-            <span className="h-1 w-1 rounded-full bg-zinc-200 dark:bg-zinc-800" />
-            <span>{t("stats.calls")}: <strong className="text-zinc-700 dark:text-zinc-300">{agentStats.calls}</strong></span>
-            <span className="h-1 w-1 rounded-full bg-zinc-200 dark:bg-zinc-800" />
-            <span>{t("stats.drafts")}: <strong className="text-zinc-700 dark:text-zinc-300">{agentStats.drafts}</strong></span>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-muted-foreground">
+            <span>{t("stats.active")}: <strong className="text-muted-foreground">{agentStats.active}</strong></span>
+            <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+            <span>{t("stats.calls")}: <strong className="text-muted-foreground">{agentStats.calls}</strong></span>
+            <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+            <span>{t("stats.drafts")}: <strong className="text-muted-foreground">{agentStats.drafts}</strong></span>
           </div>
 
           <div className="grid gap-4 xl:grid-cols-2">
@@ -1355,7 +1355,7 @@ function AgentLinksPanel({
       }}>
         <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto rounded-2xl p-6">
           <DialogHeader className="pe-8 text-start">
-            <DialogTitle className="text-lg font-black text-zinc-900 dark:text-white">
+            <DialogTitle className="text-lg font-black text-foreground">
               {oneTimeLink ? t("modal.readyTitle") : isEditing ? t("modal.editTitle") : t("modal.newTitle")}
             </DialogTitle>
           </DialogHeader>
@@ -1365,23 +1365,23 @@ function AgentLinksPanel({
               <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
                 {t("modal.oneTimeWarning")}
               </div>
-              <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4 dark:border-white/[0.08] dark:bg-white/[0.04]">
+              <div className="rounded-2xl border border-border bg-muted/80 p-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 shadow-sm dark:bg-zinc-900 dark:text-emerald-300">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-card text-emerald-700 shadow-sm dark:text-emerald-300">
                     <ShieldCheck className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 space-y-1">
-                    <p className="text-sm font-black text-zinc-900 dark:text-white">{t("modal.canDoTitle")}</p>
-                    <p className="text-xs leading-6 text-zinc-600 dark:text-zinc-300">
+                    <p className="text-sm font-black text-foreground">{t("modal.canDoTitle")}</p>
+                    <p className="text-xs leading-6 text-muted-foreground/50">
                       {oneTimePermissionSummary || t("labels.noWork")}
                     </p>
-                    <p className="text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">{t("modal.canDoDescription")}</p>
+                    <p className="text-[11px] leading-5 text-muted-foreground">{t("modal.canDoDescription")}</p>
                   </div>
                 </div>
               </div>
               <Input readOnly dir="ltr" value={oneTimeLink} className="h-12 rounded-xl font-mono text-xs" />
               <DialogFooter className="justify-start">
-                <Button onClick={copyOneTimeLink} className="bg-zinc-900 text-white hover:bg-black">
+                <Button onClick={copyOneTimeLink} className="bg-primary text-primary-foreground hover:bg-black">
                   <Copy className="me-2 h-4 w-4" />
                   {t("buttons.copy")}
                 </Button>
@@ -1392,15 +1392,15 @@ function AgentLinksPanel({
             <div className="space-y-6">
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
-                  <Label htmlFor="agentName" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.name")}</Label>
+                  <Label htmlFor="agentName" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("modal.name")}</Label>
                   <Input id="agentName" value={agentName} onChange={(event) => setAgentName(event.target.value)} className="h-11 rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.startWith")}</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("modal.startWith")}</Label>
                   <Select value={presetId} onValueChange={(value) => {
                     if (value) applyPreset(value);
                   }}>
-                    <SelectTrigger className="h-11 rounded-xl border-zinc-200 bg-white text-sm font-bold dark:border-white/10 dark:bg-[#111]">
+                    <SelectTrigger className="h-11 rounded-xl border-border bg-card text-sm font-bold">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent align="end" className="rounded-xl">
@@ -1414,11 +1414,11 @@ function AgentLinksPanel({
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.expiry")}</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("modal.expiry")}</Label>
                   <Select value={agentExpiry} onValueChange={(value) => {
                     if (value) setAgentExpiry(value);
                   }}>
-                    <SelectTrigger className="h-11 rounded-xl border-zinc-200 bg-white text-sm font-bold dark:border-white/10 dark:bg-[#111]">
+                    <SelectTrigger className="h-11 rounded-xl border-border bg-card text-sm font-bold">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent align="end" className="rounded-xl">
@@ -1432,13 +1432,13 @@ function AgentLinksPanel({
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="agentInstructions" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.instructions")}</Label>
+                <Label htmlFor="agentInstructions" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("modal.instructions")}</Label>
                 <textarea
                   id="agentInstructions"
                   value={instructions}
                   onChange={(event) => setInstructions(event.target.value)}
                   rows={3}
-                  className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-medium outline-none transition-colors focus:border-zinc-900 dark:border-white/10 dark:bg-[#111]"
+                  className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm font-medium outline-none transition-colors focus:border-ring"
                 />
               </div>
               <div className="grid gap-3 md:grid-cols-2">
@@ -1447,14 +1447,14 @@ function AgentLinksPanel({
                   const activeActions = agentPermissionActions(permissions, area.resource);
                   const allowedActions = agentPermissionActions(grantablePermissions, area.resource);
                   return (
-                    <div key={area.resource} className="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 dark:border-white/[0.06] dark:bg-white/[0.03]">
+                    <div key={area.resource} className="rounded-2xl border border-border bg-muted/60 p-4">
                       <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-white">
+                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-card text-foreground shadow-sm">
                           <Icon className="h-4 w-4" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-black text-zinc-900 dark:text-white">{t(`resources.${area.resource}`)}</p>
-                          <p className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">{t(`resourceHelp.${area.resource}`)}</p>
+                          <p className="text-sm font-black text-foreground">{t(`resources.${area.resource}`)}</p>
+                          <p className="mt-1 text-xs leading-5 text-muted-foreground">{t(`resourceHelp.${area.resource}`)}</p>
                         </div>
                       </div>
                       <div className="mt-4 flex flex-wrap gap-2">
@@ -1467,8 +1467,8 @@ function AgentLinksPanel({
                             className={cn(
                               "rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-colors",
                               activeActions.includes(action) && allowedActions.includes(action)
-                                ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900"
-                                : "border-zinc-200 bg-white text-zinc-500 hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:bg-transparent dark:hover:text-white",
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : "border-border bg-card text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40",
                             )}
                           >
                             {t(`actions.${action}`)}
@@ -1490,7 +1490,7 @@ function AgentLinksPanel({
                   <span
                     aria-hidden="true"
                     className={cn(
-                      "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 bg-white shadow-sm transition-colors peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-red-500 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-red-50 dark:bg-zinc-950 dark:peer-focus-visible:ring-offset-red-950",
+                      "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 bg-card shadow-sm transition-colors peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-red-500 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-red-50 dark:peer-focus-visible:ring-offset-red-950",
                       allowDelete
                         ? "border-red-600 bg-red-600 text-white dark:border-red-400 dark:bg-red-500"
                         : "border-red-400 text-transparent dark:border-red-300",
@@ -1520,7 +1520,7 @@ function AgentLinksPanel({
                     }
                     createMutation.mutate();
                   }}
-                  className="bg-zinc-900 text-white hover:bg-black"
+                  className="bg-primary text-primary-foreground hover:bg-black"
                 >
                   {createMutation.isPending || updateMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <KeyRound className="me-2 h-4 w-4" />}
                   {isEditing ? t("modal.save") : t("modal.make")}
@@ -1688,7 +1688,7 @@ function ApiKeysPanel({
           <Button
             disabled={!canCreate}
             onClick={openCreateDialog}
-            className="h-10 rounded-lg bg-zinc-900 px-4 text-[9px] font-black uppercase tracking-widest text-white hover:bg-black"
+            className="h-10 rounded-lg bg-primary px-4 text-[9px] font-black uppercase tracking-widest text-primary-foreground hover:bg-black"
           >
             <Plus className="me-1.5 h-3.5 w-3.5" />
             {t("newButton")}
@@ -1696,12 +1696,12 @@ function ApiKeysPanel({
         )}
       >
         <div className="space-y-6">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-zinc-400">
-            <span>{t("stats.active")}: <strong className="text-zinc-700 dark:text-zinc-300">{stats.active}</strong></span>
-            <span className="h-1 w-1 rounded-full bg-zinc-200 dark:bg-zinc-800" />
-            <span>{t("stats.quota")}: <strong className="text-zinc-700 dark:text-zinc-300">{t("stats.quotaValue")}</strong></span>
-            <span className="h-1 w-1 rounded-full bg-zinc-200 dark:bg-zinc-800" />
-            <span>{t("stats.calls")}: <strong className="text-zinc-700 dark:text-zinc-300">{stats.calls}</strong></span>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-muted-foreground">
+            <span>{t("stats.active")}: <strong className="text-muted-foreground">{stats.active}</strong></span>
+            <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+            <span>{t("stats.quota")}: <strong className="text-muted-foreground">{t("stats.quotaValue")}</strong></span>
+            <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+            <span>{t("stats.calls")}: <strong className="text-muted-foreground">{stats.calls}</strong></span>
           </div>
 
           <div className="grid gap-4 xl:grid-cols-2">
@@ -1709,29 +1709,29 @@ function ApiKeysPanel({
             {canRead && query.isLoading && <LoadingCardGrid label={t("empty.loading")} />}
             {canRead && !query.isLoading && keys.length === 0 && <EmptyState title={t("empty.noKeysTitle")} description={t("empty.noKeysDescription")} />}
             {keys.map((key) => (
-            <div key={key.id} className="rounded-2xl border border-zinc-100 bg-white p-4.5 transition-all dark:border-white/[0.04] dark:bg-[#111]">
+            <div key={key.id} className="rounded-2xl border border-border bg-card p-4.5 transition-all">
               <div className="flex h-full flex-col gap-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-1.5">
                       <StatusPill label={t(`status.${key.status}`)} tone={key.status === "active" ? "success" : key.status === "expired" ? "warning" : "neutral"} />
-                      <span className="rounded-full bg-zinc-100 px-2 py-0.5 font-mono text-[9px] font-bold text-zinc-500 dark:bg-white/5">{t("labels.keyEnding", { last4: key.keyLast4 })}</span>
+                      <span className="rounded-full bg-muted px-2 py-0.5 font-mono text-[9px] font-bold text-muted-foreground">{t("labels.keyEnding", { last4: key.keyLast4 })}</span>
                     </div>
-                    <p className="mt-2.5 truncate text-sm font-black text-zinc-800 dark:text-zinc-200">{key.name}</p>
+                    <p className="mt-2.5 truncate text-sm font-black text-foreground">{key.name}</p>
                   </div>
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-50 text-zinc-400 dark:bg-white/5 dark:text-zinc-500">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
                     <KeyRound className="h-4 w-4" />
                   </div>
                 </div>
                 
-                <p className="line-clamp-2 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
+                <p className="line-clamp-2 text-[11px] leading-5 text-muted-foreground">
                   {apiKeyPermissionSummary(key.permissions, {
                     resource: (resource) => t(`resources.${resource}`),
                     action: (action) => t(`actions.${action}`),
                   }) || t("labels.noWork")}
                 </p>
 
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[9px] font-bold text-zinc-400 uppercase tracking-wider">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
                   <span>{t("labels.used", { count: key.usageCount })}</span>
                   <span className="h-0.5 w-0.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
                   <span>{t("labels.quota", { used: key.quotaUsed, limit: key.quotaLimit })}</span>
@@ -1745,7 +1745,7 @@ function ApiKeysPanel({
                   )}
                 </div>
 
-                <div className="mt-auto flex flex-wrap gap-1.5 border-t border-zinc-100/60 pt-3 dark:border-white/[0.04]">
+                <div className="mt-auto flex flex-wrap gap-1.5 border-t border-border/60 pt-3">
                   {key.status !== "revoked" && (
                     <Button
                       variant="outline"
@@ -1785,7 +1785,7 @@ function ApiKeysPanel({
       }}>
         <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto rounded-2xl p-6">
           <DialogHeader className="pe-8 text-start">
-            <DialogTitle className="text-lg font-black text-zinc-900 dark:text-white">
+            <DialogTitle className="text-lg font-black text-foreground">
               {oneTimeKey ? t("modal.readyTitle") : rotatingKey ? t("modal.rotateTitle") : t("modal.newTitle")}
             </DialogTitle>
           </DialogHeader>
@@ -1795,30 +1795,30 @@ function ApiKeysPanel({
               <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
                 {t("modal.oneTimeWarning")}
               </div>
-              <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4 dark:border-white/[0.08] dark:bg-white/[0.04]">
-                <p className="text-sm font-black text-zinc-900 dark:text-white">{t("modal.canDoTitle")}</p>
-                <p className="mt-1 text-xs leading-6 text-zinc-600 dark:text-zinc-300">{oneTimePermissionSummary}</p>
+              <div className="rounded-2xl border border-border bg-muted/80 p-4">
+                <p className="text-sm font-black text-foreground">{t("modal.canDoTitle")}</p>
+                <p className="mt-1 text-xs leading-6 text-muted-foreground/50">{oneTimePermissionSummary}</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="apiKeyBaseUrl" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.apiUrl")}</Label>
+                <Label htmlFor="apiKeyBaseUrl" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("modal.apiUrl")}</Label>
                 <Input id="apiKeyBaseUrl" readOnly dir="ltr" value={oneTimeApiBaseUrl} className="h-12 rounded-xl font-mono text-xs" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="apiKeyExampleRequest" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.exampleRequest")}</Label>
+                <Label htmlFor="apiKeyExampleRequest" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("modal.exampleRequest")}</Label>
                 <textarea
                   id="apiKeyExampleRequest"
                   readOnly
                   dir="ltr"
                   value={oneTimeStarterRequest}
-                  className="min-h-24 w-full resize-none rounded-xl border border-zinc-200 bg-white px-3 py-3 font-mono text-xs leading-5 text-zinc-900 shadow-sm outline-none dark:border-white/10 dark:bg-[#111] dark:text-white"
+                  className="min-h-24 w-full resize-none rounded-xl border border-border bg-card px-3 py-3 font-mono text-xs leading-5 text-foreground shadow-sm outline-none"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="apiKeySecret" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.secret")}</Label>
+                <Label htmlFor="apiKeySecret" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("modal.secret")}</Label>
                 <Input id="apiKeySecret" readOnly dir="ltr" value={oneTimeKey} className="h-12 rounded-xl font-mono text-xs" />
               </div>
               <DialogFooter className="justify-start">
-                <Button onClick={copyOneTimeKey} className="bg-zinc-900 text-white hover:bg-black">
+                <Button onClick={copyOneTimeKey} className="bg-primary text-primary-foreground hover:bg-black">
                   <Copy className="me-2 h-4 w-4" />
                   {t("buttons.copy")}
                 </Button>
@@ -1829,13 +1829,13 @@ function ApiKeysPanel({
             <div className="space-y-6">
               {!rotatingKey && (
                 <div className="space-y-2">
-                  <Label htmlFor="apiKeyName" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.name")}</Label>
+                  <Label htmlFor="apiKeyName" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("modal.name")}</Label>
                   <Input id="apiKeyName" value={keyName} onChange={(event) => setKeyName(event.target.value)} className="h-11 rounded-xl" />
                 </div>
               )}
               <div className="space-y-2">
-                <Label htmlFor="apiKeyExpiry" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("modal.expiry")}</Label>
-                <select id="apiKeyExpiry" value={expiry} onChange={(event) => setExpiry(event.target.value as OrganizationApiKeyExpiry)} className="h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm font-bold dark:border-white/10 dark:bg-[#111]">
+                <Label htmlFor="apiKeyExpiry" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("modal.expiry")}</Label>
+                <select id="apiKeyExpiry" value={expiry} onChange={(event) => setExpiry(event.target.value as OrganizationApiKeyExpiry)} className="h-11 w-full rounded-xl border border-border bg-card px-3 text-sm font-bold">
                   {apiKeyExpiryOptions.map((option) => <option key={option} value={option}>{t(`expiry.${option}`)}</option>)}
                 </select>
               </div>
@@ -1846,14 +1846,14 @@ function ApiKeysPanel({
                     const activeActions = apiKeyPermissionActions(permissions, area.resource);
                     const allowedActions = apiKeyPermissionActions(grantablePermissions, area.resource);
                     return (
-                      <div key={area.resource} className="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 dark:border-white/[0.06] dark:bg-white/[0.03]">
+                    <div key={area.resource} className="rounded-2xl border border-border bg-muted/60 p-4">
                         <div className="flex items-start gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-white">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-card text-foreground shadow-sm">
                             <Icon className="h-4 w-4" />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-black text-zinc-900 dark:text-white">{t(`resources.${area.resource}`)}</p>
-                            <p className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">{t(`resourceHelp.${area.resource}`)}</p>
+                            <p className="text-sm font-black text-foreground">{t(`resources.${area.resource}`)}</p>
+                            <p className="mt-1 text-xs leading-5 text-muted-foreground">{t(`resourceHelp.${area.resource}`)}</p>
                           </div>
                         </div>
                         <div className="mt-4 flex flex-wrap gap-2">
@@ -1866,8 +1866,8 @@ function ApiKeysPanel({
                               className={cn(
                                 "rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-colors",
                                 activeActions.includes(action) && allowedActions.includes(action)
-                                  ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900"
-                                  : "border-zinc-200 bg-white text-zinc-500 hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:bg-transparent dark:hover:text-white",
+                                ? "border-primary bg-primary text-primary-foreground"
+                                   : "border-border bg-card text-muted-foreground hover:border-ring hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40",
                               )}
                             >
                               {t(`actions.${action}`)}
@@ -1884,7 +1884,7 @@ function ApiKeysPanel({
                 <Button
                   disabled={!canSubmit || createMutation.isPending || rotateMutation.isPending}
                   onClick={() => rotatingKey ? rotateMutation.mutate() : createMutation.mutate()}
-                  className="bg-zinc-900 text-white hover:bg-black"
+                  className="bg-primary text-primary-foreground hover:bg-black"
                 >
                   {createMutation.isPending || rotateMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <KeyRound className="me-2 h-4 w-4" />}
                   {rotatingKey ? t("modal.rotate") : t("modal.make")}
@@ -1917,17 +1917,17 @@ function CustomPermissionsDrawer({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side={side}
-        className="!w-[min(96vw,1120px)] !max-w-none border-zinc-200 bg-zinc-50/95 p-0 shadow-2xl dark:border-white/10 dark:bg-[#0A0A0A]"
+        className="!w-[min(96vw,1120px)] !max-w-none border-border bg-muted p-0 shadow-2xl"
       >
         <div className="flex min-h-0 flex-1 flex-col">
-          <SheetHeader className="border-b border-zinc-200 bg-white px-6 py-6 pe-14 dark:border-white/[0.06] dark:bg-[#111111]">
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-zinc-400">
+          <SheetHeader className="border-b border-border bg-card px-6 py-6 pe-14">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
               {t("roles.pageEyebrow")}
             </p>
-            <SheetTitle className="text-2xl font-black uppercase tracking-tight text-zinc-900 dark:text-white">
+            <SheetTitle className="text-2xl font-black uppercase tracking-tight text-foreground">
               {t("roles.pageTitle")}
             </SheetTitle>
-            <SheetDescription className="max-w-3xl text-xs font-medium leading-5 text-zinc-500 dark:text-zinc-400">
+            <SheetDescription className="max-w-3xl text-xs font-medium leading-5 text-muted-foreground">
               {t("roles.pageDesc")}
             </SheetDescription>
           </SheetHeader>
@@ -2053,26 +2053,26 @@ function RoleManagementPanel({ surface = "page" }: { surface?: "page" | "drawer"
   const content = (
     <div className={surface === "drawer" ? "space-y-8" : "mx-auto max-w-5xl space-y-8 px-6 py-10"}>
       <Section title={editingRole ? t("roles.editTitle") : t("roles.createTitle")} description={t("roles.createDesc")}>
-        <div className="space-y-5 rounded-2xl border border-zinc-200 bg-white p-5 dark:border-white/[0.06] dark:bg-[#111]">
+        <div className="space-y-5 rounded-2xl border border-border bg-card p-5">
           <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_260px_auto] lg:items-end">
             <div className="space-y-2">
-              <Label htmlFor="roleName" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("roles.name")}</Label>
+              <Label htmlFor="roleName" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("roles.name")}</Label>
               <Input id="roleName" value={roleName} onChange={(event) => setRoleName(event.target.value)} placeholder={t("roles.namePlaceholder")} className="h-11 rounded-xl" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="roleTemplate" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{t("roles.templateSelect")}</Label>
+              <Label htmlFor="roleTemplate" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("roles.templateSelect")}</Label>
               <Select value={templateId} onValueChange={(value) => value && applyTemplate(value)}>
                 <SelectTrigger
                   id="roleTemplate"
                   size="sm"
-                  className="h-11 rounded-xl border-zinc-200 bg-white px-3 text-sm font-extrabold text-zinc-950 hover:bg-zinc-50 focus:bg-white dark:border-white/10 dark:bg-[#111] dark:text-white dark:hover:bg-white/[0.07] dark:focus:bg-white/[0.07]"
+                  className="h-11 rounded-xl border-border bg-card px-3 text-sm font-extrabold text-foreground hover:bg-muted focus:bg-card"
                 >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent
                   align="start"
                   sideOffset={8}
-                  className="rounded-xl border-zinc-200 bg-white p-1.5 dark:border-white/10 dark:bg-[#111]"
+                  className="rounded-xl border-border bg-card p-1.5"
                 >
                   <SelectItem value="blank" className="rounded-lg py-2.5 text-sm font-bold">
                     {t("roles.templateBlank")}
@@ -2091,7 +2091,7 @@ function RoleManagementPanel({ surface = "page" }: { surface?: "page" | "drawer"
                   {t("roles.cancelEdit")}
                 </Button>
               )}
-              <Button type="button" onClick={() => roleMutation.mutate()} disabled={roleMutation.isPending || !organizationId || (editingRole ? !canUpdateRoles : !canCreateRoles)} className="h-11 rounded-xl bg-zinc-900 text-white hover:bg-black disabled:opacity-50">
+              <Button type="button" onClick={() => roleMutation.mutate()} disabled={roleMutation.isPending || !organizationId || (editingRole ? !canUpdateRoles : !canCreateRoles)} className="h-11 rounded-xl bg-primary text-primary-foreground hover:bg-black disabled:opacity-50">
                 {roleMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Save className="me-2 h-4 w-4" />}
                 {editingRole ? t("roles.update") : t("roles.create")}
               </Button>
@@ -2121,7 +2121,7 @@ function RoleManagementPanel({ surface = "page" }: { surface?: "page" | "drawer"
             <button
               type="button"
               onClick={() => setShowAdvancedWork((current) => !current)}
-              className="text-[10px] font-black uppercase tracking-widest text-zinc-500 underline-offset-4 hover:text-zinc-900 hover:underline dark:hover:text-white"
+              className="text-[10px] font-black uppercase tracking-widest text-muted-foreground underline-offset-4 hover:text-foreground hover:underline dark:hover:text-white"
             >
               {showAdvancedWork ? t("roles.hideAdvanced") : t("roles.showAdvanced")}
             </button>
@@ -2191,20 +2191,20 @@ function RoleManagementPanel({ surface = "page" }: { surface?: "page" | "drawer"
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50/50 dark:bg-[#0A0A0A]">
-      <div className="border-b border-zinc-200 bg-white dark:border-white/[0.06] dark:bg-[#111111]">
+    <div className="min-h-screen bg-muted/50">
+      <div className="border-b border-border bg-card">
         <div className="mx-auto max-w-5xl px-6 py-8">
           <Link href={`/${locale}/settings/organization?tab=members`} className={cn(buttonVariants({ variant: "ghost" }), "mb-5 h-9 rounded-xl text-[10px] font-black uppercase tracking-widest")}>
             {t("roles.backToOrganization")}
           </Link>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-zinc-400">{t("roles.pageEyebrow")}</p>
-              <h1 className="mt-2 text-3xl font-black uppercase tracking-tight text-zinc-900 dark:text-white">{t("roles.pageTitle")}</h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500 dark:text-zinc-400">{t("roles.pageDesc")}</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">{t("roles.pageEyebrow")}</p>
+              <h1 className="mt-2 text-3xl font-black uppercase tracking-tight text-foreground">{t("roles.pageTitle")}</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{t("roles.pageDesc")}</p>
             </div>
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-white/10 dark:bg-white/[0.03]">
-              <p className="flex items-center gap-2 text-xs font-bold text-zinc-500">
+            <div className="rounded-2xl border border-border bg-muted px-4 py-3">
+              <p className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
                 <HelpCircle className="h-4 w-4" />
                 {t("roles.lessIsMoreHint")}
               </p>
@@ -2223,8 +2223,8 @@ function Section({ title, description, actions, children }: { title: string; des
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-zinc-900 dark:text-white">{title}</h2>
-          {description && <p className="mt-1 max-w-3xl text-[10px] font-medium leading-5 text-zinc-400">{description}</p>}
+          <h2 className="text-[11px] font-black uppercase tracking-[0.18em] text-foreground">{title}</h2>
+          {description && <p className="mt-1 max-w-3xl text-[10px] font-medium leading-5 text-muted-foreground">{description}</p>}
         </div>
         {actions && <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">{actions}</div>}
       </div>
@@ -2236,12 +2236,12 @@ function Section({ title, description, actions, children }: { title: string; des
 function OrgField({ id, label, type = "text", registration, error, disabled }: { id: string; label: string; type?: string; registration: UseFormRegisterReturn; error?: string; disabled?: boolean }) {
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={id} className="text-[9px] font-black uppercase tracking-[0.12em] text-zinc-400 dark:text-zinc-500">{label}</Label>
+      <Label htmlFor={id} className="text-[9px] font-black uppercase tracking-[0.12em] text-muted-foreground">{label}</Label>
       <Input
         id={id}
         type={type}
         disabled={disabled}
-        className="h-10 rounded-lg border-zinc-200 bg-white/50 text-xs font-semibold shadow-none transition-colors focus-visible:border-zinc-400 focus-visible:ring-0 disabled:cursor-not-allowed disabled:bg-zinc-100/60 disabled:text-zinc-400 dark:border-white/10 dark:bg-[#0c0c0c] dark:disabled:bg-white/[0.03] dark:focus-visible:border-zinc-700"
+        className="h-10 rounded-lg border-border bg-card/50 text-xs font-semibold shadow-none transition-colors focus-visible:border-ring focus-visible:ring-0 disabled:cursor-not-allowed disabled:bg-muted/60 disabled:text-muted-foreground"
         aria-invalid={Boolean(error)}
         {...registration}
       />
@@ -2277,25 +2277,25 @@ function MemberRow({
   const email = memberEmail(member);
 
   return (
-    <div className="flex flex-col gap-4 py-4.5 border-b border-zinc-100/60 dark:border-white/[0.04] last:border-b-0 md:flex-row md:items-center">
+    <div className="flex flex-col gap-4 py-4.5 border-b border-border/60 last:border-b-0 md:flex-row md:items-center">
       <div className="flex min-w-0 flex-1 items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-zinc-100 text-xs font-black uppercase text-zinc-500 dark:bg-white/5">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted text-xs font-black uppercase text-muted-foreground">
           {member.user?.image ? <img src={member.user.image} alt={name} className="h-full w-full object-cover" /> : getInitials(name)}
         </div>
         <div className="min-w-0">
-          <p className="truncate text-xs font-black text-zinc-900 dark:text-white">
-            {name} {isCurrentUser && <span className="text-[9px] font-bold text-zinc-400">({labels.currentUser})</span>}
+          <p className="truncate text-xs font-black text-foreground">
+            {name} {isCurrentUser && <span className="text-[9px] font-bold text-muted-foreground">({labels.currentUser})</span>}
           </p>
-          <p className="mt-0.5 truncate text-[9px] font-bold uppercase tracking-widest text-zinc-400">{email}</p>
+          <p className="mt-0.5 truncate text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{email}</p>
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-4">
-        <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">{labels.joined} {formatDate(member.createdAt)}</span>
+        <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{labels.joined} {formatDate(member.createdAt)}</span>
         <select
           value={member.role}
           disabled={isLastOwner || !canUpdateRole}
           onChange={(event) => onChangeRole(event.target.value)}
-          className="h-8.5 rounded-lg border border-zinc-200 bg-white px-2.5 text-xs font-bold transition-colors dark:border-white/10 dark:bg-[#111]"
+          className="h-8.5 rounded-lg border border-border bg-card px-2.5 text-xs font-bold transition-colors"
           aria-label={labels.role}
         >
           {roles.map((role) => <option key={role} value={role}>{formatRoleName(role, roleLabels)}</option>)}
@@ -2327,10 +2327,10 @@ function PendingInviteRow({
   labels: { emailTitle: string; copy: string; copied: string; cancel: string };
 }) {
   return (
-    <div className="flex flex-col gap-4 py-4.5 border-b border-zinc-100/60 dark:border-white/[0.04] last:border-b-0 md:flex-row md:items-center">
+    <div className="flex flex-col gap-4 py-4.5 border-b border-border/60 last:border-b-0 md:flex-row md:items-center">
       <div className="min-w-0 flex-1">
-        <p className="truncate text-xs font-black text-zinc-900 dark:text-white">{invite.email}</p>
-        <p className="mt-1 text-[9px] font-bold uppercase tracking-widest text-zinc-400">
+        <p className="truncate text-xs font-black text-foreground">{invite.email}</p>
+        <p className="mt-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
           {labels.emailTitle} &bull; {formatRoleName(invite.role, roleLabels)} &bull; {invite.status} &bull; {formatDate(invite.expiresAt)}
         </p>
       </div>
@@ -2362,10 +2362,10 @@ function PendingInviteLinkRow({
   labels: { linkTitle: string; expires: string; cancel: string };
 }) {
   return (
-    <div className="flex flex-col gap-4 py-4.5 border-b border-zinc-100/60 dark:border-white/[0.04] last:border-b-0 md:flex-row md:items-center">
+    <div className="flex flex-col gap-4 py-4.5 border-b border-border/60 last:border-b-0 md:flex-row md:items-center">
       <div className="min-w-0 flex-1">
-        <p className="truncate text-xs font-black text-zinc-900 dark:text-white">{labels.linkTitle}</p>
-        <p className="mt-1 text-[9px] font-bold uppercase tracking-widest text-zinc-400">
+        <p className="truncate text-xs font-black text-foreground">{labels.linkTitle}</p>
+        <p className="mt-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
           {formatRoleName(inviteLink.role, roleLabels)} &bull; {inviteLink.status} &bull; {labels.expires} {formatDate(inviteLink.expiresAt)}
         </p>
       </div>
@@ -2397,13 +2397,13 @@ function WorkRoleGrid({
   getAreaHelp: (key: string) => string;
 }) {
   return (
-    <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-white/10">
-      <table className="min-w-[760px] w-full border-collapse bg-white text-start dark:bg-[#111]">
+    <div className="overflow-x-auto rounded-2xl border border-border">
+      <table className="min-w-[760px] w-full border-collapse bg-card text-start">
         <thead>
-          <tr className="border-b border-zinc-100 bg-zinc-50/80 dark:border-white/[0.06] dark:bg-white/[0.02]">
-            <th className="w-[260px] px-4 py-3 text-start text-[10px] font-black uppercase tracking-widest text-zinc-500">{labels.area}</th>
+          <tr className="border-b border-border bg-muted/80">
+            <th className="w-[260px] px-4 py-3 text-start text-[10px] font-black uppercase tracking-widest text-muted-foreground">{labels.area}</th>
             {actionColumns.map((action) => (
-              <th key={action} className="px-3 py-3 text-center text-[10px] font-black uppercase tracking-widest text-zinc-500">
+              <th key={action} className="px-3 py-3 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 {labels[action]}
               </th>
             ))}
@@ -2415,15 +2415,15 @@ function WorkRoleGrid({
             const Icon = workAreaIcon(area.resource);
 
             return (
-              <tr key={area.resource} className="border-b border-zinc-100 last:border-b-0 dark:border-white/[0.06]">
+              <tr key={area.resource} className="border-b border-border last:border-b-0">
                 <td className="px-4 py-4 align-top">
                   <div className="flex items-start gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500 dark:bg-white/5 dark:text-zinc-400">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                       <Icon className="h-3.5 w-3.5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-black text-zinc-900 dark:text-white">{getAreaLabel(area.labelKey)}</p>
-                      <p className="mt-1 max-w-sm text-xs leading-5 text-zinc-500 dark:text-zinc-400">{getAreaHelp(area.helperKey)}</p>
+                      <p className="text-sm font-black text-foreground">{getAreaLabel(area.labelKey)}</p>
+                      <p className="mt-1 max-w-sm text-xs leading-5 text-muted-foreground">{getAreaHelp(area.helperKey)}</p>
                     </div>
                   </div>
                 </td>
@@ -2442,14 +2442,14 @@ function WorkRoleGrid({
                           className={cn(
                             "mx-auto flex h-8 min-w-8 items-center justify-center rounded-lg border px-2 text-[10px] font-black uppercase tracking-widest transition-colors",
                             checked
-                              ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900"
-                              : "border-zinc-200 text-zinc-400 hover:border-zinc-500 hover:text-zinc-900 dark:border-white/10 dark:hover:border-white dark:hover:text-white",
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border text-muted-foreground hover:border-ring hover:text-foreground",
                           )}
                         >
                           {checked ? "✓" : ""}
                         </button>
                       ) : (
-                        <span title={labels.unavailable} className="mx-auto flex h-8 min-w-8 items-center justify-center rounded-lg border border-dashed border-zinc-200 text-[10px] font-black text-zinc-300 dark:border-white/10 dark:text-zinc-700">
+                        <span title={labels.unavailable} className="mx-auto flex h-8 min-w-8 items-center justify-center rounded-lg border border-dashed border-border text-[10px] font-black text-muted-foreground/50">
                           -
                         </span>
                       )}
@@ -2461,7 +2461,7 @@ function WorkRoleGrid({
           })}
         </tbody>
       </table>
-      <div className="border-t border-zinc-100 bg-zinc-50/80 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:border-white/[0.06] dark:bg-white/[0.02]">
+      <div className="border-t border-border bg-muted/80 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
         {labels.allowedWork}
       </div>
     </div>
@@ -2510,14 +2510,14 @@ function RoleRow({
   labels: { builtIn: string; edit: string; delete: string };
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/[0.06] dark:bg-[#111] md:flex-row md:items-center">
+    <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 md:flex-row md:items-center">
       <div className="flex min-w-0 flex-1 items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 dark:bg-white/5">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
           <UserRoundCog className="h-4 w-4" />
         </div>
         <div>
-          <p className="text-sm font-black text-zinc-900 dark:text-white">{formatRoleName(role, roleLabels)}</p>
-          <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-zinc-400">{labels.builtIn}{typeof memberCount === "number" ? ` / ${memberCount}` : ""}</p>
+          <p className="text-sm font-black text-foreground">{formatRoleName(role, roleLabels)}</p>
+          <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{labels.builtIn}{typeof memberCount === "number" ? ` / ${memberCount}` : ""}</p>
         </div>
       </div>
       {!locked && (
@@ -2532,14 +2532,14 @@ function RoleRow({
 
 function NoOrganizationState({ title, description, action, href }: { title: string; description: string; action: string; href: string }) {
   return (
-    <div className="grid min-h-screen place-items-center bg-zinc-50/50 px-6 py-12 dark:bg-[#0A0A0A]">
-      <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 text-center dark:border-white/[0.06] dark:bg-[#111]">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-500 dark:bg-white/5 dark:text-zinc-400">
+    <div className="grid min-h-screen place-items-center bg-muted/50 px-6 py-12">
+      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
           <Building2 className="h-5 w-5" />
         </div>
-        <h1 className="mt-5 text-xl font-black uppercase tracking-tight text-zinc-900 dark:text-white">{title}</h1>
-        <p className="mt-2 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{description}</p>
-        <Link href={href} className={cn(buttonVariants(), "mt-6 h-11 rounded-xl bg-zinc-900 px-6 text-[10px] font-black uppercase tracking-widest text-white hover:bg-black")}>
+        <h1 className="mt-5 text-xl font-black uppercase tracking-tight text-foreground">{title}</h1>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
+        <Link href={href} className={cn(buttonVariants(), "mt-6 h-11 rounded-xl bg-primary px-6 text-[10px] font-black uppercase tracking-widest text-primary-foreground hover:bg-black")}>
           {action}
         </Link>
       </div>
@@ -2549,13 +2549,13 @@ function NoOrganizationState({ title, description, action, href }: { title: stri
 
 function OrganizationSettingsSkeleton({ label, compact }: { label: string; compact?: boolean }) {
   return (
-    <div className="min-h-screen bg-zinc-50/50 dark:bg-[#0A0A0A]" aria-busy="true">
-      <div className="border-b border-zinc-200 bg-white dark:border-white/[0.06] dark:bg-[#111111]">
+    <div className="min-h-screen bg-muted/50" aria-busy="true">
+      <div className="border-b border-border bg-card">
         <div className="mx-auto max-w-5xl px-6 py-10">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
             <Skeleton className="h-24 w-24 shrink-0 rounded-[28px]" />
             <div className="min-w-0 flex-1 space-y-3">
-              <div className="flex items-center gap-2 text-xs font-bold text-zinc-400">
+              <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 <span>{label}</span>
               </div>
@@ -2582,7 +2582,7 @@ function OrganizationSettingsSkeleton({ label, compact }: { label: string; compa
             <Skeleton className="h-3 w-60 rounded-full" />
           </div>
           {compact ? (
-            <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-white/[0.06] dark:bg-[#111]">
+            <div className="rounded-2xl border border-border bg-card p-5">
               <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_260px_auto]">
                 <Skeleton className="h-11 rounded-xl" />
                 <Skeleton className="h-11 rounded-xl" />
@@ -2618,7 +2618,7 @@ function LoadingRow({ label, rows = 1 }: { label: string; rows?: number }) {
   return (
     <div className="space-y-3" role="status" aria-label={label}>
       {Array.from({ length: rows }).map((_, row) => (
-        <div key={row} className="flex items-center justify-between gap-4 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-white/[0.06] dark:bg-[#111]">
+        <div key={row} className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-card p-4">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <Skeleton className="h-10 w-10 shrink-0 rounded-xl" />
             <div className="min-w-0 flex-1 space-y-2">
@@ -2640,7 +2640,7 @@ function LoadingCardGrid({ label }: { label: string }) {
   return (
     <div className="contents" role="status" aria-label={label}>
       {[0, 1].map((item) => (
-        <div key={item} className="rounded-2xl border border-zinc-100 bg-white p-4.5 dark:border-white/[0.04] dark:bg-[#111]">
+        <div key={item} className="rounded-2xl border border-border bg-card p-4.5">
           <div className="flex h-full flex-col gap-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1 space-y-3">
@@ -2656,7 +2656,7 @@ function LoadingCardGrid({ label }: { label: string }) {
               <Skeleton className="h-16 rounded-xl" />
               <Skeleton className="h-16 rounded-xl" />
             </div>
-            <div className="flex items-center justify-between border-t border-zinc-100 pt-3 dark:border-white/[0.05]">
+            <div className="flex items-center justify-between border-t border-border pt-3">
               <Skeleton className="h-3 w-28 rounded-full" />
               <Skeleton className="h-8 w-24 rounded-lg" />
             </div>
@@ -2669,9 +2669,9 @@ function LoadingCardGrid({ label }: { label: string }) {
 
 function EmptyState({ title, description }: { title: string; description: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center dark:border-white/10 dark:bg-[#111]">
-      <p className="text-sm font-black text-zinc-900 dark:text-white">{title}</p>
-      <p className="mt-1 text-xs font-medium text-zinc-400">{description}</p>
+    <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center">
+      <p className="text-sm font-black text-foreground">{title}</p>
+      <p className="mt-1 text-xs font-medium text-muted-foreground">{description}</p>
     </div>
   );
 }

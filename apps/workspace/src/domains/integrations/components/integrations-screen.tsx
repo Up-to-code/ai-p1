@@ -304,7 +304,7 @@ function PartnerCatalogGrid({
 
   if (cards.length === 0) {
     return (
-      <AppSection className="flex min-h-64 flex-col items-center justify-center gap-3 text-center border border-zinc-200/80 dark:border-white/[0.06] rounded-[16px] bg-white dark:bg-white/[0.02]">
+      <AppSection className="flex min-h-64 flex-col items-center justify-center gap-3 text-center border border-border rounded-[16px] bg-card">
         <Plug className="h-8 w-8 text-zinc-300 dark:text-zinc-600" />
         <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">{t('catalog.empty')}</p>
       </AppSection>
@@ -353,9 +353,9 @@ function PartnerCatalogGrid({
       </div>
 
       {filteredCards.length === 0 ? (
-        <AppSection className="flex min-h-52 flex-col items-center justify-center gap-3 text-center border border-zinc-200/80 dark:border-white/[0.06] rounded-[16px] bg-white dark:bg-white/[0.02]">
-          <Search className="h-8 w-8 text-zinc-300 dark:text-zinc-600" />
-          <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">{t('catalog.noResults')}</p>
+        <AppSection className="flex min-h-52 flex-col items-center justify-center gap-3 text-center border border-border rounded-[16px] bg-card">
+          <Search className="h-8 w-8 text-muted-foreground" />
+          <p className="text-sm font-semibold text-muted-foreground">{t('catalog.noResults')}</p>
         </AppSection>
       ) : (
         <div className="flex flex-wrap gap-4" dir="ltr">
@@ -640,9 +640,9 @@ function PartnerConnectionsGrid({
 
   if (connections.length === 0) {
     return (
-      <AppSection className="flex min-h-64 flex-col items-center justify-center gap-3 text-center border border-zinc-200/80 dark:border-white/[0.06] rounded-[16px] bg-white dark:bg-white/[0.02] p-8">
-        <Plug className="h-8 w-8 text-zinc-300 dark:text-zinc-600" />
-        <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">No connected partner apps yet</p>
+      <AppSection className="flex min-h-64 flex-col items-center justify-center gap-3 text-center border border-border rounded-[16px] bg-card p-8">
+        <Plug className="h-8 w-8 text-muted-foreground" />
+        <p className="text-sm font-semibold text-muted-foreground">No connected partner apps yet</p>
         <Button type="button" variant="outline" onClick={onBrowseCatalog} className="mt-2 rounded-[10px] text-xs font-semibold">
           {t('tabs.catalog')}
         </Button>

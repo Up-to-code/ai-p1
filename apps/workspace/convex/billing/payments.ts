@@ -2,14 +2,19 @@ import { action } from "../_generated/server";
 import { v } from "convex/values";
 import { checkout, customerPortal, PRICING_PLANS } from "./dodo";
 
-/**
- * Create a checkout session for a subscription plan
- * Example: createCheckout { planId: "pro_monthly", quantity: 2, returnUrl: "https://qentrah.com/dashboard" }
- */
+// Map internal plan IDs to DodoPayments product IDs
+// Set these in your Convex environment variables
+const DODO_PRODUCT_ID_MAP: Record<string, string> = {
+  good_monthly: process.env.DODO_PRODUCT_GOOD_MONTHLY || "good_monthly",
+  good_yearly: process.env.DODO_PRODUCT_GOOD_YEARLY || "good_yearly",
+  better_monthly: process.env.DODO_PRODUCT_BETTER_MONTHLY || "better_monthly",
+  better_yearly: process.env.DODO_PRODUCT_BETTER_YEARLY || "better_yearly",
+};
+
 export const createCheckout = action({
   args: {
     planId: v.string(),
-    quantity: v.number(), // number of users/seats
+    quantity: v.number(),
     returnUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -20,47 +25,52 @@ export const createCheckout = action({
       throw new Error(`Plan not found: ${args.planId}`);
     }
 
-    const totalPrice = Math.round(plan.pricePerUser * args.quantity * 100); // Convert to cents
+    if (plan.pricePerUser === null) {
+      throw new Error(`Plan ${args.planId} requires contact sales`);
+    }
+
+    // Map internal plan ID to DodoPayments product ID
+    const dodoProductId = DODO_PRODUCT_ID_MAP[args.planId] || args.planId;
+
+    const checkoutPayload: {
+      product_cart: { product_id: string; quantity: number }[];
+      billing_currency?: string;
+      return_url?: string;
+      feature_flags?: { allow_discount_code?: boolean };
+    } = {
+      product_cart: [
+        {
+          product_id: dodoProductId,
+          quantity: args.quantity,
+        },
+      ],
+      billing_currency: plan.currency,
+      feature_flags: {
+        allow_discount_code: true,
+      },
+    };
+
+    if (args.returnUrl) {
+      checkoutPayload.return_url = args.returnUrl;
+    }
 
     const result = await checkout(ctx, {
-      payload: {
-        product_cart: [
-          {
-            product_id: args.planId,
-            quantity: args.quantity,
-          },
-        ],
-        return_url: args.returnUrl || "https://qentrah.com/dashboard",
-        billing_currency: plan.currency,
-        feature_flags: {
-          allow_discount_code: true,
-        },
-      },
+      payload: checkoutPayload,
     });
 
     return result;
   },
 });
 
-/**
- * Get customer portal URL for subscription management
- */
 export const getCustomerPortal = action({
-  args: {
-    returnUrl: v.optional(v.string()),
-  },
+  args: {},
   handler: async (ctx, args) => {
-    const result = await customerPortal(ctx, {
-      return_url: args.returnUrl || "https://qentrah.com/dashboard",
-    });
+    const result = await customerPortal(ctx, {});
 
     return result;
   },
 });
 
-/**
- * List available plans
- */
 export const listPlans = action({
   args: {},
   handler: async (ctx) => {

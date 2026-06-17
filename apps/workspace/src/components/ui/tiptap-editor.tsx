@@ -77,47 +77,47 @@ export function TiptapEditor({ value, onChange, placeholder, className, onUpload
   };
 
   return (
-    <div className={cn("overflow-hidden rounded-xl border border-zinc-200/70 bg-white shadow-sm dark:border-white/[0.06] dark:bg-zinc-950", className)}>
-      <div className="flex flex-wrap items-center gap-1 border-b border-zinc-200/70 bg-zinc-50/50 p-2 dark:border-white/[0.06] dark:bg-white/[0.02]">
+    <div className={cn("overflow-hidden rounded-xl border border-border bg-card shadow-sm", className)}>
+      <div className="flex flex-wrap items-center gap-1 border-b border-border bg-muted/50 p-2">
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={cn("rounded-md p-1.5 hover:bg-zinc-200/50 dark:hover:bg-white/10", editor.isActive("bold") && "bg-zinc-200/50 dark:bg-white/10 text-zinc-900 dark:text-white")}
+          className={cn("rounded-md p-1.5 hover:bg-muted", editor.isActive("bold") && "bg-muted text-foreground")}
         >
-          <Bold className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+          <Bold className="h-4 w-4 text-muted-foreground" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={cn("rounded-md p-1.5 hover:bg-zinc-200/50 dark:hover:bg-white/10", editor.isActive("italic") && "bg-zinc-200/50 dark:bg-white/10 text-zinc-900 dark:text-white")}
+          className={cn("rounded-md p-1.5 hover:bg-muted", editor.isActive("italic") && "bg-muted text-foreground")}
         >
-          <Italic className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+          <Italic className="h-4 w-4 text-muted-foreground" />
         </button>
-        <div className="h-4 w-[1px] bg-zinc-200 dark:bg-white/10 mx-1" />
+        <div className="h-4 w-[1px] bg-border mx-1" />
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={cn("rounded-md p-1.5 hover:bg-zinc-200/50 dark:hover:bg-white/10", editor.isActive("bulletList") && "bg-zinc-200/50 dark:bg-white/10 text-zinc-900 dark:text-white")}
+          className={cn("rounded-md p-1.5 hover:bg-muted", editor.isActive("bulletList") && "bg-muted text-foreground")}
         >
-          <List className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+          <List className="h-4 w-4 text-muted-foreground" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={cn("rounded-md p-1.5 hover:bg-zinc-200/50 dark:hover:bg-white/10", editor.isActive("orderedList") && "bg-zinc-200/50 dark:bg-white/10 text-zinc-900 dark:text-white")}
+          className={cn("rounded-md p-1.5 hover:bg-muted", editor.isActive("orderedList") && "bg-muted text-foreground")}
         >
-          <ListOrdered className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+          <ListOrdered className="h-4 w-4 text-muted-foreground" />
         </button>
-        <div className="h-4 w-[1px] bg-zinc-200 dark:bg-white/10 mx-1" />
+        <div className="h-4 w-[1px] bg-border mx-1" />
         {!disableImageUpload && (
           <>
             <button
               type="button"
               onClick={handleImageClick}
               disabled={isUploading}
-              className="rounded-md p-1.5 hover:bg-zinc-200/50 dark:hover:bg-white/10 disabled:opacity-50"
+              className="rounded-md p-1.5 hover:bg-muted disabled:opacity-50"
             >
-              {isUploading ? <Loader2 className="h-4 w-4 animate-spin text-zinc-500 dark:text-zinc-400" /> : <ImageIcon className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />}
+              {isUploading ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> : <ImageIcon className="h-4 w-4 text-muted-foreground" />}
             </button>
             <input
               type="file"
@@ -129,7 +129,7 @@ export function TiptapEditor({ value, onChange, placeholder, className, onUpload
           </>
         )}
       </div>
-      <div className="bg-white dark:bg-zinc-950">
+      <div className="bg-card">
         <EditorContent editor={editor} />
       </div>
     </div>

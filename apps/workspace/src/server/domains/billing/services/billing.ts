@@ -1,53 +1,30 @@
 import { makeFunctionReference } from "convex/server";
 import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/clerk-convex";
 import { convexCalls } from "@/server/convex/http-client";
-import type { BillingCheckoutPayload, TamaraWebhookPayload } from "../validation/billing.schema";
-import {
-  authoriseTamaraOrder,
-  captureTamaraOrder,
-  createTamaraCheckoutSession,
-  getTamaraOrderDetails,
-} from "./tamara-client";
-import { assertTamaraWebhookConfig, getTamaraRuntimeConfig } from "./tamara-config";
-import { verifyTamaraWebhookToken } from "./tamara-webhook-token";
+import type { BillingCheckoutPayload, DodoWebhookPayload } from "../validation/billing.schema";
 
-type BillingPlanId = "saudi_monthly" | "saudi_yearly";
+type BillingPlanId = BillingCheckoutPayload["planId"];
 
-type BillingPayment = {
+type Payment = {
   _id: string;
   amount: number;
   currency: string;
   planId: BillingPlanId;
-  tamaraOrderId?: string;
-};
-
-type TamaraPayment = {
-  id: string;
-  organizationId: string;
-  planId: BillingPlanId;
-  orderReferenceId: string;
-  orderNumber: string;
-  tamaraOrderId?: string;
-  amount: number;
-  currency: string;
-  status: "pending" | "new" | "approved" | "authorised" | "captured" | "failed" | "canceled" | "expired";
-  checkoutUrl?: string;
-  failureReason?: string;
-  updatedAt: number;
+  orderId: string;
 };
 
 type BillingOverview = {
-  plan: typeof SAUDI_MONTHLY_PLAN | typeof SAUDI_YEARLY_PLAN;
+  plan: { id: string; name: string; amount: number | null; currency: string; periodDays: number; checkoutMode: string };
   subscription: {
     organizationId: string;
-    planId: BillingPlanId;
+    planId: string;
     status: "inactive" | "pending" | "active" | "past_due" | "canceled";
     currentPeriodStartAt?: number;
     currentPeriodEndAt?: number;
     createdAt?: number;
     updatedAt: number;
   } | null;
-  latestPayment: TamaraPayment | null;
+  latestPayment: Payment | null;
 };
 
 export type OrganizationBillingUsage = {
@@ -62,50 +39,13 @@ export type OrganizationBillingUsage = {
     currentPeriodStartAt?: number;
     currentPeriodEndAt?: number;
   };
-  payments: TamaraPayment[];
-};
-
-type AcceptTamaraWebhookArgs = {
-  serverToken: string;
-  input: {
-    eventKey: string;
-    eventType: string;
-    tamaraOrderId?: string;
-    orderReferenceId?: string;
-  };
-};
-
-type AcceptedTamaraWebhook = {
-  duplicate: boolean;
-  eventId?: string;
-  payment: BillingPayment | null;
-};
-
-const SAUDI_MONTHLY_PLAN = {
-  id: "saudi_monthly" as const,
-  name: "Qentrah Saudi Arabia",
-  amount: 499,
-  currency: "SAR",
-  periodDays: 30,
-};
-
-const SAUDI_YEARLY_PLAN = {
-  id: "saudi_yearly" as const,
-  name: "Qentrah Saudi Arabia Annual",
-  amount: 5988,
-  currency: "SAR",
-  periodDays: 365,
-};
-
-const SAUDI_BILLING_PLANS = {
-  [SAUDI_MONTHLY_PLAN.id]: SAUDI_MONTHLY_PLAN,
-  [SAUDI_YEARLY_PLAN.id]: SAUDI_YEARLY_PLAN,
+  payments: Payment[];
 };
 
 const refs = {
   getSubscriptionOverview: makeFunctionReference<"query", { organizationId: string }, unknown>("billing/read:getSubscriptionOverview"),
   getUsageOverview: makeFunctionReference<"query", { organizationId: string }, OrganizationBillingUsage>("billing/read:getUsageOverview"),
-  getTamaraPaymentByOrder: makeFunctionReference<"query", { organizationId: string; orderId: string }, unknown>("billing/read:getTamaraPaymentByOrder"),
+  getPaymentByOrder: makeFunctionReference<"query", { organizationId: string; orderId: string }, unknown>("billing/read:getPaymentByOrder"),
   ensureCreditBalanceForOrganization: makeFunctionReference<"mutation", { organizationId: string }, unknown>("billing/write:ensureCreditBalanceForOrganization"),
   recordAgentCreditUsage: makeFunctionReference<"mutation", {
     organizationId: string;
@@ -121,65 +61,52 @@ const refs = {
     addOnCreditsUsed: number;
     reason?: string;
   }>("billing/write:recordAgentCreditUsage"),
-  createPendingTamaraPaymentFromHono: makeFunctionReference<"mutation", { organizationId: string; input: { planId: BillingPlanId } }, {
-    plan: { id: BillingPlanId; name: string; amount: number; currency: string; periodDays: number };
-    payment: { _id: string; id: string; orderReferenceId: string; orderNumber: string };
+  createPendingPaymentFromHono: makeFunctionReference<"mutation", { organizationId: string; input: { planId: BillingPlanId } }, {
+    plan: { id: string; name: string; amount: number | null; currency: string; periodDays: number; checkoutMode: string };
+    payment: { _id: string; id: string; orderId: string };
     organization: { name: string; legalName: string; email: string; phone: string; address: string };
-  }>("billing/write:createPendingTamaraPaymentFromHono"),
-  attachTamaraCheckoutFromHono: makeFunctionReference<"mutation", {
+  }>("billing/write:createPendingPaymentFromHono"),
+  attachCheckoutFromHono: makeFunctionReference<"mutation", {
     organizationId: string;
     paymentId: string;
-    input: { tamaraOrderId: string; tamaraCheckoutId: string; checkoutUrl: string; status: string };
-  }, unknown>("billing/write:attachTamaraCheckoutFromHono"),
-  markTamaraPaymentFailedFromHono: makeFunctionReference<"mutation", {
+    input: { dodoPaymentId: string; checkoutUrl: string; status: string };
+  }, unknown>("billing/write:attachCheckoutFromHono"),
+  markPaymentFailedFromHono: makeFunctionReference<"mutation", {
     organizationId: string;
     paymentId: string;
     reason: string;
-  }, unknown>("billing/write:markTamaraPaymentFailedFromHono"),
-  acceptTamaraWebhookFromHono: makeFunctionReference<"mutation", AcceptTamaraWebhookArgs, AcceptedTamaraWebhook>("billing/write:acceptTamaraWebhookFromHono"),
-  markTamaraPaymentStatusFromWebhook: makeFunctionReference<"mutation", {
+  }, unknown>("billing/write:markPaymentFailedFromHono"),
+  markPaymentStatusFromWebhook: makeFunctionReference<"mutation", {
     serverToken: string;
     paymentId: string;
-    status: "pending" | "new" | "approved" | "authorised" | "captured" | "failed" | "canceled" | "expired";
+    status: "pending" | "succeeded" | "failed" | "canceled";
     eventId?: string;
     failureReason?: string;
-  }, unknown>("billing/write:markTamaraPaymentStatusFromWebhook"),
-  markTamaraWebhookFailedFromHono: makeFunctionReference<"mutation", {
-    serverToken: string;
-    eventId: string;
-    error: string;
-  }, unknown>("billing/write:markTamaraWebhookFailedFromHono"),
+  }, unknown>("billing/write:markPaymentStatusFromWebhook"),
+  createCheckout: makeFunctionReference<"action", {
+    planId: string;
+    quantity: number;
+    returnUrl?: string;
+  }, { checkout_url: string }>("billing/payments:createCheckout"),
 };
 
 function convexBridgeSecret() {
   const secret = process.env.WORKSPACE_CONVEX_BRIDGE_SECRET?.trim() ?? "";
   if (secret.length < 32) {
-    throw new Error("WORKSPACE_CONVEX_BRIDGE_SECRET must be configured for Tamara billing webhooks.");
+    throw new Error("WORKSPACE_CONVEX_BRIDGE_SECRET must be configured for billing webhooks.");
   }
   return secret;
 }
 
-function eventKey(input: TamaraWebhookPayload) {
+function eventKey(input: DodoWebhookPayload) {
   return [
     input.event_type,
-    input.order_id ?? "missing-order",
-    input.order_reference_id ?? "missing-reference",
+    input.data?.payment_id ?? input.data?.subscription_id ?? "missing-id",
   ].join(":");
 }
 
-function isApprovedEvent(eventType: string) {
-  return eventType === "order_approved";
-}
-
-function failedStatusForEvent(eventType: string) {
-  if (/cancel/iu.test(eventType)) return "canceled" as const;
-  if (/expir/iu.test(eventType)) return "expired" as const;
-  if (/fail|declin|reject/iu.test(eventType)) return "failed" as const;
-  return null;
-}
-
-function getServerBillingPlan(planId: BillingPlanId) {
-  return SAUDI_BILLING_PLANS[planId];
+function isPaymentSucceededEvent(eventType: string) {
+  return eventType === "payment.succeeded" || eventType === "payment_captured";
 }
 
 function isDevelopmentConvexFunctionError(error: unknown) {
@@ -192,13 +119,21 @@ function localOrderReference() {
   return `qentrah-local-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function localBillingOverview(organizationId: string, planId: BillingPlanId = "saudi_monthly") {
-  const plan = getServerBillingPlan(planId);
+const GOOD_MONTHLY_PLAN = {
+  id: "good_monthly" as const,
+  name: "Good",
+  amount: 7,
+  currency: "USD",
+  periodDays: 30,
+  checkoutMode: "provider",
+};
+
+function localBillingOverview(organizationId: string, planId: BillingPlanId = "good_monthly") {
   return {
-    plan,
+    plan: GOOD_MONTHLY_PLAN,
     subscription: {
       organizationId,
-      planId: plan.id,
+      planId,
       status: "inactive" as const,
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -225,21 +160,19 @@ function localBillingUsage(organizationId: string): OrganizationBillingUsage {
 
 function localCheckoutContext(organizationId: string, planId: BillingPlanId) {
   const reference = localOrderReference();
-  const plan = getServerBillingPlan(planId);
   return {
-    plan,
+    plan: GOOD_MONTHLY_PLAN,
     payment: {
       _id: reference,
       id: reference,
-      orderReferenceId: reference,
-      orderNumber: reference,
+      orderId: reference,
     },
     organization: {
       name: "Qentrah Workspace",
       legalName: "Qentrah Workspace",
       email: "billing@qentrah.com",
-      phone: "+966500000000",
-      address: "Saudi Arabia",
+      phone: "",
+      address: "",
     },
     localOnly: true,
     organizationId,
@@ -289,7 +222,7 @@ export async function recordAgentCreditUsage(organizationId: string, input: {
 }
 
 export async function createBillingCheckout(organizationId: string, input: BillingCheckoutPayload) {
-  const context = await fetchAuthMutation(refs.createPendingTamaraPaymentFromHono, {
+  const context = await fetchAuthMutation(refs.createPendingPaymentFromHono, {
       organizationId,
       input: { planId: input.planId },
     })
@@ -299,52 +232,49 @@ export async function createBillingCheckout(organizationId: string, input: Billi
     });
 
   try {
-    const checkout = await createTamaraCheckoutSession({
-      ...context,
-      locale: input.locale,
-      discount: input.discount,
-    });
+    // For custom plans, return contact sales info
+    if (input.planId.startsWith("custom")) {
+      return {
+        checkoutUrl: null,
+        orderId: context.payment.orderId,
+        status: "contact_sales",
+        payment: context.payment,
+      };
+    }
 
-    const payment = await fetchAuthMutation(refs.attachTamaraCheckoutFromHono, {
+    // Create DodoPayments checkout session via Convex action
+    const checkoutResult = await convexCalls.action(refs.createCheckout, {
+      planId: input.planId,
+      quantity: 1,
+      returnUrl: input.returnUrl,
+    }) as { checkout_url?: string } | null;
+
+    const checkoutUrl = checkoutResult?.checkout_url;
+
+    // Attach checkout to payment record
+    if (checkoutUrl) {
+      await fetchAuthMutation(refs.attachCheckoutFromHono, {
         organizationId,
         paymentId: context.payment._id,
         input: {
-          tamaraOrderId: checkout.order_id,
-          tamaraCheckoutId: checkout.checkout_id,
-          checkoutUrl: checkout.checkout_url,
-          status: checkout.status,
+          dodoPaymentId: context.payment.orderId,
+          checkoutUrl,
+          status: "pending",
         },
-      })
-      .catch((error) => {
-        if (!isDevelopmentConvexFunctionError(error)) throw error;
-        return {
-          ...context.payment,
-          organizationId,
-          planId: context.plan.id,
-          amount: context.plan.amount,
-          currency: context.plan.currency,
-          tamaraOrderId: checkout.order_id,
-          tamaraCheckoutId: checkout.checkout_id,
-          checkoutUrl: checkout.checkout_url,
-          status: checkout.status === "new" ? "new" : "pending",
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-          localOnly: true,
-        };
       });
+    }
 
     return {
-      checkoutUrl: checkout.checkout_url,
-      orderId: checkout.order_id,
-      checkoutId: checkout.checkout_id,
-      status: checkout.status,
-      payment,
+      checkoutUrl: checkoutUrl || null,
+      orderId: context.payment.orderId,
+      status: checkoutUrl ? "pending" : "failed",
+      payment: context.payment,
     };
   } catch (error) {
-    await fetchAuthMutation(refs.markTamaraPaymentFailedFromHono, {
+    await fetchAuthMutation(refs.markPaymentFailedFromHono, {
         organizationId,
         paymentId: context.payment._id,
-        reason: error instanceof Error ? error.message : "Tamara checkout failed.",
+        reason: error instanceof Error ? error.message : "Checkout failed.",
       })
       .catch((markError) => {
         if (!isDevelopmentConvexFunctionError(markError)) throw markError;
@@ -353,8 +283,8 @@ export async function createBillingCheckout(organizationId: string, input: Billi
   }
 }
 
-export async function getBillingTamaraOrder(organizationId: string, orderId: string) {
-  const payment = await fetchAuthQuery(refs.getTamaraPaymentByOrder, {
+export async function getBillingPaymentStatus(organizationId: string, orderId: string) {
+  const payment = await fetchAuthQuery(refs.getPaymentByOrder, {
       organizationId,
       orderId,
     })
@@ -362,99 +292,25 @@ export async function getBillingTamaraOrder(organizationId: string, orderId: str
       if (isDevelopmentConvexFunctionError(error)) return null;
       throw error;
     });
-  let tamara: Record<string, unknown> | null = null;
-  let tamaraError: string | null = null;
 
-  try {
-    if (getTamaraRuntimeConfig().apiToken) {
-      tamara = await getTamaraOrderDetails(orderId);
-    }
-  } catch (error) {
-    tamaraError = error instanceof Error ? error.message : "Tamara order lookup failed.";
-  }
-
-  return { payment, tamara, tamaraError };
+  return { payment };
 }
 
-export async function processTamaraWebhook(input: {
+export async function processDodoWebhook(input: {
   token: string;
-  payload: TamaraWebhookPayload;
+  payload: DodoWebhookPayload;
 }) {
-  const config = assertTamaraWebhookConfig();
-  if (!verifyTamaraWebhookToken(input.token, config.notificationToken)) {
-    throw new Error("Invalid Tamara webhook token.");
-  }
-
   const serverToken = convexBridgeSecret();
-  const accepted = await convexCalls.mutation<AcceptTamaraWebhookArgs, AcceptedTamaraWebhook>(refs.acceptTamaraWebhookFromHono, {
+
+  // Find payment by order ID or payment ID
+  const paymentId = input.payload.data?.payment_id;
+
+  const payment = await convexCalls.mutation(refs.markPaymentStatusFromWebhook, {
     serverToken,
-    input: {
-      eventKey: eventKey(input.payload),
-      eventType: input.payload.event_type,
-      tamaraOrderId: input.payload.order_id,
-      orderReferenceId: input.payload.order_reference_id,
-    },
-  });
+    paymentId: paymentId || "",
+    status: isPaymentSucceededEvent(input.payload.event_type) ? "succeeded" : "pending",
+    failureReason: input.payload.data?.failure_reason,
+  }).catch(() => null);
 
-  if (accepted.duplicate) {
-    return { accepted: true, duplicate: true };
-  }
-  if (!accepted.payment) {
-    return { accepted: false, duplicate: false, error: "Tamara payment was not found." };
-  }
-
-  try {
-    const failedStatus = failedStatusForEvent(input.payload.event_type);
-    if (failedStatus) {
-      await convexCalls.mutation(refs.markTamaraPaymentStatusFromWebhook, {
-        serverToken,
-        paymentId: accepted.payment._id,
-        status: failedStatus,
-        eventId: accepted.eventId,
-        failureReason: input.payload.event_type,
-      });
-      return { accepted: true, duplicate: false, status: failedStatus };
-    }
-
-    if (isApprovedEvent(input.payload.event_type)) {
-      const orderId = input.payload.order_id ?? accepted.payment.tamaraOrderId;
-      if (!orderId) throw new Error("Tamara order id is required for authorisation.");
-
-      await authoriseTamaraOrder(orderId);
-      if (config.captureMode === "immediate") {
-        await captureTamaraOrder({
-          orderId,
-          amount: { amount: accepted.payment.amount, currency: accepted.payment.currency },
-          itemName: getServerBillingPlan(accepted.payment.planId).name,
-          planId: accepted.payment.planId,
-        });
-        await convexCalls.mutation(refs.markTamaraPaymentStatusFromWebhook, {
-          serverToken,
-          paymentId: accepted.payment._id,
-          status: "captured",
-          eventId: accepted.eventId,
-        });
-        return { accepted: true, duplicate: false, status: "captured" };
-      }
-
-      await convexCalls.mutation(refs.markTamaraPaymentStatusFromWebhook, {
-        serverToken,
-        paymentId: accepted.payment._id,
-        status: "authorised",
-        eventId: accepted.eventId,
-      });
-      return { accepted: true, duplicate: false, status: "authorised" };
-    }
-
-    return { accepted: true, duplicate: false, status: "ignored" };
-  } catch (error) {
-    if (accepted.eventId) {
-      await convexCalls.mutation(refs.markTamaraWebhookFailedFromHono, {
-        serverToken,
-        eventId: accepted.eventId,
-        error: error instanceof Error ? error.message : "Tamara webhook processing failed.",
-      });
-    }
-    throw error;
-  }
+  return { accepted: true, payment };
 }

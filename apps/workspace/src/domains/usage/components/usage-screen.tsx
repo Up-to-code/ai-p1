@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   type BillingPlan,
   type OrganizationBillingUsage,
-  type TamaraPayment,
+  type Payment,
   useBillingUsage,
 } from "@/domains/billing/api/billing";
 import { useAccountContext } from "@/domains/auth";
@@ -328,7 +328,7 @@ function PaymentsLedger({
 }: {
   copy: ReturnType<typeof usageCopy>;
   locale: UsageLocale;
-  payments: TamaraPayment[];
+  payments: Payment[];
 }) {
   return (
     <div className="max-w-5xl overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-white/[0.06] dark:bg-[#111]">
@@ -352,7 +352,7 @@ function PaymentsLedger({
               </tr>
             ) : payments.map((row) => (
               <tr key={row.id} className="border-b border-zinc-50 last:border-b-0 dark:border-white/[0.03]">
-                <td className="px-5 py-4 font-bold text-zinc-950 dark:text-white">{row.orderNumber}</td>
+                <td className="px-5 py-4 font-bold text-zinc-950 dark:text-white">{row.orderId}</td>
                 <td className="px-5 py-4 tabular-nums text-zinc-500 dark:text-zinc-400">{dateLabel(row.updatedAt, locale)}</td>
                 <td className="px-5 py-4 text-zinc-700 dark:text-zinc-300">{copy.paymentDescription}</td>
                 <td className="px-5 py-4 text-end font-bold tabular-nums text-zinc-950 dark:text-white">{moneyLabel(row.amount, row.currency, locale)}</td>
@@ -368,8 +368,8 @@ function PaymentsLedger({
   );
 }
 
-function PaymentStatus({ status, copy }: { status: TamaraPayment["status"]; copy: ReturnType<typeof usageCopy> }) {
-  const paid = status === "approved" || status === "authorised" || status === "captured";
+function PaymentStatus({ status, copy }: { status: Payment["status"]; copy: ReturnType<typeof usageCopy> }) {
+  const paid = status === "succeeded";
   return (
     <span className={cn(
       "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest",
@@ -413,6 +413,7 @@ function planPriceLabel(plan: BillingPlan, locale: UsageLocale) {
   const interval = plan.periodDays >= 365
     ? locale === "ar" ? "سنة" : "year"
     : locale === "ar" ? "شهر" : "month";
+  if (plan.amount === null) return locale === "ar" ? "مخصص / تم البيع" : "Custom / Contact sales";
   return `${moneyLabel(plan.amount, plan.currency, locale)} / ${interval}`;
 }
 

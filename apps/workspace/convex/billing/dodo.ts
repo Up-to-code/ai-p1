@@ -4,7 +4,7 @@ import { internal } from "../_generated/api";
 
 /**
  * DodoPayments Configuration
- * Pricing: $4.99/user/month (Individual), $9.99/user/month (Team), $19.99/user/month (Enterprise)
+ * Pricing: $7/user/month (Good), $19/user/month (Better), Custom (Contact Sales)
  */
 
 export const dodo = new DodoPayments(components.dodopayments, {
@@ -14,7 +14,6 @@ export const dodo = new DodoPayments(components.dodopayments, {
       return null;
     }
 
-    // Use ctx.runQuery() to lookup customer from your database
     const customer = await ctx.runQuery(internal.billing.customers.getByAuthId, {
       authId: identity.subject,
     });
@@ -33,95 +32,85 @@ export const dodo = new DodoPayments(components.dodopayments, {
     | "live_mode",
 } as DodoPaymentsClientConfig);
 
-// Export the API methods for use in your app
 export const { checkout, customerPortal } = dodo.api();
 
-/**
- * Pricing Plans
- */
 export const PRICING_PLANS = {
-  individual_monthly: {
-    id: "individual_monthly",
-    name: "Individual",
+  good_monthly: {
+    id: "good_monthly",
+    name: "Good",
     billingPeriod: "monthly",
-    pricePerUser: 4.99,
+    pricePerUser: 7,
     currency: "USD",
     features: [
-      "Up to 5 projects",
-      "Up to 50 tasks",
-      "Basic CRM",
-      "Email support",
+      "Project, asset, and client workspace",
+      "Free setup phase included",
+      "Core organization roles",
+      "Limited apps and integrations",
     ],
   },
-  individual_yearly: {
-    id: "individual_yearly",
-    name: "Individual Annual",
+  good_yearly: {
+    id: "good_yearly",
+    name: "Good Annual",
     billingPeriod: "yearly",
-    pricePerUser: 49.90, // 10 months worth = $4.99 * 10
+    pricePerUser: 70,
     currency: "USD",
     features: [
-      "Up to 5 projects",
-      "Up to 50 tasks",
-      "Basic CRM",
-      "Email support",
+      "Project, asset, and client workspace",
+      "Free setup phase included",
+      "Core organization roles",
+      "Limited apps and integrations",
     ],
   },
-  team_monthly: {
-    id: "team_monthly",
-    name: "Team",
+  better_monthly: {
+    id: "better_monthly",
+    name: "Better",
     billingPeriod: "monthly",
-    pricePerUser: 9.99,
+    pricePerUser: 19,
     currency: "USD",
     features: [
-      "Unlimited projects",
-      "Unlimited tasks",
-      "Advanced CRM",
-      "AI-powered workflows",
+      "Everything in Good",
+      "AI agents and workflows",
+      "3 included AI credit cards",
       "Priority support",
     ],
   },
-  team_yearly: {
-    id: "team_yearly",
-    name: "Team Annual",
+  better_yearly: {
+    id: "better_yearly",
+    name: "Better Annual",
     billingPeriod: "yearly",
-    pricePerUser: 99.90, // 10 months worth = $9.99 * 10
+    pricePerUser: 190,
     currency: "USD",
     features: [
-      "Unlimited projects",
-      "Unlimited tasks",
-      "Advanced CRM",
-      "AI-powered workflows",
+      "Everything in Good",
+      "AI agents and workflows",
+      "3 included AI credit cards",
       "Priority support",
     ],
   },
-  enterprise_monthly: {
-    id: "enterprise_monthly",
-    name: "Enterprise",
+  custom_monthly: {
+    id: "custom_monthly",
+    name: "Custom",
     billingPeriod: "monthly",
-    pricePerUser: 19.99,
+    pricePerUser: null,
     currency: "USD",
     features: [
-      "Everything in Team",
-      "Team collaboration",
-      "Client portal",
-      "Advanced reporting",
-      "Dedicated support",
+      "Custom AI credit cards",
       "Custom integrations",
+      "Custom organization setup",
+      "Dedicated onboarding",
     ],
   },
-  enterprise_yearly: {
-    id: "enterprise_yearly",
-    name: "Enterprise Annual",
+  custom_yearly: {
+    id: "custom_yearly",
+    name: "Custom Annual",
     billingPeriod: "yearly",
-    pricePerUser: 199.90, // 10 months worth = $19.99 * 10
+    pricePerUser: null,
     currency: "USD",
     features: [
-      "Everything in Team",
-      "Team collaboration",
-      "Client portal",
-      "Advanced reporting",
-      "Dedicated support",
+      "Custom AI credit cards",
       "Custom integrations",
+      "Custom organization setup",
+      "Dedicated onboarding",
     ],
   },
 };

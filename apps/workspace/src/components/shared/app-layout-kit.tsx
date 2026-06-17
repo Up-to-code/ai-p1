@@ -113,10 +113,10 @@ const alignClassName: Record<Align, string> = {
 };
 
 const toneClassName: Record<NonNullable<AppSectionProps["tone"]>, string> = {
-  default: "border-zinc-100 bg-white dark:border-white/5 dark:bg-[#0A0A0A]",
-  muted: "border-zinc-100 bg-zinc-50/50 dark:border-white/5 dark:bg-white/[0.01]",
-  inverse: "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900",
-  danger: "border-red-100 bg-red-50/30 dark:border-red-900/30 dark:bg-red-950/10",
+  default: "border-border bg-card",
+  muted: "border-border bg-muted/50",
+  inverse: "border-primary bg-primary text-primary-foreground",
+  danger: "border-destructive/20 bg-destructive/10",
 };
 
 export function AppPageShell({
@@ -126,7 +126,7 @@ export function AppPageShell({
   maxWidth = "wide",
 }: AppPageShellProps) {
   return (
-    <div className={cn("min-h-screen bg-white p-6 dark:bg-[#0A0A0A] md:p-8 lg:p-12", className)}>
+    <div className={cn("min-h-screen bg-background p-6 md:p-8 lg:p-12", className)}>
       <div className={cn("mx-auto space-y-10 pb-20", maxWidthClassName[maxWidth], contentClassName)}>
         {children}
       </div>
@@ -143,19 +143,19 @@ export function AppPageHeader({
   className,
 }: AppPageHeaderProps) {
   return (
-    <header className={cn("relative overflow-hidden flex flex-col gap-8 border-b border-zinc-100 pb-10 text-start dark:border-white/5 md:flex-row md:items-end md:justify-between animate-in fade-in slide-in-from-top-4 duration-1000", className)}>
+    <header className={cn("relative overflow-hidden flex flex-col gap-8 border-b border-border pb-10 text-start md:flex-row md:items-end md:justify-between animate-in fade-in slide-in-from-top-4 duration-1000", className)}>
       <div className="relative z-10 min-w-0 space-y-3">
         {eyebrow && (
-          <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
-            <div className="h-px w-6 bg-zinc-200 dark:bg-white/10" />
+          <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+            <div className="h-px w-6 bg-border" />
             <span className="truncate" dir="auto">{eyebrow}</span>
           </div>
         )}
-        <h1 className="text-2xl font-bold uppercase tracking-tight text-zinc-950 dark:text-white md:text-3xl line-clamp-2" dir="auto">
+        <h1 className="text-2xl font-bold uppercase tracking-tight text-foreground md:text-3xl line-clamp-2" dir="auto">
           {title}
         </h1>
         {subtitle && (
-          <p className="max-w-2xl text-sm font-medium leading-relaxed tracking-tight text-zinc-500 dark:text-zinc-400">
+          <p className="max-w-2xl text-sm font-medium leading-relaxed tracking-tight text-muted-foreground">
             {subtitle}
           </p>
         )}
@@ -167,27 +167,27 @@ export function AppPageHeader({
         </div>
       )}
       {/* Institutional canvas flair */}
-      <div className="absolute right-0 top-0 h-32 w-32 translate-x-16 -translate-y-16 rounded-full bg-zinc-50/50 blur-3xl dark:bg-white/[0.02]" />
+      <div className="absolute right-0 top-0 h-32 w-32 translate-x-16 -translate-y-16 rounded-full bg-muted/50 blur-3xl" />
     </header>
   );
 }
 
 export function AppStatsGrid({ stats, className }: AppStatsGridProps) {
   return (
-    <div className={cn("grid grid-cols-2 overflow-hidden rounded-[24px] border border-zinc-100 bg-zinc-100 gap-px dark:border-white/5 dark:bg-white/5 lg:grid-cols-4", className)}>
+    <div className={cn("grid grid-cols-2 overflow-hidden rounded-[24px] border border-border bg-muted gap-px lg:grid-cols-4", className)}>
       {stats.map((stat) => {
         const Icon = stat.icon;
         return (
-          <div key={stat.label} className="flex h-28 flex-col justify-between bg-white p-5 transition-colors hover:bg-zinc-50/50 dark:bg-[#0A0A0A] dark:hover:bg-white/[0.01]">
+          <div key={stat.label} className="flex h-28 flex-col justify-between bg-card p-5 transition-colors hover:bg-muted/50">
             <div className="flex items-center justify-between gap-3">
-              <span className="truncate text-[9px] font-black uppercase tracking-widest text-zinc-400">{stat.label}</span>
+              <span className="truncate text-[9px] font-black uppercase tracking-widest text-muted-foreground">{stat.label}</span>
               {Icon ? (
-                <Icon className={cn("h-3.5 w-3.5 shrink-0 text-zinc-300", stat.iconClassName)} />
+                <Icon className={cn("h-3.5 w-3.5 shrink-0 text-muted-foreground/50", stat.iconClassName)} />
               ) : (
-                <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", stat.dotClassName ?? "bg-zinc-400")} />
+                <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", stat.dotClassName ?? "bg-muted-foreground")} />
               )}
             </div>
-            <p className="truncate text-3xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">
+            <p className="truncate text-3xl font-black uppercase tracking-tighter text-foreground">
               {stat.value}
             </p>
           </div>
@@ -209,7 +209,7 @@ export function AppToolbar({
   className,
 }: AppToolbarProps) {
   return (
-    <div className={cn("flex flex-col gap-4 border-b border-zinc-100 pb-4 dark:border-white/5 md:flex-row md:items-center md:justify-between", className)}>
+    <div className={cn("flex flex-col gap-4 border-b border-border pb-4 md:flex-row md:items-center md:justify-between", className)}>
       <div className="flex min-w-0 items-center gap-4">
         {filters && activeFilter && onFilterChange && (
           <AppFilterDropdown
@@ -221,13 +221,13 @@ export function AppToolbar({
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 text-zinc-400">
+      <div className="flex flex-wrap items-center gap-3 text-muted-foreground">
         {view && onViewChange && (
-          <div className="flex rounded-xl border border-zinc-200 bg-zinc-50 p-0.5 dark:border-white/5 dark:bg-white/[0.02]">
+          <div className="flex rounded-xl border border-border bg-muted p-0.5">
             <button
               type="button"
               onClick={() => onViewChange("grid")}
-              className={cn("rounded-lg p-2 transition-colors", view === "grid" ? "bg-zinc-900 text-white" : "text-zinc-400 hover:text-zinc-900 dark:hover:text-white")}
+              className={cn("rounded-lg p-2 transition-colors", view === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
               aria-label="Grid view"
             >
               <LayoutGrid className="h-3.5 w-3.5" />
@@ -235,7 +235,7 @@ export function AppToolbar({
             <button
               type="button"
               onClick={() => onViewChange("list")}
-              className={cn("rounded-lg p-2 transition-colors", view === "list" ? "bg-zinc-900 text-white" : "text-zinc-400 hover:text-zinc-900 dark:hover:text-white")}
+              className={cn("rounded-lg p-2 transition-colors", view === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
               aria-label="List view"
             >
               <List className="h-3.5 w-3.5" />
@@ -245,7 +245,7 @@ export function AppToolbar({
         {sortLabel && (
           <div className="flex items-center gap-3">
             <Filter className="h-3 w-3" />
-            <button type="button" className="flex items-center gap-2 rounded-lg border border-zinc-200 px-3 py-1.5 text-[9px] font-black uppercase text-zinc-900 dark:border-white/10 dark:text-white">
+            <button type="button" className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-[9px] font-black uppercase text-foreground">
               {sortLabel}
               <ChevronDown className="h-2.5 w-2.5" />
             </button>
@@ -300,13 +300,13 @@ function AppFilterDropdown({
             setOpen(true);
           }
         }}
-        className="flex h-10 w-full items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white px-3 text-start text-[10px] font-black uppercase tracking-[0.16em] text-zinc-900 shadow-none transition hover:border-[#0B5CFF]/35 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0B5CFF]/10 dark:border-white/10 dark:bg-white/[0.03] dark:text-white"
+        className="flex h-10 w-full items-center justify-between gap-3 rounded-xl border border-border bg-card px-3 text-start text-[10px] font-black uppercase tracking-[0.16em] text-foreground shadow-none transition hover:border-[var(--q-accent-border)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--q-accent-muted)]"
       >
         <span className="min-w-0">
-          {label ? <span className="block truncate text-[8px] text-zinc-400">{label}</span> : null}
+          {label ? <span className="block truncate text-[8px] text-muted-foreground">{label}</span> : null}
           <span className="block truncate">{activeOption?.label}</span>
         </span>
-        <ChevronDown className={cn("h-3.5 w-3.5 shrink-0 text-zinc-400 transition-transform", open && "rotate-180")} />
+        <ChevronDown className={cn("h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} />
       </button>
 
       {open ? (
@@ -316,7 +316,7 @@ function AppFilterDropdown({
           onKeyDown={(event) => {
             if (event.key === "Escape") setOpen(false);
           }}
-          className="absolute start-0 top-12 w-full min-w-[220px] overflow-hidden rounded-2xl border border-zinc-200 bg-white p-1 shadow-lg shadow-zinc-950/5 dark:border-white/10 dark:bg-[#101010]"
+          className="absolute start-0 top-12 w-full min-w-[220px] overflow-hidden rounded-2xl border border-border bg-card p-1 shadow-lg"
         >
           {filters.map((filter) => {
             const isActive = filter.value === activeFilter;
@@ -332,10 +332,10 @@ function AppFilterDropdown({
                   setOpen(false);
                 }}
                 className={cn(
-                  "flex h-10 w-full items-center gap-3 rounded-xl px-3 text-start text-[10px] font-black uppercase tracking-[0.14em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0B5CFF]/20",
+                  "flex h-10 w-full items-center gap-3 rounded-xl px-3 text-start text-[10px] font-black uppercase tracking-[0.14em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--q-accent-muted)]",
                   isActive
-                    ? "bg-[#0B5CFF] text-white"
-                    : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-white/[0.05] dark:hover:text-white",
+                    ? "bg-[var(--q-accent)] text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
                 {Icon ? <Icon className="h-3.5 w-3.5 shrink-0" /> : null}
@@ -364,8 +364,8 @@ export function AppSection({
       {(title || description || actions) && (
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="space-y-1">
-            {title && <h2 className="text-[11px] font-black uppercase tracking-[0.35em] text-zinc-900 opacity-50 dark:text-white">{title}</h2>}
-            {description && <p className="text-xs font-medium uppercase tracking-tight text-zinc-500">{description}</p>}
+            {title && <h2 className="text-[11px] font-black uppercase tracking-[0.35em] text-foreground opacity-50">{title}</h2>}
+            {description && <p className="text-xs font-medium uppercase tracking-tight text-muted-foreground">{description}</p>}
           </div>
           {actions && <div className="flex shrink-0 flex-wrap items-center gap-3">{actions}</div>}
         </div>
@@ -385,16 +385,16 @@ export function AppDataTable<T>({
   onRowClick,
 }: AppDataTableProps<T>) {
   return (
-    <div className={cn("overflow-hidden rounded-[20px] border border-zinc-100 bg-white dark:border-white/5 dark:bg-[#0A0A0A]", className)}>
+    <div className={cn("overflow-hidden rounded-[20px] border border-border bg-card", className)}>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[760px] border-collapse text-start">
           <thead>
-            <tr className="border-b border-zinc-100 bg-zinc-50/50 dark:border-white/5 dark:bg-white/[0.01]">
+            <tr className="border-b border-border bg-muted/50">
               {columns.map((column) => (
                 <th
                   key={column.key}
                   className={cn(
-                    "px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400",
+                    "px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground",
                     alignClassName[column.align ?? "start"],
                     column.className
                   )}
@@ -404,10 +404,10 @@ export function AppDataTable<T>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-50 dark:divide-white/[0.02]">
+          <tbody className="divide-y divide-border/50">
             {data.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="px-6 py-16 text-center text-xs font-bold uppercase tracking-widest text-zinc-400">
+                <td colSpan={columns.length} className="px-6 py-16 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
                   {emptyMessage}
                 </td>
               </tr>
@@ -417,7 +417,7 @@ export function AppDataTable<T>({
                   key={getRowKey(row, index)}
                   onClick={() => onRowClick?.(row)}
                   className={cn(
-                    "group transition-colors hover:bg-zinc-50 dark:hover:bg-white/[0.01]",
+                    "group transition-colors hover:bg-muted/50",
                     onRowClick && "cursor-pointer",
                     typeof rowClassName === "function" ? rowClassName(row) : rowClassName
                   )}
@@ -426,7 +426,7 @@ export function AppDataTable<T>({
                     <td
                       key={column.key}
                       className={cn(
-                        "px-6 py-4 text-xs font-black uppercase text-zinc-600 dark:text-zinc-300",
+                        "px-6 py-4 text-xs font-black uppercase text-muted-foreground",
                         alignClassName[column.align ?? "start"],
                         column.className
                       )}
@@ -447,16 +447,16 @@ export function AppDataTable<T>({
 export function AppThumbnailCell({ src, alt, title, meta }: AppThumbnailCellProps) {
   return (
     <div className="flex min-w-0 items-center gap-3">
-      <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-zinc-100 grayscale transition-colors group-hover:grayscale-0 dark:border-white/5">
+      <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-border grayscale transition-colors group-hover:grayscale-0">
         {src ? (
           <Image src={src} alt={alt} fill sizes="32px" className="object-cover" />
         ) : (
-          <div className="h-full w-full bg-zinc-100 dark:bg-white/10" />
+          <div className="h-full w-full bg-muted" />
         )}
       </div>
       <div className="min-w-0 text-start">
-        <p className="max-w-[220px] truncate text-xs font-black uppercase tracking-tight text-zinc-900 dark:text-white">{title}</p>
-        {meta && <div className="mt-1 text-[9px] font-black uppercase tracking-widest text-zinc-400">{meta}</div>}
+        <p className="max-w-[220px] truncate text-xs font-black uppercase tracking-tight text-foreground">{title}</p>
+        {meta && <div className="mt-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground">{meta}</div>}
       </div>
     </div>
   );
@@ -464,7 +464,7 @@ export function AppThumbnailCell({ src, alt, title, meta }: AppThumbnailCellProp
 
 export function AppTabsList({ tabs, className }: AppTabsListProps) {
   return (
-    <div className="border-b border-zinc-100 dark:border-white/5">
+    <div className="border-b border-border">
       <TabsList className={cn("scrollbar-none h-10 w-full justify-start gap-6 overflow-x-auto rounded-none bg-transparent p-0", className)}>
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -503,7 +503,7 @@ export function AppPrimaryButton({
 }: React.ComponentProps<typeof Button>) {
   return (
     <Button
-      className={cn("h-10 rounded-xl border-0 bg-zinc-900 px-6 text-[10px] font-black uppercase tracking-widest text-white shadow-none transition-colors hover:bg-black dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100", className)}
+      className={cn("h-10 rounded-xl border-0 bg-primary px-6 text-[10px] font-black uppercase tracking-widest text-primary-foreground shadow-none transition-colors hover:bg-primary/90", className)}
       {...props}
     >
       {children}

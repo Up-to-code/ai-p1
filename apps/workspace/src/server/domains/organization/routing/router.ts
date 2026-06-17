@@ -121,10 +121,10 @@ import {
   handleUpdatePartnerConnection,
 } from "@/server/domains/partnerApps/handlers/partner-apps";
 import {
-  handleCreateTamaraCheckout,
+  handleCreateCheckout,
   handleGetBillingSubscription,
   handleGetBillingUsage,
-  handleGetTamaraOrder,
+  handleGetPaymentStatus,
 } from "@/server/domains/billing/handlers/billing";
 
 export const organizationRouter = new Hono();
@@ -222,8 +222,8 @@ organizationRouter.get("/:organizationId/read/dashboard", handleReadDashboardOve
 organizationRouter.get("/:organizationId/read/dashboard/index", handleReadDashboardIndex);
 organizationRouter.get("/:organizationId/billing/subscription", handleGetBillingSubscription);
 organizationRouter.get("/:organizationId/billing/usage", handleGetBillingUsage);
-organizationRouter.post("/:organizationId/billing/tamara/checkout", handleCreateTamaraCheckout);
-organizationRouter.get("/:organizationId/billing/tamara/orders/:orderId", handleGetTamaraOrder);
+organizationRouter.post("/:organizationId/billing/checkout", handleCreateCheckout);
+organizationRouter.get("/:organizationId/billing/payments/:orderId", handleGetPaymentStatus);
 
 organizationRouter.patch(
   "/:organizationId/identity",

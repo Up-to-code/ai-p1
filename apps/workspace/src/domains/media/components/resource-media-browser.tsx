@@ -118,8 +118,8 @@ export function ResourceMediaBrowser({
     <section className={cn("space-y-4", className)}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-base font-black text-zinc-950 dark:text-white">{title}</h2>
-          {description && <p className="mt-1 text-xs font-semibold leading-5 text-zinc-500 dark:text-zinc-400">{description}</p>}
+          <h2 className="text-base font-black text-foreground">{title}</h2>
+          {description && <p className="mt-1 text-xs font-semibold leading-5 text-muted-foreground">{description}</p>}
         </div>
         <Button type="button" onClick={() => setUploadOpen(true)} className="h-9 rounded-lg px-3 text-[10px] font-black uppercase tracking-widest">
           <Plus className="me-2 h-3.5 w-3.5" />
@@ -133,10 +133,10 @@ export function ResourceMediaBrowser({
         <button
           type="button"
           onClick={() => setUploadOpen(true)}
-          className="flex min-h-44 w-full flex-col items-center justify-center gap-2 border border-dashed border-zinc-200 bg-zinc-50/50 px-4 py-8 text-center text-zinc-500 transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/[0.02] dark:hover:bg-white/[0.04]"
+          className="flex min-h-44 w-full flex-col items-center justify-center gap-2 border border-dashed border-border bg-muted/50 px-4 py-8 text-center text-zinc-500 transition-colors hover:border-border hover:bg-muted"
         >
           <UploadCloud className="h-6 w-6 text-zinc-400" />
-          <span className="text-sm font-black text-zinc-800 dark:text-white">{emptyTitle}</span>
+          <span className="text-sm font-black text-foreground">{emptyTitle}</span>
           <span className="max-w-md text-xs font-semibold leading-5 text-zinc-500">{emptyDescription}</span>
         </button>
       ) : mode === "gallery" ? (
@@ -160,20 +160,20 @@ export function ResourceMediaBrowser({
           })}
         </div>
       ) : (
-        <div className="divide-y divide-zinc-200/70 border-y border-zinc-200/70 dark:divide-white/10 dark:border-white/10">
+        <div className="divide-y divide-border border-y border-border">
           {assets.map((asset) => (
             <div key={asset._id} className="grid gap-3 py-3 text-start md:grid-cols-[1fr_auto] md:items-center">
               <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500 dark:bg-white/[0.06] dark:text-zinc-300">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                   <FileText className="h-4 w-4" />
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-black text-zinc-950 dark:text-white">{asset.name}</p>
+                  <p className="truncate text-sm font-black text-foreground">{asset.name}</p>
                   <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-zinc-400">{asset.mimeType} {formatSize(asset.size)}</p>
                 </div>
               </div>
               <div className="flex items-center gap-1 md:justify-end">
-                <a href={asset.url} target="_blank" rel="noreferrer" className="inline-flex h-8 items-center justify-center rounded-lg px-3 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950 dark:hover:bg-white/10 dark:hover:text-white">
+                <a href={asset.url} target="_blank" rel="noreferrer" className="inline-flex h-8 items-center justify-center rounded-lg px-3 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:bg-muted hover:text-foreground">
                   {openLabel}
                 </a>
                 <button type="button" onClick={() => operation.run(() => deleteMediaRequest(asset.organizationId, asset._id), { successMessage: "Document deleted." })} className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10" aria-label={`${deleteLabel} ${asset.name}`}>
@@ -227,7 +227,7 @@ export function ResourceMediaBrowser({
       </Dialog>
 
       <Dialog open={isUploadOpen} onOpenChange={closeUpload}>
-        <DialogContent className="max-h-[88vh] max-w-2xl overflow-y-auto rounded-2xl border-zinc-200 bg-zinc-50 p-6 text-zinc-900 dark:border-white/10 dark:bg-[#0A0A0A] dark:text-white">
+        <DialogContent className="max-h-[88vh] max-w-2xl overflow-y-auto rounded-2xl border-border bg-card p-6 text-foreground">
           <DialogHeader className="pe-10 text-start">
             <DialogTitle className="text-lg font-black">{uploadTitle}</DialogTitle>
             <DialogDescription className="mt-2 text-xs font-semibold leading-5 text-zinc-500">{uploadDescription}</DialogDescription>
@@ -267,11 +267,11 @@ export function ResourceMediaBrowser({
 function GallerySkeleton() {
   return (
     <div className="grid min-h-[320px] grid-cols-2 gap-2 md:grid-cols-4 md:grid-rows-2" aria-hidden="true">
-      <div className="relative col-span-2 row-span-2 overflow-hidden bg-zinc-100 dark:bg-white/[0.04]">
+      <div className="relative col-span-2 row-span-2 overflow-hidden bg-muted">
         <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-zinc-100 via-zinc-200/80 to-zinc-100 dark:from-white/[0.04] dark:via-white/[0.08] dark:to-white/[0.04]" />
       </div>
       {Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className="relative min-h-36 overflow-hidden bg-zinc-100 dark:bg-white/[0.04]">
+        <div key={index} className="relative min-h-36 overflow-hidden bg-muted">
           <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-zinc-100 via-zinc-200/70 to-zinc-100 dark:from-white/[0.04] dark:via-white/[0.08] dark:to-white/[0.04]" />
         </div>
       ))}
@@ -281,14 +281,14 @@ function GallerySkeleton() {
 
 function DocumentSkeleton() {
   return (
-    <div className="divide-y divide-zinc-200/70 border-y border-zinc-200/70 dark:divide-white/10 dark:border-white/10" aria-hidden="true">
+    <div className="divide-y divide-border border-y border-border" aria-hidden="true">
       {Array.from({ length: 4 }).map((_, index) => (
         <div key={index} className="grid gap-3 py-3 md:grid-cols-[1fr_auto] md:items-center">
           <div className="flex items-center gap-3">
-            <span className="h-9 w-9 animate-pulse rounded-lg bg-zinc-100 dark:bg-white/[0.06]" />
-            <span className="h-4 w-52 max-w-[60vw] animate-pulse rounded bg-zinc-100 dark:bg-white/[0.06]" />
+            <span className="h-9 w-9 animate-pulse rounded-lg bg-muted" />
+            <span className="h-4 w-52 max-w-[60vw] animate-pulse rounded bg-muted" />
           </div>
-          <span className="h-8 w-20 animate-pulse rounded-lg bg-zinc-100 dark:bg-white/[0.06]" />
+          <span className="h-8 w-20 animate-pulse rounded-lg bg-muted" />
         </div>
       ))}
     </div>
@@ -321,7 +321,7 @@ function GalleryAssetTile({
       type="button"
       onClick={onClick}
       className={cn(
-        "group relative min-h-36 overflow-hidden bg-zinc-100 text-start text-zinc-400 transition-opacity hover:opacity-95 dark:bg-white/[0.04]",
+        "group relative min-h-36 overflow-hidden bg-muted text-start text-zinc-400 transition-opacity hover:opacity-95",
         isPremium && "col-span-2 row-span-2 min-h-[320px]",
       )}
       aria-label={asset.name}

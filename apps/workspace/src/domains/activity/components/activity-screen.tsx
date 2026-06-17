@@ -133,7 +133,7 @@ function ActivityLoadingSkeleton() {
   return (
     <div className="space-y-6" role="status" aria-label="Loading activity">
 
-      <div className="overflow-hidden rounded-[24px] border border-zinc-100 bg-white dark:border-white/5 dark:bg-[#0A0A0A]">
+      <div className="overflow-hidden rounded-[24px] border border-border bg-card">
         <div className="grid grid-cols-[0.8fr_1fr_0.8fr_1.4fr_0.7fr] gap-8 border-b border-zinc-100 px-5 py-4 dark:border-white/5">
           {[0, 1, 2, 3, 4].map((item) => (
             <Skeleton key={item} className="h-3 w-20 rounded-full" />

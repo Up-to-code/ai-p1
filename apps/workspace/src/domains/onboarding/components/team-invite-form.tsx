@@ -244,7 +244,7 @@ export function TeamInviteForm({ organizationId, currentUserEmail, onBack, onFin
 
           <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-transparent dark:border-white/10">
             <table className="w-full text-start text-sm">
-              <thead className="border-b border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-white/10 dark:bg-white/[0.02]">
+              <thead className="border-b border-zinc-200 bg-muted text-muted-foreground dark:border-white/10">
                 <tr>
                   <th className="px-6 py-4 text-start text-xs font-semibold">{t("tableEmail")}</th>
                   <th className="px-6 py-4 text-start text-xs font-semibold">{t("tableRole")}</th>

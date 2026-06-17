@@ -192,7 +192,7 @@ function OpportunityBoard({
             className={cn(
               "flex min-h-[420px] w-[min(100%,280px)] shrink-0 flex-col rounded-[28px] border p-3 transition-all duration-300",
               isDragOver
-                ? "border-[#0B5CFF] bg-[#0B5CFF]/5 ring-4 ring-[#0B5CFF]/10"
+                ? "border-[var(--q-accent)] bg-[var(--q-accent-muted)] ring-4 ring-[var(--q-accent-border)]"
                 : "border-zinc-100 bg-zinc-50/40 dark:border-white/5 dark:bg-white/[0.01]",
             )}
             onDragOver={(event) => {

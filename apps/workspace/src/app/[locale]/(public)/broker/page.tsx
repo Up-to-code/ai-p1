@@ -44,7 +44,7 @@ export default function BrokerPage() {
 
         <div className="mt-12 grid gap-4 md:grid-cols-3">
           {points.map(({ icon: Icon, title, description }) => (
-            <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-5 dark:border-white/10 dark:bg-white/[0.04]" key={title}>
+            <div className="rounded-3xl border border-border bg-muted p-5" key={title}>
               <Icon className="h-5 w-5 text-blue-700 dark:text-blue-300" />
               <h2 className="mt-5 text-xl font-bold text-zinc-950 dark:text-white">{title}</h2>
               <p className="mt-2 text-sm font-medium leading-7 text-zinc-600 dark:text-zinc-400">{description}</p>
@@ -52,7 +52,7 @@ export default function BrokerPage() {
           ))}
         </div>
 
-        <div className="mt-6 rounded-3xl border border-zinc-200 bg-white p-5 dark:border-white/10 dark:bg-white/[0.04] md:p-6">
+        <div className="mt-6 rounded-3xl border border-border bg-card p-5 md:p-6">
           <div className="flex items-center gap-3">
             <Search className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             <h2 className="text-2xl font-bold tracking-tight text-zinc-950 dark:text-white">{t("workflow.title")}</h2>

@@ -23,7 +23,7 @@ export function Faq02() {
   return (
     <PublicSection
       id="faq"
-      className="bg-white dark:bg-[#0A0A0A]"
+      className="bg-[var(--q-card)] dark:bg-[var(--q-bg)]"
       contentClassName="grid gap-16 lg:grid-cols-[1fr_1.5fr] lg:items-start"
     >
       <Reveal>
@@ -34,7 +34,7 @@ export function Faq02() {
               {t("eyebrow")}
             </span>
           </div>
-          <h2 className="text-3xl font-bold tracking-tight text-zinc-950 dark:text-white md:text-5xl rtl:leading-[1.25]">
+          <h2 className="text-3xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-5xl rtl:leading-[1.25]">
             {t("title")}
           </h2>
           <p className="text-base font-medium leading-relaxed text-zinc-500 dark:text-zinc-400 md:text-lg">
@@ -52,7 +52,7 @@ export function Faq02() {
             <AccordionItem
               key={item.question}
               value={`item-${index}`}
-              className="border-b border-zinc-200 dark:border-white/10 px-2 transition-colors duration-300 hover:bg-zinc-50/50 dark:hover:bg-white/[0.02]"
+              className="border-b border-[var(--q-border)] dark:border-white/10 px-2 transition-colors duration-300 hover:bg-zinc-50/50 dark:hover:bg-white/[0.02]"
             >
               <AccordionTrigger className="text-start py-6 text-base md:text-lg font-semibold text-zinc-900 dark:text-zinc-100 transition-all duration-300 hover:text-blue-600 dark:hover:text-blue-400 hover:no-underline">
                 {item.question}

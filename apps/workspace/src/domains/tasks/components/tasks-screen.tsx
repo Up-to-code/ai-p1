@@ -121,11 +121,11 @@ function TaskForm({
       <div className="grid gap-4 md:grid-cols-2">
         <WorkOsRecordPicker label={t("form.assignee")} value={values.assigneeUserId} options={assigneeOptions} placeholder={t("form.assigneePlaceholder")} searchPlaceholder={t("form.searchPeople")} emptyLabel={t("form.noPeople")} clearLabel={t("form.unassigned")} closeLabel={common("finish")} onChange={(value) => patch("assigneeUserId", value)} />
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-bold text-zinc-900 dark:text-white">{t("form.dueDate")}</label>
+          <label className="text-xs font-bold text-foreground">{t("form.dueDate")}</label>
           <DatePicker 
             date={values.dueDate ? new Date(values.dueDate) : undefined} 
             setDate={(date) => patch("dueDate", date ? date.toISOString().slice(0, 10) : "")} 
-            className="w-full h-11 rounded-xl bg-zinc-50 border-zinc-200/70 hover:bg-zinc-100 dark:bg-white/[0.02] dark:border-white/[0.06] dark:hover:bg-white/[0.04]"
+            className="w-full h-11 rounded-xl bg-card border-border hover:bg-muted"
           />
         </div>
       </div>
@@ -134,7 +134,7 @@ function TaskForm({
         <WorkOsRecordPicker label={t("form.project")} value={values.projectId} options={projectOptions} placeholder={t("form.projectPlaceholder")} searchPlaceholder={t("form.searchProjects")} emptyLabel={t("form.noProjects")} clearLabel={t("form.noProject")} closeLabel={common("finish")} onChange={(value) => patch("projectId", value)} />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-bold text-zinc-900 dark:text-white">{t("form.description")}</label>
+        <label className="text-xs font-bold text-foreground">{t("form.description")}</label>
         <TiptapEditor value={values.description} onChange={(value) => patch("description", value)} />
       </div>
       {onCancel ? (
@@ -272,7 +272,7 @@ export function TasksScreen({ hideShell }: { hideShell?: boolean } = {}) {
             {/* Toolbar: status tabs + search + new task */}
             <div className="flex flex-wrap items-center justify-between gap-3">
               {/* Status Tab Filters */}
-              <div className="flex items-center gap-1 rounded-xl border border-zinc-200/70 bg-zinc-50 p-1 dark:border-white/[0.06] dark:bg-white/[0.03]">
+              <div className="flex items-center gap-1 rounded-xl border border-border bg-muted p-1">
                 {statusTabs.map((tab) => (
                   <button
                     key={tab.value}
@@ -281,8 +281,8 @@ export function TasksScreen({ hideShell }: { hideShell?: boolean } = {}) {
                     className={cn(
                       "rounded-lg px-3 py-1.5 text-[11px] font-bold transition-colors",
                       statusFilter === tab.value
-                        ? "bg-white text-zinc-900 shadow-sm dark:bg-white/[0.08] dark:text-white"
-                        : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                        ? "bg-card text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     {tab.label}
@@ -292,13 +292,13 @@ export function TasksScreen({ hideShell }: { hideShell?: boolean } = {}) {
 
               {/* Right: search + new task */}
               <div className="flex items-center gap-2">
-                <div className="flex h-8 items-center gap-2 rounded-xl border border-zinc-200/70 bg-white px-3 dark:border-white/[0.06] dark:bg-white/[0.03]">
-                  <Search className="h-3.5 w-3.5 text-zinc-400" />
+                <div className="flex h-8 items-center gap-2 rounded-xl border border-border bg-card px-3">
+                  <Search className="h-3.5 w-3.5 text-muted-foreground" />
                   <input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder={common("search")}
-                    className="h-full w-36 bg-transparent text-xs font-medium text-zinc-900 outline-none placeholder:text-zinc-400 dark:text-white"
+                    className="h-full w-36 bg-transparent text-xs font-medium text-foreground outline-none placeholder:text-muted-foreground"
                   />
                 </div>
                 <AppPrimaryButton onClick={openCreateDrawer} className="h-8 rounded-xl px-3 text-xs">
@@ -402,7 +402,7 @@ export function TaskDetailScreen({ id }: { id: string }) {
     <AppPageShell>
       {/* Breadcrumb bar */}
       <div className="mb-6 flex items-center justify-between">
-        <Link href="/tasks" className="flex items-center gap-2 text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">
+        <Link href="/tasks" className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-3.5 w-3.5" />
           {t("title")}
         </Link>
@@ -426,18 +426,18 @@ export function TaskDetailScreen({ id }: { id: string }) {
         <DetailNotFoundState title={t("detail.notFoundTitle")} description={t("detail.notFoundDescription")} backHref="/tasks" backLabel={t("detail.backToTasks")} />
       ) : (
         <div className="max-w-2xl space-y-6">
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">{task.title}</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">{task.title}</h1>
 
           <div className="grid gap-4">
             {/* Status */}
             <div className="flex items-center gap-4">
-              <div className="flex w-28 items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <div className="flex w-28 items-center gap-2 text-sm text-muted-foreground">
                 <CheckCircle2 className="h-4 w-4" /> {t("form.status")}
               </div>
               <button
                 onClick={toggleDone}
                 disabled={busyId === task.id}
-                className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-bold text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300"
+                className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-muted/80"
               >
                 {task.status === "done" ? t("statuses.done") : t(`statuses.${task.status}`)}
                 {task.status === "done" && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />}
@@ -446,26 +446,26 @@ export function TaskDetailScreen({ id }: { id: string }) {
 
             {/* Priority */}
             <div className="flex items-center gap-4">
-              <div className="flex w-28 items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <div className="flex w-28 items-center gap-2 text-sm text-muted-foreground">
                 <Flag className="h-4 w-4" /> {t("form.priority")}
               </div>
-              <span className="text-sm font-medium text-zinc-900 dark:text-white">{t(`priorities.${task.priority}`)}</span>
+              <span className="text-sm font-medium text-foreground">{t(`priorities.${task.priority}`)}</span>
             </div>
 
             {/* Due date */}
             {task.dueDate && (
               <div className="flex items-center gap-4">
-                <div className="flex w-28 items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+                <div className="flex w-28 items-center gap-2 text-sm text-muted-foreground">
                   <CalendarDays className="h-4 w-4" /> {t("form.dueDate")}
                 </div>
-                <span className="text-sm font-medium text-zinc-900 dark:text-white">{task.dueDate}</span>
+                <span className="text-sm font-medium text-foreground">{task.dueDate}</span>
               </div>
             )}
 
             {/* Description */}
             {task.description && (
-              <div className="mt-4 border-t border-zinc-100 pt-4 dark:border-white/[0.06]">
-                <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">{task.description}</p>
+              <div className="mt-4 border-t border-border pt-4">
+                <p className="text-sm leading-relaxed text-muted-foreground">{task.description}</p>
               </div>
             )}
           </div>

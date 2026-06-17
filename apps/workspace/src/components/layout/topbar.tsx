@@ -77,7 +77,7 @@ export function Topbar() {
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
-                  <Button className="h-8 rounded-lg bg-[#5e5ce6] hover:bg-[#5e5ce6]/90 text-white px-3 text-xs font-semibold flex items-center gap-1.5 shadow-none border-0">
+                  <Button className="h-8 rounded-lg bg-primary hover:bg-primary/90 text-white px-3 text-xs font-semibold flex items-center gap-1.5 shadow-none border-0">
                     <Plus className="h-4 w-4" />
                     <span>{tSidebar("tasks")}</span>
                     <ChevronDown className="h-3.5 w-3.5 opacity-70 ms-0.5" />
@@ -87,7 +87,7 @@ export function Topbar() {
               <DropdownMenuContent align="end" className="min-w-56 rounded-2xl border-[var(--color-divider)] p-1">
                 <div className="flex items-center justify-between px-3 py-2 text-xs">
                   <span className="font-semibold text-text-muted">Create</span>
-                  <Link href="/settings/workspace" className="font-semibold text-[#5e5ce6] hover:text-[#5e5ce6]/80 transition-colors">
+                  <Link href="/settings/workspace" className="font-semibold text-primary hover:text-primary/80 transition-colors">
                     Manage
                   </Link>
                 </div>
@@ -97,7 +97,7 @@ export function Topbar() {
                     <DropdownMenuItem
                       key={action.href}
                       onClick={() => router.push(action.href)}
-                      className="cursor-pointer rounded-xl px-2.5 py-2 text-sm font-semibold hover:bg-zinc-100 dark:hover:bg-white/5"
+                      className="cursor-pointer rounded-xl px-2.5 py-2 text-sm font-semibold hover:bg-muted dark:hover:bg-muted"
                     >
                       <action.icon className="me-2 h-4 w-4 text-text-muted" strokeWidth={2} />
                       {action.label}

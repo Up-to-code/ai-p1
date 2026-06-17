@@ -10,7 +10,7 @@ module.exports = {
       colors: {
         "qentrah-dark": "#000000",
         "qentrah-soft-dark": "#0A0A0A",
-        "qentrah-blue": "#0B5CFF",
+        "qentrah-blue": "#0066CC",
         "qentrah-card": "#121212",
         "qentrah-secondary": "#A3A3A3",
         "qentrah-muted": "#737373",

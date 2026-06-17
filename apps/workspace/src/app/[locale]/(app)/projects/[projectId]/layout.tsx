@@ -8,7 +8,7 @@ export default async function ProjectLayout({ children, params }: { children: Re
     <div className="flex h-screen flex-col overflow-hidden bg-background">
 
       {/* Tabs Navigation */}
-      <div className="border-b border-zinc-200 bg-white px-4 dark:border-white/10 dark:bg-zinc-950 sm:px-6 lg:px-8">
+      <div className="border-b border-border bg-background px-4 sm:px-6 lg:px-8">
         <ProjectTabs projectId={projectId} />
       </div>
 

@@ -12,8 +12,7 @@ export function AgCardShell({
     <section
       data-slot="ag-ui-turn"
       className={cn(
-        "w-full rounded-[26px] border border-zinc-100 bg-white p-5",
-        "dark:border-zinc-800 dark:bg-zinc-900/50",
+        "w-full rounded-[26px] border border-border bg-card p-5",
         className,
       )}
     >

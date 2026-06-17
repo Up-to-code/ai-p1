@@ -6,7 +6,7 @@ import CTA from "@/components/cta";
 import Footer from "@/components/footer";
 import { Faq02 } from "@/components/landing/faq-02";
 import { Navbar } from "@/components/landing/navbar";
-import { Pricing03 } from "@/components/landing/pricing-03";
+import { PricingSection } from "@/components/landing/pricing-section";
 import { WebsiteBuilderConnect } from "@/components/landing/website-builder-connect";
 import { McpAgentsShowcase } from "@/components/landing/mcp-agents-showcase";
 import { ProblemSection } from "@/components/landing/problem-section";
@@ -20,7 +20,7 @@ export default function InstitutionalLanding() {
   const isAr = locale === "ar";
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="flex min-h-screen flex-col bg-background text-text-primary">
       <Navbar />
 
       <main className="flex-1">
@@ -43,7 +43,7 @@ export default function InstitutionalLanding() {
 
         <McpAgentsShowcase locale={locale} />
 
-        <Pricing03 locale={locale} />
+        <PricingSection locale={locale} />
 
         <Faq02 />
 

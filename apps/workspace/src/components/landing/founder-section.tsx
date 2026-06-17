@@ -64,7 +64,7 @@ function FounderCinematicSection({
       !isEven && "md:flex-row-reverse"
     )}>
       {/* Image Side */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[3rem] border border-zinc-200 dark:border-white/10 md:w-1/2">
+      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[3rem] border border-[var(--q-border)] dark:border-border md:w-1/2">
         <Image
           src={founder.image}
           alt={founder.name}
@@ -86,26 +86,26 @@ function FounderCinematicSection({
                 {founder.role}
               </span>
             </div>
-            <h3 className="mt-6 text-5xl font-bold tracking-tight text-zinc-900 dark:text-white md:text-7xl">
+            <h3 className="mt-6 text-5xl font-bold tracking-tight text-[var(--q-text-primary)] md:text-7xl">
               {founder.name}
             </h3>
           </header>
 
-          <p className="text-lg font-medium leading-relaxed text-zinc-600 dark:text-zinc-400 md:text-2xl md:leading-10">
+          <p className="text-lg font-medium leading-relaxed text-secondary-foreground md:text-2xl md:leading-10">
             {founder.bio}
           </p>
 
           <div className="relative pt-12">
             {/* Redesigned Quote: Editorial Style */}
-            <div className="relative rounded-[2.5rem] bg-zinc-50 p-8 dark:bg-white/[0.03]">
+            <div className="relative rounded-[2.5rem] bg-[var(--q-card-hover)] p-8">
               <span className="absolute -top-6 left-8 text-8xl font-serif text-blue-500/10 dark:text-blue-400/10">"</span>
               <blockquote className="relative">
-                <p className="text-base font-medium italic leading-relaxed text-zinc-800 dark:text-zinc-200 md:text-lg">
+                <p className="text-base font-medium italic leading-relaxed text-foreground md:text-lg">
                   {founder.quote}
                 </p>
                 <footer className="mt-6 flex items-center gap-3">
                   <div className="h-0.5 w-4 bg-blue-500/30" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--q-text-muted)]">
                     {founder.author}
                   </span>
                 </footer>

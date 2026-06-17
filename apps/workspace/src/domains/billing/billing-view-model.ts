@@ -1,7 +1,6 @@
 import type { BillingPlan, BillingPlanId } from "./api/billing";
 
 export type BillingLocale = "en" | "ar";
-export type TamaraReturnStatus = "success" | "cancel" | "failure";
 
 export function billingDateLabel(value?: number, locale: BillingLocale = "en") {
   if (!value) return "Not active yet";
@@ -17,13 +16,6 @@ export function subscriptionTone(status?: string) {
   if (status === "pending") return "warning" as const;
   if (status === "past_due") return "danger" as const;
   return "neutral" as const;
-}
-
-export function tamaraReturnTone(status: TamaraReturnStatus, paymentStatus?: string) {
-  if (status === "success" && paymentStatus === "captured") return "success" as const;
-  if (status === "success") return "warning" as const;
-  if (status === "cancel") return "neutral" as const;
-  return "danger" as const;
 }
 
 export function billingPriceLabel(plan: BillingPlan, locale: BillingLocale) {
@@ -63,7 +55,7 @@ function planIncluded(planId: BillingPlanId, locale: BillingLocale): string[] {
   return ["Custom AI credit cards", "Custom integrations", "Custom organization setup", "Dedicated onboarding"];
 }
 
-export function billingScreenCopy(locale: BillingLocale, isYearly: boolean, planId: BillingPlanId) {
+export function billingScreenCopy(locale: BillingLocale, planId: BillingPlanId) {
   const planLabel_ = planLabel(planId, locale);
   const included = planIncluded(planId, locale);
   const isContactSales = planId.startsWith("custom");
@@ -74,26 +66,18 @@ export function billingScreenCopy(locale: BillingLocale, isYearly: boolean, plan
         title: "اشتراك كانترا",
         subtitle: isContactSales
           ? "تواصل مع فريق المبيعات لتخصيص باقتك."
-          : isYearly
-            ? "ادفع السنة عبر تمارا بنظام اشتر الآن وادفع لاحقاً. يتم التفعيل بعد تأكيد تمارا."
-            : "الخطة الشهرية لا تستخدم تمارا. أكمل الإعداد الشهري من مساحة العمل.",
+          : "أكمل إعداد اشتراكك من مساحة العمل.",
         plan: planLabel_,
         monthly: "شهرياً",
         yearly: "سنوياً",
         activeUntil: "نشط حتى",
         status: "الحالة",
         latest: "آخر دفعة",
-        pay: isContactSales
-          ? "تحدث مع المبيعات"
-          : isYearly
-            ? "اشتر الآن وادفع لاحقاً مع تمارا"
-            : "متابعة الإعداد",
+        pay: isContactSales ? "تحدث مع المبيعات" : "متابعة الإعداد",
         starting: "جاري إنشاء الدفع...",
         secure: isContactSales
           ? "يمكنك تخصيص الخطة وفقاً لاحتياجات فريقك."
-          : isYearly
-            ? "يتم الدفع في صفحة تمارا الآمنة، ثم تعود إلى كانترا بعد الانتهاء."
-            : "تمارا متاحة فقط لخيار الدفع السنوي بنظام اشتر الآن وادفع لاحقاً.",
+          : "ادفع بأمان عبر بوابة الدفع.",
         included,
       }
     : {
@@ -101,57 +85,45 @@ export function billingScreenCopy(locale: BillingLocale, isYearly: boolean, plan
         title: "Qentrah subscription",
         subtitle: isContactSales
           ? "Talk to our sales team to customize your plan."
-          : isYearly
-            ? "Pay the year with Tamara buy now, pay later. Your subscription activates after Tamara confirms payment."
-            : "The monthly plan does not use Tamara. Continue setup from your workspace.",
+          : "Complete your subscription setup from your workspace.",
         plan: planLabel_,
         monthly: "per month",
         yearly: "per year",
         activeUntil: "Active until",
         status: "Status",
         latest: "Latest payment",
-        pay: isContactSales
-          ? "Talk to sales"
-          : isYearly
-            ? "Buy now, pay later with Tamara"
-            : "Continue setup",
+        pay: isContactSales ? "Talk to sales" : "Continue setup",
         starting: "Creating checkout...",
         secure: isContactSales
           ? "You can customize the plan based on your team's needs."
-          : isYearly
-            ? "Payment happens on Tamara's secure checkout, then you return to Qentrah when it is complete."
-            : "Tamara is available only for the annual buy-now-pay-later option.",
+          : "Pay securely through the payment gateway.",
         included,
       };
 }
 
-export function tamaraReturnCopy(locale: string, isCaptured: boolean) {
+export function paymentReturnCopy(locale: string, isSuccess: boolean) {
   return locale === "ar"
     ? {
-        eyebrow: "تمارا",
-        successTitle: isCaptured ? "تم تفعيل الاشتراك" : "نؤكد الدفع",
-        cancelTitle: "تم إلغاء الدفع",
-        failureTitle: "تعذر إكمال الدفع",
-        successDesc: isCaptured
-          ? "تم تأكيد دفعتك وتفعيل فترة الاشتراك الشهرية."
-          : "وصلت عودة تمارا. سيتم تحديث الاشتراك تلقائياً بعد وصول تأكيد الدفع من تمارا.",
-        cancelDesc: "لم يتم تفعيل الاشتراك. يمكنك إعادة المحاولة عندما تكون جاهزاً.",
-        failureDesc: "لم يتم تفعيل الاشتراك. تحقق من تفاصيل الدفع أو حاول مرة أخرى.",
+        eyebrow: "الدفع",
+        successTitle: isSuccess ? "تم تفعيل الاشتراك" : "تأكيد الدفع",
+        failTitle: "تعذر إكمال الدفع",
+        successDesc: isSuccess
+          ? "تم تأكيد دفعتك وتفعيل فترة الاشتراك."
+          : "تم الدفع بنجاح. سيتم تحديث الاشتراك تلقائياً.",
+        failDesc: "لم يتم تفعيل الاشتراك. تحقق من تفاصيل الدفع أو حاول مرة أخرى.",
         dashboard: "فتح لوحة التحكم",
         retry: "إعادة المحاولة",
         reference: "مرجع الدفع",
         payment: "حالة الدفع",
       }
     : {
-        eyebrow: "Tamara",
-        successTitle: isCaptured ? "Subscription activated" : "Confirming payment",
-        cancelTitle: "Payment canceled",
-        failureTitle: "Payment was not completed",
-        successDesc: isCaptured
-          ? "Your payment was confirmed and the monthly subscription period is active."
-          : "Tamara returned you to Qentrah. The subscription will update automatically when Tamara sends the payment confirmation.",
-        cancelDesc: "The subscription was not activated. You can retry whenever you are ready.",
-        failureDesc: "The subscription was not activated. Check the payment details or try again.",
+        eyebrow: "Payment",
+        successTitle: isSuccess ? "Subscription activated" : "Confirming payment",
+        failTitle: "Payment was not completed",
+        successDesc: isSuccess
+          ? "Your payment was confirmed and your subscription is active."
+          : "Payment was successful. The subscription will update automatically.",
+        failDesc: "The subscription was not activated. Check the payment details or try again.",
         dashboard: "Open dashboard",
         retry: "Retry payment",
         reference: "Payment reference",
@@ -159,12 +131,12 @@ export function tamaraReturnCopy(locale: string, isCaptured: boolean) {
       };
 }
 
-export function tamaraReturnText(
-  status: TamaraReturnStatus,
-  copy: ReturnType<typeof tamaraReturnCopy>,
+export function paymentReturnText(
+  isSuccess: boolean,
+  copy: ReturnType<typeof paymentReturnCopy>,
 ) {
   return {
-    title: status === "success" ? copy.successTitle : status === "cancel" ? copy.cancelTitle : copy.failureTitle,
-    description: status === "success" ? copy.successDesc : status === "cancel" ? copy.cancelDesc : copy.failureDesc,
+    title: isSuccess ? copy.successTitle : copy.failTitle,
+    description: isSuccess ? copy.successDesc : copy.failDesc,
   };
 }

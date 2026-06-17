@@ -1,0 +1,90 @@
+{
+  "meta": {
+    "name": "Qentrah Design System",
+    "version": "2.0.0",
+    "description": "Apple x OpenAI color system. Blue accent. Razor 0.5px borders. Extreme restraint."
+  },
+  "colors": {
+    "dark": {
+      "bg": "#080808",
+      "sidebar": "#0a0a0a",
+      "topbar": "#0a0a0a",
+      "card": "#0f0f0f",
+      "cardHover": "#161616",
+      "border": "#161616",
+      "borderStrong": "#2a2a2a",
+      "textPrimary": "#f0f0f0",
+      "textSecondary": "#3a3a3a",
+      "textMuted": "#2a2a2a",
+      "inputBg": "#111111"
+    },
+    "light": {
+      "bg": "#f2f2f7",
+      "sidebar": "#f9f9f9",
+      "topbar": "#f9f9f9",
+      "card": "#ffffff",
+      "cardHover": "#f9f9f9",
+      "border": "#e8e8e8",
+      "borderStrong": "#d0d0d0",
+      "textPrimary": "#080808",
+      "textSecondary": "#aaaaaa",
+      "textMuted": "#cccccc",
+      "inputBg": "#ebebeb"
+    },
+    "accent": {
+      "primary": "#0066cc",
+      "hover": "#0055aa",
+      "active": "#004499",
+      "muted": "rgba(0,102,204,0.10)",
+      "border": "rgba(0,102,204,0.25)"
+    },
+    "topbar": {
+      "lightBtn": "#080808"
+    },
+    "status": {
+      "success": "#4ade80",
+      "successBg": "#0b2016",
+      "warning": "#fbbf24",
+      "warningBg": "#251a05",
+      "error": "#f87171",
+      "errorBg": "#220b0a",
+      "info": "#60a5fa",
+      "infoBg": "#091a28",
+      "note": "#a78bfa",
+      "noteBg": "#160f28"
+    }
+  },
+  "cssTokens": {
+    "dark": {
+      "--q-bg-dark": "#080808",
+      "--q-sidebar-dark": "#0a0a0a",
+      "--q-card-dark": "#0f0f0f",
+      "--q-border-dark": "#161616",
+      "--q-text-primary-dark": "#f0f0f0",
+      "--q-text-secondary-dark": "#3a3a3a",
+      "--q-text-muted-dark": "#2a2a2a"
+    },
+    "light": {
+      "--q-bg-light": "#f2f2f7",
+      "--q-sidebar-light": "#f9f9f9",
+      "--q-card-light": "#ffffff",
+      "--q-border-light": "#e8e8e8",
+      "--q-text-primary-light": "#080808",
+      "--q-text-secondary-light": "#aaaaaa",
+      "--q-text-muted-light": "#cccccc"
+    },
+    "accent": {
+      "--q-accent": "#0066cc",
+      "--q-accent-hover": "#0055aa",
+      "--q-accent-active": "#004499",
+      "--q-topbar-btn-light": "#080808"
+    },
+    "status": {
+      "--q-success": "#4ade80",
+      "--q-warning": "#fbbf24",
+      "--q-error": "#f87171",
+      "--q-info": "#60a5fa",
+      "--q-note": "#a78bfa"
+    }
+  }
+}

@@ -1,9 +1,8 @@
 import {
   applyUsageToCreditBalance,
   calculateAiCredits,
-  isLegacyBillingPlanId,
-  mapLegacyBillingPlanId,
   resolveSubscriptionEntitlements,
+  type SubscriptionPlanId,
 } from "@qentrah/domain-contracts/subscription-pricing";
 
 export type StoredCreditBalance = {
@@ -46,8 +45,9 @@ export type CreditUsageSummary = {
 
 export function includedCreditsForBillingPlan(planId?: string | null) {
   if (!planId) return 0;
-  if (!isLegacyBillingPlanId(planId)) return 0;
-  return resolveSubscriptionEntitlements(mapLegacyBillingPlanId(planId).planId).includedCredits;
+  const base = planId.replace(/_monthly|_yearly$/, "") as SubscriptionPlanId;
+  if (base !== "good" && base !== "better" && base !== "custom") return 0;
+  return resolveSubscriptionEntitlements(base).includedCredits;
 }
 
 function nonNegativeInteger(value: number | undefined) {

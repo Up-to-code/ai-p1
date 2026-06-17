@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowRight, CreditCard, Landmark, ShieldCheck } from "lucide-react";
+import { ArrowRight, CreditCard, ShieldCheck } from "lucide-react";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { AppPageHeader, AppPageShell, AppSection } from "@/components/shared";
@@ -11,11 +11,9 @@ import { useToast } from "@/components/ui/toast";
 import { useAccountContext } from "@/domains/auth";
 import {
   BILLING_PLANS,
-  createTamaraCheckoutRequest,
   normalizePlanId,
   isYearlyPlan,
   isContactSales,
-  planDisplayName,
   useBillingOverview,
 } from "../api/billing";
 import type { BillingPlanId } from "../api/billing";
@@ -35,11 +33,11 @@ export function BillingScreen() {
   const selectedPlan = BILLING_PLANS[requestedPlanId];
   const yearly = isYearlyPlan(requestedPlanId);
   const contactSales = isContactSales(requestedPlanId);
-  const copy = billingScreenCopy(locale, yearly, requestedPlanId);
+  const copy = billingScreenCopy(locale, requestedPlanId);
 
   const statusLabel = overview?.subscription?.status ?? "inactive";
   const latestPaymentLabel = overview?.latestPayment
-    ? `${overview.latestPayment.status} · ${overview.latestPayment.orderReferenceId}`
+    ? `${overview.latestPayment.status} · ${overview.latestPayment.orderId}`
     : "No payment yet";
 
   const price = useMemo(() => billingPriceLabel(selectedPlan, locale), [locale, selectedPlan]);
@@ -52,15 +50,31 @@ export function BillingScreen() {
       return;
     }
 
-    if (!yearly) {
-      window.location.assign(`/${locale}/dashboard`);
-      return;
-    }
-
     setIsStartingCheckout(true);
     try {
-      const checkout = await createTamaraCheckoutRequest({ organizationId, locale, planId: requestedPlanId });
-      window.location.assign(checkout.checkoutUrl);
+      // Use the billing API to create checkout and get the URL
+      const response = await fetch(`/api/v1/organizations/${encodeURIComponent(organizationId)}/billing/checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          planId: requestedPlanId,
+          locale,
+          returnUrl: window.location.origin + `/${locale}/billing?plan=${requestedPlanId}`,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Checkout request failed");
+      }
+
+      const data = await response.json();
+
+      if (data.checkoutUrl) {
+        window.location.assign(data.checkoutUrl);
+      } else {
+        // For custom plans or if no checkout URL, show contact sales
+        window.location.assign(`/${locale}/contact`);
+      }
     } catch (error) {
       toast({
         title: isAr ? "تعذر إنشاء الدفع" : "Checkout could not start",
@@ -94,21 +108,21 @@ export function BillingScreen() {
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
           <AppSection className="overflow-hidden" contentClassName="p-0">
             <div className="grid gap-px bg-zinc-100 dark:bg-white/5 md:grid-cols-[1fr_280px]">
-              <div className="bg-white p-6 dark:bg-[#0A0A0A] md:p-8">
+              <div className="bg-card p-6 md:p-8">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-300">{copy.plan}</p>
                     <h2 className="mt-3 text-3xl font-black tracking-tight text-zinc-950 dark:text-white">{price}</h2>
                     <p className="mt-1 text-xs font-bold uppercase tracking-widest text-zinc-400">{yearly ? copy.yearly : copy.monthly}</p>
                   </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-zinc-100 bg-zinc-50 dark:border-white/10 dark:bg-white/[0.03]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-muted">
                     <CreditCard className="h-5 w-5 text-zinc-500 dark:text-zinc-300" />
                   </div>
                 </div>
 
                 <div className="mt-8 grid gap-3 sm:grid-cols-2">
                   {copy.included.map((item) => (
-                    <div key={item} className="flex items-start gap-3 rounded-xl border border-zinc-100 bg-zinc-50/60 p-4 dark:border-white/5 dark:bg-white/[0.02]">
+                    <div key={item} className="flex items-start gap-3 rounded-xl border border-border bg-muted/60 p-4">
                       <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
                       <span className="text-sm font-bold leading-6 text-zinc-700 dark:text-zinc-200">{item}</span>
                     </div>
@@ -116,7 +130,7 @@ export function BillingScreen() {
                 </div>
               </div>
 
-              <div className="flex flex-col justify-between bg-zinc-50 p-6 dark:bg-white/[0.02]">
+              <div className="flex flex-col justify-between bg-muted p-6">
                 <div className="space-y-5">
                   <Metric label={copy.status} value={statusLabel} />
                   <Metric label={copy.activeUntil} value={billingDateLabel(overview.subscription?.currentPeriodEndAt, locale)} />
@@ -133,15 +147,6 @@ export function BillingScreen() {
                   <ArrowRight className="h-4 w-4 rtl:rotate-180" />
                 </Button>
               </div>
-            </div>
-          </AppSection>
-
-          <AppSection title="Tamara" tone="muted">
-            <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-white/[0.04]">
-                <Landmark className="h-4 w-4 text-blue-600 dark:text-blue-300" />
-              </div>
-              <p className="text-sm font-semibold leading-7 text-zinc-500 dark:text-zinc-400">{copy.secure}</p>
             </div>
           </AppSection>
         </div>

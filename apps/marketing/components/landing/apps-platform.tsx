@@ -105,8 +105,8 @@ const copy = {
 
 function ToolPill({ tool }: { tool: { name: string; url: string } }) {
   return (
-    <span className="flex h-12 items-center gap-3 rounded-full border border-zinc-200/80 bg-white px-4 text-sm font-bold text-zinc-700 shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-200 transition-colors duration-200 hover:border-zinc-300 dark:hover:border-white/20">
-      <span className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 bg-zinc-50 dark:border-white/10 dark:bg-zinc-950">
+    <span className="flex h-12 items-center gap-3 rounded-full border border-zinc-200/80 bg-[var(--q-card)] px-4 text-sm font-bold text-zinc-700 shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-200 transition-colors duration-200 hover:border-zinc-300 dark:hover:border-white/20">
+      <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--q-border)] bg-[var(--q-card-hover)] dark:border-white/10 dark:bg-zinc-950">
         <Image
           alt=""
           width={20}
@@ -143,7 +143,7 @@ export function AppsPlatform({ locale }: { locale: string }) {
                   {labels.eyebrow}
                 </span>
               </div>
-              <h2 className="text-3xl font-bold tracking-tight text-zinc-950 dark:text-white md:text-5xl rtl:leading-[1.3]">
+              <h2 className="text-3xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-5xl rtl:leading-[1.3]">
                 {labels.title}
               </h2>
               <p className="text-base leading-relaxed text-zinc-600 dark:text-zinc-400 md:text-lg rtl:leading-[1.8]">
@@ -152,7 +152,7 @@ export function AppsPlatform({ locale }: { locale: string }) {
             </div>
           </Reveal>
 
-          <div className="grid gap-10 md:grid-cols-3 border-t border-zinc-200/50 pt-12 dark:border-white/[0.04]">
+          <div className="grid gap-10 md:grid-cols-3 border-t border-zinc-200 pt-12 dark:border-white/[0.04]">
             {labels.paths.map((path, i) => {
               const Icon = i === 0 ? Boxes : i === 1 ? Cpu : Handshake;
               return (
@@ -162,7 +162,7 @@ export function AppsPlatform({ locale }: { locale: string }) {
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5 text-zinc-900 dark:text-zinc-100 transition-colors duration-300 group-hover:bg-blue-500/10 group-hover:text-blue-600 dark:group-hover:text-blue-400">
                         <Icon className="h-5 w-5" />
                       </span>
-                      <h3 className="text-lg font-bold text-zinc-950 dark:text-white md:text-xl rtl:leading-[1.3]">
+                      <h3 className="text-lg font-bold text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-xl rtl:leading-[1.3]">
                         {path.heading}
                       </h3>
                     </div>
@@ -172,7 +172,7 @@ export function AppsPlatform({ locale }: { locale: string }) {
                     <div>
                       <Link
                         href={path.href}
-                        className="inline-flex items-center gap-2 text-sm font-bold text-zinc-950 transition-all duration-300 hover:gap-3 dark:text-white"
+                        className="inline-flex items-center gap-2 text-sm font-bold text-[var(--q-text-primary)] transition-all duration-300 hover:gap-3 dark:text-[var(--q-text-primary)]"
                       >
                         {path.cta}
                         <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
@@ -196,7 +196,7 @@ export function AppsPlatform({ locale }: { locale: string }) {
                   {labels.works.eyebrow}
                 </span>
               </div>
-              <h2 className="text-3xl font-bold tracking-tight text-zinc-950 dark:text-white md:text-5xl rtl:leading-[1.3]">
+              <h2 className="text-3xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-5xl rtl:leading-[1.3]">
                 {labels.works.title}
               </h2>
               <p className="text-base leading-relaxed text-zinc-600 dark:text-zinc-400 md:text-lg rtl:leading-[1.8]">

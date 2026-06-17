@@ -27,7 +27,7 @@ export function ProjectTabs({ projectId }: { projectId: string }) {
             className={cn(
               isActive
                 ? "border-primary text-primary"
-                : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:hover:border-white/20 dark:hover:text-zinc-300",
+                : "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
               "whitespace-nowrap border-b-2 py-4 px-1 text-sm font-bold transition-colors"
             )}
           >
