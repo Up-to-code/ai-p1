@@ -23,7 +23,7 @@ export function Faq02() {
   return (
     <PublicSection
       id="faq"
-      className="bg-[var(--q-card)] dark:bg-[var(--q-bg)]"
+      tone="very-dark"
       contentClassName="grid gap-16 lg:grid-cols-[1fr_1.5fr] lg:items-start"
     >
       <Reveal>

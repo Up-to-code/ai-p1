@@ -93,7 +93,7 @@ export function ProblemSection({ locale }: { locale: string }) {
 
   return (
     <div className="w-full">
-      <PublicSection id="solutions" tone="muted" className="border-y border-zinc-200/50 dark:border-white/[0.04]">
+      <PublicSection id="solutions" tone="very-dark" className="border-y border-zinc-200/50 dark:border-white/[0.04]">
         <div className="space-y-16">
           <Reveal>
             <div className="max-w-4xl space-y-5">
@@ -128,7 +128,7 @@ export function ProblemSection({ locale }: { locale: string }) {
         </div>
       </PublicSection>
 
-      <PublicSection id="the-fix" tone="default">
+      <PublicSection id="the-fix" tone="light">
         <div className="space-y-16">
           <Reveal>
             <div className="max-w-4xl space-y-5">

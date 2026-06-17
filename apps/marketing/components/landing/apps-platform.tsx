@@ -105,8 +105,8 @@ const copy = {
 
 function ToolPill({ tool }: { tool: { name: string; url: string } }) {
   return (
-    <span className="flex h-12 items-center gap-3 rounded-full border border-zinc-200/80 bg-[var(--q-card)] px-4 text-sm font-bold text-zinc-700 shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-200 transition-colors duration-200 hover:border-zinc-300 dark:hover:border-white/20">
-      <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--q-border)] bg-[var(--q-card-hover)] dark:border-white/10 dark:bg-zinc-950">
+    <span className="flex h-12 items-center gap-3 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 text-sm font-bold text-zinc-700 dark:text-zinc-200 shadow-sm transition-colors duration-200 hover:border-blue-500/50 dark:hover:border-blue-500/50">
+      <span className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900">
         <Image
           alt=""
           width={20}
@@ -132,7 +132,7 @@ export function AppsPlatform({ locale }: { locale: string }) {
 
   return (
     <div className="w-full">
-      <PublicSection id="apps" tone="default">
+      <PublicSection id="apps" tone="dark">
         <div className="mx-auto max-w-7xl space-y-16">
           <Reveal>
             <div className="space-y-4 text-start">
@@ -152,14 +152,14 @@ export function AppsPlatform({ locale }: { locale: string }) {
             </div>
           </Reveal>
 
-          <div className="grid gap-10 md:grid-cols-3 border-t border-zinc-200 pt-12 dark:border-white/[0.04]">
+          <div className="grid gap-10 md:grid-cols-3 border-t border-zinc-200 dark:border-zinc-700 pt-12">
             {labels.paths.map((path, i) => {
               const Icon = i === 0 ? Boxes : i === 1 ? Cpu : Handshake;
               return (
                 <Reveal key={i} delay={i * 0.08}>
                   <div className="group space-y-4 text-start">
                     <div className="flex items-center gap-3">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5 text-zinc-900 dark:text-zinc-100 transition-colors duration-300 group-hover:bg-blue-500/10 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 transition-colors duration-300 group-hover:bg-blue-500/10 group-hover:text-blue-600 dark:group-hover:text-blue-400">
                         <Icon className="h-5 w-5" />
                       </span>
                       <h3 className="text-lg font-bold text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-xl rtl:leading-[1.3]">
@@ -186,7 +186,7 @@ export function AppsPlatform({ locale }: { locale: string }) {
         </div>
       </PublicSection>
 
-      <PublicSection tone="muted" className="border-y border-zinc-200/50 dark:border-white/[0.04] overflow-hidden">
+      <PublicSection tone="secondary" className="border-y border-zinc-200 dark:border-white/[0.04] overflow-hidden">
         <div className="mx-auto max-w-3xl space-y-10">
           <Reveal>
             <div className="space-y-4">

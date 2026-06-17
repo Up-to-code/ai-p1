@@ -89,8 +89,8 @@ function AgentCard({ agent, isAr }: { agent: AgentItem; isAr: boolean }) {
   const descText = isAr ? agent.desc.ar : agent.desc.en;
 
   return (
-    <div className="flex items-center gap-3.5 rounded-2xl border border-zinc-200/60 bg-white p-4 shadow-sm dark:border-white/[0.06] dark:bg-zinc-950/40 hover:border-zinc-300 dark:hover:border-white/10 transition duration-300 w-full">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-zinc-50 dark:border-white/10 dark:bg-zinc-900">
+    <div className="flex items-center gap-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white p-4 shadow-sm dark:bg-zinc-800 hover:border-blue-500/50 dark:hover:border-blue-500/50 transition duration-300 w-full">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900">
         <Image
           alt=""
           width={20}
@@ -116,7 +116,7 @@ export function McpAgentsShowcase({ locale }: { locale: string }) {
   const scrollingAgents = [...agentsList, ...agentsList, ...agentsList, ...agentsList];
 
   return (
-    <section className="w-full overflow-hidden border-y border-zinc-200/70 bg-[var(--q-card)] px-6 py-16 dark:border-white/[0.08] dark:bg-[var(--q-bg)] md:py-24">
+    <section className="w-full overflow-hidden border-y border-zinc-200 dark:border-white/[0.08] bg-[var(--q-bg-secondary)] px-6 py-16 dark:bg-[var(--q-bg-dark)] dark:border-zinc-800 md:py-24">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center" dir={isAr ? "rtl" : "ltr"}>
           <div className="flex flex-col space-y-6 text-start rtl:text-right ltr:text-left max-w-xl mx-auto lg:mx-0">

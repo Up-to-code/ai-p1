@@ -54,7 +54,7 @@ export function Topbar() {
 
   return (
     <header className={cn(
-      "flex h-[var(--topbar-height)] items-center gap-4 border-b border-[var(--color-divider)] bg-[var(--color-background)]/80 backdrop-blur-xl backdrop-saturate-150 px-8 transition-all duration-300 sticky top-0 z-30 shadow-sm shadow-color-user-bubble/10",
+      "flex h-[var(--topbar-height)] items-center gap-4 border-b border-border bg-background/80 backdrop-blur-xl backdrop-saturate-150 px-8 transition-all duration-300 sticky top-0 z-30 shadow-sm shadow-[var(--q-user-bubble)]/5",
       isRtl && "font-cairo"
     )}>
 
@@ -109,24 +109,24 @@ export function Topbar() {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center rounded-full border border-[var(--color-divider)] bg-transparent p-1">
+            <div className="inline-flex items-center rounded-full border border-border bg-transparent p-1 gap-1">
               <button
                 type="button"
                 onClick={() => setTheme("light")}
                 aria-label={locale === "ar" ? "تفعيل الوضع الفاتح" : "Use light mode"}
                 aria-pressed={!isDark}
                 className={cn(
-                  "relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full transition-colors",
+                  "relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-full transition-all duration-200",
                   !isDark ? activeToggleClassName : inactiveToggleClassName,
                 )}
               >
               {!isDark && <ToggleHighlight layoutId="theme-highlight" />}
               <motion.span
                 className="relative z-10"
-                animate={{ rotate: !isDark ? 0 : -18, scale: !isDark ? 1 : 0.9 }}
+                animate={{ rotate: !isDark ? 0 : -18, scale: !isDark ? 1 : 0.88 }}
                 transition={{ type: "spring", stiffness: 420, damping: 28 }}
               >
-                <Sun className="h-4 w-4" />
+                <Sun className="h-3.5 w-3.5" />
               </motion.span>
             </button>
             <button
@@ -135,23 +135,23 @@ export function Topbar() {
               aria-label={locale === "ar" ? "تفعيل الوضع الداكن" : "Use dark mode"}
               aria-pressed={isDark}
               className={cn(
-                "relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full transition-colors",
+                "relative flex h-7 w-7 items-center justify-center overflow-hidden rounded-full transition-all duration-200",
                 isDark ? activeToggleClassName : inactiveToggleClassName,
               )}
             >
               {isDark && <ToggleHighlight layoutId="theme-highlight" />}
               <motion.span
                 className="relative z-10"
-                animate={{ rotate: isDark ? 0 : 18, scale: isDark ? 1 : 0.9 }}
+                animate={{ rotate: isDark ? 0 : 18, scale: isDark ? 1 : 0.88 }}
                 transition={{ type: "spring", stiffness: 420, damping: 28 }}
               >
-                <Moon className="h-4 w-4" />
+                <Moon className="h-3.5 w-3.5" />
               </motion.span>
             </button>
           </div>
-          <LanguageSwitcher className="hidden sm:inline-flex opacity-70 hover:opacity-100" />
+          <LanguageSwitcher className="hidden sm:inline-flex opacity-80 hover:opacity-100 transition-opacity" />
 
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full border border-transparent text-text-muted shadow-none transition-all hover:border-[var(--color-divider)] hover:bg-transparent hover:text-text-primary">
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-text-muted hover:bg-muted hover:text-text-primary transition-all">
             <Bell className="h-4 w-4" />
             <span className="sr-only">{t('live')}</span>
           </Button>
@@ -169,7 +169,7 @@ function ToggleHighlight({ layoutId }: { layoutId: string }) {
   return (
     <motion.span
       layoutId={layoutId}
-      className="absolute inset-0 rounded-full bg-foreground shadow-none"
+      className="absolute inset-0 rounded-full bg-[var(--q-user-bubble)] shadow-sm"
       transition={{ type: "spring", stiffness: 500, damping: 38, mass: 0.7 }}
     />
   );

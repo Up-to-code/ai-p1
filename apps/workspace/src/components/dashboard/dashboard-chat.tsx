@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import AiComposer from "./ai-composer";
-import { BrandMark } from "@/components/logo";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { ArrowDown, Building2, CalendarClock, CheckCircle2, Search } from "lucide-react";
@@ -256,38 +255,23 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
           </div>
         </>
       ) : messages.length === 0 ? (
-        <div className="relative flex flex-1 flex-col items-center justify-center px-4 py-8">
+        <div className="relative flex flex-1 flex-col items-center justify-center px-4 py-12">
           <motion.div
-            className="w-full max-w-3xl space-y-0 text-center"
+            className="w-full max-w-2xl space-y-8 text-center"
             initial={reduceMotion ? false : "hidden"}
             animate="show"
             variants={aiEmptyStateVariants}
           >
-            <motion.div
-              className="space-y-4 rounded-2xl border border-border/60 bg-secondary/60 px-6 py-10 backdrop-blur-sm sm:px-10"
-              variants={aiEmptyItemVariants}
-            >
-              <motion.div
-                className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card"
-                variants={aiLogoVariants}
-              >
-                <BrandMark className="h-6 w-6" priority />
-              </motion.div>
-              <h2 className="text-2xl font-black leading-tight tracking-tight text-text-primary sm:text-4xl">
+            <motion.div className="space-y-4" variants={aiEmptyItemVariants}>
+              <h2 className="text-3xl font-black leading-tight tracking-tight text-text-primary sm:text-5xl">
                 <WordWave text={t("welcome")} disabled={reduceMotion} />
               </h2>
-              <motion.p className="mx-auto max-w-xl text-sm font-medium leading-relaxed text-text-secondary" variants={aiCopyVariants}>
+              <motion.p className="mx-auto max-w-xl text-base font-medium leading-relaxed text-text-secondary" variants={aiCopyVariants}>
                 {t("inputPlaceholder")}
               </motion.p>
             </motion.div>
 
-            <motion.div className="flex items-center justify-center gap-4 py-5" variants={aiEmptyItemVariants}>
-              <span className="h-px w-10 bg-border/40" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted">ask</span>
-              <span className="h-px w-10 bg-border/40" />
-            </motion.div>
-
-            <motion.div className="relative group" variants={aiComposerVariants}>
+            <motion.div className="relative group pt-4" variants={aiComposerVariants}>
               <AiComposer 
                 value={inputValue}
                 onChange={setInputValue}
@@ -298,7 +282,7 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
               />
             </motion.div>
 
-            <motion.div className="grid grid-cols-2 gap-2 pt-2 sm:grid-cols-4" variants={aiSuggestionGroupVariants}>
+            <motion.div className="grid grid-cols-2 gap-3 pt-2 sm:grid-cols-4" variants={aiSuggestionGroupVariants}>
               {[
                 { label: t("suggestions.findClient"), icon: Search },
                 { label: t("suggestions.prepareViewing"), icon: CalendarClock },
@@ -308,12 +292,12 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
                 <motion.button
                   key={pill.label}
                   onClick={() => setInputValue(`${pill.label} - apply is in our PCS model`)}
-                  className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-color-user-bubble bg-color-user-bubble px-3 py-2 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:opacity-90"
+                  className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[var(--q-user-bubble)] bg-[var(--q-user-bubble)] px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-white shadow-sm transition-all hover:opacity-90 active:scale-[0.98]"
                   variants={aiSuggestionVariants}
                   whileHover={reduceMotion ? undefined : { y: -1 }}
                   whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                 >
-                  <pill.icon className="h-3.5 w-3.5" />
+                  <pill.icon className="h-4 w-4" />
                   {pill.label}
                 </motion.button>
               ))}
@@ -346,7 +330,7 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
                       </span>
                       {msg.content && (
                         msg.role === "user" ? (
-                          <div className="rounded-[18px] border border-color-user-bubble bg-color-user-bubble px-4 py-3 text-sm font-medium leading-relaxed text-white shadow-md shadow-color-user-bubble/20">
+                          <div className="rounded-[18px] border border-[var(--q-user-bubble)] bg-[var(--q-user-bubble)] px-4 py-3 text-sm font-medium leading-relaxed text-white shadow-md">
                             {msg.content}
                           </div>
                         ) : (
