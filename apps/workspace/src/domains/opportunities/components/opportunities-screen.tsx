@@ -193,7 +193,7 @@ function OpportunityBoard({
               "flex min-h-[420px] w-[min(100%,280px)] shrink-0 flex-col rounded-[28px] border p-3 transition-all duration-300",
               isDragOver
                 ? "border-[var(--q-accent)] bg-[var(--q-accent-muted)] ring-4 ring-[var(--q-accent-border)]"
-                : "border-zinc-100 bg-zinc-50/40 dark:border-white/5 dark:bg-white/[0.01]",
+                : "border-border bg-muted/50/40 dark:border-white/5 dark:bg-white/[0.01]",
             )}
             onDragOver={(event) => {
               event.preventDefault();
@@ -212,8 +212,8 @@ function OpportunityBoard({
             }}
           >
             <div className="mb-4 flex items-center justify-between px-2">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">{labels[stage]}</h3>
-              <span className="text-[10px] font-black tabular-nums text-zinc-300">{String(rows.length).padStart(2, "0")}</span>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">{labels[stage]}</h3>
+              <span className="text-[10px] font-black tabular-nums text-muted-foreground/40">{String(rows.length).padStart(2, "0")}</span>
             </div>
             <div className="flex-1 space-y-3">
               {rows.map((opportunity) => (
@@ -230,7 +230,7 @@ function OpportunityBoard({
                     setDragOverStage(null);
                   }}
                   className={cn(
-                    "rounded-2xl border border-zinc-200 bg-white p-3 transition-all dark:border-white/10 dark:bg-[#0A0A0A]",
+                    "rounded-2xl border border-border bg-white p-3 transition-all dark:border-white/10 dark:bg-[#0A0A0A]",
                     draggedId === opportunity.id && "scale-[0.98] opacity-60",
                     movingId === opportunity.id && "pointer-events-none opacity-50",
                     movingId !== opportunity.id && "cursor-grab active:cursor-grabbing",
@@ -238,20 +238,20 @@ function OpportunityBoard({
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <h4 className="truncate text-sm font-black text-zinc-950 dark:text-white">{opportunity.title}</h4>
-                      <p className="mt-1 text-xs font-bold text-zinc-400">{formatValue(opportunity)}</p>
+                      <h4 className="truncate text-sm font-black text-foreground">{opportunity.title}</h4>
+                      <p className="mt-1 text-xs font-bold text-muted-foreground">{formatValue(opportunity)}</p>
                     </div>
                     <StatusPill label={priorityLabels[opportunity.priority]} tone={priorityTone(opportunity.priority)} />
                   </div>
                   {opportunity.nextStep ? (
-                    <p className="mt-3 line-clamp-2 text-xs font-medium leading-5 text-zinc-500">{opportunity.nextStep}</p>
+                    <p className="mt-3 line-clamp-2 text-xs font-medium leading-5 text-muted-foreground">{opportunity.nextStep}</p>
                   ) : null}
                   <div className="mt-4 flex justify-end gap-2">
                     <Link
                       href={`/opportunities/${opportunity.id}`}
                       draggable={false}
                       onClick={(event) => event.stopPropagation()}
-                      className="inline-flex h-8 items-center rounded-lg border border-zinc-200 px-3 text-[10px] font-bold text-zinc-700 hover:bg-zinc-50 dark:border-white/10 dark:text-zinc-200 dark:hover:bg-white/5"
+                      className="inline-flex h-8 items-center rounded-lg border border-border px-3 text-[10px] font-bold text-foreground hover:bg-muted/50 dark:border-white/10 dark:text-muted-foreground/30"
                     >
                       {t("actions.open")}
                     </Link>
@@ -420,13 +420,13 @@ export function OpportunitiesScreen() {
   }
 
   const columns: AppDataTableColumn<Opportunity>[] = [
-    { key: "title", header: t("table.opportunity"), render: (row) => <div className="min-w-0"><p className="truncate text-sm font-black text-zinc-950 dark:text-white">{row.title}</p><p className="mt-1 truncate text-xs font-bold text-zinc-400">{row.nextStep || row.source || t("table.noNextStep")}</p></div> },
+    { key: "title", header: t("table.opportunity"), render: (row) => <div className="min-w-0"><p className="truncate text-sm font-black text-foreground">{row.title}</p><p className="mt-1 truncate text-xs font-bold text-muted-foreground">{row.nextStep || row.source || t("table.noNextStep")}</p></div> },
     { key: "stage", header: t("table.stage"), render: (row) => <StatusPill label={opportunityStageLabels[row.stage]} tone={stageTone(row.stage)} /> },
     { key: "priority", header: t("table.priority"), render: (row) => <StatusPill label={opportunityPriorityLabels[row.priority]} tone={priorityTone(row.priority)} /> },
     { key: "context", header: t("table.context"), render: (row) => projectOptionMap.get(row.projectId ?? "")?.name ?? clientOptionMap.get(row.clientId ?? "")?.name ?? t("table.noContext") },
     { key: "value", header: t("table.value"), render: formatValue },
     { key: "closeDate", header: t("table.close"), render: (row) => row.closeDate || t("table.noDate") },
-    { key: "actions", header: "", align: "end", render: (row) => <div className="flex justify-end gap-2"><Link href={`/opportunities/${row.id}`} className="inline-flex h-8 items-center rounded-lg border border-zinc-200 px-3 text-[10px] font-bold text-zinc-700 hover:bg-zinc-50 dark:border-white/10 dark:text-zinc-200 dark:hover:bg-white/5">{t("actions.open")}</Link><Button type="button" variant="outline" className="h-8 rounded-lg px-3 text-[10px] font-bold" onClick={() => openEditDrawer(row)}>{common("edit")}</Button><Button type="button" variant="outline" disabled={busyId === row.id} className="h-8 rounded-lg px-2 text-red-600" onClick={() => remove(row)} aria-label={t("actions.deleteOpportunity")}><Trash2 className="h-3.5 w-3.5" /></Button></div> },
+    { key: "actions", header: "", align: "end", render: (row) => <div className="flex justify-end gap-2"><Link href={`/opportunities/${row.id}`} className="inline-flex h-8 items-center rounded-lg border border-border px-3 text-[10px] font-bold text-foreground hover:bg-muted/50 dark:border-white/10 dark:text-muted-foreground/30">{t("actions.open")}</Link><Button type="button" variant="outline" className="h-8 rounded-lg px-3 text-[10px] font-bold" onClick={() => openEditDrawer(row)}>{common("edit")}</Button><Button type="button" variant="outline" disabled={busyId === row.id} className="h-8 rounded-lg px-2 text-red-600" onClick={() => remove(row)} aria-label={t("actions.deleteOpportunity")}><Trash2 className="h-3.5 w-3.5" /></Button></div> },
   ];
 
   return (
@@ -446,11 +446,11 @@ export function OpportunitiesScreen() {
             title={t("workspaceView")}
             actions={(
               <div className="flex flex-wrap items-center gap-2">
-                <div className="flex h-10 items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 dark:border-white/10 dark:bg-white/[0.03]">
-                  <Search className="h-3.5 w-3.5 text-zinc-400" />
+                <div className="flex h-10 items-center gap-2 rounded-xl border border-border bg-white px-3 dark:border-white/10 dark:bg-white/[0.03]">
+                  <Search className="h-3.5 w-3.5 text-muted-foreground" />
                   <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={common("search")} className="h-8 w-36 bg-transparent text-xs font-bold outline-none" />
                 </div>
-                <select value={stage} onChange={(event) => setStage(event.target.value as OpportunityStage | "all")} className="h-10 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-bold dark:border-white/10 dark:bg-white/[0.03]">
+                <select value={stage} onChange={(event) => setStage(event.target.value as OpportunityStage | "all")} className="h-10 rounded-xl border border-border bg-white px-3 text-xs font-bold dark:border-white/10 dark:bg-white/[0.03]">
                   <option value="all">{t("filters.allStages")}</option>
                   {stages.map((item) => <option key={item} value={item}>{opportunityStageLabels[item]}</option>)}
                 </select>
@@ -556,7 +556,7 @@ export function OpportunityDetailScreen({ id }: { id: string }) {
       <AppPageHeader
         eyebrow={t("detail.eyebrow")}
         title={opportunity?.title ?? t("title")}
-        context={<Link href="/opportunities" className="inline-flex h-10 items-center rounded-xl border border-zinc-100 bg-white px-4 text-xs font-bold text-zinc-900 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-white"><ArrowLeft className="me-2 h-4 w-4" />{common("back")}</Link>}
+        context={<Link href="/opportunities" className="inline-flex h-10 items-center rounded-xl border border-border bg-white px-4 text-xs font-bold text-foreground hover:bg-muted/50 dark:border-white/10 dark:bg-white/5"><ArrowLeft className="me-2 h-4 w-4" />{common("back")}</Link>}
         actions={opportunity ? <Button type="button" variant="outline" disabled={busyId === opportunity.id} className="h-10 rounded-xl text-xs font-bold text-red-600" onClick={remove}><Trash2 className="me-2 h-4 w-4" />{common("delete")}</Button> : null}
       />
       {workspaceStatus !== "ready" ? (
@@ -572,10 +572,10 @@ export function OpportunityDetailScreen({ id }: { id: string }) {
           </AppSection>
           <AppSection title={t("detail.summary")} tone="muted">
             <dl className="grid gap-4 text-sm">
-              <div><dt className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t("table.stage")}</dt><dd className="mt-2"><StatusPill label={opportunityStageLabels[opportunity.stage]} tone={stageTone(opportunity.stage)} /></dd></div>
-              <div><dt className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t("table.priority")}</dt><dd className="mt-2"><StatusPill label={opportunityPriorityLabels[opportunity.priority]} tone={priorityTone(opportunity.priority)} /></dd></div>
-              <div><dt className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t("table.value")}</dt><dd className="mt-1 font-black text-zinc-950 dark:text-white">{formatValue(opportunity)}</dd></div>
-              <div><dt className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t("form.nextStep")}</dt><dd className="mt-1 font-medium text-zinc-500">{opportunity.nextStep || t("table.noNextStep")}</dd></div>
+              <div><dt className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("table.stage")}</dt><dd className="mt-2"><StatusPill label={opportunityStageLabels[opportunity.stage]} tone={stageTone(opportunity.stage)} /></dd></div>
+              <div><dt className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("table.priority")}</dt><dd className="mt-2"><StatusPill label={opportunityPriorityLabels[opportunity.priority]} tone={priorityTone(opportunity.priority)} /></dd></div>
+              <div><dt className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("table.value")}</dt><dd className="mt-1 font-black text-foreground">{formatValue(opportunity)}</dd></div>
+              <div><dt className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("form.nextStep")}</dt><dd className="mt-1 font-medium text-muted-foreground">{opportunity.nextStep || t("table.noNextStep")}</dd></div>
             </dl>
           </AppSection>
         </div>

@@ -119,15 +119,15 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
                     type="button"
                     onClick={() => setIsClientPickerOpen(true)}
                     className={cn(
-                      "flex h-12 w-full items-center gap-3 rounded-xl border border-zinc-200 bg-background/50 px-4 text-start transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20 dark:hover:bg-white/10",
-                      !field.value && "text-zinc-400"
+                      "flex h-12 w-full items-center gap-3 rounded-xl border border-border bg-background/50 px-4 text-start transition-colors hover:border-border hover:bg-muted/50 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20 dark:hover:bg-white/10",
+                      !field.value && "text-muted-foreground"
                     )}
                   >
-                    <User className="h-4 w-4 shrink-0 text-zinc-400" />
-                    <span className={cn("flex-1 truncate text-sm font-medium", field.value ? "text-text-primary" : "text-zinc-400")}>
+                    <User className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className={cn("flex-1 truncate text-sm font-medium", field.value ? "text-text-primary" : "text-muted-foreground")}>
                       {selectedClientName || "Select a client..."}
                     </span>
-                    <ChevronDown className="h-4 w-4 shrink-0 text-zinc-400" />
+                    <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
                   </button>
                   <FormMessage />
                 </FormItem>
@@ -202,7 +202,7 @@ export function CreateProjectForm({ onSuccess, onCancel }: CreateProjectFormProp
         </div>
 
         <div className="relative z-10 mt-10 flex flex-col-reverse items-center gap-4 pt-6 sm:flex-row sm:justify-end">
-          <Button type="button" variant="ghost" className="w-full sm:w-auto h-12 rounded-xl px-8 font-bold text-text-secondary hover:bg-zinc-100 hover:text-text-primary dark:hover:bg-white/10" onClick={() => { onCancel?.(); router.back(); }} disabled={isSubmitting}>
+          <Button type="button" variant="ghost" className="w-full sm:w-auto h-12 rounded-xl px-8 font-bold text-text-secondary hover:bg-muted hover:text-text-primary dark:hover:bg-white/10" onClick={() => { onCancel?.(); router.back(); }} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto h-12 min-w-[160px] rounded-xl px-8 font-bold transition-all">

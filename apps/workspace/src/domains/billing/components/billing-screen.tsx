@@ -107,16 +107,16 @@ export function BillingScreen() {
       ) : (
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
           <AppSection className="overflow-hidden" contentClassName="p-0">
-            <div className="grid gap-px bg-zinc-100 dark:bg-white/5 md:grid-cols-[1fr_280px]">
+            <div className="grid gap-px bg-muted dark:bg-white/5 md:grid-cols-[1fr_280px]">
               <div className="bg-card p-6 md:p-8">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-300">{copy.plan}</p>
-                    <h2 className="mt-3 text-3xl font-black tracking-tight text-zinc-950 dark:text-white">{price}</h2>
-                    <p className="mt-1 text-xs font-bold uppercase tracking-widest text-zinc-400">{yearly ? copy.yearly : copy.monthly}</p>
+                    <h2 className="mt-3 text-3xl font-black tracking-tight text-foreground">{price}</h2>
+                    <p className="mt-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">{yearly ? copy.yearly : copy.monthly}</p>
                   </div>
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-muted">
-                    <CreditCard className="h-5 w-5 text-zinc-500 dark:text-zinc-300" />
+                    <CreditCard className="h-5 w-5 text-muted-foreground dark:text-muted-foreground/40" />
                   </div>
                 </div>
 
@@ -124,7 +124,7 @@ export function BillingScreen() {
                   {copy.included.map((item) => (
                     <div key={item} className="flex items-start gap-3 rounded-xl border border-border bg-muted/60 p-4">
                       <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                      <span className="text-sm font-bold leading-6 text-zinc-700 dark:text-zinc-200">{item}</span>
+                      <span className="text-sm font-bold leading-6 text-foreground dark:text-muted-foreground/30">{item}</span>
                     </div>
                   ))}
                 </div>
@@ -158,8 +158,8 @@ export function BillingScreen() {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{label}</p>
-      <p className="mt-1 break-words text-sm font-black uppercase tracking-tight text-zinc-950 dark:text-white">{value}</p>
+      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className="mt-1 break-words text-sm font-black uppercase tracking-tight text-foreground">{value}</p>
     </div>
   );
 }

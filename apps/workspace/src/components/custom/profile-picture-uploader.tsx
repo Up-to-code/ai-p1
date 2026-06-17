@@ -246,7 +246,7 @@ export function ProfilePictureUploader({
           {image ? (
             <img src={image} alt={name} className="h-full w-full object-cover" />
           ) : (
-            <span className="select-none text-2xl font-black tracking-tight text-zinc-400 dark:text-zinc-500">
+            <span className="select-none text-2xl font-black tracking-tight text-muted-foreground">
               {initials}
             </span>
           )}
@@ -257,14 +257,14 @@ export function ProfilePictureUploader({
           className="absolute -bottom-2 -end-2 flex h-8 w-8 items-center justify-center rounded-xl bg-card transition-transform hover:scale-105 active:scale-95"
           aria-label={uploadLabel}
         >
-          <Camera className="h-3.5 w-3.5 text-white dark:text-zinc-900" />
+          <Camera className="h-3.5 w-3.5 text-white dark:text-foreground" />
         </button>
         {image && (
           <button
             type="button"
             onClick={removeProfilePicture}
             disabled={isUploading}
-            className="absolute -top-2 -end-2 flex h-8 w-8 items-center justify-center rounded-xl bg-card text-zinc-500 ring-1 ring-border transition-colors hover:text-red-600 disabled:opacity-50"
+            className="absolute -top-2 -end-2 flex h-8 w-8 items-center justify-center rounded-xl bg-card text-muted-foreground ring-1 ring-border transition-colors hover:text-red-600 disabled:opacity-50"
             aria-label={labels.remove}
           >
             {isUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
@@ -343,11 +343,11 @@ export function ProfilePictureUploader({
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="avatar-zoom" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                <Label htmlFor="avatar-zoom" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                   <ZoomIn className="me-1 inline h-3 w-3" />
                   {labels.zoom}
                 </Label>
-                <span className="text-[10px] font-black text-zinc-400">{Math.round(progress)}%</span>
+                <span className="text-[10px] font-black text-muted-foreground">{Math.round(progress)}%</span>
               </div>
               <input
                 id="avatar-zoom"
@@ -364,7 +364,7 @@ export function ProfilePictureUploader({
                     setCropPosition((current) => clampCropPosition(imageSize, nextZoom, current));
                   }
                 }}
-                className="w-full accent-zinc-900"
+                className="w-full accent-foreground"
               />
             </div>
 
@@ -376,7 +376,7 @@ export function ProfilePictureUploader({
               <X className="me-2 h-4 w-4" />
               {labels.cancel}
             </Button>
-            <Button type="button" onClick={applyCropAndUpload} disabled={isUploading} className="rounded-full bg-zinc-900 px-6 text-white hover:bg-black">
+            <Button type="button" onClick={applyCropAndUpload} disabled={isUploading} className="rounded-full bg-foreground px-6 text-white hover:bg-black">
               {isUploading ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Check className="me-2 h-4 w-4" />}
               {labels.apply}
             </Button>

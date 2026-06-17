@@ -88,21 +88,21 @@ export function UsageScreen() {
 
   if (account.workspace.status !== "ready") {
     return (
-      <div className="min-h-screen bg-zinc-50/50 dark:bg-[#0A0A0A]">
+      <div className="min-h-screen bg-muted/50/50 dark:bg-[#0A0A0A]">
         <WorkspaceQueryState status={account.workspace.status} variant="dashboard" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50/50 dark:bg-[#0A0A0A]">
-      <div className="border-b border-zinc-200 bg-white dark:border-white/[0.06] dark:bg-[#111111]">
+    <div className="min-h-screen bg-muted/50/50 dark:bg-[#0A0A0A]">
+      <div className="border-b border-border bg-white dark:border-white/[0.06] dark:bg-[#111111]">
         <div className="mx-auto max-w-7xl px-6 py-10">
           <div className="space-y-2">
-            <h1 className="truncate text-2xl font-black uppercase tracking-tight text-zinc-900 dark:text-white">
+            <h1 className="truncate text-2xl font-black uppercase tracking-tight text-foreground">
               {copy.title}
             </h1>
-            <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm font-medium text-muted-foreground">
               {copy.subtitle}
             </p>
           </div>
@@ -118,8 +118,8 @@ export function UsageScreen() {
                   className={cn(
                     "flex items-center gap-2 rounded-t-xl border-b-2 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all duration-150",
                     activeTab === tab.id
-                      ? "border-zinc-900 bg-zinc-50/80 text-zinc-900 dark:border-white dark:bg-white/[0.03] dark:text-white"
-                      : "border-transparent text-zinc-400 hover:bg-zinc-50 hover:text-zinc-600 dark:hover:bg-white/[0.02] dark:hover:text-zinc-300",
+                      ? "border-foreground bg-muted/50/80 text-foreground dark:border-white dark:bg-white/[0.03]"
+                      : "border-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground dark:hover:bg-white/[0.02] dark:hover:text-muted-foreground/40",
                   )}
                 >
                   <Icon className="h-3 w-3" />
@@ -148,13 +148,13 @@ export function UsageScreen() {
 function UsageLoadingSkeleton({ activeTab, label }: { activeTab: UsageTab; label: string }) {
   if (activeTab === "payments") {
     return (
-      <div className="max-w-5xl overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-white/[0.06] dark:bg-[#111]" role="status" aria-label={label}>
-        <div className="flex items-center gap-10 border-b border-zinc-100 bg-zinc-50 px-5 py-3 dark:border-white/5 dark:bg-white/[0.02]">
+      <div className="max-w-5xl overflow-hidden rounded-2xl border border-border bg-white dark:border-white/[0.06] dark:bg-[#111]" role="status" aria-label={label}>
+        <div className="flex items-center gap-10 border-b border-border bg-muted/50 px-5 py-3 dark:border-white/5 dark:bg-white/[0.02]">
           {[0, 1, 2, 3, 4].map((item) => (
             <Skeleton key={item} className="h-3 w-20 rounded-full" />
           ))}
         </div>
-        <div className="divide-y divide-zinc-100 dark:divide-white/[0.04]">
+        <div className="divide-y divide-border dark:divide-white/[0.04]">
           {[0, 1, 2, 3].map((row) => (
             <div key={row} className="grid grid-cols-[1fr_0.8fr_1.5fr_0.7fr_0.6fr] items-center gap-6 px-5 py-4">
               <Skeleton className="h-4 w-24 rounded-full" />
@@ -171,7 +171,7 @@ function UsageLoadingSkeleton({ activeTab, label }: { activeTab: UsageTab; label
 
   return (
     <div className="max-w-3xl space-y-6" role="status" aria-label={label}>
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-white/[0.06] dark:bg-[#111]">
+      <div className="rounded-2xl border border-border bg-white p-6 dark:border-white/[0.06] dark:bg-[#111]">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 space-y-3">
             <Skeleton className="h-3 w-24 rounded-full" />
@@ -186,7 +186,7 @@ function UsageLoadingSkeleton({ activeTab, label }: { activeTab: UsageTab; label
         </div>
       </div>
 
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-white/[0.06] dark:bg-[#111]">
+      <div className="rounded-2xl border border-border bg-white p-6 dark:border-white/[0.06] dark:bg-[#111]">
         <div className="space-y-7">
           {[0, 1].map((item) => (
             <div key={item}>
@@ -220,19 +220,19 @@ function UsageOverviewPanel({
 
   return (
     <div className="max-w-3xl space-y-6">
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-white/[0.06] dark:bg-[#111]">
+      <div className="rounded-2xl border border-border bg-white p-6 dark:border-white/[0.06] dark:bg-[#111]">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <p className="text-[9px] font-black uppercase tracking-[0.15em] text-zinc-400">
+            <p className="text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground">
               {copy.currentPlan}
             </p>
-            <h2 className="mt-2 text-xl font-black tracking-tight text-zinc-950 dark:text-white">
+            <h2 className="mt-2 text-xl font-black tracking-tight text-foreground">
               {usage.overview.plan.name}
             </h2>
-            <p className="mt-1 text-sm font-bold text-zinc-500 dark:text-zinc-400">
+            <p className="mt-1 text-sm font-bold text-muted-foreground">
               {planPriceLabel(usage.overview.plan, locale)}
             </p>
-            <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+            <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
               {fmt.format(credits.subscriptionCreditsGranted)} {copy.monthlyCredits}
             </p>
           </div>
@@ -241,7 +241,7 @@ function UsageOverviewPanel({
               "rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest",
               status === "active"
                 ? "bg-emerald-500/10 text-emerald-500"
-                : "bg-zinc-100 text-zinc-500 dark:bg-white/[0.06] dark:text-zinc-400",
+                : "bg-muted text-muted-foreground dark:bg-white/[0.06]",
             )}>
               {status === "active" ? copy.active : copy.inactive}
             </span>
@@ -257,7 +257,7 @@ function UsageOverviewPanel({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-white/[0.06] dark:bg-[#111]">
+      <div className="rounded-2xl border border-border bg-white p-6 dark:border-white/[0.06] dark:bg-[#111]">
         <div className="space-y-7">
           <CreditProgress
             label={copy.subscriptionCredits}
@@ -304,17 +304,17 @@ function CreditProgress({
   return (
     <div>
       <div className="flex items-baseline justify-between gap-4">
-        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-zinc-900 dark:text-white">
+        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-foreground">
           {label}
         </p>
-        <p className="text-xs font-bold tabular-nums text-zinc-500 dark:text-zinc-400">
+        <p className="text-xs font-bold tabular-nums text-muted-foreground">
           {fmt.format(safeValue)} / {fmt.format(safeTotal)}
         </p>
       </div>
-      <div className="mt-3 h-3 overflow-hidden rounded-full bg-zinc-100 dark:bg-white/[0.06]" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
+      <div className="mt-3 h-3 overflow-hidden rounded-full bg-muted dark:bg-white/[0.06]" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
         <div className={cn("h-full rounded-full transition-all duration-500", toneClassName)} style={{ width: `${percent}%` }} />
       </div>
-      <p className="mt-3 text-2xl font-black tracking-tight text-zinc-950 dark:text-white">
+      <p className="mt-3 text-2xl font-black tracking-tight text-foreground">
         {percent}%
       </p>
     </div>
@@ -331,11 +331,11 @@ function PaymentsLedger({
   payments: Payment[];
 }) {
   return (
-    <div className="max-w-5xl overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-white/[0.06] dark:bg-[#111]">
+    <div className="max-w-5xl overflow-hidden rounded-2xl border border-border bg-white dark:border-white/[0.06] dark:bg-[#111]">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] text-sm">
           <thead>
-            <tr className="border-b border-zinc-100 bg-zinc-50 dark:border-white/5 dark:bg-white/[0.02]">
+            <tr className="border-b border-border bg-muted/50 dark:border-white/5 dark:bg-white/[0.02]">
               <LedgerHead>{copy.thInvoice}</LedgerHead>
               <LedgerHead>{copy.thDate}</LedgerHead>
               <LedgerHead>{copy.thDescription}</LedgerHead>
@@ -346,16 +346,16 @@ function PaymentsLedger({
           <tbody>
             {payments.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-5 py-10 text-center text-sm font-bold text-zinc-500 dark:text-zinc-400">
+                <td colSpan={5} className="px-5 py-10 text-center text-sm font-bold text-muted-foreground">
                   {copy.noPayments}
                 </td>
               </tr>
             ) : payments.map((row) => (
-              <tr key={row.id} className="border-b border-zinc-50 last:border-b-0 dark:border-white/[0.03]">
-                <td className="px-5 py-4 font-bold text-zinc-950 dark:text-white">{row.orderId}</td>
-                <td className="px-5 py-4 tabular-nums text-zinc-500 dark:text-zinc-400">{dateLabel(row.updatedAt, locale)}</td>
-                <td className="px-5 py-4 text-zinc-700 dark:text-zinc-300">{copy.paymentDescription}</td>
-                <td className="px-5 py-4 text-end font-bold tabular-nums text-zinc-950 dark:text-white">{moneyLabel(row.amount, row.currency, locale)}</td>
+              <tr key={row.id} className="border-b border-border last:border-b-0 dark:border-white/[0.03]">
+                <td className="px-5 py-4 font-bold text-foreground">{row.orderId}</td>
+                <td className="px-5 py-4 tabular-nums text-muted-foreground">{dateLabel(row.updatedAt, locale)}</td>
+                <td className="px-5 py-4 text-foreground/40">{copy.paymentDescription}</td>
+                <td className="px-5 py-4 text-end font-bold tabular-nums text-foreground">{moneyLabel(row.amount, row.currency, locale)}</td>
                 <td className="px-5 py-4 text-end">
                   <PaymentStatus status={row.status} copy={copy} />
                 </td>
@@ -375,7 +375,7 @@ function PaymentStatus({ status, copy }: { status: Payment["status"]; copy: Retu
       "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest",
       paid
         ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
-        : "bg-zinc-100 text-zinc-500 dark:bg-white/[0.06] dark:text-zinc-400",
+        : "bg-muted text-muted-foreground dark:bg-white/[0.06]",
     )}>
       {paid && <CheckCircle2 className="h-3 w-3" />}
       {paid ? copy.statusPaid : status}
@@ -385,9 +385,9 @@ function PaymentStatus({ status, copy }: { status: Payment["status"]; copy: Retu
 
 function UsageStatePanel({ message, muted }: { message: string; muted?: string }) {
   return (
-    <div className="max-w-3xl rounded-2xl border border-zinc-200 bg-white p-6 dark:border-white/[0.06] dark:bg-[#111]">
-      <p className="text-sm font-black text-zinc-950 dark:text-white">{message}</p>
-      {muted && <p className="mt-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">{muted}</p>}
+    <div className="max-w-3xl rounded-2xl border border-border bg-white p-6 dark:border-white/[0.06] dark:bg-[#111]">
+      <p className="text-sm font-black text-foreground">{message}</p>
+      {muted && <p className="mt-2 text-xs font-medium text-muted-foreground">{muted}</p>}
     </div>
   );
 }
@@ -401,7 +401,7 @@ function LedgerHead({
 }) {
   return (
     <th className={cn(
-      "px-5 py-3 text-[10px] font-black uppercase tracking-widest text-zinc-400",
+      "px-5 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground",
       align === "end" ? "text-end" : "text-start",
     )}>
       {children}

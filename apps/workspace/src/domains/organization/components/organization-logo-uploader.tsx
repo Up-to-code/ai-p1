@@ -325,7 +325,7 @@ export function OrganizationLogoUploader({
                     setCropPosition((current) => clampLogoCropPosition(imageSize, nextZoom, current));
                   }
                 }}
-                className="w-full accent-zinc-900"
+                className="w-full accent-foreground"
               />
             </div>
 

@@ -69,7 +69,7 @@ export function calendarEventTypeClassName(type: string) {
     return "bg-teal-50 border-teal-200 text-teal-800 dark:bg-teal-900/20 dark:border-teal-800 dark:text-teal-300";
   if (type === "focusBlock")
     return "bg-violet-50 border-violet-200 text-violet-800 dark:bg-violet-900/20 dark:border-violet-800 dark:text-violet-300";
-  return "bg-zinc-50 border-zinc-200 text-zinc-800 dark:bg-zinc-800/40 dark:border-zinc-700 dark:text-zinc-300";
+  return "bg-muted/50 border-border text-foreground";
 }
 
 export function calendarScheduleTitle(typeLabel: string, context?: string) {

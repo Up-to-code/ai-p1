@@ -165,10 +165,10 @@ export function TeamInviteForm({ organizationId, currentUserEmail, onBack, onFin
   
   return (
     <form onSubmit={handleSubmit(addInvite)}>
-      <Card className="w-full rounded-[24px] border border-zinc-200 bg-[oklch(99%_0.004_255)] dark:border-white/10 dark:bg-[oklch(13%_0.016_255)]">
+      <Card className="w-full rounded-[24px] border border-border bg-[oklch(99%_0.004_255)] dark:border-white/10 dark:bg-[oklch(13%_0.016_255)]">
         <CardHeader className="pb-8 pt-8">
-          <CardTitle className="text-start text-2xl font-semibold tracking-0 text-zinc-950 dark:text-white">{t("title")}</CardTitle>
-          <CardDescription className="mt-2 text-start text-sm font-medium leading-6 text-zinc-500 dark:text-zinc-400">
+          <CardTitle className="text-start text-2xl font-semibold tracking-0 text-foreground">{t("title")}</CardTitle>
+          <CardDescription className="mt-2 text-start text-sm font-medium leading-6 text-muted-foreground dark:text-muted-foreground">
             {t("desc")}
           </CardDescription>
         </CardHeader>
@@ -177,10 +177,10 @@ export function TeamInviteForm({ organizationId, currentUserEmail, onBack, onFin
           <div className="grid items-end gap-4 bg-transparent p-0 md:grid-cols-[minmax(0,1fr)_220px_auto]">
             <div className="w-full space-y-3">
               <div className="flex items-center gap-1">
-                <Label htmlFor="inviteEmail" className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">{t("emailLabel")}</Label>
+                <Label htmlFor="inviteEmail" className="text-sm font-semibold text-foreground dark:text-muted-foreground/40">{t("emailLabel")}</Label>
                 <Tooltip>
                   <TooltipTrigger className="inline-flex cursor-help">
-                    <HelpCircle className="h-3 w-3 text-zinc-400 transition-colors hover:text-zinc-900" />
+                    <HelpCircle className="h-3 w-3 text-muted-foreground transition-colors hover:text-foreground" />
                   </TooltipTrigger>
                   <TooltipContent side="top">
                     <p>{t("emailTooltip")}</p>
@@ -191,7 +191,7 @@ export function TeamInviteForm({ organizationId, currentUserEmail, onBack, onFin
                 id="inviteEmail"
                 type="email"
                 placeholder={t("emailPlaceholder")}
-                className="h-12 rounded-2xl border-zinc-200 bg-transparent px-4 text-sm font-medium focus-visible:ring-blue-600/15 dark:border-white/10"
+                className="h-12 rounded-2xl border-border bg-transparent px-4 text-sm font-medium focus-visible:ring-blue-600/15 dark:border-white/10"
                 aria-invalid={Boolean(errors.inviteEmail)}
                 disabled={isBusy}
                 {...register("inviteEmail")}
@@ -200,10 +200,10 @@ export function TeamInviteForm({ organizationId, currentUserEmail, onBack, onFin
             </div>
             <div className="w-full space-y-3">
               <div className="flex items-center gap-1">
-                <Label htmlFor="inviteRole" className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">{t("roleLabel")}</Label>
+                <Label htmlFor="inviteRole" className="text-sm font-semibold text-foreground dark:text-muted-foreground/40">{t("roleLabel")}</Label>
                 <Tooltip>
                   <TooltipTrigger className="inline-flex cursor-help">
-                    <HelpCircle className="h-3 w-3 text-zinc-400 transition-colors hover:text-zinc-900" />
+                    <HelpCircle className="h-3 w-3 text-muted-foreground transition-colors hover:text-foreground" />
                   </TooltipTrigger>
                   <TooltipContent side="top">
                     <p>{t("roleTooltip")}</p>
@@ -218,7 +218,7 @@ export function TeamInviteForm({ organizationId, currentUserEmail, onBack, onFin
                 <SelectTrigger
                   id="inviteRole"
                   aria-label={t("roleLabel")}
-                  className="h-12 rounded-2xl border-zinc-200 bg-transparent px-4 text-sm font-medium focus-visible:ring-blue-600/15 dark:border-white/10"
+                  className="h-12 rounded-2xl border-border bg-transparent px-4 text-sm font-medium focus-visible:ring-blue-600/15 dark:border-white/10"
                 >
                   <SelectValue />
                 </SelectTrigger>
@@ -233,7 +233,7 @@ export function TeamInviteForm({ organizationId, currentUserEmail, onBack, onFin
               {errors.inviteRole && <p className="text-xs font-semibold text-red-600">{errors.inviteRole.message}</p>}
             </div>
             <Button
-              className="h-12 w-full rounded-2xl bg-zinc-950 px-6 text-sm font-bold text-white hover:bg-black disabled:pointer-events-none disabled:opacity-50 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 md:w-auto"
+              className="h-12 w-full rounded-2xl bg-foreground px-6 text-sm font-bold text-white hover:bg-black disabled:pointer-events-none disabled:opacity-50 dark:bg-white dark:text-foreground dark:hover:bg-muted md:w-auto"
               type="submit"
               disabled={isBusy}
             >
@@ -242,9 +242,9 @@ export function TeamInviteForm({ organizationId, currentUserEmail, onBack, onFin
             </Button>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-transparent dark:border-white/10">
+          <div className="overflow-hidden rounded-2xl border border-border bg-transparent dark:border-white/10">
             <table className="w-full text-start text-sm">
-              <thead className="border-b border-zinc-200 bg-muted text-muted-foreground dark:border-white/10">
+              <thead className="border-b border-border bg-muted text-muted-foreground dark:border-white/10">
                 <tr>
                   <th className="px-6 py-4 text-start text-xs font-semibold">{t("tableEmail")}</th>
                   <th className="px-6 py-4 text-start text-xs font-semibold">{t("tableRole")}</th>
@@ -254,16 +254,16 @@ export function TeamInviteForm({ organizationId, currentUserEmail, onBack, onFin
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan={3} className="px-6 py-8 text-center text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                    <td colSpan={3} className="px-6 py-8 text-center text-xs font-semibold text-muted-foreground dark:text-muted-foreground">
                       <Loader2 className="me-2 inline h-4 w-4 animate-spin" />
                       {t("loadingInvites")}
                     </td>
                   </tr>
                 ) : visibleInvitations.length > 0 ? (
                   visibleInvitations.map((invitation) => (
-                    <tr key={invitation.id} className="border-b border-zinc-100 bg-transparent transition-colors last:border-0 hover:bg-zinc-50/50 dark:border-white/5 dark:hover:bg-white/[0.01]">
-                      <td className="px-6 py-4 font-medium text-zinc-900 dark:text-white">{invitation.email}</td>
-                      <td className="px-6 py-4 text-xs font-medium text-zinc-500">{formatRoleName(invitation.role, defaultRoleLabels)}</td>
+                    <tr key={invitation.id} className="border-b border-border bg-transparent transition-colors last:border-0 hover:bg-muted/50/50 dark:border-white/5 dark:hover:bg-white/[0.01]">
+                      <td className="px-6 py-4 font-medium text-foreground">{invitation.email}</td>
+                      <td className="px-6 py-4 text-xs font-medium text-muted-foreground">{formatRoleName(invitation.role, defaultRoleLabels)}</td>
                       <td className="px-6 py-4 text-end">
                         <Button
                           variant="ghost"
@@ -272,7 +272,7 @@ export function TeamInviteForm({ organizationId, currentUserEmail, onBack, onFin
                           aria-label={t("cancelInvite")}
                           disabled={isBusy}
                           onClick={() => void cancelInvite(invitation.id)}
-                          className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-50 dark:hover:bg-red-500/10"
+                          className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-red-50 hover:text-red-500 disabled:opacity-50 dark:hover:bg-red-500/10"
                         >
                           {cancelingInviteId === invitation.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                         </Button>
@@ -281,7 +281,7 @@ export function TeamInviteForm({ organizationId, currentUserEmail, onBack, onFin
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={3} className="px-6 py-8 text-center text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                    <td colSpan={3} className="px-6 py-8 text-center text-xs font-semibold text-muted-foreground dark:text-muted-foreground">
                       {t("emptyInvites")}
                     </td>
                   </tr>
@@ -292,16 +292,16 @@ export function TeamInviteForm({ organizationId, currentUserEmail, onBack, onFin
           {loadError && <p className="text-xs font-semibold text-red-600">{loadError}</p>}
         </CardContent>
 
-        <CardFooter className="mt-8 flex items-center justify-between border-t border-zinc-200 px-8 pb-8 pt-8 rtl:flex-row-reverse dark:border-white/10">
-          <Button variant="ghost" type="button" className="text-sm font-semibold text-zinc-500 hover:text-zinc-950 dark:hover:text-white" onClick={onBack} disabled={isBusy}>
+        <CardFooter className="mt-8 flex items-center justify-between border-t border-border px-8 pb-8 pt-8 rtl:flex-row-reverse dark:border-white/10">
+          <Button variant="ghost" type="button" className="text-sm font-semibold text-muted-foreground hover:text-foreground" onClick={onBack} disabled={isBusy}>
             {tc("back")}
           </Button>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" type="button" className="text-sm font-semibold text-zinc-500 hover:text-zinc-950 dark:hover:text-white" onClick={handleFinish} disabled={isBusy}>
+            <Button variant="ghost" type="button" className="text-sm font-semibold text-muted-foreground hover:text-foreground" onClick={handleFinish} disabled={isBusy}>
               {tc("saveAndExit")}
             </Button>
             <Button 
-              className="h-12 rounded-2xl bg-zinc-950 px-7 text-sm font-bold text-white hover:bg-black disabled:pointer-events-none disabled:opacity-50 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100"
+              className="h-12 rounded-2xl bg-foreground px-7 text-sm font-bold text-white hover:bg-black disabled:pointer-events-none disabled:opacity-50 dark:bg-white dark:text-foreground dark:hover:bg-muted"
               type="button"
               onClick={handleFinish}
               disabled={isBusy}

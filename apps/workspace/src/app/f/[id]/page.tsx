@@ -35,11 +35,11 @@ export default async function PublicFilePage({ params }: PublicFilePageProps) {
       <header className="sticky top-0 z-10 border-b border-border bg-card/85 px-4 py-3 backdrop-blur dark:bg-background/85">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 dark:bg-white/10 dark:text-zinc-300">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground dark:bg-white/10">
               <FileText className="h-5 w-5" />
             </span>
             <div className="min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{kind}</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{kind}</p>
               <h1 className="truncate text-base font-black tracking-tight sm:text-lg">{asset.name}</h1>
             </div>
           </div>
@@ -48,7 +48,7 @@ export default async function PublicFilePage({ params }: PublicFilePageProps) {
               href={asset.url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 px-4 text-xs font-black uppercase tracking-widest text-zinc-700 transition hover:bg-zinc-100 dark:border-white/10 dark:text-zinc-200 dark:hover:bg-white/10"
+              className="inline-flex h-10 items-center justify-center rounded-xl border border-border px-4 text-xs font-black uppercase tracking-widest text-muted-foreground transition hover:bg-muted dark:border-white/10 dark:hover:bg-white/10"
             >
               <ExternalLink className="me-2 h-4 w-4" />
               Open
@@ -58,7 +58,7 @@ export default async function PublicFilePage({ params }: PublicFilePageProps) {
               target="_blank"
               rel="noreferrer"
               download={asset.name}
-              className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-950 px-4 text-xs font-black uppercase tracking-widest text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-muted px-4 text-xs font-black uppercase tracking-widest text-white transition hover:bg-muted dark:bg-white dark:text-foreground dark:hover:bg-muted"
             >
               <Download className="me-2 h-4 w-4" />
               Download
@@ -74,11 +74,11 @@ export default async function PublicFilePage({ params }: PublicFilePageProps) {
         ) : asset.mimeType.startsWith("video/") ? (
           <video src={asset.url} className="max-h-[calc(100vh-120px)] max-w-full" controls />
         ) : asset.mimeType === "application/pdf" ? (
-          <iframe title={asset.name} src={asset.url} className="h-[calc(100vh-120px)] w-full border border-zinc-200 bg-white dark:border-white/10" />
+          <iframe title={asset.name} src={asset.url} className="h-[calc(100vh-120px)] w-full border border-border bg-white dark:border-white/10" />
         ) : (
           <div className="max-w-md text-center">
-            <FileText className="mx-auto h-10 w-10 text-zinc-400" />
-            <p className="mt-4 text-sm font-bold text-zinc-500 dark:text-zinc-300">Preview is not available for this file type.</p>
+            <FileText className="mx-auto h-10 w-10 text-muted-foreground" />
+            <p className="mt-4 text-sm font-bold text-muted-foreground">Preview is not available for this file type.</p>
           </div>
         )}
       </section>

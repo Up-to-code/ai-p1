@@ -133,11 +133,11 @@ export function ResourceMediaBrowser({
         <button
           type="button"
           onClick={() => setUploadOpen(true)}
-          className="flex min-h-44 w-full flex-col items-center justify-center gap-2 border border-dashed border-border bg-muted/50 px-4 py-8 text-center text-zinc-500 transition-colors hover:border-border hover:bg-muted"
+          className="flex min-h-44 w-full flex-col items-center justify-center gap-2 border border-dashed border-border bg-muted/50 px-4 py-8 text-center text-muted-foreground transition-colors hover:border-border hover:bg-muted"
         >
-          <UploadCloud className="h-6 w-6 text-zinc-400" />
+          <UploadCloud className="h-6 w-6 text-muted-foreground" />
           <span className="text-sm font-black text-foreground">{emptyTitle}</span>
-          <span className="max-w-md text-xs font-semibold leading-5 text-zinc-500">{emptyDescription}</span>
+          <span className="max-w-md text-xs font-semibold leading-5 text-muted-foreground">{emptyDescription}</span>
         </button>
       ) : mode === "gallery" ? (
         <div className="grid min-h-[320px] grid-cols-2 gap-2 md:grid-cols-4 md:grid-rows-2">
@@ -169,14 +169,14 @@ export function ResourceMediaBrowser({
                 </span>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-black text-foreground">{asset.name}</p>
-                  <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-zinc-400">{asset.mimeType} {formatSize(asset.size)}</p>
+                  <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{asset.mimeType} {formatSize(asset.size)}</p>
                 </div>
               </div>
               <div className="flex items-center gap-1 md:justify-end">
-                <a href={asset.url} target="_blank" rel="noreferrer" className="inline-flex h-8 items-center justify-center rounded-lg px-3 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:bg-muted hover:text-foreground">
+                <a href={asset.url} target="_blank" rel="noreferrer" className="inline-flex h-8 items-center justify-center rounded-lg px-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-muted hover:text-foreground">
                   {openLabel}
                 </a>
-                <button type="button" onClick={() => operation.run(() => deleteMediaRequest(asset.organizationId, asset._id), { successMessage: "Document deleted." })} className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10" aria-label={`${deleteLabel} ${asset.name}`}>
+                <button type="button" onClick={() => operation.run(() => deleteMediaRequest(asset.organizationId, asset._id), { successMessage: "Document deleted." })} className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10" aria-label={`${deleteLabel} ${asset.name}`}>
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </div>
@@ -188,7 +188,7 @@ export function ResourceMediaBrowser({
       {operation.error && <p className="text-xs font-bold text-red-500">{operation.error}</p>}
 
       <Dialog open={viewerIndex !== null} onOpenChange={(open) => !open && setViewerIndex(null)}>
-        <DialogContent className="max-h-[90vh] max-w-5xl overflow-hidden rounded-2xl border-zinc-200 bg-zinc-950 p-0 text-white dark:border-white/10" overlayClassName="bg-black/75 supports-backdrop-filter:backdrop-blur-sm">
+        <DialogContent className="max-h-[90vh] max-w-5xl overflow-hidden rounded-2xl border-border bg-foreground p-0 text-white dark:border-white/10" overlayClassName="bg-black/75 supports-backdrop-filter:backdrop-blur-sm">
           {activeAsset && (
             <div className="grid max-h-[90vh] grid-rows-[auto_minmax(0,1fr)_auto]">
               <DialogHeader className="border-b border-white/10 p-4 pe-14 text-start">
@@ -230,7 +230,7 @@ export function ResourceMediaBrowser({
         <DialogContent className="max-h-[88vh] max-w-2xl overflow-y-auto rounded-2xl border-border bg-card p-6 text-foreground">
           <DialogHeader className="pe-10 text-start">
             <DialogTitle className="text-lg font-black">{uploadTitle}</DialogTitle>
-            <DialogDescription className="mt-2 text-xs font-semibold leading-5 text-zinc-500">{uploadDescription}</DialogDescription>
+            <DialogDescription className="mt-2 text-xs font-semibold leading-5 text-muted-foreground">{uploadDescription}</DialogDescription>
           </DialogHeader>
           <div className="mt-5">
             <ResourceMediaUploader
@@ -268,11 +268,11 @@ function GallerySkeleton() {
   return (
     <div className="grid min-h-[320px] grid-cols-2 gap-2 md:grid-cols-4 md:grid-rows-2" aria-hidden="true">
       <div className="relative col-span-2 row-span-2 overflow-hidden bg-muted">
-        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-zinc-100 via-zinc-200/80 to-zinc-100 dark:from-white/[0.04] dark:via-white/[0.08] dark:to-white/[0.04]" />
+        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-muted via-muted to-muted dark:from-white/[0.04] dark:via-white/[0.08] dark:to-white/[0.04]" />
       </div>
       {Array.from({ length: 4 }).map((_, index) => (
         <div key={index} className="relative min-h-36 overflow-hidden bg-muted">
-          <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-zinc-100 via-zinc-200/70 to-zinc-100 dark:from-white/[0.04] dark:via-white/[0.08] dark:to-white/[0.04]" />
+          <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-muted via-muted to-muted dark:from-white/[0.04] dark:via-white/[0.08] dark:to-white/[0.04]" />
         </div>
       ))}
     </div>
@@ -321,12 +321,12 @@ function GalleryAssetTile({
       type="button"
       onClick={onClick}
       className={cn(
-        "group relative min-h-36 overflow-hidden bg-muted text-start text-zinc-400 transition-opacity hover:opacity-95",
+        "group relative min-h-36 overflow-hidden bg-muted text-start text-muted-foreground transition-opacity hover:opacity-95",
         isPremium && "col-span-2 row-span-2 min-h-[320px]",
       )}
       aria-label={asset.name}
     >
-      {!loaded && <span className="absolute inset-0 z-10 animate-pulse bg-gradient-to-br from-zinc-100 via-zinc-200/80 to-zinc-100 dark:from-white/[0.04] dark:via-white/[0.08] dark:to-white/[0.04]" />}
+      {!loaded && <span className="absolute inset-0 z-10 animate-pulse bg-gradient-to-br from-muted via-muted to-muted dark:from-white/[0.04] dark:via-white/[0.08] dark:to-white/[0.04]" />}
       {asset.kind === "image" ? (
         <Image
           src={asset.url}
@@ -344,7 +344,7 @@ function GalleryAssetTile({
       )}
       <span className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/10 opacity-70 transition-opacity group-hover:opacity-90" />
       {isPremium && asset.isCover && (
-        <span className="absolute start-3 top-3 bg-white/95 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-zinc-950">
+        <span className="absolute start-3 top-3 bg-white/95 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-foreground">
           {coverLabel}
         </span>
       )}

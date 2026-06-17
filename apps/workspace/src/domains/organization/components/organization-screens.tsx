@@ -601,7 +601,7 @@ export function OrganizationScreen() {
                     <EmptyState title={t("members.emptyTitle")} description={t("members.emptyDesc")} />
                   </div>
                 ) : (
-                  <div className="px-5 divide-y divide-zinc-100/60">
+                  <div className="px-5 divide-y divide-border">
                     {members.map((member) => (
                       <MemberRow
                         key={member.id}
@@ -631,7 +631,7 @@ export function OrganizationScreen() {
               {(invitationsQuery.data ?? []).length === 0 && pendingInviteLinks.length === 0 ? (
                 <EmptyState title={t("invites.emptyTitle")} description={t("invites.emptyDesc")} />
               ) : (
-                <div className="overflow-hidden rounded-2xl border border-border bg-card px-5 divide-y divide-zinc-100/60">
+                <div className="overflow-hidden rounded-2xl border border-border bg-card px-5 divide-y divide-border">
                   {pendingInviteLinks.map((inviteLink) => (
                     <PendingInviteLinkRow
                       key={inviteLink.id}
@@ -1239,11 +1239,11 @@ function AgentLinksPanel({
 
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
             <span>{t("labels.used", { count: connection.usageCount })}</span>
-            <span className="h-0.5 w-0.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+            <span className="h-0.5 w-0.5 rounded-full bg-border" />
             <span>{t("labels.created", { date: formatDate(connection.createdAt) })}</span>
             {connection.lastUsedAt && (
               <>
-                <span className="h-0.5 w-0.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                <span className="h-0.5 w-0.5 rounded-full bg-border" />
                 <span>{t("labels.lastUsed", { date: formatDate(connection.lastUsedAt) })}</span>
               </>
             )}
@@ -1319,9 +1319,9 @@ function AgentLinksPanel({
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-muted-foreground">
             <span>{t("stats.active")}: <strong className="text-muted-foreground">{agentStats.active}</strong></span>
-            <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+            <span className="h-1 w-1 rounded-full bg-border" />
             <span>{t("stats.calls")}: <strong className="text-muted-foreground">{agentStats.calls}</strong></span>
-            <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+            <span className="h-1 w-1 rounded-full bg-border" />
             <span>{t("stats.drafts")}: <strong className="text-muted-foreground">{agentStats.drafts}</strong></span>
           </div>
 
@@ -1698,9 +1698,9 @@ function ApiKeysPanel({
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-muted-foreground">
             <span>{t("stats.active")}: <strong className="text-muted-foreground">{stats.active}</strong></span>
-            <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+            <span className="h-1 w-1 rounded-full bg-border" />
             <span>{t("stats.quota")}: <strong className="text-muted-foreground">{t("stats.quotaValue")}</strong></span>
-            <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+            <span className="h-1 w-1 rounded-full bg-border" />
             <span>{t("stats.calls")}: <strong className="text-muted-foreground">{stats.calls}</strong></span>
           </div>
 
@@ -1733,13 +1733,13 @@ function ApiKeysPanel({
 
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
                   <span>{t("labels.used", { count: key.usageCount })}</span>
-                  <span className="h-0.5 w-0.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                  <span className="h-0.5 w-0.5 rounded-full bg-border" />
                   <span>{t("labels.quota", { used: key.quotaUsed, limit: key.quotaLimit })}</span>
-                  <span className="h-0.5 w-0.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                  <span className="h-0.5 w-0.5 rounded-full bg-border" />
                   <span>{key.expiresAt ? t("labels.expires", { date: formatDate(key.expiresAt) }) : t("labels.neverExpires")}</span>
                   {key.lastUsedAt && (
                     <>
-                      <span className="h-0.5 w-0.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                      <span className="h-0.5 w-0.5 rounded-full bg-border" />
                       <span>{t("labels.lastUsed", { date: formatDate(key.lastUsedAt) })}</span>
                     </>
                   )}

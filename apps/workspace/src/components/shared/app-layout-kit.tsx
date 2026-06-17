@@ -126,8 +126,8 @@ export function AppPageShell({
   maxWidth = "wide",
 }: AppPageShellProps) {
   return (
-    <div className={cn("min-h-screen bg-background p-6 md:p-8 lg:p-12", className)}>
-      <div className={cn("mx-auto space-y-10 pb-20", maxWidthClassName[maxWidth], contentClassName)}>
+    <div className={cn("min-h-screen bg-background p-5 md:p-7 lg:p-10", className)}>
+      <div className={cn("mx-auto space-y-8 pb-20", maxWidthClassName[maxWidth], contentClassName)}>
         {children}
       </div>
     </div>
@@ -143,15 +143,15 @@ export function AppPageHeader({
   className,
 }: AppPageHeaderProps) {
   return (
-    <header className={cn("relative overflow-hidden flex flex-col gap-8 border-b border-border pb-10 text-start md:flex-row md:items-end md:justify-between animate-in fade-in slide-in-from-top-4 duration-1000", className)}>
-      <div className="relative z-10 min-w-0 space-y-3">
+    <header className={cn("relative overflow-hidden flex flex-col gap-6 border-b border-border pb-8 text-start md:flex-row md:items-end md:justify-between animate-in fade-in slide-in-from-top-4 duration-700", className)}>
+      <div className="relative z-10 min-w-0 space-y-2">
         {eyebrow && (
           <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-            <div className="h-px w-6 bg-border" />
+            <div className="h-px w-5 bg-border" />
             <span className="truncate" dir="auto">{eyebrow}</span>
           </div>
         )}
-        <h1 className="text-2xl font-bold uppercase tracking-tight text-foreground md:text-3xl line-clamp-2" dir="auto">
+        <h1 className="text-2xl font-black uppercase tracking-tight text-foreground md:text-3xl line-clamp-2" dir="auto">
           {title}
         </h1>
         {subtitle && (
@@ -161,13 +161,13 @@ export function AppPageHeader({
         )}
       </div>
       {(context || actions) && (
-        <div className="relative z-10 flex shrink-0 flex-wrap items-center gap-4">
+        <div className="relative z-10 flex shrink-0 flex-wrap items-center gap-3">
           {context}
           {actions}
         </div>
       )}
-      {/* Institutional canvas flair */}
-      <div className="absolute right-0 top-0 h-32 w-32 translate-x-16 -translate-y-16 rounded-full bg-muted/50 blur-3xl" />
+      {/* Subtle radial glow */}
+      <div className="absolute right-0 top-0 h-28 w-28 translate-x-14 -translate-y-14 rounded-full bg-primary/5 blur-3xl" />
     </header>
   );
 }
@@ -178,7 +178,7 @@ export function AppStatsGrid({ stats, className }: AppStatsGridProps) {
       {stats.map((stat) => {
         const Icon = stat.icon;
         return (
-          <div key={stat.label} className="flex h-28 flex-col justify-between bg-card p-5 transition-colors hover:bg-muted/50">
+          <div key={stat.label} className="flex h-28 flex-col justify-between bg-card p-5 transition-colors hover:bg-muted/30">
             <div className="flex items-center justify-between gap-3">
               <span className="truncate text-[9px] font-black uppercase tracking-widest text-muted-foreground">{stat.label}</span>
               {Icon ? (
@@ -389,12 +389,12 @@ export function AppDataTable<T>({
       <div className="overflow-x-auto">
         <table className="w-full min-w-[760px] border-collapse text-start">
           <thead>
-            <tr className="border-b border-border bg-muted/50">
+            <tr className="border-b border-border bg-muted/40">
               {columns.map((column) => (
                 <th
                   key={column.key}
                   className={cn(
-                    "px-6 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground",
+                    "px-6 py-3.5 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground",
                     alignClassName[column.align ?? "start"],
                     column.className
                   )}
@@ -404,7 +404,7 @@ export function AppDataTable<T>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-border/50">
+          <tbody className="divide-y divide-border">
             {data.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="px-6 py-16 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -417,7 +417,7 @@ export function AppDataTable<T>({
                   key={getRowKey(row, index)}
                   onClick={() => onRowClick?.(row)}
                   className={cn(
-                    "group transition-colors hover:bg-muted/50",
+                    "group transition-colors hover:bg-muted/30",
                     onRowClick && "cursor-pointer",
                     typeof rowClassName === "function" ? rowClassName(row) : rowClassName
                   )}
@@ -447,16 +447,20 @@ export function AppDataTable<T>({
 export function AppThumbnailCell({ src, alt, title, meta }: AppThumbnailCellProps) {
   return (
     <div className="flex min-w-0 items-center gap-3">
-      <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-border grayscale transition-colors group-hover:grayscale-0">
+      <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-border bg-muted transition-colors group-hover:border-border/80">
         {src ? (
-          <Image src={src} alt={alt} fill sizes="32px" className="object-cover" />
+          <Image src={src} alt={alt} fill sizes="32px" className="object-cover grayscale transition-all group-hover:grayscale-0" />
         ) : (
-          <div className="h-full w-full bg-muted" />
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+            <span className="text-[9px] font-black uppercase text-muted-foreground">
+              {String(alt).slice(0, 2)}
+            </span>
+          </div>
         )}
       </div>
       <div className="min-w-0 text-start">
         <p className="max-w-[220px] truncate text-xs font-black uppercase tracking-tight text-foreground">{title}</p>
-        {meta && <div className="mt-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground">{meta}</div>}
+        {meta && <div className="mt-0.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{meta}</div>}
       </div>
     </div>
   );
@@ -473,12 +477,12 @@ export function AppTabsList({ tabs, className }: AppTabsListProps) {
               key={tab.value}
               value={tab.value}
               style={{ "--tab-color": tab.iconColor ?? "currentColor" } as React.CSSProperties}
-              className="group relative h-10 flex-none rounded-none border-0 bg-transparent px-0 text-sm font-medium shadow-none transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:opacity-0 after:transition-opacity text-[#787774] hover:text-[#37352F] data-active:bg-transparent data-active:text-[#37352F] data-active:after:opacity-100 dark:text-[#9B9A97] dark:data-active:text-[#FFFFFF] dark:hover:text-[#FFFFFF]"
+              className="group relative h-10 flex-none rounded-none border-0 bg-transparent px-0 text-sm font-semibold shadow-none transition-colors text-muted-foreground hover:text-foreground data-active:bg-transparent data-active:text-foreground"
             >
               {/* Colored underline via inline var */}
               <span
                 className="pointer-events-none absolute inset-x-0 bottom-0 h-0.5 opacity-0 transition-opacity group-data-active:opacity-100"
-                style={{ backgroundColor: tab.iconColor ?? ("var(--foreground)") }}
+                style={{ backgroundColor: tab.iconColor ?? ("var(--color-foreground)") }}
               />
               {tab.emoji && <span className="me-1.5 text-base leading-none">{tab.emoji}</span>}
               {Icon && !tab.emoji && (
@@ -503,7 +507,7 @@ export function AppPrimaryButton({
 }: React.ComponentProps<typeof Button>) {
   return (
     <Button
-      className={cn("h-10 rounded-xl border-0 bg-primary px-6 text-[10px] font-black uppercase tracking-widest text-primary-foreground shadow-none transition-colors hover:bg-primary/90", className)}
+      className={cn("h-10 rounded-xl border-0 bg-primary px-6 text-[10px] font-black uppercase tracking-widest text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25 active:scale-[0.98]", className)}
       {...props}
     >
       {children}

@@ -119,6 +119,7 @@ export function ChatDrawerContent({
   const styles = useMemo(() => createStyles(colors, isRTL, metrics), [colors, isRTL, metrics]);
   const setActiveThreadId = useAppStore((state) => state.setActiveThreadId);
   const beginThreadCreation = useAppStore((state) => state.beginThreadCreation);
+  const clearDraft = useAppStore((state) => state.clearDraft);
   const e2eQaMode = useAppStore((state) => state.e2eQaMode);
   const favoriteThreadIds = useAppStore((state) => state.favoriteThreadIds);
   const toggleFavoriteThread = useAppStore((state) => state.toggleFavoriteThread);
@@ -137,6 +138,7 @@ export function ChatDrawerContent({
   const inverseForeground = resolvedColorScheme === "dark" ? "#000000" : "#FFFFFF";
 
   const handleNewThread = () => {
+    clearDraft();
     beginThreadCreation();
     if (e2eQaMode) {
       setActiveThreadId(createE2EThread());
@@ -223,7 +225,7 @@ export function ChatDrawerContent({
 
         <View style={styles.seriesSection}>
           <View style={styles.seriesHeader}>
-            <Text variant="title" style={styles.seriesTitle}>Recent series</Text>
+            <Text variant="title" style={styles.seriesTitle}>{t.menu.researchArchive}</Text>
             <Pressable onPress={onOpenFullHistory} hitSlop={8}>
               <Text variant="label" tone="muted">See all</Text>
             </Pressable>
@@ -241,6 +243,7 @@ export function ChatDrawerContent({
                 <Pressable
                   style={styles.seriesPress}
                   onPress={() => {
+                    clearDraft();
                     setActiveThreadId(thread._id);
                     onClose();
                   }}
@@ -293,7 +296,7 @@ export function ChatDrawerContent({
         onPress={handleNewThread}
       >
         <Plus size={metrics.floatingIcon} color={inverseForeground} />
-        <Text variant="title" style={[styles.floatingNewLabel, { color: inverseForeground }]}>New series</Text>
+        <Text variant="title" style={[styles.floatingNewLabel, { color: inverseForeground }]}>{t.menu.startConversation}</Text>
       </Pressable>
     </View>
   );

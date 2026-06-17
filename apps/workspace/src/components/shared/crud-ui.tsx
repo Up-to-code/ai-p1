@@ -46,10 +46,10 @@ export function StatusPill({
 }) {
   const toneClassName = {
     success: "border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-400",
-    warning: "border-sky-500/20 bg-sky-500/10 text-sky-600 dark:border-sky-400/20 dark:bg-sky-400/10 dark:text-sky-400",
+    warning: "border-amber-500/20 bg-amber-500/10 text-amber-600 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-400",
     danger: "border-rose-500/20 bg-rose-500/10 text-rose-600 dark:border-rose-400/20 dark:bg-rose-400/10 dark:text-rose-400",
-    info: "border-indigo-500/20 bg-indigo-500/10 text-indigo-600 dark:border-indigo-400/20 dark:bg-indigo-400/10 dark:text-indigo-400",
-    neutral: "border-border bg-muted text-zinc-500",
+    info: "border-blue-500/20 bg-blue-500/10 text-blue-600 dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-400",
+    neutral: "border-border bg-muted text-muted-foreground",
   }[tone];
 
   return (
@@ -77,7 +77,7 @@ export function SearchBox({
   const t = useTranslations("Common");
   return (
     <div className={cn("flex items-center gap-2 rounded-xl border border-border bg-muted px-3 focus-within:ring-2 focus-within:ring-ring", className)}>
-      <Search className="h-3.5 w-3.5 text-zinc-400" aria-hidden="true" />
+      <Search className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
       <input
         aria-label={ariaLabel || t('searchAriaLabel')}
         autoComplete="off"
@@ -85,7 +85,7 @@ export function SearchBox({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder || t('searchPlaceholder')}
-        className="h-9 w-40 border-none bg-transparent text-[10px] font-black uppercase tracking-widest text-zinc-900 outline-none placeholder:text-zinc-400 dark:text-white"
+        className="h-9 w-40 border-none bg-transparent text-[10px] font-black uppercase tracking-widest text-foreground outline-none placeholder:text-muted-foreground"
       />
     </div>
   );
@@ -104,9 +104,9 @@ export function EmptyWorkspace({
 }) {
   return (
     <div className="flex min-h-64 flex-col items-center justify-center rounded-[24px] border border-dashed border-border p-10 text-center">
-      <Icon className="h-8 w-8 text-zinc-200" />
-      <h3 className="mt-5 text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">{title}</h3>
-      <p className="mt-2 max-w-md text-xs font-medium uppercase leading-relaxed tracking-tight text-zinc-500">{description}</p>
+      <Icon className="h-8 w-8 text-muted-foreground/40" />
+      <h3 className="mt-5 text-sm font-black uppercase tracking-widest text-foreground">{title}</h3>
+      <p className="mt-2 max-w-md text-xs font-medium uppercase leading-relaxed tracking-tight text-muted-foreground">{description}</p>
       {children}
     </div>
   );
@@ -150,10 +150,10 @@ export function ProgressiveLoadingState({
       <ResourceLoadingSkeleton variant={variant} />
       {isStalled && (
         <div className="rounded-[24px] border border-border bg-card p-4 text-start">
-          <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">
+          <h3 className="text-sm font-black uppercase tracking-widest text-foreground">
             {t("loadingStillTitle")}
           </h3>
-          <p className="mt-2 max-w-md text-xs font-medium uppercase leading-relaxed tracking-tight text-zinc-500">
+          <p className="mt-2 max-w-md text-xs font-medium uppercase leading-relaxed tracking-tight text-muted-foreground">
             {t("loadingStillDesc")}
           </p>
           <Button
@@ -166,14 +166,14 @@ export function ProgressiveLoadingState({
           </Button>
           {shouldShowDebug && (
             <details className="mt-5 w-full max-w-xl rounded-2xl border border-border bg-card/70 p-4 text-start">
-              <summary className="cursor-pointer text-[10px] font-black uppercase tracking-widest text-zinc-500">
+              <summary className="cursor-pointer text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 {t("debugDetails")}
               </summary>
-              <dl className="mt-4 grid gap-2 text-[11px] font-medium text-zinc-500 sm:grid-cols-2">
+              <dl className="mt-4 grid gap-2 text-[11px] font-medium text-muted-foreground sm:grid-cols-2">
                 {debugDetails.map((item) => (
                   <div key={item.label} className="min-w-0 rounded-xl bg-muted px-3 py-2">
-                    <dt className="truncate text-[9px] font-black uppercase tracking-widest text-zinc-400">{item.label}</dt>
-                    <dd className="mt-1 break-all font-mono text-[10px] text-zinc-700 dark:text-zinc-200">{item.value}</dd>
+                    <dt className="truncate text-[9px] font-black uppercase tracking-widest text-muted-foreground">{item.label}</dt>
+                    <dd className="mt-1 break-all font-mono text-[10px] text-foreground">{item.value}</dd>
                   </div>
                 ))}
               </dl>
@@ -230,7 +230,7 @@ export function WorkspaceQueryState({
           </Button>
           <Link
             href="/sign-in"
-            className="inline-flex h-9 items-center justify-center rounded-xl bg-zinc-900 px-4 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-black focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
+            className="inline-flex h-9 items-center justify-center rounded-xl bg-foreground px-4 text-[10px] font-black uppercase tracking-widest text-background transition-colors hover:bg-foreground/90 focus-visible:ring-2 focus-visible:ring-ring"
           >
             {t("signIn")}
           </Link>
@@ -253,14 +253,14 @@ function QueryDebugDetails({
 
   return (
     <details className="mt-4 w-full max-w-xl rounded-2xl border border-border bg-card/70 p-4 text-start">
-      <summary className="cursor-pointer text-[10px] font-black uppercase tracking-widest text-zinc-500">
+      <summary className="cursor-pointer text-[10px] font-black uppercase tracking-widest text-muted-foreground">
         {t("debugDetails")}
       </summary>
-      <dl className="mt-4 grid gap-2 text-[11px] font-medium text-zinc-500 sm:grid-cols-2">
+      <dl className="mt-4 grid gap-2 text-[11px] font-medium text-muted-foreground sm:grid-cols-2">
         {debugDetails.map((item) => (
           <div key={item.label} className="min-w-0 rounded-xl bg-muted px-3 py-2">
-            <dt className="truncate text-[9px] font-black uppercase tracking-widest text-zinc-400">{item.label}</dt>
-            <dd className="mt-1 break-all font-mono text-[10px] text-zinc-700 dark:text-zinc-200">{item.value}</dd>
+            <dt className="truncate text-[9px] font-black uppercase tracking-widest text-muted-foreground">{item.label}</dt>
+            <dd className="mt-1 break-all font-mono text-[10px] text-foreground">{item.value}</dd>
           </div>
         ))}
       </dl>
@@ -535,7 +535,7 @@ export function DetailNotFoundState({
   const t = useTranslations('Common');
   return (
     <EmptyWorkspace icon={AlertTriangle} title={title} description={description}>
-      <Link href={backHref} className="mt-6 inline-flex h-10 items-center justify-center rounded-xl border border-border px-5 text-[10px] font-black uppercase tracking-widest text-zinc-900 transition-colors hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:text-white dark:hover:bg-white/5">
+      <Link href={backHref} className="mt-6 inline-flex h-10 items-center justify-center rounded-xl border border-border px-5 text-[10px] font-black uppercase tracking-widest text-foreground transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
         <ArrowLeft className="me-2 h-3.5 w-3.5" aria-hidden="true" />
         {backLabel || t('backToList')}
       </Link>
@@ -606,7 +606,7 @@ function FormField({
 }) {
   return (
     <div className={cn("grid gap-2 text-start", className)}>
-      <Label htmlFor={id} className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 rtl:text-right">
+      <Label htmlFor={id} className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground rtl:text-right">
         {label}
       </Label>
       {children}
@@ -699,7 +699,7 @@ function WizardActions({
           type="button"
           variant="ghost" 
           onClick={onBack} 
-          className="h-12 w-full rounded-[20px] text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:bg-zinc-50 hover:text-foreground transition-all dark:hover:bg-white/5"
+          className="h-12 w-full rounded-[20px] text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
         >
           {backLabel || t('back')}
         </Button>
@@ -742,9 +742,9 @@ function ChoiceGrid<TValue extends string>({
               aria-checked={isActive}
               onClick={() => onChange(option.value)}
               className={cn(
-                "flex min-h-24 flex-col items-center justify-center gap-3 rounded-2xl border p-4 text-[10px] font-black uppercase tracking-widest transition-colors focus-visible:ring-2 focus-visible:ring-zinc-900/15",
+                "flex min-h-24 flex-col items-center justify-center gap-3 rounded-2xl border p-4 text-[10px] font-black uppercase tracking-widest transition-colors focus-visible:ring-2 focus-visible:ring-ring",
                 isActive
-                  ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900"
+                  ? "border-foreground bg-foreground text-background"
                   : "border-border bg-muted/50 text-muted-foreground hover:border-border hover:text-foreground",
               )}
             >
@@ -777,7 +777,7 @@ export function FormActions({
         type="button" 
         variant="ghost" 
         onClick={onCancel} 
-        className="h-11 rounded-xl px-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:bg-zinc-50 hover:text-foreground transition-all dark:hover:bg-white/5"
+        className="h-11 rounded-xl px-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
       >
         {t('cancel')}
       </Button>
@@ -804,7 +804,7 @@ function IconAction({
         event.stopPropagation();
         onClick?.();
       }}
-      className={cn("inline-flex h-8 w-8 items-center justify-center rounded-xl text-zinc-300 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-white/5 dark:hover:text-white", className)}
+      className={cn("inline-flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground/40 transition-colors hover:bg-muted hover:text-foreground", className)}
     >
       {children ?? <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />}
     </button>
@@ -882,8 +882,8 @@ export function SegmentedControl<TValue extends string>({
               className={cn(
                 "flex flex-1 items-center justify-center gap-2 rounded-lg text-xs font-bold transition-all duration-200",
                 isActive
-                  ? "bg-white text-zinc-900 dark:bg-white/10 dark:text-white"
-                  : "text-zinc-400 hover:bg-white/50 hover:text-zinc-600 dark:hover:bg-white/5 dark:hover:text-zinc-300"
+                  ? "bg-white text-foreground dark:bg-white/10"
+                  : "text-muted-foreground hover:bg-white/50 hover:text-foreground dark:hover:text-muted-foreground/40"
               )}
             >
               {Icon && <Icon className="h-3 w-3" />}

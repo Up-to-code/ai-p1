@@ -25,10 +25,10 @@ export function ClientSheet({ open, onOpenChange, existing, indexQueryKey, onSuc
               <div className="h-2 w-2 rounded-full bg-sky-500 animate-pulse" />
               <div className="text-[10px] font-black uppercase tracking-[0.3em] text-sky-600 dark:text-sky-400">{t('form.eyebrow')}</div>
             </div>
-            <SheetTitle className="mt-4 text-3xl font-black tracking-tighter text-zinc-900 dark:text-white">
+            <SheetTitle className="mt-4 text-3xl font-black tracking-tighter text-foreground">
               {existing ? t('form.editTitle') + "." : t('form.createTitle') + "."}
             </SheetTitle>
-            <SheetDescription className="text-xs font-bold uppercase tracking-widest text-zinc-400">
+            <SheetDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               {t('form.subtitle')}
             </SheetDescription>
           </SheetHeader>

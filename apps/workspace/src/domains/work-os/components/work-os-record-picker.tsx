@@ -93,7 +93,7 @@ export function WorkOsRecordPicker({
       className="overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
     >
       <div       className="flex h-11 items-center gap-2 border-b border-border px-3">
-        <Search className="h-4 w-4 shrink-0 text-zinc-400" />
+        <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
         <Input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
@@ -113,14 +113,14 @@ export function WorkOsRecordPicker({
           }}
           className={cn(
             "mb-1 flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-start text-xs font-bold transition hover:bg-muted rtl:text-right",
-            !value ? "text-foreground" : "text-zinc-500",
+            !value ? "text-foreground" : "text-muted-foreground",
           )}
         >
           <span className="min-w-0 truncate">{clearLabel}</span>
-          {!value ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <X className="h-4 w-4 shrink-0 text-zinc-300" />}
+          {!value ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <X className="h-4 w-4 shrink-0 text-muted-foreground/40" />}
         </button>
         {visibleOptions.length === 0 ? (
-          <div className="px-3 py-6 text-center text-xs font-bold text-zinc-400">{emptyLabel}</div>
+          <div className="px-3 py-6 text-center text-xs font-bold text-muted-foreground">{emptyLabel}</div>
         ) : (
           visibleOptions.map((option) => (
             <button
@@ -137,7 +137,7 @@ export function WorkOsRecordPicker({
             >
               <span className="min-w-0">
                 <span className="block truncate text-xs font-black text-foreground">{option.label}</span>
-                {option.helper ? <span className="mt-1 block truncate text-[10px] font-bold text-zinc-400">{option.helper}</span> : null}
+                {option.helper ? <span className="mt-1 block truncate text-[10px] font-bold text-muted-foreground">{option.helper}</span> : null}
               </span>
               {option.id === value ? <CheckCircle2 className="h-4 w-4 shrink-0 text-foreground" /> : null}
             </button>
@@ -154,7 +154,7 @@ export function WorkOsRecordPicker({
 
   return (
     <div className="grid gap-2 text-start">
-      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 rtl:text-right">
+      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground rtl:text-right">
         {label}
       </span>
       <button
@@ -165,11 +165,11 @@ export function WorkOsRecordPicker({
         onClick={() => setOpen((current) => !current)}
         className={cn(
           "flex h-12 w-full items-center justify-between gap-3 rounded-2xl border border-border bg-muted/50 px-4 text-sm font-black tracking-tight text-foreground outline-none transition-all focus:border-ring focus:bg-card focus:ring-4 focus:ring-ring rtl:text-right",
-          !selected && "text-zinc-400 dark:text-zinc-500",
+          !selected && "text-muted-foreground dark:text-muted-foreground",
         )}
       >
         <span className="min-w-0 truncate">{selected?.label ?? placeholder}</span>
-        <ChevronDown className={cn("h-4 w-4 shrink-0 text-zinc-400 transition", open && "rotate-180")} />
+        <ChevronDown className={cn("h-4 w-4 shrink-0 text-muted-foreground transition", open && "rotate-180")} />
       </button>
       {typeof document !== "undefined" && menu ? createPortal(menu, document.body) : null}
     </div>

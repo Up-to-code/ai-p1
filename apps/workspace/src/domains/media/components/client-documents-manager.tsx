@@ -224,7 +224,7 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-bold text-zinc-400">{t("eyebrow")}</p>
+          <p className="text-xs font-bold text-muted-foreground">{t("eyebrow")}</p>
           <h3 className="mt-1 text-lg font-black tracking-tight text-foreground">{t("title")}</h3>
         </div>
         <Button type="button" onClick={() => setIsUploadOpen(true)} className="h-10 rounded-xl px-4 text-xs font-black uppercase tracking-widest" disabled={!canUpload}>
@@ -235,15 +235,15 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
 
       <section className="min-h-[280px]">
         {isLoading ? (
-          <div className="flex h-64 items-center justify-center rounded-[24px] border border-dashed border-border text-zinc-400">
+          <div className="flex h-64 items-center justify-center rounded-[24px] border border-dashed border-border text-muted-foreground">
             <Loader2 className="me-2 h-4 w-4 animate-spin" />
             {common("loading")}
           </div>
         ) : mediaList.length === 0 ? (
           <div className="flex h-64 flex-col items-center justify-center rounded-[24px] border border-dashed border-border bg-muted/40 text-center">
-            <FileText className="h-8 w-8 text-zinc-300" />
+            <FileText className="h-8 w-8 text-muted-foreground/40" />
             <p className="mt-3 text-sm font-black text-foreground">{t("emptyTitle")}</p>
-            <p className="mt-1 text-xs font-semibold text-zinc-400">{t("emptyDesc")}</p>
+            <p className="mt-1 text-xs font-semibold text-muted-foreground">{t("emptyDesc")}</p>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -259,7 +259,7 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
                         <span className="rounded-full bg-muted px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
                           {mediaTypeLabel(asset.kind, asset.mimeType)}
                         </span>
-                        <span className="text-[10px] font-bold text-zinc-400">{formatSize(asset.size)}</span>
+                        <span className="text-[10px] font-bold text-muted-foreground">{formatSize(asset.size)}</span>
                       </div>
                       <h4 className="mt-3 truncate text-sm font-black text-foreground" title={asset.name}>{asset.name}</h4>
                       <p className="mt-2 truncate rounded-xl bg-muted px-3 py-2 text-[10px] font-bold text-muted-foreground">
@@ -280,7 +280,7 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
                         {visibility === "public" ? <Globe2 className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block text-[10px] font-bold text-zinc-400">{t("visibilityLabel")}</span>
+                        <span className="block text-[10px] font-bold text-muted-foreground">{t("visibilityLabel")}</span>
                         <span className="mt-0.5 block text-xs font-black text-foreground">
                           {visibility === "public" ? t("public") : t("private")}
                         </span>
@@ -291,16 +291,16 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
                     </button>
 
                     <div className="flex items-center justify-end gap-1.5 border-t border-border pt-3">
-                      <a href={url} target="_blank" rel="noreferrer" className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-400 transition hover:bg-muted hover:text-foreground" aria-label={t("openFile", { name: asset.name })}>
+                      <a href={url} target="_blank" rel="noreferrer" className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-muted hover:text-foreground" aria-label={t("openFile", { name: asset.name })}>
                         <ExternalLink className="h-4 w-4" />
                       </a>
-                      <a href={asset.url} target="_blank" rel="noreferrer" download={asset.name} className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-400 transition hover:bg-muted hover:text-foreground" aria-label={t("downloadFile", { name: asset.name })}>
+                      <a href={asset.url} target="_blank" rel="noreferrer" download={asset.name} className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-muted hover:text-foreground" aria-label={t("downloadFile", { name: asset.name })}>
                         <Download className="h-4 w-4" />
                       </a>
                       <button
                         type="button"
                         onClick={() => openShareDialog(asset)}
-                        className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-400 transition hover:bg-muted hover:text-foreground"
+                        className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-muted hover:text-foreground"
                         aria-label={t("openShareSettings", { name: asset.name })}
                         disabled={mediaOperation.isRunning}
                       >
@@ -309,7 +309,7 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
                       <button
                         type="button"
                         onClick={() => organizationId && void mediaOperation.run(() => deleteMediaRequest(organizationId, asset._id), { successMessage: t("deleted") })}
-                        className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-400 transition hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/30"
+                        className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/30"
                         aria-label={t("deleteFile", { name: asset.name })}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -329,24 +329,24 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
         <DialogContent className="max-w-lg overflow-hidden rounded-[28px] border-border bg-card p-0 shadow-none">
           <DialogHeader className="border-b border-border p-5">
             <DialogTitle className="text-lg font-black tracking-tight">{t("shareTitle")}</DialogTitle>
-            <DialogDescription className="text-xs font-semibold text-zinc-400">
+            <DialogDescription className="text-xs font-semibold text-muted-foreground">
               {t("shareDesc")}
             </DialogDescription>
           </DialogHeader>
 
           {!activeShareAsset ? (
-            <div className="flex min-h-48 items-center justify-center p-6 text-sm font-bold text-zinc-400">
+            <div className="flex min-h-48 items-center justify-center p-6 text-sm font-bold text-muted-foreground">
               <Loader2 className="me-2 h-4 w-4 animate-spin" />
               {t("shareLoading")}
             </div>
           ) : (
             <div className="space-y-4 p-5">
               <div className="rounded-[22px] border border-border bg-muted p-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t("currentFile")}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("currentFile")}</p>
                 <p className="mt-2 truncate text-sm font-black text-foreground" title={activeShareAsset.name}>
                   {activeShareAsset.name}
                 </p>
-                <p className="mt-1 text-xs font-semibold text-zinc-400">
+                <p className="mt-1 text-xs font-semibold text-muted-foreground">
                   {mediaTypeLabel(activeShareAsset.kind, activeShareAsset.mimeType)} - {formatSize(activeShareAsset.size)}
                 </p>
               </div>
@@ -364,7 +364,7 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
                       className={cn(
                         "min-h-32 rounded-[22px] border p-4 text-start transition",
                         isSelected
-                          ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-950"
+                          ? "border-foreground bg-foreground text-white dark:border-white dark:bg-white dark:text-foreground"
                           : "border-border bg-card text-foreground hover:border-border",
                       )}
                     >
@@ -388,7 +388,7 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
                       </span>
                       <span className={cn(
                         "mt-2 block text-xs font-semibold leading-5",
-                        isSelected ? "text-white/70 dark:text-zinc-600" : "text-zinc-400",
+                        isSelected ? "text-white/70 dark:text-foreground" : "text-muted-foreground",
                       )}>
                         {visibility === "public" ? t("sharePublicDesc") : t("sharePrivateDesc")}
                       </span>
@@ -400,7 +400,7 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
               <div className="rounded-[22px] border border-border bg-card p-3">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t("shareLink")}</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("shareLink")}</p>
                     <p className="mt-1 truncate text-xs font-bold text-muted-foreground">
                       {(activeShareAsset.shareVisibility ?? "private") === "public" ? shareUrl(activeShareAsset._id) : t("shareLinkUnavailable")}
                     </p>
@@ -454,7 +454,7 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
         <DialogContent className="max-w-2xl rounded-[28px] border-border bg-card p-0 shadow-none">
           <DialogHeader className="border-b border-border p-5">
             <DialogTitle className="text-lg font-black tracking-tight">{t("uploadTitle")}</DialogTitle>
-            <DialogDescription className="text-xs font-semibold text-zinc-400">
+            <DialogDescription className="text-xs font-semibold text-muted-foreground">
               {t("uploadModalDesc")}
             </DialogDescription>
           </DialogHeader>
@@ -477,7 +477,7 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
                 <UploadCloud className="h-5 w-5" />
               </span>
               <span className="mt-3 text-[10px] font-black uppercase tracking-widest text-foreground">{t("chooseFiles")}</span>
-              <span className="mt-2 text-xs font-semibold text-zinc-400">{t("uploadHint")}</span>
+              <span className="mt-2 text-xs font-semibold text-muted-foreground">{t("uploadHint")}</span>
               <input
                 ref={inputRef}
                 type="file"
@@ -495,13 +495,13 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
 
             <div className="rounded-[24px] border border-border bg-muted/50 p-4">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t("queuedFiles")}</p>
-                {uploadStatus === "uploading" && <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />}
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("queuedFiles")}</p>
+                {uploadStatus === "uploading" && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
                 {uploadStatus === "uploaded" && <CheckCircle2 className="h-4 w-4 text-emerald-500" />}
               </div>
               <div className="mt-3">
                 {pendingFiles.length === 0 ? (
-                  <p className="rounded-2xl bg-card px-3 py-3 text-xs font-semibold text-zinc-400">{t("noQueued")}</p>
+                  <p className="rounded-2xl bg-card px-3 py-3 text-xs font-semibold text-muted-foreground">{t("noQueued")}</p>
                 ) : (
                   <div className="grid gap-3 sm:grid-cols-2">
                     {pendingFiles.map((item) => (
@@ -513,7 +513,7 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
                                 <span className="rounded-full bg-muted px-2 py-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
                                 {fileTypeLabel(item.file, item.extension)}
                               </span>
-                              <span className="text-[10px] font-bold text-zinc-400">{formatSize(item.file.size)}</span>
+                              <span className="text-[10px] font-bold text-muted-foreground">{formatSize(item.file.size)}</span>
                             </div>
 
                             {item.isEditing ? (
@@ -538,7 +538,7 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
                                   autoFocus
                                 />
                                 {item.extension && (
-                                  <span className="shrink-0 border-s border-border px-2 text-xs font-black text-zinc-400">
+                                  <span className="shrink-0 border-s border-border px-2 text-xs font-black text-muted-foreground">
                                     {item.extension}
                                   </span>
                                 )}
@@ -555,7 +555,7 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
                           <button
                             type="button"
                             onClick={() => openLocalFile(item.file)}
-                            className="flex h-8 w-8 items-center justify-center rounded-xl text-zinc-400 transition hover:bg-muted hover:text-foreground"
+                            className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-muted hover:text-foreground"
                             aria-label={t("viewQueued", { name: pendingUploadName(item) })}
                             disabled={uploadOperation.isRunning}
                           >
@@ -568,7 +568,7 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
                                 togglePendingUploadEdit(current, item.id),
                               );
                             }}
-                            className="flex h-8 w-8 items-center justify-center rounded-xl text-zinc-400 transition hover:bg-muted hover:text-foreground"
+                            className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-muted hover:text-foreground"
                             aria-label={item.isEditing ? t("saveName", { name: pendingUploadName(item) }) : t("editName", { name: pendingUploadName(item) })}
                             disabled={uploadOperation.isRunning}
                           >
@@ -577,7 +577,7 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
                           <button
                             type="button"
                             onClick={() => setPendingFiles((current) => removePendingUpload(current, item.id))}
-                            className="flex h-8 w-8 items-center justify-center rounded-xl text-zinc-400 transition hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/30"
+                            className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/30"
                             aria-label={t("removeQueued", { name: pendingUploadName(item) })}
                             disabled={uploadOperation.isRunning}
                           >

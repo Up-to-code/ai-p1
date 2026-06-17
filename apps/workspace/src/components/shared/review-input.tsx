@@ -74,7 +74,7 @@ function StarRatingPicker({
               "h-5 w-5 transition-colors duration-150",
               (hover || value) >= star
                 ? "fill-amber-400 text-amber-400"
-                : "text-zinc-200 dark:text-zinc-700",
+                : "text-muted-foreground/30 dark:text-foreground",
             )}
           />
         </button>
@@ -172,7 +172,7 @@ function ReviewInput({
   return (
     <div className={cn("space-y-4", className)}>
       {/* Section Header */}
-      <h3 className="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
+      <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
         {title}
       </h3>
 
@@ -186,7 +186,7 @@ function ReviewInput({
           </Avatar>
 
           <div className="flex-1 min-w-0">
-            <span className="block text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate">
+            <span className="block text-xs font-semibold text-foreground dark:text-muted-foreground/30 truncate">
               {user.name}
             </span>
             <StarRatingPicker value={rating} onChange={setRating} disabled={busy} />
@@ -209,8 +209,8 @@ function ReviewInput({
               }
             }}
             className={cn(
-              "w-full resize-none bg-transparent text-sm text-zinc-900 dark:text-zinc-100",
-              "placeholder:text-zinc-400 dark:placeholder:text-zinc-500",
+              "w-full resize-none bg-transparent text-sm text-foreground dark:text-muted-foreground",
+              "placeholder:text-muted-foreground dark:placeholder:text-muted-foreground",
               "outline-none border-0 focus:ring-0 min-h-[72px]",
               "leading-relaxed",
               busy && "opacity-50 cursor-not-allowed",
@@ -230,8 +230,8 @@ function ReviewInput({
                 onClick={() => handleFormat(fmt.action)}
                 className={cn(
                   "h-7 w-7 rounded-lg flex items-center justify-center",
-                  "text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100",
-                  "dark:text-zinc-500 dark:hover:text-zinc-300 dark:hover:bg-white/[0.06]",
+                  "text-muted-foreground hover:text-foreground hover:bg-muted",
+                  "dark:text-muted-foreground dark:hover:text-muted-foreground/40 dark:hover:bg-white/[0.06]",
                   "transition-colors duration-100",
                   busy && "pointer-events-none opacity-50",
                 )}
@@ -248,8 +248,8 @@ function ReviewInput({
               disabled={busy}
               className={cn(
                 "h-7 w-7 rounded-lg flex items-center justify-center",
-                "text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100",
-                "dark:text-zinc-500 dark:hover:text-zinc-300 dark:hover:bg-white/[0.06]",
+                "text-muted-foreground hover:text-foreground hover:bg-muted",
+                "dark:text-muted-foreground dark:hover:text-muted-foreground/40 dark:hover:bg-white/[0.06]",
                 "transition-colors duration-100",
                 busy && "pointer-events-none opacity-50",
               )}
@@ -273,7 +273,7 @@ function ReviewInput({
       </div>
 
       {/* Hint */}
-      <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium">
+      <p className="text-[10px] text-muted-foreground dark:text-muted-foreground font-medium">
         Press <kbd className="px-1 py-0.5 rounded bg-muted text-muted-foreground font-mono text-[9px]">⌘ Enter</kbd> to submit
       </p>
     </div>

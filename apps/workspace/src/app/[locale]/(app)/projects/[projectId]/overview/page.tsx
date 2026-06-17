@@ -15,23 +15,23 @@ export default function ProjectOverviewPage({ params }: { params: Promise<{ proj
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-      <div className="rounded-3xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-white/10 dark:bg-white/5">
+      <div className="rounded-3xl border border-border bg-white p-8 shadow-sm dark:border-white/10 dark:bg-white/5">
         <h2 className="text-2xl font-black">{project.name}</h2>
-        <p className="mt-4 text-zinc-600 dark:text-zinc-400">
+        <p className="mt-4 text-foreground dark:text-muted-foreground">
           {project.description || "No description provided."}
         </p>
 
         <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-4">
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Status</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Status</h4>
             <p className="mt-1 font-semibold">{project.status}</p>
           </div>
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Health</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Health</h4>
             <p className="mt-1 font-semibold">{project.health}</p>
           </div>
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Budget</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Budget</h4>
             <p className="mt-1 font-semibold">{project.budget ? `$${project.budget}` : "Not set"}</p>
           </div>
         </div>

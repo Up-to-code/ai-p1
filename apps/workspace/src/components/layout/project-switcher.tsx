@@ -86,7 +86,7 @@ export function ProjectSwitcher() {
           <div
             role="combobox"
             aria-expanded={open}
-            className="flex h-9 items-center justify-between gap-2 rounded-lg border border-[var(--color-divider)] bg-background px-3 text-sm font-semibold transition-colors hover:bg-zinc-100 dark:hover:bg-white/5 w-[220px]"
+            className="flex h-9 items-center justify-between gap-2 rounded-lg border border-[var(--color-divider)] bg-background px-3 text-sm font-semibold transition-colors hover:bg-muted w-[220px]"
           >
             <div className="flex items-center gap-2 truncate">
               {isLoading ? (
@@ -96,7 +96,7 @@ export function ProjectSwitcher() {
                 </>
               ) : isGlobalMode || !activeProject ? (
                 <>
-                  <div className="flex h-5 w-5 items-center justify-center rounded bg-zinc-100 text-zinc-600 dark:bg-white/10 dark:text-zinc-400">
+                  <div className="flex h-5 w-5 items-center justify-center rounded bg-muted text-foreground dark:bg-white/10 dark:text-muted-foreground">
                     <Globe className="h-3.5 w-3.5" />
                   </div>
                   <span className="truncate">Global Workspace</span>
@@ -122,7 +122,7 @@ export function ProjectSwitcher() {
               }}
               className="flex w-full items-center px-2 py-1.5 text-sm font-medium rounded-lg hover:bg-[var(--color-divider)] transition-colors"
             >
-              <Globe className="me-2 h-4 w-4 text-zinc-500" />
+              <Globe className="me-2 h-4 w-4 text-muted-foreground" />
               Global Workspace
               {isGlobalMode && <Check className="ms-auto h-4 w-4" />}
             </button>

@@ -54,7 +54,7 @@ function CodeBlockCode({
   }, [code, language, theme])
 
   const classNames = cn(
-    "w-full overflow-x-auto bg-zinc-950 text-[13px] text-zinc-100 [&>pre]:!bg-zinc-950 [&>pre]:px-4 [&>pre]:py-4",
+    "w-full overflow-x-auto bg-foreground text-[13px] text-muted-foreground [&>pre]:!bg-foreground [&>pre]:px-4 [&>pre]:py-4",
     className
   )
 

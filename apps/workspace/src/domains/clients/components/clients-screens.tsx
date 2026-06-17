@@ -133,12 +133,12 @@ function ClientDetailField({
 }) {
   return (
     <label className={cn("block text-start", className)}>
-      <span className="text-[11px] font-bold text-zinc-400">{label}</span>
+      <span className="text-[11px] font-bold text-muted-foreground">{label}</span>
       <input
         name={name}
         type={type}
         defaultValue={defaultValue}
-        className="mt-2 h-11 w-full rounded-xl border border-border bg-card px-3 text-sm font-bold text-foreground outline-none transition focus:border-zinc-300 focus:border-ring"
+        className="mt-2 h-11 w-full rounded-xl border border-border bg-card px-3 text-sm font-bold text-foreground outline-none transition focus:border-border focus:ring-2 focus:ring-ring"
       />
     </label>
   );
@@ -159,11 +159,11 @@ function ClientDetailSelect({
 }) {
   return (
     <label className={cn("block text-start", className)}>
-      <span className="text-[11px] font-bold text-zinc-400">{label}</span>
+      <span className="text-[11px] font-bold text-muted-foreground">{label}</span>
       <select
         name={name}
         defaultValue={defaultValue}
-        className="mt-2 h-11 w-full rounded-xl border border-border bg-card px-3 text-sm font-bold text-foreground outline-none transition focus:border-ring"
+        className="mt-2 h-11 w-full rounded-xl border border-border bg-card px-3 text-sm font-bold text-foreground outline-none transition focus:ring-2 focus:ring-ring"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>{option.label}</option>
@@ -176,7 +176,7 @@ function ClientDetailSelect({
 function ClientMetaPill({ icon: Icon, children }: { icon: LucideIcon; children: ReactNode }) {
   return (
     <span className="inline-flex h-8 min-w-0 max-w-full items-center gap-2 rounded-full bg-muted px-3 text-xs font-bold text-muted-foreground">
-      <Icon className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+      <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
       <span className="truncate">{children}</span>
     </span>
   );
@@ -185,7 +185,7 @@ function ClientMetaPill({ icon: Icon, children }: { icon: LucideIcon; children: 
 function ClientInfoRow({ icon: Icon, label, value }: { icon: LucideIcon; label: ReactNode; value: ReactNode }) {
   return (
     <div className="min-w-0 rounded-2xl bg-muted p-4">
-      <span className="flex items-center gap-2 text-[11px] font-bold text-zinc-400">
+      <span className="flex items-center gap-2 text-[11px] font-bold text-muted-foreground">
         <Icon className="h-3.5 w-3.5 shrink-0" />
         <span className="truncate">{label}</span>
       </span>
@@ -197,7 +197,7 @@ function ClientInfoRow({ icon: Icon, label, value }: { icon: LucideIcon; label: 
 function CompactClientFact({ label, value }: { label: ReactNode; value: ReactNode }) {
   return (
     <div className="min-w-0 rounded-2xl bg-muted p-4">
-      <p className="text-[11px] font-bold text-zinc-400">{label}</p>
+      <p className="text-[11px] font-bold text-muted-foreground">{label}</p>
       <p className="mt-2 line-clamp-2 text-sm font-black leading-snug text-foreground">{value}</p>
     </div>
   );
@@ -220,19 +220,19 @@ function ClientMiniCard({
       className="group rounded-[24px] border border-border bg-card p-5 transition-colors hover:border-border"
     >
       <div className="flex items-start justify-between gap-4">
-        <Link href={`/clients/${client.id}`} className="flex min-w-0 items-center gap-3 rounded-xl focus-visible:ring-2 focus-visible:ring-zinc-900/15">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-sm font-black uppercase text-white dark:bg-white dark:text-zinc-900">
+        <Link href={`/clients/${client.id}`} className="flex min-w-0 items-center gap-3 rounded-xl focus-visible:ring-2 focus-visible:ring-ring">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-foreground text-sm font-black uppercase text-background">
             {client.name.charAt(0)}
           </div>
           <div className="min-w-0 text-start">
             <h3 className="truncate text-sm font-black uppercase tracking-tight text-foreground">{client.name}</h3>
-            <p className="mt-1 truncate text-[9px] font-black uppercase tracking-widest text-zinc-400">{client.contact}</p>
+            <p className="mt-1 truncate text-[9px] font-black uppercase tracking-widest text-muted-foreground">{client.contact}</p>
           </div>
         </Link>
         <Link
           href={`/clients/${client.id}/edit`}
           aria-label={`Edit ${client.name}`}
-          className="flex h-8 w-8 items-center justify-center rounded-xl text-zinc-300 opacity-0 transition-opacity hover:bg-zinc-50 hover:text-zinc-900 focus-visible:ring-2 focus-visible:ring-zinc-900/15 group-hover:opacity-100 dark:hover:text-white"
+          className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground/40 opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring group-hover:opacity-100"
         >
           <Edit className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>
@@ -245,17 +245,17 @@ function ClientMiniCard({
 
       <div className="mt-5 grid grid-cols-2 gap-3 border-t border-border pt-4">
         <div className="text-start">
-          <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{t('card.budget')}</p>
+          <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">{t('card.budget')}</p>
           <p className="mt-1 truncate text-[11px] font-black uppercase text-foreground">{client.budget}</p>
         </div>
         <div className="text-start">
-          <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{t('card.next')}</p>
+          <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">{t('card.next')}</p>
           <p className="mt-1 truncate text-[11px] font-black uppercase text-foreground">{client.nextAction}</p>
         </div>
       </div>
 
       <div className="mt-5 flex items-center justify-between gap-3">
-        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{client.lastContact}</span>
+        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{client.lastContact}</span>
         <div className="flex items-center gap-1">
           <button
             type="button"
@@ -265,7 +265,7 @@ function ClientMiniCard({
               event.stopPropagation();
               onMarkClosed(client);
             }}
-            className="inline-flex h-8 items-center gap-1.5 rounded-xl px-2 text-[9px] font-black uppercase tracking-widest text-zinc-400 transition-colors hover:bg-emerald-50 hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-300"
+            className="inline-flex h-8 items-center gap-1.5 rounded-xl px-2 text-[9px] font-black uppercase tracking-widest text-muted-foreground transition-colors hover:bg-emerald-50 hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-300"
           >
             <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
             {t("actions.markClosed")}
@@ -277,7 +277,7 @@ function ClientMiniCard({
               event.stopPropagation();
               onDelete(client);
             }}
-            className="text-zinc-300 transition-colors hover:text-red-500 focus-visible:ring-2 focus-visible:ring-red-500/20"
+            className="text-muted-foreground/40 transition-colors hover:text-red-500 focus-visible:ring-2 focus-visible:ring-red-500/20"
           >
             <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
@@ -373,12 +373,12 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
         <Link
           href={`/clients/${client.id}`}
           onClick={(event) => event.stopPropagation()}
-          className="flex min-w-0 items-center gap-3 rounded-xl focus-visible:ring-2 focus-visible:ring-zinc-900/15"
+          className="flex min-w-0 items-center gap-3 rounded-xl focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted text-xs font-black">{client.name.charAt(0)}</div>
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted text-xs font-black text-foreground">{client.name.charAt(0)}</div>
           <div className="min-w-0 text-start">
             <p className="truncate text-xs font-black uppercase text-foreground">{client.name}</p>
-            <p className="mt-1 truncate text-[9px] font-black uppercase tracking-widest text-zinc-400">{client.contact}</p>
+            <p className="mt-1 truncate text-[9px] font-black uppercase tracking-widest text-muted-foreground">{client.contact}</p>
           </div>
         </Link>
       ),
@@ -402,7 +402,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
                 event.stopPropagation();
                 markClientClosed(client);
               }}
-              className="p-2 text-zinc-300 hover:text-emerald-600 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+              className="p-2 text-muted-foreground/40 hover:text-emerald-600 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
             >
               <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
@@ -411,11 +411,11 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
             href={`/clients/${client.id}/edit`}
             aria-label={`Edit ${client.name}`}
             onClick={(event) => event.stopPropagation()}
-            className="p-2 text-zinc-300 hover:text-zinc-900 focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:hover:text-white"
+            className="p-2 text-muted-foreground/40 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Edit className="h-3.5 w-3.5" aria-hidden="true" />
           </Link>
-          <button type="button" aria-label={`Delete ${client.name}`} onClick={(event) => { event.stopPropagation(); setDeleting(client); }} className="p-2 text-zinc-300 hover:text-red-500 focus-visible:ring-2 focus-visible:ring-red-500/20">
+          <button type="button" aria-label={`Delete ${client.name}`} onClick={(event) => { event.stopPropagation(); setDeleting(client); }} className="p-2 text-muted-foreground/40 hover:text-red-500 focus-visible:ring-2 focus-visible:ring-red-500/20">
             <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
         </div>
@@ -454,8 +454,8 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
                 className={cn(
                   "h-8 rounded-full px-3 text-[10px] font-black uppercase tracking-widest transition-colors",
                   stageFilter === stage
-                    ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
-                    : "text-zinc-400 hover:text-zinc-900 dark:hover:text-white",
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {t(`stageFilters.${stage}`)}
@@ -512,8 +512,8 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
                 }}
               >
                 <div className="mb-4 flex items-center justify-between px-2">
-                  <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">{translateClientStage(t, stage)}</h2>
-                  <span className="text-[10px] font-black text-zinc-300">{String(stats?.stages?.[stage] ?? stageClients.length).padStart(2, "0")}</span>
+                  <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">{translateClientStage(t, stage)}</h2>
+                  <span className="text-[10px] font-black text-muted-foreground/40">{String(stats?.stages?.[stage] ?? stageClients.length).padStart(2, "0")}</span>
                 </div>
                 <div className="space-y-3">
                   {stageClients.map((client, index) => {
@@ -574,7 +574,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
               <div className="flex items-start justify-between gap-4">
                 <div className="text-start">
                   <p className="text-sm font-black uppercase tracking-tight text-foreground">{event.title}</p>
-                  <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-zinc-400">{event.clientName ?? event.location ?? "Workspace event"}</p>
+                  <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">{event.clientName ?? event.location ?? "Workspace event"}</p>
                 </div>
                 <StatusPill label={event.status} tone="info" />
               </div>
@@ -694,11 +694,11 @@ export function ClientDetailScreen({ id }: { id: string }) {
       <section className="space-y-5 text-start">
         <div className="flex flex-col gap-4 border-b border-border pb-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-start gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-zinc-950 text-lg font-black uppercase text-white dark:bg-zinc-100 dark:text-zinc-950">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-foreground text-lg font-black uppercase text-background">
               {client.name.charAt(0)}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-[10px] font-black uppercase tracking-widest text-zinc-400">{client.id.toUpperCase()}</p>
+              <p className="truncate text-[10px] font-black uppercase tracking-widest text-muted-foreground">{client.id.toUpperCase()}</p>
               <h1 className="mt-2 max-w-5xl text-3xl font-black leading-tight text-foreground md:text-[32px]">
                 {client.name}
               </h1>
@@ -742,13 +742,13 @@ export function ClientDetailScreen({ id }: { id: string }) {
                 key={stage}
                 className={cn(
                   "flex min-w-0 items-center gap-2 rounded-xl px-3 py-2 transition-colors",
-                  i <= currentStageIndex ? "bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950" : "bg-zinc-50 text-zinc-400 dark:bg-zinc-950/60"
+                  i <= currentStageIndex ? "bg-foreground text-background" : "bg-muted text-muted-foreground"
                 )}
               >
                 <span
                   className={cn(
                     "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9px] font-black",
-                    i <= currentStageIndex ? "bg-white/15 text-current dark:bg-zinc-950/10" : "border border-border"
+                    i <= currentStageIndex ? "bg-foreground/15 text-current" : "border border-border"
                   )}
                 >
                   {String(i + 1).padStart(2, "0")}
@@ -888,8 +888,8 @@ export function ClientDetailScreen({ id }: { id: string }) {
             contentClassName="space-y-4"
             actions={(
               <>
-                <span className="rounded-full border border-border px-3 py-1.5 text-xs font-bold text-zinc-500">{tasks.length} {t('detail.activity.tasks')}</span>
-                <span className="rounded-full border border-border px-3 py-1.5 text-xs font-bold text-zinc-500">{events.length} {t('detail.activity.events')}</span>
+                <span className="rounded-full border border-border px-3 py-1.5 text-xs font-bold text-muted-foreground">{tasks.length} {t('detail.activity.tasks')}</span>
+                <span className="rounded-full border border-border px-3 py-1.5 text-xs font-bold text-muted-foreground">{events.length} {t('detail.activity.events')}</span>
               </>
             )}
           >
@@ -922,7 +922,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
                 value={taskTitle}
                 onChange={(event) => setTaskTitle(event.target.value)}
                 placeholder={t('detail.activity.taskTitle')}
-                className="h-10 min-w-0 rounded-xl border border-border bg-card px-3 text-sm font-bold text-foreground outline-none transition focus:border-zinc-400 focus:border-ring"
+                className="h-10 min-w-0 rounded-xl border border-border bg-card px-3 text-sm font-bold text-foreground outline-none transition focus:border-border focus:border-ring"
               />
               <select name="priority" defaultValue={client.priority} className="h-10 rounded-xl border border-border bg-card px-3 text-xs font-bold text-foreground outline-none">
                 {clientPriorities.map((value) => <option key={value} value={value}>{translateClientPriority(t, value)}</option>)}
@@ -938,7 +938,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
 
             <div className="grid gap-3">
               {tasks.length === 0 && events.length === 0 ? (
-                <div className="rounded-[20px] border border-dashed border-border p-8 text-center text-sm font-bold text-zinc-400">
+                <div className="rounded-[20px] border border-dashed border-border p-8 text-center text-sm font-bold text-muted-foreground">
                   {t('detail.activity.emptyTasks')}
                 </div>
               ) : null}
@@ -949,17 +949,17 @@ export function ClientDetailScreen({ id }: { id: string }) {
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <StatusPill label={t(`detail.activity.taskStatuses.${task.status}`)} tone={statusTone} />
-                        <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{translateClientPriority(t, task.priority)}</span>
-                        <span className="text-[10px] font-bold text-zinc-400">{dueDateLabel}</span>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">{translateClientPriority(t, task.priority)}</span>
+                        <span className="text-[10px] font-bold text-muted-foreground">{dueDateLabel}</span>
                       </div>
-                      <p className={cn("mt-2 truncate text-sm font-black text-foreground", isDone && "text-zinc-400 line-through dark:text-zinc-500")}>
+                      <p className={cn("mt-2 truncate text-sm font-black text-foreground", isDone && "text-muted-foreground line-through dark:text-muted-foreground")}>
                         {task.title}
                       </p>
-                      <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] font-bold text-zinc-400">
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] font-bold text-muted-foreground">
                         <span>{t('detail.activity.tasks')}</span>
                         {linkedAsset && (
                           <>
-                            <span className="h-1 w-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                            <span className="h-1 w-1 rounded-full bg-muted-foreground/40 dark:bg-muted" />
                             <span>{linkedAsset.title}</span>
                           </>
                         )}
@@ -1008,7 +1008,7 @@ export function ClientDetailScreen({ id }: { id: string }) {
                           if (!workspaceOrganizationId) throw new Error("Select an organization first.");
                           return deleteClientTaskRequest(workspaceOrganizationId, task.id);
                         }, { successMessage: t('detail.activity.deleted') })}
-                        className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-300 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-50 dark:hover:bg-red-950/30"
+                        className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground/40 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-50 dark:hover:bg-red-950/30"
                         aria-label={t('detail.activity.deleteTask')}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -1023,12 +1023,12 @@ export function ClientDetailScreen({ id }: { id: string }) {
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <StatusPill label={event.status} tone="info" />
-                      <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{t('detail.activity.calendarEvents')}</span>
-                      <span className="text-[10px] font-bold text-zinc-400">{event.date} · {event.time}</span>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">{t('detail.activity.calendarEvents')}</span>
+                      <span className="text-[10px] font-bold text-muted-foreground">{event.date} · {event.time}</span>
                     </div>
                     <p className="mt-2 truncate text-sm font-black text-foreground">{event.title}</p>
                   </div>
-                  <span className="inline-flex h-9 items-center justify-center rounded-xl border border-border px-3 text-xs font-bold text-zinc-500">
+                  <span className="inline-flex h-9 items-center justify-center rounded-xl border border-border px-3 text-xs font-bold text-muted-foreground">
                     {t('detail.activity.events')}
                   </span>
                 </article>

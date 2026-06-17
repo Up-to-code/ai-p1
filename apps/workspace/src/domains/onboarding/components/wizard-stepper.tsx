@@ -28,7 +28,7 @@ export function WizardStepper({ currentStep }: WizardStepperProps) {
                   <div 
                     className={cn(
                       "h-full w-full rounded-full",
-                      status === "complete" ? "bg-zinc-900 dark:bg-white" : "bg-zinc-100 dark:bg-white/10"
+                      status === "complete" ? "bg-foreground dark:bg-white" : "bg-muted dark:bg-white/10"
                     )} 
                   />
                 </div>
@@ -38,7 +38,7 @@ export function WizardStepper({ currentStep }: WizardStepperProps) {
                   className={cn(
                     "flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-300",
                     status === "complete" 
-                      ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900" 
+                      ? "border-foreground bg-foreground text-white dark:border-white dark:bg-white dark:text-foreground" 
                       : status === "current"
                       ? "border-primary bg-card"
                       : "border-border bg-card"
@@ -51,14 +51,14 @@ export function WizardStepper({ currentStep }: WizardStepperProps) {
                     <span 
                       className={cn(
                         "text-xs font-semibold", 
-                        status === "current" ? "text-zinc-900 dark:text-white" : "text-zinc-400 dark:text-zinc-600"
+                        status === "current" ? "text-foreground" : "text-muted-foreground dark:text-foreground"
                       )}
                     >
                       {step.id}
                     </span>
                   )}
                 </div>
-                <span className="absolute -bottom-6 text-xs font-semibold whitespace-nowrap text-zinc-500 dark:text-zinc-400 hidden sm:block">
+                <span className="absolute -bottom-6 text-xs font-semibold whitespace-nowrap text-muted-foreground dark:text-muted-foreground hidden sm:block">
                   {status === "current" && step.name}
                 </span>
               </div>

@@ -24,8 +24,8 @@ const statusColors: Record<string, string> = {
   new: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
   active: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
   nurture: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  inactive: "bg-zinc-500/10 text-zinc-500",
-  archived: "bg-zinc-500/10 text-zinc-400",
+  inactive: "bg-muted/500/10 text-muted-foreground",
+  archived: "bg-muted/500/10 text-muted-foreground",
 };
 
 const pipelineColors: Record<string, string> = {
@@ -72,31 +72,31 @@ export function ClientPickerModal({
 
           {/* Search */}
           <div className="relative mt-4">
-            <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+            <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search by name..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-              className="h-10 rounded-lg border-zinc-200 bg-zinc-50 ps-9 text-sm dark:border-white/10 dark:bg-white/5"
+              className="h-10 rounded-lg border-border bg-muted/50 ps-9 text-sm dark:border-white/10 dark:bg-white/5"
             />
           </div>
         </div>
 
         {/* Client list */}
-        <div className="max-h-[360px] min-h-[200px] overflow-y-auto border-t border-zinc-100 dark:border-white/5">
+        <div className="max-h-[360px] min-h-[200px] overflow-y-auto border-t border-border dark:border-white/5">
           {clientsQuery?.queryStatus === "loading" ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-primary" />
-              <p className="mt-3 text-sm font-medium text-zinc-500">Loading clients...</p>
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-border border-t-primary" />
+              <p className="mt-3 text-sm font-medium text-muted-foreground">Loading clients...</p>
             </div>
           ) : pagedClients.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <User className="h-8 w-8 text-zinc-300 dark:text-zinc-600" />
-              <p className="mt-3 text-sm font-medium text-zinc-500">No clients found</p>
-              <p className="mt-1 text-xs text-zinc-400">Try adjusting your search query.</p>
+              <User className="h-8 w-8 text-muted-foreground/40 dark:text-foreground" />
+              <p className="mt-3 text-sm font-medium text-muted-foreground">No clients found</p>
+              <p className="mt-1 text-xs text-muted-foreground">Try adjusting your search query.</p>
             </div>
           ) : (
-            <div className="divide-y divide-zinc-100 dark:divide-white/5">
+            <div className="divide-y divide-border dark:divide-white/5">
               {pagedClients.map((client) => {
                 const isSelected = selectedClientId === client.id;
                 return (
@@ -104,7 +104,7 @@ export function ClientPickerModal({
                     key={client.id}
                     onClick={() => handleSelect(client)}
                     className={cn(
-                      "flex w-full items-start gap-3 px-5 py-3 text-start transition-colors hover:bg-zinc-50 dark:hover:bg-white/5",
+                      "flex w-full items-start gap-3 px-5 py-3 text-start transition-colors hover:bg-muted/50",
                       isSelected && "bg-primary/5 dark:bg-primary/10"
                     )}
                   >
@@ -136,7 +136,7 @@ export function ClientPickerModal({
                           {client.pipelineStage}
                         </span>
                         {client.phone && (
-                          <span className="text-[11px] text-zinc-400">{client.phone}</span>
+                          <span className="text-[11px] text-muted-foreground">{client.phone}</span>
                         )}
                       </div>
                     </div>
@@ -149,8 +149,8 @@ export function ClientPickerModal({
 
         {/* Pagination footer */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-zinc-100 px-5 py-3 dark:border-white/5">
-            <span className="text-xs font-medium text-zinc-500">
+          <div className="flex items-center justify-between border-t border-border px-5 py-3 dark:border-white/5">
+            <span className="text-xs font-medium text-muted-foreground">
               {totalClients} client{totalClients !== 1 ? "s" : ""} · Page {page + 1} of {totalPages}
             </span>
             <div className="flex items-center gap-1">

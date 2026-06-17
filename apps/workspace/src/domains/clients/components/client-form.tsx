@@ -162,7 +162,7 @@ export function ClientForm({ existing, indexQueryKey, onSuccess, onCancel }: Cli
         </div>
       </div>
 
-      <div className="mt-12 border-t border-zinc-100 pt-8 dark:border-white/5">
+      <div className="mt-12 border-t border-border pt-8 dark:border-white/5">
         <FormActions 
           isSubmitting={saveOperation.isRunning || createClientMutation.isPending || isSubmitting} 
           onCancel={onCancel || (() => {})} 

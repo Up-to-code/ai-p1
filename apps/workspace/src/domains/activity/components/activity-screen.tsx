@@ -54,7 +54,7 @@ export function ActivityScreen() {
       key: "action",
       header: t("table.action"),
       render: (event) => (
-        <span className="font-black uppercase tracking-tight text-zinc-900 dark:text-white">
+        <span className="font-black uppercase tracking-tight text-foreground">
           {activityActionLabel(event.action)}
         </span>
       ),
@@ -70,7 +70,7 @@ export function ActivityScreen() {
       key: "details",
       header: t("table.details"),
       render: (event) => (
-        <span className="block max-w-[360px] truncate text-xs font-bold text-zinc-500 dark:text-zinc-400">
+        <span className="block max-w-[360px] truncate text-xs font-bold text-muted-foreground dark:text-muted-foreground">
           {event.summary}
         </span>
       ),
@@ -80,7 +80,7 @@ export function ActivityScreen() {
       header: t("table.actor"),
       align: "end",
       render: (event) => (
-        <span className="font-mono text-[10px] font-black uppercase text-zinc-400">
+        <span className="font-mono text-[10px] font-black uppercase text-muted-foreground">
           {shortActivityActor(event.actorUserId)}
         </span>
       ),
@@ -134,13 +134,13 @@ function ActivityLoadingSkeleton() {
     <div className="space-y-6" role="status" aria-label="Loading activity">
 
       <div className="overflow-hidden rounded-[24px] border border-border bg-card">
-        <div className="grid grid-cols-[0.8fr_1fr_0.8fr_1.4fr_0.7fr] gap-8 border-b border-zinc-100 px-5 py-4 dark:border-white/5">
+        <div className="grid grid-cols-[0.8fr_1fr_0.8fr_1.4fr_0.7fr] gap-8 border-b border-border px-5 py-4 dark:border-white/5">
           {[0, 1, 2, 3, 4].map((item) => (
             <Skeleton key={item} className="h-3 w-20 rounded-full" />
           ))}
         </div>
         {[0, 1, 2, 3, 4, 5, 6].map((row) => (
-          <div key={row} className="grid grid-cols-[0.8fr_1fr_0.8fr_1.4fr_0.7fr] items-center gap-8 border-b border-zinc-100 px-5 py-4 last:border-b-0 dark:border-white/5">
+          <div key={row} className="grid grid-cols-[0.8fr_1fr_0.8fr_1.4fr_0.7fr] items-center gap-8 border-b border-border px-5 py-4 last:border-b-0 dark:border-white/5">
             <Skeleton className="h-4 w-24 rounded-full" />
             <Skeleton className="h-4 w-28 rounded-full" />
             <Skeleton className="h-6 w-24 rounded-full" />

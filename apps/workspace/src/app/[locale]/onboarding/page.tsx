@@ -38,10 +38,10 @@ export default function OnboardingPage() {
           </span>
           <span className="text-lg font-black text-foreground">qentrah</span>
         </Link>
-        <h1 className="text-3xl font-semibold tracking-0 text-zinc-950 dark:text-white">
+        <h1 className="text-3xl font-semibold tracking-0 text-foreground dark:text-white">
           {t("organizationRequiredTitle")}
         </h1>
-        <p className="mt-4 max-w-sm text-sm font-medium leading-6 text-zinc-500 dark:text-zinc-400">
+        <p className="mt-4 max-w-sm text-sm font-medium leading-6 text-muted-foreground">
           {t("organizationRequiredDesc")}
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">

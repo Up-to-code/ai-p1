@@ -232,7 +232,7 @@ export function Sidebar() {
               className={cn(
                 "flex items-center rounded-xl transition-opacity hover:opacity-80 min-w-0",
                 isOpen ? "gap-2.5 w-full" : "justify-center",
-                isDarkMode ? "text-background" : "text-foreground",
+                "text-foreground",
               )}
             >
               <div
@@ -277,8 +277,8 @@ export function Sidebar() {
                     "flex items-center rounded-xl transition-all",
                     isOpen ? "h-9 w-full px-3 gap-3" : "h-9 w-9 justify-center",
                     isActive
-                        ? "bg-card text-foreground"
-                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                        ? "bg-muted text-foreground font-semibold"
+                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                   )}
                 >
                   <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={isActive ? 2.2 : 1.8} />
@@ -315,9 +315,7 @@ export function Sidebar() {
                     aria-label={locale === "ar" ? "محادثة جديدة" : "New thread"}
                     className={cn(
                       "flex h-9 w-9 items-center justify-center rounded-xl transition-all",
-                      isDarkMode
-                        ? "text-muted-foreground hover:bg-muted hover:text-foreground"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                   >
                     <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} />
@@ -338,9 +336,9 @@ export function Sidebar() {
                         className={cn(
                           "flex items-center rounded-xl transition-all min-w-0",
                           isOpen ? "h-9 w-full px-3 gap-3" : "h-9 w-9 justify-center",
-isActive
-                        ? "bg-card text-foreground"
-                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                          isActive
+                            ? "bg-muted text-foreground font-semibold"
+                            : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                         )}
                       >
                         {isDeleting && !isOpen ? (
@@ -379,9 +377,7 @@ isActive
                     className={cn(
                       "flex items-center rounded-xl transition-all",
                       isOpen ? "h-9 w-full px-3 gap-3" : "h-9 w-9 justify-center",
-                      isDarkMode
-                        ? "text-muted-foreground hover:bg-accent hover:text-foreground"
-                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                      "text-muted-foreground hover:bg-accent hover:text-foreground",
                     )}
                   >
                     <HistoryIcon className="h-[16px] w-[16px] shrink-0" strokeWidth={1.8} />
@@ -408,8 +404,8 @@ isActive
                     "flex items-center rounded-xl transition-all",
                     isOpen ? "h-9 w-full px-3 gap-3" : "h-9 w-9 justify-center",
                     isActive
-                        ? "bg-card text-foreground"
-                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                        ? "bg-muted text-foreground font-semibold"
+                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                   )}
                 >
                   <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={isActive ? 2.2 : 1.8} />
@@ -436,12 +432,8 @@ isActive
                         "flex items-center transition-all disabled:cursor-default",
                         isOpen ? "w-full gap-2 rounded-xl py-1.5 px-2 text-start" : "h-6 w-6 justify-center overflow-hidden rounded-lg",
                         isActive
-                          ? isDarkMode
-                            ? isOpen ? "bg-muted text-background" : "border border-border text-background"
-                            : isOpen ? "bg-muted text-foreground" : "border border-border text-foreground"
-                          : isDarkMode
-                            ? isOpen ? "text-muted-foreground hover:bg-muted hover:text-foreground" : "border border-border text-muted-foreground hover:border-border hover:text-foreground"
-                            : isOpen ? "text-muted-foreground hover:bg-muted hover:text-foreground" : "border border-border text-muted-foreground hover:border-border hover:text-foreground",
+                          ? isOpen ? "bg-muted text-foreground" : "border border-border text-foreground"
+                          : isOpen ? "text-muted-foreground hover:bg-muted hover:text-foreground" : "border border-border text-muted-foreground hover:border-border hover:text-foreground",
                       )}
                     >
                       <span className={cn("flex shrink-0 items-center justify-center overflow-hidden font-black uppercase", isOpen ? "h-6 w-6 rounded-lg text-[9px] border border-inherit" : "h-full w-full text-[8px]")}>
@@ -524,7 +516,7 @@ isActive
                       "group/thread flex min-h-11 items-center gap-1 rounded-xl transition-all",
                       isActive
                         ? "bg-primary/10 text-foreground dark:bg-primary/20"
-                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                     )}
                   >
                     <Link

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { NativeSyntheticEvent, TextInputContentSizeChangeEventData } from "react-native";
 
 import {
@@ -21,12 +21,6 @@ const INPUT_MAX_HEIGHT = COMPOSER_INPUT_MAX_HEIGHT;
 export function useComposerState(draftText: string, options: { isEditing?: boolean } = {}) {
   const [measuredContentHeight, setMeasuredContentHeight] = useState(INPUT_MIN_HEIGHT);
   const isEditing = Boolean(options.isEditing);
-
-  useEffect(() => {
-    if (!draftText.trim()) {
-      setMeasuredContentHeight(INPUT_MIN_HEIGHT);
-    }
-  }, [draftText]);
 
   const resolvedContentHeight = resolveComposerMeasuredHeight(draftText, measuredContentHeight);
   const inputHeight = isEditing && draftText.trim()

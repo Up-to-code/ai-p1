@@ -51,6 +51,10 @@ export const createConversationSlice: StateCreator<
     set((state) => ({
       activeThreadId: threadId,
       isCreatingThread: threadId ? false : state.isCreatingThread,
+      // Clear stale per-thread state when switching threads
+      editingMessage: null,
+      runFailureMessage: null,
+      activeRunId: null,
     })),
   setActiveRunId: (runId) => set({ activeRunId: runId }),
   beginEditingMessage: (message) =>

@@ -125,15 +125,15 @@ export function IntegrationsScreen() {
           </Tabs>
         </div>
         <div className="absolute inset-0 z-10 flex items-center justify-center p-6 min-h-[500px]">
-          <div className="flex max-w-sm flex-col items-center gap-4 rounded-[20px] border border-zinc-200/80 bg-white/90 p-8 text-center shadow-xl backdrop-blur-xl dark:border-white/[0.08] dark:bg-zinc-950/90 dark:shadow-black/40">
+          <div className="flex max-w-sm flex-col items-center gap-4 rounded-[20px] border border-border/80 bg-white/90 p-8 text-center shadow-xl backdrop-blur-xl dark:border-white/[0.08] dark:bg-foreground/90 dark:shadow-black/40">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-sky-600 dark:bg-sky-500/10 dark:text-sky-400">
               <Plug className="h-3.5 w-3.5" />
               {isAr ? "قريباً" : "Coming soon"}
             </span>
-            <h3 className="text-xl font-black tracking-tight text-zinc-950 dark:text-white">
+            <h3 className="text-xl font-black tracking-tight text-foreground">
               {isAr ? "تطبيقات الويب والربط" : "Web Apps & Integrations"}
             </h3>
-            <p className="text-sm font-medium leading-relaxed text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm font-medium leading-relaxed text-muted-foreground">
               {isAr ? "نعمل على تجهيز متجر التطبيقات وخدمات الربط. سيكون متاحاً قريباً." : "We're setting up the web apps catalog and integrations. It will be available shortly."}
             </p>
           </div>
@@ -162,15 +162,15 @@ function IntegrationsOverview({
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
       <div className="space-y-6">
-        <section className="rounded-[16px] border border-zinc-200/80 bg-white p-5 dark:border-white/[0.06] dark:bg-white/[0.02]">
+        <section className="rounded-[16px] border border-border/80 bg-white p-5 dark:border-white/[0.06] dark:bg-white/[0.02]">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
             <div className="max-w-2xl space-y-2 text-start">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200/80 bg-zinc-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:border-white/[0.06] dark:bg-white/[0.03] dark:text-zinc-400">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-muted/50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground dark:border-white/[0.06] dark:bg-white/[0.03]">
                 <Sparkles className="h-3 w-3" aria-hidden="true" />
                 {t('overview.badge')}
               </span>
-              <h2 className="text-lg font-bold tracking-tight text-zinc-950 dark:text-white">{t('overview.title')}</h2>
-              <p className="text-sm font-medium leading-6 text-zinc-500 dark:text-zinc-400">{t('overview.description')}</p>
+              <h2 className="text-lg font-bold tracking-tight text-foreground">{t('overview.title')}</h2>
+              <p className="text-sm font-medium leading-6 text-muted-foreground">{t('overview.description')}</p>
             </div>
             <Button type="button" variant="outline" onClick={onBrowseCatalog} className="h-9 rounded-[10px] px-3 text-xs font-semibold">
               {t('overview.browseCatalog')}
@@ -184,22 +184,22 @@ function IntegrationsOverview({
             { label: t('overview.stats.connected'), value: isLoading ? "..." : String(activeConnections), icon: CheckCircle2 },
             { label: t('overview.stats.soon'), value: isLoading ? "..." : String(comingSoonCount), icon: Clock, tone: "soon" },
           ].map((item) => (
-            <section key={item.label} className="rounded-[14px] border border-zinc-200/80 bg-white p-4 dark:border-white/[0.06] dark:bg-white/[0.02]">
+            <section key={item.label} className="rounded-[14px] border border-border/80 bg-white p-4 dark:border-white/[0.06] dark:bg-white/[0.02]">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">{item.label}</span>
+                <span className="text-xs font-semibold text-muted-foreground">{item.label}</span>
                 <item.icon
-                  className={`h-4 w-4 ${item.tone === "soon" ? "text-sky-500 dark:text-sky-300" : "text-zinc-400 dark:text-zinc-500"}`}
+                  className={`h-4 w-4 ${item.tone === "soon" ? "text-sky-500 dark:text-sky-300" : "text-muted-foreground"}`}
                   aria-hidden="true"
                 />
               </div>
-              <p className={`mt-3 text-2xl font-black tracking-tight ${item.tone === "soon" ? "text-sky-600 dark:text-sky-200" : "text-zinc-950 dark:text-white"}`}>{item.value}</p>
+              <p className={`mt-3 text-2xl font-black tracking-tight ${item.tone === "soon" ? "text-sky-600 dark:text-sky-200" : "text-foreground"}`}>{item.value}</p>
             </section>
           ))}
         </div>
 
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{t('overview.lowerTitle')}</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('overview.lowerTitle')}</h2>
             <span className="rounded-full border border-sky-300/70 bg-sky-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-sky-700 shadow-[0_0_18px_rgba(14,165,233,0.18)] dark:border-sky-400/25 dark:bg-sky-400/10 dark:text-sky-200 dark:shadow-[0_0_22px_rgba(56,189,248,0.16)]">
               {t('overview.comingSoon')}
             </span>
@@ -209,16 +209,16 @@ function IntegrationsOverview({
               <Link
                 key={app.id}
                 href={`/web-apps/${app.id}`}
-                className="group block rounded-[14px] border border-zinc-200/80 bg-white p-4 text-start transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-sm dark:border-white/[0.06] dark:bg-white/[0.02] dark:hover:border-white/10 dark:hover:shadow-black/20"
+                className="group block rounded-[14px] border border-border/80 bg-white p-4 text-start transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-sm dark:border-white/[0.06] dark:bg-white/[0.02] dark:hover:border-white/10 dark:hover:shadow-black/20"
               >
                 <div className="flex items-center gap-3">
                   <AppIcon app={app} size="sm" />
                   <div className="min-w-0">
-                    <h3 className="truncate text-sm font-semibold text-zinc-950 dark:text-white group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors">{app.name}</h3>
-                    <p className="truncate text-[11px] font-medium text-zinc-400 dark:text-zinc-500">{app.publisherName ?? t('catalog.partnerApp')}</p>
+                    <h3 className="truncate text-sm font-semibold text-foreground group-hover:text-foreground dark:group-hover:text-muted-foreground/40 transition-colors">{app.name}</h3>
+                    <p className="truncate text-[11px] font-medium text-muted-foreground">{app.publisherName ?? t('catalog.partnerApp')}</p>
                   </div>
                 </div>
-                <p className="mt-3 line-clamp-2 text-xs font-medium leading-5 text-zinc-500 dark:text-zinc-400">{app.description}</p>
+                <p className="mt-3 line-clamp-2 text-xs font-medium leading-5 text-muted-foreground">{app.description}</p>
               </Link>
             ))}
           </div>
@@ -231,12 +231,12 @@ function IntegrationsOverview({
             <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-sky-100 text-sky-700 dark:bg-sky-400/10 dark:text-sky-200">
               <Clock className="h-4 w-4" aria-hidden="true" />
             </span>
-            <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-100">{t('overview.sideTitle')}</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">{t('overview.sideTitle')}</h2>
           </div>
           <div className="mt-4 space-y-3">
             {(t.raw('overview.sideItems') as string[]).map((item) => (
-              <div key={item} className="flex items-center justify-between gap-3 border-t border-zinc-100 pt-3 first:border-t-0 first:pt-0 dark:border-white/[0.04]">
-                <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">{item}</span>
+              <div key={item} className="flex items-center justify-between gap-3 border-t border-border pt-3 first:border-t-0 first:pt-0 dark:border-white/[0.04]">
+                <span className="text-xs font-semibold text-foreground/40">{item}</span>
                 <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold text-sky-700 dark:bg-sky-400/10 dark:text-sky-200">{t('overview.comingSoon')}</span>
               </div>
             ))}
@@ -265,35 +265,35 @@ function PartnerCatalogGrid({
     return (
       <div className="space-y-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Skeleton className="h-10 w-full max-w-md rounded-[10px] bg-zinc-200/60 dark:bg-white/[0.06]" />
-          <Skeleton className="h-10 w-28 rounded-[10px] bg-zinc-200/60 dark:bg-white/[0.06]" />
+          <Skeleton className="h-10 w-full max-w-md rounded-[10px] bg-muted dark:bg-white/[0.06]" />
+          <Skeleton className="h-10 w-28 rounded-[10px] bg-muted dark:bg-white/[0.06]" />
         </div>
         <div className="flex flex-wrap gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="flex w-full md:w-[calc(50%-8px)] lg:w-[calc(33.33%-11px)] flex-col justify-between rounded-[14px] border border-zinc-200/80 bg-white p-5 dark:border-white/[0.06] dark:bg-white/[0.02]">
+            <div key={i} className="flex w-full md:w-[calc(50%-8px)] lg:w-[calc(33.33%-11px)] flex-col justify-between rounded-[14px] border border-border/80 bg-white p-5 dark:border-white/[0.06] dark:bg-white/[0.02]">
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-3">
-                    <Skeleton className="h-10 w-10 rounded-[10px] bg-zinc-200/60 dark:bg-white/[0.06]" />
+                    <Skeleton className="h-10 w-10 rounded-[10px] bg-muted dark:bg-white/[0.06]" />
                     <div className="space-y-1.5">
-                      <Skeleton className="h-4 w-24 rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
-                      <Skeleton className="h-3 w-16 rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
+                      <Skeleton className="h-4 w-24 rounded bg-muted dark:bg-white/[0.06]" />
+                      <Skeleton className="h-3 w-16 rounded bg-muted dark:bg-white/[0.06]" />
                     </div>
                   </div>
-                  <Skeleton className="h-5 w-16 rounded-full bg-zinc-200/60 dark:bg-white/[0.06]" />
+                  <Skeleton className="h-5 w-16 rounded-full bg-muted dark:bg-white/[0.06]" />
                 </div>
                 <div className="space-y-2">
-                  <Skeleton className="h-3 w-full rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
-                  <Skeleton className="h-3 w-4/5 rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
+                  <Skeleton className="h-3 w-full rounded bg-muted dark:bg-white/[0.06]" />
+                  <Skeleton className="h-3 w-4/5 rounded bg-muted dark:bg-white/[0.06]" />
                 </div>
                 <div className="flex gap-1.5 pt-1">
-                  <Skeleton className="h-5 w-20 rounded-full bg-zinc-200/60 dark:bg-white/[0.06]" />
-                  <Skeleton className="h-5 w-20 rounded-full bg-zinc-200/60 dark:bg-white/[0.06]" />
+                  <Skeleton className="h-5 w-20 rounded-full bg-muted dark:bg-white/[0.06]" />
+                  <Skeleton className="h-5 w-20 rounded-full bg-muted dark:bg-white/[0.06]" />
                 </div>
               </div>
-              <div className="mt-5 flex items-center gap-2 border-t border-zinc-100 pt-3.5 dark:border-white/[0.04]">
-                <Skeleton className="h-8.5 flex-1 rounded-[8px] bg-zinc-200/60 dark:bg-white/[0.06]" />
-                <Skeleton className="h-8.5 w-16 rounded-[8px] bg-zinc-200/60 dark:bg-white/[0.06]" />
+              <div className="mt-5 flex items-center gap-2 border-t border-border pt-3.5 dark:border-white/[0.04]">
+                <Skeleton className="h-8.5 flex-1 rounded-[8px] bg-muted dark:bg-white/[0.06]" />
+                <Skeleton className="h-8.5 w-16 rounded-[8px] bg-muted dark:bg-white/[0.06]" />
               </div>
             </div>
           ))}
@@ -305,8 +305,8 @@ function PartnerCatalogGrid({
   if (cards.length === 0) {
     return (
       <AppSection className="flex min-h-64 flex-col items-center justify-center gap-3 text-center border border-border rounded-[16px] bg-card">
-        <Plug className="h-8 w-8 text-zinc-300 dark:text-zinc-600" />
-        <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">{t('catalog.empty')}</p>
+        <Plug className="h-8 w-8 text-muted-foreground/40 dark:text-foreground" />
+        <p className="text-sm font-semibold text-muted-foreground">{t('catalog.empty')}</p>
       </AppSection>
     );
   }
@@ -315,13 +315,13 @@ function PartnerCatalogGrid({
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <label className="relative min-w-0 flex-1 max-w-md">
-          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" aria-hidden="true" />
+          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <span className="sr-only">{t('catalog.search')}</span>
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={t('catalog.search')}
-            className="h-10 w-full rounded-[10px] border border-zinc-200/80 bg-white ps-9 pe-4 text-sm font-medium text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 dark:border-white/[0.06] dark:bg-white/[0.02] dark:text-white dark:focus:border-white/20"
+            className="h-10 w-full rounded-[10px] border border-border/80 bg-white ps-9 pe-4 text-sm font-medium text-foreground outline-none transition placeholder:text-muted-foreground focus:border-border focus:ring-1 focus:ring-ring dark:border-white/[0.06] dark:bg-white/[0.02] dark:focus:border-white/20"
           />
         </label>
         <DropdownMenu>
@@ -329,10 +329,10 @@ function PartnerCatalogGrid({
             render={
               <button
                 type="button"
-                className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-[10px] border border-zinc-200/80 bg-white px-3 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-white/[0.06] dark:bg-white/[0.02] dark:text-zinc-300 dark:hover:bg-white/[0.04]"
+                className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-[10px] border border-border/80 bg-white px-3 text-xs font-semibold text-foreground transition hover:bg-muted/50 dark:border-white/[0.06] dark:bg-white/[0.02]/40 dark:hover:bg-white/[0.04]"
               >
                 {t('catalog.filter')}: {t(`catalog.filters.${filter}`)}
-                <ChevronDown className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" aria-hidden="true" />
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
               </button>
             }
           />
@@ -406,43 +406,43 @@ function PartnerAppCard({
   }
 
   return (
-    <article className="flex w-full md:w-[calc(50%-8px)] lg:w-[calc(33.33%-11px)] flex-col justify-between rounded-[14px] border border-zinc-200/80 bg-white p-5 text-start transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-sm dark:border-white/[0.06] dark:bg-white/[0.02] dark:hover:border-white/10 dark:hover:shadow-black/20" dir="auto">
+    <article className="flex w-full md:w-[calc(50%-8px)] lg:w-[calc(33.33%-11px)] flex-col justify-between rounded-[14px] border border-border/80 bg-white p-5 text-start transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-sm dark:border-white/[0.06] dark:bg-white/[0.02] dark:hover:border-white/10 dark:hover:shadow-black/20" dir="auto">
       <div className="space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <AppIcon app={app} size="md" />
             <div className="min-w-0">
-              <Link href={`/web-apps/${app.id}`} className="rounded-lg focus-visible:ring-2 focus-visible:ring-zinc-900/15">
-                <h3 className="truncate text-sm font-semibold tracking-tight text-zinc-950 dark:text-white hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">
+              <Link href={`/web-apps/${app.id}`} className="rounded-lg focus-visible:ring-2 focus-visible:ring-ring">
+                <h3 className="truncate text-sm font-semibold tracking-tight text-foreground hover:text-foreground dark:hover:text-muted-foreground/40 transition-colors">
                   {app.name}
                 </h3>
               </Link>
-              <p className="mt-0.5 truncate text-[11px] font-medium text-zinc-400 dark:text-zinc-500">
+              <p className="mt-0.5 truncate text-[11px] font-medium text-muted-foreground">
                 {app.publisherName ?? t('catalog.partnerApp')}
               </p>
             </div>
           </div>
           <StatusPill label={effectiveStatus} tone={statusTone} />
         </div>
-        <p className="line-clamp-2 text-xs font-normal leading-relaxed text-zinc-500 dark:text-zinc-400">
+        <p className="line-clamp-2 text-xs font-normal leading-relaxed text-muted-foreground">
           {app.description}
         </p>
         <div className="flex flex-wrap gap-1.5 pt-1">
-          <span className="inline-flex items-center gap-1 rounded-full bg-zinc-50 px-2 py-0.5 text-[10px] font-medium text-zinc-500 border border-zinc-100 dark:bg-white/[0.02] dark:text-zinc-400 dark:border-white/[0.04]">
-            <Plug className="h-3 w-3 text-zinc-400" aria-hidden="true" />
+          <span className="inline-flex items-center gap-1 rounded-full bg-muted/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground border border-border dark:bg-white/[0.02] dark:border-white/[0.04]">
+            <Plug className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
             {scopeCount} {t('catalog.scopes')}
           </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-zinc-50 px-2 py-0.5 text-[10px] font-medium text-zinc-500 border border-zinc-100 dark:bg-white/[0.02] dark:text-zinc-400 dark:border-white/[0.04]">
-            {isConnected ? <CheckCircle2 className="h-3 w-3 text-emerald-500" aria-hidden="true" /> : <Clock className="h-3 w-3 text-zinc-400" aria-hidden="true" />}
+          <span className="inline-flex items-center gap-1 rounded-full bg-muted/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground border border-border dark:bg-white/[0.02] dark:border-white/[0.04]">
+            {isConnected ? <CheckCircle2 className="h-3 w-3 text-emerald-500" aria-hidden="true" /> : <Clock className="h-3 w-3 text-muted-foreground" aria-hidden="true" />}
             {isConnected ? t('catalog.connected') : t('catalog.comingSoon')}
           </span>
         </div>
       </div>
-      <div className="mt-5 flex items-center gap-2 border-t border-zinc-100 pt-3.5 dark:border-white/[0.04]">
+      <div className="mt-5 flex items-center gap-2 border-t border-border pt-3.5 dark:border-white/[0.04]">
         {connectHref && connectState === "manage" ? (
           <Link
             href={connectHref}
-            className="inline-flex h-8.5 flex-1 items-center justify-center gap-1.5 rounded-[8px] bg-zinc-900 px-3 text-xs font-semibold text-white transition hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:ring-offset-2 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+            className="inline-flex h-8.5 flex-1 items-center justify-center gap-1.5 rounded-[8px] bg-foreground px-3 text-xs font-semibold text-white transition hover:bg-foreground/80 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 dark:bg-white dark:text-foreground dark:hover:bg-muted"
           >
             {t('catalog.manage')}
             <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
@@ -452,7 +452,7 @@ function PartnerAppCard({
             variant="outline"
             disabled={isConnecting}
             onClick={handleConnect}
-            className="h-8.5 flex-1 rounded-[8px] text-xs font-semibold hover:bg-zinc-50 dark:hover:bg-white/[0.04]"
+            className="h-8.5 flex-1 rounded-[8px] text-xs font-semibold hover:bg-muted/50 dark:hover:bg-white/[0.04]"
           >
             {isConnecting ? (
               <RefreshCw className="me-1 h-3 w-3 animate-spin" aria-hidden="true" />
@@ -469,7 +469,7 @@ function PartnerAppCard({
         )}
         <Link
           href={`/web-apps/${app.id}`}
-          className="inline-flex h-8.5 items-center justify-center rounded-[8px] border border-zinc-200/80 bg-white px-3 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 dark:border-white/[0.06] dark:bg-white/[0.02] dark:text-zinc-300 dark:hover:bg-white/[0.04]"
+          className="inline-flex h-8.5 items-center justify-center rounded-[8px] border border-border/80 bg-white px-3 text-xs font-medium text-foreground transition hover:bg-muted/50 dark:border-white/[0.06] dark:bg-white/[0.02]/40 dark:hover:bg-white/[0.04]"
         >
           {t('catalog.details')}
         </Link>
@@ -493,7 +493,7 @@ function AppIcon({ app, size = "md" }: { app: PartnerCatalogApp; size?: "sm" | "
 
   if (app.logoUrl) {
     return (
-      <span className={`flex shrink-0 items-center justify-center overflow-hidden border border-zinc-100 bg-white dark:border-white/[0.04] dark:bg-black/20 ${sizeClasses[size]}`}>
+      <span className={`flex shrink-0 items-center justify-center overflow-hidden border border-border bg-white dark:border-white/[0.04] dark:bg-black/20 ${sizeClasses[size]}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={app.logoUrl} alt="" className="h-full w-full object-cover" />
       </span>
@@ -501,7 +501,7 @@ function AppIcon({ app, size = "md" }: { app: PartnerCatalogApp; size?: "sm" | "
   }
 
   return (
-    <span className={`flex shrink-0 items-center justify-center border border-zinc-100 bg-zinc-950 text-white dark:border-white/[0.04] dark:bg-white dark:text-zinc-950 ${sizeClasses[size]}`}>
+    <span className={`flex shrink-0 items-center justify-center border border-border bg-foreground text-white dark:border-white/[0.04] dark:bg-white dark:text-foreground ${sizeClasses[size]}`}>
       <Code2 className={`${iconClasses[size]}`} aria-hidden="true" />
     </span>
   );
@@ -541,19 +541,19 @@ function PartnerConnectionRow({
   }
 
   return (
-    <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between hover:bg-zinc-50/50 dark:hover:bg-white/[0.01] transition-colors">
+    <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between hover:bg-muted/50/50 dark:hover:bg-white/[0.01] transition-colors">
       <div className="flex items-center gap-4 min-w-0">
         <AppIcon app={connectedConnection.partnerApp} size="md" />
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Link href={`/web-apps/${connectedConnection.partnerApp.id}`} className="hover:underline">
-              <h3 className="text-sm font-semibold tracking-tight text-zinc-950 dark:text-white">
+              <h3 className="text-sm font-semibold tracking-tight text-foreground">
                 {connectedConnection.partnerApp.name}
               </h3>
             </Link>
             <StatusPill label={effectiveStatus} tone={statusTone} />
           </div>
-          <p className="mt-1 text-[11px] font-medium text-zinc-400 dark:text-zinc-500">
+          <p className="mt-1 text-[11px] font-medium text-muted-foreground">
             {connectedConnection.partnerApp.publisherName ?? "Partner App"} • {connection.scopes.length} scopes • Expires {partnerConnectionExpiryLabel(connection.expiresAt, "No expiry")}
           </p>
         </div>
@@ -565,18 +565,18 @@ function PartnerConnectionRow({
             variant="outline"
             disabled={isMutating || !organizationId}
             onClick={() => run(pauseOrResumeAction)}
-            className="h-8.5 rounded-[8px] px-3 text-xs font-semibold border-zinc-200/80 text-zinc-700 hover:bg-zinc-50 dark:border-white/[0.06] dark:text-zinc-300 dark:hover:bg-white/[0.04]"
+            className="h-8.5 rounded-[8px] px-3 text-xs font-semibold border-border/80 text-foreground hover:bg-muted/50 dark:border-white/[0.06]/40 dark:hover:bg-white/[0.04]"
           >
             {isMutating ? (
               <RefreshCw className="h-3 w-3 animate-spin" />
             ) : pauseOrResumeAction === "pause" ? (
               <>
-                <Pause className="me-1.5 h-3 w-3 text-zinc-400" />
+                <Pause className="me-1.5 h-3 w-3 text-muted-foreground" />
                 Pause
               </>
             ) : (
               <>
-                <Play className="me-1.5 h-3 w-3 text-zinc-400" />
+                <Play className="me-1.5 h-3 w-3 text-muted-foreground" />
                 Resume
               </>
             )}
@@ -588,7 +588,7 @@ function PartnerConnectionRow({
             variant="outline"
             disabled={isMutating || !organizationId}
             onClick={() => run("revoke")}
-            className="h-8.5 rounded-[8px] px-3 text-xs font-semibold border-zinc-200/80 text-red-600 hover:bg-red-50 hover:border-red-200 dark:border-white/[0.06] dark:text-red-400 dark:hover:bg-red-950/20 dark:hover:border-red-900/30"
+            className="h-8.5 rounded-[8px] px-3 text-xs font-semibold border-border/80 text-red-600 hover:bg-red-50 hover:border-red-200 dark:border-white/[0.06] dark:text-red-400 dark:hover:bg-red-950/20 dark:hover:border-red-900/30"
           >
             <Trash2 className="me-1.5 h-3 w-3" />
             Revoke
@@ -616,20 +616,20 @@ function PartnerConnectionsGrid({
 
   if (isLoading) {
     return (
-      <div className="overflow-hidden rounded-[16px] border border-zinc-200/80 bg-white dark:border-white/[0.06] dark:bg-white/[0.02]">
-        <div className="divide-y divide-zinc-100 dark:divide-white/[0.04]">
+      <div className="overflow-hidden rounded-[16px] border border-border/80 bg-white dark:border-white/[0.06] dark:bg-white/[0.02]">
+        <div className="divide-y divide-border dark:divide-white/[0.04]">
           {[1, 2, 3].map((i) => (
             <div key={i} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 animate-pulse">
               <div className="flex items-center gap-3 min-w-0">
-                <Skeleton className="h-10 w-10 rounded-[10px] shrink-0 bg-zinc-200/60 dark:bg-white/[0.06]" />
+                <Skeleton className="h-10 w-10 rounded-[10px] shrink-0 bg-muted dark:bg-white/[0.06]" />
                 <div className="space-y-1.5">
-                  <Skeleton className="h-4 w-28 rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
-                  <Skeleton className="h-3 w-36 rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
+                  <Skeleton className="h-4 w-28 rounded bg-muted dark:bg-white/[0.06]" />
+                  <Skeleton className="h-3 w-36 rounded bg-muted dark:bg-white/[0.06]" />
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Skeleton className="h-5 w-16 rounded-full bg-zinc-200/60 dark:bg-white/[0.06]" />
-                <Skeleton className="h-8 w-20 rounded-[8px] bg-zinc-200/60 dark:bg-white/[0.06]" />
+                <Skeleton className="h-5 w-16 rounded-full bg-muted dark:bg-white/[0.06]" />
+                <Skeleton className="h-8 w-20 rounded-[8px] bg-muted dark:bg-white/[0.06]" />
               </div>
             </div>
           ))}
@@ -651,8 +651,8 @@ function PartnerConnectionsGrid({
   }
 
   return (
-    <div className="overflow-hidden rounded-[16px] border border-zinc-200/80 bg-white dark:border-white/[0.06] dark:bg-white/[0.02]">
-      <div className="divide-y divide-zinc-100 dark:divide-white/[0.04]">
+    <div className="overflow-hidden rounded-[16px] border border-border/80 bg-white dark:border-white/[0.06] dark:bg-white/[0.02]">
+      <div className="divide-y divide-border dark:divide-white/[0.04]">
         {connections.map((connection) => (
           <PartnerConnectionRow
             key={connection.id}
@@ -780,43 +780,43 @@ function WebhooksTelemetryDashboard() {
   return (
     <div className="space-y-6" dir={isAr ? "rtl" : "ltr"}>
       {/* Premium Minimal Summary Header */}
-      <div className="flex flex-wrap items-center justify-between gap-y-3 border-b border-zinc-100 pb-5 dark:border-white/[0.04]">
-        <div className="flex flex-wrap items-center gap-x-4 text-[10px] sm:text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
-          <span>{labels.activeEndpoints}: <span className="text-zinc-950 dark:text-white font-extrabold">2</span></span>
-          <span className="text-zinc-200 dark:text-zinc-800">•</span>
-          <span>{labels.deliveries}: <span className="text-zinc-950 dark:text-white font-extrabold">1,420</span></span>
-          <span className="text-zinc-200 dark:text-zinc-800">•</span>
-          <span>{labels.successRate}: <span className="text-zinc-950 dark:text-white font-extrabold text-emerald-600 dark:text-emerald-400">99.8%</span></span>
-          <span className="text-zinc-200 dark:text-zinc-800">•</span>
-          <span>{labels.latency}: <span className="text-zinc-950 dark:text-white font-extrabold">48ms</span></span>
+      <div className="flex flex-wrap items-center justify-between gap-y-3 border-b border-border pb-5 dark:border-white/[0.04]">
+        <div className="flex flex-wrap items-center gap-x-4 text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider">
+          <span>{labels.activeEndpoints}: <span className="text-foreground font-extrabold">2</span></span>
+          <span className="text-muted-foreground/30 dark:text-foreground">•</span>
+          <span>{labels.deliveries}: <span className="text-foreground font-extrabold">1,420</span></span>
+          <span className="text-muted-foreground/30 dark:text-foreground">•</span>
+          <span>{labels.successRate}: <span className="text-foreground font-extrabold text-emerald-600 dark:text-emerald-400">99.8%</span></span>
+          <span className="text-muted-foreground/30 dark:text-foreground">•</span>
+          <span>{labels.latency}: <span className="text-foreground font-extrabold">48ms</span></span>
         </div>
-        <Button type="button" variant="outline" className="h-8.5 rounded-[8px] px-3.5 text-xs font-bold border-zinc-200/80 dark:border-white/[0.06] hover:bg-zinc-50 dark:hover:bg-white/[0.04] text-zinc-700 dark:text-zinc-250 active:scale-95 transition">
+        <Button type="button" variant="outline" className="h-8.5 rounded-[8px] px-3.5 text-xs font-bold border-border/80 dark:border-white/[0.06] hover:bg-muted/50 dark:hover:bg-white/[0.04] text-foreground active:scale-95 transition">
           {labels.addEndpoint}
         </Button>
       </div>
 
       {/* Webhook Endpoints List */}
       <div className="space-y-4">
-        <div className="overflow-hidden rounded-[16px] border border-zinc-200/80 bg-white dark:border-white/[0.06] dark:bg-white/[0.02]">
-          <div className="divide-y divide-zinc-100 dark:divide-white/[0.04]">
+        <div className="overflow-hidden rounded-[16px] border border-border/80 bg-white dark:border-white/[0.06] dark:bg-white/[0.02]">
+          <div className="divide-y divide-border dark:divide-white/[0.04]">
             {endpoints.map((ep) => (
               <div key={ep.id} className="p-5 transition-colors">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="flex shrink-0 items-center justify-center border border-zinc-200/85 bg-zinc-55/40 shadow-sm dark:border-white/[0.06] dark:bg-black/20 h-10 w-10 rounded-[10px]">
-                      <Webhook className="h-5 w-5 text-zinc-500 dark:text-zinc-400" />
+                    <div className="flex shrink-0 items-center justify-center border border-border/85 bg-muted/50 shadow-sm dark:border-white/[0.06] dark:bg-black/20 h-10 w-10 rounded-[10px]">
+                      <Webhook className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div className="min-w-0 space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-sm font-semibold text-zinc-950 dark:text-white leading-none">{ep.name}</h3>
+                        <h3 className="text-sm font-semibold text-foreground leading-none">{ep.name}</h3>
                         <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-emerald-700 border border-emerald-250/20 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800/20">
                           {ep.status}
                         </span>
-                        <span className="inline-flex items-center rounded-full bg-zinc-50 px-2 py-0.5 text-[9px] font-semibold text-zinc-500 border border-zinc-200/60 dark:bg-white/[0.02] dark:text-zinc-400 dark:border-white/[0.04]">
+                        <span className="inline-flex items-center rounded-full bg-muted/50 px-2 py-0.5 text-[9px] font-semibold text-muted-foreground border border-border/60 dark:bg-white/[0.02] dark:border-white/[0.04]">
                           {ep.events.length} {isAr ? "أحداث" : "events"}
                         </span>
                       </div>
-                      <p className="font-mono text-xs text-zinc-400 dark:text-zinc-500 break-all select-all leading-none">{ep.url}</p>
+                      <p className="font-mono text-xs text-muted-foreground break-all select-all leading-none">{ep.url}</p>
                     </div>
                   </div>
                   
@@ -825,10 +825,10 @@ function WebhooksTelemetryDashboard() {
                       type="button"
                       variant="outline"
                       onClick={() => copyToClipboard(ep.id, ep.url)}
-                      className="h-8.5 rounded-[8px] px-2.5 text-xs font-semibold border-zinc-200/80 dark:border-white/[0.06] dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-white/[0.04] transition active:scale-95"
+                      className="h-8.5 rounded-[8px] px-2.5 text-xs font-semibold border-border/80 dark:border-white/[0.06]/40 hover:bg-muted/50 dark:hover:bg-white/[0.04] transition active:scale-95"
                       title="Copy URL"
                     >
-                      {copiedEndpoints[ep.id] ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5 text-zinc-500" />}
+                      {copiedEndpoints[ep.id] ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
                     </Button>
                     <Button
                       type="button"
@@ -836,8 +836,8 @@ function WebhooksTelemetryDashboard() {
                       onClick={() => setExpandedEndpointId(prev => prev === ep.id ? null : ep.id)}
                       className={`h-8.5 rounded-[8px] px-4 text-xs font-bold transition active:scale-95 ${
                         expandedEndpointId === ep.id 
-                          ? "bg-zinc-950 text-white border-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:border-white dark:hover:bg-zinc-200" 
-                          : "border-zinc-200/80 dark:border-white/[0.06] dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-white/[0.04]"
+                          ? "bg-foreground text-white border-foreground hover:bg-foreground/80 dark:bg-white dark:text-foreground dark:border-white dark:hover:bg-muted" 
+                          : "border-border/80 dark:border-white/[0.06]/40 hover:bg-muted/50 dark:hover:bg-white/[0.04]"
                       }`}
                     >
                       {expandedEndpointId === ep.id 
@@ -850,31 +850,31 @@ function WebhooksTelemetryDashboard() {
 
                 {/* Collapsible Panel */}
                 {expandedEndpointId === ep.id && (
-                  <div className="mt-4 p-5 rounded-[12px] bg-zinc-50/50 dark:bg-white/[0.01] border border-zinc-200/60 dark:border-white/[0.04] space-y-5 animate-in fade-in slide-in-from-top-2 duration-250">
+                  <div className="mt-4 p-5 rounded-[12px] bg-muted/50/50 dark:bg-white/[0.01] border border-border/60 dark:border-white/[0.04] space-y-5 animate-in fade-in slide-in-from-top-2 duration-250">
                     
                     {/* Signing Secret */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 dark:border-white/[0.04] pb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border dark:border-white/[0.04] pb-4">
                       <div>
-                        <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">{labels.signingSecret}</span>
-                        <span className="font-mono text-xs text-zinc-800 dark:text-zinc-300 font-semibold break-all select-all">
+                        <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">{labels.signingSecret}</span>
+                        <span className="font-mono text-xs text-foreground/40 font-semibold break-all select-all">
                           {revealedSecrets[ep.id] ? ep.secret : "••••••••••••••••••••••••••••••••"}
                         </span>
                       </div>
                       <button
                         type="button"
                         onClick={() => toggleSecret(ep.id)}
-                        className="text-xs font-semibold text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 underline self-start sm:self-center"
+                        className="text-xs font-semibold text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground/30 underline self-start sm:self-center"
                       >
                         {revealedSecrets[ep.id] ? labels.hide : labels.reveal}
                       </button>
                     </div>
 
                     {/* Subscribed Events */}
-                    <div className="border-b border-zinc-100 dark:border-white/[0.04] pb-4">
-                      <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2">{labels.subscribedEvents}</span>
+                    <div className="border-b border-border dark:border-white/[0.04] pb-4">
+                      <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{labels.subscribedEvents}</span>
                       <div className="flex flex-wrap gap-1.5">
                         {ep.events.map(ev => (
-                          <span key={ev} className="font-mono text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-zinc-100 text-zinc-650 dark:bg-white/[0.04] dark:text-zinc-400 border border-zinc-200/40 dark:border-white/[0.02]">
+                          <span key={ev} className="font-mono text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground dark:bg-white/[0.04] border border-border/40 dark:border-white/[0.02]">
                             {ev}
                           </span>
                         ))}
@@ -883,11 +883,11 @@ function WebhooksTelemetryDashboard() {
 
                     {/* Recent Deliveries filter for just this Endpoint */}
                     <div className="space-y-3">
-                      <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">{labels.recentDeliveries}</span>
-                      <div className="overflow-x-auto rounded-[12px] border border-zinc-200/80 bg-white dark:border-white/[0.06] dark:bg-white/[0.02]">
+                      <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{labels.recentDeliveries}</span>
+                      <div className="overflow-x-auto rounded-[12px] border border-border/80 bg-white dark:border-white/[0.06] dark:bg-white/[0.02]">
                         <table className="w-full text-start text-xs border-collapse">
                           <thead>
-                            <tr className="border-b border-zinc-100 bg-zinc-50/50 text-[10px] font-bold text-zinc-400 dark:border-white/[0.04] dark:bg-white/[0.01] uppercase tracking-wider">
+                            <tr className="border-b border-border bg-muted/50/50 text-[10px] font-bold text-muted-foreground dark:border-white/[0.04] dark:bg-white/[0.01] uppercase tracking-wider">
                               <th className="p-3 text-start font-bold">{labels.deliveryId}</th>
                               <th className="p-3 text-start font-bold">{labels.event}</th>
                               <th className="p-3 text-start font-bold">{labels.duration}</th>
@@ -895,21 +895,21 @@ function WebhooksTelemetryDashboard() {
                               <th className="p-3 text-end font-bold">{labels.time}</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-zinc-100 dark:divide-white/[0.04]">
+                          <tbody className="divide-y divide-border dark:divide-white/[0.04]">
                             {logs
                               .filter(log => log.target.includes("aqar") === ep.id.includes("aqar"))
                               .map((log, idx) => (
-                                <tr key={`${log.id}-${idx}`} className="hover:bg-zinc-50/50 dark:hover:bg-white/[0.01] transition-colors">
-                                  <td className="p-3 font-mono font-medium text-zinc-500 dark:text-zinc-550">{log.id}</td>
-                                  <td className="p-3 font-mono font-semibold text-zinc-700 dark:text-zinc-300">{log.event}</td>
-                                  <td className="p-3 text-zinc-500 dark:text-zinc-400">{log.duration}</td>
+                                <tr key={`${log.id}-${idx}`} className="hover:bg-muted/50/50 dark:hover:bg-white/[0.01] transition-colors">
+                                  <td className="p-3 font-mono font-medium text-muted-foreground">{log.id}</td>
+                                  <td className="p-3 font-mono font-semibold text-foreground/40">{log.event}</td>
+                                  <td className="p-3 text-muted-foreground">{log.duration}</td>
                                   <td className="p-3">
                                     <span className={`inline-flex items-center gap-1 font-semibold ${log.status === 200 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
                                       <span className={`h-1.5 w-1.5 rounded-full ${log.status === 200 ? "bg-emerald-500" : "bg-rose-500"}`} />
                                       {log.statusText}
                                     </span>
                                   </td>
-                                  <td className="p-3 text-end text-zinc-400 dark:text-zinc-500">{log.time}</td>
+                                  <td className="p-3 text-end text-muted-foreground">{log.time}</td>
                                 </tr>
                               ))}
                           </tbody>
@@ -1017,32 +1017,32 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
           screenshotTitle: t('detail.appDetails.icloud.screenshotTitle'),
           screenshotHtml: (
             <div className="space-y-3 font-sans text-xs" dir={isAr ? "rtl" : "ltr"}>
-              <div className="flex items-center justify-between border-b border-zinc-101 dark:border-white/[0.04] pb-2">
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200">{t('detail.appDetails.icloud.screenshot.connection')}</span>
+              <div className="flex items-center justify-between border-b border-border dark:border-white/[0.04] pb-2">
+                <span className="font-semibold text-foreground/30">{t('detail.appDetails.icloud.screenshot.connection')}</span>
                 <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   {t('detail.appDetails.icloud.screenshot.status')}
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-[8px] bg-zinc-50 dark:bg-white/[0.01] p-2.5 border border-zinc-100 dark:border-white/[0.04]">
-                  <span className="block text-[10px] text-zinc-400 dark:text-zinc-500 mb-0.5">{t('detail.appDetails.icloud.screenshot.folder')}</span>
-                  <span className="font-mono text-zinc-750 dark:text-zinc-300">/iCloud/Qentrah/Al_Manar</span>
+                <div className="rounded-[8px] bg-muted/50 dark:bg-white/[0.01] p-2.5 border border-border dark:border-white/[0.04]">
+                  <span className="block text-[10px] text-muted-foreground mb-0.5">{t('detail.appDetails.icloud.screenshot.folder')}</span>
+                  <span className="font-mono text-muted-foreground/40">/iCloud/Qentrah/Al_Manar</span>
                 </div>
-                <div className="rounded-[8px] bg-zinc-50 dark:bg-white/[0.01] p-2.5 border border-zinc-100 dark:border-white/[0.04]">
-                  <span className="block text-[10px] text-zinc-400 dark:text-zinc-500 mb-0.5">{t('detail.appDetails.icloud.screenshot.files')}</span>
-                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">{t('detail.appDetails.icloud.screenshot.filesCount')}</span>
+                <div className="rounded-[8px] bg-muted/50 dark:bg-white/[0.01] p-2.5 border border-border dark:border-white/[0.04]">
+                  <span className="block text-[10px] text-muted-foreground mb-0.5">{t('detail.appDetails.icloud.screenshot.files')}</span>
+                  <span className="font-semibold text-foreground/30">{t('detail.appDetails.icloud.screenshot.filesCount')}</span>
                 </div>
               </div>
-              <div className="rounded-[8px] bg-zinc-50 dark:bg-white/[0.01] p-2.5 border border-zinc-100 dark:border-white/[0.04] space-y-1.5">
-                <span className="block text-[10px] font-semibold text-zinc-400 dark:text-zinc-500">{t('detail.appDetails.icloud.screenshot.syncLog')}</span>
+              <div className="rounded-[8px] bg-muted/50 dark:bg-white/[0.01] p-2.5 border border-border dark:border-white/[0.04] space-y-1.5">
+                <span className="block text-[10px] font-semibold text-muted-foreground">{t('detail.appDetails.icloud.screenshot.syncLog')}</span>
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-zinc-650 dark:text-zinc-400">📄 Floorplan_Block_A.pdf</span>
-                  <span className="text-zinc-400 font-mono">{t('webhooks.justNow')}</span>
+                  <span className="text-muted-foreground">📄 Floorplan_Block_A.pdf</span>
+                  <span className="text-muted-foreground font-mono">{t('webhooks.justNow')}</span>
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-zinc-650 dark:text-zinc-400">📸 Exterior_Facade_Sunset.png</span>
-                  <span className="text-zinc-400 font-mono">{t('webhooks.minsAgo', { count: 2 })}</span>
+                  <span className="text-muted-foreground">📸 Exterior_Facade_Sunset.png</span>
+                  <span className="text-muted-foreground font-mono">{t('webhooks.minsAgo', { count: 2 })}</span>
                 </div>
               </div>
             </div>
@@ -1050,27 +1050,27 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
           screenshot2Title: t('detail.appDetails.icloud.screenshot2Title'),
           screenshot2Html: (
             <div className="space-y-3 font-sans text-xs text-start" dir={isAr ? "rtl" : "ltr"}>
-              <div className="flex items-center justify-between border-b border-zinc-100 dark:border-white/[0.04] pb-2">
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200">{t('detail.appDetails.icloud.screenshot.filesBackups')}</span>
+              <div className="flex items-center justify-between border-b border-border dark:border-white/[0.04] pb-2">
+                <span className="font-semibold text-foreground/30">{t('detail.appDetails.icloud.screenshot.filesBackups')}</span>
                 <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                   {t('detail.appDetails.icloud.screenshot.status')}
                 </span>
               </div>
               <div className="space-y-2">
-                <div className="rounded-[8px] bg-zinc-50 dark:bg-white/[0.01] p-2.5 border border-zinc-100 dark:border-white/[0.04] flex items-center justify-between">
+                <div className="rounded-[8px] bg-muted/50 dark:bg-white/[0.01] p-2.5 border border-border dark:border-white/[0.04] flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-amber-500 font-bold">📁</span>
-                    <span className="font-semibold text-zinc-800 dark:text-zinc-300">/Blueprints_Manar</span>
+                    <span className="font-semibold text-foreground/40">/Blueprints_Manar</span>
                   </div>
-                  <span className="text-[10px] text-zinc-400 font-mono">14 {t('detail.fields.events')}</span>
+                  <span className="text-[10px] text-muted-foreground font-mono">14 {t('detail.fields.events')}</span>
                 </div>
-                <div className="rounded-[8px] bg-zinc-50 dark:bg-white/[0.01] p-2.5 border border-zinc-100 dark:border-white/[0.04] flex items-center justify-between">
+                <div className="rounded-[8px] bg-muted/50 dark:bg-white/[0.01] p-2.5 border border-border dark:border-white/[0.04] flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-red-500 font-bold">📄</span>
-                    <span className="font-semibold text-zinc-800 dark:text-zinc-300">Contract_Heights_Signed.pdf</span>
+                    <span className="font-semibold text-foreground/40">Contract_Heights_Signed.pdf</span>
                   </div>
-                  <span className="text-[10px] text-zinc-400 font-mono">{t('detail.appDetails.icloud.screenshot.filesCountBackups')}</span>
+                  <span className="text-[10px] text-muted-foreground font-mono">{t('detail.appDetails.icloud.screenshot.filesCountBackups')}</span>
                 </div>
               </div>
             </div>
@@ -1096,8 +1096,8 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
           screenshotTitle: t('detail.appDetails.calendar.screenshotTitle'),
           screenshotHtml: (
             <div className="space-y-3 font-sans text-xs" dir={isAr ? "rtl" : "ltr"}>
-              <div className="flex items-center justify-between border-b border-zinc-101 dark:border-white/[0.04] pb-2">
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200">{t('detail.appDetails.calendar.screenshot.status')}</span>
+              <div className="flex items-center justify-between border-b border-border dark:border-white/[0.04] pb-2">
+                <span className="font-semibold text-foreground/30">{t('detail.appDetails.calendar.screenshot.status')}</span>
                 <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   {t('detail.appDetails.calendar.screenshot.synced')}
@@ -1130,20 +1130,20 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
           screenshot2Title: t('detail.appDetails.calendar.screenshot2Title'),
           screenshot2Html: (
             <div className="space-y-3 font-sans text-xs text-start" dir={isAr ? "rtl" : "ltr"}>
-              <div className="flex items-center justify-between border-b border-zinc-101 dark:border-white/[0.04] pb-2">
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200">{t('detail.appDetails.calendar.screenshot.showingSlots')}</span>
+              <div className="flex items-center justify-between border-b border-border dark:border-white/[0.04] pb-2">
+                <span className="font-semibold text-foreground/30">{t('detail.appDetails.calendar.screenshot.showingSlots')}</span>
                 <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-650 dark:text-emerald-400">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   {t('detail.appDetails.calendar.screenshot.synced')}
                 </span>
               </div>
               <div className="space-y-2">
-                <div className="p-2.5 rounded-[8px] bg-zinc-50 dark:bg-white/[0.01] border border-zinc-100 dark:border-white/[0.04] flex items-center justify-between">
-                  <span className="font-semibold text-zinc-800 dark:text-zinc-300">{t('detail.appDetails.calendar.screenshot.slot1')}</span>
+                <div className="p-2.5 rounded-[8px] bg-muted/50 dark:bg-white/[0.01] border border-border dark:border-white/[0.04] flex items-center justify-between">
+                  <span className="font-semibold text-foreground/40">{t('detail.appDetails.calendar.screenshot.slot1')}</span>
                   <span className="rounded bg-emerald-50 dark:bg-emerald-950/20 px-1.5 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">{t('detail.available')}</span>
                 </div>
-                <div className="p-2.5 rounded-[8px] bg-zinc-50 dark:bg-white/[0.01] border border-zinc-100 dark:border-white/[0.04] flex items-center justify-between">
-                  <span className="font-semibold text-zinc-800 dark:text-zinc-300">{t('detail.appDetails.calendar.screenshot.slot2')}</span>
+                <div className="p-2.5 rounded-[8px] bg-muted/50 dark:bg-white/[0.01] border border-border dark:border-white/[0.04] flex items-center justify-between">
+                  <span className="font-semibold text-foreground/40">{t('detail.appDetails.calendar.screenshot.slot2')}</span>
                   <span className="rounded bg-emerald-50 dark:bg-emerald-950/20 px-1.5 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">{t('detail.available')}</span>
                 </div>
               </div>
@@ -1170,26 +1170,26 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
           screenshotTitle: t('detail.appDetails.contacts.screenshotTitle'),
           screenshotHtml: (
             <div className="space-y-3 font-sans text-xs" dir={isAr ? "rtl" : "ltr"}>
-              <div className="flex items-center justify-between border-b border-zinc-101 dark:border-white/[0.04] pb-2">
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200">{t('detail.appDetails.contacts.screenshot.sync')}</span>
-                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-zinc-555">
+              <div className="flex items-center justify-between border-b border-border dark:border-white/[0.04] pb-2">
+                <span className="font-semibold text-foreground/30">{t('detail.appDetails.contacts.screenshot.sync')}</span>
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground">
                   {t('detail.appDetails.contacts.screenshot.pending')}
                 </span>
               </div>
-              <div className="divide-y divide-zinc-100 dark:divide-white/[0.04]">
+              <div className="divide-y divide-border dark:divide-white/[0.04]">
                 <div className="flex items-center justify-between py-2">
                   <div>
-                    <span className="block font-semibold text-zinc-800 dark:text-zinc-200">{isAr ? "أحمد منصور" : "Ahmed Mansour"}</span>
-                    <span className="block text-[10px] text-zinc-400">ahmed@qentrah.sa • +966 50 123 4567</span>
+                    <span className="block font-semibold text-foreground/30">{isAr ? "أحمد منصور" : "Ahmed Mansour"}</span>
+                    <span className="block text-[10px] text-muted-foreground">ahmed@qentrah.sa • +966 50 123 4567</span>
                   </div>
-                  <span className="rounded bg-zinc-100 dark:bg-white/[0.04] px-1.5 py-0.5 text-[9px] font-mono text-zinc-550 dark:text-zinc-400">{t('detail.appDetails.contacts.screenshot.buyer')}</span>
+                  <span className="rounded bg-muted dark:bg-white/[0.04] px-1.5 py-0.5 text-[9px] font-mono text-muted-foreground">{t('detail.appDetails.contacts.screenshot.buyer')}</span>
                 </div>
                 <div className="flex items-center justify-between py-2">
                   <div>
-                    <span className="block font-semibold text-zinc-800 dark:text-zinc-200">{isAr ? "سارة سميث" : "Sarah Smith"}</span>
-                    <span className="block text-[10px] text-zinc-400">sarah@gmail.com • +966 55 987 6543</span>
+                    <span className="block font-semibold text-foreground/30">{isAr ? "سارة سميث" : "Sarah Smith"}</span>
+                    <span className="block text-[10px] text-muted-foreground">sarah@gmail.com • +966 55 987 6543</span>
                   </div>
-                  <span className="rounded bg-zinc-100 dark:bg-white/[0.04] px-1.5 py-0.5 text-[9px] font-mono text-zinc-555 dark:text-zinc-400">{t('detail.appDetails.contacts.screenshot.tenant')}</span>
+                  <span className="rounded bg-muted dark:bg-white/[0.04] px-1.5 py-0.5 text-[9px] font-mono text-muted-foreground">{t('detail.appDetails.contacts.screenshot.tenant')}</span>
                 </div>
               </div>
             </div>
@@ -1197,20 +1197,20 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
           screenshot2Title: t('detail.appDetails.contacts.screenshot2Title'),
           screenshot2Html: (
             <div className="space-y-3 font-sans text-xs text-start" dir={isAr ? "rtl" : "ltr"}>
-              <div className="flex items-center justify-between border-b border-zinc-101 dark:border-white/[0.04] pb-2">
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200">{t('detail.appDetails.contacts.screenshot.syncRules')}</span>
-                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-zinc-555">
+              <div className="flex items-center justify-between border-b border-border dark:border-white/[0.04] pb-2">
+                <span className="font-semibold text-foreground/30">{t('detail.appDetails.contacts.screenshot.syncRules')}</span>
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground">
                   {t('detail.appDetails.contacts.screenshot.sync')}
                 </span>
               </div>
               <div className="space-y-2">
-                <div className="p-2.5 rounded-[8px] bg-zinc-50 dark:bg-white/[0.01] border border-zinc-100 dark:border-white/[0.04] flex items-center justify-between">
-                  <span className="font-medium text-zinc-700 dark:text-zinc-300">{t('detail.appDetails.contacts.screenshot.rule1')}</span>
-                  <span className="text-[10px] text-zinc-455 dark:text-zinc-400">active</span>
+                <div className="p-2.5 rounded-[8px] bg-muted/50 dark:bg-white/[0.01] border border-border dark:border-white/[0.04] flex items-center justify-between">
+                  <span className="font-medium text-foreground/40">{t('detail.appDetails.contacts.screenshot.rule1')}</span>
+                  <span className="text-[10px] text-muted-foreground/60">active</span>
                 </div>
-                <div className="p-2.5 rounded-[8px] bg-zinc-50 dark:bg-white/[0.01] border border-zinc-100 dark:border-white/[0.04] flex items-center justify-between">
-                  <span className="font-medium text-zinc-700 dark:text-zinc-300">{t('detail.appDetails.contacts.screenshot.rule2')}</span>
-                  <span className="text-[10px] text-zinc-455 dark:text-zinc-400">active</span>
+                <div className="p-2.5 rounded-[8px] bg-muted/50 dark:bg-white/[0.01] border border-border dark:border-white/[0.04] flex items-center justify-between">
+                  <span className="font-medium text-foreground/40">{t('detail.appDetails.contacts.screenshot.rule2')}</span>
+                  <span className="text-[10px] text-muted-foreground/60">active</span>
                 </div>
               </div>
             </div>
@@ -1232,31 +1232,31 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
           screenshotTitle: t('detail.appDetails.spotlight.screenshotTitle'),
           screenshotHtml: (
             <div className="space-y-3 font-sans text-xs" dir={isAr ? "rtl" : "ltr"}>
-              <div className="flex items-center justify-between border-b border-zinc-101 dark:border-white/[0.04] pb-2">
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200">{t('detail.appDetails.spotlight.screenshot.status')}</span>
+              <div className="flex items-center justify-between border-b border-border dark:border-white/[0.04] pb-2">
+                <span className="font-semibold text-foreground/30">{t('detail.appDetails.spotlight.screenshot.status')}</span>
                 <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
                   {t('detail.appDetails.spotlight.screenshot.ready')}
                 </span>
               </div>
-              <div className="rounded-[10px] bg-zinc-950 p-3 text-white border border-white/10 space-y-2 font-sans" dir="ltr">
-                <div className="flex items-center gap-2 border-b border-white/10 pb-1.5 text-[10px] font-mono text-zinc-400">
+              <div className="rounded-[10px] bg-foreground p-3 text-white border border-white/10 space-y-2 font-sans" dir="ltr">
+                <div className="flex items-center gap-2 border-b border-white/10 pb-1.5 text-[10px] font-mono text-muted-foreground">
                   <Search className="h-3 w-3" />
                   <span>Spotlight search: "Al Manar"</span>
                 </div>
                 <div className="space-y-2 text-start">
                   <div className="flex items-center justify-between text-[11px]">
                     <div className="min-w-0">
-                      <span className="block font-semibold truncate text-zinc-100">{t('detail.appDetails.spotlight.screenshot.complex')}</span>
-                      <span className="block text-[9px] text-zinc-400 truncate">{t('detail.appDetails.spotlight.screenshot.complexDesc')}</span>
+                      <span className="block font-semibold truncate text-muted-foreground">{t('detail.appDetails.spotlight.screenshot.complex')}</span>
+                      <span className="block text-[9px] text-muted-foreground truncate">{t('detail.appDetails.spotlight.screenshot.complexDesc')}</span>
                     </div>
-                    <span className="text-[10px] text-zinc-500 font-mono">{t('detail.appDetails.spotlight.screenshot.open')}</span>
+                    <span className="text-[10px] text-muted-foreground font-mono">{t('detail.appDetails.spotlight.screenshot.open')}</span>
                   </div>
                   <div className="flex items-center justify-between text-[11px]">
                     <div className="min-w-0">
-                      <span className="block font-semibold truncate text-zinc-100">{t('detail.appDetails.spotlight.screenshot.apt')}</span>
-                      <span className="block text-[9px] text-zinc-400 truncate">{t('detail.appDetails.spotlight.screenshot.aptDesc')}</span>
+                      <span className="block font-semibold truncate text-muted-foreground">{t('detail.appDetails.spotlight.screenshot.apt')}</span>
+                      <span className="block text-[9px] text-muted-foreground truncate">{t('detail.appDetails.spotlight.screenshot.aptDesc')}</span>
                     </div>
-                    <span className="text-[10px] text-zinc-500 font-mono">{t('detail.appDetails.spotlight.screenshot.open')}</span>
+                    <span className="text-[10px] text-muted-foreground font-mono">{t('detail.appDetails.spotlight.screenshot.open')}</span>
                   </div>
                 </div>
               </div>
@@ -1265,20 +1265,20 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
           screenshot2Title: t('detail.appDetails.spotlight.screenshot2Title'),
           screenshot2Html: (
             <div className="space-y-3 font-sans text-xs text-start" dir={isAr ? "rtl" : "ltr"}>
-              <div className="flex items-center justify-between border-b border-zinc-101 dark:border-white/[0.04] pb-2">
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200">{t('detail.appDetails.spotlight.screenshot.indexTelemetry')}</span>
+              <div className="flex items-center justify-between border-b border-border dark:border-white/[0.04] pb-2">
+                <span className="font-semibold text-foreground/30">{t('detail.appDetails.spotlight.screenshot.indexTelemetry')}</span>
                 <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
                   {t('detail.appDetails.spotlight.screenshot.ready')}
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-center">
-                <div className="rounded-[8px] bg-zinc-50 dark:bg-white/[0.01] p-2.5 border border-zinc-100 dark:border-white/[0.04]">
-                  <span className="block text-[10px] text-zinc-400 dark:text-zinc-500 mb-0.5">{t('detail.appDetails.spotlight.screenshot.rebuildTime')}</span>
-                  <span className="font-mono text-zinc-750 dark:text-zinc-300">12ms</span>
+                <div className="rounded-[8px] bg-muted/50 dark:bg-white/[0.01] p-2.5 border border-border dark:border-white/[0.04]">
+                  <span className="block text-[10px] text-muted-foreground mb-0.5">{t('detail.appDetails.spotlight.screenshot.rebuildTime')}</span>
+                  <span className="font-mono text-muted-foreground/40">12ms</span>
                 </div>
-                <div className="rounded-[8px] bg-zinc-50 dark:bg-white/[0.01] p-2.5 border border-zinc-100 dark:border-white/[0.04]">
-                  <span className="block text-[10px] text-zinc-400 dark:text-zinc-500 mb-0.5">{t('detail.appDetails.spotlight.screenshot.totalIndexed')}</span>
-                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">{t('detail.appDetails.spotlight.screenshot.totalIndexed')}</span>
+                <div className="rounded-[8px] bg-muted/50 dark:bg-white/[0.01] p-2.5 border border-border dark:border-white/[0.04]">
+                  <span className="block text-[10px] text-muted-foreground mb-0.5">{t('detail.appDetails.spotlight.screenshot.totalIndexed')}</span>
+                  <span className="font-semibold text-foreground/30">{t('detail.appDetails.spotlight.screenshot.totalIndexed')}</span>
                 </div>
               </div>
             </div>
@@ -1297,13 +1297,13 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
           videoDuration: t('detail.appDetails.default.videoDuration'),
           screenshotTitle: t('detail.appDetails.default.screenshotTitle', { name: app.name }),
           screenshotHtml: (
-            <div className="flex min-h-[120px] items-center justify-center text-xs text-zinc-400 dark:text-zinc-500 italic">
+            <div className="flex min-h-[120px] items-center justify-center text-xs text-muted-foreground italic">
               {t('detail.appDetails.default.screenshotHtml')}
             </div>
           ),
           screenshot2Title: t('detail.appDetails.default.screenshot2Title', { name: app.name }),
           screenshot2Html: (
-            <div className="flex min-h-[120px] items-center justify-center text-xs text-zinc-400 dark:text-zinc-500 italic">
+            <div className="flex min-h-[120px] items-center justify-center text-xs text-muted-foreground italic">
               {t('detail.appDetails.default.screenshotHtml')}
             </div>
           )
@@ -1317,27 +1317,27 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
         <div className="space-y-6">
           {/* Back button skeleton */}
           <div className="flex items-center justify-between animate-pulse">
-            <Skeleton className="h-9 w-20 rounded-[10px] bg-zinc-200/60 dark:bg-white/[0.06]" />
-            <Skeleton className="h-9 w-28 rounded-[10px] bg-zinc-200/60 dark:bg-white/[0.06]" />
+            <Skeleton className="h-9 w-20 rounded-[10px] bg-muted dark:bg-white/[0.06]" />
+            <Skeleton className="h-9 w-28 rounded-[10px] bg-muted dark:bg-white/[0.06]" />
           </div>
 
           {/* Premium App Store Header Skeleton */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 pb-6 animate-pulse">
-            <Skeleton className="h-24 w-24 sm:h-28 sm:w-28 rounded-[22%] shrink-0 bg-zinc-200/60 dark:bg-white/[0.06]" />
+            <Skeleton className="h-24 w-24 sm:h-28 sm:w-28 rounded-[22%] shrink-0 bg-muted dark:bg-white/[0.06]" />
             <div className="min-w-0 flex-1 space-y-3">
-              <Skeleton className="h-7 w-48 sm:h-8 sm:w-64 rounded-lg bg-zinc-200/60 dark:bg-white/[0.06]" />
-              <Skeleton className="h-4 w-36 rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
-              <Skeleton className="h-7 w-24 rounded-[14px] bg-zinc-200/60 dark:bg-white/[0.06]" />
+              <Skeleton className="h-7 w-48 sm:h-8 sm:w-64 rounded-lg bg-muted dark:bg-white/[0.06]" />
+              <Skeleton className="h-4 w-36 rounded bg-muted dark:bg-white/[0.06]" />
+              <Skeleton className="h-7 w-24 rounded-[14px] bg-muted dark:bg-white/[0.06]" />
             </div>
           </div>
 
           {/* Metadata Bar Skeleton */}
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-y-4 gap-x-2 py-5 border-t border-b border-zinc-100 dark:border-white/[0.04] animate-pulse">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-y-4 gap-x-2 py-5 border-t border-b border-border dark:border-white/[0.04] animate-pulse">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="flex flex-col items-center justify-between min-h-[52px] border-e border-zinc-100 dark:border-white/[0.04] last:border-0 px-2 space-y-2">
-                <Skeleton className="h-2.5 w-12 rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
-                <Skeleton className="h-6 w-16 rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
-                <Skeleton className="h-3 w-14 rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
+              <div key={i} className="flex flex-col items-center justify-between min-h-[52px] border-e border-border dark:border-white/[0.04] last:border-0 px-2 space-y-2">
+                <Skeleton className="h-2.5 w-12 rounded bg-muted dark:bg-white/[0.06]" />
+                <Skeleton className="h-6 w-16 rounded bg-muted dark:bg-white/[0.06]" />
+                <Skeleton className="h-3 w-14 rounded bg-muted dark:bg-white/[0.06]" />
               </div>
             ))}
           </div>
@@ -1345,26 +1345,26 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
           {/* Content Layout Skeleton */}
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
             {/* Left Content */}
-            <div className="space-y-0 divide-y divide-zinc-100 dark:divide-white/[0.04]">
+            <div className="space-y-0 divide-y divide-border dark:divide-white/[0.04]">
               {/* Overview */}
               <div className="py-6 space-y-4 animate-pulse">
-                <Skeleton className="h-4 w-20 rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
+                <Skeleton className="h-4 w-20 rounded bg-muted dark:bg-white/[0.06]" />
                 <div className="space-y-2">
-                  <Skeleton className="h-3 w-full rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
-                  <Skeleton className="h-3 w-full rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
-                  <Skeleton className="h-3 w-3/4 rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
+                  <Skeleton className="h-3 w-full rounded bg-muted dark:bg-white/[0.06]" />
+                  <Skeleton className="h-3 w-full rounded bg-muted dark:bg-white/[0.06]" />
+                  <Skeleton className="h-3 w-3/4 rounded bg-muted dark:bg-white/[0.06]" />
                 </div>
               </div>
               {/* Permissions */}
               <div className="py-6 space-y-4 animate-pulse">
-                <Skeleton className="h-4 w-24 rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
+                <Skeleton className="h-4 w-24 rounded bg-muted dark:bg-white/[0.06]" />
                 <div className="space-y-3">
                   {[1, 2, 3].map((j) => (
-                    <div key={j} className="flex gap-3 p-4 border border-zinc-200/80 bg-white rounded-[14px] dark:border-white/[0.06] dark:bg-white/[0.02]">
-                      <Skeleton className="h-6 w-6 rounded-full shrink-0 bg-zinc-200/60 dark:bg-white/[0.06]" />
+                    <div key={j} className="flex gap-3 p-4 border border-border/80 bg-white rounded-[14px] dark:border-white/[0.06] dark:bg-white/[0.02]">
+                      <Skeleton className="h-6 w-6 rounded-full shrink-0 bg-muted dark:bg-white/[0.06]" />
                       <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4.5 w-32 rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
-                        <Skeleton className="h-3.5 w-full rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
+                        <Skeleton className="h-4.5 w-32 rounded bg-muted dark:bg-white/[0.06]" />
+                        <Skeleton className="h-3.5 w-full rounded bg-muted dark:bg-white/[0.06]" />
                       </div>
                     </div>
                   ))}
@@ -1374,13 +1374,13 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
 
             {/* Right Sidebar */}
             <div className="space-y-6 xl:pt-6 animate-pulse">
-              <div className="rounded-[14px] border border-zinc-200/80 bg-white p-5 dark:border-white/[0.06] dark:bg-white/[0.02] space-y-4">
-                <Skeleton className="h-4 w-24 rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
+              <div className="rounded-[14px] border border-border/80 bg-white p-5 dark:border-white/[0.06] dark:bg-white/[0.02] space-y-4">
+                <Skeleton className="h-4 w-24 rounded bg-muted dark:bg-white/[0.06]" />
                 <div className="space-y-3">
                   {[1, 2, 3, 4].map((k) => (
-                    <div key={k} className="flex justify-between items-center py-2 border-b border-zinc-100 last:border-0 dark:border-white/[0.04]">
-                      <Skeleton className="h-3 w-16 rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
-                      <Skeleton className="h-3 w-24 rounded bg-zinc-200/60 dark:bg-white/[0.06]" />
+                    <div key={k} className="flex justify-between items-center py-2 border-b border-border last:border-0 dark:border-white/[0.04]">
+                      <Skeleton className="h-3 w-16 rounded bg-muted dark:bg-white/[0.06]" />
+                      <Skeleton className="h-3 w-24 rounded bg-muted dark:bg-white/[0.06]" />
                     </div>
                   ))}
                 </div>
@@ -1437,7 +1437,7 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
         <div className="flex items-center justify-between">
           <Link
             href="/web-apps"
-            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[10px] border border-zinc-200/80 bg-white px-3 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-white/[0.06] dark:bg-white/[0.02] dark:text-zinc-300 dark:hover:bg-white/[0.04]"
+            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[10px] border border-border/80 bg-white px-3 text-xs font-semibold text-foreground transition hover:bg-muted/50 dark:border-white/[0.06] dark:bg-white/[0.02]/40 dark:hover:bg-white/[0.04]"
           >
             <ArrowLeft className={`h-3.5 w-3.5 ${isAr ? "rotate-180" : ""}`} aria-hidden="true" />
             {t('detail.backBtn')}
@@ -1447,7 +1447,7 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
               href={app.homepageUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex h-9 items-center justify-center rounded-[10px] bg-zinc-950 px-4 text-xs font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+              className="inline-flex h-9 items-center justify-center rounded-[10px] bg-foreground px-4 text-xs font-semibold text-white transition hover:bg-foreground/80 dark:bg-white dark:text-foreground dark:hover:bg-muted"
             >
               {staticLabels.visitPartner}
             </a>
@@ -1457,12 +1457,12 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
         {/* Premium App Store Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 pb-6">
           {/* Rounded Squircle App Icon (Mac App Store Squircle style) */}
-          <div className="flex shrink-0 items-center justify-center overflow-hidden border border-zinc-200/80 bg-white shadow-sm dark:border-white/[0.06] dark:bg-black/20 h-24 w-24 sm:h-28 sm:w-28 rounded-[22%]">
+          <div className="flex shrink-0 items-center justify-center overflow-hidden border border-border/80 bg-white shadow-sm dark:border-white/[0.06] dark:bg-black/20 h-24 w-24 sm:h-28 sm:w-28 rounded-[22%]">
             {app.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={app.logoUrl} alt="" className="h-full w-full object-cover" />
             ) : (
-              <span className="flex h-full w-full items-center justify-center bg-zinc-950 text-white dark:bg-white dark:text-zinc-950">
+              <span className="flex h-full w-full items-center justify-center bg-foreground text-white dark:bg-white dark:text-foreground">
                 <Code2 className="h-12 w-12 sm:h-14 sm:w-14" aria-hidden="true" />
               </span>
             )}
@@ -1470,18 +1470,18 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
           
           <div className="min-w-0 flex-1 space-y-1.5 text-start">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-black tracking-tight text-zinc-950 dark:text-white sm:text-3xl">
+              <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">
                 {app.name}
               </h1>
             </div>
             
-            <p className="text-sm font-semibold text-zinc-400 dark:text-zinc-500">
+            <p className="text-sm font-semibold text-muted-foreground">
               {app.publisherName ?? staticLabels.partnerIntegration} • {mockDetails.category}
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
               {isConnected && connection ? (
-                <span className={`inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider rounded-[14px] bg-zinc-100 dark:bg-white/[0.06] px-4 py-1.5 text-zinc-800 dark:text-zinc-200`}>
+                <span className={`inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider rounded-[14px] bg-muted dark:bg-white/[0.06] px-4 py-1.5 text-foreground/30`}>
                   <span className={`h-1.5 w-1.5 rounded-full ${connection.status === "active" ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
                   {connection.status === "active" ? t('detail.connected') : t('detail.pause')}
                 </span>
@@ -1501,7 +1501,7 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
                   )}
                 </Button>
               ) : (
-                <span className="inline-flex h-8.5 items-center justify-center rounded-[16px] bg-zinc-100 px-5 text-xs font-semibold text-zinc-400 dark:bg-white/[0.04]">
+                <span className="inline-flex h-8.5 items-center justify-center rounded-[16px] bg-muted px-5 text-xs font-semibold text-muted-foreground dark:bg-white/[0.04]">
                   {staticLabels.unavailable}
                 </span>
               )}
@@ -1510,13 +1510,13 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
         </div>
 
         {/* App Store Metadata Bar */}
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-y-4 gap-x-2 py-5 text-center border-t border-b border-zinc-100 dark:border-white/[0.04]" dir={isAr ? "rtl" : "ltr"}>
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-y-4 gap-x-2 py-5 text-center border-t border-b border-border dark:border-white/[0.04]" dir={isAr ? "rtl" : "ltr"}>
           {/* Col 1: Ratings */}
-          <div className="flex flex-col items-center justify-between min-h-[52px] border-e border-zinc-100 dark:border-white/[0.04] last:border-0 px-2">
-            <span className="text-[9px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+          <div className="flex flex-col items-center justify-between min-h-[52px] border-e border-border dark:border-white/[0.04] last:border-0 px-2">
+            <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-wider">
               {t('detail.reviews.reviewsCount')}
             </span>
-            <span className="text-xl font-black text-zinc-950 dark:text-white leading-none">
+            <span className="text-xl font-black text-foreground leading-none">
               {t('detail.reviews.ratingValue')}
             </span>
             <div className="flex items-center gap-0.5 text-amber-500 scale-90">
@@ -1529,66 +1529,66 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
           </div>
 
           {/* Col 2: Age Rating / Compatibility */}
-          <div className="flex flex-col items-center justify-between min-h-[52px] border-e border-zinc-100 dark:border-white/[0.04] last:border-0 px-2">
-            <span className="text-[9px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+          <div className="flex flex-col items-center justify-between min-h-[52px] border-e border-border dark:border-white/[0.04] last:border-0 px-2">
+            <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-wider">
               {t('detail.appStoreGrid.ageRating')}
             </span>
-            <span className="text-xl font-black text-zinc-950 dark:text-white leading-none">
+            <span className="text-xl font-black text-foreground leading-none">
               {t('detail.appStoreGrid.yearsVal')}
             </span>
-            <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500">
+            <span className="text-[10px] font-bold text-muted-foreground">
               {t('detail.appStoreGrid.years')}
             </span>
           </div>
 
           {/* Col 3: Chart */}
-          <div className="flex flex-col items-center justify-between min-h-[52px] border-e border-zinc-100 dark:border-white/[0.04] last:border-0 px-2">
-            <span className="text-[9px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+          <div className="flex flex-col items-center justify-between min-h-[52px] border-e border-border dark:border-white/[0.04] last:border-0 px-2">
+            <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-wider">
               {t('detail.appStoreGrid.chart')}
             </span>
-            <span className="text-xl font-black text-zinc-950 dark:text-white leading-none">
+            <span className="text-xl font-black text-foreground leading-none">
               {t('detail.appStoreGrid.chartVal')}
             </span>
-            <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 truncate max-w-[80px]">
+            <span className="text-[10px] font-bold text-muted-foreground truncate max-w-[80px]">
               {mockDetails.category.includes("&") ? mockDetails.category.split("&")[0].trim() : mockDetails.category}
             </span>
           </div>
 
           {/* Col 4: Developer */}
-          <div className="flex flex-col items-center justify-between min-h-[52px] border-e border-zinc-100 dark:border-white/[0.04] last:border-0 px-2">
-            <span className="text-[9px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+          <div className="flex flex-col items-center justify-between min-h-[52px] border-e border-border dark:border-white/[0.04] last:border-0 px-2">
+            <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-wider">
               {t('detail.appStoreGrid.developer')}
             </span>
-            <div className="text-zinc-950 dark:text-white">
-              <Server className="h-4 w-4 text-zinc-400" />
+            <div className="text-foreground">
+              <Server className="h-4 w-4 text-muted-foreground" />
             </div>
-            <span className="text-[10px] font-bold text-zinc-450 dark:text-zinc-500 truncate max-w-[80px]">
+            <span className="text-[10px] font-bold text-muted-foreground truncate max-w-[80px]">
               {app.publisherName ?? "Apple"}
             </span>
           </div>
 
           {/* Col 5: Language */}
-          <div className="flex flex-col items-center justify-between min-h-[52px] border-e border-zinc-100 dark:border-white/[0.04] last:border-0 px-2">
-            <span className="text-[9px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+          <div className="flex flex-col items-center justify-between min-h-[52px] border-e border-border dark:border-white/[0.04] last:border-0 px-2">
+            <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-wider">
               {t('detail.appStoreGrid.language')}
             </span>
-            <span className="text-xl font-black text-zinc-950 dark:text-white leading-none">
+            <span className="text-xl font-black text-foreground leading-none">
               {t('detail.appStoreGrid.languageVal')}
             </span>
-            <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500">
+            <span className="text-[10px] font-bold text-muted-foreground">
               {t('detail.appStoreGrid.languageSub')}
             </span>
           </div>
 
           {/* Col 6: Size */}
           <div className="flex flex-col items-center justify-between min-h-[52px] last:border-0 px-2">
-            <span className="text-[9px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+            <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-wider">
               {t('detail.appStoreGrid.size')}
             </span>
-            <span className="text-xl font-black text-zinc-950 dark:text-white leading-none">
+            <span className="text-xl font-black text-foreground leading-none">
               {t('detail.appStoreGrid.sizeVal')}
             </span>
-            <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500">
+            <span className="text-[10px] font-bold text-muted-foreground">
               {t('detail.appStoreGrid.sizeSub')}
             </span>
           </div>
@@ -1598,13 +1598,13 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
           
           {/* Left Main Content */}
-          <div className="space-y-0 divide-y divide-zinc-100 dark:divide-white/[0.04]">
+          <div className="space-y-0 divide-y divide-border dark:divide-white/[0.04]">
             
             {/* Overview / Description */}
             <section className="py-6 space-y-4">
-              <h2 className="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wider">{staticLabels.overview}</h2>
-              <div className="space-y-3 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400 text-start">
-                <p className="font-semibold text-zinc-700 dark:text-zinc-300">{mockDetails.valueProp}</p>
+              <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">{staticLabels.overview}</h2>
+              <div className="space-y-3 text-xs leading-relaxed text-muted-foreground text-start">
+                <p className="font-semibold text-foreground/40">{mockDetails.valueProp}</p>
                 <p>{app.description}</p>
               </div>
             </section>
@@ -1612,10 +1612,10 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
             {/* Permissions Breakdown (Top Placement, before screenshots) */}
             <section className="py-6 space-y-4">
               <div className="space-y-1">
-                <h2 className="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wider">{staticLabels.permissionsTitle}</h2>
-                <p className="text-xs font-medium leading-relaxed text-zinc-500 dark:text-zinc-400">{staticLabels.permissionsDescription}</p>
+                <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">{staticLabels.permissionsTitle}</h2>
+                <p className="text-xs font-medium leading-relaxed text-muted-foreground">{staticLabels.permissionsDescription}</p>
               </div>
-              <ul className="divide-y divide-zinc-100 overflow-hidden rounded-[14px] border border-zinc-200/80 bg-white dark:divide-white/[0.05] dark:border-white/[0.06] dark:bg-white/[0.02]">
+              <ul className="divide-y divide-border overflow-hidden rounded-[14px] border border-border/80 bg-white dark:divide-white/[0.05] dark:border-white/[0.06] dark:bg-white/[0.02]">
                 {mockDetails.scopesExplained.map((scopeItem) => (
                   <li key={scopeItem.scope} className="flex gap-3 p-4 text-start">
                     <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/25 dark:text-emerald-400">
@@ -1623,12 +1623,12 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
                     </span>
                     <div className="min-w-0 flex-1 space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono text-[11px] font-semibold text-zinc-700 dark:text-zinc-200">{scopeItem.scope}</span>
-                        <span className="rounded-full border border-zinc-200 px-2 py-0.5 text-[10px] font-semibold text-zinc-500 dark:border-white/[0.08] dark:text-zinc-400">
+                        <span className="font-mono text-[11px] font-semibold text-foreground/30">{scopeItem.scope}</span>
+                        <span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold text-muted-foreground dark:border-white/[0.08]">
                           {staticLabels.policyStatus}
                         </span>
                       </div>
-                      <p className="text-xs font-medium leading-relaxed text-zinc-500 dark:text-zinc-400">{scopeItem.desc}</p>
+                      <p className="text-xs font-medium leading-relaxed text-muted-foreground">{scopeItem.desc}</p>
                     </div>
                   </li>
                 ))}
@@ -1639,8 +1639,8 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
             <section className="py-6 space-y-4">
               <div className="flex items-center justify-between pb-2">
                 <div className="flex items-center gap-1.5">
-                  <Sparkles className="h-4 w-4 text-zinc-455" />
-                  <h2 className="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
+                  <Sparkles className="h-4 w-4 text-muted-foreground/60" />
+                  <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">
                     {t('detail.appDetails.default.screenshotTitle', { name: app.name }).includes('{name}') 
                       ? t('detail.appDetails.default.screenshotTitle', { name: app.name }).replace('{name}', app.name)
                       : t('detail.appDetails.default.screenshotTitle', { name: app.name })}
@@ -1651,14 +1651,14 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
                 <div className="flex items-center gap-1.5" dir="ltr">
                   <button
                     onClick={() => scrollCarousel("left")}
-                    className="h-7 w-7 rounded-full border border-zinc-200/80 bg-white hover:bg-zinc-50 dark:border-white/[0.06] dark:bg-white/[0.02] dark:hover:bg-white/[0.04] flex items-center justify-center text-zinc-650 dark:text-zinc-400 active:scale-95 transition"
+                    className="h-7 w-7 rounded-full border border-border/80 bg-white hover:bg-muted/50 dark:border-white/[0.06] dark:bg-white/[0.02] dark:hover:bg-white/[0.04] flex items-center justify-center text-muted-foreground active:scale-95 transition"
                     title="Scroll Left"
                   >
                     <ArrowLeft className="h-3.5 w-3.5" />
                   </button>
                   <button
                     onClick={() => scrollCarousel("right")}
-                    className="h-7 w-7 rounded-full border border-zinc-200/80 bg-white hover:bg-zinc-50 dark:border-white/[0.06] dark:bg-white/[0.02] dark:hover:bg-white/[0.04] flex items-center justify-center text-zinc-650 dark:text-zinc-400 active:scale-95 transition"
+                    className="h-7 w-7 rounded-full border border-border/80 bg-white hover:bg-muted/50 dark:border-white/[0.06] dark:bg-white/[0.02] dark:hover:bg-white/[0.04] flex items-center justify-center text-muted-foreground active:scale-95 transition"
                     title="Scroll Right"
                   >
                     <ArrowLeft className="h-3.5 w-3.5 rotate-180" />
@@ -1666,12 +1666,12 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
                 </div>
               </div>
 
-              <div ref={carouselRef} className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-800" dir="ltr">
+              <div ref={carouselRef} className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-border dark:scrollbar-thumb-border" dir="ltr">
                 
                 {/* Slide 1: Cinematic Video Showcase */}
                 <div 
                   onClick={() => setActiveMedia("video")}
-                  className="group relative aspect-video w-[280px] sm:w-[460px] shrink-0 snap-center rounded-[14px] border border-zinc-200/80 bg-zinc-950 dark:border-white/[0.06] overflow-hidden flex flex-col justify-between p-4 cursor-pointer"
+                  className="group relative aspect-video w-[280px] sm:w-[460px] shrink-0 snap-center rounded-[14px] border border-border/80 bg-foreground dark:border-white/[0.06] overflow-hidden flex flex-col justify-between p-4 cursor-pointer"
                 >
                   {/* Background Gradient / Cover Mock */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-0 group-hover:from-black/95 transition-all duration-300" />
@@ -1698,9 +1698,9 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
                     <h3 className="text-xs font-semibold text-white truncate drop-shadow-sm">
                       {mockDetails.videoTitle}
                     </h3>
-                    <div className="flex items-center gap-3 text-[10px] font-mono text-zinc-355">
+                    <div className="flex items-center gap-3 text-[10px] font-mono text-muted-foreground">
                       <div className="flex-1 h-1 bg-white/25 rounded overflow-hidden">
-                        <div className="w-1/3 h-full bg-zinc-400" />
+                        <div className="w-1/3 h-full bg-muted-foreground" />
                       </div>
                       <span>0:00 / {mockDetails.videoDuration}</span>
                     </div>
@@ -1710,7 +1710,7 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
                 {/* Slide 2: High-Fidelity App Store Screenshot Mock (Real Image) */}
                 <div 
                   onClick={() => setActiveMedia("screenshot")}
-                  className="aspect-video w-[280px] sm:w-[460px] shrink-0 snap-center rounded-[14px] overflow-hidden border border-zinc-200/80 dark:border-white/[0.06] shadow-sm bg-zinc-950 cursor-pointer hover:opacity-95 transition-opacity"
+                  className="aspect-video w-[280px] sm:w-[460px] shrink-0 snap-center rounded-[14px] overflow-hidden border border-border/80 dark:border-white/[0.06] shadow-sm bg-foreground cursor-pointer hover:opacity-95 transition-opacity"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={mockDetails.screenshotImgUrl} alt="" className="h-full w-full object-cover" />
@@ -1718,7 +1718,7 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
 
               </div>
               
-              <div className="flex items-center gap-2 text-zinc-400 text-xs pt-1 select-none text-start">
+              <div className="flex items-center gap-2 text-muted-foreground text-xs pt-1 select-none text-start">
                 <span>💻</span>
                 <span className="font-semibold">{t('detail.appStoreGrid.compatVal')}</span>
               </div>
@@ -1727,17 +1727,17 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
             {/* Ratings & Reviews (Comments) Section */}
             <section className="py-6 space-y-6">
               <div className="flex items-center justify-between pb-2">
-                <h2 className="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wider">{t('detail.reviews.title')}</h2>
-                <span className="text-xs font-semibold text-zinc-400 dark:text-zinc-500">{t('detail.reviews.reviewsCount')}</span>
+                <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">{t('detail.reviews.title')}</h2>
+                <span className="text-xs font-semibold text-muted-foreground">{t('detail.reviews.reviewsCount')}</span>
               </div>
 
               <div className="grid gap-6 md:grid-cols-[160px_1fr] items-center">
                 {/* Left block: Numeric Score */}
-                <div className="flex flex-col items-center justify-center text-center p-4 rounded-[12px] bg-zinc-50 dark:bg-white/[0.005] border border-zinc-100 dark:border-white/[0.03]">
-                  <span className="text-4xl font-extrabold tracking-tight text-zinc-950 dark:text-white">
+                <div className="flex flex-col items-center justify-center text-center p-4 rounded-[12px] bg-muted/50 dark:bg-white/[0.005] border border-border dark:border-white/[0.03]">
+                  <span className="text-4xl font-extrabold tracking-tight text-foreground">
                     {t('detail.reviews.ratingValue')}
                   </span>
-                  <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 mt-1 uppercase tracking-wider">
+                  <span className="text-[10px] font-bold text-muted-foreground mt-1 uppercase tracking-wider">
                     {t('detail.reviews.outOf')}
                   </span>
                   <div className="flex items-center gap-0.5 text-amber-500 mt-3">
@@ -1759,14 +1759,14 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
                     { stars: 1, pct: "0%" },
                   ].map((row) => (
                     <div key={row.stars} className="flex items-center gap-3 text-xs">
-                      <div className="flex items-center gap-0.5 w-12 text-zinc-400 shrink-0">
-                        <span className="font-bold text-zinc-700 dark:text-zinc-300 w-3 text-end">{row.stars}</span>
+                      <div className="flex items-center gap-0.5 w-12 text-muted-foreground shrink-0">
+                        <span className="font-bold text-foreground/40 w-3 text-end">{row.stars}</span>
                         <Star className="h-3 w-3 fill-current text-amber-500" />
                       </div>
-                      <div className="flex-1 h-2 rounded bg-zinc-100 dark:bg-white/[0.04] overflow-hidden">
+                      <div className="flex-1 h-2 rounded bg-muted dark:bg-white/[0.04] overflow-hidden">
                         <div className="h-full bg-amber-500 rounded" style={{ width: row.pct }} />
                       </div>
-                      <span className="w-8 text-[10px] text-zinc-400 dark:text-zinc-500 font-mono text-end shrink-0">{row.pct}</span>
+                      <span className="w-8 text-[10px] text-muted-foreground font-mono text-end shrink-0">{row.pct}</span>
                     </div>
                   ))}
                 </div>
@@ -1775,26 +1775,26 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
               {/* Individual Review Comments Grid */}
               <div className="grid gap-4 sm:grid-cols-2 pt-2">
                 {(t.raw('detail.reviews.items') as { title: string; author: string; time: string; rating: number; comment: string }[]).map((review, idx) => (
-                  <div key={idx} className="flex flex-col justify-between p-4 rounded-[12px] bg-zinc-50/50 dark:bg-white/[0.005] border border-zinc-100 dark:border-white/[0.03] space-y-3">
+                  <div key={idx} className="flex flex-col justify-between p-4 rounded-[12px] bg-muted/50/50 dark:bg-white/[0.005] border border-border dark:border-white/[0.03] space-y-3">
                     <div className="space-y-1.5 text-start">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-xs text-zinc-800 dark:text-zinc-200 line-clamp-1">{review.title}</span>
-                        <span className="text-[10px] text-zinc-400 font-mono">{review.time}</span>
+                        <span className="font-semibold text-xs text-foreground/30 line-clamp-1">{review.title}</span>
+                        <span className="text-[10px] text-muted-foreground font-mono">{review.time}</span>
                       </div>
                       <div className="flex items-center gap-0.5 text-amber-500">
                         {Array.from({ length: 5 }).map((_, i) => (
                           <Star
                             key={i}
-                            className={`h-3 w-3 ${i < review.rating ? "fill-current" : "text-zinc-200 dark:text-zinc-800"}`}
+                            className={`h-3 w-3 ${i < review.rating ? "fill-current" : "text-muted-foreground/30 dark:text-foreground"}`}
                           />
                         ))}
                       </div>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-medium pt-1 line-clamp-3">
+                      <p className="text-xs text-muted-foreground leading-relaxed font-medium pt-1 line-clamp-3">
                         {review.comment}
                       </p>
                     </div>
-                    <div className="pt-2 border-t border-zinc-100/50 dark:border-white/[0.02] text-start">
-                      <span className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500">{review.author}</span>
+                    <div className="pt-2 border-t border-border/50 dark:border-white/[0.02] text-start">
+                      <span className="text-[10px] font-semibold text-muted-foreground">{review.author}</span>
                     </div>
                   </div>
                 ))}
@@ -1824,12 +1824,12 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
           <div className="space-y-6">
             
             {/* App Metadata */}
-            <section className="rounded-[16px] border border-zinc-200/80 bg-white p-5 dark:border-white/[0.06] dark:bg-white/[0.02] space-y-5">
+            <section className="rounded-[16px] border border-border/80 bg-white p-5 dark:border-white/[0.06] dark:bg-white/[0.02] space-y-5">
               <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-zinc-100 text-zinc-700 dark:bg-white/[0.06] dark:text-zinc-200">
+                <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-muted text-foreground dark:bg-white/[0.06]/30">
                   <Server className="h-4 w-4" aria-hidden="true" />
                 </span>
-                <h2 className="text-xs font-bold text-zinc-800 dark:text-zinc-100 uppercase tracking-wider">{staticLabels.metadataTitle}</h2>
+                <h2 className="text-xs font-bold text-foreground uppercase tracking-wider">{staticLabels.metadataTitle}</h2>
               </div>
               <dl className="space-y-1">
                 {[
@@ -1840,10 +1840,10 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
                   { label: staticLabels.dataPolicy, value: staticLabels.managedByQentrah, icon: CheckCircle },
                 ].map((item) => (
                   <div key={item.label} className="flex items-start gap-3 rounded-[10px] px-1 py-2.5 text-start">
-                    <item.icon className="mt-0.5 h-4 w-4 shrink-0 text-zinc-400 dark:text-zinc-500" aria-hidden="true" />
+                    <item.icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                     <div className="min-w-0 flex-1">
-                      <dt className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500">{item.label}</dt>
-                      <dd className="mt-0.5 break-all text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                      <dt className="text-[11px] font-semibold text-muted-foreground">{item.label}</dt>
+                      <dd className="mt-0.5 break-all text-xs font-semibold text-foreground/30">
                         {item.href ? (
                           <a href={item.href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400">
                             {item.value}
@@ -1860,8 +1860,8 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
             </section>
 
             {/* Connection Access Fields */}
-            <section className="rounded-[16px] border border-zinc-200/80 bg-white p-5 dark:border-white/[0.06] dark:bg-white/[0.02] space-y-5">
-              <h2 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">{staticLabels.accessDetails}</h2>
+            <section className="rounded-[16px] border border-border/80 bg-white p-5 dark:border-white/[0.06] dark:bg-white/[0.02] space-y-5">
+              <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{staticLabels.accessDetails}</h2>
               <dl className="space-y-4">
                 {[
                   [t('detail.clientId'), app.partnersClientId],
@@ -1869,17 +1869,17 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
                   [t('detail.startUrl'), app.homepageUrl ?? t('detail.notSet')],
                   [t('detail.connectionStatus'), isConnected ? t('detail.connected') : t('detail.notConnected')],
                 ].map(([label, value]) => (
-                  <div key={label} className="border-t border-zinc-100 pt-3.5 first:border-t-0 first:pt-0 dark:border-white/[0.04]">
-                    <dt className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500">{label}</dt>
-                    <dd className="mt-1 break-all text-xs font-medium text-zinc-800 dark:text-zinc-200">{value}</dd>
+                  <div key={label} className="border-t border-border pt-3.5 first:border-t-0 first:pt-0 dark:border-white/[0.04]">
+                    <dt className="text-[11px] font-semibold text-muted-foreground">{label}</dt>
+                    <dd className="mt-1 break-all text-xs font-medium text-foreground/30">{value}</dd>
                   </div>
                 ))}
               </dl>
             </section>
 
             {/* Connection Control Action Box */}
-            <section className="rounded-[16px] border border-zinc-200/80 bg-white p-5 dark:border-white/[0.06] dark:bg-white/[0.02] space-y-4">
-              <h2 className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">{staticLabels.configure}</h2>
+            <section className="rounded-[16px] border border-border/80 bg-white p-5 dark:border-white/[0.06] dark:bg-white/[0.02] space-y-4">
+              <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{staticLabels.configure}</h2>
               
               <div className="space-y-2">
                 {isConnected && connection ? (
@@ -1889,18 +1889,18 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
                       variant="outline"
                       disabled={isMutating || !organizationId}
                       onClick={() => handlePauseOrResume(connection.status === "active" ? "pause" : "resume")}
-                      className="w-full h-9 rounded-[10px] text-xs font-semibold border-zinc-200/80 text-zinc-700 hover:bg-zinc-50 dark:border-white/[0.06] dark:text-zinc-300 dark:hover:bg-white/[0.04]"
+                      className="w-full h-9 rounded-[10px] text-xs font-semibold border-border/80 text-foreground hover:bg-muted/50 dark:border-white/[0.06]/40 dark:hover:bg-white/[0.04]"
                     >
                       {isMutating ? (
                         <RefreshCw className="h-3.5 w-3.5 animate-spin" />
                       ) : connection.status === "active" ? (
                         <>
-                          <Pause className="me-2 h-3.5 w-3.5 text-zinc-400" />
+                          <Pause className="me-2 h-3.5 w-3.5 text-muted-foreground" />
                           {staticLabels.pause}
                         </>
                       ) : (
                         <>
-                          <Play className="me-2 h-3.5 w-3.5 text-zinc-400" />
+                          <Play className="me-2 h-3.5 w-3.5 text-muted-foreground" />
                           {staticLabels.resume}
                         </>
                       )}
@@ -1910,7 +1910,7 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
                       variant="outline"
                       disabled={isMutating || !organizationId}
                       onClick={handleRevoke}
-                      className="w-full h-9 rounded-[10px] text-xs font-semibold border-zinc-200/80 text-red-650 hover:bg-red-50 hover:border-red-200 dark:border-white/[0.06] dark:text-red-400 dark:hover:bg-red-950/20"
+                      className="w-full h-9 rounded-[10px] text-xs font-semibold border-border/80 text-red-650 hover:bg-red-50 hover:border-red-200 dark:border-white/[0.06] dark:text-red-400 dark:hover:bg-red-950/20"
                     >
                       <Trash2 className="me-2 h-3.5 w-3.5" />
                       {staticLabels.revoke}
@@ -1921,7 +1921,7 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
                     type="button"
                     disabled={isMutating || !organizationId}
                     onClick={handleConnect}
-                    className="inline-flex w-full h-9 items-center justify-center gap-1.5 rounded-[10px] bg-zinc-950 px-4 text-xs font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+                    className="inline-flex w-full h-9 items-center justify-center gap-1.5 rounded-[10px] bg-foreground px-4 text-xs font-semibold text-white transition hover:bg-foreground/80 dark:bg-white dark:text-foreground dark:hover:bg-muted"
                   >
                     {isMutating ? (
                       <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -1947,7 +1947,7 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
       {/* Interactive Lightbox / Video Modal */}
       {activeMedia && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 transition-all duration-300 animate-in fade-in duration-200">
-          <div className="relative w-full max-w-4xl bg-zinc-950 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+          <div className="relative w-full max-w-4xl bg-foreground rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
             {/* Close button */}
             <button
               onClick={() => setActiveMedia(null)}
@@ -1965,7 +1965,7 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
                   <span className="rounded bg-red-655 px-2 py-0.5 text-[9px] font-black text-white tracking-wide animate-pulse">
                     LIVE DEMO
                   </span>
-                  <span className="text-[10px] font-mono text-zinc-450">{mockDetails.videoDuration}</span>
+                  <span className="text-[10px] font-mono text-muted-foreground">{mockDetails.videoDuration}</span>
                 </div>
 
                 <div className="absolute inset-0 flex items-center justify-center z-10">
@@ -1976,7 +1976,7 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
 
                 <div className="z-10 space-y-3 text-start">
                   <h3 className="text-sm font-bold text-white tracking-tight">{mockDetails.videoTitle}</h3>
-                  <div className="flex items-center gap-3 text-xs font-mono text-zinc-400">
+                  <div className="flex items-center gap-3 text-xs font-mono text-muted-foreground">
                     <div className="flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden">
                       <div className="w-1/2 h-full bg-blue-500 animate-pulse" />
                     </div>
@@ -1985,7 +1985,7 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
                 </div>
               </div>
             ) : (
-              <div className="aspect-video w-full bg-zinc-950 flex items-center justify-center overflow-hidden">
+              <div className="aspect-video w-full bg-foreground flex items-center justify-center overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={mockDetails.screenshotImgUrl} alt="" className="max-h-full max-w-full object-contain" />
               </div>

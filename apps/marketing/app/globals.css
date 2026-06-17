@@ -6,32 +6,31 @@
 
 @theme {
   /* ── Shadcn Color Palette (Light) ── */
-  --color-background: #f2f2f7;
-  --color-foreground: #080808;
-  --color-card: #ffffff;
-  --color-card-foreground: #080808;
-  --color-popover: #ffffff;
-  --color-popover-foreground: #080808;
+  --color-background: #f5f4f0;
+  --color-foreground: #1a1a18;
+  --color-card: #fbfaf7;
+  --color-card-foreground: #1a1a18;
+  --color-popover: #fbfaf7;
+  --color-popover-foreground: #1a1a18;
   --color-primary: #0066cc;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #f9f9f9;
-  --color-secondary-foreground: #080808;
-  --color-muted: #ebebeb;
-  --color-muted-foreground: #aaaaaa;
-  --color-accent: #f9f9f9;
-  --color-accent-foreground: #080808;
+  --color-secondary: #efeeea;
+  --color-secondary-foreground: #1a1a18;
+  --color-muted: #e9e7e1;
+  --color-muted-foreground: #79766f;
+  --color-accent: #efeeea;
+  --color-accent-foreground: #1a1a18;
   --color-destructive: #f87171;
-  --color-destructive-foreground: #080808;
-  --color-border: #e8e8e8;
-  --color-input: #ebebeb;
+  --color-destructive-foreground: #1a1a18;
+  --color-border: #e0ddd6;
+  --color-input: #e9e7e1;
   --color-ring: #0066cc;
-  --color-divider: #e8e8e8;
 
   /* ── Custom semantic tokens ── */
-  --color-text-primary: #080808;
-  --color-text-secondary: #aaaaaa;
-  --color-text-muted: #999999;
-  --color-surface: #f9f9f9;
+  --color-text-primary: #1a1a18;
+  --color-text-secondary: #79766f;
+  --color-text-muted: #9e9b97;
+  --color-surface: #fbfaf7;
   --color-surface-elevated: #ffffff;
 
   /* ── Semantic Status ── */
@@ -56,23 +55,29 @@
   color-scheme: light;
 
   /* ── Qentrah Custom Properties ── */
-  --q-bg: #f2f2f7;
-  --q-sidebar: #f9f9f9;
-  --q-topbar: #f9f9f9;
+  --q-bg: #f5f4f0;
+  --q-bg-very-dark: #e9e7e1;
+  --q-bg-dark: #efeeea;
+  --q-bg-secondary: #f2f1ed;
+  --q-bg-light: #ffffff;
+  --q-bg-very-light: #fbfaf7;
+  
+  --q-sidebar: #efeeea;
+  --q-topbar: #efeeea;
   --q-card: #ffffff;
   --q-card-hover: #f9f9f9;
-  --q-border: #e8e8e8;
-  --q-border-strong: #d0d0d0;
-  --q-text-primary: #080808;
-  --q-text-secondary: #aaaaaa;
-  --q-text-muted: #999999;
-  --q-input-bg: #ebebeb;
+  --q-border: #e0ddd6;
+  --q-border-strong: #d0ccc6;
+  --q-text-primary: #1a1a18;
+  --q-text-secondary: #79766f;
+  --q-text-muted: #9e9b97;
+  --q-input-bg: #e9e7e1;
   --q-accent: #0066cc;
   --q-accent-hover: #0055aa;
   --q-accent-active: #004499;
   --q-accent-muted: rgba(0,102,204,0.10);
   --q-accent-border: rgba(0,102,204,0.25);
-  --q-topbar-btn: #080808;
+  --q-topbar-btn: #1a1a18;
 
   /* Status */
   --q-success: #4ade80;
@@ -91,43 +96,60 @@
   color-scheme: dark;
 
   /* ── Shadcn Color Palette (Dark) ── */
-  --color-background: #080808;
-  --color-foreground: #f0f0f0;
-  --color-card: #0f0f0f;
-  --color-card-foreground: #f0f0f0;
-  --color-popover: #0f0f0f;
-  --color-popover-foreground: #f0f0f0;
+  --color-background: #121212;
+  --color-foreground: #ededec;
+  --color-card: #1a1a1a;
+  --color-card-foreground: #ededec;
+  --color-popover: #1a1a1a;
+  --color-popover-foreground: #ededec;
   --color-primary: #0066cc;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #0a0a0a;
-  --color-secondary-foreground: #f0f0f0;
-  --color-muted: #111111;
-  --color-muted-foreground: #3a3a3a;
-  --color-accent: #0a0a0a;
-  --color-accent-foreground: #f0f0f0;
+  --color-secondary: #161616;
+  --color-secondary-foreground: #ededec;
+  --color-muted: #1e1e1e;
+  --color-muted-foreground: #6b6b6b;
+  --color-accent: #161616;
+  --color-accent-foreground: #ededec;
   --color-destructive: #f87171;
-  --color-destructive-foreground: #080808;
-  --color-border: #161616;
-  --color-input: #111111;
+  --color-destructive-foreground: #121212;
+  --color-border: #2a2a2a;
+  --color-input: #1e1e1e;
   --color-ring: #0066cc;
-  --color-divider: #161616;
 
   /* ── Qentrah Custom Properties (Dark) ── */
-  --q-bg: #080808;
-  --q-sidebar: #0a0a0a;
-  --q-topbar: #0a0a0a;
-  --q-card: #0f0f0f;
-  --q-card-hover: #0a0a0a;
-  --q-border: #161616;
-  --q-border-strong: #2a2a2a;
-  --q-text-primary: #f0f0f0;
-  --q-text-secondary: #3a3a3a;
+  --q-bg: #121212;
+  --q-bg-very-dark: #0a0a0a;
+  --q-bg-dark: #121212;
+  --q-bg-secondary: #161616;
+  --q-bg-light: #1a1a1a;
+  --q-bg-very-light: #1e1e1e;
+  
+  --q-sidebar: #121212;
+  --q-topbar: #121212;
+  --q-card: #1a1a1a;
+  --q-card-hover: #121212;
+  --q-border: #2a2a2a;
+  --q-border-strong: #3a3a3a;
+  --q-text-primary: #ededec;
+  --q-text-secondary: #6b6b6b;
   --q-text-muted: #555555;
-  --q-input-bg: #111111;
+  --q-input-bg: #1e1e1e;
   --q-accent: #0066cc;
   --q-accent-hover: #0055aa;
   --q-accent-active: #004499;
   --q-topbar-btn: #0066cc;
+
+  /* Status */
+  --q-success: #4ade80;
+  --q-success-bg: #0b2016;
+  --q-warning: #fbbf24;
+  --q-warning-bg: #251a05;
+  --q-error: #f87171;
+  --q-error-bg: #220b0a;
+  --q-info: #60a5fa;
+  --q-info-bg: #091a28;
+  --q-note: #a78bfa;
+  --q-note-bg: #160f28;
 }
 
 @layer base {

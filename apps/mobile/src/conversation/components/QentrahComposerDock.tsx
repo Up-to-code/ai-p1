@@ -7,6 +7,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Text as RNText,
   TextInput,
   View,
   type KeyboardEventName,
@@ -412,6 +413,28 @@ export function QentrahComposerDock({
                     isRtl ? { textAlign: "right", writingDirection: "rtl" } : null,
                   ]}
                 />
+                {/* Ghost text ruler — mirrors draftText with the same font and width
+                    so onLayout always reports the true word-wrapped height.
+                    Handles paste, dictation, and programmatic text changes where
+                    React Native's onContentSizeChange is unreliable on iOS. */}
+                <RNText
+                  aria-hidden
+                  pointerEvents="none"
+                  style={[
+                    styles.inputRuler,
+                    { fontFamily: composerFontFamily },
+                    isRtl ? { textAlign: "right" } : null,
+                  ]}
+                  onLayout={(e) => {
+                    handleContentSizeChange({
+                      nativeEvent: {
+                        contentSize: { height: e.nativeEvent.layout.height, width: 0 },
+                      },
+                    } as Parameters<typeof handleContentSizeChange>[0]);
+                  }}
+                >
+                  {draftText || "\u200b"}
+                </RNText>
                 {inputExpanded ? (
                   <Animated.View
                     pointerEvents="none"
@@ -732,6 +755,21 @@ const createStyles = (colors: AppColors, insets: EdgeInsets, isRtl: boolean) => 
     paddingBottom: 0,
     paddingVertical: 0,
     includeFontPadding: false,
+  },
+  // Invisible measurement mirror — same font/padding as the TextInput but
+  // unconstrained height so it always reflects the true word-wrapped size.
+  // Positioned absolutely (left:0, right:0) to share the same pixel width.
+  inputRuler: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    opacity: 0,
+    fontSize: 16,
+    lineHeight: 22,
+    paddingTop: 0,
+    paddingBottom: 0,
+    includeFontPadding: false,
+    zIndex: -1,
   },
   inputCompact: {
     paddingTop: 0,

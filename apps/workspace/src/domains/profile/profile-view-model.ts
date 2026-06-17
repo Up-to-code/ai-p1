@@ -50,7 +50,7 @@ const roleColors: Record<string, string> = {
   "Project Editor":
     "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20",
   Viewer:
-    "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-white/5 dark:text-zinc-400 dark:border-white/10",
+    "bg-muted text-muted-foreground border-border",
 };
 
 const roleI18nKeys: Record<string, string> = {

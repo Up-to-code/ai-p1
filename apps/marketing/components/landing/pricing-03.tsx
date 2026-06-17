@@ -305,21 +305,22 @@ export function Pricing03({ locale }: { locale: string }) {
   return (
     <PublicSection
       id="pricing"
-      className="relative bg-white py-14 dark:bg-zinc-950 md:py-20"
+      tone="very-dark"
+      className="relative py-14 md:py-20"
     >
       <div className="relative mx-auto max-w-6xl">
         <div className="sticky top-20 z-20 mb-8 flex justify-center py-2">
           <div
             aria-label={copy.eyebrow}
-            className="grid w-full max-w-sm grid-cols-2 rounded-full border border-zinc-200 bg-zinc-100/95 p-1 text-xs font-black uppercase tracking-widest shadow-sm shadow-zinc-200/50 backdrop-blur dark:border-white/10 dark:bg-zinc-900/90 dark:shadow-none"
+            className="grid w-full max-w-sm grid-cols-2 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white/80 p-1 text-xs font-black uppercase tracking-widest shadow-sm backdrop-blur dark:bg-zinc-800/80"
             role="tablist"
           >
             {(["monthly", "annual"] as const).map((cycle) => (
               <button
                 aria-selected={billingCycle === cycle}
                 className={cn(
-                  "relative isolate h-10 overflow-hidden rounded-full px-4 text-zinc-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:text-zinc-400 dark:focus-visible:ring-offset-zinc-950",
-                  billingCycle === cycle && "text-zinc-950 dark:text-zinc-950",
+                  "relative isolate h-10 overflow-hidden rounded-full px-4 text-zinc-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--q-accent)] dark:text-zinc-300",
+                  billingCycle === cycle && "text-zinc-900 dark:text-zinc-100",
                 )}
                 key={cycle}
                 onClick={() => setBillingCycle(cycle)}
@@ -328,7 +329,7 @@ export function Pricing03({ locale }: { locale: string }) {
               >
                 {billingCycle === cycle && (
                   <motion.span
-                    className="absolute inset-0 -z-10 rounded-full bg-white shadow-sm shadow-zinc-200/60 dark:bg-white dark:shadow-none"
+                    className="absolute inset-0 -z-10 rounded-full bg-[var(--q-bg-light)] shadow-sm dark:bg-zinc-900"
                     layoutId="pricing-cycle-indicator"
                     transition={indicatorTransition}
                   />
@@ -346,7 +347,7 @@ export function Pricing03({ locale }: { locale: string }) {
           initial={false}
           transition={panelTransition}
         >
-          <div className="relative grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <div className="relative grid grid-cols-1 gap-6 lg:grid-cols-3">
             {activePlans.map((plan, index) => (
               <motion.div
                 animate={{ opacity: 1, y: 0 }}
@@ -390,8 +391,8 @@ function formatQuota(value: number) {
 
 function PlanLimit({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 dark:border-white/10 dark:bg-white/[0.045]">
-      <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">{label}</p>
+    <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/80 dark:bg-zinc-900/60 p-3">
+      <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">{label}</p>
       <p className="mt-1 truncate text-xs font-black capitalize text-zinc-900 dark:text-white">{value}</p>
     </div>
   );
@@ -409,24 +410,26 @@ function PlanCard({
   return (
     <article
       className={cn(
-        "relative flex min-h-[560px] w-full flex-col overflow-hidden rounded-[1.5rem] border border-zinc-200 bg-white p-6 text-start transition duration-300 hover:border-zinc-300 hover:bg-zinc-50/40 dark:border-white/10 dark:bg-white/[0.045] dark:hover:border-white/15 dark:hover:bg-white/[0.06]",
-        plan.isPopular && "border-blue-500 bg-blue-50/50 text-zinc-950 hover:border-blue-500 hover:bg-blue-50/70 dark:border-blue-400/80 dark:bg-blue-500/[0.12] dark:text-white dark:hover:bg-blue-500/[0.16]",
+        "relative flex min-h-[560px] w-full flex-col overflow-hidden rounded-3xl border p-6 text-start transition duration-300 hover:shadow-lg dark:hover:shadow-none",
+        plan.isPopular
+          ? "border-[var(--q-accent)] bg-white text-zinc-900 dark:border-[var(--q-accent)] dark:bg-[var(--q-card)] dark:text-white"
+          : "border-zinc-200 bg-white/80 text-zinc-900 dark:border-zinc-800 dark:bg-[var(--q-bg-secondary)]/60 dark:text-white",
       )}
       data-testid={`pricing-card-${plan.id}`}
     >
-      <div className={cn("absolute inset-x-8 top-0 h-1 rounded-b-full", plan.isPopular ? "bg-blue-500" : "bg-zinc-200 dark:bg-white/10")} />
+      <div className={cn("absolute inset-x-8 top-0 h-1 rounded-b-full", plan.isPopular ? "bg-[var(--q-accent)]" : "bg-zinc-200 dark:bg-zinc-800")} />
       {plan.isPopular && (
-        <Badge className="absolute end-6 top-5 rounded-full bg-blue-600 px-3 text-white dark:bg-blue-600 dark:text-white">
+        <Badge className="absolute end-6 top-5 rounded-full bg-[var(--q-accent)] px-3 text-white dark:bg-[var(--q-accent)] dark:text-white">
           {plan.period === "year" ? copy.annualBadge : copy.popular}
         </Badge>
       )}
 
       <div>
         <h3 className={cn("text-2xl font-black tracking-tight", plan.isPopular && "pe-28")}>{plan.name}</h3>
-        <p className="mt-4 min-h-[84px] text-sm font-medium leading-7 text-zinc-500 dark:text-zinc-400">
+        <p className="mt-4 min-h-[84px] text-sm font-medium leading-7 text-zinc-600 dark:text-zinc-400">
           {plan.description}
         </p>
-        <div className="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50/80 p-5 dark:border-white/10 dark:bg-white/[0.055]">
+        <div className="mt-6 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/80 p-5 dark:bg-zinc-900/50">
           <p className="flex min-h-[58px] flex-wrap items-end gap-2">
             {typeof plan.price === "number" ? (
               <>
@@ -436,7 +439,7 @@ function PlanCard({
                   transformTiming={{ duration: 900, easing: "ease-out" }}
                   value={plan.price}
                 />
-                <span className="pb-1 text-sm font-bold text-zinc-500 dark:text-zinc-400">
+                <span className="pb-1 text-sm font-bold text-zinc-600 dark:text-zinc-400">
                   {periodLabel}
                 </span>
               </>
@@ -462,22 +465,22 @@ function PlanCard({
         className={cn(
           "mt-5 h-11 w-full rounded-full",
           plan.isPopular
-            ? "bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
-            : "border border-zinc-200 bg-white text-zinc-950 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/[0.06] dark:text-white dark:hover:bg-white/10",
+            ? "bg-[var(--q-text-primary)] text-[var(--q-bg)] hover:bg-[var(--q-text-secondary)] dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+            : "border border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700",
         )}
-        variant="secondary"
+        variant={plan.isPopular ? "primary" : "secondary"}
       >
         {plan.period === "year" && <CalendarDays className="h-4 w-4" />}
         {plan.buttonText}
         <ArrowRight className="h-4 w-4 rtl:rotate-180" />
       </LandingButton>
 
-      <div className="my-6 h-px bg-zinc-200/80 dark:bg-white/10" />
+      <div className="my-6 h-px bg-zinc-200/80 dark:bg-zinc-700" />
 
       <ul className="mt-auto space-y-3">
         {plan.features.map((feature) => (
           <li className="flex items-start gap-3" key={feature.title}>
-            <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-[var(--q-accent)] dark:text-[var(--q-accent)]" />
             <span className="text-sm font-bold leading-relaxed">{feature.title}</span>
           </li>
         ))}

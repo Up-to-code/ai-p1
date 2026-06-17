@@ -236,7 +236,7 @@ export function ProfileSettingsScreen() {
             <Button
               onClick={saveProfile}
               disabled={saveOperation.isRunning || isSubmitting}
-              className="shrink-0 h-11 px-6 rounded-[22px] bg-foreground text-background hover:opacity-90 font-black uppercase tracking-widest text-[10px] dark:bg-white dark:text-zinc-900 dark:hover:bg-muted transition-all active:scale-[0.98] disabled:opacity-50"
+              className="shrink-0 h-11 px-6 rounded-[22px] bg-foreground text-background hover:opacity-90 font-black uppercase tracking-widest text-[10px] dark:hover:bg-muted transition-all active:scale-[0.98] disabled:opacity-50"
             >
               {saveOperation.isRunning ? (
                 <Loader2 className="me-2 h-3.5 w-3.5 animate-spin" />

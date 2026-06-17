@@ -45,9 +45,9 @@ export function ProjectListView() {
           <div className="h-8 w-8 animate-spin rounded-full border-[3px] border-primary border-t-transparent" />
         </div>
       ) : projects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-[2rem] border border-dashed border-zinc-300 bg-surface/50 p-16 text-center dark:border-white/10 dark:bg-white/5">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-zinc-100 dark:bg-white/10">
-            <FolderKanban className="h-10 w-10 text-zinc-400" />
+        <div className="flex flex-col items-center justify-center rounded-[2rem] border border-dashed border-border bg-surface/50 p-16 text-center dark:border-white/10 dark:bg-white/5">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted dark:bg-white/10">
+            <FolderKanban className="h-10 w-10 text-muted-foreground" />
           </div>
           <h3 className="mt-6 text-xl font-black text-text-primary">No projects found</h3>
           <p className="mt-2 max-w-sm text-sm font-medium text-text-secondary">Get started by creating your first project container to organize tasks, files, and team communication.</p>
@@ -69,7 +69,7 @@ export function ProjectListView() {
                   <div className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-black uppercase tracking-wider ${
                     project.status === "active" ? "bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400" :
                     project.status === "paused" ? "bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400" :
-                    "bg-zinc-100 text-zinc-600 dark:bg-white/10 dark:text-zinc-400"
+                    "bg-muted text-foreground dark:bg-white/10 dark:text-muted-foreground"
                   }`}>
                     {project.status || "Planned"}
                   </div>

@@ -1,0 +1,90 @@
+{
+  "meta": {
+    "name": "Qentrah Design Tokens",
+    "description": "Apple x OpenAI color system — shadcn/ui CSS variable tokens for Next.js + Tailwind v4",
+    "version": "1.0.0",
+    "usage": "CSS variables via @theme in globals.css. Dark mode via .dark class on <html>."
+  },
+  "color": {
+    "light": {
+      "background":             { "value": "#f5f4f0", "css": "--background",            "note": "Page bg — Apple off-white" },
+      "foreground":             { "value": "#1a1a18", "css": "--foreground",            "note": "Primary text — warmed black" },
+      "card":                   { "value": "#fbfaf7", "css": "--card",                  "note": "Card / panel surface — softened" },
+      "card-foreground":        { "value": "#1a1a18", "css": "--card-foreground",       "note": "Text on cards" },
+      "popover":                { "value": "#fbfaf7", "css": "--popover" },
+      "popover-foreground":     { "value": "#1a1a18", "css": "--popover-foreground",   "note": "Menu text" },
+      "primary":                { "value": "#0066cc", "css": "--primary",               "note": "Brand accent — Apple blue" },
+      "primary-hover":          { "value": "#0055aa", "css": "--primary-hover" },
+      "primary-active":         { "value": "#004499", "css": "--primary-active" },
+      "primary-foreground":     { "value": "#ffffff", "css": "--primary-foreground" },
+      "secondary":              { "value": "#efeeea", "css": "--secondary",             "note": "Sidebar, subtle surface" },
+      "secondary-foreground":   { "value": "#1a1a18", "css": "--secondary-foreground" },
+      "muted":                  { "value": "#e9e7e1", "css": "--muted",                 "note": "Fields, disabled bg" },
+      "muted-foreground":       { "value": "#79766f", "css": "--muted-foreground",      "note": "Secondary / helper text — more legible" },
+      "accent":                 { "value": "#efeeea", "css": "--accent",                "note": "Hover surface" },
+      "accent-foreground":      { "value": "#1a1a18", "css": "--accent-foreground" },
+      "destructive":            { "value": "#f87171", "css": "--destructive" },
+      "destructive-foreground": { "value": "#1a1a18", "css": "--destructive-foreground" },
+      "border":                 { "value": "#e0ddd6", "css": "--border",                "note": "Dividers — warmer" },
+      "input":                  { "value": "#e9e7e1", "css": "--input" },
+      "ring":                   { "value": "#0066cc", "css": "--ring",                  "note": "Focus ring" },
+      "topbar-bg":              { "value": "#efeeea", "css": "--q-topbar",              "note": "Topbar matches sidebar in light" },
+      "topbar-btn":             { "value": "#1a1a18", "css": "--q-topbar-btn",           "note": "Black button in light — Apple convention" }
+    },
+    "dark": {
+      "background":             { "value": "#121212", "css": "--background",            "note": "Page bg — lifted, less harsh than #080808" },
+      "foreground":             { "value": "#ededec", "css": "--foreground",            "note": "Near-white — softer, warmer" },
+      "card":                   { "value": "#1a1a1a", "css": "--card",                  "note": "Card / panel surface — warmer" },
+      "card-foreground":        { "value": "#ededec", "css": "--card-foreground",       "note": "Text on cards" },
+      "popover":                { "value": "#1a1a1a", "css": "--popover" },
+      "popover-foreground":     { "value": "#ededec", "css": "--popover-foreground",   "note": "Menu text" },
+      "primary":                { "value": "#0066cc", "css": "--primary",               "note": "Brand accent — same in both themes" },
+      "primary-hover":          { "value": "#0055aa", "css": "--primary-hover" },
+      "primary-active":         { "value": "#004499", "css": "--primary-active" },
+      "primary-foreground":     { "value": "#ffffff", "css": "--primary-foreground" },
+      "secondary":              { "value": "#161616", "css": "--secondary",             "note": "Sidebar — warmer" },
+      "secondary-foreground":   { "value": "#ededec", "css": "--secondary-foreground" },
+      "muted":                  { "value": "#1e1e1e", "css": "--muted" },
+      "muted-foreground":       { "value": "#6b6b6b", "css": "--muted-foreground",      "note": "More legible than #3a3a3a" },
+      "accent":                 { "value": "#161616", "css": "--accent" },
+      "accent-foreground":      { "value": "#ededec", "css": "--accent-foreground" },
+      "destructive":            { "value": "#f87171", "css": "--destructive" },
+      "destructive-foreground": { "value": "#121212", "css": "--destructive-foreground" },
+      "border":                 { "value": "#2a2a2a", "css": "--border",                "note": "Hairline — more visible, less strain" },
+      "input":                  { "value": "#1e1e1e", "css": "--input" },
+      "ring":                   { "value": "#0066cc", "css": "--ring" },
+      "topbar-bg":              { "value": "#121212", "css": "--q-topbar",              "note": "Topbar matches page bg in dark — OpenAI pattern" },
+      "topbar-btn":             { "value": "#ededec", "css": "--q-topbar-btn" }
+    },
+    "semantic": {
+      "success": { "value": "#4ade80", "css": "--q-success", "note": "Done / running" },
+      "warning": { "value": "#fbbf24", "css": "--q-warning", "note": "In review / queued" },
+      "error":   { "value": "#f87171", "css": "--q-error",   "note": "Blocked / failed / destructive" },
+      "info":    { "value": "#60a5fa", "css": "--q-info",    "note": "In progress" },
+      "note":    { "value": "#a78bfa", "css": "--q-note",    "note": "Draft / neutral" }
+    }
+  },
+  "typography": {
+    "fontSans":         { "value": "Inter, -apple-system, BlinkMacSystemFont, sans-serif" },
+    "fontMono":         { "value": "JetBrains Mono, ui-monospace, Menlo, Monaco, Consolas, monospace" },
+    "letterSpacing":    { "value": "-0.03em", "note": "Apple-style tight tracking on body" },
+    "letterSpacingRtl": { "value": "0",       "note": "Arabic / RTL — no tracking" }
+  },
+  "radius": {
+    "sm":  "4px",
+    "md":  "8px",
+    "lg":  "10px",
+    "xl":  "12px",
+    "2xl": "14px"
+  },
+  "layout": {
+    "sidebarWidth":   "172px",
+    "topbarHeight":   "46px",
+    "contentPadding": "18px",
+    "cardGap":        "10px"
+  },
+  "principles": {
+    "fromApple":  "Off-white page, near-white sidebar, tight letter-spacing, black topbar button in light. Body text near-white — never pure white.",
+    "fromOpenAI": "Near-black base, hairline borders, one accent, no decoration. Dark topbar matches page bg. Hierarchy through opacity not extra colors."
+  }
+}

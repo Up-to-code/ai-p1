@@ -35,8 +35,8 @@ export function Topbar() {
   const { isDark, setTheme } = useTheme();
   const { isOpen, toggleSidebar } = useSidebar();
   const setActiveAiThreadId = useWorkspaceStore((state) => state.setActiveAiThreadId);
-  const activeToggleClassName = "text-background";
-  const inactiveToggleClassName = "text-text-muted hover:text-text-primary";
+  const activeToggleClassName = "text-white";
+  const inactiveToggleClassName = "text-muted-foreground hover:text-foreground";
 
   const createActions = [
     { label: tSidebar("tasks"), href: "/tasks?new=true", icon: ListTodo },
@@ -54,7 +54,7 @@ export function Topbar() {
 
   return (
     <header className={cn(
-      "flex h-[var(--topbar-height)] items-center gap-4 border-b border-[var(--color-divider)] bg-background/95 px-8 transition-all duration-300",
+      "flex h-[var(--topbar-height)] items-center gap-4 border-b border-[var(--color-divider)] bg-[var(--color-background)]/80 backdrop-blur-xl backdrop-saturate-150 px-8 transition-all duration-300 sticky top-0 z-30 shadow-sm shadow-color-user-bubble/10",
       isRtl && "font-cairo"
     )}>
 
@@ -169,7 +169,7 @@ function ToggleHighlight({ layoutId }: { layoutId: string }) {
   return (
     <motion.span
       layoutId={layoutId}
-      className="absolute inset-0 rounded-full bg-text-primary shadow-none"
+      className="absolute inset-0 rounded-full bg-foreground shadow-none"
       transition={{ type: "spring", stiffness: 500, damping: 38, mass: 0.7 }}
     />
   );

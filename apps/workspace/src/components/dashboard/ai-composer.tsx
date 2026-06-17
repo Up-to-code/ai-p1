@@ -220,7 +220,7 @@ export default function AiComposer({
                 className={cn(
                   "flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 active:scale-90",
                   isTyping
-                    ? "bg-foreground text-background hover:opacity-90"
+                    ? "bg-color-user-bubble text-white hover:opacity-90"
                     : "bg-surface border border-border text-text-muted",
                 )}
               >

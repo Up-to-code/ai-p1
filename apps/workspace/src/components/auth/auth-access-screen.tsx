@@ -149,7 +149,7 @@ export function AuthAccessScreen({
 
             <div className={`mt-8 grid gap-3 ${isAppleAuthEnabled ? "sm:grid-cols-2" : ""}`}>
               <Button
-                className="h-12 rounded-2xl border-zinc-200 bg-white text-sm font-bold text-zinc-950 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-white"
+                className="h-12 rounded-2xl border-border bg-white text-sm font-bold text-foreground hover:bg-muted/50 dark:border-white/10 dark:bg-white/5"
                 disabled={isPending}
                 onClick={() => onSocialSignIn("google")}
                 type="button"
@@ -162,7 +162,7 @@ export function AuthAccessScreen({
               </Button>
               {isAppleAuthEnabled ? (
                 <Button
-                  className="h-12 rounded-2xl border-zinc-200 bg-white text-sm font-bold text-zinc-950 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-white"
+                  className="h-12 rounded-2xl border-border bg-white text-sm font-bold text-foreground hover:bg-muted/50 dark:border-white/10 dark:bg-white/5"
                   disabled={isPending}
                   onClick={() => onSocialSignIn("apple")}
                   type="button"

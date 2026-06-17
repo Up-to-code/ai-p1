@@ -307,8 +307,8 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
               ].map((pill) => (
                 <motion.button
                   key={pill.label}
-                  onClick={() => setInputValue(pill.label)}
-                  className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-[10px] font-black uppercase tracking-widest text-text-secondary transition-all hover:border-border hover:bg-surface-elevated hover:text-text-primary"
+                  onClick={() => setInputValue(`${pill.label} - apply is in our PCS model`)}
+                  className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-color-user-bubble bg-color-user-bubble px-3 py-2 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:opacity-90"
                   variants={aiSuggestionVariants}
                   whileHover={reduceMotion ? undefined : { y: -1 }}
                   whileTap={reduceMotion ? undefined : { scale: 0.98 }}

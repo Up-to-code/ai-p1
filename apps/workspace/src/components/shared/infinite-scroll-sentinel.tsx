@@ -43,9 +43,9 @@ export function InfiniteScrollSentinel({
   return (
     <div ref={ref} className={cn("flex min-h-12 items-center justify-center py-4", className)}>
       {status === "LoadingMore" ? (
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" aria-label="Loading more records" />
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-label="Loading more records" />
       ) : status === "Exhausted" && exhaustedLabel ? (
-        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-300">{exhaustedLabel}</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">{exhaustedLabel}</p>
       ) : null}
     </div>
   );

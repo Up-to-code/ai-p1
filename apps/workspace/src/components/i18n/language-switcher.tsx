@@ -24,7 +24,7 @@ export function LanguageSwitcher({ className, compact = false }: LanguageSwitche
       aria-label={`Switch language to ${label}`}
       className={cn(
         buttonVariants({ variant: "outline", size: compact ? "icon" : "sm" }),
-        "shrink-0 border-zinc-100 bg-white font-bold uppercase tracking-[0.1em] text-[10px] shadow-none hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10",
+        "shrink-0 border-border bg-white font-bold uppercase tracking-[0.1em] text-[10px] shadow-none hover:bg-muted/50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10",
         className
       )}
     >

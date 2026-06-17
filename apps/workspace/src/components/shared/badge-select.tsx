@@ -61,7 +61,7 @@ export function BadgeSelect<TValue extends string>({
       {label && (
         <span
           id={labelId}
-          className="mb-2 block text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-300"
+          className="mb-2 block text-[9px] font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground/40"
         >
           {label}
         </span>
@@ -78,7 +78,7 @@ export function BadgeSelect<TValue extends string>({
           aria-describedby={describedBy}
           aria-invalid={Boolean(error)}
           className={cn(
-            "h-11 rounded-xl border-zinc-200 bg-zinc-50/80 px-3 text-xs font-bold shadow-none transition-colors focus:border-zinc-400 focus:bg-white focus-visible:ring-2 focus-visible:ring-zinc-900/20 dark:border-white/15 dark:bg-white/7 dark:focus:border-white/30 dark:focus:bg-white/10 dark:focus-visible:ring-white/25",
+            "h-11 rounded-xl border-border bg-muted/50/80 px-3 text-xs font-bold shadow-none transition-colors focus:border-border focus:bg-white focus-visible:ring-2 focus-visible:ring-ring dark:border-white/15 dark:bg-white/7 dark:focus:border-white/30 dark:focus:bg-white/10 dark:focus-visible:ring-white/25",
             error &&
               "border-red-300 focus:border-red-400 dark:border-red-500/60 dark:focus:border-red-400",
             triggerClassName,
@@ -94,14 +94,14 @@ export function BadgeSelect<TValue extends string>({
                 <span className="truncate">{selected.label}</span>
               </Badge>
             ) : (
-              <span className="truncate text-zinc-400">{placeholder}</span>
+              <span className="truncate text-muted-foreground">{placeholder}</span>
             )}
           </span>
         </SelectTrigger>
         <SelectContent
           align="start"
           className={cn(
-            "rounded-2xl border-zinc-100 p-1 dark:border-white/10",
+            "rounded-2xl border-border p-1 dark:border-white/10",
             contentClassName,
           )}
         >
@@ -123,7 +123,7 @@ export function BadgeSelect<TValue extends string>({
                       <span className="truncate">{option.label}</span>
                     </Badge>
                     {option.description && (
-                      <span className="truncate text-[10px] font-bold text-zinc-400">
+                      <span className="truncate text-[10px] font-bold text-muted-foreground">
                         {option.description}
                       </span>
                     )}

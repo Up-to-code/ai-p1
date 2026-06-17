@@ -251,7 +251,7 @@ export function ResourceMediaUploader({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h3 className="text-sm font-black uppercase tracking-tight text-foreground">{copy.title}</h3>
-            <p className="mt-1 max-w-xl text-xs font-semibold leading-relaxed text-zinc-400">{copy.description}</p>
+            <p className="mt-1 max-w-xl text-xs font-semibold leading-relaxed text-muted-foreground">{copy.description}</p>
           </div>
         </div>
       )}
@@ -262,11 +262,11 @@ export function ResourceMediaUploader({
         variant === "review" ? "min-h-28" : "min-h-32",
         (operation.isRunning || uploadQueue.isUploading) && "pointer-events-none opacity-60",
       )}>
-        <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-card text-foreground shadow-sm shadow-zinc-950/[0.04] dark:shadow-none">
+        <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-card text-foreground shadow-sm shadow-black/5 dark:shadow-none">
           <UploadCloud className="h-5 w-5" />
         </span>
         <span className="text-[10px] font-black uppercase tracking-widest text-foreground">{copy.pick}</span>
-        {!copy.hideDropDescription && <span className="max-w-md text-xs font-semibold leading-relaxed text-zinc-400">{copy.description}</span>}
+        {!copy.hideDropDescription && <span className="max-w-md text-xs font-semibold leading-relaxed text-muted-foreground">{copy.description}</span>}
         <input
           type="file"
           className="sr-only"
@@ -279,7 +279,7 @@ export function ResourceMediaUploader({
       {uploadQueueItems.length > 0 && (
         <div className="mt-4 border border-border bg-muted/50 p-3">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{copy.queued}</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{copy.queued}</p>
             {canUpload && !immediate && (
               <Button type="button" size="sm" onClick={() => void uploadPending()} disabled={operation.isRunning}>
                 {copy.upload}
@@ -307,7 +307,7 @@ export function ResourceMediaUploader({
                     <span className="block h-full w-1/2 animate-[upload-slide_1.1s_ease-in-out_infinite] bg-blue-500" />
                   </span>
                 )}
-                <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-muted text-zinc-400">
+                <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-muted text-muted-foreground">
                   {preview.previewUrl && preview.kind === "image" ? (
                     <Image src={preview.previewUrl} alt={preview.file.name} fill sizes="180px" className="object-cover" />
                   ) : preview.previewUrl && preview.kind === "video" ? (
@@ -315,21 +315,21 @@ export function ResourceMediaUploader({
                   ) : (
                     <MediaIcon kind={preview.kind} />
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/75 via-zinc-950/5 to-transparent opacity-100" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-muted/75 via-muted to-transparent opacity-100" />
                   {preview.status === "uploading" && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-zinc-950/20">
+                    <div className="absolute inset-0 flex items-center justify-center bg-foreground/20">
                       <Loader2 className="h-5 w-5 animate-spin text-white" />
                     </div>
                   )}
                   <div className="absolute right-2 top-2 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
                     {immediate && preview.status === "failed" && (
-                      <button type="button" className="inline-flex h-8 w-8 items-center justify-center bg-zinc-950/70 text-white transition hover:bg-zinc-900" onClick={() => uploadQueue.uploadQueued([preview.id])} aria-label={copy.retry}>
+                      <button type="button" className="inline-flex h-8 w-8 items-center justify-center bg-foreground/70 text-white transition hover:bg-foreground" onClick={() => uploadQueue.uploadQueued([preview.id])} aria-label={copy.retry}>
                         <RotateCcw className="h-3.5 w-3.5" />
                       </button>
                     )}
                     <button
                       type="button"
-                      className="inline-flex h-8 w-8 items-center justify-center bg-zinc-950/70 text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="inline-flex h-8 w-8 items-center justify-center bg-foreground/70 text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
                       disabled={preview.status === "uploading"}
                       onClick={() => {
                         if (immediate) void uploadQueue.removeFromQueue(preview.id);
@@ -359,14 +359,14 @@ export function ResourceMediaUploader({
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {visibleMedia.map((asset) => (
             <article key={asset._id} className="overflow-hidden rounded-2xl border border-border bg-muted">
-              <div className="relative flex aspect-video items-center justify-center bg-muted text-zinc-400">
+              <div className="relative flex aspect-video items-center justify-center bg-muted text-muted-foreground">
                 {asset.kind === "image" ? (
                   <Image src={asset.url} alt={asset.name} fill sizes="300px" className="object-cover" />
                 ) : (
                   <MediaIcon kind={asset.kind} />
                 )}
                 {asset.isCover && (
-                  <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-white px-2 py-1 text-[9px] font-black uppercase text-zinc-900 dark:bg-zinc-900 dark:text-white">
+                  <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-white px-2 py-1 text-[9px] font-black uppercase text-foreground dark:bg-foreground">
                     <Star className="h-3 w-3 fill-current" />
                     {copy.cover}
                   </span>
@@ -376,11 +376,11 @@ export function ResourceMediaUploader({
                 <p className="min-w-0 truncate text-xs font-black text-foreground">{asset.name}</p>
                 <div className="flex shrink-0 items-center gap-1">
                   {asset.kind === "image" && !asset.isCover && (
-                    <button type="button" className="p-2 text-zinc-400 hover:text-foreground" onClick={() => operation.run(() => setMediaCoverRequest(asset.organizationId, asset._id), { successMessage: "Cover updated." })} aria-label={copy.setCover}>
+                    <button type="button" className="p-2 text-muted-foreground hover:text-foreground" onClick={() => operation.run(() => setMediaCoverRequest(asset.organizationId, asset._id), { successMessage: "Cover updated." })} aria-label={copy.setCover}>
                       <Star className="h-3.5 w-3.5" />
                     </button>
                   )}
-                  <button type="button" className="p-2 text-zinc-400 hover:text-red-500" onClick={() => operation.run(() => deleteMediaRequest(asset.organizationId, asset._id), { successMessage: "Media deleted." })} aria-label={copy.delete}>
+                  <button type="button" className="p-2 text-muted-foreground hover:text-red-500" onClick={() => operation.run(() => deleteMediaRequest(asset.organizationId, asset._id), { successMessage: "Media deleted." })} aria-label={copy.delete}>
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -402,9 +402,9 @@ function UploadQueueBadge({ status, labels }: { status: UploadQueueStatus; label
     <span className={cn(
       "inline-flex h-5 items-center gap-1 px-1.5 text-[8px] font-black uppercase tracking-widest",
       status === "uploaded" && "bg-emerald-500 text-white",
-      status === "failed" && "bg-amber-500 text-zinc-950",
+      status === "failed" && "bg-amber-500 text-foreground",
       status === "uploading" && "bg-blue-500 text-white",
-      status === "queued" && "bg-white/90 text-zinc-800",
+      status === "queued" && "bg-white/90 text-foreground",
     )}>
       <Icon className={cn("h-3 w-3", status === "uploading" && "animate-spin")} />
       {label}

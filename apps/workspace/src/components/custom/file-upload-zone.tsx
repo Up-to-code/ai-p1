@@ -54,7 +54,7 @@ export function FileUploadZone({
   
   return (
     <div className="space-y-3 w-full">
-      <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{label}</div>
+      <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{label}</div>
       <label
         htmlFor={inputId}
         tabIndex={0}
