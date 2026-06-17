@@ -6,39 +6,42 @@
 
 @theme {
   /* ── Shadcn Color Palette (Light) ── */
-  --color-background: #f5f4f0;
-  --color-foreground: #1a1a18;
-  --color-card: #fbfaf7;
-  --color-card-foreground: #1a1a18;
-  --color-popover: #fbfaf7;
-  --color-popover-foreground: #1a1a18;
+  --color-background: #f0ede6;
+  --color-foreground: #111110;
+  --color-card: #faf9f5;
+  --color-card-foreground: #111110;
+  --color-popover: #faf9f5;
+  --color-popover-foreground: #111110;
   --color-primary: #0066cc;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #efeeea;
-  --color-secondary-foreground: #1a1a18;
-  --color-muted: #e9e7e1;
-  --color-muted-foreground: #79766f;
-  --color-accent: #efeeea;
-  --color-accent-foreground: #1a1a18;
+  --color-secondary: #e4e0d6;
+  --color-secondary-foreground: #111110;
+  --color-muted: #e4e0d6;
+  --color-muted-foreground: #5a5751;
+  --color-accent: #e4e0d6;
+  --color-accent-foreground: #111110;
   --color-destructive: #f87171;
-  --color-destructive-foreground: #1a1a18;
-  --color-border: #e0ddd6;
-  --color-input: #e9e7e1;
+  --color-destructive-foreground: #111110;
+  --color-border: #d5d0c6;
+  --color-input: #ffffff;
   --color-ring: #0066cc;
 
   /* ── Custom semantic tokens ── */
-  --color-text-primary: #1a1a18;
-  --color-text-secondary: #79766f;
-  --color-text-muted: #9e9b97;
-  --color-surface: #fbfaf7;
-  --color-surface-elevated: #ffffff;
+  --color-text-primary: #111110;
+  --color-text-secondary: #5a5751;
+  --color-text-muted: #3d3b37;
+  --color-surface: #e4e0d6;
+  --color-surface-elevated: #faf9f5;
+
+  /* ── User bubble color (brand) ── */
+  --color-user-bubble: #1565c0;
 
   /* ── Semantic Status ── */
-  --color-success: #4ade80;
-  --color-warning: #fbbf24;
-  --color-danger: #f87171;
-  --color-info: #60a5fa;
-  --color-note: #a78bfa;
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+  --color-info: #2563eb;
+  --color-note: #7c3aed;
 
   /* ── Typography ── */
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, ui-sans-serif, system-ui, sans-serif;
@@ -55,23 +58,23 @@
   color-scheme: light;
 
   /* ── Qentrah Custom Properties ── */
-  --q-bg: #f5f4f0;
-  --q-bg-very-dark: #e9e7e1;
-  --q-bg-dark: #efeeea;
-  --q-bg-secondary: #f2f1ed;
-  --q-bg-light: #ffffff;
-  --q-bg-very-light: #fbfaf7;
+  --q-bg: #f0ede6;
+  --q-bg-very-dark: #e4e0d6;
+  --q-bg-dark: #e8e4db;
+  --q-bg-secondary: #ebe7df;
+  --q-bg-light: #faf9f5;
+  --q-bg-very-light: #ffffff;
   
-  --q-sidebar: #efeeea;
-  --q-topbar: #efeeea;
-  --q-card: #ffffff;
-  --q-card-hover: #f9f9f9;
-  --q-border: #e0ddd6;
-  --q-border-strong: #d0ccc6;
-  --q-text-primary: #1a1a18;
-  --q-text-secondary: #79766f;
-  --q-text-muted: #9e9b97;
-  --q-input-bg: #e9e7e1;
+  --q-sidebar: #e4e0d6;
+  --q-topbar: #e8e4db;
+  --q-card: #faf9f5;
+  --q-card-hover: #e4e0d6;
+  --q-border: #d5d0c6;
+  --q-border-strong: #c9c5bc;
+  --q-text-primary: #111110;
+  --q-text-secondary: #5a5751;
+  --q-text-muted: #3d3b37;
+  --q-input-bg: #ffffff;
   --q-accent: #0066cc;
   --q-accent-hover: #0055aa;
   --q-accent-active: #004499;
@@ -79,65 +82,83 @@
   --q-accent-border: rgba(0,102,204,0.25);
   --q-topbar-btn: #1a1a18;
 
+  /* User bubble (brand blue) */
+  --q-user-bubble: #1565c0;
+  --q-user-bubble-hover: #1e88e5;
+
   /* Status */
-  --q-success: #4ade80;
-  --q-success-bg: #0b2016;
-  --q-warning: #fbbf24;
-  --q-warning-bg: #251a05;
-  --q-error: #f87171;
-  --q-error-bg: #220b0a;
-  --q-info: #60a5fa;
-  --q-info-bg: #091a28;
-  --q-note: #a78bfa;
-  --q-note-bg: #160f28;
+  --q-success: #16a34a;
+  --q-success-bg: #f0fdf4;
+  --q-warning: #d97706;
+  --q-warning-bg: #fffbeb;
+  --q-error: #dc2626;
+  --q-error-bg: #fef2f2;
+  --q-info: #2563eb;
+  --q-info-bg: #eff6ff;
+  --q-note: #7c3aed;
+  --q-note-bg: #f5f3ff;
 }
 
 .dark {
   color-scheme: dark;
 
   /* ── Shadcn Color Palette (Dark) ── */
-  --color-background: #121212;
-  --color-foreground: #ededec;
-  --color-card: #1a1a1a;
-  --color-card-foreground: #ededec;
-  --color-popover: #1a1a1a;
-  --color-popover-foreground: #ededec;
+  --color-background: #0e0e0e;
+  --color-foreground: #f0f0ee;
+  --color-card: #1c1c1c;
+  --color-card-foreground: #f0f0ee;
+  --color-popover: #1c1c1c;
+  --color-popover-foreground: #f0f0ee;
   --color-primary: #0066cc;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #161616;
-  --color-secondary-foreground: #ededec;
-  --color-muted: #1e1e1e;
-  --color-muted-foreground: #6b6b6b;
-  --color-accent: #161616;
-  --color-accent-foreground: #ededec;
+  --color-secondary: #181818;
+  --color-secondary-foreground: #f0f0ee;
+  --color-muted: #181818;
+  --color-muted-foreground: #9e9b96;
+  --color-accent: #181818;
+  --color-accent-foreground: #f0f0ee;
   --color-destructive: #f87171;
-  --color-destructive-foreground: #121212;
-  --color-border: #2a2a2a;
-  --color-input: #1e1e1e;
+  --color-destructive-foreground: #0e0e0e;
+  --color-border: #303030;
+  --color-input: #272727;
   --color-ring: #0066cc;
 
+  /* ── Custom semantic tokens (Dark) ── */
+  --color-text-primary: #f0f0ee;
+  --color-text-secondary: #9e9b96;
+  --color-text-muted: #b8b4ae;
+  --color-surface: #181818;
+  --color-surface-elevated: #1c1c1c;
+
+  /* ── User bubble color (lighter in dark mode) ── */
+  --color-user-bubble: #42a5f5;
+
   /* ── Qentrah Custom Properties (Dark) ── */
-  --q-bg: #121212;
-  --q-bg-very-dark: #0a0a0a;
-  --q-bg-dark: #121212;
-  --q-bg-secondary: #161616;
-  --q-bg-light: #1a1a1a;
-  --q-bg-very-light: #1e1e1e;
+  --q-bg: #0e0e0e;
+  --q-bg-very-dark: #080808;
+  --q-bg-dark: #0e0e0e;
+  --q-bg-secondary: #181818;
+  --q-bg-light: #1c1c1c;
+  --q-bg-very-light: #242424;
   
-  --q-sidebar: #121212;
-  --q-topbar: #121212;
-  --q-card: #1a1a1a;
-  --q-card-hover: #121212;
-  --q-border: #2a2a2a;
-  --q-border-strong: #3a3a3a;
-  --q-text-primary: #ededec;
-  --q-text-secondary: #6b6b6b;
-  --q-text-muted: #555555;
-  --q-input-bg: #1e1e1e;
+  --q-sidebar: #181818;
+  --q-topbar: #0e0e0e;
+  --q-card: #1c1c1c;
+  --q-card-hover: #202020;
+  --q-border: #303030;
+  --q-border-strong: #444444;
+  --q-text-primary: #f0f0ee;
+  --q-text-secondary: #9e9b96;
+  --q-text-muted: #b8b4ae;
+  --q-input-bg: #272727;
   --q-accent: #0066cc;
-  --q-accent-hover: #0055aa;
-  --q-accent-active: #004499;
-  --q-topbar-btn: #0066cc;
+  --q-accent-hover: #1a7be6;
+  --q-accent-active: #136ecc;
+  --q-topbar-btn: #f0f0ee;
+
+  /* User bubble (brand blue - lighter in dark) */
+  --q-user-bubble: #42a5f5;
+  --q-user-bubble-hover: #64b5f6;
 
   /* Status */
   --q-success: #4ade80;
