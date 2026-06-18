@@ -43,6 +43,10 @@ import {
   handleReadOpportunity,
   handleReadOpportunityOptions,
   handleReadOpportunityStats,
+  handleReadDeal,
+  handleReadDeals,
+  handleReadDealOptions,
+  handleReadDealStats,
   handleReadProject,
   handleReadProjectOptions,
   handleReadProjectStats,
@@ -64,6 +68,11 @@ import {
   handleDeleteOpportunity,
   handleUpdateOpportunity,
 } from "@/server/domains/opportunities/handlers/opportunities";
+import {
+  handleCreateDeal,
+  handleDeleteDeal,
+  handleUpdateDeal,
+} from "@/server/domains/deals/handlers/deals";
 import {
   handleCreateClient,
   handleDeleteClient,
@@ -191,6 +200,10 @@ organizationRouter.get("/:organizationId/read/opportunities", handleReadOpportun
 organizationRouter.get("/:organizationId/read/opportunities/stats", handleReadOpportunityStats);
 organizationRouter.get("/:organizationId/read/opportunities/options", handleReadOpportunityOptions);
 organizationRouter.get("/:organizationId/read/opportunities/:opportunityId", handleReadOpportunity);
+organizationRouter.get("/:organizationId/read/deals", handleReadDeals);
+organizationRouter.get("/:organizationId/read/deals/stats", handleReadDealStats);
+organizationRouter.get("/:organizationId/read/deals/options", handleReadDealOptions);
+organizationRouter.get("/:organizationId/read/deals/:dealId", handleReadDeal);
 organizationRouter.get("/:organizationId/read/tasks", handleReadTasks);
 organizationRouter.get("/:organizationId/read/tasks/stats", handleReadTaskStats);
 organizationRouter.get("/:organizationId/read/tasks/options", handleReadTaskOptions);
@@ -283,6 +296,21 @@ organizationRouter.patch(
 organizationRouter.delete(
   "/:organizationId/opportunities/:opportunityId",
   handleDeleteOpportunity,
+);
+
+organizationRouter.post(
+  "/:organizationId/deals",
+  handleCreateDeal,
+);
+
+organizationRouter.patch(
+  "/:organizationId/deals/:dealId",
+  handleUpdateDeal,
+);
+
+organizationRouter.delete(
+  "/:organizationId/deals/:dealId",
+  handleDeleteDeal,
 );
 
 organizationRouter.post(

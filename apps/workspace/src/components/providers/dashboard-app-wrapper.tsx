@@ -32,15 +32,21 @@ function DashboardAuthenticatedShell({ children }: { children: ReactNode }) {
   
   const isAuthHandoffPending = useAuthHandoffPending(account.isSignedIn, account.workspace.organizationId);
   
-  // Memoize authRedirect to prevent unnecessary recalculations
+  // Memoize authRedirect to prevent unnecessary recalculations.
+  // Only compute a redirect once the session has fully loaded — never during
+  // "loadingSession" to avoid a false redirect caused by Clerk's async init.
   const authRedirect = useMemo(
-    () =>
-      getWorkspaceAuthRedirect({
+    () => {
+      // Don't redirect while the session is still loading — isSignedIn may
+      // be false momentarily even for authenticated users.
+      if (account.workspace.status === "loadingSession") return null;
+      return getWorkspaceAuthRedirect({
         isSignedIn: account.isSignedIn,
         workspaceStatus: account.workspace.status,
         locale,
         isAuthHandoffPending,
-      }),
+      });
+    },
     [account.isSignedIn, account.workspace.status, locale, isAuthHandoffPending]
   );
 
@@ -57,13 +63,21 @@ function DashboardAuthenticatedShell({ children }: { children: ReactNode }) {
   // Stable redirect effect - only redirect once per authRedirect change
   useEffect(() => {
     if (!authRedirect || hasRedirected) return;
-    
+
     setHasRedirected(true);
     const targetHref = toRouterHref(locale, authRedirect);
-    
+
     // Prevent redirect loops by checking if we're already on the target
     if (window.location.pathname !== targetHref) {
-      router.replace(targetHref);
+      // If redirecting to sign-in, encode the current full URL (path + search)
+      // as callbackURL so after sign-in the user lands back exactly where they were.
+      if (targetHref.includes("/sign-in")) {
+        const currentUrl = window.location.pathname + window.location.search;
+        const localizedCurrent = `/${locale}${currentUrl}`;
+        router.replace(`/sign-in?callbackURL=${encodeURIComponent(localizedCurrent)}`);
+      } else {
+        router.replace(targetHref);
+      }
     }
   }, [authRedirect, locale, router, hasRedirected]);
 
@@ -95,7 +109,9 @@ function DashboardAuthenticatedShell({ children }: { children: ReactNode }) {
           <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background">
             {isPendingApproval && <PendingApprovalBanner />}
             <Topbar />
-            <main className="flex-1 overflow-y-auto outline-none">{children}</main>
+            <main className="flex min-h-0 flex-1 flex-col overflow-hidden outline-none">
+              {children}
+            </main>
           </div>
         </div>
       </SidebarProvider>

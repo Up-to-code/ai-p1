@@ -3,18 +3,15 @@
 import {
   useMemo,
   useState,
+  useCallback,
   type ReactNode,
 } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LocationPicker } from "@qentrah/location-map/react";
-import type { LocationValue } from "@qentrah/location-map";
 import {
   CalendarDays,
-  Plus,
-  Trash2,
   User,
   Clock,
   X,
@@ -33,12 +30,17 @@ import {
   ArrowUpRight,
   ExternalLink,
   CheckCircle2,
+  Link2,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Trash2,
+  Pencil,
+  Filter,
+  Plus,
 } from "lucide-react";
 import {
-  AppPageHeader,
-  AppPageShell,
   AppPrimaryButton,
-  AppStatsGrid,
 } from "@/components/shared";
 import { useCalendarStore } from "@/domains/calendar";
 import type { CalendarEvent } from "../store/calendar.types";
@@ -46,10 +48,9 @@ import {
   calendarEventSchema,
   type CalendarEventFormValues,
 } from "../validation/calendar.schema";
-import { format, parse } from 'date-fns';
+import { format, parse, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays } from "date-fns";
 import { QentrahCalendarKit } from "./qentrah-calendar-kit";
-import type { CalendarEvent as CalendarKitEvent } from "calendarkit-basic";
-
+import type { CalendarEvent as CalendarKitEvent } from "@qentrah/calendar-kit";
 import { useAccountContext } from "@/domains/auth";
 import {
   calendarEventTone,
@@ -57,56 +58,40 @@ import {
   calendarIsoDate,
   calendarLongDayLabel,
   calendarLongDayYearLabel,
-  calendarLocationValueFromString,
   calendarScheduleTitle,
   calendarTasksForClient,
+  calendarHeaderLabel,
   customEventTypeValues,
-  formatCalendarTimeLabel,
-  orderedCalendarEvents,
-  serializeCalendarLocation,
-  visibleCalendarPickerOptions,
   visibleCalendarRange,
-  calendarDateOptions,
-  calendarTimeOptions,
-  calendarIsoOptionLabel,
-  type CalendarView,
 } from "@/domains/calendar/calendar-view-model";
-import { useClientOptionsQuery, useClientQuery } from "@/domains/clients/api/clients";
+import { useClientOptionsQuery } from "@/domains/clients/api/clients";
 import { useClientTaskOptionsQuery } from "@/domains/clients/api/client-tasks";
 import { useCalendarEventMutations } from "../hooks";
-import { useCalendarIndexRangeQueryResult, createCalendarEventRequest, updateCalendarEventRequest } from "../api/calendar";
+import { useCalendarDrawer } from "../hooks/use-calendar-drawer";
+import { useCalendarIndexRangeQueryResult } from "../api/calendar";
+import { useCurrentProjectId } from "@/domains/projects/hooks/use-current-project-id";
 import { useOperationState } from "@/lib/utils/operation-state";
 import {
-  DeleteRecordDialog,
   FormErrorSummary,
   HttpQueryState,
-  StatusPill,
-  TextInput,
   WorkspaceQueryState,
 } from "@/components/shared/crud-ui";
 import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { CalendarDatePicker } from "@/components/ui/calendar-date-picker";
+import { TimePicker } from "@/components/ui/time-picker";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { OwnerPicker } from "@/components/ui/owner-picker";
+import { CustomSelect } from "@/components/ui/custom-select";
+import { EventTypeBadge, EventStatusBadge } from "@/components/ui/event-badge";
 import {
   Sheet,
   SheetContent,
   SheetTitle,
 } from "@/components/ui/sheet";
-
 type PickerKind = "client" | "task";
+type DrawerView = "read" | "edit";
 
 /* ── Main ── */
 export function CalendarScreen() {
@@ -123,505 +108,304 @@ export function CalendarScreen() {
     () => visibleCalendarRange(currentDate, view),
     [currentDate, view],
   );
+  const projectId = useCurrentProjectId();
   const eventsQuery = useCalendarIndexRangeQueryResult(
     workspaceOrganizationId,
     range.startAt,
     range.endAt,
+    projectId,
   );
-  const stats = eventsQuery.data?.stats;
   const events = useMemo(
     () => (eventsQuery.data?.events ?? []) as CalendarEvent[],
     [eventsQuery.data],
   );
   const isLoading = isWorkspaceReady && eventsQuery.queryStatus === "loading";
   const isQueryBlocked = isLoading || eventsQuery.queryStatus === "error";
-  const [deleting, setDeleting] = useState<CalendarEvent | null>(null);
-  const [drawerDate, setDrawerDate] = useState<Date | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
-    null,
-  );
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
-  const shouldLoadPickerOptions = isCreateOpen || Boolean(editingEvent);
+  const drawer = useCalendarDrawer();
+  const shouldLoadPickerOptions = drawer.isOpen;
   const clientsQuery = useClientOptionsQuery(workspaceOrganizationId, { enabled: shouldLoadPickerOptions });
-    const tasksQuery = useClientTaskOptionsQuery(workspaceOrganizationId, { enabled: shouldLoadPickerOptions });
+  const tasksQuery = useClientTaskOptionsQuery(workspaceOrganizationId, { enabled: shouldLoadPickerOptions });
   const clients = clientsQuery ?? [];
   const tasks = tasksQuery ?? [];
   const isContextLoading = shouldLoadPickerOptions && Boolean(workspaceOrganizationId) && (!clientsQuery || !tasksQuery);
-  const deleteOperation = useOperationState({
-    errorMessage: "Event delete failed.",
-  });
   const calendarQueryKey = useMemo(
-    () => workspaceOrganizationId ? ["calendar", "index", { organizationId: workspaceOrganizationId, startAt: range.startAt, endAt: range.endAt }] : ["calendar", "index", "skip"],
-    [workspaceOrganizationId, range.startAt, range.endAt],
+    () => workspaceOrganizationId ? ["calendar", "index", { organizationId: workspaceOrganizationId, startAt: range.startAt, endAt: range.endAt, projectId: projectId ?? undefined }] : ["calendar", "index", "skip"],
+    [workspaceOrganizationId, range.startAt, range.endAt, projectId],
   );
-  const { createEvent, updateEvent, deleteEvent, isCreating, isUpdating, isDeleting } = useCalendarEventMutations(calendarQueryKey);
+  const { createEvent, updateEvent, deleteEvent } = useCalendarEventMutations(calendarQueryKey);
+  const deleteOp = useOperationState({ errorMessage: "Delete failed." });
+
+  const [filterStartDate, setFilterStartDate] = useState("");
+  const [filterEndDate, setFilterEndDate] = useState("");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const isFiltering = Boolean(filterStartDate && filterEndDate);
+
+  const effectiveRange = useMemo(() => {
+    if (isFiltering && filterStartDate && filterEndDate) {
+      return {
+        startAt: new Date(filterStartDate + "T00:00:00").getTime(),
+        endAt: new Date(filterEndDate + "T23:59:59").getTime(),
+      };
+    }
+    return range;
+  }, [isFiltering, filterStartDate, filterEndDate, range]);
+
+  const filteredEvents = useMemo(() => {
+    if (!isFiltering) return events;
+    return events.filter((ev) => {
+      const evDate = ev.date;
+      return evDate >= filterStartDate && evDate <= filterEndDate;
+    });
+  }, [events, isFiltering, filterStartDate, filterEndDate]);
 
   return (
-    <AppPageShell>
-      <AppPageHeader
-        eyebrow={t("eyebrow")}
-        title={t("title") + "."}
-        actions={
-          <AppPrimaryButton onClick={() => setIsCreateOpen(true)}>
-            <Plus className="me-2 h-3.5 w-3.5" />
-            {t("add")}
-          </AppPrimaryButton>
-        }
-      />
-
+    <div className="flex h-full flex-col overflow-hidden bg-background">
       {workspaceStatus !== "ready" ? (
         <WorkspaceQueryState status={workspaceStatus} variant="calendar" />
       ) : isQueryBlocked ? (
         <HttpQueryState query={eventsQuery} variant="calendar" />
       ) : (
         <>
-          <div className="h-[60vh] min-h-[500px] lg:h-[700px]">
+          {/* ── Top Header Bar ── */}
+          <div className="flex shrink-0 items-center justify-between gap-4 border-b border-border bg-card px-5 py-3">
+            {/* Left: Title + Navigation */}
+            <div className="flex items-center gap-3 min-w-0">
+              <h1 className="text-lg font-bold text-foreground truncate">{t("title")}</h1>
+              <div className="h-5 w-px bg-border shrink-0" />
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  onClick={() => {
+                    if (view === "month") setCurrentDate(subMonths(currentDate, 1));
+                    else if (view === "week") setCurrentDate(subWeeks(currentDate, 1));
+                    else setCurrentDate(subDays(currentDate, 1));
+                  }}
+                  className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setCurrentDate(new Date())}
+                  className="h-7 rounded-lg border border-border px-2.5 text-[11px] font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                >
+                  {t("today")}
+                </button>
+                <button
+                  onClick={() => {
+                    if (view === "month") setCurrentDate(addMonths(currentDate, 1));
+                    else if (view === "week") setCurrentDate(addWeeks(currentDate, 1));
+                    else setCurrentDate(addDays(currentDate, 1));
+                  }}
+                  className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+              <span className="text-sm font-semibold text-foreground whitespace-nowrap">
+                {calendarHeaderLabel(currentDate, view, locale)}
+              </span>
+            </div>
+
+            {/* Right: View Toggle + Add + Filter */}
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Filter toggle */}
+              <button
+                onClick={() => setIsFilterOpen((v) => !v)}
+                className={cn(
+                  "flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors",
+                  isFilterOpen
+                    ? "border-foreground/20 bg-muted text-foreground"
+                    : "border-border text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                <Filter className="h-3.5 w-3.5" />
+                {t("filter")}
+              </button>
+
+              {/* View toggle */}
+              <div className="flex items-center rounded-lg bg-muted p-0.5 gap-0.5">
+                {(["month", "week", "day"] as const).map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setView(v)}
+                    className={cn(
+                      "h-7 rounded-md px-3 text-[11px] font-bold uppercase tracking-wide transition-all",
+                      view === v
+                        ? "bg-card text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {t(v)}
+                  </button>
+                ))}
+              </div>
+
+              {/* Add Event */}
+              <AppPrimaryButton onClick={() => drawer.openCreate()} className="h-8 px-3 text-xs">
+                <Plus className="me-1.5 h-3.5 w-3.5" />
+                {t("add")}
+              </AppPrimaryButton>
+            </div>
+          </div>
+
+          {/* ── Filter Bar (collapsible) ── */}
+          {isFilterOpen && (
+            <div className="flex shrink-0 items-center gap-3 border-b border-border bg-card/50 px-5 py-2.5">
+              <CalendarDatePicker
+                value={filterStartDate}
+                onChange={setFilterStartDate}
+                locale={locale}
+              />
+              <span className="text-xs text-muted-foreground">{locale === "ar" ? "←" : "→"}</span>
+              <CalendarDatePicker
+                value={filterEndDate}
+                onChange={setFilterEndDate}
+                locale={locale}
+              />
+              {isFiltering && (
+                <button
+                  onClick={() => { setFilterStartDate(""); setFilterEndDate(""); }}
+                  className="flex h-7 items-center gap-1 rounded-lg bg-muted px-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="h-3 w-3" />
+                  {t("clear")}
+                </button>
+              )}
+            </div>
+          )}
+
+          <div className="min-h-0 flex-1">
             <QentrahCalendarKit
-              events={events}
+              events={filteredEvents}
               view={view}
               onViewChange={setView}
               date={currentDate}
               onDateChange={setCurrentDate}
-              onEventCreate={async (calendarKitEvent) => {
-                if (!account.organization.id || !calendarKitEvent.start || !calendarKitEvent.title) return;
-                
-                const newEvent = {
-                  title: calendarKitEvent.title,
+              onEventCreate={async (calEvent) => {
+                if (!account.organization.id || !calEvent.start || !calEvent.title) return;
+                await createEvent({
+                  title: calEvent.title,
                   owner: account.user.name,
-                  date: format(calendarKitEvent.start, "yyyy-MM-dd"),
-                  time: format(calendarKitEvent.start, "HH:mm"),
-                  type: "meeting" as const,
-                  status: "draft" as const,
-                  notes: calendarKitEvent.description || "",
-                  startAt: calendarKitEvent.start.getTime(),
-                  endAt: calendarKitEvent.end?.getTime() || (calendarKitEvent.start.getTime() + 3600000),
-                };
-
-                await createEvent(newEvent);
+                  date: format(calEvent.start, "yyyy-MM-dd"),
+                  time: format(calEvent.start, "HH:mm"),
+                  type: "meeting",
+                  status: "draft",
+                  notes: calEvent.description || "",
+                });
               }}
-              onEventUpdate={async (calendarKitEvent) => {
+              onEventUpdate={async (calEvent) => {
                 if (!account.organization.id) return;
-                
-                const existingEvent = events.find((e) => e.id === calendarKitEvent.id);
-                if (!existingEvent) return;
-
-                const updatedEvent = {
-                  ...existingEvent,
-                  title: calendarKitEvent.title,
-                  owner: existingEvent.owner,
-                  date: format(calendarKitEvent.start, "yyyy-MM-dd"),
-                  time: format(calendarKitEvent.start, "HH:mm"),
-                  type: existingEvent.type,
-                  status: existingEvent.status,
-                  startAt: calendarKitEvent.start.getTime(),
-                  endAt: calendarKitEvent.end?.getTime() || (calendarKitEvent.start.getTime() + 3600000),
-                  notes: calendarKitEvent.description || existingEvent.notes,
-                };
-
-                await updateEvent(calendarKitEvent.id, updatedEvent);
+                const existing = events.find((e) => e.id === calEvent.id);
+                if (!existing) return;
+                await updateEvent(calEvent.id, {
+                  ...existing,
+                  title: calEvent.title,
+                  date: format(calEvent.start, "yyyy-MM-dd"),
+                  time: format(calEvent.start, "HH:mm"),
+                  notes: calEvent.description || existing.notes,
+                });
               }}
-              onEventDelete={async (eventId) => {
-                await deleteEvent(eventId);
+              onEventClick={(calEvent) => {
+                const full = events.find((e) => e.id === calEvent.id);
+                if (full) drawer.openRead(full);
               }}
-              onEventClick={(calendarKitEvent) => {
-                const fullEvent = events.find((e) => e.id === calendarKitEvent.id);
-                if (fullEvent) {
-                  setSelectedEvent(fullEvent);
-                }
+              onTimeSlotClick={(date) => {
+                drawer.openCreate(date);
               }}
               isLoading={isLoading}
               locale={locale}
             />
           </div>
 
-          {/* ── Day Dialog ── */}
-          {drawerDate && (
-            <DayDialog
-              date={drawerDate}
-              events={events.filter((e) => e.date === format(drawerDate, "yyyy-MM-dd"))}
-              onClose={() => setDrawerDate(null)}
-              onEventClick={setSelectedEvent}
-              onDelete={(id) => {
-                void deleteEvent(id);
-              }}
-            />
-          )}
-
-          {/* ── Event Detail ── */}
-          {selectedEvent && (
-            <EventDetailDialog
-              event={selectedEvent}
-              onClose={() => setSelectedEvent(null)}
-              onDelete={(id) => {
-                void deleteEvent(id);
-                setSelectedEvent(null);
-              }}
-              onEditClick={(event) => {
-                setSelectedEvent(null);
-                setEditingEvent(event);
-              }}
-            />
-          )}
-
-          <DeleteRecordDialog
-            open={Boolean(deleting)}
-            onOpenChange={(open) => {
-              if (!open) {
-                deleteOperation.clearError();
-                setDeleting(null);
-              }
-            }}
-            title={t("delete.title")}
-            description={t("delete.desc", { name: deleting?.title ?? "..." })}
-            isDeleting={deleteOperation.isRunning}
-            error={deleteOperation.error}
-            onConfirm={() =>
-              deleteOperation.run(
-                () => {
-                  if (!deleting) throw new Error("No event");
-                  if (!account.organization.id)
-                    throw new Error("Select an organization first.");
-                  return deleteEvent(deleting.id);
-                },
-                {
-                  successMessage: "Event deleted.",
-                  onSuccess: () => setDeleting(null),
-                },
-              )
-            }
-          />
-          <BusinessScheduleDialog
-            mode="create"
-            open={isCreateOpen}
-            onOpenChange={setIsCreateOpen}
-            organizationId={workspaceOrganizationId}
-            clients={clients}
-            tasks={tasks}
-            clientsLoading={isContextLoading && !clientsQuery}
-            tasksLoading={isContextLoading && !tasksQuery}
-          />
-          {editingEvent && (
-            <BusinessScheduleDialog
-              mode="edit"
-              open={Boolean(editingEvent)}
-              onOpenChange={(open) => {
-                if (!open) setEditingEvent(null);
-              }}
-              event={editingEvent}
+          {drawer.isOpen && drawer.mode && (
+            <EventDrawer
+              mode={drawer.mode}
+              view={drawer.view}
+              open={drawer.isOpen}
+              onClose={() => drawer.close()}
+              onEdit={() => drawer.setView("edit")}
+              event={drawer.event ?? undefined}
+              initialDate={drawer.initialDate ?? undefined}
               organizationId={workspaceOrganizationId}
               clients={clients}
               tasks={tasks}
-            clientsLoading={isContextLoading && !clientsQuery}
+              clientsLoading={isContextLoading && !clientsQuery}
               tasksLoading={isContextLoading && !tasksQuery}
+              onDelete={async () => {
+                if (!drawer.event) return;
+                await deleteEvent(drawer.event.id);
+                drawer.close();
+              }}
+              onSave={async (data) => {
+                if (!workspaceOrganizationId) return;
+                if (drawer.mode === "create") {
+                  await createEvent(data);
+                } else if (drawer.event) {
+                  await updateEvent(drawer.event.id, data);
+                }
+                drawer.close();
+              }}
             />
           )}
         </>
       )}
-    </AppPageShell>
+    </div>
   );
 }
 
-/* ── Day Dialog ── */
-function DayDialog({
-  date,
-  events,
-  onClose,
-  onEventClick,
-  onDelete,
-}: {
-  date: Date;
-  events: CalendarEvent[];
-  onClose: () => void;
-  onEventClick: (e: CalendarEvent) => void;
-  onDelete: (id: string) => void;
-}) {
-  const t = useTranslations("Calendar");
-  const locale = useLocale();
-  return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent showCloseButton={false} className="max-w-md p-0 overflow-hidden bg-card border-border rounded-[32px] shadow-2xl">
-        <div className="flex items-center justify-between p-5 border-b border-border">
-          <div>
-            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-              {t("drawer.title")}
-            </p>
-            <DialogTitle className="text-lg font-black uppercase tracking-tight text-foreground mt-1">
-              {calendarLongDayLabel(date, locale)}
-            </DialogTitle>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl hover:bg-muted transition-all"
-          >
-            <X className="h-5 w-5 text-muted-foreground" />
-          </button>
-        </div>
-
-        <div className="p-5 max-h-[70vh] overflow-y-auto">
-          {events.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 opacity-40">
-              <CalendarDays className="h-8 w-8 text-muted-foreground/40" />
-              <p className="mt-4 text-[10px] font-black uppercase tracking-widest">
-                {t("drawer.noEvents")}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {orderedCalendarEvents(events)
-                .map((ev) => (
-                  <div
-                    key={ev.id}
-                    className="rounded-2xl border border-border p-4 hover:border-border cursor-pointer transition-all"
-                    onClick={() => {
-                      onClose();
-                      onEventClick(ev);
-                    }}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-sm font-black uppercase text-foreground">
-                          {ev.title}
-                        </p>
-                        <div className="flex items-center gap-3 mt-2">
-                          <span className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            {ev.time}
-                          </span>
-                          <span className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground">
-                            <User className="h-3 w-3" />
-                            {ev.owner}
-                          </span>
-                        </div>
-                      </div>
-                      <StatusPill
-                        label={t(`statuses.${ev.status}`)}
-                        tone={calendarEventTone(ev.status)}
-                      />
-                    </div>
-                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
-                      <span
-                        className={cn(
-                          "rounded-lg border px-2 py-0.5 text-[9px] font-black uppercase tracking-widest",
-                          calendarEventTypeClassName(ev.type),
-                        )}
-                      >
-                        {t(`types.${ev.type}`)}
-                      </span>
-                      <div className="flex-1" />
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDelete(ev.id);
-                        }}
-                        className="p-1.5 text-muted-foreground/40 hover:text-red-500 transition-colors"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-/* ── Event Detail Dialog ── */
-function EventDetailDialog({
-  event,
-  onClose,
-  onDelete,
-  onEditClick,
-}: {
-  event: CalendarEvent;
-  onClose: () => void;
-  onDelete: (id: string) => void;
-  onEditClick: (event: CalendarEvent) => void;
-}) {
-  const t = useTranslations("Calendar");
-  const locale = useLocale();
-  const eventDate = new Date(event.date + "T00:00:00");
-  const [quickViewEntity, setQuickViewEntity] = useState<{ id: string; type: "client" | "task"; title: string } | null>(null);
-  const closeEventDialog = () => {
-    setQuickViewEntity(null);
-    onClose();
-  };
-
-  return (
-    <>
-    <Dialog open onOpenChange={(open) => { if (!open) closeEventDialog(); }}>
-      <DialogContent showCloseButton={false} className="max-w-2xl w-[94vw] p-0 overflow-hidden bg-card border-border rounded-[32px] shadow-2xl flex flex-col max-h-[90vh]">
-        <div
-          aria-hidden={Boolean(quickViewEntity)}
-          className={cn(
-            "flex min-h-0 flex-1 flex-col transition duration-150",
-            quickViewEntity && "pointer-events-none select-none opacity-35 blur-[1px]",
-          )}
-        >
-        <div className="p-5 border-b border-border">
-          <div className="flex items-center justify-between">
-            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-              {t("detail.eyebrow")}
-            </p>
-            <button
-              onClick={closeEventDialog}
-              disabled={Boolean(quickViewEntity)}
-              className="p-2 rounded-xl hover:bg-muted transition-all"
-            >
-              <X className="h-5 w-5 text-muted-foreground" />
-            </button>
-          </div>
-          <DialogTitle className="text-xl font-black uppercase tracking-tight text-foreground mt-3">
-            {event.title}
-          </DialogTitle>
-          <div className="flex items-center gap-2 mt-3">
-            <StatusPill
-              label={t(`statuses.${event.status}`)}
-              tone={calendarEventTone(event.status)}
-            />
-            <span
-              className={cn(
-                "rounded-lg border px-2 py-0.5 text-[9px] font-black uppercase tracking-widest",
-                calendarEventTypeClassName(event.type),
-              )}
-            >
-              {t(`types.${event.type}`)}
-            </span>
-          </div>
-        </div>
-
-        <div className="px-5 py-2 max-h-[60vh] overflow-y-auto">
-          <PropertyRow icon={<User className="h-4 w-4" />} label={t("detail.owner")}>
-            <p className="text-xs font-black uppercase text-foreground sm:mt-1.5">
-              {event.owner}
-            </p>
-          </PropertyRow>
-          
-          <PropertyRow icon={<CalendarDays className="h-4 w-4" />} label={t("detail.date")}>
-            <p className="text-xs font-black uppercase text-foreground sm:mt-1.5">
-              {calendarLongDayYearLabel(eventDate, locale)}
-            </p>
-          </PropertyRow>
-          
-          <PropertyRow icon={<Clock className="h-4 w-4" />} label={t("detail.time")}>
-            <p className="text-xs font-black uppercase text-foreground sm:mt-1.5">
-              {event.time}
-            </p>
-          </PropertyRow>
-
-          {(event.clientName || event.clientId) && (
-            <PropertyRow icon={<User className="h-4 w-4" />} label={t("form.clientLabel")}>
-              <button 
-                type="button"
-                onClick={() => setQuickViewEntity({ id: event.clientId || "", type: "client", title: event.clientName || event.clientId || "" })}
-                className="flex w-full items-start gap-3 rounded-2xl border border-border bg-muted p-3 text-foreground hover:bg-muted transition-colors text-start"
-              >
-                <span className="flex-1 whitespace-pre-wrap break-words text-xs font-black uppercase tracking-widest leading-relaxed">
-                  {event.clientName ?? event.clientId}
-                </span>
-                <Eye className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
-              </button>
-            </PropertyRow>
-          )}
-
-          
-
-          {event.taskId && (
-            <PropertyRow icon={<ClipboardList className="h-4 w-4" />} label={t("form.taskLabel")}>
-              <button 
-                type="button"
-                onClick={() => setQuickViewEntity({ id: event.taskId || "", type: "task", title: event.taskId || "" })}
-                className="flex w-full items-start gap-3 rounded-2xl border border-border bg-muted p-3 text-foreground hover:bg-muted transition-colors text-start"
-              >
-                <span className="flex-1 whitespace-pre-wrap break-words text-xs font-black uppercase tracking-widest leading-relaxed">
-                  {event.taskId}
-                </span>
-                <Eye className="h-3.5 w-3.5 text-muted-foreground mt-0.5" />
-              </button>
-            </PropertyRow>
-          )}
-
-          {event.location && (
-            <PropertyRow icon={<MapPin className="h-4 w-4" />} label={t("form.locationLabel")}>
-              <p className="whitespace-pre-wrap break-words text-xs font-bold leading-5 text-foreground sm:mt-1">
-                {event.location}
-              </p>
-            </PropertyRow>
-          )}
-
-          {event.notes && (
-            <PropertyRow icon={<AlignLeft className="h-4 w-4" />} label={t("form.notesLabel")}>
-              <p className="whitespace-pre-wrap break-words text-xs font-bold leading-5 text-foreground sm:mt-1">
-                {event.notes}
-              </p>
-            </PropertyRow>
-          )}
-        </div>
-
-        <div className="p-5 border-t border-border space-y-3">
-            <Button
-              variant="outline"
-              onClick={() => onEditClick(event)}
-              disabled={Boolean(quickViewEntity)}
-              className="w-full h-10 rounded-xl text-[10px] font-black uppercase tracking-widest border-border"
-            >
-            <Eye className="me-2 h-3.5 w-3.5" />
-            {t("detail.edit") || "Edit"}
-          </Button>
-          <button
-            onClick={() => onDelete(event.id)}
-            disabled={Boolean(quickViewEntity)}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-red-600 text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all dark:border-red-900 dark:bg-red-900/20 dark:text-red-400"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            {t("delete.title")}
-          </button>
-        </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-    {quickViewEntity && (
-      <EntityQuickViewDialog
-        entity={quickViewEntity}
-        onClose={() => setQuickViewEntity(null)}
-      />
-    )}
-    </>
-  );
-}
-
-function BusinessScheduleDialog({
+/* ── Event Drawer (read / edit / create) ── */
+function EventDrawer({
   mode,
+  view: drawerView,
   open,
-  onOpenChange,
+  onClose,
+  onEdit,
   event,
+  initialDate,
   organizationId,
   clients = [],
   tasks = [],
   clientsLoading,
   tasksLoading,
+  onDelete,
+  onSave,
 }: {
   mode: "create" | "edit";
+  view: DrawerView;
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onClose: () => void;
+  onEdit: () => void;
   event?: CalendarEvent;
+  initialDate?: Date;
   organizationId?: string;
   clients: Array<{ id: string; name: string }>;
   tasks: Array<{ id: string; title: string; clientId: string }>;
   clientsLoading: boolean;
   tasksLoading: boolean;
+  onDelete: () => void;
+  onSave: (data: CalendarEventFormValues) => void;
 }) {
   const t = useTranslations("Calendar");
+  const locale = useLocale();
+  const isRead = mode === "edit" && drawerView === "read" && Boolean(event);
+  const isEdit = mode === "edit" && drawerView === "edit";
+  const isCreate = mode === "create";
+
   const today = useMemo(() => new Date(), []);
-  const defaultDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const defaultDate = initialDate
+    ? format(initialDate, "yyyy-MM-dd")
+    : `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const defaultTime = initialDate
+    ? format(initialDate, "HH:mm")
+    : "10:00";
+
   const defaultValues: CalendarEventFormValues = {
     title: event?.title ?? "",
     owner: event?.owner ?? "Team",
     date: event?.date ?? defaultDate,
-    time: event?.time ?? "10:00",
+    time: event?.time ?? defaultTime,
+    endDate: event?.endDate ?? "",
+    endTime: event?.endTime ?? "",
+    isMultiDay: event?.isMultiDay ?? false,
     type: event?.type ?? "meeting",
     status: event?.status ?? "confirmed",
     clientId: event?.clientId ?? "",
@@ -631,14 +415,15 @@ function BusinessScheduleDialog({
     notes: event?.notes ?? "",
     customFields: [],
   };
+
   const [picker, setPicker] = useState<PickerKind | null>(null);
   const [pickerSearch, setPickerSearch] = useState("");
-  const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
-  
+  const [quickTaskTitle, setQuickTaskTitle] = useState("");
+  const [isCreatingTask, setIsCreatingTask] = useState(false);
   const operation = useOperationState({
     errorMessage: mode === "create" ? "Event creation failed." : "Event update failed.",
   });
-  
+
   const {
     control,
     handleSubmit,
@@ -655,72 +440,54 @@ function BusinessScheduleDialog({
     Object.entries(errors).map(([key, error]) => [key, error?.message]),
   ) as Record<keyof CalendarEventFormValues, string | undefined>;
 
-  const selectedClient = clients.find((client) => client.id === form.clientId);
-  const selectedTask = tasks.find((task) => task.id === form.taskId);
+  const selectedClient = clients.find((c) => c.id === form.clientId);
+  const selectedTask = tasks.find((tk) => tk.id === form.taskId);
   const filteredTasks = calendarTasksForClient(tasks, form.clientId);
-  const dateOptions = useMemo(() => {
-    return calendarDateOptions(today, form.date);
-  }, [form.date, today]);
-  const timeOptions = useMemo(() => {
-    return calendarTimeOptions(form.time);
-  }, [form.time]);
-  
+
   const pickerConfig = picker
     ? {
         client: {
           title: t("form.chooseClient"),
           empty: t("form.noClients"),
           loading: clientsLoading,
-          options: clients.map((client) => ({ id: client.id, label: client.name, icon: <User className="h-4 w-4" /> })),
+          options: clients.map((c) => ({ id: c.id, label: c.name, icon: <User className="h-4 w-4" /> })),
           selectedId: form.clientId ?? "",
         },
         task: {
           title: t("form.chooseTask"),
           empty: t("form.noTasks"),
           loading: tasksLoading,
-          options: filteredTasks.map((task) => ({ id: task.id, label: task.title, icon: <ClipboardList className="h-4 w-4" /> })),
+          options: filteredTasks.map((tk) => ({ id: tk.id, label: tk.title, icon: <ClipboardList className="h-4 w-4" /> })),
           selectedId: form.taskId ?? "",
         },
       }[picker]
     : null;
 
   function closeDrawer() {
-    onOpenChange(false);
     reset(defaultValues);
     setPicker(null);
     setPickerSearch("");
-    setIsLocationPickerOpen(false);
+    setQuickTaskTitle("");
+    setIsCreatingTask(false);
+    operation.clearError();
+    onClose();
+  }
+
+  function updateField<TKey extends keyof CalendarEventFormValues>(key: TKey, value: CalendarEventFormValues[TKey]) {
+    setValue(key, value as never, { shouldDirty: true, shouldValidate: Boolean(fieldErrors[key]) });
     operation.clearError();
   }
 
-  function updateField<TKey extends keyof CalendarEventFormValues>(
-    key: TKey,
-    value: CalendarEventFormValues[TKey],
-  ) {
-    setValue(key, value as never, {
-      shouldDirty: true,
-      shouldValidate: Boolean(fieldErrors[key]),
-    });
-    operation.clearError();
-  }
-
-  function openPicker(kind: PickerKind) {
-    setPicker(kind);
-    setPickerSearch("");
-  }
-
+  function openPicker(kind: PickerKind) { setPicker(kind); setPickerSearch(""); }
   function selectPickerValue(id: string) {
-    if (picker === "client") {
-      updateField("clientId", id);
-    }
+    if (picker === "client") updateField("clientId", id);
     if (picker === "task") {
-      const task = tasks.find((item) => item.id === id);
+      const task = tasks.find((i) => i.id === id);
       updateField("taskId", id);
       if (task?.clientId && !form.clientId) updateField("clientId", task.clientId);
     }
     setPicker(null);
   }
-
   function clearPickerValue(kind: PickerKind) {
     if (kind === "client") updateField("clientId", "");
     if (kind === "task") updateField("taskId", "");
@@ -734,193 +501,240 @@ function BusinessScheduleDialog({
 
   const onSubmit = handleSubmit((data) => {
     void operation.run(
-      () => {
-        if (!organizationId) throw new Error("Select an organization first.");
-        if (mode === "create") {
-          return createCalendarEventRequest(organizationId, data);
-        }
-        return updateCalendarEventRequest(organizationId, event!.id, data);
-      },
-      {
-        successMessage: mode === "create" ? "Event created." : "Event updated.",
-        onSuccess: () => closeDrawer(),
-      },
+      () => onSave(data),
+      { successMessage: mode === "create" ? "Event created." : "Event updated.", onSuccess: closeDrawer },
     );
   });
 
   function submitSchedule() {
     const values = getValues();
-    if (!values.title?.trim()) {
-      setValue("title", generatedTitle(values), { shouldDirty: true, shouldValidate: false });
-    }
-    if (!values.owner?.trim()) {
-      setValue("owner", "Team", { shouldDirty: true, shouldValidate: false });
-    }
+    if (!values.title?.trim()) setValue("title", generatedTitle(values), { shouldDirty: true, shouldValidate: false });
+    if (!values.owner?.trim()) setValue("owner", "Team", { shouldDirty: true, shouldValidate: false });
     void onSubmit();
   }
 
+  const title = isCreate ? t("scheduleBusiness") : isRead ? event?.title ?? "" : t("editSchedule");
+
   return (
-    <Sheet open={open} onOpenChange={(nextOpen) => nextOpen ? onOpenChange(true) : closeDrawer()}>
+    <Sheet open={open} onOpenChange={(next) => { if (!next) closeDrawer(); }}>
       <SheetContent
         side="right"
         showCloseButton={false}
-        className="z-[100] !w-[min(94vw,760px)] !max-w-[760px] gap-0 border-s border-border bg-card p-0 text-foreground sm:!max-w-[760px]"
+        className="z-[100] !w-[min(96vw,860px)] !max-w-[860px] gap-0 border-s border-border bg-background p-0 text-foreground sm:!max-w-[860px]"
       >
-        <div className="flex items-start justify-between gap-4 border-b border-border p-5">
-          <div className="min-w-0">
-            <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-              {t("form.basics")}
-            </p>
-            <SheetTitle className="mt-1 text-2xl font-black leading-tight tracking-tight text-foreground">
-              {mode === "create" ? t("scheduleBusiness") : t("editSchedule")}
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-border px-8 py-5">
+          <div className="flex items-center gap-3 min-w-0">
+            <SheetTitle className="text-lg font-bold text-foreground truncate">
+              {title}
             </SheetTitle>
+            {isRead && event && (
+              <div className="flex items-center gap-2 shrink-0">
+                <EventTypeBadge type={event.type} />
+                <EventStatusBadge status={event.status} />
+              </div>
+            )}
           </div>
-          <button
-            onClick={closeDrawer}
-            className="p-2 rounded-xl hover:bg-muted transition-all"
-          >
-            <X className="h-5 w-5 text-muted-foreground" />
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            {isRead && (
+              <button
+                onClick={onEdit}
+                className="flex h-8 items-center gap-1.5 rounded-lg border border-border px-3 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                {t("detail.edit")}
+              </button>
+            )}
+            <button
+              onClick={closeDrawer}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-5">
-          <FormErrorSummary errors={fieldErrors} />
-          
-          <div className="grid gap-6">
-            <section className="space-y-4">
-              <ScheduleSectionTitle icon={<CalendarDays className="h-4 w-4" />} title={t("form.scheduledTime")} />
+        {/* ── Read View ── */}
+        {isRead && event && (
+          <div className="flex-1 overflow-y-auto px-8 py-6">
+            <div className="space-y-5">
+              <div className="space-y-1.5">
+                <span className="text-xs font-semibold text-muted-foreground">{t("form.titleLabel")}</span>
+                <p className="text-sm font-medium text-foreground">{event.title}</p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold text-muted-foreground">{t("form.dateLabel")}</span>
+                  <p className="text-sm font-medium text-foreground">{calendarLongDayYearLabel(new Date(event.date + "T00:00:00"), locale)}</p>
+                </div>
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold text-muted-foreground">{t("form.timeLabel")}</span>
+                  <p className="text-sm font-medium text-foreground">{event.time}</p>
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold text-muted-foreground">{t("form.typeLabel")}</span>
+                  <p className="text-sm font-medium text-foreground capitalize">{t(`types.${event.type}`)}</p>
+                </div>
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold text-muted-foreground">{t("table.status")}</span>
+                  <p className="text-sm font-medium text-foreground capitalize">{t(`statuses.${event.status}`)}</p>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <span className="text-xs font-semibold text-muted-foreground">{t("form.ownerLabel")}</span>
+                <p className="text-sm font-medium text-foreground">{event.owner}</p>
+              </div>
+              {event.location && (
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold text-muted-foreground">{t("form.locationLabel")}</span>
+                  <p className="text-sm font-medium text-foreground">{event.location}</p>
+                </div>
+              )}
+              {event.notes && (
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold text-muted-foreground">{t("form.notesLabel")}</span>
+                  <div className="text-sm text-foreground prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: event.notes }} />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
-              <TextInput
-                label={t("form.scheduleName")}
-                name="title"
-                value={form.title}
-                onChange={(value) => updateField("title", value)}
-                error={fieldErrors.title}
+        {/* ── Edit / Create View ── */}
+        {!isRead && (
+          <div className="flex-1 overflow-y-auto px-8 py-5">
+            <FormErrorSummary errors={fieldErrors} />
+            <div className="space-y-6">
+              <div className="space-y-1.5">
+                <span className="text-xs font-semibold text-muted-foreground">{t("form.scheduleName")}</span>
+                <input
+                  type="text"
+                  value={form.title}
+                  onChange={(e) => updateField("title", e.target.value)}
+                  placeholder={t("form.titlePlaceholder")}
+                  className="h-10 w-full rounded-xl border border-border bg-card px-3 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition focus:border-foreground/20 focus:ring-1 focus:ring-foreground/10"
+                />
+                {fieldErrors.title && <p className="text-xs font-medium text-red-500">{fieldErrors.title}</p>}
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <CalendarDatePicker
+                  value={form.date}
+                  onChange={(v) => updateField("date", v)}
+                  endDate={form.isMultiDay ? form.endDate : undefined}
+                  onEndDateChange={(v) => updateField("endDate", v)}
+                  label={t("form.dateLabel")}
+                  error={fieldErrors.date}
+                />
+                <TimePicker
+                  value={form.time}
+                  onChange={(v) => updateField("time", v)}
+                  label={t("form.timeLabel")}
+                  error={fieldErrors.time}
+                />
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => { updateField("isMultiDay", !form.isMultiDay); if (!form.isMultiDay) updateField("endDate", form.date); }}
+                  className={cn("relative h-5 w-9 rounded-full transition-colors", form.isMultiDay ? "bg-foreground" : "bg-border")}
+                >
+                  <span className={cn("absolute top-0.5 h-4 w-4 rounded-full bg-background transition-transform", form.isMultiDay ? "left-[18px]" : "left-0.5")} />
+                </button>
+                <span className="text-xs font-semibold text-muted-foreground">Multi-day event</span>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <CustomSelect
+                  value={form.type}
+                  onChange={(v) => updateField("type", v as CalendarEventFormValues["type"])}
+                  options={customEventTypeValues.map((ty) => ({ value: ty, label: t(`types.${ty}`) }))}
+                  label={t("form.typeLabel")}
+                />
+                <CustomSelect
+                  value={form.status}
+                  onChange={(v) => updateField("status", v as CalendarEventFormValues["status"])}
+                  options={(["confirmed", "pending", "draft"] as const).map((s) => ({ value: s, label: t(`statuses.${s}`) }))}
+                  label={t("table.status")}
+                />
+              </div>
+
+              <OwnerPicker
+                value={form.owner}
+                onChange={(v) => updateField("owner", v)}
+                options={[{ id: "team", name: "Team" }]}
+                label={t("form.ownerLabel")}
+                error={fieldErrors.owner}
               />
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <ScheduleSelect
-                  label={t("form.dateLabel")}
-                  value={form.date}
-                  onValueChange={(value) => updateField("date", value)}
-                  options={dateOptions.map((value) => ({
-                    label: calendarIsoOptionLabel(value),
-                    value,
-                  }))}
-                />
-                <ScheduleSelect
-                  label={t("form.timeLabel")}
-                  value={form.time}
-                  onValueChange={(value) => updateField("time", value)}
-                  options={timeOptions.map((value) => ({
-                    label: formatCalendarTimeLabel(value),
-                    value,
-                  }))}
-                />
+              <div className="border-t border-border" />
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold text-muted-foreground">{t("form.clientLabel")}</span>
+                  <TicketPickerButton label={t("form.clientLabel")} value={selectedClient?.name} icon={<User className="h-4 w-4" />} onClick={() => openPicker("client")} onClear={form.clientId ? () => clearPickerValue("client") : undefined} />
+                </div>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-muted-foreground">{t("form.taskLabel")}</span>
+                    <button type="button" onClick={() => setIsCreatingTask(true)} className="text-[10px] font-semibold text-muted-foreground hover:text-foreground transition-colors">+ {t("form.quickTask")}</button>
+                  </div>
+                  {isCreatingTask ? (
+                    <div className="flex items-center gap-2">
+                      <input type="text" value={quickTaskTitle} onChange={(e) => setQuickTaskTitle(e.target.value)} placeholder={t("form.taskPlaceholder")} autoFocus className="h-10 flex-1 rounded-xl border border-border bg-card px-3 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-foreground/20" onKeyDown={(e) => { if (e.key === "Enter" && quickTaskTitle.trim()) { setIsCreatingTask(false); setQuickTaskTitle(""); } if (e.key === "Escape") { setIsCreatingTask(false); setQuickTaskTitle(""); } }} />
+                      <button type="button" onClick={() => { if (quickTaskTitle.trim()) { setIsCreatingTask(false); setQuickTaskTitle(""); } }} className="h-10 rounded-xl bg-foreground px-3 text-[10px] font-semibold text-background">{t("form.add")}</button>
+                    </div>
+                  ) : (
+                    <TicketPickerButton label={t("form.taskLabel")} value={selectedTask?.title} icon={<ClipboardList className="h-4 w-4" />} onClick={() => openPicker("task")} onClear={form.taskId ? () => clearPickerValue("task") : undefined} />
+                  )}
+                </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3">
-                <ScheduleSelect
-                  label={t("form.typeLabel")}
-                  value={form.type}
-                  onValueChange={(value) => updateField("type", value as CalendarEventFormValues["type"])}
-                  options={customEventTypeValues.map((type) => ({
-                    label: t(`types.${type}`),
-                    value: type,
-                  }))}
-                />
-                <ScheduleSelect
-                  label={t("table.status")}
-                  value={form.status}
-                  onValueChange={(value) => updateField("status", value as CalendarEventFormValues["status"])}
-                  options={(["confirmed", "pending", "draft"] as const).map((status) => ({
-                    label: t(`statuses.${status}`),
-                    value: status,
-                  }))}
-                />
-                <TextInput
-                  label={t("form.ownerLabel")}
-                  name="owner"
-                  value={form.owner}
-                  onChange={(value) => updateField("owner", value)}
-                  error={fieldErrors.owner}
-                />
+              <div className="space-y-1.5">
+                <span className="text-xs font-semibold text-muted-foreground">{t("form.locationLabel")}</span>
+                <div className="relative">
+                  <MapPin className={cn("pointer-events-none absolute top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60", locale === "ar" ? "right-3" : "left-3")} />
+                  <input type="text" value={form.location ?? ""} onChange={(e) => updateField("location", e.target.value)} placeholder={t("form.locationPlaceholder")} className={cn("h-10 w-full rounded-xl border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition focus:border-foreground/20 focus:ring-1 focus:ring-foreground/10", locale === "ar" ? "pr-9 pl-3" : "pl-9 pr-3")} />
+                </div>
               </div>
-            </section>
 
-            <section className="border-t border-border pt-5">
-              <ContextActionCard ariaLabel={t("form.showAdvancedDetails")}>
-                <PropertyRow icon={<User className="h-4 w-4" />} label={t("form.clientLabel")}>
-                  <TicketPickerButton
-                    label={t("form.clientLabel")}
-                    value={selectedClient?.name}
-                    icon={<User className="h-4 w-4" />}
-                    onClick={() => openPicker("client")}
-                    onClear={form.clientId ? () => clearPickerValue("client") : undefined}
-                  />
-                </PropertyRow>
+              <div className="space-y-1.5">
+                <span className="text-xs font-semibold text-muted-foreground">{t("form.notesLabel")}</span>
+                <RichTextEditor value={form.notes ?? ""} onChange={(v) => updateField("notes", v)} placeholder={t("form.notesPlaceholder")} minHeight="100px" />
+              </div>
+            </div>
+          </div>
+        )}
 
-                <PropertyRow icon={<ClipboardList className="h-4 w-4" />} label={t("form.taskLabel")}>
-                  <TicketPickerButton
-                    label={t("form.taskLabel")}
-                    value={selectedTask?.title}
-                    icon={<ClipboardList className="h-4 w-4" />}
-                    onClick={() => openPicker("task")}
-                    onClear={form.taskId ? () => clearPickerValue("task") : undefined}
-                  />
-                </PropertyRow>
-
-                <PropertyRow icon={<MapPin className="h-4 w-4" />} label={t("form.locationLabel")}>
-                  <TicketPickerButton
-                    label={t("form.pickLocation")}
-                    value={form.location}
-                    icon={<MapPin className="h-4 w-4" />}
-                    onClick={() => setIsLocationPickerOpen(true)}
-                    onClear={form.location ? () => updateField("location", "") : undefined}
-                  />
-                </PropertyRow>
-
-                <PropertyRow icon={<AlignLeft className="h-4 w-4" />} label={t("form.notesLabel")}>
-                  <Textarea
-                    id="calendar-notes"
-                    value={form.notes ?? ""}
-                    onChange={(event) => updateField("notes", event.target.value)}
-                    className="min-h-[100px] w-full rounded-2xl border border-border bg-card transition-colors hover:border-border focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-white/10"
-                  />
-                </PropertyRow>
-              </ContextActionCard>
-            </section>
+        {/* Footer */}
+        <div className="sticky bottom-0 flex items-center justify-between border-t border-border bg-background/95 px-8 py-4 backdrop-blur-sm">
+          <div>
+            {isRead && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={onDelete}
+                className="h-10 px-4 text-sm font-medium text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {t("delete.btn")}
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <Button type="button" variant="ghost" onClick={closeDrawer} className="h-10 px-5 text-sm font-medium text-muted-foreground hover:text-foreground">
+              {t("form.cancel")}
+            </Button>
+            {!isRead && (
+              <AppPrimaryButton disabled={operation.isRunning || isSubmitting} onClick={submitSchedule}>
+                {mode === "create" ? t("form.createBtn") : t("form.saveBtn")}
+              </AppPrimaryButton>
+            )}
           </div>
         </div>
-
-        <div className="sticky bottom-0 flex items-center justify-end gap-3 border-t border-border bg-muted/95 p-5 backdrop-blur">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={closeDrawer}
-            className="h-10 rounded-xl px-5 text-[10px] font-black uppercase tracking-widest"
-          >
-            {t("form.cancel")}
-          </Button>
-          <AppPrimaryButton disabled={operation.isRunning || isSubmitting} onClick={submitSchedule}>
-            {mode === "create" ? t("form.createBtn") : t("form.saveBtn")}
-          </AppPrimaryButton>
-        </div>
-
-        {isLocationPickerOpen && (
-          <LocationPickerModal
-            closeLabel={t("form.closePicker")}
-            confirmLabel={t("form.confirmLocation")}
-            currentLocation={form.location ?? ""}
-            onClose={() => setIsLocationPickerOpen(false)}
-            onSelect={(location) => {
-              updateField("location", location);
-              setIsLocationPickerOpen(false);
-            }}
-            searchLabel={t("form.mapSearch")}
-            title={t("form.pickLocation")}
-          />
-        )}
 
         {picker && pickerConfig && (
           <ContextPickerOverlay
@@ -945,321 +759,47 @@ function BusinessScheduleDialog({
   );
 }
 
-function ScheduleSectionTitle({
-  icon,
-  title,
-}: {
-  icon: ReactNode;
-  title: string;
-}) {
-  return (
-    <div className="flex items-center gap-2 text-foreground">
-      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-        {icon}
-      </span>
-      <p className="text-[10px] font-black uppercase tracking-[0.25em]">
-        {title}
-      </p>
-    </div>
-  );
-}
-
-function ScheduleSelect({
+/* ── Ticket Picker Button ── */
+function TicketPickerButton({
   label,
-  onValueChange,
-  options,
   value,
+  icon,
+  onClick,
+  onClear,
 }: {
   label: string;
-  onValueChange: (value: string) => void;
-  options: Array<{ label: string; value: string }>;
   value?: string;
+  icon: ReactNode;
+  onClick: () => void;
+  onClear?: () => void;
 }) {
-  return (
-    <label className="block">
-      <span className="mb-2 block text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-        {label}
-      </span>
-      <Select value={value} onValueChange={(nextValue) => nextValue && onValueChange(nextValue)}>
-        <SelectTrigger className="h-12 rounded-2xl border-border bg-muted px-4 text-xs font-black shadow-none transition focus:border-border focus:bg-card">
-          <SelectValue placeholder={label} />
-        </SelectTrigger>
-        <SelectContent align="start" className="rounded-2xl border-border">
-          {options.map((option) => (
-            <SelectItem key={option.value} value={option.value} className="rounded-xl px-3 py-2.5 text-xs font-bold">
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </label>
-  );
-}
-
-function ContextActionCard({ ariaLabel, children }: { ariaLabel: string; children: ReactNode }) {
-  return (
-    <div
-      aria-label={ariaLabel}
-      className="divide-y divide-border"
-    >
-      {children}
-    </div>
-  );
-}
-
-function PropertyRow({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
-  return (
-    <div className="grid gap-2 py-3 sm:grid-cols-[160px_minmax(0,1fr)] sm:items-center">
-      <div className="flex items-center gap-3 text-muted-foreground">
-        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-          {icon}
-        </span>
-        <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
-      </div>
-      <div className="flex-1 min-w-0">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function TicketPickerButton({ label, value, icon, onClick, onClear }: { label: string, value?: string, icon: ReactNode, onClick: () => void, onClear?: () => void }) {
-  const active = Boolean(value);
-  if (active) {
-    return (
-      <div className="flex w-full items-start gap-3 rounded-2xl border border-primary bg-primary p-3 text-primary-foreground shadow-sm transition-all hover:bg-primary/90" role="button" tabIndex={0} onClick={onClick} onKeyDown={(e) => e.key === 'Enter' && onClick()}>
-        <span className="mt-0.5 flex-shrink-0 opacity-70">{icon}</span>
-        <span className="flex-1 whitespace-pre-wrap break-words text-xs font-black uppercase tracking-widest leading-relaxed text-start">
-          {value}
-        </span>
-        {onClear && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onClear();
-            }}
-            className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20 transition-colors hover:bg-red-500 hover:text-white dark:bg-foreground/10 dark:hover:bg-red-500"
-          >
-            <X className="h-3 w-3" />
-          </button>
-        )}
-      </div>
-    );
-  }
-
   return (
     <button
       type="button"
       onClick={onClick}
-      className="group flex min-h-[44px] w-full max-w-sm items-center gap-3 rounded-2xl border border-dashed border-border bg-muted/50 px-3.5 text-left transition-colors hover:border-border hover:bg-muted"
+      className={cn(
+        "flex h-10 w-full items-center gap-2.5 rounded-xl border px-3 text-left text-sm transition-colors hover:bg-muted/50",
+        value ? "border-border bg-card" : "border-dashed border-border bg-muted/50",
+      )}
     >
-      <span className="flex-shrink-0 text-muted-foreground transition-colors group-hover:text-foreground dark:group-hover:text-muted-foreground/40">{icon}</span>
-      <span className="flex-1 truncate text-[10px] font-black uppercase tracking-widest text-muted-foreground transition-colors group-hover:text-foreground dark:group-hover:text-muted-foreground/40">
-        {label}
-      </span>
-      <Plus className="ml-auto h-3.5 w-3.5 text-muted-foreground transition-colors group-hover:text-foreground dark:group-hover:text-muted-foreground/40" />
+      <span className={cn("shrink-0", value ? "text-muted-foreground" : "text-muted-foreground/60")}>{icon}</span>
+      <span className={cn("flex-1 truncate", value ? "text-foreground font-medium" : "text-muted-foreground")}>{value || label}</span>
+      {onClear && (
+        <span
+          role="button"
+          tabIndex={0}
+          onClick={(e) => { e.stopPropagation(); onClear(); }}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); onClear(); } }}
+          className="shrink-0 text-muted-foreground/50 hover:text-foreground"
+        >
+          <X className="h-3.5 w-3.5" />
+        </span>
+      )}
     </button>
   );
 }
 
-
-
-
-/* ── Entity Quick View Dialog ── */
-function EntityQuickViewDialog({
-  entity,
-  onClose,
-}: {
-  entity: { id: string; type: "client" | "task"; title: string };
-  onClose: () => void;
-}) {
-  return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent
-        showCloseButton={false}
-        overlayClassName="z-[70] bg-black/55 supports-backdrop-filter:backdrop-blur-sm"
-        containerClassName="z-[80] p-3 sm:p-4"
-        className="z-[80] flex max-h-[min(86vh,720px)] w-[min(94vw,560px)] max-w-none flex-col overflow-hidden rounded-[22px] border-border bg-muted p-0 text-foreground shadow-none"
-      >
-        {entity.type === "client" && <ClientQuickView clientId={entity.id} onClose={onClose} />}
-        
-        {entity.type === "task" && (
-          <div className="p-5 text-center">
-            <button onClick={onClose} className="mb-5 flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition hover:bg-muted hover:text-foreground">
-              <X className="h-4 w-4" />
-            </button>
-            <ClipboardList className="mx-auto mb-4 h-10 w-10 text-muted-foreground/40 dark:text-muted-foreground" />
-            <p className="mb-2 text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground">Task</p>
-            <h2 className="mb-6 text-xl font-black text-foreground">{entity.title}</h2>
-            <button onClick={onClose} className="h-11 w-full rounded-2xl border border-border bg-card text-xs font-black uppercase tracking-widest text-muted-foreground transition-colors hover:bg-muted">Close</button>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-/* ── Client Quick View ── */
-function ClientQuickView({ clientId, onClose }: { clientId: string; onClose: () => void }) {
-  const account = useAccountContext();
-  const organizationId = (account.workspace.status === "ready" && account.workspace.organizationId) || undefined;
-  const locale = useLocale();
-  const router = useRouter();
-  const client = useClientQuery(organizationId, clientId);
-
-  if (!client) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground/40" />
-      </div>
-    );
-  }
-
-  const stageColors: Record<string, string> = {
-    new: "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800",
-    qualified: "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800",
-    review: "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800",
-    negotiation: "bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800",
-                    closed: "bg-muted text-muted-foreground border-border",
-  };
-
-  return (
-    <>
-      <div className="flex items-start gap-4 border-b border-border bg-card p-5">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-lg font-black text-primary-foreground">
-          {client.name.charAt(0).toUpperCase()}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="mb-1 text-[9px] font-black uppercase tracking-[0.25em] text-muted-foreground">Client Profile</p>
-          <h2 className="truncate text-base font-black leading-tight text-foreground">{client.name}</h2>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span className={cn("rounded-lg border px-2 py-0.5 text-[9px] font-black uppercase tracking-widest", stageColors[client.pipelineStage] || stageColors.new)}>
-              {client.pipelineStage}
-            </span>
-            <span className="rounded-lg border border-border bg-muted px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-              {client.type}
-            </span>
-            {client.priority !== "normal" && (
-              <span className={cn("rounded-lg border px-2 py-0.5 text-[9px] font-black uppercase tracking-widest", client.priority === "urgent" ? "bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800" : "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800")}>
-                {client.priority}
-              </span>
-            )}
-          </div>
-        </div>
-        <button onClick={onClose} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition hover:bg-muted hover:text-foreground">
-          <X className="h-4 w-4" />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-2 border-b border-border bg-card sm:grid-cols-4">
-        <div className="min-w-0 border-e border-b border-border px-4 py-3 sm:border-b-0">
-          <Phone className="h-4 w-4 text-muted-foreground" />
-          <p className="mt-2 text-[8px] font-black uppercase tracking-widest text-muted-foreground">Phone</p>
-          <p className="mt-1 truncate text-xs font-bold text-foreground" dir="ltr">{client.phone || "—"}</p>
-        </div>
-        <div className="min-w-0 border-b border-border px-4 py-3 sm:border-e sm:border-b-0">
-          <Mail className="h-4 w-4 text-muted-foreground" />
-          <p className="mt-2 text-[8px] font-black uppercase tracking-widest text-muted-foreground">Email</p>
-          <p className="mt-1 truncate text-xs font-bold text-foreground">{client.contact || "—"}</p>
-        </div>
-        <div className="min-w-0 border-e border-border px-4 py-3">
-          <DollarSign className="h-4 w-4 text-muted-foreground" />
-          <p className="mt-2 text-[8px] font-black uppercase tracking-widest text-muted-foreground">Budget</p>
-          <p className="mt-1 truncate text-xs font-bold text-foreground">{client.budget || "—"}</p>
-        </div>
-        <div className="min-w-0 px-4 py-3">
-          <Building2 className="h-4 w-4 text-muted-foreground" />
-          <p className="mt-2 text-[8px] font-black uppercase tracking-widest text-muted-foreground">Interest</p>
-          <p className="mt-1 truncate text-xs font-bold text-foreground">{client.assetInterest || "—"}</p>
-        </div>
-      </div>
-
-
-
-      <div className="border-t border-border bg-card p-4">
-        <AppPrimaryButton
-          className="h-12 w-full rounded-2xl text-xs font-black uppercase tracking-widest shadow-none"
-          onClick={() => { onClose(); router.push(`/${locale}/clients/${clientId}`); }}
-        >
-          <ExternalLink className="me-2 h-4 w-4" />
-          Open Full Profile
-        </AppPrimaryButton>
-      </div>
-    </>
-  );
-}
-
-/* ── Linked Asset Mini Card ── */
-function LocationPickerModal({
-  closeLabel,
-  confirmLabel,
-  currentLocation,
-  onClose,
-  onSelect,
-  searchLabel,
-  title,
-}: {
-  closeLabel: string;
-  confirmLabel: string;
-  currentLocation: string;
-  onClose: () => void;
-  onSelect: (location: string) => void;
-  searchLabel: string;
-  title: string;
-}) {
-  const [selectedLocation, setSelectedLocation] = useState<LocationValue | null>(() =>
-    calendarLocationValueFromString(currentLocation),
-  );
-
-  return (
-    <div className="fixed inset-0 z-[320] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={title}>
-      <div className="flex max-h-[88vh] w-[min(94vw,720px)] flex-col overflow-hidden rounded-[28px] border border-border bg-card text-foreground">
-        <div className="flex min-h-0 flex-col">
-          <div className="flex items-start justify-between gap-4 border-b border-border p-5">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{searchLabel}</p>
-              <h3 className="mt-2 text-xl font-black tracking-tight text-foreground">{title}</h3>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label={closeLabel}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-border text-muted-foreground transition hover:bg-muted hover:text-foreground"
-            >
-              <X className="h-4 w-4" aria-hidden="true" />
-            </button>
-          </div>
-          <div className="min-h-0 overflow-y-auto p-4 [--workspace-border:#27272a] [--workspace-elevated:#18181b] [--workspace-muted:#a1a1aa] [--workspace-panel:#111113]">
-            <LocationPicker
-              value={selectedLocation}
-              onChange={setSelectedLocation}
-              label={title}
-              placeholder={searchLabel}
-            />
-          </div>
-          <div className="mt-auto flex items-center justify-end gap-2 border-t border-border p-4">
-            <Button type="button" variant="outline" onClick={onClose} className="h-10 rounded-xl px-4 text-[10px] font-black uppercase tracking-widest">
-              {closeLabel}
-            </Button>
-            <Button
-              type="button"
-              disabled={!selectedLocation}
-              onClick={() => {
-                if (!selectedLocation) return;
-                onSelect(serializeCalendarLocation(selectedLocation));
-              }}
-              className="h-10 rounded-xl px-4 text-[10px] font-black uppercase tracking-widest disabled:opacity-50"
-            >
-              {confirmLabel}
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
+/* ── Context Picker Overlay ── */
 function ContextPickerOverlay({
   title,
   searchLabel,
@@ -1279,9 +819,9 @@ function ContextPickerOverlay({
   title: string;
   searchLabel: string;
   searchValue: string;
-  onSearchChange: (value: string) => void;
+  onSearchChange: (v: string) => void;
   selectedId: string;
-  options: Array<{ id: string; label: string; icon: ReactNode }>;
+  options: Array<{ id: string; label: string; icon?: ReactNode }>;
   loading: boolean;
   emptyLabel: string;
   noResultsLabel: string;
@@ -1291,81 +831,43 @@ function ContextPickerOverlay({
   onSelect: (id: string) => void;
   onClose: () => void;
 }) {
-  const visibleOptions = visibleCalendarPickerOptions(options, searchValue);
-
+  const filtered = options.filter((o) => o.label.toLowerCase().includes(searchValue.toLowerCase()));
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={title}>
-      <div className="flex max-h-[82vh] w-full max-w-2xl flex-col overflow-hidden rounded-[28px] border border-border bg-card shadow-none">
-        <div className="flex items-start justify-between gap-4 border-b border-border p-5">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{searchLabel}</p>
-            <h3 className="mt-2 text-xl font-black tracking-tight text-foreground">{title}</h3>
+    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm">
+      <div className="flex max-h-[70vh] w-full max-w-md flex-col overflow-hidden rounded-[24px] border border-border bg-card">
+        <div className="flex items-center justify-between border-b border-border px-5 py-4">
+          <h3 className="text-base font-bold text-foreground">{title}</h3>
+          <button type="button" onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted"><X className="h-4 w-4" /></button>
+        </div>
+        <div className="border-b border-border px-4 py-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input value={searchValue} onChange={(e) => onSearchChange(e.target.value)} placeholder={searchLabel} className="h-10 w-full rounded-xl border border-border bg-muted ps-9 text-sm font-medium text-foreground outline-none focus:border-foreground/20" autoFocus />
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={closeLabel}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-border text-muted-foreground transition hover:bg-muted hover:text-foreground"
-          >
-            <X className="h-4 w-4" aria-hidden="true" />
-          </button>
         </div>
-        <div className="border-b border-border p-4">
-          <label className="relative block">
-            <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-            <input
-              value={searchValue}
-              onChange={(event) => onSearchChange(event.target.value)}
-              placeholder={searchLabel}
-              className="h-12 w-full rounded-2xl border border-border bg-muted px-10 text-sm font-bold text-foreground outline-none transition focus:border-border focus:bg-card focus:ring-2 focus:ring-ring"
-              autoFocus
-            />
-          </label>
-        </div>
-        <div className="min-h-48 flex-1 overflow-y-auto p-4">
+        <div className="min-h-0 flex-1 overflow-y-auto p-3">
           {loading ? (
-            <div className="flex h-48 items-center justify-center text-sm font-bold text-muted-foreground">
-              <Loader2 className="me-2 h-4 w-4 animate-spin" aria-hidden="true" />
-              {emptyLabel}
-            </div>
-          ) : visibleOptions.length === 0 ? (
-            <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-border text-sm font-bold text-muted-foreground">
-              {options.length === 0 ? emptyLabel : noResultsLabel}
-            </div>
+            <div className="flex h-32 items-center justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+          ) : filtered.length === 0 ? (
+            <div className="flex h-32 items-center justify-center text-sm font-medium text-muted-foreground">{searchValue ? noResultsLabel : emptyLabel}</div>
           ) : (
-            <div className="grid gap-2">
-              {visibleOptions.map((option) => {
-                const active = option.id === selectedId;
+            <div className="grid gap-1.5">
+              {selectedId && (
+                <button type="button" onClick={onClear} className="flex w-full items-center gap-3 rounded-xl border border-dashed border-border p-3 text-left text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
+                  {clearLabel}
+                </button>
+              )}
+              {filtered.map((option) => {
+                const isActive = option.id === selectedId;
                 return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() => onSelect(option.id)}
-                    className={cn(
-                      "flex items-center gap-3 rounded-2xl border p-3 text-start transition focus:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:focus-visible:ring-white/25",
-                      active
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-card text-foreground hover:border-border hover:bg-muted",
-                    )}
-                  >
-                    <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", active ? "bg-primary/15" : "bg-muted text-muted-foreground")}>
-                      {option.icon}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate text-sm font-black">{option.label}</span>
-                    {active && <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />}
+                  <button key={option.id} type="button" onClick={() => onSelect(option.id)} className={cn("flex items-center gap-3 rounded-xl border p-3 text-left text-sm font-medium transition", isActive ? "border-foreground bg-foreground text-background" : "border-border bg-card text-foreground hover:bg-muted")}>
+                    {option.icon && <span className="shrink-0">{option.icon}</span>}
+                    <span className="flex-1 truncate">{option.label}</span>
                   </button>
                 );
               })}
             </div>
           )}
-        </div>
-        <div className="flex items-center justify-end gap-2 border-t border-border p-4">
-          <Button type="button" variant="outline" onClick={onClear} className="h-10 rounded-xl px-4 text-[10px] font-black uppercase tracking-widest">
-            {clearLabel}
-          </Button>
-          <Button type="button" onClick={onClose} className="h-10 rounded-xl px-4 text-[10px] font-black uppercase tracking-widest">
-            {closeLabel}
-          </Button>
         </div>
       </div>
     </div>

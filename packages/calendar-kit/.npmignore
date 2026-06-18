@@ -1,0 +1,8 @@
+# Source — not needed in published package (dist/ is pre-built)
+src/
+*.map
+tsconfig*.json
+rollup.config.*
+.eslintrc*
+*.test.*
+__tests__/

@@ -72,17 +72,17 @@ export function useCalendarEventsRangeQueryResult(organizationId: string | undef
   );
 }
 
-export function useCalendarIndexRangeQueryResult(organizationId: string | undefined, startAt: number, endAt: number) {
+export function useCalendarIndexRangeQueryResult(organizationId: string | undefined, startAt: number, endAt: number, projectId?: string | null) {
   const args = useMemo(
-    () => organizationId ? { organizationId, startAt, endAt } : "skip" as const,
-    [endAt, organizationId, startAt],
+    () => organizationId ? { organizationId, startAt, endAt, projectId: projectId ?? undefined } : "skip" as const,
+    [endAt, organizationId, startAt, projectId],
   );
 
   return useWorkspaceResourceResult<CalendarIndex>(
     ["calendar", "index", args],
     organizationId,
     "calendar/index",
-    organizationId ? { startAt, endAt } : undefined,
+    organizationId ? { startAt, endAt, projectId: projectId ?? undefined } : undefined,
   );
 }
 

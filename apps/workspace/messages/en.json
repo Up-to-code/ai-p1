@@ -225,11 +225,13 @@
     "dashboard": "Dashboard",
     "projects": "Projects",
     "opportunities": "Opportunities",
+    "deals": "Deals",
     "tasks": "Tasks",
     "assets": "Assets",
     "clients": "Clients",
     "calendar": "Calendar",
     "organization": "Organization",
+    "conversations": "Conversations",
     "automations": "Automations",
     "team": "Team",
     "usage": "Usage",
@@ -238,6 +240,7 @@
     "components": "UI Components",
     "activity": "Activity Log",
     "comingSoon": "Coming soon",
+    "soon": "Soon",
     "announcements": "Announcements",
     "settings": "Settings",
     "collapse": "Collapse",
@@ -2226,6 +2229,7 @@
         "hideDrafts": "Hide drafts",
         "cancel": "Cancel"
       },
+      "revokeConfirm": "This will move \"{name}\" to draft and disable the connection immediately.",
       "toasts": {
         "readyTitle": "Agent link ready",
         "readyDescription": "The link was copied. It is shown here once.",
@@ -2327,6 +2331,7 @@
         "revoke": "Revoke",
         "cancel": "Cancel"
       },
+      "revokeConfirm": "This will permanently revoke \"{name}\". Any integrations using it will stop working immediately.",
       "toasts": {
         "readyTitle": "API key ready",
         "readyDescription": "The secret was copied. It is shown here once.",
@@ -3122,8 +3127,12 @@
       "save": "Save opportunity",
       "created": "Opportunity created.",
       "saved": "Opportunity saved.",
+      "deleted": "Opportunity deleted.",
       "createFailed": "Could not create opportunity.",
       "saveFailed": "Could not save opportunity.",
+      "deleteFailed": "Could not delete opportunity.",
+      "deleteTitle": "Delete opportunity",
+      "deleteDesc": "This will permanently delete \"{title}\". This action cannot be undone.",
       "open": "Open",
       "deleteOpportunity": "Delete opportunity"
     },
@@ -3198,6 +3207,105 @@
       "backToOpportunities": "Back to opportunities"
     }
   },
+  "Deals": {
+    "eyebrow": "Deals",
+    "title": "Deals",
+    "subtitle": "Track closed deals, contract values, and deal reasoning.",
+    "workspaceView": "Workspace view",
+    "stats": {
+      "total": "Total Deals",
+      "open": "Open",
+      "won": "Won",
+      "totalValue": "Total Value"
+    },
+    "filters": {
+      "all": "All stages"
+    },
+    "actions": {
+      "new": "New deal",
+      "create": "Create deal",
+      "edit": "Edit deal",
+      "save": "Save deal",
+      "created": "Deal created.",
+      "saved": "Deal saved.",
+      "deleted": "Deal deleted.",
+      "createFailed": "Could not create deal.",
+      "saveFailed": "Could not save deal.",
+      "deleteFailed": "Could not delete deal.",
+      "deleteTitle": "Delete deal",
+      "deleteDesc": "Are you sure you want to delete this deal? This action cannot be undone.",
+      "open": "Open",
+      "deleteDeal": "Delete deal"
+    },
+    "empty": {
+      "title": "No deals yet",
+      "description": "Create your first deal to start tracking closed business."
+    },
+    "table": {
+      "title": "Title",
+      "stage": "Stage",
+      "priority": "Priority",
+      "context": "Context",
+      "value": "Value",
+      "thinking": "Deal Thinking",
+      "close": "Close Date",
+      "noNextStep": "No next step",
+      "noContext": "No client or project",
+      "noDate": "No date",
+      "noThinking": "No reasoning"
+    },
+    "form": {
+      "title": "Title",
+      "stage": "Stage",
+      "status": "Status",
+      "priority": "Priority",
+      "value": "Deal Value",
+      "currency": "Currency",
+      "dealThinking": "Deal Thinking",
+      "closeDate": "Close date",
+      "client": "Client",
+      "project": "Project",
+      "source": "Source",
+      "tags": "Tags",
+      "nextStep": "Next step",
+      "clientPlaceholder": "Select client",
+      "projectPlaceholder": "Select project",
+      "searchClients": "Search clients",
+      "searchProjects": "Search projects",
+      "noClients": "No clients available",
+      "noProjects": "No projects available",
+      "noClient": "No client",
+      "noProject": "No project"
+    },
+    "stages": {
+      "lead": "Lead",
+      "qualified": "Qualified",
+      "proposal_sent": "Proposal Sent",
+      "contract_sent": "Contract Sent",
+      "won": "Won",
+      "lost": "Lost"
+    },
+    "statuses": {
+      "open": "Open",
+      "paused": "Paused",
+      "won": "Won",
+      "lost": "Lost"
+    },
+    "priorities": {
+      "low": "Low",
+      "normal": "Normal",
+      "high": "High",
+      "urgent": "Urgent"
+    },
+    "detail": {
+      "eyebrow": "Deal detail",
+      "record": "Record",
+      "summary": "Summary",
+      "notFoundTitle": "Deal not found",
+      "notFoundDescription": "The deal was deleted or you do not have access.",
+      "backToDeals": "Back to deals"
+    }
+  },
   "Tasks": {
     "from": "From",
     "to": "To",
@@ -3222,10 +3330,12 @@
       "new": "New task",
       "create": "Create task",
       "save": "Save task",
+      "edit": "Edit task",
       "open": "Open",
       "done": "Done",
       "reopen": "Reopen",
-      "deleteTask": "Delete task"
+      "deleteTask": "Delete task",
+      "deleteDesc": "This will permanently delete \"{title}\". This action cannot be undone."
     },
     "drawer": {
       "create": "New task",
@@ -3312,6 +3422,9 @@
     "month": "Month",
     "week": "Week",
     "day": "Day",
+    "filter": "Filter",
+    "clear": "Clear",
+    "noEvents": "No events",
     "stats": {
       "events": "Events",
       "confirmed": "Confirmed",
@@ -3339,7 +3452,8 @@
     },
     "delete": {
       "title": "Delete event?",
-      "desc": "This removes {name} from the calendar."
+      "desc": "This removes {name} from the calendar.",
+      "btn": "Delete"
     },
     "form": {
       "title": "Add Event",
@@ -3411,7 +3525,13 @@
       "closeDrawer": "Close schedule drawer",
       "createBtn": "Create",
       "saveBtn": "Save",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "titlePlaceholder": "Event title...",
+      "notesPlaceholder": "Add notes...",
+      "locationPlaceholder": "Add location...",
+      "quickTask": "Quick task",
+      "add": "Add",
+      "taskPlaceholder": "Task title..."
     },
     "types": {
       "meeting": "Meeting",

@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useToast } from "@/components/ui/toast";
-import { StatusPill } from "@/components/shared/crud-ui";
+import { StatusPill, DeleteRecordDialog } from "@/components/shared/crud-ui";
 import { updateOrganizationProfileSchema, type UpdateOrganizationProfileValues } from "../validation/organization.schema";
 import { useUpdateOrganizationProfileMutation } from "../api/use-update-profile";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -1095,6 +1095,7 @@ function AgentLinksPanel({
   const [oneTimeLink, setOneTimeLink] = useState("");
   const [oneTimePermissions, setOneTimePermissions] = useState<McpConnectionPermission[]>([]);
   const [showDrafts, setShowDrafts] = useState(false);
+  const [revokingConnection, setRevokingConnection] = useState<OrganizationMcpConnection | null>(null);
   const selectedGrantablePermissions = clampAgentPermissionsToGrantable(permissions, grantablePermissions);
   const memberByUserId = new Map(members.map((member) => [member.userId, member]));
 
@@ -1318,7 +1319,7 @@ function AgentLinksPanel({
               <Button
                 variant="outline"
                 disabled={!canDelete || revokeMutation.isPending}
-                onClick={() => revokeMutation.mutate(connection)}
+                onClick={() => setRevokingConnection(connection)}
                 className="h-8 rounded-lg text-[9px] font-black uppercase tracking-widest px-2.5 text-sky-700 border-sky-100 bg-sky-500/5 hover:bg-sky-500/10 dark:border-sky-500/15"
               >
                 <Trash2 className="me-1.5 h-3.5 w-3.5" />
@@ -1561,6 +1562,21 @@ function AgentLinksPanel({
           )}
         </DialogContent>
       </Dialog>
+
+      <DeleteRecordDialog
+        open={Boolean(revokingConnection)}
+        onOpenChange={(open) => { if (!open) setRevokingConnection(null); }}
+        title={t("buttons.moveToDraft")}
+        description={t("revokeConfirm", { name: revokingConnection?.name ?? "..." })}
+        isDeleting={revokeMutation.isPending}
+        onConfirm={() => {
+          if (!revokingConnection) return;
+          revokeMutation.mutate(revokingConnection, {
+            onSuccess: () => setRevokingConnection(null),
+            onError: () => setRevokingConnection(null),
+          });
+        }}
+      />
     </div>
   );
 }
@@ -1617,6 +1633,7 @@ function ApiKeysPanel({
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [rotatingKey, setRotatingKey] = useState<OrganizationApiKey | null>(null);
+  const [revokingKey, setRevokingKey] = useState<OrganizationApiKey | null>(null);
   const [keyName, setKeyName] = useState("");
   const [expiry, setExpiry] = useState<OrganizationApiKeyExpiry>("30d");
   const [permissions, setPermissions] = useState<OrganizationApiKeyPermission[]>(defaultApiKeyPermissions(grantablePermissions));
@@ -1792,7 +1809,7 @@ function ApiKeysPanel({
                     <Button
                       variant="outline"
                       disabled={!canDelete || revokeMutation.isPending}
-                      onClick={() => revokeMutation.mutate(key)}
+                      onClick={() => setRevokingKey(key)}
                       className="h-8 rounded-lg text-[9px] font-black uppercase tracking-widest px-2.5 text-red-600 border-red-100 bg-red-500/5 hover:bg-red-500/10 dark:border-red-500/15"
                     >
                       <Trash2 className="me-1.5 h-3.5 w-3.5" />
@@ -1925,6 +1942,21 @@ function ApiKeysPanel({
           )}
         </DialogContent>
       </Dialog>
+
+      <DeleteRecordDialog
+        open={Boolean(revokingKey)}
+        onOpenChange={(open) => { if (!open) setRevokingKey(null); }}
+        title={t("buttons.revoke")}
+        description={t("revokeConfirm", { name: revokingKey?.name ?? "..." })}
+        isDeleting={revokeMutation.isPending}
+        onConfirm={() => {
+          if (!revokingKey) return;
+          revokeMutation.mutate(revokingKey, {
+            onSuccess: () => setRevokingKey(null),
+            onError: () => setRevokingKey(null),
+          });
+        }}
+      />
     </div>
   );
 }

@@ -7,14 +7,15 @@ import {
 } from "@/domains/organization/api/organization-request";
 import type { Opportunity, OpportunityFormValues, OpportunityStage, OpportunityStats } from "../opportunities.types";
 
-export function useOpportunitiesQuery(organizationId?: string, options?: { stage?: OpportunityStage | "all"; search?: string }) {
+export function useOpportunitiesQuery(organizationId?: string, options?: { stage?: OpportunityStage | "all"; search?: string; projectId?: string | null }) {
   return useWorkspaceResource<Opportunity[]>(
-    ["opportunities", organizationId, options?.stage, options?.search],
+    ["opportunities", organizationId, options?.stage, options?.search, options?.projectId],
     organizationId,
     "opportunities",
     {
       stage: options?.stage === "all" ? undefined : options?.stage,
       search: options?.search,
+      projectId: options?.projectId ?? undefined,
     },
   );
 }

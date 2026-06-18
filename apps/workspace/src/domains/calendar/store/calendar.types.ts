@@ -8,6 +8,9 @@ export interface CalendarEvent {
   endAt?: number;
   date: string;
   time: string;
+  endDate?: string;
+  endTime?: string;
+  isMultiDay?: boolean;
   type: "meeting" | "deadline" | "reminder" | "milestone" | "focusBlock";
   status: "confirmed" | "pending" | "draft";
   clientId?: string;

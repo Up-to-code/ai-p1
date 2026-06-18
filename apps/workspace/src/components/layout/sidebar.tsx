@@ -3,7 +3,6 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Link, usePathname } from "@/i18n/routing";
 import {
-  BriefcaseBusiness,
   UserRound,
   Plug,
   History as HistoryIcon,
@@ -18,8 +17,10 @@ import {
   Settings,
   Trash2,
   Bot,
-  UserPlus,
   UsersRound,
+  LayoutDashboard,
+  BadgeDollarSign,
+  Building2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -47,6 +48,10 @@ import { useSidebar } from "./sidebar-context";
 import { workspaceModeHref } from "@/domains/dashboard/store/dashboard.store";
 import { useRouter } from "@/i18n/routing";
 import { agentThreadUrl } from "@/domains/agents/conversation-runtime";
+import { useCurrentProjectId } from "@/domains/projects/hooks/use-current-project-id";
+import { useProjectQuery } from "@/domains/projects/api/projects";
+import { WorkspaceLink } from "./workspace-link";
+import { Badge } from "@/components/ui/badge";
 
 type BetterAuthOrganization = {
   id: string;
@@ -74,16 +79,20 @@ const primaryNav = [
   { name: "dashboard", href: "/dashboard", icon: Bot, label: "AI Assistant" },
   { name: "clients", href: "/clients", icon: UserRound, label: "Clients" },
   { name: "opportunities", href: "/opportunities", icon: KanbanSquare, label: "Opportunities" },
-
+  { name: "deals", href: "/deals", icon: BadgeDollarSign, label: "Deals" },
   { name: "tasks", href: "/tasks", icon: ListTodo, label: "Tasks" },
   { name: "calendar", href: "/calendar", icon: CalendarDays, label: "Calendar" },
 ];
 
-// Secondary/bottom nav
-const secondaryNav = [
-  { name: "automations", href: "/automations", icon: Workflow, label: "Automations" },
-  { name: "integrations", href: "/web-apps", icon: Plug, label: "Integrations" },
-  { name: "organization", href: "/settings/organization", icon: Settings, label: "Settings" },
+// Coming soon items (not clickable)
+const comingSoonNav = [
+  { name: "automations", icon: Workflow, label: "Automations" },
+  { name: "integrations", icon: Plug, label: "Integrations" },
+];
+
+// Organization nav (replaces Settings)
+const organizationNav = [
+  { name: "organization", href: "/settings/organization", icon: Building2, label: "Organization" },
 ];
 
 function getInitials(value: string) {
@@ -129,6 +138,16 @@ export function Sidebar() {
   const account = useAccountContext();
   const workspaceOrganizationId =
     account.workspace.status === "ready" ? account.workspace.organizationId : null;
+
+  // Project context from search param (for sidebar project name display only)
+  const currentProjectId = useCurrentProjectId();
+  const isProjectZone = Boolean(currentProjectId);
+  const orgId = workspaceOrganizationId ?? undefined;
+  const projectData = useProjectQuery(
+    isProjectZone ? orgId : undefined,
+    currentProjectId ?? "",
+  );
+  const projectName = projectData?.name ?? "Project";
   const queriedAgentThreads = useAgentThreadsQuery(workspaceOrganizationId, {
     enabled: Boolean(workspaceOrganizationId),
     limit: 50,
@@ -227,7 +246,7 @@ export function Sidebar() {
         {/* Logo / Org Avatar */}
         <div className={cn("flex h-14 shrink-0 items-center border-b border-inherit", isOpen ? "px-4" : "justify-center")}>
           <NavTooltip label={organizationDisplayName} disabled={isOpen}>
-            <Link
+            <WorkspaceLink
               href={workspaceModeHref("ws")}
               className={cn(
                 "flex items-center rounded-xl transition-opacity hover:opacity-80 min-w-0",
@@ -253,14 +272,14 @@ export function Sidebar() {
                   {organizationDisplayName}
                 </span>
               )}
-            </Link>
+            </WorkspaceLink>
           </NavTooltip>
         </div>
 
         <nav className={cn("flex flex-1 flex-col overflow-y-auto py-3 scrollbar-none", isOpen ? "px-3 gap-1" : "items-center gap-1")}>
 
+          {/* ── Primary Nav ── */}
           {primaryNav.map((item) => {
-
             const isActive =
               item.href === "/dashboard"
                 ? pathname === "/dashboard" || pathname.startsWith("/dashboard")
@@ -270,20 +289,20 @@ export function Sidebar() {
 
             return (
               <NavTooltip key={item.name} label={label} disabled={isOpen}>
-                <Link
+                <WorkspaceLink
                   href={itemHref}
                   aria-label={label}
                   className={cn(
                     "flex items-center rounded-xl transition-all",
                     isOpen ? "h-9 w-full px-3 gap-3" : "h-9 w-9 justify-center",
                     isActive
-                        ? "bg-muted text-foreground font-semibold"
-                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                        ? "bg-accent text-accent-foreground font-semibold ring-1 ring-accent-foreground/10"
+                        : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground",
                   )}
                 >
                   <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={isActive ? 2.2 : 1.8} />
                   {isOpen && <span className="truncate text-sm font-semibold">{label}</span>}
-                </Link>
+                </WorkspaceLink>
               </NavTooltip>
             );
           })}
@@ -291,35 +310,78 @@ export function Sidebar() {
           {/* Divider */}
           <div className={cn("my-2 h-px shrink-0", isOpen ? "w-full" : "w-6 self-center", "bg-border")} />
 
-          {/* AI Threads */}
+          {/* ── Apps & Automation (Coming Soon) ── */}
+          {comingSoonNav.map((item) => {
+            const label = t(item.name);
+
+            return (
+              <NavTooltip key={item.name} label={`${label} — ${t("comingSoon")}`} disabled={isOpen}>
+                <div
+                  className={cn(
+                    "flex items-center rounded-xl transition-all cursor-not-allowed opacity-50",
+                    isOpen ? "h-9 w-full px-3 gap-3" : "h-9 w-9 justify-center",
+                    "text-muted-foreground",
+                  )}
+                >
+                  <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
+                  {isOpen && (
+                    <span className="truncate text-sm font-semibold flex-1">{label}</span>
+                  )}
+                  {isOpen && (
+                    <Badge variant="secondary" className="ml-auto text-[9px] font-bold px-1.5 py-0 h-4 rounded-md">
+                      {t("soon")}
+                    </Badge>
+                  )}
+                </div>
+              </NavTooltip>
+            );
+          })}
+        </nav>
+
+        {/* ── Bottom: Conversations + Organization + Account ── */}
+        <div className={cn("flex flex-col border-t border-inherit py-3", isOpen ? "px-3 gap-1" : "items-center gap-1")}>
+          {/* Conversations */}
           {workspaceOrganizationId && (
             <>
               {isOpen && (
                 <div className="px-3 pb-1 pt-2 flex items-center justify-between">
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">
-                    {locale === "ar" ? "المحادثات" : "Threads"}
+                    {t("conversations")}
                   </span>
-                  <Link
-                    href={workspaceModeHref("ai")}
-                    className="text-text-muted hover:text-text-primary transition-colors"
-                  >
-                    <Plus className="h-3 w-3" />
-                  </Link>
+                  <div className="flex items-center gap-1">
+                    {hasMoreAgentThreads && (
+                      <button
+                        type="button"
+                        onClick={() => setThreadHistoryOpen(true)}
+                        className="text-text-muted hover:text-text-primary transition-colors p-0.5"
+                      >
+                        <HistoryIcon className="h-3 w-3" />
+                      </button>
+                    )}
+                    <WorkspaceLink
+                      href={workspaceModeHref("ai")}
+                      extraParams={{ threadId: "" }}
+                      className="text-text-muted hover:text-text-primary transition-colors"
+                    >
+                      <Plus className="h-3 w-3" />
+                    </WorkspaceLink>
+                  </div>
                 </div>
               )}
               
               {!isOpen && (
                 <NavTooltip label={locale === "ar" ? "محادثة جديدة" : "New thread"}>
-                  <Link
+                  <WorkspaceLink
                     href={workspaceModeHref("ai")}
+                    extraParams={{ threadId: "" }}
                     aria-label={locale === "ar" ? "محادثة جديدة" : "New thread"}
                     className={cn(
                       "flex h-9 w-9 items-center justify-center rounded-xl transition-all",
-                      "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground",
                     )}
                   >
                     <Plus className="h-[18px] w-[18px]" strokeWidth={1.8} />
-                  </Link>
+                  </WorkspaceLink>
                 </NavTooltip>
               )}
 
@@ -330,15 +392,15 @@ export function Sidebar() {
                 return (
                   <NavTooltip key={thread.id} label={thread.title} disabled={isOpen}>
                     <div className={cn("group/thread relative flex items-center min-w-0", isOpen && "w-full")}>
-                      <Link
+                      <WorkspaceLink
                         href={workspaceModeHref("ai", thread.id)}
                         aria-label={thread.title}
                         className={cn(
                           "flex items-center rounded-xl transition-all min-w-0",
                           isOpen ? "h-9 w-full px-3 gap-3" : "h-9 w-9 justify-center",
                           isActive
-                            ? "bg-muted text-foreground font-semibold"
-                            : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                            ? "bg-accent text-accent-foreground font-semibold ring-1 ring-accent-foreground/10"
+                            : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground",
                         )}
                       >
                         {isDeleting && !isOpen ? (
@@ -347,7 +409,7 @@ export function Sidebar() {
                           <MessageSquareText className="h-[16px] w-[16px] shrink-0" strokeWidth={1.8} />
                         )}
                         {isOpen && <span className="truncate text-[13px] font-semibold">{thread.title}</span>}
-                      </Link>
+                      </WorkspaceLink>
                       
                       {/* delete on hover */}
                       <button
@@ -368,56 +430,57 @@ export function Sidebar() {
                 );
               })}
 
-              <div className="mt-2" />
-              {hasMoreAgentThreads && (
-                <NavTooltip label={locale === "ar" ? "السجل" : "History"} disabled={isOpen}>
+              {!isOpen && hasMoreAgentThreads && (
+                <NavTooltip label={locale === "ar" ? "السجل" : "History"}>
                   <button
                     type="button"
                     onClick={() => setThreadHistoryOpen(true)}
                     className={cn(
-                      "flex items-center rounded-xl transition-all",
-                      isOpen ? "h-9 w-full px-3 gap-3" : "h-9 w-9 justify-center",
-                      "text-muted-foreground hover:bg-accent hover:text-foreground",
+                      "flex h-9 w-9 items-center justify-center rounded-xl transition-all",
+                      "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground",
                     )}
                   >
-                    <HistoryIcon className="h-[16px] w-[16px] shrink-0" strokeWidth={1.8} />
-                    {isOpen && <span className="text-[13px] font-semibold">{locale === "ar" ? "السجل" : "History"}</span>}
+                    <HistoryIcon className="h-[16px] w-[16px]" strokeWidth={1.8} />
                   </button>
                 </NavTooltip>
               )}
             </>
           )}
-        </nav>
 
-        {/* Bottom: secondary nav + user avatar */}
-        <div className={cn("flex flex-col border-t border-inherit py-3", isOpen ? "px-3 gap-1" : "items-center gap-1")}>
-          {secondaryNav.map((item) => {
+          {/* Divider */}
+          <div className={cn("my-2 h-px shrink-0", isOpen ? "w-full" : "w-6 self-center", "bg-border")} />
+
+          {/* Organization */}
+          {organizationNav.map((item) => {
             const isActive = pathname.startsWith(item.href);
-            const label = item.name === "organization" ? (locale === "ar" ? "الإعدادات" : "Settings") : t(item.name);
+            const label = t(item.name);
 
             return (
               <NavTooltip key={item.name} label={label} disabled={isOpen}>
-                <Link
+                <WorkspaceLink
                   href={item.href}
                   aria-label={label}
                   className={cn(
                     "flex items-center rounded-xl transition-all",
                     isOpen ? "h-9 w-full px-3 gap-3" : "h-9 w-9 justify-center",
                     isActive
-                        ? "bg-muted text-foreground font-semibold"
-                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                        ? "bg-accent text-accent-foreground font-semibold ring-1 ring-accent-foreground/10"
+                        : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground",
                   )}
                 >
                   <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={isActive ? 2.2 : 1.8} />
                   {isOpen && <span className="truncate text-sm font-semibold">{label}</span>}
-                </Link>
+                </WorkspaceLink>
               </NavTooltip>
             );
           })}
 
+          {/* Divider */}
+          <div className={cn("my-2 h-px shrink-0", isOpen ? "w-full" : "w-6 self-center", "bg-border")} />
+
           {/* Multi-org switcher */}
           {organizations.length > 1 && (
-            <div className={cn("mt-4 flex", isOpen ? "flex-col gap-1 px-3" : "flex-col items-center gap-2")}>
+            <div className={cn("flex", isOpen ? "flex-col gap-1 px-3" : "flex-col items-center gap-2")}>
               {isOpen && <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted mb-1">{locale === "ar" ? "مساحات العمل" : "Workspaces"}</span>}
               {organizations.map((org) => {
                 const isActive = org.id === account.organization.id;
@@ -459,12 +522,12 @@ export function Sidebar() {
             </div>
           )}
 
-          {/* User Avatar */}
+          {/* User Avatar / Account */}
           <NavTooltip label={account.user.name} disabled={isOpen}>
-            <Link
+            <WorkspaceLink
               href="/profile/settings"
               aria-label={account.user.name}
-              className={cn("mt-2 flex items-center transition-all hover:opacity-80", isOpen ? "gap-3 px-3 py-2 rounded-xl" : "")}
+              className={cn("mt-1 flex items-center transition-all hover:opacity-80", isOpen ? "gap-3 px-3 py-2 rounded-xl" : "")}
             >
               <IdentityAvatar
                 image={account.user.image}
@@ -479,7 +542,7 @@ export function Sidebar() {
                   <p className="truncate text-[11px] font-semibold text-text-muted">{account.user.email}</p>
                 </div>
               )}
-            </Link>
+            </WorkspaceLink>
           </NavTooltip>
         </div>
       </aside>
@@ -519,7 +582,7 @@ export function Sidebar() {
                         : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                     )}
                   >
-                    <Link
+                    <WorkspaceLink
                       href={workspaceModeHref("ai", thread.id)}
                       onClick={() => setThreadHistoryOpen(false)}
                       className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2 text-start"
@@ -537,7 +600,7 @@ export function Sidebar() {
                           })}
                         </span>
                       </span>
-                    </Link>
+                    </WorkspaceLink>
                     <button
                       type="button"
                       aria-label={`Delete: ${thread.title}`}

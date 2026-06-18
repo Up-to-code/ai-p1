@@ -1,16 +1,18 @@
 "use client";
 
-import { useMemo, useState, useCallback, useEffect } from "react";
-import { useWorkspaceStore } from "@/domains/dashboard/store/dashboard.store";
+import { useMemo, useCallback } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useProjectOptionsQueryResult } from "@/domains/projects/api/projects";
 import { useAccountContext } from "@/domains/auth";
-import { useRouter } from "@/i18n/routing";
-import { usePathname } from "next/navigation";
+import { useCurrentProjectId } from "./use-current-project-id";
 
 export function useProjectSwitcher() {
   const router = useRouter();
   const pathname = usePathname();
-  const { activeProjectId, setActiveProjectId } = useWorkspaceStore();
+  const searchParams = useSearchParams();
+  const activeProjectId = useCurrentProjectId();
+
   const account = useAccountContext();
   const activeOrganizationId =
     account.workspace.status === "ready"
@@ -26,39 +28,36 @@ export function useProjectSwitcher() {
     [projects, activeProjectId],
   );
 
-  const isGlobalMode = !activeProjectId;
+  const isGlobalMode = activeProjectId === null;
 
+  /**
+   * Build a new URL that keeps all current search params except `project`,
+   * which is replaced with the new value (or removed for global mode).
+   */
+  function buildProjectUrl(projectId: string | null): string {
+    const params = new URLSearchParams(searchParams.toString());
+    if (projectId) {
+      params.set("project", projectId);
+    } else {
+      params.delete("project");
+    }
+    const query = params.toString();
+    return query ? `${pathname}?${query}` : pathname;
+  }
+
+  /** Switch to a project — stay on the current page, just update ?project= */
   const switchProject = useCallback(
     (projectId: string) => {
-      setActiveProjectId(projectId);
-      if (pathname.includes("/projects/")) {
-        const pathParts = pathname.split("/");
-        const projectsIndex = pathParts.indexOf("projects");
-        const currentTab = pathParts[projectsIndex + 2] || "overview";
-        router.push(`/projects/${projectId}/${currentTab}`);
-      }
+      router.push(buildProjectUrl(projectId));
     },
-    [pathname, setActiveProjectId, router],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pathname, searchParams, router],
   );
 
+  /** Go back to global (no project) — stay on the current page, remove ?project= */
   const switchToGlobal = useCallback(() => {
-    setActiveProjectId(null);
-    if (pathname.includes("/projects/")) {
-      router.push("/dashboard");
-    }
-  }, [pathname, setActiveProjectId, router]);
-
-  // Deep link sync: if URL specifies a project but store doesn't
-  useEffect(() => {
-    const pathParts = pathname.split("/");
-    const projectsIndex = pathParts.indexOf("projects");
-    if (projectsIndex !== -1 && pathParts.length > projectsIndex + 1) {
-      const idInUrl = pathParts[projectsIndex + 1];
-      if (idInUrl !== "create" && idInUrl !== "index" && idInUrl !== activeProjectId) {
-        setActiveProjectId(idInUrl);
-      }
-    }
-  }, [pathname, activeProjectId, setActiveProjectId]);
+    router.push(buildProjectUrl(null));
+  }, [pathname, searchParams, router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const refetchProjects = useCallback(() => {
     projectsQuery.refetch();

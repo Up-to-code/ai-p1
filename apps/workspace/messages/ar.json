@@ -225,11 +225,13 @@
     "dashboard": "لوحة التحكم",
     "projects": "المشاريع",
     "opportunities": "الفرص",
+    "deals": "الصفقات",
     "tasks": "المهام",
     "assets": "الأصول",
     "clients": "العملاء",
     "calendar": "التقويم",
     "organization": "المؤسسة",
+    "conversations": "المحادثات",
     "automations": "الأتمتة",
     "team": "الفريق",
     "usage": "الاستخدام",
@@ -238,6 +240,7 @@
     "components": "عناصر الواجهة",
     "activity": "سجل النشاط",
     "comingSoon": "قريباً",
+    "soon": "قريباً",
     "announcements": "الإعلانات",
     "settings": "الإعدادات",
     "collapse": "طوي",
@@ -2222,6 +2225,7 @@
         "hideDrafts": "إخفاء المسودات",
         "cancel": "إلغاء"
       },
+      "revokeConfirm": "سيؤدي هذا إلى نقل \"{name}\" إلى المسودات وتعطيل الاتصال فوراً.",
       "toasts": {
         "readyTitle": "رابط الوكيل جاهز",
         "readyDescription": "تم نسخ الرابط. يظهر هنا مرة واحدة فقط.",
@@ -2324,6 +2328,7 @@
         "revoke": "إلغاء",
         "cancel": "إلغاء"
       },
+      "revokeConfirm": "سيؤدي هذا إلى إلغاء \"{name}\" نهائياً. ستتوقف أي تكاملات تستخدمه فوراً.",
       "toasts": {
         "readyTitle": "مفتاح API جاهز",
         "readyDescription": "تم نسخ السر. يظهر هنا مرة واحدة فقط.",
@@ -3119,8 +3124,12 @@
       "save": "حفظ الفرصة",
       "created": "تم إنشاء الفرصة.",
       "saved": "تم حفظ الفرصة.",
+      "deleted": "تم حذف الفرصة.",
       "createFailed": "تعذر إنشاء الفرصة.",
       "saveFailed": "تعذر حفظ الفرصة.",
+      "deleteFailed": "تعذر حذف الفرصة.",
+      "deleteTitle": "حذف الفرصة",
+      "deleteDesc": "سيؤدي هذا إلى حذف \"{title}\" نهائياً. لا يمكن التراجع عن هذا الإجراء.",
       "open": "فتح",
       "deleteOpportunity": "حذف الفرصة"
     },
@@ -3195,6 +3204,105 @@
       "backToOpportunities": "العودة إلى الفرص"
     }
   },
+  "Deals": {
+    "eyebrow": "الصفقات",
+    "title": "الصفقات",
+    "subtitle": "تتبع الصفقات المغلقة وقيم العقود وأسباب الصفقات.",
+    "workspaceView": "عرض مساحة العمل",
+    "stats": {
+      "total": "إجمالي الصفقات",
+      "open": "المفتوحة",
+      "won": "الفائزة",
+      "totalValue": "القيمة الإجمالية"
+    },
+    "filters": {
+      "all": "جميع المراحل"
+    },
+    "actions": {
+      "new": "صفقة جديدة",
+      "create": "إنشاء صفقة",
+      "edit": "تعديل الصفقة",
+      "save": "حفظ الصفقة",
+      "created": "تم إنشاء الصفقة.",
+      "saved": "تم حفظ الصفقة.",
+      "deleted": "تم حذف الصفقة.",
+      "createFailed": "تعذر إنشاء الصفقة.",
+      "saveFailed": "تعذر حفظ الصفقة.",
+      "deleteFailed": "تعذر حذف الصفقة.",
+      "deleteTitle": "حذف الصفقة",
+      "deleteDesc": "هل أنت متأكد من حذف هذه الصفقة؟ لا يمكن التراجع عن هذا الإجراء.",
+      "open": "فتح",
+      "deleteDeal": "حذف الصفقة"
+    },
+    "empty": {
+      "title": "لا توجد صفقات بعد",
+      "description": "أنشئ صفقتك الأولى لتتبع الأعمال المغلقة."
+    },
+    "table": {
+      "title": "العنوان",
+      "stage": "المرحلة",
+      "priority": "الأولوية",
+      "context": "السياق",
+      "value": "القيمة",
+      "thinking": "تفكير الصفقة",
+      "close": "تاريخ الإغلاق",
+      "noNextStep": "لا يوجد خطوة تالية",
+      "noContext": "لا يوجد عميل أو مشروع",
+      "noDate": "لا يوجد تاريخ",
+      "noThinking": "لا يوجد سبب"
+    },
+    "form": {
+      "title": "العنوان",
+      "stage": "المرحلة",
+      "status": "الحالة",
+      "priority": "الأولوية",
+      "value": "قيمة الصفقة",
+      "currency": "العملة",
+      "dealThinking": "تفكير الصفقة",
+      "closeDate": "تاريخ الإغلاق",
+      "client": "العميل",
+      "project": "المشروع",
+      "source": "المصدر",
+      "tags": "العلامات",
+      "nextStep": "الخطوة التالية",
+      "clientPlaceholder": "اختر العميل",
+      "projectPlaceholder": "اختر المشروع",
+      "searchClients": "بحث في العملاء",
+      "searchProjects": "بحث في المشاريع",
+      "noClients": "لا يوجد عملاء متاحين",
+      "noProjects": "لا توجد مشاريع متاحة",
+      "noClient": "لا يوجد عميل",
+      "noProject": "لا يوجد مشروع"
+    },
+    "stages": {
+      "lead": "عميل محتمل",
+      "qualified": "مؤهل",
+      "proposal_sent": "تم إرسال العرض",
+      "contract_sent": "تم إرسال العقد",
+      "won": "فاز",
+      "lost": "خسر"
+    },
+    "statuses": {
+      "open": "مفتوح",
+      "paused": "متوقف",
+      "won": "فاز",
+      "lost": "خسر"
+    },
+    "priorities": {
+      "low": "منخفضة",
+      "normal": "عادية",
+      "high": "عالية",
+      "urgent": "عاجلة"
+    },
+    "detail": {
+      "eyebrow": "تفاصيل الصفقة",
+      "record": "السجل",
+      "summary": "الملخص",
+      "notFoundTitle": "لم يتم العثور على الصفقة",
+      "notFoundDescription": "تم حذف الصفقة أو لا تملك صلاحية الوصول إليها.",
+      "backToDeals": "العودة إلى الصفقات"
+    }
+  },
   "Tasks": {
     "from": "من",
     "to": "إلى",
@@ -3219,10 +3327,12 @@
       "new": "مهمة جديدة",
       "create": "إنشاء مهمة",
       "save": "حفظ المهمة",
+      "edit": "تعديل المهمة",
       "open": "فتح",
       "done": "إنجاز",
       "reopen": "إعادة فتح",
-      "deleteTask": "حذف المهمة"
+      "deleteTask": "حذف المهمة",
+      "deleteDesc": "سيؤدي هذا إلى حذف \"{title}\" نهائياً. لا يمكن التراجع عن هذا الإجراء."
     },
     "drawer": {
       "create": "مهمة جديدة",
@@ -3309,6 +3419,9 @@
     "month": "شهر",
     "week": "أسبوع",
     "day": "يوم",
+    "filter": "تصفية",
+    "clear": "مسح",
+    "noEvents": "لا توجد أحداث",
     "stats": {
       "events": "الأحداث",
       "confirmed": "مؤكد",
@@ -3336,7 +3449,8 @@
     },
     "delete": {
       "title": "حذف الحدث؟",
-      "desc": "سيؤدي هذا إلى إزالة {name} من التقويم."
+      "desc": "سيؤدي هذا إلى إزالة {name} من التقويم.",
+      "btn": "حذف"
     },
     "form": {
       "title": "إضافة حدث",
@@ -3408,7 +3522,13 @@
       "closeDrawer": "إغلاق درج الجدولة",
       "createBtn": "إنشاء",
       "saveBtn": "حفظ",
-      "cancel": "إلغاء"
+      "cancel": "إلغاء",
+      "titlePlaceholder": "عنوان الحدث...",
+      "notesPlaceholder": "إضافة ملاحظات...",
+      "locationPlaceholder": "إضافة موقع...",
+      "quickTask": "مهمة سريعة",
+      "add": "إضافة",
+      "taskPlaceholder": "عنوان المهمة..."
     },
     "types": {
       "meeting": "اجتماع",

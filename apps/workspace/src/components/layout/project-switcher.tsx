@@ -10,7 +10,6 @@ import { CreateProjectForm } from "@/domains/projects/components/create-project-
 import { useProjectSwitcher } from "@/domains/projects/hooks/use-project-switcher";
 import { deleteProjectRequest } from "@/domains/projects/api/projects";
 import { useAccountContext } from "@/domains/auth";
-import { useWorkspaceStore } from "@/domains/dashboard/store/dashboard.store";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useRouter } from "@/i18n/routing";
@@ -28,7 +27,6 @@ export function ProjectSwitcher() {
     account.workspace.status === "ready"
       ? account.workspace.organizationId ?? undefined
       : undefined;
-  const { setActiveProjectId } = useWorkspaceStore();
 
   const {
     projects,
@@ -52,9 +50,6 @@ export function ProjectSwitcher() {
     setIsDeleting(true);
     try {
       await deleteProjectRequest(activeOrganizationId, deleteModal.project.id);
-      if (activeProjectId === deleteModal.project.id) {
-        setActiveProjectId(null);
-      }
       setDeleteModal(null);
       setContextMenu(null);
       refetchProjects();
@@ -63,7 +58,7 @@ export function ProjectSwitcher() {
     } finally {
       setIsDeleting(false);
     }
-  }, [deleteModal, activeOrganizationId, activeProjectId, isDeleting, setActiveProjectId, router, refetchProjects]);
+  }, [deleteModal, activeOrganizationId, isDeleting, router, refetchProjects]);
 
   React.useEffect(() => {
     if (!contextMenu) return;

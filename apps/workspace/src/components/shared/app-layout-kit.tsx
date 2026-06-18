@@ -126,7 +126,7 @@ export function AppPageShell({
   maxWidth = "wide",
 }: AppPageShellProps) {
   return (
-    <div className={cn("min-h-screen bg-background p-5 md:p-7 lg:p-10", className)}>
+    <div className={cn("overflow-y-auto p-5 md:p-7 lg:p-10", className)}>
       <div className={cn("mx-auto space-y-8 pb-20", maxWidthClassName[maxWidth], contentClassName)}>
         {children}
       </div>
