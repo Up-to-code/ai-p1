@@ -718,7 +718,7 @@ try {
      * isPropValid will have to be provided via `MotionContext`. In a 6.0.0 this should probably be removed
      * in favour of explicit injection.
      */
-    loadExternalIsValidProp(require("@emotion/is-prop-valid").default);
+    // @emotion/is-prop-valid intentionally skipped — not available in this bundle
 }
 catch (_a) {
     // We don't need to actually do anything here - the fallback is the existing `isPropValid`.
