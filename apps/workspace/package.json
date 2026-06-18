@@ -19,7 +19,7 @@
     "dev:convex": "convex dev",
     "dev:convex:once": "convex dev --once",
     "codegen:convex": "convex codegen",
-    "build": "npm --workspace @qentrah/location-map --include-workspace-root=false run build && next build && node scripts/ensure-vercel-manifest.mjs",
+    "build": "npm --workspace @qentrah/location-map --include-workspace-root=false run build && npm --workspace @qentrah/calendar-kit --include-workspace-root=false run build && next build && node scripts/ensure-vercel-manifest.mjs",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "lint": "eslint",
