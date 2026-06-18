@@ -17,14 +17,6 @@ export const clientPayloadSchema = z.object({
   website: optionalTrimmedText,
   notes: optionalTrimmedText,
   tags: z.array(z.string().trim()).optional(),
-}).superRefine((value, context) => {
-  if (!value.email && !value.phone) {
-    context.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Provide either email or phone for the client.",
-      path: ["email"],
-    });
-  }
 });
 
 export type ClientPayload = z.infer<typeof clientPayloadSchema>;
