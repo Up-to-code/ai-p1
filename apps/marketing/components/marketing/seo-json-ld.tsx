@@ -36,11 +36,7 @@ export function MarketingHomeJsonLd({ locale }: { locale: Locale }) {
     logo: logoUrl,
     email: brandIdentity.domains.email,
     keywords,
-    areaServed: {
-      "@type": "Country",
-      name: isArabic ? "السعودية" : "Saudi Arabia",
-      identifier: "SA",
-    },
+    // Global market — no country restriction
     sameAs: [workspaceUrl, partnersUrl],
   };
 
@@ -50,7 +46,7 @@ export function MarketingHomeJsonLd({ locale }: { locale: Locale }) {
     "@id": `${rootUrl}/#website`,
     name,
     url: rootUrl,
-    inLanguage: isArabic ? "ar-SA" : "en-SA",
+    inLanguage: isArabic ? "ar" : "en",
     keywords,
     publisher: { "@id": `${rootUrl}/#organization` },
   };
@@ -78,18 +74,13 @@ export function MarketingHomeJsonLd({ locale }: { locale: Locale }) {
     operatingSystem: "Web",
     url: workspaceUrl,
     image: logoUrl,
-    inLanguage: isArabic ? "ar-SA" : "en-SA",
+    inLanguage: isArabic ? "ar" : "en",
     description,
     keywords,
     offers: {
       "@type": "Offer",
-      price: "0",
-      priceCurrency: "SAR",
-    },
-    areaServed: {
-      "@type": "Country",
-      identifier: "SA",
-      name: isArabic ? "السعودية" : "Saudi Arabia",
+      price: "6.99",
+      priceCurrency: "USD",
     },
     publisher: { "@id": `${rootUrl}/#organization` },
   };
@@ -142,7 +133,7 @@ export function MarketingPageJsonLd({
     url: pageUrl,
     name: title,
     description,
-    inLanguage: isArabic ? "ar-SA" : "en-SA",
+    inLanguage: isArabic ? "ar" : "en",
     isPartOf: { "@id": `${rootUrl}/#website` },
     publisher: { "@id": `${rootUrl}/#organization` },
   };

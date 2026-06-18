@@ -7,11 +7,9 @@ import { publicSeoLinks } from "@/lib/public-links";
 const siteUrl = brandDomainUrl("root");
 
 const localeLanguages = {
-  "ar-SA": "/ar",
-  ar: "/ar",
-  "en-SA": "/en",
-  en: "/en",
-  "x-default": "/ar",
+  "ar": "/ar",
+  "en": "/en",
+  "x-default": "/en",
 } as const;
 
 function localizedPath(locale: Locale, path = "") {
@@ -92,8 +90,8 @@ export function rootMarketingMetadata(locale: Locale = "ar"): Metadata {
       siteName: brand,
       title,
       description,
-      locale: locale === "ar" ? "ar_SA" : "en_US",
-      alternateLocale: locale === "ar" ? ["en_US"] : ["ar_SA"],
+      locale: locale === "ar" ? "ar" : "en",
+      alternateLocale: locale === "ar" ? ["en"] : ["ar"],
       images: [
         {
           url: "/app-icon-512.png",
@@ -187,8 +185,8 @@ function marketingPageSeo(locale: Locale, path: string) {
       title: locale === "ar" ? "توثيق كانترا" : "Qentrah Docs",
       description:
         locale === "ar"
-          ? "توثيق عام لربط مساحة عمل كانترا بالوكلاء والتطبيقات وتدفقات التشغيل العقاري."
-          : "Public documentation for connecting Qentrah Workspace with agents, apps, and real estate operating workflows.",
+          ? "توثيق عام لربط مساحة عمل كانترا بالوكلاء والتطبيقات وتدفقات التشغيل."
+          : "Public documentation for connecting Qentrah Workspace with agents, apps, and automated workflows.",
     };
   }
 
@@ -197,8 +195,8 @@ function marketingPageSeo(locale: Locale, path: string) {
       title: locale === "ar" ? "اشتراك كانترا" : "Qentrah Billing",
       description:
         locale === "ar"
-          ? "إدارة اشتراك مساحة العمل وخطط التشغيل العقاري في كانترا."
-          : "Manage Qentrah Workspace billing and real estate operating plans.",
+          ? "إدارة اشتراك مساحة عمل كانترا وخطط التشغيل."
+          : "Manage your Qentrah Workspace subscription and operating plan.",
     };
   }
 
