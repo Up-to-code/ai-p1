@@ -5,7 +5,7 @@ import { BasicScheduler } from "calendarkit-basic";
 import type { CalendarEvent as CalendarKitEvent } from "calendarkit-basic";
 import type { CalendarEvent } from "../store/calendar.types";
 import { parse } from "date-fns";
-import "calendarkit-basic/dist/styles.css";
+// Calendar styles loaded via globals.css to avoid Tailwind conflicts
 
 interface QentrahCalendarKitProps {
   events: CalendarEvent[];
@@ -143,21 +143,31 @@ export function QentrahCalendarKit({
           --foreground: var(--q-text-primary);
           --card: var(--q-card);
           --card-foreground: var(--q-text-primary);
-          --primary: var(--q-primary);
-          --primary-foreground: var(--q-primary-foreground);
+          --primary: var(--q-accent);
+          --primary-foreground: #ffffff;
           --secondary: var(--q-bg-secondary);
           --secondary-foreground: var(--q-text-primary);
-          --muted: var(--q-bg-muted);
+          --muted: var(--q-bg-secondary);
           --muted-foreground: var(--q-text-muted);
           --accent: var(--q-bg-secondary);
           --accent-foreground: var(--q-text-primary);
           --border: var(--q-border);
           --input: var(--q-border);
-          --ring: var(--q-primary);
-          --radius: var(--q-radius);
+          --ring: var(--q-accent);
+          --destructive: var(--q-error);
+          --destructive-foreground: #ffffff;
+          --radius: 12px;
           
           /* Typography */
-          font-family: var(--font-cairo), system-ui, sans-serif;
+          font-family: var(--font-sans), system-ui, sans-serif;
+        }
+
+        /* Container - Add rounded corners and border */
+        .qentrah-calendar-wrapper > div {
+          background: var(--q-card);
+          border: 1px solid var(--q-border);
+          border-radius: 24px;
+          overflow: hidden;
         }
 
         /* Apply Qentrah button styles */
@@ -166,49 +176,106 @@ export function QentrahCalendarKit({
           text-transform: uppercase;
           letter-spacing: 0.05em;
           transition: all 0.2s;
+          border-radius: 12px;
         }
 
         /* Calendar header styling */
         .qentrah-calendar-wrapper .calendar-header {
           border-bottom: 1px solid var(--q-border);
           background: var(--q-card);
-          border-radius: var(--q-radius-lg) var(--q-radius-lg) 0 0;
+          padding: 1.25rem;
         }
 
         /* Event pills styling */
         .qentrah-calendar-wrapper .calendar-event {
-          border-radius: var(--q-radius);
+          border-radius: 12px;
           font-weight: 800;
           font-size: 0.75rem;
-          padding: 0.375rem 0.625rem;
-          box-shadow: var(--q-shadow-sm);
+          padding: 0.5rem 0.75rem;
+          border: 1px solid transparent;
         }
 
-        /* Month view grid */
-        .qentrah-calendar-wrapper .calendar-month-grid {
+        /* Month view grid cells */
+        .qentrah-calendar-wrapper .calendar-day {
           border: 1px solid var(--q-border);
-          border-radius: var(--q-radius-lg);
-          overflow: hidden;
+          background: var(--q-card);
+          transition: background 0.2s;
+        }
+
+        .qentrah-calendar-wrapper .calendar-day:hover {
+          background: var(--q-bg-muted);
         }
 
         /* Week/Day timeline */
         .qentrah-calendar-wrapper .calendar-timeline {
           border: 1px solid var(--q-border);
-          border-radius: var(--q-radius-lg);
         }
 
         /* Today highlight */
         .qentrah-calendar-wrapper .calendar-today {
-          background-color: var(--q-primary);
-          color: var(--q-primary-foreground);
+          background-color: var(--q-accent) !important;
+          color: #ffffff !important;
+          border-radius: 50%;
         }
 
-        /* Container styling */
-        .qentrah-calendar-wrapper > div {
+        /* View toggle buttons */
+        .qentrah-calendar-wrapper .view-toggle {
+          background: var(--q-bg-muted);
+          border-radius: 12px;
+          padding: 4px;
+        }
+
+        .qentrah-calendar-wrapper .view-toggle button {
+          border-radius: 8px;
+          padding: 0.5rem 1rem;
+          font-size: 10px;
+          font-weight: 800;
+        }
+
+        .qentrah-calendar-wrapper .view-toggle button[data-active="true"] {
           background: var(--q-card);
-          border: 1px solid var(--q-border);
-          border-radius: 24px;
-          overflow: hidden;
+          color: var(--q-text-primary);
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Navigation buttons */
+        .qentrah-calendar-wrapper .nav-button {
+          background: var(--q-bg-muted);
+          border-radius: 12px;
+          padding: 0.5rem;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        /* Month/Week headers */
+        .qentrah-calendar-wrapper .calendar-header-cell {
+          font-size: 10px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: var(--q-text-muted);
+          padding: 0.75rem;
+          text-align: center;
+        }
+
+        /* Time slots in day/week view */
+        .qentrah-calendar-wrapper .time-slot {
+          border-top: 1px solid var(--q-border);
+          min-height: 60px;
+        }
+
+        /* Empty state */
+        .qentrah-calendar-wrapper .empty-state {
+          color: var(--q-text-muted);
+          text-align: center;
+          padding: 3rem;
+        }
+
+        /* Loading state */
+        .qentrah-calendar-wrapper .loading {
+          opacity: 0.6;
+          pointer-events: none;
         }
       `}</style>
     </div>

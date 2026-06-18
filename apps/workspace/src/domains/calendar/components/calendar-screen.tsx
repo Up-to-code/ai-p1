@@ -73,12 +73,8 @@ import {
 } from "@/domains/calendar/calendar-view-model";
 import { useClientOptionsQuery, useClientQuery } from "@/domains/clients/api/clients";
 import { useClientTaskOptionsQuery } from "@/domains/clients/api/client-tasks";
-import {
-  createCalendarEventRequest,
-  deleteCalendarEventRequest,
-  updateCalendarEventRequest,
-  useCalendarIndexRangeQueryResult,
-} from "../api/calendar";
+import { useCalendarEventMutations } from "../hooks";
+import { useCalendarIndexRangeQueryResult, createCalendarEventRequest, updateCalendarEventRequest } from "../api/calendar";
 import { useOperationState } from "@/lib/utils/operation-state";
 import {
   DeleteRecordDialog,
@@ -155,6 +151,11 @@ export function CalendarScreen() {
   const deleteOperation = useOperationState({
     errorMessage: "Event delete failed.",
   });
+  const calendarQueryKey = useMemo(
+    () => workspaceOrganizationId ? ["calendar", "index", { organizationId: workspaceOrganizationId, startAt: range.startAt, endAt: range.endAt }] : ["calendar", "index", "skip"],
+    [workspaceOrganizationId, range.startAt, range.endAt],
+  );
+  const { createEvent, updateEvent, deleteEvent, isCreating, isUpdating, isDeleting } = useCalendarEventMutations(calendarQueryKey);
 
   return (
     <AppPageShell>
@@ -169,38 +170,13 @@ export function CalendarScreen() {
         }
       />
 
-      <AppStatsGrid
-        stats={[
-          {
-            label: t("stats.events"),
-            value: stats?.total ?? "...",
-            icon: CalendarDays,
-          },
-          {
-            label: t("stats.confirmed"),
-            value: stats?.confirmed ?? "...",
-            dotClassName: "bg-emerald-500",
-          },
-          {
-            label: t("stats.pending"),
-            value: stats?.pending ?? "...",
-            dotClassName: "bg-amber-500",
-          },
-          {
-            label: t("stats.owners"),
-            value: stats?.owners ?? "...",
-            icon: User,
-          },
-        ]}
-      />
-
       {workspaceStatus !== "ready" ? (
         <WorkspaceQueryState status={workspaceStatus} variant="calendar" />
       ) : isQueryBlocked ? (
         <HttpQueryState query={eventsQuery} variant="calendar" />
       ) : (
         <>
-          <div style={{ height: "700px" }}>
+          <div className="h-[60vh] min-h-[500px] lg:h-[700px]">
             <QentrahCalendarKit
               events={events}
               view={view}
@@ -222,7 +198,7 @@ export function CalendarScreen() {
                   endAt: calendarKitEvent.end?.getTime() || (calendarKitEvent.start.getTime() + 3600000),
                 };
 
-                await createCalendarEventRequest(account.organization.id, newEvent);
+                await createEvent(newEvent);
               }}
               onEventUpdate={async (calendarKitEvent) => {
                 if (!account.organization.id) return;
@@ -243,11 +219,10 @@ export function CalendarScreen() {
                   notes: calendarKitEvent.description || existingEvent.notes,
                 };
 
-                await updateCalendarEventRequest(account.organization.id, calendarKitEvent.id, updatedEvent);
+                await updateEvent(calendarKitEvent.id, updatedEvent);
               }}
               onEventDelete={async (eventId) => {
-                if (!account.organization.id) return;
-                await deleteCalendarEventRequest(account.organization.id, eventId);
+                await deleteEvent(eventId);
               }}
               onEventClick={(calendarKitEvent) => {
                 const fullEvent = events.find((e) => e.id === calendarKitEvent.id);
@@ -268,8 +243,7 @@ export function CalendarScreen() {
               onClose={() => setDrawerDate(null)}
               onEventClick={setSelectedEvent}
               onDelete={(id) => {
-                if (!account.organization.id) return;
-                void deleteCalendarEventRequest(account.organization.id, id);
+                void deleteEvent(id);
               }}
             />
           )}
@@ -280,8 +254,7 @@ export function CalendarScreen() {
               event={selectedEvent}
               onClose={() => setSelectedEvent(null)}
               onDelete={(id) => {
-                if (!account.organization.id) return;
-                void deleteCalendarEventRequest(account.organization.id, id);
+                void deleteEvent(id);
                 setSelectedEvent(null);
               }}
               onEditClick={(event) => {
@@ -309,10 +282,7 @@ export function CalendarScreen() {
                   if (!deleting) throw new Error("No event");
                   if (!account.organization.id)
                     throw new Error("Select an organization first.");
-                  return deleteCalendarEventRequest(
-                    account.organization.id,
-                    deleting.id,
-                  );
+                  return deleteEvent(deleting.id);
                 },
                 {
                   successMessage: "Event deleted.",
