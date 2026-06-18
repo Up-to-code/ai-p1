@@ -15,6 +15,7 @@ import type { Client, ClientType, PipelineStage } from "../store/clients.types";
 import { clientSchema, type ClientFormValues } from "../validation/client.schema";
 import { useOperationState } from "@/lib/utils/operation-state";
 import { SelectField, SegmentedControl, FormActions, FormErrorSummary, TextInput } from "@/components/shared/crud-ui";
+import { User, Mail, Phone, DollarSign, Target, AlertCircle, Eye } from "lucide-react";
 
 interface ClientFormProps {
   existing?: Client;
@@ -24,6 +25,17 @@ interface ClientFormProps {
 }
 
 const pipelineStages = ["new", "qualified", "review", "negotiation", "closed"] as const;
+
+function SectionHeader({ icon: Icon, title }: { icon: React.ElementType; title: string }) {
+  return (
+    <div className="flex items-center gap-2 pb-3 border-b border-border">
+      <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/10">
+        <Icon className="h-3.5 w-3.5 text-primary" />
+      </div>
+      <h3 className="text-xs font-black uppercase tracking-widest text-foreground">{title}</h3>
+    </div>
+  );
+}
 
 export function ClientForm({ existing, indexQueryKey, onSuccess, onCancel }: ClientFormProps) {
   const t = useTranslations('Clients');
@@ -89,28 +101,38 @@ export function ClientForm({ existing, indexQueryKey, onSuccess, onCancel }: Cli
 
   return (
     <form className="flex h-full flex-col" onSubmit={onSubmit}>
-      <div className="flex-1 space-y-12">
+      <div className="flex-1 space-y-10">
         <FormErrorSummary errors={fieldErrors} />
         
-        <div className="grid gap-8">
+        {/* Contact Information */}
+        <div className="space-y-5">
+          <SectionHeader icon={User} title={t('form.contactSection')} />
+          
           <TextInput name="name" label={t('form.nameLabel')} value={form.name} onChange={(value) => setField("name", value)} placeholder={t("form.namePlaceholder")} autoComplete="name" error={fieldErrors.name} />
           
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-5 md:grid-cols-2">
             <TextInput name="contact" label={t('form.emailLabel')} type="email" value={form.contact} onChange={(value) => setField("contact", value)} placeholder={t("form.emailPlaceholder")} error={fieldErrors.contact} />
             <TextInput name="phone" label={t('form.phoneLabel')} type="tel" value={form.phone} onChange={(value) => setField("phone", value)} placeholder={t("form.phonePlaceholder")} error={fieldErrors.phone} />
           </div>
+        </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
+        {/* Client Profile */}
+        <div className="space-y-5">
+          <SectionHeader icon={Target} title={t('form.profileSection')} />
+          
+          <div className="grid gap-5 md:grid-cols-2">
             <TextInput name="age" label={t('form.ageLabel')} type="number" value={form.age} onChange={(value) => setField("age", value)} error={fieldErrors.age} />
             <TextInput name="budget" label={t('form.budgetLabel')} value={form.budget} onChange={(value) => setField("budget", value)} placeholder={t("form.budgetPlaceholder")} error={fieldErrors.budget} />
           </div>
           
           <TextInput name="assetInterest" label={t('form.interestLabel')} value={form.assetInterest} onChange={(value) => setField("assetInterest", value)} placeholder={t("form.interestPlaceholder")} error={fieldErrors.assetInterest} />
-          <TextInput name="nextAction" label={t('form.actionLabel')} value={form.nextAction} onChange={(value) => setField("nextAction", value)} placeholder={t("form.actionPlaceholder")} error={fieldErrors.nextAction} />
         </div>
 
-        <div className="grid gap-8">
-          <div className="grid gap-6 md:grid-cols-2">
+        {/* Classification & Status */}
+        <div className="space-y-5">
+          <SectionHeader icon={AlertCircle} title={t('form.classificationSection')} />
+          
+          <div className="grid gap-5 md:grid-cols-2">
             <SegmentedControl
               id="type"
               label={t('form.typeLabel')}
@@ -145,6 +167,14 @@ export function ClientForm({ existing, indexQueryKey, onSuccess, onCancel }: Cli
             options={pipelineStages.map((stage) => ({ value: stage, label: t(`stages.${stage}`) }))} 
             error={fieldErrors.pipelineStage} 
           />
+        </div>
+
+        {/* Actions & Visibility */}
+        <div className="space-y-5">
+          <SectionHeader icon={Eye} title={t('form.actionsSection')} />
+          
+          <TextInput name="nextAction" label={t('form.actionLabel')} value={form.nextAction} onChange={(value) => setField("nextAction", value)} placeholder={t("form.actionPlaceholder")} error={fieldErrors.nextAction} />
+          
           {canManageVisibility && (
             <SelectField
               id="visibility"

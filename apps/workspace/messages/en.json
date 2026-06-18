@@ -354,13 +354,34 @@
         "title": "One loop for the teams around every workflow.",
         "description": "The platform is built for the movement between client demand, team execution, partner systems, and workspace decisions.",
         "items": [
-          { "name": "Projects", "label": "Plan" },
-          { "name": "Clients", "label": "Demand" },
-          { "name": "Operations", "label": "Readiness" },
-          { "name": "Teams", "label": "Handoff" },
-          { "name": "Finance", "label": "Revenue" },
-          { "name": "Legal", "label": "Approval" },
-          { "name": "Web apps", "label": "Sync" }
+          {
+            "name": "Projects",
+            "label": "Plan"
+          },
+          {
+            "name": "Clients",
+            "label": "Demand"
+          },
+          {
+            "name": "Operations",
+            "label": "Readiness"
+          },
+          {
+            "name": "Teams",
+            "label": "Handoff"
+          },
+          {
+            "name": "Finance",
+            "label": "Revenue"
+          },
+          {
+            "name": "Legal",
+            "label": "Approval"
+          },
+          {
+            "name": "Web apps",
+            "label": "Sync"
+          }
         ]
       },
       "audiences": {
@@ -375,9 +396,18 @@
             "href": "/developer",
             "image": "/images/projects/business-park.png",
             "stats": [
-              { "label": "Projects", "value": "Live" },
-              { "label": "Assets", "value": "Synced" },
-              { "label": "Status", "value": "Clear" }
+              {
+                "label": "Projects",
+                "value": "Live"
+              },
+              {
+                "label": "Assets",
+                "value": "Synced"
+              },
+              {
+                "label": "Status",
+                "value": "Clear"
+              }
             ]
           },
           {
@@ -387,9 +417,18 @@
             "href": "/broker",
             "image": "/images/projects/residential.png",
             "stats": [
-              { "label": "Clients", "value": "Active" },
-              { "label": "Meetings", "value": "Ready" },
-              { "label": "Context", "value": "Shared" }
+              {
+                "label": "Clients",
+                "value": "Active"
+              },
+              {
+                "label": "Meetings",
+                "value": "Ready"
+              },
+              {
+                "label": "Context",
+                "value": "Shared"
+              }
             ]
           }
         ]
@@ -813,9 +852,18 @@
         "title": "See the project the way operations sees it.",
         "description": "The operations route focuses on project state, available assets, launch blockers, and the team context needed to move records.",
         "stats": {
-          "projects": { "label": "Projects", "value": "42" },
-          "assets": { "label": "Assets", "value": "1.8k" },
-          "health": { "label": "Health", "value": "99%" }
+          "projects": {
+            "label": "Projects",
+            "value": "42"
+          },
+          "assets": {
+            "label": "Assets",
+            "value": "1.8k"
+          },
+          "health": {
+            "label": "Health",
+            "value": "99%"
+          }
         }
       },
       "workflow": {
@@ -880,9 +928,18 @@
         "title": "Keep the client, asset, and operational context together.",
         "description": "The team route focuses on practical movement: match the client, check availability, plan the meeting, and keep the team aligned.",
         "stats": {
-          "matches": { "label": "Matches", "value": "Live" },
-          "viewings": { "label": "Viewings", "value": "Today" },
-          "context": { "label": "Context", "value": "Shared" }
+          "matches": {
+            "label": "Matches",
+            "value": "Live"
+          },
+          "viewings": {
+            "label": "Viewings",
+            "value": "Today"
+          },
+          "context": {
+            "label": "Context",
+            "value": "Shared"
+          }
         }
       },
       "workflow": {
@@ -1891,7 +1948,11 @@
       "actionPlaceholder": "Next follow-up or handoff",
       "issueLabel": "Open Issue",
       "saveBtn": "Save Client",
-      "createBtn": "Create Client"
+      "createBtn": "Create Client",
+      "contactSection": "Contact Information",
+      "profileSection": "Client Profile",
+      "classificationSection": "Classification & Status",
+      "actionsSection": "Actions & Visibility"
     },
     "types": {
       "person": "Person",

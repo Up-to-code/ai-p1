@@ -257,13 +257,13 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
       ) : messages.length === 0 ? (
         <div className="relative flex flex-1 flex-col items-center justify-center px-4 py-12">
           <motion.div
-            className="w-full max-w-2xl space-y-8 text-center"
+            className="w-full max-w-[806px] space-y-8 text-center"
             initial={reduceMotion ? false : "hidden"}
             animate="show"
             variants={aiEmptyStateVariants}
           >
             <motion.div className="space-y-4" variants={aiEmptyItemVariants}>
-              <h2 className="text-3xl font-black leading-tight tracking-tight text-text-primary sm:text-5xl">
+              <h2 className="text-3xl font-black leading-none tracking-tight text-text-primary sm:text-5xl">
                 <WordWave text={t("welcome")} disabled={reduceMotion} />
               </h2>
               <motion.p className="mx-auto max-w-xl text-base font-medium leading-relaxed text-text-secondary" variants={aiCopyVariants}>

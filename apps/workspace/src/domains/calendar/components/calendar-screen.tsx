@@ -49,24 +49,9 @@ import {
   calendarEventSchema,
   type CalendarEventFormValues,
 } from "../validation/calendar.schema";
-import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay } from 'date-fns';
-import { enUS } from 'date-fns/locale/en-US';
-import { arSA } from 'date-fns/locale/ar-SA';
-
-
-const locales = {
-  'en': enUS,
-  'ar': arSA,
-};
-
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales,
-});
+import { format, parse } from 'date-fns';
+import { QentrahCalendarKit } from "./qentrah-calendar-kit";
+import type { CalendarEvent as CalendarKitEvent } from "calendarkit-basic";
 
 import { useAccountContext } from "@/domains/auth";
 import {
@@ -249,31 +234,65 @@ export function CalendarScreen() {
         <HttpQueryState query={eventsQuery} variant="calendar" />
       ) : (
         <>
-          <UntitledCalendarSurface
-            currentDate={currentDate}
-            eventsForDate={eventsForDate}
-            headerLabel={headerLabel}
-            locale={locale}
-            onDateClick={setDrawerDate}
-            onEventClick={setSelectedEvent}
-            onNavigate={navigate}
-            onToday={() => setCurrentDate(new Date())}
-            onViewChange={setView}
-            moreLabel={t("more")}
-            statusLabels={{
-              confirmed: t("statuses.confirmed"),
-              draft: t("statuses.draft"),
-              pending: t("statuses.pending"),
-            }}
-            todayLabel={t("today")}
-            view={view}
-            viewLabels={{
-              day: t("day"),
-              month: t("month"),
-              week: t("week"),
-            }}
-            weekDayLabels={weekDayLabels}
-          />
+          <div style={{ height: "700px" }}>
+            <QentrahCalendarKit
+              events={events}
+              view={view}
+              onViewChange={setView}
+              date={currentDate}
+              onDateChange={setCurrentDate}
+              onEventCreate={async (calendarKitEvent) => {
+                if (!account.organization.id || !calendarKitEvent.start || !calendarKitEvent.title) return;
+                
+                const newEvent: Partial<CalendarEvent> = {
+                  title: calendarKitEvent.title,
+                  owner: account.user.name,
+                  date: format(calendarKitEvent.start, "yyyy-MM-dd"),
+                  time: format(calendarKitEvent.start, "HH:mm"),
+                  type: "meeting",
+                  status: "draft",
+                  notes: calendarKitEvent.description,
+                };
+
+                if (calendarKitEvent.start && calendarKitEvent.end) {
+                  newEvent.startAt = calendarKitEvent.start.getTime();
+                  newEvent.endAt = calendarKitEvent.end.getTime();
+                }
+
+                await createCalendarEventRequest(account.organization.id, newEvent);
+              }}
+              onEventUpdate={async (calendarKitEvent) => {
+                if (!account.organization.id) return;
+                
+                const existingEvent = events.find((e) => e.id === calendarKitEvent.id);
+                if (!existingEvent) return;
+
+                const updatedEvent: Partial<CalendarEvent> = {
+                  ...existingEvent,
+                  title: calendarKitEvent.title,
+                  date: format(calendarKitEvent.start, "yyyy-MM-dd"),
+                  time: format(calendarKitEvent.start, "HH:mm"),
+                  startAt: calendarKitEvent.start.getTime(),
+                  endAt: calendarKitEvent.end.getTime(),
+                  notes: calendarKitEvent.description,
+                };
+
+                await updateCalendarEventRequest(account.organization.id, calendarKitEvent.id, updatedEvent);
+              }}
+              onEventDelete={async (eventId) => {
+                if (!account.organization.id) return;
+                await deleteCalendarEventRequest(account.organization.id, eventId);
+              }}
+              onEventClick={(calendarKitEvent) => {
+                const fullEvent = events.find((e) => e.id === calendarKitEvent.id);
+                if (fullEvent) {
+                  setSelectedEvent(fullEvent);
+                }
+              }}
+              isLoading={isLoading}
+              locale={locale}
+            />
+          </div>
 
           {/* ── Day Dialog ── */}
           {drawerDate && (
