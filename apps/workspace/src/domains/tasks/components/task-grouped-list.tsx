@@ -58,10 +58,14 @@ export function TaskGroupedList({
   tasks,
   statusFilter = "all",
   onTaskDrop,
+  onTaskClick,
+  selectedId,
 }: {
   tasks: TaskRecord[];
   statusFilter?: TaskStatus | "all";
   onTaskDrop?: (taskId: string, newStatus: TaskStatus) => void;
+  onTaskClick?: (id: string) => void;
+  selectedId?: string;
 }) {
   const t = useTranslations("Tasks");
   const [mounted, setMounted] = useState(false);
@@ -161,10 +165,12 @@ export function TaskGroupedList({
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
+                            onClick={() => onTaskClick?.(task.id)}
                             className={cn(
-                              "group rounded-xl border border-border bg-card p-3 shadow-none transition-shadow",
+                              "group rounded-xl border border-border bg-card p-3 shadow-none transition-all cursor-pointer",
                               snapshot.isDragging && "shadow-xl ring-2 ring-primary/20 opacity-90",
-                              !snapshot.isDragging && "hover:shadow-sm hover:bg-muted/30"
+                              !snapshot.isDragging && "hover:shadow-sm hover:bg-muted/30",
+                              selectedId === task.id && "ring-2 ring-primary/40 border-primary/30",
                             )}
                           >
                             {/* Title row */}

@@ -10,7 +10,6 @@ import {
   AppPrimaryButton,
   AppSection,
   AppTabsList,
-  AppToolbar,
   InfiniteScrollSentinel,
   type AppDataTableColumn,
 } from "@/components/shared";
@@ -65,7 +64,7 @@ import {
   type PipelineStage,
 } from "../client-view-model";
 import { useOperationState } from "@/lib/utils/operation-state";
-import { DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, HttpQueryState, ProgressiveLoadingState, SearchBox, StatusPill, WorkspaceQueryState } from "@/components/shared/crud-ui";
+import { DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, HttpQueryState, ProgressiveLoadingState, StatusPill, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { useUrlListState } from "@/components/shared/use-url-list-state";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -424,47 +423,95 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
   ];
 
   return (
-    <AppPageShell>
-      <AppPageHeader eyebrow={t("eyebrow")} title={t("title") + "."} actions={<AppPrimaryButton onClick={() => setIsCreateOpen(true)}><UserPlus className="me-2 h-3.5 w-3.5" />{t("add")}</AppPrimaryButton>} />
-      <AppToolbar
-        filters={[
-          { value: "all", label: t("toolbar.filters.all") },
-          { value: "person", label: t("toolbar.filters.person") },
-          { value: "organization", label: t("toolbar.filters.organization") },
-        ]}
-        activeFilter={filter}
-        onFilterChange={(next) => setFilter(next as "all" | ClientType)}
-        sortLabel={t("toolbar.newest")}
-        trailing={<SearchBox value={search} onChange={setSearch} placeholder={t("toolbar.search")} name="client-search" ariaLabel="Search clients" />}
-      />
-
-      <div className="flex flex-wrap gap-2">
-        {(["pipeline", "list", "calendar"] as const).map((mode) => (
-          <Button key={mode} variant={view === mode ? "default" : "outline"} size="sm" onClick={() => setView(mode)} className="text-[10px] font-black uppercase tracking-widest">
-            {t(`views.${mode}`)}
-          </Button>
-        ))}
-        {view === "list" && (
-          <div className="ms-auto flex flex-wrap gap-1 rounded-full border border-border bg-card p-1">
-            {clientStageFilters.map((stage) => (
+    <div className="flex h-full flex-col overflow-hidden bg-background">
+      {/* ── Page Header ── */}
+      <div className="flex shrink-0 items-center justify-between gap-4 border-b border-border bg-background/80 backdrop-blur-xl px-8 h-14 sticky top-0 z-10">
+        {/* Left: Title + divider + Type filter + View tabs */}
+        <div className="flex items-center gap-3 min-w-0">
+          <h1 className="text-sm font-semibold text-foreground shrink-0 tracking-tight">{t("title")}</h1>
+          <div className="h-4 w-px bg-border shrink-0" />
+          {/* Type filter */}
+          <div className="inline-flex items-center rounded-xl border border-border bg-card p-0.5 gap-0.5">
+            {(["all", "person", "organization"] as const).map((f) => (
               <button
-                key={stage}
+                key={f}
                 type="button"
-                onClick={() => setStageFilter(stage)}
+                onClick={() => setFilter(f as "all" | ClientType)}
                 className={cn(
-                  "h-8 rounded-full px-3 text-[10px] font-black uppercase tracking-widest transition-colors",
-                  stageFilter === stage
-                    ? "bg-foreground text-background"
-                    : "text-muted-foreground hover:text-foreground",
+                  "h-6 rounded-lg px-2.5 text-[11px] font-semibold transition-all",
+                  filter === f ? "bg-foreground text-background shadow-sm" : "text-text-muted hover:text-foreground",
                 )}
               >
-                {t(`stageFilters.${stage}`)}
+                {t(`toolbar.filters.${f}`)}
               </button>
             ))}
           </div>
-        )}
+          <div className="h-4 w-px bg-border shrink-0" />
+          {/* View tabs */}
+          <div className="inline-flex items-center rounded-xl border border-border bg-card p-0.5 gap-0.5">
+            {(["pipeline", "list", "calendar"] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setView(mode)}
+                className={cn(
+                  "h-6 rounded-lg px-2.5 text-[11px] font-semibold transition-all",
+                  view === mode ? "bg-foreground text-background shadow-sm" : "text-text-muted hover:text-foreground",
+                )}
+              >
+                {t(`views.${mode}`)}
+              </button>
+            ))}
+          </div>
+          {/* Stage sub-filter (list mode only) */}
+          {view === "list" && (
+            <>
+              <div className="h-4 w-px bg-border shrink-0" />
+              <div className="inline-flex items-center rounded-xl border border-border bg-card p-0.5 gap-0.5">
+                {clientStageFilters.map((stage) => (
+                  <button
+                    key={stage}
+                    type="button"
+                    onClick={() => setStageFilter(stage)}
+                    className={cn(
+                      "h-6 rounded-lg px-2.5 text-[11px] font-semibold transition-all",
+                      stageFilter === stage ? "bg-foreground text-background shadow-sm" : "text-text-muted hover:text-foreground",
+                    )}
+                  >
+                    {t(`stageFilters.${stage}`)}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Right: Search + New Client */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex h-8 items-center gap-2 rounded-xl border border-border bg-card px-3 transition-colors focus-within:border-ring/50 focus-within:ring-2 focus-within:ring-ring/20">
+            <Search className="h-3.5 w-3.5 shrink-0 text-text-muted" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t("toolbar.search")}
+              aria-label="Search clients"
+              className="h-full w-32 bg-transparent text-xs font-medium text-foreground outline-none placeholder:text-text-muted"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsCreateOpen(true)}
+            className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-primary px-3 text-xs font-semibold text-white hover:bg-primary/90 transition-colors"
+          >
+            <UserPlus className="h-3.5 w-3.5" />
+            {t("add")}
+          </button>
+        </div>
       </div>
 
+      {/* ── Content ── */}
+      <div className="flex-1 overflow-auto p-5 md:p-6 lg:p-8">
+        <div className="mx-auto w-full max-w-[1400px] space-y-6">
       {workspaceStatus !== "ready" ? (
         <WorkspaceQueryState status={workspaceStatus} variant={view === "pipeline" ? "pipeline" : view === "calendar" ? "calendar" : "table"} />
       ) : isQueryBlocked ? (
@@ -622,7 +669,9 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
           setStageFilter("all");
         }}
       />
-    </AppPageShell>
+        </div>
+      </div>
+    </div>
   );
 }
 
