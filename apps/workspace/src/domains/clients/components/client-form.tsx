@@ -15,7 +15,8 @@ import type { Client, ClientType, PipelineStage } from "../store/clients.types";
 import { clientSchema, type ClientFormValues } from "../validation/client.schema";
 import { useOperationState } from "@/lib/utils/operation-state";
 import { SelectField, SegmentedControl, FormActions, FormErrorSummary, TextInput } from "@/components/shared/crud-ui";
-import { User, Mail, Phone, DollarSign, Target, AlertCircle, Eye } from "lucide-react";
+import { TiptapEditor } from "@/components/ui/tiptap-editor";
+import { User, Mail, Phone, DollarSign, Target, AlertCircle, Eye, FileText } from "lucide-react";
 
 interface ClientFormProps {
   existing?: Client;
@@ -108,11 +109,15 @@ export function ClientForm({ existing, indexQueryKey, onSuccess, onCancel }: Cli
         <div className="space-y-5">
           <SectionHeader icon={User} title={t('form.contactSection')} />
           
-          <TextInput name="name" label={t('form.nameLabel')} value={form.name} onChange={(value) => setField("name", value)} placeholder={t("form.namePlaceholder")} autoComplete="name" error={fieldErrors.name} />
+          <div className="grid gap-5 lg:grid-cols-3">
+            <TextInput name="name" label={t('form.nameLabel')} value={form.name} onChange={(value) => setField("name", value)} placeholder={t("form.namePlaceholder")} autoComplete="name" error={fieldErrors.name} className="lg:col-span-2" />
+            <TextInput name="age" label={t('form.ageLabel')} type="number" value={form.age} onChange={(value) => setField("age", value)} error={fieldErrors.age} />
+          </div>
           
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-5 lg:grid-cols-3">
             <TextInput name="contact" label={t('form.emailLabel')} type="email" value={form.contact} onChange={(value) => setField("contact", value)} placeholder={t("form.emailPlaceholder")} error={fieldErrors.contact} />
             <TextInput name="phone" label={t('form.phoneLabel')} type="tel" value={form.phone} onChange={(value) => setField("phone", value)} placeholder={t("form.phonePlaceholder")} error={fieldErrors.phone} />
+            <TextInput name="budget" label={t('form.budgetLabel')} value={form.budget} onChange={(value) => setField("budget", value)} placeholder={t("form.budgetPlaceholder")} error={fieldErrors.budget} />
           </div>
         </div>
 
@@ -120,19 +125,17 @@ export function ClientForm({ existing, indexQueryKey, onSuccess, onCancel }: Cli
         <div className="space-y-5">
           <SectionHeader icon={Target} title={t('form.profileSection')} />
           
-          <div className="grid gap-5 md:grid-cols-2">
-            <TextInput name="age" label={t('form.ageLabel')} type="number" value={form.age} onChange={(value) => setField("age", value)} error={fieldErrors.age} />
-            <TextInput name="budget" label={t('form.budgetLabel')} value={form.budget} onChange={(value) => setField("budget", value)} placeholder={t("form.budgetPlaceholder")} error={fieldErrors.budget} />
+          <div className="grid gap-5 lg:grid-cols-2">
+            <TextInput name="assetInterest" label={t('form.interestLabel')} value={form.assetInterest} onChange={(value) => setField("assetInterest", value)} placeholder={t("form.interestPlaceholder")} error={fieldErrors.assetInterest} />
+            <TextInput name="nextAction" label={t('form.actionLabel')} value={form.nextAction} onChange={(value) => setField("nextAction", value)} placeholder={t("form.actionPlaceholder")} error={fieldErrors.nextAction} />
           </div>
-          
-          <TextInput name="assetInterest" label={t('form.interestLabel')} value={form.assetInterest} onChange={(value) => setField("assetInterest", value)} placeholder={t("form.interestPlaceholder")} error={fieldErrors.assetInterest} />
         </div>
 
         {/* Classification & Status */}
         <div className="space-y-5">
           <SectionHeader icon={AlertCircle} title={t('form.classificationSection')} />
           
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-5 lg:grid-cols-3">
             <SegmentedControl
               id="type"
               label={t('form.typeLabel')}
@@ -157,24 +160,17 @@ export function ClientForm({ existing, indexQueryKey, onSuccess, onCancel }: Cli
               ]} 
               error={fieldErrors.priority} 
             />
+
+            <SelectField 
+              id="pipelineStage" 
+              label={t('form.stageLabel')} 
+              value={form.pipelineStage} 
+              onChange={(value) => setField("pipelineStage", value)} 
+              options={pipelineStages.map((stage) => ({ value: stage, label: t(`stages.${stage}`) }))} 
+              error={fieldErrors.pipelineStage} 
+            />
           </div>
 
-          <SelectField 
-            id="pipelineStage" 
-            label={t('form.stageLabel')} 
-            value={form.pipelineStage} 
-            onChange={(value) => setField("pipelineStage", value)} 
-            options={pipelineStages.map((stage) => ({ value: stage, label: t(`stages.${stage}`) }))} 
-            error={fieldErrors.pipelineStage} 
-          />
-        </div>
-
-        {/* Actions & Visibility */}
-        <div className="space-y-5">
-          <SectionHeader icon={Eye} title={t('form.actionsSection')} />
-          
-          <TextInput name="nextAction" label={t('form.actionLabel')} value={form.nextAction} onChange={(value) => setField("nextAction", value)} placeholder={t("form.actionPlaceholder")} error={fieldErrors.nextAction} />
-          
           {canManageVisibility && (
             <SelectField
               id="visibility"
@@ -189,6 +185,17 @@ export function ClientForm({ existing, indexQueryKey, onSuccess, onCancel }: Cli
               error={fieldErrors.visibility}
             />
           )}
+        </div>
+
+        {/* Notes */}
+        <div className="space-y-5">
+          <SectionHeader icon={FileText} title={t('form.notesSection')} />
+          <TiptapEditor
+            value={form.notes ?? ""}
+            onChange={(value) => setField("notes", value)}
+            placeholder={t('form.notesPlaceholder')}
+            disableImageUpload
+          />
         </div>
       </div>
 

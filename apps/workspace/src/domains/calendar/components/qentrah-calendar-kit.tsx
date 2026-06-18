@@ -5,7 +5,7 @@ import { BasicScheduler } from "calendarkit-basic";
 import type { CalendarEvent as CalendarKitEvent } from "calendarkit-basic";
 import type { CalendarEvent } from "../store/calendar.types";
 import { parse } from "date-fns";
-import "calendarkit-basic/dist/index.css";
+import "calendarkit-basic/dist/styles.css";
 
 interface QentrahCalendarKitProps {
   events: CalendarEvent[];

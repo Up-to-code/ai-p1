@@ -31,6 +31,7 @@ export interface Client {
   appointmentTime: string;
   syncState: SyncState;
   issue?: string;
+  notes?: string;
   createdAt?: number;
   updatedAt?: number;
 }

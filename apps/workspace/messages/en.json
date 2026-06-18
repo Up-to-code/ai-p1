@@ -1952,7 +1952,9 @@
       "contactSection": "Contact Information",
       "profileSection": "Client Profile",
       "classificationSection": "Classification & Status",
-      "actionsSection": "Actions & Visibility"
+      "actionsSection": "Actions & Visibility",
+      "notesSection": "Notes",
+      "notesPlaceholder": "Add any additional notes about this client..."
     },
     "types": {
       "person": "Person",

@@ -9,14 +9,10 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Button as AriaButton } from "react-aria-components";
 import { LocationPicker } from "@qentrah/location-map/react";
 import type { LocationValue } from "@qentrah/location-map";
 import {
   CalendarDays,
-  ChevronLeft,
-  ChevronRight,
-  CheckCircle2,
   Plus,
   Trash2,
   User,
@@ -36,6 +32,7 @@ import {
   Ruler,
   ArrowUpRight,
   ExternalLink,
+  CheckCircle2,
 } from "lucide-react";
 import {
   AppPageHeader,
@@ -55,32 +52,23 @@ import type { CalendarEvent as CalendarKitEvent } from "calendarkit-basic";
 
 import { useAccountContext } from "@/domains/auth";
 import {
-  calendarDateOptions,
-  calendarDayMonthLabel,
-  calendarEventsByDate,
-  calendarEventsForTimeSlot,
   calendarEventTone,
   calendarEventTypeClassName,
-  calendarHeaderLabel,
-  calendarIsoOptionLabel,
   calendarIsoDate,
   calendarLongDayLabel,
   calendarLongDayYearLabel,
   calendarLocationValueFromString,
   calendarScheduleTitle,
-  calendarShortMonthLabel,
   calendarTasksForClient,
-  calendarTimeOptions,
   customEventTypeValues,
   formatCalendarTimeLabel,
-  generateCalendarTimeSlots,
-  getCalendarMonthDays,
-  getCalendarWeekDays,
-  nextCalendarDate,
   orderedCalendarEvents,
   serializeCalendarLocation,
   visibleCalendarPickerOptions,
   visibleCalendarRange,
+  calendarDateOptions,
+  calendarTimeOptions,
+  calendarIsoOptionLabel,
   type CalendarView,
 } from "@/domains/calendar/calendar-view-model";
 import { useClientOptionsQuery, useClientQuery } from "@/domains/clients/api/clients";
@@ -168,28 +156,6 @@ export function CalendarScreen() {
     errorMessage: "Event delete failed.",
   });
 
-  const eventsByDate = useMemo(() => {
-    return calendarEventsByDate(events);
-  }, [events]);
-
-  const eventsForDate = (d: Date) => eventsByDate[calendarIsoDate(d)] || [];
-
-  const navigate = (dir: 1 | -1) => {
-    setCurrentDate(nextCalendarDate(currentDate, view, dir));
-  };
-
-  const headerLabel = calendarHeaderLabel(currentDate, view, locale);
-
-  const weekDayLabels = [
-    t("weekDays.sun"),
-    t("weekDays.mon"),
-    t("weekDays.tue"),
-    t("weekDays.wed"),
-    t("weekDays.thu"),
-    t("weekDays.fri"),
-    t("weekDays.sat"),
-  ];
-
   return (
     <AppPageShell>
       <AppPageHeader
@@ -244,20 +210,17 @@ export function CalendarScreen() {
               onEventCreate={async (calendarKitEvent) => {
                 if (!account.organization.id || !calendarKitEvent.start || !calendarKitEvent.title) return;
                 
-                const newEvent: Partial<CalendarEvent> = {
+                const newEvent = {
                   title: calendarKitEvent.title,
                   owner: account.user.name,
                   date: format(calendarKitEvent.start, "yyyy-MM-dd"),
                   time: format(calendarKitEvent.start, "HH:mm"),
-                  type: "meeting",
-                  status: "draft",
-                  notes: calendarKitEvent.description,
+                  type: "meeting" as const,
+                  status: "draft" as const,
+                  notes: calendarKitEvent.description || "",
+                  startAt: calendarKitEvent.start.getTime(),
+                  endAt: calendarKitEvent.end?.getTime() || (calendarKitEvent.start.getTime() + 3600000),
                 };
-
-                if (calendarKitEvent.start && calendarKitEvent.end) {
-                  newEvent.startAt = calendarKitEvent.start.getTime();
-                  newEvent.endAt = calendarKitEvent.end.getTime();
-                }
 
                 await createCalendarEventRequest(account.organization.id, newEvent);
               }}
@@ -267,14 +230,17 @@ export function CalendarScreen() {
                 const existingEvent = events.find((e) => e.id === calendarKitEvent.id);
                 if (!existingEvent) return;
 
-                const updatedEvent: Partial<CalendarEvent> = {
+                const updatedEvent = {
                   ...existingEvent,
                   title: calendarKitEvent.title,
+                  owner: existingEvent.owner,
                   date: format(calendarKitEvent.start, "yyyy-MM-dd"),
                   time: format(calendarKitEvent.start, "HH:mm"),
+                  type: existingEvent.type,
+                  status: existingEvent.status,
                   startAt: calendarKitEvent.start.getTime(),
-                  endAt: calendarKitEvent.end.getTime(),
-                  notes: calendarKitEvent.description,
+                  endAt: calendarKitEvent.end?.getTime() || (calendarKitEvent.start.getTime() + 3600000),
+                  notes: calendarKitEvent.description || existingEvent.notes,
                 };
 
                 await updateCalendarEventRequest(account.organization.id, calendarKitEvent.id, updatedEvent);
@@ -298,7 +264,7 @@ export function CalendarScreen() {
           {drawerDate && (
             <DayDialog
               date={drawerDate}
-              events={eventsForDate(drawerDate)}
+              events={events.filter((e) => e.date === format(drawerDate, "yyyy-MM-dd"))}
               onClose={() => setDrawerDate(null)}
               onEventClick={setSelectedEvent}
               onDelete={(id) => {
@@ -383,397 +349,6 @@ export function CalendarScreen() {
         </>
       )}
     </AppPageShell>
-  );
-}
-
-function UntitledCalendarSurface({
-  currentDate,
-  eventsForDate,
-  headerLabel,
-  locale,
-  onDateClick,
-  onEventClick,
-  onNavigate,
-  onToday,
-  onViewChange,
-  moreLabel,
-  statusLabels,
-  todayLabel,
-  view,
-  viewLabels,
-  weekDayLabels,
-}: {
-  currentDate: Date;
-  eventsForDate: (date: Date) => CalendarEvent[];
-  headerLabel: string;
-  locale: string;
-  onDateClick: (date: Date) => void;
-  onEventClick: (event: CalendarEvent) => void;
-  onNavigate: (direction: 1 | -1) => void;
-  onToday: () => void;
-  onViewChange: (view: CalendarView) => void;
-  moreLabel: string;
-  statusLabels: Record<CalendarEvent["status"], string>;
-  todayLabel: string;
-  view: CalendarView;
-  viewLabels: Record<CalendarView, string>;
-  weekDayLabels: string[];
-}) {
-  const selectedDayEvents = eventsForDate(currentDate);
-  const selectedDayLabel = calendarDayMonthLabel(currentDate, locale);
-
-  return (
-    <section className="overflow-hidden rounded-[24px] border border-border bg-card text-foreground">
-      <div className="flex flex-col gap-5 border-b border-border p-4 lg:flex-row lg:items-center lg:justify-between lg:p-5">
-        <div className="flex min-w-0 items-center gap-4">
-          <div className="hidden h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl border border-border bg-muted text-center sm:flex">
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-              {calendarShortMonthLabel(currentDate, locale)}
-            </span>
-            <span className="text-xl font-black leading-none text-foreground">
-              {currentDate.getDate()}
-            </span>
-          </div>
-          <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-              {viewLabels[view]}
-            </p>
-            <h2 className="truncate text-lg font-black uppercase tracking-normal text-foreground">
-              {headerLabel}
-            </h2>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:justify-end">
-          <div className="inline-flex w-fit items-center gap-1 rounded-xl border border-border bg-muted p-1">
-            <AriaButton
-              aria-label="Previous calendar period"
-              onPress={() => onNavigate(-1)}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rtl:rotate-180"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </AriaButton>
-            <AriaButton
-              onPress={onToday}
-              className="h-8 rounded-lg bg-primary px-3 text-[10px] font-black uppercase tracking-widest text-primary-foreground transition hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-            >
-              {todayLabel}
-            </AriaButton>
-            <AriaButton
-              aria-label="Next calendar period"
-              onPress={() => onNavigate(1)}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rtl:rotate-180"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </AriaButton>
-          </div>
-
-          <div className="grid w-full grid-cols-3 gap-1 rounded-xl border border-border bg-muted p-1 sm:w-auto">
-            {(["month", "week", "day"] as const).map((nextView) => (
-              <AriaButton
-                key={nextView}
-                onPress={() => onViewChange(nextView)}
-                className={cn(
-                  "h-8 rounded-lg px-3 text-[10px] font-black uppercase tracking-widest transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-                  view === nextView
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {viewLabels[nextView]}
-              </AriaButton>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {view === "month" && (
-        <CalendarMonthView
-          currentDate={currentDate}
-          eventsForDate={eventsForDate}
-          moreLabel={moreLabel}
-          onDateClick={onDateClick}
-          onEventClick={onEventClick}
-          weekDayLabels={weekDayLabels}
-        />
-      )}
-
-      {view === "week" && (
-        <CalendarWeekView
-          currentDate={currentDate}
-          eventsForDate={eventsForDate}
-          locale={locale}
-          onDateClick={onDateClick}
-          onEventClick={onEventClick}
-          weekDayLabels={weekDayLabels}
-        />
-      )}
-
-      {view === "day" && (
-        <CalendarDayView
-          dateLabel={selectedDayLabel}
-          events={selectedDayEvents}
-          onEventClick={onEventClick}
-          statusLabels={statusLabels}
-        />
-      )}
-    </section>
-  );
-}
-
-function CalendarMonthView({
-  currentDate,
-  eventsForDate,
-  moreLabel,
-  onDateClick,
-  onEventClick,
-  weekDayLabels,
-}: {
-  currentDate: Date;
-  eventsForDate: (date: Date) => CalendarEvent[];
-  moreLabel: string;
-  onDateClick: (date: Date) => void;
-  onEventClick: (event: CalendarEvent) => void;
-  weekDayLabels: string[];
-}) {
-  const todayIso = calendarIsoDate(new Date());
-
-  return (
-    <div className="overflow-x-auto">
-      <div className="min-w-[760px]">
-        <div className="grid grid-cols-7 border-b border-border">
-          {weekDayLabels.map((day) => (
-            <div
-              key={day}
-              className="px-3 py-3 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground"
-            >
-              {day}
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7">
-          {getCalendarMonthDays(currentDate).map((date) => {
-            const dayEvents = eventsForDate(date);
-            const dateIso = calendarIsoDate(date);
-            const isCurrentMonth = date.getMonth() === currentDate.getMonth();
-            const isToday = dateIso === todayIso;
-
-            return (
-              <div
-                key={dateIso}
-                className={cn(
-                  "group relative min-h-[132px] border-b border-e border-border bg-card p-2 text-start transition hover:bg-muted",
-                  !isCurrentMonth && "bg-muted/60 text-muted-foreground",
-                )}
-              >
-                <AriaButton
-                  aria-label={`Open schedules for ${dateIso}`}
-                  onPress={() => onDateClick(date)}
-                  className="absolute inset-0 z-0 cursor-pointer rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
-                />
-                <AriaButton
-                  onPress={() => onDateClick(date)}
-                  className={cn(
-                    "relative z-10 inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-black transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-                    isToday
-                      ? "bg-primary text-primary-foreground"
-                      : "text-foreground group-hover:bg-muted dark:text-muted-foreground/40 dark:group-hover:bg-white/10",
-                  )}
-                >
-                  {date.getDate()}
-                </AriaButton>
-                <div className="relative z-10 mt-2 space-y-1.5">
-                  {dayEvents.slice(0, 3).map((event) => (
-                    <CalendarEventChip
-                      event={event}
-                      key={event.id}
-                      onClick={(clickedEvent) => onEventClick(clickedEvent)}
-                      variant="compact"
-                    />
-                  ))}
-                  {dayEvents.length > 3 && (
-                    <AriaButton
-                      onPress={() => onDateClick(date)}
-                      className="w-full rounded-lg border border-dashed border-border bg-muted px-2 py-1 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground transition hover:border-border hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                    >
-                      +{dayEvents.length - 3} {moreLabel}
-                    </AriaButton>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function CalendarWeekView({
-  currentDate,
-  eventsForDate,
-  locale,
-  onDateClick,
-  onEventClick,
-  weekDayLabels,
-}: {
-  currentDate: Date;
-  eventsForDate: (date: Date) => CalendarEvent[];
-  locale: string;
-  onDateClick: (date: Date) => void;
-  onEventClick: (event: CalendarEvent) => void;
-  weekDayLabels: string[];
-}) {
-  const todayIso = calendarIsoDate(new Date());
-
-  return (
-    <div className="overflow-x-auto">
-      <div className="grid min-w-[860px] grid-cols-7 divide-x divide-border rtl:divide-x-reverse">
-        {getCalendarWeekDays(currentDate).map((date) => {
-          const dayEvents = eventsForDate(date);
-          const isToday = calendarIsoDate(date) === todayIso;
-
-          return (
-            <div key={calendarIsoDate(date)} className="min-h-[560px] bg-background">
-              <AriaButton
-                onPress={() => onDateClick(date)}
-                className={cn(
-                  "flex w-full items-center justify-between border-b border-border px-3 py-3 text-start transition hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-                  isToday && "bg-primary text-primary-foreground hover:bg-primary/90",
-                )}
-              >
-                <span>
-                  <span className="block text-[10px] font-black uppercase tracking-widest opacity-70">
-                    {weekDayLabels[date.getDay()]}
-                  </span>
-                  <span className="mt-0.5 block text-lg font-black">
-                    {date.getDate()}
-                  </span>
-                </span>
-                <span className="text-[10px] font-bold opacity-50">
-                  {calendarShortMonthLabel(date, locale)}
-                </span>
-              </AriaButton>
-              <div className="space-y-2 p-2">
-                {dayEvents.map((event) => (
-                  <CalendarEventChip
-                    event={event}
-                    key={event.id}
-                    onClick={onEventClick}
-                    variant="stacked"
-                  />
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function CalendarDayView({
-  dateLabel,
-  events,
-  onEventClick,
-  statusLabels,
-}: {
-  dateLabel: string;
-  events: CalendarEvent[];
-  onEventClick: (event: CalendarEvent) => void;
-  statusLabels: Record<CalendarEvent["status"], string>;
-}) {
-  return (
-    <div className="mx-auto max-w-4xl px-4 py-5 sm:px-6">
-      <div className="space-y-1">
-        {generateCalendarTimeSlots().map((time) => {
-          const slotEvents = calendarEventsForTimeSlot(events, time);
-
-          return (
-            <div key={time} className="group grid grid-cols-[64px_minmax(0,1fr)] gap-4 sm:grid-cols-[88px_minmax(0,1fr)] sm:gap-6">
-              <div className="pt-4 text-end text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 transition group-hover:text-muted-foreground rtl:text-start">
-                {time}
-              </div>
-              <div
-                className={cn(
-                  "min-h-[44px] border-t border-border",
-                  slotEvents.length > 0 && "space-y-2 py-2",
-                )}
-              >
-                {slotEvents.map((event) => (
-                  <AriaButton
-                    key={event.id}
-                    onPress={() => onEventClick(event)}
-                    className="flex w-full items-center justify-between gap-4 rounded-2xl border border-border bg-card p-3 text-start transition hover:border-border hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                  >
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-black uppercase tracking-normal text-foreground">
-                        {event.title}
-                      </span>
-                      <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-bold text-muted-foreground">
-                        <span className="inline-flex items-center gap-1">
-                          <User className="h-3 w-3" />
-                          {event.owner}
-                        </span>
-                        <span className="inline-flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {dateLabel}, {event.time}
-                        </span>
-                      </span>
-                    </span>
-                    <StatusPill
-                      label={statusLabels[event.status]}
-                      tone={calendarEventTone(event.status)}
-                    />
-                  </AriaButton>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function CalendarEventChip({
-  event,
-  onClick,
-  variant,
-}: {
-  event: CalendarEvent;
-  onClick: (event: CalendarEvent) => void;
-  variant: "compact" | "stacked";
-}) {
-  return (
-    <AriaButton
-      onPress={() => onClick(event)}
-      className={cn(
-        "block w-full rounded-xl border text-start shadow-sm transition hover:brightness-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-        calendarEventTypeClassName(event.type),
-        variant === "compact"
-          ? "min-h-8 px-2.5 py-1.5 text-xs font-black leading-4"
-          : "px-3 py-3",
-      )}
-    >
-      {variant === "compact" ? (
-        <span className="block truncate">
-          {event.time} {event.title}
-        </span>
-      ) : (
-        <span className="block min-w-0">
-          <span className="block text-[10px] font-black opacity-80">
-            {event.time}
-          </span>
-          <span className="mt-1 block truncate text-sm font-black">
-            {event.title}
-          </span>
-          <span className="mt-1 block truncate text-xs font-bold opacity-70">
-            {event.owner}
-          </span>
-        </span>
-      )}
-    </AriaButton>
   );
 }
 
@@ -1824,134 +1399,5 @@ function ContextPickerOverlay({
         </div>
       </div>
     </div>
-  );
-}
-
-
-function BigCalendarSurface({
-  currentDate,
-  events,
-  locale,
-  onDateClick,
-  onEventClick,
-  onNavigate,
-  onToday,
-  onViewChange,
-  view,
-}: {
-  currentDate: Date;
-  events: CalendarEvent[];
-  locale: string;
-  onDateClick: (date: Date) => void;
-  onEventClick: (event: CalendarEvent) => void;
-  onNavigate: (direction: 1 | -1) => void;
-  onToday: () => void;
-  onViewChange: (view: CalendarView) => void;
-  view: CalendarView;
-}) {
-  const mappedEvents = events.map(e => ({
-    ...e,
-    start: new Date(e.startAt ?? Date.now()),
-    end: new Date(e.endAt ?? Date.now()),
-  }));
-
-  const viewMap: Record<CalendarView, any> = {
-    month: 'month',
-    week: 'week',
-    day: 'day',
-  };
-
-  return (
-    <section className="h-[calc(100vh-12rem)] min-h-[600px] overflow-hidden rounded-[24px] border border-border bg-card text-foreground">
-      <Calendar
-        localizer={localizer}
-        events={mappedEvents}
-        startAccessor="start"
-        endAccessor="end"
-        date={currentDate}
-        view={viewMap[view]}
-        culture={locale === 'ar' ? 'ar' : 'en'}
-        onNavigate={(newDate) => {
-           // We'll use our custom toolbar
-        }}
-        onView={() => {}}
-        onSelectEvent={(e) => onEventClick(e as any)}
-        onSelectSlot={(slotInfo) => onDateClick(slotInfo.start)}
-        selectable
-        components={{
-          event: ({ event }) => (
-            <CalendarEventChip
-              event={event as any}
-              onClick={() => onEventClick(event as any)}
-              variant="compact"
-            />
-          ),
-          toolbar: (toolbarProps) => {
-            const { onNavigate: rbcNavigate, onView: rbcView, label, view: currentView } = toolbarProps;
-            return (
-              <div className="flex flex-col gap-5 border-b border-border p-4 lg:flex-row lg:items-center lg:justify-between lg:p-5">
-                <div className="flex min-w-0 items-center gap-4">
-                  <div className="hidden h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl border border-border bg-muted text-center sm:flex">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                      {calendarShortMonthLabel(currentDate, locale)}
-                    </span>
-                    <span className="text-xl font-black leading-none text-foreground">
-                      {currentDate.getDate()}
-                    </span>
-                  </div>
-                  <div className="min-w-0">
-                    <h2 className="truncate text-lg font-black uppercase tracking-normal text-foreground">
-                      {label}
-                    </h2>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:justify-end">
-                  <div className="inline-flex w-fit items-center gap-1 rounded-xl border border-border bg-muted p-1">
-                    <AriaButton
-                      aria-label="Previous calendar period"
-                      onPress={() => { rbcNavigate('PREV'); onNavigate(-1); }}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rtl:rotate-180"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </AriaButton>
-                    <AriaButton
-                      onPress={() => { rbcNavigate('TODAY'); onToday(); }}
-                      className="h-8 rounded-lg bg-primary px-3 text-[10px] font-black uppercase tracking-widest text-primary-foreground transition hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                    >
-                      Today
-                    </AriaButton>
-                    <AriaButton
-                      aria-label="Next calendar period"
-                      onPress={() => { rbcNavigate('NEXT'); onNavigate(1); }}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rtl:rotate-180"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </AriaButton>
-                  </div>
-
-                  <div className="grid w-full grid-cols-3 gap-1 rounded-xl border border-border bg-muted p-1 sm:w-auto">
-                    {(["month", "week", "day"] as const).map((nextView) => (
-                      <AriaButton
-                        key={nextView}
-                        onPress={() => { rbcView(nextView); onViewChange(nextView); }}
-                        className={cn(
-                          "h-8 rounded-lg px-3 text-[10px] font-black uppercase tracking-widest transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-                          currentView === nextView
-                            ? "bg-card text-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground",
-                        )}
-                      >
-                        {nextView}
-                      </AriaButton>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            );
-          }
-        }}
-      />
-    </section>
   );
 }

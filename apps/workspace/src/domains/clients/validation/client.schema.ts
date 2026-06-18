@@ -20,6 +20,7 @@ export const clientSchema = z.object({
   priority: z.enum(["normal", "high", "urgent"]),
   nextAction: requiredText("Next action"),
   issue: optionalText,
+  notes: optionalText,
 });
 
 export interface ClientFormValues {
@@ -39,4 +40,5 @@ export interface ClientFormValues {
   priority: "normal" | "high" | "urgent";
   nextAction: string;
   issue?: string;
+  notes?: string;
 }

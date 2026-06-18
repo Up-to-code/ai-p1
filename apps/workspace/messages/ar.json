@@ -1948,7 +1948,9 @@
       "contactSection": "معلومات الاتصال",
       "profileSection": "ملف العميل",
       "classificationSection": "التصنيف والحالة",
-      "actionsSection": "الإجراءات والظهور"
+      "actionsSection": "الإجراءات والظهور",
+      "notesSection": "ملاحظات",
+      "notesPlaceholder": "أضف أي ملاحظات إضافية حول هذا العميل..."
     },
     "types": {
       "person": "فرد",

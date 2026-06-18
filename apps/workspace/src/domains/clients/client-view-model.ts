@@ -48,6 +48,7 @@ export function clientToFormValues(client: Client): ClientFormValues {
     priority: client.priority,
     nextAction: client.nextAction,
     issue: client.issue ?? "",
+    notes: client.notes ?? "",
   };
 }
 
@@ -72,6 +73,7 @@ export function clientValuesFromFormData(formData: FormData): ClientFormValues {
     priority: formText(formData, "priority") as ClientFormValues["priority"],
     nextAction: formText(formData, "nextAction"),
     issue: formText(formData, "issue"),
+    notes: formText(formData, "notes"),
   };
 }
 
