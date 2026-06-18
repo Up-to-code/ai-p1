@@ -23,7 +23,7 @@ export function Faq02() {
   return (
     <PublicSection
       id="faq"
-      className="bg-[var(--q-card)] dark:bg-[var(--q-bg)]"
+      tone="default"
       contentClassName="grid gap-16 lg:grid-cols-[1fr_1.5fr] lg:items-start"
     >
       <Reveal>
@@ -34,10 +34,10 @@ export function Faq02() {
               {t("eyebrow")}
             </span>
           </div>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-5xl rtl:leading-[1.25]">
+          <h2 className="text-3xl font-bold tracking-tight text-[var(--q-text-primary)] md:text-5xl rtl:leading-[1.25]">
             {t("title")}
           </h2>
-          <p className="text-base font-medium leading-relaxed text-muted-foreground md:text-lg">
+          <p className="text-base font-medium leading-relaxed text-[var(--q-text-secondary)] md:text-lg">
             {t("description")}
           </p>
         </div>
@@ -52,12 +52,12 @@ export function Faq02() {
             <AccordionItem
               key={item.question}
               value={`item-${index}`}
-              className="border-b border-[var(--q-border)] dark:border-border px-2 transition-colors duration-300 hover:bg-zinc-50/50 dark:hover:bg-[var(--q-card)]/[0.02]"
+              className="border-b border-[var(--q-border)] px-2 transition-colors duration-300 hover:bg-[var(--q-bg-secondary)]"
             >
-              <AccordionTrigger className="text-start py-6 text-base md:text-lg font-semibold text-foreground transition-all duration-300 hover:text-blue-600 dark:hover:text-blue-400 hover:no-underline">
+              <AccordionTrigger className="text-start py-6 text-base md:text-lg font-semibold text-[var(--q-text-primary)] transition-all duration-300 hover:text-blue-600 dark:hover:text-blue-400 hover:no-underline">
                 {item.question}
               </AccordionTrigger>
-              <AccordionContent className="text-sm md:text-base font-medium text-muted-foreground leading-relaxed pb-6">
+              <AccordionContent className="text-sm md:text-base font-medium text-[var(--q-text-secondary)] leading-relaxed pb-6">
                 {item.answer}
               </AccordionContent>
             </AccordionItem>

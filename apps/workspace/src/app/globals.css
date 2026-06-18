@@ -54,6 +54,12 @@
 :root {
   /* ── Qentrah Custom Properties ── */
   --q-bg: #f0ede6;
+  --q-bg-very-dark: #e9e7e1;
+  --q-bg-dark: #efeeea;
+  --q-bg-secondary: #f2f1ed;
+  --q-bg-light: #ffffff;
+  --q-bg-very-light: #fbfaf7;
+  
   --q-sidebar: #e4e0d6;
   --q-topbar: #e8e4db;
   --q-card: #faf9f5;
@@ -134,6 +140,12 @@
 
   /* ── Qentrah Custom Properties (Dark) ── */
   --q-bg: #0e0e0e;
+  --q-bg-very-dark: #0a0a0a;
+  --q-bg-dark: #121212;
+  --q-bg-secondary: #161616;
+  --q-bg-light: #1a1a1a;
+  --q-bg-very-light: #1e1e1e;
+  
   --q-sidebar: #181818;
   --q-topbar: #0e0e0e;
   --q-card: #1c1c1c;

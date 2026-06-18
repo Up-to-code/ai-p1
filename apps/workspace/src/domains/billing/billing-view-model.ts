@@ -1,9 +1,10 @@
-import type { BillingPlan, BillingPlanId } from "./api/billing";
+import type { BillingPlan, BillingPlanId, BillingSubscription } from "./api/billing";
+import { PRICE_PER_SEAT, PLAN_CURRENCY } from "./api/billing";
 
 export type BillingLocale = "en" | "ar";
 
 export function billingDateLabel(value?: number, locale: BillingLocale = "en") {
-  if (!value) return "Not active yet";
+  if (!value) return locale === "ar" ? "غير نشط بعد" : "Not active yet";
   return new Intl.DateTimeFormat(locale === "ar" ? "ar-SA" : "en-US", {
     day: "numeric",
     month: "short",
@@ -19,85 +20,73 @@ export function subscriptionTone(status?: string) {
 }
 
 export function billingPriceLabel(plan: BillingPlan, locale: BillingLocale) {
-  if (plan.amount === null) return "Custom";
   return new Intl.NumberFormat(locale === "ar" ? "ar-SA" : "en-US", {
     style: "currency",
     currency: plan.currency,
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(plan.amount);
 }
 
-function planLabel(planId: BillingPlanId, locale: BillingLocale): string {
-  const labels: Record<BillingPlanId, { en: string; ar: string }> = {
-    good_monthly: { en: "Good plan", ar: "خطة Good" },
-    good_yearly: { en: "Good plan (annual)", ar: "خطة Good (سنوية)" },
-    better_monthly: { en: "Better plan", ar: "خطة Better" },
-    better_yearly: { en: "Better plan (annual)", ar: "خطة Better (سنوية)" },
-    custom_monthly: { en: "Custom plan", ar: "خطة مخصصة" },
-    custom_yearly: { en: "Custom plan (annual)", ar: "خطة مخصصة (سنوية)" },
-  };
-  return labels[planId]?.[locale] ?? "Plan";
+export function seatTotalLabel(seats: number, locale: BillingLocale) {
+  const total = Math.round(seats * PRICE_PER_SEAT * 100) / 100;
+  return new Intl.NumberFormat(locale === "ar" ? "ar-SA" : "en-US", {
+    style: "currency",
+    currency: PLAN_CURRENCY,
+    maximumFractionDigits: 2,
+  }).format(total);
 }
 
-function planIncluded(planId: BillingPlanId, locale: BillingLocale): string[] {
-  const isGood = planId.startsWith("good");
-  const isBetter = planId.startsWith("better");
-  const isCustom = planId.startsWith("custom");
-
-  if (locale === "ar") {
-    if (isGood) return ["مساحة المشاريع والأصول والعملاء", "مرحلة إعداد مجانية", "دعم الأدوار الأساسية", "تكاملات محدودة"];
-    if (isBetter) return ["كل مزايا Good", "وكلاء الذكاء الاصطناعي وسير العمل", "3 بطاقات رصيد ذكاء اصطناعي", "دعم ذو أولوية"];
-    return ["بطاقات رصيد مخصصة", "تكاملات خاصة", "تهيئة مخصصة", "دعم مخصص"];
-  }
-
-  if (isGood) return ["Project, asset, and client workspace", "Free setup phase included", "Core organization roles", "Limited apps and integrations"];
-  if (isBetter) return ["Everything in Good", "AI agents and workflows", "3 included AI credit cards", "Priority support"];
-  return ["Custom AI credit cards", "Custom integrations", "Custom organization setup", "Dedicated onboarding"];
-}
-
-export function billingScreenCopy(locale: BillingLocale, planId: BillingPlanId) {
-  const planLabel_ = planLabel(planId, locale);
-  const included = planIncluded(planId, locale);
-  const isContactSales = planId.startsWith("custom");
-
+export function billingScreenCopy(locale: BillingLocale) {
   return locale === "ar"
     ? {
         eyebrow: "الفوترة",
-        title: "اشتراك كانترا",
-        subtitle: isContactSales
-          ? "تواصل مع فريق المبيعات لتخصيص باقتك."
-          : "أكمل إعداد اشتراكك من مساحة العمل.",
-        plan: planLabel_,
-        monthly: "شهرياً",
-        yearly: "سنوياً",
+        title: "اشتراك Qentrah",
+        subtitle: "أكمل إعداد اشتراكك من مساحة العمل.",
+        plan: "Qentrah Workspace",
+        monthly: "لكل مستخدم / شهرياً",
         activeUntil: "نشط حتى",
         status: "الحالة",
         latest: "آخر دفعة",
-        pay: isContactSales ? "تحدث مع المبيعات" : "متابعة الإعداد",
+        seats: "المقاعد",
+        perSeat: "لكل مستخدم / شهر",
+        total: "المجموع الشهري",
+        pay: "متابعة الدفع",
         starting: "جاري إنشاء الدفع...",
-        secure: isContactSales
-          ? "يمكنك تخصيص الخطة وفقاً لاحتياجات فريقك."
-          : "ادفع بأمان عبر بوابة الدفع.",
-        included,
+        guarantee: "ضمان استرداد 30 يوماً · دفع آمن عبر DodoPayments",
+        ownerNote: "يدفع مالك المؤسسة نيابةً عن جميع الأعضاء",
+        included: [
+          "مساحة المشاريع والأصول والعملاء",
+          "وكلاء الذكاء الاصطناعي وسير العمل",
+          "جميع التطبيقات والتكاملات",
+          "دعم ذو أولوية",
+          "رصيد AI ضمن الخطة",
+          "إضافات مرنة عبر Add-ons",
+        ],
       }
     : {
         eyebrow: "Billing",
         title: "Qentrah subscription",
-        subtitle: isContactSales
-          ? "Talk to our sales team to customize your plan."
-          : "Complete your subscription setup from your workspace.",
-        plan: planLabel_,
-        monthly: "per month",
-        yearly: "per year",
+        subtitle: "Complete your subscription setup from your workspace.",
+        plan: "Qentrah Workspace",
+        monthly: "per user / month",
         activeUntil: "Active until",
         status: "Status",
         latest: "Latest payment",
-        pay: isContactSales ? "Talk to sales" : "Continue setup",
+        seats: "Seats",
+        perSeat: "per user / month",
+        total: "Monthly total",
+        pay: "Continue to checkout",
         starting: "Creating checkout...",
-        secure: isContactSales
-          ? "You can customize the plan based on your team's needs."
-          : "Pay securely through the payment gateway.",
-        included,
+        guarantee: "30-day money-back guarantee · Secure checkout via DodoPayments",
+        ownerNote: "Organization owner pays on behalf of all members",
+        included: [
+          "Project, asset & client workspace",
+          "AI agents & workflows",
+          "All apps & integrations",
+          "Priority support",
+          "Included AI credits",
+          "Flexible seat add-ons",
+        ],
       };
 }
 

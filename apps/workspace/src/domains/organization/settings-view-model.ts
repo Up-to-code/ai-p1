@@ -12,13 +12,13 @@ import type {
   OrganizationRole,
 } from "./api/clerk-organization-api";
 
-export type OrganizationSettingsTab = "profile" | "members" | "agentLinks" | "apiKeys" | "notifications";
+export type OrganizationSettingsTab = "profile" | "members" | "agentLinks" | "apiKeys" | "notifications" | "billing";
 export type Tab = OrganizationSettingsTab;
 export type InviteMode = "link" | "email";
 export type PermissionResource = keyof OrganizationPermissionStatement;
 export type WorkAction = "read" | "create" | "update" | "delete" | "authorize";
 
-export const organizationSettingsTabs = ["profile", "members", "agentLinks", "apiKeys", "notifications"] as const satisfies readonly OrganizationSettingsTab[];
+export const organizationSettingsTabs = ["profile", "members", "agentLinks", "apiKeys", "notifications", "billing"] as const satisfies readonly OrganizationSettingsTab[];
 export const defaultRoleNames = ["owner", "admin", "member"] as const;
 export const workActionColumns: WorkAction[] = ["read", "create", "update", "delete"];
 export const advancedActionColumns: WorkAction[] = ["read", "create", "update", "delete", "authorize"];

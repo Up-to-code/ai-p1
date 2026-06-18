@@ -12,7 +12,7 @@ const CTA = () => {
   const isAr = locale === "ar";
 
   return (
-    <section className="px-6 py-20 md:py-32 bg-[var(--q-card)] border-t border-[var(--q-border)]">
+    <section className="px-6 py-20 md:py-32 bg-[var(--q-bg-secondary)] border-t border-[var(--q-border)]">
       <div className="mx-auto max-w-5xl text-center flex flex-col items-center">
         <div className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-500/10 px-4 py-1.5 mb-8 transition-colors hover:bg-blue-500/20 cursor-default">
           <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
@@ -36,14 +36,14 @@ const CTA = () => {
 
         <div className="mt-12 flex flex-col gap-4 sm:flex-row justify-center w-full sm:w-auto">
           <Link
-            className="group inline-flex h-14 items-center justify-center gap-3 rounded-[14px] bg-[var(--q-text-primary)] px-8 text-sm font-bold text-background transition-all duration-300 hover:opacity-90 active:scale-95 dark:bg-white dark:text-background"
+            className="group inline-flex h-14 items-center justify-center gap-3 rounded-[14px] bg-[var(--q-text-primary)] px-8 text-sm font-bold text-[var(--q-bg)] transition-all duration-300 hover:opacity-90 active:scale-95"
             href="/dashboard"
           >
             {t("primary")}
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
           </Link>
           <Link
-            className="group inline-flex h-14 items-center justify-center gap-3 rounded-[14px] border border-[var(--q-border)] bg-transparent px-8 text-sm font-bold text-[var(--q-text-primary)] transition-all duration-300 hover:bg-[var(--q-card-hover)] active:scale-95 dark:hover:border-border"
+            className="group inline-flex h-14 items-center justify-center gap-3 rounded-[14px] border border-[var(--q-border)] bg-transparent px-8 text-sm font-bold text-[var(--q-text-primary)] transition-all duration-300 hover:bg-[var(--q-bg-dark)] active:scale-95"
             href="/contact"
           >
             {t("secondary")}

@@ -19,7 +19,7 @@ const LogoCloud = () => {
   const isAr = locale === "ar";
 
   return (
-    <div className="w-full border-b border-zinc-200/70 px-6 py-12 dark:border-border md:py-16">
+    <div className="w-full border-b border-[var(--q-border)] bg-[var(--q-bg-light)] px-6 py-12 md:py-16">
       <div className="mx-auto max-w-7xl overflow-hidden">
         <p className="text-center text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground md:text-base">
           {isAr ? "يعمل مع أدواتك المفضلة" : "Works with your favorite tools"}
@@ -35,9 +35,9 @@ const LogoCloud = () => {
             {toolBrands.map((tool) => (
               <span
                 key={tool.name}
-                className="flex h-12 items-center gap-3 rounded-full border border-zinc-200/80 bg-card px-4 text-sm font-bold text-secondary-foreground shadow-sm dark:border-border dark:bg-muted dark:text-foreground"
+                className="flex h-12 items-center gap-3 rounded-full border border-[var(--q-border)] bg-[var(--q-card)] px-4 text-sm font-bold text-[var(--q-text-secondary)] shadow-sm"
               >
-                <span className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-muted dark:border-border dark:bg-card">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--q-border)] bg-[var(--q-bg-secondary)]">
                   <img
                     alt=""
                     className="h-5 w-5"

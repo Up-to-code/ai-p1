@@ -3,7 +3,23 @@ import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/clerk-convex";
 import { convexCalls } from "@/server/convex/http-client";
 import type { BillingCheckoutPayload, DodoWebhookPayload } from "../validation/billing.schema";
 
-type BillingPlanId = BillingCheckoutPayload["planId"];
+// ─── Constants ────────────────────────────────────────────────────────────────
+// The single DodoPayments product used for all Qentrah subscriptions.
+// Quantity = number of seats. Add-ons are attached to this product in DodoPay.
+const DODO_PRODUCT_ID = "pdt_0NhGI8pfoyfuPWt0TLZ1x";
+const PRICE_PER_SEAT = 6.99;
+
+const QENTRAH_PLAN = {
+  id: "qentrah_workspace" as const,
+  dodoProductId: DODO_PRODUCT_ID,
+  name: "Qentrah Workspace",
+  amount: PRICE_PER_SEAT,
+  currency: "USD",
+  periodDays: 30,
+  checkoutMode: "provider",
+};
+
+type BillingPlanId = "qentrah_workspace";
 
 type Payment = {
   _id: string;
@@ -14,10 +30,11 @@ type Payment = {
 };
 
 type BillingOverview = {
-  plan: { id: string; name: string; amount: number | null; currency: string; periodDays: number; checkoutMode: string };
+  plan: typeof QENTRAH_PLAN;
   subscription: {
     organizationId: string;
-    planId: string;
+    planId: BillingPlanId;
+    seatCount: number;
     status: "inactive" | "pending" | "active" | "past_due" | "canceled";
     currentPeriodStartAt?: number;
     currentPeriodEndAt?: number;
@@ -42,11 +59,20 @@ export type OrganizationBillingUsage = {
   payments: Payment[];
 };
 
+// ─── Convex function references ───────────────────────────────────────────────
 const refs = {
-  getSubscriptionOverview: makeFunctionReference<"query", { organizationId: string }, unknown>("billing/read:getSubscriptionOverview"),
-  getUsageOverview: makeFunctionReference<"query", { organizationId: string }, OrganizationBillingUsage>("billing/read:getUsageOverview"),
-  getPaymentByOrder: makeFunctionReference<"query", { organizationId: string; orderId: string }, unknown>("billing/read:getPaymentByOrder"),
-  ensureCreditBalanceForOrganization: makeFunctionReference<"mutation", { organizationId: string }, unknown>("billing/write:ensureCreditBalanceForOrganization"),
+  getSubscriptionOverview: makeFunctionReference<"query", { organizationId: string }, unknown>(
+    "billing/read:getSubscriptionOverview",
+  ),
+  getUsageOverview: makeFunctionReference<"query", { organizationId: string }, OrganizationBillingUsage>(
+    "billing/read:getUsageOverview",
+  ),
+  getPaymentByOrder: makeFunctionReference<"query", { organizationId: string; orderId: string }, unknown>(
+    "billing/read:getPaymentByOrder",
+  ),
+  ensureCreditBalanceForOrganization: makeFunctionReference<"mutation", { organizationId: string }, unknown>(
+    "billing/write:ensureCreditBalanceForOrganization",
+  ),
   recordAgentCreditUsage: makeFunctionReference<"mutation", {
     organizationId: string;
     runId: string;
@@ -61,8 +87,11 @@ const refs = {
     addOnCreditsUsed: number;
     reason?: string;
   }>("billing/write:recordAgentCreditUsage"),
-  createPendingPaymentFromHono: makeFunctionReference<"mutation", { organizationId: string; input: { planId: BillingPlanId } }, {
-    plan: { id: string; name: string; amount: number | null; currency: string; periodDays: number; checkoutMode: string };
+  createPendingPaymentFromHono: makeFunctionReference<"mutation", {
+    organizationId: string;
+    input: { planId: BillingPlanId; seats: number };
+  }, {
+    plan: typeof QENTRAH_PLAN;
     payment: { _id: string; id: string; orderId: string };
     organization: { name: string; legalName: string; email: string; phone: string; address: string };
   }>("billing/write:createPendingPaymentFromHono"),
@@ -83,12 +112,15 @@ const refs = {
     eventId?: string;
     failureReason?: string;
   }, unknown>("billing/write:markPaymentStatusFromWebhook"),
+  // DodoPayments action — passes the real product ID + seat quantity
   createCheckout: makeFunctionReference<"action", {
-    planId: string;
+    productId: string;
     quantity: number;
     returnUrl?: string;
   }, { checkout_url: string }>("billing/payments:createCheckout"),
 };
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function convexBridgeSecret() {
   const secret = process.env.WORKSPACE_CONVEX_BRIDGE_SECRET?.trim() ?? "";
@@ -96,13 +128,6 @@ function convexBridgeSecret() {
     throw new Error("WORKSPACE_CONVEX_BRIDGE_SECRET must be configured for billing webhooks.");
   }
   return secret;
-}
-
-function eventKey(input: DodoWebhookPayload) {
-  return [
-    input.event_type,
-    input.data?.payment_id ?? input.data?.subscription_id ?? "missing-id",
-  ].join(":");
 }
 
 function isPaymentSucceededEvent(eventType: string) {
@@ -119,27 +144,18 @@ function localOrderReference() {
   return `qentrah-local-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-const GOOD_MONTHLY_PLAN = {
-  id: "good_monthly" as const,
-  name: "Good",
-  amount: 7,
-  currency: "USD",
-  periodDays: 30,
-  checkoutMode: "provider",
-};
-
-function localBillingOverview(organizationId: string, planId: BillingPlanId = "good_monthly") {
+function localBillingOverview(organizationId: string): BillingOverview {
   return {
-    plan: GOOD_MONTHLY_PLAN,
+    plan: QENTRAH_PLAN,
     subscription: {
       organizationId,
-      planId,
-      status: "inactive" as const,
+      planId: "qentrah_workspace",
+      seatCount: 1,
+      status: "inactive",
       createdAt: Date.now(),
       updatedAt: Date.now(),
     },
     latestPayment: null,
-    localOnly: true,
   };
 }
 
@@ -158,15 +174,11 @@ function localBillingUsage(organizationId: string): OrganizationBillingUsage {
   };
 }
 
-function localCheckoutContext(organizationId: string, planId: BillingPlanId) {
+function localCheckoutContext(organizationId: string) {
   const reference = localOrderReference();
   return {
-    plan: GOOD_MONTHLY_PLAN,
-    payment: {
-      _id: reference,
-      id: reference,
-      orderId: reference,
-    },
+    plan: QENTRAH_PLAN,
+    payment: { _id: reference, id: reference, orderId: reference },
     organization: {
       name: "Qentrah Workspace",
       legalName: "Qentrah Workspace",
@@ -178,6 +190,8 @@ function localCheckoutContext(organizationId: string, planId: BillingPlanId) {
     organizationId,
   };
 }
+
+// ─── Service functions ────────────────────────────────────────────────────────
 
 export async function getBillingSubscription(organizationId: string) {
   try {
@@ -222,36 +236,28 @@ export async function recordAgentCreditUsage(organizationId: string, input: {
 }
 
 export async function createBillingCheckout(organizationId: string, input: BillingCheckoutPayload) {
+  const seats = input.seats ?? 1;
+
+  // 1. Create a pending payment record in Convex
   const context = await fetchAuthMutation(refs.createPendingPaymentFromHono, {
-      organizationId,
-      input: { planId: input.planId },
-    })
-    .catch((error) => {
-      if (isDevelopmentConvexFunctionError(error)) return localCheckoutContext(organizationId, input.planId);
-      throw error;
-    });
+    organizationId,
+    input: { planId: "qentrah_workspace", seats },
+  }).catch((error) => {
+    if (isDevelopmentConvexFunctionError(error)) return localCheckoutContext(organizationId);
+    throw error;
+  });
 
   try {
-    // For custom plans, return contact sales info
-    if (input.planId.startsWith("custom")) {
-      return {
-        checkoutUrl: null,
-        orderId: context.payment.orderId,
-        status: "contact_sales",
-        payment: context.payment,
-      };
-    }
-
-    // Create DodoPayments checkout session via Convex action
+    // 2. Create DodoPayments hosted checkout — product ID + seat quantity
     const checkoutResult = await convexCalls.action(refs.createCheckout, {
-      planId: input.planId,
-      quantity: 1,
+      productId: DODO_PRODUCT_ID,
+      quantity: seats,
       returnUrl: input.returnUrl,
     }) as { checkout_url?: string } | null;
 
     const checkoutUrl = checkoutResult?.checkout_url;
 
-    // Attach checkout to payment record
+    // 3. Attach the checkout URL to the payment record
     if (checkoutUrl) {
       await fetchAuthMutation(refs.attachCheckoutFromHono, {
         organizationId,
@@ -272,27 +278,22 @@ export async function createBillingCheckout(organizationId: string, input: Billi
     };
   } catch (error) {
     await fetchAuthMutation(refs.markPaymentFailedFromHono, {
-        organizationId,
-        paymentId: context.payment._id,
-        reason: error instanceof Error ? error.message : "Checkout failed.",
-      })
-      .catch((markError) => {
-        if (!isDevelopmentConvexFunctionError(markError)) throw markError;
-      });
+      organizationId,
+      paymentId: context.payment._id,
+      reason: error instanceof Error ? error.message : "Checkout failed.",
+    }).catch((markError) => {
+      if (!isDevelopmentConvexFunctionError(markError)) throw markError;
+    });
     throw error;
   }
 }
 
 export async function getBillingPaymentStatus(organizationId: string, orderId: string) {
-  const payment = await fetchAuthQuery(refs.getPaymentByOrder, {
-      organizationId,
-      orderId,
-    })
+  const payment = await fetchAuthQuery(refs.getPaymentByOrder, { organizationId, orderId })
     .catch((error) => {
       if (isDevelopmentConvexFunctionError(error)) return null;
       throw error;
     });
-
   return { payment };
 }
 
@@ -301,8 +302,6 @@ export async function processDodoWebhook(input: {
   payload: DodoWebhookPayload;
 }) {
   const serverToken = convexBridgeSecret();
-
-  // Find payment by order ID or payment ID
   const paymentId = input.payload.data?.payment_id;
 
   const payment = await convexCalls.mutation(refs.markPaymentStatusFromWebhook, {

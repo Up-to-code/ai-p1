@@ -1,490 +1,222 @@
 "use client";
 
-import NumberFlow from "@number-flow/react";
 import { useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
-import type { Transition } from "framer-motion";
-import { ArrowRight, CalendarDays, CircleCheck } from "lucide-react";
-import {
-  billingSelectionKey,
-  getMarketPricing,
-  resolveSubscriptionEntitlements,
-  type BillingCycle,
-  type SubscriptionEntitlements,
-  type SubscriptionPlanId,
-} from "@qentrah/domain-contracts/subscription-pricing";
-
-import { LandingButton, PublicSection } from "@/components/landing/public-landing-kit";
-import { Badge } from "@/components/ui/badge";
+import { ArrowRight, Check, Users, Zap, Shield, Bot, Layers, Headphones } from "lucide-react";
+import { Link } from "@/i18n/routing";
+import { PublicSection } from "@/components/landing/public-landing-kit";
 import { cn } from "@/lib/utils";
 
-type TooltipKey = "sync" | "ai" | "governance";
-type PricingCycle = "monthly" | "annual";
+const PRICE_PER_SEAT = 6.99;
 
-type PricingPlan = {
-  id: SubscriptionPlanId;
-  name: string;
-  price: number | "custom";
-  entitlements?: SubscriptionEntitlements;
-  period?: "month" | "year";
-  description: string;
-  buttonText: string;
-  href: string;
-  isPopular?: boolean;
-  features: Array<{
-    title: string;
-    tooltip?: TooltipKey;
-  }>;
-};
-
-const planCopy = {
+const copy = {
   en: {
-    eyebrow: "Pricing",
-    tabs: {
-      monthly: "Monthly",
-      annual: "Annually",
-    },
-    popular: "Most useful",
-    perMonth: "per user / month",
-    perYear: "per user / year",
-    customPrice: "Custom",
-    annualBadge: "Save 17%",
-    tooltips: {
-      sync: "Keeps projects, assets, media, pricing, and availability aligned across teams.",
-      ai: "AI assists with triage, drafting, summaries, and repetitive operational work.",
-      governance: "Controls roles, approvals, audit trails, and trusted organization access.",
-    },
-    plans: [
-      {
-        id: "good",
-        name: "Good",
-        price: "custom",
-        period: "month",
-        description: "For small teams that need the core workspace with project, asset, and client management.",
-        buttonText: "Start setup",
-        href: "/billing?plan=good_monthly",
-        features: [
-          { title: "Project management", tooltip: "sync" },
-          { title: "Asset management" },
-          { title: "Client management" },
-          { title: "Calendar management" },
-          { title: "Limited apps and integrations" },
-          { title: "Starter API access" },
-          { title: "No bundled AI credits", tooltip: "ai" },
-        ],
-      },
-      {
-        id: "better",
-        name: "Better",
-        price: "custom",
-        period: "month",
-        description: "For growing teams that want AI agents, higher usage budgets, and broader app access.",
-        buttonText: "Start with AI",
-        href: "/billing?plan=better_monthly",
-        isPopular: true,
-        features: [
-          { title: "Everything in Good" },
-          { title: "AI agents and workflows", tooltip: "ai" },
-          { title: "3 included AI credit cards" },
-          { title: "Standard apps and integrations", tooltip: "sync" },
-          { title: "Higher API and agent-link quotas" },
-          { title: "Priority support", tooltip: "governance" },
-        ],
-      },
-      {
-        id: "custom",
-        name: "Custom",
-        price: "custom",
-        description: "For larger organizations that need custom AI budgets, private workflows, and dedicated onboarding.",
-        buttonText: "Talk to Qentrah",
-        href: "/contact",
-        features: [
-          { title: "Custom AI credit cards", tooltip: "ai" },
-          { title: "Custom app and integration access", tooltip: "sync" },
-          { title: "Custom API and agent-link quotas" },
-          { title: "Dedicated onboarding", tooltip: "governance" },
-        ],
-      },
-    ],
-    annualPlans: [
-      {
-        id: "good",
-        name: "Good",
-        price: "custom",
-        period: "year",
-        description: "Annual core workspace for teams that want predictable operations without bundled AI credit spend.",
-        buttonText: "Start annual setup",
-        href: "/billing?plan=good_yearly",
-        features: [
-          { title: "Project management", tooltip: "sync" },
-          { title: "Asset management" },
-          { title: "Client management" },
-          { title: "Calendar management" },
-          { title: "Limited apps and integrations" },
-          { title: "Starter API access" },
-          { title: "No bundled AI credits", tooltip: "ai" },
-        ],
-      },
-      {
-        id: "better",
-        name: "Better",
-        price: "custom",
-        period: "year",
-        description: "Annual AI-enabled workspace with included credit cards and broader app access.",
-        buttonText: "Start annual AI setup",
-        href: "/billing?plan=better_yearly",
-        isPopular: true,
-        features: [
-          { title: "Everything in Good" },
-          { title: "AI agents and workflows", tooltip: "ai" },
-          { title: "3 included AI credit cards" },
-          { title: "Standard apps and integrations", tooltip: "sync" },
-          { title: "Higher API and agent-link quotas" },
-          { title: "Priority support", tooltip: "governance" },
-        ],
-      },
-      {
-        id: "custom",
-        name: "Custom",
-        price: "custom",
-        description: "For larger organizations that need custom AI budgets, private workflows, and dedicated onboarding.",
-        buttonText: "Talk to Qentrah",
-        href: "/contact",
-        features: [
-          { title: "Custom AI credit cards", tooltip: "ai" },
-          { title: "Custom app and integration access", tooltip: "sync" },
-          { title: "Custom API and agent-link quotas" },
-          { title: "Dedicated onboarding", tooltip: "governance" },
-        ],
-      },
+    eyebrow: "Simple Pricing",
+    title: "One plan. Every feature.",
+    description:
+      "Everything your team needs — billed per user, per month. No tiers, no hidden fees.",
+    priceLabel: "$6.99",
+    interval: "/ user / month",
+    cta: "Get started",
+    guarantee: "30-day money-back guarantee · Secure checkout via DodoPayments",
+    seats: "seat",
+    seatsPlural: "seats",
+    previewLabel: "Price preview",
+    seatsHint: "Adjust seats at any time after signing up",
+    ownerNote: "Organization owner pays — covers your entire team",
+    features: [
+      { icon: Layers,     text: "Project, asset & client workspace" },
+      { icon: Bot,        text: "AI agents & workflows" },
+      { icon: Zap,        text: "All apps & integrations" },
+      { icon: Users,      text: "Unlimited team members" },
+      { icon: Shield,     text: "Included AI credits" },
+      { icon: Headphones, text: "Priority support" },
     ],
   },
   ar: {
-    eyebrow: "التسعير",
-    tabs: {
-      monthly: "شهري",
-      annual: "سنوي",
-    },
-    popular: "الأكثر استخداماً",
-    perMonth: "لكل مستخدم / شهرياً",
-    perYear: "لكل مستخدم / سنوياً",
-    customPrice: "مخصص",
-    annualBadge: "وفّر 17%",
-    tooltips: {
-      sync: "يحافظ على توافق المشاريع والوحدات والوسائط والأسعار والتوفر بين الفرق.",
-      ai: "يساعد الذكاء الاصطناعي في الفرز، الصياغة، التلخيص، والعمل التشغيلي المتكرر.",
-      governance: "يدير الأدوار، الموافقات، سجلات التدقيق، ووصول المؤسسة الموثوق.",
-    },
-    plans: [
-      {
-        id: "good",
-        name: "Good",
-        price: "custom",
-        period: "month",
-        description: "للفرق الصغيرة التي تحتاج مساحة عمل أساسية لإدارة المشاريع والأصول والعملاء.",
-        buttonText: "ابدأ الإعداد",
-        href: "/billing?plan=good_monthly",
-        features: [
-          { title: "إدارة المشاريع", tooltip: "sync" },
-          { title: "إدارة الوحدات" },
-          { title: "إدارة العملاء" },
-          { title: "إدارة التقويم" },
-          { title: "تكاملات محدودة" },
-          { title: "وصول API أساسي" },
-          { title: "بدون رصيد ذكاء اصطناعي مضمّن", tooltip: "ai" },
-        ],
-      },
-      {
-        id: "better",
-        name: "Better",
-        price: "custom",
-        period: "month",
-        description: "للفرق النمو وتريد وكلاء ذكاء اصطناعي، رصيد استخدام أعلى، ووصولاً أوسع للتطبيقات.",
-        buttonText: "ابدأ مع الذكاء الاصطناعي",
-        href: "/billing?plan=better_monthly",
-        isPopular: true,
-        features: [
-          { title: "كل مزايا Good" },
-          { title: "وكلاء الذكاء الاصطناعي وسير العمل", tooltip: "ai" },
-          { title: "3 بطاقات رصيد ذكاء اصطناعي" },
-          { title: "تكاملات وتطبيقات أوسع", tooltip: "sync" },
-          { title: "حصص أعلى للـ API وروابط الوكلاء" },
-        ],
-      },
-      {
-        id: "custom",
-        name: "باقة مخصصة",
-        price: "custom",
-        description: "للفرق الأكبر التي تحتاج رصيد ذكاء اصطناعي مخصص، تطبيقات خاصة، وتهيئة مخصصة.",
-        buttonText: "تحدث مع كانترا",
-        href: "/contact",
-        features: [
-          { title: "بطاقات رصيد ذكاء اصطناعي مخصصة", tooltip: "ai" },
-          { title: "تطبيقات وتكاملات مخصصة", tooltip: "sync" },
-          { title: "حصص API وروابط وكلاء مخصصة" },
-          { title: "تهيئة مخصصة", tooltip: "governance" },
-        ],
-      },
-    ],
-    annualPlans: [
-      {
-        id: "good",
-        name: "Good",
-        price: "custom",
-        period: "year",
-        description: "وصول سنوي لمساحة عمل أساسية للفرق التي تريد عمليات متوقعة بدون رصيد ذكاء اصطناعي.",
-        buttonText: "ابدأ الإعداد السنوي",
-        href: "/billing?plan=good_yearly",
-        features: [
-          { title: "إدارة المشاريع", tooltip: "sync" },
-          { title: "إدارة الوحدات" },
-          { title: "إدارة العملاء" },
-          { title: "إدارة التقويم" },
-          { title: "تكاملات محدودة" },
-          { title: "وصول API أساسي" },
-          { title: "بدون رصيد ذكاء اصطناعي مضمّن", tooltip: "ai" },
-        ],
-      },
-      {
-        id: "better",
-        name: "Better",
-        price: "custom",
-        period: "year",
-        description: "وصول سنوي لمساحة عمل مدعومة بالذكاء الاصطناعي مع بطاقات رصيد مضمّنة وتكاملات أوسع.",
-        buttonText: "ابدأ الإعداد السنوي للذكاء الاصطناعي",
-        href: "/billing?plan=better_yearly",
-        isPopular: true,
-        features: [
-          { title: "كل مزايا Good" },
-          { title: "وكلاء الذكاء الاصطناعي وسير العمل", tooltip: "ai" },
-          { title: "3 بطاقات رصيد ذكاء اصطناعي" },
-          { title: "تكاملات وتطبيقات أوسع", tooltip: "sync" },
-          { title: "حصص أعلى للـ API وروابط الوكلاء" },
-        ],
-      },
-      {
-        id: "custom",
-        name: "باقة مخصصة",
-        price: "custom",
-        description: "للفرق الأكبر التي تحتاج رصيد ذكاء اصطناعي مخصص، تطبيقات خاصة، وتهيئة مخصصة.",
-        buttonText: "تحدث مع كانترا",
-        href: "/contact",
-        features: [
-          { title: "بطاقات رصيد ذكاء اصطناعي مخصصة", tooltip: "ai" },
-          { title: "تطبيقات وتكاملات مخصصة", tooltip: "sync" },
-          { title: "حصص API وروابط وكلاء مخصصة" },
-          { title: "تهيئة مخصصة", tooltip: "governance" },
-        ],
-      },
+    eyebrow: "تسعير بسيط",
+    title: "خطة واحدة. كل الميزات.",
+    description:
+      "كل ما يحتاجه فريقك — بسعر ثابت لكل مستخدم شهرياً. بدون مستويات، بدون رسوم خفية.",
+    priceLabel: "$6.99",
+    interval: "/ مستخدم / شهر",
+    cta: "ابدأ الآن",
+    guarantee: "ضمان استرداد 30 يوماً · دفع آمن عبر DodoPayments",
+    seats: "مقعد",
+    seatsPlural: "مقاعد",
+    previewLabel: "معاينة السعر",
+    seatsHint: "يمكنك تعديل عدد المقاعد في أي وقت بعد التسجيل",
+    ownerNote: "يدفع مالك المؤسسة — يشمل جميع أعضاء الفريق",
+    features: [
+      { icon: Layers,     text: "مساحة المشاريع والأصول والعملاء" },
+      { icon: Bot,        text: "وكلاء الذكاء الاصطناعي وسير العمل" },
+      { icon: Zap,        text: "جميع التطبيقات والتكاملات" },
+      { icon: Users,      text: "عدد غير محدود من أعضاء الفريق" },
+      { icon: Shield,     text: "رصيد AI ضمن الخطة" },
+      { icon: Headphones, text: "دعم ذو أولوية" },
     ],
   },
-} satisfies Record<
-  "en" | "ar",
-  {
-    eyebrow: string;
-    tabs: Record<PricingCycle, string>;
-    popular: string;
-    perMonth: string;
-    perYear: string;
-    customPrice: string;
-    annualBadge: string;
-    tooltips: Record<string, string>;
-    plans: PricingPlan[];
-    annualPlans: PricingPlan[];
-  }
->;
+} as const;
 
 export function Pricing03({ locale }: { locale: string }) {
-  const copy = locale === "ar" ? planCopy.ar : planCopy.en;
-  const [billingCycle, setBillingCycle] = useState<PricingCycle>("monthly");
-  const activePlans = hydratePlans(billingCycle === "monthly" ? copy.plans : copy.annualPlans, billingCycle === "monthly" ? "monthly" : "yearly");
-  const shouldReduceMotion = useReducedMotion();
-  const panelTransition: Transition = shouldReduceMotion ? { duration: 0 } : { duration: 0.34, ease: [0.22, 1, 0.36, 1] };
-  const indicatorTransition: Transition = shouldReduceMotion ? { duration: 0 } : { duration: 0.32, ease: [0.22, 1, 0.36, 1] };
+  const t = locale === "ar" ? copy.ar : copy.en;
+  const isAr = locale === "ar";
+  const [previewSeats, setPreviewSeats] = useState(3);
+  const total = (previewSeats * PRICE_PER_SEAT).toFixed(2);
 
   return (
-    <PublicSection
-      id="pricing"
-      tone="very-dark"
-      className="relative py-14 md:py-20"
-    >
-      <div className="relative mx-auto max-w-6xl">
-        <div className="sticky top-20 z-20 mb-8 flex justify-center py-2">
-          <div
-            aria-label={copy.eyebrow}
-            className="grid w-full max-w-sm grid-cols-2 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white/80 p-1 text-xs font-black uppercase tracking-widest shadow-sm backdrop-blur dark:bg-zinc-800/80"
-            role="tablist"
-          >
-            {(["monthly", "annual"] as const).map((cycle) => (
-              <button
-                aria-selected={billingCycle === cycle}
-                className={cn(
-                  "relative isolate h-10 overflow-hidden rounded-full px-4 text-zinc-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--q-accent)] dark:text-zinc-300",
-                  billingCycle === cycle && "text-zinc-900 dark:text-zinc-100",
-                )}
-                key={cycle}
-                onClick={() => setBillingCycle(cycle)}
-                role="tab"
-                type="button"
-              >
-                {billingCycle === cycle && (
-                  <motion.span
-                    className="absolute inset-0 -z-10 rounded-full bg-[var(--q-bg-light)] shadow-sm dark:bg-zinc-900"
-                    layoutId="pricing-cycle-indicator"
-                    transition={indicatorTransition}
-                  />
-                )}
-                <span className="relative z-10">{copy.tabs[cycle]}</span>
-              </button>
-            ))}
+    <PublicSection id="pricing" tone="very-dark" className="py-20 md:py-32">
+      <div className="mx-auto max-w-5xl">
+
+        {/* ── Header ─────────────────────────────────────────── */}
+        <div className="mb-16 text-center">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--q-accent-border)] bg-[var(--q-accent-muted)] px-4 py-2">
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--q-accent)]">
+              {t.eyebrow}
+            </span>
           </div>
-        </div>
-
-        <motion.div
-          animate={{ opacity: 1, y: 0 }}
-          className="mx-auto max-w-5xl"
-          data-billing-cycle={billingCycle}
-          initial={false}
-          transition={panelTransition}
-        >
-          <div className="relative grid grid-cols-1 gap-6 lg:grid-cols-3">
-            {activePlans.map((plan, index) => (
-              <motion.div
-                animate={{ opacity: 1, y: 0 }}
-                className="flex"
-                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
-                key={`pricing-slot-${index}`}
-                layout
-                transition={{
-                  ...panelTransition,
-                  delay: shouldReduceMotion ? 0 : index * 0.03,
-                }}
-              >
-                <PlanCard copy={copy} plan={plan} />
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      </div>
-    </PublicSection>
-  );
-}
-
-function hydratePlans(plans: PricingPlan[], cycle: BillingCycle): PricingPlan[] {
-  return plans.map((plan) => {
-    const marketPricing = getMarketPricing({ planId: plan.id, cycle });
-    return {
-      ...plan,
-      price: marketPricing.amount ?? "custom",
-      period: cycle === "yearly" ? "year" : "month",
-      href: plan.id === "custom" ? plan.href : `/billing?plan=${billingSelectionKey({ planId: plan.id, cycle })}`,
-      entitlements: resolveSubscriptionEntitlements(plan.id),
-      isPopular: marketPricing.publicFeatureFlags.highlighted,
-    };
-  });
-}
-
-function formatQuota(value: number) {
-  if (value >= 1_000_000) return "Custom";
-  return value.toLocaleString();
-}
-
-function PlanLimit({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/80 dark:bg-zinc-900/60 p-3">
-      <p className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">{label}</p>
-      <p className="mt-1 truncate text-xs font-black capitalize text-zinc-900 dark:text-white">{value}</p>
-    </div>
-  );
-}
-
-function PlanCard({
-  copy,
-  plan,
-}: {
-  copy: (typeof planCopy)["en"] | (typeof planCopy)["ar"];
-  plan: PricingPlan;
-}) {
-  const periodLabel = plan.period === "year" ? copy.perYear : copy.perMonth;
-
-  return (
-    <article
-      className={cn(
-        "relative flex min-h-[560px] w-full flex-col overflow-hidden rounded-3xl border p-6 text-start transition duration-300 hover:shadow-lg dark:hover:shadow-none",
-        plan.isPopular
-          ? "border-[var(--q-accent)] bg-white text-zinc-900 dark:border-[var(--q-accent)] dark:bg-[var(--q-card)] dark:text-white"
-          : "border-zinc-200 bg-white/80 text-zinc-900 dark:border-zinc-800 dark:bg-[var(--q-bg-secondary)]/60 dark:text-white",
-      )}
-      data-testid={`pricing-card-${plan.id}`}
-    >
-      <div className={cn("absolute inset-x-8 top-0 h-1 rounded-b-full", plan.isPopular ? "bg-[var(--q-accent)]" : "bg-zinc-200 dark:bg-zinc-800")} />
-      {plan.isPopular && (
-        <Badge className="absolute end-6 top-5 rounded-full bg-[var(--q-accent)] px-3 text-white dark:bg-[var(--q-accent)] dark:text-white">
-          {plan.period === "year" ? copy.annualBadge : copy.popular}
-        </Badge>
-      )}
-
-      <div>
-        <h3 className={cn("text-2xl font-black tracking-tight", plan.isPopular && "pe-28")}>{plan.name}</h3>
-        <p className="mt-4 min-h-[84px] text-sm font-medium leading-7 text-zinc-600 dark:text-zinc-400">
-          {plan.description}
-        </p>
-        <div className="mt-6 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/80 p-5 dark:bg-zinc-900/50">
-          <p className="flex min-h-[58px] flex-wrap items-end gap-2">
-            {typeof plan.price === "number" ? (
-              <>
-                <span className="pb-1 text-2xl font-black md:text-3xl">$</span>
-                <NumberFlow
-                  className="text-4xl font-black tracking-tight md:text-5xl"
-                  transformTiming={{ duration: 900, easing: "ease-out" }}
-                  value={plan.price}
-                />
-                <span className="pb-1 text-sm font-bold text-zinc-600 dark:text-zinc-400">
-                  {periodLabel}
-                </span>
-              </>
-            ) : (
-              <span className="text-4xl font-black tracking-tight md:text-5xl">
-                {copy.customPrice}
-              </span>
-            )}
+          <h2 className="mb-4 text-4xl font-black tracking-tight text-[var(--q-text-primary)] md:text-6xl">
+            {t.title}
+          </h2>
+          <p className="mx-auto max-w-xl text-lg font-medium text-[var(--q-text-secondary)]">
+            {t.description}
           </p>
         </div>
-        {plan.entitlements && (
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <PlanLimit label="AI credits" value={plan.entitlements.aiAccess ? plan.entitlements.includedCredits.toLocaleString() : "None"} />
-            <PlanLimit label="Apps" value={plan.entitlements.appAccessLevel} />
-            <PlanLimit label="API calls" value={formatQuota(plan.entitlements.apiKeyQuota)} />
-            <PlanLimit label="Agent links" value={formatQuota(plan.entitlements.agentLinkQuota)} />
+
+        {/* ── Card ───────────────────────────────────────────── */}
+        <div className="overflow-hidden rounded-3xl border-2 border-[var(--q-accent)] bg-[var(--q-card)] shadow-2xl shadow-[var(--q-accent)]/10">
+          {/* Accent top bar */}
+          <div className="h-1.5 bg-[var(--q-accent)]" />
+
+          <div className="grid md:grid-cols-2">
+
+            {/* ── Left: price + seat slider ──────────────────── */}
+            <div className="space-y-8 p-8 md:p-10">
+
+              {/* Per-seat price */}
+              <div>
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className="text-6xl font-black tracking-tight text-[var(--q-text-primary)]">
+                    {t.priceLabel}
+                  </span>
+                  <span className="text-sm font-bold text-[var(--q-text-secondary)]">
+                    {t.interval}
+                  </span>
+                </div>
+                <p className="mt-2 text-[11px] font-bold text-[var(--q-text-secondary)] uppercase tracking-widest">
+                  {t.ownerNote}
+                </p>
+              </div>
+
+              {/* Seat preview — slider + custom input */}
+              <div className="rounded-2xl border border-[var(--q-accent)]/20 bg-[var(--q-accent)]/5 p-5 space-y-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--q-accent)]">
+                  {t.previewLabel}
+                </p>
+
+                {/* Number input + total */}
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min={1}
+                    max={999}
+                    value={previewSeats}
+                    onChange={(e) => {
+                      const v = Math.max(1, Math.min(999, Number(e.target.value) || 1));
+                      setPreviewSeats(v);
+                    }}
+                    className="w-24 rounded-xl border border-[var(--q-border)] bg-[var(--q-card)] px-3 py-2 text-center text-xl font-black tabular-nums text-[var(--q-text-primary)] focus:border-[var(--q-accent)] focus:outline-none"
+                    aria-label={isAr ? "عدد المقاعد" : "Number of seats"}
+                  />
+                  <span className="text-sm font-bold text-[var(--q-text-secondary)]">
+                    {previewSeats === 1 ? t.seats : t.seatsPlural}
+                  </span>
+                  <span className="ms-auto text-lg font-black text-[var(--q-accent)]">
+                    ${total}
+                    <span className="text-xs font-bold text-[var(--q-text-secondary)]">
+                      {isAr ? " / شهر" : " / mo"}
+                    </span>
+                  </span>
+                </div>
+
+                {/* Slider for quick adjustment up to 50 */}
+                <input
+                  type="range"
+                  min={1}
+                  max={50}
+                  value={Math.min(previewSeats, 50)}
+                  onChange={(e) => setPreviewSeats(Number(e.target.value))}
+                  className="w-full accent-[var(--q-accent)]"
+                  aria-label={isAr ? "تمرير عدد المقاعد" : "Drag to adjust seats"}
+                />
+                <div className="flex justify-between text-[10px] font-bold text-[var(--q-text-secondary)]">
+                  <span>1</span>
+                  <span>50+</span>
+                </div>
+
+                <p className="text-[10px] font-medium text-[var(--q-text-secondary)]">
+                  {t.seatsHint}
+                </p>
+              </div>
+
+              {/* CTA */}
+              <Link
+                href="/sign-up"
+                className={cn(
+                  "flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4",
+                  "bg-[var(--q-accent)] text-sm font-black uppercase tracking-widest text-white",
+                  "shadow-lg shadow-[var(--q-accent)]/25 transition-all duration-200",
+                  "hover:bg-[var(--q-accent-hover)] hover:shadow-xl hover:shadow-[var(--q-accent)]/40 active:scale-[0.98]",
+                )}
+              >
+                {t.cta}
+                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+              </Link>
+
+              {/* Guarantee */}
+              <div className="flex items-center justify-center gap-2 rounded-xl border border-[var(--q-border)] bg-[var(--q-bg-secondary)] px-4 py-3">
+                <Check className="h-3.5 w-3.5 shrink-0 text-[var(--q-accent)]" strokeWidth={3} />
+                <span className="text-[10px] font-bold text-[var(--q-text-secondary)]">
+                  {t.guarantee}
+                </span>
+              </div>
+            </div>
+
+            {/* ── Right: feature list ────────────────────────── */}
+            <div className="border-t border-[var(--q-border)] bg-[var(--q-bg-secondary)] p-8 md:border-t-0 md:border-s md:p-10">
+              <p className="mb-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--q-text-secondary)]">
+                {isAr ? "كل ما تحتاجه" : "Everything included"}
+              </p>
+
+              <ul className="space-y-4">
+                {t.features.map(({ icon: Icon, text }) => (
+                  <li key={text} className="flex items-start gap-3">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-[var(--q-accent)]/10">
+                      <Icon className="h-3.5 w-3.5 text-[var(--q-accent)]" />
+                    </div>
+                    <span className="pt-0.5 text-sm font-medium leading-relaxed text-[var(--q-text-primary)]">
+                      {text}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              {/* Add-ons note */}
+              <div className="mt-8 rounded-xl border border-[var(--q-border)] bg-[var(--q-card)] p-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--q-accent)]">
+                  {isAr ? "إضافات مرنة" : "Flexible add-ons"}
+                </p>
+                <p className="mt-1 text-xs font-medium text-[var(--q-text-secondary)]">
+                  {isAr
+                    ? "وسّع رصيد الذكاء الاصطناعي وقدرات فريقك بإضافات مرنة عبر DodoPayments."
+                    : "Extend AI credits and capacity with seat add-ons via DodoPayments."}
+                </p>
+              </div>
+            </div>
+
           </div>
-        )}
+        </div>
+
       </div>
-
-      <LandingButton
-        href={plan.href}
-        className={cn(
-          "mt-5 h-11 w-full rounded-full",
-          plan.isPopular
-            ? "bg-[var(--q-text-primary)] text-[var(--q-bg)] hover:bg-[var(--q-text-secondary)] dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
-            : "border border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700",
-        )}
-        variant={plan.isPopular ? "primary" : "secondary"}
-      >
-        {plan.period === "year" && <CalendarDays className="h-4 w-4" />}
-        {plan.buttonText}
-        <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-      </LandingButton>
-
-      <div className="my-6 h-px bg-zinc-200/80 dark:bg-zinc-700" />
-
-      <ul className="mt-auto space-y-3">
-        {plan.features.map((feature) => (
-          <li className="flex items-start gap-3" key={feature.title}>
-            <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-[var(--q-accent)] dark:text-[var(--q-accent)]" />
-            <span className="text-sm font-bold leading-relaxed">{feature.title}</span>
-          </li>
-        ))}
-      </ul>
-    </article>
+    </PublicSection>
   );
 }

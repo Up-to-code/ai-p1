@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useLocale } from "next-intl";
 import { PendingApprovalBanner } from "@/components/layout/pending-approval-banner";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -28,13 +28,21 @@ function DashboardAuthenticatedShell({ children }: { children: ReactNode }) {
   const locale = useLocale();
   const router = useRouter();
   const account = useAccountContext();
+  const [hasRedirected, setHasRedirected] = useState(false);
+  
   const isAuthHandoffPending = useAuthHandoffPending(account.isSignedIn, account.workspace.organizationId);
-  const authRedirect = getWorkspaceAuthRedirect({
-    isSignedIn: account.isSignedIn,
-    workspaceStatus: account.workspace.status,
-    locale,
-    isAuthHandoffPending,
-  });
+  
+  // Memoize authRedirect to prevent unnecessary recalculations
+  const authRedirect = useMemo(
+    () =>
+      getWorkspaceAuthRedirect({
+        isSignedIn: account.isSignedIn,
+        workspaceStatus: account.workspace.status,
+        locale,
+        isAuthHandoffPending,
+      }),
+    [account.isSignedIn, account.workspace.status, locale, isAuthHandoffPending]
+  );
 
   useEffect(() => {
     markAppPerformance("shell:ready", { workspaceStatus: account.workspace.status });
@@ -46,12 +54,33 @@ function DashboardAuthenticatedShell({ children }: { children: ReactNode }) {
     }
   }, [account.workspace.organizationId, account.workspace.status]);
 
+  // Stable redirect effect - only redirect once per authRedirect change
   useEffect(() => {
-    if (!authRedirect) return;
-    router.replace(toRouterHref(locale, authRedirect));
-  }, [authRedirect, locale, router]);
+    if (!authRedirect || hasRedirected) return;
+    
+    setHasRedirected(true);
+    const targetHref = toRouterHref(locale, authRedirect);
+    
+    // Prevent redirect loops by checking if we're already on the target
+    if (window.location.pathname !== targetHref) {
+      router.replace(targetHref);
+    }
+  }, [authRedirect, locale, router, hasRedirected]);
 
-  if (account.workspace.status === "loadingSession" || isAuthHandoffPending || authRedirect) {
+  // Reset redirect flag when authRedirect changes
+  useEffect(() => {
+    if (authRedirect) {
+      setHasRedirected(false);
+    }
+  }, [authRedirect]);
+
+  // Show loading state only when truly necessary
+  const shouldShowLoading = 
+    account.workspace.status === "loadingSession" || 
+    isAuthHandoffPending || 
+    (authRedirect && !hasRedirected);
+
+  if (shouldShowLoading) {
     return <DashboardLoadingState />;
   }
 

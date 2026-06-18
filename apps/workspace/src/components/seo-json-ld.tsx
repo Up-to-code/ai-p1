@@ -16,26 +16,30 @@ const trustedKeywords = [
   "client operations",
   "asset management",
   "project workflow",
+  "AI-first Work OS",
+  "agency management",
+  "project management",
+  "CRM for agencies",
 ];
 const primaryLinks = [
   {
     name: "Qentrah Workspace",
-    description: "Enter the public Qentrah Workspace overview for business operations.",
+    description: "AI-first Work OS for agencies — clients, projects, tasks, and AI agents.",
     url: workspaceUrl,
   },
   {
-    name: "Developers",
-    description: "See how development teams prepare projects and verified inventory in Qentrah.",
-    url: `${workspaceUrl}/en/developer`,
+    name: "Pricing",
+    description: "Transparent pricing for teams of all sizes — Free, Pro, and Enterprise plans.",
+    url: `${workspaceUrl}/en/pricing`,
   },
   {
-    name: "Brokers",
-    description: "See how brokers manage clients, viewings, and live inventory in Qentrah.",
-    url: `${workspaceUrl}/en/broker`,
+    name: "About",
+    description: "Meet the team behind Qentrah and our philosophy.",
+    url: `${workspaceUrl}/en/about`,
   },
   {
     name: "Docs",
-    description: "Read public documentation for connecting AI agents to Qentrah Workspace.",
+    description: "Public documentation for connecting AI agents to Qentrah Workspace.",
     url: `${workspaceUrl}/en/docs`,
   },
   {
@@ -66,7 +70,7 @@ export function WorkspacePublicJsonLd() {
     url: workspaceUrl,
     image: logoUrl,
     inLanguage: ["ar-SA", "en-SA"],
-    description: "مساحة عمل تشغيلية لإدارة العملاء والمشاريع والأصول والتقويم والمهام من مصدر واحد موثوق.",
+    description: "منصة تشغيل ذكية للوكالات والشركات الخدمية — إدارة العملاء والمشاريع والمهام والتقويم مع وكلاء ذكاء اصطناعي.",
     keywords: trustedKeywords,
     areaServed: {
       "@type": "Country",
@@ -88,32 +92,48 @@ export function WorkspacePublicJsonLd() {
     },
   };
 
+  const website = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${workspaceUrl}/#website`,
+    url: workspaceUrl,
+    name: brandProductName("workspace", "en"),
+    alternateName: brandProductName("workspace", "ar"),
+    inLanguage: ["en", "ar"],
+    description: "AI-first Work OS for agencies — clients, projects, tasks, and AI agents in one workspace.",
+    publisher: {
+      "@type": "Organization",
+      "@id": `${rootUrl}/#organization`,
+    },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${workspaceUrl}/en/search?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
   const webPage = {
     "@context": "https://schema.org",
     "@type": "WebPage",
     "@id": `${workspaceUrl}/#webpage`,
     url: workspaceUrl,
-    name: brandProductName("workspace", "ar"),
-    inLanguage: ["ar-SA", "en-SA"],
-    isPartOf: { "@id": `${rootUrl}/#website` },
+    name: brandProductName("workspace", "en"),
+    alternateName: brandProductName("workspace", "ar"),
+    inLanguage: ["en", "ar"],
+    isPartOf: { "@id": `${workspaceUrl}/#website` },
     about: { "@id": `${workspaceUrl}/#software` },
-  };
-
-  const breadcrumbs = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "@id": `${workspaceUrl}/#breadcrumb`,
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: brandLabel("ar"), item: rootUrl },
-      { "@type": "ListItem", position: 2, name: brandProductName("workspace", "ar"), item: workspaceUrl },
-    ],
+    description: "AI-first Work OS for agencies — clients, projects, tasks, and AI agents in one workspace.",
   };
 
   const siteNavigation = {
     "@context": "https://schema.org",
     "@type": "ItemList",
     "@id": `${workspaceUrl}/#site-navigation`,
-    name: "Qentrah Workspace primary links",
+    name: "Qentrah primary links",
+    description: "Main pages and sections of the Qentrah Workspace platform.",
     itemListElement: primaryLinks.map((link, index) => ({
       "@type": "SiteNavigationElement",
       position: index + 1,
@@ -123,9 +143,24 @@ export function WorkspacePublicJsonLd() {
     })),
   };
 
+  const breadcrumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "@id": `${workspaceUrl}/#breadcrumb`,
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: brandLabel("ar"), item: rootUrl },
+      { "@type": "ListItem", position: 2, name: brandProductName("workspace", "en"), item: workspaceUrl },
+      { "@type": "ListItem", position: 3, name: "Pricing", item: `${workspaceUrl}/en/pricing` },
+      { "@type": "ListItem", position: 4, name: "About", item: `${workspaceUrl}/en/about` },
+      { "@type": "ListItem", position: 5, name: "Contact", item: `${workspaceUrl}/en/contact` },
+      { "@type": "ListItem", position: 6, name: "Docs", item: `${workspaceUrl}/en/docs` },
+    ],
+  };
+
   return (
     <>
       <JsonLd data={app} />
+      <JsonLd data={website} />
       <JsonLd data={webPage} />
       <JsonLd data={siteNavigation} />
       <JsonLd data={breadcrumbs} />

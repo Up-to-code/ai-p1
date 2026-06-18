@@ -13,7 +13,7 @@ export function PublicSection({
   children: ReactNode;
   className?: string;
   contentClassName?: string;
-  tone?: "default" | "muted" | "inverse";
+  tone?: "default" | "muted" | "inverse" | "very-dark" | "dark" | "secondary" | "light" | "very-light";
   id?: string;
 }) {
   return (
@@ -21,8 +21,21 @@ export function PublicSection({
       id={id}
       className={cn(
         "px-6 py-20 md:py-32 transition-colors duration-500",
+        // Very dark - darkest sections
+        tone === "very-dark" && "bg-[var(--q-bg-very-dark)] text-[var(--q-text-primary)]",
+        // Dark - darker than default
+        tone === "dark" && "bg-[var(--q-bg-dark)] text-[var(--q-text-primary)]",
+        // Secondary - subtle contrast
+        tone === "secondary" && "bg-[var(--q-bg-secondary)] text-[var(--q-text-primary)]",
+        // Default - standard card background
         tone === "default" && "bg-[var(--q-card)] text-[var(--q-text-primary)]",
+        // Light - lighter than default
+        tone === "light" && "bg-[var(--q-bg-light)] text-[var(--q-text-primary)]",
+        // Very light - lightest sections
+        tone === "very-light" && "bg-[var(--q-bg-very-light)] text-[var(--q-text-primary)]",
+        // Muted - legacy support
         tone === "muted" && "bg-zinc-50/80 dark:bg-zinc-950/50 text-foreground",
+        // Inverse - high contrast
         tone === "inverse" && "bg-[var(--q-text-primary)] text-white dark:bg-white dark:text-zinc-950",
         className
       )}

@@ -167,6 +167,7 @@ export default defineSchema({
     dodoPaymentId: v.optional(v.string()),
     amount: v.number(),
     currency: v.string(),
+    seats: v.optional(v.number()),
     status: v.union(
       v.literal("pending"),
       v.literal("succeeded"),

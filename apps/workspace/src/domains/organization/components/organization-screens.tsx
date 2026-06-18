@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useQuery as useConvexQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
-import { Bell, Bot, Building2, CalendarDays, Check, CheckCircle2, Clock, Copy, FileText, HelpCircle, Home, KeyRound, LinkIcon, Loader2, Mail, PauseCircle, Plus, RefreshCcw, Save, ShieldCheck, Trash2, UserRoundCog, Users } from "lucide-react";
+import { Bell, Bot, Building2, CalendarDays, Check, CheckCircle2, Clock, Copy, CreditCard, FileText, HelpCircle, Home, KeyRound, LinkIcon, Loader2, Mail, PauseCircle, Plus, RefreshCcw, Save, ShieldCheck, Trash2, UserRoundCog, Users } from "lucide-react";
 import { type UseFormRegisterReturn, useForm } from "react-hook-form";
 import { useAccountContext } from "@/domains/auth";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,7 @@ import { updateOrganizationProfileSchema, type UpdateOrganizationProfileValues }
 import { useUpdateOrganizationProfileMutation } from "../api/use-update-profile";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Link as LocaleLink } from "@/i18n/routing";
 import {
   cancelOrganizationInviteLink,
   cancelOrganizationInvitation,
@@ -70,6 +71,12 @@ import {
   type NotificationCategory,
   type NotificationPreference,
 } from "@/domains/notifications/api/notifications";
+import {
+  useBillingOverview,
+  useBillingUsage,
+  type BillingPlanId,
+} from "@/domains/billing/api/billing";
+import { billingDateLabel, subscriptionTone } from "@/domains/billing/billing-view-model";
 import {
   advancedActionColumns,
   advancedWorkAreas,
@@ -118,6 +125,7 @@ import {
 export function OrganizationScreen() {
   const t = useTranslations("Organization");
   const locale = useLocale();
+  const isAr = locale === "ar";
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -184,6 +192,11 @@ export function OrganizationScreen() {
   const canInviteMembers = capabilities?.canInviteMembers ?? false;
   const canUpdateMembers = capabilities?.canUpdateMembers ?? false;
   const canRemoveMembers = capabilities?.canRemoveMembers ?? false;
+
+  // Billing: single plan, no hard member cap — seats scale via DodoPayments add-ons
+  const billingOverview = useBillingOverview(organizationId);
+  const atMemberLimit = false; // no fixed cap on the single plan
+  const upgradePlanIdForInvite = "qentrah_workspace" as BillingPlanId; // kept for type compat
   const canReadAgentLinks = capabilities?.canReadOrganization ?? false;
   const canCreateAgentLinks = capabilities?.canReadOrganization ?? false;
   const canDeleteAgentLinks = capabilities?.canReadOrganization ?? false;
@@ -368,6 +381,7 @@ export function OrganizationScreen() {
     { id: "agentLinks", label: t("tabs.agentLinks"), icon: Bot },
     { id: "apiKeys", label: t("tabs.apiKeys"), icon: KeyRound },
     { id: "notifications", label: t("tabs.notifications"), icon: Bell },
+    { id: "billing", label: isAr ? "الفوترة" : "Billing", icon: CreditCard },
   ];
 
   function setActiveOrganizationTab(tab: Tab) {
@@ -574,10 +588,19 @@ export function OrganizationScreen() {
               title={t("members.title")}
               actions={(
                 <div className="flex flex-wrap gap-2 sm:justify-end">
-                  <Button disabled={!canInviteMembers} onClick={() => setInviteDialogOpen(true)} className="h-9.5 rounded-lg bg-primary text-[9px] font-black uppercase tracking-widest text-primary-foreground hover:bg-black disabled:opacity-50">
-                    <Plus className="me-1.5 h-3.5 w-3.5" />
-                    {t("invites.open")}
-                  </Button>
+                  {atMemberLimit ? (
+                    <LocaleLink href={`/billing?plan=${upgradePlanIdForInvite}`}>
+                      <Button className="h-9.5 rounded-lg bg-amber-500 text-[9px] font-black uppercase tracking-widest text-white hover:bg-amber-600">
+                        <CreditCard className="me-1.5 h-3.5 w-3.5" />
+                        {t("invites.open")}
+                      </Button>
+                    </LocaleLink>
+                  ) : (
+                    <Button disabled={!canInviteMembers} onClick={() => setInviteDialogOpen(true)} className="h-9.5 rounded-lg bg-primary text-[9px] font-black uppercase tracking-widest text-primary-foreground hover:bg-black disabled:opacity-50">
+                      <Plus className="me-1.5 h-3.5 w-3.5" />
+                      {t("invites.open")}
+                    </Button>
+                  )}
                   <Button
                     type="button"
                     variant="outline"
@@ -698,6 +721,14 @@ export function OrganizationScreen() {
             loading={organizationNotificationQuery.isLoading || capabilitiesQuery.isLoading}
             saving={updateOrganizationNotificationsMutation.isPending}
             onSave={(next) => updateOrganizationNotificationsMutation.mutate(next)}
+          />
+        )}
+
+        {activeTab === "billing" && (
+          <OrganizationBillingPanel
+            organizationId={organizationId}
+            locale={locale as "en" | "ar"}
+            memberCount={members.length}
           />
         )}
       </div>
@@ -2672,6 +2703,210 @@ function EmptyState({ title, description }: { title: string; description: string
     <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center">
       <p className="text-sm font-black text-foreground">{title}</p>
       <p className="mt-1 text-xs font-medium text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Billing tab panel
+// ─────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────
+// Billing tab panel  (single plan: Qentrah Workspace $6.99/user/month)
+// ─────────────────────────────────────────────────────────────
+
+function OrganizationBillingPanel({
+  organizationId,
+  locale,
+  memberCount,
+}: {
+  organizationId: string;
+  locale: "en" | "ar";
+  memberCount: number;
+}) {
+  const overview = useBillingOverview(organizationId);
+  const usage = useBillingUsage(organizationId);
+  const isAr = locale === "ar";
+
+  if (!organizationId) return null;
+
+  const subscription = overview?.subscription ?? null;
+  const plan = overview?.plan ?? null;
+  const status = subscription?.status ?? "inactive";
+  const isActive = status === "active";
+
+  // Price per seat
+  const pricePerUser = plan?.amount ?? 6.99;
+  const priceLabel = plan
+    ? new Intl.NumberFormat(isAr ? "ar-SA" : "en-US", {
+        style: "currency",
+        currency: plan.currency,
+        maximumFractionDigits: 2,
+      }).format(pricePerUser)
+    : "$6.99";
+  const totalLabel = new Intl.NumberFormat(isAr ? "ar-SA" : "en-US", {
+    style: "currency",
+    currency: plan?.currency ?? "USD",
+    maximumFractionDigits: 2,
+  }).format(pricePerUser * memberCount);
+
+  const renewalLabel = billingDateLabel(subscription?.currentPeriodEndAt, locale);
+
+  // AI credits
+  const credits = usage.status === "ready" ? usage.data.credits : null;
+  const creditsGranted = credits?.subscriptionCreditsGranted ?? 0;
+  const creditsUsed = credits?.subscriptionCreditsUsed ?? 0;
+  const creditsPercent = creditsGranted > 0 ? Math.round((creditsUsed / creditsGranted) * 100) : 0;
+  const creditsWarning = creditsPercent >= 80;
+
+  return (
+    <div className="max-w-3xl space-y-5">
+
+      {/* ── Current plan card ──────────────────────────── */}
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className={cn("h-1.5", isActive ? "bg-emerald-500" : "bg-[var(--q-accent)]")} />
+
+        <div className="flex flex-col gap-5 p-6 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 space-y-1">
+            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-muted-foreground">
+              {isAr ? "الخطة الحالية" : "Current plan"}
+            </p>
+            <h2 className="text-2xl font-black tracking-tight text-foreground">
+              {plan?.name ?? "Qentrah Workspace"}
+            </h2>
+            {/* Per-seat price */}
+            <p className="text-sm font-bold text-muted-foreground">
+              {priceLabel}
+              <span className="ms-1 text-xs text-muted-foreground/60">
+                {isAr ? "/ مستخدم / شهر" : "/ user / month"}
+              </span>
+            </p>
+            {/* Seat total */}
+            <p className="text-[10px] font-bold text-[var(--q-accent)]">
+              {priceLabel} × {memberCount} {isAr ? "مستخدم" : memberCount === 1 ? "user" : "users"}{" "}
+              = {totalLabel} {isAr ? "/ شهر" : "/ month"}
+            </p>
+            {isActive && (
+              <p className="text-[10px] font-bold text-muted-foreground">
+                {isAr ? "يجدد في" : "Renews"} {renewalLabel}
+              </p>
+            )}
+          </div>
+
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <StatusPill label={status} tone={subscriptionTone(status)} />
+            <LocaleLink href="/billing">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 gap-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest"
+              >
+                <CreditCard className="h-3.5 w-3.5" />
+                {isAr ? "إدارة الفوترة" : "Manage billing"}
+              </Button>
+            </LocaleLink>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Usage meters ───────────────────────────────── */}
+      <div className="overflow-hidden rounded-2xl border border-border bg-card p-6 space-y-6">
+        <p className="text-[9px] font-black uppercase tracking-[0.18em] text-muted-foreground">
+          {isAr ? "الاستخدام" : "Usage"}
+        </p>
+
+        {usage.status === "loading" && (
+          <div className="space-y-2">
+            <Skeleton className="h-3 w-32 rounded-full" />
+            <Skeleton className="h-2.5 rounded-full" />
+          </div>
+        )}
+
+        {usage.status === "ready" && (
+          <BillingMeter
+            label={isAr ? "رصيد الذكاء الاصطناعي" : "AI credits"}
+            value={creditsUsed}
+            total={creditsGranted}
+            percent={creditsPercent}
+            warn={creditsWarning}
+            barColor={creditsWarning ? "bg-amber-500" : "bg-[var(--q-accent)]"}
+            suffix={isAr ? "رصيد" : "credits"}
+          />
+        )}
+
+        <BillingMeter
+          label={isAr ? "أعضاء الفريق" : "Team members"}
+          value={memberCount}
+          total={undefined}
+          percent={0}
+          warn={false}
+          barColor="bg-[var(--q-accent)]"
+          suffix={isAr ? "عضو" : "members"}
+        />
+      </div>
+
+      {/* ── Payment history ────────────────────────────── */}
+      <LocaleLink href="/usage">
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest"
+        >
+          {isAr ? "سجل المدفوعات والاستخدام" : "View usage & payment history"}
+        </Button>
+      </LocaleLink>
+    </div>
+  );
+}
+
+function BillingMeter({
+  label,
+  value,
+  total,
+  percent,
+  warn,
+  barColor,
+  suffix,
+}: {
+  label: string;
+  value: number;
+  total?: number;
+  percent: number;
+  warn: boolean;
+  barColor: string;
+  suffix: string;
+}) {
+  const fmt = new Intl.NumberFormat("en-US");
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-4">
+        <p className={cn("text-[10px] font-black uppercase tracking-[0.15em]", warn ? "text-amber-600 dark:text-amber-400" : "text-foreground")}>
+          {label}
+        </p>
+        <p className="text-xs font-bold tabular-nums text-muted-foreground">
+          {fmt.format(value)}
+          {total !== undefined ? ` / ${fmt.format(total)} ${suffix}` : ` ${suffix}`}
+        </p>
+      </div>
+      {total !== undefined && (
+        <div
+          className="mt-2 h-2 overflow-hidden rounded-full bg-muted dark:bg-white/[0.06]"
+          role="progressbar"
+          aria-valuenow={percent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div
+            className={cn("h-full rounded-full transition-all duration-500", barColor)}
+            style={{ width: `${percent}%` }}
+          />
+        </div>
+      )}
+      {warn && total !== undefined && (
+        <p className="mt-1 text-[10px] font-bold text-amber-600 dark:text-amber-400">
+          {percent}% used
+        </p>
+      )}
     </div>
   );
 }

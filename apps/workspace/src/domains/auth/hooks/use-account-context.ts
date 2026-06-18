@@ -89,32 +89,61 @@ function useAccountContextValue(): AccountContextValue {
   const userQuery = useUser();
   const organizationQuery = useOrganization();
   const convexAuth = useConvexAuth();
+  
+  // Stabilize primitive values to prevent unnecessary re-renders
   const organizationId = auth.orgId ?? organizationQuery.organization?.id ?? null;
   const isOrganizationPending = !organizationQuery.isLoaded;
   const isConvexAuthenticated = convexAuth.isAuthenticated;
   const isConvexAuthPending = !convexAuth.isLoading && auth.isSignedIn ? false : convexAuth.isLoading;
-  const membershipOrganizationIds = clerkMembershipOrganizationIds(userQuery.user);
+  
+  // Memoize membership IDs to prevent recalculation on every render
+  const membershipOrganizationIds = useMemo(
+    () => clerkMembershipOrganizationIds(userQuery.user),
+    [userQuery.user?.organizationMemberships]
+  );
+  
   const hasLoadedMemberships = userQuery.isLoaded;
-  const hasOrganizationAccessDenied =
-    typeof organizationId === "string" &&
-    hasLoadedMemberships &&
-    !membershipOrganizationIds.includes(organizationId);
+  const hasOrganizationAccessDenied = useMemo(
+    () =>
+      typeof organizationId === "string" &&
+      hasLoadedMemberships &&
+      !membershipOrganizationIds.includes(organizationId),
+    [organizationId, hasLoadedMemberships, membershipOrganizationIds]
+  );
+
+  // Only query organization profile when needed and stable
   const organizationProfile = useQuery(
     api.organizations.profile.read.getProfile,
     organizationId && isConvexAuthenticated && !hasOrganizationAccessDenied ? { organizationId } : "skip",
   );
+  
   const userProfile = useQuery(
     api.userProfiles.read.getCurrent,
-    {},
+    isConvexAuthenticated ? {} : "skip",
   );
-  const workspaceStatus: WorkspaceStatus = deriveWorkspaceStatus({
-    isSessionPending: !auth.isLoaded || !userQuery.isLoaded,
-    isOrganizationPending,
-    organizationId,
-    isConvexAuthPending,
-    isConvexAuthenticated,
-    hasOrganizationAccessDenied,
-  });
+  
+  // Memoize workspace status to prevent recalculation
+  const workspaceStatus: WorkspaceStatus = useMemo(
+    () =>
+      deriveWorkspaceStatus({
+        isSessionPending: !auth.isLoaded || !userQuery.isLoaded,
+        isOrganizationPending,
+        organizationId,
+        isConvexAuthPending,
+        isConvexAuthenticated,
+        hasOrganizationAccessDenied,
+      }),
+    [
+      auth.isLoaded,
+      userQuery.isLoaded,
+      isOrganizationPending,
+      organizationId,
+      isConvexAuthPending,
+      isConvexAuthenticated,
+      hasOrganizationAccessDenied,
+    ]
+  );
+  
   const isWorkspaceReady = workspaceStatus === "ready";
 
   return useMemo(() => {
@@ -182,14 +211,31 @@ function useAccountContextValue(): AccountContextValue {
     isConvexAuthenticated,
     isConvexAuthPending,
     isWorkspaceReady,
-    hasOrganizationAccessDenied,
-    organizationQuery.organization,
     organizationId,
-    organizationProfile,
-    membershipOrganizationIds,
+    organizationProfile?.name,
+    organizationProfile?.legalName,
+    organizationProfile?.type,
+    organizationProfile?.email,
+    organizationProfile?.phone,
+    organizationProfile?.website,
+    organizationProfile?.address,
+    organizationProfile?.logo,
+    organizationQuery.organization?.name,
+    organizationQuery.organization?.imageUrl,
+    organizationQuery.organization?.slug,
     userQuery.isLoaded,
-    userQuery.user,
-    userProfile,
+    userQuery.user?.id,
+    userQuery.user?.fullName,
+    userQuery.user?.username,
+    userQuery.user?.primaryEmailAddress?.emailAddress,
+    userQuery.user?.imageUrl,
+    userProfile?.name,
+    userProfile?.avatarUrl,
+    userProfile?.phone,
+    userProfile?.role,
+    userProfile?.language,
+    userProfile?.timezone,
+    userProfile?.notifications,
     workspaceStatus,
   ]);
 }

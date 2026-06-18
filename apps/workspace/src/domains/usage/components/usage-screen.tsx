@@ -9,12 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   type BillingPlan,
+  type BillingPlanId,
   type OrganizationBillingUsage,
   type Payment,
   useBillingUsage,
 } from "@/domains/billing/api/billing";
 import { useAccountContext } from "@/domains/auth";
 import { cn } from "@/lib/utils";
+import { Link } from "@/i18n/routing";
 
 type UsageLocale = "en" | "ar";
 type UsageTab = "usage" | "payments";
@@ -217,6 +219,8 @@ function UsageOverviewPanel({
 }) {
   const status = usage.overview.subscription?.status ?? "inactive";
   const credits = usage.credits;
+  const planId = (usage.overview.plan.id ?? "qentrah_workspace") as BillingPlanId;
+  void planId; // single plan — no upgrade path needed
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -245,14 +249,16 @@ function UsageOverviewPanel({
             )}>
               {status === "active" ? copy.active : copy.inactive}
             </span>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest"
-            >
-              <ArrowUpRight className="h-3.5 w-3.5" />
-              {copy.upgradePlan}
-            </Button>
+            <Link href="/billing">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest"
+              >
+                <ArrowUpRight className="h-3.5 w-3.5" />
+                {copy.upgradePlan}
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
@@ -274,14 +280,16 @@ function UsageOverviewPanel({
         </div>
       </div>
 
-      <Button
-        variant="outline"
-        size="sm"
-        className="gap-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest"
-      >
-        <Plus className="h-3.5 w-3.5" />
-        {copy.addCredits}
-      </Button>
+      <Link href="/billing">
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          {copy.addCredits}
+        </Button>
+      </Link>
     </div>
   );
 }

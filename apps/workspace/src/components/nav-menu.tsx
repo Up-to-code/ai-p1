@@ -13,10 +13,10 @@ import {
 } from "@/components/ui/navigation-menu";
 
 const navItems = [
-  { key: "solutions", href: "/#solutions" },
-  { key: "pricing", href: "/#pricing" },
-  { key: "resources", href: "/#resources" },
-  { key: "company", href: "/about" },
+  { key: "pricing", href: "/pricing" },
+  { key: "documentation", href: "/docs" },
+  { key: "about", href: "/about" },
+  { key: "contact", href: "/contact" },
 ] as const;
 
 export const NavMenu = (props: ComponentProps<typeof NavigationMenu>) => {

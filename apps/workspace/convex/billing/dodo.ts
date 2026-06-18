@@ -4,7 +4,9 @@ import { internal } from "../_generated/api";
 
 /**
  * DodoPayments Configuration
- * Pricing: $7/user/month (Good), $19/user/month (Better), Custom (Contact Sales)
+ * Single plan: Qentrah Workspace — $6.99/user/month
+ * Product ID: pdt_0NhGI8pfoyfuPWt0TLZ1x
+ * Quantity = number of seats. Add-ons are associated on the product in DodoPay.
  */
 
 export const dodo = new DodoPayments(components.dodopayments, {
@@ -35,82 +37,28 @@ export const dodo = new DodoPayments(components.dodopayments, {
 export const { checkout, customerPortal } = dodo.api();
 
 export const PRICING_PLANS = {
-  good_monthly: {
-    id: "good_monthly",
-    name: "Good",
+  // Single active plan
+  qentrah_workspace: {
+    id: "qentrah_workspace",
+    name: "Qentrah Workspace",
     billingPeriod: "monthly",
-    pricePerUser: 7,
+    pricePerUser: 6.99,
     currency: "USD",
+    dodoProductId: "pdt_0NhGI8pfoyfuPWt0TLZ1x",
     features: [
-      "Project, asset, and client workspace",
-      "Free setup phase included",
-      "Core organization roles",
-      "Limited apps and integrations",
-    ],
-  },
-  good_yearly: {
-    id: "good_yearly",
-    name: "Good Annual",
-    billingPeriod: "yearly",
-    pricePerUser: 70,
-    currency: "USD",
-    features: [
-      "Project, asset, and client workspace",
-      "Free setup phase included",
-      "Core organization roles",
-      "Limited apps and integrations",
-    ],
-  },
-  better_monthly: {
-    id: "better_monthly",
-    name: "Better",
-    billingPeriod: "monthly",
-    pricePerUser: 19,
-    currency: "USD",
-    features: [
-      "Everything in Good",
-      "AI agents and workflows",
-      "3 included AI credit cards",
+      "Project, asset & client workspace",
+      "AI agents & workflows",
+      "All apps & integrations",
       "Priority support",
+      "Included AI credits",
+      "Flexible seat add-ons",
     ],
   },
-  better_yearly: {
-    id: "better_yearly",
-    name: "Better Annual",
-    billingPeriod: "yearly",
-    pricePerUser: 190,
-    currency: "USD",
-    features: [
-      "Everything in Good",
-      "AI agents and workflows",
-      "3 included AI credit cards",
-      "Priority support",
-    ],
-  },
-  custom_monthly: {
-    id: "custom_monthly",
-    name: "Custom",
-    billingPeriod: "monthly",
-    pricePerUser: null,
-    currency: "USD",
-    features: [
-      "Custom AI credit cards",
-      "Custom integrations",
-      "Custom organization setup",
-      "Dedicated onboarding",
-    ],
-  },
-  custom_yearly: {
-    id: "custom_yearly",
-    name: "Custom Annual",
-    billingPeriod: "yearly",
-    pricePerUser: null,
-    currency: "USD",
-    features: [
-      "Custom AI credit cards",
-      "Custom integrations",
-      "Custom organization setup",
-      "Dedicated onboarding",
-    ],
-  },
+  // Legacy plan entries — kept so existing stored planId values don't break
+  good_monthly: { id: "good_monthly", name: "Good", billingPeriod: "monthly", pricePerUser: 7, currency: "USD", dodoProductId: process.env.DODO_PRODUCT_GOOD_MONTHLY ?? "good_monthly", features: [] },
+  good_yearly:  { id: "good_yearly",  name: "Good Annual", billingPeriod: "yearly",  pricePerUser: 70, currency: "USD", dodoProductId: process.env.DODO_PRODUCT_GOOD_YEARLY ?? "good_yearly", features: [] },
+  better_monthly: { id: "better_monthly", name: "Better", billingPeriod: "monthly", pricePerUser: 19, currency: "USD", dodoProductId: process.env.DODO_PRODUCT_BETTER_MONTHLY ?? "better_monthly", features: [] },
+  better_yearly:  { id: "better_yearly",  name: "Better Annual", billingPeriod: "yearly",  pricePerUser: 190, currency: "USD", dodoProductId: process.env.DODO_PRODUCT_BETTER_YEARLY ?? "better_yearly", features: [] },
+  custom_monthly: { id: "custom_monthly", name: "Custom", billingPeriod: "monthly", pricePerUser: null as null, currency: "USD", dodoProductId: "", features: [] },
+  custom_yearly:  { id: "custom_yearly",  name: "Custom Annual", billingPeriod: "yearly",  pricePerUser: null as null, currency: "USD", dodoProductId: "", features: [] },
 };

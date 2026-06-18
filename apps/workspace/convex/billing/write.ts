@@ -82,7 +82,7 @@ function subscriptionPeriod(subscription: StoredSubscription | null, now: number
 
 async function ensureCreditBalance(ctx: MutationCtx, organizationId: string, now: number) {
   const subscription = await findSubscription(ctx, organizationId);
-  const planId = subscription?.planId ?? "good_monthly";
+  const planId = subscription?.planId ?? "qentrah_workspace";
   const subscriptionCreditsGranted = includedCreditsForBillingPlan(planId);
   const period = subscriptionPeriod(subscription, now);
   const existing = await findCreditBalance(ctx, organizationId);
@@ -332,7 +332,10 @@ export const recordAgentCreditUsage = mutation({
 export const createPendingPaymentFromHono = mutation({
   args: {
     organizationId: v.string(),
-    input: v.object({ planId: billingPlanIdValidator }),
+    input: v.object({
+      planId: billingPlanIdValidator,
+      seats: v.optional(v.number()),
+    }),
   },
   returns: checkoutContextValidator,
   handler: async (ctx, args) => {
@@ -343,12 +346,17 @@ export const createPendingPaymentFromHono = mutation({
     const now = Date.now();
     const reference = orderReference(now);
     const profile = await findOrganizationProfile(ctx, args.organizationId);
+    const seats = Math.max(1, args.input.seats ?? 1);
+    const unitAmount = plan.amount ?? 0;
+    const totalAmount = Math.round(unitAmount * seats * 100) / 100;
+
     const paymentId = await billingDb(ctx).insert("dodoPayments", {
       organizationId: args.organizationId,
       planId: plan.id,
       orderId: reference,
-      amount: plan.amount ?? 0,
+      amount: totalAmount,
       currency: plan.currency,
+      seats,
       status: "pending",
       createdByUserId: user._id,
       createdAt: now,

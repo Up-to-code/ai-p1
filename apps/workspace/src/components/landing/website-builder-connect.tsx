@@ -44,8 +44,8 @@ const copy = {
 
 function ToolPill({ tool }: { tool: ToolBrand }) {
   return (
-    <span className="flex h-12 items-center gap-3 rounded-full border border-border bg-[var(--q-card)] px-4 text-sm font-bold text-secondary-foreground shadow-sm dark:border-border dark:bg-muted dark:text-foreground">
-      <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--q-border)] bg-muted dark:border-border dark:bg-card">
+    <span className="flex h-12 items-center gap-3 rounded-full border border-[var(--q-border)] bg-[var(--q-card)] px-4 text-sm font-bold text-[var(--q-text-secondary)] shadow-sm">
+      <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--q-border)] bg-[var(--q-bg-secondary)]">
         <Image
           alt=""
           width={20}
@@ -65,17 +65,17 @@ export function WebsiteBuilderConnect({ locale }: { locale: string }) {
   const labels = isAr ? copy.ar : copy.en;
 
   return (
-    <section className="w-full overflow-hidden border-y border-border bg-[var(--q-card)] px-6 py-16 dark:border-border dark:bg-[var(--q-bg)] md:py-24">
+    <section className="w-full overflow-hidden border-y border-[var(--q-border)] bg-[var(--q-bg-secondary)] px-6 py-16 md:py-24">
       <div className="mx-auto max-w-7xl">
         <div className="flex max-w-4xl flex-col items-start space-y-5 text-start">
           <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-blue-700 dark:text-blue-300">
             <PlugZap className="h-3.5 w-3.5" />
             {labels.eyebrow}
           </div>
-          <h2 className="max-w-3xl text-[clamp(2.25rem,6vw,4.5rem)] font-bold leading-[0.98] tracking-tight text-foreground rtl:leading-[1.16]">
+          <h2 className="max-w-3xl text-[clamp(2.25rem,6vw,4.5rem)] font-bold leading-[0.98] tracking-tight text-[var(--q-text-primary)] rtl:leading-[1.16]">
             {labels.title}
           </h2>
-          <p className="max-w-2xl text-base font-semibold leading-relaxed text-secondary-foreground md:text-lg">
+          <p className="max-w-2xl text-base font-semibold leading-relaxed text-[var(--q-text-secondary)] md:text-lg">
             {labels.description}
           </p>
         </div>

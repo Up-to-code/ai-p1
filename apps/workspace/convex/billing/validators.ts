@@ -1,6 +1,9 @@
 import { v } from "convex/values";
 
 export const billingPlanIdValidator = v.union(
+  // Current single plan
+  v.literal("qentrah_workspace"),
+  // Legacy plan IDs kept for backward compatibility with existing stored data
   v.literal("good_monthly"),
   v.literal("good_yearly"),
   v.literal("better_monthly"),
@@ -26,6 +29,7 @@ export const paymentStatusValidator = v.union(
 
 export const billingPlanValidator = v.object({
   id: billingPlanIdValidator,
+  dodoProductId: v.optional(v.string()),
   name: v.string(),
   amount: v.union(v.number(), v.null()),
   currency: v.string(),

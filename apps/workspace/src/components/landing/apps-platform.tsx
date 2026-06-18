@@ -105,8 +105,8 @@ const copy = {
 
 function ToolPill({ tool }: { tool: { name: string; url: string } }) {
   return (
-    <span className="flex h-12 items-center gap-3 rounded-full border border-border bg-[var(--q-card)] px-4 text-sm font-bold text-secondary-foreground shadow-sm dark:border-border dark:bg-muted dark:text-foreground transition-colors duration-200 hover:border-border dark:hover:border-border">
-      <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--q-border)] bg-[var(--q-card-hover)] dark:border-border dark:bg-[var(--q-text-primary)]">
+    <span className="flex h-12 items-center gap-3 rounded-full border border-[var(--q-border)] bg-[var(--q-card)] px-4 text-sm font-bold text-[var(--q-text-secondary)] shadow-sm">
+      <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--q-border)] bg-[var(--q-bg-secondary)]">
         <Image
           alt=""
           width={20}
@@ -132,7 +132,7 @@ export function AppsPlatform({ locale }: { locale: string }) {
 
   return (
     <div className="w-full">
-      <PublicSection id="apps" tone="default">
+      <PublicSection id="apps" tone="light">
         <div className="mx-auto max-w-7xl space-y-16">
           <Reveal>
             <div className="space-y-4 text-start">
@@ -143,36 +143,36 @@ export function AppsPlatform({ locale }: { locale: string }) {
                   {labels.eyebrow}
                 </span>
               </div>
-              <h2 className="text-3xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-5xl rtl:leading-[1.3]">
+              <h2 className="text-3xl font-bold tracking-tight text-[var(--q-text-primary)] md:text-5xl rtl:leading-[1.3]">
                 {labels.title}
               </h2>
-              <p className="text-base leading-relaxed text-secondary-foreground dark:text-[var(--q-text-muted)] md:text-lg rtl:leading-[1.8]">
+              <p className="text-base leading-relaxed text-[var(--q-text-secondary)] md:text-lg rtl:leading-[1.8]">
                 {labels.description}
               </p>
             </div>
           </Reveal>
 
-          <div className="grid gap-10 md:grid-cols-3 border-t border-border pt-12 dark:border-border">
+          <div className="grid gap-10 md:grid-cols-3 border-t border-[var(--q-border)] pt-12">
             {labels.paths.map((path, i) => {
               const Icon = i === 0 ? Boxes : i === 1 ? Cpu : Handshake;
               return (
                 <Reveal key={i} delay={i * 0.08}>
                   <div className="group space-y-4 text-start">
                     <div className="flex items-center gap-3">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted dark:bg-muted text-[var(--q-text-primary)] dark:text-foreground transition-colors duration-300 group-hover:bg-blue-500/10 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--q-bg-secondary)] text-[var(--q-text-primary)] transition-colors duration-300 group-hover:bg-blue-500/10 group-hover:text-blue-600 dark:group-hover:text-blue-400">
                         <Icon className="h-5 w-5" />
                       </span>
-                      <h3 className="text-lg font-bold text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-xl rtl:leading-[1.3]">
+                      <h3 className="text-lg font-bold text-[var(--q-text-primary)] md:text-xl rtl:leading-[1.3]">
                         {path.heading}
                       </h3>
                     </div>
-                    <p className="text-sm leading-relaxed text-secondary-foreground dark:text-[var(--q-text-muted)] md:text-base rtl:leading-[1.7]">
+                    <p className="text-sm leading-relaxed text-[var(--q-text-secondary)] md:text-base rtl:leading-[1.7]">
                       {path.body}
                     </p>
                     <div>
                       <Link
                         href={path.href}
-                        className="inline-flex items-center gap-2 text-sm font-bold text-[var(--q-text-primary)] transition-all duration-300 hover:gap-3 dark:text-[var(--q-text-primary)]"
+                        className="inline-flex items-center gap-2 text-sm font-bold text-[var(--q-text-primary)] transition-all duration-300 hover:gap-3"
                       >
                         {path.cta}
                         <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
@@ -186,7 +186,7 @@ export function AppsPlatform({ locale }: { locale: string }) {
         </div>
       </PublicSection>
 
-      <PublicSection tone="muted" className="border-y border-border dark:border-border overflow-hidden">
+      <PublicSection tone="dark" className="border-y border-[var(--q-border)] overflow-hidden">
         <div className="mx-auto max-w-3xl space-y-10">
           <Reveal>
             <div className="space-y-4">
@@ -196,10 +196,10 @@ export function AppsPlatform({ locale }: { locale: string }) {
                   {labels.works.eyebrow}
                 </span>
               </div>
-              <h2 className="text-3xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-5xl rtl:leading-[1.3]">
+              <h2 className="text-3xl font-bold tracking-tight text-[var(--q-text-primary)] md:text-5xl rtl:leading-[1.3]">
                 {labels.works.title}
               </h2>
-              <p className="text-base leading-relaxed text-secondary-foreground dark:text-[var(--q-text-muted)] md:text-lg rtl:leading-[1.8]">
+              <p className="text-base leading-relaxed text-[var(--q-text-secondary)] md:text-lg rtl:leading-[1.8]">
                 {labels.works.description}
               </p>
             </div>

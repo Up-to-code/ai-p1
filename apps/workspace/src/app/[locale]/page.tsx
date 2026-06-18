@@ -6,7 +6,6 @@ import CTA from "@/components/cta";
 import Footer from "@/components/footer";
 import { Faq02 } from "@/components/landing/faq-02";
 import { Navbar } from "@/components/landing/navbar";
-import { PricingSection } from "@/components/landing/pricing-section";
 import { WebsiteBuilderConnect } from "@/components/landing/website-builder-connect";
 import { McpAgentsShowcase } from "@/components/landing/mcp-agents-showcase";
 import { ProblemSection } from "@/components/landing/problem-section";
@@ -42,8 +41,6 @@ export default function InstitutionalLanding() {
         <WebsiteBuilderConnect locale={locale} />
 
         <McpAgentsShowcase locale={locale} />
-
-        <PricingSection locale={locale} />
 
         <Faq02 />
 

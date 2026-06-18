@@ -143,7 +143,6 @@ export function AppsPlatform({ locale }: { locale: string }) {
                   {labels.eyebrow}
                 </span>
               </div>
-              </div>
               <h2 className="text-3xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-5xl rtl:leading-[1.3]">
                 {labels.title}
               </h2>
