@@ -1,30 +1,28 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import PrivacyPage from "./page-content";
 
-import { LegalPage } from "@/components/marketing/legal-page";
-import { MarketingPageJsonLd } from "@/components/marketing/seo-json-ld";
-import { getContent, isLocale, type Locale } from "@/lib/content";
-import { localizedMarketingMetadata } from "@/lib/seo";
+type Props = {
+  params: Promise<{ locale: string }>;
+};
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
-  const { locale: localeParam } = await params;
-  return isLocale(localeParam) ? localizedMarketingMetadata(localeParam, "privacy") : {};
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const isAr = locale === "ar";
+
+  return {
+    title: isAr ? "سياسة الخصوصية | Qentrah" : "Privacy Policy | Qentrah",
+    description: isAr
+      ? "سياسة الخصوصية لمنصة كانترا — منصة التشغيل الذكية للوكالات. كيف نجمع البيانات الشخصية ونستخدمها ونحميها."
+      : "Privacy Policy for Qentrah — the AI-first Work OS for agencies. How we collect, use, disclose, and protect your information.",
+    openGraph: {
+      title: isAr ? "سياسة الخصوصية | Qentrah" : "Privacy Policy | Qentrah",
+      description: isAr
+        ? "سياسة الخصوصية لمنصة كانترا — منصة التشغيل الذكية للوكالات. كيف نجمع البيانات الشخصية ونستخدمها ونحميها."
+        : "Privacy Policy for Qentrah — the AI-first Work OS for agencies. How we collect, use, disclose, and protect your information.",
+    },
+  };
 }
 
-export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale: localeParam } = await params;
-
-  if (!isLocale(localeParam)) {
-    notFound();
-  }
-
-  const locale = localeParam as Locale;
-  const page = getContent(locale).legal;
-
-  return (
-    <>
-      <MarketingPageJsonLd description={String(page.privacy[0].body).split("\n\n")[0]} locale={locale} path="privacy" title={page.privacyTitle} />
-      <LegalPage kind="privacy" locale={locale} />
-    </>
-  );
+export default function PrivacyPageWrapper() {
+  return <PrivacyPage />;
 }

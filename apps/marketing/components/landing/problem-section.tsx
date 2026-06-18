@@ -6,21 +6,23 @@ import { Reveal } from "@/components/landing/cinematic-motion";
 const copy = {
   en: {
     painPoints: {
-      eyebrow: "The Old Way of Working",
-      title: "The Old Way of Working is Broken.",
-      description: "You are a human doing machine work. Managing 10 different SaaS tools, chasing updates, and drowning in busywork. It's time to let it go.",
+      tagline: "40% of work is lost in context \u2014 and AI is lost without it",
+      description: "Work sprawl is killing context and destroying your team's productivity.",
       items: [
         {
-          title: "The SaaS Trap",
-          desc: "You bought tools to save time, but now you spend all your time managing the tools. The context switching is destroying your focus."
+          stat: "40%",
+          title: "Context Switching",
+          desc: "Teams waste up to 40% of their day constantly switching between 10+ disjointed SaaS apps just to find context."
         },
         {
+          stat: "3 Hours",
           title: "Manual Chaos",
-          desc: "Copy-pasting data, writing endless follow-ups, and updating statuses manually across disconnected systems."
+          desc: "Employees spend an average of 3 hours every single day searching for information and manually syncing statuses."
         },
         {
-          title: "Wasted Potential",
-          desc: "Your team's talent is buried under administrative overhead instead of driving creative and strategic outcomes."
+          stat: "85%",
+          title: "AI Failure",
+          desc: "85% of companies fail to get value from AI because it lacks the unified workspace context needed to execute tasks."
         }
       ]
     },
@@ -46,21 +48,23 @@ const copy = {
   },
   ar: {
     painPoints: {
-      eyebrow: "طريقة العمل القديمة",
-      title: "العمل بالطريقة القديمة لم يعد مجدياً.",
-      description: "أنت إنسان تقوم بعمل الآلات. تدير 10 أدوات مختلفة، وتطارد التحديثات، وتغرق في العمل الروتيني. حان الوقت للتخلص من ذلك.",
+      tagline: "40% من العمل يضيع في فوضى التطبيقات — والذكاء الاصطناعي يضيع بدون سياق",
+      description: "فوضى التطبيقات تدمر السياق وتقضي على إنتاجية فريقك بالكامل.",
       items: [
         {
-          title: "فخ التطبيقات",
-          desc: "اشتريت أدوات لتوفير الوقت، لكنك الآن تقضي كل وقتك في إدارتها. التنقل بينها يدمر تركيزك."
+          stat: "40%",
+          title: "تشتت الانتباه",
+          desc: "تهدر الفرق ما يصل إلى 40٪ من يومها في التنقل المستمر بين أكثر من 10 تطبيقات منفصلة للبحث عن المعلومات."
         },
         {
+          stat: "3 ساعات",
           title: "الفوضى اليدوية",
-          desc: "نسخ ولصق البيانات، كتابة رسائل متابعة لا تنتهي، وتحديث الحالات يدوياً عبر أنظمة منفصلة."
+          desc: "يقضي الموظفون ما معدله 3 ساعات يومياً في البحث عن البيانات وتحديث الحالات يدوياً بين الأنظمة."
         },
         {
-          title: "إهدار الإمكانيات",
-          desc: "موهبة فريقك مدفونة تحت الأعباء الإدارية بدلاً من التركيز على النتائج الإبداعية والاستراتيجية."
+          stat: "85%",
+          title: "فشل الذكاء الاصطناعي",
+          desc: "85٪ من الشركات تفشل في الاستفادة من الذكاء الاصطناعي لأنه يفتقر إلى مساحة عمل موحدة لفهم السياق."
         }
       ]
     },
@@ -94,31 +98,29 @@ export function ProblemSection({ locale }: { locale: string }) {
   return (
     <div className="w-full">
       <PublicSection id="solutions" tone="very-dark" className="border-y border-zinc-200/50 dark:border-white/[0.04]">
-        <div className="space-y-16">
+        <div className="flex flex-col items-center text-center space-y-24">
           <Reveal>
-            <div className="max-w-4xl space-y-5">
-              <div className="flex items-center gap-3">
-                <span className="h-px w-8 bg-[var(--q-user-bubble)]/30" />
-                <span className="text-[10px] font-black uppercase tracking-[0.35em] text-[var(--q-user-bubble)] dark:text-[var(--q-user-bubble)]">{pLabels.eyebrow}</span>
-              </div>
-              <h2 className="text-4xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-6xl rtl:leading-[1.25]">
-                {pLabels.title}
+            <div className="max-w-4xl space-y-6 mx-auto">
+              <h2 className="text-4xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-6xl lg:text-7xl rtl:leading-[1.25]">
+                {pLabels.tagline}
               </h2>
-              <p className="max-w-3xl text-base font-semibold leading-7 text-zinc-700 dark:text-zinc-300 md:text-lg rtl:leading-[1.8]">
+              <p className="mx-auto max-w-2xl text-lg font-medium text-zinc-600 dark:text-zinc-400 md:text-xl rtl:leading-[1.8]">
                 {pLabels.description}
               </p>
             </div>
           </Reveal>
 
-          <div className="grid gap-x-12 gap-y-10 md:grid-cols-3 border-t border-zinc-200/50 dark:border-white/[0.04] pt-12">
+          <div className="grid w-full gap-8 md:grid-cols-3">
             {pLabels.items.map((item, i) => (
               <Reveal key={i} delay={i * 0.1}>
-                <div className="space-y-4">
-                  <h3 className="text-xl font-bold text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-[var(--q-user-bubble)] shrink-0" />
+                <div className="group relative overflow-hidden rounded-3xl bg-zinc-50 border border-zinc-200 p-8 text-left transition-all hover:shadow-lg dark:bg-zinc-900/50 dark:border-zinc-800">
+                  <div className="mb-8 text-4xl font-black text-[var(--q-text-primary)] md:text-5xl">
+                    {item.stat}
+                  </div>
+                  <h3 className="mb-3 text-xl font-bold text-[var(--q-text-primary)]">
                     {item.title}
                   </h3>
-                  <p className="text-sm font-semibold leading-relaxed text-zinc-600 dark:text-zinc-400 md:text-base rtl:leading-[1.7]">
+                  <p className="text-sm font-medium leading-relaxed text-zinc-600 dark:text-zinc-400">
                     {item.desc}
                   </p>
                 </div>

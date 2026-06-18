@@ -1,30 +1,28 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import LegalPage from "./page-content";
 
-import { LegalPage } from "@/components/marketing/legal-page";
-import { MarketingPageJsonLd } from "@/components/marketing/seo-json-ld";
-import { getContent, isLocale, type Locale } from "@/lib/content";
-import { localizedMarketingMetadata } from "@/lib/seo";
+type Props = {
+  params: Promise<{ locale: string }>;
+};
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
-  const { locale: localeParam } = await params;
-  return isLocale(localeParam) ? localizedMarketingMetadata(localeParam, "legal") : {};
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const isAr = locale === "ar";
+
+  return {
+    title: isAr ? "إشعار قانوني | Qentrah" : "Legal Notice | Qentrah",
+    description: isAr
+      ? "المعلومات القانونية والامتثال التنظيمي لمنصة كانترا — منصة التشغيل الذكية للوكالات والشركات الخدمية."
+      : "Legal information and regulatory compliance for Qentrah — the AI-first Work OS for agencies and professional service firms.",
+    openGraph: {
+      title: isAr ? "إشعار قانوني | Qentrah" : "Legal Notice | Qentrah",
+      description: isAr
+        ? "المعلومات القانونية والامتثال التنظيمي لمنصة كانترا — منصة التشغيل الذكية للوكالات والشركات الخدمية."
+        : "Legal information and regulatory compliance for Qentrah — the AI-first Work OS for agencies and professional service firms.",
+    },
+  };
 }
 
-export default async function LocaleLegalPage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale: localeParam } = await params;
-
-  if (!isLocale(localeParam)) {
-    notFound();
-  }
-
-  const locale = localeParam as Locale;
-  const page = getContent(locale).legal;
-
-  return (
-    <>
-      <MarketingPageJsonLd description={String(page.legal[0].body).split("\n\n")[0]} locale={locale} path="legal" title={page.legalTitle} />
-      <LegalPage kind="legal" locale={locale} />
-    </>
-  );
+export default function LegalPageWrapper() {
+  return <LegalPage />;
 }

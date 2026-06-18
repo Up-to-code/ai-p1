@@ -1,30 +1,28 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import TermsPage from "./page-content";
 
-import { LegalPage } from "@/components/marketing/legal-page";
-import { MarketingPageJsonLd } from "@/components/marketing/seo-json-ld";
-import { getContent, isLocale, type Locale } from "@/lib/content";
-import { localizedMarketingMetadata } from "@/lib/seo";
+type Props = {
+  params: Promise<{ locale: string }>;
+};
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
-  const { locale: localeParam } = await params;
-  return isLocale(localeParam) ? localizedMarketingMetadata(localeParam, "terms") : {};
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const isAr = locale === "ar";
+
+  return {
+    title: isAr ? "شروط الخدمة | Qentrah" : "Terms of Service | Qentrah",
+    description: isAr
+      ? "شروط الخدمة لمنصة كانترا — منصة التشغيل الذكية للوكالات والشركات الخدمية. قبول الشروط، وصف المنصة، مسؤوليات الحساب."
+      : "Terms of Service for Qentrah — the AI-first Work OS for agencies. Acceptance, platform description, account responsibilities, and more.",
+    openGraph: {
+      title: isAr ? "شروط الخدمة | Qentrah" : "Terms of Service | Qentrah",
+      description: isAr
+        ? "شروط الخدمة لمنصة كانترا — منصة التشغيل الذكية للوكالات والشركات الخدمية. قبول الشروط، وصف المنصة، مسؤوليات الحساب."
+        : "Terms of Service for Qentrah — the AI-first Work OS for agencies. Acceptance, platform description, account responsibilities, and more.",
+    },
+  };
 }
 
-export default async function TermsPage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale: localeParam } = await params;
-
-  if (!isLocale(localeParam)) {
-    notFound();
-  }
-
-  const locale = localeParam as Locale;
-  const page = getContent(locale).legal;
-
-  return (
-    <>
-      <MarketingPageJsonLd description={String(page.terms[0].body).split("\n\n")[0]} locale={locale} path="terms" title={page.termsTitle} />
-      <LegalPage kind="terms" locale={locale} />
-    </>
-  );
+export default function TermsPageWrapper() {
+  return <TermsPage />;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check } from "lucide-react";
 
 import { Link } from "@/i18n/routing";
 import { IntroAnimation, introRevealMs } from "@/components/landing/intro-animation";
@@ -58,17 +58,6 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
   const [videoReady, setVideoReady] = useState(false);
   const introLabel = isAr ? "كانترا" : "QENTRAH";
   const revealDelay = useMemo(() => introRevealMs(isAr ? 1 : Array.from(introLabel).length), [introLabel, isAr]);
-  const stats: HeroStat[] = isAr
-    ? [
-        { value: "01", label: "رؤية السوق" },
-        { value: "02", label: "حركة الطلب" },
-        { value: "03", label: "إدارة المبيعات" },
-      ]
-    : [
-        { value: "01", label: "Market truth" },
-        { value: "02", label: "Partner motion" },
-        { value: "03", label: "Workspace action" },
-      ];
 
   const handleIntroDone = useCallback(() => {
     setHeroReady(true);
@@ -95,6 +84,31 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
           transition: "transform 2s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       />
+
+      <div 
+        className="absolute right-0 top-[15%] z-[5] hidden w-[680px] xl:w-[860px] lg:block"
+        style={{
+          opacity: heroReady ? 1 : 0,
+          filter: heroReady ? "blur(0px)" : "blur(20px)",
+          transform: heroReady ? "translateX(18%)" : "translateX(30%)",
+          transition: "opacity 1s cubic-bezier(0.16,1,0.3,1) 300ms, filter 1s cubic-bezier(0.16,1,0.3,1) 300ms, transform 1s cubic-bezier(0.16,1,0.3,1) 300ms",
+        }}
+      >
+        <div className="relative overflow-hidden rounded-2xl bg-white/5 p-2 shadow-[0_0_60px_rgba(0,0,0,0.15)] backdrop-blur-sm border border-white/10 dark:bg-black/20 dark:border-white/5">
+           {/* Light mode screenshot */}
+           <img 
+             src="/images/hero-app-light.png" 
+             alt="Dashboard AI Assistant" 
+             className="block dark:hidden rounded-xl w-full h-auto object-cover shadow-[0_30px_60px_rgba(0,0,0,0.15)]" 
+           />
+           {/* Dark mode screenshot */}
+           <img 
+             src="/images/hero-app-dark.png" 
+             alt="Dashboard AI Assistant" 
+             className="hidden dark:block rounded-xl w-full h-auto object-cover shadow-[0_30px_60px_rgba(0,0,0,0.6)]" 
+           />
+        </div>
+      </div>
 
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 z-10"
@@ -135,9 +149,9 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
         }}
       />
 
-      <div className="relative z-30 flex min-h-screen items-end px-5 pb-9 pt-32 sm:px-8 md:px-12 md:pb-12">
-        <div className="grid w-full max-w-7xl gap-8 lg:grid-cols-[minmax(0,0.86fr)_minmax(260px,0.34fr)] lg:items-end">
-          <div className="max-w-4xl">
+      <div className="relative z-30 flex min-h-[100dvh] items-end px-5 pb-24 pt-48 sm:px-8 md:px-12 lg:pb-32 overflow-hidden">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-end gap-12 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="relative z-20">
             <p
               className="mb-5 inline-flex rounded-full border border-[var(--q-accent-border)] bg-[var(--q-accent-muted)] px-4 py-2 text-[10px] font-black uppercase text-[var(--q-accent)] backdrop-blur-xl transition-colors duration-300 hover:bg-[var(--q-accent)] hover:text-[var(--q-text-primary)]"
               style={{
@@ -160,8 +174,8 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
             >
               {title}
             </h1>
-            <p
-              className="mt-6 max-w-2xl text-base font-medium leading-8 text-[var(--q-text-secondary)] md:text-lg"
+            <ul
+              className="mt-8 space-y-4"
               style={{
                 opacity: heroReady ? 1 : 0,
                 filter: heroReady ? "blur(0px)" : "blur(16px)",
@@ -169,8 +183,31 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
                 transition: "opacity 0.85s cubic-bezier(0.16,1,0.3,1) 110ms, filter 0.85s cubic-bezier(0.16,1,0.3,1) 110ms, transform 0.85s cubic-bezier(0.16,1,0.3,1) 110ms",
               }}
             >
-              {description}
-            </p>
+              <li className="flex items-start gap-3">
+                <div className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--q-accent)]/10 text-[var(--q-accent)]">
+                  <Check className="size-3" />
+                </div>
+                <span className="text-[15px] font-medium leading-relaxed text-[var(--q-text-secondary)]">
+                  {isAr ? "بساطة ذكية. كل تطبيقاتك وعملائك ومشاريعك في مكان واحد." : "Smart simplicity. All your apps, clients, and projects unified."}
+                </span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--q-accent)]/10 text-[var(--q-accent)]">
+                  <Check className="size-3" />
+                </div>
+                <span className="text-[15px] font-medium leading-relaxed text-[var(--q-text-secondary)]">
+                  {isAr ? "مستقبل العمل. وكلاء ذكاء اصطناعي يعملون كأعضاء في فريقك." : "Futuristic workflow. AI agents working alongside your team."}
+                </span>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--q-accent)]/10 text-[var(--q-accent)]">
+                  <Check className="size-3" />
+                </div>
+                <span className="text-[15px] font-medium leading-relaxed text-[var(--q-text-secondary)]">
+                  {isAr ? "إنجاز حقيقي. توقف عن إدارة المهام وابدأ بتوجيه النتائج." : "Real execution. Stop managing tasks and start directing outcomes."}
+                </span>
+              </li>
+            </ul>
             <div
               className="mt-8 flex flex-col gap-3 sm:flex-row"
               style={{
@@ -185,23 +222,8 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-5 lg:grid-cols-1 lg:justify-self-end">
-            {stats.map((stat, index) => (
-              <div
-                className="min-w-0"
-                key={stat.label}
-                style={{
-                  opacity: heroReady ? 1 : 0,
-                  filter: heroReady ? "blur(0px)" : "blur(16px)",
-                  transform: heroReady ? "translateY(0px)" : "translateY(20px)",
-                  transition: `opacity 0.8s cubic-bezier(0.16,1,0.3,1) ${220 + index * 80}ms, filter 0.8s cubic-bezier(0.16,1,0.3,1) ${220 + index * 80}ms, transform 0.8s cubic-bezier(0.16,1,0.3,1) ${220 + index * 80}ms`,
-                }}
-              >
-                <div className="truncate text-2xl font-light leading-none text-[var(--q-text-primary)] sm:text-3xl md:text-4xl">{stat.value}</div>
-                <div className="mt-2 text-[10px] font-black uppercase leading-4 text-[var(--q-text-secondary)] sm:text-xs">{stat.label}</div>
-              </div>
-            ))}
-          </div>
+          {/* Spacer to preserve grid layout and prevent text overlap on the right */}
+          <div className="hidden lg:block"></div>
         </div>
       </div>
     </section>

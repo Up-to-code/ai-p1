@@ -1,30 +1,28 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import AboutPage from "./page-content";
 
-import { WorkspaceAboutPage } from "@/components/marketing/workspace-public/about-page";
-import { MarketingPageJsonLd } from "@/components/marketing/seo-json-ld";
-import { getWorkspaceLanding, isLocale, type Locale } from "@/lib/content";
-import { localizedMarketingMetadata } from "@/lib/seo";
+type Props = {
+  params: Promise<{ locale: string }>;
+};
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
-  const { locale: localeParam } = await params;
-  return isLocale(localeParam) ? localizedMarketingMetadata(localeParam, "about") : {};
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const isAr = locale === "ar";
+
+  return {
+    title: isAr ? "عن كانترا | Qentrah" : "About | Qentrah",
+    description: isAr
+      ? "كانترا هي منصة تشغيل ذكية للوكالات والشركات الخدمية. تجمع إدارة العملاء والمشاريع مع وكلاء ذكاء اصطناعي يعملون داخل سير عملك."
+      : "Qentrah is an AI-first Work OS for agencies and professional service firms. It unifies clients, projects, tasks, and AI agents in one intelligent workspace.",
+    openGraph: {
+      title: isAr ? "عن كانترا | Qentrah" : "About | Qentrah",
+      description: isAr
+        ? "كانترا هي منصة تشغيل ذكية للوكالات والشركات الخدمية. تجمع إدارة العملاء والمشاريع مع وكلاء ذكاء اصطناعي يعملون داخل سير عملك."
+        : "Qentrah is an AI-first Work OS for agencies and professional service firms. It unifies clients, projects, tasks, and AI agents in one intelligent workspace.",
+    },
+  };
 }
 
-export default async function AboutPage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale: localeParam } = await params;
-
-  if (!isLocale(localeParam)) {
-    notFound();
-  }
-
-  const locale = localeParam as Locale;
-  const page = getWorkspaceLanding(locale).about.hero;
-
-  return (
-    <>
-      <MarketingPageJsonLd description={page.description} locale={locale} path="about" title={page.title} />
-      <WorkspaceAboutPage />
-    </>
-  );
+export default function AboutPageWrapper() {
+  return <AboutPage />;
 }

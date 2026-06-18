@@ -1,30 +1,28 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import ContactPage from "./page-content";
 
-import { WorkspaceContactPage } from "@/components/marketing/workspace-public/contact-page";
-import { MarketingPageJsonLd } from "@/components/marketing/seo-json-ld";
-import { getWorkspaceLanding, isLocale, type Locale } from "@/lib/content";
-import { localizedMarketingMetadata } from "@/lib/seo";
+type Props = {
+  params: Promise<{ locale: string }>;
+};
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
-  const { locale: localeParam } = await params;
-  return isLocale(localeParam) ? localizedMarketingMetadata(localeParam, "contact") : {};
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const isAr = locale === "ar";
+
+  return {
+    title: isAr ? "اتصل بنا | Qentrah" : "Contact | Qentrah",
+    description: isAr
+      ? "تواصل مع فريق كانترا — منصة التشغيل الذكية للوكالات والشركات الخدمية. يسعدنا سماع رأيك ومساعدتك."
+      : "Get in touch with the Qentrah team — the AI-first Work OS for agencies and professional service firms. We'd love to hear from you.",
+    openGraph: {
+      title: isAr ? "اتصل بنا | Qentrah" : "Contact | Qentrah",
+      description: isAr
+        ? "تواصل مع فريق كانترا — منصة التشغيل الذكية للوكالات والشركات الخدمية. يسعدنا سماع رأيك ومساعدتك."
+        : "Get in touch with the Qentrah team — the AI-first Work OS for agencies and professional service firms. We'd love to hear from you.",
+    },
+  };
 }
 
-export default async function ContactPage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale: localeParam } = await params;
-
-  if (!isLocale(localeParam)) {
-    notFound();
-  }
-
-  const locale = localeParam as Locale;
-  const page = getWorkspaceLanding(locale).contact.hero;
-
-  return (
-    <>
-      <MarketingPageJsonLd description={page.description} locale={locale} path="contact" title={page.title} />
-      <WorkspaceContactPage />
-    </>
-  );
+export default function ContactPageWrapper() {
+  return <ContactPage />;
 }

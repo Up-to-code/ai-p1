@@ -6,6 +6,15 @@ import { CheckCircle2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
+type Tone = "blue" | "green" | "amber" | "zinc";
+
+const toneClasses: Record<Tone, string> = {
+  blue: "bg-blue-500 text-white shadow-blue-500/20",
+  green: "bg-emerald-500 text-white shadow-emerald-500/20",
+  amber: "bg-amber-400 text-zinc-950 shadow-amber-400/20",
+  zinc: "bg-[var(--q-text-primary)] text-background shadow-zinc-950/10 dark:bg-card dark:text-background",
+};
+
 export function PublicSection({
   children,
   muted = false,
@@ -16,9 +25,35 @@ export function PublicSection({
   className?: string;
 }) {
   return (
-    <section className={cn("px-6 py-16 md:py-24", muted ? "bg-zinc-50/80 dark:bg-[var(--q-bg)]" : "bg-[var(--q-card)] dark:bg-zinc-950", className)}>
+    <section className={cn("px-6 py-16 md:py-24", muted ? "bg-zinc-50/80 dark:bg-[var(--q-bg)]" : "bg-[var(--q-card)] dark:bg-[var(--q-bg)]", className)}>
       <div className="mx-auto max-w-7xl">{children}</div>
     </section>
+  );
+}
+
+export function SectionHeader({
+  eyebrow,
+  title,
+  description,
+  center = false,
+}: {
+  eyebrow: string;
+  title: string;
+  description?: string;
+  center?: boolean;
+}) {
+  return (
+    <div className={cn("max-w-3xl", center && "mx-auto text-center")}>
+      <SectionKicker center={center}>{eyebrow}</SectionKicker>
+      <h2 className="mt-4 text-3xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-white md:text-5xl rtl:leading-[1.18]">
+        {title}
+      </h2>
+      {description ? (
+        <p className="mt-4 text-sm font-medium leading-7 text-[var(--q-text-secondary)] dark:text-[var(--q-text-muted)] md:text-base rtl:leading-8">
+          {description}
+        </p>
+      ) : null}
+    </div>
   );
 }
 
@@ -32,16 +67,45 @@ export function SectionKicker({ children, center = false }: { children: ReactNod
   );
 }
 
+export function MetricCard({
+  label,
+  value,
+  helper,
+  icon: Icon,
+  tone = "zinc",
+}: {
+  label: string;
+  value: string;
+  helper: string;
+  icon: LucideIcon;
+  tone?: Tone;
+}) {
+  return (
+    <div className="rounded-3xl border border-[var(--q-border)] bg-[var(--q-card)] p-5 shadow-sm dark:border-border dark:bg-muted">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--q-text-muted)]">{label}</p>
+          <p className="mt-2 text-xs font-medium leading-6 text-[var(--q-text-secondary)] dark:text-[var(--q-text-muted)]">{helper}</p>
+        </div>
+        <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl", toneClasses[tone])}>
+          <Icon className="h-4 w-4" />
+        </div>
+      </div>
+      <p className="mt-7 text-3xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-white">{value}</p>
+    </div>
+  );
+}
+
 export function FeatureGrid({ items }: { items: { title: string; description: string; icon: LucideIcon }[] }) {
   return (
     <div className="grid gap-4 md:grid-cols-3">
       {items.map(({ title, description, icon: Icon }) => (
-        <div key={title} className="rounded-3xl border border-[var(--q-border)] bg-[var(--q-card)] p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-900 text-[var(--q-text-primary)] dark:bg-white dark:text-zinc-950">
+        <div key={title} className="rounded-3xl border border-[var(--q-border)] bg-[var(--q-card)] p-6 shadow-sm dark:border-border dark:bg-muted">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--q-card)] text-[var(--q-text-primary)] dark:bg-card dark:text-background">
             <Icon className="h-5 w-5" />
           </div>
           <h3 className="mt-6 text-xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-white">{title}</h3>
-          <p className="mt-3 text-sm font-medium leading-7 text-zinc-600 dark:text-zinc-400 rtl:leading-8">{description}</p>
+          <p className="mt-3 text-sm font-medium leading-7 text-[var(--q-text-secondary)] dark:text-[var(--q-text-muted)] rtl:leading-8">{description}</p>
         </div>
       ))}
     </div>
@@ -65,8 +129,8 @@ export function LegalArticle({
         <SectionKicker>{eyebrow}</SectionKicker>
         <h1 className="mt-5 text-5xl font-black tracking-tight text-[var(--q-text-primary)] dark:text-white md:text-7xl">{title}</h1>
         <p className="mt-5 text-sm font-bold uppercase tracking-[0.18em] text-[var(--q-text-muted)]">{updated}</p>
-        <article className="mt-12 rounded-[2rem] border border-[var(--q-border)] bg-[var(--q-card)] p-6 shadow-[0_24px_90px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-white/[0.04] md:p-10">
-          <div className="space-y-8 text-base font-medium leading-8 text-zinc-600 dark:text-zinc-400">
+        <article className="mt-12 rounded-[2rem] border border-[var(--q-border)] bg-[var(--q-card)] p-6 shadow-[0_24px_90px_rgba(15,23,42,0.06)] dark:border-border dark:bg-muted md:p-10">
+          <div className="space-y-8 text-base font-medium leading-8 text-[var(--q-text-secondary)] dark:text-[var(--q-text-muted)]">
             {children}
           </div>
         </article>
