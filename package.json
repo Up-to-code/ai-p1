@@ -24,6 +24,7 @@
     "postinstall": "node scripts/postinstall.mjs"
   },
   "devDependencies": {
+    "@emotion/is-prop-valid": "^1.4.0",
     "effect": "^3.21.2",
     "patch-package": "^8.0.1"
   },
