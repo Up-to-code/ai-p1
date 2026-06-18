@@ -12,6 +12,7 @@ lint_output.txt
 .next
 out
 dist
+!packages/calendar-kit/dist
 coverage
 .env
 .env.*
