@@ -34,7 +34,7 @@ export default function Footer() {
   const locale = useLocale() === "ar" ? "ar" : "en";
 
   return (
-    <footer className="border-t border-zinc-200 bg-[var(--q-bg)] dark:bg-[var(--q-bg)] dark:border-zinc-800">
+    <footer className="border-t bg-[var(--q-bg)]" style={{ borderColor: "var(--q-border)" }}>
       <div className="mx-auto max-w-(--breakpoint-xl)">
         <div className="flex flex-col items-start justify-between gap-x-10 gap-y-10 px-6 py-12 sm:flex-row xl:px-0">
           <div className="max-w-sm">
@@ -87,7 +87,7 @@ export default function Footer() {
           </Link>
         </div>
 
-        <div className="flex flex-col-reverse items-start justify-between gap-4 border-t border-zinc-200 dark:border-zinc-800 px-6 py-7 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--q-text-secondary)] sm:flex-row sm:items-center xl:px-0">
+        <div className="flex flex-col-reverse items-start justify-between gap-4 border-t px-6 py-7 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--q-text-secondary)] sm:flex-row sm:items-center xl:px-0" style={{ borderColor: "var(--q-border)" }}>
           <span>{t("copyright")}</span>
           <div className="flex flex-wrap gap-4">
             <Link className="transition hover:text-[var(--q-text-primary)]" href="/privacy">

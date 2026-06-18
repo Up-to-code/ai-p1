@@ -245,6 +245,7 @@ function legalDescription(body: LegalBlockBody) {
 
 const marketingSitemapPaths = [
   "",
+  "pricing",
   "dashboard",
   "partners",
   "developer",

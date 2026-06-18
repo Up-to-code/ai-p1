@@ -32,8 +32,8 @@ export const publicSeoLinks = [
   },
   {
     id: "pricing",
-    href: "/#pricing",
-    externalUrl: `${rootUrl}/#pricing`,
+    href: "/pricing",
+    externalUrl: `${rootUrl}/pricing`,
     navKey: "pricing",
     labels: {
       en: "Pricing",

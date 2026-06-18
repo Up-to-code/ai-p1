@@ -148,8 +148,17 @@ export function WorkspacePricingPage() {
                 <Button
                   className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-4 text-sm font-black uppercase tracking-widest text-white shadow-lg shadow-primary/25 transition-all duration-200 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/40 active:scale-[0.98]"
                 >
-                  {isAr ? "ابدأ الآن" : "Get started"}
+                  {isAr ? "ابدأ الاشتراك" : "Start subscription"}
                   <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                </Button>
+              </Link>
+
+              <Link href="/dashboard">
+                <Button
+                  variant="outline"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border-border px-6 py-4 text-sm font-black uppercase tracking-widest"
+                >
+                  {isAr ? "تسجيل الدخول" : "Sign in to workspace"}
                 </Button>
               </Link>
 
@@ -305,6 +314,14 @@ export function WorkspacePricingPage() {
                   >
                     {isAr ? "ابدأ الاشتراك" : "Start subscription"}
                     <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                  </Button>
+                </Link>
+                <Link href="/dashboard">
+                  <Button
+                    variant="ghost"
+                    className="rounded-2xl px-8 py-6 text-sm font-black uppercase tracking-widest text-background/70 hover:bg-background/10 hover:text-background"
+                  >
+                    {isAr ? "تسجيل الدخول" : "Sign in"}
                   </Button>
                 </Link>
               </div>
