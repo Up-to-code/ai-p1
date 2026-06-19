@@ -101,24 +101,6 @@ export function clientInput(input: Input) {
   };
 }
 
-export function assetInput(input: Input) {
-  return {
-    name: optionalString(input, "name") ?? requiredString(input, "title"),
-    type: requiredString(input, "type"),
-    status: oneOf(input.status, ["draft", "active", "review", "approved", "archived"] as const, "draft"),
-    url: optionalString(input, "url"),
-    fileId: optionalString(input, "fileId"),
-    description: optionalString(input, "description"),
-  };
-}
-
-export function assetFieldPatch(input: Input) {
-  const field = requiredString(input, "field");
-  const allowed = new Set(["name", "type", "status", "url", "fileId", "description"]);
-  if (!allowed.has(field)) throw new Error("This asset field cannot be edited by MCP.");
-  return { [field]: input.value };
-}
-
 export function projectStatus(input: Input) {
   return oneOf(input.status, ["planned", "active", "paused", "completed", "archived"] as const, "planned");
 }
@@ -126,6 +108,8 @@ export function projectStatus(input: Input) {
 export function projectInput(input: Input) {
   return {
     name: requiredString(input, "name"),
+    clientId: optionalString(input, "clientId") as Id<"clients"> | undefined,
+    opportunityId: optionalString(input, "opportunityId") as Id<"opportunities"> | undefined,
     status: projectStatus(input),
     health: oneOf(input.health, ["onTrack", "atRisk", "blocked"] as const, "onTrack"),
     budget: optionalNumber(input, "budget"),
@@ -138,6 +122,9 @@ export function calendarInput(input: Input) {
   return {
     title: requiredString(input, "title"),
     ownerUserId: optionalString(input, "ownerUserId"),
+    clientId: optionalString(input, "clientId") as Id<"clients"> | undefined,
+    projectId: optionalString(input, "projectId") as Id<"projects"> | undefined,
+    taskId: optionalString(input, "taskId") as Id<"tasks"> | undefined,
     startAt: requiredNumber(input, "startAt"),
     endAt: optionalNumber(input, "endAt") ?? requiredNumber(input, "startAt"),
     type: oneOf(input.type, ["meeting", "deadline", "reminder", "milestone", "focusBlock"] as const, "meeting"),
@@ -162,17 +149,12 @@ export function taskInput(input: Input) {
     status: taskStatus(input),
     priority: priority(input),
     assigneeUserId: optionalString(input, "assigneeUserId"),
-    clientId: optionalString(input, "clientId"),
-    projectId: optionalString(input, "projectId"),
+    clientId: optionalString(input, "clientId") as Id<"clients"> | undefined,
+    projectId: optionalString(input, "projectId") as Id<"projects"> | undefined,
     dueDate: optionalString(input, "dueDate"),
     description: optionalString(input, "description") ?? optionalString(input, "notes"),
     visibility: oneOf(input.visibility, ["private", "team", "workspace"] as const, "workspace"),
   };
-}
-
-export function clientAssetStatus(input: Input) {
-  const status = typeof input.status === "string" && input.status === "viewing" ? "review" : typeof input.status === "string" && input.status === "offer" ? "proposal" : input.status;
-  return oneOf(status, ["interested", "shortlisted", "review", "proposal", "rejected"] as const, "interested");
 }
 
 export function mediaKind(input: Input) {
@@ -193,17 +175,23 @@ export async function assertMediaResource(
   throw new Error("Unsupported media resource type.");
 }
 
-export async function assertOptionalProject(ctx: MutationCtx, organizationId: string, projectId?: string) {
-  if (!projectId) return;
-  assertActiveWorkspaceRecord(await ctx.db.get(projectId as Id<"projects">), organizationId, "Project");
-}
-
 export async function assertCalendarLinks(
   ctx: MutationCtx,
   organizationId: string,
   input: ReturnType<typeof calendarInput>,
 ) {
-  return;
+  if (input.clientId) {
+    const client = await ctx.db.get(input.clientId as Id<"clients">);
+    assertActiveWorkspaceRecord(client, organizationId, "Client");
+  }
+  if (input.projectId) {
+    const project = await ctx.db.get(input.projectId as Id<"projects">);
+    assertActiveWorkspaceRecord(project, organizationId, "Project");
+  }
+  if (input.taskId) {
+    const task = await ctx.db.get(input.taskId as Id<"tasks">);
+    assertActiveWorkspaceRecord(task, organizationId, "Task");
+  }
 }
 
 export async function assertTaskLinks(
@@ -211,5 +199,15 @@ export async function assertTaskLinks(
   organizationId: string,
   input: ReturnType<typeof taskInput> | { status: "done"; completedAt: number },
 ) {
-  return;
+  const clientId = "clientId" in input ? input.clientId : undefined;
+  const projectId = "projectId" in input ? input.projectId : undefined;
+  
+  if (clientId) {
+    const client = await ctx.db.get(clientId as Id<"clients">);
+    assertActiveWorkspaceRecord(client, organizationId, "Client");
+  }
+  if (projectId) {
+    const project = await ctx.db.get(projectId as Id<"projects">);
+    assertActiveWorkspaceRecord(project, organizationId, "Project");
+  }
 }

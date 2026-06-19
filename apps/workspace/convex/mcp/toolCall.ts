@@ -4,7 +4,13 @@ import {
   mcpReadToolNames as readTools,
   mcpToolPermissionMap as toolPermissions,
 } from "./toolRegistry";
-import { clientInput } from "./toolInputs";
+import {
+  clientInput,
+  projectInput,
+  calendarInput,
+  taskInput,
+  requiredString,
+} from "./toolInputs";
 
 type Input = Record<string, unknown>;
 
@@ -15,8 +21,32 @@ function inputObject(value: unknown): Input {
 }
 
 function validateToolInputBeforeApproval(tool: string, input: Input) {
-  if (tool === "clients_create") {
-    clientInput(input);
+  switch (tool) {
+    case "clients_create":
+    case "clients_update":
+      clientInput(input);
+      break;
+    case "projects_create":
+    case "projects_update":
+      projectInput(input);
+      break;
+    case "calendar_create":
+    case "calendar_update":
+      calendarInput(input);
+      break;
+    case "tasks_create":
+    case "tasks_update":
+      taskInput(input);
+      break;
+    case "tasks_complete":
+      requiredString(input, "taskId");
+      break;
+    case "clients_delete":
+    case "projects_delete":
+    case "calendar_delete":
+    case "tasks_delete":
+      requiredString(input, tool === "clients_delete" ? "clientId" : tool === "projects_delete" ? "projectId" : tool === "calendar_delete" ? "eventId" : "taskId");
+      break;
   }
 }
 

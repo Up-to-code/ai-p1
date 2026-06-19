@@ -84,6 +84,12 @@ import {
   handleUpdateClientTask,
 } from "@/server/domains/clientTasks/handlers/client-tasks";
 import {
+  handleCreateFollowUp,
+  handleDeleteFollowUp,
+  handleMarkFollowUpComplete,
+  handleUpdateFollowUp,
+} from "@/server/domains/clientFollowUps/handlers/follow-ups";
+import {
   handleCreateCalendarEvent,
   handleDeleteCalendarEvent,
   handleUpdateCalendarEvent,
@@ -371,6 +377,26 @@ organizationRouter.patch(
 organizationRouter.delete(
   "/:organizationId/client-tasks/:taskId",
   handleDeleteClientTask,
+);
+
+organizationRouter.post(
+  "/:organizationId/client-follow-ups",
+  handleCreateFollowUp,
+);
+
+organizationRouter.patch(
+  "/:organizationId/client-follow-ups/:followUpId",
+  handleUpdateFollowUp,
+);
+
+organizationRouter.delete(
+  "/:organizationId/client-follow-ups/:followUpId",
+  handleDeleteFollowUp,
+);
+
+organizationRouter.patch(
+  "/:organizationId/client-follow-ups/:followUpId/complete",
+  handleMarkFollowUpComplete,
 );
 
 organizationRouter.post(

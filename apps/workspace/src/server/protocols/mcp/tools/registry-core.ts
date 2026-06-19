@@ -91,7 +91,7 @@ const mcpToolRegistry = [
   tool({ name: "members_update_role", title: "Update member role", description: "Change an organization member's work role.", resource: "member", action: "update", adapters: agentOnly }),
   tool({ name: "members_remove", title: "Remove member", description: "Remove an organization member.", resource: "member", action: "delete", destructive: true, adapters: agentOnly }),
   tool({ name: "invitations_create", title: "Invite member", description: "Create an organization email invitation.", resource: "member", action: "create", adapters: agentOnly }),
-  tool({ name: "invitations_cancel", title: "Cancel invitation", description: "Cancel an organization email invitation.", resource: "member", action: "create", adapters: agentOnly }),
+  tool({ name: "invitations_cancel", title: "Cancel invitation", description: "Cancel an organization email invitation.", resource: "member", action: "delete", destructive: true, adapters: agentOnly }),
   tool({ name: "roles_list", title: "List work roles", description: "List organization work roles.", resource: "role", action: "read", adapters: agentOnly }),
   tool({ name: "roles_create", title: "Create work role", description: "Create an organization work role.", resource: "role", action: "create", adapters: agentOnly }),
   tool({ name: "roles_update", title: "Update work role", description: "Update an organization work role.", resource: "role", action: "update", adapters: agentOnly }),

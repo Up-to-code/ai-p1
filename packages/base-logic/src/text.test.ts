@@ -10,9 +10,9 @@ describe("@qentrah/base-logic", () => {
   });
 
   it("tokenizes queries with location phrases", () => {
-    expect(tokenizeQuery("Tasks in Riyadh near operations")).toEqual({
-      tokens: ["tasks", "riyadh", "near", "operations"],
-      locationPhrases: ["riyadh"],
+    expect(tokenizeQuery("Tasks in Northern District near operations")).toEqual({
+      tokens: ["tasks", "northern", "district", "near", "operations"],
+      locationPhrases: ["northern district"],
     });
   });
 

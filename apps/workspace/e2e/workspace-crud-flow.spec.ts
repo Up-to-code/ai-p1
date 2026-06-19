@@ -27,10 +27,10 @@ async function createProjectThroughUi(page: Page, organizationId: string, name: 
 
   await page.getByLabel("Project Name").fill(name);
   await page.getByLabel("Developer").fill("Codex Development");
-  await page.getByLabel("City").fill("Riyadh");
-  await page.getByLabel("Area").fill("Al Malqa");
+  await page.getByLabel("City").fill("Downtown");
+  await page.getByLabel("Area").fill("Central District");
   await page.getByLabel("Assets").fill("12");
-  await page.getByLabel("Price Range").fill("850K SAR");
+  await page.getByLabel("Price Range").fill("850K USD");
   await page.getByRole("button", { name: "Next", exact: true }).click();
 
   const gallery = page.locator("section").filter({ hasText: "Images and overview video" });
@@ -83,7 +83,7 @@ async function createAssetThroughUi(
   await page.getByLabel("Asset Name").fill(title);
   await expect(page.locator("select#project")).toContainText(project.name);
   await page.locator("select#project").selectOption({ label: project.name });
-  await page.getByLabel("City").fill("Riyadh");
+  await page.getByLabel("City").fill("Downtown");
   await page.getByLabel("Area").fill("120 m2");
   await page.getByLabel("Price").fill("900000");
   await finishWizard(page);
@@ -106,8 +106,8 @@ async function createClientThroughUi(page: Page, name: string) {
   await page.getByLabel("Email").fill(`${name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@example.com`);
   await page.getByLabel("Phone").fill("+966555000111");
   await page.getByRole("spinbutton", { name: "Age" }).fill("34");
-  await page.getByLabel("Budget").fill("900K - 1.2M SAR");
-  await page.getByLabel("Asset Interest").fill("2BR apartment in Riyadh");
+  await page.getByLabel("Budget").fill("900K - 1.2M USD");
+  await page.getByLabel("Asset Interest").fill("2BR apartment in Downtown");
   await page.getByLabel("Next Action").fill("Schedule viewing");
   await page.getByRole("button", { name: "Create Client" }).click();
 

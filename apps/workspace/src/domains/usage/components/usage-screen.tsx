@@ -45,7 +45,7 @@ function usageCopy(locale: UsageLocale) {
       thDescription: "الوصف",
       thAmount: "المبلغ",
       thStatus: "الحالة",
-      paymentDescription: "مدفوعات Tamara والفوترة",
+      paymentDescription: "مدفوعات الفوترة",
       statusPaid: "مدفوع",
     };
   }
@@ -70,7 +70,7 @@ function usageCopy(locale: UsageLocale) {
     thDescription: "Description",
     thAmount: "Amount",
     thStatus: "Status",
-    paymentDescription: "Tamara and billing payment",
+    paymentDescription: "Billing payment",
     statusPaid: "Paid",
   };
 }

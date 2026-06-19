@@ -58,7 +58,7 @@ export function ClientForm({ existing, indexQueryKey, onSuccess, onCancel }: Cli
       contact: existing?.contact ?? "",
       phone: existing?.phone ?? "",
       age: String(existing?.age ?? 30),
-      nationality: existing?.nationality ?? "Saudi",
+      nationality: existing?.nationality ?? "",
       generation: existing?.generation ?? "Millennial",
       budget: existing?.budget ?? "",
       assetInterest: existing?.assetInterest ?? "",

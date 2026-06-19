@@ -55,11 +55,11 @@ export function sanitizeWebText(value: string | undefined, fallback = ""): strin
 export function extractPriceHint(text: string): string | undefined {
   const normalized = text.replace(/,/g, "");
   const moneyFirstMatch = normalized.match(
-    /\b(?:SAR|USD|AED|ريال(?:\sسعودي)?)\s?\d{3,9}(?:\.\d{1,2})?\s?(?:million|m|k|ألف|مليون)?\b/i,
+    /\b(?:USD|AED|KWD|QAR|BHD|OMR)\s?\d{3,9}(?:\.\d{1,2})?\s?(?:million|m|k|ألف|مليون)?\b/i,
   );
   if (moneyFirstMatch?.[0]) return moneyFirstMatch[0].trim();
   const match = normalized.match(
-    /\b(?:SAR|USD|AED|ريال|ريال سعودي)?\s?\d{2,9}(?:\.\d{1,2})?\s?(?:million|m|k|ألف|مليون)?\b/i,
+    /\b(?:USD|AED|KWD|QAR|BHD|OMR)?\s?\d{2,9}(?:\.\d{1,2})?\s?(?:million|m|k|ألف|مليون)?\b/i,
   );
   return match?.[0]?.trim();
 }
@@ -97,10 +97,6 @@ export function tokenizeQuery(query: string): {
 function extractLocationPhrases(query: string): string[] {
   const phrases: string[] = [];
   const normalized = query.toLowerCase();
-  const cityMatch = normalized.match(
-    /\b(riyadh|jeddah|dammam|makkah|medina|khobar|jubail|yanbu|tabuk|abha|رياض|جدة|الدمام|مكة|المدينة|الخبر|الجبيل|ينبع|تبوك|أبها)\b/gi,
-  );
-  if (cityMatch) phrases.push(...cityMatch.map((phrase) => phrase.toLowerCase()));
   const areaMatch = normalized.match(
     /(?:al|northern|southern|eastern|western|حي|شارع)\s+(\p{L}+)/gu,
   );

@@ -30,6 +30,7 @@ export interface Client {
   nextActionDate: string;
   appointmentTime: string;
   syncState: SyncState;
+  tags?: string[];
   issue?: string;
   notes?: string;
   createdAt?: number;

@@ -432,11 +432,26 @@ function ResourceLoadingSkeleton({ variant }: { variant: LoadingSkeletonVariant 
             <div className="space-y-3">
               <Skeleton className="h-3 w-32 rounded-full" />
               <Skeleton className="h-9 w-80 max-w-full rounded-xl" />
-              <Skeleton className="h-6 w-56 max-w-full rounded-full" />
+              <div className="flex gap-2 mt-2">
+                <Skeleton className="h-5 w-16 rounded-full" />
+                <Skeleton className="h-5 w-20 rounded-full" />
+                <Skeleton className="h-5 w-14 rounded-full" />
+              </div>
+              <div className="flex gap-2 mt-2">
+                <Skeleton className="h-8 w-40 rounded-full" />
+                <Skeleton className="h-8 w-32 rounded-full" />
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Skeleton className="h-10 w-24 rounded-xl" />
-              <Skeleton className="h-10 w-10 rounded-xl" />
+            <div className="flex flex-col gap-2 items-end">
+              <div className="flex gap-2">
+                <Skeleton className="h-9 w-16 rounded-xl" />
+                <Skeleton className="h-9 w-16 rounded-xl" />
+                <Skeleton className="h-9 w-20 rounded-xl" />
+              </div>
+              <div className="flex gap-2">
+                <Skeleton className="h-10 w-24 rounded-xl" />
+                <Skeleton className="h-10 w-10 rounded-xl" />
+              </div>
             </div>
           </div>
           <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.25fr)_420px]">
@@ -446,7 +461,24 @@ function ResourceLoadingSkeleton({ variant }: { variant: LoadingSkeletonVariant 
             </div>
           </div>
         </section>
-        <TableLoadingSkeleton rows={3} />
+        <div className="flex gap-2">
+          {[0, 1, 2, 3, 4, 5].map((tab) => (
+            <Skeleton key={tab} className="h-8 w-24 rounded-xl" />
+          ))}
+        </div>
+        <div className="rounded-[24px] border border-border bg-card p-5">
+          <Skeleton className="h-5 w-40 rounded-full" />
+          <div className="mt-4 flex gap-2">
+            {[0, 1, 2, 3].map((filter) => (
+              <Skeleton key={filter} className="h-7 w-16 rounded-lg" />
+            ))}
+          </div>
+          <div className="mt-4 space-y-3">
+            {[0, 1, 2].map((item) => (
+              <Skeleton key={item} className="h-24 rounded-[20px]" />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }

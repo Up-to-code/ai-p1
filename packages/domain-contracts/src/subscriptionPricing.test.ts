@@ -8,7 +8,6 @@ import {
   getMarketPricing,
   includedCreditCardsForPlan,
   listAddOnCreditCards,
-  mapLegacyBillingPlanId,
   resolveSubscriptionEntitlements,
 } from "./subscriptionPricing";
 
@@ -26,40 +25,31 @@ describe("subscription pricing catalog", () => {
     });
   });
 
-  it("projects Saudi pricing with SAR and provider eligibility", () => {
-    expect(getMarketPricing({ marketId: "sa", planId: "good", cycle: "yearly" })).toMatchObject({
-      amount: 5_988,
-      currency: "SAR",
-      providerEligibility: ["tamara"],
-      legacyPlanId: "saudi_yearly",
+  it("returns USD pricing for global plans", () => {
+    expect(getMarketPricing({ planId: "good", cycle: "yearly" })).toMatchObject({
+      amount: 70,
+      currency: "USD",
+      providerEligibility: ["dodo"],
     });
-    expect(getMarketPricing({ marketId: "sa", planId: "better", cycle: "monthly" })).toMatchObject({
-      amount: 899,
-      currency: "SAR",
-      providerEligibility: ["manual"],
+    expect(getMarketPricing({ planId: "better", cycle: "monthly" })).toMatchObject({
+      amount: 19,
+      currency: "USD",
+      providerEligibility: ["dodo"],
     });
   });
 
-  it("returns contact-sales pricing for unsupported markets", () => {
-    expect(getMarketPricing({ marketId: "ae", planId: "better", cycle: "yearly" })).toMatchObject({
+  it("returns contact-sales pricing for custom plans", () => {
+    expect(getMarketPricing({ planId: "custom", cycle: "yearly" })).toMatchObject({
       amount: null,
       checkoutMode: "contact_sales",
       publicFeatureFlags: { contactSales: true },
     });
   });
 
-  it("maps legacy Saudi plan ids to global billing selections", () => {
-    expect(mapLegacyBillingPlanId("saudi_monthly")).toEqual({ planId: "good", cycle: "monthly", marketId: "sa" });
-    expect(mapLegacyBillingPlanId("saudi_yearly")).toEqual({ planId: "good", cycle: "yearly", marketId: "sa" });
-  });
-
-  it("keeps credit packs market-specific while credits stay normalized", () => {
-    expect(getCreditPack({ marketId: "sa", packId: "growth" })).toMatchObject({
+  it("keeps credit packs available for all plans", () => {
+    expect(getCreditPack({ packId: "growth" })).toMatchObject({
       credits: 12_000,
-      amount: 249,
-      currency: "SAR",
     });
-    expect(getCreditPack({ marketId: "ae", packId: "growth" })).toBeNull();
   });
 
   it("models included and add-on AI credit cards separately from plan price", () => {
@@ -69,8 +59,8 @@ describe("subscription pricing catalog", () => {
       cardSize: 4_000,
     });
     expect(canAddCreditCardsToPlan("good")).toBe(true);
-    expect(listAddOnCreditCards({ marketId: "sa", planId: "better" }).map((pack) => pack.id)).toEqual(["starter", "growth", "scale"]);
-    expect(listAddOnCreditCards({ marketId: "sa", planId: "custom" })).toEqual([]);
+    expect(listAddOnCreditCards({ planId: "better" }).map((pack) => pack.id)).toEqual(["starter", "growth", "scale"]);
+    expect(listAddOnCreditCards({ planId: "custom" })).toEqual([]);
   });
 });
 

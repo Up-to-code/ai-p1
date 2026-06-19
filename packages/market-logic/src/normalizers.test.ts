@@ -2,18 +2,15 @@ import { describe, expect, it } from "vitest";
 import {
   inferAssetTypeLabel,
   normalizeMarketArea,
-  normalizeSaudiCity,
   normalizeSellingFeature,
-  parseSaudiGeography,
+  parseMarketGeography,
 } from "./normalizers";
 
 describe("@qentrah/market-logic normalizers", () => {
-  it("normalizes Saudi geography", () => {
-    expect(normalizeSaudiCity("Riyadh")).toBe("الرياض");
-    expect(normalizeMarketArea("Riyadh - Al Narjis")).toBe("narjis");
-    expect(parseSaudiGeography({ location: "Riyadh - Al Olaya" })).toEqual({
-      city: "الرياض",
-      area: "olaya",
+  it("normalizes market geography", () => {
+    expect(normalizeMarketArea("Al Olaya")).toBe("olaya");
+    expect(parseMarketGeography({ area: "Al Narjis" })).toEqual({
+      area: "narjis",
     });
   });
 

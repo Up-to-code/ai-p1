@@ -108,7 +108,7 @@ export type OrganizationInviteSummary = {
 export const createOrganizationInputSchema = z.object({
   name: z.string().trim().min(2, "Organization name must be at least 2 characters").max(120),
   type: z.enum(["broker", "red"]).optional(),
-  countryCode: z.enum(GCC_COUNTRY_CODES).default("SA"),
+  countryCode: z.enum(GCC_COUNTRY_CODES).optional(),
 });
 
 /**

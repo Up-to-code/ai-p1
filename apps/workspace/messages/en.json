@@ -17,7 +17,7 @@
     "expand": "Expand"
   },
   "AutoUi": {
-    "The Saudi Arabia Central Workspace Operating System___": "The Saudi Arabia Central Workspace Operating System",
+    "The Saudi Arabia Central Workspace Operating System___": "The Central Workspace Operating System",
     "© 2026 qentrah Platform___ All rights reserved___": "© 2026 qentrah Platform. All rights reserved.",
     "Sign in to access your workspace data workspace___": "Sign in to access your workspace.",
     "Min___ 8 characters": "Min. 8 characters",
@@ -2712,8 +2712,8 @@
             "contract": "Contract Signing Meeting",
             "contractDetails": "11:00 AM - 12:00 PM • HQ Conference Room",
             "showingSlots": "Available Showing Slots",
-            "slot1": "Morning Slot - 10:00 AM (Riyadh)",
-            "slot2": "Afternoon Slot - 4:30 PM (Jeddah)"
+            "slot1": "Morning Slot - 10:00 AM (Downtown)",
+            "slot2": "Afternoon Slot - 4:30 PM (Suburbs)"
           }
         },
         "contacts": {
@@ -2733,7 +2733,7 @@
             "buyer": "Client Lead",
             "tenant": "Tenant Lead",
             "syncRules": "Lead Synchronization Rules",
-            "rule1": "Auto-assign to Riyadh Brokerage",
+            "rule1": "Auto-assign to Main Office",
             "rule2": "Redact personal notes on sync"
           }
         },
@@ -2752,7 +2752,7 @@
             "ready": "Ready for local indexing",
             "search": "Spotlight search: \"Al Manar\"",
             "complex": "Al Manar Residential Complex",
-            "complexDesc": "Qentrah Workspace Project • Riyadh",
+            "complexDesc": "Qentrah Workspace Project • Downtown",
             "apt": "Apt A-101 (Al Manar)",
             "aptDesc": "Available Asset • 145 sqm • 3 Bed",
             "open": "Open in Qentrah",
@@ -3361,6 +3361,7 @@
     },
     "form": {
       "title": "Title",
+      "titlePlaceholder": "Task title",
       "status": "Status",
       "priority": "Priority",
       "visibility": "Visibility",
@@ -3369,6 +3370,7 @@
       "client": "Client",
       "project": "Project",
       "description": "Description",
+      "descriptionPlaceholder": "Add description… Type / for commands",
       "tags": "Tags",
       "assigneePlaceholder": "Select teammate",
       "clientPlaceholder": "Select client",
@@ -3626,7 +3628,7 @@
       "avatarRemoveSavedDescription": "Your profile picture was removed and the change is already saved.",
       "avatarDesc": "JPG or PNG, max 2MB",
       "orgType": "Organization Type",
-      "timezoneTooltip": "e.g. Asia/Riyadh — affects how timestamps appear across the platform."
+      "timezoneTooltip": "e.g. America/New_York — affects how timestamps appear across the platform."
     },
     "notifications": {
       "product": "Product",
@@ -3774,7 +3776,7 @@
       "legalNamePlaceholder": "e.g. Acme Workspace LLC",
       "displayNamePlaceholder": "e.g. Acme",
       "crNumberPlaceholder": "1010XXXXXX",
-      "cityPlaceholder": "e.g. Riyadh",
+      "cityPlaceholder": "e.g. New York",
       "legalNameTooltip": "Full legal name as registered in official documents.",
       "displayNameTooltip": "The name that will be visible to your team and clients.",
       "cityTooltip": "The city where your company main office is located."

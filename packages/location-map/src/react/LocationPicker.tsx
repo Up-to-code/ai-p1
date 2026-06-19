@@ -65,8 +65,6 @@ export default function LocationPicker({
       try {
         const params = new URLSearchParams({
           access_token: token,
-          country: "SA",
-          language: "ar",
           limit: "5",
         });
         const response = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query.trim())}.json?${params.toString()}`);

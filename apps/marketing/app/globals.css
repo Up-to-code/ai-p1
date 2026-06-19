@@ -3,7 +3,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is([data-theme="dark"] *));
 
 @theme {
   /* ── Shadcn Color Palette (Light) ── */
@@ -100,7 +100,7 @@
   --q-note-bg: #f5f3ff;
 }
 
-.dark {
+[data-theme="dark"] {
   color-scheme: dark;
 
   /* ── Shadcn Color Palette (Dark) ── */

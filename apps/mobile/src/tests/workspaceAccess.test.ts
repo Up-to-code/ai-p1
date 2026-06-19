@@ -107,9 +107,9 @@ test("workspace organization display and thread reset helpers are deterministic"
 });
 
 test("workspace organization regions are read from selected organization metadata", () => {
-  assert.deepEqual(getWorkspaceOrganizationRegions({ id: "org_1", regions: ["ksa", " gulf "] }), ["ksa", "gulf"]);
-  assert.deepEqual(getWorkspaceOrganizationRegions({ id: "org_2", metadata: { region: "ksa" } }), ["ksa"]);
-  assert.deepEqual(getWorkspaceOrganizationRegions({ id: "org_3", metadata: JSON.stringify({ regions: ["riyadh", "jeddah"] }) }), ["riyadh", "jeddah"]);
+  assert.deepEqual(getWorkspaceOrganizationRegions({ id: "org_1", regions: ["global", " gulf "] }), ["global", "gulf"]);
+  assert.deepEqual(getWorkspaceOrganizationRegions({ id: "org_2", metadata: { region: "global" } }), ["global"]);
+  assert.deepEqual(getWorkspaceOrganizationRegions({ id: "org_3", metadata: JSON.stringify({ regions: ["downtown", "suburbs"] }) }), ["downtown", "suburbs"]);
   assert.deepEqual(getWorkspaceOrganizationRegions({ id: "org_4", metadata: "not-json" }), []);
 });
 
@@ -167,7 +167,7 @@ test("workspace invite API uses the configured Workspace API origin", async () =
     assert.equal(init?.credentials, "include");
     const headers = new Headers(init?.headers);
     assert.equal(headers.get("x-qentrah-organization-id"), "org_1");
-    assert.equal(headers.get("x-qentrah-regions"), "ksa,gulf");
+    assert.equal(headers.get("x-qentrah-regions"), "global,gulf");
     assert.equal(init?.body, JSON.stringify({ role: "member", locale: "en" }));
     return new Response(JSON.stringify({
       inviteUrl: "https://app.qentrah.com/accept-invite?inviteToken=abc",
@@ -176,7 +176,7 @@ test("workspace invite API uses the configured Workspace API origin", async () =
   }) as typeof fetch;
 
   try {
-    setWorkspaceOrganizationRequestContext({ organizationId: "org_1", regions: ["ksa", "gulf"] });
+    setWorkspaceOrganizationRequestContext({ organizationId: "org_1", regions: ["global", "gulf"] });
     const invite = await createWorkspaceInviteLink("org_1", { role: "member", locale: "en" });
     assert.equal(invite.inviteUrl, "https://app.qentrah.com/accept-invite?inviteToken=abc");
   } finally {

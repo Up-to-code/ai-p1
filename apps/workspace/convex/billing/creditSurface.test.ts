@@ -11,7 +11,7 @@ function balance(input: Partial<StoredCreditBalance>): StoredCreditBalance {
   return {
     _id: "balance_1",
     organizationId: "org_1",
-    planId: "saudi_monthly",
+    planId: "qentrah_workspace",
     subscriptionCreditsGranted: 0,
     subscriptionCreditsUsed: 0,
     addOnCreditsGranted: 0,
@@ -22,9 +22,8 @@ function balance(input: Partial<StoredCreditBalance>): StoredCreditBalance {
 }
 
 describe("billing credit surface", () => {
-  it("maps legacy billing plans through subscription entitlements", () => {
-    expect(includedCreditsForBillingPlan("saudi_monthly")).toBe(0);
-    expect(includedCreditsForBillingPlan("saudi_yearly")).toBe(0);
+  it("maps billing plans through subscription entitlements", () => {
+    expect(includedCreditsForBillingPlan("qentrah_workspace")).toBe(0);
   });
 
   it("builds zero-safe usage summaries when no balance exists", () => {

@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, useCallback, type ReactNode } from "react";
 import { useQuery as useReactQuery } from "@tanstack/react-query";
-import { CalendarDays, CheckCircle2, Copy, Edit, Mail, Phone, Plus, Search, Trash2, User, UserPlus, Users, History as ActivityIcon, FileText as DocsIcon, LayoutDashboard, type LucideIcon } from "lucide-react";
+import { CalendarDays, CheckCircle2, Clock, Edit, Mail, Phone, Plus, Search, Trash2, User, UserPlus, Users, History as ActivityIcon, FileText as DocsIcon, LayoutDashboard, PhoneCall, Video, Tag, Link2, FileText, Briefcase, Calendar, type LucideIcon } from "lucide-react";
 import {
   AppDataTable,
   AppPageHeader,
@@ -15,7 +15,6 @@ import {
 } from "@/components/shared";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Link, useRouter } from "@/i18n/routing";
 import { useAccountContext } from "@/domains/auth";
 import {
@@ -36,7 +35,18 @@ import {
   useClientTasksQuery,
   type ClientTaskPayload,
 } from "@/domains/clients/api/client-tasks";
+import {
+  useClientFollowUpsQuery,
+  createFollowUpRequest,
+  deleteFollowUpRequest,
+  markFollowUpCompleteRequest,
+} from "@/domains/clients/api/client-follow-ups";
+import type { ClientFollowUpPayload } from "@/domains/clients/api/client-follow-ups";
 import { useCalendarEventsQuery, useUpcomingCalendarEventsQuery } from "@/domains/calendar/api/calendar";
+import { useOpportunitiesQuery } from "@/domains/opportunities/api/opportunities";
+import { useQuery as useConvexQuery } from "convex/react";
+import { api as convexApi } from "@convex/_generated/api";
+import type { Id as ConvexId } from "@convex/_generated/dataModel";
 import { getOrganizationCapabilities } from "@/domains/organization/api/clerk-organization-api";
 import { ClientDocumentsManager } from "@/domains/media/components/client-documents-manager";
 import type { Client, ClientType } from "../store/clients.types";
@@ -685,12 +695,30 @@ export function ClientDetailScreen({ id }: { id: string }) {
   const client = useClientQuery(workspaceOrganizationId, id) as Client | null | undefined;
   const tasks = useClientTasksQuery(workspaceOrganizationId, id) ?? [];
   const events = useCalendarEventsQuery(workspaceOrganizationId, id) ?? [];
+  const followUpsRaw = useClientFollowUpsQuery(workspaceOrganizationId, id);
+  const followUps = useMemo(() => followUpsRaw ?? [], [followUpsRaw]);
+  const linkedOpportunities = useOpportunitiesQuery(workspaceOrganizationId, { stage: "all" });
+  const linkedProjects = useConvexQuery(
+    convexApi.projects.read.listByClient,
+    workspaceOrganizationId && id ? { organizationId: workspaceOrganizationId, clientId: id as ConvexId<"clients"> } : "skip",
+  ) ?? [];
   const [taskTitle, setTaskTitle] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [followUpFilter, setFollowUpFilter] = useState<"all" | "upcoming" | "past" | "completed">("all");
+  const [showFollowUpForm, setShowFollowUpForm] = useState(false);
+  const [followUpForm, setFollowUpForm] = useState<ClientFollowUpPayload>(() => ({
+    clientId: id,
+    type: "call",
+    title: "",
+    notes: "",
+    followUpDate: Date.now(),
+    status: "upcoming",
+  }));
   const router = useRouter();
   const profileOperation = useOperationState({ errorMessage: "Client update failed." });
   const deleteOperation = useOperationState({ errorMessage: "Client delete failed." });
   const taskOperation = useOperationState({ errorMessage: "Task action failed." });
+  const followUpOperation = useOperationState({ errorMessage: "Follow-up action failed." });
   const queryDebug = {
     resourceType: "client",
     resourceId: id,
@@ -709,12 +737,59 @@ export function ClientDetailScreen({ id }: { id: string }) {
     clientsIndexQueryBaseKey(workspaceOrganizationId),
   );
 
+  const filteredFollowUps = useMemo(() => {
+    if (followUpFilter === "all") return followUps;
+    return followUps.filter((fu: { status: string }) => fu.status === followUpFilter);
+  }, [followUps, followUpFilter]);
+
+  const clientOpportunities = useMemo(() => {
+    return (linkedOpportunities ?? []).filter((opp) => opp.clientId === id);
+  }, [linkedOpportunities, id]);
+
+  const handleCreateFollowUp = useCallback(async () => {
+    if (!workspaceOrganizationId || !followUpForm.title.trim()) return;
+    await followUpOperation.run(async () => {
+      await createFollowUpRequest(workspaceOrganizationId, {
+        ...followUpForm,
+        clientId: id,
+        followUpDate: Date.now(),
+      });
+      setFollowUpForm({ clientId: id, type: "call", title: "", notes: "", followUpDate: Date.now(), status: "upcoming" });
+      setShowFollowUpForm(false);
+    }, { successMessage: "Follow-up created." });
+  }, [workspaceOrganizationId, followUpForm, id, followUpOperation]);
+
+  const handleDeleteFollowUp = useCallback(async (followUpId: string) => {
+    if (!workspaceOrganizationId) return;
+    await followUpOperation.run(
+      () => deleteFollowUpRequest(workspaceOrganizationId, followUpId),
+      { successMessage: "Follow-up deleted." },
+    );
+  }, [workspaceOrganizationId, followUpOperation]);
+
+  const handleMarkFollowUpComplete = useCallback(async (followUpId: string) => {
+    if (!workspaceOrganizationId) return;
+    await followUpOperation.run(
+      () => markFollowUpCompleteRequest(workspaceOrganizationId, followUpId),
+      { successMessage: "Follow-up completed." },
+    );
+  }, [workspaceOrganizationId, followUpOperation]);
+
   if (workspaceStatus !== "ready") {
     return <AppPageShell><WorkspaceQueryState status={workspaceStatus} variant="detail" /></AppPageShell>;
   }
 
   if (client === undefined) {
-    return <AppPageShell><ProgressiveLoadingState title={t("detail.loadingTitle")} description={t("detail.loadingDesc")} debug={queryDebug} variant="detail" /></AppPageShell>;
+    return (
+      <AppPageShell>
+        <ProgressiveLoadingState
+          title={t("detail.loadingTitle")}
+          description={t("detail.loadingDesc")}
+          debug={queryDebug}
+          variant="detail"
+        />
+      </AppPageShell>
+    );
   }
 
   if (client === null) {
@@ -751,6 +826,16 @@ export function ClientDetailScreen({ id }: { id: string }) {
               <h1 className="mt-2 max-w-5xl text-3xl font-black leading-tight text-foreground md:text-[32px]">
                 {client.name}
               </h1>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {client.tags?.map((tag) => (
+                  <span key={tag} className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+                    <Tag className="h-2.5 w-2.5" />
+                    {tag}
+                  </span>
+                ))}
+                <StatusPill label={translateClientType(t, client.type)} tone={typeTone(client.type)} />
+                <StatusPill label={translateClientStatus(t, client.status)} tone={client.status === "active" ? "success" : "neutral"} />
+              </div>
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <ClientMetaPill icon={Mail}>{client.contact}</ClientMetaPill>
                 <ClientMetaPill icon={Phone}>{client.phone}</ClientMetaPill>
@@ -758,29 +843,60 @@ export function ClientDetailScreen({ id }: { id: string }) {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-            <Button variant="outline" onClick={() => setDeleting(true)} className="h-10 rounded-xl border-red-200 px-4 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-500/20 dark:hover:bg-red-950/30">
-              <Trash2 className="me-2 h-3.5 w-3.5" />
-              {t('detail.delete')}
-            </Button>
-            <Link href={`/clients/${client.id}/edit`}>
-              <AppPrimaryButton>
-                <Edit className="me-2 h-3.5 w-3.5" />
-                {t('detail.edit')}
-              </AppPrimaryButton>
-            </Link>
-            {client.pipelineStage !== "closed" && (
+          <div className="flex flex-col gap-3 lg:items-end">
+            <div className="flex flex-wrap items-center gap-2 lg:justify-end">
               <Button
-                type="button"
-                disabled={clientCloseMutation.isPending}
-                onClick={markClosed}
                 variant="outline"
-                className="h-10 rounded-xl px-4 text-xs font-bold"
+                size="sm"
+                className="h-9 rounded-xl border-border px-3 text-xs font-bold"
+                onClick={() => window.location.href = `tel:${client.phone}`}
               >
-                <CheckCircle2 className="me-2 h-3.5 w-3.5" />
-                {t("actions.markClosed")}
+                <PhoneCall className="me-1.5 h-3.5 w-3.5" />
+                Call
               </Button>
-            )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 rounded-xl border-border px-3 text-xs font-bold"
+                onClick={() => window.location.href = `mailto:${client.contact}`}
+              >
+                <Mail className="me-1.5 h-3.5 w-3.5" />
+                Email
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 rounded-xl border-border px-3 text-xs font-bold"
+                onClick={() => router.push('/calendar')}
+              >
+                <Calendar className="me-1.5 h-3.5 w-3.5" />
+                Schedule
+              </Button>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+              <Button variant="outline" onClick={() => setDeleting(true)} className="h-10 rounded-xl border-red-200 px-4 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-500/20 dark:hover:bg-red-950/30">
+                <Trash2 className="me-2 h-3.5 w-3.5" />
+                {t('detail.delete')}
+              </Button>
+              <Link href={`/clients/${client.id}/edit`}>
+                <AppPrimaryButton>
+                  <Edit className="me-2 h-3.5 w-3.5" />
+                  {t('detail.edit')}
+                </AppPrimaryButton>
+              </Link>
+              {client.pipelineStage !== "closed" && (
+                <Button
+                  type="button"
+                  disabled={clientCloseMutation.isPending}
+                  onClick={markClosed}
+                  variant="outline"
+                  className="h-10 rounded-xl px-4 text-xs font-bold"
+                >
+                  <CheckCircle2 className="me-2 h-3.5 w-3.5" />
+                  {t("actions.markClosed")}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -809,13 +925,185 @@ export function ClientDetailScreen({ id }: { id: string }) {
         </div>
       </section>
 
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs defaultValue="followups" className="space-y-6">
         <AppTabsList tabs={[
+          { value: "followups", label: "Follow-ups & Notes", icon: Clock },
           { value: "overview", label: t('views.pipeline'), icon: LayoutDashboard },
           { value: "profile", label: t('detail.recordTitle'), icon: User },
           { value: "docs", label: t('detail.tabs.documents'), icon: DocsIcon },
           { value: "activity", label: t('detail.tabs.activity'), icon: ActivityIcon },
+          { value: "connections", label: "Connections", icon: Link2 },
         ]} />
+
+        <TabsContent value="followups" className="space-y-6">
+          <AppSection
+            title="Follow-ups & Notes"
+            description="Track all interactions and follow-ups with this client"
+            actions={(
+              <div className="flex items-center gap-2">
+                <span className="rounded-full border border-border px-3 py-1.5 text-xs font-bold text-muted-foreground">{followUps.length} total</span>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => setShowFollowUpForm(!showFollowUpForm)}
+                  className="h-8 rounded-xl px-3 text-xs font-bold"
+                >
+                  <Plus className="me-1 h-3.5 w-3.5" />
+                  Add New Follow-up
+                </Button>
+              </div>
+            )}
+          >
+            {/* Filter bar */}
+            <div className="flex items-center gap-1 rounded-xl border border-border bg-card p-1 mb-4">
+              {(["all", "upcoming", "past", "completed"] as const).map((filter) => (
+                <button
+                  key={filter}
+                  type="button"
+                  onClick={() => setFollowUpFilter(filter)}
+                  className={cn(
+                    "h-7 rounded-lg px-3 text-[11px] font-semibold transition-all capitalize",
+                    followUpFilter === filter ? "bg-foreground text-background shadow-sm" : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+
+            {/* Add New Follow-up Form */}
+            {showFollowUpForm && (
+              <div className="rounded-[20px] border border-border bg-muted p-4 mb-4 space-y-3">
+                <div className="grid gap-3 md:grid-cols-[140px_1fr_160px]">
+                  <select
+                    value={followUpForm.type}
+                    onChange={(e) => setFollowUpForm({ ...followUpForm, type: e.target.value as ClientFollowUpPayload["type"] })}
+                    className="h-10 rounded-xl border border-border bg-card px-3 text-xs font-bold text-foreground outline-none"
+                  >
+                    <option value="call">Call</option>
+                    <option value="meeting">Meeting</option>
+                    <option value="email">Email</option>
+                    <option value="task">Task</option>
+                  </select>
+                  <input
+                    value={followUpForm.title}
+                    onChange={(e) => setFollowUpForm({ ...followUpForm, title: e.target.value })}
+                    placeholder="Follow-up title..."
+                    className="h-10 min-w-0 rounded-xl border border-border bg-card px-3 text-sm font-bold text-foreground outline-none transition focus:border-ring"
+                  />
+                  <select
+                    value={followUpForm.status}
+                    onChange={(e) => setFollowUpForm({ ...followUpForm, status: e.target.value as ClientFollowUpPayload["status"] })}
+                    className="h-10 rounded-xl border border-border bg-card px-3 text-xs font-bold text-foreground outline-none"
+                  >
+                    <option value="upcoming">Upcoming</option>
+                    <option value="completed">Completed</option>
+                    <option value="past">Past</option>
+                  </select>
+                </div>
+                <textarea
+                  value={followUpForm.notes ?? ""}
+                  onChange={(e) => setFollowUpForm({ ...followUpForm, notes: e.target.value })}
+                  placeholder="Add notes..."
+                  rows={2}
+                  className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm font-bold text-foreground outline-none transition focus:border-ring resize-none"
+                />
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="outline" size="sm" onClick={() => setShowFollowUpForm(false)} className="h-8 rounded-xl text-xs font-bold">
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={!followUpForm.title.trim() || followUpOperation.isRunning}
+                    onClick={handleCreateFollowUp}
+                    className="h-8 rounded-xl px-4 text-xs font-bold"
+                  >
+                    {followUpOperation.isRunning ? "Saving..." : "Save Follow-up"}
+                  </Button>
+                </div>
+                {followUpOperation.error && <p className="text-xs font-bold text-red-500">{followUpOperation.error}</p>}
+              </div>
+            )}
+
+            {/* Follow-ups History List */}
+            <div className="grid gap-3">
+              {filteredFollowUps.length === 0 ? (
+                <div className="rounded-[20px] border border-dashed border-border p-8 text-center text-sm font-bold text-muted-foreground">
+                  No follow-ups found. Click "Add New Follow-up" to create one.
+                </div>
+              ) : (
+                filteredFollowUps.map((followUp: { id: string; type: string; status: string; followUpDate: number; title: string; notes?: string }, index: number) => {
+                  const typeIcons: Record<string, LucideIcon> = {
+                    call: PhoneCall,
+                    meeting: Video,
+                    email: Mail,
+                    task: CheckCircle2,
+                  };
+                  const TypeIcon = typeIcons[followUp.type] || Clock;
+                  const isRecent = index === 0;
+                  const date = new Date(followUp.followUpDate);
+                  const dateLabel = date.toLocaleDateString(locale, { month: "short", day: "numeric" });
+                  const timeLabel = date.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" });
+
+                  return (
+                    <article
+                      key={followUp.id}
+                      className={cn(
+                        "grid gap-4 rounded-[20px] border bg-card p-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center",
+                        isRecent ? "border-foreground/20 ring-1 ring-foreground/5" : "border-border",
+                      )}
+                    >
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+                            <TypeIcon className="h-2.5 w-2.5" />
+                            {followUp.type}
+                          </span>
+                          <StatusPill
+                            label={followUp.status}
+                            tone={followUp.status === "completed" ? "success" : followUp.status === "upcoming" ? "info" : "neutral"}
+                          />
+                          <span className="text-[10px] font-bold text-muted-foreground">{dateLabel} {timeLabel}</span>
+                        </div>
+                        <p className="mt-2 text-sm font-black text-foreground">{followUp.title}</p>
+                        {followUp.notes && (
+                          <p className="mt-1 text-xs font-medium text-muted-foreground line-clamp-2">{followUp.notes}</p>
+                        )}
+                        <div className="mt-2 flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
+                          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[8px] font-black">Y</div>
+                          <span>You</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={followUpOperation.isRunning}
+                          onClick={() => handleMarkFollowUpComplete(followUp.id)}
+                          className="h-8 rounded-xl text-[10px] font-bold"
+                        >
+                          <CheckCircle2 className="me-1 h-3 w-3" />
+                          {followUp.status === "completed" ? "Done" : "Complete"}
+                        </Button>
+                        <button
+                          type="button"
+                          disabled={followUpOperation.isRunning}
+                          onClick={() => handleDeleteFollowUp(followUp.id)}
+                          className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground/40 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
+                          aria-label="Delete follow-up"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })
+              )}
+            </div>
+          </AppSection>
+        </TabsContent>
 
         <TabsContent value="overview">
           <div className="space-y-5">
@@ -1082,6 +1370,113 @@ export function ClientDetailScreen({ id }: { id: string }) {
                   </span>
                 </article>
               ))}
+            </div>
+          </AppSection>
+        </TabsContent>
+
+        <TabsContent value="connections" className="space-y-6">
+          <AppSection
+            title="Related Items"
+            description="Linked opportunities, projects, calendar events, and documents"
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              {/* Linked Opportunities */}
+              <div className="rounded-[20px] border border-border bg-card p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Briefcase className="h-4 w-4 text-muted-foreground" />
+                  <h3 className="text-xs font-black uppercase tracking-widest text-foreground">Opportunities</h3>
+                  <span className="ml-auto text-[10px] font-bold text-muted-foreground">{clientOpportunities.length}</span>
+                </div>
+                {clientOpportunities.length === 0 ? (
+                  <p className="text-xs font-medium text-muted-foreground">No linked opportunities</p>
+                ) : (
+                  <div className="space-y-2">
+                    {clientOpportunities.map((opp) => (
+                      <div key={opp.id} className="flex items-center justify-between rounded-xl bg-muted p-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-xs font-bold text-foreground">{opp.title}</p>
+                          <p className="text-[10px] font-bold text-muted-foreground">
+                            {opp.value ? `$${opp.value.toLocaleString()}` : "No value"} · {opp.stage}
+                          </p>
+                        </div>
+                        <StatusPill label={opp.status} tone={opp.status === "open" ? "info" : opp.status === "won" ? "success" : "neutral"} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Linked Projects */}
+              <div className="rounded-[20px] border border-border bg-card p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <h3 className="text-xs font-black uppercase tracking-widest text-foreground">Projects</h3>
+                  <span className="ml-auto text-[10px] font-bold text-muted-foreground">{linkedProjects.length}</span>
+                </div>
+                {linkedProjects.length === 0 ? (
+                  <p className="text-xs font-medium text-muted-foreground">No linked projects</p>
+                ) : (
+                  <div className="space-y-2">
+                    {linkedProjects.map((project: { id: string; name: string; status: string }) => (
+                      <div key={project.id} className="flex items-center justify-between rounded-xl bg-muted p-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-xs font-bold text-foreground">{project.name}</p>
+                          <p className="text-[10px] font-bold text-muted-foreground">{project.status}</p>
+                        </div>
+                        <StatusPill label={project.status} tone={project.status === "active" ? "success" : "neutral"} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Linked Calendar Events */}
+              <div className="rounded-[20px] border border-border bg-card p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <h3 className="text-xs font-black uppercase tracking-widest text-foreground">Calendar Events</h3>
+                  <span className="ml-auto text-[10px] font-bold text-muted-foreground">{events.length}</span>
+                </div>
+                {events.length === 0 ? (
+                  <p className="text-xs font-medium text-muted-foreground">No linked calendar events</p>
+                ) : (
+                  <div className="space-y-2">
+                    {events.slice(0, 5).map((event) => (
+                      <div key={event.id} className="flex items-center justify-between rounded-xl bg-muted p-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-xs font-bold text-foreground">{event.title}</p>
+                          <p className="text-[10px] font-bold text-muted-foreground">{event.date} · {event.time}</p>
+                        </div>
+                        <StatusPill label={event.status} tone="info" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Linked Documents */}
+              <div className="rounded-[20px] border border-border bg-card p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <h3 className="text-xs font-black uppercase tracking-widest text-foreground">Documents</h3>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between rounded-xl bg-muted p-3">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="text-xs font-bold text-foreground">Proposal_v2.pdf</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-muted-foreground">2.4 MB</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-xl bg-muted p-3">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="text-xs font-bold text-foreground">Contract Draft</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-muted-foreground">1.1 MB</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </AppSection>
         </TabsContent>

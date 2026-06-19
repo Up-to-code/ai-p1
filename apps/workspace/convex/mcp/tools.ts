@@ -26,7 +26,6 @@ import {
 import {
   assertCalendarLinks,
   assertMediaResource,
-  assertOptionalProject,
   assertTaskLinks,
   calendarInput,
   clientInput,
@@ -37,8 +36,6 @@ import {
   optionalNumber,
   optionalString,
   projectInput,
-  assetFieldPatch,
-  assetInput,
   requiredNumber,
   requiredString,
   searchTerm,
@@ -58,12 +55,6 @@ const clientSearchValues = (client: { name: string; email?: string; phone?: stri
   client.phone ?? "",
   client.company ?? "",
   client.source,
-];
-
-const assetSearchValues = (asset: { name: string; type: string; description?: string }) => [
-  asset.name,
-  asset.type,
-  asset.description ?? "",
 ];
 
 const projectSearchValues = (project: { name: string; description?: string; status: string; health: string }) => [
@@ -199,14 +190,6 @@ export const readTool = internalQuery({
     if (args.tool === "clients_get") {
       const client = await ctx.db.get(requiredString(input, "clientId") as Id<"clients">);
       return presentWorkspaceRecord(assertPublicWorkspaceRecord(assertActiveWorkspaceRecord(client, args.organizationId, "Client"), "Client"));
-    }
-
-    if (
-      args.tool === "assets_list"
-      || args.tool === "assets_get"
-      || args.tool === "assets_open"
-    ) {
-      throw new Error("Asset tools are no longer available in this workspace.");
     }
 
     if (args.tool === "projects_list") {
@@ -361,17 +344,6 @@ export const writeTool = internalMutation({
       return { removed: true };
     }
 
-    if (
-      args.tool === "clients_link_asset"
-      || args.tool === "clients_unlink_asset"
-      || args.tool === "assets_create"
-      || args.tool === "assets_update"
-      || args.tool === "assets_update_field"
-      || args.tool === "assets_delete"
-    ) {
-      throw new Error("Asset tools are no longer available in this workspace.");
-    }
-
     if (args.tool === "projects_create") {
       const id = await ctx.db.insert("projects", {
         organizationId: args.organizationId,
@@ -398,7 +370,7 @@ export const writeTool = internalMutation({
     if (args.tool === "projects_delete") {
       const projectId = requiredString(input, "projectId") as Id<"projects">;
       const existing = assertActiveWorkspaceRecord(await ctx.db.get(projectId), args.organizationId, "Project");
-      await ctx.db.patch(projectId, { deletedAt: now, updatedAt: now });
+      await ctx.db.patch(projectId, { deletedAt: now, isDeleted: true, updatedAt: now });
       await audit(ctx, args.organizationId, args.connectionId, "project.delete", projectId, `Deleted project ${existing.name}.`);
       return { removed: true };
     }
@@ -452,12 +424,19 @@ export const writeTool = internalMutation({
     if (args.tool === "tasks_update" || args.tool === "tasks_complete") {
       const taskId = requiredString(input, "taskId") as Id<"tasks">;
       const existing = assertActiveWorkspaceRecord(await ctx.db.get(taskId), args.organizationId, "Task");
-      const patch = args.tool === "tasks_complete"
-        ? { status: "done" as const, completedAt: existing.completedAt ?? now }
-        : taskInput({ ...existing, ...input });
-      if (args.tool === "tasks_update") {
-        await assertTaskLinks(ctx, args.organizationId, patch);
+      
+      if (args.tool === "tasks_complete") {
+        if (existing.status === "done") {
+          return presentWorkspaceRecord(existing);
+        }
+        const patch = { status: "done" as const, completedAt: existing.completedAt ?? now };
+        await ctx.db.patch(taskId, { ...patch, updatedAt: now });
+        await audit(ctx, args.organizationId, args.connectionId, "client.task.update", taskId, `Completed task ${existing.title}.`);
+        return presentWorkspaceRecord((await ctx.db.get(taskId))!);
       }
+      
+      const patch = taskInput({ ...existing, ...input });
+      await assertTaskLinks(ctx, args.organizationId, patch);
       await ctx.db.patch(taskId, { ...patch, updatedAt: now });
       await audit(ctx, args.organizationId, args.connectionId, "client.task.update", taskId, `Updated task ${existing.title}.`);
       return presentWorkspaceRecord((await ctx.db.get(taskId))!);
@@ -502,7 +481,6 @@ export const writeTool = internalMutation({
     }
 
     if (args.tool === "notifications_schedule") {
-      const input = inputObject(args.input);
       const id = await ctx.db.insert("notificationSchedules", {
         organizationId: args.organizationId,
         ownerUserId: actorId,
@@ -523,7 +501,6 @@ export const writeTool = internalMutation({
     }
 
     if (args.tool === "notifications_update_schedule") {
-      const input = inputObject(args.input);
       const scheduleId = requiredString(input, "scheduleId") as Id<"notificationSchedules">;
       const existing = await ctx.db.get(scheduleId);
       if (!existing || existing.organizationId !== args.organizationId) {
@@ -545,7 +522,6 @@ export const writeTool = internalMutation({
     }
 
     if (args.tool === "notifications_cancel_schedule") {
-      const input = inputObject(args.input);
       const scheduleId = requiredString(input, "scheduleId") as Id<"notificationSchedules">;
       const existing = await ctx.db.get(scheduleId);
       if (!existing || existing.organizationId !== args.organizationId) {

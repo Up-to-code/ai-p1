@@ -162,18 +162,6 @@ for (const [key, value] of Object.entries(expected)) {
   if (env[key] !== value) failures.push(`${key} should be ${value}`);
 }
 
-if (env.TAMARA_API_BASE_URL && env.TAMARA_API_BASE_URL !== "https://api.tamara.co") {
-  failures.push("TAMARA_API_BASE_URL should be https://api.tamara.co when Tamara billing is configured.");
-}
-
-if (env.TAMARA_WEBHOOK_URL && env.TAMARA_WEBHOOK_URL !== "https://app.qentrah.com/api/v1/billing/tamara/webhook") {
-  failures.push("TAMARA_WEBHOOK_URL should be https://app.qentrah.com/api/v1/billing/tamara/webhook when Tamara billing is configured.");
-}
-
-if (env.TAMARA_CAPTURE_MODE && env.TAMARA_CAPTURE_MODE !== "immediate") {
-  failures.push("TAMARA_CAPTURE_MODE should be immediate when Tamara billing is configured.");
-}
-
 for (const [key, value] of Object.entries(env)) {
   if (/^https?:\/\/localhost|^http:\/\/127\.0\.0\.1/u.test(value)) {
     failures.push(`${key} still points at local development`);

@@ -9,7 +9,7 @@ describe("@qentrah/compliance-logic org type", () => {
   });
 
   it("normalizes country fallbacks", () => {
-    expect(resolveComplianceCountryCode()).toBe("SA");
+    expect(resolveComplianceCountryCode()).toBeUndefined();
     expect(resolveComplianceCountryCode(" ae ")).toBe("AE");
   });
 });

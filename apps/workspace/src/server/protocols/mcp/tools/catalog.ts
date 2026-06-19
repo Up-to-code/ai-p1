@@ -106,8 +106,9 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     title: "Cancel invitation",
     description: "Cancel an organization email invitation.",
     resource: "member",
-    action: "create",
+    action: "delete",
     inputSchema: { invitationId: id },
+    destructive: true,
   },
   {
     name: "roles_list",

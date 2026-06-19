@@ -18,6 +18,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type KeyboardEvent,
@@ -32,6 +33,7 @@ import Blockquote from "@tiptap/extension-blockquote";
 import CodeBlock from "@tiptap/extension-code-block";
 import Heading from "@tiptap/extension-heading";
 import OrderedList from "@tiptap/extension-ordered-list";
+import Image from "@tiptap/extension-image";
 import { createPortal } from "react-dom";
 import {
   Bold,
@@ -46,9 +48,13 @@ import {
   Minus,
   Heading2,
   Heading3,
+  ImageIcon,
+  Link2,
   Loader2,
+  Paperclip,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { uploadFiles } from "@/lib/uploadthing";
 import {
   SlashCommandMenu,
   getSlashCommandItems,
@@ -72,7 +78,13 @@ export interface DocEditorMentionOption {
   id: string;
   label: string;
   helper?: string;
+  type?: "member" | "client" | "project" | "task" | "meeting" | "deal" | "file";
+  href?: string;
 }
+
+export type DocEditorContext =
+  | { scope: "global"; organizationId: string }
+  | { scope: "project"; organizationId: string; projectId: string };
 
 export interface WorkOsDocEditorProps {
   /** Current title value */
@@ -93,8 +105,10 @@ export interface WorkOsDocEditorProps {
   onBodyBlur?: (html: string) => void;
   /** Called on every body keystroke — use for optimistic local state only */
   onBodyChange?: (html: string) => void;
-  /** People available for @-mention */
+  /** People/entities available for @ and @/-mention */
   mentionOptions?: DocEditorMentionOption[];
+  /** Current document context used to scope entity links and labels */
+  documentContext?: DocEditorContext;
   /** Trailing content rendered below metadata rows (e.g. subtasks, attachments) */
   children?: ReactNode;
   /** Extra class on the outermost container */
@@ -136,7 +150,17 @@ function ToolbarBtn({
 
 // ─── Floating editor toolbar ─────────────────────────────────────────────────
 
-function EditorToolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
+function EditorToolbar({
+  editor,
+  onInsertLink,
+  onPickImage,
+  onPickFile,
+}: {
+  editor: ReturnType<typeof useEditor>;
+  onInsertLink: () => void;
+  onPickImage: () => void;
+  onPickFile: () => void;
+}) {
   if (!editor) return null;
   return (
     <div className="flex flex-wrap items-center gap-0.5 border-b border-border bg-card/60 px-3 py-1.5 backdrop-blur-sm">
@@ -240,6 +264,18 @@ function EditorToolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
       >
         <AlignRight className="h-3 w-3" />
       </ToolbarBtn>
+      <div className="mx-1.5 h-3.5 w-px bg-border" />
+
+      {/* Rich inserts */}
+      <ToolbarBtn title="Insert link" onClick={onInsertLink}>
+        <Link2 className="h-3 w-3" />
+      </ToolbarBtn>
+      <ToolbarBtn title="Upload image" onClick={onPickImage}>
+        <ImageIcon className="h-3 w-3" />
+      </ToolbarBtn>
+      <ToolbarBtn title="Attach file" onClick={onPickFile}>
+        <Paperclip className="h-3 w-3" />
+      </ToolbarBtn>
     </div>
   );
 }
@@ -257,6 +293,7 @@ export function WorkOsDocEditor({
   onBodyBlur,
   onBodyChange,
   mentionOptions = [],
+  documentContext,
   children,
   className,
 }: WorkOsDocEditorProps) {
@@ -282,15 +319,38 @@ export function WorkOsDocEditor({
   const [showSlashMenu, setShowSlashMenu] = useState(false);
   const showSlashMenuRef = useRef(false);
   const [slashItems, setSlashItems] = useState<SlashMenuItem[]>([]);
-  const [slashFrom, setSlashFrom] = useState(0);
   const slashFromRef = useRef(0);
   const slashSelectedIndexRef = useRef(0);
+  const [slashSelectedIndex, setSlashSelectedIndex] = useState(0);
   const slashItemsRef = useRef<SlashMenuItem[]>([]);
   const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
+  const [showMentionMenu, setShowMentionMenu] = useState(false);
+  const showMentionMenuRef = useRef(false);
+  const mentionFromRef = useRef(0);
+  const [mentionItems, setMentionItems] = useState<DocEditorMentionOption[]>(
+    [],
+  );
+  const mentionItemsRef = useRef<DocEditorMentionOption[]>([]);
+  const mentionSelectedIndexRef = useRef(0);
+  const [mentionSelectedIndex, setMentionSelectedIndex] = useState(0);
   const editorContainerRef = useRef<HTMLDivElement>(null);
+  const [selectionToolbar, setSelectionToolbar] = useState({
+    show: false,
+    top: 0,
+    left: 0,
+  });
+  const [linkPanel, setLinkPanel] = useState({
+    open: false,
+    href: "",
+    label: "",
+  });
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
 
   // ── Tiptap editor ───────────────────────────────────────────────────────
   const editor = useEditor({
+    immediatelyRender: true,
     extensions: [
       StarterKit.configure({
         heading: false,
@@ -303,6 +363,13 @@ export function WorkOsDocEditor({
       CodeBlock,
       OrderedList,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
+      Image.configure({
+        HTMLAttributes: {
+          class: "my-4 block max-w-full rounded-2xl border border-border",
+          style:
+            "resize: both; overflow: auto; min-width: 160px; min-height: 120px;",
+        },
+      }),
       Placeholder.configure({
         placeholder: bodyPlaceholder,
         emptyEditorClass:
@@ -315,10 +382,16 @@ export function WorkOsDocEditor({
         },
         suggestion: {
           char: "@",
-          items: ({ query }: { query: string }) =>
-            mentionOptions
-              .filter((m) => m.label.toLowerCase().includes(query.toLowerCase()))
-              .slice(0, 6),
+          items: ({ query }: { query: string }) => {
+            const normalized = query.startsWith("/") ? query.slice(1) : query;
+            return mentionOptions
+              .filter((m) =>
+                [m.label, m.helper, m.type].some((value) =>
+                  value?.toLowerCase().includes(normalized.toLowerCase()),
+                ),
+              )
+              .slice(0, 8);
+          },
           render: () => {
             // Minimal inline dropdown handled via portal below
             return {
@@ -336,27 +409,64 @@ export function WorkOsDocEditor({
       const html = e.getHTML();
       onBodyChange?.(html);
 
-      // Slash command detection
+      // Contextual @/ mention detection
       const { state } = e;
       const { from } = state.selection;
       const textBefore = state.doc.textBetween(
-        Math.max(0, from - 50),
+        Math.max(0, from - 80),
         from,
         "\n",
       );
+      const mentionIndex = textBefore.lastIndexOf("@/");
+      if (mentionIndex !== -1) {
+        const query = textBefore.slice(mentionIndex + 2);
+        if (!query.includes("\n")) {
+          const absFrom = from - (textBefore.length - mentionIndex);
+          const filtered = mentionOptions
+            .filter((item) =>
+              [item.label, item.helper, item.type].some((value) =>
+                value?.toLowerCase().includes(query.toLowerCase()),
+              ),
+            )
+            .slice(0, 10);
+          mentionFromRef.current = absFrom;
+          mentionItemsRef.current = filtered;
+          mentionSelectedIndexRef.current = 0;
+          setMentionItems(filtered);
+          setMentionSelectedIndex(0);
+          const domPos = e.view.domAtPos(from);
+          const node = domPos.node as HTMLElement;
+          const el =
+            node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+          if (el) {
+            const rect = el.getBoundingClientRect();
+            setMenuPos({ top: rect.bottom + 4, left: rect.left });
+          }
+          showMentionMenuRef.current = true;
+          setShowMentionMenu(true);
+          return;
+        }
+      }
+      if (showMentionMenuRef.current) {
+        showMentionMenuRef.current = false;
+        setShowMentionMenu(false);
+      }
+
+      // Slash command detection
       const slashIndex = textBefore.lastIndexOf("/");
-      if (slashIndex !== -1) {
+      const slashIsMentionTrigger = slashIndex > 0 && textBefore[slashIndex - 1] === "@";
+      if (slashIndex !== -1 && !slashIsMentionTrigger) {
         const query = textBefore.slice(slashIndex + 1);
         if (!query.includes(" ") && !query.includes("\n")) {
           const absFrom = from - (textBefore.length - slashIndex);
           slashFromRef.current = absFrom;
-          setSlashFrom(absFrom);
           const filtered = getSlashCommandItems().filter((item) =>
             item.label.toLowerCase().includes(query.toLowerCase()),
           );
           slashItemsRef.current = filtered;
           setSlashItems(filtered);
           slashSelectedIndexRef.current = 0;
+          setSlashSelectedIndex(0);
 
           // Position the menu near the cursor
           const domPos = e.view.domAtPos(from);
@@ -377,29 +487,93 @@ export function WorkOsDocEditor({
         setShowSlashMenu(false);
       }
     },
+    onSelectionUpdate({ editor: e }) {
+      const { from, to } = e.state.selection;
+      if (from === to) {
+        setSelectionToolbar((current) =>
+          current.show ? { ...current, show: false } : current,
+        );
+        return;
+      }
+      const start = e.view.coordsAtPos(from);
+      const end = e.view.coordsAtPos(to);
+      setSelectionToolbar({
+        show: true,
+        top: Math.max(8, Math.min(start.top, end.top) - 46),
+        left: Math.min(
+          Math.max(12, (start.left + end.right) / 2 - 96),
+          Math.max(12, window.innerWidth - 220),
+        ),
+      });
+    },
     editorProps: {
       attributes: {
         class:
           "doc-editor-body prose prose-sm dark:prose-invert prose-zinc max-w-none min-h-[240px] px-0 py-4 text-sm leading-relaxed text-foreground focus:outline-none",
       },
+      handleClick(view, pos, event) {
+        const target = event.target as HTMLElement | null;
+        const link = target?.closest?.("a[href]") as HTMLAnchorElement | null;
+        if (!link?.href) return false;
+        if (event.metaKey || event.ctrlKey || link.dataset.mentionType) {
+          event.preventDefault();
+          window.location.href = link.getAttribute("href") || link.href;
+          return true;
+        }
+        return false;
+      },
       handleKeyDown(view, event) {
+        if (showMentionMenuRef.current) {
+          const items = mentionItemsRef.current;
+          if (event.key === "ArrowDown") {
+            event.preventDefault();
+            const nextIndex = Math.min(
+              mentionSelectedIndexRef.current + 1,
+              items.length - 1,
+            );
+            mentionSelectedIndexRef.current = nextIndex;
+            setMentionSelectedIndex(nextIndex);
+            setMentionItems([...items]);
+            return true;
+          }
+          if (event.key === "ArrowUp") {
+            event.preventDefault();
+            const nextIndex = Math.max(mentionSelectedIndexRef.current - 1, 0);
+            mentionSelectedIndexRef.current = nextIndex;
+            setMentionSelectedIndex(nextIndex);
+            setMentionItems([...items]);
+            return true;
+          }
+          if (event.key === "Enter" && items.length > 0) {
+            event.preventDefault();
+            executeMentionReference(items[mentionSelectedIndexRef.current]);
+            return true;
+          }
+          if (event.key === "Escape") {
+            showMentionMenuRef.current = false;
+            setShowMentionMenu(false);
+            return true;
+          }
+          return false;
+        }
         if (!showSlashMenuRef.current) return false;
         const items = slashItemsRef.current;
         if (event.key === "ArrowDown") {
           event.preventDefault();
-          slashSelectedIndexRef.current = Math.min(
+          const nextIndex = Math.min(
             slashSelectedIndexRef.current + 1,
             items.length - 1,
           );
+          slashSelectedIndexRef.current = nextIndex;
+          setSlashSelectedIndex(nextIndex);
           setSlashItems([...items]); // force re-render
           return true;
         }
         if (event.key === "ArrowUp") {
           event.preventDefault();
-          slashSelectedIndexRef.current = Math.max(
-            slashSelectedIndexRef.current - 1,
-            0,
-          );
+          const nextIndex = Math.max(slashSelectedIndexRef.current - 1, 0);
+          slashSelectedIndexRef.current = nextIndex;
+          setSlashSelectedIndex(nextIndex);
           setSlashItems([...items]);
           return true;
         }
@@ -427,23 +601,53 @@ export function WorkOsDocEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [body]);
 
+  const localizedHref = useCallback((href: string) => {
+    if (!href || href === "#" || /^https?:\/\//.test(href)) return href || "#";
+    if (typeof window === "undefined") return href;
+    const first = window.location.pathname.split("/").filter(Boolean)[0];
+    const prefix = first && /^[a-z]{2}(?:-[A-Z]{2})?$/.test(first) ? `/${first}` : "";
+    if (!prefix || href.startsWith(`${prefix}/`)) return href;
+    return `${prefix}${href.startsWith("/") ? href : `/${href}`}`;
+  }, []);
+
+  const executeMentionReference = useCallback(
+    (option: DocEditorMentionOption) => {
+      if (!editor) return;
+      const mentionStart = mentionFromRef.current;
+      const { from } = editor.state.selection;
+      const type = option.type || "member";
+      const label = option.label.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const href = localizedHref(option.href || "#");
+      editor
+        .chain()
+        .focus()
+        .deleteRange({ from: mentionStart, to: from })
+        .insertContent(
+          `<a href="${href}" data-mention-type="${type}" data-mention-id="${option.id}" class="mention inline-flex items-center rounded bg-primary/10 px-1 text-primary font-medium">@${label}</a>&nbsp;`,
+        )
+        .run();
+      showMentionMenuRef.current = false;
+      mentionSelectedIndexRef.current = 0;
+      setMentionSelectedIndex(0);
+      setShowMentionMenu(false);
+    },
+    [editor, localizedHref],
+  );
+
   const executeSlashCommand = useCallback(
     (item: SlashMenuItem) => {
       if (!editor) return;
       const slashStart = slashFromRef.current;
       const { state } = editor;
       const { from } = state.selection;
-      editor
-        .chain()
-        .focus()
-        .deleteRange({ from: slashStart, to: from })
-        .run();
+      editor.chain().focus().deleteRange({ from: slashStart, to: from }).run();
       item.chainCommands(editor.chain().focus()).run();
       showSlashMenuRef.current = false;
       slashSelectedIndexRef.current = 0;
+      setSlashSelectedIndex(0);
       setShowSlashMenu(false);
     },
-    [editor],
+    [editor, localizedHref],
   );
 
   const handleBodyBlur = useCallback(() => {
@@ -451,12 +655,124 @@ export function WorkOsDocEditor({
     onBodyBlur?.(editor.getHTML());
   }, [editor, onBodyBlur]);
 
+  const openLinkPanel = useCallback(() => {
+    if (!editor) return;
+    const selected = editor.state.doc.textBetween(
+      editor.state.selection.from,
+      editor.state.selection.to,
+      " ",
+    );
+    setLinkPanel({ open: true, href: "", label: selected });
+  }, [editor]);
+
+  const applyLink = useCallback(() => {
+    if (!editor || !linkPanel.href.trim()) return;
+    const href = linkPanel.href.trim();
+    const label = (linkPanel.label || href).trim();
+    editor
+      .chain()
+      .focus()
+      .insertContent(
+        `<a href="${href}" target="_blank" rel="noreferrer">${label}</a>`,
+      )
+      .run();
+    setLinkPanel({ open: false, href: "", label: "" });
+  }, [editor, linkPanel.href, linkPanel.label]);
+
+  const insertMentionReference = useCallback(
+    (option: DocEditorMentionOption) => {
+      if (!editor) return;
+      const type = option.type || "member";
+      const label = option.label.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const href = localizedHref(option.href || "#");
+      editor
+        .chain()
+        .focus()
+        .insertContent(
+          `<a href="${href}" data-mention-type="${type}" data-mention-id="${option.id}" class="mention inline-flex items-center rounded bg-primary/10 px-1 text-primary font-medium">@${label}</a>&nbsp;`,
+        )
+        .run();
+    },
+    [editor],
+  );
+
+  const uploadAndInsert = useCallback(
+    async (files: FileList | null, mode: "image" | "file") => {
+      if (!editor || !files?.length) return;
+      setUploading(true);
+      try {
+        const [uploaded] = await uploadFiles("projectMedia", {
+          files: Array.from(files),
+          input: { organizationId: documentContext?.organizationId || "" },
+        });
+        if (!uploaded?.url) return;
+        if (mode === "image") {
+          editor
+            .chain()
+            .focus()
+            .setImage({
+              src: uploaded.url,
+              alt: uploaded.name || "Uploaded image",
+            })
+            .run();
+        } else {
+          editor
+            .chain()
+            .focus()
+            .insertContent(
+              `<p><a href="${uploaded.url}" target="_blank" rel="noreferrer">📎 ${uploaded.name || "Attached file"}</a></p>`,
+            )
+            .run();
+        }
+      } finally {
+        setUploading(false);
+        if (imageInputRef.current) imageInputRef.current.value = "";
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
+    },
+    [documentContext?.organizationId, editor],
+  );
+
+  const quickReferences = useMemo(() => {
+    const preferredOrder = [
+      "member",
+      "client",
+      "project",
+      "task",
+      "meeting",
+      "deal",
+      "file",
+    ];
+    return [...mentionOptions]
+      .sort(
+        (a, b) =>
+          preferredOrder.indexOf(a.type || "member") -
+          preferredOrder.indexOf(b.type || "member"),
+      )
+      .slice(0, 12);
+  }, [mentionOptions]);
+  const extraReferenceCount = Math.max(
+    0,
+    mentionOptions.length - quickReferences.length,
+  );
+
+  const menuStyle = {
+    top: menuPos.top,
+    left: Math.min(
+      menuPos.left,
+      Math.max(
+        16,
+        (typeof window !== "undefined" ? window.innerWidth : 1200) - 384,
+      ),
+    ),
+  };
+
   // ── Render ──────────────────────────────────────────────────────────────
   return (
     <div className={cn("flex h-full flex-col bg-background", className)}>
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-3xl px-8 pb-20 pt-10">
+        <div className="mx-auto w-full max-w-5xl px-6 pb-20 pt-8 sm:px-10">
           {/* ── Title ── */}
           <div className="relative mb-2">
             <textarea
@@ -465,7 +781,8 @@ export function WorkOsDocEditor({
               onChange={(e) => setLocalTitle(e.target.value)}
               onBlur={() => {
                 const trimmed = localTitle.trim();
-                if (trimmed !== title) onTitleBlur?.(trimmed || titlePlaceholder);
+                if (trimmed !== title)
+                  onTitleBlur?.(trimmed || titlePlaceholder);
               }}
               onKeyDown={(e: KeyboardEvent<HTMLTextAreaElement>) => {
                 if (e.key === "Enter") {
@@ -523,20 +840,239 @@ export function WorkOsDocEditor({
             className="relative"
             onBlur={(e) => {
               // Only fire when focus leaves the editor entirely
-              if (!editorContainerRef.current?.contains(e.relatedTarget as Node)) {
+              if (
+                !editorContainerRef.current?.contains(e.relatedTarget as Node)
+              ) {
                 handleBodyBlur();
               }
             }}
           >
             {/* Sticky toolbar */}
             <div className="sticky top-0 z-10 -mx-1 mb-2 overflow-hidden rounded-xl border border-border shadow-sm">
-              <EditorToolbar editor={editor} />
+              <EditorToolbar
+                editor={editor}
+                onInsertLink={openLinkPanel}
+                onPickImage={() => imageInputRef.current?.click()}
+                onPickFile={() => fileInputRef.current?.click()}
+              />
             </div>
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => void uploadAndInsert(e.target.files, "image")}
+            />
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              onChange={(e) => void uploadAndInsert(e.target.files, "file")}
+            />
+            {(uploading || documentContext) && (
+              <div className="mb-3 flex flex-wrap items-center gap-2 text-[11px] text-text-muted">
+                {uploading && (
+                  <span className="inline-flex items-center gap-1">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Uploading…
+                  </span>
+                )}
+                {documentContext && (
+                  <span className="rounded-full border border-border bg-card px-2 py-1">
+                    Mentions scoped to{" "}
+                    {documentContext.scope === "project"
+                      ? "this project"
+                      : "workspace"}
+                  </span>
+                )}
+                <span className="rounded-full border border-border bg-card px-2 py-1">
+                  Type @/ to link people and workspace records
+                </span>
+              </div>
+            )}
+            {quickReferences.length > 0 && (
+              <div className="mb-4 overflow-hidden rounded-xl border border-border bg-card/80 shadow-sm">
+                <div className="flex items-center justify-between border-b border-border px-3 py-2">
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-text-muted">
+                      References
+                    </div>
+                    <div className="text-xs text-text-muted">
+                      Click a chip or type @/ for the full searchable menu
+                    </div>
+                  </div>
+                  {extraReferenceCount > 0 && (
+                    <button
+                      type="button"
+                      onMouseDown={(event) => {
+                        event.preventDefault();
+                        mentionItemsRef.current = mentionOptions.slice(0, 60);
+                        setMentionItems(mentionOptions.slice(0, 60));
+                        setMentionSelectedIndex(0);
+                        mentionSelectedIndexRef.current = 0;
+                        setMenuPos({
+                          top: event.clientY + 8,
+                          left: event.clientX - 320,
+                        });
+                        showMentionMenuRef.current = true;
+                        setShowMentionMenu(true);
+                      }}
+                      className="rounded-full bg-muted px-2 py-1 text-[10px] font-bold text-text-muted hover:text-foreground"
+                    >
+                      +{extraReferenceCount} more
+                    </button>
+                  )}
+                </div>
+                <div className="flex max-h-20 flex-wrap gap-1.5 overflow-y-auto p-2">
+                  {quickReferences.map((option) => (
+                    <button
+                      key={`${option.type || "member"}-${option.id}`}
+                      type="button"
+                      title={option.helper || option.type || "Reference"}
+                      onMouseDown={(event) => {
+                        event.preventDefault();
+                        insertMentionReference(option);
+                      }}
+                      className="max-w-[180px] truncate rounded-full border border-border bg-background px-2 py-0.5 text-[11px] font-semibold text-foreground transition-colors hover:bg-muted"
+                    >
+                      <span className="text-text-muted">
+                        {option.type || "member"}
+                      </span>{" "}
+                      @{option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <EditorContent editor={editor} />
+            {editor &&
+              selectionToolbar.show &&
+              typeof document !== "undefined" &&
+              createPortal(
+                <div
+                  className="fixed z-[2000] flex items-center gap-0.5 rounded-xl border border-border bg-popover p-1 text-popover-foreground shadow-2xl"
+                  style={{
+                    top: selectionToolbar.top,
+                    left: selectionToolbar.left,
+                  }}
+                >
+                  <ToolbarBtn
+                    title="Bold"
+                    onClick={() => editor.chain().focus().toggleBold().run()}
+                    active={editor.isActive("bold")}
+                  >
+                    <Bold className="h-3 w-3" />
+                  </ToolbarBtn>
+                  <ToolbarBtn
+                    title="Italic"
+                    onClick={() => editor.chain().focus().toggleItalic().run()}
+                    active={editor.isActive("italic")}
+                  >
+                    <Italic className="h-3 w-3" />
+                  </ToolbarBtn>
+                  <ToolbarBtn title="Link" onClick={openLinkPanel}>
+                    <Link2 className="h-3 w-3" />
+                  </ToolbarBtn>
+                  <ToolbarBtn
+                    title="Quote"
+                    onClick={() =>
+                      editor.chain().focus().toggleBlockquote().run()
+                    }
+                    active={editor.isActive("blockquote")}
+                  >
+                    <Quote className="h-3 w-3" />
+                  </ToolbarBtn>
+                  <ToolbarBtn
+                    title="Code"
+                    onClick={() => editor.chain().focus().toggleCode().run()}
+                    active={editor.isActive("code")}
+                  >
+                    <Code className="h-3 w-3" />
+                  </ToolbarBtn>
+                </div>,
+                document.body,
+              )}
+
+            {linkPanel.open &&
+              typeof document !== "undefined" &&
+              createPortal(
+                <div
+                  className="fixed z-[2000] w-[min(92vw,360px)] rounded-2xl border border-border bg-popover p-4 text-popover-foreground shadow-2xl"
+                  style={{
+                    top: Math.max(80, selectionToolbar.top || 160),
+                    left: Math.min(
+                      Math.max(16, selectionToolbar.left || 280),
+                      Math.max(
+                        16,
+                        (typeof window !== "undefined"
+                          ? window.innerWidth
+                          : 1200) - 384,
+                      ),
+                    ),
+                  }}
+                >
+                  <div className="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-text-muted">
+                    Add link
+                  </div>
+                  <label className="mb-2 block text-xs font-semibold text-text-muted">
+                    Link name
+                  </label>
+                  <input
+                    value={linkPanel.label}
+                    onChange={(e) =>
+                      setLinkPanel((current) => ({
+                        ...current,
+                        label: e.target.value,
+                      }))
+                    }
+                    className="mb-3 h-9 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/20"
+                    placeholder="Display text"
+                  />
+                  <label className="mb-2 block text-xs font-semibold text-text-muted">
+                    URL
+                  </label>
+                  <input
+                    value={linkPanel.href}
+                    onChange={(e) =>
+                      setLinkPanel((current) => ({
+                        ...current,
+                        href: e.target.value,
+                      }))
+                    }
+                    className="h-9 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/20"
+                    placeholder="https://..."
+                    autoFocus
+                  />
+                  <div className="mt-4 flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setLinkPanel({ open: false, href: "", label: "" });
+                      }}
+                      className="h-8 rounded-xl px-3 text-xs font-semibold text-text-muted hover:bg-muted"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        applyLink();
+                      }}
+                      className="h-8 rounded-xl bg-primary px-3 text-xs font-semibold text-white"
+                    >
+                      Insert link
+                    </button>
+                  </div>
+                </div>,
+                document.body,
+              )}
 
             {/* Slash command portal */}
-            {editor && showSlashMenu && typeof document !== "undefined" &&
+            {editor &&
+              showSlashMenu &&
+              typeof document !== "undefined" &&
               createPortal(
                 <div
                   className="fixed z-[200]"
@@ -549,8 +1085,58 @@ export function WorkOsDocEditor({
                       showSlashMenuRef.current = false;
                       setShowSlashMenu(false);
                     }}
-                    selectedIndex={slashSelectedIndexRef.current}
+                    selectedIndex={slashSelectedIndex}
                   />
+                </div>,
+                document.body,
+              )}
+            {editor &&
+              showMentionMenu &&
+              typeof document !== "undefined" &&
+              createPortal(
+                <div
+                  className="fixed z-[2000] w-[min(92vw,360px)] overflow-hidden rounded-2xl border border-border bg-popover p-1 text-popover-foreground shadow-2xl"
+                  style={menuStyle}
+                >
+                  <div className="border-b border-border px-3 py-2">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-text-muted">
+                      Reference workspace
+                    </div>
+                    <div className="text-xs text-text-muted">
+                      Members, clients, projects, and scoped tasks
+                    </div>
+                  </div>
+                  <div className="max-h-72 overflow-y-auto py-1">
+                    {mentionItems.length === 0 ? (
+                      <div className="px-3 py-3 text-xs text-text-muted">
+                        No matching references
+                      </div>
+                    ) : (
+                      mentionItems.map((item, index) => (
+                        <button
+                          key={`${item.type || "member"}-${item.id}`}
+                          type="button"
+                          className={cn(
+                            "flex w-full flex-col rounded-lg px-3 py-2 text-left transition-colors",
+                            index === mentionSelectedIndex
+                              ? "bg-muted text-foreground"
+                              : "text-foreground hover:bg-muted/70",
+                          )}
+                          onMouseDown={(event) => {
+                            event.preventDefault();
+                            executeMentionReference(item);
+                          }}
+                        >
+                          <span className="text-sm font-semibold">
+                            @{item.label}
+                          </span>
+                          <span className="text-[11px] text-text-muted">
+                            {item.helper || item.type || "Reference"}
+                          </span>
+                        </button>
+                      ))
+                    )}
+                  </div>
                 </div>,
                 document.body,
               )}

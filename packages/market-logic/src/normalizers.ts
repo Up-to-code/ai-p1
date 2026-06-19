@@ -8,24 +8,6 @@ type CityDefinition = {
   aliases: string[];
 };
 
-const SAUDI_CITY_DEFINITIONS: CityDefinition[] = [
-  { canonical: "الرياض", aliases: ["الرياض", "riyadh", "ar riyadh", "riyad"] },
-  { canonical: "جدة", aliases: ["جدة", "جده", "jeddah", "jedda"] },
-  { canonical: "الدمام", aliases: ["الدمام", "dammam"] },
-  { canonical: "مكة المكرمة", aliases: ["مكة", "مكة المكرمة", "makkah", "mecca"] },
-  { canonical: "المدينة المنورة", aliases: ["المدينة", "المدينة المنورة", "medina", "madinah"] },
-  { canonical: "الخبر", aliases: ["الخبر", "khobar", "al khobar"] },
-  { canonical: "الظهران", aliases: ["الظهران", "dhahran"] },
-  { canonical: "الجبيل", aliases: ["الجبيل", "jubail", "al jubail"] },
-  { canonical: "أبها", aliases: ["أبها", "ابها", "abha"] },
-  { canonical: "الطائف", aliases: ["الطائف", "taif", "ta'if"] },
-  { canonical: "تبوك", aliases: ["تبوك", "tabuk"] },
-  { canonical: "بريدة", aliases: ["بريدة", "buraydah", "buraidah"] },
-  { canonical: "حائل", aliases: ["حائل", "hail", "ha'il"] },
-  { canonical: "نجران", aliases: ["نجران", "najran"] },
-  { canonical: "جازان", aliases: ["جازان", "جيزان", "jazan", "gizan"] },
-];
-
 const MARKET_STOPWORDS = new Set([
   "في",
   "داخل",
@@ -41,9 +23,6 @@ const MARKET_STOPWORDS = new Set([
   "district",
   "area",
   "city",
-  "saudi",
-  "arabia",
-  "ksa",
   "الأصول",
   "أصل",
   "اصول",
@@ -106,13 +85,19 @@ function cleanDisplayText(value: string): string {
 }
 
 function stripCityAliases(value: string): string {
-  let result = value;
-  for (const city of SAUDI_CITY_DEFINITIONS) {
-    for (const alias of city.aliases) {
-      result = result.replace(new RegExp(`\\b${escapeRegExp(alias)}\\b`, "giu"), " ");
-    }
-  }
-  return cleanDisplayText(result);
+  return cleanDisplayText(value);
+}
+
+function deriveAreaFromCombinedText(value: string): string | undefined {
+  const fragments = value
+    .split(/[،,\-|/]/)
+    .map((fragment) => cleanDisplayText(fragment))
+    .filter(Boolean);
+  const preferred = fragments[0];
+  const normalizedPreferred = normalizeMarketArea(preferred);
+  if (normalizedPreferred) return normalizedPreferred;
+
+  return normalizeMarketArea(stripCityAliases(value));
 }
 
 function isUsefulAreaCandidate(value: string | undefined): value is string {
@@ -124,15 +109,6 @@ function isUsefulAreaCandidate(value: string | undefined): value is string {
     .filter(Boolean)
     .filter((token) => !MARKET_STOPWORDS.has(token));
   return tokens.length > 0 && cleaned.length >= 2;
-}
-
-export function normalizeSaudiCity(value?: string | null): string | undefined {
-  if (!value) return undefined;
-  const normalized = normalizeText(value);
-  const match = SAUDI_CITY_DEFINITIONS.find((city) =>
-    city.aliases.some((alias) => normalized.includes(alias.toLowerCase())),
-  );
-  return match?.canonical;
 }
 
 export function normalizeMarketArea(value?: string | null): string | undefined {
@@ -147,52 +123,27 @@ export function normalizeMarketArea(value?: string | null): string | undefined {
   return filtered.join(" ");
 }
 
-function deriveAreaFromCombinedText(value: string, city?: string): string | undefined {
-  const fragments = value
-    .split(/[،,\-|/]/)
-    .map((fragment) => cleanDisplayText(fragment))
-    .filter(Boolean);
-  const preferred = fragments.find((fragment) => {
-    const fragmentCity = normalizeSaudiCity(fragment);
-    return !fragmentCity || fragmentCity !== city;
-  });
-  const normalizedPreferred = normalizeMarketArea(preferred);
-  if (normalizedPreferred) return normalizedPreferred;
-
-  return normalizeMarketArea(stripCityAliases(value));
-}
-
-export function parseSaudiGeography(args: {
+export function parseMarketGeography(args: {
   location?: string | null;
   area?: string | null;
   address?: string | null;
   query?: string | null;
 }): ParsedMarketGeography {
-  const composite = [args.location, args.area, args.address, args.query]
-    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
-    .join(" ");
-  const city =
-    normalizeSaudiCity(args.location) ??
-    normalizeSaudiCity(args.area) ??
-    normalizeSaudiCity(args.address) ??
-    normalizeSaudiCity(args.query) ??
-    normalizeSaudiCity(composite);
-
   const explicitArea = normalizeMarketArea(args.area);
-  if (explicitArea && explicitArea !== city) {
-    return { city, area: explicitArea };
+  if (explicitArea) {
+    return { area: explicitArea };
   }
 
   const inferredArea =
-    deriveAreaFromCombinedText(args.location ?? "", city) ??
-    deriveAreaFromCombinedText(args.address ?? "", city) ??
-    deriveAreaFromCombinedText(args.query ?? "", city);
+    deriveAreaFromCombinedText(args.location ?? "") ??
+    deriveAreaFromCombinedText(args.address ?? "") ??
+    deriveAreaFromCombinedText(args.query ?? "");
 
-  if (inferredArea && inferredArea !== city) {
-    return { city, area: inferredArea };
+  if (inferredArea) {
+    return { area: inferredArea };
   }
 
-  return city ? { city } : {};
+  return {};
 }
 
 export function inferAssetTypeLabel(value?: string | null): string | undefined {

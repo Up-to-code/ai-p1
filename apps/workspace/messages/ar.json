@@ -17,7 +17,7 @@
     "expand": "توسيع"
   },
   "AutoUi": {
-    "The Saudi Arabia Central Real Estate Data Synchronization Engine___": "محرك مزامنة البيانات الأصلية المركزي في المملكة العربية السعودية",
+    "The Saudi Arabia Central Real Estate Data Synchronization Engine___": "محرك مزامنة البيانات المركزي",
     "© 2026 qentrah Platform___ All rights reserved___": "© 2026 منصة كانترا. جميع الحقوق محفوظة.",
     "Sign in to access your workspace data workspace___": "سجل الدخول للوصول إلى مساحة العمل.",
     "Min___ 8 characters": "الحد الأدنى 8 أحرف",
@@ -2749,7 +2749,7 @@
             "ready": "جاهز للفهرسة المحلية",
             "search": "Spotlight search: \"Al Manar\"",
             "complex": "Al Manar Residential Complex",
-            "complexDesc": "Qentrah Workspace Project • Riyadh",
+            "complexDesc": "Qentrah Workspace Project • Downtown",
             "apt": "Apt A-101 (Al Manar)",
             "aptDesc": "Available asset • 145 sqm",
             "open": "Open in Qentrah",
@@ -3358,6 +3358,7 @@
     },
     "form": {
       "title": "العنوان",
+      "titlePlaceholder": "عنوان المهمة",
       "status": "الحالة",
       "priority": "الأولوية",
       "visibility": "الظهور",
@@ -3366,6 +3367,7 @@
       "client": "العميل",
       "project": "المشروع",
       "description": "الوصف",
+      "descriptionPlaceholder": "أضف وصفاً… اكتب / للأوامر",
       "tags": "الوسوم",
       "assigneePlaceholder": "اختر زميل عمل",
       "clientPlaceholder": "اختر العميل",
@@ -3623,7 +3625,7 @@
       "avatarRemoveSavedDescription": "تمت إزالة صورة الملف الشخصي وحفظ التغيير تلقائياً.",
       "avatarDesc": "JPG أو PNG، الحد الأقصى 2 ميجابايت",
       "orgType": "نوع المؤسسة",
-      "timezoneTooltip": "مثال: Asia/Riyadh — يؤثر على طريقة عرض الطوابع الزمنية."
+      "timezoneTooltip": "مثال: America/New_York — يؤثر على طريقة عرض الطوابع الزمنية."
     },
     "notifications": {
       "product": "المنتج",

@@ -1,5 +1,4 @@
 export const GCC_COUNTRY_OPTIONS = [
-  { code: "SA", label: "المملكة العربية السعودية" },
   { code: "AE", label: "الإمارات العربية المتحدة" },
   { code: "QA", label: "دولة قطر" },
   { code: "KW", label: "دولة الكويت" },

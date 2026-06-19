@@ -2,7 +2,7 @@ import { brandDomainUrl } from "@qentrah/brand-identity";
 
 import type { Locale } from "@/lib/content";
 
-type PublicSeoLinkId = "home" | "pricing" | "docs" | "about";
+type PublicSeoLinkId = "home" | "pricing" | "docs" | "about" | "blog";
 
 type PublicSeoLink = {
   id: PublicSeoLinkId;
@@ -42,6 +42,20 @@ export const publicSeoLinks = [
     descriptions: {
       en: "View Qentrah workspace pricing.",
       ar: "اطلع على أسعار مساحة عمل كانترا.",
+    },
+  },
+  {
+    id: "blog",
+    href: "/blog",
+    externalUrl: `${rootUrl}/blog`,
+    navKey: "blog",
+    labels: {
+      en: "Blog",
+      ar: "المدونة",
+    },
+    descriptions: {
+      en: "Read the latest articles and news.",
+      ar: "اقرأ أحدث المقالات والأخبار.",
     },
   },
   {

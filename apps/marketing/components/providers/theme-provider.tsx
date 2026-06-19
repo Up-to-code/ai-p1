@@ -17,17 +17,17 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function applyTheme(theme: Theme) {
   const root = document.documentElement;
-  root.classList.toggle("dark", theme === "dark");
+  root.setAttribute("data-theme", theme);
   root.style.colorScheme = theme;
 }
 
-function readStoredTheme(): Theme {
+function readCurrentTheme(): Theme {
   if (typeof window === "undefined") return "light";
-  return window.localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "light";
+  return document.documentElement.getAttribute("data-theme") as Theme || "light";
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => readStoredTheme());
+  const [theme, setThemeState] = useState<Theme>(() => readCurrentTheme());
 
   useEffect(() => {
     applyTheme(theme);
