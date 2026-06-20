@@ -110,6 +110,7 @@ import type * as security_backfillTargets from "../security/backfillTargets.js";
 import type * as security_clientPii from "../security/clientPii.js";
 import type * as security_organizationData from "../security/organizationData.js";
 import type * as serviceTokens from "../serviceTokens.js";
+import type * as shared_present from "../shared/present.js";
 import type * as userProfiles_data from "../userProfiles/data.js";
 import type * as userProfiles_read from "../userProfiles/read.js";
 import type * as userProfiles_validators from "../userProfiles/validators.js";
@@ -228,6 +229,7 @@ declare const fullApi: ApiFromModules<{
   "security/clientPii": typeof security_clientPii;
   "security/organizationData": typeof security_organizationData;
   serviceTokens: typeof serviceTokens;
+  "shared/present": typeof shared_present;
   "userProfiles/data": typeof userProfiles_data;
   "userProfiles/read": typeof userProfiles_read;
   "userProfiles/validators": typeof userProfiles_validators;

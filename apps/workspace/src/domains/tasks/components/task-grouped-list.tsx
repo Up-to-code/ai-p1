@@ -1,14 +1,19 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Calendar, Flag, CheckCircle2, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TaskRecord, TaskStatus } from "../tasks.types";
 import {
-  nextTaskPipelineOrder,
-  sortPipelineTasks,
-} from "../task-pipeline-order";
+  STATUS_DOT,
+  STATUS_COLUMN_BG,
+  PRIORITY_COLOR,
+  getDueDateColor,
+  getInitials,
+} from "../tasks.constants";
+import { sortPipelineTasks } from "../task-pipeline-order";
+import { taskLog } from "../task-log";
 import {
   DragDropContext,
   Droppable,
@@ -16,52 +21,19 @@ import {
   type DropResult,
 } from "@hello-pangea/dnd";
 
-function getDueDateColor(dueDate?: string | null) {
-  if (!dueDate) return "text-muted-foreground";
-  const date = new Date(dueDate);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  if (date < today) return "text-red-500";
-  if (date.getTime() === today.getTime()) return "text-amber-500";
-  return "text-muted-foreground";
-}
-
-function getColumnBg(status: TaskStatus) {
-  if (status === "todo") return "bg-muted/30";
-  if (status === "inProgress") return "bg-blue-500/5 dark:bg-blue-500/10";
-  if (status === "waiting") return "bg-amber-500/5 dark:bg-amber-500/10";
-  if (status === "done") return "bg-emerald-500/5 dark:bg-emerald-500/10";
-  return "bg-muted/30";
-}
-
-function getPriorityColor(priority: string) {
-  if (priority === "urgent") return "text-red-500";
-  if (priority === "high") return "text-amber-500";
-  return "text-muted-foreground/50";
-}
-
-function getStatusDot(status: TaskStatus) {
-  if (status === "done") return "bg-emerald-500";
-  if (status === "inProgress") return "bg-blue-500";
-  if (status === "waiting") return "bg-amber-500";
-  if (status === "canceled") return "bg-muted-foreground";
-  return "bg-muted-foreground/50";
-}
-
-function getStatusLabel(status: TaskStatus) {
-  if (status === "done") return "Done";
-  if (status === "inProgress") return "In progress";
-  if (status === "waiting") return "Waiting";
-  if (status === "canceled") return "Canceled";
-  return "To do";
-}
-
-function getInitials(name?: string) {
-  if (!name) return "?";
-  return name.slice(0, 2).toUpperCase();
-}
-
 const BOARD_STATUSES: TaskStatus[] = ["todo", "inProgress", "waiting", "done"];
+
+function taskIds(list: TaskRecord[]) {
+  return list.map((t) => t.id);
+}
+
+function sameIds(a: string[], b: string[]) {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
 
 export function TaskGroupedList({
   tasks,
@@ -82,35 +54,59 @@ export function TaskGroupedList({
 }) {
   const t = useTranslations("Tasks");
   const [mounted, setMounted] = useState(false);
-  const [optimisticTasks, setOptimisticTasks] = useState(tasks);
-
-  // Sync optimistic tasks with real tasks prop when it changes
-  useEffect(() => {
-    setOptimisticTasks(tasks);
-  }, [tasks]);
 
   useEffect(() => {
-    setMounted(true);
+    const frame = window.requestAnimationFrame(() => setMounted(true));
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
+  // Track previous column arrays to avoid reference churn
+  const prevRef = useRef<Record<string, TaskRecord[]>>({});
+
   const groupedTasks = useMemo(() => {
-    const groups: Record<TaskStatus, TaskRecord[]> = {
+    const groups: Record<string, TaskRecord[]> = {
       todo: [],
       inProgress: [],
       waiting: [],
       done: [],
       canceled: [],
     };
-    for (const task of optimisticTasks) {
+    for (const task of tasks) {
       if (groups[task.status]) {
         groups[task.status].push(task);
       }
     }
+
+    const prev = prevRef.current;
+    const result: Record<string, TaskRecord[]> = {};
+    const changed: string[] = [];
+
     for (const status of BOARD_STATUSES) {
-      groups[status] = sortPipelineTasks(groups[status]);
+      const sorted = sortPipelineTasks(groups[status]);
+      const prevIds = taskIds(prev[status] ?? []);
+      const nextIds = taskIds(sorted);
+
+      if (sameIds(prevIds, nextIds)) {
+        // Order unchanged — keep previous reference (no Draggable re-renders)
+        result[status] = prev[status];
+      } else {
+        result[status] = sorted;
+        changed.push(status);
+      }
     }
-    return groups;
-  }, [optimisticTasks]);
+
+    if (changed.length > 0) {
+      taskLog.info("grouped:changed", {
+        changed,
+        counts: BOARD_STATUSES.map(
+          (s) => `${s}:${(result[s] ?? []).length}`,
+        ).join(" "),
+      });
+    }
+
+    prevRef.current = result;
+    return result as Record<TaskStatus, TaskRecord[]>;
+  }, [tasks]);
 
   const visibleStatuses =
     statusFilter === "all"
@@ -129,25 +125,6 @@ export function TaskGroupedList({
 
     const newStatus = destination.droppableId as TaskStatus;
 
-    // Optimistically update status + pipelineOrder so same-column and cross-column drops
-    // render with the same ordering rules used by the persisted mutation.
-    setOptimisticTasks((prev) => {
-      const moving = prev.find((task) => task.id === draggableId);
-      if (!moving) return prev;
-      const statusTasks = prev.filter((task) => task.status === newStatus);
-      const pipelineOrder = nextTaskPipelineOrder(
-        statusTasks,
-        draggableId,
-        destination.index,
-      );
-      return prev.map((task) =>
-        task.id === draggableId
-          ? { ...moving, status: newStatus, pipelineOrder }
-          : task,
-      );
-    });
-
-    // Call the API for same-column and cross-column moves to persist index.
     onTaskDrop?.(draggableId, newStatus, destination.index);
   };
 
@@ -155,7 +132,7 @@ export function TaskGroupedList({
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="flex min-h-[480px] gap-4 overflow-x-auto pb-8 items-start">
+      <div className="flex min-h-[480px] gap-4 items-start">
         {visibleStatuses.map((status) => {
           const columnTasks = groupedTasks[status];
           return (
@@ -163,7 +140,7 @@ export function TaskGroupedList({
               key={status}
               className={cn(
                 "flex w-[300px] shrink-0 flex-col rounded-2xl border border-border",
-                getColumnBg(status),
+                STATUS_COLUMN_BG[status],
               )}
             >
               {/* Column Header */}
@@ -172,7 +149,7 @@ export function TaskGroupedList({
                   <span
                     className={cn(
                       "h-2.5 w-2.5 rounded-full shrink-0",
-                      getStatusDot(status),
+                      STATUS_DOT[status],
                     )}
                   />
                   <span className="text-xs font-black uppercase tracking-widest text-foreground">
@@ -237,7 +214,7 @@ export function TaskGroupedList({
                               </p>
                             </div>
 
-                            {/* Meta row - using ps-6 for RTL support */}
+                            {/* Meta row */}
                             <div className="mt-2.5 flex flex-wrap items-center gap-2 ps-6">
                               {task.dueDate && (
                                 <span
@@ -257,7 +234,7 @@ export function TaskGroupedList({
                                 <span
                                   className={cn(
                                     "flex items-center gap-1 text-[11px] font-semibold",
-                                    getPriorityColor(task.priority),
+                                    PRIORITY_COLOR[task.priority],
                                   )}
                                 >
                                   <Flag className="h-3 w-3" />
@@ -266,7 +243,7 @@ export function TaskGroupedList({
                               )}
                             </div>
 
-                            {/* Assignee row - using justify-between (RTL friendly) and ps-6 */}
+                            {/* Assignee row */}
                             <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-3">
                               <div className="flex flex-col gap-0.5">
                                 <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">

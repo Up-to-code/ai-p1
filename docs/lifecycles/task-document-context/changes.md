@@ -27,3 +27,15 @@
 - Normalized mention hrefs again at insertion time using the current browser locale path.
 - Restyled and compacted the reference card to better match the app design system.
 - Wired board drag/drop destination index into persisted `pipelineOrder`, including same-column moves and cross-column top insertion.
+
+## 2025-06-20
+
+- Fixed task query error handling and retry behavior.
+- Exposed query error state from task hooks so the UI can show actionable error messages instead of silent empty states.
+- Added retry buttons to task list and task detail screens using `refetch()` from the query result.
+- Fixed ownership filter label to use existing `Tasks.filters.all` translation key.
+- Fixed kanban card reload glitch by improving optimistic update logic in `moveTaskMutation`.
+- Updated lifecycle notes in `risks.md` and `changes.md`.
+- Removed the board-local optimistic task store so task columns render from the TanStack task query cache only.
+- Centralized task cache upsert/remove handling for create, save, delete, and drag/drop moves so the task list no longer invalidates and reloads after every task mutation.
+- Added an in-flight move patch overlay so a background task read cannot visibly snap a dragged card back to its old column/order while the write is still pending.

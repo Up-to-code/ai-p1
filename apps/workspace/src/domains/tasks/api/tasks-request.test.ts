@@ -55,12 +55,12 @@ describe("task request wrappers", () => {
 
     expect(fetcher).toHaveBeenNthCalledWith(1, "/api/v1/organizations/org%201/tasks", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "content-type": "application/json" },
       body: JSON.stringify(taskPayloadFromForm(values)),
     });
     expect(fetcher).toHaveBeenNthCalledWith(2, "/api/v1/organizations/org%201/tasks/task%2F1", {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: { "content-type": "application/json" },
       body: JSON.stringify(taskPayloadFromForm(values)),
     });
     expect(fetcher).toHaveBeenNthCalledWith(3, "/api/v1/organizations/org%201/tasks/task%2F1", {
