@@ -1,6 +1,7 @@
 import type { Context } from "hono";
 import { z } from "zod";
 import type { Id, TableNames } from "@convex/_generated/dataModel";
+import { errorMessage, errorStatus } from "@/server/utils/response/error-map";
 
 const WORKSPACE_READ_TIMEOUT_MS = 10_000;
 const MAX_CURSOR_LENGTH = 4_000;
@@ -23,25 +24,11 @@ export class WorkspaceReadTimeoutError extends Error {
 }
 
 export function workspaceReadStatus(error: unknown) {
-  const message = error instanceof Error ? error.message : "";
-  if (error instanceof WorkspaceReadTimeoutError) return 504;
-  if (/Unauthenticated/i.test(message)) return 401;
-  if (/permission|not have access|forbidden/i.test(message)) return 403;
-  if (/not found/i.test(message)) return 404;
-  if (/rate.?limit/i.test(message)) return 429;
-  return 500;
+  return errorStatus(error);
 }
 
 export function workspaceReadMessage(error: unknown) {
-  const status = workspaceReadStatus(error);
-  if (error instanceof WorkspaceReadTimeoutError) {
-    return "Workspace data took too long to load. Try again in a moment.";
-  }
-  if (status === 401) return "Sign in again to load workspace data.";
-  if (status === 403) return "You do not have permission to load this workspace data.";
-  if (status === 404) return "Workspace data was not found.";
-  if (status === 429) return "Too many workspace requests. Try again in a moment.";
-  return "Workspace data could not be loaded.";
+  return errorMessage(error, "Workspace data could not be loaded.");
 }
 
 function validationError(c: Context, error: z.ZodError, fallback: string) {

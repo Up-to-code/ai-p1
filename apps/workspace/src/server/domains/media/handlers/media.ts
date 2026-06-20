@@ -1,12 +1,17 @@
 import type { Context } from "hono";
+import { createCrudHandlers } from "@/server/utils/handler-factory";
 import { validateJsonBody } from "@/server/utils/request/json-body";
 import { actionErrorJson } from "@/server/utils/response/action-error";
-import { attachMedia, createMediaFolder, deleteMedia, deleteMediaFolder, updateMedia } from "../services/media";
-import { attachMediaPayloadSchema, createMediaFolderPayloadSchema, updateMediaPayloadSchema } from "../validation/media.schema";
+import { attachMedia, createMediaFolder, deleteMediaFolder, updateMedia, deleteMedia } from "../services/media";
+import { attachMediaPayloadSchema, createMediaFolderPayloadSchema } from "../validation/media.schema";
 
-function handleError(c: Context, error: unknown) {
-  return actionErrorJson(c, error, "Media action failed.");
-}
+export const { handleUpdate: handleUpdateMedia, handleDelete: handleDeleteMedia } = createCrudHandlers({
+  resourceName: "mediaAsset",
+  createSchema: attachMediaPayloadSchema,
+  updateSchema: attachMediaPayloadSchema,
+  resourceIdParam: "mediaId",
+  service: { create: attachMedia, update: updateMedia, delete: deleteMedia },
+});
 
 export async function handleAttachMedia(c: Context) {
   const organizationId = c.req.param("organizationId");
@@ -15,38 +20,9 @@ export async function handleAttachMedia(c: Context) {
   if (!parsed.ok) return parsed.response;
 
   try {
-    const mediaAsset = await attachMedia(organizationId, parsed.data);
-    return c.json({ mediaAsset });
+    return c.json({ mediaAsset: await attachMedia(organizationId, parsed.data) });
   } catch (error) {
-    return handleError(c, error);
-  }
-}
-
-export async function handleUpdateMedia(c: Context) {
-  const organizationId = c.req.param("organizationId");
-  const mediaId = c.req.param("mediaId");
-  if (!organizationId || !mediaId) return c.json({ error: "Organization and media ids are required." }, 400);
-  const parsed = await validateJsonBody(c, updateMediaPayloadSchema, "Invalid media payload.");
-  if (!parsed.ok) return parsed.response;
-
-  try {
-    const mediaAsset = await updateMedia(organizationId, mediaId, parsed.data);
-    return c.json({ mediaAsset });
-  } catch (error) {
-    return handleError(c, error);
-  }
-}
-
-export async function handleDeleteMedia(c: Context) {
-  const organizationId = c.req.param("organizationId");
-  const mediaId = c.req.param("mediaId");
-  if (!organizationId || !mediaId) return c.json({ error: "Organization and media ids are required." }, 400);
-
-  try {
-    const result = await deleteMedia(organizationId, mediaId);
-    return c.json(result);
-  } catch (error) {
-    return handleError(c, error);
+    return actionErrorJson(c, error, "Media action failed.");
   }
 }
 
@@ -57,10 +33,9 @@ export async function handleCreateMediaFolder(c: Context) {
   if (!parsed.ok) return parsed.response;
 
   try {
-    const folder = await createMediaFolder(organizationId, parsed.data);
-    return c.json({ folder });
+    return c.json({ folder: await createMediaFolder(organizationId, parsed.data) });
   } catch (error) {
-    return handleError(c, error);
+    return actionErrorJson(c, error, "Media action failed.");
   }
 }
 
@@ -70,9 +45,8 @@ export async function handleDeleteMediaFolder(c: Context) {
   if (!organizationId || !folderId) return c.json({ error: "Organization and folder ids are required." }, 400);
 
   try {
-    const result = await deleteMediaFolder(organizationId, folderId);
-    return c.json(result);
+    return c.json(await deleteMediaFolder(organizationId, folderId));
   } catch (error) {
-    return handleError(c, error);
+    return actionErrorJson(c, error, "Media action failed.");
   }
 }

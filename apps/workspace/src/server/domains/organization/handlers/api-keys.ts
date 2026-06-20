@@ -12,7 +12,7 @@ import {
   rotateOrganizationApiKeySchema,
 } from "../validation/api-key.schema";
 
-function organizationId(c: Context) {
+function orgId(c: Context) {
   return c.req.param("organizationId");
 }
 
@@ -21,19 +21,18 @@ function handleError(c: Context, error: unknown) {
 }
 
 export async function handleListOrganizationApiKeys(c: Context) {
-  const id = organizationId(c);
+  const id = orgId(c);
   if (!id) return c.json({ error: "Organization id is required." }, 400);
 
   try {
-    const keys = await listOrganizationApiKeys(id);
-    return c.json({ keys });
+    return c.json({ keys: await listOrganizationApiKeys(id) });
   } catch (error) {
     return handleError(c, error);
   }
 }
 
 export async function handleCreateOrganizationApiKey(c: Context) {
-  const id = organizationId(c);
+  const id = orgId(c);
   if (!id) return c.json({ error: "Organization id is required." }, 400);
   const parsed = await validateJsonBody(c, createOrganizationApiKeySchema, "Invalid API key payload.");
   if (!parsed.ok) return parsed.response;
@@ -47,7 +46,7 @@ export async function handleCreateOrganizationApiKey(c: Context) {
 }
 
 export async function handleRotateOrganizationApiKey(c: Context) {
-  const id = organizationId(c);
+  const id = orgId(c);
   const apiKeyId = c.req.param("apiKeyId");
   if (!id || !apiKeyId) return c.json({ error: "Organization and API key ids are required." }, 400);
   const parsed = await validateJsonBody(c, rotateOrganizationApiKeySchema, "Invalid API key payload.");
@@ -62,13 +61,12 @@ export async function handleRotateOrganizationApiKey(c: Context) {
 }
 
 export async function handleRevokeOrganizationApiKey(c: Context) {
-  const id = organizationId(c);
+  const id = orgId(c);
   const apiKeyId = c.req.param("apiKeyId");
   if (!id || !apiKeyId) return c.json({ error: "Organization and API key ids are required." }, 400);
 
   try {
-    const result = await revokeOrganizationApiKey(id, apiKeyId);
-    return c.json(result);
+    return c.json(await revokeOrganizationApiKey(id, apiKeyId));
   } catch (error) {
     return handleError(c, error);
   }

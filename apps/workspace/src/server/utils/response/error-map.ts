@@ -1,0 +1,77 @@
+import type { ContentfulStatusCode } from "hono/utils/http-status";
+
+export type ErrorClass =
+  | "UNAUTHENTICATED"
+  | "FORBIDDEN"
+  | "PLATFORM_ADMIN_REQUIRED"
+  | "NOT_FOUND"
+  | "RATE_LIMITED"
+  | "VALIDATION"
+  | "TIMEOUT"
+  | "INTERNAL";
+
+const CLASS_BY_STATUS: Record<number, ErrorClass> = {
+  401: "UNAUTHENTICATED",
+  403: "FORBIDDEN",
+  404: "NOT_FOUND",
+  429: "RATE_LIMITED",
+  400: "VALIDATION",
+  504: "TIMEOUT",
+  500: "INTERNAL",
+};
+
+const STATUS_BY_CLASS: Record<ErrorClass, ContentfulStatusCode> = {
+  UNAUTHENTICATED: 401,
+  FORBIDDEN: 403,
+  PLATFORM_ADMIN_REQUIRED: 403,
+  NOT_FOUND: 404,
+  RATE_LIMITED: 429,
+  VALIDATION: 400,
+  TIMEOUT: 504,
+  INTERNAL: 500,
+};
+
+export function classifyError(error: unknown): ErrorClass {
+  const message = error instanceof Error ? error.message : "";
+
+  if (error instanceof Error && error.name === "WorkspaceReadTimeoutError") return "TIMEOUT";
+  if (/Unauthenticated/i.test(message)) return "UNAUTHENTICATED";
+  if (/platform admin required/i.test(message)) return "PLATFORM_ADMIN_REQUIRED";
+  if (/permission|not have access|forbidden/i.test(message)) return "FORBIDDEN";
+  if (/not found/i.test(message)) return "NOT_FOUND";
+  if (/rate.?limit/i.test(message)) return "RATE_LIMITED";
+  if (/invalid|required|must be/i.test(message)) return "VALIDATION";
+
+  return "INTERNAL";
+}
+
+export function errorStatus(error: unknown): ContentfulStatusCode {
+  return STATUS_BY_CLASS[classifyError(error)];
+}
+
+const MESSAGES: Record<ErrorClass, (error: unknown) => string> = {
+  UNAUTHENTICATED: () => "Sign in again to continue.",
+  PLATFORM_ADMIN_REQUIRED: () => "Platform admin required.",
+  FORBIDDEN: () => "You do not have permission to perform this action.",
+  NOT_FOUND: () => "The requested workspace record was not found.",
+  RATE_LIMITED: () => "Too many requests. Try again in a moment.",
+  VALIDATION: (error) => (error instanceof Error ? error.message : "Invalid request."),
+  TIMEOUT: () => "Workspace data took too long to load. Try again in a moment.",
+  INTERNAL: () => "Internal Server Error",
+};
+
+export function errorMessage(error: unknown, fallback: string): string {
+  const cls = classifyError(error);
+  if (cls === "INTERNAL") return fallback;
+  return MESSAGES[cls](error);
+}
+
+export function httpStatusFromCode(code: string): ContentfulStatusCode {
+  if (code === "UNAUTHORIZED") return 401;
+  if (code === "FORBIDDEN" || code === "ACCOUNT_INACTIVE" || code === "ROLE_PENDING" || code === "ROLE_REJECTED" || code === "VERIFICATION_REQUIRED") return 403;
+  if (code === "NOT_FOUND") return 404;
+  if (code === "ORGANIZATION_EXISTS" || code === "INVITE_EXISTS" || code === "MEMBER_EXISTS" || code === "USERNAME_TAKEN") return 409;
+  if (code === "RATE_LIMITED") return 429;
+  if (code === "AUTH_CONFIGURATION_ERROR" || code === "UPSTREAM_UNAVAILABLE") return 503;
+  return 500;
+}
