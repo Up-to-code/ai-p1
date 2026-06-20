@@ -1,3 +1,5 @@
+import { workspaceFetch } from "@/domains/resources/workspace-resource-request";
+
 export type NotificationCategory = "calendar" | "task" | "manual" | "organization";
 export type NotificationSourceType = "calendarEvent" | "task" | "manualSchedule";
 export type NotificationTrigger = "before_start" | "at_start" | "after_start" | "after_complete";
@@ -72,55 +74,43 @@ export const defaultNotificationPreference: Omit<NotificationPreference, "organi
   ],
 };
 
-async function jsonOrThrow<T>(response: Response, fallbackMessage: string): Promise<T> {
-  const payload = await response.json().catch(() => null);
-  if (!response.ok) {
-    const message = payload && typeof payload === "object" && "error" in payload
-      ? String((payload as { error: unknown }).error)
-      : fallbackMessage;
-    throw new Error(message);
-  }
-  return payload as T;
-}
-
-function organizationPath(organizationId: string, path: string) {
-  return `/api/v1/organizations/${encodeURIComponent(organizationId)}/${path.replace(/^\/+/u, "")}`;
-}
-
 export function getPushDeviceStatus() {
-  return fetch("/api/v1/profile/push-devices").then((response) =>
-    jsonOrThrow<PushDeviceStatus>(response, "Unable to load push device status."));
+  return fetch("/api/v1/profile/push-devices").then((r) => r.json()) as Promise<PushDeviceStatus>;
 }
 
 export function getMyNotificationPreferences(organizationId: string) {
-  return fetch(organizationPath(organizationId, "notification-settings/me")).then((response) =>
-    jsonOrThrow<{ preference: NotificationPreference }>(response, "Unable to load notification settings."));
+  return workspaceFetch<{ preference: NotificationPreference }>(organizationId, "notification-settings/me", {
+    method: "GET",
+    fallbackMessage: "Unable to load notification settings.",
+  });
 }
 
 export function updateMyNotificationPreferences(organizationId: string, input: NotificationPreference) {
-  return fetch(organizationPath(organizationId, "notification-settings/me"), {
+  return workspaceFetch<{ preference: NotificationPreference }>(organizationId, "notification-settings/me", {
     method: "PATCH",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(input),
-  }).then((response) =>
-    jsonOrThrow<{ preference: NotificationPreference }>(response, "Unable to save notification settings."));
+    body: input,
+    fallbackMessage: "Unable to save notification settings.",
+  });
 }
 
 export function getOrganizationNotificationPreferences(organizationId: string) {
-  return fetch(organizationPath(organizationId, "notification-settings/organization")).then((response) =>
-    jsonOrThrow<{ preference: NotificationPreference }>(response, "Unable to load organization notification settings."));
+  return workspaceFetch<{ preference: NotificationPreference }>(organizationId, "notification-settings/organization", {
+    method: "GET",
+    fallbackMessage: "Unable to load organization notification settings.",
+  });
 }
 
 export function updateOrganizationNotificationPreferences(organizationId: string, input: NotificationPreference) {
-  return fetch(organizationPath(organizationId, "notification-settings/organization"), {
+  return workspaceFetch<{ preference: NotificationPreference }>(organizationId, "notification-settings/organization", {
     method: "PATCH",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(input),
-  }).then((response) =>
-    jsonOrThrow<{ preference: NotificationPreference }>(response, "Unable to save organization notification settings."));
+    body: input,
+    fallbackMessage: "Unable to save organization notification settings.",
+  });
 }
 
 export function listNotificationSchedules(organizationId: string) {
-  return fetch(organizationPath(organizationId, "notification-schedules")).then((response) =>
-    jsonOrThrow<{ schedules: NotificationSchedule[] }>(response, "Unable to load notification schedules."));
+  return workspaceFetch<{ schedules: NotificationSchedule[] }>(organizationId, "notification-schedules", {
+    method: "GET",
+    fallbackMessage: "Unable to load notification schedules.",
+  });
 }

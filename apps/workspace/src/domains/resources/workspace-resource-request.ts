@@ -87,25 +87,54 @@ export function useWorkspaceResourceResult<T>(
   );
 }
 
-async function workspaceJsonOrThrow(response: Response, fallbackMessage: string) {
-  const payload = await response.json();
+// ─── Unified fetch ──────────────────────────────────────────────────────────
+
+type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE";
+
+async function parseJsonResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
+  const payload = await response.json().catch(() => null) as { error?: string } | null;
   if (!response.ok) {
-    throw new Error(payload.error ?? fallbackMessage);
+    throw new Error(payload?.error ?? fallbackMessage);
   }
-  return payload;
+  return payload as T;
 }
 
-export async function workspaceMutation<T>(
+/**
+ * The single source of truth for all organization-scoped HTTP mutations/queries.
+ * All other fetch helpers (workspaceMutation, requestOrganizationAction, etc.)
+ * should delegate to this function.
+ */
+export async function workspaceFetch<T>(
   organizationId: string,
   path: string,
-  options: { method: "POST" | "PATCH" | "DELETE"; body?: unknown; fallbackMessage: string },
-) {
+  options: { method: HttpMethod; body?: unknown; fallbackMessage: string },
+): Promise<T> {
   const response = await fetch(organizationResourcePath(organizationId, path), {
     method: options.method,
     headers: options.body === undefined ? undefined : { "content-type": "application/json" },
     body: options.body === undefined ? undefined : JSON.stringify(options.body),
   });
-  return workspaceJsonOrThrow(response, options.fallbackMessage) as Promise<T>;
+  return parseJsonResponse<T>(response, options.fallbackMessage);
+}
+
+/**
+ * Build an organization-scoped API path from segments.
+ * Use this instead of hardcoding `/api/v1/organizations/...`.
+ */
+export function organizationApiPath(organizationId: string, ...segments: string[]) {
+  const encoded = [organizationId, ...segments].map((segment) => encodeURIComponent(segment));
+  return `/api/v1/organizations/${encoded.join("/")}`;
+}
+
+/**
+ * Backward-compatible wrapper. Prefer `workspaceFetch` for new code.
+ */
+export async function workspaceMutation<T>(
+  organizationId: string,
+  path: string,
+  options: { method: "POST" | "PATCH" | "DELETE"; body?: unknown; fallbackMessage: string },
+) {
+  return workspaceFetch<T>(organizationId, path, options);
 }
 
 export type { IndexedInfinitePage };
