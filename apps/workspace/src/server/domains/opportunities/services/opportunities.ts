@@ -1,6 +1,6 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { fetchAuthMutation } from "@/server/auth/clerk-convex";
+import { createCrudService } from "@/server/utils/service-factory";
 import type { OpportunityPayload } from "../validation/opportunity.schema";
 
 function toConvexInput(input: OpportunityPayload) {
@@ -12,25 +12,16 @@ function toConvexInput(input: OpportunityPayload) {
   };
 }
 
-export async function createOpportunity(organizationId: string, input: OpportunityPayload) {
-  return fetchAuthMutation(api.opportunities.write.createFromHono, {
-    organizationId,
-    input: toConvexInput(input),
-  });
-}
+const crud = createCrudService<OpportunityPayload>({
+  api: {
+    create: api.opportunities.write.createFromHono,
+    update: api.opportunities.write.updateFromHono,
+    delete: api.opportunities.write.deleteFromHono,
+  },
+  idParamName: "opportunityId",
+  toConvexInput,
+});
 
-export async function updateOpportunity(organizationId: string, opportunityId: string, input: OpportunityPayload) {
-  return fetchAuthMutation(api.opportunities.write.updateFromHono, {
-    organizationId,
-    opportunityId: opportunityId as Id<"opportunities">,
-    input: toConvexInput(input),
-  });
-}
-
-export async function deleteOpportunity(organizationId: string, opportunityId: string) {
-  return fetchAuthMutation(api.opportunities.write.deleteFromHono, {
-    organizationId,
-    opportunityId: opportunityId as Id<"opportunities">,
-  });
-}
-
+export const createOpportunity = crud.create;
+export const updateOpportunity = crud.update;
+export const deleteOpportunity = crud.remove;

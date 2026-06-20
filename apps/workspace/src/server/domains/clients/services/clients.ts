@@ -1,29 +1,16 @@
 import { api } from "@convex/_generated/api";
-import { fetchAuthMutation } from "@/server/auth/clerk-convex";
+import { createCrudService } from "@/server/utils/service-factory";
 import type { ClientPayload } from "../validation/client.schema";
 
-function toConvexInput(input: ClientPayload) {
-  return input;
-}
+const crud = createCrudService<ClientPayload>({
+  api: {
+    create: api.clients.write.createFromHono,
+    update: api.clients.write.updateFromHono,
+    delete: api.clients.write.deleteFromHono,
+  },
+  idParamName: "clientId",
+});
 
-export async function createClient(organizationId: string, input: ClientPayload) {
-  return fetchAuthMutation(api.clients.write.createFromHono, {
-    organizationId,
-    input: toConvexInput(input),
-  });
-}
-
-export async function updateClient(organizationId: string, clientId: string, input: ClientPayload) {
-  return fetchAuthMutation(api.clients.write.updateFromHono, {
-    organizationId,
-    clientId: clientId as never,
-    input: toConvexInput(input),
-  });
-}
-
-export async function deleteClient(organizationId: string, clientId: string) {
-  return fetchAuthMutation(api.clients.write.deleteFromHono, {
-    organizationId,
-    clientId: clientId as never,
-  });
-}
+export const createClient = crud.create;
+export const updateClient = crud.update;
+export const deleteClient = crud.remove;

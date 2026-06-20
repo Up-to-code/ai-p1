@@ -1,6 +1,6 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { fetchAuthMutation } from "@/server/auth/clerk-convex";
+import { createCrudService } from "@/server/utils/service-factory";
 import type { ProjectPayload } from "../validation/project.schema";
 
 function toConvexInput(input: ProjectPayload) {
@@ -12,21 +12,16 @@ function toConvexInput(input: ProjectPayload) {
   };
 }
 
-export async function createProject(organizationId: string, input: ProjectPayload) {
-  return fetchAuthMutation(api.projects.write.createFromHono, { organizationId, input: toConvexInput(input) });
-}
+const crud = createCrudService<ProjectPayload>({
+  api: {
+    create: api.projects.write.createFromHono,
+    update: api.projects.write.updateFromHono,
+    delete: api.projects.write.deleteFromHono,
+  },
+  idParamName: "projectId",
+  toConvexInput,
+});
 
-export async function updateProject(organizationId: string, projectId: string, input: ProjectPayload) {
-  return fetchAuthMutation(api.projects.write.updateFromHono, {
-    organizationId,
-    projectId: projectId as never,
-    input: toConvexInput(input),
-  });
-}
-
-export async function deleteProject(organizationId: string, projectId: string) {
-  return fetchAuthMutation(api.projects.write.deleteFromHono, {
-    organizationId,
-    projectId: projectId as never,
-  });
-}
+export const createProject = crud.create;
+export const updateProject = crud.update;
+export const deleteProject = crud.remove;

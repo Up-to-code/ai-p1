@@ -1,6 +1,6 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { fetchAuthMutation } from "@/server/auth/clerk-convex";
+import { createCrudService } from "@/server/utils/service-factory";
 import type { DealPayload } from "../validation/deal.schema";
 
 function toConvexInput(input: DealPayload) {
@@ -12,24 +12,16 @@ function toConvexInput(input: DealPayload) {
   };
 }
 
-export async function createDeal(organizationId: string, input: DealPayload) {
-  return fetchAuthMutation(api.deals.write.createFromHono, {
-    organizationId,
-    input: toConvexInput(input),
-  });
-}
+const crud = createCrudService<DealPayload>({
+  api: {
+    create: api.deals.write.createFromHono,
+    update: api.deals.write.updateFromHono,
+    delete: api.deals.write.deleteFromHono,
+  },
+  idParamName: "dealId",
+  toConvexInput,
+});
 
-export async function updateDeal(organizationId: string, dealId: string, input: DealPayload) {
-  return fetchAuthMutation(api.deals.write.updateFromHono, {
-    organizationId,
-    dealId: dealId as Id<"deals">,
-    input: toConvexInput(input),
-  });
-}
-
-export async function deleteDeal(organizationId: string, dealId: string) {
-  return fetchAuthMutation(api.deals.write.deleteFromHono, {
-    organizationId,
-    dealId: dealId as Id<"deals">,
-  });
-}
+export const createDeal = crud.create;
+export const updateDeal = crud.update;
+export const deleteDeal = crud.remove;
