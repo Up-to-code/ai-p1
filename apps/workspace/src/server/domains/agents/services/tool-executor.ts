@@ -15,6 +15,9 @@ import {
   updateOrganizationWorkRole,
 } from "@/server/domains/organization/services/actions";
 import { updateOrganizationProfile } from "@/server/domains/organization/services/update-profile";
+import { createClient, updateClient, deleteClient } from "@/server/domains/clients/services/clients";
+import { createProject, updateProject, deleteProject } from "@/server/domains/projects/services/projects";
+import { createClientTask, updateClientTask, deleteClientTask } from "@/server/domains/clientTasks/services/client-tasks";
 import {
   calendarInputSchema,
   cleanInput,
@@ -135,26 +138,19 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
     case "clients_get":
       return fetchAuthQuery(api.clients.read.get, { organizationId, clientId: input.clientId as Id<"clients"> });
     case "clients_create":
-      return fetchAuthMutation(api.clients.write.createFromHono, {
-        organizationId,
-        input: clientCreateInputSchema.parse(input) as never,
-      });
+      return createClient(organizationId, clientCreateInputSchema.parse(input) as never);
     case "clients_update": {
       const existing = await fetchAuthQuery(api.clients.read.get, { organizationId, clientId: input.clientId as Id<"clients"> });
       if (!existing) throw new Error("Client was not found.");
       const patch = { ...input };
       delete patch.clientId;
-      return fetchAuthMutation(api.clients.write.updateFromHono, {
-        organizationId,
-        clientId: input.clientId as Id<"clients">,
-        input: cleanInput(clientInputSchema, {
-          ...stripPresentedDatabaseFields(existing as Record<string, unknown>),
-          ...stripPresentedDatabaseFields(patch),
-        }) as never,
-      });
+      return updateClient(organizationId, input.clientId as string, cleanInput(clientInputSchema, {
+        ...stripPresentedDatabaseFields(existing as Record<string, unknown>),
+        ...stripPresentedDatabaseFields(patch),
+      }) as never);
     }
     case "clients_delete":
-      return fetchAuthMutation(api.clients.write.deleteFromHono, { organizationId, clientId: input.clientId as Id<"clients"> });
+      return deleteClient(organizationId, input.clientId as string);
     case "projects_list":
       return fetchAuthQuery(api.projects.read.listPaged, {
         organizationId,
@@ -164,26 +160,19 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
     case "projects_get":
       return fetchAuthQuery(api.projects.read.get, { organizationId, projectId: input.projectId as Id<"projects"> });
     case "projects_create":
-      return fetchAuthMutation(api.projects.write.createFromHono, {
-        organizationId,
-        input: cleanInput(projectInputSchema, input) as never,
-      });
+      return createProject(organizationId, cleanInput(projectInputSchema, input) as never);
     case "projects_update": {
       const existing = await fetchAuthQuery(api.projects.read.get, { organizationId, projectId: input.projectId as Id<"projects"> });
       if (!existing) throw new Error("Project was not found.");
       const patch = { ...input };
       delete patch.projectId;
-      return fetchAuthMutation(api.projects.write.updateFromHono, {
-        organizationId,
-        projectId: input.projectId as Id<"projects">,
-        input: cleanInput(projectInputSchema, {
-          ...stripPresentedDatabaseFields(existing as Record<string, unknown>),
-          ...stripPresentedDatabaseFields(patch),
-        }) as never,
-      });
+      return updateProject(organizationId, input.projectId as string, cleanInput(projectInputSchema, {
+        ...stripPresentedDatabaseFields(existing as Record<string, unknown>),
+        ...stripPresentedDatabaseFields(patch),
+      }) as never);
     }
     case "projects_delete":
-      return fetchAuthMutation(api.projects.write.deleteFromHono, { organizationId, projectId: input.projectId as Id<"projects"> });
+      return deleteProject(organizationId, input.projectId as string);
     case "calendar_list_today": {
       const startAt = startOfToday();
       return compact(await fetchAuthQuery(api.calendar.read.listRange, {
@@ -258,40 +247,29 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
       return tasks.find((task) => task.id === input.taskId || task._id === input.taskId) ?? null;
     }
     case "tasks_create":
-      return fetchAuthMutation(api.clientTasks.write.createFromHono, {
-        organizationId,
-        input: cleanInput(taskInputSchema, input) as never,
-      });
+      return createClientTask(organizationId, cleanInput(taskInputSchema, input) as never);
     case "tasks_update": {
       const tasks = await fetchAuthQuery(api.clientTasks.read.list, { organizationId });
       const existing = tasks.find((task) => task.id === input.taskId || task._id === input.taskId);
       if (!existing) throw new Error("Task was not found.");
       const patch = { ...input };
       delete patch.taskId;
-      return fetchAuthMutation(api.clientTasks.write.updateFromHono, {
-        organizationId,
-        taskId: input.taskId as Id<"tasks">,
-        input: cleanInput(taskInputSchema, {
-          ...stripPresentedDatabaseFields(existing as Record<string, unknown>),
-          ...stripPresentedDatabaseFields(patch),
-        }) as never,
-      });
+      return updateClientTask(organizationId, input.taskId as string, cleanInput(taskInputSchema, {
+        ...stripPresentedDatabaseFields(existing as Record<string, unknown>),
+        ...stripPresentedDatabaseFields(patch),
+      }) as never);
     }
     case "tasks_complete": {
       const tasks = await fetchAuthQuery(api.clientTasks.read.list, { organizationId });
       const existing = tasks.find((task) => task.id === input.taskId || task._id === input.taskId);
       if (!existing) throw new Error("Task was not found.");
-      return fetchAuthMutation(api.clientTasks.write.updateFromHono, {
-        organizationId,
-        taskId: input.taskId as Id<"tasks">,
-        input: cleanInput(taskInputSchema, {
-          ...stripPresentedDatabaseFields(existing as Record<string, unknown>),
-          status: "done",
-        }) as never,
-      });
+      return updateClientTask(organizationId, input.taskId as string, cleanInput(taskInputSchema, {
+        ...stripPresentedDatabaseFields(existing as Record<string, unknown>),
+        status: "done",
+      }) as never);
     }
     case "tasks_delete":
-      return fetchAuthMutation(api.clientTasks.write.deleteFromHono, { organizationId, taskId: input.taskId as Id<"tasks"> });
+      return deleteClientTask(organizationId, input.taskId as string);
     case "media_list":
       return compact(await fetchAuthQuery(api.media.read.listForResource, {
         organizationId,
