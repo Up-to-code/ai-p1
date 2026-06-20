@@ -713,7 +713,7 @@ function WebhooksTelemetryDashboard() {
       id: "ep-aqar",
       name: t('webhooks.endpointsData.aqar.name'),
       url: "https://api.aqar.sa/v1/webhooks/qentrah-sync",
-      secret: "whsec_aqar_928173902183098213",
+      secret: "••••••••••••••••",
       events: ["asset.published", "asset.updated", "asset.deleted"],
       status: isAr ? "نشط" : "active",
       created: "2026-04-12"
@@ -722,7 +722,7 @@ function WebhooksTelemetryDashboard() {
       id: "ep-crm",
       name: t('webhooks.endpointsData.crm.name'),
       url: "https://crm.institutional.com/webhooks/qentrah-receiver",
-      secret: "whsec_crm_098321098432109843",
+      secret: "••••••••••••••••",
       events: ["client.created", "client.assigned", "client.updated"],
       status: isAr ? "نشط" : "active",
       created: "2026-05-01"

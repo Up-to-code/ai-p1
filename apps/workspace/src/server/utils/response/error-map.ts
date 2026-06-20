@@ -10,16 +10,6 @@ export type ErrorClass =
   | "TIMEOUT"
   | "INTERNAL";
 
-const CLASS_BY_STATUS: Record<number, ErrorClass> = {
-  401: "UNAUTHENTICATED",
-  403: "FORBIDDEN",
-  404: "NOT_FOUND",
-  429: "RATE_LIMITED",
-  400: "VALIDATION",
-  504: "TIMEOUT",
-  500: "INTERNAL",
-};
-
 const STATUS_BY_CLASS: Record<ErrorClass, ContentfulStatusCode> = {
   UNAUTHENTICATED: 401,
   FORBIDDEN: 403,

@@ -35,7 +35,6 @@ function hasPermission(permissions: McpPermission[] | undefined, tool: McpToolDe
 }
 
 export function evaluateAgentToolPolicy(input: AgentToolPolicyInput): AgentToolPolicyDecision {
-  console.log("[tool-policy] evaluateAgentToolPolicy adapter:", input.adapter, "tool:", input.tool?.name, "approvalRequirement:", input.tool?.approvalRequirement);
   if (!input.organizationId.trim()) {
     return { state: "blocked", reason: "Organization scope is required." };
   }
@@ -92,7 +91,6 @@ export function evaluateAgentToolPolicy(input: AgentToolPolicyInput): AgentToolP
   }
 
   if (input.adapter === "agent" && tool.approvalRequirement === "user") {
-    console.log("[tool-policy] BLOCKED: requires_user_approval for agent adapter");
     return {
       state: "requires_user_approval",
       reason: "This agent action requires user approval before execution.",

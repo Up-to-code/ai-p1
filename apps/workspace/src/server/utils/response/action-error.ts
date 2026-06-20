@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import { classifyError, errorMessage, errorStatus } from "./error-map";
+import { errorMessage, errorStatus } from "./error-map";
 
 export function actionErrorStatus(error: unknown) {
   return errorStatus(error);
