@@ -2,6 +2,7 @@ import type { Context } from "hono";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/clerk-convex";
+import { requireOrganizationId } from "@/server/utils/organization/require-organization-id";
 
 function parseLimit(c: Context, fallback: number, max: number) {
   const raw = c.req.query("limit");
@@ -100,10 +101,8 @@ function agentWriteErrorResponse(c: Context, error: unknown, fallback: string) {
 }
 
 export async function handleListAgentThreads(c: Context) {
-  const organizationId = c.req.param("organizationId");
-  if (!organizationId) {
-    return c.json({ error: "Organization id is required." }, 400);
-  }
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   const limit = parseLimit(c, 50, 50);
   if (limit == null) {
@@ -117,7 +116,7 @@ export async function handleListAgentThreads(c: Context) {
 
   try {
     const page = await fetchAuthQuery(api.agents.read.listThreadsPage, {
-      organizationId,
+      organizationId: org.organizationId,
       limit,
       cursor,
     });
@@ -129,10 +128,8 @@ export async function handleListAgentThreads(c: Context) {
 }
 
 export async function handleListAgentMessages(c: Context) {
-  const organizationId = c.req.param("organizationId");
-  if (!organizationId) {
-    return c.json({ error: "Organization id is required." }, 400);
-  }
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   const threadId = c.req.param("threadId");
   if (!threadId) {
@@ -146,7 +143,7 @@ export async function handleListAgentMessages(c: Context) {
 
   try {
     const messages = await fetchAuthQuery(api.agents.read.listMessages, {
-      organizationId,
+      organizationId: org.organizationId,
       threadId: threadId as Id<"agentThreads">,
       limit,
     });
@@ -158,10 +155,8 @@ export async function handleListAgentMessages(c: Context) {
 }
 
 export async function handleDeleteAgentThread(c: Context) {
-  const organizationId = c.req.param("organizationId");
-  if (!organizationId) {
-    return c.json({ error: "Organization id is required." }, 400);
-  }
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   const threadId = c.req.param("threadId");
   if (!threadId) {
@@ -170,7 +165,7 @@ export async function handleDeleteAgentThread(c: Context) {
 
   try {
     const result = await fetchAuthMutation(api.agents.write.deleteThreadFromHono, {
-      organizationId,
+      organizationId: org.organizationId,
       threadId: threadId as Id<"agentThreads">,
     });
 

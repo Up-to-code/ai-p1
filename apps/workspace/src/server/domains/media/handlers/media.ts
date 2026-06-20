@@ -1,5 +1,6 @@
 import type { Context } from "hono";
 import { createCrudHandlers } from "@/server/utils/handler-factory";
+import { requireOrganizationId } from "@/server/utils/organization/require-organization-id";
 import { validateJsonBody } from "@/server/utils/request/json-body";
 import { actionErrorJson } from "@/server/utils/response/action-error";
 import { attachMedia, createMediaFolder, deleteMediaFolder, updateMedia, deleteMedia } from "../services/media";
@@ -14,38 +15,39 @@ export const { handleUpdate: handleUpdateMedia, handleDelete: handleDeleteMedia 
 });
 
 export async function handleAttachMedia(c: Context) {
-  const organizationId = c.req.param("organizationId");
-  if (!organizationId) return c.json({ error: "Organization id is required." }, 400);
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
   const parsed = await validateJsonBody(c, attachMediaPayloadSchema, "Invalid media payload.");
   if (!parsed.ok) return parsed.response;
 
   try {
-    return c.json({ mediaAsset: await attachMedia(organizationId, parsed.data) });
+    return c.json({ mediaAsset: await attachMedia(org.organizationId, parsed.data) });
   } catch (error) {
     return actionErrorJson(c, error, "Media action failed.");
   }
 }
 
 export async function handleCreateMediaFolder(c: Context) {
-  const organizationId = c.req.param("organizationId");
-  if (!organizationId) return c.json({ error: "Organization id is required." }, 400);
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
   const parsed = await validateJsonBody(c, createMediaFolderPayloadSchema, "Invalid media folder payload.");
   if (!parsed.ok) return parsed.response;
 
   try {
-    return c.json({ folder: await createMediaFolder(organizationId, parsed.data) });
+    return c.json({ folder: await createMediaFolder(org.organizationId, parsed.data) });
   } catch (error) {
     return actionErrorJson(c, error, "Media action failed.");
   }
 }
 
 export async function handleDeleteMediaFolder(c: Context) {
-  const organizationId = c.req.param("organizationId");
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
   const folderId = c.req.param("folderId");
-  if (!organizationId || !folderId) return c.json({ error: "Organization and folder ids are required." }, 400);
+  if (!folderId) return c.json({ error: "Folder id is required." }, 400);
 
   try {
-    return c.json(await deleteMediaFolder(organizationId, folderId));
+    return c.json(await deleteMediaFolder(org.organizationId, folderId));
   } catch (error) {
     return actionErrorJson(c, error, "Media action failed.");
   }

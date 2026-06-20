@@ -1,5 +1,6 @@
 import type { Context } from "hono";
 import { Effect } from "effect";
+import { requireOrganizationId } from "@/server/utils/organization/require-organization-id";
 import { parseJsonBody, routePromise, runEffectRoute } from "@/server/effect/route";
 import {
   authorizePartnerConnectionSchema,
@@ -26,14 +27,14 @@ export async function handleListPartnerApps(c: Context) {
 }
 
 export async function handleAuthorizePartnerConnection(c: Context) {
-  const organizationId = c.req.param("organizationId");
-  if (!organizationId) return c.json({ error: "Organization id is required." }, 400);
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   return runEffectRoute(
     c,
     Effect.gen(function* () {
       const input = yield* parseJsonBody(c, authorizePartnerConnectionSchema, "Invalid partner authorization payload.");
-      const connection = yield* routePromise(() => authorizePartnerConnection(organizationId, input), fallbackError);
+      const connection = yield* routePromise(() => authorizePartnerConnection(org.organizationId, input), fallbackError);
       return { connection };
     }),
     { fallbackError },
@@ -41,12 +42,12 @@ export async function handleAuthorizePartnerConnection(c: Context) {
 }
 
 export async function handleListPartnerConnections(c: Context) {
-  const organizationId = c.req.param("organizationId");
-  if (!organizationId) return c.json({ error: "Organization id is required." }, 400);
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   return runEffectRoute(
     c,
-    routePromise(() => listPartnerConnections(organizationId), fallbackError).pipe(
+    routePromise(() => listPartnerConnections(org.organizationId), fallbackError).pipe(
       Effect.map((connections) => ({ connections })),
     ),
     { fallbackError },
@@ -54,15 +55,16 @@ export async function handleListPartnerConnections(c: Context) {
 }
 
 export async function handleUpdatePartnerConnection(c: Context) {
-  const organizationId = c.req.param("organizationId");
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
   const connectionId = c.req.param("connectionId");
-  if (!organizationId || !connectionId) return c.json({ error: "Organization and connection ids are required." }, 400);
+  if (!connectionId) return c.json({ error: "Connection id is required." }, 400);
 
   return runEffectRoute(
     c,
     Effect.gen(function* () {
       const input = yield* parseJsonBody(c, updatePartnerConnectionSchema, "Invalid partner connection payload.");
-      const connection = yield* routePromise(() => updatePartnerConnection(organizationId, connectionId, input), fallbackError);
+      const connection = yield* routePromise(() => updatePartnerConnection(org.organizationId, connectionId, input), fallbackError);
       return { connection };
     }),
     { fallbackError },
@@ -70,26 +72,27 @@ export async function handleUpdatePartnerConnection(c: Context) {
 }
 
 export async function handleRevokePartnerConnection(c: Context) {
-  const organizationId = c.req.param("organizationId");
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
   const connectionId = c.req.param("connectionId");
-  if (!organizationId || !connectionId) return c.json({ error: "Organization and connection ids are required." }, 400);
+  if (!connectionId) return c.json({ error: "Connection id is required." }, 400);
 
   return runEffectRoute(
     c,
-    routePromise(() => revokePartnerConnection(organizationId, connectionId), fallbackError),
+    routePromise(() => revokePartnerConnection(org.organizationId, connectionId), fallbackError),
     { fallbackError },
   );
 }
 
 export async function handleCreatePartnerWebhookEndpoint(c: Context) {
-  const organizationId = c.req.param("organizationId");
-  if (!organizationId) return c.json({ error: "Organization id is required." }, 400);
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   return runEffectRoute(
     c,
     Effect.gen(function* () {
       const input = yield* parseJsonBody(c, createPartnerWebhookEndpointSchema, "Invalid partner webhook payload.");
-      const endpoint = yield* routePromise(() => createPartnerWebhookEndpoint(organizationId, input), fallbackError);
+      const endpoint = yield* routePromise(() => createPartnerWebhookEndpoint(org.organizationId, input), fallbackError);
       return { endpoint };
     }),
     { fallbackError, status: 201 },

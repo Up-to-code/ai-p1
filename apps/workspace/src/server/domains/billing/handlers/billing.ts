@@ -1,4 +1,5 @@
 import type { Context } from "hono";
+import { requireOrganizationId } from "@/server/utils/organization/require-organization-id";
 import { validateJsonBody } from "@/server/utils/request/json-body";
 import { actionErrorJson } from "@/server/utils/response/action-error";
 import { billingCheckoutSchema, dodoWebhookSchema } from "../validation/billing.schema";
@@ -10,56 +11,53 @@ import {
   processDodoWebhook,
 } from "../services/billing";
 
-function organizationId(c: Context) {
-  return c.req.param("organizationId");
-}
-
 function handleBillingError(c: Context, error: unknown) {
   return actionErrorJson(c, error, "Billing request failed.");
 }
 
 export async function handleGetBillingSubscription(c: Context) {
-  const id = organizationId(c);
-  if (!id) return c.json({ error: "Organization id is required." }, 400);
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   try {
-    return c.json(await getBillingSubscription(id));
+    return c.json(await getBillingSubscription(org.organizationId));
   } catch (error) {
     return handleBillingError(c, error);
   }
 }
 
 export async function handleGetBillingUsage(c: Context) {
-  const id = organizationId(c);
-  if (!id) return c.json({ error: "Organization id is required." }, 400);
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   try {
-    return c.json(await getBillingUsage(id));
+    return c.json(await getBillingUsage(org.organizationId));
   } catch (error) {
     return handleBillingError(c, error);
   }
 }
 
 export async function handleCreateCheckout(c: Context) {
-  const id = organizationId(c);
-  if (!id) return c.json({ error: "Organization id is required." }, 400);
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
   const parsed = await validateJsonBody(c, billingCheckoutSchema, "Invalid billing checkout payload.");
   if (!parsed.ok) return parsed.response;
 
   try {
-    return c.json(await createBillingCheckout(id, parsed.data));
+    return c.json(await createBillingCheckout(org.organizationId, parsed.data));
   } catch (error) {
     return handleBillingError(c, error);
   }
 }
 
 export async function handleGetPaymentStatus(c: Context) {
-  const id = organizationId(c);
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
   const orderId = c.req.param("orderId");
-  if (!id || !orderId) return c.json({ error: "Organization and order ids are required." }, 400);
+  if (!orderId) return c.json({ error: "Order id is required." }, 400);
 
   try {
-    return c.json(await getBillingPaymentStatus(id, orderId));
+    return c.json(await getBillingPaymentStatus(org.organizationId, orderId));
   } catch (error) {
     return handleBillingError(c, error);
   }

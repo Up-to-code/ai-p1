@@ -1,5 +1,6 @@
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
+import { requireOrganizationId } from "@/server/utils/organization/require-organization-id";
 import { validateJsonBody } from "@/server/utils/request/json-body";
 import { OrganizationActionError } from "../errors/action-error";
 import {
@@ -24,14 +25,6 @@ import {
   updateOrganizationRoleSchema,
 } from "../validation/actions.schema";
 
-function organizationIdOrResponse(c: Context) {
-  const organizationId = c.req.param("organizationId");
-  if (!organizationId) {
-    return { response: c.json({ error: "Organization id is required." }, 400) };
-  }
-  return { organizationId };
-}
-
 function handleActionError(c: Context, error: unknown) {
   const actionError = error as OrganizationActionError;
   return c.json(
@@ -41,17 +34,17 @@ function handleActionError(c: Context, error: unknown) {
 }
 
 export async function handleGetOrganizationCapabilities(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   const startedAt = Date.now();
   try {
-    const capabilities = await getCapabilities(params.organizationId);
+    const capabilities = await getCapabilities(org.organizationId);
     const elapsedMs = Date.now() - startedAt;
     if (process.env.NODE_ENV !== "production" && elapsedMs > 750) {
       console.warn("[organization-capabilities] Slow capability load", {
         route: "GET /api/v1/organizations/:organizationId/capabilities",
-        organizationId: params.organizationId,
+        organizationId: org.organizationId,
         elapsedMs,
       });
     }
@@ -62,11 +55,11 @@ export async function handleGetOrganizationCapabilities(c: Context) {
 }
 
 export async function handleListOrganizationRoles(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   try {
-    const roles = await listOrganizationWorkRoles(c, params.organizationId);
+    const roles = await listOrganizationWorkRoles(c, org.organizationId);
     return c.json({ roles });
   } catch (error) {
     return handleActionError(c, error);
@@ -74,14 +67,14 @@ export async function handleListOrganizationRoles(c: Context) {
 }
 
 export async function handleUpdateOrganizationIdentity(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   const parsed = await validateJsonBody(c, organizationIdentityUpdateSchema, "Invalid organization payload.");
   if (!parsed.ok) return parsed.response;
 
   try {
-    const organization = await updateOrganizationIdentity(c, params.organizationId, parsed.data);
+    const organization = await updateOrganizationIdentity(c, org.organizationId, parsed.data);
     return c.json({ organization });
   } catch (error) {
     return handleActionError(c, error);
@@ -89,14 +82,14 @@ export async function handleUpdateOrganizationIdentity(c: Context) {
 }
 
 export async function handleCreateOrganizationInvitation(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   const parsed = await validateJsonBody(c, createOrganizationInvitationSchema, "Invalid invitation payload.");
   if (!parsed.ok) return parsed.response;
 
   try {
-    const invitation = await createOrganizationEmailInvitation(c, params.organizationId, parsed.data);
+    const invitation = await createOrganizationEmailInvitation(c, org.organizationId, parsed.data);
     return c.json({ invitation });
   } catch (error) {
     return handleActionError(c, error);
@@ -116,8 +109,8 @@ export async function handleAcceptOrganizationInvitation(c: Context) {
 }
 
 export async function handleCancelOrganizationInvitation(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   const invitationId = c.req.param("invitationId");
   if (!invitationId) {
@@ -125,7 +118,7 @@ export async function handleCancelOrganizationInvitation(c: Context) {
   }
 
   try {
-    const invitation = await cancelOrganizationEmailInvitation(c, params.organizationId, invitationId);
+    const invitation = await cancelOrganizationEmailInvitation(c, org.organizationId, invitationId);
     return c.json({ invitation });
   } catch (error) {
     return handleActionError(c, error);
@@ -133,8 +126,8 @@ export async function handleCancelOrganizationInvitation(c: Context) {
 }
 
 export async function handleUpdateOrganizationMemberRole(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   const memberId = c.req.param("memberId");
   if (!memberId) {
@@ -145,7 +138,7 @@ export async function handleUpdateOrganizationMemberRole(c: Context) {
   if (!parsed.ok) return parsed.response;
 
   try {
-    const member = await updateOrganizationMemberRole(c, params.organizationId, memberId, parsed.data);
+    const member = await updateOrganizationMemberRole(c, org.organizationId, memberId, parsed.data);
     return c.json({ member });
   } catch (error) {
     return handleActionError(c, error);
@@ -153,8 +146,8 @@ export async function handleUpdateOrganizationMemberRole(c: Context) {
 }
 
 export async function handleRemoveOrganizationMember(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   const memberId = c.req.param("memberId");
   if (!memberId) {
@@ -162,7 +155,7 @@ export async function handleRemoveOrganizationMember(c: Context) {
   }
 
   try {
-    const member = await removeOrganizationMember(c, params.organizationId, memberId);
+    const member = await removeOrganizationMember(c, org.organizationId, memberId);
     return c.json({ member });
   } catch (error) {
     return handleActionError(c, error);
@@ -170,14 +163,14 @@ export async function handleRemoveOrganizationMember(c: Context) {
 }
 
 export async function handleCreateOrganizationRole(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   const parsed = await validateJsonBody(c, createOrganizationRoleSchema, "Invalid work role payload.");
   if (!parsed.ok) return parsed.response;
 
   try {
-    const role = await createOrganizationWorkRole(c, params.organizationId, parsed.data);
+    const role = await createOrganizationWorkRole(c, org.organizationId, parsed.data);
     return c.json({ role });
   } catch (error) {
     return handleActionError(c, error);
@@ -185,8 +178,8 @@ export async function handleCreateOrganizationRole(c: Context) {
 }
 
 export async function handleUpdateOrganizationRole(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   const roleId = c.req.param("roleId");
   if (!roleId) {
@@ -197,7 +190,7 @@ export async function handleUpdateOrganizationRole(c: Context) {
   if (!parsed.ok) return parsed.response;
 
   try {
-    const role = await updateOrganizationWorkRole(c, params.organizationId, roleId, parsed.data);
+    const role = await updateOrganizationWorkRole(c, org.organizationId, roleId, parsed.data);
     return c.json({ role });
   } catch (error) {
     return handleActionError(c, error);
@@ -205,8 +198,8 @@ export async function handleUpdateOrganizationRole(c: Context) {
 }
 
 export async function handleDeleteOrganizationRole(c: Context) {
-  const params = organizationIdOrResponse(c);
-  if ("response" in params) return params.response;
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   const roleId = c.req.param("roleId");
   if (!roleId) {
@@ -214,7 +207,7 @@ export async function handleDeleteOrganizationRole(c: Context) {
   }
 
   try {
-    const role = await deleteOrganizationWorkRole(c, params.organizationId, roleId);
+    const role = await deleteOrganizationWorkRole(c, org.organizationId, roleId);
     return c.json({ role });
   } catch (error) {
     return handleActionError(c, error);

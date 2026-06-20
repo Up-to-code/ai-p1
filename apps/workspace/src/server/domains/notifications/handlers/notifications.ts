@@ -1,4 +1,5 @@
 import type { Context } from "hono";
+import { requireOrganizationId } from "@/server/utils/organization/require-organization-id";
 import { validateJsonBody } from "@/server/utils/request/json-body";
 import { actionErrorJson } from "@/server/utils/response/action-error";
 import {
@@ -20,18 +21,8 @@ import {
   updateOrganizationNotificationPreferences,
 } from "../services/notifications";
 
-function orgId(c: Context) {
-  return c.req.param("organizationId");
-}
-
 function notificationError(c: Context, error: unknown) {
   return actionErrorJson(c, error, "Notification action failed.");
-}
-
-async function requireOrgId(c: Context): Promise<string | Response> {
-  const id = orgId(c);
-  if (!id) return c.json({ error: "Organization id is required." }, 400);
-  return id;
 }
 
 export async function handleGetPushDeviceStatus(c: Context) {
@@ -65,100 +56,100 @@ export async function handleRemovePushDevice(c: Context) {
 }
 
 export async function handleGetMyNotificationPreferences(c: Context) {
-  const organizationId = await requireOrgId(c);
-  if (organizationId instanceof Response) return organizationId;
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   try {
-    return c.json({ preference: await getMyNotificationPreferences(organizationId) });
+    return c.json({ preference: await getMyNotificationPreferences(org.organizationId) });
   } catch (error) {
     return notificationError(c, error);
   }
 }
 
 export async function handleUpdateMyNotificationPreferences(c: Context) {
-  const organizationId = await requireOrgId(c);
-  if (organizationId instanceof Response) return organizationId;
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
   const parsed = await validateJsonBody(c, notificationPreferenceSchema, "Invalid notification settings payload.");
   if (!parsed.ok) return parsed.response;
 
   try {
-    return c.json({ preference: await updateMyNotificationPreferences(organizationId, parsed.data) });
+    return c.json({ preference: await updateMyNotificationPreferences(org.organizationId, parsed.data) });
   } catch (error) {
     return notificationError(c, error);
   }
 }
 
 export async function handleGetOrganizationNotificationPreferences(c: Context) {
-  const organizationId = await requireOrgId(c);
-  if (organizationId instanceof Response) return organizationId;
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   try {
-    return c.json({ preference: await getOrganizationNotificationPreferences(organizationId) });
+    return c.json({ preference: await getOrganizationNotificationPreferences(org.organizationId) });
   } catch (error) {
     return notificationError(c, error);
   }
 }
 
 export async function handleUpdateOrganizationNotificationPreferences(c: Context) {
-  const organizationId = await requireOrgId(c);
-  if (organizationId instanceof Response) return organizationId;
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
   const parsed = await validateJsonBody(c, notificationPreferenceSchema, "Invalid notification settings payload.");
   if (!parsed.ok) return parsed.response;
 
   try {
-    return c.json({ preference: await updateOrganizationNotificationPreferences(organizationId, parsed.data) });
+    return c.json({ preference: await updateOrganizationNotificationPreferences(org.organizationId, parsed.data) });
   } catch (error) {
     return notificationError(c, error);
   }
 }
 
 export async function handleListNotificationSchedules(c: Context) {
-  const organizationId = await requireOrgId(c);
-  if (organizationId instanceof Response) return organizationId;
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
 
   try {
-    return c.json({ schedules: await listNotificationSchedules(organizationId) });
+    return c.json({ schedules: await listNotificationSchedules(org.organizationId) });
   } catch (error) {
     return notificationError(c, error);
   }
 }
 
 export async function handleCreateNotificationSchedule(c: Context) {
-  const organizationId = await requireOrgId(c);
-  if (organizationId instanceof Response) return organizationId;
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
   const parsed = await validateJsonBody(c, notificationScheduleSchema, "Invalid notification schedule payload.");
   if (!parsed.ok) return parsed.response;
 
   try {
-    return c.json({ schedule: await createNotificationSchedule(organizationId, parsed.data) });
+    return c.json({ schedule: await createNotificationSchedule(org.organizationId, parsed.data) });
   } catch (error) {
     return notificationError(c, error);
   }
 }
 
 export async function handleUpdateNotificationSchedule(c: Context) {
-  const organizationId = await requireOrgId(c);
-  if (organizationId instanceof Response) return organizationId;
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
   const scheduleId = c.req.param("scheduleId");
   if (!scheduleId) return c.json({ error: "Schedule id is required." }, 400);
   const parsed = await validateJsonBody(c, notificationScheduleSchema, "Invalid notification schedule payload.");
   if (!parsed.ok) return parsed.response;
 
   try {
-    return c.json({ schedule: await updateNotificationSchedule(organizationId, scheduleId, parsed.data) });
+    return c.json({ schedule: await updateNotificationSchedule(org.organizationId, scheduleId, parsed.data) });
   } catch (error) {
     return notificationError(c, error);
   }
 }
 
 export async function handleCancelNotificationSchedule(c: Context) {
-  const organizationId = await requireOrgId(c);
-  if (organizationId instanceof Response) return organizationId;
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
   const scheduleId = c.req.param("scheduleId");
   if (!scheduleId) return c.json({ error: "Schedule id is required." }, 400);
 
   try {
-    return c.json(await cancelNotificationSchedule(organizationId, scheduleId));
+    return c.json(await cancelNotificationSchedule(org.organizationId, scheduleId));
   } catch (error) {
     return notificationError(c, error);
   }
