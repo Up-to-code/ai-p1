@@ -3306,6 +3306,10 @@
       "notFoundTitle": "Deal not found",
       "notFoundDescription": "The deal was deleted or you do not have access.",
       "backToDeals": "Back to deals"
+    },
+    "delete": {
+      "title": "Delete deal",
+      "description": "Are you sure you want to delete this deal? This action cannot be undone."
     }
   },
   "Tasks": {
