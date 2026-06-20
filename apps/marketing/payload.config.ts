@@ -1,5 +1,5 @@
 import { buildConfig } from "payload";
-import { sqliteAdapter } from "@payloadcms/db-sqlite";
+import { postgresAdapter } from "@payloadcms/db-postgres";
 import {
   BoldFeature,
   ItalicFeature,
@@ -66,9 +66,9 @@ export default buildConfig({
   typescript: {
     outputFile: process.cwd() + "/payload-types.ts",
   },
-  db: sqliteAdapter({
-    client: {
-      url: "file:" + process.cwd() + "/database.db",
+  db: postgresAdapter({
+    pool: {
+      connectionString: process.env.DATABASE_URL || "",
     },
   }),
   localization: {

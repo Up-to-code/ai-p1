@@ -13,7 +13,7 @@
     "@base-ui/react": "^1.4.1",
     "@next/swc-darwin-arm64": "^16.3.0-canary.19",
     "@number-flow/react": "^0.6.0",
-    "@payloadcms/db-sqlite": "^3.85.1",
+    "@payloadcms/db-postgres": "^3.85.1",
     "@payloadcms/next": "^3.85.1",
     "@payloadcms/richtext-lexical": "^3.85.1",
     "@payloadcms/translations": "^3.85.1",
