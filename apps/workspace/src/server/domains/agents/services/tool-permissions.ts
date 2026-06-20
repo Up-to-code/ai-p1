@@ -22,6 +22,10 @@ export type AgentOrganizationCapabilities = {
   canCreateProjects: boolean;
   canUpdateProjects: boolean;
   canDeleteProjects: boolean;
+  canReadDeals?: boolean;
+  canCreateDeals?: boolean;
+  canUpdateDeals?: boolean;
+  canDeleteDeals?: boolean;
   canReadCalendarEvents: boolean;
   canCreateCalendarEvents: boolean;
   canUpdateCalendarEvents: boolean;
@@ -65,6 +69,12 @@ export function agentToolPermissionsFromCapabilities(capabilities: AgentOrganiza
       capabilities.canCreateProjects && "create",
       capabilities.canUpdateProjects && "update",
       capabilities.canDeleteProjects && "delete",
+    ],
+    deal: [
+      (capabilities.canReadDeals ?? capabilities.canReadClients) && "read",
+      (capabilities.canCreateDeals ?? capabilities.canCreateClients) && "create",
+      (capabilities.canUpdateDeals ?? capabilities.canUpdateClients) && "update",
+      (capabilities.canDeleteDeals ?? capabilities.canDeleteClients) && "delete",
     ],
     calendar: [
       capabilities.canReadCalendarEvents && "read",

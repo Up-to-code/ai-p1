@@ -26,6 +26,11 @@ export function optionalString(input: Input, key: string) {
   return typeof value === "string" && value.trim().length > 0 ? value : undefined;
 }
 
+export function optionalRelationId(input: Input, key: string) {
+  if (input[key] === null) return undefined;
+  return optionalString(input, key);
+}
+
 export function optionalNumber(input: Input, key: string) {
   const value = input[key];
   return typeof value === "number" ? value : undefined;
@@ -108,8 +113,8 @@ export function projectStatus(input: Input) {
 export function projectInput(input: Input) {
   return {
     name: requiredString(input, "name"),
-    clientId: optionalString(input, "clientId") as Id<"clients"> | undefined,
-    opportunityId: optionalString(input, "opportunityId") as Id<"opportunities"> | undefined,
+    clientId: optionalRelationId(input, "clientId") as Id<"clients"> | undefined,
+    opportunityId: optionalRelationId(input, "opportunityId") as Id<"opportunities"> | undefined,
     status: projectStatus(input),
     health: oneOf(input.health, ["onTrack", "atRisk", "blocked"] as const, "onTrack"),
     budget: optionalNumber(input, "budget"),
@@ -118,12 +123,39 @@ export function projectInput(input: Input) {
   };
 }
 
+function dealStage(input: Input) {
+  return oneOf(input.stage, ["lead", "qualified", "proposal_sent", "contract_sent", "won", "lost"] as const, "lead");
+}
+
+function dealStatus(input: Input) {
+  return oneOf(input.status, ["open", "won", "lost", "paused"] as const, "open");
+}
+
+export function dealInput(input: Input) {
+  return {
+    title: requiredString(input, "title"),
+    clientId: optionalRelationId(input, "clientId") as Id<"clients"> | undefined,
+    projectId: optionalRelationId(input, "projectId") as Id<"projects"> | undefined,
+    stage: dealStage(input),
+    status: dealStatus(input),
+    value: optionalNumber(input, "value"),
+    currency: optionalString(input, "currency") ?? "USD",
+    dealThinking: optionalString(input, "dealThinking"),
+    source: optionalString(input, "source") ?? "mcp",
+    priority: priority(input),
+    closeDate: optionalString(input, "closeDate"),
+    nextStep: optionalString(input, "nextStep"),
+    ownerUserId: optionalString(input, "ownerUserId"),
+    tags: Array.isArray(input.tags) ? input.tags.filter((tag): tag is string => typeof tag === "string" && tag.trim().length > 0).map((tag) => tag.trim()) : undefined,
+  };
+}
+
 export function calendarInput(input: Input) {
   return {
     title: requiredString(input, "title"),
     ownerUserId: optionalString(input, "ownerUserId"),
-    clientId: optionalString(input, "clientId") as Id<"clients"> | undefined,
-    projectId: optionalString(input, "projectId") as Id<"projects"> | undefined,
+    clientId: optionalRelationId(input, "clientId") as Id<"clients"> | undefined,
+    projectId: optionalRelationId(input, "projectId") as Id<"projects"> | undefined,
     taskId: optionalString(input, "taskId") as Id<"tasks"> | undefined,
     startAt: requiredNumber(input, "startAt"),
     endAt: optionalNumber(input, "endAt") ?? requiredNumber(input, "startAt"),
@@ -209,5 +241,35 @@ export async function assertTaskLinks(
   if (projectId) {
     const project = await ctx.db.get(projectId as Id<"projects">);
     assertActiveWorkspaceRecord(project, organizationId, "Project");
+  }
+}
+
+export async function assertDealLinks(
+  ctx: MutationCtx,
+  organizationId: string,
+  input: ReturnType<typeof dealInput>,
+) {
+  if (input.clientId) {
+    const client = await ctx.db.get(input.clientId as Id<"clients">);
+    assertActiveWorkspaceRecord(client, organizationId, "Client");
+  }
+  if (input.projectId) {
+    const project = await ctx.db.get(input.projectId as Id<"projects">);
+    assertActiveWorkspaceRecord(project, organizationId, "Project");
+  }
+}
+
+export async function assertProjectLinks(
+  ctx: MutationCtx,
+  organizationId: string,
+  input: ReturnType<typeof projectInput>,
+) {
+  if (input.clientId) {
+    const client = await ctx.db.get(input.clientId as Id<"clients">);
+    assertActiveWorkspaceRecord(client, organizationId, "Client");
+  }
+  if (input.opportunityId) {
+    const opportunity = await ctx.db.get(input.opportunityId as Id<"opportunities">);
+    assertActiveWorkspaceRecord(opportunity, organizationId, "Opportunity");
   }
 }

@@ -4,6 +4,7 @@ export const mcpResourceValidator = v.union(
   v.literal("organization"),
   v.literal("client"),
   v.literal("project"),
+  v.literal("deal"),
   v.literal("calendar"),
   v.literal("task"),
   v.literal("media"),
@@ -69,6 +70,7 @@ export type McpResource =
   | "organization"
   | "client"
   | "project"
+  | "deal"
   | "calendar"
   | "task"
   | "media";

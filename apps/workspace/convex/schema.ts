@@ -270,6 +270,7 @@ export default defineSchema({
         v.literal("organization"),
         v.literal("client"),
         v.literal("project"),
+        v.literal("deal"),
         v.literal("calendar"),
         v.literal("task"),
         v.literal("media"),

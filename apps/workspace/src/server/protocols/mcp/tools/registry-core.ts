@@ -4,6 +4,7 @@ type McpPermissionResource =
   | "role"
   | "client"
   | "project"
+  | "deal"
   | "calendar"
   | "task"
   | "media";
@@ -45,7 +46,7 @@ function safetyForTool(input: {
     return {
       riskLevel: "read",
       approvalRequirement: "none",
-      dataSensitivity: input.resource === "client" ? "pii" : "public_business",
+      dataSensitivity: input.resource === "client" || input.resource === "deal" ? "pii" : "public_business",
     };
   }
 
@@ -61,11 +62,11 @@ function safetyForTool(input: {
     return {
       riskLevel: "destructive",
       approvalRequirement: "admin",
-      dataSensitivity: input.resource === "client" ? "pii" : "private_organization",
+      dataSensitivity: input.resource === "client" || input.resource === "deal" ? "pii" : "private_organization",
     };
   }
 
-  if (input.resource === "client") {
+  if (input.resource === "client" || input.resource === "deal") {
     return {
       riskLevel: "sensitive_write",
       approvalRequirement: "user",
@@ -106,6 +107,11 @@ const mcpToolRegistry = [
   tool({ name: "projects_create", title: "Create project", description: "Create a client delivery project.", resource: "project", action: "create", adapters: both }),
   tool({ name: "projects_update", title: "Update project", description: "Update a project.", resource: "project", action: "update", adapters: both }),
   tool({ name: "projects_delete", title: "Delete project", description: "Soft delete a project.", resource: "project", action: "delete", destructive: true, adapters: both }),
+  tool({ name: "deals_list", title: "List deals", description: "List workspace deals, optionally scoped to a client or project.", resource: "deal", action: "read", adapters: both }),
+  tool({ name: "deals_get", title: "Get deal", description: "Get one workspace deal.", resource: "deal", action: "read", adapters: both }),
+  tool({ name: "deals_create", title: "Create deal", description: "Create a workspace deal.", resource: "deal", action: "create", adapters: both }),
+  tool({ name: "deals_update", title: "Update deal", description: "Update a workspace deal or move it between global, client, and project context.", resource: "deal", action: "update", adapters: both }),
+  tool({ name: "deals_delete", title: "Delete deal", description: "Soft delete a workspace deal.", resource: "deal", action: "delete", destructive: true, adapters: both }),
   tool({ name: "calendar_list_today", title: "Today calendar", description: "List today's calendar events.", resource: "calendar", action: "read", adapters: both }),
   tool({ name: "calendar_list_range", title: "Calendar range", description: "List calendar events in a date range.", resource: "calendar", action: "read", adapters: both }),
   tool({ name: "calendar_list_month", title: "Month calendar", description: "List calendar events for a month.", resource: "calendar", action: "read", adapters: both }),

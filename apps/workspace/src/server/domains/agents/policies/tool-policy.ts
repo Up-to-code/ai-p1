@@ -90,7 +90,7 @@ export function evaluateAgentToolPolicy(input: AgentToolPolicyInput): AgentToolP
     };
   }
 
-  if (input.adapter === "agent" && tool.approvalRequirement === "user") {
+  if (tool.approvalRequirement === "user") {
     return {
       state: "requires_user_approval",
       reason: "This agent action requires user approval before execution.",

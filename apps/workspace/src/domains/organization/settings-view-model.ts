@@ -313,6 +313,12 @@ export function grantableAgentPermissions(capabilities?: OrganizationCapabilitie
       capabilities.canUpdateProjects && "update",
       capabilities.canDeleteProjects && "delete",
     ],
+    deal: [
+      capabilities.canReadClients && "read",
+      capabilities.canCreateClients && "create",
+      capabilities.canUpdateClients && "update",
+      capabilities.canDeleteClients && "delete",
+    ],
     calendar: [
       capabilities.canReadCalendarEvents && "read",
       capabilities.canCreateCalendarEvents && "create",

@@ -14,6 +14,7 @@ export type McpPermissionResource =
   | "role"
   | "client"
   | "project"
+  | "deal"
   | "calendar"
   | "task"
   | "media";
@@ -48,6 +49,8 @@ const clientType = z.enum(["person", "organization"]).optional();
 const clientStatus = z.enum(["new", "active", "nurture", "inactive", "archived"]).optional();
 const projectStatus = z.enum(["planned", "active", "paused", "completed", "archived"]).optional();
 const projectHealth = z.enum(["onTrack", "atRisk", "blocked"]).optional();
+const dealStage = z.enum(["lead", "qualified", "proposal_sent", "contract_sent", "won", "lost"]).optional();
+const dealStatus = z.enum(["open", "won", "lost", "paused"]).optional();
 const calendarType = z.enum(["meeting", "deadline", "reminder", "milestone", "focusBlock"]).optional();
 const calendarStatus = z.enum(["confirmed", "pending", "draft"]).optional();
 const taskStatus = z.enum(["todo", "inProgress", "waiting", "done", "canceled"]).optional();
@@ -231,8 +234,8 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     action: "create",
     inputSchema: {
       name: id,
-      clientId: maybeText,
-      opportunityId: maybeText,
+      clientId: maybeText.nullable(),
+      opportunityId: maybeText.nullable(),
       status: projectStatus,
       health: projectHealth,
       budget: z.number().optional(),
@@ -249,8 +252,8 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     inputSchema: {
       projectId: id,
       name: maybeText,
-      clientId: maybeText,
-      opportunityId: maybeText,
+      clientId: maybeText.nullable(),
+      opportunityId: maybeText.nullable(),
       status: projectStatus,
       health: projectHealth,
       budget: z.number().optional(),
@@ -265,6 +268,78 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     resource: "project",
     action: "delete",
     inputSchema: { projectId: id },
+    destructive: true,
+  },
+  {
+    name: "deals_list",
+    title: "List deals",
+    description: "List workspace deals, optionally filtered by clientId, projectId, stage, status, or search. Use projectId null to list global deals without a project.",
+    resource: "deal",
+    action: "read",
+    inputSchema: { limit: listLimit, search: listSearch, cursor: listCursor, clientId: maybeText, projectId: maybeText.nullable(), stage: dealStage, status: dealStatus },
+  },
+  {
+    name: "deals_get",
+    title: "Get deal",
+    description: "Get one workspace deal.",
+    resource: "deal",
+    action: "read",
+    inputSchema: { dealId: id },
+  },
+  {
+    name: "deals_create",
+    title: "Create deal",
+    description: "Create a workspace deal. Prefer setting clientId and projectId when the deal is tied to a client product/project.",
+    resource: "deal",
+    action: "create",
+    inputSchema: {
+      title: id,
+      clientId: maybeText,
+      projectId: maybeText,
+      stage: dealStage,
+      status: dealStatus,
+      value: z.number().optional(),
+      currency: maybeText,
+      dealThinking: maybeText,
+      source: maybeText,
+      priority,
+      closeDate: maybeText,
+      nextStep: maybeText,
+      ownerUserId: maybeText,
+      tags: z.array(z.string().trim()).optional(),
+    },
+  },
+  {
+    name: "deals_update",
+    title: "Update deal",
+    description: "Update a workspace deal. Set projectId to a project id to move it into a project or null to move it back to global.",
+    resource: "deal",
+    action: "update",
+    inputSchema: {
+      dealId: id,
+      title: maybeText,
+      clientId: maybeText.nullable(),
+      projectId: maybeText.nullable(),
+      stage: dealStage,
+      status: dealStatus,
+      value: z.number().optional(),
+      currency: maybeText,
+      dealThinking: maybeText,
+      source: maybeText,
+      priority,
+      closeDate: maybeText,
+      nextStep: maybeText,
+      ownerUserId: maybeText,
+      tags: z.array(z.string().trim()).optional(),
+    },
+  },
+  {
+    name: "deals_delete",
+    title: "Delete deal",
+    description: "Soft delete a workspace deal.",
+    resource: "deal",
+    action: "delete",
+    inputSchema: { dealId: id },
     destructive: true,
   },
   {
@@ -399,7 +474,7 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     description: "List workspace tasks.",
     resource: "task",
     action: "read",
-    inputSchema: { limit: listLimit, search: listSearch, cursor: listCursor },
+    inputSchema: { limit: listLimit, search: listSearch, cursor: listCursor, clientId: maybeText, projectId: maybeText.nullable() },
   },
   {
     name: "tasks_get",
@@ -420,6 +495,8 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
       status: taskStatus,
       priority,
       assigneeUserId: maybeText,
+      clientId: maybeText,
+      projectId: maybeText,
       dueDate: maybeText,
       description: maybeText,
       notes: maybeText,
@@ -437,6 +514,8 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
       status: taskStatus,
       priority,
       assigneeUserId: maybeText,
+      clientId: maybeText.nullable(),
+      projectId: maybeText.nullable(),
       dueDate: maybeText,
       description: maybeText,
       notes: maybeText,

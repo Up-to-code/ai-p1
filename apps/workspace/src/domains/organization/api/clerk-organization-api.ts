@@ -71,6 +71,7 @@ export type McpPermissionResource =
   | "organization"
   | "client"
   | "project"
+  | "deal"
   | "calendar"
   | "task"
   | "media";

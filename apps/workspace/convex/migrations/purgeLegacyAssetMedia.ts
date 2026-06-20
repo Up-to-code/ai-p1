@@ -1,11 +1,13 @@
 import { v } from "convex/values";
 import { internalMutation } from "../_generated/server";
 
-type StoredResource = "organization" | "client" | "project" | "calendar" | "task" | "media";
+type StoredResource = "organization" | "client" | "project" | "deal" | "calendar" | "task" | "media";
+type StoredApiKeyResource = Exclude<StoredResource, "deal">;
 type StoredPermission = {
   resource: StoredResource;
   actions: Array<"read" | "create" | "update" | "delete">;
 };
+type StoredApiKeyPermission = StoredPermission & { resource: StoredApiKeyResource };
 
 function normalizeStoredPermissions(permissions: StoredPermission[]) {
   const normalized: StoredPermission[] = [];
@@ -39,6 +41,12 @@ function permissionsChanged(before: StoredPermission[], after: StoredPermission[
     const next = after[index];
     return permission.resource !== next.resource || permission.actions.join(",") !== next.actions.join(",");
   });
+}
+
+function normalizeStoredApiKeyPermissions(permissions: StoredApiKeyPermission[]) {
+  return normalizeStoredPermissions(permissions).filter(
+    (permission): permission is StoredApiKeyPermission => permission.resource !== "deal",
+  );
 }
 
 export const purgeAllLegacyAssetMedia = internalMutation({
@@ -85,7 +93,7 @@ export const purgeAllLegacyAssetMedia = internalMutation({
     const apiKeys = await ctx.db.query("organizationApiKeys").collect();
     let patchedApiKeys = 0;
     for (const apiKey of apiKeys) {
-      const permissions = normalizeStoredPermissions(apiKey.permissions);
+      const permissions = normalizeStoredApiKeyPermissions(apiKey.permissions);
       if (permissionsChanged(apiKey.permissions, permissions)) {
         await ctx.db.patch(apiKey._id, { permissions, updatedAt: now });
         patchedApiKeys += 1;

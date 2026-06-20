@@ -93,6 +93,10 @@ async function filterLivePermissions(
   return filtered;
 }
 
+function organizationResourceForMcp(resource: McpResource) {
+  return resource === "deal" ? "client" : resource;
+}
+
 async function assertDelegatedPermissions(
   ctx: Parameters<typeof assertOrganizationResourcePermission>[0],
   organizationId: string,
@@ -100,7 +104,7 @@ async function assertDelegatedPermissions(
 ) {
   for (const permission of permissions) {
     for (const action of permission.actions) {
-      await assertOrganizationResourcePermission(ctx, organizationId, permission.resource, action);
+      await assertOrganizationResourcePermission(ctx, organizationId, organizationResourceForMcp(permission.resource), action);
     }
   }
 }

@@ -25,10 +25,13 @@ import {
 } from "./toolRegistry";
 import {
   assertCalendarLinks,
+  assertDealLinks,
   assertMediaResource,
+  assertProjectLinks,
   assertTaskLinks,
   calendarInput,
   clientInput,
+  dealInput,
   inputObject,
   listCursor,
   listLimit,
@@ -68,6 +71,28 @@ const taskSearchValues = (task: { title: string; description?: string }) => [
   task.title,
   task.description ?? "",
 ];
+
+const dealSearchValues = (deal: { title: string; source?: string; nextStep?: string; dealThinking?: string; tags?: string[] }) => [
+  deal.title,
+  deal.source ?? "",
+  deal.nextStep ?? "",
+  deal.dealThinking ?? "",
+  ...(deal.tags ?? []),
+];
+
+function hasInputKey(input: Input, key: string) {
+  return Object.prototype.hasOwnProperty.call(input, key);
+}
+
+function scopedProjectId(input: Input) {
+  if (!hasInputKey(input, "projectId")) return undefined;
+  return optionalString(input, "projectId");
+}
+
+function scopedClientId(input: Input) {
+  if (!hasInputKey(input, "clientId")) return undefined;
+  return optionalString(input, "clientId");
+}
 
 function hasConnectionPermission(
   permissions: unknown[],
@@ -247,18 +272,37 @@ export const readTool = internalQuery({
     if (args.tool === "tasks_list") {
       const limit = listLimit(input);
       const search = searchTerm(input);
+      const projectId = scopedProjectId(input);
+      const clientId = scopedClientId(input);
       if (!search) {
-        const page = await ctx.db
-          .query("tasks")
-          .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
-          .order("desc")
-          .paginate({ numItems: limit, cursor: listCursor(input) });
+        const query = hasInputKey(input, "projectId")
+          ? ctx.db
+              .query("tasks")
+              .withIndex("by_organization_project", (q) => q.eq("organizationId", args.organizationId).eq("projectId", projectId))
+          : clientId
+            ? ctx.db
+                .query("tasks")
+                .withIndex("by_organization_client", (q) => q.eq("organizationId", args.organizationId).eq("clientId", clientId))
+            : ctx.db
+                .query("tasks")
+                .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId));
+        const page = await query.order("desc").paginate({ numItems: limit, cursor: listCursor(input) });
         return mcpPublicWorkspacePage(page);
       }
-      const tasks = await ctx.db
-        .query("tasks")
-        .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
-        .take(TOOL_SCAN_LIMIT);
+      const tasks = hasInputKey(input, "projectId")
+        ? await ctx.db
+            .query("tasks")
+            .withIndex("by_organization_project", (q) => q.eq("organizationId", args.organizationId).eq("projectId", projectId))
+            .take(TOOL_SCAN_LIMIT)
+        : clientId
+          ? await ctx.db
+              .query("tasks")
+              .withIndex("by_organization_client", (q) => q.eq("organizationId", args.organizationId).eq("clientId", clientId))
+              .take(TOOL_SCAN_LIMIT)
+          : await ctx.db
+              .query("tasks")
+              .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
+              .take(TOOL_SCAN_LIMIT);
       return mcpPublicWorkspaceSearchResult(tasks, {
         search,
         limit,
@@ -270,6 +314,50 @@ export const readTool = internalQuery({
     if (args.tool === "tasks_get") {
       const task = await ctx.db.get(requiredString(input, "taskId") as Id<"tasks">);
       return presentWorkspaceRecord(assertPublicWorkspaceRecord(assertActiveWorkspaceRecord(task, args.organizationId, "Task"), "Task"));
+    }
+
+    if (args.tool === "deals_list") {
+      const limit = listLimit(input);
+      const search = searchTerm(input);
+      const projectId = scopedProjectId(input) as Id<"projects"> | undefined;
+      const clientId = scopedClientId(input) as Id<"clients"> | undefined;
+      const stage = optionalString(input, "stage") as "lead" | "qualified" | "proposal_sent" | "contract_sent" | "won" | "lost" | undefined;
+      const status = optionalString(input, "status") as "open" | "won" | "lost" | "paused" | undefined;
+      const query = hasInputKey(input, "projectId")
+        ? ctx.db
+            .query("deals")
+            .withIndex("by_project", (q) => q.eq("organizationId", args.organizationId).eq("projectId", projectId))
+        : clientId
+          ? ctx.db
+              .query("deals")
+              .withIndex("by_client", (q) => q.eq("organizationId", args.organizationId).eq("clientId", clientId))
+          : stage
+            ? ctx.db
+                .query("deals")
+                .withIndex("by_organization_stage", (q) => q.eq("organizationId", args.organizationId).eq("stage", stage))
+            : status
+              ? ctx.db
+                  .query("deals")
+                  .withIndex("by_organization_status", (q) => q.eq("organizationId", args.organizationId).eq("status", status))
+              : ctx.db
+                  .query("deals")
+                  .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId));
+      const page = await query.paginate({ numItems: limit, cursor: listCursor(input) });
+      return {
+        items: page.page
+          .filter((deal) => !deal.deletedAt)
+          .filter((deal) => !stage || deal.stage === stage)
+          .filter((deal) => !status || deal.status === status)
+          .filter((deal) => !search || dealSearchValues(deal).some((value) => value.toLowerCase().includes(search)))
+          .map(presentWorkspaceRecord),
+        isDone: page.isDone,
+        continueCursor: page.continueCursor,
+      };
+    }
+
+    if (args.tool === "deals_get") {
+      const deal = await ctx.db.get(requiredString(input, "dealId") as Id<"deals">);
+      return presentWorkspaceRecord(assertActiveWorkspaceRecord(deal, args.organizationId, "Deal"));
     }
 
     if (args.tool === "media_list") {
@@ -332,7 +420,7 @@ export const writeTool = internalMutation({
       const revealed = await revealClientPii(existing);
       const client = clientInput({ ...existing, ...revealed, ...input });
       await ctx.db.patch(clientId, { ...client, ...await protectClientPii(args.organizationId, client), updatedAt: now });
-      await audit(ctx, args.organizationId, args.connectionId, "client.update", clientId, `Updated client ${requiredString(input, "name") || existing.name}.`);
+      await audit(ctx, args.organizationId, args.connectionId, "client.update", clientId, `Updated client ${optionalString(input, "name") ?? existing.name}.`);
       return presentWorkspaceRecord((await ctx.db.get(clientId))!);
     }
 
@@ -345,9 +433,11 @@ export const writeTool = internalMutation({
     }
 
     if (args.tool === "projects_create") {
+      const project = projectInput(input);
+      await assertProjectLinks(ctx, args.organizationId, project);
       const id = await ctx.db.insert("projects", {
         organizationId: args.organizationId,
-        ...projectInput(input),
+        ...project,
         visibility: "workspace",
         ownerUserId: actorId,
         createdByUserId: actorId,
@@ -362,6 +452,7 @@ export const writeTool = internalMutation({
       const projectId = requiredString(input, "projectId") as Id<"projects">;
       const existing = assertActiveWorkspaceRecord(await ctx.db.get(projectId), args.organizationId, "Project");
       const patch = projectInput({ ...existing, ...input });
+      await assertProjectLinks(ctx, args.organizationId, patch);
       await ctx.db.patch(projectId, { ...patch, updatedAt: now });
       await audit(ctx, args.organizationId, args.connectionId, "project.update", projectId, `Updated project ${existing.name}.`);
       return presentWorkspaceRecord((await ctx.db.get(projectId))!);
@@ -372,6 +463,45 @@ export const writeTool = internalMutation({
       const existing = assertActiveWorkspaceRecord(await ctx.db.get(projectId), args.organizationId, "Project");
       await ctx.db.patch(projectId, { deletedAt: now, isDeleted: true, updatedAt: now });
       await audit(ctx, args.organizationId, args.connectionId, "project.delete", projectId, `Deleted project ${existing.name}.`);
+      return { removed: true };
+    }
+
+    if (args.tool === "deals_create") {
+      const deal = dealInput(input);
+      await assertDealLinks(ctx, args.organizationId, deal);
+      const id = await ctx.db.insert("deals", {
+        organizationId: args.organizationId,
+        ...deal,
+        ownerUserId: deal.ownerUserId ?? actorId,
+        createdByUserId: actorId,
+        createdAt: now,
+        updatedAt: now,
+        ...(deal.status === "won" || deal.status === "lost" ? { closedAt: now } : {}),
+      });
+      await audit(ctx, args.organizationId, args.connectionId, "deal.create", id, `Created deal ${requiredString(input, "title")}.`);
+      return presentWorkspaceRecord((await ctx.db.get(id))!);
+    }
+
+    if (args.tool === "deals_update") {
+      const dealId = requiredString(input, "dealId") as Id<"deals">;
+      const existing = assertActiveWorkspaceRecord(await ctx.db.get(dealId), args.organizationId, "Deal");
+      const patch = dealInput({ ...existing, ...input });
+      await assertDealLinks(ctx, args.organizationId, patch);
+      await ctx.db.patch(dealId, {
+        ...patch,
+        ownerUserId: patch.ownerUserId ?? existing.ownerUserId,
+        updatedAt: now,
+        ...(patch.status === "won" || patch.status === "lost" ? { closedAt: existing.closedAt ?? now } : {}),
+      });
+      await audit(ctx, args.organizationId, args.connectionId, "deal.update", dealId, `Updated deal ${existing.title}.`);
+      return presentWorkspaceRecord((await ctx.db.get(dealId))!);
+    }
+
+    if (args.tool === "deals_delete") {
+      const dealId = requiredString(input, "dealId") as Id<"deals">;
+      const existing = assertActiveWorkspaceRecord(await ctx.db.get(dealId), args.organizationId, "Deal");
+      await ctx.db.patch(dealId, { deletedAt: now, isDeleted: true, updatedAt: now });
+      await audit(ctx, args.organizationId, args.connectionId, "deal.delete", dealId, `Deleted deal ${existing.title}.`);
       return { removed: true };
     }
 

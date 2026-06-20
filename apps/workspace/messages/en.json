@@ -2182,6 +2182,7 @@
         "property": "Assets",
         "asset": "Assets",
         "project": "Projects",
+        "deal": "Deals",
         "calendar": "Calendar",
         "task": "Tasks",
         "media": "Documents"
@@ -2192,6 +2193,7 @@
         "property": "Read and manage assets, operational inventory, status, ownership context, and attached records.",
         "asset": "Read and manage assets, operational inventory, status, ownership context, and attached records.",
         "project": "Read and manage project records, delivery context, linked clients, assets, and team work.",
+        "deal": "Read and manage sales deals, stages, values, clients, projects, and next steps.",
         "calendar": "Read and manage meetings, deadlines, reminders, and scheduled team work.",
         "task": "Read and manage tasks, assignees, due dates, status, and follow-up work.",
         "media": "Read files and attach URL-backed documents to workspace records."
