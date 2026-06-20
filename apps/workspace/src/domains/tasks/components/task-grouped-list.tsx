@@ -86,7 +86,7 @@ export function TaskGroupedList({
       const prevIds = taskIds(prev[status] ?? []);
       const nextIds = taskIds(sorted);
 
-      if (sameIds(prevIds, nextIds)) {
+      if (prev[status] && sameIds(prevIds, nextIds)) {
         // Order unchanged — keep previous reference (no Draggable re-renders)
         result[status] = prev[status];
       } else {

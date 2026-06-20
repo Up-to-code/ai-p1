@@ -28,6 +28,7 @@ type ConversationFeedProps = {
   onEditMessage?: (message: ConversationMessage) => void;
   onApproveConfirmation?: (confirmationId: string) => void | Promise<void>;
   onCancelConfirmation?: (confirmationId: string) => void | Promise<void>;
+  showPendingConfirmationCards?: boolean;
   threadPresentation?: ThreadPresentation | null;
   hasTransientTurn?: boolean;
   isStreaming?: boolean;
@@ -104,6 +105,7 @@ const ConversationMessageRow = React.memo(function ConversationMessageRow({
   onDismissActions,
   onApproveConfirmation,
   onCancelConfirmation,
+  showPendingConfirmationCards,
   onTurnAction,
   onSuggestionPress,
   threadPresentation,
@@ -116,6 +118,7 @@ const ConversationMessageRow = React.memo(function ConversationMessageRow({
   onDismissActions: () => void;
   onApproveConfirmation?: (confirmationId: string) => void | Promise<void>;
   onCancelConfirmation?: (confirmationId: string) => void | Promise<void>;
+  showPendingConfirmationCards?: boolean;
   onTurnAction: (action: ConversationTurnAction, message: ConversationMessage) => void | Promise<void>;
   onSuggestionPress?: (suggestion: string) => void;
   threadPresentation?: ThreadPresentation | null;
@@ -131,6 +134,7 @@ const ConversationMessageRow = React.memo(function ConversationMessageRow({
         onDismissActions={onDismissActions}
         onApproveConfirmation={onApproveConfirmation}
         onCancelConfirmation={onCancelConfirmation}
+        showPendingConfirmationCard={showPendingConfirmationCards}
         threadPresentation={threadPresentation}
       />
 
@@ -155,6 +159,7 @@ export function ConversationFeed({
   onEditMessage,
   onApproveConfirmation,
   onCancelConfirmation,
+  showPendingConfirmationCards = true,
   threadPresentation,
   hasTransientTurn = false,
   isStreaming = false,
@@ -291,6 +296,7 @@ export function ConversationFeed({
         onDismissActions={() => setActiveActionMessageId(null)}
         onApproveConfirmation={onApproveConfirmation}
         onCancelConfirmation={onCancelConfirmation}
+        showPendingConfirmationCards={showPendingConfirmationCards}
         onTurnAction={onTurnAction}
         onSuggestionPress={onSuggestionPress}
         threadPresentation={threadPresentation}
@@ -300,6 +306,7 @@ export function ConversationFeed({
     activeActionMessageId,
     onApproveConfirmation,
     onCancelConfirmation,
+    showPendingConfirmationCards,
     onEditMessage,
     onSuggestionPress,
     onTurnAction,

@@ -5,13 +5,14 @@ import { useCallback, useMemo } from "react";
 import { ConversationFeed } from "@/conversation/components/ConversationFeed";
 import { ConversationStatusBanner } from "@/conversation/components/ConversationStatusBanner";
 import { EdgeFade } from "@/conversation/components/EdgeFade";
+import { PendingConfirmationDock } from "@/conversation/components/PendingConfirmationDock";
 import { QentrahComposerDock } from "@/conversation/components/QentrahComposerDock";
 import { useConversationController } from "@/conversation/hooks/useConversationController";
 import { useComposerMode } from "@/conversation/hooks/useComposerMode";
 import { getLocalizedRuntimeMessage, resolveThreadPresentationState } from "@/conversation/lib/assistantPresentation";
 import { useKeyboardDock } from "@/conversation/hooks/useKeyboardDock";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
-import type { AppColors } from "@/foundation/theme/tokens";
+import { theme, type AppColors } from "@/foundation/theme/tokens";
 import { useThreadPresentation } from "@/persistence/api/conversationData";
 import { useAppStore } from "@/store";
 
@@ -36,6 +37,8 @@ export function ConversationViewport() {
     isStreaming,
     messages,
     openUpgrade,
+    pendingConfirmation,
+    confirmationActionState,
     runFailureMessage,
     runStageFeed,
     runtimeHealth,
@@ -56,6 +59,10 @@ export function ConversationViewport() {
     keyboardHeight,
   });
   const runtimeUnavailable = runtimeHealth.status === "unavailable";
+  const showConfirmationDock = Boolean(pendingConfirmation);
+  const confirmationDockHeight = showConfirmationDock ? 132 : 0;
+  const feedBottomInset = listBottomPadding + confirmationDockHeight;
+  const dockGap = theme.spacing.sm;
   const composerDisabledReason = runtimeUnavailable
     ? getLocalizedRuntimeMessage(runtimeHealth, resolvedPresentation.surfaceCopy)
     : undefined;
@@ -103,11 +110,12 @@ export function ConversationViewport() {
           hasTransientTurn={hasTransientTurn}
           isLoading={isThreadLoading}
           isStreaming={isStreaming}
-          bottomContentInset={listBottomPadding}
-          scrollButtonBottomOffset={scrollButtonBottomOffset + composerMode.scrollButtonExtraOffset}
+          bottomContentInset={feedBottomInset}
+          scrollButtonBottomOffset={scrollButtonBottomOffset + confirmationDockHeight + composerMode.scrollButtonExtraOffset}
           errorMessage={threadLoadError}
           onRetryLoad={retryThreadLoad}
           onDismissKeyboard={dismissComposerKeyboard}
+          showPendingConfirmationCards={false}
         />
       </View>
 
@@ -137,6 +145,14 @@ export function ConversationViewport() {
           onCancelEdit={cancelComposerEdit}
         />
       </View>
+
+      <PendingConfirmationDock
+        confirmation={pendingConfirmation}
+        actionState={confirmationActionState}
+        bottomOffset={dockBottomOffset + composerDockHeight + dockGap}
+        onApprove={approveConfirmation}
+        onCancel={cancelConfirmation}
+      />
     </View>
   );
 }

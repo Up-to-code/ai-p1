@@ -28,6 +28,8 @@ export type ConversationTimeline = {
   hasTransientTurn: boolean;
 };
 
+const LOCAL_TURN_ORDER_STEP = 1;
+
 export function createLocalTurnId(startedAt: number) {
   return `local-turn-${startedAt}`;
 }
@@ -78,6 +80,15 @@ export function buildConversationTimeline({
   streamTurn,
 }: ConversationTimelineInput): ConversationTimeline {
   const rows = [...serverMessages];
+  const lastServerCreatedAt = serverMessages.reduce(
+    (latest, message) => Math.max(latest, message.createdAt),
+    0,
+  );
+  const localTurnBaseCreatedAt = Math.max(
+    draftTurn?.startedAt ?? 0,
+    streamTurn?.message.createdAt ?? 0,
+    lastServerCreatedAt + LOCAL_TURN_ORDER_STEP,
+  );
 
   if (draftTurn) {
     const hasUser = rows.some((message) =>
@@ -88,7 +99,10 @@ export function buildConversationTimeline({
       ),
     );
     if (!hasUser) {
-      rows.push(createOptimisticUserMessage(draftTurn, activeThreadId));
+      rows.push({
+        ...createOptimisticUserMessage(draftTurn, activeThreadId),
+        createdAt: localTurnBaseCreatedAt,
+      });
     }
   }
 
@@ -102,7 +116,10 @@ export function buildConversationTimeline({
       ),
     );
     if (!alreadyPersisted) {
-      rows.push(streamingMessage);
+      rows.push({
+        ...streamingMessage,
+        createdAt: localTurnBaseCreatedAt + LOCAL_TURN_ORDER_STEP,
+      });
     }
   }
 

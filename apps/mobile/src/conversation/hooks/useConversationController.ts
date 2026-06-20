@@ -47,6 +47,13 @@ import {
 import { useAppStore } from "@/store";
 import type { ConversationMessage, PendingAgentAttachment, UploadedAgentAttachment } from "@/types/domain";
 
+type PendingConfirmation = NonNullable<NonNullable<ConversationMessage["turnMeta"]>["confirmation"]>;
+type ConfirmationActionState = {
+  confirmationId: string;
+  status: "approving" | "canceling" | "executed" | "canceled" | "failed";
+  error?: string;
+};
+
 export function useConversationController() {
   const { canUpgrade, isAuthenticated } = useAuthSession();
   const workspace = useWorkspaceIdentity();
@@ -80,6 +87,8 @@ export function useConversationController() {
   } | null>(null);
   const [draftTurn, setDraftTurn] = useState<DraftConversationTurn | null>(null);
   const [streamTurn, setStreamTurn] = useState<StreamingConversationTurn | null>(null);
+  const [pendingConfirmation, setPendingConfirmation] = useState<PendingConfirmation | null>(null);
+  const [confirmationActionState, setConfirmationActionState] = useState<ConfirmationActionState | null>(null);
   const [messagesRefreshKey, setMessagesRefreshKey] = useState(0);
 
   const {
@@ -117,6 +126,22 @@ export function useConversationController() {
     streamTurn,
   }), [activeThreadId, draftTurn, serverMessages, streamTurn]);
   const messages = timeline.messages;
+  const latestMessagePendingConfirmation = useMemo(() => {
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      const confirmation = messages[index]?.turnMeta?.confirmation;
+      if (confirmation?.status === "pending") {
+        return confirmation;
+      }
+    }
+    return null;
+  }, [messages]);
+  const visiblePendingConfirmation = pendingConfirmation?.status === "pending"
+    ? pendingConfirmation
+    : confirmationActionState && pendingConfirmation?.confirmationId === confirmationActionState.confirmationId
+      ? pendingConfirmation
+      : pendingConfirmation?.status && latestMessagePendingConfirmation?.confirmationId === pendingConfirmation.confirmationId
+      ? null
+      : latestMessagePendingConfirmation;
   const threadPresentation = useThreadPresentation(activeThreadId);
   const resolvedPresentation = resolveThreadPresentationState(threadPresentation);
   const surfaceCopy = resolvedPresentation.surfaceCopy;
@@ -162,6 +187,8 @@ export function useConversationController() {
       setPendingPrompt(null);
       setDraftTurn(null);
       setStreamTurn(null);
+      setPendingConfirmation(null);
+      setConfirmationActionState(null);
       setMessagesRefreshKey((value) => value + 1);
       refreshThreads?.();
     }
@@ -394,6 +421,16 @@ export function useConversationController() {
           }
 
           if (event.type === "confirmation_required") {
+            const confirmation: PendingConfirmation = {
+              confirmationId: event.confirmationId,
+              summary: event.summary,
+              resource: event.resource,
+              action: event.action,
+              inputPreview: event.inputPreview,
+              expiresAt: event.expiresAt,
+              status: "pending",
+            };
+            setPendingConfirmation(confirmation);
             setStreamTurn((turn) => turn ? {
               ...turn,
               message: {
@@ -404,15 +441,7 @@ export function useConversationController() {
                 turnMeta: {
                   ...turn.message.turnMeta,
                   runId: streamRunId ?? turn.message.runId,
-                  confirmation: {
-                    confirmationId: event.confirmationId,
-                    summary: event.summary,
-                    resource: event.resource,
-                    action: event.action,
-                    inputPreview: event.inputPreview,
-                    expiresAt: event.expiresAt,
-                    status: "pending",
-                  },
+                  confirmation,
                 },
               },
             } : turn);
@@ -640,44 +669,80 @@ export function useConversationController() {
 
   const approveConfirmation = async (confirmationId: string) => {
     if (!workspace.organizationId) return;
-    await approveAgentConfirmation(workspace.organizationId, confirmationId);
-    setStreamTurn((turn) => turn ? {
-      ...turn,
-      message: {
-        ...turn.message,
-        turnMeta: turn.message.turnMeta?.confirmation?.confirmationId === confirmationId
-        ? {
-            ...turn.message.turnMeta,
-            confirmation: {
-              ...turn.message.turnMeta.confirmation,
-              status: "executed",
-            },
-          }
-        : turn.message.turnMeta,
-      },
-    } : turn);
-    setMessagesRefreshKey((value) => value + 1);
-    refreshThreads?.();
+    setPendingConfirmation((confirmation) => confirmation ?? (
+      latestMessagePendingConfirmation?.confirmationId === confirmationId
+        ? latestMessagePendingConfirmation
+        : confirmation
+    ));
+    setConfirmationActionState({ confirmationId, status: "approving" });
+    try {
+      await approveAgentConfirmation(workspace.organizationId, confirmationId);
+      setPendingConfirmation((confirmation) => confirmation?.confirmationId === confirmationId
+        ? { ...confirmation, status: "executed" }
+        : confirmation);
+      setConfirmationActionState({ confirmationId, status: "executed" });
+      setStreamTurn((turn) => turn ? {
+        ...turn,
+        message: {
+          ...turn.message,
+          turnMeta: turn.message.turnMeta?.confirmation?.confirmationId === confirmationId
+          ? {
+              ...turn.message.turnMeta,
+              confirmation: {
+                ...turn.message.turnMeta.confirmation,
+                status: "executed",
+              },
+            }
+          : turn.message.turnMeta,
+        },
+      } : turn);
+      setMessagesRefreshKey((value) => value + 1);
+      refreshThreads?.();
+      setTimeout(() => {
+        setConfirmationActionState((state) => state?.confirmationId === confirmationId ? null : state);
+      }, 2200);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Approved action failed.";
+      setConfirmationActionState({ confirmationId, status: "failed", error: message });
+    }
   };
 
   const cancelConfirmation = async (confirmationId: string) => {
     if (!workspace.organizationId) return;
-    await cancelAgentConfirmation(workspace.organizationId, confirmationId);
-    setStreamTurn((turn) => turn ? {
-      ...turn,
-      message: {
-        ...turn.message,
-        turnMeta: turn.message.turnMeta?.confirmation?.confirmationId === confirmationId
-        ? {
-            ...turn.message.turnMeta,
-            confirmation: {
-              ...turn.message.turnMeta.confirmation,
-              status: "canceled",
-            },
-          }
-        : turn.message.turnMeta,
-      },
-    } : turn);
+    setPendingConfirmation((confirmation) => confirmation ?? (
+      latestMessagePendingConfirmation?.confirmationId === confirmationId
+        ? latestMessagePendingConfirmation
+        : confirmation
+    ));
+    setConfirmationActionState({ confirmationId, status: "canceling" });
+    try {
+      await cancelAgentConfirmation(workspace.organizationId, confirmationId);
+      setPendingConfirmation((confirmation) => confirmation?.confirmationId === confirmationId
+        ? { ...confirmation, status: "canceled" }
+        : confirmation);
+      setConfirmationActionState({ confirmationId, status: "canceled" });
+      setStreamTurn((turn) => turn ? {
+        ...turn,
+        message: {
+          ...turn.message,
+          turnMeta: turn.message.turnMeta?.confirmation?.confirmationId === confirmationId
+          ? {
+              ...turn.message.turnMeta,
+              confirmation: {
+                ...turn.message.turnMeta.confirmation,
+                status: "canceled",
+              },
+            }
+          : turn.message.turnMeta,
+        },
+      } : turn);
+      setTimeout(() => {
+        setConfirmationActionState((state) => state?.confirmationId === confirmationId ? null : state);
+      }, 1800);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Canceling action failed.";
+      setConfirmationActionState({ confirmationId, status: "failed", error: message });
+    }
   };
 
   return {
@@ -700,6 +765,8 @@ export function useConversationController() {
     stop,
     threads,
     runStageFeed,
+    pendingConfirmation: visiblePendingConfirmation,
+    confirmationActionState,
     handleTurnAction,
     approveConfirmation,
     cancelConfirmation,

@@ -146,6 +146,44 @@ test("persisted message with matching run id replaces local stream row without d
   assert.equal(timeline.messages[0]?.id, "server-assistant");
 });
 
+test("optimistic image turn stays before local assistant when server clock is behind", () => {
+  const startedAt = 10_000;
+  const localTurnId = createLocalTurnId(startedAt);
+  const draftTurn: DraftConversationTurn = {
+    localTurnId,
+    prompt: "Please review the attached files.",
+    startedAt,
+    threadId: "thread_1",
+    attachments: [{
+      key: "uploads/image.png",
+      url: "https://example.com/image.png",
+      name: "image.png",
+      mimeType: "image/png",
+      size: 1024,
+      kind: "image",
+    }],
+  };
+  const streamTurn = createStreamingAssistantTurn({
+    localTurnId,
+    threadId: "thread_1",
+    startedAt,
+    pendingText: "Thinking...",
+  });
+
+  const timeline = buildConversationTimeline({
+    serverMessages: [serverAssistant({ id: "older-server-assistant", createdAt: 9_900 })],
+    activeThreadId: "thread_1",
+    draftTurn,
+    streamTurn,
+  });
+
+  assert.deepEqual(timeline.messages.map((message) => message.id), [
+    "older-server-assistant",
+    `${localTurnId}-user`,
+    `${localTurnId}-assistant`,
+  ]);
+});
+
 test("thread validation refresh keeps previous messages for an active thread", () => {
   const keep = shouldKeepPreviousMessagesOnThreadValidation({
     previousMessages: [serverAssistant()],

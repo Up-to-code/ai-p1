@@ -43,6 +43,7 @@ type MessageBubbleProps = {
   onDismissActions?: () => void;
   onApproveConfirmation?: (confirmationId: string) => void | Promise<void>;
   onCancelConfirmation?: (confirmationId: string) => void | Promise<void>;
+  showPendingConfirmationCard?: boolean;
   threadPresentation?: ThreadPresentation | null;
 };
 
@@ -498,6 +499,7 @@ export function MessageBubble({
   onDismissActions,
   onApproveConfirmation,
   onCancelConfirmation,
+  showPendingConfirmationCard = true,
   threadPresentation,
 }: MessageBubbleProps) {
   const { colors, resolvedColorScheme } = useTheme();
@@ -609,7 +611,9 @@ export function MessageBubble({
             ]}
           />
         </View>
-        {message.turnMeta?.confirmation ? (
+        {message.turnMeta?.confirmation && (
+          showPendingConfirmationCard || message.turnMeta.confirmation.status !== "pending"
+        ) ? (
           <ConfirmationCard
             confirmation={message.turnMeta.confirmation}
             onApprove={onApproveConfirmation}
