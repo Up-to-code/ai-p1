@@ -39,8 +39,8 @@ describe("workspace read helper", () => {
     expect(workspaceReadStatus(new WorkspaceReadTimeoutError("clients list"))).toBe(504);
     expect(workspaceReadStatus(new Error("rate limited"))).toBe(429);
     expect(workspaceReadStatus(new Error("Unexpected"))).toBe(500);
-    expect(workspaceReadMessage(new Error("Unauthenticated"))).toBe("Sign in again to load workspace data.");
-    expect(workspaceReadMessage(new Error("You do not have permission to read this organization client."))).toBe("You do not have permission to load this workspace data.");
+    expect(workspaceReadMessage(new Error("Unauthenticated"))).toBe("Sign in again to continue.");
+    expect(workspaceReadMessage(new Error("You do not have permission to read this organization client."))).toBe("You do not have permission to perform this action.");
     expect(workspaceReadMessage(new WorkspaceReadTimeoutError("clients list"))).toContain("too long");
     expect(workspaceReadMessage(new Error("database secret"))).toBe("Workspace data could not be loaded.");
   });

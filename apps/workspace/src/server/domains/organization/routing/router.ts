@@ -26,38 +26,14 @@ import {
 } from "../handlers/actions";
 import { handleGetOrganizationProfile } from "../handlers/get-profile";
 import { handleUpdateOrganizationProfile } from "../handlers/update-profile";
-import {
-  handleReadActivity,
-  handleReadActivityIndex,
-  handleReadActivityStats,
-  handleReadCalendarEvents,
-  handleReadCalendarIndex,
-  handleReadCalendarStats,
-  handleReadClientOptions,
-  handleReadClientsIndex,
-  handleReadClients,
-  handleReadClientStats,
-  handleReadDashboardIndex,
-  handleReadDashboardOverview,
-  handleReadOpportunities,
-  handleReadOpportunity,
-  handleReadOpportunityOptions,
-  handleReadOpportunityStats,
-  handleReadDeal,
-  handleReadDeals,
-  handleReadDealOptions,
-  handleReadDealStats,
-  handleReadProject,
-  handleReadProjectOptions,
-  handleReadProjectStats,
-  handleReadProjectsIndex,
-  handleReadProjects,
-  handleReadTask,
-  handleReadTaskStats,
-  handleReadTasks,
-  handleReadTaskOptions,
-  handleReadUpcomingCalendarEvents,
-} from "../handlers/workspace-read";
+import { handleReadOpportunities, handleReadOpportunity, handleReadOpportunityOptions, handleReadOpportunityStats } from "@/server/domains/opportunities/handlers/opportunities-read";
+import { handleReadDeals, handleReadDeal, handleReadDealOptions, handleReadDealStats } from "@/server/domains/deals/handlers/deals-read";
+import { handleReadTasks, handleReadTask, handleReadTaskOptions, handleReadTaskStats } from "@/server/domains/clientTasks/handlers/client-tasks-read";
+import { handleReadProjects, handleReadProject, handleReadProjectOptions, handleReadProjectStats, handleReadProjectsIndex } from "@/server/domains/projects/handlers/projects-read";
+import { handleReadClients, handleReadClientOptions, handleReadClientStats, handleReadClientsIndex } from "@/server/domains/clients/handlers/clients-read";
+import { handleReadCalendarEvents, handleReadCalendarIndex, handleReadCalendarStats, handleReadUpcomingCalendarEvents } from "@/server/domains/calendar/handlers/calendar-read";
+import { handleReadActivity, handleReadActivityIndex, handleReadActivityStats } from "../handlers/activity-read";
+import { handleReadDashboardIndex, handleReadDashboardOverview } from "../handlers/dashboard-read";
 import {
   handleCreateProject,
   handleDeleteProject,

@@ -3,12 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@/server/auth/clerk-convex", () => ({
   fetchAuthQuery: vi.fn(),
 }));
-import {
-  handleReadActivityIndex,
-  handleReadCalendarIndex,
-  handleReadClientsIndex,
-  handleReadProjectsIndex,
-} from "./workspace-read";
+import { handleReadProjectsIndex } from "@/server/domains/projects/handlers/projects-read";
+import { handleReadClientsIndex } from "@/server/domains/clients/handlers/clients-read";
+import { handleReadActivityIndex } from "./activity-read";
+import { handleReadCalendarIndex } from "@/server/domains/calendar/handlers/calendar-read";
 
 function fakeContext(input: {
   params?: Record<string, string | undefined>;

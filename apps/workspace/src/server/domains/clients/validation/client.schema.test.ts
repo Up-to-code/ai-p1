@@ -45,12 +45,16 @@ describe("client validation", () => {
     expect(parsed.phone).toBe("+20 100 000 0000");
   });
 
-  it("rejects a client without any contact method", () => {
-    expect(() =>
-      clientPayloadSchema.parse({
-        name: "Mona Saleh",
-      }),
-    ).toThrow("Provide either email or phone for the client.");
+  it("accepts a client without any contact method", () => {
+    const parsed = clientPayloadSchema.parse({
+      name: "Mona Saleh",
+    });
+
+    expect(parsed).toMatchObject({
+      name: "Mona Saleh",
+      type: "person",
+      status: "new",
+    });
   });
 
   it("rejects invalid client identity and status values", () => {
