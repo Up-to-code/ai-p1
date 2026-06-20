@@ -1,5 +1,6 @@
 import type { Context } from "hono";
 import { requireOrganizationId } from "@/server/utils/organization/require-organization-id";
+import { actionErrorJson } from "@/server/utils/response/action-error";
 import { approveAgentConfirmation, cancelAgentConfirmation } from "../services/confirmations";
 
 export async function handleApproveAgentConfirmation(c: Context) {
@@ -12,7 +13,7 @@ export async function handleApproveAgentConfirmation(c: Context) {
     const result = await approveAgentConfirmation(c, org.organizationId, confirmationId);
     return c.json(result);
   } catch (error) {
-    return c.json({ error: error instanceof Error ? error.message : "Agent confirmation could not be approved." }, 400);
+    return actionErrorJson(c, error, "Agent confirmation could not be approved.");
   }
 }
 
@@ -26,6 +27,6 @@ export async function handleCancelAgentConfirmation(c: Context) {
     const confirmation = await cancelAgentConfirmation(c, org.organizationId, confirmationId);
     return c.json({ confirmation });
   } catch (error) {
-    return c.json({ error: error instanceof Error ? error.message : "Agent confirmation could not be canceled." }, 400);
+    return actionErrorJson(c, error, "Agent confirmation could not be canceled.");
   }
 }

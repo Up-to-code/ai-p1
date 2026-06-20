@@ -22,9 +22,19 @@ const STATUS_BY_CLASS: Record<ErrorClass, ContentfulStatusCode> = {
 };
 
 export function classifyError(error: unknown): ErrorClass {
-  const message = error instanceof Error ? error.message : "";
-
   if (error instanceof Error && error.name === "WorkspaceReadTimeoutError") return "TIMEOUT";
+
+  if (hasStatus(error)) {
+    const status = error.status;
+    if (status === 401 || status === 403) return status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN";
+    if (status === 404) return "NOT_FOUND";
+    if (status === 409) return "VALIDATION";
+    if (status === 429) return "RATE_LIMITED";
+    if (status === 400 || status === 422) return "VALIDATION";
+    if (status >= 500) return "INTERNAL";
+  }
+
+  const message = error instanceof Error ? error.message : "";
   if (/Unauthenticated/i.test(message)) return "UNAUTHENTICATED";
   if (/platform admin required/i.test(message)) return "PLATFORM_ADMIN_REQUIRED";
   if (/permission|not have access|forbidden/i.test(message)) return "FORBIDDEN";
@@ -33,6 +43,10 @@ export function classifyError(error: unknown): ErrorClass {
   if (/invalid|required|must be/i.test(message)) return "VALIDATION";
 
   return "INTERNAL";
+}
+
+function hasStatus(error: unknown): error is { status: number } {
+  return typeof error === "object" && error !== null && "status" in error && typeof (error as { status: unknown }).status === "number";
 }
 
 export function errorStatus(error: unknown): ContentfulStatusCode {

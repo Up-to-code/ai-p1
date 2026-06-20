@@ -3,13 +3,13 @@ import { mutation } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
 import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
+import { presentWorkspaceRecord, stripDeletedFields } from "../shared/present";
 import { projectInputValidator, projectValidator } from "./validators";
 
 function presentProject(project: Doc<"projects">) {
-  const { deletedAt: _deletedAt, isDeleted: _isDeleted, ...safeProject } = project;
   return {
-    ...safeProject,
-    id: project._id,
+    ...stripDeletedFields(project),
+    ...presentWorkspaceRecord(project),
     visibility: project.visibility ?? "private",
     coverImageUrl: undefined,
   };

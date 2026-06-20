@@ -13,10 +13,6 @@ import {
   rotateOrganizationApiKeySchema,
 } from "../validation/api-key.schema";
 
-function handleError(c: Context, error: unknown) {
-  return actionErrorJson(c, error, "API key action failed.");
-}
-
 export async function handleListOrganizationApiKeys(c: Context) {
   const org = requireOrganizationId(c);
   if (!org.ok) return org.response;
@@ -24,7 +20,7 @@ export async function handleListOrganizationApiKeys(c: Context) {
   try {
     return c.json({ keys: await listOrganizationApiKeys(org.organizationId) });
   } catch (error) {
-    return handleError(c, error);
+    return actionErrorJson(c, error, "API key action failed.");
   }
 }
 
@@ -38,7 +34,7 @@ export async function handleCreateOrganizationApiKey(c: Context) {
     const result = await createOrganizationApiKey(org.organizationId, parsed.data);
     return c.json({ key: result.key, apiKey: result.secret });
   } catch (error) {
-    return handleError(c, error);
+    return actionErrorJson(c, error, "API key action failed.");
   }
 }
 
@@ -54,7 +50,7 @@ export async function handleRotateOrganizationApiKey(c: Context) {
     const result = await rotateOrganizationApiKey(org.organizationId, apiKeyId, parsed.data);
     return c.json({ key: result.key, apiKey: result.secret });
   } catch (error) {
-    return handleError(c, error);
+    return actionErrorJson(c, error, "API key action failed.");
   }
 }
 
@@ -67,6 +63,6 @@ export async function handleRevokeOrganizationApiKey(c: Context) {
   try {
     return c.json(await revokeOrganizationApiKey(org.organizationId, apiKeyId));
   } catch (error) {
-    return handleError(c, error);
+    return actionErrorJson(c, error, "API key action failed.");
   }
 }

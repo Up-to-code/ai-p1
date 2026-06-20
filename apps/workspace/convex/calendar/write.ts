@@ -4,20 +4,12 @@ import type { Doc } from "../_generated/dataModel";
 import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { cancelQueuedJobsForSource, scheduleCalendarEventReminders } from "../notifications/helpers";
+import { isoDate, isoTime, presentWorkspaceRecord } from "../shared/present";
 import { calendarEventInputValidator, calendarEventValidator } from "./validators";
-
-function isoDate(timestamp: number) {
-  return new Date(timestamp).toISOString().slice(0, 10);
-}
-
-function isoTime(timestamp: number) {
-  return new Date(timestamp).toISOString().slice(11, 16);
-}
 
 function presentEvent(event: Doc<"calendarEvents">) {
   return {
-    ...event,
-    id: event._id,
+    ...presentWorkspaceRecord(event),
     date: isoDate(event.startAt),
     time: isoTime(event.startAt),
   };

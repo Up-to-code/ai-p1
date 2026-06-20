@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { query } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
+import { isoDate, isoTime, presentWorkspaceRecord } from "../shared/present";
 import { activeChronologicalWorkspaceRows, boundedWorkspaceReadLimit } from "../workspace/readSurface";
 import { calendarStats } from "../workspace/readStats";
 import { calendarEventValidator } from "./validators";
@@ -9,18 +10,9 @@ import { calendarEventValidator } from "./validators";
 const MAX_LIST_EVENTS = 500;
 const MAX_RANGE_EVENTS = 1_000;
 
-function isoDate(timestamp: number) {
-  return new Date(timestamp).toISOString().slice(0, 10);
-}
-
-function isoTime(timestamp: number) {
-  return new Date(timestamp).toISOString().slice(11, 16);
-}
-
 async function presentEvent(event: Doc<"calendarEvents">) {
   return {
-    ...event,
-    id: event._id,
+    ...presentWorkspaceRecord(event),
     date: isoDate(event.startAt),
     time: isoTime(event.startAt),
   };

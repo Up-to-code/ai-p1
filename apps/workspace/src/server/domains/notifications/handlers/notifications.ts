@@ -21,15 +21,11 @@ import {
   updateOrganizationNotificationPreferences,
 } from "../services/notifications";
 
-function notificationError(c: Context, error: unknown) {
-  return actionErrorJson(c, error, "Notification action failed.");
-}
-
 export async function handleGetPushDeviceStatus(c: Context) {
   try {
     return c.json(await getPushDeviceStatus());
   } catch (error) {
-    return notificationError(c, error);
+    return actionErrorJson(c, error, "Notification action failed.");
   }
 }
 
@@ -40,7 +36,7 @@ export async function handleRegisterPushDevice(c: Context) {
   try {
     return c.json({ device: await registerPushDevice(parsed.data) });
   } catch (error) {
-    return notificationError(c, error);
+    return actionErrorJson(c, error, "Notification action failed.");
   }
 }
 
@@ -51,7 +47,7 @@ export async function handleRemovePushDevice(c: Context) {
   try {
     return c.json(await removePushDevice(installationId));
   } catch (error) {
-    return notificationError(c, error);
+    return actionErrorJson(c, error, "Notification action failed.");
   }
 }
 
@@ -62,7 +58,7 @@ export async function handleGetMyNotificationPreferences(c: Context) {
   try {
     return c.json({ preference: await getMyNotificationPreferences(org.organizationId) });
   } catch (error) {
-    return notificationError(c, error);
+    return actionErrorJson(c, error, "Notification action failed.");
   }
 }
 
@@ -75,7 +71,7 @@ export async function handleUpdateMyNotificationPreferences(c: Context) {
   try {
     return c.json({ preference: await updateMyNotificationPreferences(org.organizationId, parsed.data) });
   } catch (error) {
-    return notificationError(c, error);
+    return actionErrorJson(c, error, "Notification action failed.");
   }
 }
 
@@ -86,7 +82,7 @@ export async function handleGetOrganizationNotificationPreferences(c: Context) {
   try {
     return c.json({ preference: await getOrganizationNotificationPreferences(org.organizationId) });
   } catch (error) {
-    return notificationError(c, error);
+    return actionErrorJson(c, error, "Notification action failed.");
   }
 }
 
@@ -99,7 +95,7 @@ export async function handleUpdateOrganizationNotificationPreferences(c: Context
   try {
     return c.json({ preference: await updateOrganizationNotificationPreferences(org.organizationId, parsed.data) });
   } catch (error) {
-    return notificationError(c, error);
+    return actionErrorJson(c, error, "Notification action failed.");
   }
 }
 
@@ -110,7 +106,7 @@ export async function handleListNotificationSchedules(c: Context) {
   try {
     return c.json({ schedules: await listNotificationSchedules(org.organizationId) });
   } catch (error) {
-    return notificationError(c, error);
+    return actionErrorJson(c, error, "Notification action failed.");
   }
 }
 
@@ -123,7 +119,7 @@ export async function handleCreateNotificationSchedule(c: Context) {
   try {
     return c.json({ schedule: await createNotificationSchedule(org.organizationId, parsed.data) });
   } catch (error) {
-    return notificationError(c, error);
+    return actionErrorJson(c, error, "Notification action failed.");
   }
 }
 
@@ -138,7 +134,7 @@ export async function handleUpdateNotificationSchedule(c: Context) {
   try {
     return c.json({ schedule: await updateNotificationSchedule(org.organizationId, scheduleId, parsed.data) });
   } catch (error) {
-    return notificationError(c, error);
+    return actionErrorJson(c, error, "Notification action failed.");
   }
 }
 
@@ -151,6 +147,6 @@ export async function handleCancelNotificationSchedule(c: Context) {
   try {
     return c.json(await cancelNotificationSchedule(org.organizationId, scheduleId));
   } catch (error) {
-    return notificationError(c, error);
+    return actionErrorJson(c, error, "Notification action failed.");
   }
 }

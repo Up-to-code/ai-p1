@@ -11,10 +11,6 @@ import {
   updateMcpConnection,
 } from "../services/mcp-connections";
 
-function handleError(c: Context, error: unknown) {
-  return actionErrorJson(c, error, "Agent link action failed.");
-}
-
 function mcpUrl(c: Context, publicId: string, secret: string) {
   const origin = new URL(c.req.url).origin;
   return `${origin}/api/mcp/agent/${encodeURIComponent(publicId)}/${encodeURIComponent(secret)}`;
@@ -28,7 +24,7 @@ export async function handleListMcpConnections(c: Context) {
     const connections = await listMcpConnections(org.organizationId);
     return c.json({ connections });
   } catch (error) {
-    return handleError(c, error);
+    return actionErrorJson(c, error, "Agent link action failed.");
   }
 }
 
@@ -45,7 +41,7 @@ export async function handleCreateMcpConnection(c: Context) {
       agentLink: mcpUrl(c, result.connection.publicId, result.secret),
     });
   } catch (error) {
-    return handleError(c, error);
+    return actionErrorJson(c, error, "Agent link action failed.");
   }
 }
 
@@ -61,7 +57,7 @@ export async function handleUpdateMcpConnection(c: Context) {
     const connection = await updateMcpConnection(org.organizationId, connectionId, parsed.data);
     return c.json({ connection });
   } catch (error) {
-    return handleError(c, error);
+    return actionErrorJson(c, error, "Agent link action failed.");
   }
 }
 
@@ -75,7 +71,7 @@ export async function handleRevokeMcpConnection(c: Context) {
     const result = await revokeMcpConnection(org.organizationId, connectionId);
     return c.json(result);
   } catch (error) {
-    return handleError(c, error);
+    return actionErrorJson(c, error, "Agent link action failed.");
   }
 }
 
@@ -92,6 +88,6 @@ export async function handleRotateMcpConnection(c: Context) {
       agentLink: mcpUrl(c, result.connection.publicId, result.secret),
     });
   } catch (error) {
-    return handleError(c, error);
+    return actionErrorJson(c, error, "Agent link action failed.");
   }
 }

@@ -1,8 +1,7 @@
 import type { Context } from "hono";
-import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { requireOrganizationId } from "@/server/utils/organization/require-organization-id";
 import { validateJsonBody } from "@/server/utils/request/json-body";
-import { OrganizationActionError } from "../errors/action-error";
+import { actionErrorJson } from "@/server/utils/response/action-error";
 import {
   acceptOrganizationEmailInvitation,
   cancelOrganizationEmailInvitation,
@@ -25,14 +24,6 @@ import {
   updateOrganizationRoleSchema,
 } from "../validation/actions.schema";
 
-function handleActionError(c: Context, error: unknown) {
-  const actionError = error as OrganizationActionError;
-  return c.json(
-    { error: actionError.message ?? "Organization action failed." },
-    (actionError.status ?? 500) as ContentfulStatusCode,
-  );
-}
-
 export async function handleGetOrganizationCapabilities(c: Context) {
   const org = requireOrganizationId(c);
   if (!org.ok) return org.response;
@@ -50,7 +41,7 @@ export async function handleGetOrganizationCapabilities(c: Context) {
     }
     return c.json({ capabilities });
   } catch (error) {
-    return handleActionError(c, error);
+    return actionErrorJson(c, error, "Organization action failed.");
   }
 }
 
@@ -62,7 +53,7 @@ export async function handleListOrganizationRoles(c: Context) {
     const roles = await listOrganizationWorkRoles(c, org.organizationId);
     return c.json({ roles });
   } catch (error) {
-    return handleActionError(c, error);
+    return actionErrorJson(c, error, "Organization action failed.");
   }
 }
 
@@ -77,7 +68,7 @@ export async function handleUpdateOrganizationIdentity(c: Context) {
     const organization = await updateOrganizationIdentity(c, org.organizationId, parsed.data);
     return c.json({ organization });
   } catch (error) {
-    return handleActionError(c, error);
+    return actionErrorJson(c, error, "Organization action failed.");
   }
 }
 
@@ -92,7 +83,7 @@ export async function handleCreateOrganizationInvitation(c: Context) {
     const invitation = await createOrganizationEmailInvitation(c, org.organizationId, parsed.data);
     return c.json({ invitation });
   } catch (error) {
-    return handleActionError(c, error);
+    return actionErrorJson(c, error, "Organization action failed.");
   }
 }
 
@@ -104,7 +95,7 @@ export async function handleAcceptOrganizationInvitation(c: Context) {
     const invitation = await acceptOrganizationEmailInvitation(c, parsed.data.invitationId);
     return c.json({ invitation });
   } catch (error) {
-    return handleActionError(c, error);
+    return actionErrorJson(c, error, "Organization action failed.");
   }
 }
 
@@ -121,7 +112,7 @@ export async function handleCancelOrganizationInvitation(c: Context) {
     const invitation = await cancelOrganizationEmailInvitation(c, org.organizationId, invitationId);
     return c.json({ invitation });
   } catch (error) {
-    return handleActionError(c, error);
+    return actionErrorJson(c, error, "Organization action failed.");
   }
 }
 
@@ -141,7 +132,7 @@ export async function handleUpdateOrganizationMemberRole(c: Context) {
     const member = await updateOrganizationMemberRole(c, org.organizationId, memberId, parsed.data);
     return c.json({ member });
   } catch (error) {
-    return handleActionError(c, error);
+    return actionErrorJson(c, error, "Organization action failed.");
   }
 }
 
@@ -158,7 +149,7 @@ export async function handleRemoveOrganizationMember(c: Context) {
     const member = await removeOrganizationMember(c, org.organizationId, memberId);
     return c.json({ member });
   } catch (error) {
-    return handleActionError(c, error);
+    return actionErrorJson(c, error, "Organization action failed.");
   }
 }
 
@@ -173,7 +164,7 @@ export async function handleCreateOrganizationRole(c: Context) {
     const role = await createOrganizationWorkRole(c, org.organizationId, parsed.data);
     return c.json({ role });
   } catch (error) {
-    return handleActionError(c, error);
+    return actionErrorJson(c, error, "Organization action failed.");
   }
 }
 
@@ -193,7 +184,7 @@ export async function handleUpdateOrganizationRole(c: Context) {
     const role = await updateOrganizationWorkRole(c, org.organizationId, roleId, parsed.data);
     return c.json({ role });
   } catch (error) {
-    return handleActionError(c, error);
+    return actionErrorJson(c, error, "Organization action failed.");
   }
 }
 
@@ -210,6 +201,6 @@ export async function handleDeleteOrganizationRole(c: Context) {
     const role = await deleteOrganizationWorkRole(c, org.organizationId, roleId);
     return c.json({ role });
   } catch (error) {
-    return handleActionError(c, error);
+    return actionErrorJson(c, error, "Organization action failed.");
   }
 }

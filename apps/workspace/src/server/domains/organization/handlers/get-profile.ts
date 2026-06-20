@@ -1,5 +1,6 @@
 import type { Context } from "hono";
 import { requireOrganizationId } from "@/server/utils/organization/require-organization-id";
+import { actionErrorJson } from "@/server/utils/response/action-error";
 import { getOrganizationProfile } from "../services/get-profile";
 
 export async function handleGetOrganizationProfile(c: Context) {
@@ -10,6 +11,6 @@ export async function handleGetOrganizationProfile(c: Context) {
     const profile = await getOrganizationProfile(org.organizationId);
     return c.json({ profile });
   } catch (error) {
-    return c.json({ error: error instanceof Error ? error.message : "Unable to load organization profile." }, 500);
+    return actionErrorJson(c, error, "Unable to load organization profile.");
   }
 }

@@ -6,11 +6,8 @@ import type { MutationCtx } from "../_generated/server";
 import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { protectClientPii, revealClientPii } from "../security/clientPii";
+import { isoDate } from "../shared/present";
 import { clientInputValidator, clientValidator, resolveClientPipelineStage } from "./validators";
-
-function isoDate(timestamp: number) {
-  return new Date(timestamp).toISOString().slice(0, 10);
-}
 
 function withoutPrivateClientFields(client: Doc<"clients">) {
   const safeClient = { ...client };

@@ -1,6 +1,7 @@
 import type { Context } from "hono";
 import { requireOrganizationId } from "@/server/utils/organization/require-organization-id";
 import { validateJsonBody } from "@/server/utils/request/json-body";
+import { actionErrorJson } from "@/server/utils/response/action-error";
 import {
   acceptOrganizationInviteLink,
   cancelOrganizationInviteLink,
@@ -10,11 +11,6 @@ import {
   acceptOrganizationInviteLinkSchema,
   createOrganizationInviteLinkSchema,
 } from "../validation/invite-link.schema";
-
-function errorResponse(c: Context, error: unknown, fallback: string, status: 400 | 403 | 500 = 500) {
-  const message = error instanceof Error ? error.message : fallback;
-  return c.json({ error: message }, status);
-}
 
 export async function handleCreateOrganizationInviteLink(c: Context) {
   const org = requireOrganizationId(c);
@@ -35,7 +31,7 @@ export async function handleCreateOrganizationInviteLink(c: Context) {
     const result = await createOrganizationInviteLink(org.organizationId, parsed.data, origin);
     return c.json(result);
   } catch (error) {
-    return errorResponse(c, error, "Invite link could not be created.", 403);
+    return actionErrorJson(c, error, "Invite link could not be created.");
   }
 }
 
@@ -54,7 +50,7 @@ export async function handleAcceptOrganizationInviteLink(c: Context) {
     const inviteLink = await acceptOrganizationInviteLink(parsed.data);
     return c.json({ inviteLink });
   } catch (error) {
-    return errorResponse(c, error, "Invite link could not be accepted.", 403);
+    return actionErrorJson(c, error, "Invite link could not be accepted.");
   }
 }
 
@@ -68,6 +64,6 @@ export async function handleCancelOrganizationInviteLink(c: Context) {
     const inviteLink = await cancelOrganizationInviteLink(org.organizationId, inviteLinkId);
     return c.json({ inviteLink });
   } catch (error) {
-    return errorResponse(c, error, "Invite link could not be canceled.", 403);
+    return actionErrorJson(c, error, "Invite link could not be canceled.");
   }
 }

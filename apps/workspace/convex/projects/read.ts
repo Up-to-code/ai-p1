@@ -5,6 +5,7 @@ import type { QueryCtx } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { listResourceMedia, selectCoverUrl } from "../media/data";
+import { presentWorkspaceRecord, stripDeletedFields } from "../shared/present";
 import {
   activeUpdatedWorkspaceRows,
   activeWorkspaceRows,
@@ -21,10 +22,9 @@ const MAX_STATS_SCAN_ITEMS = 2_000;
 
 async function presentProject(ctx: QueryCtx, project: Doc<"projects">) {
   const media = await listResourceMedia(ctx, project.organizationId, "project", project._id);
-  const { deletedAt: _deletedAt, isDeleted: _isDeleted, ...safeProject } = project;
   return {
-    ...safeProject,
-    id: project._id,
+    ...stripDeletedFields(project),
+    ...presentWorkspaceRecord(project),
     visibility: project.visibility ?? "private",
     coverImageUrl: selectCoverUrl(media),
   };
@@ -32,10 +32,9 @@ async function presentProject(ctx: QueryCtx, project: Doc<"projects">) {
 
 async function presentProjectListItem(ctx: QueryCtx, project: Doc<"projects">) {
   const media = await listResourceMedia(ctx, project.organizationId, "project", project._id);
-  const { deletedAt: _deletedAt, isDeleted: _isDeleted, ...safeProject } = project;
   return {
-    ...safeProject,
-    id: project._id,
+    ...stripDeletedFields(project),
+    ...presentWorkspaceRecord(project),
     visibility: project.visibility ?? "private",
     coverImageUrl: selectCoverUrl(media),
   };

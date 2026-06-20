@@ -4,6 +4,7 @@ import { query } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { revealClientPii } from "../security/clientPii";
+import { isoDate } from "../shared/present";
 import {
   activeUpdatedWorkspaceRows,
   activeWorkspaceRows,
@@ -25,10 +26,6 @@ function withoutPrivateClientFields(client: Doc<"clients">) {
   delete safeClient.encryptedPhone;
   delete safeClient.piiEncryptedAt;
   return safeClient;
-}
-
-function isoDate(timestamp: number) {
-  return new Date(timestamp).toISOString().slice(0, 10);
 }
 
 async function presentClient(client: Doc<"clients">) {

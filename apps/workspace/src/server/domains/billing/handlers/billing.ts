@@ -11,10 +11,6 @@ import {
   processDodoWebhook,
 } from "../services/billing";
 
-function handleBillingError(c: Context, error: unknown) {
-  return actionErrorJson(c, error, "Billing request failed.");
-}
-
 export async function handleGetBillingSubscription(c: Context) {
   const org = requireOrganizationId(c);
   if (!org.ok) return org.response;
@@ -22,7 +18,7 @@ export async function handleGetBillingSubscription(c: Context) {
   try {
     return c.json(await getBillingSubscription(org.organizationId));
   } catch (error) {
-    return handleBillingError(c, error);
+    return actionErrorJson(c, error, "Billing request failed.");
   }
 }
 
@@ -33,7 +29,7 @@ export async function handleGetBillingUsage(c: Context) {
   try {
     return c.json(await getBillingUsage(org.organizationId));
   } catch (error) {
-    return handleBillingError(c, error);
+    return actionErrorJson(c, error, "Billing request failed.");
   }
 }
 
@@ -46,7 +42,7 @@ export async function handleCreateCheckout(c: Context) {
   try {
     return c.json(await createBillingCheckout(org.organizationId, parsed.data));
   } catch (error) {
-    return handleBillingError(c, error);
+    return actionErrorJson(c, error, "Billing request failed.");
   }
 }
 
@@ -59,7 +55,7 @@ export async function handleGetPaymentStatus(c: Context) {
   try {
     return c.json(await getBillingPaymentStatus(org.organizationId, orderId));
   } catch (error) {
-    return handleBillingError(c, error);
+    return actionErrorJson(c, error, "Billing request failed.");
   }
 }
 
@@ -74,6 +70,6 @@ export async function handleDodoWebhook(c: Context) {
   try {
     return c.json(await processDodoWebhook({ token, payload: parsed.data }));
   } catch (error) {
-    return handleBillingError(c, error);
+    return actionErrorJson(c, error, "Billing request failed.");
   }
 }
