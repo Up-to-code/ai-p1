@@ -22,6 +22,19 @@ const serverFunction: ServerFunctionClient = async ({ name, args }) => {
   });
 };
 
+const stripExtensionAttributes = `
+(function(){
+  try{
+    new MutationObserver(function(m){
+      for(var i=0;i<m.length;i++){
+        var t=m[i].target;
+        if(t.removeAttribute&&t.hasAttribute("cz-shortcut-listen"))t.removeAttribute("cz-shortcut-listen");
+      }
+    }).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:["cz-shortcut-listen"]});
+  }catch(e){}
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
@@ -34,6 +47,7 @@ export default function RootLayout({
         suppressHydrationWarning: true,
       }}
     >
+      <script dangerouslySetInnerHTML={{ __html: stripExtensionAttributes }} suppressHydrationWarning />
       {children}
     </PayloadRootLayout>
   );
