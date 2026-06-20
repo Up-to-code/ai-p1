@@ -8,6 +8,7 @@ import {
   Circle,
   ExternalLink,
   Flag,
+  FolderKanban,
   Maximize2,
   Minimize2,
   MoreHorizontal,
@@ -52,7 +53,8 @@ import { createCalendarEventRequest } from "@/domains/calendar/api/calendar";
 import {
   taskDocumentContext,
 } from "../tasks.constants";
-import { StatusPicker, PriorityPicker, DueDatePicker, AssigneePicker } from "./task-pickers";
+import { StatusPicker, PriorityPicker, DueDatePicker, AssigneePicker, ProjectPicker } from "./task-pickers";
+import { useProjectOptionsQueryResult } from "@/domains/projects/api/projects";
 import { taskHref, meetingDateTimeFromTask } from "./task-hooks";
 import { taskLog } from "../task-log";
 
@@ -121,6 +123,11 @@ export function TaskEditor({
   );
 
   const storageKey = `qentrah:task-draft:${organizationId}:${task.id}`;
+  const projectOptions = useProjectOptionsQueryResult(organizationId, { limit: 200 });
+  const projectList = useMemo(
+    () => projectOptions.data ?? [],
+    [projectOptions.data],
+  );
   const initialDraft = useMemo(() => {
     const serverDraft = formFromTask(task);
     if (typeof window === "undefined") return serverDraft;
@@ -214,6 +221,19 @@ export function TaskEditor({
         <DueDatePicker
           value={draft.dueDate}
           onChange={(v) => updateDraft({ dueDate: v })}
+        />
+      ),
+    },
+    {
+      key: "project",
+      icon: <FolderKanban className="h-3.5 w-3.5" />,
+      label: t("form.project"),
+      value: (
+        <ProjectPicker
+          value={draft.projectId}
+          onChange={(v) => updateDraft({ projectId: v })}
+          options={projectList}
+          t={t}
         />
       ),
     },

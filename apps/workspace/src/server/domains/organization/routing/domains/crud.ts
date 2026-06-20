@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { handleReadOpportunities, handleReadOpportunity, handleReadOpportunityOptions, handleReadOpportunityStats } from "@/server/domains/opportunities/handlers/opportunities-read";
 import { handleReadDeals, handleReadDeal, handleReadDealOptions, handleReadDealStats } from "@/server/domains/deals/handlers/deals-read";
 import { handleReadTasks, handleReadTask, handleReadTaskOptions, handleReadTaskStats } from "@/server/domains/clientTasks/handlers/client-tasks-read";
-import { handleReadProjects, handleReadProject, handleReadProjectOptions, handleReadProjectStats, handleReadProjectsIndex } from "@/server/domains/projects/handlers/projects-read";
+import { handleReadProjects, handleReadProject, handleReadProjectOptions, handleReadProjectStats, handleReadProjectsIndex, handleReadProjectTaskCounts } from "@/server/domains/projects/handlers/projects-read";
 import { handleReadClients, handleReadClientOptions, handleReadClientStats, handleReadClientsIndex } from "@/server/domains/clients/handlers/clients-read";
 import { handleReadCalendarEvents, handleReadCalendarIndex, handleReadCalendarStats, handleReadUpcomingCalendarEvents } from "@/server/domains/calendar/handlers/calendar-read";
 import { handleReadActivity, handleReadActivityIndex, handleReadActivityStats } from "@/server/domains/organization/handlers/activity-read";
@@ -12,6 +12,7 @@ import { handleCreateOpportunity, handleDeleteOpportunity, handleUpdateOpportuni
 import { handleCreateDeal, handleDeleteDeal, handleUpdateDeal } from "@/server/domains/deals/handlers/deals";
 import { handleCreateClient, handleDeleteClient, handleUpdateClient } from "@/server/domains/clients/handlers/clients";
 import { handleCreateClientTask, handleDeleteClientTask, handleUpdateClientTask } from "@/server/domains/clientTasks/handlers/client-tasks";
+import { handleAssignTasksToProject } from "@/server/domains/clientTasks/handlers/assign-to-project";
 import { handleCreateFollowUp, handleDeleteFollowUp, handleMarkFollowUpComplete, handleUpdateFollowUp } from "@/server/domains/clientFollowUps/handlers/follow-ups";
 import { handleCreateCalendarEvent, handleDeleteCalendarEvent, handleUpdateCalendarEvent } from "@/server/domains/calendar/handlers/calendar";
 
@@ -20,6 +21,7 @@ export const crudSubRouter = new Hono();
 crudSubRouter.get("/:organizationId/read/projects", handleReadProjects);
 crudSubRouter.get("/:organizationId/read/projects/stats", handleReadProjectStats);
 crudSubRouter.get("/:organizationId/read/projects/options", handleReadProjectOptions);
+crudSubRouter.get("/:organizationId/read/projects/task-counts", handleReadProjectTaskCounts);
 crudSubRouter.get("/:organizationId/read/projects/index", handleReadProjectsIndex);
 crudSubRouter.get("/:organizationId/read/projects/:projectId", handleReadProject);
 
@@ -74,6 +76,7 @@ crudSubRouter.delete("/:organizationId/clients/:clientId", handleDeleteClient);
 crudSubRouter.post("/:organizationId/tasks", handleCreateClientTask);
 crudSubRouter.patch("/:organizationId/tasks/:taskId", handleUpdateClientTask);
 crudSubRouter.delete("/:organizationId/tasks/:taskId", handleDeleteClientTask);
+crudSubRouter.post("/:organizationId/tasks/assign-to-project", handleAssignTasksToProject);
 
 crudSubRouter.post("/:organizationId/client-tasks", handleCreateClientTask);
 crudSubRouter.patch("/:organizationId/client-tasks/:taskId", handleUpdateClientTask);

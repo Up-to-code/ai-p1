@@ -59,6 +59,14 @@ export function useProjectQuery(organizationId: string | undefined, projectId: s
   );
 }
 
+export function useProjectTaskCounts(organizationId?: string) {
+  return useWorkspaceResource<Record<string, number>>(
+    ["projects-task-counts", organizationId],
+    organizationId,
+    "projects/task-counts",
+  );
+}
+
 function projectPayloadFromForm(values: ProjectFormValues) {
   return {
     name: values.name,

@@ -5,6 +5,7 @@ import { assertOrganizationResourcePermission } from "../organizations/profile/a
 import { cancelQueuedJobsForSource, scheduleTaskReminders } from "../notifications/helpers";
 import { clientTaskInputValidator, clientTaskValidator } from "./validators";
 import { validateStrictTaskDates, updateProjectRollup } from "../projects/rollup";
+import { assertActiveWorkspaceRecord } from "../workspace/businessData";
 
 function presentTask<TTask extends { _id: string; visibility?: "private" | "team" | "workspace" }>(task: TTask) {
   return { ...task, id: task._id, visibility: task.visibility ?? "private" };
@@ -127,5 +128,54 @@ export const deleteFromHono = mutation({
     }
 
     return { removed: true };
+  },
+});
+
+export const assignTasksToProject = mutation({
+  args: {
+    organizationId: v.string(),
+    taskIds: v.array(v.id("tasks")),
+    projectId: v.id("projects"),
+  },
+  returns: v.object({ updated: v.number() }),
+  handler: async (ctx, args) => {
+    const user = await clerkAuthComponent.getAuthUser(ctx);
+    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "update");
+
+    const project = await ctx.db.get(args.projectId);
+    assertActiveWorkspaceRecord(project, args.organizationId, "Project");
+
+    const now = Date.now();
+    let updated = 0;
+    const affectedProjectIds = new Set<string>();
+
+    for (const taskId of args.taskIds) {
+      const existing = await ctx.db.get(taskId);
+      if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) continue;
+
+      await ctx.db.patch(taskId, {
+        projectId: args.projectId,
+        updatedAt: now,
+      });
+      updated++;
+
+      if (existing.projectId) affectedProjectIds.add(existing.projectId);
+      affectedProjectIds.add(args.projectId);
+    }
+
+    await ctx.db.insert("organizationAuditEvents", {
+      organizationId: args.organizationId,
+      actorUserId: user._id,
+      action: "client.task.update",
+      target: args.taskIds[0],
+      summary: `Assigned ${updated} task(s) to project.`,
+      createdAt: now,
+    });
+
+    for (const pid of affectedProjectIds) {
+      await updateProjectRollup(ctx.db, pid);
+    }
+
+    return { updated };
   },
 });

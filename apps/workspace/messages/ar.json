@@ -3323,7 +3323,8 @@
       "allStatuses": "كل الحالات",
       "all": "كل المهام",
       "assignedToMe": "مسندة إلي",
-      "sentByMe": "أرسلتها أنا"
+      "sentByMe": "أرسلتها أنا",
+      "allProjects": "كل المشاريع"
     },
     "actions": {
       "new": "مهمة جديدة",

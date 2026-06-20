@@ -146,3 +146,16 @@ export function removeTaskFromTaskCaches(
     null,
   );
 }
+
+export async function assignTasksToProjectRequest(
+  organizationId: string,
+  taskIds: string[],
+  projectId: string,
+) {
+  return requestOrganizationAction<{ updated: number }>(
+    organizationApiPath(organizationId, "tasks", "assign-to-project"),
+    "POST",
+    { taskIds, projectId },
+    "Failed to assign tasks to project.",
+  );
+}

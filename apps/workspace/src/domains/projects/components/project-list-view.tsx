@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useAccountContext } from "@/domains/auth";
-import { useProjectsIndexQuery } from "../api/projects";
-import { Plus, Search, Filter, FolderKanban } from "lucide-react";
+import { useProjectsIndexQuery, useProjectTaskCounts } from "../api/projects";
+import { Plus, Search, Filter, FolderKanban, ListTodo } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "@/i18n/routing";
@@ -20,6 +20,8 @@ export function ProjectListView() {
   const query = useProjectsIndexQuery(workspaceOrganizationId ?? undefined, { search });
   const projects = query.results ?? [];
   const stats = query.stats ?? { total: 0, approved: 0, pending: 0, draft: 0, rejected: 0 };
+  const taskCounts = useProjectTaskCounts(workspaceOrganizationId ?? undefined);
+  const counts: Record<string, number> = taskCounts ?? {};
   
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-10">
@@ -83,8 +85,9 @@ export function ProjectListView() {
               </div>
               
               <div className="mt-8 flex items-center justify-between border-t border-border pt-5 dark:border-white/5">
-                <div className="text-xs font-bold uppercase tracking-wider text-text-muted">
-                  Team & Client
+                <div className="flex items-center gap-1.5 text-xs font-bold text-text-muted">
+                  <ListTodo className="h-3 w-3" />
+                  {counts[project.id] ?? 0} tasks
                 </div>
                 <div className="text-xs font-bold text-text-secondary">
                   {new Date(project._creationTime).toLocaleDateString()}

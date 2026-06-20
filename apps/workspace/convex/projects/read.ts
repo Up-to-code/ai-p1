@@ -183,3 +183,27 @@ export const get = query({
     return presentProject(ctx, project);
   },
 });
+
+export const taskCounts = query({
+  args: { organizationId: v.string() },
+  returns: v.record(v.string(), v.number()),
+  handler: async (ctx, args) => {
+    await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "read");
+    const projects = await ctx.db
+      .query("projects")
+      .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
+      .take(MAX_LIST_ITEMS);
+
+    const counts: Record<string, number> = {};
+    for (const project of activeUpdatedWorkspaceRows(projects)) {
+      const tasks = await ctx.db
+        .query("tasks")
+        .withIndex("by_organization_project", (q) =>
+          q.eq("organizationId", args.organizationId).eq("projectId", project._id),
+        )
+        .take(500);
+      counts[project._id] = tasks.filter((t) => !t.deletedAt).length;
+    }
+    return counts;
+  },
+});

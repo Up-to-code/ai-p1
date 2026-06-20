@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, Flag, UserRound, Search, X } from "lucide-react";
+import { CalendarDays, Flag, UserRound, Search, X, FolderKanban } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import {
@@ -252,6 +252,101 @@ export function AssigneePicker({
               {o.label.charAt(0).toUpperCase()}
             </div>
             <span className="truncate">{o.label}</span>
+          </button>
+        ))}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// ─── ProjectPicker (inline popover) ───────────────────────────────────────────
+
+export type ProjectOption = { id: string; name: string };
+
+export function ProjectPicker({
+  value,
+  onChange,
+  options,
+  t,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: ProjectOption[];
+  t: ReturnType<typeof useTranslations<"Tasks">>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const selected = options.find((o) => o.id === value);
+  const filtered = q
+    ? options.filter((o) => o.name.toLowerCase().includes(q.toLowerCase()))
+    : options;
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v);
+        if (!v) setQ("");
+      }}
+    >
+      <PopoverTrigger
+        render={
+          <button
+            type="button"
+            className="inline-flex h-7 items-center gap-2 rounded-lg border border-border bg-card px-2.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
+          >
+            <FolderKanban className="h-3 w-3 shrink-0 text-text-muted" />
+            {selected?.name ?? (
+              <span className="text-text-muted">{t("form.noProject")}</span>
+            )}
+          </button>
+        }
+      />
+      <PopoverContent
+        align="start"
+        sideOffset={4}
+        className="w-60 p-1.5 rounded-xl border-border bg-card shadow-lg"
+      >
+        <div className="mb-1.5 flex items-center gap-2 rounded-lg border border-border bg-muted px-2.5 py-1.5">
+          <Search className="h-3 w-3 shrink-0 text-text-muted" />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={t("form.searchProjects")}
+            className="flex-1 bg-transparent text-xs text-foreground outline-none placeholder:text-text-muted"
+          />
+        </div>
+        {value && (
+          <button
+            type="button"
+            onClick={() => {
+              onChange("");
+              setOpen(false);
+            }}
+            className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs text-text-muted hover:bg-muted transition-colors"
+          >
+            <X className="h-3 w-3" /> {t("form.noProject")}
+          </button>
+        )}
+        {filtered.length === 0 && (
+          <div className="px-2.5 py-2 text-xs text-text-muted">
+            {t("form.noProjects")}
+          </div>
+        )}
+        {filtered.map((o) => (
+          <button
+            key={o.id}
+            type="button"
+            onClick={() => {
+              onChange(o.id);
+              setOpen(false);
+            }}
+            className={cn(
+              "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-semibold transition-colors hover:bg-muted",
+              o.id === value ? "text-foreground" : "text-text-muted",
+            )}
+          >
+            <FolderKanban className="h-3.5 w-3.5 shrink-0 text-text-muted" />
+            <span className="truncate">{o.name}</span>
           </button>
         ))}
       </PopoverContent>

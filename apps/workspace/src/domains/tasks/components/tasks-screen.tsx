@@ -23,9 +23,11 @@ import {
   createTaskRequest,
   upsertTaskInTaskCaches,
   updateTaskRequest,
+  assignTasksToProjectRequest,
   useTaskQuery,
   useTasksQuery,
 } from "../api/tasks";
+import { useProjectOptionsQueryResult } from "@/domains/projects/api/projects";
 import type { TaskRecord, TaskStatus } from "../tasks.types";
 import { cn } from "@/lib/utils";
 import {
@@ -72,6 +74,7 @@ export function TasksScreen({
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<TaskStatus | "all">("all");
   const [ownership, setOwnership] = useState<OwnershipFilter>("all");
+  const [projectFilter, setProjectFilter] = useState<string>("");
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -84,6 +87,12 @@ export function TasksScreen({
   const projectIdFromUrl = useCurrentProjectId();
   const projectId =
     projectIdProp !== undefined ? projectIdProp : projectIdFromUrl;
+
+  const projectOptions = useProjectOptionsQueryResult(organizationId, { limit: 200 });
+  const projectList = useMemo(
+    () => projectOptions.data ?? [],
+    [projectOptions.data],
+  );
 
   const setSelectedId = useCallback(
     (id: string | null) => {
@@ -101,7 +110,7 @@ export function TasksScreen({
   const tasksResult = useTasksQuery(organizationId, {
     status: "all",
     search,
-    projectId: projectId ?? null,
+    projectId: projectId ?? (projectFilter || null),
   });
   const emptyTasks = useMemo(() => [] as TaskRecord[], []);
   const tasks = tasksResult.data ?? emptyTasks;
@@ -293,6 +302,20 @@ export function TasksScreen({
               </option>
             ))}
           </select>
+          {!projectId && projectList.length > 0 && (
+            <select
+              value={projectFilter}
+              onChange={(e) => setProjectFilter(e.target.value)}
+              className="h-8 rounded-xl border border-border bg-card px-2.5 text-xs font-semibold text-foreground outline-none focus:ring-2 focus:ring-ring/20"
+            >
+              <option value="">{t("filters.allProjects")}</option>
+              {projectList.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          )}
           <button
             type="button"
             onClick={createNewTask}

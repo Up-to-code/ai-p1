@@ -65,3 +65,9 @@ export async function handleReadProject(c: Context) {
     }),
   );
 }
+
+export async function handleReadProjectTaskCounts(c: Context) {
+  return workspaceOrganizationReadJson(c, "project task counts", (organizationId) =>
+    fetchAuthQuery(api.projects.read.taskCounts, { organizationId }),
+  );
+}

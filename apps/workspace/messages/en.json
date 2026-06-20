@@ -3326,7 +3326,8 @@
       "allStatuses": "All statuses",
       "all": "All tasks",
       "assignedToMe": "Assigned to me",
-      "sentByMe": "Sent by me"
+      "sentByMe": "Sent by me",
+      "allProjects": "All projects"
     },
     "actions": {
       "new": "New task",
