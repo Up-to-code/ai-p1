@@ -1,13 +1,11 @@
-import { ReactNode } from "react";
+import { use } from "react";
+import { ProjectDetailLayout } from "@/domains/projects/components/detail/project-detail-layout";
 
-export default async function ProjectLayout({
-  children,
+export default function ProjectLayout({
+  params,
 }: {
-  children: ReactNode;
+  params: Promise<{ projectId: string }>;
 }) {
-  return (
-    <div className="flex h-screen flex-col overflow-hidden bg-background">
-      <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
-    </div>
-  );
+  const { projectId } = use(params);
+  return <ProjectDetailLayout projectId={projectId} />;
 }
