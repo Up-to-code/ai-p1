@@ -1,27 +1,45 @@
 import { z } from "zod";
 import { optionalText, requiredText } from "@/validation/common.schema";
 
-const numericText = (label: string) => z.string().trim().regex(/^\d+$/, `${label} must be a number.`);
+const optionalNumericText = (label: string) =>
+  z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => value ?? "")
+    .refine((value) => !value || /^\d+$/.test(value), `${label} must be a number.`);
 
-export const clientSchema = z.object({
-  name: requiredText("Full name"),
-  type: z.enum(["person", "organization"]),
-  contact: z.string().trim().email("Enter a valid email address."),
-  phone: requiredText("Phone", 7),
-  age: numericText("Age").refine((value) => Number(value) >= 18, "Age must be 18 or higher.").refine((value) => Number(value) <= 120, "Age must be realistic."),
-  nationality: requiredText("Nationality"),
-  generation: requiredText("Generation"),
-  budget: requiredText("Budget"),
-  assetInterest: requiredText("Asset interest"),
-  status: z.enum(["new", "active", "nurture", "inactive", "archived"]),
-  visibility: z.enum(["private", "team", "workspace"]).optional(),
-  pipelineStage: z.enum(["new", "qualified", "review", "negotiation", "closed"]),
-  pipelineOrder: z.number().finite().optional(),
-  priority: z.enum(["normal", "high", "urgent"]),
-  nextAction: requiredText("Next action"),
-  issue: optionalText,
-  notes: optionalText,
-});
+export const clientSchema = z
+  .object({
+    name: requiredText("Full name"),
+    type: z.enum(["person", "organization"]),
+    contact: z
+      .string()
+      .trim()
+      .optional()
+      .transform((value) => value ?? "")
+      .refine((value) => !value || z.string().email().safeParse(value).success, "Enter a valid email address."),
+    phone: optionalText.default(""),
+    age: optionalNumericText("Age")
+      .refine((value) => !value || Number(value) >= 18, "Age must be 18 or higher.")
+      .refine((value) => !value || Number(value) <= 120, "Age must be realistic."),
+    nationality: optionalText.default(""),
+    generation: optionalText.default(""),
+    budget: optionalText.default(""),
+    assetInterest: optionalText.default(""),
+    status: z.enum(["new", "active", "nurture", "inactive", "archived"]),
+    visibility: z.enum(["private", "team", "workspace"]).optional(),
+    pipelineStage: z.enum(["new", "qualified", "review", "negotiation", "closed"]),
+    pipelineOrder: z.number().finite().optional(),
+    priority: z.enum(["normal", "high", "urgent"]),
+    nextAction: optionalText.default(""),
+    issue: optionalText,
+    notes: optionalText,
+  })
+  .refine((value) => Boolean(value.contact || value.phone), {
+    message: "Add an email or phone.",
+    path: ["contact"],
+  });
 
 export interface ClientFormValues {
   name: string;
@@ -41,4 +59,5 @@ export interface ClientFormValues {
   nextAction: string;
   issue?: string;
   notes?: string;
+  tags?: string[];
 }

@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  ArrowLeft,
   CalendarDays,
   Circle,
   ExternalLink,
@@ -288,38 +287,27 @@ export function TaskEditor({
   return (
     <div
       className={cn(
-        "flex h-full flex-col",
+        "relative flex h-full flex-col",
         isFullscreen && "fixed inset-0 z-[60] bg-background",
       )}
     >
-      {/* ── Context-aware task action bar ── */}
-      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border bg-background/90 backdrop-blur-xl px-4 sm:px-6 h-12">
-        <div className="min-w-0 flex items-center gap-2">
-          {showBackLink ? (
-            <Link
-              href="/tasks"
-              className="flex items-center gap-1.5 text-xs font-medium text-text-muted hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              {t("title")}
-            </Link>
-          ) : (
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted">
-              {context.scope === "project" ? "Project task" : "Workspace task"}
-            </span>
-          )}
-          <span className="truncate text-xs font-semibold text-foreground">
-            {draft.title}
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0">
+      <div className="pointer-events-none absolute end-4 top-4 z-20 flex items-center gap-1.5">
+        {showBackLink ? (
+          <Link
+            href="/tasks"
+            className="pointer-events-auto inline-flex h-8 items-center rounded-xl border border-border bg-background/90 px-3 text-xs font-semibold text-text-muted shadow-sm backdrop-blur-xl transition-colors hover:text-foreground"
+          >
+            {t("title")}
+          </Link>
+        ) : null}
+        <div className="pointer-events-auto flex items-center gap-1.5 rounded-2xl border border-border bg-background/90 p-1 shadow-xl backdrop-blur-xl">
           {hasUnsavedChanges && !busyId && (
-            <span className="text-[10px] text-amber-600 dark:text-amber-400">
-              Saved in browser
+            <span className="px-2 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+              Unsaved
             </span>
           )}
           {busyId === "patch" && (
-            <span className="text-[10px] text-text-muted animate-pulse">
+            <span className="px-2 text-[10px] text-text-muted animate-pulse">
               Saving…
             </span>
           )}
@@ -343,7 +331,7 @@ export function TaskEditor({
                   className="h-8 rounded-xl text-xs"
                 >
                   <Video className="h-3.5 w-3.5" />
-                  Schedule meeting
+                  Schedule
                 </Button>
               }
             />
@@ -351,8 +339,18 @@ export function TaskEditor({
               align="end"
               className="w-72 rounded-2xl border-border bg-popover p-4 shadow-2xl"
             >
-              <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-text-muted">
-                <Clock3 className="h-3.5 w-3.5" /> Meeting time
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-text-muted">
+                  <Clock3 className="h-3.5 w-3.5" /> Meeting time
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setScheduleOpen(false)}
+                  className="rounded-lg p-1 text-text-muted transition-colors hover:bg-muted hover:text-foreground"
+                  aria-label="Close meeting scheduler"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
               </div>
               <label className="mb-2 block text-xs font-semibold text-text-muted">
                 Date
@@ -462,6 +460,7 @@ export function TaskEditor({
           onBodyBlur={() => {}}
           mentionOptions={mentionOptions}
           documentContext={context}
+          compactFormatting
         />
       </div>
 

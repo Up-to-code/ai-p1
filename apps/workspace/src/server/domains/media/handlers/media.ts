@@ -4,12 +4,12 @@ import { requireOrganizationId } from "@/server/utils/organization/require-organ
 import { validateJsonBody } from "@/server/utils/request/json-body";
 import { actionErrorJson } from "@/server/utils/response/action-error";
 import { attachMedia, createMediaFolder, deleteMediaFolder, updateMedia, deleteMedia } from "../services/media";
-import { attachMediaPayloadSchema, createMediaFolderPayloadSchema } from "../validation/media.schema";
+import { attachMediaPayloadSchema, createMediaFolderPayloadSchema, updateMediaPayloadSchema } from "../validation/media.schema";
 
 export const { handleUpdate: handleUpdateMedia, handleDelete: handleDeleteMedia } = createCrudHandlers({
   resourceName: "mediaAsset",
   createSchema: attachMediaPayloadSchema,
-  updateSchema: attachMediaPayloadSchema,
+  updateSchema: updateMediaPayloadSchema,
   resourceIdParam: "mediaId",
   service: { create: attachMedia, update: updateMedia, delete: deleteMedia },
 });

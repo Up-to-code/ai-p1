@@ -16,7 +16,9 @@ describe("client form workspace source", () => {
 
   it("uses workspace-neutral placeholders instead of real-estate examples", () => {
     expect(formSource).toContain('placeholder={t("form.namePlaceholder")}');
-    expect(formSource).toContain('placeholder={t("form.actionPlaceholder")}');
+    expect(formSource).toContain('placeholder={t("form.emailPlaceholder")}');
+    expect(formSource).toContain('placeholder={t("form.phonePlaceholder")}');
+    expect(formSource).not.toContain('placeholder={t("form.actionPlaceholder")}');
     expect(formSource).not.toContain("Schedule viewing");
     expect(formSource).not.toContain("900K - 1.2M SAR");
     expect(formSource).not.toContain("priority asset, Cairo");

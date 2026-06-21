@@ -21,6 +21,7 @@ import {
   LayoutDashboard,
   BadgeDollarSign,
   Building2,
+  FolderGit2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -80,6 +81,7 @@ const primaryNav = [
   { name: "clients", href: "/clients", icon: UserRound, label: "Clients" },
   { name: "opportunities", href: "/opportunities", icon: KanbanSquare, label: "Opportunities" },
   { name: "deals", href: "/deals", icon: BadgeDollarSign, label: "Deals" },
+  { name: "projects", href: "/projects", icon: FolderGit2, label: "Projects" },
   { name: "tasks", href: "/tasks", icon: ListTodo, label: "Tasks" },
   { name: "calendar", href: "/calendar", icon: CalendarDays, label: "Calendar" },
 ];

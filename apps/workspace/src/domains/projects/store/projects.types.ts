@@ -16,6 +16,9 @@ export interface Project {
   budget?: number;
   description?: string;
   templateId?: string;
+  tags?: string[];
+  progress?: number;
+  teamMemberIds?: string[];
   _creationTime: number;
   syncState?: "draft" | "blocked" | "synced";
 }

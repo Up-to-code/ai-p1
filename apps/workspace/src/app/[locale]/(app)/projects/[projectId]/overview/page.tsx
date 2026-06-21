@@ -1,41 +1,20 @@
 "use client";
 
 import { use } from "react";
-import { useProjectQuery } from "@/domains/projects/api/projects";
-import { useAccountContext } from "@/domains/auth";
+import { useRouter } from "@/i18n/routing";
+import { useEffect } from "react";
 
 export default function ProjectOverviewPage({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = use(params);
-  const account = useAccountContext();
-  const orgId = account.workspace.status === "ready" ? account.workspace.organizationId : undefined;
-  const project = useProjectQuery(orgId ?? undefined, projectId);
+  const router = useRouter();
 
-  if (project === undefined) return <div className="p-8">Loading overview...</div>;
-  if (project === null) return <div className="p-8 text-red-500">Project not found</div>;
+  useEffect(() => {
+    router.replace(`/projects/${projectId}/edit`);
+  }, [projectId, router]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-      <div className="rounded-3xl border border-border bg-white p-8 shadow-sm dark:border-white/10 dark:bg-white/5">
-        <h2 className="text-2xl font-black">{project.name}</h2>
-        <p className="mt-4 text-foreground dark:text-muted-foreground">
-          {project.description || "No description provided."}
-        </p>
-
-        <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-4">
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Status</h4>
-            <p className="mt-1 font-semibold">{project.status}</p>
-          </div>
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Health</h4>
-            <p className="mt-1 font-semibold">{project.health}</p>
-          </div>
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Budget</h4>
-            <p className="mt-1 font-semibold">{project.budget ? `$${project.budget}` : "Not set"}</p>
-          </div>
-        </div>
-      </div>
+    <div className="flex h-48 items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-[3px] border-primary border-t-transparent" />
     </div>
   );
 }

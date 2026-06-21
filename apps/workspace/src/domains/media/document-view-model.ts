@@ -3,7 +3,7 @@
 import type { MediaKind } from "./api/media";
 
 export type UploadStatus = "idle" | "uploading" | "uploaded";
-export type ShareVisibility = "private" | "public";
+export type ShareVisibility = "private" | "public" | "team" | "owner" | "member";
 export type PendingUpload = {
   id: string;
   file: File;

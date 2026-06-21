@@ -7,9 +7,9 @@ import { presentWorkspaceRecord, stripDeletedFields } from "../shared/present";
 import { projectInputValidator, projectValidator } from "./validators";
 
 function presentProject(project: Doc<"projects">) {
+  const clean = stripDeletedFields(project);
   return {
-    ...stripDeletedFields(project),
-    ...presentWorkspaceRecord(project),
+    ...presentWorkspaceRecord(clean),
     visibility: project.visibility ?? "private",
     coverImageUrl: undefined,
   };

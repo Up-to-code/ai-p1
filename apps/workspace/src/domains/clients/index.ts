@@ -1,4 +1,5 @@
-export { ClientsWorkspace, ClientDetailScreen, ClientFormScreen } from "./components/clients-screens";
+export { ClientsWorkspace, ClientFormScreen } from "./components/clients-screens";
+export { ClientDetailLayout as ClientDetailScreen } from "./components/detail/client-detail-layout";
 export { ClientForm } from "./components/client-form";
 export { ClientSheet } from "./components/client-sheet";
 export { useClientsStore } from "./store/clients.store";

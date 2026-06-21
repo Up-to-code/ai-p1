@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
@@ -14,9 +14,18 @@ interface TiptapEditorProps {
   className?: string;
   onUploadImage?: (file: File) => Promise<string | undefined>;
   disableImageUpload?: boolean;
+  saveOnBlur?: boolean;
 }
 
-export function TiptapEditor({ value, onChange, placeholder, className, onUploadImage, disableImageUpload }: TiptapEditorProps) {
+export function TiptapEditor({
+  value,
+  onChange,
+  placeholder,
+  className,
+  onUploadImage,
+  disableImageUpload,
+  saveOnBlur = false,
+}: TiptapEditorProps) {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -31,7 +40,14 @@ export function TiptapEditor({ value, onChange, placeholder, className, onUpload
     ],
     content: value,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      if (!saveOnBlur) {
+        onChange(editor.getHTML());
+      }
+    },
+    onBlur: ({ editor }) => {
+      if (saveOnBlur) {
+        onChange(editor.getHTML());
+      }
     },
     editorProps: {
       attributes: {
@@ -39,6 +55,13 @@ export function TiptapEditor({ value, onChange, placeholder, className, onUpload
       },
     },
   });
+
+  // Sync external value changes with editor
+  useEffect(() => {
+    if (editor && value !== editor.getHTML()) {
+      editor.commands.setContent(value);
+    }
+  }, [value, editor]);
 
   if (!editor) {
     return null;

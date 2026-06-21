@@ -386,15 +386,15 @@ export function AppDataTable<T>({
 }: AppDataTableProps<T>) {
   return (
     <div className={cn("overflow-hidden rounded-[20px] border border-border bg-card", className)}>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[760px] border-collapse text-start">
+      <div className="overflow-x-auto pb-4">
+        <table className="w-full min-w-max border-collapse text-start">
           <thead>
-            <tr className="border-b border-border bg-muted/40">
+            <tr className="border-b border-border bg-card">
               {columns.map((column) => (
                 <th
                   key={column.key}
                   className={cn(
-                    "px-6 py-3.5 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground",
+                    "px-6 py-4 text-[10px] font-black uppercase tracking-[0.25em] text-foreground/70",
                     alignClassName[column.align ?? "start"],
                     column.className
                   )}

@@ -8,6 +8,7 @@ import { mcpSubRouter } from "./domains/mcp";
 import { agentsSubRouter } from "./domains/agents";
 import { partnersSubRouter } from "./domains/partners";
 import { billingSubRouter } from "./domains/billing";
+import { customFieldsSubRouter } from "@/server/domains/custom-fields/routing/router";
 
 export const organizationRouter = new Hono();
 
@@ -21,3 +22,4 @@ organizationRouter.route("/", mcpSubRouter);
 organizationRouter.route("/", agentsSubRouter);
 organizationRouter.route("/", partnersSubRouter);
 organizationRouter.route("/", billingSubRouter);
+organizationRouter.route("/", customFieldsSubRouter);

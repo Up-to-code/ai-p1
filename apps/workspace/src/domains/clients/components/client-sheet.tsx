@@ -20,16 +20,12 @@ export function ClientSheet({ open, onOpenChange, existing, indexQueryKey, onSuc
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:w-[80vw] sm:min-w-[800px] max-w-none sm:max-w-none border-none bg-background p-0 shadow-2xl">
         <div className="flex h-full flex-col">
-          <SheetHeader className="border-b border-border bg-card p-10">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-sky-500 animate-pulse" />
-              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-sky-600 dark:text-sky-400">{t('form.eyebrow')}</div>
-            </div>
-            <SheetTitle className="mt-4 text-3xl font-black tracking-tighter text-foreground">
-              {existing ? t('form.editTitle') + "." : t('form.createTitle') + "."}
+          <SheetHeader className="border-b border-border bg-card px-8 py-6">
+            <SheetTitle className="text-2xl font-black tracking-tight text-foreground">
+              {existing ? t("form.editTitle") : t("form.createTitle")}
             </SheetTitle>
-            <SheetDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              {t('form.subtitle')}
+            <SheetDescription className="sr-only">
+              {t("form.subtitle")}
             </SheetDescription>
           </SheetHeader>
           

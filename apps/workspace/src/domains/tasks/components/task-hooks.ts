@@ -137,33 +137,65 @@ export function useMemberOptions(
   organizationId?: string,
   currentUser?: { id: string; name: string; email: string },
 ) {
-  const [members, setMembers] = useState<WorkOsPickerOption[]>([]);
+  const currentUserOption = useMemo<WorkOsPickerOption | null>(() => {
+    if (!currentUser?.id) return null;
+    return {
+      id: currentUser.id,
+      label: "Me",
+      helper: [currentUser.name, currentUser.email, "You"]
+        .filter(Boolean)
+        .join(" · "),
+    };
+  }, [currentUser?.email, currentUser?.id, currentUser?.name]);
+  const [members, setMembers] = useState<WorkOsPickerOption[]>(
+    () => currentUserOption ? [currentUserOption] : [],
+  );
   useEffect(() => {
-    if (!organizationId) return;
+    if (!organizationId) {
+      setMembers(currentUserOption ? [currentUserOption] : []);
+      return;
+    }
     let active = true;
+    setMembers(currentUserOption ? [currentUserOption] : []);
     listOrganizationMembers(organizationId)
       .then((list) => {
         if (!active) return;
-        const mapped = list.map((m) => ({
-          id: m.userId,
-          label: m.user?.name || m.user?.email || m.userId,
-          helper: m.user?.email || m.role,
-        }));
-        if (currentUser?.id && !mapped.some((m) => m.id === currentUser.id)) {
-          mapped.unshift({
-            id: currentUser.id,
-            label: `${currentUser.name || currentUser.email || "Me"} (me)`,
-            helper: currentUser.email || "You",
+        const seen = new Set<string>();
+        const mapped: WorkOsPickerOption[] = [];
+        for (const member of list) {
+          const id = member.userId || member.user?.id || member.id;
+          if (!id || seen.has(id)) continue;
+          seen.add(id);
+          const isCurrentUser = currentUser?.id === id;
+          mapped.push({
+            id,
+            label: isCurrentUser
+              ? "Me"
+              : member.user?.name || member.user?.email || id,
+            helper: [
+              member.user?.email,
+              member.role,
+              isCurrentUser ? "You" : null,
+            ].filter(Boolean).join(" · "),
+          });
+        }
+        if (currentUserOption && !seen.has(currentUserOption.id)) {
+          mapped.unshift(currentUserOption);
+        } else {
+          mapped.sort((left, right) => {
+            if (left.id === currentUser?.id) return -1;
+            if (right.id === currentUser?.id) return 1;
+            return left.label.localeCompare(right.label);
           });
         }
         setMembers(mapped);
       })
       .catch(() => {
-        if (active) setMembers([]);
+        if (active) setMembers(currentUserOption ? [currentUserOption] : []);
       });
     return () => {
       active = false;
     };
-  }, [currentUser?.email, currentUser?.id, currentUser?.name, organizationId]);
+  }, [currentUser?.id, currentUserOption, organizationId]);
   return members;
 }

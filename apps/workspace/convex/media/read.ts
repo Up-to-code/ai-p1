@@ -62,11 +62,32 @@ export const getForPublicRoute = query({
   args: {
     mediaId: v.id("mediaAssets"),
   },
-  returns: v.union(mediaAssetValidator, v.null()),
+  returns: v.union(
+    v.object({
+      asset: mediaAssetValidator,
+      organization: v.object({
+        name: v.string(),
+        logo: v.optional(v.string()),
+      }),
+    }),
+    v.null()
+  ),
   handler: async (ctx, args) => {
     const asset = await getMediaAsset(ctx, args.mediaId);
     if (!asset || (asset.shareVisibility ?? "private") !== "public") return null;
-    return asset;
+
+    const profile = await ctx.db
+      .query("organizations")
+      .withIndex("by_organization_id", (q) => q.eq("organizationId", asset.organizationId))
+      .first();
+
+    return {
+      asset,
+      organization: {
+        name: profile?.name || "Workspace",
+        logo: profile?.logo,
+      },
+    };
   },
 });
 

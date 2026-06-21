@@ -253,7 +253,7 @@ export async function listOrganizationMembers(organizationId: string) {
     .listMembers({ query: { organizationId, limit: 100, offset: 0 } })
     .then((result) => assertOk(result, "Members could not be loaded."));
 
-  return Array.isArray(data) ? data : data.members;
+  return Array.isArray(data) ? data : data.members ?? [];
 }
 
 export function createOrganizationInvitation(organizationId: string, input: { email: string; role: string }) {

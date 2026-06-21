@@ -17,6 +17,8 @@ export type ClientTaskPayload = {
   dueDate?: string;
   description?: string;
   tags?: string[];
+  clientId?: string;
+  projectId?: string;
 };
 
 type ClientTaskOption = {

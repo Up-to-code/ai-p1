@@ -34,6 +34,8 @@ import CodeBlock from "@tiptap/extension-code-block";
 import Heading from "@tiptap/extension-heading";
 import OrderedList from "@tiptap/extension-ordered-list";
 import Image from "@tiptap/extension-image";
+import LinkExtension from "@tiptap/extension-link";
+import UnderlineExtension from "@tiptap/extension-underline";
 import { createPortal } from "react-dom";
 import {
   Bold,
@@ -46,11 +48,15 @@ import {
   AlignCenter,
   AlignRight,
   Minus,
+  Heading1,
   Heading2,
   Heading3,
+  Strikethrough,
+  Underline,
   ImageIcon,
   Link2,
   Loader2,
+  Maximize2,
   Paperclip,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -113,6 +119,8 @@ export interface WorkOsDocEditorProps {
   children?: ReactNode;
   /** Extra class on the outermost container */
   className?: string;
+  /** Hide the always-visible formatting bar and use only contextual controls */
+  compactFormatting?: boolean;
 }
 
 // ─── Toolbar button ──────────────────────────────────────────────────────────
@@ -280,6 +288,34 @@ function EditorToolbar({
   );
 }
 
+function safeEditorHtml(editor: ReturnType<typeof useEditor>) {
+  if (!editor || editor.isDestroyed) return null;
+  try {
+    return editor.getHTML();
+  } catch {
+    return null;
+  }
+}
+
+const ResizableImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      width: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("width") || null,
+        renderHTML: (attributes) => {
+          if (!attributes.width) return {};
+          return {
+            width: attributes.width,
+            style: `width: ${attributes.width}; max-width: 100%; height: auto;`,
+          };
+        },
+      },
+    };
+  },
+});
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function WorkOsDocEditor({
@@ -296,6 +332,7 @@ export function WorkOsDocEditor({
   documentContext,
   children,
   className,
+  compactFormatting = false,
 }: WorkOsDocEditorProps) {
   // ── Title ──────────────────────────────────────────────────────────────
   const [localTitle, setLocalTitle] = useState(title);
@@ -358,16 +395,26 @@ export function WorkOsDocEditor({
         codeBlock: false,
         orderedList: false,
       }),
+      LinkExtension.configure({
+        autolink: true,
+        openOnClick: false,
+        linkOnPaste: true,
+        HTMLAttributes: {
+          class: "text-primary underline underline-offset-2",
+          rel: "noreferrer",
+          target: "_blank",
+        },
+      }),
+      UnderlineExtension,
       Heading.configure({ levels: [1, 2, 3] }),
       Blockquote,
       CodeBlock,
       OrderedList,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
-      Image.configure({
+      ResizableImage.configure({
         HTMLAttributes: {
-          class: "my-4 block max-w-full rounded-2xl border border-border",
-          style:
-            "resize: both; overflow: auto; min-width: 160px; min-height: 120px;",
+          class:
+            "my-4 block h-auto max-w-full rounded-2xl border border-border",
         },
       }),
       Placeholder.configure({
@@ -406,7 +453,8 @@ export function WorkOsDocEditor({
     ],
     content: body,
     onUpdate({ editor: e }) {
-      const html = e.getHTML();
+      const html = safeEditorHtml(e);
+      if (!html) return;
       onBodyChange?.(html);
 
       // Contextual @/ mention detection
@@ -594,19 +642,21 @@ export function WorkOsDocEditor({
 
   // Sync external body when it changes from outside
   useEffect(() => {
-    if (!editor) return;
-    if (body !== editor.getHTML()) {
+    if (!editor || editor.isDestroyed) return;
+    const currentHtml = safeEditorHtml(editor);
+    if (currentHtml && body !== currentHtml) {
       editor.commands.setContent(body, { emitUpdate: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [body]);
 
   const localizedHref = useCallback((href: string) => {
-    if (!href || href === "#" || /^https?:\/\//.test(href)) return href || "#";
+    if (!href || href === "#" || /^(https?:|mailto:|tel:)/.test(href)) return href || "#";
     if (typeof window === "undefined") return href;
     const first = window.location.pathname.split("/").filter(Boolean)[0];
     const prefix = first && /^[a-z]{2}(?:-[A-Z]{2})?$/.test(first) ? `/${first}` : "";
     if (!prefix || href.startsWith(`${prefix}/`)) return href;
+    if (/^\/[a-z]{2}(?:-[A-Z]{2})?\//.test(href)) return href;
     return `${prefix}${href.startsWith("/") ? href : `/${href}`}`;
   }, []);
 
@@ -651,8 +701,9 @@ export function WorkOsDocEditor({
   );
 
   const handleBodyBlur = useCallback(() => {
-    if (!editor) return;
-    onBodyBlur?.(editor.getHTML());
+    const html = safeEditorHtml(editor);
+    if (!html) return;
+    onBodyBlur?.(html);
   }, [editor, onBodyBlur]);
 
   const openLinkPanel = useCallback(() => {
@@ -667,34 +718,18 @@ export function WorkOsDocEditor({
 
   const applyLink = useCallback(() => {
     if (!editor || !linkPanel.href.trim()) return;
-    const href = linkPanel.href.trim();
+    const rawHref = linkPanel.href.trim();
+    const href = /^([a-z][a-z0-9+.-]*:|\/|#)/i.test(rawHref)
+      ? localizedHref(rawHref)
+      : `https://${rawHref}`;
     const label = (linkPanel.label || href).trim();
-    editor
-      .chain()
-      .focus()
-      .insertContent(
-        `<a href="${href}" target="_blank" rel="noreferrer">${label}</a>`,
-      )
-      .run();
+    if (editor.state.selection.empty) {
+      editor.chain().focus().insertContent(`<a href="${href}">${label}</a>`).run();
+    } else {
+      editor.chain().focus().extendMarkRange("link").setLink({ href }).run();
+    }
     setLinkPanel({ open: false, href: "", label: "" });
-  }, [editor, linkPanel.href, linkPanel.label]);
-
-  const insertMentionReference = useCallback(
-    (option: DocEditorMentionOption) => {
-      if (!editor) return;
-      const type = option.type || "member";
-      const label = option.label.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      const href = localizedHref(option.href || "#");
-      editor
-        .chain()
-        .focus()
-        .insertContent(
-          `<a href="${href}" data-mention-type="${type}" data-mention-id="${option.id}" class="mention inline-flex items-center rounded bg-primary/10 px-1 text-primary font-medium">@${label}</a>&nbsp;`,
-        )
-        .run();
-    },
-    [editor],
-  );
+  }, [editor, linkPanel.href, linkPanel.label, localizedHref]);
 
   const uploadAndInsert = useCallback(
     async (files: FileList | null, mode: "image" | "file") => {
@@ -714,6 +749,7 @@ export function WorkOsDocEditor({
               src: uploaded.url,
               alt: uploaded.name || "Uploaded image",
             })
+            .updateAttributes("image", { width: "100%" })
             .run();
         } else {
           editor
@@ -731,29 +767,6 @@ export function WorkOsDocEditor({
       }
     },
     [documentContext?.organizationId, editor],
-  );
-
-  const quickReferences = useMemo(() => {
-    const preferredOrder = [
-      "member",
-      "client",
-      "project",
-      "task",
-      "meeting",
-      "deal",
-      "file",
-    ];
-    return [...mentionOptions]
-      .sort(
-        (a, b) =>
-          preferredOrder.indexOf(a.type || "member") -
-          preferredOrder.indexOf(b.type || "member"),
-      )
-      .slice(0, 12);
-  }, [mentionOptions]);
-  const extraReferenceCount = Math.max(
-    0,
-    mentionOptions.length - quickReferences.length,
   );
 
   const menuStyle = {
@@ -774,7 +787,7 @@ export function WorkOsDocEditor({
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto w-full max-w-5xl px-6 pb-20 pt-8 sm:px-10">
           {/* ── Title ── */}
-          <div className="relative mb-2">
+          <div className="relative mb-4">
             <textarea
               ref={titleRef}
               value={localTitle}
@@ -794,7 +807,7 @@ export function WorkOsDocEditor({
               rows={1}
               className={cn(
                 "w-full resize-none overflow-hidden bg-transparent",
-                "text-[2rem] font-bold leading-tight tracking-tight text-foreground",
+                "text-[1.8rem] font-bold leading-tight tracking-tight text-foreground",
                 "placeholder:text-text-muted/40",
                 "outline-none focus:outline-none",
                 "transition-colors",
@@ -811,19 +824,17 @@ export function WorkOsDocEditor({
 
           {/* ── Metadata rows ── */}
           {fields.length > 0 && (
-            <div className="mb-6 flex flex-col gap-0.5">
+            <div className="mb-5 grid gap-2 md:grid-cols-2">
               {fields.map((field) => (
                 <div
                   key={field.key}
-                  className="group flex min-h-[34px] items-center gap-0 rounded-lg transition-colors hover:bg-muted/50"
+                  className="group grid min-h-9 grid-cols-[112px_minmax(0,1fr)] items-center gap-3 rounded-xl border border-transparent px-2 py-1 transition-colors hover:border-border hover:bg-muted/35"
                 >
-                  {/* Label column — fixed width */}
-                  <div className="flex w-40 shrink-0 items-center gap-2 px-3 text-xs font-medium text-text-muted">
+                  <div className="flex min-w-0 items-center gap-2 text-xs font-medium text-text-muted">
                     <span className="shrink-0 opacity-60">{field.icon}</span>
                     <span className="truncate">{field.label}</span>
                   </div>
-                  {/* Value column */}
-                  <div className="min-w-0 flex-1 px-2 text-sm text-foreground">
+                  <div className="min-w-0 text-sm text-foreground">
                     {field.value}
                   </div>
                 </div>
@@ -832,7 +843,7 @@ export function WorkOsDocEditor({
           )}
 
           {/* ── Divider ── */}
-          <div className="mb-4 h-px bg-border" />
+          <div className="mb-4 h-px bg-border/80" />
 
           {/* ── Editor ── */}
           <div
@@ -847,15 +858,16 @@ export function WorkOsDocEditor({
               }
             }}
           >
-            {/* Sticky toolbar */}
-            <div className="sticky top-0 z-10 -mx-1 mb-2 overflow-hidden rounded-xl border border-border shadow-sm">
-              <EditorToolbar
-                editor={editor}
-                onInsertLink={openLinkPanel}
-                onPickImage={() => imageInputRef.current?.click()}
-                onPickFile={() => fileInputRef.current?.click()}
-              />
-            </div>
+            {!compactFormatting && (
+              <div className="sticky top-0 z-10 -mx-1 mb-2 overflow-hidden rounded-xl border border-border shadow-sm">
+                <EditorToolbar
+                  editor={editor}
+                  onInsertLink={openLinkPanel}
+                  onPickImage={() => imageInputRef.current?.click()}
+                  onPickFile={() => fileInputRef.current?.click()}
+                />
+              </div>
+            )}
             <input
               ref={imageInputRef}
               type="file"
@@ -869,78 +881,13 @@ export function WorkOsDocEditor({
               className="hidden"
               onChange={(e) => void uploadAndInsert(e.target.files, "file")}
             />
-            {(uploading || documentContext) && (
-              <div className="mb-3 flex flex-wrap items-center gap-2 text-[11px] text-text-muted">
+            {uploading && (
+              <div className="mb-2 flex flex-wrap items-center gap-1.5 text-[10px] text-text-muted">
                 {uploading && (
                   <span className="inline-flex items-center gap-1">
                     <Loader2 className="h-3 w-3 animate-spin" /> Uploading…
                   </span>
                 )}
-                {documentContext && (
-                  <span className="rounded-full border border-border bg-card px-2 py-1">
-                    Mentions scoped to{" "}
-                    {documentContext.scope === "project"
-                      ? "this project"
-                      : "workspace"}
-                  </span>
-                )}
-                <span className="rounded-full border border-border bg-card px-2 py-1">
-                  Type @/ to link people and workspace records
-                </span>
-              </div>
-            )}
-            {quickReferences.length > 0 && (
-              <div className="mb-4 overflow-hidden rounded-xl border border-border bg-card/80 shadow-sm">
-                <div className="flex items-center justify-between border-b border-border px-3 py-2">
-                  <div>
-                    <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-text-muted">
-                      References
-                    </div>
-                    <div className="text-xs text-text-muted">
-                      Click a chip or type @/ for the full searchable menu
-                    </div>
-                  </div>
-                  {extraReferenceCount > 0 && (
-                    <button
-                      type="button"
-                      onMouseDown={(event) => {
-                        event.preventDefault();
-                        mentionItemsRef.current = mentionOptions.slice(0, 60);
-                        setMentionItems(mentionOptions.slice(0, 60));
-                        setMentionSelectedIndex(0);
-                        mentionSelectedIndexRef.current = 0;
-                        setMenuPos({
-                          top: event.clientY + 8,
-                          left: event.clientX - 320,
-                        });
-                        showMentionMenuRef.current = true;
-                        setShowMentionMenu(true);
-                      }}
-                      className="rounded-full bg-muted px-2 py-1 text-[10px] font-bold text-text-muted hover:text-foreground"
-                    >
-                      +{extraReferenceCount} more
-                    </button>
-                  )}
-                </div>
-                <div className="flex max-h-20 flex-wrap gap-1.5 overflow-y-auto p-2">
-                  {quickReferences.map((option) => (
-                    <button
-                      key={`${option.type || "member"}-${option.id}`}
-                      type="button"
-                      title={option.helper || option.type || "Reference"}
-                      onMouseDown={(event) => {
-                        event.preventDefault();
-                        insertMentionReference(option);
-                      }}
-                      className="max-w-[180px] truncate rounded-full border border-border bg-background px-2 py-0.5 text-[11px] font-semibold text-foreground transition-colors hover:bg-muted"
-                    >
-                      <span className="text-text-muted">
-                        {option.type || "member"}
-                      </span>{" "}
-                      @{option.label}
-                    </button>
-                  ))}
-                </div>
               </div>
             )}
 
@@ -957,6 +904,20 @@ export function WorkOsDocEditor({
                   }}
                 >
                   <ToolbarBtn
+                    title="Heading 1"
+                    onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+                    active={editor.isActive("heading", { level: 1 })}
+                  >
+                    <Heading1 className="h-3 w-3" />
+                  </ToolbarBtn>
+                  <ToolbarBtn
+                    title="Heading 2"
+                    onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                    active={editor.isActive("heading", { level: 2 })}
+                  >
+                    <Heading2 className="h-3 w-3" />
+                  </ToolbarBtn>
+                  <ToolbarBtn
                     title="Bold"
                     onClick={() => editor.chain().focus().toggleBold().run()}
                     active={editor.isActive("bold")}
@@ -970,8 +931,36 @@ export function WorkOsDocEditor({
                   >
                     <Italic className="h-3 w-3" />
                   </ToolbarBtn>
+                  <ToolbarBtn
+                    title="Underline"
+                    onClick={() => editor.chain().focus().toggleUnderline().run()}
+                    active={editor.isActive("underline")}
+                  >
+                    <Underline className="h-3 w-3" />
+                  </ToolbarBtn>
+                  <ToolbarBtn
+                    title="Strikethrough"
+                    onClick={() => editor.chain().focus().toggleStrike().run()}
+                    active={editor.isActive("strike")}
+                  >
+                    <Strikethrough className="h-3 w-3" />
+                  </ToolbarBtn>
                   <ToolbarBtn title="Link" onClick={openLinkPanel}>
                     <Link2 className="h-3 w-3" />
+                  </ToolbarBtn>
+                  <ToolbarBtn
+                    title="Bullet list"
+                    onClick={() => editor.chain().focus().toggleBulletList().run()}
+                    active={editor.isActive("bulletList")}
+                  >
+                    <List className="h-3 w-3" />
+                  </ToolbarBtn>
+                  <ToolbarBtn
+                    title="Numbered list"
+                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                    active={editor.isActive("orderedList")}
+                  >
+                    <ListOrdered className="h-3 w-3" />
                   </ToolbarBtn>
                   <ToolbarBtn
                     title="Quote"
@@ -989,6 +978,35 @@ export function WorkOsDocEditor({
                   >
                     <Code className="h-3 w-3" />
                   </ToolbarBtn>
+                  {editor.isActive("image") ? (
+                    <>
+                      <div className="mx-1 h-3.5 w-px bg-border" />
+                      <ToolbarBtn
+                        title="Small image"
+                        onClick={() =>
+                          editor.chain().focus().updateAttributes("image", { width: "40%" }).run()
+                        }
+                      >
+                        <ImageIcon className="h-3 w-3" />
+                      </ToolbarBtn>
+                      <ToolbarBtn
+                        title="Medium image"
+                        onClick={() =>
+                          editor.chain().focus().updateAttributes("image", { width: "65%" }).run()
+                        }
+                      >
+                        <ImageIcon className="h-3.5 w-3.5" />
+                      </ToolbarBtn>
+                      <ToolbarBtn
+                        title="Full width image"
+                        onClick={() =>
+                          editor.chain().focus().updateAttributes("image", { width: "100%" }).run()
+                        }
+                      >
+                        <Maximize2 className="h-3 w-3" />
+                      </ToolbarBtn>
+                    </>
+                  ) : null}
                 </div>,
                 document.body,
               )}

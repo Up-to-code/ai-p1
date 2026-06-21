@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, Flag, UserRound, Search, X, FolderKanban } from "lucide-react";
+import { CalendarDays, Check, Flag, UserRound, Search, X, FolderKanban } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import {
@@ -134,6 +134,14 @@ export function DueDatePicker({
 }) {
   const [open, setOpen] = useState(false);
   const date = value ? new Date(value) : undefined;
+  const today = new Date();
+  const quickDates = [
+    { label: "Today", date: today },
+    { label: "Tomorrow", date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1) },
+    { label: "Next week", date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7) },
+    { label: "Two weeks", date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 14) },
+  ];
+  const selectedLabel = date ? format(date, "EEEE, MMM d, yyyy") : "No due date";
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
@@ -153,17 +161,90 @@ export function DueDatePicker({
       />
       <PopoverContent
         align="start"
-        sideOffset={4}
-        className="w-auto p-0 rounded-xl border-border"
+        sideOffset={8}
+        className="max-h-[min(80vh,560px)] w-[min(92vw,520px)] overflow-y-auto rounded-2xl border-border bg-card p-0 shadow-2xl"
       >
-        <Calendar
-          mode="single"
-          selected={date}
-          onSelect={(d) => {
-            onChange(d ? d.toISOString().slice(0, 10) : "");
-            setOpen(false);
-          }}
-        />
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-border bg-card/95 px-4 py-3 backdrop-blur">
+          <div className="min-w-0">
+            <div className="text-xs font-black uppercase tracking-[0.16em] text-text-muted">
+              Due date
+            </div>
+            <div className="mt-1 truncate text-sm font-semibold text-foreground">
+              {selectedLabel}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-text-muted transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="Close due date picker"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="grid gap-0 md:grid-cols-[160px_1fr]">
+          <div className="border-b border-border p-3 md:border-b-0 md:border-e">
+            {quickDates.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => {
+                  onChange(item.date.toISOString().slice(0, 10));
+                  setOpen(false);
+                }}
+                className={cn(
+                  "flex min-h-11 w-full items-center justify-between rounded-xl px-3 text-left text-sm font-semibold transition-colors hover:bg-muted",
+                  value === item.date.toISOString().slice(0, 10)
+                    ? "bg-primary/10 text-primary"
+                    : "text-foreground",
+                )}
+              >
+                <span>{item.label}</span>
+                <span className="inline-flex items-center gap-1 text-xs text-text-muted">
+                  {value === item.date.toISOString().slice(0, 10) ? (
+                    <Check className="h-3 w-3 text-primary" />
+                  ) : null}
+                  {format(item.date, "EEE")}
+                </span>
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => {
+                onChange("");
+                setOpen(false);
+              }}
+              className="mt-2 flex min-h-11 w-full items-center rounded-xl px-3 text-left text-sm font-semibold text-text-muted transition-colors hover:bg-muted hover:text-foreground"
+            >
+              Clear date
+            </button>
+          </div>
+          <div className="min-w-0 p-3">
+            <label className="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-text-muted">
+              Exact date
+            </label>
+            <div className="mb-3 flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2 focus-within:ring-2 focus-within:ring-ring/20">
+              <CalendarDays className="h-4 w-4 shrink-0 text-text-muted" />
+              <input
+                type="date"
+                value={value}
+                onChange={(event) => onChange(event.target.value)}
+                className="h-8 min-w-0 flex-1 bg-transparent text-sm font-semibold text-foreground outline-none"
+              />
+            </div>
+            <div className="overflow-x-auto pb-1">
+              <Calendar
+                mode="single"
+                selected={date}
+                className="min-w-[280px] rounded-xl border border-border bg-background p-3 [--cell-size:2.35rem]"
+                onSelect={(d) => {
+                  onChange(d ? d.toISOString().slice(0, 10) : "");
+                  setOpen(false);
+                }}
+              />
+            </div>
+          </div>
+        </div>
       </PopoverContent>
     </Popover>
   );
@@ -251,9 +332,19 @@ export function AssigneePicker({
             <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[9px] font-black text-primary">
               {o.label.charAt(0).toUpperCase()}
             </div>
-            <span className="truncate">{o.label}</span>
+            <span className="min-w-0 flex-1 truncate text-left">{o.label}</span>
+            {o.helper ? (
+              <span className="max-w-24 truncate text-[10px] font-medium text-text-muted">
+                {o.helper}
+              </span>
+            ) : null}
           </button>
         ))}
+        {filtered.length === 0 ? (
+          <div className="px-2.5 py-3 text-xs text-text-muted">
+            No organization members found.
+          </div>
+        ) : null}
       </PopoverContent>
     </Popover>
   );

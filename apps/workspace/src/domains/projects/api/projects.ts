@@ -79,6 +79,7 @@ function projectPayloadFromForm(values: ProjectFormValues) {
     endDate: values.endDate || undefined,
     budget: values.budget ? Number(values.budget) : undefined,
     description: values.description || undefined,
+    tags: values.tags ?? [],
     templateId: values.templateId || undefined,
   };
 }

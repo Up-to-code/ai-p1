@@ -17,6 +17,9 @@ import {
   Trash2,
   UploadCloud,
   X,
+  User,
+  Users,
+  UserPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -47,6 +50,39 @@ import {
   type ShareVisibility,
   type UploadStatus,
 } from "../document-view-model";
+
+const VISIBILITY_OPTIONS = [
+  {
+    value: "private" as const,
+    title: "Private Workspace File",
+    desc: "Only signed-in team members with access can open this file.",
+    icon: Lock,
+  },
+  {
+    value: "owner" as const,
+    title: "Only Me (Owner)",
+    desc: "Private, only accessible by me as the file owner.",
+    icon: User,
+  },
+  {
+    value: "team" as const,
+    title: "Shareable for the Team",
+    desc: "Shared and visible to all members of the workspace/project.",
+    icon: Users,
+  },
+  {
+    value: "member" as const,
+    title: "Share with Member",
+    desc: "Shareable with specific team members of your choice.",
+    icon: UserPlus,
+  },
+  {
+    value: "public" as const,
+    title: "End-user Share Link",
+    desc: "Creates a public link that can be sent to a client or buyer.",
+    icon: Globe2,
+  },
+];
 
 type MediaAsset = NonNullable<ReturnType<typeof useResourceMediaQuery>>[number];
 
@@ -277,12 +313,28 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
                         "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
                         visibility === "public" ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300" : "bg-muted text-muted-foreground",
                       )}>
-                        {visibility === "public" ? <Globe2 className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                        {visibility === "public" ? (
+                          <Globe2 className="h-4 w-4" />
+                        ) : visibility === "team" ? (
+                          <Users className="h-4 w-4" />
+                        ) : visibility === "member" ? (
+                          <UserPlus className="h-4 w-4" />
+                        ) : (
+                          <Lock className="h-4 w-4" />
+                        )}
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block text-[10px] font-bold text-muted-foreground">{t("visibilityLabel")}</span>
-                        <span className="mt-0.5 block text-xs font-black text-foreground">
-                          {visibility === "public" ? t("public") : t("private")}
+                        <span className="mt-0.5 block text-xs font-black text-foreground capitalize">
+                          {visibility === "public"
+                            ? "Public Link"
+                            : visibility === "owner"
+                            ? "Only Me"
+                            : visibility === "team"
+                            ? "Team Share"
+                            : visibility === "member"
+                            ? "Specific Members"
+                            : "Private"}
                         </span>
                       </span>
                       <span className="rounded-full bg-card px-3 py-1.5 text-[10px] font-black text-muted-foreground shadow-sm">
@@ -304,7 +356,15 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
                         aria-label={t("openShareSettings", { name: asset.name })}
                         disabled={mediaOperation.isRunning}
                       >
-                        {visibility === "public" ? <Globe2 className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                        {visibility === "public" ? (
+                          <Globe2 className="h-4 w-4" />
+                        ) : visibility === "team" ? (
+                          <Users className="h-4 w-4" />
+                        ) : visibility === "member" ? (
+                          <UserPlus className="h-4 w-4" />
+                        ) : (
+                          <Lock className="h-4 w-4" />
+                        )}
                       </button>
                       <button
                         type="button"
@@ -351,21 +411,21 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
                 </p>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                {(["private", "public"] as const).map((visibility) => {
-                  const isSelected = (activeShareAsset.shareVisibility ?? "private") === visibility;
-                  const isThisActionRunning = mediaOperation.isRunning && shareAction === visibility;
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 max-h-[300px] overflow-y-auto pr-1">
+                {VISIBILITY_OPTIONS.map((opt) => {
+                  const isSelected = (activeShareAsset.shareVisibility ?? "private") === opt.value;
+                  const isThisActionRunning = mediaOperation.isRunning && shareAction === opt.value;
                   return (
                     <button
-                      key={visibility}
+                      key={opt.value}
                       type="button"
-                      onClick={() => void updateVisibility(activeShareAsset, visibility)}
+                      onClick={() => void updateVisibility(activeShareAsset, opt.value)}
                       disabled={mediaOperation.isRunning || isSelected || !organizationId}
                       className={cn(
-                        "min-h-32 rounded-[22px] border p-4 text-start transition",
+                        "min-h-24 rounded-[22px] border p-4 text-start transition cursor-pointer select-none outline-none",
                         isSelected
-                          ? "border-foreground bg-foreground text-white dark:border-white dark:bg-white dark:text-foreground"
-                          : "border-border bg-card text-foreground hover:border-border",
+                          ? "border-foreground bg-foreground text-white dark:border-secondary dark:bg-secondary dark:text-foreground"
+                          : "border-border bg-card text-foreground hover:border-border/60 hover:bg-muted/30",
                       )}
                     >
                       <span className="flex items-center justify-between gap-3">
@@ -375,22 +435,20 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
                         )}>
                           {isThisActionRunning ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : visibility === "public" ? (
-                            <Globe2 className="h-4 w-4" />
                           ) : (
-                            <Lock className="h-4 w-4" />
+                            <opt.icon className="h-4 w-4" />
                           )}
                         </span>
-                        {isSelected && <CheckCircle2 className="h-4 w-4" />}
+                        {isSelected && <CheckCircle2 className="h-4 w-4 animate-in zoom-in duration-100" />}
                       </span>
-                      <span className="mt-4 block text-sm font-black">
-                        {visibility === "public" ? t("sharePublicTitle") : t("sharePrivateTitle")}
+                      <span className="mt-3.5 block text-xs font-black">
+                        {opt.title}
                       </span>
                       <span className={cn(
-                        "mt-2 block text-xs font-semibold leading-5",
-                        isSelected ? "text-white/70 dark:text-foreground" : "text-muted-foreground",
+                        "mt-1.5 block text-[10px] font-semibold leading-normal",
+                        isSelected ? "text-white/70 dark:text-foreground/80" : "text-muted-foreground",
                       )}>
-                        {visibility === "public" ? t("sharePublicDesc") : t("sharePrivateDesc")}
+                        {opt.desc}
                       </span>
                     </button>
                   );

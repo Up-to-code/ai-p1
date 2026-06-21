@@ -49,6 +49,7 @@ export function clientToFormValues(client: Client): ClientFormValues {
     nextAction: client.nextAction,
     issue: client.issue ?? "",
     notes: client.notes ?? "",
+    tags: client.tags ?? [],
   };
 }
 

@@ -16,6 +16,9 @@ export const mediaResourceTypeValidator = v.union(
 export const mediaShareVisibilityValidator = v.union(
   v.literal("private"),
   v.literal("public"),
+  v.literal("team"),
+  v.literal("owner"),
+  v.literal("member"),
 );
 
 export const mediaFolderValidator = v.object({

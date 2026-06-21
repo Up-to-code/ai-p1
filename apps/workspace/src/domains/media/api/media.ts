@@ -11,7 +11,7 @@ import {
 
 export type MediaKind = "image" | "video" | "document";
 export type MediaResourceType = "project" | "client" | "calendarEvent" | "task";
-export type MediaShareVisibility = "private" | "public";
+export type MediaShareVisibility = "private" | "public" | "team" | "owner" | "member";
 export type MediaAsset = {
   _id: Id<"mediaAssets">;
   _creationTime: number;

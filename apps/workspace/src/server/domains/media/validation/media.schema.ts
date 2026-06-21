@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const mediaKindSchema = z.enum(["image", "video", "document"]);
 const mediaResourceTypeSchema = z.enum(["project", "client", "calendarEvent", "task"]);
-const mediaShareVisibilitySchema = z.enum(["private", "public"]);
+const mediaShareVisibilitySchema = z.enum(["private", "public", "team", "owner", "member"]);
 
 function inferMediaKind(mimeType: string) {
   if (mimeType.startsWith("image/")) return "image" as const;

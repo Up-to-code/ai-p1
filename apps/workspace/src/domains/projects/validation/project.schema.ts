@@ -15,8 +15,11 @@ export const projectSchema = z.object({
   endDate: z.string().trim().optional(),
   budget: z.string().trim().optional(),
   description: z.string().trim().optional(),
+  tags: z.array(z.string().trim()).optional(),
   templateId: z.string().trim().optional(),
   useAiSetup: z.boolean().optional().default(false),
+  progress: z.number().min(0).max(100).optional(),
+  teamMemberIds: z.array(z.string()).optional(),
 });
 
 export type ProjectFormValues = z.infer<typeof projectSchema>;
