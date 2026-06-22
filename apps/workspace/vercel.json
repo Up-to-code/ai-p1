@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "installCommand": "cd ../.. && npm install",
+  "installCommand": "cd ../.. && npm install --force",
   "ignoreCommand": "node ../../scripts/vercel-ignore.mjs --workspace @qentrah/workspace",
   "buildCommand": "npm run build"
 }
