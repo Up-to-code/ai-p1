@@ -185,11 +185,11 @@ export function TaskGroupedList({
                             {...provided.dragHandleProps}
                             onClick={() => onTaskClick?.(task.id)}
                             className={cn(
-                              "group rounded-xl border border-border bg-card p-3 shadow-none transition-all cursor-pointer",
+                              "group rounded-xl border border-border bg-card p-3 transition-all cursor-pointer",
                               snapshot.isDragging &&
-                                "shadow-xl ring-2 ring-primary/20 opacity-90",
+                                "ring-2 ring-primary/20 opacity-90",
                               !snapshot.isDragging &&
-                                "hover:shadow-sm hover:bg-muted/30",
+                                "hover:bg-muted/30",
                               selectedId === task.id &&
                                 "ring-2 ring-primary/40 border-primary/30",
                             )}

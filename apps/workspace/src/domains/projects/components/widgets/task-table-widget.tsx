@@ -1,70 +1,193 @@
 "use client";
 
-import { Check, MoreHorizontal } from "lucide-react";
+import { useState, useMemo } from "react";
+import { useTranslations } from "next-intl";
+import { useDashboardContext } from "../dashboard-context";
+import { useTasksQuery, updateTaskRequest } from "@/domains/tasks/api/tasks";
+import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { Check, Circle } from "lucide-react";
+import type { TaskRecord } from "@/domains/tasks/tasks.types";
 
-const statusTone: Record<string, string> = {
-  "IN PROGRESS": "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-  "PENDING": "bg-teal-500/10 text-teal-600 dark:text-teal-400",
-  "READY FOR DEV": "bg-purple-500/10 text-purple-600 dark:text-purple-400",
-  "REVIEW": "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  "ISSUES FOUND": "bg-red-500/10 text-red-600 dark:text-red-400",
+const statusColors: Record<string, { color: string; dot: string }> = {
+  todo: { color: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400", dot: "bg-gray-400" },
+  inProgress: { color: "bg-blue-500/10 text-blue-600 dark:text-blue-400", dot: "bg-blue-500" },
+  waiting: { color: "bg-amber-500/10 text-amber-600 dark:text-amber-400", dot: "bg-amber-500" },
+  done: { color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500" },
+  canceled: { color: "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500", dot: "bg-gray-300" },
 };
 
-const mockTasks = [
-  { id: 1, name: "Update contractor agreement", status: "IN PROGRESS", dueDate: "Tomorrow", timeRemaining: "6h 20m", note: "Planning" },
-  { id: 2, name: "Plan for next year", status: "PENDING", dueDate: "-", timeRemaining: "-", note: "-" },
-  { id: 3, name: "How to manage event planning", status: "READY FOR DEV", dueDate: "Apr 28", timeRemaining: "-", note: "-" },
-  { id: 4, name: "Reminders for Tasks", status: "REVIEW", dueDate: "-", timeRemaining: "2h", note: "Execution" },
-  { id: 5, name: "Budget assessment", status: "ISSUES FOUND", dueDate: "-", timeRemaining: "-", note: "-" },
-  { id: 6, name: "Finalize project scope", status: "IN PROGRESS", dueDate: "Today", timeRemaining: "1h", note: "-" },
-  { id: 7, name: "Gather key resources", status: "READY FOR DEV", dueDate: "-", timeRemaining: "-", note: "-" },
-];
+const priorityColors: Record<string, string> = {
+  urgent: "text-red-500",
+  high: "text-amber-500",
+  normal: "text-muted-foreground",
+  low: "text-muted-foreground/50",
+};
+
+const statusOrder: TaskRecord["status"][] = ["todo", "inProgress", "waiting", "done", "canceled"];
+
+function formatDueDate(dateStr: string | undefined, t: (key: string, params?: Record<string, string | number>) => string): { text: string; isOverdue: boolean; isToday: boolean } {
+  if (!dateStr) return { text: "—", isOverdue: false, isToday: false };
+  const date = new Date(dateStr);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.floor((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) return { text: t("dueLabels.overdue", { days: Math.abs(diffDays) }), isOverdue: true, isToday: false };
+  if (diffDays === 0) return { text: t("dueLabels.today"), isOverdue: false, isToday: true };
+  if (diffDays === 1) return { text: t("dueLabels.tomorrow"), isOverdue: false, isToday: false };
+  if (diffDays <= 7) return { text: t("dueLabels.daysLeft", { days: diffDays }), isOverdue: false, isToday: false };
+  return { text: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }), isOverdue: false, isToday: false };
+}
 
 export function TaskTableWidget() {
+  const t = useTranslations("Widgets.taskTable");
+  const { projectId, organizationId } = useDashboardContext();
+  const queryClient = useQueryClient();
+  const tasksResult = useTasksQuery(organizationId, { projectId });
+  const tasks = tasksResult.data ?? [];
+  const [showAddRow, setShowAddRow] = useState(false);
+
+  const sortedTasks = useMemo(() => {
+    return [...tasks].sort((a, b) => {
+      const aIdx = statusOrder.indexOf(a.status);
+      const bIdx = statusOrder.indexOf(b.status);
+      if (aIdx !== bIdx) return aIdx - bIdx;
+      if (!a.dueDate && !b.dueDate) return 0;
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+    });
+  }, [tasks]);
+
+  const toggleDone = async (task: TaskRecord) => {
+    const newStatus: TaskRecord["status"] = task.status === "done" ? "todo" : "done";
+    try {
+      await updateTaskRequest(organizationId, task.id, {
+        title: task.title,
+        status: newStatus,
+        priority: task.priority,
+        visibility: task.visibility ?? "team",
+        assigneeUserId: task.assigneeUserId ?? "",
+        projectId: task.projectId ?? "",
+        clientId: task.clientId ?? "",
+        dueDate: task.dueDate ?? "",
+        description: task.description ?? "",
+        tags: (task.tags ?? []).join(", "),
+      });
+      queryClient.invalidateQueries({ queryKey: ["tasks", organizationId] });
+    } catch (err) {
+      console.error("Failed to toggle task:", err);
+    }
+  };
+
+  const cycleStatus = async (task: TaskRecord) => {
+    const currentIdx = statusOrder.indexOf(task.status);
+    const nextIdx = (currentIdx + 1) % statusOrder.length;
+    const newStatus = statusOrder[nextIdx];
+    try {
+      await updateTaskRequest(organizationId, task.id, {
+        title: task.title,
+        status: newStatus,
+        priority: task.priority,
+        visibility: task.visibility ?? "team",
+        assigneeUserId: task.assigneeUserId ?? "",
+        projectId: task.projectId ?? "",
+        clientId: task.clientId ?? "",
+        dueDate: task.dueDate ?? "",
+        description: task.description ?? "",
+        tags: (task.tags ?? []).join(", "),
+      });
+      queryClient.invalidateQueries({ queryKey: ["tasks", organizationId] });
+    } catch (err) {
+      console.error("Failed to update task status:", err);
+    }
+  };
+
+  if (tasks.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+        <Circle className="h-8 w-8 text-muted-foreground/30 mb-3" />
+        <p className="text-sm font-medium text-muted-foreground/60">{t("noTasksYet")}</p>
+        <p className="text-xs text-muted-foreground/40 mt-1">{t("addTasksHint")}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="overflow-x-auto h-full pb-4">
-      <table className="w-full text-left text-sm whitespace-nowrap">
-        <thead className="bg-muted/50 dark:bg-white/[0.02]">
-          <tr className="border-b border-border dark:border-white/5">
-            <th className="w-12 px-4 py-3 text-center text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">#</th>
-            <th className="px-4 py-3 text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5" />
-                Task
-              </div>
-            </th>
-            <th className="w-40 px-4 py-3 text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">Status</th>
-            <th className="w-32 px-4 py-3 text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">Due Date</th>
-            <th className="w-36 px-4 py-3 text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">Time Remaining</th>
-            <th className="px-4 py-3 text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">Note</th>
+    <div className="overflow-auto h-full">
+      <table className="w-full text-left text-sm">
+        <thead>
+          <tr className="border-b border-border/60">
+            <th className="w-10 px-3 py-2.5" />
+            <th className="px-3 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">{t("task")}</th>
+            <th className="w-32 px-3 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">{t("status")}</th>
+            <th className="w-28 px-3 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">{t("due")}</th>
+            <th className="w-24 px-3 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">{t("priority")}</th>
           </tr>
         </thead>
         <tbody>
-          {mockTasks.map((task) => (
-            <tr key={task.id} className="border-b border-border/70 last:border-0 transition-colors hover:bg-muted/30 dark:border-white/5 dark:hover:bg-white/[0.02] group">
-              <td className="w-12 px-4 py-3 text-center text-muted-foreground">{task.id}</td>
-              <td className="px-4 py-3 text-foreground font-medium">
-                <div className="flex items-center gap-3">
-                  <div className="h-4 w-4 rounded-sm border border-muted-foreground/30 bg-transparent flex items-center justify-center group-hover:border-muted-foreground/50 transition-colors cursor-pointer" />
-                  {task.name}
-                </div>
-              </td>
-              <td className="px-4 py-3">
-                <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider", statusTone[task.status])}>
-                  {task.status}
-                </span>
-              </td>
-              <td className={cn("px-4 py-3", task.dueDate === "Today" || task.dueDate === "Apr 28" ? "text-orange-500 font-medium" : "text-muted-foreground")}>
-                {task.dueDate}
-              </td>
-              <td className="px-4 py-3 text-muted-foreground">{task.timeRemaining}</td>
-              <td className="px-4 py-3 text-muted-foreground flex justify-between items-center group/note">
-                <span>{task.note}</span>
-                <MoreHorizontal className="h-4 w-4 text-muted-foreground opacity-0 group-hover/note:opacity-100 transition-opacity cursor-pointer mr-2" />
-              </td>
-            </tr>
-          ))}
+          {sortedTasks.map((task) => {
+            const isDone = task.status === "done";
+            const due = formatDueDate(task.dueDate, t);
+            const taskStatusColors = statusColors[task.status] ?? statusColors.todo;
+            const priorityColor = priorityColors[task.priority] ?? priorityColors.normal;
+
+            return (
+              <tr
+                key={task.id}
+                className={cn(
+                  "border-b border-border/40 last:border-0 hover:bg-muted/20 transition-colors group",
+                  isDone && "opacity-50",
+                )}
+              >
+                <td className="px-3 py-2.5">
+                  <button
+                    type="button"
+                    onClick={() => toggleDone(task)}
+                    className={cn(
+                      "flex h-4 w-4 items-center justify-center rounded-sm border transition-all",
+                      isDone
+                        ? "bg-primary border-primary text-white"
+                        : "border-muted-foreground/30 hover:border-muted-foreground/60",
+                    )}
+                  >
+                    {isDone && <Check className="h-3 w-3" />}
+                  </button>
+                </td>
+                <td className="px-3 py-2.5">
+                  <span className={cn("font-medium text-foreground", isDone && "line-through text-muted-foreground")}>
+                    {task.title}
+                  </span>
+                </td>
+                <td className="px-3 py-2.5">
+                  <button
+                    type="button"
+                    onClick={() => cycleStatus(task)}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider transition-all hover:opacity-80",
+                      taskStatusColors.color,
+                    )}
+                  >
+                    <span className={cn("h-1.5 w-1.5 rounded-full", taskStatusColors.dot)} />
+                    {t(`statusLabels.${task.status}`)}
+                  </button>
+                </td>
+                <td className={cn(
+                  "px-3 py-2.5 text-xs font-medium",
+                  due.isOverdue ? "text-red-500" : due.isToday ? "text-amber-500" : "text-muted-foreground",
+                )}>
+                  {due.text}
+                </td>
+                <td className="px-3 py-2.5">
+                  <span className={cn("text-[10px] font-bold uppercase tracking-wider", priorityColor)}>
+                    {t(`priorityLabels.${task.priority}`)}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

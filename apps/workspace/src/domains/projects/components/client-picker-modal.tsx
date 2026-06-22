@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,7 @@ export function ClientPickerModal({
 }: ClientPickerModalProps) {
   const account = useAccountContext();
   const organizationId = account.workspace.status === "ready" ? account.workspace.organizationId : undefined;
+  const t = useTranslations("Projects.form.clientPicker");
 
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
@@ -65,16 +67,16 @@ export function ClientPickerModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg p-0 overflow-hidden" showCloseButton>
         <div className="p-5 pb-3">
-          <DialogTitle className="text-lg font-bold text-text-primary">Select Client</DialogTitle>
+          <DialogTitle className="text-lg font-bold text-text-primary">{t("title")}</DialogTitle>
           <DialogDescription className="text-sm text-text-secondary mt-1">
-            Choose a client to associate with this project.
+            {t("description")}
           </DialogDescription>
 
           {/* Search */}
           <div className="relative mt-4">
             <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search by name..."
+              placeholder={t("searchPlaceholder")}
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(0); }}
               className="h-10 rounded-lg border-border bg-muted/50 ps-9 text-sm dark:border-white/10 dark:bg-white/5"
@@ -87,13 +89,13 @@ export function ClientPickerModal({
           {clientsQuery?.queryStatus === "loading" ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-border border-t-primary" />
-              <p className="mt-3 text-sm font-medium text-muted-foreground">Loading clients...</p>
+              <p className="mt-3 text-sm font-medium text-muted-foreground">{t("loading")}</p>
             </div>
           ) : pagedClients.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <User className="h-8 w-8 text-muted-foreground/40 dark:text-foreground" />
-              <p className="mt-3 text-sm font-medium text-muted-foreground">No clients found</p>
-              <p className="mt-1 text-xs text-muted-foreground">Try adjusting your search query.</p>
+              <p className="mt-3 text-sm font-medium text-muted-foreground">{t("noClients")}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{t("noClientsDesc")}</p>
             </div>
           ) : (
             <div className="divide-y divide-border dark:divide-white/5">
@@ -151,7 +153,7 @@ export function ClientPickerModal({
         {totalPages > 1 && (
           <div className="flex items-center justify-between border-t border-border px-5 py-3 dark:border-white/5">
             <span className="text-xs font-medium text-muted-foreground">
-              {totalClients} client{totalClients !== 1 ? "s" : ""} · Page {page + 1} of {totalPages}
+              {t("clientsCount", { count: totalClients, page: page + 1, total: totalPages })}
             </span>
             <div className="flex items-center gap-1">
               <Button

@@ -105,6 +105,7 @@ import type * as partnerApps_webhookUrlSafety from "../partnerApps/webhookUrlSaf
 import type * as partnerApps_webhooks from "../partnerApps/webhooks.js";
 import type * as partnerResourceGateway from "../partnerResourceGateway.js";
 import type * as platform_access from "../platform/access.js";
+import type * as projectDashboards from "../projectDashboards.js";
 import type * as projects_read from "../projects/read.js";
 import type * as projects_rollup from "../projects/rollup.js";
 import type * as projects_validators from "../projects/validators.js";
@@ -228,6 +229,7 @@ declare const fullApi: ApiFromModules<{
   "partnerApps/webhooks": typeof partnerApps_webhooks;
   partnerResourceGateway: typeof partnerResourceGateway;
   "platform/access": typeof platform_access;
+  projectDashboards: typeof projectDashboards;
   "projects/read": typeof projects_read;
   "projects/rollup": typeof projects_rollup;
   "projects/validators": typeof projects_validators;

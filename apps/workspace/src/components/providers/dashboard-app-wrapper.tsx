@@ -106,10 +106,10 @@ function DashboardAuthenticatedShell({ children }: { children: ReactNode }) {
         <div className="flex h-full overflow-hidden bg-background text-text-primary">
           <Sidebar />
 
-          <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background">
+          <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background ml-4">
             {isPendingApproval && <PendingApprovalBanner />}
             <Topbar />
-            <main className="flex min-h-0 flex-1 flex-col overflow-hidden outline-none">
+            <main className="flex min-h-0 flex-1 flex-col overflow-hidden outline-none p-4">
               {children}
             </main>
           </div>

@@ -1,4 +1,33 @@
 {
+  "Projects": {
+    "title": "المشاريع",
+    "add": "مشروع جديد",
+    "form": {
+      "namePlaceholder": "اسم المشروع",
+      "budgetPlaceholder": "الميزانية",
+      "status": {
+        "planning": "تخطيط",
+        "active": "نشط",
+        "completed": "مكتمل",
+        "onHold": "متوقف"
+      },
+      "health": {
+        "healthy": "صحي",
+        "atRisk": "معرض للخطر",
+        "delayed": "متأخر",
+        "critical": "حرج"
+      },
+      "tagHeader": "الوسوم",
+      "tagPlaceholder": "أضف وسماً...",
+      "addTag": "إضافة وسم"
+    },
+    "clientPicker": {
+      "title": "اختر العميل",
+      "searchPlaceholder": "البحث عن العملاء...",
+      "noClientsFound": "لم يتم العثور على عملاء",
+      "createNew": "إنشاء عميل جديد"
+    }
+  },
   "Navigation": {
     "dashboard": "لوحة التحكم",
     "projects": "المشاريع",
@@ -1299,7 +1328,35 @@
       "previewDescription": "سيظهر وصف المشروع هنا أثناء كتابته.",
       "previewChecklist": "جاهزية السجل",
       "previewMedia": "الوسائط",
-      "previewDocuments": "المستندات"
+      "previewDocuments": "المستندات",
+      "createSubtitle": "إعداد حاوية تسليم جديدة لعميلك.",
+      "editSubtitle": "تحديث تفاصيل المشروع والإعدادات.",
+      "clientPicker": {
+        "title": "اختيار العميل",
+        "description": "اختر عميلاً لربطه بهذا المشروع.",
+        "searchPlaceholder": "البحث بالاسم...",
+        "loading": "جاري تحميل العملاء...",
+        "noClients": "لم يتم العثور على عملاء",
+        "noClientsDesc": "حاول تعديل معايير البحث.",
+        "pagination": "{count} عملاء · الصفحة {page} من {total}",
+        "clientsCount": "{count} عملاء · الصفحة {page} من {total}"
+      },
+      "tagsLabel": "الوسوم",
+      "tagsHelper": "اضغط Enter أو انقر على إضافة لإدراج وسم.",
+      "saveChangesBtn": "حفظ التغييرات",
+      "cancelBtn": "إلغاء",
+      "namePlaceholder": "مثال: مجمع المنار السكني",
+      "budgetPlaceholder": "0.00",
+      "statusPlanned": "مخطط",
+      "statusActive": "نشط",
+      "statusPaused": "متوقف",
+      "statusCompleted": "مكتمل",
+      "statusArchived": "مؤرشف",
+      "healthOnTrack": "على المسار",
+      "healthAtRisk": "مخاطر",
+      "healthBlocked": "محجوب",
+      "tagPlaceholder": "إضافة وسم...",
+      "addTagBtn": "إضافة"
     },
     "types": {
       "workspace": "مشروع عمل",
@@ -3387,7 +3444,25 @@
       "noProjects": "لا توجد مشاريع متاحة",
       "unassigned": "غير مسندة",
       "noClient": "بدون عميل",
-      "noProject": "بدون مشروع"
+      "noProject": "بدون مشروع",
+      "visibility": "الظهور",
+      "visibilityPrivate": "خاص",
+      "visibilityTeam": "الفريق",
+      "visibilityWorkspace": "مساحة العمل",
+      "scheduleMeetingTitle": "اجتماع المهمة",
+      "meetingScheduled": "تم جدولة الاجتماع من المهمة.",
+      "statusUpdated": "تم تحديث حالة المهمة.",
+      "savedToast": "تم حفظ وثيقة المهمة.",
+      "unsaved": "غير محفوظة",
+      "saving": "جاري الحفظ…",
+      "saveBtn": "حفظ",
+      "scheduleBtn": "جدولة",
+      "meetingTime": "وقت الاجتماع",
+      "closeMeetingScheduler": "إغلاق أداة جدولة الاجتماع",
+      "dateLabel": "التاريخ",
+      "createMeeting": "إنشاء اجتماع في التقويم",
+      "closeDrawer": "إغلاق اللوحة",
+      "openTaskLink": "فتح رابط المهمة"
     },
     "statuses": {
       "todo": "للعمل",
@@ -3747,7 +3822,9 @@
     },
     "languages": {
       "en": "الإنجليزية",
-      "ar": "العربية"
+      "ar": "العربية",
+      "nameEn": "الانجليزية",
+      "nameAr": "العربية"
     },
     "saveOperationError": "فشل حفظ الملف الشخصي.",
     "saveOperationSuccess": "تم حفظ الملف الشخصي بنجاح.",
@@ -3879,5 +3956,117 @@
     "errorDesc": "تعذر إكمال إجراء المؤسسة.",
     "organizationsDisabled": "ميزة المؤسسات غير مفعلة في Clerk لهذا المشروع. فعّل Organizations من لوحة Clerk ثم أنشئ مساحة العمل مرة أخرى.",
     "slugsDisabled": "روابط المؤسسات المختصرة غير مفعلة في Clerk. سيتم إنشاء مساحة العمل بدون رابط مختصر مخصص."
+  },
+  "Widgets": {
+    "taskTable": {
+      "task": "المهمة",
+      "status": "الحالة",
+      "due": "الاستحقاق",
+      "priority": "الأولوية",
+      "noTasksYet": "لا توجد مهام بعد",
+      "addTasksHint": "أضف المهام من تبويب المهام",
+      "statusLabels": {
+        "todo": "للتنفيذ",
+        "inProgress": "قيد التنفيذ",
+        "waiting": "قيد الانتظار",
+        "done": "مكتمل",
+        "canceled": "ملغي"
+      },
+      "priorityLabels": {
+        "urgent": "عاجل",
+        "high": "عالي",
+        "normal": "عادي",
+        "low": "منخفض"
+      },
+      "dueLabels": {
+        "overdue": "متأخر {days} يوم",
+        "today": "اليوم",
+        "tomorrow": "غداً",
+        "daysLeft": "متبقي {days} يوم"
+      }
+    },
+    "budgetChart": {
+      "budget": "الميزانية",
+      "spent": "المصروف",
+      "remaining": "المتبقي",
+      "utilization": "الاستخدام",
+      "noBudgetSet": "لم يتم تعيين ميزانية",
+      "addBudgetHint": "أضف ميزانية في إعدادات المشروع"
+    },
+    "workloadChart": {
+      "noTasksToDisplay": "لا توجد مهام لعرضها",
+      "totalTasks": "إجمالي المهام",
+      "tasks": "{count} مهام",
+      "statusLabels": {
+        "todo": "للتنفيذ",
+        "inProgress": "قيد التنفيذ",
+        "waiting": "قيد الانتظار",
+        "done": "مكتمل",
+        "canceled": "ملغي"
+      }
+    },
+    "progressChart": {
+      "tasks": "{count} مهام",
+      "completed": "{count} مكتملة",
+      "daysLeft": "متبقي {days} يوم"
+    },
+    "addWidgetModal": {
+      "addCard": "إضافة بطاقة",
+      "search": "بحث...",
+      "featured": "مميز",
+      "overview": "نظرة عامة",
+      "charts": "رسوم بيانية",
+      "aiCards": "بطاقات الذكاء",
+      "custom": "مخصص",
+      "categories": {
+        "featured": "مميز",
+        "overview": "نظرة عامة",
+        "charts": "رسوم بيانية",
+        "ai": "بطاقات الذكاء",
+        "custom": "مخصص"
+      },
+      "widgets": {
+        "taskList": "قائمة المهام",
+        "taskListDesc": "عرض والتفاعل مع مهام المشروع",
+        "notes": "ملاحظات",
+        "notesDesc": "إضافة ملاحظات نصية غنية لهذا المشروع",
+        "workload": " workload حسب الحالة",
+        "workloadDesc": "رسم بياني دائري يوضح المهام حسب الحالة",
+        "progressChart": "رسم بياني للتقدم",
+        "progressChartDesc": "تقدم المشروع مع تفصيل المهام",
+        "budgetChart": "متتبع الميزانية",
+        "budgetChartDesc": "نظرة عامة على استخدام الميزانية والإنفاق",
+        "aiBrain": "الذكاء الاصطناعي",
+        "aiBrainDesc": "توليد الأفكار والمحتوى مع مخصص",
+        "calculation": "الحساب",
+        "calculationDesc": "حساب المجاميع والمتوسطات والمزيد",
+        "portfolio": "المحفظة",
+        "portfolioDesc": "تصنيف وتتبع تقدم القوائم والمجلدات",
+        "assignee": "المهام حسب المسؤول",
+        "assigneeDesc": "عرض رسم بياني دائري للمهام حسب المسؤول",
+        "discussion": "النقاش",
+        "discussionDesc": "التعاون والدردشة مع الأعضاء",
+        "bookmarks": "الإشارات المرجعية",
+        "bookmarksDesc": "حفظ عناصر مثل الروابط الخارجية"
+      }
+    },
+    "placeholder": {
+      "comingSoon": "قريباً",
+      "underDevelopment": "هذه البطاقة قيد التطوير"
+    }
+  },
+  "DatePicker": {
+    "pickADate": "اختر تاريخاً"
+  },
+  "ProjectSwitcher": {
+    "globalWorkspace": "مساحة العمل العامة",
+    "activeProjects": "المشاريع النشطة",
+    "noProjectFound": "لم يتم العثور على مشروع.",
+    "viewAllProjects": "عرض جميع المشاريع",
+    "createNewProject": "إنشاء مشروع جديد"
+  },
+  "Topbar": {
+    "create": "إنشاء",
+    "manage": "إدارة"
   }
 }

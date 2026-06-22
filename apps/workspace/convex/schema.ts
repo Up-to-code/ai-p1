@@ -1184,6 +1184,15 @@ export default defineSchema({
     .index("by_organization_resource", ["organizationId", "resourceType", "resourceId"])
     .index("by_organization_resource_name", ["organizationId", "resourceType", "resourceId", "name"])
     .index("by_updated", ["updatedAt"]),
+  projectDashboards: defineTable({
+    organizationId: v.string(),
+    projectId: v.string(),
+    widgetConfig: v.string(),
+    layout: v.string(),
+    notes: v.optional(v.string()),
+    updatedAt: v.number(),
+  })
+    .index("by_organization_project", ["organizationId", "projectId"]),
   // DodoPayments Integration Tables
   dodoCustomers: defineTable({
     authId: v.string(),

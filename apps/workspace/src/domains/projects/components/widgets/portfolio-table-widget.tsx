@@ -11,7 +11,7 @@ const mockTableData = [
 
 export function PortfolioTableWidget() {
   return (
-    <div className="overflow-x-auto h-full pb-4">
+    <div className="overflow-auto h-full pb-4">
       <table className="w-full text-left text-sm whitespace-nowrap">
         <thead className="text-muted-foreground border-b border-border/30">
           <tr>

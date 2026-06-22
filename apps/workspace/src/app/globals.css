@@ -8,33 +8,33 @@
 
 @theme {
   /* ── Shadcn Color Palette (Light) ── */
-  --color-background: #f0ede6;
+  --color-background: #ffffff;
   --color-foreground: #111110;
-  --color-card: #faf9f5;
+  --color-card: #ffffff;
   --color-card-foreground: #111110;
-  --color-popover: #faf9f5;
+  --color-popover: #ffffff;
   --color-popover-foreground: #111110;
   --color-primary: #0066cc;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #e4e0d6;
+  --color-secondary: #f7f7f8;
   --color-secondary-foreground: #111110;
-  --color-muted: #e4e0d6;
-  --color-muted-foreground: #5a5751;
-  --color-accent: #e4e0d6;
+  --color-muted: #ececee;
+  --color-muted-foreground: #6b6b6b;
+  --color-accent: #ececee;
   --color-accent-foreground: #111110;
   --color-destructive: #f87171;
   --color-destructive-foreground: #111110;
-  --color-border: #d5d0c6;
+  --color-border: #e5e5e5;
   --color-input: #ffffff;
   --color-ring: #0066cc;
-  --color-divider: #d5d0c6;
+  --color-divider: #e5e5e5;
 
   /* ── Custom semantic tokens ── */
   --color-text-primary: #111110;
-  --color-text-secondary: #5a5751;
-  --color-text-muted: #3d3b37;
-  --color-surface: #e4e0d6;
-  --color-surface-elevated: #faf9f5;
+  --color-text-secondary: #6b6b6b;
+  --color-text-muted: #6b6b6b;
+  --color-surface: #ececee;
+  --color-surface-elevated: #ffffff;
 
   /* ── Third color (user message bubble) ── */
   --color-user-bubble: #1565c0;
@@ -53,22 +53,22 @@
 
 :root {
   /* ── Qentrah Custom Properties ── */
-  --q-bg: #f0ede6;
-  --q-bg-very-dark: #e9e7e1;
-  --q-bg-dark: #efeeea;
-  --q-bg-secondary: #f2f1ed;
+  --q-bg: #ffffff;
+  --q-bg-very-dark: #f5f5f5;
+  --q-bg-dark: #f7f7f8;
+  --q-bg-secondary: #f7f7f8;
   --q-bg-light: #ffffff;
-  --q-bg-very-light: #fbfaf7;
+  --q-bg-very-light: #fafafa;
   
-  --q-sidebar: #e4e0d6;
-  --q-topbar: #e8e4db;
-  --q-card: #faf9f5;
-  --q-card-hover: #e4e0d6;
-  --q-border: #d5d0c6;
-  --q-border-strong: #c9c5bc;
+  --q-sidebar: #f7f7f8;
+  --q-topbar: #ffffff;
+  --q-card: #ffffff;
+  --q-card-hover: #ececee;
+  --q-border: #e5e5e5;
+  --q-border-strong: #d4d4d4;
   --q-text-primary: #111110;
-  --q-text-secondary: #5a5751;
-  --q-text-muted: #3d3b37;
+  --q-text-secondary: #6b6b6b;
+  --q-text-muted: #6b6b6b;
   --q-input-bg: #ffffff;
   --q-accent: #0066cc;
   --q-accent-hover: #0055aa;
@@ -242,7 +242,7 @@
   }
 
   /* Scrollbar */
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--q-border-strong); border-radius: 99px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--q-text-muted); }
@@ -370,3 +370,28 @@
 
 /* Selection */
 .doc-editor-body ::selection { background: color-mix(in srgb, var(--color-primary) 18%, transparent); }
+
+/* ── Modal Animations ── */
+@keyframes modal-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes modal-overlay-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes modal-content-in {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes modal-content-out {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to { opacity: 0; transform: scale(0.95) translateY(8px); }
+}
+
+.modal-overlay-animate-in {
+  animation: modal-overlay-in 200ms ease-out forwards;
+}
+.modal-content-animate-in {
+  animation: modal-content-in 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

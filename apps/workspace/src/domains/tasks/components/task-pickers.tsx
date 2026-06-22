@@ -45,7 +45,7 @@ export function StatusPicker({
       <PopoverContent
         align="start"
         sideOffset={4}
-        className="w-44 p-1 rounded-xl border-border bg-card shadow-lg"
+        className="w-44 p-1 rounded-xl border-border bg-card"
       >
         {STATUSES.map((s) => (
           <button
@@ -99,7 +99,7 @@ export function PriorityPicker({
       <PopoverContent
         align="start"
         sideOffset={4}
-        className="w-40 p-1 rounded-xl border-border bg-card shadow-lg"
+        className="w-40 p-1 rounded-xl border-border bg-card"
       >
         {PRIORITIES.map((p) => (
           <button
@@ -162,7 +162,7 @@ export function DueDatePicker({
       <PopoverContent
         align="start"
         sideOffset={8}
-        className="max-h-[min(80vh,560px)] w-[min(92vw,520px)] overflow-y-auto rounded-2xl border-border bg-card p-0 shadow-2xl"
+        className="max-h-[min(80vh,560px)] w-[min(92vw,520px)] overflow-y-auto rounded-2xl border-border bg-card p-0"
       >
         <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-border bg-card/95 px-4 py-3 backdrop-blur">
           <div className="min-w-0">
@@ -293,7 +293,7 @@ export function AssigneePicker({
       <PopoverContent
         align="start"
         sideOffset={4}
-        className="w-60 p-1.5 rounded-xl border-border bg-card shadow-lg"
+        className="w-60 p-1.5 rounded-xl border-border bg-card shadow-none"
       >
         <div className="mb-1.5 flex items-center gap-2 rounded-lg border border-border bg-muted px-2.5 py-1.5">
           <Search className="h-3 w-3 shrink-0 text-text-muted" />
@@ -395,7 +395,7 @@ export function ProjectPicker({
       <PopoverContent
         align="start"
         sideOffset={4}
-        className="w-60 p-1.5 rounded-xl border-border bg-card shadow-lg"
+        className="w-60 p-1.5 rounded-xl border-border bg-card shadow-none"
       >
         <div className="mb-1.5 flex items-center gap-2 rounded-lg border border-border bg-muted px-2.5 py-1.5">
           <Search className="h-3 w-3 shrink-0 text-text-muted" />

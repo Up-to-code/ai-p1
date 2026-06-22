@@ -1,125 +1,311 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import "gridstack/dist/gridstack.min.css";
 import { GridStack } from "gridstack";
-import { TaskTableWidget } from "./widgets/task-table-widget";
 import { cn } from "@/lib/utils";
-import { GripHorizontal, MoreHorizontal } from "lucide-react";
+import { GripHorizontal, MoreHorizontal, Plus, Trash2, Pencil } from "lucide-react";
+import { AddWidgetModal, type WidgetOption, type WidgetType } from "./add-widget-modal";
+import { DashboardProvider } from "./dashboard-context";
+import { useDashboardPersistence } from "@/domains/projects/hooks/use-dashboard-persistence";
+import { useAccountContext } from "@/domains/auth";
+import { getWidgetComponent } from "./widgets/widget-registry";
 
 interface ProjectDashboardProps {
   projectId: string;
 }
 
+interface ActiveWidget {
+  id: string;
+  type: WidgetType;
+  title: string;
+  w: number;
+  h: number;
+  x?: number;
+  y?: number;
+}
+
+const DEFAULT_WIDGETS: ActiveWidget[] = [
+  { id: "default-tasks", type: "task-list", title: "Task List", w: 12, h: 6 },
+  { id: "default-workload", type: "workload", title: "Workload by Status", w: 6, h: 4 },
+  { id: "default-notes", type: "notes", title: "Notes", w: 6, h: 4 },
+  { id: "default-progress", type: "progress-chart", title: "Progress", w: 6, h: 4 },
+  { id: "default-budget", type: "budget-chart", title: "Budget", w: 6, h: 4 },
+];
+
+function WidgetShell({
+  widget,
+  onRemove,
+  onRename,
+  children,
+}: {
+  widget: ActiveWidget;
+  onRemove: () => void;
+  onRename: (title: string) => void;
+  children: React.ReactNode;
+}) {
+  const [showMenu, setShowMenu] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState(widget.title);
+
+  return (
+    <div className="grid-stack-item-content rounded-2xl border border-border/80 bg-card overflow-hidden flex flex-col">
+      {/* Widget Header (Draggable) */}
+      <div className="drag-handle p-3 border-b border-border/40 bg-muted/20 flex items-center justify-between cursor-move group/hdr">
+        <div className="flex items-center gap-2 min-w-0">
+          <GripHorizontal className="h-4 w-4 text-muted-foreground/30 group-hover/hdr:text-muted-foreground transition-colors shrink-0" />
+          {isRenaming ? (
+            <input
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onBlur={() => {
+                if (renameValue.trim()) onRename(renameValue.trim());
+                setIsRenaming(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  if (renameValue.trim()) onRename(renameValue.trim());
+                  setIsRenaming(false);
+                }
+                if (e.key === "Escape") setIsRenaming(false);
+              }}
+              autoFocus
+              className="text-sm font-bold text-foreground bg-transparent border-b border-primary outline-none w-full"
+            />
+          ) : (
+            <span className="text-sm font-bold text-foreground truncate">{widget.title}</span>
+          )}
+        </div>
+        <div className="flex items-center gap-0.5 shrink-0">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowMenu(!showMenu);
+            }}
+            className="p-1 text-muted-foreground/40 hover:text-foreground rounded hover:bg-muted/50 transition-colors"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </button>
+          {showMenu && (
+            <div className="absolute right-2 top-10 z-50 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[120px]">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsRenaming(true);
+                  setShowMenu(false);
+                }}
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/50 transition-colors"
+              >
+                <Pencil className="h-3 w-3" />
+                Rename
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onRemove();
+                  setShowMenu(false);
+                }}
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-500/10 transition-colors"
+              >
+                <Trash2 className="h-3 w-3" />
+                Remove
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Widget Content */}
+      <div className="flex-1 overflow-auto bg-background">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
+  const account = useAccountContext();
+  const organizationId =
+    account.workspace.status === "ready" ? account.workspace.organizationId ?? "" : "";
+
   const gridRef = useRef<GridStack | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isReady, setIsReady] = useState(false);
+  const [widgets, setWidgets] = useState<ActiveWidget[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const { config, isLoaded, saveWidgetConfig, saveLayout, lastSyncedAt, syncStatus } =
+    useDashboardPersistence(projectId, organizationId);
+
+  // Load widgets from persistence
   useEffect(() => {
-    if (!containerRef.current) return;
-
-    // Initialize Gridstack
-    gridRef.current = GridStack.init({
-      margin: 16,
-      cellHeight: 80,
-      float: true,
-      animate: true,
-      handle: '.drag-handle', // Only drag from headers
-    }, containerRef.current);
-
-    // Load saved layout from localStorage
-    const savedLayout = localStorage.getItem(`project-dashboard-${projectId}`);
-    
-    // We expect the DOM to have the nodes already (rendered by React). 
-    // Gridstack will attach to them. 
-    // If we have a saved layout, we map it over the existing DOM nodes.
-    if (savedLayout && gridRef.current) {
-      try {
-        const layout = JSON.parse(savedLayout);
-        gridRef.current.load(layout);
-      } catch (e) {
-        console.error("Failed to parse saved layout", e);
+    if (!isLoaded || !config) return;
+    try {
+      const parsed = JSON.parse(config.widgetConfig) as ActiveWidget[];
+      if (parsed.length > 0) {
+        setWidgets(parsed);
+      } else {
+        setWidgets(DEFAULT_WIDGETS);
       }
+    } catch {
+      setWidgets(DEFAULT_WIDGETS);
     }
+  }, [isLoaded, config]);
 
-    // Save layout on change
-    gridRef.current.on("change", () => {
-      if (gridRef.current) {
-        // save(false) saves the layout without the full HTML content
-        const layout = gridRef.current.save(false);
-        localStorage.setItem(`project-dashboard-${projectId}`, JSON.stringify(layout));
+  // Initialize gridstack
+  useEffect(() => {
+    if (!containerRef.current || widgets.length === 0) return;
+
+    if (!gridRef.current) {
+      gridRef.current = GridStack.init({
+        margin: 24,
+        cellHeight: 80,
+        float: true,
+        animate: true,
+        handle: ".drag-handle",
+        resizable: { handles: "se, sw, ne, nw" },
+      }, containerRef.current);
+
+      // Load saved layout
+      if (config?.layout) {
+        try {
+          const layout = JSON.parse(config.layout);
+          gridRef.current.load(layout);
+        } catch {
+          // ignore
+        }
       }
-    });
 
-    // Fade in to prevent FOUC (flash of unstyled content)
-    setIsReady(true);
+      // Save layout on change
+      gridRef.current.on("change", () => {
+        if (gridRef.current) {
+          const layout = gridRef.current.save(false);
+          saveLayout(JSON.stringify(layout));
+        }
+      });
 
+      setIsReady(true);
+    } else {
+      const elements = containerRef.current.querySelectorAll(".grid-stack-item:not(.grid-stack-item-initialized)");
+      elements.forEach((el) => {
+        gridRef.current?.makeWidget(el as HTMLElement);
+      });
+    }
+  }, [widgets, config?.layout, saveLayout]);
+
+  // Cleanup
+  useEffect(() => {
     return () => {
       if (gridRef.current) {
         gridRef.current.destroy(false);
+        gridRef.current = null;
       }
     };
-  }, [projectId]);
+  }, []);
+
+  const handleAddWidget = useCallback(
+    (option: WidgetOption) => {
+      const newWidget: ActiveWidget = {
+        id: `widget-${Date.now()}`,
+        type: option.type,
+        title: option.title,
+        w: option.defaultWidth,
+        h: option.defaultHeight,
+      };
+      const updated = [...widgets, newWidget];
+      setWidgets(updated);
+      saveWidgetConfig(JSON.stringify(updated));
+      setIsModalOpen(false);
+    },
+    [widgets, saveWidgetConfig],
+  );
+
+  const handleRemoveWidget = useCallback(
+    (widgetId: string) => {
+      const updated = widgets.filter((w) => w.id !== widgetId);
+      setWidgets(updated);
+      saveWidgetConfig(JSON.stringify(updated));
+      // Remove from gridstack
+      const el = containerRef.current?.querySelector(`[gs-id="${widgetId}"]`);
+      if (el && gridRef.current) {
+        gridRef.current.removeWidget(el as HTMLElement);
+      }
+    },
+    [widgets, saveWidgetConfig],
+  );
+
+  const handleRenameWidget = useCallback(
+    (widgetId: string, title: string) => {
+      const updated = widgets.map((w) => (w.id === widgetId ? { ...w, title } : w));
+      setWidgets(updated);
+      saveWidgetConfig(JSON.stringify(updated));
+    },
+    [widgets, saveWidgetConfig],
+  );
+
+  if (!organizationId) return null;
 
   return (
-    <div className={cn("transition-opacity duration-300 h-full", isReady ? "opacity-100" : "opacity-0")}>
-      <div className="grid-stack" ref={containerRef}>
-        
-        {/* Task Table Widget */}
-        {/* Default size: width 12 (full), height 6 */}
-        <div className="grid-stack-item" gs-w="12" gs-h="6" gs-id="task-table" gs-min-w="6" gs-min-h="4">
-          <div className="grid-stack-item-content rounded-2xl border border-border bg-surface dark:border-white/5 overflow-hidden flex flex-col shadow-sm">
-            
-            {/* Widget Header (Draggable) */}
-            <div className="drag-handle p-3 border-b border-border/50 bg-muted/30 flex items-center justify-between cursor-move group/header">
-              <div className="flex items-center gap-2">
-                <GripHorizontal className="h-4 w-4 text-muted-foreground opacity-50 group-hover/header:opacity-100 transition-opacity" />
-                <span className="font-semibold text-sm">Tasks</span>
-              </div>
-              <button className="text-muted-foreground hover:text-foreground">
-                <MoreHorizontal className="h-4 w-4" />
-              </button>
-            </div>
-            
-            {/* Widget Content */}
-            <div className="flex-1 overflow-auto bg-background">
-              <TaskTableWidget />
-            </div>
+    <DashboardProvider projectId={projectId} organizationId={organizationId}>
+      <div className="flex flex-col h-full">
+        {/* Toolbar */}
+        <div className="flex items-center justify-between mb-6 px-4">
+          <div className="flex items-center gap-3">
+            {syncStatus === "syncing" && (
+              <span className="text-[10px] font-bold text-muted-foreground/60 animate-pulse">Saving...</span>
+            )}
+            {syncStatus === "synced" && lastSyncedAt && (
+              <span className="text-[10px] font-bold text-muted-foreground/60">
+                Saved {Math.round((Date.now() - lastSyncedAt) / 1000)}s ago
+              </span>
+            )}
+          </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-lg font-bold text-sm shadow-sm transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Add Widget
+          </button>
+        </div>
+
+        {/* Grid */}
+        <div className={cn("transition-opacity duration-300 flex-1", isReady ? "opacity-100" : "opacity-0")}>
+          <div className="grid-stack" ref={containerRef}>
+            {widgets.map((widget) => {
+              const WidgetComponent = getWidgetComponent(widget.type);
+              return (
+                <div
+                  key={widget.id}
+                  className="grid-stack-item"
+                  gs-w={widget.w}
+                  gs-h={widget.h}
+                  gs-x={widget.x}
+                  gs-y={widget.y}
+                  gs-id={widget.id}
+                  gs-min-w="3"
+                  gs-min-h="3"
+                >
+                  <WidgetShell
+                    widget={widget}
+                    onRemove={() => handleRemoveWidget(widget.id)}
+                    onRename={(title) => handleRenameWidget(widget.id, title)}
+                  >
+                    <WidgetComponent />
+                  </WidgetShell>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Placeholder Widget 1 */}
-        <div className="grid-stack-item" gs-w="6" gs-h="4" gs-id="summary-1" gs-x="0" gs-y="6">
-          <div className="grid-stack-item-content rounded-2xl border border-border bg-surface dark:border-white/5 overflow-hidden flex flex-col shadow-sm">
-            <div className="drag-handle p-3 border-b border-border/50 bg-muted/30 flex items-center justify-between cursor-move group/header">
-              <div className="flex items-center gap-2">
-                <GripHorizontal className="h-4 w-4 text-muted-foreground opacity-50 group-hover/header:opacity-100 transition-opacity" />
-                <span className="font-semibold text-sm">Project Summary</span>
-              </div>
-            </div>
-            <div className="flex-1 p-6 text-sm text-muted-foreground flex items-center justify-center bg-background">
-              Drag to resize or move this widget.
-            </div>
-          </div>
-        </div>
-
-        {/* Placeholder Widget 2 */}
-        <div className="grid-stack-item" gs-w="6" gs-h="4" gs-id="summary-2" gs-x="6" gs-y="6">
-          <div className="grid-stack-item-content rounded-2xl border border-border bg-surface dark:border-white/5 overflow-hidden flex flex-col shadow-sm">
-            <div className="drag-handle p-3 border-b border-border/50 bg-muted/30 flex items-center justify-between cursor-move group/header">
-              <div className="flex items-center gap-2">
-                <GripHorizontal className="h-4 w-4 text-muted-foreground opacity-50 group-hover/header:opacity-100 transition-opacity" />
-                <span className="font-semibold text-sm">Recent Activity</span>
-              </div>
-            </div>
-            <div className="flex-1 p-6 text-sm text-muted-foreground flex items-center justify-center bg-background">
-              Layout configuration is automatically saved.
-            </div>
-          </div>
-        </div>
-
+        <AddWidgetModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSelectWidget={handleAddWidget}
+        />
       </div>
-    </div>
+    </DashboardProvider>
   );
 }

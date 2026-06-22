@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Check, ChevronsUpDown, FolderGit2, Globe, Plus, Trash2, Loader2 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -15,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "@/i18n/routing";
 
 export function ProjectSwitcher() {
+  const t = useTranslations("ProjectSwitcher");
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
@@ -94,7 +96,7 @@ export function ProjectSwitcher() {
                   <div className="flex h-5 w-5 items-center justify-center rounded bg-muted text-foreground dark:bg-white/10 dark:text-muted-foreground">
                     <Globe className="h-3.5 w-3.5" />
                   </div>
-                  <span className="truncate">Global Workspace</span>
+                  <span className="truncate">{t("globalWorkspace")}</span>
                 </>
               ) : (
                 <>
@@ -118,13 +120,13 @@ export function ProjectSwitcher() {
               className="flex w-full items-center px-2 py-1.5 text-sm font-medium rounded-lg hover:bg-[var(--color-divider)] transition-colors"
             >
               <Globe className="me-2 h-4 w-4 text-muted-foreground" />
-              Global Workspace
+              {t("globalWorkspace")}
               {isGlobalMode && <Check className="ms-auto h-4 w-4" />}
             </button>
 
             <div className="h-px bg-[var(--color-divider)] my-1" />
 
-            <div className="px-2 pt-1 pb-1 text-xs font-medium text-text-muted">Active Projects</div>
+            <div className="px-2 pt-1 pb-1 text-xs font-medium text-text-muted">{t("activeProjects")}</div>
             {isLoading ? (
               <div className="space-y-1 px-1">
                 {[0, 1, 2].map((i) => (
@@ -135,7 +137,7 @@ export function ProjectSwitcher() {
                 ))}
               </div>
             ) : projects.length === 0 ? (
-              <div className="px-2 py-2 text-sm text-text-muted">No project found.</div>
+              <div className="px-2 py-2 text-sm text-text-muted">{t("noProjectFound")}</div>
             ) : (
               projects.map((project) => (
                 <button
@@ -162,7 +164,7 @@ export function ProjectSwitcher() {
               }}
               className="flex w-full items-center px-2 py-1.5 text-xs text-text-muted rounded-lg hover:bg-[var(--color-divider)] transition-colors"
             >
-              View all projects
+              {t("viewAllProjects")}
             </button>
             <button
               onClick={() => {
@@ -172,18 +174,16 @@ export function ProjectSwitcher() {
               className="flex w-full items-center px-2 py-1.5 text-xs text-primary rounded-lg hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors"
             >
               <Plus className="me-2 h-3.5 w-3.5" />
-              Create new project
+              {t("createNewProject")}
             </button>
           </div>
         </PopoverContent>
 
-        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogContent className="max-w-2xl border-none bg-transparent p-0 shadow-none" showCloseButton={false}>
-            <DialogTitle className="sr-only">New Project</DialogTitle>
-            <DialogDescription className="sr-only">Create a new project</DialogDescription>
-            <CreateProjectForm onSuccess={() => setIsCreateModalOpen(false)} onCancel={() => setIsCreateModalOpen(false)} />
-          </DialogContent>
-        </Dialog>
+        <CreateProjectForm
+          isOpen={isCreateModalOpen}
+          onSuccess={() => setIsCreateModalOpen(false)}
+          onCancel={() => setIsCreateModalOpen(false)}
+        />
       </Popover>
 
       {contextMenu && createPortal(

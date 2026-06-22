@@ -18,15 +18,6 @@ import { BudgetTab } from "./tabs/budget-tab";
 import { TeamTab } from "./tabs/team-tab";
 import { ActivityTab } from "./tabs/activity-tab";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import {
-  LayoutDashboard,
-  CheckSquare,
-  Calendar,
-  Folder,
-  DollarSign,
-  Users,
-  Activity,
-} from "lucide-react";
 
 export function ProjectDetailLayout({ projectId }: { projectId: string }) {
   const t = useTranslations("Projects");
@@ -106,18 +97,18 @@ export function ProjectDetailLayout({ projectId }: { projectId: string }) {
         <AppTabsList
           className="bg-transparent border-b border-border rounded-none p-0 h-auto justify-start space-x-6"
           tabs={[
-            { value: "overview", label: "Overview", icon: LayoutDashboard },
-            { value: "tasks", label: "Tasks & Timeline", icon: CheckSquare },
-            { value: "calendar", label: "Calendar", icon: Calendar },
-            { value: "documents", label: "Files", icon: Folder },
-            { value: "budget", label: "Budget", icon: DollarSign },
-            { value: "team", label: "Team", icon: Users },
-            { value: "activity", label: "Activity", icon: Activity },
+            { value: "overview", label: "Overview" },
+            { value: "tasks", label: "Tasks & Timeline" },
+            { value: "calendar", label: "Calendar" },
+            { value: "documents", label: "Files" },
+            { value: "budget", label: "Budget" },
+            { value: "team", label: "Team" },
+            { value: "activity", label: "Activity" },
           ]}
         />
 
         <TabsContent value="overview" className="mt-6 border-none p-0 outline-none">
-          <OverviewTab project={project} onUpdate={handleUpdateProject} />
+          <OverviewTab project={project} />
         </TabsContent>
 
         <TabsContent value="tasks" className="mt-6 border-none p-0 outline-none">

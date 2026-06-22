@@ -75,6 +75,7 @@ export function TasksScreen({
   const [statusFilter, setStatusFilter] = useState<TaskStatus | "all">("all");
   const [ownership, setOwnership] = useState<OwnershipFilter>("all");
   const [projectFilter, setProjectFilter] = useState<string>("");
+  const [isModalFullscreen, setIsModalFullscreen] = useState(false);
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -266,7 +267,7 @@ export function TasksScreen({
                 className={cn(
                   "h-6 rounded-lg px-2.5 text-[11px] font-semibold transition-all",
                   statusFilter === tab.value
-                    ? "bg-foreground text-background shadow-sm"
+                    ? "bg-foreground text-background"
                     : "text-text-muted hover:text-foreground",
                 )}
               >
@@ -349,7 +350,7 @@ export function TasksScreen({
                   onClick={() => tasksResult.refetch()}
                   className="inline-flex h-9 items-center rounded-xl bg-primary px-4 text-xs font-semibold text-white hover:bg-primary/90 transition-colors"
                 >
-                  Retry
+                  {common("tryAgain")}
                 </button>
               </div>
             ) : tasksResult.data === undefined ? (
@@ -374,16 +375,23 @@ export function TasksScreen({
           </div>
         </div>
 
-        {/* Right: overlay document drawer */}
+        {/* Task document modal */}
         {selectedTask && organizationId && (
-          <div className="fixed inset-0 z-40">
+          <div className={cn(
+            "fixed inset-0 z-40 flex items-center justify-center modal-overlay-animate-in",
+          )}>
             <button
               type="button"
               aria-label="Close task document"
               className="absolute inset-0 cursor-default bg-black/20 backdrop-blur-[2px] dark:bg-black/45"
               onClick={() => setSelectedId(null)}
             />
-            <div className="absolute inset-y-0 end-0 w-full max-w-[min(96vw,980px)] overflow-hidden border-s border-border bg-background shadow-2xl">
+            <div className={cn(
+              "relative z-10 overflow-hidden border border-border bg-background flex flex-col modal-content-animate-in",
+              isModalFullscreen
+                ? "w-screen h-screen rounded-none border-0"
+                : "w-[90vw] h-[90vh] rounded-2xl",
+            )}>
               <TaskEditor
                 key={selectedTask.id}
                 task={selectedTask}
@@ -397,6 +405,8 @@ export function TasksScreen({
                   refresh();
                 }}
                 routeProjectId={projectId}
+                isFullscreen={isModalFullscreen}
+                onToggleFullscreen={() => setIsModalFullscreen((v) => !v)}
               />
             </div>
           </div>

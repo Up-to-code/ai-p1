@@ -22,6 +22,7 @@ export function GlobalProjectsDashboard() {
       float: true,
       animate: true,
       handle: '.drag-handle', // Only drag from headers
+      resizable: { handles: "se, sw, ne, nw" },
     }, containerRef.current);
 
     // Load saved layout from localStorage

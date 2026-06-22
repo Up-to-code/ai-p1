@@ -1,4 +1,33 @@
 {
+  "Projects": {
+    "title": "Projects",
+    "add": "New Project",
+    "form": {
+      "namePlaceholder": "Project name",
+      "budgetPlaceholder": "Budget",
+      "status": {
+        "planning": "Planning",
+        "active": "Active",
+        "completed": "Completed",
+        "onHold": "On Hold"
+      },
+      "health": {
+        "healthy": "Healthy",
+        "atRisk": "At Risk",
+        "delayed": "Delayed",
+        "critical": "Critical"
+      },
+      "tagHeader": "Tags",
+      "tagPlaceholder": "Add a tag...",
+      "addTag": "Add tag"
+    },
+    "clientPicker": {
+      "title": "Select Client",
+      "searchPlaceholder": "Search clients...",
+      "noClientsFound": "No clients found",
+      "createNew": "Create new client"
+    }
+  },
   "Navigation": {
     "dashboard": "Dashboard",
     "projects": "Projects",
@@ -1303,7 +1332,42 @@
       "previewDescription": "The project description will appear here as you write it.",
       "previewChecklist": "Record readiness",
       "previewMedia": "Media",
-      "previewDocuments": "Documents"
+      "previewDocuments": "Documents",
+      "createSubtitle": "Set up a new delivery container for your client.",
+      "editSubtitle": "Update project details and settings.",
+      "clientPicker": {
+        "title": "Select Client",
+        "description": "Choose a client to associate with this project.",
+        "searchPlaceholder": "Search by name...",
+        "loading": "Loading clients...",
+        "noClients": "No clients found",
+        "noClientsDesc": "Try adjusting your search query.",
+        "pagination": "{count} clients · Page {page} of {total}",
+        "selectPlaceholder": "Select a client..."
+      },
+      "budgetLabel": "Budget",
+      "startDateLabel": "Start Date",
+      "endDateLabel": "End Date",
+      "statusLabel": "Status",
+      "healthLabel": "Health",
+      "descLabel": "Description",
+      "selectPlaceholder": "Select a client...",
+      "tagsLabel": "Tags",
+      "tagsHelper": "Press Enter or click Add to insert a tag.",
+      "saveChangesBtn": "Save Changes",
+      "cancelBtn": "Cancel",
+      "namePlaceholder": "e.g. Acme Corp Rebrand",
+      "budgetPlaceholder": "$0.00",
+      "statusPlanned": "Planned",
+      "statusActive": "Active",
+      "statusPaused": "Paused",
+      "statusCompleted": "Completed",
+      "statusArchived": "Archived",
+      "healthOnTrack": "On Track",
+      "healthAtRisk": "At Risk",
+      "healthBlocked": "Blocked",
+      "tagPlaceholder": "Add a tag...",
+      "addTagBtn": "Add"
     },
     "types": {
       "workspace": "Workspace project",
@@ -3390,7 +3454,25 @@
       "noProjects": "No projects available",
       "unassigned": "Unassigned",
       "noClient": "No client",
-      "noProject": "No project"
+      "noProject": "No project",
+      "visibility": "Visibility",
+      "visibilityPrivate": "Private",
+      "visibilityTeam": "Team",
+      "visibilityWorkspace": "Workspace",
+      "scheduleMeetingTitle": "Task meeting",
+      "meetingScheduled": "Meeting scheduled from task.",
+      "statusUpdated": "Task status updated.",
+      "savedToast": "Task document saved.",
+      "unsaved": "Unsaved",
+      "saving": "Saving…",
+      "saveBtn": "Save",
+      "scheduleBtn": "Schedule",
+      "meetingTime": "Meeting time",
+      "closeMeetingScheduler": "Close meeting scheduler",
+      "dateLabel": "Date",
+      "createMeeting": "Create calendar meeting",
+      "closeDrawer": "Close drawer",
+      "openTaskLink": "Open task link"
     },
     "statuses": {
       "todo": "To do",
@@ -3880,5 +3962,117 @@
     "errorDesc": "Could not complete this organization action.",
     "organizationsDisabled": "Clerk Organizations are not enabled for this instance. Enable Organizations in the Clerk Dashboard, then create the workspace again.",
     "slugsDisabled": "Organization slugs are disabled in Clerk. The workspace will be created without a custom slug."
+  },
+  "Widgets": {
+    "taskTable": {
+      "task": "Task",
+      "status": "Status",
+      "due": "Due",
+      "priority": "Priority",
+      "noTasksYet": "No tasks yet",
+      "addTasksHint": "Add tasks from the Tasks tab",
+      "statusLabels": {
+        "todo": "To Do",
+        "inProgress": "In Progress",
+        "waiting": "Waiting",
+        "done": "Done",
+        "canceled": "Canceled"
+      },
+      "priorityLabels": {
+        "urgent": "Urgent",
+        "high": "High",
+        "normal": "Normal",
+        "low": "Low"
+      },
+      "dueLabels": {
+        "overdue": "{days}d overdue",
+        "today": "Today",
+        "tomorrow": "Tomorrow",
+        "daysLeft": "{days}d left"
+      }
+    },
+    "budgetChart": {
+      "budget": "Budget",
+      "spent": "Spent",
+      "remaining": "Remaining",
+      "utilization": "Utilization",
+      "noBudgetSet": "No budget set",
+      "addBudgetHint": "Add a budget in project settings"
+    },
+    "workloadChart": {
+      "noTasksToDisplay": "No tasks to display",
+      "totalTasks": "Total Tasks",
+      "tasks": "{count} tasks",
+      "statusLabels": {
+        "todo": "To Do",
+        "inProgress": "In Progress",
+        "waiting": "Waiting",
+        "done": "Done",
+        "canceled": "Canceled"
+      }
+    },
+    "progressChart": {
+      "tasks": "{count} tasks",
+      "completed": "{count} completed",
+      "daysLeft": "{days} days left"
+    },
+    "addWidgetModal": {
+      "addCard": "Add Card",
+      "search": "Search...",
+      "featured": "Featured",
+      "overview": "Overview",
+      "charts": "Charts",
+      "aiCards": "AI Cards",
+      "custom": "Custom",
+      "categories": {
+        "featured": "Featured",
+        "overview": "Overview",
+        "charts": "Charts",
+        "ai": "AI Cards",
+        "custom": "Custom"
+      },
+      "widgets": {
+        "taskList": "Task List",
+        "taskListDesc": "View and interact with project tasks",
+        "notes": "Notes",
+        "notesDesc": "Add rich text notes for this project",
+        "workload": "Workload by Status",
+        "workloadDesc": "Pie chart showing tasks by status",
+        "progressChart": "Progress Chart",
+        "progressChartDesc": "Project progress with task breakdown",
+        "budgetChart": "Budget Tracker",
+        "budgetChartDesc": "Budget utilization and spending overview",
+        "aiBrain": "AI Brain",
+        "aiBrainDesc": "Generate ideas and content with a custom prompt",
+        "calculation": "Calculation",
+        "calculationDesc": "Calculate sums, averages, and so much more",
+        "portfolio": "Portfolio",
+        "portfolioDesc": "Categorize and track progress of Lists & Folders",
+        "assignee": "Tasks by Assignee",
+        "assigneeDesc": "Display a pie chart of your total tasks by Assignee",
+        "discussion": "Discussion",
+        "discussionDesc": "Collaborate and chat with members",
+        "bookmarks": "Bookmarks",
+        "bookmarksDesc": "Bookmark items such as URLs or external links"
+      }
+    },
+    "placeholder": {
+      "comingSoon": "Coming soon",
+      "underDevelopment": "This widget is under development"
+    }
+  },
+  "DatePicker": {
+    "pickADate": "Pick a date"
+  },
+  "ProjectSwitcher": {
+    "globalWorkspace": "Global Workspace",
+    "activeProjects": "Active Projects",
+    "noProjectFound": "No project found.",
+    "viewAllProjects": "View all projects",
+    "createNewProject": "Create new project"
+  },
+  "Topbar": {
+    "create": "Create",
+    "manage": "Manage"
   }
 }

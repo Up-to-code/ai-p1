@@ -3,18 +3,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  CalendarDays,
   Circle,
-  ExternalLink,
-  Flag,
   FolderKanban,
+  UserRound,
+  CalendarDays,
+  Flag,
   Maximize2,
   Minimize2,
-  MoreHorizontal,
-  Trash2,
-  UserRound,
-  Video,
-  Clock3,
   X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -24,7 +19,6 @@ import {
   type DocEditorMetaField,
 } from "@/components/shared/work-os-doc-editor";
 import { DeleteRecordDialog } from "@/components/shared/crud-ui";
-import { Link, useRouter } from "@/i18n/routing";
 import type { WorkOsPickerOption } from "@/domains/work-os/components/work-os-record-picker";
 import {
   deleteTaskRequest,
@@ -34,27 +28,14 @@ import {
 } from "../api/tasks";
 import type { TaskFormValues, TaskRecord } from "../tasks.types";
 import { cn } from "@/lib/utils";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/toast";
-import { createCalendarEventRequest } from "@/domains/calendar/api/calendar";
 import {
   taskDocumentContext,
 } from "../tasks.constants";
 import { StatusPicker, PriorityPicker, DueDatePicker, AssigneePicker, ProjectPicker } from "./task-pickers";
 import { useProjectOptionsQueryResult } from "@/domains/projects/api/projects";
-import { taskHref, meetingDateTimeFromTask } from "./task-hooks";
+import { taskHref } from "./task-hooks";
 import { taskLog } from "../task-log";
 
 // ─── Form helpers ──────────────────────────────────────────────────────────────
@@ -91,6 +72,8 @@ export function TaskEditor({
   onClose,
   showBackLink = false,
   routeProjectId = null,
+  isFullscreen = false,
+  onToggleFullscreen,
 }: {
   task: TaskRecord;
   organizationId: string;
@@ -101,24 +84,15 @@ export function TaskEditor({
   onClose?: () => void;
   showBackLink?: boolean;
   routeProjectId?: string | null;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
 }) {
   const t = useTranslations("Tasks");
-  const router = useRouter();
   const queryClient = useQueryClient();
   const toast = useToast();
   const context = useMemo(
     () => taskDocumentContext(organizationId, routeProjectId, task.projectId),
     [organizationId, routeProjectId, task.projectId],
-  );
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [scheduleOpen, setScheduleOpen] = useState(false);
-  const defaultMeetingTime = meetingDateTimeFromTask(task);
-  const [meetingDate, setMeetingDate] = useState(defaultMeetingTime.date);
-  const [meetingStartTime, setMeetingStartTime] = useState(
-    defaultMeetingTime.time,
-  );
-  const [meetingEndTime, setMeetingEndTime] = useState(
-    defaultMeetingTime.endTime,
   );
 
   const storageKey = `qentrah:task-draft:${organizationId}:${task.id}`;
@@ -164,7 +138,7 @@ export function TaskEditor({
       if (typeof window !== "undefined")
         window.localStorage.removeItem(storageKey);
       taskLog.info("save:success", { taskId: task.id });
-      toast.toast({ title: "Task document saved.", type: "success" });
+      toast.toast({ title: t("form.savedToast"), type: "success" });
       onSaved?.();
     } catch (error) {
       taskLog.error("save:failed", { taskId: task.id, error: String(error) });
@@ -238,34 +212,6 @@ export function TaskEditor({
     },
   ];
 
-  async function scheduleMeetingFromTask() {
-    setBusyId("schedule");
-    try {
-      await createCalendarEventRequest(organizationId, {
-        title: draft.title || task.title || "Task meeting",
-        owner: draft.assigneeUserId || "Team",
-        date: meetingDate,
-        time: meetingStartTime,
-        endDate: meetingDate,
-        endTime: meetingEndTime,
-        type: "meeting",
-        status: "draft",
-        clientId: draft.clientId || undefined,
-        projectId:
-          context.scope === "project"
-            ? context.projectId
-            : draft.projectId || undefined,
-        taskId: task.id,
-        notes: `Created from task: ${draft.title}\n${taskHref(task.id, context)}`,
-      });
-      await queryClient.invalidateQueries({ queryKey: ["calendar"] });
-      setScheduleOpen(false);
-      toast.toast({ title: "Meeting scheduled from task.", type: "success" });
-    } finally {
-      setBusyId(null);
-    }
-  }
-
   async function confirmDelete() {
     taskLog.info("delete:start", { taskId: task.id });
     setBusyId("delete");
@@ -274,7 +220,6 @@ export function TaskEditor({
       removeTaskFromTaskCaches(queryClient, organizationId, task.id);
       taskLog.info("delete:success", { taskId: task.id });
       onDeleted?.();
-      if (showBackLink) router.push("/tasks");
     } catch (error) {
       taskLog.error("delete:failed", { taskId: task.id, error: String(error) });
       throw error;
@@ -287,155 +232,53 @@ export function TaskEditor({
   return (
     <div
       className={cn(
-        "relative flex h-full flex-col",
-        isFullscreen && "fixed inset-0 z-[60] bg-background",
+        "flex h-full flex-col",
+        isFullscreen ? "fixed inset-0 z-[60] w-screen h-screen bg-background" : "relative",
       )}
     >
-      <div className="pointer-events-none absolute end-4 top-4 z-20 flex items-center gap-1.5">
-        {showBackLink ? (
-          <Link
-            href="/tasks"
-            className="pointer-events-auto inline-flex h-8 items-center rounded-xl border border-border bg-background/90 px-3 text-xs font-semibold text-text-muted shadow-sm backdrop-blur-xl transition-colors hover:text-foreground"
-          >
-            {t("title")}
-          </Link>
-        ) : null}
-        <div className="pointer-events-auto flex items-center gap-1.5 rounded-2xl border border-border bg-background/90 p-1 shadow-xl backdrop-blur-xl">
-          {hasUnsavedChanges && !busyId && (
-            <span className="px-2 text-[10px] font-medium text-amber-600 dark:text-amber-400">
-              Unsaved
-            </span>
-          )}
-          {busyId === "patch" && (
-            <span className="px-2 text-[10px] text-text-muted animate-pulse">
-              Saving…
-            </span>
-          )}
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-border px-4 py-2.5 shrink-0">
+        <div className="flex items-center gap-3">
           <Button
             type="button"
             size="sm"
             onClick={saveDraft}
             disabled={Boolean(busyId) || !hasUnsavedChanges}
-            className="h-8 rounded-xl text-xs"
+            className="h-8 rounded-xl text-xs transition-all duration-200"
           >
-            Save
+            {busyId === "patch" ? "Saving..." : t("form.saveBtn")}
           </Button>
-          <Popover open={scheduleOpen} onOpenChange={setScheduleOpen}>
-            <PopoverTrigger
-              render={
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  disabled={Boolean(busyId)}
-                  className="h-8 rounded-xl text-xs"
-                >
-                  <Video className="h-3.5 w-3.5" />
-                  Schedule
-                </Button>
-              }
-            />
-            <PopoverContent
-              align="end"
-              className="w-72 rounded-2xl border-border bg-popover p-4 shadow-2xl"
-            >
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-text-muted">
-                  <Clock3 className="h-3.5 w-3.5" /> Meeting time
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setScheduleOpen(false)}
-                  className="rounded-lg p-1 text-text-muted transition-colors hover:bg-muted hover:text-foreground"
-                  aria-label="Close meeting scheduler"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
-              <label className="mb-2 block text-xs font-semibold text-text-muted">
-                Date
-              </label>
-              <input
-                type="date"
-                value={meetingDate}
-                onChange={(e) => setMeetingDate(e.target.value)}
-                className="mb-3 h-9 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/20"
-              />
-              <div className="grid grid-cols-2 gap-2">
-                <label className="block text-xs font-semibold text-text-muted">
-                  From
-                  <input
-                    type="time"
-                    value={meetingStartTime}
-                    onChange={(e) => setMeetingStartTime(e.target.value)}
-                    className="mt-1 h-9 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/20"
-                  />
-                </label>
-                <label className="block text-xs font-semibold text-text-muted">
-                  To
-                  <input
-                    type="time"
-                    value={meetingEndTime}
-                    onChange={(e) => setMeetingEndTime(e.target.value)}
-                    className="mt-1 h-9 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/20"
-                  />
-                </label>
-              </div>
-              <Button
-                type="button"
-                onClick={scheduleMeetingFromTask}
-                disabled={Boolean(busyId)}
-                className="mt-4 h-9 w-full rounded-xl text-xs"
-              >
-                Create calendar meeting
-              </Button>
-            </PopoverContent>
-          </Popover>
+          {hasUnsavedChanges && !busyId && (
+            <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400 transition-opacity duration-300">
+              Unsaved changes
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
           <Button
             type="button"
             variant="ghost"
             size="icon-sm"
-            onClick={() => setIsFullscreen((v) => !v)}
+            onClick={onToggleFullscreen}
             title={isFullscreen ? "Exit full screen" : "Full screen"}
+            className="transition-all duration-200 h-8 w-8"
           >
             {isFullscreen ? (
-              <Minimize2 className="h-3.5 w-3.5" />
+              <Minimize2 className="h-4 w-4" />
             ) : (
-              <Maximize2 className="h-3.5 w-3.5" />
+              <Maximize2 className="h-4 w-4" />
             )}
           </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button type="button" variant="ghost" size="icon-sm">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              }
-            />
-            <DropdownMenuContent align="end" className="min-w-48">
-              {onClose && (
-                <DropdownMenuItem onClick={onClose}>
-                  <X className="h-4 w-4" />
-                  Close drawer
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem
-                onClick={() => router.push(taskHref(task.id, context) as never)}
-              >
-                <ExternalLink className="h-4 w-4" />
-                Open task link
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={() => setDeleting(true)}
-                disabled={busyId === "delete"}
-              >
-                <Trash2 className="h-4 w-4" />
-                {t("actions.deleteTask")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={onClose}
+            title="Close"
+            className="transition-all duration-200 hover:bg-destructive/10 hover:text-destructive h-8 w-8"
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
