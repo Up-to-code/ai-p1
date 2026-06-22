@@ -2,9 +2,8 @@
 
 import React, { useState, useMemo, useCallback } from "react";
 import { type Project } from "../../../store/projects.types";
-import { useTasksQuery, createTaskRequest, updateTaskRequest, upsertTaskInTaskCaches } from "@/domains/tasks/api/tasks";
+import { useTasksQuery, createTaskRequest, updateTaskRequest } from "@/domains/tasks/api/tasks";
 import { useAccountContext } from "@/domains/auth";
-import { useQueryClient } from "@tanstack/react-query";
 import { EditableText } from "@/components/ui/editable-text";
 import { EditableSelect } from "@/components/ui/editable-select";
 import { Button } from "@/components/ui/button";
@@ -61,7 +60,6 @@ const priorityColors: Record<string, "gray" | "green" | "yellow" | "blue" | "red
 const statusOptions = statusColumns.map((s) => ({ label: s.label, value: s.value }));
 
 export function TasksTimelineTab({ project, organizationId }: TasksTimelineTabProps) {
-  const queryClient = useQueryClient();
   const tasksResult = useTasksQuery(organizationId, { projectId: project.id });
   const tasks = tasksResult.data ?? [];
 
@@ -96,7 +94,7 @@ export function TasksTimelineTab({ project, organizationId }: TasksTimelineTabPr
     if (!newTitle.trim()) return;
     setIsSubmitting(true);
     try {
-      const result = await createTaskRequest(organizationId, {
+      await createTaskRequest(organizationId, {
         title: newTitle.trim(),
         status: "todo",
         priority: newPriority as TaskPriority,
@@ -108,9 +106,6 @@ export function TasksTimelineTab({ project, organizationId }: TasksTimelineTabPr
         description: "",
         tags: "",
       });
-      if (result?.task) {
-        upsertTaskInTaskCaches(queryClient, organizationId, result.task);
-      }
       setNewTitle("");
       setNewPriority("normal");
       setNewDueDate("");
@@ -119,7 +114,7 @@ export function TasksTimelineTab({ project, organizationId }: TasksTimelineTabPr
       console.error("Failed to create task:", err);
     }
     setIsSubmitting(false);
-  }, [newTitle, newPriority, newDueDate, organizationId, project.id, queryClient]);
+  }, [newTitle, newPriority, newDueDate, organizationId, project.id]);
 
   const handleStatusChange = useCallback(
     async (task: TaskRecord, newStatus: TaskStatus) => {
@@ -136,12 +131,11 @@ export function TasksTimelineTab({ project, organizationId }: TasksTimelineTabPr
           description: task.description ?? "",
           tags: Array.isArray(task.tags) ? task.tags.join(",") : (task.tags ?? ""),
         });
-        upsertTaskInTaskCaches(queryClient, organizationId, { ...task, status: newStatus });
       } catch (err) {
         console.error("Failed to update task:", err);
       }
     },
-    [organizationId, queryClient],
+    [organizationId],
   );
 
   // Gantt data

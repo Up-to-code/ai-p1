@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { ListTodo, Plus, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useAccountContext } from "@/domains/auth";
@@ -21,7 +21,6 @@ import {
 import { useCurrentProjectId } from "@/domains/projects/hooks/use-current-project-id";
 import {
   createTaskRequest,
-  upsertTaskInTaskCaches,
   updateTaskRequest,
   assignTasksToProjectRequest,
   useTaskQuery,
@@ -42,6 +41,7 @@ import {
 } from "./task-hooks";
 import { TaskBoardSkeleton } from "./task-board-skeleton";
 import { taskLog } from "../task-log";
+import { useOptimisticActions, taskOptimisticMove } from "../hooks/use-optimistic-actions";
 
 // ─── TasksScreen (split-pane) ─────────────────────────────────────────────────
 
@@ -51,7 +51,6 @@ export function TasksScreen({
   const t = useTranslations("Tasks");
   const common = useTranslations("Common");
   const account = useAccountContext();
-  const queryClient = useQueryClient();
   const workspaceStatus = account.workspace.status;
   const organizationId =
     workspaceStatus === "ready"
@@ -114,7 +113,11 @@ export function TasksScreen({
     projectId: projectId ?? (projectFilter || null),
   });
   const emptyTasks = useMemo(() => [] as TaskRecord[], []);
-  const tasks = tasksResult.data ?? emptyTasks;
+  const rawTasks = tasksResult.data ?? emptyTasks;
+
+  const optimistic = useOptimisticActions<TaskRecord>();
+  const tasks = useMemo(() => optimistic.applyToList(rawTasks), [rawTasks, optimistic.applyToList]);
+
   const memberOptions = useMemberOptions(organizationId, account.user);
   const listDocumentContext = organizationId
     ? taskDocumentContext(organizationId, projectId, null)
@@ -130,6 +133,7 @@ export function TasksScreen({
   const filteredTasks = useMemo(() => {
     const needle = search.trim().toLowerCase();
     return tasks.filter((task) => {
+      if (task._deleted) return false;
       if (
         needle &&
         ![
@@ -154,11 +158,6 @@ export function TasksScreen({
     [filteredTasks, selectedId],
   );
 
-  async function refresh() {
-    // Only invalidate stats, not task list to avoid reload animation
-    await queryClient.invalidateQueries({ queryKey: ["tasks-stats", organizationId] });
-  }
-
   const moveTaskMutation = useMutation({
     mutationFn: async (variables: {
       organizationId: string;
@@ -166,46 +165,21 @@ export function TasksScreen({
       status: TaskStatus;
       statusTasks: TaskRecord[];
       targetIndex: number;
+      optimisticId: string;
     }) => {
-      // prettier-ignore
       const pipelineOrder = nextTaskPipelineOrder(variables.statusTasks, variables.task.id, variables.targetIndex);
-      // prettier-ignore
       return updateTaskRequest(variables.organizationId, variables.task.id, taskFormValuesForPipeline(variables.task, variables.status, pipelineOrder));
     },
-    onMutate: async (variables) => {
-      taskLog.info("drag:optimistic", {
-        taskId: variables.task.id,
-        from: variables.task.status,
-        to: variables.status,
-        targetIndex: variables.targetIndex,
-      });
-      await queryClient.cancelQueries({ queryKey: ["tasks", variables.organizationId] });
-      const previousEntries = queryClient.getQueriesData<TaskRecord[]>({ queryKey: ["tasks", variables.organizationId] });
-      const pipelineOrder = nextTaskPipelineOrder(variables.statusTasks, variables.task.id, variables.targetIndex);
-      const optimisticTask = {
-        ...variables.task,
-        status: variables.status,
-        pipelineOrder,
-        updatedAt: Date.now(),
-      };
-      upsertTaskInTaskCaches(queryClient, variables.organizationId, optimisticTask);
-      return { previousEntries };
-    },
-    onError: (error, variables, context) => {
-      taskLog.error("drag:rollback", {
-        taskId: variables.task.id,
-        error: String(error),
-      });
-      context?.previousEntries.forEach(([key, data]) => {
-        queryClient.setQueryData(key, data);
-      });
-    },
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       taskLog.info("drag:committed", {
         taskId: variables.task.id,
         newStatus: variables.status,
       });
-      queryClient.invalidateQueries({ queryKey: ["tasks-stats", variables.organizationId] });
+      optimistic.remove(variables.optimisticId);
+    },
+    onError: (_error, variables) => {
+      taskLog.error("drag:rollback", { taskId: variables.task.id });
+      optimistic.remove(variables.optimisticId);
     },
   });
 
@@ -226,13 +200,26 @@ export function TasksScreen({
     const statusTasks = tasks.filter(
       (candidate) => candidate.status === newStatus,
     );
-    moveTaskMutation.mutate({
-      organizationId,
-      task,
-      status: newStatus,
-      statusTasks,
-      targetIndex,
-    });
+    const pipelineOrder = nextTaskPipelineOrder(statusTasks, taskId, targetIndex);
+
+    const action = taskOptimisticMove(taskId, newStatus, pipelineOrder);
+    optimistic.push(action);
+
+    moveTaskMutation.mutate(
+      {
+        organizationId,
+        task,
+        status: newStatus,
+        statusTasks,
+        targetIndex,
+        optimisticId: action.id,
+      },
+      {
+        onError: () => {
+          optimistic.remove(action.id);
+        },
+      },
+    );
   }
 
   async function createNewTask() {
@@ -243,8 +230,6 @@ export function TasksScreen({
       projectId: projectId ?? "",
     });
     taskLog.info("create:success", { taskId: result.task.id });
-    upsertTaskInTaskCaches(queryClient, organizationId, result.task);
-    await refresh();
     setSelectedId(result.task.id);
   }
 
@@ -399,10 +384,9 @@ export function TasksScreen({
                 memberOptions={memberOptions}
                 mentionOptions={mentionOptions}
                 onClose={() => setSelectedId(null)}
-                onSaved={refresh}
+                onSaved={() => {}}
                 onDeleted={() => {
                   setSelectedId(null);
-                  refresh();
                 }}
                 routeProjectId={projectId}
                 isFullscreen={isModalFullscreen}

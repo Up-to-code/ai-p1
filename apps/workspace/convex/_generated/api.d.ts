@@ -56,6 +56,7 @@ import type * as http from "../http.js";
 import type * as mcp_connectionLifecycle from "../mcp/connectionLifecycle.js";
 import type * as mcp_connectionPermissions from "../mcp/connectionPermissions.js";
 import type * as mcp_connections from "../mcp/connections.js";
+import type * as mcp_markdownToHtml from "../mcp/markdownToHtml.js";
 import type * as mcp_readSurface from "../mcp/readSurface.js";
 import type * as mcp_toolCall from "../mcp/toolCall.js";
 import type * as mcp_toolInputs from "../mcp/toolInputs.js";
@@ -180,6 +181,7 @@ declare const fullApi: ApiFromModules<{
   "mcp/connectionLifecycle": typeof mcp_connectionLifecycle;
   "mcp/connectionPermissions": typeof mcp_connectionPermissions;
   "mcp/connections": typeof mcp_connections;
+  "mcp/markdownToHtml": typeof mcp_markdownToHtml;
   "mcp/readSurface": typeof mcp_readSurface;
   "mcp/toolCall": typeof mcp_toolCall;
   "mcp/toolInputs": typeof mcp_toolInputs;

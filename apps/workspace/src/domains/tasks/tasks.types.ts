@@ -18,6 +18,7 @@ export type TaskRecord = {
   createdByUserId: string;
   createdAt: number;
   updatedAt: number;
+  _deleted?: boolean;
 };
 
 export type TaskFormValues = {

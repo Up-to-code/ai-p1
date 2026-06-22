@@ -1,9 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { QueryClient } from "@tanstack/react-query";
 import {
-  removeTaskFromTaskCaches,
   taskPayloadFromForm,
-  upsertTaskInTaskCaches,
 } from "./tasks";
 import type { TaskFormValues, TaskRecord } from "../tasks.types";
 
@@ -461,47 +458,6 @@ describe("tasks API", () => {
       const result = taskPayloadFromForm(formValues);
 
       expect(result.pipelineOrder).toBe(-5);
-    });
-  });
-
-  describe("task query cache helpers", () => {
-    const task: TaskRecord = {
-      id: "task_1",
-      title: "Prepare follow-up",
-      status: "todo",
-      priority: "normal",
-      visibility: "team",
-      assigneeUserId: "user_1",
-      projectId: "project_1",
-      description: "Call client",
-      tags: ["client"],
-      createdByUserId: "user_2",
-      createdAt: 1,
-      updatedAt: 1,
-    };
-
-    it("moves an updated task between filtered task caches without invalidating the list", () => {
-      const queryClient = new QueryClient();
-      queryClient.setQueryData(["tasks", "org_1", "todo", "", "project_1"], [task]);
-      queryClient.setQueryData(["tasks", "org_1", "done", "", "project_1"], []);
-
-      const moved = { ...task, status: "done" as const, pipelineOrder: 4 };
-      upsertTaskInTaskCaches(queryClient, "org_1", moved);
-
-      expect(queryClient.getQueryData(["tasks", "org_1", "todo", "", "project_1"])).toEqual([]);
-      expect(queryClient.getQueryData(["tasks", "org_1", "done", "", "project_1"])).toEqual([moved]);
-      expect(queryClient.getQueryData(["task", "org_1", "task_1"])).toEqual(moved);
-    });
-
-    it("removes a deleted task from list and detail caches", () => {
-      const queryClient = new QueryClient();
-      queryClient.setQueryData(["tasks", "org_1", "all", "", null], [task]);
-      queryClient.setQueryData(["task", "org_1", "task_1"], task);
-
-      removeTaskFromTaskCaches(queryClient, "org_1", "task_1");
-
-      expect(queryClient.getQueryData(["tasks", "org_1", "all", "", null])).toEqual([]);
-      expect(queryClient.getQueryData(["task", "org_1", "task_1"])).toBeNull();
     });
   });
 });

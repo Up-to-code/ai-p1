@@ -46,6 +46,7 @@ import {
   taskStatus,
   type Input,
 } from "./toolInputs";
+import { markdownToHtml } from "./markdownToHtml";
 
 export const mcpToolPermissionMap = toolPermissions;
 export const mcpReadToolNames = readTools;
@@ -537,10 +538,12 @@ export const writeTool = internalMutation({
     }
 
     if (args.tool === "tasks_create") {
-      await assertTaskLinks(ctx, args.organizationId, taskInput(input));
+      const taskData = taskInput(input);
+      await assertTaskLinks(ctx, args.organizationId, taskData);
       const id = await ctx.db.insert("tasks", {
         organizationId: args.organizationId,
-        ...taskInput(input),
+        ...taskData,
+        description: taskData.description ? markdownToHtml(taskData.description) : undefined,
         visibility: "workspace",
         createdByUserId: actorId,
         createdAt: now,
@@ -567,7 +570,11 @@ export const writeTool = internalMutation({
       
       const patch = taskInput({ ...existing, ...input });
       await assertTaskLinks(ctx, args.organizationId, patch);
-      await ctx.db.patch(taskId, { ...patch, updatedAt: now });
+      await ctx.db.patch(taskId, {
+        ...patch,
+        description: patch.description ? markdownToHtml(patch.description) : patch.description,
+        updatedAt: now,
+      });
       await audit(ctx, args.organizationId, args.connectionId, "client.task.update", taskId, `Updated task ${existing.title}.`);
       return presentWorkspaceRecord((await ctx.db.get(taskId))!);
     }

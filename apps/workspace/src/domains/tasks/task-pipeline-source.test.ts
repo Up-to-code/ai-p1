@@ -29,14 +29,12 @@ describe("task pipeline source", () => {
     expect(orderSource).not.toContain('"canceled"');
   });
 
-  it("persists drag/drop with optimistic rollback", () => {
+  it("persists drag/drop with Convex real-time updates", () => {
     expect(screenSource).toContain("moveTaskMutation.mutate");
     expect(screenSource).toContain("nextTaskPipelineOrder(variables.statusTasks, variables.task.id, variables.targetIndex)");
     expect(screenSource).toContain("taskFormValuesForPipeline(variables.task, variables.status, pipelineOrder)");
-    expect(screenSource).toContain("upsertTaskInTaskCaches(queryClient, variables.organizationId");
-    expect(screenSource).toContain("context?.previousEntries.forEach");
-    expect(screenSource).not.toContain('invalidateQueries({ queryKey: ["tasks",');
-    expect(screenSource).toContain('invalidateQueries({ queryKey: ["tasks-stats", variables.organizationId] })');
+    expect(screenSource).toContain("onSuccess:");
+    expect(screenSource).toContain('taskLog.info("drag:committed"');
   });
 
   it("keeps the task board rendered from the query cache instead of a second local task store", () => {

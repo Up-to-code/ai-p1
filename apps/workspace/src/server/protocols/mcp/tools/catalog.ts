@@ -487,7 +487,7 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
   {
     name: "tasks_create",
     title: "Create task",
-    description: "Create a workspace task.",
+    description: "Create a workspace task. The 'description' field accepts markdown (## headings, **bold**, *italic*, - lists, `code`, ```code blocks```, > quotes, [links](url)). It will be rendered as formatted rich text in the task editor. Use structured markdown for detailed task specs: objective, features, acceptance criteria, etc.",
     resource: "task",
     action: "create",
     inputSchema: {
@@ -505,7 +505,7 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
   {
     name: "tasks_update",
     title: "Update task",
-    description: "Update a workspace task.",
+    description: "Update a workspace task. The 'description' field accepts markdown (## headings, **bold**, *italic*, - lists, `code`, ```code blocks```, > quotes, [links](url)). It will be rendered as formatted rich text.",
     resource: "task",
     action: "update",
     inputSchema: {

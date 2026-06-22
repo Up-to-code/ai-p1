@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import {
   Circle,
   FolderKanban,
@@ -22,8 +21,6 @@ import { DeleteRecordDialog } from "@/components/shared/crud-ui";
 import type { WorkOsPickerOption } from "@/domains/work-os/components/work-os-record-picker";
 import {
   deleteTaskRequest,
-  removeTaskFromTaskCaches,
-  upsertTaskInTaskCaches,
   updateTaskRequest,
 } from "../api/tasks";
 import type { TaskFormValues, TaskRecord } from "../tasks.types";
@@ -88,7 +85,6 @@ export function TaskEditor({
   onToggleFullscreen?: () => void;
 }) {
   const t = useTranslations("Tasks");
-  const queryClient = useQueryClient();
   const toast = useToast();
   const context = useMemo(
     () => taskDocumentContext(organizationId, routeProjectId, task.projectId),
@@ -133,8 +129,7 @@ export function TaskEditor({
     taskLog.info("save:start", { taskId: task.id });
     setBusyId("patch");
     try {
-      const updatedTask = await updateTaskRequest(organizationId, task.id, draft);
-      upsertTaskInTaskCaches(queryClient, organizationId, updatedTask.task);
+      await updateTaskRequest(organizationId, task.id, draft);
       if (typeof window !== "undefined")
         window.localStorage.removeItem(storageKey);
       taskLog.info("save:success", { taskId: task.id });
@@ -146,7 +141,7 @@ export function TaskEditor({
     } finally {
       setBusyId(null);
     }
-  }, [draft, organizationId, task.id, queryClient, storageKey, toast, onSaved]);
+  }, [draft, organizationId, task.id, storageKey, toast, onSaved]);
 
   const fields: DocEditorMetaField[] = [
     {
@@ -217,7 +212,6 @@ export function TaskEditor({
     setBusyId("delete");
     try {
       await deleteTaskRequest(organizationId, task.id);
-      removeTaskFromTaskCaches(queryClient, organizationId, task.id);
       taskLog.info("delete:success", { taskId: task.id });
       onDeleted?.();
     } catch (error) {
