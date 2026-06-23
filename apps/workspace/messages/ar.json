@@ -256,6 +256,7 @@
     "opportunities": "الفرص",
     "deals": "الصفقات",
     "tasks": "المهام",
+    "docs": "التوثيق",
     "assets": "الأصول",
     "clients": "العملاء",
     "calendar": "التقويم",
@@ -3491,6 +3492,66 @@
       "backToTasks": "العودة إلى المهام"
     }
   },
+  "Docs": {
+    "title": "التوثيق",
+    "viewMode": {
+      "list": "قائمة",
+      "grid": "شبكة"
+    },
+    "filters": {
+      "all": "جميع المستندات",
+      "createdByMe": "أنشأتها أنا"
+    },
+    "actions": {
+      "newDoc": "مستند جديد",
+      "create": "إنشاء مستند",
+      "save": "حفظ",
+      "edit": "تعديل المستند",
+      "deleteDoc": "حذف المستند",
+      "deleteDesc": "سيتم حذف \"{title}\" نهائياً. هذا الإجراء لا يمكن التراجع عنه.",
+      "moveTo": "نقل إلى...",
+      "rename": "إعادة تسمية",
+      "delete": "حذف"
+    },
+    "empty": {
+      "title": "لا توجد مستندات",
+      "description": "أنشئ مستندك الأول للبدء."
+    },
+    "form": {
+      "title": "العنوان",
+      "titlePlaceholder": "عنوان المستند",
+      "bodyPlaceholder": "ابدأ الكتابة... اكتب / للأوامر",
+      "visibility": "الظهور",
+      "visibilityPrivate": "خاص",
+      "visibilityTeam": "الفريق",
+      "visibilityWorkspace": "مساحة العمل",
+      "tags": "الوسوم",
+      "folder": "المجلد",
+      "project": "المشروع",
+      "savedToast": "تم حفظ المستند.",
+      "saveBtn": "حفظ"
+    },
+    "folders": {
+      "title": "المجلدات",
+      "allDocs": "جميع المستندات",
+      "newFolder": "مجلد جديد",
+      "folderPlaceholder": "اسم المجلد...",
+      "renamePlaceholder": "الاسم الجديد..."
+    },
+    "templates": {
+      "blank": "مستند فارغ",
+      "sdd": "وثيقة تصميم البرنامج",
+      "api": "توثيق API",
+      "guide": "دليل المستخدم / الميزة",
+      "adr": "سجل قرار العمارة",
+      "plan": "خطة المشروع"
+    },
+    "detail": {
+      "notFoundTitle": "لم يتم العثور على المستند",
+      "notFoundDescription": "تم حذف المستند أو لا تملك صلاحية الوصول إليه.",
+      "backToDocs": "العودة إلى التوثيق"
+    }
+  },
   "Calendar": {
     "eyebrow": "الأعمال المجدولة",
     "title": "التقويم",
@@ -3955,6 +4016,21 @@
     "errorTitle": "فشل إعداد المؤسسة",
     "errorDesc": "تعذر إكمال إجراء المؤسسة.",
     "organizationsDisabled": "ميزة المؤسسات غير مفعلة في Clerk لهذا المشروع. فعّل Organizations من لوحة Clerk ثم أنشئ مساحة العمل مرة أخرى.",
+    "slugsDisabled": "روابط المؤسسات المختصرة غير مفعلة في Clerk. سيتم إنشاء مساحة العمل بدون رابط مختصر مخصص."
+  },
+  "NoOrganizationModal": {
+    "title": "أنشئ مساحة العمل שלך",
+    "description": "تحتاج إلى مساحة عمل للوصول إلى لوحة التحكم. أنشئ واحدة الآن أو انتظر دعوة من فريقك.",
+    "nameLabel": "اسم المؤسسة",
+    "namePlaceholder": "مثال: شركة الأصول النموذجية",
+    "createBtn": "إنشاء مساحة العمل",
+    "creating": "جاري الإنشاء...",
+    "or": "أو",
+    "invitationTitle": "لديك دعوة؟",
+    "invitationDesc": "اطلب من مسؤول المؤسسة إرسال رابط الدعوة لك. بمجرد قبولها، ستنضم تلقائيًا إلى مساحة عملهم.",
+    "nameRequired": "أدخل اسم المؤسسة أولا.",
+    "errorDesc": "تعذر إنشاء المؤسسة.",
+    "organizationsDisabled": "ميزة المؤسسات غير مفعلة في Clerk لهذا المشروع. فعّل Organizations من لوحة Clerk ثم حاول مرة أخرى.",
     "slugsDisabled": "روابط المؤسسات المختصرة غير مفعلة في Clerk. سيتم إنشاء مساحة العمل بدون رابط مختصر مخصص."
   },
   "Widgets": {

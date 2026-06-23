@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type { ViewMode } from "@/types/common.types";
 import type { Client, ClientType, PipelineStage } from "./clients.types";
 
-type ClientInput = Omit<Client, "id" | "added" | "lastContact" | "nextActionDate" | "appointmentTime" | "syncState">;
+type ClientInput = Omit<Client, "id" | "_id" | "_creationTime" | "added" | "lastContact" | "createdByUserId" | "createdAt" | "updatedAt">;
 
 interface ClientsState {
   clients: Client[];
@@ -19,93 +19,7 @@ interface ClientsState {
   moveClient: (id: string, pipelineStage: PipelineStage, targetIndex?: number) => void;
 }
 
-const clients: Client[] = [
-	{
-	    id: "cl-1",
-	    name: "Abdullah Al-Faisal",
-	    type: "person",
-	    contact: "abdullah@example.com",
-	    phone: "+966 512 345 678",
-	    age: 34,
-	    nationality: "Operations",
-	    generation: "Millennial",
-	    budget: "25K - 40K USD",
-	    assetInterest: "Priority onboarding workspace",
-	    status: "active",
-	    added: "May 1, 2026",
-	    pipelineStage: "qualified",
-	    priority: "high",
-	    lastContact: "Today",
-	    nextAction: "Send onboarding options",
-    nextActionDate: "May 5, 2026",
-    appointmentTime: "10:30",
-    syncState: "eligible",
-  },
-  {
-	    id: "cl-2",
-	    name: "Sarah Al-Rashid",
-	    type: "person",
-    contact: "sarah@example.com",
-    phone: "+966 555 123 456",
-    age: 29,
-	    nationality: "Customer success",
-	    generation: "Millennial",
-	    budget: "8K - 12K USD / quarter",
-	    assetInterest: "Service workspace rollout",
-    status: "active",
-    added: "May 2, 2026",
-    pipelineStage: "new",
-    priority: "normal",
-    lastContact: "Yesterday",
-	    nextAction: "Confirm rollout date",
-    nextActionDate: "May 6, 2026",
-    appointmentTime: "13:00",
-    syncState: "draft",
-  },
-  {
-	    id: "cl-3",
-	    name: "Capital Ventures",
-	    type: "organization",
-    contact: "info@capitalventures.sa",
-    phone: "+966 11 234 5678",
-    age: 42,
-	    nationality: "Finance",
-	    generation: "Gen X",
-	    budget: "120K - 180K USD",
-	    assetInterest: "Strategic workspace assets",
-    status: "active",
-    added: "Apr 28, 2026",
-    pipelineStage: "negotiation",
-    priority: "urgent",
-    lastContact: "May 4",
-    nextAction: "Share yield report",
-    nextActionDate: "May 8, 2026",
-    appointmentTime: "09:15",
-    syncState: "synced",
-  },
-  {
-	    id: "cl-4",
-	    name: "Fahad Al-Saud",
-	    type: "person",
-    contact: "fahad@example.com",
-    phone: "+966 509 876 543",
-    age: 39,
-	    nationality: "Partner",
-	    generation: "Gen X",
-	    budget: "Partner pipeline",
-	    assetInterest: "Partner workspace assets",
-	    issue: "Partner agreement needs legal review.",
-    status: "inactive",
-    added: "Apr 15, 2026",
-	    pipelineStage: "negotiation",
-    priority: "normal",
-    lastContact: "Apr 30",
-	    nextAction: "Review partner agreement",
-    nextActionDate: "May 11, 2026",
-    appointmentTime: "15:30",
-    syncState: "blocked",
-  },
-];
+const clients: Client[] = [];
 
 export const useClientsStore = create<ClientsState>((set, get) => ({
   clients,
@@ -117,14 +31,19 @@ export const useClientsStore = create<ClientsState>((set, get) => ({
   setView: (view) => set({ view }),
   getById: (id) => get().clients.find((client) => client.id === id),
   createClient: (input) => {
+    const now = Date.now();
     const next: Client = {
       ...input,
+      _id: `cl-${get().clients.length + 1}`,
+      _creationTime: now,
       id: `cl-${get().clients.length + 1}`,
+      organizationId: "",
+      ownerUserId: "",
       added: "Today",
       lastContact: "Now",
-      nextActionDate: "This week",
-      appointmentTime: "10:00",
-      syncState: "draft",
+      createdByUserId: "",
+      createdAt: now,
+      updatedAt: now,
     };
     set((state) => ({ clients: [next, ...state.clients] }));
     return next;
@@ -145,7 +64,6 @@ export const useClientsStore = create<ClientsState>((set, get) => ({
       let stageCount = 0;
       let insertAt = -1;
       
-      // Find the position in the flat array that corresponds to targetIndex in the stage
       for (let i = 0; i <= updatedClients.length; i++) {
         if (stageCount === targetIndex) {
           insertAt = i;

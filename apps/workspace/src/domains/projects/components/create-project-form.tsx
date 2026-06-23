@@ -16,6 +16,7 @@ import { CalendarDatePicker } from "@/components/ui/calendar-date-picker";
 import { RecordModal } from "@/components/shared/record-modal";
 import { WorkOsDocEditor, type DocEditorMetaField } from "@/components/shared/work-os-doc-editor";
 import { ProjectStatusPicker, ProjectHealthPicker, ClientInlinePicker } from "./project-pickers";
+import { useClientOptionsQuery } from "@/domains/clients/api/clients";
 
 export interface CreateProjectFormProps {
   isOpen: boolean;
@@ -33,6 +34,8 @@ export function CreateProjectForm({ isOpen, onSuccess, onCancel }: CreateProject
   const [tagInput, setTagInput] = useState("");
 
   const queryClient = useQueryClient();
+  const organizationId = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+  const clientOptionsQuery = useClientOptionsQuery(organizationId);
 
   const form = useForm<ProjectFormValues>({
     resolver: (zodResolver as any)(projectSchema),
@@ -116,7 +119,7 @@ export function CreateProjectForm({ isOpen, onSuccess, onCancel }: CreateProject
         <ClientInlinePicker
           value={form.watch("clientId") ?? ""}
           onChange={(v) => form.setValue("clientId", v)}
-          options={[]}
+          options={clientOptionsQuery ?? []}
           placeholder={t("clientPicker.selectPlaceholder")}
           searchPlaceholder={t("clientPicker.searchPlaceholder")}
           noResultsText={t("clientPicker.noClients")}

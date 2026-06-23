@@ -70,6 +70,7 @@ import { useCalendarEventMutations } from "../hooks";
 import { useCalendarDrawer } from "../hooks/use-calendar-drawer";
 import { useCalendarIndexRangeQueryResult } from "../api/calendar";
 import { useCurrentProjectId } from "@/domains/projects/hooks/use-current-project-id";
+import { useCurrentSpace } from "@/domains/projects/hooks/use-current-space";
 import { useOperationState } from "@/lib/utils/operation-state";
 import {
   FormErrorSummary,
@@ -109,11 +110,14 @@ export function CalendarScreen() {
     [currentDate, view],
   );
   const projectId = useCurrentProjectId();
+  const currentSpace = useCurrentSpace();
+  const spaceId = currentSpace?.spaceId ?? null;
   const eventsQuery = useCalendarIndexRangeQueryResult(
     workspaceOrganizationId,
     range.startAt,
     range.endAt,
     projectId,
+    spaceId,
   );
   const events = useMemo(
     () => (eventsQuery.data?.events ?? []) as CalendarEvent[],

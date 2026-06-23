@@ -1,5 +1,3 @@
-import type { SyncState } from "@/types/common.types";
-
 export type ClientType = "person" | "organization";
 export type ClientStatus = "new" | "active" | "nurture" | "inactive" | "archived";
 export type PipelineStage = "new" | "qualified" | "review" | "negotiation" | "closed";
@@ -7,34 +5,35 @@ export type Priority = "normal" | "high" | "urgent";
 export type Visibility = "private" | "team" | "workspace";
 
 export interface Client {
-  _id?: string;
+  _id: string;
+  _creationTime: number;
   id: string;
-  organizationId?: string;
+  organizationId: string;
   name: string;
   type: ClientType;
-  contact: string;
+  ownerUserId: string;
+  status: ClientStatus;
+  source: string;
+  visibility: Visibility;
+  company?: string;
+  contactName?: string;
+  email?: string;
   phone: string;
-  age: number;
-  nationality: string;
-  generation: string;
+  contact: string;
+  website?: string;
+  notes?: string;
+  priority: Priority;
   budget: string;
   assetInterest: string;
-  status: ClientStatus;
-  visibility?: Visibility;
-  added: string;
   pipelineStage: PipelineStage;
   pipelineOrder?: number;
-  priority: Priority;
-  lastContact: string;
-  nextAction: string;
-  nextActionDate: string;
-  appointmentTime: string;
-  syncState: SyncState;
   tags?: string[];
-  issue?: string;
-  notes?: string;
-  createdAt?: number;
-  updatedAt?: number;
+  customFields?: Array<{ key: string; value: unknown }>;
+  added: string;
+  lastContact: string;
+  createdByUserId: string;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export type ClientAssetLinkStatus = "interested" | "shortlisted" | "review" | "proposal" | "rejected";

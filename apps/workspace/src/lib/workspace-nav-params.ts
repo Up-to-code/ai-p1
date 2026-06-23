@@ -39,6 +39,12 @@ export const PERSISTENT_PARAMS: PersistentParamConfig[] = [
     key: "threadId",
     skipPaths: [],
   },
+  {
+    // Active space filter — carried so space context survives navigation
+    // within a project. Cleared when switching projects or going global.
+    key: "space",
+    skipPaths: [],
+  },
 ];
 
 /**

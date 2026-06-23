@@ -8,7 +8,7 @@ import {
 } from "@/domains/organization/api/organization-request";
 import type { TaskFormValues, TaskRecord, TaskStats } from "../tasks.types";
 
-export function useTasksQuery(organizationId?: string, options?: { status?: TaskRecord["status"] | "all"; search?: string; projectId?: string | null }) {
+export function useTasksQuery(organizationId?: string, options?: { status?: TaskRecord["status"] | "all"; search?: string; projectId?: string | null; spaceId?: string | null }) {
   const allTasks = useQuery(
     api.clientTasks.read.list,
     organizationId ? { organizationId } : "skip",
@@ -16,12 +16,20 @@ export function useTasksQuery(organizationId?: string, options?: { status?: Task
 
   const projectTasks = useQuery(
     api.clientTasks.read.listByProject,
-    organizationId && options?.projectId
+    organizationId && options?.projectId && !options?.spaceId
       ? { organizationId, projectId: options.projectId }
       : "skip",
   );
 
-  const tasks = options?.projectId ? projectTasks : allTasks;
+  const spaceTasks = useQuery(
+    api.clientTasks.read.listBySpace,
+    organizationId && options?.projectId && options?.spaceId
+      ? { organizationId, projectId: options.projectId, spaceId: options.spaceId }
+      : "skip",
+  );
+
+  // Priority: spaceTasks > projectTasks > allTasks
+  const tasks = options?.spaceId ? spaceTasks : options?.projectId ? projectTasks : allTasks;
 
   const filtered = tasks?.filter((task) => {
     if (options?.status && options.status !== "all" && task.status !== options.status) return false;
@@ -61,6 +69,7 @@ export function taskPayloadFromForm(values: TaskFormValues) {
     assigneeUserId: values.assigneeUserId || undefined,
     clientId: values.clientId || undefined,
     projectId: values.projectId || undefined,
+    spaceId: values.spaceId || undefined,
     dueDate: values.dueDate || undefined,
     description: values.description || undefined,
     tags: values.tags.split(",").map((tag) => tag.trim()).filter(Boolean),

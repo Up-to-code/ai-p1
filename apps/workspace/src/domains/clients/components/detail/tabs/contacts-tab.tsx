@@ -74,53 +74,42 @@ export function ContactsTab({ client, onUpdate }: ContactsTabProps) {
             </div>
           </div>
 
-          {/* Nationality */}
+          {/* Source */}
           <div className="grid grid-cols-[120px_1fr] items-center gap-4 pt-4">
             <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
               <Globe className="h-4 w-4" />
-              Nationality
+              Source
             </div>
             <div className="text-sm font-medium text-foreground">
-              <EditableText
-                value={client.nationality || ""}
-                onChange={(nationality) => onUpdate({ nationality })}
-                placeholder="Add nationality..."
-                className="text-sm"
-              />
+              {client.source}
             </div>
           </div>
 
-          {/* Age */}
-          <div className="grid grid-cols-[120px_1fr] items-center gap-4 pt-4">
-            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              <User className="h-4 w-4" />
-              Age
+          {/* Company */}
+          {client.company && (
+            <div className="grid grid-cols-[120px_1fr] items-center gap-4 pt-4">
+              <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                <User className="h-4 w-4" />
+                Company
+              </div>
+              <div className="text-sm font-medium text-foreground">
+                {client.company}
+              </div>
             </div>
-            <div className="text-sm font-medium text-foreground">
-              <EditableText
-                value={client.age ? String(client.age) : ""}
-                onChange={(age) => onUpdate({ age })}
-                placeholder="Add age..."
-                className="text-sm"
-              />
-            </div>
-          </div>
+          )}
 
-          {/* Generation */}
-          <div className="grid grid-cols-[120px_1fr] items-center gap-4 pt-4">
-            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              <Tag className="h-4 w-4" />
-              Generation
+          {/* Website */}
+          {client.website && (
+            <div className="grid grid-cols-[120px_1fr] items-center gap-4 pt-4">
+              <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                <Tag className="h-4 w-4" />
+                Website
+              </div>
+              <div className="text-sm font-medium text-foreground">
+                {client.website}
+              </div>
             </div>
-            <div className="text-sm font-medium text-foreground">
-              <EditableText
-                value={client.generation || ""}
-                onChange={(generation) => onUpdate({ generation })}
-                placeholder="Add generation..."
-                className="text-sm"
-              />
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

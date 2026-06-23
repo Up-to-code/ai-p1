@@ -348,7 +348,7 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     description: "List today's calendar events.",
     resource: "calendar",
     action: "read",
-    inputSchema: { limit: listLimit, cursor: listCursor },
+    inputSchema: { limit: listLimit, cursor: listCursor, spaceId: maybeText },
   },
   {
     name: "calendar_list_range",
@@ -356,7 +356,7 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     description: "List calendar events in a date range.",
     resource: "calendar",
     action: "read",
-    inputSchema: { startAt: timestamp, endAt: timestamp, limit: listLimit, cursor: listCursor },
+    inputSchema: { startAt: timestamp, endAt: timestamp, limit: listLimit, cursor: listCursor, spaceId: maybeText },
   },
   {
     name: "calendar_list_month",
@@ -364,7 +364,7 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     description: "List calendar events for a month.",
     resource: "calendar",
     action: "read",
-    inputSchema: { year: z.number(), month: z.number().min(1).max(12), limit: listLimit, cursor: listCursor },
+    inputSchema: { year: z.number(), month: z.number().min(1).max(12), limit: listLimit, cursor: listCursor, spaceId: maybeText },
   },
   {
     name: "calendar_get",
@@ -474,7 +474,7 @@ const rawAgentToolCatalog: Array<Omit<McpToolDefinition, "riskLevel" | "approval
     description: "List workspace tasks.",
     resource: "task",
     action: "read",
-    inputSchema: { limit: listLimit, search: listSearch, cursor: listCursor, clientId: maybeText, projectId: maybeText.nullable() },
+    inputSchema: { limit: listLimit, search: listSearch, cursor: listCursor, clientId: maybeText, projectId: maybeText.nullable(), spaceId: maybeText },
   },
   {
     name: "tasks_get",

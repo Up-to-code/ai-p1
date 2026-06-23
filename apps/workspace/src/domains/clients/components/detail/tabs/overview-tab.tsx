@@ -191,13 +191,10 @@ export function OverviewTab({ client, onUpdate }: OverviewTabProps) {
               />
             </div>
             <div className="group rounded-xl border border-transparent hover:border-border hover:bg-muted/30 p-3 transition-colors">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Nationality</p>
-              <EditableText
-                value={client.nationality || ""}
-                onChange={(nationality) => onUpdate({ nationality })}
-                placeholder="Add nationality..."
-                className="text-sm font-medium"
-              />
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Contact Name</p>
+              <div className="text-sm font-medium">
+                {client.contactName || "Not set"}
+              </div>
             </div>
             <div className="group rounded-xl border border-transparent hover:border-border hover:bg-muted/30 p-3 transition-colors">
               <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Budget</p>

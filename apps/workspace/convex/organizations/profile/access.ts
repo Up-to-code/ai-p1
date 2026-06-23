@@ -18,7 +18,8 @@ type OrganizationPermissionResource =
   | "visibility"
   | "integration"
   | "apiKey"
-  | "oauthApp";
+  | "oauthApp"
+  | "space";
 
 const capabilitiesReturnValidator = v.object({
   canReadOrganization: v.boolean(),

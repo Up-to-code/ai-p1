@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { useRouter } from "@/i18n/routing";
+import { Link, useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { useAccountContext } from "@/domains/auth";
 import {
@@ -207,10 +207,9 @@ export function NotionClientTable({
                   onMouseEnter={() => setHoveredRow(client.id)}
                   onMouseLeave={() => setHoveredRow(null)}
                   className={cn(
-                    "border-b border-border/50 last:border-0 transition-colors cursor-pointer",
+                    "border-b border-border/50 last:border-0 transition-colors",
                     hoveredRow === client.id && "bg-muted/20 dark:bg-white/[0.02]",
                   )}
-                  onClick={() => router.push(`/clients/${client.id}`)}
                 >
                   {/* Avatar */}
                   <td className="px-3 py-2.5">
@@ -230,15 +229,15 @@ export function NotionClientTable({
                     </div>
                   </td>
 
-                  {/* Name + Contact (inline editable) */}
+                  {/* Name + Contact */}
                   <td className="px-3 py-2.5">
                     <div className="min-w-0">
-                      <EditableText
-                        value={client.name}
-                        onChange={(name) => updateClientField(client, "name", name)}
-                        className="text-sm font-bold text-foreground"
-                        disabled={hoveredRow !== client.id}
-                      />
+                      <Link
+                        href={`/clients/${client.id}`}
+                        className="text-sm font-bold text-foreground hover:underline"
+                      >
+                        {client.name}
+                      </Link>
                       <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
                         {client.contact || "No contact"}
                       </p>
@@ -251,7 +250,6 @@ export function NotionClientTable({
                       value={client.type}
                       options={clientTypes.map((t) => ({ label: t.charAt(0).toUpperCase() + t.slice(1), value: t }))}
                       onChange={(type) => updateClientField(client, "type", type)}
-                      disabled={hoveredRow !== client.id}
                     />
                   </td>
 
@@ -269,7 +267,6 @@ export function NotionClientTable({
                         inactive: "gray",
                         archived: "gray",
                       }}
-                      disabled={hoveredRow !== client.id}
                     />
                   </td>
 
@@ -287,7 +284,6 @@ export function NotionClientTable({
                         negotiation: "orange",
                         closed: "green",
                       }}
-                      disabled={hoveredRow !== client.id}
                     />
                   </td>
 
@@ -303,7 +299,6 @@ export function NotionClientTable({
                     <EditableTags
                       tags={client.tags ?? []}
                       onChange={(tags) => updateClientField(client, "tags", tags)}
-                      disabled={hoveredRow !== client.id}
                     />
                   </td>
 

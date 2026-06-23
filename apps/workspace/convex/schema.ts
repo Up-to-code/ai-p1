@@ -8,6 +8,7 @@ const workOsRecordResourceValidator = v.union(
   v.literal("project"),
   v.literal("task"),
   v.literal("calendarEvent"),
+  v.literal("space"),
 );
 
 const workOsCustomFieldTypeValidator = v.union(
@@ -274,6 +275,7 @@ export default defineSchema({
         v.literal("calendar"),
         v.literal("task"),
         v.literal("media"),
+        v.literal("space"),
       ),
       actions: v.array(v.union(
         v.literal("read"),
@@ -312,6 +314,7 @@ export default defineSchema({
         v.literal("calendar"),
         v.literal("task"),
         v.literal("media"),
+        v.literal("space"),
       ),
       actions: v.array(v.union(
         v.literal("read"),
@@ -418,6 +421,7 @@ export default defineSchema({
       v.literal("calendar"),
       v.literal("task"),
       v.literal("media"),
+      v.literal("space"),
     ),
     externalId: v.string(),
     resourceId: v.string(),
@@ -764,6 +768,23 @@ export default defineSchema({
     .index("by_opportunity", ["organizationId", "opportunityId"])
     .index("by_organization_updated", ["organizationId", "updatedAt"])
     .index("by_updated", ["updatedAt"]),
+  projectSpaces: defineTable({
+    organizationId: v.string(),
+    projectId: v.id("projects"),
+    name: v.string(),
+    icon: v.optional(v.string()),
+    color: v.optional(v.string()),
+    visibility: v.union(v.literal("all_members"), v.literal("selected_members")),
+    defaultAssigneeIds: v.optional(v.array(v.string())),
+    slug: v.string(),
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_project_id", ["organizationId", "projectId"])
+    .index("by_project_slug", ["organizationId", "projectId", "slug"])
+    .index("by_organization_id", ["organizationId"]),
   clients: defineTable({
     organizationId: v.string(),
     name: v.string(),
@@ -1048,6 +1069,7 @@ export default defineSchema({
     tags: v.optional(v.array(v.string())),
     customFields: v.optional(v.array(workOsCustomFieldValueValidator)),
     visibility: v.optional(v.union(v.literal("private"), v.literal("team"), v.literal("workspace"))),
+    spaceId: v.optional(v.string()),
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -1059,6 +1081,7 @@ export default defineSchema({
     .index("by_organization_assignee", ["organizationId", "assigneeUserId"])
     .index("by_organization_client", ["organizationId", "clientId"])
     .index("by_organization_project", ["organizationId", "projectId"])
+    .index("by_organization_project_space", ["organizationId", "projectId", "spaceId"])
     .index("by_due", ["organizationId", "dueDate"])
     .index("by_updated", ["updatedAt"]),
   calendarEvents: defineTable({
@@ -1085,6 +1108,7 @@ export default defineSchema({
     notes: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
     customFields: v.optional(v.array(workOsCustomFieldValueValidator)),
+    spaceId: v.optional(v.string()),
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -1093,6 +1117,7 @@ export default defineSchema({
     .index("by_organization_id", ["organizationId"])
     .index("by_organization_owner", ["organizationId", "ownerUserId"])
     .index("by_organization_project", ["organizationId", "projectId"])
+    .index("by_organization_project_space", ["organizationId", "projectId", "spaceId"])
     .index("by_organization_client", ["organizationId", "clientId"])
     .index("by_start", ["organizationId", "startAt"])
     .index("by_updated", ["updatedAt"]),
@@ -1144,6 +1169,7 @@ export default defineSchema({
       v.literal("client"),
       v.literal("calendarEvent"),
       v.literal("task"),
+      v.literal("space"),
     ),
     resourceId: v.string(),
     folderId: v.optional(v.id("mediaFolders")),
@@ -1158,12 +1184,14 @@ export default defineSchema({
     publicDisabledAt: v.optional(v.number()),
     sortOrder: v.number(),
     isCover: v.boolean(),
+    spaceId: v.optional(v.string()),
     createdByUserId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_organization_id", ["organizationId"])
     .index("by_organization_resource", ["organizationId", "resourceType", "resourceId"])
+    .index("by_organization_space", ["organizationId", "spaceId"])
     .index("by_key", ["key"])
     .index("by_updated", ["updatedAt"]),
   mediaFolders: defineTable({
@@ -1173,6 +1201,7 @@ export default defineSchema({
       v.literal("client"),
       v.literal("calendarEvent"),
       v.literal("task"),
+      v.literal("space"),
     ),
     resourceId: v.string(),
     name: v.string(),
@@ -1184,6 +1213,38 @@ export default defineSchema({
     .index("by_organization_resource", ["organizationId", "resourceType", "resourceId"])
     .index("by_organization_resource_name", ["organizationId", "resourceType", "resourceId", "name"])
     .index("by_updated", ["updatedAt"]),
+  docFolders: defineTable({
+    organizationId: v.string(),
+    name: v.string(),
+    parentId: v.optional(v.string()),
+    projectId: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_organization", ["organizationId"])
+    .index("by_organization_project", ["organizationId", "projectId"])
+    .index("by_parent", ["parentId"])
+    .index("by_organization_parent", ["organizationId", "parentId"]),
+  docs: defineTable({
+    organizationId: v.string(),
+    title: v.string(),
+    content: v.optional(v.string()),
+    folderId: v.optional(v.string()),
+    projectId: v.optional(v.string()),
+    visibility: v.union(v.literal("private"), v.literal("team"), v.literal("workspace")),
+    tags: v.optional(v.array(v.string())),
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_organization", ["organizationId"])
+    .index("by_organization_project", ["organizationId", "projectId"])
+    .index("by_folder", ["folderId"])
+    .index("by_organization_folder", ["organizationId", "folderId"]),
   projectDashboards: defineTable({
     organizationId: v.string(),
     projectId: v.string(),

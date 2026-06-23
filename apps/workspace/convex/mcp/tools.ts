@@ -250,11 +250,11 @@ export const readTool = internalQuery({
       const now = new Date();
       const start = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
       const end = start + 24 * 60 * 60 * 1000;
-      return listEvents(ctx, args.organizationId, start, end, listLimit(input), listCursor(input));
+      return listEvents(ctx, args.organizationId, start, end, listLimit(input), listCursor(input), optionalString(input, "spaceId"));
     }
 
     if (args.tool === "calendar_list_range") {
-      return listEvents(ctx, args.organizationId, requiredNumber(input, "startAt"), requiredNumber(input, "endAt"), listLimit(input), listCursor(input));
+      return listEvents(ctx, args.organizationId, requiredNumber(input, "startAt"), requiredNumber(input, "endAt"), listLimit(input), listCursor(input), optionalString(input, "spaceId"));
     }
 
     if (args.tool === "calendar_list_month") {
@@ -262,7 +262,7 @@ export const readTool = internalQuery({
       const month = requiredNumber(input, "month");
       const start = Date.UTC(year, month - 1, 1);
       const end = Date.UTC(year, month, 1);
-      return listEvents(ctx, args.organizationId, start, end, listLimit(input), listCursor(input));
+      return listEvents(ctx, args.organizationId, start, end, listLimit(input), listCursor(input), optionalString(input, "spaceId"));
     }
 
     if (args.tool === "calendar_get") {
@@ -275,35 +275,45 @@ export const readTool = internalQuery({
       const search = searchTerm(input);
       const projectId = scopedProjectId(input);
       const clientId = scopedClientId(input);
+      const spaceId = optionalString(input, "spaceId");
       if (!search) {
-        const query = hasInputKey(input, "projectId")
+        const query = spaceId && projectId
           ? ctx.db
               .query("tasks")
-              .withIndex("by_organization_project", (q) => q.eq("organizationId", args.organizationId).eq("projectId", projectId))
-          : clientId
+              .withIndex("by_organization_project_space", (q) => q.eq("organizationId", args.organizationId).eq("projectId", projectId).eq("spaceId", spaceId))
+          : hasInputKey(input, "projectId")
             ? ctx.db
                 .query("tasks")
-                .withIndex("by_organization_client", (q) => q.eq("organizationId", args.organizationId).eq("clientId", clientId))
-            : ctx.db
-                .query("tasks")
-                .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId));
+                .withIndex("by_organization_project", (q) => q.eq("organizationId", args.organizationId).eq("projectId", projectId))
+            : clientId
+              ? ctx.db
+                  .query("tasks")
+                  .withIndex("by_organization_client", (q) => q.eq("organizationId", args.organizationId).eq("clientId", clientId))
+              : ctx.db
+                  .query("tasks")
+                  .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId));
         const page = await query.order("desc").paginate({ numItems: limit, cursor: listCursor(input) });
         return mcpPublicWorkspacePage(page);
       }
-      const tasks = hasInputKey(input, "projectId")
+      const tasks = spaceId && projectId
         ? await ctx.db
             .query("tasks")
-            .withIndex("by_organization_project", (q) => q.eq("organizationId", args.organizationId).eq("projectId", projectId))
+            .withIndex("by_organization_project_space", (q) => q.eq("organizationId", args.organizationId).eq("projectId", projectId).eq("spaceId", spaceId))
             .take(TOOL_SCAN_LIMIT)
-        : clientId
+        : hasInputKey(input, "projectId")
           ? await ctx.db
               .query("tasks")
-              .withIndex("by_organization_client", (q) => q.eq("organizationId", args.organizationId).eq("clientId", clientId))
+              .withIndex("by_organization_project", (q) => q.eq("organizationId", args.organizationId).eq("projectId", projectId))
               .take(TOOL_SCAN_LIMIT)
-          : await ctx.db
-              .query("tasks")
-              .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
-              .take(TOOL_SCAN_LIMIT);
+          : clientId
+            ? await ctx.db
+                .query("tasks")
+                .withIndex("by_organization_client", (q) => q.eq("organizationId", args.organizationId).eq("clientId", clientId))
+                .take(TOOL_SCAN_LIMIT)
+            : await ctx.db
+                .query("tasks")
+                .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
+                .take(TOOL_SCAN_LIMIT);
       return mcpPublicWorkspaceSearchResult(tasks, {
         search,
         limit,
@@ -685,10 +695,16 @@ async function listEvents(
   endAt: number,
   limit: number,
   cursor: string | null,
+  spaceId?: string | null,
 ) {
-  const page = await ctx.db
+  let query = ctx.db
     .query("calendarEvents")
-    .withIndex("by_start", (q) => q.eq("organizationId", organizationId).gte("startAt", startAt).lt("startAt", endAt))
-    .paginate({ numItems: limit, cursor });
+    .withIndex("by_start", (q) =>
+      q.eq("organizationId", organizationId).gte("startAt", startAt).lt("startAt", endAt),
+    );
+  if (spaceId) {
+    query = query.filter((q) => q.eq("spaceId", spaceId));
+  }
+  const page = await query.paginate({ numItems: limit, cursor });
   return mcpCalendarEventPage(page);
 }

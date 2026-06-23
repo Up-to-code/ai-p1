@@ -1,11 +1,14 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import type { TaskRecord } from "../tasks.types";
 
-type PendingAction<T> = {
+type PendingAction = {
   id: string;
-  apply: (item: T) => T;
-  isAffected: (item: T) => boolean;
+  taskId: string;
+  apply: (item: TaskRecord) => TaskRecord;
+  isAffected: (item: TaskRecord) => boolean;
+  matchesRealtime: (item: TaskRecord) => boolean;
 };
 
 let actionCounter = 0;
@@ -13,95 +16,109 @@ function nextActionId() {
   return `opt_${++actionCounter}_${Date.now()}`;
 }
 
-export function useOptimisticActions<T extends { id: string }>() {
-  const pendingRef = useRef<PendingAction<T>[]>([]);
-  const [, forceRender] = useState(0);
+export function useOptimisticTaskActions() {
+  const [pending, setPending] = useState<PendingAction[]>([]);
+  const [version, setVersion] = useState(0);
 
-  const push = useCallback((action: PendingAction<T>) => {
-    pendingRef.current = [...pendingRef.current, action];
-    forceRender((n) => n + 1);
+  const push = useCallback((action: PendingAction) => {
+    setPending((prev) => [...prev, action]);
+    setVersion((v) => v + 1);
   }, []);
 
   const remove = useCallback((actionId: string) => {
-    pendingRef.current = pendingRef.current.filter((a) => a.id !== actionId);
-    forceRender((n) => n + 1);
+    setPending((prev) => prev.filter((a) => a.id !== actionId));
+    setVersion((v) => v + 1);
   }, []);
 
-  const applyToList = useCallback((items: T[]): T[] => {
+  const reconcile = useCallback((items: TaskRecord[]) => {
+    setPending((prev) => {
+      if (prev.length === 0) return prev;
+      const remaining = prev.filter((action) => {
+        const realtimeItem = items.find((i) => i.id === action.taskId);
+        if (!realtimeItem) return true;
+        return !action.matchesRealtime(realtimeItem);
+      });
+      if (remaining.length === prev.length) return prev;
+      setVersion((v) => v + 1);
+      return remaining;
+    });
+  }, []);
+
+  const applyToList = useCallback((items: TaskRecord[]): TaskRecord[] => {
+    if (pending.length === 0) return items;
     let result = items;
-    for (const action of pendingRef.current) {
-      result = result.map((item) =>
-        action.isAffected(item) ? action.apply(item) : item,
-      );
+    for (const action of pending) {
+      let hasChange = false;
+      const next = result.map((item) => {
+        const newItem = action.isAffected(item) ? action.apply(item) : item;
+        if (newItem !== item) hasChange = true;
+        return newItem;
+      });
+      if (!hasChange) continue;
+      result = next;
     }
     return result;
-  }, []);
+  }, [pending]);
 
-  const applyToItem = useCallback((item: T | null | undefined): T | null | undefined => {
-    if (!item) return item;
+  const applyToItem = useCallback((item: TaskRecord | null | undefined) => {
+    if (!item || pending.length === 0) return item;
     let result = item;
-    for (const action of pendingRef.current) {
+    for (const action of pending) {
       if (action.isAffected(result)) {
         result = action.apply(result);
       }
     }
     return result;
-  }, []);
+  }, [pending]);
 
-  const mutate = useCallback(
-    async <TResult>(
-      action: PendingAction<T>,
-      fn: () => Promise<TResult>,
-    ): Promise<TResult> => {
-      push(action);
-      try {
-        const result = await fn();
-        return result;
-      } catch (error) {
-        remove(action.id);
-        throw error;
-      } finally {
-        remove(action.id);
-      }
-    },
-    [push, remove],
-  );
-
-  return { applyToList, applyToItem, mutate, push, remove };
+  return { applyToList, applyToItem, push, remove, reconcile, version };
 }
 
-export function taskOptimisticMove<T extends { id: string; status: string; pipelineOrder?: number }>(
+export function taskOptimisticMove(
   taskId: string,
   newStatus: string,
   newPipelineOrder: number,
-): PendingAction<T> {
+): PendingAction {
   return {
     id: nextActionId(),
+    taskId,
     apply: (item) =>
       item.id === taskId
-        ? { ...item, status: newStatus, pipelineOrder: newPipelineOrder, updatedAt: Date.now() }
+        ? { ...item, status: newStatus as TaskRecord["status"], pipelineOrder: newPipelineOrder, updatedAt: Date.now() }
         : item,
     isAffected: (item) => item.id === taskId,
+    matchesRealtime: (item) =>
+      item.id === taskId && item.status === newStatus && item.pipelineOrder === newPipelineOrder,
   };
 }
 
-export function taskOptimisticUpdate<T extends { id: string }>(
+export function taskOptimisticUpdate(
   taskId: string,
-  patch: Partial<T>,
-): PendingAction<T> {
+  patch: Partial<TaskRecord>,
+): PendingAction {
   return {
     id: nextActionId(),
+    taskId,
     apply: (item) => (item.id === taskId ? { ...item, ...patch, updatedAt: Date.now() } : item),
     isAffected: (item) => item.id === taskId,
+    matchesRealtime: (item) => {
+      for (const [key, value] of Object.entries(patch)) {
+        if (key === "updatedAt") continue;
+        if ((item as any)[key] !== value) return false;
+      }
+      return true;
+    },
   };
 }
 
-export function taskOptimisticRemove<T extends { id: string }>(
+export function taskOptimisticRemove(
   taskId: string,
-): PendingAction<T> {
+): PendingAction {
   return {
     id: nextActionId(),
-    apply: () => ({ ...({ id: "", title: "", status: "canceled" } as any) as T, _deleted: true } as T),
+    taskId,
+    apply: (item) => (item.id === taskId ? { ...item, _deleted: true } : item),
     isAffected: (item) => item.id === taskId,
+    matchesRealtime: () => false,
   };
 }

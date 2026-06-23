@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback, type ReactNode } from "react";
+import { useMemo, useState, useCallback, useEffect, type ReactNode } from "react";
 import { useQuery as useReactQuery } from "@tanstack/react-query";
 import { CalendarDays, CheckCircle2, ChevronDown, Clock, Edit, Mail, Phone, Plus, Search, Trash2, User, UserPlus, Users, History as ActivityIcon, FileText as DocsIcon, LayoutDashboard, PhoneCall, Video, Tag, Link2, FileText, Briefcase, Calendar, Pencil, type LucideIcon } from "lucide-react";
 import {
@@ -356,10 +356,10 @@ function ClientMiniCard({
             {client.budget}
           </div>
         )}
-        {client.nextAction && (
+        {client.notes && (
           <div className="inline-flex items-center gap-1.5 rounded-md bg-blue-500/10 px-2 py-1 text-[10px] font-bold text-blue-600 dark:bg-blue-500/20 dark:text-blue-400">
             <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-            {client.nextAction}
+            {client.notes}
           </div>
         )}
         {client.tags?.slice(0, 2).map(tag => (
@@ -402,31 +402,6 @@ function ClientMiniCard({
   );
 }
 
-const PipelineIcon = ({ className }: { className?: string }) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <rect x="3" y="4" width="5" height="12" rx="1.5" fill="#FF5E5E"/>
-    <rect x="10" y="4" width="5" height="16" rx="1.5" fill="#4B9BFF"/>
-    <rect x="17" y="4" width="5" height="8" rx="1.5" fill="#2ECC71"/>
-  </svg>
-);
-
-const TableIcon = ({ className }: { className?: string }) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <rect x="3" y="4" width="18" height="4" rx="1" fill="#FFB020"/>
-    <rect x="3" y="10" width="18" height="4" rx="1" fill="#4B9BFF"/>
-    <rect x="3" y="16" width="18" height="4" rx="1" fill="#2ECC71"/>
-  </svg>
-);
-
-const TimelineIcon = ({ className }: { className?: string }) => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <rect x="4" y="4" width="16" height="16" rx="2" fill="#EAEAEA" stroke="#9E9E9E" strokeWidth="2"/>
-    <rect x="4" y="4" width="16" height="5" fill="#FF5E5E"/>
-    <circle cx="8" cy="14" r="2" fill="#4B9BFF"/>
-    <circle cx="16" cy="14" r="2" fill="#2ECC71"/>
-    <path d="M10 14h4" stroke="#9E9E9E" strokeWidth="2" strokeLinecap="round"/>
-  </svg>
-);
 
 export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "pipeline" | "calendar" | "list" }) {
   const t = useTranslations('Clients');
@@ -444,6 +419,28 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
   const [dragOverStage, setDragOverStage] = useState<PipelineStage | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<{ stage: PipelineStage; index: number } | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // Load saved filters from localStorage on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = localStorage.getItem("clients-filters");
+      if (saved) {
+        const { filter: savedFilter, stageFilter: savedStage } = JSON.parse(saved);
+        if (savedFilter && clientFilters.includes(savedFilter)) setFilter(savedFilter);
+        if (savedStage && clientStageFilters.includes(savedStage)) setStageFilter(savedStage);
+      }
+    } catch {}
+  }, []);
+
+  // Save filters to localStorage when they change
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem("clients-filters", JSON.stringify({ filter, stageFilter }));
+    } catch {}
+  }, [filter, stageFilter]);
 
   useUrlListState({
     filter,
@@ -521,32 +518,13 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
   return (
     <div className="flex h-full flex-col overflow-hidden bg-background">
       {/* ── Page Header ── */}
-      <div className="flex shrink-0 items-center justify-between gap-4 border-b border-border bg-background/80 backdrop-blur-xl px-8 h-14 sticky top-0 z-10">
-        {/* Left: Title + divider + Type filter + View tabs */}
-        <div className="flex items-center gap-3 min-w-0">
+      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border bg-background/80 backdrop-blur-xl px-6 h-12 sticky top-0 z-10">
+        {/* Left: View switcher + filters */}
+        <div className="flex items-center gap-2 min-w-0">
           <h1 className="text-sm font-semibold text-foreground shrink-0 tracking-tight">{t("title")}</h1>
-          <div className="h-4 w-px bg-border shrink-0" />
-          {/* Type filter */}
-          <div className="inline-flex items-center rounded-xl border border-border bg-card p-0.5 gap-0.5">
-            {(["all", "person", "organization"] as const).map((f) => (
-              <button
-                key={f}
-                type="button"
-                onClick={() => setFilter(f as "all" | ClientType)}
-                className={cn(
-                  "h-6 rounded-lg px-2.5 text-[11px] font-semibold transition-all",
-                  filter === f ? "bg-foreground text-background shadow-sm" : "text-text-muted hover:text-foreground",
-                )}
-              >
-                {t(`toolbar.filters.${f}`)}
-              </button>
-            ))}
-          </div>
-          <div className="h-4 w-px bg-border shrink-0" />
-          {/* View tabs */}
-          <div className="inline-flex items-center rounded-[14px] border border-border bg-card p-1 shadow-sm gap-1">
+
+          <div className="inline-flex items-center gap-1">
             {(["pipeline", "list", "calendar"] as const).map((mode) => {
-              const Icon = mode === "pipeline" ? PipelineIcon : mode === "list" ? TableIcon : TimelineIcon;
               const isActive = view === mode;
               return (
                 <button
@@ -554,58 +532,113 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
                   type="button"
                   onClick={() => setView(mode)}
                   className={cn(
-                    "relative flex h-8 items-center gap-2 rounded-[10px] px-3 text-[11px] font-bold uppercase tracking-wider transition-all duration-300",
-                    isActive ? "bg-muted text-foreground shadow-sm ring-1 ring-border/50" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+                    "relative h-7 rounded-md px-3 text-[11px] font-semibold transition-all",
+                    isActive ? "bg-foreground text-background shadow-sm" : "text-text-muted hover:text-foreground",
                   )}
                 >
-                  <Icon className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:scale-110" />
                   {t(`views.${mode}`)}
                 </button>
               );
             })}
           </div>
-          {/* Stage sub-filter (list mode only) */}
-          {view === "list" && (
-            <>
-              <div className="h-4 w-px bg-border shrink-0" />
-              <div className="inline-flex items-center rounded-xl border border-border bg-card p-0.5 gap-0.5">
-                {clientStageFilters.map((stage) => (
-                  <button
-                    key={stage}
-                    type="button"
-                    onClick={() => setStageFilter(stage)}
-                    className={cn(
-                      "h-6 rounded-lg px-2.5 text-[11px] font-semibold transition-all",
-                      stageFilter === stage ? "bg-foreground text-background shadow-sm" : "text-text-muted hover:text-foreground",
-                    )}
-                  >
-                    {t(`stageFilters.${stage}`)}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
+
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className={cn(
+                "inline-flex h-7 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-[11px] font-semibold transition-all",
+                (filter !== "all" || stageFilter !== "all") ? "border-primary/50 bg-primary/5 text-foreground" : "text-text-muted hover:text-foreground"
+              )}
+            >
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+              </svg>
+              <span className="hidden sm:inline">Filters</span>
+              {(filter !== "all" || stageFilter !== "all") && (
+                <span className="ml-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+                  {(filter !== "all" ? 1 : 0) + (stageFilter !== "all" ? 1 : 0)}
+                </span>
+              )}
+            </button>
+            {isFilterOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setIsFilterOpen(false)} />
+                <div className="absolute top-full left-0 z-20 mt-1 w-56 rounded-lg border border-border bg-card p-2 shadow-lg">
+                  <div className="space-y-3">
+                    <div>
+                      <p className="mb-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Type</p>
+                      {(["all", "person", "organization"] as const).map((f) => (
+                        <label key={f} className="flex items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-muted cursor-pointer">
+                          <input
+                            type="radio"
+                            name="type-filter"
+                            checked={filter === f}
+                            onChange={() => setFilter(f as "all" | ClientType)}
+                            className="h-3.5 w-3.5 rounded border-border text-primary focus:ring-primary"
+                          />
+                          <span className={cn("font-medium", filter === f ? "text-foreground" : "text-muted-foreground")}>
+                            {t(`toolbar.filters.${f}`)}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                    <div className="h-px bg-border" />
+                    <div>
+                      <p className="mb-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Stage</p>
+                      {clientStageFilters.map((stage) => (
+                        <label key={stage} className="flex items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-muted cursor-pointer">
+                          <input
+                            type="radio"
+                            name="stage-filter"
+                            checked={stageFilter === stage}
+                            onChange={() => setStageFilter(stage)}
+                            className="h-3.5 w-3.5 rounded border-border text-primary focus:ring-primary"
+                          />
+                          <span className={cn("font-medium", stageFilter === stage ? "text-foreground" : "text-muted-foreground")}>
+                            {t(`stageFilters.${stage}`)}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  {(filter !== "all" || stageFilter !== "all") && (
+                    <>
+                      <div className="my-2 h-px bg-border" />
+                      <button
+                        type="button"
+                        onClick={() => { setFilter("all"); setStageFilter("all"); }}
+                        className="w-full rounded px-2 py-1.5 text-left text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+                      >
+                        Clear all filters
+                      </button>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Right: Search + New Client */}
         <div className="flex items-center gap-2 shrink-0">
-          <div className="flex h-8 items-center gap-2 rounded-xl border border-border bg-card px-3 transition-colors focus-within:border-ring/50 focus-within:ring-2 focus-within:ring-ring/20">
+          <div className="flex h-8 items-center gap-2 rounded-lg border border-border bg-card px-2.5 transition-colors focus-within:border-ring/50 focus-within:ring-2 focus-within:ring-ring/20">
             <Search className="h-3.5 w-3.5 shrink-0 text-text-muted" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t("toolbar.search")}
               aria-label="Search clients"
-              className="h-full w-32 bg-transparent text-xs font-medium text-foreground outline-none placeholder:text-text-muted"
+              className="h-full w-28 bg-transparent text-xs font-medium text-foreground outline-none placeholder:text-text-muted"
             />
           </div>
           <button
             type="button"
             onClick={() => setIsCreateOpen(true)}
-            className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-primary px-3 text-xs font-semibold text-white hover:bg-primary/90 transition-colors"
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-semibold text-white hover:bg-primary/90 transition-colors"
           >
             <UserPlus className="h-3.5 w-3.5" />
-            {t("add")}
+            <span className="hidden sm:inline">{t("add")}</span>
           </button>
         </div>
       </div>

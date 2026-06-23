@@ -11,6 +11,7 @@ import { WorkspaceRouteLoading } from "@/components/loading/workspace-route-load
 import { ToastProvider } from "@/components/ui/toast";
 import { AccountProvider, useAccountContext } from "@/domains/auth";
 import { getWorkspaceAuthRedirect } from "@/domains/auth/workspace-status";
+import { NoOrganizationModal } from "@/domains/auth/components/no-organization-modal";
 import { clearAuthHandoff, readAuthHandoff } from "@/domains/auth";
 import { useRouter } from "@/i18n/routing";
 import { markAppPerformance } from "@/lib/utils/performance";
@@ -32,14 +33,23 @@ function DashboardAuthenticatedShell({ children }: { children: ReactNode }) {
   
   const isAuthHandoffPending = useAuthHandoffPending(account.isSignedIn, account.workspace.organizationId);
   
+  // When workspace has no organization, show a modal instead of redirecting.
+  // This avoids the glitch between auth and choose-org pages.
+  const showNoOrganizationModal = 
+    account.workspace.status === "noOrganization" && 
+    !isAuthHandoffPending;
+  
   // Memoize authRedirect to prevent unnecessary recalculations.
   // Only compute a redirect once the session has fully loaded — never during
   // "loadingSession" to avoid a false redirect caused by Clerk's async init.
+  // Note: "noOrganization" is handled by the modal, not by redirect.
   const authRedirect = useMemo(
     () => {
       // Don't redirect while the session is still loading — isSignedIn may
       // be false momentarily even for authenticated users.
       if (account.workspace.status === "loadingSession") return null;
+      // Don't redirect for noOrganization — the modal handles this case.
+      if (account.workspace.status === "noOrganization") return null;
       return getWorkspaceAuthRedirect({
         isSignedIn: account.isSignedIn,
         workspaceStatus: account.workspace.status,
@@ -115,6 +125,7 @@ function DashboardAuthenticatedShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </SidebarProvider>
+      {showNoOrganizationModal && <NoOrganizationModal />}
     </ToastProvider>
   );
 }

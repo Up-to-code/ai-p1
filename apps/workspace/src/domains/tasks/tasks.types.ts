@@ -12,6 +12,7 @@ export type TaskRecord = {
   assigneeUserId?: string;
   clientId?: string;
   projectId?: string;
+  spaceId?: string;
   dueDate?: string;
   description?: string;
   tags?: string[];
@@ -30,6 +31,7 @@ export type TaskFormValues = {
   assigneeUserId: string;
   clientId: string;
   projectId: string;
+  spaceId?: string;
   dueDate: string;
   description: string;
   tags: string;

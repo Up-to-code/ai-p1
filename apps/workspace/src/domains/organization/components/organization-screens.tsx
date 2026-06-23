@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useQuery as useConvexQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
-import { Bell, Bot, Building2, CalendarDays, Check, CheckCircle2, Clock, Copy, CreditCard, FileText, HelpCircle, Home, KeyRound, LinkIcon, Loader2, Mail, PauseCircle, Plus, RefreshCcw, Save, ShieldCheck, Trash2, UserRoundCog, Users } from "lucide-react";
+import { Bell, Bot, Building2, CalendarDays, Check, CheckCircle2, Clock, Copy, CreditCard, FileText, HelpCircle, Home, KeyRound, Layers, LinkIcon, Loader2, Mail, PauseCircle, Plus, RefreshCcw, Save, ShieldCheck, Trash2, UserRoundCog, Users } from "lucide-react";
 import { type UseFormRegisterReturn, useForm } from "react-hook-form";
 import { useAccountContext } from "@/domains/auth";
 import { cn } from "@/lib/utils";
@@ -907,6 +907,7 @@ const agentPermissionAreas: Array<{
 }> = [
   { resource: "client", icon: Users, actions: ["read", "create", "update", "delete"] },
   { resource: "project", icon: Building2, actions: ["read", "create", "update", "delete"] },
+  { resource: "space", icon: Layers, actions: ["read", "create", "update", "delete"] },
   { resource: "deal", icon: CreditCard, actions: ["read", "create", "update", "delete"] },
   { resource: "calendar", icon: CalendarDays, actions: ["read", "create", "update", "delete"] },
   { resource: "task", icon: CheckCircle2, actions: ["read", "create", "update", "delete"] },
@@ -943,6 +944,7 @@ const agentPresets: Array<{ id: AgentPresetId; permissions: McpConnectionPermiss
       { resource: "organization", actions: ["read"] },
       { resource: "client", actions: ["read", "create", "update", "delete"] },
       { resource: "project", actions: ["read", "create", "update", "delete"] },
+      { resource: "space", actions: ["read", "create", "update", "delete"] },
       { resource: "deal", actions: ["read", "create", "update", "delete"] },
       { resource: "calendar", actions: ["read", "create", "update", "delete"] },
       { resource: "task", actions: ["read", "create", "update", "delete"] },

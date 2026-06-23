@@ -11,6 +11,7 @@ export const mediaResourceTypeValidator = v.union(
   v.literal("client"),
   v.literal("calendarEvent"),
   v.literal("task"),
+  v.literal("space"),
 );
 
 export const mediaShareVisibilityValidator = v.union(

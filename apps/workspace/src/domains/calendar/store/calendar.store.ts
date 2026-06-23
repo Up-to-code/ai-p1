@@ -14,18 +14,7 @@ interface CalendarState {
   deleteEvent: (id: string) => void;
 }
 
-const events: CalendarEvent[] = [
-  { id: "cal-1", title: "Client onboarding kickoff", owner: "Fahad Al-Saud", date: "2026-05-07", time: "10:30", type: "meeting", status: "confirmed", clientId: "cl-4", assetId: "ast-3", location: "Workspace HQ" },
-  { id: "cal-2", title: "Budget allocation audit", owner: "Capital Ventures", date: "2026-05-08", time: "13:00", type: "focusBlock", status: "pending", clientId: "cl-3" },
-  { id: "cal-3", title: "Implementation sync", owner: "Sara Al-Rashid", date: "2026-05-09", time: "15:15", type: "meeting", status: "draft", clientId: "cl-2" },
-  { id: "cal-4", title: "Asset A-101 review", owner: "Abdullah Al-Faisal", date: "2026-05-10", time: "09:00", type: "meeting", status: "confirmed", clientId: "cl-1", assetId: "ast-1", location: "Operations Hub" },
-  { id: "cal-5", title: "Proposal paperwork reminder", owner: "Abdullah Al-Faisal", date: "2026-05-10", time: "14:00", type: "reminder", status: "pending", clientId: "cl-1" },
-  { id: "cal-6", title: "Resource B-301 review", owner: "Capital Ventures", date: "2026-05-12", time: "11:00", type: "meeting", status: "confirmed", clientId: "cl-3", assetId: "ast-2", location: "Operations Hub" },
-  { id: "cal-7", title: "Milestone readiness check", owner: "Fahad Al-Saud", date: "2026-05-15", time: "10:00", type: "milestone", status: "pending", clientId: "cl-4" },
-  { id: "cal-8", title: "Agreement approval deadline", owner: "Capital Ventures", date: "2026-05-18", time: "09:30", type: "deadline", status: "draft", clientId: "cl-3", notes: "Bring 3 copies of the agreement" },
-  { id: "cal-9", title: "Field operations checkpoint", owner: "Sara Al-Rashid", date: "2026-05-22", time: "08:00", type: "meeting", status: "confirmed", clientId: "cl-2", location: "North Office" },
-  { id: "cal-10", title: "Contract renewal follow-up", owner: "Abdullah Al-Faisal", date: "2026-05-25", time: "16:00", type: "reminder", status: "pending", clientId: "cl-1" },
-];
+const events: CalendarEvent[] = [];
 
 export const useCalendarStore = create<CalendarState>((set, get) => ({
   events,

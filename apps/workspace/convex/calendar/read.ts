@@ -96,6 +96,30 @@ export const listByProject = query({
   },
 });
 
+export const listBySpace = query({
+  args: {
+    organizationId: v.string(),
+    projectId: v.string(),
+    spaceId: v.string(),
+    limit: v.optional(v.number()),
+  },
+  returns: v.array(calendarEventValidator),
+  handler: async (ctx, args) => {
+    await assertOrganizationResourcePermission(ctx, args.organizationId, "calendar", "read");
+    const limit = boundedWorkspaceReadLimit(args.limit, 100, 300);
+    const events = await ctx.db
+      .query("calendarEvents")
+      .withIndex("by_organization_project_space", (q) =>
+        q.eq("organizationId", args.organizationId)
+         .eq("projectId", args.projectId)
+         .eq("spaceId", args.spaceId),
+      )
+      .take(limit);
+
+    return Promise.all(activeChronologicalWorkspaceRows(events).map(presentEvent));
+  },
+});
+
 export const statsInRange = query({
   args: {
     organizationId: v.string(),

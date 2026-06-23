@@ -22,6 +22,7 @@ import {
   BadgeDollarSign,
   Building2,
   FolderGit2,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -51,6 +52,7 @@ import { useRouter } from "@/i18n/routing";
 import { agentThreadUrl } from "@/domains/agents/conversation-runtime";
 import { useCurrentProjectId } from "@/domains/projects/hooks/use-current-project-id";
 import { useProjectQuery } from "@/domains/projects/api/projects";
+import { SpaceList } from "@/domains/projects/components/spaces";
 import { WorkspaceLink } from "./workspace-link";
 import { Badge } from "@/components/ui/badge";
 
@@ -83,6 +85,7 @@ const primaryNav = [
   { name: "deals", href: "/deals", icon: BadgeDollarSign, label: "Deals" },
   { name: "projects", href: "/projects", icon: FolderGit2, label: "Projects" },
   { name: "tasks", href: "/tasks", icon: ListTodo, label: "Tasks" },
+  { name: "docs", href: "/docs", icon: FileText, label: "Docs" },
   { name: "calendar", href: "/calendar", icon: CalendarDays, label: "Calendar" },
 ];
 
@@ -311,6 +314,26 @@ export function Sidebar() {
 
           {/* Divider */}
           <div className={cn("my-2 h-px shrink-0", isOpen ? "w-full" : "w-6 self-center", "bg-border")} />
+
+          {/* ── Project Spaces (when inside a project) ── */}
+          {isProjectZone && currentProjectId && isOpen && (
+            <div className="px-1 py-1">
+              <SpaceList
+                projectId={currentProjectId}
+                currentSpaceSlug={searchParams.get("space")}
+                onSpaceSelect={(slug) => {
+                  const params = new URLSearchParams(searchParams.toString());
+                  if (slug) {
+                    params.set("space", slug);
+                  } else {
+                    params.delete("space");
+                  }
+                  const qs = params.toString();
+                  router.push(`${pathname}${qs ? `?${qs}` : ""}` as never);
+                }}
+              />
+            </div>
+          )}
 
           {/* ── Apps & Automation (Coming Soon) ── */}
           {comingSoonNav.map((item) => {

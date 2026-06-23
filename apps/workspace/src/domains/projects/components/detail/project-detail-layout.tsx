@@ -7,6 +7,7 @@ import { useAccountContext } from "@/domains/auth";
 import { useProjectQuery, updateProjectRequest } from "../../api/projects";
 import type { Project } from "../../store/projects.types";
 import type { ProjectFormValues } from "../../validation/project.schema";
+import { useCurrentSpace } from "../../hooks/use-current-space";
 import { AppPageShell, AppTabsList } from "@/components/shared";
 import { ProgressiveLoadingState, DetailNotFoundState } from "@/components/shared/crud-ui";
 import { ProjectDetailHeader } from "./project-detail-header";
@@ -26,6 +27,10 @@ export function ProjectDetailLayout({ projectId }: { projectId: string }) {
   const workspaceStatus = account.workspace.status;
   const workspaceOrganizationId =
     workspaceStatus === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+
+  // Resolve space slug from URL to spaceId for scoped data loading
+  const currentSpace = useCurrentSpace();
+  const currentSpaceId = currentSpace?.spaceId;
 
   const project = useProjectQuery(workspaceOrganizationId, projectId) as Project | null | undefined;
 
@@ -113,13 +118,21 @@ export function ProjectDetailLayout({ projectId }: { projectId: string }) {
 
         <TabsContent value="tasks" className="mt-6 border-none p-0 outline-none">
           {workspaceOrganizationId && (
-            <TasksTimelineTab project={project} organizationId={workspaceOrganizationId} />
+            <TasksTimelineTab
+              project={project}
+              organizationId={workspaceOrganizationId}
+              spaceId={currentSpaceId}
+            />
           )}
         </TabsContent>
 
         <TabsContent value="calendar" className="mt-6 border-none p-0 outline-none">
           {workspaceOrganizationId && (
-            <CalendarTab project={project} organizationId={workspaceOrganizationId} />
+            <CalendarTab
+              project={project}
+              organizationId={workspaceOrganizationId}
+              spaceId={currentSpaceId}
+            />
           )}
         </TabsContent>
 
@@ -141,7 +154,11 @@ export function ProjectDetailLayout({ projectId }: { projectId: string }) {
 
         <TabsContent value="activity" className="mt-6 border-none p-0 outline-none">
           {workspaceOrganizationId && (
-            <ActivityTab project={project} organizationId={workspaceOrganizationId} />
+            <ActivityTab
+              project={project}
+              organizationId={workspaceOrganizationId}
+              spaceId={currentSpaceId}
+            />
           )}
         </TabsContent>
       </Tabs>

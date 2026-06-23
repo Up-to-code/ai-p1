@@ -27,6 +27,7 @@ import {
 interface CalendarTabProps {
   project: Project;
   organizationId: string;
+  spaceId?: string;
 }
 
 const eventTypeColors: Record<string, string> = {
@@ -37,7 +38,7 @@ const eventTypeColors: Record<string, string> = {
   focusBlock: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
 };
 
-export function CalendarTab({ project, organizationId }: CalendarTabProps) {
+export function CalendarTab({ project, organizationId, spaceId }: CalendarTabProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
@@ -48,7 +49,7 @@ export function CalendarTab({ project, organizationId }: CalendarTabProps) {
   const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getTime();
   const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0, 23, 59, 59).getTime();
 
-  const calendarResult = useCalendarIndexRangeQueryResult(organizationId, startOfMonth, endOfMonth, project.id);
+  const calendarResult = useCalendarIndexRangeQueryResult(organizationId, startOfMonth, endOfMonth, project.id, spaceId);
   const events = calendarResult.data?.events ?? [];
 
   const eventsByDate = useMemo(() => {

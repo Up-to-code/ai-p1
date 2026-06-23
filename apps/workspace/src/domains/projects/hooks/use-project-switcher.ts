@@ -41,6 +41,8 @@ export function useProjectSwitcher() {
     } else {
       params.delete("project");
     }
+    // Spaces are project-scoped — clear space context when switching projects
+    params.delete("space");
     const query = params.toString();
     return query ? `${pathname}?${query}` : pathname;
   }

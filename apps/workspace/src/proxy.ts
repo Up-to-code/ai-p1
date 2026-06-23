@@ -68,19 +68,14 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
     }
 
     // Get auth state
-    const { userId, orgId } = await auth();
+    const { userId } = await auth();
 
     // Handle auth routes (sign-in, sign-up, sso-callback)
     if (isAuthRoute(request)) {
       if (userId) {
-        // User is authenticated, redirect to appropriate page
-        if (orgId) {
-          // Has organization, go to dashboard
-          return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
-        } else {
-          // No organization, go to org selection
-          return NextResponse.redirect(new URL(`/${locale}/choose-org`, request.url));
-        }
+        // User is authenticated, redirect to dashboard.
+        // The DashboardAppWrapper will show a modal if no organization exists.
+        return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
       }
       // Not signed in, allow access to auth pages
       return intlMiddleware(request);
@@ -93,11 +88,9 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
         unauthenticatedUrl: new URL(`/${locale}/sign-in`, request.url).toString(),
       });
 
-      // Check if user needs to select an organization
-      const segment = request.nextUrl.pathname.split("/").filter(Boolean)[1];
-      if (!orgId && segment !== "choose-org") {
-        return NextResponse.redirect(new URL(`/${locale}/choose-org`, request.url));
-      }
+      // NOTE: We no longer redirect to /choose-org here.
+      // The DashboardAppWrapper shows a modal for users without an organization,
+      // avoiding the glitch between auth and organization selection.
     }
 
     return intlMiddleware(request);
@@ -123,8 +116,8 @@ export const config = {
     "/contact",
     "/developer",
     "/broker",
-    "/docs",
-    "/docs/:path*",
+    "/mcp-docs",
+    "/mcp-docs/:path*",
     "/api/v1/:path*",
     "/api/uploadthing",
   ],

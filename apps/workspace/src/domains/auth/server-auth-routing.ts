@@ -10,7 +10,9 @@ export async function redirectAuthenticatedUserFromAuthEntry(locale: string) {
 
   if (!session.userId) return;
 
-  redirect(localizedPath(locale, session.orgId ? "/dashboard" : "/choose-org"));
+  // Always redirect to dashboard after sign-in/sign-up.
+  // The DashboardAppWrapper will show a modal if the user has no organization.
+  redirect(localizedPath(locale, "/dashboard"));
 }
 
 export async function redirectInvalidChooseOrganizationAccess(locale: string) {

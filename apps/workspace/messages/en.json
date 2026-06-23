@@ -256,6 +256,7 @@
     "opportunities": "Opportunities",
     "deals": "Deals",
     "tasks": "Tasks",
+    "docs": "Docs",
     "assets": "Assets",
     "clients": "Clients",
     "calendar": "Calendar",
@@ -1255,6 +1256,7 @@
       "statusLabel": "Status",
       "visibilityLabel": "External visibility",
       "visibilityPrivate": "Private",
+      "visibilityTeam": "Team",
       "visibilityPublic": "Public",
       "descLabel": "Description",
       "saveBtn": "Save Project",
@@ -3501,6 +3503,66 @@
       "backToTasks": "Back to tasks"
     }
   },
+  "Docs": {
+    "title": "Docs",
+    "viewMode": {
+      "list": "List",
+      "grid": "Grid"
+    },
+    "filters": {
+      "all": "All docs",
+      "createdByMe": "Created by me"
+    },
+    "actions": {
+      "newDoc": "New doc",
+      "create": "Create doc",
+      "save": "Save",
+      "edit": "Edit doc",
+      "deleteDoc": "Delete document",
+      "deleteDesc": "This will permanently delete \"{title}\". This action cannot be undone.",
+      "moveTo": "Move to...",
+      "rename": "Rename",
+      "delete": "Delete"
+    },
+    "empty": {
+      "title": "No documents",
+      "description": "Create your first document to get started."
+    },
+    "form": {
+      "title": "Title",
+      "titlePlaceholder": "Document title",
+      "bodyPlaceholder": "Start writing... Type / for commands",
+      "visibility": "Visibility",
+      "visibilityPrivate": "Private",
+      "visibilityTeam": "Team",
+      "visibilityWorkspace": "Workspace",
+      "tags": "Tags",
+      "folder": "Folder",
+      "project": "Project",
+      "savedToast": "Document saved.",
+      "saveBtn": "Save"
+    },
+    "folders": {
+      "title": "Folders",
+      "allDocs": "All Docs",
+      "newFolder": "New folder",
+      "folderPlaceholder": "Folder name...",
+      "renamePlaceholder": "New name..."
+    },
+    "templates": {
+      "blank": "Blank Document",
+      "sdd": "Software Design Document",
+      "api": "API Documentation",
+      "guide": "User / Feature Guide",
+      "adr": "Architecture Decision Record",
+      "plan": "Project Plan"
+    },
+    "detail": {
+      "notFoundTitle": "Document not found",
+      "notFoundDescription": "The document was deleted or you do not have access.",
+      "backToDocs": "Back to docs"
+    }
+  },
   "Calendar": {
     "eyebrow": "Scheduled work",
     "title": "Calendar",
@@ -3961,6 +4023,21 @@
     "errorTitle": "Organization setup failed",
     "errorDesc": "Could not complete this organization action.",
     "organizationsDisabled": "Clerk Organizations are not enabled for this instance. Enable Organizations in the Clerk Dashboard, then create the workspace again.",
+    "slugsDisabled": "Organization slugs are disabled in Clerk. The workspace will be created without a custom slug."
+  },
+  "NoOrganizationModal": {
+    "title": "Create your workspace",
+    "description": "You need a workspace to access the dashboard. Create one now or wait for an invitation from your team.",
+    "nameLabel": "Organization Name",
+    "namePlaceholder": "e.g. Acme Workspace",
+    "createBtn": "Create Workspace",
+    "creating": "Creating...",
+    "or": "or",
+    "invitationTitle": "Have an invitation?",
+    "invitationDesc": "Ask your organization admin to send you an invite link. Once you accept, you will automatically join their workspace.",
+    "nameRequired": "Enter an organization name first.",
+    "errorDesc": "Could not create the organization.",
+    "organizationsDisabled": "Clerk Organizations are not enabled for this instance. Enable Organizations in the Clerk Dashboard, then try again.",
     "slugsDisabled": "Organization slugs are disabled in Clerk. The workspace will be created without a custom slug."
   },
   "Widgets": {

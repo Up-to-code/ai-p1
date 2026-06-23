@@ -95,7 +95,7 @@ export function ProfileMenu() {
             <Building className="h-4 w-4 mr-2" />
             Organization
           </DropdownMenuItem>
-          <DropdownMenuItem render={<Link href="/profile/settings" />} className="py-2">
+          <DropdownMenuItem render={<Link href="/settings" />} className="py-2">
             <Settings className="h-4 w-4 mr-2" />
             Settings
           </DropdownMenuItem>

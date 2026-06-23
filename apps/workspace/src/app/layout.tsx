@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { brandIdentity, brandLabel, brandDomainUrl } from "@qentrah/brand-identity";
 import { Cairo } from "next/font/google";
+import { NavigationProgress } from "@/components/layout/navigation-progress";
 
 import "./globals.css";
 
@@ -103,6 +104,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="h-full flex flex-col bg-background text-text-primary" suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <NavigationProgress />
         {children}
       </body>
     </html>

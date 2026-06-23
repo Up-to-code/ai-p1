@@ -18,35 +18,7 @@ interface ProjectsState {
   deleteProject: (id: string) => void;
 }
 
-const projects: Project[] = [
-  {
-    id: "prj-1",
-    name: "Client Onboarding System",
-    reference: "PRJ-001",
-    status: "active",
-    health: "onTrack",
-    syncState: "synced",
-    description: "A verified onboarding project with approved resources and customer-ready media.",
-  } as Project,
-  {
-    id: "prj-2",
-    name: "Partner Portal Rollout",
-    reference: "PRJ-002",
-    status: "active",
-    health: "onTrack",
-    syncState: "blocked",
-    description: "Mixed-use complex awaiting final data sync approval.",
-  } as Project,
-  {
-    id: "prj-3",
-    name: "Field Operations Launch",
-    reference: "PRJ-003",
-    status: "planned",
-    health: "onTrack",
-    syncState: "draft",
-    description: "Field operations workspace in draft preparation.",
-  } as Project,
-];
+const projects: Project[] = [];
 
 export const useProjectsStore = create<ProjectsState>((set, get) => ({
   projects,

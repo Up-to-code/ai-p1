@@ -7,6 +7,7 @@ import {
 } from "@/domains/organization/api/organization-request";
 import type { PartnerCatalogFilter } from "./store/integrations.view-model";
 import type { PartnerCatalogApp, PartnerConnection } from "./store/integrations.types";
+import { MOCK_MAC_APPS, createMockConnection, createICloudConnection } from "./mock-data";
 
 type Fetcher = typeof fetch;
 
@@ -112,33 +113,8 @@ export async function updatePartnerConnectionStatus(
   fetcher: Fetcher = fetch,
 ) {
   if (connectionId === "conn-mac-icloud" || connectionId.startsWith("mock-")) {
-    // If updating iCloud, make sure we initialize it in localStorage first
     if (connectionId === "conn-mac-icloud") {
-      const iCloudConn: PartnerConnection = {
-        id: "conn-mac-icloud",
-        organizationId,
-        partnersAppId: "mac-icloud-sync",
-        partnersClientId: "client_mac_icloud",
-        status: "active",
-        effectiveStatus: "active",
-        scopes: ["icloud.files.read", "icloud.files.write"],
-        expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
-        updatedAt: Date.now(),
-        partnerApp: {
-          id: "mac-icloud-sync",
-          partnersClientId: "client_mac_icloud",
-          name: "Apple iCloud Sync",
-          publisherName: "macOS Integration",
-          description: "Real-time, bi-directional file and asset synchronization directly with Apple iCloud Drive.",
-          homepageUrl: "https://apple.com/icloud",
-          logoUrl: "https://cdn.simpleicons.org/icloud/005A9C",
-          allowedScopes: ["icloud.files.read", "icloud.files.write"],
-          redirectUris: [],
-          status: "approved",
-          updatedAt: Date.now(),
-        },
-      };
-      saveLocalConnection(organizationId, iCloudConn);
+      saveLocalConnection(organizationId, createICloudConnection(organizationId));
     }
     updateLocalConnectionStatus(organizationId, connectionId, status);
     return;
@@ -163,69 +139,9 @@ export async function createPartnerConnectionGrant(
   fetcher: Fetcher = fetch,
 ) {
   if (input.partnersAppId.startsWith("mac-")) {
-    const macApps = [
-      {
-        id: "mac-icloud-sync",
-        partnersClientId: "client_mac_icloud",
-        name: "Apple iCloud Sync",
-        publisherName: "macOS Integration",
-        description: "Real-time, bi-directional file and asset synchronization directly with Apple iCloud Drive.",
-        homepageUrl: "https://apple.com/icloud",
-        logoUrl: "https://cdn.simpleicons.org/icloud/005A9C",
-        allowedScopes: ["icloud.files.read", "icloud.files.write"],
-      },
-      {
-        id: "mac-calendar-sync",
-        partnersClientId: "client_mac_calendar",
-        name: "iCloud Calendar Sync",
-        publisherName: "macOS Integration",
-        description: "Sync client meetings, operational reviews, and appointment calendars with Apple Calendar.",
-        homepageUrl: "https://apple.com/calendar",
-        logoUrl: "https://cdn.simpleicons.org/apple/000000",
-        allowedScopes: ["calendar.events.read", "calendar.events.write"],
-      },
-      {
-        id: "mac-contacts-gateway",
-        partnersClientId: "client_mac_contacts",
-        name: "Mac Contacts Gateway",
-        publisherName: "macOS Integration",
-        description: "Secure, real-time sync of customer leads, CRM client profiles, and phone numbers with Apple Contacts.",
-        homepageUrl: "https://apple.com",
-        logoUrl: "https://cdn.simpleicons.org/apple/555555",
-        allowedScopes: ["contacts.read", "contacts.write"],
-      },
-      {
-        id: "mac-spotlight-indexer",
-        partnersClientId: "client_mac_spotlight",
-        name: "macOS Spotlight Indexer",
-        publisherName: "macOS Integration",
-        description: "Enable instant spotlight indexing for your assets, projects, and clients on macOS devices.",
-        homepageUrl: "https://apple.com",
-        logoUrl: "https://cdn.simpleicons.org/apple/999999",
-        allowedScopes: ["spotlight.index.write"],
-      },
-    ];
-
-    const matchedApp = macApps.find((a) => a.id === input.partnersAppId);
+    const matchedApp = MOCK_MAC_APPS.find((a) => a.id === input.partnersAppId);
     if (matchedApp) {
-      const mockConn: PartnerConnection = {
-        id: `mock-${matchedApp.id}-${Date.now()}`,
-        organizationId,
-        partnersAppId: matchedApp.id,
-        partnersClientId: matchedApp.partnersClientId,
-        status: "active",
-        effectiveStatus: "active",
-        scopes: matchedApp.allowedScopes,
-        expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
-        updatedAt: Date.now(),
-        partnerApp: {
-          ...matchedApp,
-          redirectUris: [],
-          status: "approved",
-          updatedAt: Date.now(),
-        },
-      };
-      saveLocalConnection(organizationId, mockConn);
+      saveLocalConnection(organizationId, createMockConnection(organizationId, matchedApp));
       return;
     }
   }
@@ -246,31 +162,10 @@ export async function revokePartnerConnection(
 ) {
   if (connectionId === "conn-mac-icloud" || connectionId.startsWith("mock-")) {
     if (connectionId === "conn-mac-icloud") {
-      const iCloudConn: PartnerConnection = {
-        id: "conn-mac-icloud",
-        organizationId,
-        partnersAppId: "mac-icloud-sync",
-        partnersClientId: "client_mac_icloud",
-        status: "revoked",
-        effectiveStatus: "revoked",
-        scopes: ["icloud.files.read", "icloud.files.write"],
-        expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
-        updatedAt: Date.now(),
-        partnerApp: {
-          id: "mac-icloud-sync",
-          partnersClientId: "client_mac_icloud",
-          name: "Apple iCloud Sync",
-          publisherName: "macOS Integration",
-          description: "Real-time, bi-directional file and asset synchronization directly with Apple iCloud Drive.",
-          homepageUrl: "https://apple.com/icloud",
-          logoUrl: "https://cdn.simpleicons.org/icloud/005A9C",
-          allowedScopes: ["icloud.files.read", "icloud.files.write"],
-          redirectUris: [],
-          status: "approved",
-          updatedAt: Date.now(),
-        },
-      };
-      saveLocalConnection(organizationId, iCloudConn);
+      const conn = createICloudConnection(organizationId);
+      conn.status = "revoked";
+      conn.effectiveStatus = "revoked";
+      saveLocalConnection(organizationId, conn);
     }
     updateLocalConnectionStatus(organizationId, connectionId, "revoked");
     return;
@@ -293,118 +188,10 @@ export function usePartnerCatalogApps() {
     let active = true;
     fetchPartnerCatalogApps()
       .then((items) => {
-        const macApps: PartnerCatalogApp[] = [
-          {
-            id: "mac-icloud-sync",
-            partnersClientId: "client_mac_icloud",
-            name: "Apple iCloud Sync",
-            publisherName: "macOS Integration",
-            description: "Real-time, bi-directional file and asset synchronization directly with Apple iCloud Drive.",
-            homepageUrl: "https://apple.com/icloud",
-            logoUrl: "https://cdn.simpleicons.org/icloud/005A9C",
-            allowedScopes: ["icloud.files.read", "icloud.files.write"],
-            redirectUris: [],
-            status: "approved",
-            updatedAt: Date.now(),
-          },
-          {
-            id: "mac-calendar-sync",
-            partnersClientId: "client_mac_calendar",
-            name: "iCloud Calendar Sync",
-            publisherName: "macOS Integration",
-            description: "Sync client meetings, operational reviews, and appointment calendars with Apple Calendar.",
-            homepageUrl: "https://apple.com/calendar",
-            logoUrl: "https://cdn.simpleicons.org/apple/000000",
-            allowedScopes: ["calendar.events.read", "calendar.events.write"],
-            redirectUris: [],
-            status: "approved",
-            updatedAt: Date.now(),
-          },
-          {
-            id: "mac-contacts-gateway",
-            partnersClientId: "client_mac_contacts",
-            name: "Mac Contacts Gateway",
-            publisherName: "macOS Integration",
-            description: "Secure, real-time sync of customer leads, CRM client profiles, and phone numbers with Apple Contacts.",
-            homepageUrl: "https://apple.com",
-            logoUrl: "https://cdn.simpleicons.org/apple/555555",
-            allowedScopes: ["contacts.read", "contacts.write"],
-            redirectUris: [],
-            status: "approved",
-            updatedAt: Date.now(),
-          },
-          {
-            id: "mac-spotlight-indexer",
-            partnersClientId: "client_mac_spotlight",
-            name: "macOS Spotlight Indexer",
-            publisherName: "macOS Integration",
-            description: "Enable instant spotlight indexing for your assets, projects, and clients on macOS devices.",
-            homepageUrl: "https://apple.com",
-            logoUrl: "https://cdn.simpleicons.org/apple/999999",
-            allowedScopes: ["spotlight.index.write"],
-            redirectUris: [],
-            status: "approved",
-            updatedAt: Date.now(),
-          },
-        ];
-        if (active) setApps([...macApps, ...items]);
+        if (active) setApps([...MOCK_MAC_APPS, ...items]);
       })
       .catch(() => {
-        const macApps: PartnerCatalogApp[] = [
-          {
-            id: "mac-icloud-sync",
-            partnersClientId: "client_mac_icloud",
-            name: "Apple iCloud Sync",
-            publisherName: "macOS Integration",
-            description: "Real-time, bi-directional file and asset synchronization directly with Apple iCloud Drive.",
-            homepageUrl: "https://apple.com/icloud",
-            logoUrl: "https://cdn.simpleicons.org/icloud/005A9C",
-            allowedScopes: ["icloud.files.read", "icloud.files.write"],
-            redirectUris: [],
-            status: "approved",
-            updatedAt: Date.now(),
-          },
-          {
-            id: "mac-calendar-sync",
-            partnersClientId: "client_mac_calendar",
-            name: "iCloud Calendar Sync",
-            publisherName: "macOS Integration",
-            description: "Sync client meetings, operational reviews, and appointment calendars with Apple Calendar.",
-            homepageUrl: "https://apple.com/calendar",
-            logoUrl: "https://cdn.simpleicons.org/apple/000000",
-            allowedScopes: ["calendar.events.read", "calendar.events.write"],
-            redirectUris: [],
-            status: "approved",
-            updatedAt: Date.now(),
-          },
-          {
-            id: "mac-contacts-gateway",
-            partnersClientId: "client_mac_contacts",
-            name: "Mac Contacts Gateway",
-            publisherName: "macOS Integration",
-            description: "Secure, real-time sync of customer leads, CRM client profiles, and phone numbers with Apple Contacts.",
-            homepageUrl: "https://apple.com",
-            logoUrl: "https://cdn.simpleicons.org/apple/555555",
-            allowedScopes: ["contacts.read", "contacts.write"],
-            redirectUris: [],
-            status: "approved",
-            updatedAt: Date.now(),
-          },
-          {
-            id: "mac-spotlight-indexer",
-            partnersClientId: "client_mac_spotlight",
-            name: "macOS Spotlight Indexer",
-            publisherName: "macOS Integration",
-            description: "Enable instant spotlight indexing for your assets, projects, and clients on macOS devices.",
-            homepageUrl: "https://apple.com",
-            logoUrl: "https://cdn.simpleicons.org/apple/999999",
-            allowedScopes: ["spotlight.index.write"],
-            redirectUris: [],
-            status: "approved",
-            updatedAt: Date.now(),
-          },
-        ];
-        if (active) setApps(macApps);
+        if (active) setApps([...MOCK_MAC_APPS]);
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -433,7 +220,6 @@ export function usePartnerConnections(organizationId?: string | null) {
       .then((items) => {
         const localItems = getLocalConnections(organizationId);
 
-        // check if iCloud is revoked or paused in local storage
         const iCloudRevoked = localItems.some(
           (c) => c.partnersAppId === "mac-icloud-sync" && c.status === "revoked",
         );
@@ -443,31 +229,7 @@ export function usePartnerConnections(organizationId?: string | null) {
 
         const mockConnectedList: PartnerConnection[] = [];
         if (!iCloudRevoked) {
-          const iCloudConn: PartnerConnection = iCloudLocal || {
-            id: "conn-mac-icloud",
-            organizationId,
-            partnersAppId: "mac-icloud-sync",
-            partnersClientId: "client_mac_icloud",
-            status: "active",
-            effectiveStatus: "active",
-            scopes: ["icloud.files.read", "icloud.files.write"],
-            expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
-            updatedAt: Date.now(),
-            partnerApp: {
-              id: "mac-icloud-sync",
-              partnersClientId: "client_mac_icloud",
-              name: "Apple iCloud Sync",
-              publisherName: "macOS Integration",
-              description: "Real-time, bi-directional file and asset synchronization directly with Apple iCloud Drive.",
-              homepageUrl: "https://apple.com/icloud",
-              logoUrl: "https://cdn.simpleicons.org/icloud/005A9C",
-              allowedScopes: ["icloud.files.read", "icloud.files.write"],
-              redirectUris: [],
-              status: "approved",
-              updatedAt: Date.now(),
-            },
-          };
-          mockConnectedList.push(iCloudConn);
+          mockConnectedList.push(iCloudLocal || createICloudConnection(organizationId));
         }
 
         const otherLocal = localItems.filter(
@@ -488,31 +250,7 @@ export function usePartnerConnections(organizationId?: string | null) {
 
         const mockConnectedList: PartnerConnection[] = [];
         if (!iCloudRevoked) {
-          const iCloudConn: PartnerConnection = iCloudLocal || {
-            id: "conn-mac-icloud",
-            organizationId,
-            partnersAppId: "mac-icloud-sync",
-            partnersClientId: "client_mac_icloud",
-            status: "active",
-            effectiveStatus: "active",
-            scopes: ["icloud.files.read", "icloud.files.write"],
-            expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
-            updatedAt: Date.now(),
-            partnerApp: {
-              id: "mac-icloud-sync",
-              partnersClientId: "client_mac_icloud",
-              name: "Apple iCloud Sync",
-              publisherName: "macOS Integration",
-              description: "Real-time, bi-directional file and asset synchronization directly with Apple iCloud Drive.",
-              homepageUrl: "https://apple.com/icloud",
-              logoUrl: "https://cdn.simpleicons.org/icloud/005A9C",
-              allowedScopes: ["icloud.files.read", "icloud.files.write"],
-              redirectUris: [],
-              status: "approved",
-              updatedAt: Date.now(),
-            },
-          };
-          mockConnectedList.push(iCloudConn);
+          mockConnectedList.push(iCloudLocal || createICloudConnection(organizationId));
         }
 
         const otherLocal = localItems.filter(

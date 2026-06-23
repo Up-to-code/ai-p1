@@ -8,7 +8,7 @@ export const ORGANIZATION_API_KEY_PREFIX = "qentrah_org_";
 export const ORGANIZATION_API_KEY_QUOTA_LIMIT = 1_000;
 export const ORGANIZATION_API_KEY_QUOTA_WINDOW_MS = 60 * 60 * 1000;
 
-type ApiKeyResource = "organization" | "client" | "project" | "calendar" | "task" | "media";
+type ApiKeyResource = "organization" | "client" | "project" | "calendar" | "task" | "media" | "space";
 type ApiKeyAction = "read" | "create" | "update" | "delete";
 type ApiKeyPermission = { resource: ApiKeyResource; actions: ApiKeyAction[] };
 

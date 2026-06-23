@@ -19,18 +19,19 @@ import {
 interface ActivityTabProps {
   project: Project;
   organizationId: string;
+  spaceId?: string;
 }
 
 type ActivityFilter = "all" | "tasks" | "calendar" | "changes";
 
-export function ActivityTab({ project, organizationId }: ActivityTabProps) {
+export function ActivityTab({ project, organizationId, spaceId }: ActivityTabProps) {
   const [filter, setFilter] = useState<ActivityFilter>("all");
 
-  const tasksResult = useTasksQuery(organizationId, { projectId: project.id });
+  const tasksResult = useTasksQuery(organizationId, { projectId: project.id, spaceId });
   const tasks = tasksResult.data ?? [];
   const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
   const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0, 23, 59, 59).getTime();
-  const calendarResult = useCalendarIndexRangeQueryResult(organizationId, startOfMonth, endOfMonth, project.id);
+  const calendarResult = useCalendarIndexRangeQueryResult(organizationId, startOfMonth, endOfMonth, project.id, spaceId);
   const calendarEvents = calendarResult.data?.events ?? [];
 
   // Build activity feed from tasks + calendar events

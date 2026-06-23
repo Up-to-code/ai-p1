@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, memo } from "react";
 import { useTranslations } from "next-intl";
 import { Calendar, Flag, CheckCircle2, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,6 @@ import {
   getInitials,
 } from "../tasks.constants";
 import { sortPipelineTasks } from "../task-pipeline-order";
-import { taskLog } from "../task-log";
 import {
   DragDropContext,
   Droppable,
@@ -23,17 +22,104 @@ import {
 
 const BOARD_STATUSES: TaskStatus[] = ["todo", "inProgress", "waiting", "done"];
 
-function taskIds(list: TaskRecord[]) {
-  return list.map((t) => t.id);
-}
+const TaskCard = memo(function TaskCard({
+  task,
+  status,
+  selectedId,
+  onTaskClick,
+}: {
+  task: TaskRecord;
+  status: TaskStatus;
+  selectedId?: string;
+  onTaskClick?: (id: string) => void;
+}) {
+  const t = useTranslations("Tasks");
+  return (
+    <div
+      className={cn(
+        "group rounded-xl border border-border bg-card p-3 transition-colors cursor-pointer",
+        selectedId === task.id &&
+          "ring-2 ring-primary/40 border-primary/30",
+      )}
+    >
+      {/* Title row */}
+      <div className="flex items-start gap-2">
+        <button className="mt-0.5 shrink-0 text-muted-foreground/50 transition-colors hover:text-emerald-500">
+          {status === "done" ? (
+            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+          ) : (
+            <Circle className="h-4 w-4" />
+          )}
+        </button>
+        <p
+          className={cn(
+            "min-w-0 flex-1 text-sm font-semibold leading-snug text-foreground",
+            status === "done" &&
+              "text-muted-foreground line-through",
+          )}
+        >
+          {task.title}
+        </p>
+      </div>
 
-function sameIds(a: string[], b: string[]) {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) return false;
-  }
-  return true;
-}
+      {/* Meta row */}
+      <div className="mt-2.5 flex flex-wrap items-center gap-2 ps-6">
+        {task.dueDate && (
+          <span
+            className={cn(
+              "flex items-center gap-1 text-[11px] font-semibold",
+              getDueDateColor(task.dueDate),
+            )}
+          >
+            <Calendar className="h-3 w-3" />
+            {new Date(task.dueDate).toLocaleDateString(
+              undefined,
+              { month: "short", day: "numeric" },
+            )}
+          </span>
+        )}
+        {task.priority !== "normal" && (
+          <span
+            className={cn(
+              "flex items-center gap-1 text-[11px] font-semibold",
+              PRIORITY_COLOR[task.priority],
+            )}
+          >
+            <Flag className="h-3 w-3" />
+            {t(`priorities.${task.priority}`)}
+          </span>
+        )}
+      </div>
+
+      {/* Assignee row */}
+      <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-3">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+            {t("from")}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[8px] font-black text-muted-foreground">
+              {t("me")}
+            </div>
+          </div>
+        </div>
+
+        {task.assigneeUserId && (
+          <div className="flex flex-col items-end gap-0.5">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+              {t("to")}
+            </span>
+            <div className="flex items-center gap-1.5">
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-violet-500 text-[8px] font-black text-white">
+                {getInitials(task.assigneeUserId)}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+});
 
 export function TaskGroupedList({
   tasks,
@@ -60,9 +146,6 @@ export function TaskGroupedList({
     return () => window.cancelAnimationFrame(frame);
   }, []);
 
-  // Track previous column arrays to avoid reference churn
-  const prevRef = useRef<Record<string, TaskRecord[]>>({});
-
   const groupedTasks = useMemo(() => {
     const groups: Record<string, TaskRecord[]> = {
       todo: [],
@@ -77,36 +160,14 @@ export function TaskGroupedList({
       }
     }
 
-    const prev = prevRef.current;
     const result: Record<string, TaskRecord[]> = {};
-    const changed: string[] = [];
-
     for (const status of BOARD_STATUSES) {
-      const sorted = sortPipelineTasks(groups[status]);
-      const prevIds = taskIds(prev[status] ?? []);
-      const nextIds = taskIds(sorted);
-
-      if (prev[status] && sameIds(prevIds, nextIds)) {
-        // Order unchanged — keep previous reference (no Draggable re-renders)
-        result[status] = prev[status];
-      } else {
-        result[status] = sorted;
-        changed.push(status);
-      }
+      result[status] = sortPipelineTasks(groups[status]);
     }
 
-    if (changed.length > 0) {
-      taskLog.info("grouped:changed", {
-        changed,
-        counts: BOARD_STATUSES.map(
-          (s) => `${s}:${(result[s] ?? []).length}`,
-        ).join(" "),
-      });
-    }
-
-    prevRef.current = result;
     return result as Record<TaskStatus, TaskRecord[]>;
   }, [tasks]);
+
 
   const visibleStatuses =
     statusFilter === "all"
@@ -185,90 +246,17 @@ export function TaskGroupedList({
                             {...provided.dragHandleProps}
                             onClick={() => onTaskClick?.(task.id)}
                             className={cn(
-                              "group rounded-xl border border-border bg-card p-3 transition-all cursor-pointer",
+                              "transition-opacity",
                               snapshot.isDragging &&
-                                "ring-2 ring-primary/20 opacity-90",
-                              !snapshot.isDragging &&
-                                "hover:bg-muted/30",
-                              selectedId === task.id &&
-                                "ring-2 ring-primary/40 border-primary/30",
+                                "opacity-90",
                             )}
                           >
-                            {/* Title row */}
-                            <div className="flex items-start gap-2">
-                              <button className="mt-0.5 shrink-0 text-muted-foreground/50 transition-colors hover:text-emerald-500">
-                                {status === "done" ? (
-                                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                                ) : (
-                                  <Circle className="h-4 w-4" />
-                                )}
-                              </button>
-                              <p
-                                className={cn(
-                                  "min-w-0 flex-1 text-sm font-semibold leading-snug text-foreground",
-                                  status === "done" &&
-                                    "text-muted-foreground line-through",
-                                )}
-                              >
-                                {task.title}
-                              </p>
-                            </div>
-
-                            {/* Meta row */}
-                            <div className="mt-2.5 flex flex-wrap items-center gap-2 ps-6">
-                              {task.dueDate && (
-                                <span
-                                  className={cn(
-                                    "flex items-center gap-1 text-[11px] font-semibold",
-                                    getDueDateColor(task.dueDate),
-                                  )}
-                                >
-                                  <Calendar className="h-3 w-3" />
-                                  {new Date(task.dueDate).toLocaleDateString(
-                                    undefined,
-                                    { month: "short", day: "numeric" },
-                                  )}
-                                </span>
-                              )}
-                              {task.priority !== "normal" && (
-                                <span
-                                  className={cn(
-                                    "flex items-center gap-1 text-[11px] font-semibold",
-                                    PRIORITY_COLOR[task.priority],
-                                  )}
-                                >
-                                  <Flag className="h-3 w-3" />
-                                  {t(`priorities.${task.priority}`)}
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Assignee row */}
-                            <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-3">
-                              <div className="flex flex-col gap-0.5">
-                                <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-                                  {t("from")}
-                                </span>
-                                <div className="flex items-center gap-1.5">
-                                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[8px] font-black text-muted-foreground">
-                                    {t("me")}
-                                  </div>
-                                </div>
-                              </div>
-
-                              {task.assigneeUserId && (
-                                <div className="flex flex-col items-end gap-0.5">
-                                  <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-                                    {t("to")}
-                                  </span>
-                                  <div className="flex items-center gap-1.5">
-                                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-violet-500 text-[8px] font-black text-white">
-                                      {getInitials(task.assigneeUserId)}
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
+                            <TaskCard
+                              task={task}
+                              status={status}
+                              selectedId={selectedId}
+                              onTaskClick={onTaskClick}
+                            />
                           </div>
                         )}
                       </Draggable>

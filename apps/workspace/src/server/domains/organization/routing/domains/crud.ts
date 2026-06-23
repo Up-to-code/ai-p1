@@ -8,6 +8,8 @@ import { handleReadCalendarEvents, handleReadCalendarIndex, handleReadCalendarSt
 import { handleReadActivity, handleReadActivityIndex, handleReadActivityStats } from "@/server/domains/organization/handlers/activity-read";
 import { handleReadDashboardIndex, handleReadDashboardOverview } from "@/server/domains/organization/handlers/dashboard-read";
 import { handleCreateProject, handleDeleteProject, handleUpdateProject } from "@/server/domains/projects/handlers/projects";
+import { handleCreateSpace, handleDeleteSpace, handleUpdateSpace } from "@/server/domains/projectSpaces/handlers/spaces";
+import { handleReadSpaces, handleReadSpaceOptions, handleReadSpace } from "@/server/domains/projectSpaces/handlers/spaces-read";
 import { handleCreateOpportunity, handleDeleteOpportunity, handleUpdateOpportunity } from "@/server/domains/opportunities/handlers/opportunities";
 import { handleCreateDeal, handleDeleteDeal, handleUpdateDeal } from "@/server/domains/deals/handlers/deals";
 import { handleCreateClient, handleDeleteClient, handleUpdateClient } from "@/server/domains/clients/handlers/clients";
@@ -15,6 +17,8 @@ import { handleCreateClientTask, handleDeleteClientTask, handleUpdateClientTask 
 import { handleAssignTasksToProject } from "@/server/domains/clientTasks/handlers/assign-to-project";
 import { handleCreateFollowUp, handleDeleteFollowUp, handleMarkFollowUpComplete, handleUpdateFollowUp } from "@/server/domains/clientFollowUps/handlers/follow-ups";
 import { handleCreateCalendarEvent, handleDeleteCalendarEvent, handleUpdateCalendarEvent } from "@/server/domains/calendar/handlers/calendar";
+import { handleCreateDoc, handleUpdateDoc, handleDeleteDoc, handleMoveDoc } from "@/server/domains/docs/handlers/docs";
+import { handleCreateDocFolder, handleRenameDocFolder, handleDeleteDocFolder } from "@/server/domains/docs/handlers/doc-folders";
 
 export const crudSubRouter = new Hono();
 
@@ -69,6 +73,13 @@ crudSubRouter.post("/:organizationId/projects", handleCreateProject);
 crudSubRouter.patch("/:organizationId/projects/:projectId", handleUpdateProject);
 crudSubRouter.delete("/:organizationId/projects/:projectId", handleDeleteProject);
 
+crudSubRouter.get("/:organizationId/read/projects/:projectId/spaces", handleReadSpaces);
+crudSubRouter.get("/:organizationId/read/projects/:projectId/spaces/options", handleReadSpaceOptions);
+crudSubRouter.get("/:organizationId/read/projects/:projectId/spaces/:spaceId", handleReadSpace);
+crudSubRouter.post("/:organizationId/projects/:projectId/spaces", handleCreateSpace);
+crudSubRouter.patch("/:organizationId/projects/:projectId/spaces/:spaceId", handleUpdateSpace);
+crudSubRouter.delete("/:organizationId/projects/:projectId/spaces/:spaceId", handleDeleteSpace);
+
 crudSubRouter.post("/:organizationId/clients", handleCreateClient);
 crudSubRouter.patch("/:organizationId/clients/:clientId", handleUpdateClient);
 crudSubRouter.delete("/:organizationId/clients/:clientId", handleDeleteClient);
@@ -90,3 +101,12 @@ crudSubRouter.patch("/:organizationId/client-follow-ups/:followUpId/complete", h
 crudSubRouter.post("/:organizationId/calendar-events", handleCreateCalendarEvent);
 crudSubRouter.patch("/:organizationId/calendar-events/:eventId", handleUpdateCalendarEvent);
 crudSubRouter.delete("/:organizationId/calendar-events/:eventId", handleDeleteCalendarEvent);
+
+crudSubRouter.post("/:organizationId/docs", handleCreateDoc);
+crudSubRouter.patch("/:organizationId/docs/:docId", handleUpdateDoc);
+crudSubRouter.delete("/:organizationId/docs/:docId", handleDeleteDoc);
+crudSubRouter.post("/:organizationId/docs/:docId/move", handleMoveDoc);
+
+crudSubRouter.post("/:organizationId/doc-folders", handleCreateDocFolder);
+crudSubRouter.patch("/:organizationId/doc-folders/:folderId", handleRenameDocFolder);
+crudSubRouter.delete("/:organizationId/doc-folders/:folderId", handleDeleteDocFolder);

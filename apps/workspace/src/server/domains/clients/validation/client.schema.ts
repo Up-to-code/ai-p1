@@ -17,6 +17,7 @@ export const clientPayloadSchema = z.object({
   website: optionalTrimmedText,
   notes: optionalTrimmedText,
   tags: z.array(z.string().trim()).optional(),
+  customFields: z.array(z.object({ key: z.string(), value: z.unknown() })).optional(),
 });
 
 export type ClientPayload = z.infer<typeof clientPayloadSchema>;

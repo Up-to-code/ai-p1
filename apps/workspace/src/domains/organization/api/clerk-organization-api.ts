@@ -74,7 +74,8 @@ export type McpPermissionResource =
   | "deal"
   | "calendar"
   | "task"
-  | "media";
+  | "media"
+  | "space";
 
 export type McpPermissionAction = "read" | "create" | "update" | "delete";
 

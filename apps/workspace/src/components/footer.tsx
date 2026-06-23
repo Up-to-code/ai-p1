@@ -11,7 +11,7 @@ const footerGroups = [
     title: "platform",
     links: [
       { href: "/about", label: "about" },
-      { href: "/docs", label: "documentation" },
+      { href: "/mcp-docs", label: "documentation" },
     ],
   },
   {

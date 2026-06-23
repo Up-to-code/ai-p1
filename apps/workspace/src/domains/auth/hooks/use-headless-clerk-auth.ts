@@ -150,7 +150,8 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
     if (!isSignedIn) return false;
 
     if (session?.currentTask) {
-      router.replace("/choose-org");
+      // After sign-up, always go to dashboard — the modal handles no-org state.
+      router.replace("/dashboard");
       return true;
     }
 
@@ -162,14 +163,16 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
       return true;
     }
 
-    router.replace("/choose-org");
+    // No organization — still go to dashboard, the modal will handle it.
+    router.replace("/dashboard");
     return true;
   }, [clerk, clerkAuth.isSignedIn, clerkAuth.orgId, router]);
 
   const navigateAfterAuth = useCallback(
     ({ session, decorateUrl }: { session?: { currentTask?: unknown } | null; decorateUrl: (url: string) => string }) => {
       if (session?.currentTask) {
-        router.replace("/choose-org");
+        // After sign-up, always go to dashboard — the modal handles no-org state.
+        router.replace("/dashboard");
         return;
       }
 

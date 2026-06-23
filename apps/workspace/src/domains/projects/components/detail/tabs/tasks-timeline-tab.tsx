@@ -34,6 +34,7 @@ import type { TaskStatus, TaskPriority, TaskRecord } from "@/domains/tasks/tasks
 interface TasksTimelineTabProps {
   project: Project;
   organizationId: string;
+  spaceId?: string;
 }
 
 const statusColumns: { value: TaskStatus; label: string; icon: any; color: string }[] = [
@@ -59,8 +60,8 @@ const priorityColors: Record<string, "gray" | "green" | "yellow" | "blue" | "red
 
 const statusOptions = statusColumns.map((s) => ({ label: s.label, value: s.value }));
 
-export function TasksTimelineTab({ project, organizationId }: TasksTimelineTabProps) {
-  const tasksResult = useTasksQuery(organizationId, { projectId: project.id });
+export function TasksTimelineTab({ project, organizationId, spaceId }: TasksTimelineTabProps) {
+  const tasksResult = useTasksQuery(organizationId, { projectId: project.id, spaceId });
   const tasks = tasksResult.data ?? [];
 
   const [view, setView] = useState<"board" | "timeline">("board");

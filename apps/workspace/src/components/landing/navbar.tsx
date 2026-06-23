@@ -12,7 +12,7 @@ import { Menu, X } from "lucide-react";
 
 const mobileNavItems = [
   { key: "pricing", href: "/pricing" },
-  { key: "documentation", href: "/docs" },
+  { key: "documentation", href: "/mcp-docs" },
   { key: "about", href: "/about" },
   { key: "contact", href: "/contact" },
 ] as const;

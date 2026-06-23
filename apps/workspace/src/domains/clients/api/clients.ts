@@ -106,7 +106,6 @@ export function useUpdateClientOptimisticMutation(queryKey: QueryKey | undefined
         queryKey,
         (data) => patchClientInIndexData(data, variables.client.id, {
           ...clientPayloadFromForm(variables.values),
-          age: Number(variables.values.age || 0),
           updatedAt: Date.now(),
         }),
       );
