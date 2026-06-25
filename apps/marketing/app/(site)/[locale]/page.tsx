@@ -5,10 +5,12 @@ import { notFound } from "next/navigation";
 
 import CTA from "@/components/cta";
 import { Faq02 } from "@/components/landing/faq-02";
-import { WebsiteBuilderConnect } from "@/components/landing/website-builder-connect";
-import { McpAgentsShowcase } from "@/components/landing/mcp-agents-showcase";
+import { PlatformSection } from "@/components/landing/platform-section";
 import { ProblemSection } from "@/components/landing/problem-section";
-import { AppsPlatform } from "@/components/landing/apps-platform";
+import { SolutionSection } from "@/components/landing/solution-section";
+import { AISection } from "@/components/landing/ai-section";
+import { CommunicationSection } from "@/components/landing/communication-section";
+import { VisionSection } from "@/components/landing/vision-section";
 import { AnimatedHomeHero } from "@/components/landing/animated-home-hero";
 import LogoCloud from "@/components/logo-cloud";
 import { isLocale } from "@/lib/content";
@@ -41,11 +43,15 @@ export default function LocaleHomePage({
 
       <ProblemSection locale={locale} />
 
-      <AppsPlatform locale={locale} />
+      <SolutionSection locale={locale} />
 
-      <WebsiteBuilderConnect locale={locale} />
+      <PlatformSection locale={locale} />
 
-      <McpAgentsShowcase locale={locale} />
+      <AISection locale={locale} />
+
+      <CommunicationSection locale={locale} />
+
+      <VisionSection locale={locale} />
 
       <Faq02 />
 

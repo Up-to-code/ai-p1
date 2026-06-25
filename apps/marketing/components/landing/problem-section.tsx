@@ -5,166 +5,196 @@ import { Reveal } from "@/components/landing/cinematic-motion";
 
 const copy = {
   en: {
-    painPoints: {
-      tagline: "40% of work is lost in context \u2014 and AI is lost without it",
-      description: "Work sprawl is killing context and destroying your team's productivity.",
-      items: [
-        {
-          stat: "40%",
-          title: "Context Switching",
-          desc: "Teams waste up to 40% of their day constantly switching between 10+ disjointed SaaS apps just to find context."
-        },
-        {
-          stat: "3 Hours",
-          title: "Manual Chaos",
-          desc: "Employees spend an average of 3 hours every single day searching for information and manually syncing statuses."
-        },
-        {
-          stat: "85%",
-          title: "AI Failure",
-          desc: "85% of companies fail to get value from AI because it lacks the unified workspace context needed to execute tasks."
-        }
-      ]
-    },
-    fix: {
-      eyebrow: "The New Paradigm",
-      title: "Say Hello to Your New AI Teammate.",
-      description: "Qentrah isn't just software; it's an intelligent agent that actively works alongside you. You set the direction, the AI handles the execution.",
-      items: [
-        {
-          title: "Autonomous Execution",
-          desc: "Hand off tasks and watch them get done. From organizing data to drafting communications, the agent handles the heavy lifting."
-        },
-        {
-          title: "Unified Intelligence",
-          desc: "One brain that understands your clients, projects, and goals. No more siloed data or disjointed context."
-        },
-        {
-          title: "Human Leverage",
-          desc: "Multiply your team's output without adding headcount. Let humans focus on strategy while the AI handles the operations."
-        }
-      ]
-    }
+    label: "PROBLEM",
+    headline: (
+      <>
+        The problem isn't work.<br />
+        It's <em>fragmentation.</em>
+      </>
+    ),
+    subtext: (
+      <>Projects, conversations, documents, clients, and AI are scattered across disconnected tools. Teams spend more time searching for context than executing work.</>
+    ),
+    nodes: [
+      { icon: "projects", label: "Projects", sub: "Scattered tasks" },
+      { icon: "clients", label: "Clients", sub: "Lost in emails" },
+      { icon: "docs", label: "Documents", sub: "Version chaos" },
+      { icon: "ai", label: "AI Tools", sub: "No context" },
+      { icon: "comms", label: "Messages", sub: "Endless threads" }
+    ],
+    stats: [
+      { 
+        tag: "CONTEXT",
+        value: "40%",
+        desc: "Lost to Context Switching"
+      },
+      { 
+        tag: "TIME",
+        value: "3 Hours",
+        desc: "Lost Every Day"
+      },
+      { 
+        tag: "AI",
+        value: "85%",
+        desc: "Fail Without Context"
+      },
+      { 
+        tag: "PRODUCTIVITY",
+        value: "2.5x",
+        desc: "Faster With Unity"
+      }
+    ]
   },
   ar: {
-    painPoints: {
-      tagline: "40% من العمل يضيع في فوضى التطبيقات — والذكاء الاصطناعي يضيع بدون سياق",
-      description: "فوضى التطبيقات تدمر السياق وتقضي على إنتاجية فريقك بالكامل.",
-      items: [
-        {
-          stat: "40%",
-          title: "تشتت الانتباه",
-          desc: "تهدر الفرق ما يصل إلى 40٪ من يومها في التنقل المستمر بين أكثر من 10 تطبيقات منفصلة للبحث عن المعلومات."
-        },
-        {
-          stat: "3 ساعات",
-          title: "الفوضى اليدوية",
-          desc: "يقضي الموظفون ما معدله 3 ساعات يومياً في البحث عن البيانات وتحديث الحالات يدوياً بين الأنظمة."
-        },
-        {
-          stat: "85%",
-          title: "فشل الذكاء الاصطناعي",
-          desc: "85٪ من الشركات تفشل في الاستفادة من الذكاء الاصطناعي لأنه يفتقر إلى مساحة عمل موحدة لفهم السياق."
-        }
-      ]
-    },
-    fix: {
-      eyebrow: "النموذج الجديد",
-      title: "رحب بزميلك الذكي الجديد.",
-      description: "كانترا ليست مجرد برنامج؛ إنها وكيل ذكي يعمل جنباً إلى جنب معك. أنت تحدد الاتجاه، والذكاء الاصطناعي يتولى التنفيذ.",
-      items: [
-        {
-          title: "تنفيذ ذاتي",
-          desc: "سلم المهام وشاهدها تنجز. من تنظيم البيانات إلى صياغة الرسائل، الوكيل يتولى المهام الثقيلة."
-        },
-        {
-          title: "ذكاء موحد",
-          desc: "عقل واحد يفهم عملاءك، مشاريعك، وأهدافك. لا مزيد من البيانات المعزولة أو السياق المشتت."
-        },
-        {
-          title: "مضاعفة قدرات البشر",
-          desc: "ضاعف إنتاجية فريقك دون زيادة العدد. دع البشر يركزون على الاستراتيجية بينما يتولى الذكاء الاصطناعي العمليات."
-        }
-      ]
-    }
+    label: "المشكلة",
+    headline: (
+      <>
+        المشكلة ليست في العمل.<br />
+        إنها <em>التشتت.</em>
+      </>
+    ),
+    subtext: (
+      <>المشاريع والمحادثات والمستندات والعملاء والذكاء الاصطناعي موزعة عبر أدوات منفصلة. تقضي الفرق وقتاً في البحث عن السياق أكثر من تنفيذ العمل.</>
+    ),
+    nodes: [
+      { icon: "projects", label: "المشاريع", sub: "مهام مبعثرة" },
+      { icon: "clients", label: "العملاء", sub: "ضائعة في البريد" },
+      { icon: "docs", label: "المستندات", sub: "فوضى النسخ" },
+      { icon: "ai", label: "الذكاء الاصطناعي", sub: "بدون سياق" },
+      { icon: "comms", label: "الرسائل", sub: "سلاسل لا تنتهي" }
+    ],
+    stats: [
+      { 
+        tag: "السياق",
+        value: "40٪",
+        desc: "مفقود في تبديل السياق"
+      },
+      { 
+        tag: "الوقت",
+        value: "3 ساعات",
+        desc: "مفقودة كل يوم"
+      },
+      { 
+        tag: "الذكاء الاصطناعي",
+        value: "85٪",
+        desc: "يفشل بدون سياق"
+      },
+      { 
+        tag: "الإنتاجية",
+        value: "2.5x",
+        desc: "أسرع مع الوحدة"
+      }
+    ]
   }
 };
 
+function NodeIcon({ type }: { type: string }) {
+  const icons: Record<string, React.ReactNode> = {
+    projects: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1"/>
+        <rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/>
+        <rect x="14" y="14" width="7" height="7" rx="1"/>
+      </svg>
+    ),
+    clients: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+    ),
+    docs: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14,2 14,8 20,8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+    ),
+    ai: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/>
+        <path d="M16 14H8a4 4 0 0 0-4 4v2h16v-2a4 4 0 0 0-4-4z"/>
+        <circle cx="18" cy="6" r="2"/>
+        <circle cx="6" cy="6" r="2"/>
+      </svg>
+    ),
+    comms: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        <line x1="9" y1="10" x2="15" y2="10"/>
+        <line x1="12" y1="7" x2="12" y2="13"/>
+      </svg>
+    )
+  };
+  return <>{icons[type] || icons.projects}</>;
+}
+
 export function ProblemSection({ locale }: { locale: string }) {
   const isAr = locale === "ar";
-  const pLabels = isAr ? copy.ar.painPoints : copy.en.painPoints;
-  const fLabels = isAr ? copy.ar.fix : copy.en.fix;
+  const labels = isAr ? copy.ar : copy.en;
 
   return (
-    <div className="w-full">
-      <PublicSection id="solutions" tone="very-dark" className="border-y border-zinc-200/50 dark:border-white/[0.04]">
-        <div className="flex flex-col items-center text-center space-y-24">
+    <PublicSection id="problem" tone="light">
+      <div className="wrap">
+        {/* Centered Headline */}
+        <div className="text-center mb-14">
           <Reveal>
-            <div className="max-w-4xl space-y-6 mx-auto">
-              <h2 className="text-4xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-6xl lg:text-7xl rtl:leading-[1.25]">
-                {pLabels.tagline}
-              </h2>
-              <p className="mx-auto max-w-2xl text-lg font-medium text-zinc-600 dark:text-zinc-400 md:text-xl rtl:leading-[1.8]">
-                {pLabels.description}
-              </p>
-            </div>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight max-w-2xl mx-auto mb-4" style={{ letterSpacing: "-0.03em" }}>
+              {labels.headline}
+            </h2>
           </Reveal>
+          <Reveal delay={0.1}>
+            <p className="text-base text-[var(--q-text-secondary)] max-w-md mx-auto">
+              {labels.subtext}
+            </p>
+          </Reveal>
+        </div>
 
-          <div className="grid w-full gap-8 md:grid-cols-3">
-            {pLabels.items.map((item, i) => (
-              <Reveal key={i} delay={i * 0.1}>
-                <div className="group relative overflow-hidden rounded-3xl bg-zinc-50 border border-zinc-200 p-8 text-left transition-all hover:shadow-lg dark:bg-zinc-900/50 dark:border-zinc-800">
-                  <div className="mb-8 text-4xl font-black text-[var(--q-text-primary)] md:text-5xl">
-                    {item.stat}
+        {/* Disconnected Nodes */}
+        <Reveal delay={0.2}>
+          <div className="flex items-center justify-center gap-0 mb-12 flex-wrap">
+            {labels.nodes.map((node, i) => (
+              <div key={i} className="flex items-center">
+                <div className="text-center px-6 sm:px-8">
+                  <div className="w-14 h-14 rounded-full border-2 border-dashed border-[var(--q-border)] flex items-center justify-center mx-auto mb-2.5 bg-[var(--q-bg)]">
+                    <NodeIcon type={node.icon} />
                   </div>
-                  <h3 className="mb-3 text-xl font-bold text-[var(--q-text-primary)]">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm font-medium leading-relaxed text-zinc-600 dark:text-zinc-400">
-                    {item.desc}
-                  </p>
+                  <div className="text-xs font-semibold mb-1">{node.label}</div>
+                  <div className="text-[11px] text-[var(--q-text-muted)] max-w-[130px] mx-auto leading-tight">
+                    {node.sub}
+                  </div>
                 </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </PublicSection>
-
-      <PublicSection id="the-fix" tone="light">
-        <div className="space-y-16">
-          <Reveal>
-            <div className="max-w-4xl space-y-5">
-              <div className="flex items-center gap-3">
-                <span className="h-px w-8 bg-[var(--q-accent)]/30" />
-                <span className="text-[10px] font-black uppercase tracking-[0.35em] text-[var(--q-accent)] dark:text-[var(--q-accent)]">{fLabels.eyebrow}</span>
+                {i < labels.nodes.length - 1 && (
+                  <div className="flex-1 h-px max-w-20" style={{ background: "linear-gradient(90deg, transparent, var(--q-border), transparent)" }} />
+                )}
               </div>
-              <h2 className="text-4xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-6xl rtl:leading-[1.25]">
-                {fLabels.title}
-              </h2>
-              <p className="max-w-3xl text-base font-semibold leading-7 text-zinc-700 dark:text-zinc-300 md:text-lg rtl:leading-[1.8]">
-                {fLabels.description}
-              </p>
-            </div>
-          </Reveal>
-
-          <div className="grid gap-x-12 gap-y-10 md:grid-cols-3 border-t border-zinc-200/50 dark:border-white/[0.04] pt-12">
-            {fLabels.items.map((item, i) => (
-              <Reveal key={i} delay={i * 0.1}>
-                <div className="space-y-4">
-                  <h3 className="text-xl font-bold text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-[var(--q-accent)] shrink-0" />
-                    {item.title}
-                  </h3>
-                  <p className="text-sm font-semibold leading-relaxed text-zinc-600 dark:text-zinc-400 md:text-base rtl:leading-[1.7]">
-                    {item.desc}
-                  </p>
-                </div>
-              </Reveal>
             ))}
           </div>
-        </div>
-      </PublicSection>
+        </Reveal>
 
-    </div>
+        {/* Statistics Grid */}
+        <Reveal delay={0.3}>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-[var(--q-border)] border border-[var(--q-border)] rounded-2xl overflow-hidden">
+            {labels.stats.map((stat, i) => (
+              <div key={i} className="bg-[var(--q-bg-light)] p-7 sm:p-8 transition-colors hover:bg-[var(--q-bg)]">
+                <div className="text-[11px] font-bold tracking-wider uppercase text-[var(--blue)] mb-2" style={{ letterSpacing: "0.06em" }}>
+                  {stat.tag}
+                </div>
+                <div className="text-3xl sm:text-4xl font-bold tracking-tight mb-1.5" style={{ letterSpacing: "-0.03em" }}>
+                  {stat.value}
+                </div>
+                <p className="text-sm text-[var(--q-text-secondary)] leading-relaxed">
+                  {stat.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+      </div>
+    </PublicSection>
   );
 }

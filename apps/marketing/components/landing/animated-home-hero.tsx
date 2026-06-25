@@ -45,8 +45,8 @@ function HeroLink({
       href={href}
       className={
         secondary
-          ? "inline-flex h-12 items-center justify-center gap-2 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-6 text-sm font-bold text-zinc-900 dark:text-white backdrop-blur-xl transition hover:bg-zinc-50 dark:hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--q-accent)]"
-          : "inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--q-accent)] px-7 text-sm font-bold text-white transition hover:bg-[var(--q-accent-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--q-accent)]"
+          ? "inline-flex h-12 items-center justify-center gap-2 rounded-full border border-[var(--q-border)] bg-[var(--q-card)] px-6 text-sm font-bold text-[var(--q-text-primary)] backdrop-blur-xl transition hover:bg-[var(--q-card-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--q-accent)]"
+          : "inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--q-accent)] px-7 text-sm font-bold text-[var(--q-bg)] transition hover:bg-[var(--q-accent-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--q-accent)]"
       }
     >
       {label}
@@ -96,30 +96,7 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
         }}
       />
 
-      <div 
-        className="absolute right-0 top-[15%] z-[5] hidden w-[680px] xl:w-[860px] lg:block"
-        style={{
-          opacity: heroReady ? 1 : 0,
-          filter: heroReady ? "blur(0px)" : "blur(20px)",
-          transform: heroReady ? "translateX(18%)" : "translateX(30%)",
-          transition: "opacity 1s cubic-bezier(0.16,1,0.3,1) 300ms, filter 1s cubic-bezier(0.16,1,0.3,1) 300ms, transform 1s cubic-bezier(0.16,1,0.3,1) 300ms",
-        }}
-      >
-        <div className="relative overflow-hidden rounded-2xl bg-white/5 p-2 shadow-[0_0_60px_rgba(0,0,0,0.15)] backdrop-blur-sm border border-white/10 dark:bg-black/20 dark:border-white/5">
-           {/* Light mode screenshot */}
-           <img 
-             src="/images/hero-app-light.png" 
-             alt="Dashboard AI Assistant" 
-             className="block dark:hidden rounded-xl w-full h-auto object-cover shadow-[0_30px_60px_rgba(0,0,0,0.15)]" 
-           />
-           {/* Dark mode screenshot */}
-           <img 
-             src="/images/hero-app-dark.png" 
-             alt="Dashboard AI Assistant" 
-             className="hidden dark:block rounded-xl w-full h-auto object-cover shadow-[0_30px_60px_rgba(0,0,0,0.6)]" 
-           />
-        </div>
-      </div>
+      {/* Dashboard screenshot removed */}
 
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 z-10"
@@ -160,81 +137,93 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
         }}
       />
 
-      <div className="relative z-30 flex min-h-[100dvh] items-end px-5 pb-24 pt-48 sm:px-8 md:px-12 lg:pb-32 overflow-hidden">
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-end gap-12 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="relative z-20">
-            <p
-              className="mb-5 inline-flex rounded-full border border-[var(--q-accent-border)] bg-[var(--q-accent-muted)] px-4 py-2 text-[10px] font-black uppercase text-[var(--q-accent)] backdrop-blur-xl transition-colors duration-300 hover:bg-[var(--q-accent)] hover:text-[var(--q-text-primary)]"
-              style={{
-                opacity: heroReady ? 1 : 0,
-                filter: heroReady ? "blur(0px)" : "blur(14px)",
-                transform: heroReady ? "translateY(0px)" : "translateY(16px)",
-                transition: "opacity 0.8s cubic-bezier(0.16,1,0.3,1), filter 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1)",
-              }}
-            >
-              {eyebrow}
-            </p>
-            <h1
-              className="max-w-4xl text-5xl font-light leading-none text-[var(--q-text-primary)] sm:text-6xl md:text-7xl lg:text-8xl rtl:leading-[1.14]"
-              style={{
-                opacity: heroReady ? 1 : 0,
-                filter: heroReady ? "blur(0px)" : "blur(24px)",
-                transform: heroReady ? "translateY(0px)" : "translateY(32px)",
-                transition: "opacity 1s cubic-bezier(0.16,1,0.3,1), filter 1s cubic-bezier(0.16,1,0.3,1), transform 1s cubic-bezier(0.16,1,0.3,1)",
-              }}
-            >
-              {title}
-            </h1>
-            <ul
-              className="mt-8 space-y-4"
-              style={{
-                opacity: heroReady ? 1 : 0,
-                filter: heroReady ? "blur(0px)" : "blur(16px)",
-                transform: heroReady ? "translateY(0px)" : "translateY(20px)",
-                transition: "opacity 0.85s cubic-bezier(0.16,1,0.3,1) 110ms, filter 0.85s cubic-bezier(0.16,1,0.3,1) 110ms, transform 0.85s cubic-bezier(0.16,1,0.3,1) 110ms",
-              }}
-            >
-              <li className="flex items-start gap-3">
-                <div className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--q-accent)]/10 text-[var(--q-accent)]">
-                  <Check className="size-3" />
-                </div>
-                <span className="text-[15px] font-medium leading-relaxed text-[var(--q-text-secondary)]">
-                  {isAr ? "بساطة ذكية. كل تطبيقاتك وعملائك ومشاريعك في مكان واحد." : "Smart simplicity. All your apps, clients, and projects unified."}
-                </span>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--q-accent)]/10 text-[var(--q-accent)]">
-                  <Check className="size-3" />
-                </div>
-                <span className="text-[15px] font-medium leading-relaxed text-[var(--q-text-secondary)]">
-                  {isAr ? "مستقبل العمل. وكلاء ذكاء اصطناعي يعملون كأعضاء في فريقك." : "Futuristic workflow. AI agents working alongside your team."}
-                </span>
-              </li>
-              <li className="flex items-start gap-3">
-                <div className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--q-accent)]/10 text-[var(--q-accent)]">
-                  <Check className="size-3" />
-                </div>
-                <span className="text-[15px] font-medium leading-relaxed text-[var(--q-text-secondary)]">
-                  {isAr ? "إنجاز حقيقي. توقف عن إدارة المهام وابدأ بتوجيه النتائج." : "Real execution. Stop managing tasks and start directing outcomes."}
-                </span>
-              </li>
-            </ul>
-            <div
-              className="mt-8 flex flex-col gap-3 sm:flex-row"
-              style={{
-                opacity: heroReady ? 1 : 0,
-                filter: heroReady ? "blur(0px)" : "blur(16px)",
-                transform: heroReady ? "translateY(0px)" : "translateY(18px)",
-                transition: "opacity 0.85s cubic-bezier(0.16,1,0.3,1) 180ms, filter 0.85s cubic-bezier(0.16,1,0.3,1) 180ms, transform 0.85s cubic-bezier(0.16,1,0.3,1) 180ms",
-              }}
-            >
-              <HeroLink href="/dashboard" label={primaryLabel} isAr={isAr} />
-              <HeroLink href="/contact" label={secondaryLabel} isAr={isAr} secondary />
-            </div>
+      <div className="relative z-30 flex min-h-[100dvh] items-end justify-start px-6 pb-24 pt-20 sm:px-12 md:px-16 lg:px-20 xl:px-24 lg:pb-32 overflow-hidden">
+        <div className="w-full max-w-4xl">
+          <p
+            className="mb-6 inline-flex rounded-full border border-[var(--q-accent-border)] bg-[var(--q-accent-muted)] px-5 py-2.5 text-[10px] font-black uppercase text-[var(--q-accent)] backdrop-blur-xl transition-colors duration-300 hover:bg-[var(--q-accent)] hover:text-[var(--q-text-primary)]"
+            style={{
+              opacity: heroReady ? 1 : 0,
+              filter: heroReady ? "blur(0px)" : "blur(14px)",
+              transform: heroReady ? "translateY(0px)" : "translateY(16px)",
+              transition: "opacity 0.8s cubic-bezier(0.16,1,0.3,1), filter 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1)",
+            }}
+          >
+            {eyebrow}
+          </p>
+          <h1
+            className="text-3xl font-light leading-tight text-[var(--q-text-primary)] sm:text-4xl md:text-5xl lg:text-6xl rtl:leading-[1.2] tracking-tight"
+            style={{
+              opacity: heroReady ? 1 : 0,
+              filter: heroReady ? "blur(0px)" : "blur(24px)",
+              transform: heroReady ? "translateY(0px)" : "translateY(32px)",
+              transition: "opacity 1s cubic-bezier(0.16,1,0.3,1), filter 1s cubic-bezier(0.16,1,0.3,1), transform 1s cubic-bezier(0.16,1,0.3,1)",
+            }}
+          >
+            {isAr ? (
+              <>
+                برنامج جعل كل شيء <span className="font-semibold text-[var(--q-accent)]">بسيط</span> و<span className="font-semibold text-[var(--q-accent)]">ذكي</span>
+              </>
+            ) : (
+              <>Software made it <span className="font-semibold text-[var(--q-accent)]">simple</span> and <span className="font-semibold text-[var(--q-accent)]">smart</span></>
+            )}
+          </h1>
+          <p
+            className="mt-6 text-base font-medium text-[var(--q-text-secondary)] md:text-lg"
+            style={{
+              opacity: heroReady ? 1 : 0,
+              filter: heroReady ? "blur(0px)" : "blur(16px)",
+              transform: heroReady ? "translateY(0px)" : "translateY(20px)",
+              transition: "opacity 0.85s cubic-bezier(0.16,1,0.3,1) 80ms, filter 0.85s cubic-bezier(0.16,1,0.3,1) 80ms, transform 0.85s cubic-bezier(0.16,1,0.3,1) 80ms",
+            }}
+          >
+            {isAr ? "كل مشاريعك وعملائك والذكاء الاصطناعي وفرقك والأتمتة" : "all your projects, clients, AI, teams & automation"}
+          </p>
+          <ul
+            className="mt-8 space-y-3"
+            style={{
+              opacity: heroReady ? 1 : 0,
+              filter: heroReady ? "blur(0px)" : "blur(16px)",
+              transform: heroReady ? "translateY(0px)" : "translateY(20px)",
+              transition: "opacity 0.85s cubic-bezier(0.16,1,0.3,1) 110ms, filter 0.85s cubic-bezier(0.16,1,0.3,1) 110ms, transform 0.85s cubic-bezier(0.16,1,0.3,1) 110ms",
+            }}
+          >
+            <li className="flex items-start gap-2.5">
+              <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--q-accent)]/10 text-[var(--q-accent)]">
+                <Check className="size-3" />
+              </div>
+              <span className="text-[14px] font-semibold leading-snug text-[var(--q-text-secondary)]">
+                {isAr ? "وفّر المال. كل تطبيقاتك وخطط الذكاء الاصطناعي ومشاريعك في مكان واحد." : "Save money. All your apps, AI plans, and projects in one place."}
+              </span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--q-accent)]/10 text-[var(--q-accent)]">
+                <Check className="size-3" />
+              </div>
+              <span className="text-[14px] font-semibold leading-snug text-[var(--q-text-secondary)]">
+                {isAr ? "وصّل كل شيء. بروتوكول MCP يتيح للمطورين ووكلاء الذكاء الاصطناعي العمل بسلاسة." : "Connect everything. MCP protocol lets developers and AI agents work seamlessly."}
+              </span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--q-accent)]/10 text-[var(--q-accent)]">
+                <Check className="size-3" />
+              </div>
+              <span className="text-[14px] font-semibold leading-snug text-[var(--q-text-secondary)]">
+                {isAr ? "إنتاجية لا نهائية. وكلاء ذكاء اصطناعي ينفذون، لا يتحدثون فقط." : "Create infinite productivity. AI Agents that execute, not just chat."}
+              </span>
+            </li>
+          </ul>
+          <div
+            className="mt-10 flex flex-col gap-4 sm:flex-row"
+            style={{
+              opacity: heroReady ? 1 : 0,
+              filter: heroReady ? "blur(0px)" : "blur(16px)",
+              transform: heroReady ? "translateY(0px)" : "translateY(18px)",
+              transition: "opacity 0.85s cubic-bezier(0.16,1,0.3,1) 180ms, filter 0.85s cubic-bezier(0.16,1,0.3,1) 180ms, transform 0.85s cubic-bezier(0.16,1,0.3,1) 180ms",
+            }}
+          >
+            <HeroLink href="/dashboard" label={isAr ? "ابدأ الآن — مجاني للأبد" : "Get started — Free forever"} isAr={isAr} />
+            <HeroLink href="/contact" label={isAr ? "بدون بطاقة ائتمان" : "No credit card needed"} isAr={isAr} secondary />
           </div>
-
-          {/* Spacer to preserve grid layout and prevent text overlap on the right */}
-          <div className="hidden lg:block"></div>
         </div>
       </div>
     </section>

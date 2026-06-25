@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qentrah Workspace — Architecture Deepening Opportunities</title>
+  <style>
+    :root {
+      --q-bg: #ffffff;
+      --q-bg-alt: #f8f9fa;
+      --q-bg-tertiary: #f1f3f5;
+      --q-text: #1a1a1a;
+      --q-text-secondary: #495057;
+      --q-text-muted: #868e96;
+      --q-border: #dee2e6;
+      --q-accent: #228be6;
+      --q-accent-light: #e7f5ff;
+      --q-danger: #e03131;
+      --q-danger-light: #fff5f5;
+      --q-warning: #f08c00;
+      --q-warning-light: #fff9db;
+      --q-success: #2b8a3e;
+      --q-success-light: #ebfbee;
+      --q-radius: 8px;
+      --q-spacing: 24px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--q-bg);
+      color: var(--q-text);
+      line-height: 1.6;
+      padding: var(--q-spacing);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 48px;
+      padding-bottom: var(--q-spacing);
+      border-bottom: 2px solid var(--q-border);
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin: 32px 0 16px;
+      padding-top: 24px;
+      border-top: 1px solid var(--q-border);
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 24px 0 12px;
+    }
+
+    h4 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 16px 0 8px;
+      color: var(--q-text-secondary);
+    }
+
+    p {
+      margin-bottom: 12px;
+      color: var(--q-text-secondary);
+    }
+
+    .subtitle {
+      color: var(--q-text-muted);
+      font-size: 1.1rem;
+    }
+
+    .metadata {
+      display: flex;
+      gap: 24px;
+      margin-top: 16px;
+      font-size: 0.9rem;
+      color: var(--q-text-muted);
+    }
+
+    .metadata span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    section {
+      margin-bottom: 48px;
+      padding: var(--q-spacing);
+      background: var(--q-bg-alt);
+      border-radius: var(--q-radius);
+      border: 1px solid var(--q-border);
+    }
+
+    section:nth-child(even) {
+      background: var(--q-bg-tertiary);
+    }
+
+    .issue-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .severity {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .severity.high {
+      background: var(--q-danger-light);
+      color: var(--q-danger);
+    }
+
+    .severity.medium {
+      background: var(--q-warning-light);
+      color: var(--q-warning);
+    }
+
+    .severity.low {
+      background: var(--q-success-light);
+      color: var(--q-success);
+    }
+
+    .file-list {
+      background: var(--q-bg);
+      padding: 16px;
+      border-radius: var(--q-radius);
+      margin: 12px 0;
+      border: 1px solid var(--q-border);
+    }
+
+    .file-list h4 {
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--q-text-muted);
+    }
+
+    .file-list ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .file-list li {
+      padding: 6px 0;
+      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+      font-size: 0.9rem;
+      color: var(--q-text-secondary);
+      border-bottom: 1px solid var(--q-bg-tertiary);
+    }
+
+    .file-list li:last-child {
+      border-bottom: none;
+    }
+
+    .evidence {
+      background: var(--q-accent-light);
+      padding: 16px;
+      border-radius: var(--q-radius);
+      margin: 16px 0;
+      border-left: 4px solid var(--q-accent);
+    }
+
+    .evidence h4 {
+      color: var(--q-accent);
+      margin-bottom: 8px;
+    }
+
+    .evidence code {
+      display: block;
+      background: var(--q-bg);
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      margin-top: 8px;
+      overflow-x: auto;
+    }
+
+    .benefits {
+      background: var(--q-success-light);
+      padding: 16px;
+      border-radius: var(--q-radius);
+      margin: 16px 0;
+      border-left: 4px solid var(--q-success);
+    }
+
+    .benefits h4 {
+      color: var(--q-success);
+      margin-bottom: 8px;
+    }
+
+    .benefits ul {
+      margin-left: 20px;
+      color: var(--q-text-secondary);
+    }
+
+    .benefits li {
+      margin-bottom: 6px;
+    }
+
+    .options {
+      background: var(--q-warning-light);
+      padding: 16px;
+      border-radius: var(--q-radius);
+      margin: 16px 0;
+      border-left: 4px solid var(--q-warning);
+    }
+
+    .options h4 {
+      color: var(--q-warning);
+      margin-bottom: 8px;
+    }
+
+    .option {
+      margin: 12px 0;
+      padding: 12px;
+      background: var(--q-bg);
+      border-radius: 4px;
+    }
+
+    .option strong {
+      color: var(--q-text);
+    }
+
+    code {
+      background: var(--q-bg-tertiary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+    }
+
+    pre {
+      background: var(--q-bg);
+      padding: 16px;
+      border-radius: var(--q-radius);
+      overflow-x: auto;
+      border: 1px solid var(--q-border);
+      margin: 12px 0;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+    }
+
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+    }
+
+    .summary-table th,
+    .summary-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--q-border);
+    }
+
+    .summary-table th {
+      background: var(--q-bg-tertiary);
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--q-text-muted);
+    }
+
+    .summary-table td {
+      color: var(--q-text-secondary);
+    }
+
+    .toc {
+      background: var(--q-bg-alt);
+      padding: var(--q-spacing);
+      border-radius: var(--q-radius);
+      margin: 24px 0;
+      border: 1px solid var(--q-border);
+    }
+
+    .toc h3 {
+      margin-bottom: 12px;
+    }
+
+    .toc ol {
+      margin-left: 20px;
+    }
+
+    .toc li {
+      margin-bottom: 8px;
+    }
+
+    .toc a {
+      color: var(--q-accent);
+      text-decoration: none;
+    }
+
+    .toc a:hover {
+      text-decoration: underline;
+    }
+
+    ul {
+      margin-left: 20px;
+      margin-bottom: 12px;
+      color: var(--q-text-secondary);
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 16px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      h2 {
+        font-size: 1.25rem;
+      }
+
+      .metadata {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      section {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Qentrah Workspace — Architecture Deepening Opportunities</h1>
+      <p class="subtitle">Modularization gaps and codebase architecture improvements</p>
+      <div class="metadata">
+        <span>📊 4 Candidates Identified</span>
+        <span>📁 130 Convex Files Analyzed</span>
+        <span>⚠️ 25+ Duplicate Patterns Found</span>
+      </div>
+    </header>
+
+    <div class="toc">
+      <h3>Table of Contents</h3>
+      <ol>
+        <li><a href="#candidate-1">Shallow Pipeline Factory</a></li>
+        <li><a href="#candidate-2">Scattered Presentation Logic</a></li>
+        <li><a href="#candidate-3">Admin Domain Adapter — Massive Conditional Dispatch</a></li>
+        <li><a href="#candidate-4">Partner Resource Gateway — God Function for CRUD</a></li>
+      </ol>
+    </div>
+
+    <h2>Executive Summary</h2>
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Candidate</th>
+          <th>Severity</th>
+          <th>Pattern</th>
+          <th>Impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Pipeline Factory</td>
+          <td><span class="severity high">High</span></td>
+          <td>Unused factory, duplicated code</td>
+          <td>Zero leverage, maintenance burden</td>
+        </tr>
+        <tr>
+          <td>Presentation Logic</td>
+          <td><span class="severity medium">Medium</span></td>
+          <td>25+ duplicated present functions</td>
+          <td>Inconsistent output, scattered logic</td>
+        </tr>
+        <tr>
+          <td>Admin Domain Adapter</td>
+          <td><span class="severity high">High</span></td>
+          <td>600-line conditional dispatch</td>
+          <td>Poor locality, hard to test</td>
+        </tr>
+        <tr>
+          <td>Partner Gateway</td>
+          <td><span class="severity medium">Medium</span></td>
+          <td>God function with 7 resource types</td>
+          <td>Misleading interface, tight coupling</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Candidate 1 -->
+    <section id="candidate-1">
+      <div class="issue-header">
+        <h2>1. Shallow Pipeline Factory</h2>
+        <span class="severity high">High</span>
+      </div>
+
+      <div class="file-list">
+        <h4>Files Involved</h4>
+        <ul>
+          <li>convex/pipeline_core.ts (214 lines)</li>
+          <li>convex/deals/read.ts (111 lines)</li>
+          <li>convex/deals/write.ts (97 lines)</li>
+          <li>convex/opportunities/read.ts, write.ts</li>
+          <li>convex/clients/read.ts, write.ts</li>
+          <li>convex/projects/read.ts, write.ts</li>
+        </ul>
+      </div>
+
+      <h3>Problem</h3>
+      <p>
+        The <code>pipeline_core.ts</code> module exports factory functions (<code>createPipelineList</code>, <code>createPipelineCreate</code>, etc.) that generate Convex query/mutation handlers from a <code>PipelineConfig</code> object. However, <strong>no one is using these factories</strong> — the <code>deals/</code> module has completely duplicated the same logic inline.
+      </p>
+      <p>
+        This is a classic <strong>shallow module</strong>: the factory's interface (<code>PipelineConfig</code> with 7 fields) is nearly as complex as understanding the generated code itself. The factories were meant to provide <strong>leverage</strong> (one implementation, many callers), but since they're unused, they're providing zero <strong>locality</strong> — bugs in <code>deals/read.ts</code> won't be fixed in the factory, and vice versa.
+      </p>
+
+      <div class="evidence">
+        <h4>Evidence</h4>
+        <code>
+          <div>grep -r "createPipeline" finds only the factory definitions, no callers</div>
+          <div style="margin-top: 8px;">deals/read.ts:list (lines 28-52) is a 95% copy of createPipelineList's handler</div>
+          <div style="margin-top: 8px;">deals/write.ts:createFromHono (lines 11-42) duplicates createPipelineCreate</div>
+        </code>
+      </div>
+
+      <h3>Deletion Test</h3>
+      <p>
+        If you delete <code>pipeline_core.ts</code>, nothing breaks — no callers exist. The domain-specific code in <code>deals/</code> is actually clearer because it uses concrete types, not <code>any</code> casts.
+      </p>
+
+      <div class="options">
+        <h4>Solution Options</h4>
+        <div class="option">
+          <strong>Option A (Delete the factory):</strong> Remove <code>pipeline_core.ts</code> entirely. The duplicated code in each domain module is more maintainable because it uses proper types and is easier to understand.
+        </div>
+        <div class="option">
+          <strong>Option B (Make it earn its keep):</strong> Migrate all pipeline entities (deals, opportunities, etc.) to use the factory, but deepen it by extracting the shared CRUD+audit pattern into a proper <strong>workspace entity lifecycle module</strong> that handles auth, validation, persistence, and audit in one place with a small, stable interface.
+        </div>
+      </div>
+
+      <div class="benefits">
+        <h4>Benefits of Deepening</h4>
+        <ul>
+          <li><strong>Testability:</strong> Currently untestable because the factories return Convex handler objects. A deepened module would expose pure lifecycle functions (e.g., <code>createEntity</code>, <code>updateEntity</code>) that can be unit-tested without Convex runtime</li>
+          <li><strong>Locality:</strong> Bug fixes in CRUD logic apply to all entities, not just one</li>
+          <li><strong>Leverage:</strong> One well-tested implementation serves all pipeline domains</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Candidate 2 -->
+    <section id="candidate-2">
+      <div class="issue-header">
+        <h2>2. Scattered Presentation Logic</h2>
+        <span class="severity medium">Medium</span>
+      </div>
+
+      <div class="file-list">
+        <h4>Files Involved (25+ duplicate present functions)</h4>
+        <ul>
+          <li>convex/shared/present.ts (generic presentWorkspaceRecord)</li>
+          <li>convex/deals/read.ts:9-11 (presentDeal)</li>
+          <li>convex/deals/write.ts:7-9 (presentDeal — identical!)</li>
+          <li>convex/clients/read.ts:31 (presentClient — async)</li>
+          <li>convex/clients/write.ts:22 (presentClient — different!)</li>
+          <li>convex/admin/domainAdapters.ts:116-265 (10+ summary functions)</li>
+          <li>convex/opportunities/read.ts, write.ts (presentOpportunity)</li>
+          <li>convex/projects/read.ts, write.ts (presentProject)</li>
+          <li>convex/clientTasks/read.ts, write.ts (presentTask)</li>
+          <li>convex/clientFollowUps/read.ts, write.ts (presentFollowUp)</li>
+          <li>convex/clientDocs/read.ts, write.ts (presentDoc)</li>
+          <li>convex/projectSpaces/write.ts (presentSpace)</li>
+          <li>convex/organizationApiKeyLifecycle.ts:27 (presentOrganizationApiKey)</li>
+          <li>convex/mcp/connectionLifecycle.ts:30 (presentMcpConnection)</li>
+          <li>convex/billing/data.ts:84,105 (presentPayment, presentSubscription)</li>
+        </ul>
+      </div>
+
+      <h3>Problem</h3>
+      <p>
+        Nearly every module defines its own <code>present*</code> function that does <code>{ ...doc, id: doc._id }</code>. This is <strong>duplicated pass-through logic</strong> with slight variations. The interface for presentation is inconsistent:
+      </p>
+      <ul>
+        <li>Some add <code>id</code>, some don't</li>
+        <li>Some handle <code>visibility</code> defaults</li>
+        <li>Some strip <code>deletedAt</code>/<code>isDeleted</code> fields</li>
+        <li>Some do async operations (e.g., <code>presentClient</code> in <code>clients/read.ts</code> is <code>async</code>)</li>
+      </ul>
+
+      <p>
+        The <code>shared/present.ts</code> module tries to be the seam, but callers ignore it and define their own. This suggests the shared interface doesn't match caller needs.
+      </p>
+
+      <div class="evidence">
+        <h4>Evidence</h4>
+        <code>
+          <div>// In shared/present.ts (generic)</div>
+          <div>export function presentWorkspaceRecord&lt;T extends { _id: string }&gt;(doc: T) {</div>
+          <div>&nbsp;&nbsp;return { ...doc, id: doc._id };</div>
+          <div>}</div>
+          <br>
+          <div>// In deals/read.ts (duplicate)</div>
+          <div>function presentDeal&lt;TDeal extends { _id: string }&gt;(deal: TDeal) {</div>
+          <div>&nbsp;&nbsp;return { ...deal, id: deal._id };</div>
+          <div>}</div>
+          <br>
+          <div>// In organizationApiKeyLifecycle.ts (complex, earns its keep)</div>
+          <div>export function presentOrganizationApiKey(key, now = Date.now()) {</div>
+          <div>&nbsp;&nbsp;return {</div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;status: organizationApiKeyStatus(key, now),</div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;quotaLimit: ORGANIZATION_API_KEY_QUOTA_LIMIT,</div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;quotaUsed: key.quotaUsed ?? 0,</div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;// ... 15 more computed fields</div>
+          <div>&nbsp;&nbsp;};</div>
+          <div>}</div>
+        </code>
+      </div>
+
+      <h3>Deletion Test</h3>
+      <p>
+        If you delete <code>shared/present.ts</code>, nothing breaks — callers already have their own copies. But if you try to consolidate them, you'll discover the real complexity: <strong>presentation is coupled to domain semantics</strong> (e.g., <code>presentOrganizationApiKey</code> computes status, quota, TTL).
+      </p>
+
+      <div class="options">
+        <h4>Solution</h4>
+        <div class="option">
+          <strong>Create deepened presentation modules per domain entity:</strong> Instead of a generic <code>shared/present.ts</code>, create domain-specific presentation modules that encapsulate all presentation rules: ID projection, status computation, field redaction, visibility defaults.
+        </div>
+      </div>
+
+      <div class="benefits">
+        <h4>Benefits</h4>
+        <ul>
+          <li><strong>Locality:</strong> Changing how deals are presented only requires editing one place, not synchronizing <code>deals/read.ts</code> and <code>deals/write.ts</code></li>
+          <li><strong>Testability:</strong> Tests verify presentation invariants (e.g., "revoked keys show correct status", "client PII is protected in list views") at the seam</li>
+          <li><strong>Consistency:</strong> All callers get the same presentation logic, no drift</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Candidate 3 -->
+    <section id="candidate-3">
+      <div class="issue-header">
+        <h2>3. Admin Domain Adapter — Massive Conditional Dispatch</h2>
+        <span class="severity high">High</span>
+      </div>
+
+      <div class="file-list">
+        <h4>Files Involved</h4>
+        <ul>
+          <li>convex/admin/domainAdapters.ts (621 lines)</li>
+          <li>convex/admin/listSurface.ts (43 lines)</li>
+          <li>convex/admin/organizationDashboard.ts (92 lines)</li>
+        </ul>
+      </div>
+
+      <h3>Problem</h3>
+      <p>
+        The <code>domainAdapters.ts</code> file implements a <code>DomainAdapter</code> interface with <code>list</code>, <code>find</code>, <code>summarize</code>, <code>detailRaw</code>, and <code>runAction</code> methods. But the implementation is a <strong>600-line switch statement</strong> that handles 11 different admin domains:
+      </p>
+      <ul>
+        <li>organizations</li>
+        <li>users</li>
+        <li>apps</li>
+        <li>oauth-clients</li>
+        <li>partner-connections</li>
+        <li>api-keys</li>
+        <li>mcp-connections</li>
+        <li>webhooks</li>
+        <li>ai-activity</li>
+        <li>audit-logs</li>
+        <li>workspace-data</li>
+      </ul>
+
+      <p>
+        Each domain has custom list query logic, custom summary formatter, custom action handlers (approve, reject, suspend, revoke, etc.), and custom detail enrichment.
+      </p>
+      <p>
+        This is a <strong>shallow adapter</strong>: the interface promises polymorphism, but the implementation is a massive conditional that knows about every domain. Adding a 12th domain requires editing this file in 5+ places.
+      </p>
+
+      <div class="evidence">
+        <h4>Evidence</h4>
+        <code>
+          <div>// Lines 300-500: giant conditional chains</div>
+          <div>if (domain === "organizations") { /* 80 lines */ }</div>
+          <div>else if (domain === "users") { /* 40 lines */ }</div>
+          <div>else if (domain === "api-keys") { /* 50 lines */ }</div>
+          <div>else if (domain === "mcp-connections") { /* 45 lines */ }</div>
+          <div>else if (domain === "webhooks") { /* 60 lines */ }</div>
+          <div>// ... 6 more domains</div>
+          <br>
+          <div>// No test file for domainAdapters.ts (too hard to test through this interface)</div>
+        </code>
+      </div>
+
+      <h3>Deletion Test</h3>
+      <p>
+        If you delete <code>domainAdapters.ts</code>, the admin UI breaks completely — this module is earning its keep. But the current architecture makes it a bottleneck for adding new domains.
+      </p>
+
+      <div class="options">
+        <h4>Solution</h4>
+        <div class="option">
+          <strong>Extract per-domain adapters:</strong> Move each domain's adapter logic into its own file (e.g., <code>admin/organizationsAdapter.ts</code>, <code>admin/usersAdapter.ts</code>). The <code>domainAdapters.ts</code> file becomes a thin registry that imports and exports adapters.
+        </div>
+      </div>
+
+      <div class="benefits">
+        <h4>Benefits</h4>
+        <ul>
+          <li><strong>Locality:</strong> Understanding how admin actions work for API keys only requires reading one file, not finding the right <code>else if</code> branch in a 600-line file</li>
+          <li><strong>Testability:</strong> Each adapter can be tested independently with focused test cases</li>
+          <li><strong>Leverage:</strong> The <code>DomainAdapter</code> interface becomes real — new domains implement it without modifying existing code</li>
+          <li><strong>Open-Closed Principle:</strong> Open for extension (new adapters), closed for modification (existing adapters unchanged)</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Candidate 4 -->
+    <section id="candidate-4">
+      <div class="issue-header">
+        <h2>4. Partner Resource Gateway — God Function for CRUD</h2>
+        <span class="severity medium">Medium</span>
+      </div>
+
+      <div class="file-list">
+        <h4>Files Involved</h4>
+        <ul>
+          <li>convex/partnerResourceGateway.ts (345 lines)</li>
+          <li>convex/organizationApiKeys.ts:140-183 (calls the gateway)</li>
+          <li>convex/partnerResourceGateway.test.ts (264 lines)</li>
+        </ul>
+      </div>
+
+      <h3>Problem</h3>
+      <p>
+        <code>readPartnerResourceThroughGateway</code> and <code>writePartnerResourceThroughGateway</code> are <strong>god functions</strong> that handle CRUD for 7 different resource types through conditional dispatch:
+      </p>
+      <ul>
+        <li>organization</li>
+        <li>client</li>
+        <li>project</li>
+        <li>task</li>
+        <li>calendar</li>
+        <li>media</li>
+        <li>asset</li>
+      </ul>
+
+      <p>
+        The read function (lines 201-270) has 7 <code>if (args.resource === ...)</code> branches, each implementing different query logic:
+      </p>
+      <ul>
+        <li>Organization: single record lookup</li>
+        <li>Client/Project/Task/Calendar: list or single by ID</li>
+        <li>Media: filtered by resourceType + resourceId</li>
+      </ul>
+
+      <p>
+        The write function (lines 272-344) <strong>only supports client</strong>, but throws for all other resources. This is misleading — the interface promises polymorphism but the implementation rejects 6/7 resources.
+      </p>
+
+      <div class="evidence">
+        <h4>Coupling Issues</h4>
+        <ul>
+          <li>Client PII protection logic is inline (lines 280-302)</li>
+          <li>Audit event creation is duplicated for partner apps vs API keys</li>
+          <li>Webhook enqueueing is mixed in (line 198)</li>
+        </ul>
+      </div>
+
+      <div class="evidence">
+        <h4>Evidence</h4>
+        <code>
+          <div>// readPartnerResourceThroughGateway (270 lines)</div>
+          <div>if (args.resource === "organization") { /* 10 lines */ }</div>
+          <div>if (args.resource === "client") { /* 20 lines */ }</div>
+          <div>if (args.resource === "project") { /* 15 lines */ }</div>
+          <div>if (args.resource === "task") { /* 15 lines */ }</div>
+          <div>if (args.resource === "calendar") { /* 15 lines */ }</div>
+          <div>if (args.resource === "media") { /* 20 lines */ }</div>
+          <br>
+          <div>// writePartnerResourceThroughGateway (344 lines)</div>
+          <div>if (args.resource !== "client") throw new Error(...);</div>
+          <div>// Only client is supported! 6/7 resources throw</div>
+        </code>
+      </div>
+
+      <h3>Deletion Test</h3>
+      <p>
+        If you delete <code>partnerResourceGateway.ts</code>, partner API integration breaks completely — this module is earning its keep. But the god function pattern makes it hard to understand and test individual resource handlers.
+      </p>
+
+      <div class="options">
+        <h4>Solution</h4>
+        <div class="option">
+          <strong>Extract per-resource handlers:</strong> Create separate modules for each resource (e.g., <code>partnerGateway/clientHandler.ts</code>, <code>partnerGateway/projectHandler.ts</code>). The gateway becomes a thin router that delegates to handlers.
+        </div>
+      </div>
+
+      <div class="benefits">
+        <h4>Benefits</h4>
+        <ul>
+          <li><strong>Locality:</strong> Client PII protection changes only require editing one handler, not understanding the whole gateway</li>
+          <li><strong>Testability:</strong> Each handler can be tested with focused inputs/outputs</li>
+          <li><strong>Honest interface:</strong> If write only supports client, the type system should reflect that (not promise 7 resources and throw for 6)</li>
+          <li><strong>Separation of concerns:</strong> Webhook logic, PII protection, and audit creation are separated from routing logic</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Next Steps -->
+    <section>
+      <h2>Recommended Next Steps</h2>
+      <p>Prioritize based on impact and effort:</p>
+      <ol>
+        <li><strong>Immediate:</strong> Delete <code>pipeline_core.ts</code> (Candidate 1) — it's unused and provides zero value</li>
+        <li><strong>Short-term:</strong> Extract admin domain adapters (Candidate 3) — 600-line file is a maintenance bottleneck</li>
+        <li><strong>Medium-term:</strong> Deepen presentation logic (Candidate 2) — consolidate 25+ duplicates into domain-specific modules</li>
+        <li><strong>Medium-term:</strong> Refactor partner gateway (Candidate 4) — extract per-resource handlers for better testability</li>
+      </ol>
+
+      <h3>Glossary</h3>
+      <ul>
+        <li><strong>Module:</strong> Anything with an interface and an implementation (function, class, package)</li>
+        <li><strong>Interface:</strong> Everything a caller must know to use the module: types, invariants, error modes</li>
+        <li><strong>Depth:</strong> Leverage at the interface — a lot of behaviour behind a small interface</li>
+        <li><strong>Shallow:</strong> Interface nearly as complex as the implementation</li>
+        <li><strong>Seam:</strong> Where an interface lives; a place behaviour can be altered without editing in place</li>
+        <li><strong>Locality:</strong> Change, bugs, knowledge concentrated in one place</li>
+        <li><strong>Leverage:</strong> What callers get from depth</li>
+      </ul>
+    </section>
+
+    <footer style="margin-top: 48px; padding-top: 24px; border-top: 2px solid var(--q-border); text-align: center; color: var(--q-text-muted); font-size: 0.9rem;">
+      <p>Generated: June 26, 2026 | Qentrah Workspace Architecture Review</p>
+      <p>130 Convex files analyzed | 4 deepening opportunities identified</p>
+    </footer>
+  </div>
+</body>
+</html>

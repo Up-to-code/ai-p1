@@ -3,7 +3,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is([data-theme="dark"] *));
+@custom-variant dark (&:is([data-theme="dark"]));
 
 @theme {
   /* ── Shadcn Color Palette (Light) ── */
@@ -15,23 +15,23 @@
   --color-popover-foreground: #111111;
   --color-primary: #111111;
   --color-primary-foreground: #FFFFFF;
-  --color-secondary: #F5F3EF;
+  --color-secondary: #F5F2EC;
   --color-secondary-foreground: #111111;
-  --color-muted: #ECE8E1;
-  --color-muted-foreground: #5A5A5A;
-  --color-accent: #ECE8E1;
+  --color-muted: #EFEAE2;
+  --color-muted-foreground: #4D4D4D;
+  --color-accent: #EAE6DF;
   --color-accent-foreground: #111111;
-  --color-destructive: #FF5A5A;
+  --color-destructive: #A55B52;
   --color-destructive-foreground: #FFFFFF;
-  --color-border: #E5E2DD;
+  --color-border: #DED8CF;
   --color-input: #FFFFFF;
   --color-ring: #111111;
 
   /* ── Custom semantic tokens ── */
   --color-text-primary: #111111;
-  --color-text-secondary: #5A5A5A;
-  --color-text-muted: #8E8E8E;
-  --color-surface: #F5F3EF;
+  --color-text-secondary: #4D4D4D;
+  --color-text-muted: #787878;
+  --color-surface: #F5F2EC;
   --color-surface-elevated: #FFFFFF;
 
   /* ── Domain colors ── */
@@ -43,9 +43,9 @@
   --color-system-gray: #5D6570;
 
   /* ── Semantic Status ── */
-  --color-success: #19A65B;
-  --color-warning: #FFB547;
-  --color-danger: #FF5A5A;
+  --color-success: #5F7768;
+  --color-warning: #B78544;
+  --color-danger: #A55B52;
   --color-info: #4388FF;
   --color-note: #8A5CFF;
 
@@ -83,66 +83,25 @@
 :root {
   color-scheme: light;
 
-  /* ── Shadcn Color Palette (Light) ── */
-  --color-background: #FAF8F4;
-  --color-foreground: #111111;
-  --color-card: #FFFFFF;
-  --color-card-foreground: #111111;
-  --color-popover: #FFFFFF;
-  --color-popover-foreground: #111111;
-  --color-primary: #111111;
-  --color-primary-foreground: #FFFFFF;
-  --color-secondary: #F5F3EF;
-  --color-secondary-foreground: #111111;
-  --color-muted: #ECE8E1;
-  --color-muted-foreground: #5A5A5A;
-  --color-accent: #ECE8E1;
-  --color-accent-foreground: #111111;
-  --color-destructive: #FF5A5A;
-  --color-destructive-foreground: #FFFFFF;
-  --color-border: #E5E2DD;
-  --color-input: #FFFFFF;
-  --color-ring: #111111;
-
-  /* ── Custom semantic tokens ── */
-  --color-text-primary: #111111;
-  --color-text-secondary: #5A5A5A;
-  --color-text-muted: #8E8E8E;
-  --color-surface: #F5F3EF;
-  --color-surface-elevated: #FFFFFF;
-
-  /* ── Domain colors ── */
-  --color-network-blue: #4F80FF;
-  --color-agent-purple: #8A5CFF;
-  --color-human-green: #2BB673;
-  --color-automation-orange: #FF9A3D;
-  --color-data-cyan: #00A3FF;
-  --color-system-gray: #5D6570;
-
-  /* ── Semantic Status ── */
-  --color-success: #19A65B;
-  --color-warning: #FFB547;
-  --color-danger: #FF5A5A;
-  --color-info: #4388FF;
-  --color-note: #8A5CFF;
-
   /* ── Qentrah Custom Properties ── */
   --q-bg: #FAF8F4;
-  --q-bg-very-dark: #F5F3EF;
-  --q-bg-dark: #F5F3EF;
-  --q-bg-secondary: #F5F3EF;
+  --q-bg-secondary: #F5F2EC;
+  --q-bg-tertiary: #EFEAE2;
+  --q-bg-very-dark: #F5F2EC;
+  --q-bg-dark: #F5F2EC;
   --q-bg-light: #FFFFFF;
   --q-bg-very-light: #FAF8F4;
+  --q-bg-alt: #F5F2EC;
 
-  --q-sidebar: #F5F3EF;
+  --q-sidebar: #F5F2EC;
   --q-topbar: #FAF8F4;
   --q-card: #FFFFFF;
-  --q-card-hover: #F5F3EF;
-  --q-border: #E5E2DD;
-  --q-border-strong: #D2CEC8;
+  --q-card-hover: #F5F2EC;
+  --q-border: #DED8CF;
+  --q-border-strong: #D5CEC4;
   --q-text-primary: #111111;
-  --q-text-secondary: #5A5A5A;
-  --q-text-muted: #8E8E8E;
+  --q-text-secondary: #4D4D4D;
+  --q-text-muted: #787878;
   --q-input-bg: #FFFFFF;
   --q-accent: #111111;
   --q-accent-hover: #222222;
@@ -152,16 +111,16 @@
   --q-topbar-btn: #111111;
 
   /* Status */
-  --q-success: #19A65B;
-  --q-success-bg: #E8F5EE;
-  --q-warning: #FFB547;
-  --q-warning-bg: #FFF4E0;
-  --q-error: #FF5A5A;
-  --q-error-bg: #FFE8E8;
+  --q-success: #5F7768;
+  --q-success-bg: rgba(95, 119, 104, 0.12);
+  --q-warning: #B78544;
+  --q-warning-bg: rgba(183, 133, 68, 0.12);
+  --q-error: #A55B52;
+  --q-error-bg: rgba(165, 91, 82, 0.12);
   --q-info: #4388FF;
-  --q-info-bg: #EBF2FF;
+  --q-info-bg: rgba(67, 136, 255, 0.12);
   --q-note: #8A5CFF;
-  --q-note-bg: #F3EEFF;
+  --q-note-bg: rgba(138, 92, 255, 0.12);
 
   /* Domain colors */
   --q-network-blue: #4F80FF;
@@ -170,83 +129,63 @@
   --q-automation-orange: #FF9A3D;
   --q-data-cyan: #00A3FF;
   --q-system-gray: #5D6570;
+
+  /* Landing accent colors */
+  --blue: #2F6FED;
+  --blue-pale: #EEF4FF;
+  --coral: #FF6B4A;
+  --purple: #8B5CF6;
+  --green: #10B981;
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
 
-  /* ── Shadcn Color Palette (Dark) ── */
-  --color-background: #090909;
-  --color-foreground: #FFFFFF;
-  --color-card: #121212;
-  --color-card-foreground: #FFFFFF;
-  --color-popover: #121212;
-  --color-popover-foreground: #FFFFFF;
-  --color-primary: #FFFFFF;
-  --color-primary-foreground: #090909;
-  --color-secondary: #1A1A1A;
-  --color-secondary-foreground: #FFFFFF;
-  --color-muted: #1A1A1A;
-  --color-muted-foreground: #C7C7C7;
-  --color-accent: #1A1A1A;
-  --color-accent-foreground: #FFFFFF;
-  --color-destructive: #FF6B6B;
-  --color-destructive-foreground: #090909;
-  --color-border: #2A2A2A;
-  --color-input: #1A1A1A;
-  --color-ring: #FFFFFF;
-
-  /* ── Custom semantic tokens (Dark) ── */
-  --color-text-primary: #FFFFFF;
-  --color-text-secondary: #C7C7C7;
-  --color-text-muted: #8D8D8D;
-  --color-surface: #1A1A1A;
-  --color-surface-elevated: #121212;
-
-  /* ── Domain colors ── */
-  --color-network-blue: #4F80FF;
-  --color-agent-purple: #8A5CFF;
-  --color-human-green: #2BB673;
-  --color-automation-orange: #FF9A3D;
-  --color-data-cyan: #00A3FF;
-  --color-system-gray: #5D6570;
-
   /* ── Qentrah Custom Properties (Dark) ── */
-  --q-bg: #090909;
-  --q-bg-very-dark: #060606;
-  --q-bg-dark: #121212;
-  --q-bg-secondary: #1A1A1A;
-  --q-bg-light: #222222;
-  --q-bg-very-light: #2A2A2A;
+  --q-bg: #0E0E0E;
+  --q-bg-secondary: #1F1F1F;
+  --q-bg-tertiary: #262626;
+  --q-bg-very-dark: #0E0E0E;
+  --q-bg-dark: #161616;
+  --q-bg-light: #1F1F1F;
+  --q-bg-very-light: #262626;
+  --q-bg-alt: #1F1F1F;
 
-  --q-sidebar: #121212;
-  --q-topbar: #090909;
-  --q-card: #121212;
-  --q-card-hover: #1A1A1A;
-  --q-border: #2A2A2A;
-  --q-border-strong: #404040;
-  --q-text-primary: #FFFFFF;
-  --q-text-secondary: #C7C7C7;
-  --q-text-muted: #8D8D8D;
-  --q-input-bg: #1A1A1A;
-  --q-accent: #FFFFFF;
-  --q-accent-hover: #F0F0F0;
-  --q-accent-active: #D7D7D7;
-  --q-accent-muted: rgba(255, 255, 255, 0.10);
-  --q-accent-border: rgba(255, 255, 255, 0.20);
-  --q-topbar-btn: #FFFFFF;
+  --q-sidebar: #161616;
+  --q-topbar: #0E0E0E;
+  --q-card: #161616;
+  --q-card-hover: #1F1F1F;
+  --q-border: #2C2C2C;
+  --q-border-strong: #3A3A3A;
+  --q-text-primary: #F5F2EC;
+  --q-text-secondary: #BFB8AE;
+  --q-text-muted: #8A857E;
+  --q-input-bg: #1F1F1F;
+  --q-accent: #F5F2EC;
+  --q-accent-hover: #EFEAE2;
+  --q-accent-active: #DED8CF;
+  --q-accent-muted: rgba(245, 242, 236, 0.10);
+  --q-accent-border: rgba(245, 242, 236, 0.20);
+  --q-topbar-btn: #F5F2EC;
 
   /* Status */
-  --q-success: #33D17A;
-  --q-success-bg: rgba(51, 209, 122, 0.12);
-  --q-warning: #FFB547;
-  --q-warning-bg: rgba(255, 181, 71, 0.12);
-  --q-error: #FF6B6B;
-  --q-error-bg: rgba(255, 107, 107, 0.12);
+  --q-success: #7F9987;
+  --q-success-bg: rgba(127, 153, 135, 0.12);
+  --q-warning: #D4A56C;
+  --q-warning-bg: rgba(212, 165, 108, 0.12);
+  --q-error: #C5776D;
+  --q-error-bg: rgba(197, 119, 109, 0.12);
   --q-info: #5B9CFF;
   --q-info-bg: rgba(91, 156, 255, 0.12);
   --q-note: #8A5CFF;
   --q-note-bg: rgba(138, 92, 255, 0.12);
+
+  /* Landing accent colors (Dark) */
+  --blue: #4F8BFF;
+  --blue-pale: rgba(79, 139, 255, 0.15);
+  --coral: #FF7A5C;
+  --purple: #A78BFA;
+  --green: #34D399;
 }
 
 @layer base {

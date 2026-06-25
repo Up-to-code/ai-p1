@@ -5,10 +5,13 @@ import { useLocale, useTranslations } from "next-intl";
 import CTA from "@/components/cta";
 import LogoCloud from "@/components/logo-cloud";
 import { AnimatedHomeHero } from "@/components/landing/animated-home-hero";
-import { AppsPlatform } from "@/components/landing/apps-platform";
 import { Faq02 } from "@/components/landing/faq-02";
-import { McpAgentsShowcase } from "@/components/landing/mcp-agents-showcase";
+import { PlatformSection } from "@/components/landing/platform-section";
 import { ProblemSection } from "@/components/landing/problem-section";
+import { SolutionSection } from "@/components/landing/solution-section";
+import { AISection } from "@/components/landing/ai-section";
+import { CommunicationSection } from "@/components/landing/communication-section";
+import { VisionSection } from "@/components/landing/vision-section";
 
 export function HomePage() {
   const t = useTranslations("Landing.home");
@@ -30,9 +33,15 @@ export function HomePage() {
 
       <ProblemSection locale={locale} />
 
-      <AppsPlatform locale={locale} />
+      <SolutionSection locale={locale} />
 
-      <McpAgentsShowcase locale={locale} />
+      <PlatformSection locale={locale} />
+
+      <AISection locale={locale} />
+
+      <CommunicationSection locale={locale} />
+
+      <VisionSection locale={locale} />
 
       <Faq02 />
 

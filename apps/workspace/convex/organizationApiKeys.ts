@@ -15,6 +15,7 @@ import {
 
 const DEFAULT_LIMIT = 100;
 
+// Validator for API key permissions (includes "space")
 const apiKeyResourceValidator = v.union(
   v.literal("organization"),
   v.literal("client"),
@@ -22,6 +23,18 @@ const apiKeyResourceValidator = v.union(
   v.literal("calendar"),
   v.literal("task"),
   v.literal("media"),
+  v.literal("space"),
+);
+
+// Validator for partner gateway resources (includes "asset")
+const partnerResourceValidator = v.union(
+  v.literal("organization"),
+  v.literal("client"),
+  v.literal("project"),
+  v.literal("calendar"),
+  v.literal("task"),
+  v.literal("media"),
+  v.literal("asset"),
 );
 
 const apiKeyActionValidator = v.union(
@@ -127,7 +140,7 @@ export const readResource = query({
   args: {
     serverToken: v.string(),
     organizationId: v.string(),
-    resource: apiKeyResourceValidator,
+    resource: partnerResourceValidator,
     action: apiKeyActionValidator,
     input: v.optional(v.any()),
   },
@@ -149,7 +162,7 @@ export const writeResource = mutation({
     serverToken: v.string(),
     organizationId: v.string(),
     apiKeyId: v.id("organizationApiKeys"),
-    resource: apiKeyResourceValidator,
+    resource: partnerResourceValidator,
     action: apiKeyActionValidator,
     input: v.optional(v.any()),
   },
