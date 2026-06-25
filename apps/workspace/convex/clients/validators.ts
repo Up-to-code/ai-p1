@@ -22,20 +22,14 @@ export const clientPriorityValidator = v.union(
 
 export const visibilityValidator = v.union(v.literal("private"), v.literal("team"), v.literal("workspace"));
 
-export const clientPipelineStageValidator = v.union(
-  v.literal("new"),
-  v.literal("qualified"),
-  v.literal("review"),
-  v.literal("negotiation"),
-  v.literal("closed"),
-);
+export const clientPipelineStageValidator = v.string();
 
-export type ClientPipelineStage = "new" | "qualified" | "review" | "negotiation" | "closed";
+export type ClientPipelineStage = string;
 
 export function resolveClientPipelineStage(client: {
   status: "new" | "active" | "nurture" | "inactive" | "archived";
-  pipelineStage?: ClientPipelineStage;
-}): ClientPipelineStage {
+  pipelineStage?: string;
+}): string {
   if (client.status === "archived") return "closed";
   return client.pipelineStage ?? "new";
 }

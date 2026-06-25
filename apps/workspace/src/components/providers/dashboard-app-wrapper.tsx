@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useLocale } from "next-intl";
 import { PendingApprovalBanner } from "@/components/layout/pending-approval-banner";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -10,6 +10,8 @@ import { Topbar } from "@/components/layout/topbar";
 import { WorkspaceRouteLoading } from "@/components/loading/workspace-route-loading";
 import { ToastProvider } from "@/components/ui/toast";
 import { AccountProvider, useAccountContext } from "@/domains/auth";
+import { AiPanel } from "@/components/layout/ai-panel";
+import { useAssistantPanel } from "@/components/layout/use-assistant-panel";
 import { getWorkspaceAuthRedirect } from "@/domains/auth/workspace-status";
 import { NoOrganizationModal } from "@/domains/auth/components/no-organization-modal";
 import { clearAuthHandoff, readAuthHandoff } from "@/domains/auth";
@@ -30,6 +32,7 @@ function DashboardAuthenticatedShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const account = useAccountContext();
   const [hasRedirected, setHasRedirected] = useState(false);
+  const isAiPanelOpen = useAssistantPanel((s) => s.isOpen);
   
   const isAuthHandoffPending = useAuthHandoffPending(account.isSignedIn, account.workspace.organizationId);
   
@@ -119,9 +122,12 @@ function DashboardAuthenticatedShell({ children }: { children: ReactNode }) {
           <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background ml-4">
             {isPendingApproval && <PendingApprovalBanner />}
             <Topbar />
-            <main className="flex min-h-0 flex-1 flex-col overflow-hidden outline-none p-4">
-              {children}
-            </main>
+            <div className="flex min-h-0 flex-1 overflow-hidden">
+              <main className="flex min-h-0 flex-1 flex-col overflow-auto outline-none p-4">
+                {children}
+              </main>
+              {isAiPanelOpen && <ResizableAiPanel />}
+            </div>
           </div>
         </div>
       </SidebarProvider>
@@ -168,4 +174,53 @@ function useAuthHandoffPending(isSignedIn: boolean, organizationId: string | nul
 
 function DashboardLoadingState() {
   return <WorkspaceRouteLoading variant="session" />;
+}
+
+const AI_PANEL_MIN = 320;
+const AI_PANEL_MAX = 560;
+const AI_PANEL_DEFAULT = 400;
+
+function ResizableAiPanel() {
+  const [width, setWidth] = useState(AI_PANEL_DEFAULT);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const startWidth = useRef(0);
+
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    isDragging.current = true;
+    startX.current = e.clientX;
+    startWidth.current = width;
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  }, [width]);
+
+  const onPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!isDragging.current) return;
+    const delta = startX.current - e.clientX;
+    const next = Math.min(AI_PANEL_MAX, Math.max(AI_PANEL_MIN, startWidth.current + delta));
+    setWidth(next);
+  }, []);
+
+  const onPointerUp = useCallback(() => {
+    isDragging.current = false;
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
+  }, []);
+
+  return (
+    <div className="relative flex h-full shrink-0" style={{ width }}>
+      <div
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        className="absolute left-0 top-0 z-20 flex h-full w-2 -translate-x-1 cursor-col-resize items-center justify-center"
+      >
+        <div className="h-8 w-0.5 rounded-full bg-border transition-colors hover:bg-muted-foreground/50" />
+      </div>
+      <div className="flex h-full min-w-0 flex-1 overflow-hidden pl-1">
+        <AiPanel />
+      </div>
+    </div>
+  );
 }

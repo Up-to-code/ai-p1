@@ -791,13 +791,7 @@ export default defineSchema({
     type: v.union(v.literal("person"), v.literal("organization")),
     ownerUserId: v.string(),
     status: v.union(v.literal("new"), v.literal("active"), v.literal("nurture"), v.literal("inactive"), v.literal("archived")),
-    pipelineStage: v.optional(v.union(
-      v.literal("new"),
-      v.literal("qualified"),
-      v.literal("review"),
-      v.literal("negotiation"),
-      v.literal("closed"),
-    )),
+    pipelineStage: v.optional(v.string()),
     pipelineOrder: v.optional(v.number()),
     source: v.string(),
     company: v.optional(v.string()),
@@ -1280,4 +1274,16 @@ export default defineSchema({
     .index("by_dodo_customer_id", ["dodoCustomerId"])
     .index("by_status", ["status"])
     .index("by_updated", ["updatedAt"]),
+  pipeline_stages: defineTable({
+    organizationId: v.string(),
+    key: v.string(),
+    name: v.string(),
+    color: v.string(),
+    order: v.number(),
+    isActive: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_organization", ["organizationId"])
+    .index("by_org_key", ["organizationId", "key"]),
 });

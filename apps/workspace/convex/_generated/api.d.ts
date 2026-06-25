@@ -108,6 +108,9 @@ import type * as partnerApps_webhookSecrets from "../partnerApps/webhookSecrets.
 import type * as partnerApps_webhookUrlSafety from "../partnerApps/webhookUrlSafety.js";
 import type * as partnerApps_webhooks from "../partnerApps/webhooks.js";
 import type * as partnerResourceGateway from "../partnerResourceGateway.js";
+import type * as pipeline_core from "../pipeline_core.js";
+import type * as pipeline_stages_read from "../pipeline_stages/read.js";
+import type * as pipeline_stages_write from "../pipeline_stages/write.js";
 import type * as platform_access from "../platform/access.js";
 import type * as projectDashboards from "../projectDashboards.js";
 import type * as projectSpaces_read from "../projectSpaces/read.js";
@@ -117,6 +120,7 @@ import type * as projects_read from "../projects/read.js";
 import type * as projects_rollup from "../projects/rollup.js";
 import type * as projects_validators from "../projects/validators.js";
 import type * as projects_write from "../projects/write.js";
+import type * as requireAuth from "../requireAuth.js";
 import type * as security_backfill from "../security/backfill.js";
 import type * as security_backfillTargets from "../security/backfillTargets.js";
 import type * as security_clientPii from "../security/clientPii.js";
@@ -239,6 +243,9 @@ declare const fullApi: ApiFromModules<{
   "partnerApps/webhookUrlSafety": typeof partnerApps_webhookUrlSafety;
   "partnerApps/webhooks": typeof partnerApps_webhooks;
   partnerResourceGateway: typeof partnerResourceGateway;
+  pipeline_core: typeof pipeline_core;
+  "pipeline_stages/read": typeof pipeline_stages_read;
+  "pipeline_stages/write": typeof pipeline_stages_write;
   "platform/access": typeof platform_access;
   projectDashboards: typeof projectDashboards;
   "projectSpaces/read": typeof projectSpaces_read;
@@ -248,6 +255,7 @@ declare const fullApi: ApiFromModules<{
   "projects/rollup": typeof projects_rollup;
   "projects/validators": typeof projects_validators;
   "projects/write": typeof projects_write;
+  requireAuth: typeof requireAuth;
   "security/backfill": typeof security_backfill;
   "security/backfillTargets": typeof security_backfillTargets;
   "security/clientPii": typeof security_clientPii;

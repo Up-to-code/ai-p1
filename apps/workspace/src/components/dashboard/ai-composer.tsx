@@ -105,7 +105,7 @@ export default function AiComposer({
     <div
       className={cn(
         "w-full transition-all",
-        layout === "landing" ? "mx-auto max-w-3xl" : "mx-auto max-w-4xl px-3 sm:px-4",
+        layout === "landing" ? "mx-auto max-w-3xl" : "px-3 sm:px-4",
       )}
       onDragEnter={(e) => { e.preventDefault(); setIsDraggingFiles(true); }}
       onDragOver={(e) => { e.preventDefault(); }}

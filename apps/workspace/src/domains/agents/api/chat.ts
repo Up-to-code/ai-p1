@@ -4,7 +4,7 @@ import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import type { AgUiConversationTurn } from "@/components/ui/ag-ui/types";
-export { deleteAgentThreadRequest, parseAgentSseChunk, sendAgentChatRequest } from "./agent-chat-request";
+export { deleteAgentThreadRequest, parseAgentSseChunk, sendAgentChatRequest, approveAgentConfirmationRequest, cancelAgentConfirmationRequest } from "./agent-chat-request";
 
 export type AgentChatEvent =
   | { type: "meta"; threadId: string; runId: string }

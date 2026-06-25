@@ -6,9 +6,9 @@ import { Input } from "@/components/ui/input";
 import { 
   Plus, Search, ListTodo, Calendar, KanbanSquare, FileText, 
   CheckSquare, LayoutGrid, Table2, Presentation, Clock, 
-  Activity, BarChart, Network, Users, MapPin, Globe, FileSpreadsheet
+  Activity, BarChart, Network, Users, MapPin, Globe, FileSpreadsheet,
+  Lock, Pin
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export type ViewType = "list" | "calendar" | "board" | "doc" | "form" | "dashboard" | "table" | "whiteboard" | "timeline" | "activity" | "workload" | "mindmap" | "team" | "map" | "website" | "sheets";
 
@@ -21,28 +21,28 @@ export interface ViewOption {
 }
 
 const POPULAR_VIEWS: ViewOption[] = [
-  { type: "list", label: "List", description: "Track tasks, bugs, people & more", icon: ListTodo, color: "text-slate-500 bg-slate-500/10" },
-  { type: "calendar", label: "Calendar", description: "Plan, schedule, & delegate", icon: Calendar, color: "text-orange-500 bg-orange-500/10" },
-  { type: "board", label: "Board – Kanban", description: "Move tasks between columns", icon: KanbanSquare, color: "text-indigo-500 bg-indigo-500/10" },
-  { type: "doc", label: "Doc", description: "Collaborate & document anything", icon: FileText, color: "text-blue-500 bg-blue-500/10" },
-  { type: "form", label: "Form", description: "Collect, track, & report data", icon: CheckSquare, color: "text-violet-500 bg-violet-500/10" },
-  { type: "dashboard", label: "Dashboard", description: "Track metrics & insights", icon: LayoutGrid, color: "text-purple-500 bg-purple-500/10" },
+  { type: "list", label: "List", description: "Track tasks, bugs, people & more", icon: ListTodo, color: "#3a3a3a" },
+  { type: "calendar", label: "Calendar", description: "Plan, schedule, & delegate", icon: Calendar, color: "#e87732" },
+  { type: "board", label: "Board \u2013 Kanban", description: "Move tasks between columns", icon: KanbanSquare, color: "#7c3aed" },
+  { type: "doc", label: "Doc", description: "Collaborate & document anything", icon: FileText, color: "#2563eb" },
+  { type: "form", label: "Form", description: "Collect, track, & report data", icon: CheckSquare, color: "#db2777" },
+  { type: "dashboard", label: "Dashboard", description: "Track metrics & insights", icon: LayoutGrid, color: "#4f46e5" },
 ];
 
 const MORE_VIEWS: ViewOption[] = [
-  { type: "table", label: "Table", description: "Structured table format", icon: Table2, color: "text-emerald-500 bg-emerald-500/10" },
-  { type: "whiteboard", label: "Whiteboard", description: "Visualize & brainstorm ideas", icon: Presentation, color: "text-amber-500 bg-amber-500/10" },
-  { type: "timeline", label: "Timeline", description: "See tasks by start & due date", icon: Clock, color: "text-orange-600 bg-orange-600/10" },
-  { type: "activity", label: "Activity", description: "Real-time activity feed", icon: Activity, color: "text-blue-600 bg-blue-600/10" },
-  { type: "workload", label: "Workload", description: "Visualize team capacity", icon: BarChart, color: "text-teal-500 bg-teal-500/10" },
-  { type: "mindmap", label: "Mind Map", description: "Visual brainstorming of ideas", icon: Network, color: "text-pink-500 bg-pink-500/10" },
-  { type: "team", label: "Team", description: "Monitor work being done", icon: Users, color: "text-indigo-600 bg-indigo-600/10" },
-  { type: "map", label: "Map", description: "Tasks visualized by address", icon: MapPin, color: "text-orange-500 bg-orange-500/10" },
+  { type: "table", label: "Table", description: "Structured table format", icon: Table2, color: "#16a34a" },
+  { type: "whiteboard", label: "Whiteboard", description: "Visualize & brainstorm ideas", icon: Presentation, color: "#d97706" },
+  { type: "timeline", label: "Timeline", description: "See tasks by start & due date", icon: Clock, color: "#e87732" },
+  { type: "activity", label: "Activity", description: "Real-time activity feed", icon: Activity, color: "#0891b2" },
+  { type: "workload", label: "Workload", description: "Visualize team capacity", icon: BarChart, color: "#0d9488" },
+  { type: "mindmap", label: "Mind Map", description: "Visual brainstorming of ideas", icon: Network, color: "#db2777" },
+  { type: "team", label: "Team", description: "Monitor work being done", icon: Users, color: "#7c3aed" },
+  { type: "map", label: "Map", description: "Tasks visualized by address", icon: MapPin, color: "#dc2626" },
 ];
 
 const EMBEDS: ViewOption[] = [
-  { type: "website", label: "Any website", description: "Embed a website", icon: Globe, color: "text-slate-400 bg-slate-400/10" },
-  { type: "sheets", label: "Google Sheets", description: "Embed a Google Sheet", icon: FileSpreadsheet, color: "text-emerald-600 bg-emerald-600/10" },
+  { type: "website", label: "Any website", description: "Embed any page or tool", icon: Globe, color: "#2563eb" },
+  { type: "sheets", label: "Google Sheets", description: "Connect your spreadsheet", icon: FileSpreadsheet, color: "#16a34a" },
 ];
 
 interface AddViewDropdownProps {
@@ -58,35 +58,46 @@ export function AddViewDropdown({ onAddView }: AddViewDropdownProps) {
     setOpen(false);
   };
 
-  const renderSection = (title: string, views: ViewOption[]) => {
-    const filtered = views.filter(v => 
-      v.label.toLowerCase().includes(search.toLowerCase()) || 
+  const filterViews = (views: ViewOption[]) =>
+    views.filter(v =>
+      v.label.toLowerCase().includes(search.toLowerCase()) ||
       v.description.toLowerCase().includes(search.toLowerCase())
     );
-    
-    if (filtered.length === 0) return null;
+
+  const filteredPopular = filterViews(POPULAR_VIEWS);
+  const filteredMore = filterViews(MORE_VIEWS);
+  const filteredEmbeds = filterViews(EMBEDS);
+
+  const hasResults = filteredPopular.length > 0 || filteredMore.length > 0 || filteredEmbeds.length > 0;
+
+  const renderSection = (title: string, views: ViewOption[], showDivider: boolean = false) => {
+    if (views.length === 0) return null;
 
     return (
-      <div className="mb-4">
-        <h3 className="text-xs font-semibold text-muted-foreground px-2 mb-2">{title}</h3>
-        <div className="grid grid-cols-2 gap-1">
-          {filtered.map(view => (
+      <>
+        {showDivider && <div className="h-px bg-[#252528] my-2" />}
+        <div className="text-[11px] text-[#666] font-medium tracking-wider px-2 mb-1.5">{title}</div>
+        <div className="grid grid-cols-2 gap-0.5 px-2">
+          {views.map(view => (
             <button
               key={view.type}
               onClick={() => handleSelect(view)}
-              className="flex items-start text-left gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors group"
+              className="flex items-center text-left gap-2.5 p-2 rounded-lg hover:bg-[#25252e] transition-colors"
             >
-              <div className={cn("mt-0.5 h-8 w-8 rounded-lg flex items-center justify-center shrink-0", view.color)}>
-                <view.icon className="h-4 w-4" />
+              <div 
+                className="h-[34px] w-[34px] rounded-lg flex items-center justify-center shrink-0 text-white"
+                style={{ backgroundColor: view.color }}
+              >
+                <view.icon className="h-[17px] w-[17px]" />
               </div>
               <div>
-                <div className="text-sm font-semibold text-foreground">{view.label}</div>
-                <div className="text-[11px] text-muted-foreground leading-tight mt-0.5">{view.description}</div>
+                <div className="text-[13px] font-medium text-[#ddd] leading-tight">{view.label}</div>
+                <div className="text-[11px] text-[#666] leading-tight mt-0.5">{view.description}</div>
               </div>
             </button>
           ))}
         </div>
-      </div>
+      </>
     );
   };
 
@@ -98,22 +109,40 @@ export function AddViewDropdown({ onAddView }: AddViewDropdownProps) {
           Add view
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-[500px] p-0 rounded-xl border-border shadow-xl overflow-hidden" align="start">
-        <div className="p-3 border-b border-border/50">
+      <PopoverContent className="w-[460px] p-0 rounded-[10px] border-[#2e2e35] shadow-2xl overflow-hidden bg-[#1a1a1f]" align="start">
+        <div className="p-2.5 border-b border-[#252528]">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#555]" />
             <Input 
               placeholder="Search views..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-9 border-primary/30 focus-visible:ring-primary/20 bg-primary/5 rounded-md text-sm" 
+              className="pl-9 h-8 border-none focus-visible:ring-0 bg-transparent text-[#ccc] text-[13px] placeholder:text-[#555]" 
             />
           </div>
         </div>
-        <div className="p-3 max-h-[450px] overflow-y-auto">
-          {renderSection("Popular", POPULAR_VIEWS)}
-          {renderSection("More views", MORE_VIEWS)}
-          {renderSection("Embeds", EMBEDS)}
+        <div className="p-2 max-h-[450px] overflow-y-auto">
+          {hasResults ? (
+            <>
+              {renderSection("Popular", filteredPopular)}
+              {renderSection("More views", filteredMore, true)}
+              {renderSection("Embeds", filteredEmbeds, true)}
+            </>
+          ) : (
+            <div className="py-8 text-center text-[#666] text-[13px]">No views found</div>
+          )}
+        </div>
+        <div className="flex items-center gap-5 px-3.5 py-2.5 border-t border-[#252528]">
+          <label className="flex items-center gap-1.5 text-[12px] text-[#666] cursor-pointer hover:text-[#aaa]">
+            <input type="checkbox" className="accent-[#555] w-[13px] h-[13px]" />
+            <Lock className="h-[13px] w-[13px]" />
+            Private view
+          </label>
+          <label className="flex items-center gap-1.5 text-[12px] text-[#666] cursor-pointer hover:text-[#aaa]">
+            <input type="checkbox" className="accent-[#555] w-[13px] h-[13px]" />
+            <Pin className="h-[13px] w-[13px]" />
+            Pin view
+          </label>
         </div>
       </PopoverContent>
     </Popover>

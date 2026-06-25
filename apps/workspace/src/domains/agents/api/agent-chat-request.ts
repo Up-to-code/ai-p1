@@ -83,3 +83,35 @@ export async function deleteAgentThreadRequest(organizationId: string, threadId:
 
   return response.json() as Promise<{ deleted: true; threadId: string }>;
 }
+
+function agentConfirmationPath(organizationId: string, confirmationId: string, action: "approve" | "cancel") {
+  return `/api/v1/organizations/${organizationId}/agents/confirmations/${confirmationId}/${action}`;
+}
+
+export async function approveAgentConfirmationRequest(organizationId: string, confirmationId: string) {
+  const response = await fetch(agentConfirmationPath(organizationId, confirmationId, "approve"), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload.error ?? "Failed to approve confirmation.");
+  }
+
+  return response.json() as Promise<{ confirmation: unknown; input: unknown }>;
+}
+
+export async function cancelAgentConfirmationRequest(organizationId: string, confirmationId: string) {
+  const response = await fetch(agentConfirmationPath(organizationId, confirmationId, "cancel"), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload.error ?? "Failed to cancel confirmation.");
+  }
+
+  return response.json() as Promise<{ confirmation: unknown }>;
+}

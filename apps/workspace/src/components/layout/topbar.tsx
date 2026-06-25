@@ -18,6 +18,7 @@ import { useSearchParams } from "next/navigation";
 import { SharePopover } from "@/components/shared/share-popover";
 import { useToast } from "@/components/ui/toast";
 import { useAccountContext } from "@/domains/auth";
+import { useAssistantPanel } from "@/components/layout/use-assistant-panel";
 import {
   createOrganizationInvitation,
   createOrganizationInviteLink,
@@ -103,6 +104,7 @@ export function Topbar() {
   const { isOpen, toggleSidebar } = useSidebar();
   const account = useAccountContext();
   const { toast } = useToast();
+  const { togglePanel, isOpen: isAiPanelOpen } = useAssistantPanel();
   const setActiveAiThreadId = useWorkspaceStore((state) => state.setActiveAiThreadId);
   const searchParams = useSearchParams();
   const organizationId = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
@@ -307,6 +309,21 @@ export function Topbar() {
               });
             }}
           />
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={togglePanel}
+            className={cn(
+              "h-8 w-8 transition-colors",
+              isAiPanelOpen
+                ? "bg-[var(--q-user-bubble)]/10 text-[var(--q-user-bubble)] hover:bg-[var(--q-user-bubble)]/20"
+                : "text-text-muted hover:bg-[var(--color-divider)] hover:text-text-primary"
+            )}
+            aria-label={isAiPanelOpen ? "Close AI Assistant" : "Open AI Assistant"}
+          >
+            <Bot className="h-4 w-4" />
+          </Button>
 
           <div className="ms-2 border-l border-[var(--color-divider)] ps-4">
             <ProfileMenu />

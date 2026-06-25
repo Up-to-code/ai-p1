@@ -13,6 +13,9 @@ import {
   InfiniteScrollSentinel,
   type AppDataTableColumn,
 } from "@/components/shared";
+import { PipelineBoard, ViewSwitcherTabs, GroupedList } from "@/components/shared/view-system";
+import type { ViewDefinition } from "@/components/shared/view-system/types";
+import { clientToCardItem } from "./client-view-helpers";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -82,6 +85,8 @@ import { cn } from "@/lib/utils";
 import { ClientForm } from "./client-form";
 import { ClientSheet } from "./client-sheet";
 import { NotionClientTable } from "./notion-client-table";
+import { PipelineStagesSettings } from "./pipeline-stages-settings";
+import { usePipelineStages } from "@/domains/clients/api/pipeline-stages";
 import { sortPipelineClients } from "@/domains/clients/pipeline-order";
 
 const clientTypeValuesForTranslation = new Set(["person", "organization", "Client", "Buyer", "Tenant", "Investor", "Broker"]);
@@ -420,6 +425,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
   const [dragOverIndex, setDragOverIndex] = useState<{ stage: PipelineStage; index: number } | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isStagesSettingsOpen, setIsStagesSettingsOpen] = useState(false);
 
   // Load saved filters from localStorage on mount
   useEffect(() => {
@@ -471,6 +477,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
   const calendarEvents = useMemo(() => calendarEventsQuery ?? [], [calendarEventsQuery]);
   const isLoading = isWorkspaceReady && clientsQuery.queryStatus === "loading";
   const isQueryBlocked = isLoading || clientsQuery.queryStatus === "error";
+  const { stages: pipelineStagesData } = usePipelineStages(workspaceOrganizationId);
 
   const searchedClients = useMemo(() => clients.filter((client) => matchesClientSearch(client, search)), [clients, search]);
 
@@ -524,22 +531,24 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
           <h1 className="text-sm font-semibold text-foreground shrink-0 tracking-tight">{t("title")}</h1>
 
           <div className="inline-flex items-center gap-1">
-            {(["pipeline", "list", "calendar"] as const).map((mode) => {
-              const isActive = view === mode;
-              return (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => setView(mode)}
-                  className={cn(
-                    "relative h-7 rounded-md px-3 text-[11px] font-semibold transition-all",
-                    isActive ? "bg-foreground text-background shadow-sm" : "text-text-muted hover:text-foreground",
-                  )}
-                >
-                  {t(`views.${mode}`)}
-                </button>
-              );
-            })}
+            {([
+              { key: "pipeline", label: t("views.pipeline"), icon: <LayoutDashboard className="h-3 w-3" /> },
+              { key: "list", label: t("views.list"), icon: <FileText className="h-3 w-3" /> },
+              { key: "calendar", label: t("views.calendar"), icon: <CalendarDays className="h-3 w-3" /> },
+            ] as ViewDefinition[]).map((v) => (
+              <button
+                key={v.key}
+                type="button"
+                onClick={() => setView(v.key as typeof view)}
+                className={cn(
+                  "relative h-7 rounded-md px-3 text-[11px] font-semibold transition-all inline-flex items-center gap-1.5",
+                  view === v.key ? "bg-foreground text-background shadow-sm" : "text-text-muted hover:text-foreground",
+                )}
+              >
+                {v.icon}
+                {v.label}
+              </button>
+            ))}
           </div>
 
           <div className="relative">
@@ -644,109 +653,87 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
       </div>
 
       {/* ── Content ── */}
-      <div className="flex-1 overflow-auto p-5 md:p-6 lg:p-8">
-        <div className="mx-auto w-full max-w-[1400px] space-y-6">
+      <div className={cn(
+        "flex-1 min-h-0 p-5 md:p-6 lg:p-8",
+        view === "pipeline" ? "overflow-hidden" : "overflow-auto"
+      )}>
+        <div className={cn(
+          "mx-auto w-full space-y-6 h-full",
+          view === "pipeline" ? "" : "max-w-[1400px]"
+        )}>
       {workspaceStatus !== "ready" ? (
         <WorkspaceQueryState status={workspaceStatus} variant={view === "pipeline" ? "pipeline" : view === "calendar" ? "calendar" : "table"} />
       ) : isQueryBlocked ? (
         <HttpQueryState query={clientsQuery} variant={view === "pipeline" ? "pipeline" : view === "calendar" ? "calendar" : "table"} />
       ) : view === "pipeline" && (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {activePipelineStages.map((stage) => {
-            const stageClients = sortPipelineClients(activeJourneyClients.filter((client) => client.pipelineStage === stage));
-            const isDragOver = dragOverStage === stage;
-
-            return (
-              <section
-                key={stage}
-                className={cn(
-                  "min-h-[420px] rounded-[28px] border p-3 transition-all duration-300",
-                  isDragOver
-                    ? "border-primary bg-primary/5 ring-4 ring-primary/5"
-                    : "border-border bg-muted/40"
-                )}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  e.dataTransfer.dropEffect = "move";
-                  if (dragOverStage !== stage) setDragOverStage(stage);
-                }}
-                onDragLeave={() => setDragOverStage(null)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setDragOverStage(null);
-                  const clientId = e.dataTransfer.getData("clientId") || draggedId;
-                  if (clientId && account.organization.id) {
-                    const movingClient = clients.find((client) => client.id === clientId);
-                    if (movingClient) {
-                      const targetIndex = dragOverIndex?.stage === stage ? dragOverIndex.index : stageClients.length;
-                      moveClientMutation.mutate({
-                        organizationId: account.organization.id,
-                        client: movingClient,
-                        stage,
-                        stageClients,
-                        targetIndex,
-                      });
-                    }
-                  }
-                  setDraggedId(null);
-                  setDragOverIndex(null);
-                }}
-              >
-                <div className="mb-4 flex items-center justify-between px-2">
-                  <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">{translateClientStage(t, stage)}</h2>
-                  <span className="text-[10px] font-black text-muted-foreground/40">{String(stats?.stages?.[stage] ?? stageClients.length).padStart(2, "0")}</span>
-                </div>
-                <div className="space-y-3">
-                  {stageClients.map((client, index) => {
-                    const isDragOverItem = dragOverIndex?.stage === stage && dragOverIndex.index === index;
-
-                    return (
-                      <div
-                        key={client.id}
-                        draggable
-                        onDragStart={(e) => {
-                          setDraggedId(client.id);
-                          e.dataTransfer.setData("clientId", client.id);
-                          e.dataTransfer.effectAllowed = "move";
-                        }}
-                        onDragEnd={() => {
-                          setDraggedId(null);
-                          setDragOverStage(null);
-                          setDragOverIndex(null);
-                        }}
-                        onDragOver={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          if (draggedId !== client.id) {
-                            setDragOverIndex({ stage, index });
-                            setDragOverStage(stage);
-                          }
-                        }}
-                        className={cn(
-                          "transition-all duration-200",
-                          draggedId === client.id ? "opacity-40" : "opacity-100",
-                          isDragOverItem && "pt-12 relative before:absolute before:top-4 before:left-0 before:right-0 before:h-1 before:bg-primary/40 before:rounded-full"
-                        )}
-                      >
-                        <ClientMiniCard client={client} onDelete={setDeleting} onMarkClosed={markClientClosed} isClosing={updateClientMutation.isPending} />
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            );
-          })}
-        </div>
+        <PipelineBoard
+          items={activeJourneyClients.map((client) => clientToCardItem({
+            id: client.id,
+            name: client.name,
+            contact: client.contact,
+            phone: client.phone,
+            company: client.company,
+            source: client.source,
+            pipelineStage: client.pipelineStage,
+            type: client.type,
+          }))}
+          stages={activePipelineStages.map((stage, index) => ({
+            key: stage,
+            name: translateClientStage(t, stage),
+            color: ["#3b82f6", "#f59e0b", "#8b5cf6", "#10b981"][index] ?? "#9CA3AF",
+            order: index,
+          }))}
+          showBarColor
+          showCount
+          draggable
+          onCardMove={(itemId, _fromStage, toStage, targetIndex) => {
+            if (!account.organization.id) return;
+            const movingClient = clients.find((c) => c.id === itemId);
+            if (movingClient) {
+              const stageClients = sortPipelineClients(activeJourneyClients.filter((c) => c.pipelineStage === toStage));
+              moveClientMutation.mutate({
+                organizationId: account.organization.id,
+                client: movingClient,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                stage: toStage as any,
+                stageClients,
+                targetIndex,
+              });
+            }
+          }}
+          onCardClick={(item) => {
+            const client = clients.find((c) => c.id === item.id);
+            if (client) router.push(`/clients/${client.id}`);
+          }}
+          onAddStage={() => setIsStagesSettingsOpen(true)}
+        />
       )}
 
       {isWorkspaceReady && !isLoading && view === "list" && (
-        <NotionClientTable
-          clients={tableClients}
-          isLoading={isLoading}
-          search={search}
-          onSearchChange={setSearch}
-          onLoadMore={clientsQuery.loadMore}
-          hasMore={clientsQuery.status === "CanLoadMore"}
+        <GroupedList
+          items={tableClients.map((client) => clientToCardItem({
+            id: client.id,
+            name: client.name,
+            contact: client.contact,
+            phone: client.phone,
+            company: client.company,
+            source: client.source,
+            pipelineStage: client.pipelineStage,
+            type: client.type,
+          }))}
+          stages={activePipelineStages.map((stage, index) => ({
+            key: stage,
+            name: translateClientStage(t, stage),
+            color: ["#3b82f6", "#f59e0b", "#8b5cf6", "#10b981"][index] ?? "#9CA3AF",
+            order: index,
+          }))}
+          showSearch
+          showCount
+          defaultExpanded
+          onRowClick={(item) => {
+            const client = clients.find((c) => c.id === item.id);
+            if (client) router.push(`/clients/${client.id}`);
+          }}
         />
       )}
 
@@ -805,6 +792,15 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
           setStageFilter("all");
         }}
       />
+
+      {workspaceOrganizationId && (
+        <PipelineStagesSettings
+          open={isStagesSettingsOpen}
+          onOpenChange={setIsStagesSettingsOpen}
+          organizationId={workspaceOrganizationId}
+          stages={pipelineStagesData}
+        />
+      )}
     </div>
   </div>
 </div>
