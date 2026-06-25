@@ -7,217 +7,252 @@
 
 @theme {
   /* ── Shadcn Color Palette (Light) ── */
-  --color-background: #f2f2f7;
-  --color-foreground: #080808;
-  --color-card: #ffffff;
-  --color-card-foreground: #080808;
-  --color-popover: #ffffff;
-  --color-popover-foreground: #080808;
-  --color-primary: #0066cc;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #f9f9f9;
-  --color-secondary-foreground: #080808;
-  --color-muted: #ebebeb;
-  --color-muted-foreground: #aaaaaa;
-  --color-accent: #f9f9f9;
-  --color-accent-foreground: #080808;
-  --color-destructive: #f87171;
-  --color-destructive-foreground: #080808;
-  --color-border: #e8e8e8;
-  --color-input: #ebebeb;
-  --color-ring: #0066cc;
+  --color-background: #FAF8F4;
+  --color-foreground: #111111;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #111111;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #111111;
+  --color-primary: #111111;
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: #F5F3EF;
+  --color-secondary-foreground: #111111;
+  --color-muted: #ECE8E1;
+  --color-muted-foreground: #5A5A5A;
+  --color-accent: #ECE8E1;
+  --color-accent-foreground: #111111;
+  --color-destructive: #FF5A5A;
+  --color-destructive-foreground: #FFFFFF;
+  --color-border: #E5E2DD;
+  --color-input: #FFFFFF;
+  --color-ring: #111111;
 
   /* ── Custom semantic tokens ── */
-  --color-text-primary: #080808;
-  --color-text-secondary: #aaaaaa;
-  --color-text-muted: #3a3a3a;
-  --color-surface: #f9f9f9;
-  --color-surface-elevated: #ffffff;
+  --color-text-primary: #111111;
+  --color-text-secondary: #5A5A5A;
+  --color-text-muted: #8E8E8E;
+  --color-surface: #F5F3EF;
+  --color-surface-elevated: #FFFFFF;
 
-  /* ── User bubble color (brand) ── */
-  --color-user-bubble: #1565c0;
+  /* ── Domain colors ── */
+  --color-network-blue: #4F80FF;
+  --color-agent-purple: #8A5CFF;
+  --color-human-green: #2BB673;
+  --color-automation-orange: #FF9A3D;
+  --color-data-cyan: #00A3FF;
+  --color-system-gray: #5D6570;
 
   /* ── Semantic Status ── */
-  --color-success: #16a34a;
-  --color-warning: #d97706;
-  --color-danger: #dc2626;
-  --color-info: #2563eb;
-  --color-note: #7c3aed;
+  --color-success: #19A65B;
+  --color-warning: #FFB547;
+  --color-danger: #FF5A5A;
+  --color-info: #4388FF;
+  --color-note: #8A5CFF;
 
   /* ── Typography ── */
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, ui-sans-serif, system-ui, sans-serif;
+  --font-display: "SF Pro Display", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
 
   /* ── Radius ── */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 10px;
-  --radius-xl: 12px;
-  --radius-2xl: 14px;
+  --radius-none: 0px;
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  --radius-3xl: 40px;
+  --radius-pill: 9999px;
+
+  /* ── Elevation ── */
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
+
+  /* ── Motion ── */
+  --duration-instant: 80ms;
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  --duration-slower: 700ms;
+  --easing-default: cubic-bezier(0.22, 1, 0.36, 1);
+  --easing-smooth: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 :root {
   color-scheme: light;
 
   /* ── Shadcn Color Palette (Light) ── */
-  --color-background: #f2f2f7;
-  --color-foreground: #080808;
-  --color-card: #ffffff;
-  --color-card-foreground: #080808;
-  --color-popover: #ffffff;
-  --color-popover-foreground: #080808;
-  --color-primary: #0066cc;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #f9f9f9;
-  --color-secondary-foreground: #080808;
-  --color-muted: #ebebeb;
-  --color-muted-foreground: #aaaaaa;
-  --color-accent: #f9f9f9;
-  --color-accent-foreground: #080808;
-  --color-destructive: #f87171;
-  --color-destructive-foreground: #080808;
-  --color-border: #e8e8e8;
-  --color-input: #ebebeb;
-  --color-ring: #0066cc;
+  --color-background: #FAF8F4;
+  --color-foreground: #111111;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #111111;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #111111;
+  --color-primary: #111111;
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: #F5F3EF;
+  --color-secondary-foreground: #111111;
+  --color-muted: #ECE8E1;
+  --color-muted-foreground: #5A5A5A;
+  --color-accent: #ECE8E1;
+  --color-accent-foreground: #111111;
+  --color-destructive: #FF5A5A;
+  --color-destructive-foreground: #FFFFFF;
+  --color-border: #E5E2DD;
+  --color-input: #FFFFFF;
+  --color-ring: #111111;
 
   /* ── Custom semantic tokens ── */
-  --color-text-primary: #080808;
-  --color-text-secondary: #aaaaaa;
-  --color-text-muted: #3a3a3a;
-  --color-surface: #f9f9f9;
-  --color-surface-elevated: #ffffff;
+  --color-text-primary: #111111;
+  --color-text-secondary: #5A5A5A;
+  --color-text-muted: #8E8E8E;
+  --color-surface: #F5F3EF;
+  --color-surface-elevated: #FFFFFF;
 
-  /* ── User bubble color (brand) ── */
-  --color-user-bubble: #1565c0;
+  /* ── Domain colors ── */
+  --color-network-blue: #4F80FF;
+  --color-agent-purple: #8A5CFF;
+  --color-human-green: #2BB673;
+  --color-automation-orange: #FF9A3D;
+  --color-data-cyan: #00A3FF;
+  --color-system-gray: #5D6570;
 
   /* ── Semantic Status ── */
-  --color-success: #16a34a;
-  --color-warning: #d97706;
-  --color-danger: #dc2626;
-  --color-info: #2563eb;
-  --color-note: #7c3aed;
+  --color-success: #19A65B;
+  --color-warning: #FFB547;
+  --color-danger: #FF5A5A;
+  --color-info: #4388FF;
+  --color-note: #8A5CFF;
 
   /* ── Qentrah Custom Properties ── */
-  --q-bg: #f2f2f7;
-  --q-bg-very-dark: #ebebeb;
-  --q-bg-dark: #f2f2f7;
-  --q-bg-secondary: #ffffff;
-  --q-bg-light: #ffffff;
-  --q-bg-very-light: #ffffff;
-  
-  --q-sidebar: #f9f9f9;
-  --q-topbar: #f2f2f7;
-  --q-card: #ffffff;
-  --q-card-hover: #ebebeb;
-  --q-border: #e8e8e8;
-  --q-border-strong: #d0d0d0;
-  --q-text-primary: #080808;
-  --q-text-secondary: #aaaaaa;
-  --q-text-muted: #3a3a3a;
-  --q-input-bg: #ebebeb;
-  --q-accent: #0066cc;
-  --q-accent-hover: #0055aa;
-  --q-accent-active: #004499;
-  --q-accent-muted: rgba(0,102,204,0.10);
-  --q-accent-border: rgba(0,102,204,0.25);
-  --q-topbar-btn: #080808;
+  --q-bg: #FAF8F4;
+  --q-bg-very-dark: #F5F3EF;
+  --q-bg-dark: #F5F3EF;
+  --q-bg-secondary: #F5F3EF;
+  --q-bg-light: #FFFFFF;
+  --q-bg-very-light: #FAF8F4;
 
-  /* User bubble (brand blue) */
-  --q-user-bubble: #1565c0;
-  --q-user-bubble-hover: #1e88e5;
+  --q-sidebar: #F5F3EF;
+  --q-topbar: #FAF8F4;
+  --q-card: #FFFFFF;
+  --q-card-hover: #F5F3EF;
+  --q-border: #E5E2DD;
+  --q-border-strong: #D2CEC8;
+  --q-text-primary: #111111;
+  --q-text-secondary: #5A5A5A;
+  --q-text-muted: #8E8E8E;
+  --q-input-bg: #FFFFFF;
+  --q-accent: #111111;
+  --q-accent-hover: #222222;
+  --q-accent-active: #000000;
+  --q-accent-muted: rgba(17, 17, 17, 0.08);
+  --q-accent-border: rgba(17, 17, 17, 0.20);
+  --q-topbar-btn: #111111;
 
   /* Status */
-  --q-success: #16a34a;
-  --q-success-bg: #f0fdf4;
-  --q-warning: #d97706;
-  --q-warning-bg: #fffbeb;
-  --q-error: #dc2626;
-  --q-error-bg: #fef2f2;
-  --q-info: #2563eb;
-  --q-info-bg: #eff6ff;
-  --q-note: #7c3aed;
-  --q-note-bg: #f5f3ff;
+  --q-success: #19A65B;
+  --q-success-bg: #E8F5EE;
+  --q-warning: #FFB547;
+  --q-warning-bg: #FFF4E0;
+  --q-error: #FF5A5A;
+  --q-error-bg: #FFE8E8;
+  --q-info: #4388FF;
+  --q-info-bg: #EBF2FF;
+  --q-note: #8A5CFF;
+  --q-note-bg: #F3EEFF;
+
+  /* Domain colors */
+  --q-network-blue: #4F80FF;
+  --q-agent-purple: #8A5CFF;
+  --q-human-green: #2BB673;
+  --q-automation-orange: #FF9A3D;
+  --q-data-cyan: #00A3FF;
+  --q-system-gray: #5D6570;
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
 
   /* ── Shadcn Color Palette (Dark) ── */
-  --color-background: #080808;
-  --color-foreground: #f0f0f0;
-  --color-card: #0f0f0f;
-  --color-card-foreground: #f0f0f0;
-  --color-popover: #0f0f0f;
-  --color-popover-foreground: #f0f0f0;
-  --color-primary: #0066cc;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #0a0a0a;
-  --color-secondary-foreground: #f0f0f0;
-  --color-muted: #111111;
-  --color-muted-foreground: #3a3a3a;
-  --color-accent: #0a0a0a;
-  --color-accent-foreground: #f0f0f0;
-  --color-destructive: #f87171;
-  --color-destructive-foreground: #080808;
-  --color-border: #161616;
-  --color-input: #111111;
-  --color-ring: #0066cc;
+  --color-background: #090909;
+  --color-foreground: #FFFFFF;
+  --color-card: #121212;
+  --color-card-foreground: #FFFFFF;
+  --color-popover: #121212;
+  --color-popover-foreground: #FFFFFF;
+  --color-primary: #FFFFFF;
+  --color-primary-foreground: #090909;
+  --color-secondary: #1A1A1A;
+  --color-secondary-foreground: #FFFFFF;
+  --color-muted: #1A1A1A;
+  --color-muted-foreground: #C7C7C7;
+  --color-accent: #1A1A1A;
+  --color-accent-foreground: #FFFFFF;
+  --color-destructive: #FF6B6B;
+  --color-destructive-foreground: #090909;
+  --color-border: #2A2A2A;
+  --color-input: #1A1A1A;
+  --color-ring: #FFFFFF;
 
   /* ── Custom semantic tokens (Dark) ── */
-  --color-text-primary: #f0f0f0;
-  --color-text-secondary: #3a3a3a;
-  --color-text-muted: #aaaaaa;
-  --color-surface: #0a0a0a;
-  --color-surface-elevated: #0f0f0f;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #C7C7C7;
+  --color-text-muted: #8D8D8D;
+  --color-surface: #1A1A1A;
+  --color-surface-elevated: #121212;
 
-  /* ── User bubble color (brand) ── */
-  --color-user-bubble: #42a5f5;
+  /* ── Domain colors ── */
+  --color-network-blue: #4F80FF;
+  --color-agent-purple: #8A5CFF;
+  --color-human-green: #2BB673;
+  --color-automation-orange: #FF9A3D;
+  --color-data-cyan: #00A3FF;
+  --color-system-gray: #5D6570;
 
   /* ── Qentrah Custom Properties (Dark) ── */
-  --q-bg: #080808;
-  --q-bg-very-dark: #030303;
-  --q-bg-dark: #080808;
-  --q-bg-secondary: #0a0a0a;
-  --q-bg-light: #0f0f0f;
-  --q-bg-very-light: #111111;
-  
-  --q-sidebar: #0a0a0a;
-  --q-topbar: #080808;
-  --q-card: #0f0f0f;
-  --q-card-hover: #0a0a0a;
-  --q-border: #161616;
-  --q-border-strong: #3a3a3a;
-  --q-text-primary: #f0f0f0;
-  --q-text-secondary: #3a3a3a;
-  --q-text-muted: #aaaaaa;
-  --q-input-bg: #111111;
-  --q-accent: #0066cc;
-  --q-accent-hover: #1a7be6;
-  --q-accent-active: #136ecc;
-  --q-accent-muted: rgba(0,102,204,0.10);
-  --q-accent-border: rgba(0,102,204,0.25);
-  --q-topbar-btn: #f0f0f0;
+  --q-bg: #090909;
+  --q-bg-very-dark: #060606;
+  --q-bg-dark: #121212;
+  --q-bg-secondary: #1A1A1A;
+  --q-bg-light: #222222;
+  --q-bg-very-light: #2A2A2A;
 
-  /* User bubble (brand blue) */
-  --q-user-bubble: #42a5f5;
-  --q-user-bubble-hover: #64b5f6;
+  --q-sidebar: #121212;
+  --q-topbar: #090909;
+  --q-card: #121212;
+  --q-card-hover: #1A1A1A;
+  --q-border: #2A2A2A;
+  --q-border-strong: #404040;
+  --q-text-primary: #FFFFFF;
+  --q-text-secondary: #C7C7C7;
+  --q-text-muted: #8D8D8D;
+  --q-input-bg: #1A1A1A;
+  --q-accent: #FFFFFF;
+  --q-accent-hover: #F0F0F0;
+  --q-accent-active: #D7D7D7;
+  --q-accent-muted: rgba(255, 255, 255, 0.10);
+  --q-accent-border: rgba(255, 255, 255, 0.20);
+  --q-topbar-btn: #FFFFFF;
 
   /* Status */
-  --q-success: #4ade80;
-  --q-success-bg: #0b2016;
-  --q-warning: #fbbf24;
-  --q-warning-bg: #251a05;
-  --q-error: #f87171;
-  --q-error-bg: #220b0a;
-  --q-info: #60a5fa;
-  --q-info-bg: #091a28;
-  --q-note: #a78bfa;
-  --q-note-bg: #160f28;
+  --q-success: #33D17A;
+  --q-success-bg: rgba(51, 209, 122, 0.12);
+  --q-warning: #FFB547;
+  --q-warning-bg: rgba(255, 181, 71, 0.12);
+  --q-error: #FF6B6B;
+  --q-error-bg: rgba(255, 107, 107, 0.12);
+  --q-info: #5B9CFF;
+  --q-info-bg: rgba(91, 156, 255, 0.12);
+  --q-note: #8A5CFF;
+  --q-note-bg: rgba(138, 92, 255, 0.12);
 }
 
 @layer base {
   * {
     border-color: var(--q-border);
-    outline-color: rgba(0,102,204,0.5);
+    outline-color: rgba(17, 17, 17, 0.5);
   }
 
   html {

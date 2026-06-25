@@ -1,13 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { Activity, Building2, Clock3, History, Users } from "lucide-react";
+import {   History } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import {
   AppDataTable,
   AppPageHeader,
   AppPageShell,
-  AppStatsGrid,
   InfiniteScrollSentinel,
   type AppDataTableColumn,
 } from "@/components/shared";

@@ -11,10 +11,7 @@ import {
 import type { Client } from "@/domains/clients/store/clients.types";
 import { cn } from "@/lib/utils";
 import {
-  Search,
   ArrowUpDown,
-  Plus,
-  X,
   ArrowUp,
   ArrowDown,
   Trash2,
@@ -24,21 +21,32 @@ import {
   ChevronLeft,
   ChevronRight,
   Layers,
-  SlidersHorizontal,
 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { DeleteRecordDialog } from "@/components/shared/crud-ui";
 import { BulkActionModal } from "./bulk-action-modal";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-
-/* ── Types ─────────────────────────────────────────────────────────────────── */
-
-type SortField = "name" | "type" | "status" | "pipelineStage" | "lastContact";
-type SortDir = "asc" | "desc";
-
-type FilterType = "" | "person" | "organization";
-type FilterStatus = "" | "new" | "active" | "nurture" | "inactive" | "archived";
-type FilterStage = "" | "blank" | "new_lead" | "attempted" | "contacted" | "qualified" | "unqualified";
+import {
+  CLIENT_TABLE_PAGE_SIZE,
+  clientTableStageOptions,
+  clientTableStatusOptions,
+  clientTableTypeOptions,
+  type ClientTableFilterStage,
+  type ClientTableFilterStatus,
+  type ClientTableFilterType,
+  type ClientTableSortDir,
+  type ClientTableSortField,
+} from "../config/client-table.config";
+import {
+  clientStageBadgeClass,
+  clientStatusBadgeClass,
+  clientTableInitials,
+  clientTablePageNumbers,
+  clientTypeBadgeClass,
+  filterClientTableRows,
+  paginateClientTableRows,
+  sortClientTableRows,
+} from "../lib/client-table-utils";
+import { ClientTableSkeleton } from "./client-table-skeleton";
 
 interface ClientTableViewProps {
   clients: Client[];
@@ -58,115 +66,6 @@ interface ClientTableViewProps {
   onSearchChange?: (search: string) => void;
   clientCount?: number;
 }
-
-/* ── Constants ─────────────────────────────────────────────────────────────── */
-
-const PAGE_SIZE = 15;
-
-const stageOptions = [
-  { value: "blank", label: "Blank" },
-  { value: "new_lead", label: "New Lead" },
-  { value: "attempted", label: "Attempted" },
-  { value: "contacted", label: "Contacted" },
-  { value: "qualified", label: "Qualified" },
-  { value: "unqualified", label: "Unqualified" },
-] as const;
-
-const typeOptions = [
-  { value: "person", label: "Person" },
-  { value: "organization", label: "Organization" },
-] as const;
-
-const statusOptions = [
-  { value: "new", label: "New" },
-  { value: "active", label: "Active" },
-  { value: "nurture", label: "Nurture" },
-  { value: "inactive", label: "Inactive" },
-  { value: "archived", label: "Archived" },
-] as const;
-
-/* ── Helpers ───────────────────────────────────────────────────────────────── */
-
-function getInitials(name: string): string {
-  return name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w.charAt(0).toUpperCase())
-    .join("");
-}
-
-function statusBadgeClass(status: string): string {
-  switch (status) {
-    case "active":
-      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400";
-    case "new":
-      return "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-400";
-    case "nurture":
-      return "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400";
-    case "inactive":
-      return "bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-white/50";
-    case "archived":
-      return "bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-white/40";
-    default:
-      return "bg-muted text-muted-foreground";
-  }
-}
-
-function stageBadgeClass(stage: string): string {
-  switch (stage) {
-    case "blank":
-      return "bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-white/50";
-    case "new_lead":
-      return "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400";
-    case "attempted":
-      return "bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400";
-    case "contacted":
-      return "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-400";
-    case "qualified":
-      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400";
-    case "unqualified":
-      return "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400";
-    default:
-      return "bg-muted text-muted-foreground";
-  }
-}
-
-function typeBadgeClass(type: string): string {
-  switch (type) {
-    case "organization":
-      return "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-400";
-    case "person":
-      return "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-400";
-    default:
-      return "bg-muted text-muted-foreground";
-  }
-}
-
-/* ── Skeleton Rows ─────────────────────────────────────────────────────────── */
-
-function TableSkeleton({ rows = 5 }: { rows?: number }) {
-  return (
-    <>
-      {Array.from({ length: rows }).map((_, i) => (
-        <tr key={`skel-${i}`} className="border-t border-border">
-          <td className="px-4 py-3">
-            <div className="flex items-center gap-3">
-              <Skeleton className="h-7 w-7 rounded-full" />
-              <Skeleton className="h-4 w-32" />
-            </div>
-          </td>
-          <td className="px-4 py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
-          <td className="px-4 py-3"><Skeleton className="h-5 w-14 rounded-full" /></td>
-          <td className="px-4 py-3"><Skeleton className="h-5 w-20 rounded-full" /></td>
-          <td className="px-4 py-3"><Skeleton className="h-4 w-20" /></td>
-          <td className="px-4 py-3"><Skeleton className="h-5 w-5 rounded" /></td>
-        </tr>
-      ))}
-    </>
-  );
-}
-
-/* ── Component ─────────────────────────────────────────────────────────────── */
 
 export function ClientTableView({
   clients,
@@ -190,8 +89,8 @@ export function ClientTableView({
   const account = useAccountContext();
 
   /* ── State ─────────────────────────────────────────────────────────────── */
-  const [sortField, setSortField] = useState<SortField>("name");
-  const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const [sortField, setSortField] = useState<ClientTableSortField>("name");
+  const [sortDir, setSortDir] = useState<ClientTableSortDir>("asc");
   const [page, setPage] = useState(1);
   const [deleting, setDeleting] = useState<Client | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -199,64 +98,29 @@ export function ClientTableView({
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
   const [filters, setFilters] = useState<{
-    type: FilterType;
-    status: FilterStatus;
-    pipelineStage: FilterStage;
+    type: ClientTableFilterType;
+    status: ClientTableFilterStatus;
+    pipelineStage: ClientTableFilterStage;
   }>({ type: "", status: "", pipelineStage: "" });
 
   const updateClientMutation = useUpdateClientOptimisticMutation(["clients-index"]);
   const deleteClientMutation = useDeleteClientOptimisticMutation(["clients-index"]);
 
   /* ── Filtering & Sorting ───────────────────────────────────────────────── */
-  const filteredClients = useMemo(() => {
-    const q = search.toLowerCase();
-    return clients.filter((c) => {
-      const matchesSearch =
-        !q ||
-        c.name.toLowerCase().includes(q) ||
-        c.contact.toLowerCase().includes(q) ||
-        (c.company && c.company.toLowerCase().includes(q));
-      const matchesType = !filters.type || c.type === filters.type;
-      const matchesStatus = !filters.status || c.status === filters.status;
-      const matchesStage =
-        !filters.pipelineStage || c.pipelineStage === filters.pipelineStage;
-      return matchesSearch && matchesType && matchesStatus && matchesStage;
-    });
-  }, [clients, search, filters]);
+  const filteredClients = useMemo(
+    () => filterClientTableRows(clients, search, filters),
+    [clients, search, filters],
+  );
 
-  const sortedClients = useMemo(() => {
-    const sorted = [...filteredClients];
-    sorted.sort((a, b) => {
-      let cmp = 0;
-      switch (sortField) {
-        case "name":
-          cmp = a.name.localeCompare(b.name);
-          break;
-        case "type":
-          cmp = a.type.localeCompare(b.type);
-          break;
-        case "status":
-          cmp = a.status.localeCompare(b.status);
-          break;
-        case "pipelineStage":
-          cmp = a.pipelineStage.localeCompare(b.pipelineStage);
-          break;
-        case "lastContact":
-          cmp = (a.lastContact ?? "").localeCompare(b.lastContact ?? "");
-          break;
-      }
-      return sortDir === "asc" ? cmp : -cmp;
-    });
-    return sorted;
-  }, [filteredClients, sortField, sortDir]);
+  const sortedClients = useMemo(
+    () => sortClientTableRows(filteredClients, sortField, sortDir),
+    [filteredClients, sortField, sortDir],
+  );
 
-  /* ── Pagination ────────────────────────────────────────────────────────── */
-  const totalPages = Math.max(1, Math.ceil(sortedClients.length / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages);
-  const paginatedClients = useMemo(() => {
-    const start = (safePage - 1) * PAGE_SIZE;
-    return sortedClients.slice(start, start + PAGE_SIZE);
-  }, [sortedClients, safePage]);
+  const { page: safePage, totalPages, rows: paginatedClients } = useMemo(
+    () => paginateClientTableRows(sortedClients, page, CLIENT_TABLE_PAGE_SIZE),
+    [sortedClients, page],
+  );
 
   /* ── Selection ─────────────────────────────────────────────────────────── */
   const allVisibleSelected =
@@ -326,7 +190,7 @@ export function ClientTableView({
 
   /* ── Handlers ──────────────────────────────────────────────────────────── */
   const handleSort = useCallback(
-    (field: SortField) => {
+    (field: ClientTableSortField) => {
       if (sortField === field) {
         setSortDir((d) => (d === "asc" ? "desc" : "asc"));
       } else {
@@ -378,7 +242,7 @@ export function ClientTableView({
     [onBulkUpdate, selectedIds, clearSelection],
   );
 
-  const SortIcon = ({ field }: { field: SortField }) => {
+  const SortIcon = ({ field }: { field: ClientTableSortField }) => {
     if (sortField !== field)
       return <ArrowUpDown className="ml-1 h-3 w-3 opacity-40" />;
     return sortDir === "asc" ? (
@@ -389,25 +253,10 @@ export function ClientTableView({
   };
 
   /* ── Page numbers ──────────────────────────────────────────────────────── */
-  const pageNumbers = useMemo(() => {
-    const pages: (number | "...")[] = [];
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
-      pages.push(1);
-      if (safePage > 3) pages.push("...");
-      for (
-        let i = Math.max(2, safePage - 1);
-        i <= Math.min(totalPages - 1, safePage + 1);
-        i++
-      ) {
-        pages.push(i);
-      }
-      if (safePage < totalPages - 2) pages.push("...");
-      pages.push(totalPages);
-    }
-    return pages;
-  }, [totalPages, safePage]);
+  const pageNumbers = useMemo(
+    () => clientTablePageNumbers(totalPages, safePage),
+    [totalPages, safePage],
+  );
 
   return (
     <div className="w-full">
@@ -508,7 +357,7 @@ export function ClientTableView({
             </thead>
             <tbody>
               {isLoading ? (
-                <TableSkeleton rows={5} />
+                <ClientTableSkeleton rows={5} />
               ) : paginatedClients.length === 0 ? (
                 <tr>
                   <td
@@ -558,7 +407,7 @@ export function ClientTableView({
                             {client.type === "organization" ? (
                               <Building2 className="h-3.5 w-3.5" />
                             ) : (
-                              getInitials(client.name)
+                              clientTableInitials(client.name)
                             )}
                           </div>
                           <Link
@@ -576,7 +425,7 @@ export function ClientTableView({
                           <PopoverTrigger
                             className={cn(
                               "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest transition-all hover:opacity-80 cursor-pointer outline-none",
-                              typeBadgeClass(client.type),
+                              clientTypeBadgeClass(client.type),
                             )}
                           >
                             <span className={cn(
@@ -587,7 +436,7 @@ export function ClientTableView({
                           </PopoverTrigger>
                           <PopoverContent align="start" className="w-48 p-1.5">
                             <p className="px-2 pb-1.5 pt-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground">Type</p>
-                            {typeOptions.map((option) => (
+                            {clientTableTypeOptions.map((option) => (
                               <button
                                 key={option.value}
                                 type="button"
@@ -616,7 +465,7 @@ export function ClientTableView({
                           <PopoverTrigger
                             className={cn(
                               "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest transition-all hover:opacity-80 cursor-pointer outline-none",
-                              statusBadgeClass(client.status),
+                              clientStatusBadgeClass(client.status),
                             )}
                           >
                             <span className={cn(
@@ -631,7 +480,7 @@ export function ClientTableView({
                           </PopoverTrigger>
                           <PopoverContent align="start" className="w-48 p-1.5">
                             <p className="px-2 pb-1.5 pt-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground">Status</p>
-                            {statusOptions.map((option) => (
+                            {clientTableStatusOptions.map((option) => (
                               <button
                                 key={option.value}
                                 type="button"
@@ -664,7 +513,7 @@ export function ClientTableView({
                           <PopoverTrigger
                             className={cn(
                               "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest transition-all hover:opacity-80 cursor-pointer outline-none",
-                              stageBadgeClass(client.pipelineStage),
+                              clientStageBadgeClass(client.pipelineStage),
                             )}
                           >
                             <span className={cn(
@@ -680,7 +529,7 @@ export function ClientTableView({
                           </PopoverTrigger>
                           <PopoverContent align="start" className="w-48 p-1.5">
                             <p className="px-2 pb-1.5 pt-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground">Stage</p>
-                            {stageOptions.map((option) => (
+                            {clientTableStageOptions.map((option) => (
                               <button
                                 key={option.value}
                                 type="button"
@@ -764,8 +613,8 @@ export function ClientTableView({
       {totalPages > 1 && (
         <div className="mt-3 flex items-center justify-between">
           <span className="text-[11px] text-muted-foreground">
-            Showing {(safePage - 1) * PAGE_SIZE + 1}\u2013
-            {Math.min(safePage * PAGE_SIZE, sortedClients.length)} of{" "}
+            Showing {(safePage - 1) * CLIENT_TABLE_PAGE_SIZE + 1}\u2013
+            {Math.min(safePage * CLIENT_TABLE_PAGE_SIZE, sortedClients.length)} of{" "}
             {sortedClients.length}
           </span>
           <div className="flex items-center gap-1">

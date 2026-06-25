@@ -5,9 +5,20 @@ import { useAuth, useClerk, useSignIn, useSignUp } from "@clerk/nextjs";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { resolveAuthEntryCallbackUrl } from "../utils/auth-callback-url";
+import {
+  assignExternalRedirect,
+  clerkSocialProviderStrategies,
+  externalVerificationRedirectUrl,
+  isAlreadySignedInError,
+  localizedAuthError,
+  socialRedirectFallbackMs,
+  toLocalizedPath,
+  toRouterHref,
+  type AuthErrorMessageKey,
+  type ClerkSocialProvider,
+} from "../lib/clerk-auth-utils";
 
 type AuthMode = "sign-in" | "sign-up";
-export type ClerkSocialProvider = "google" | "apple";
 export type AuthFlowPhase = "credentials" | "verify_email" | "verify_second_factor";
 
 type AuthFlowInput = {
@@ -23,98 +34,7 @@ type CredentialsInput = {
   password: string;
 };
 
-type AuthErrorMessageKey =
-  | "authStillLoading"
-  | "callbackFailed"
-  | "passwordNotEnabled"
-  | "signInFailed"
-  | "signUpFailed"
-  | "socialProviderNotEnabled"
-  | "socialStartFailed"
-  | "unsupportedStep"
-  | "verificationIncomplete"
-  | "verifyFailed";
-
-const providerStrategies: Record<ClerkSocialProvider, `oauth_${string}`> = {
-  apple: "oauth_apple",
-  google: "oauth_google",
-};
-const socialRedirectFallbackMs = 6000;
-
-type ExternalVerification = {
-  externalVerificationRedirectURL?: URL | string | null;
-} | null | undefined;
-
-function externalVerificationRedirectUrl(verification: ExternalVerification) {
-  const value = verification?.externalVerificationRedirectURL;
-  if (!value) return null;
-  return value instanceof URL ? value.toString() : value;
-}
-
-function assignExternalRedirect(url: string) {
-  window.location.assign(url);
-}
-
-function clerkErrorText(error: unknown) {
-  const candidate = error as {
-    message?: string;
-    errors?: Array<{ message?: string; longMessage?: string; code?: string }>;
-  };
-  const first = candidate?.errors?.[0];
-  return first?.longMessage ?? first?.message ?? first?.code ?? candidate?.message ?? null;
-}
-
-function localizedAuthError(
-  error: unknown,
-  fallback: string,
-  t: (key: AuthErrorMessageKey) => string,
-) {
-  const message = clerkErrorText(error);
-  if (!message) return fallback;
-  const normalized = message.toLowerCase();
-
-  if (normalized.includes("provider") || normalized.includes("client")) {
-    return t("socialProviderNotEnabled");
-  }
-
-  if (normalized.includes("did not redirect")) {
-    return t("socialStartFailed");
-  }
-
-  if (normalized.includes("loading")) {
-    return t("authStillLoading");
-  }
-
-  if (normalized.includes("password") && normalized.includes("not enabled")) {
-    return t("passwordNotEnabled");
-  }
-
-  if (normalized.includes("unsupported next step")) {
-    return t("unsupportedStep");
-  }
-
-  if (normalized.includes("verification") && normalized.includes("not complete")) {
-    return t("verificationIncomplete");
-  }
-
-  return message;
-}
-
-function isAlreadySignedInError(error: unknown) {
-  const message = clerkErrorText(error)?.toLowerCase() ?? "";
-  return message.includes("already signed in");
-}
-
-function toLocalizedPath(locale: string, path: string) {
-  return `/${locale}${path.startsWith("/") ? path : `/${path}`}`;
-}
-
-function toRouterHref(locale: string, url: string) {
-  const localePrefix = `/${locale}`;
-  if (url === localePrefix) return "/";
-  if (url.startsWith(`${localePrefix}/`)) return url.slice(localePrefix.length);
-  return url;
-}
+export type { ClerkSocialProvider };
 
 export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInput) {
   const t = useTranslations("signin.errors") as (key: AuthErrorMessageKey) => string;
@@ -137,10 +57,7 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
     const clerkState = clerk as unknown as {
       isSignedIn?: boolean;
       organization?: { id?: string | null } | null;
-      session?: {
-        currentTask?: unknown;
-        lastActiveOrganizationId?: string | null;
-      } | null;
+      session?: { currentTask?: unknown; lastActiveOrganizationId?: string | null } | null;
       setActive?: (input: { organization: string }) => Promise<void>;
     };
     const session = clerkState.session ?? null;
@@ -149,21 +66,14 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
 
     if (!isSignedIn) return false;
 
-    if (session?.currentTask) {
-      // After sign-up, always go to dashboard — the modal handles no-org state.
-      router.replace("/dashboard");
-      return true;
-    }
-
-    if (organizationId) {
-      if (!clerkAuth.orgId) {
+    if (session?.currentTask || organizationId) {
+      if (organizationId && !clerkAuth.orgId) {
         await clerkState.setActive?.({ organization: organizationId });
       }
       router.replace("/dashboard");
       return true;
     }
 
-    // No organization — still go to dashboard, the modal will handle it.
     router.replace("/dashboard");
     return true;
   }, [clerk, clerkAuth.isSignedIn, clerkAuth.orgId, router]);
@@ -171,7 +81,6 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
   const navigateAfterAuth = useCallback(
     ({ session, decorateUrl }: { session?: { currentTask?: unknown } | null; decorateUrl: (url: string) => string }) => {
       if (session?.currentTask) {
-        // After sign-up, always go to dashboard — the modal handles no-org state.
         router.replace("/dashboard");
         return;
       }
@@ -190,7 +99,6 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
   const finalizeSignIn = useCallback(async () => {
     const api = signIn as unknown as {
       finalize?: (input: { navigate: typeof navigateAfterAuth }) => Promise<unknown>;
-      status?: string | null;
     };
 
     if (api.finalize) {
@@ -204,7 +112,6 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
   const finalizeSignUp = useCallback(async () => {
     const api = signUp as unknown as {
       finalize?: (input: { navigate: typeof navigateAfterAuth }) => Promise<unknown>;
-      status?: string | null;
     };
 
     if (api.finalize) {
@@ -224,9 +131,7 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
       setIsPending(true);
 
       try {
-        if (!signInLoaded || !signIn) {
-          throw new Error("Authentication is still loading.");
-        }
+        if (!signInLoaded || !signIn) throw new Error("Authentication is still loading.");
 
         const callback = `${toLocalizedPath(locale, "/sso-callback")}?callbackURL=${encodeURIComponent(finalCallbackURL)}`;
         const startUrl = window.location.href;
@@ -242,9 +147,9 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
             strategy: `oauth_${string}`;
           }) => Promise<{
             error?: unknown;
-            firstFactorVerification?: ExternalVerification;
+            firstFactorVerification?: Parameters<typeof externalVerificationRedirectUrl>[0];
           } | undefined>;
-          firstFactorVerification?: ExternalVerification;
+          firstFactorVerification?: Parameters<typeof externalVerificationRedirectUrl>[0];
           sso?: (input: {
             strategy: `oauth_${string}`;
             redirectCallbackUrl: string;
@@ -255,23 +160,20 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
         if (api.create) {
           const result = await api.create({
             actionCompleteRedirectUrl: finalCallbackURL,
-            strategy: providerStrategies[provider],
+            strategy: clerkSocialProviderStrategies[provider],
             redirectUrl: callback,
           });
           if (result?.error) throw result.error;
 
           const redirectUrl = externalVerificationRedirectUrl(result?.firstFactorVerification ?? api.firstFactorVerification);
-          if (!redirectUrl) {
-            throw new Error("Social sign-in did not redirect.");
-          }
-
+          if (!redirectUrl) throw new Error("Social sign-in did not redirect.");
           assignExternalRedirect(redirectUrl);
           return;
         }
 
         if (api.authenticateWithRedirect) {
           await api.authenticateWithRedirect({
-            strategy: providerStrategies[provider],
+            strategy: clerkSocialProviderStrategies[provider],
             redirectUrl: callback,
             redirectUrlComplete: finalCallbackURL,
           });
@@ -287,17 +189,14 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
 
         if (api.sso) {
           const result = await api.sso({
-            strategy: providerStrategies[provider],
+            strategy: clerkSocialProviderStrategies[provider],
             redirectCallbackUrl: callback,
             redirectUrl: finalCallbackURL,
           });
           if (result?.error) throw result.error;
 
           const redirectUrl = externalVerificationRedirectUrl(api.firstFactorVerification);
-          if (!redirectUrl) {
-            throw new Error("Social sign-in did not redirect.");
-          }
-
+          if (!redirectUrl) throw new Error("Social sign-in did not redirect.");
           assignExternalRedirect(redirectUrl);
           return;
         }
@@ -324,19 +223,14 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
       setIsPending(true);
 
       try {
-        if (mode === "sign-in" && (await redirectExistingSession())) {
-          return;
-        }
+        if (mode === "sign-in" && (await redirectExistingSession())) return;
 
         if (mode === "sign-in") {
           if (!signInLoaded || !signIn) throw new Error("Authentication is still loading.");
           const api = signIn as unknown as {
             password?: (input: CredentialsInput) => Promise<{ error?: unknown } | undefined>;
             status?: string | null;
-            supportedSecondFactors?: Array<{ strategy?: string }>;
-            mfa?: {
-              sendEmailCode?: () => Promise<unknown>;
-            };
+            mfa?: { sendEmailCode?: () => Promise<unknown> };
           };
           if (!api.password) throw new Error("Email/password sign-in is not enabled.");
 
@@ -363,9 +257,7 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
           status?: string | null;
           unverifiedFields?: string[];
           missingFields?: string[];
-          verifications?: {
-            sendEmailCode?: () => Promise<unknown>;
-          };
+          verifications?: { sendEmailCode?: () => Promise<unknown> };
         };
         if (!api.password) throw new Error("Email/password sign-up is not enabled.");
 
@@ -394,9 +286,7 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
 
         throw new Error("Sign-up requires an unsupported next step.");
       } catch (caught) {
-        if (mode === "sign-in" && isAlreadySignedInError(caught) && (await redirectExistingSession())) {
-          return;
-        }
+        if (mode === "sign-in" && isAlreadySignedInError(caught) && (await redirectExistingSession())) return;
         setError(localizedAuthError(caught, mode === "sign-in" ? t("signInFailed") : t("signUpFailed"), t));
       } finally {
         setIsPending(false);
@@ -417,9 +307,7 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
         if (phase === "verify_email") {
           const api = signUp as unknown as {
             status?: string | null;
-            verifications?: {
-              verifyEmailCode?: (input: { code: string }) => Promise<{ error?: unknown } | undefined>;
-            };
+            verifications?: { verifyEmailCode?: (input: { code: string }) => Promise<{ error?: unknown } | undefined> };
           };
           const result = await api.verifications?.verifyEmailCode?.({ code });
           if (result?.error) throw result.error;
@@ -432,9 +320,7 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
 
         const api = signIn as unknown as {
           status?: string | null;
-          mfa?: {
-            verifyEmailCode?: (input: { code: string }) => Promise<{ error?: unknown } | undefined>;
-          };
+          mfa?: { verifyEmailCode?: (input: { code: string }) => Promise<{ error?: unknown } | undefined> };
         };
         const result = await api.mfa?.verifyEmailCode?.({ code });
         if (result?.error) throw result.error;
@@ -499,10 +385,7 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
 
       const sessionId = signInApi.existingSession?.sessionId ?? signUpApi.existingSession?.sessionId;
       if (sessionId) {
-        await clerk.setActive({
-          session: sessionId,
-          navigate: navigateAfterAuth,
-        });
+        await clerk.setActive({ session: sessionId, navigate: navigateAfterAuth });
         return;
       }
 

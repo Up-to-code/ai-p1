@@ -41,34 +41,7 @@ import { type DocViewMode, emptyDoc } from "../docs.constants";
 import { DocSkeleton } from "./doc-skeleton";
 import { useOptimisticDocActions, docOptimisticUpdate, docOptimisticRemove } from "../hooks/use-optimistic-actions";
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function buildBreadcrumbPath(
-  folders: DocFolder[],
-  selectedFolderId: string | null,
-): DocFolder[] {
-  if (!selectedFolderId) return [];
-  const map = new Map<string, DocFolder>();
-  for (const f of folders) map.set(f.id, f);
-  const path: DocFolder[] = [];
-  let current = map.get(selectedFolderId);
-  while (current) {
-    path.unshift(current);
-    current = current.parentId ? map.get(current.parentId) : undefined;
-  }
-  return path;
-}
-
-function getSubfolders(folders: DocFolder[], parentId: string | null): DocFolder[] {
-  return folders.filter((f) => {
-    if (f.deletedAt) return false;
-    if (parentId === null) return !f.parentId;
-    return f.parentId === parentId;
-  });
-}
-
-// ─── DocsScreen ──────────────────────────────────────────────────────────────
-
+import { buildBreadcrumbPath, getSubfolders } from "../lib/folder-utils";
 export function DocsScreen({
   projectId: projectIdProp,
 }: { hideShell?: boolean; projectId?: string | null } = {}) {

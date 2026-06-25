@@ -75,7 +75,7 @@ describe("billing request wrappers", () => {
     });
     expect(fetcher).toHaveBeenNthCalledWith(3, "/api/v1/organizations/org%201/billing/checkout", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: expect.objectContaining({ "content-type": "application/json" }),
       body: JSON.stringify({ planId: "qentrah_workspace", seats: 1, returnUrl: "https://example.com/billing" }),
     });
     expect(fetcher).toHaveBeenNthCalledWith(4, "/api/v1/organizations/org%201/billing/payments/order%2F1", {

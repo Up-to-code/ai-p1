@@ -117,7 +117,7 @@ export function WorkspacePricingPage() {
                     {previewSeats === 1 ? (isAr ? "مقعد" : "seat") : (isAr ? "مقاعد" : "seats")}
                   </span>
                   <span className="ms-auto font-black text-primary">
-                    ${totalPreview}/mo
+                    ${totalPreview}{isAr ? " / شهر" : " / mo"}
                   </span>
                 </div>
 

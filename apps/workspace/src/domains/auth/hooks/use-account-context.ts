@@ -5,125 +5,48 @@ import { useAuth, useOrganization, useUser } from "@clerk/nextjs";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { deriveWorkspaceStatus } from "../workspace-status";
-import type { WorkspaceStatus } from "../workspace-status";
-
-type AccountContextValue = {
-  isPending: boolean;
-  isSignedIn: boolean;
-  workspace: {
-    status: WorkspaceStatus;
-    organizationId: string | null;
-    isOrganizationPending: boolean;
-    isConvexAuthPending: boolean;
-    isConvexAuthenticated: boolean;
-    isReady: boolean;
-  };
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    image: string | null;
-    initials: string;
-    profile: {
-      phone: string;
-      role: string;
-      language: "en" | "ar";
-      timezone: string;
-      notifications: {
-        product: boolean;
-        approvals: boolean;
-        billing: boolean;
-        security: boolean;
-      };
-    };
-  };
-  organization: {
-    id: string | null;
-    name: string;
-    legalName?: string | null;
-    type?: string | null;
-    email?: string | null;
-    phone?: string | null;
-    website?: string | null;
-    address?: string | null;
-    logo: string | null;
-    slug: string | null;
-    status: string;
-    brandColor?: string;
-    sound?: string;
-    initials: string;
-  };
-};
+import {
+  accountInitials,
+  clerkMembershipOrganizationIds,
+  defaultAccountNotifications,
+  type AccountContextValue,
+} from "../lib/account-normalizers";
 
 const AccountContext = createContext<AccountContextValue | null>(null);
-
-const defaultNotifications = {
-  product: true,
-  approvals: true,
-  billing: false,
-  security: true,
-};
-
-function getInitials(value: string) {
-  return value
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("") || "AN";
-}
-
-function clerkMembershipOrganizationIds(user: ReturnType<typeof useUser>["user"]) {
-  const memberships = user?.organizationMemberships;
-  const data = Array.isArray(memberships)
-    ? memberships
-    : (memberships as { data?: unknown[] } | null | undefined)?.data ?? [];
-
-  return data
-    .map((membership) => (membership as { organization?: { id?: string | null } | null }).organization?.id)
-    .filter((id): id is string => Boolean(id));
-}
 
 function useAccountContextValue(): AccountContextValue {
   const auth = useAuth();
   const userQuery = useUser();
   const organizationQuery = useOrganization();
   const convexAuth = useConvexAuth();
-  
-  // Stabilize primitive values to prevent unnecessary re-renders
+
   const organizationId = auth.orgId ?? organizationQuery.organization?.id ?? null;
   const isOrganizationPending = !organizationQuery.isLoaded;
   const isConvexAuthenticated = convexAuth.isAuthenticated;
   const isConvexAuthPending = !convexAuth.isLoading && auth.isSignedIn ? false : convexAuth.isLoading;
-  
-  // Memoize membership IDs to prevent recalculation on every render
+
   const membershipOrganizationIds = useMemo(
     () => clerkMembershipOrganizationIds(userQuery.user),
-    [userQuery.user?.organizationMemberships]
+    [userQuery.user?.organizationMemberships],
   );
-  
+
   const hasLoadedMemberships = userQuery.isLoaded;
   const hasOrganizationAccessDenied = useMemo(
     () =>
       typeof organizationId === "string" &&
       hasLoadedMemberships &&
       !membershipOrganizationIds.includes(organizationId),
-    [organizationId, hasLoadedMemberships, membershipOrganizationIds]
+    [organizationId, hasLoadedMemberships, membershipOrganizationIds],
   );
 
-  // Only query organization profile when needed and stable
   const organizationProfile = useQuery(
     api.organizations.profile.read.getProfile,
     organizationId && isConvexAuthenticated && !hasOrganizationAccessDenied ? { organizationId } : "skip",
   );
-  
-  const userProfile = useQuery(
-    api.userProfiles.read.getCurrent,
-    isConvexAuthenticated ? {} : "skip",
-  );
-  
-  // Memoize workspace status to prevent recalculation
-  const workspaceStatus: WorkspaceStatus = useMemo(
+
+  const userProfile = useQuery(api.userProfiles.read.getCurrent, isConvexAuthenticated ? {} : "skip");
+
+  const workspaceStatus = useMemo(
     () =>
       deriveWorkspaceStatus({
         isSessionPending: !auth.isLoaded || !userQuery.isLoaded,
@@ -141,9 +64,9 @@ function useAccountContextValue(): AccountContextValue {
       isConvexAuthPending,
       isConvexAuthenticated,
       hasOrganizationAccessDenied,
-    ]
+    ],
   );
-  
+
   const isWorkspaceReady = workspaceStatus === "ready";
 
   return useMemo(() => {
@@ -156,10 +79,7 @@ function useAccountContextValue(): AccountContextValue {
       clerkUser?.primaryEmailAddress?.emailAddress ||
       "Workspace user";
     const userEmail = clerkUser?.primaryEmailAddress?.emailAddress ?? "";
-    const organizationName =
-      organizationProfile?.name?.trim() ||
-      clerkOrganization?.name?.trim() ||
-      "Workspace";
+    const organizationName = organizationProfile?.name?.trim() || clerkOrganization?.name?.trim() || "Workspace";
 
     return {
       isSignedIn: Boolean(auth.isSignedIn),
@@ -177,13 +97,13 @@ function useAccountContextValue(): AccountContextValue {
         name: userName,
         email: userEmail,
         image: userProfile?.avatarUrl ?? clerkUser?.imageUrl ?? null,
-        initials: getInitials(userName),
+        initials: accountInitials(userName),
         profile: {
           phone: userProfile?.phone ?? "",
           role: userProfile?.role ?? "Workspace Owner",
           language: userProfile?.language ?? "en",
           timezone: userProfile?.timezone ?? "Africa/Cairo",
-          notifications: userProfile?.notifications ?? defaultNotifications,
+          notifications: userProfile?.notifications ?? defaultAccountNotifications,
         },
       },
       organization: {
@@ -200,7 +120,7 @@ function useAccountContextValue(): AccountContextValue {
         status: "active",
         brandColor: undefined,
         sound: undefined,
-        initials: getInitials(organizationName),
+        initials: accountInitials(organizationName),
       },
     };
   }, [
@@ -252,3 +172,5 @@ export function useAccountContext() {
   }
   return value;
 }
+
+export type { AccountContextValue };

@@ -21,13 +21,13 @@ function applyTheme(theme: Theme) {
   root.style.colorScheme = theme;
 }
 
-function readCurrentTheme(): Theme {
+function readStoredTheme(): Theme {
   if (typeof window === "undefined") return "light";
-  return document.documentElement.getAttribute("data-theme") as Theme || "light";
+  return window.localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "light";
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => readCurrentTheme());
+  const [theme, setThemeState] = useState<Theme>(() => readStoredTheme());
 
   useEffect(() => {
     applyTheme(theme);

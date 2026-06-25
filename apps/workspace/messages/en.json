@@ -274,12 +274,103 @@
     "announcements": "Announcements",
     "settings": "Settings",
     "collapse": "Collapse",
-    "expand": "Expand"
+    "expand": "Expand",
+    "defaultOrganizationName": "Organization",
+    "workspaces": "Workspaces",
+    "threads": {
+      "newThread": "New thread",
+      "history": "History",
+      "historyTitle": "Thread history",
+      "historyDescription": "Search AI threads for this workspace.",
+      "searchPlaceholder": "Search threads...",
+      "empty": "No threads yet",
+      "deleted": "Conversation deleted",
+      "deleteFailed": "Delete failed",
+      "deleteTitle": "Delete this conversation?",
+      "deleteDescription": "This permanently deletes the conversation, messages, and agent run history.",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    }
   },
   "Topbar": {
     "draftMode": "Draft Mode",
     "live": "Live",
-    "search": "Search..."
+    "search": "Search...",
+    "create": "Create",
+    "manage": "Manage",
+    "assistant": {
+      "open": "Open AI Assistant",
+      "close": "Close AI Assistant"
+    },
+    "essential": {
+      "openSidebar": "Open sidebar",
+      "closeSidebar": "Close sidebar"
+    },
+    "share": {
+      "inviteSent": {
+        "title": "Invite sent",
+        "description": "The organization invitation was sent."
+      },
+      "inviteFailed": {
+        "title": "Invite failed",
+        "description": "The invitation could not be sent."
+      },
+      "inviteLinkCreated": {
+        "title": "Invite link created",
+        "description": "The link was copied to your clipboard."
+      },
+      "linkFailed": {
+        "title": "Link failed",
+        "description": "The link could not be created."
+      },
+      "mcpLinkCreated": {
+        "title": "MCP link created",
+        "description": "The link was copied to your clipboard."
+      },
+      "mcpNoPermissions": "No shareable MCP permissions are available.",
+      "mcpConnectionName": "Share link",
+      "mcpConnectionInstructions": "Use this link only for the organization data allowed by this Share action."
+    }
+  },
+  "SharePopover": {
+    "trigger": "Share",
+    "tooltip": "Share this item",
+    "invite": "Invite",
+    "inviteLink": "Invite Link",
+    "copyLink": "Copy Link",
+    "createMcp": "Create MCP",
+    "permissions": {
+      "owner": "Owner",
+      "editor": "Can edit",
+      "viewer": "Can view",
+      "commenter": "Can comment"
+    },
+    "generalAccess": {
+      "invited": "Only those invited",
+      "link": "Link Access"
+    },
+    "inviteDialog": {
+      "title": "Send Invite",
+      "email": "Email",
+      "emailPlaceholder": "Email...",
+      "permission": "Permission",
+      "cancel": "Cancel",
+      "send": "Send"
+    },
+    "mcpDialog": {
+      "title": "Create MCP Link",
+      "name": "Name",
+      "namePlaceholder": "e.g. Sales Agent",
+      "preset": "Preset",
+      "cancel": "Cancel",
+      "create": "Create",
+      "creating": "Creating..."
+    },
+    "mcpPresets": {
+      "client": "Client",
+      "calendar": "Calendar",
+      "full": "Full Access"
+    }
   },
   "Landing": {
     "nav": {
@@ -1369,7 +1460,13 @@
       "healthAtRisk": "At Risk",
       "healthBlocked": "Blocked",
       "tagPlaceholder": "Add a tag...",
-      "addTagBtn": "Add"
+      "addTagBtn": "Add",
+      "statusTooltip": "Set project status",
+      "healthTooltip": "Rate project health",
+      "clientTooltip": "Link project to a client",
+      "durationLabel": "Duration",
+      "dateRangeTooltip": "Set start and end dates",
+      "bodyPlaceholder": "Add description… Type / for commands"
     },
     "types": {
       "workspace": "Workspace project",
@@ -2594,6 +2691,11 @@
     "subtitle": "Connect reviewed web apps to this workspace",
     "catalog_eyebrow": "App catalog",
     "add": "Add Web App",
+    "comingSoonOverlay": {
+      "badge": "Coming soon",
+      "title": "Web Apps & Integrations",
+      "description": "We're setting up the web apps catalog and integrations. It will be available shortly."
+    },
     "catalog": {
       "loading": "Loading web apps",
       "empty": "No approved web apps yet",
@@ -2613,7 +2715,16 @@
       "connect": "Connect",
       "manage": "Manage",
       "missingStart": "Start URL missing",
-      "details": "Details"
+      "details": "Details",
+      "connecting": "Connecting..."
+    },
+    "connections": {
+      "empty": "No connected partner apps yet",
+      "pause": "Pause",
+      "resume": "Resume",
+      "revoke": "Revoke",
+      "expires": "Expires",
+      "noExpiry": "No expiry"
     },
     "tabs": {
       "overview": "Overview",
@@ -2675,6 +2786,10 @@
       "hourAgo": "1 hour ago",
       "hoursAgo": "{count} hours ago",
       "justNow": "Just now",
+      "statusActive": "active",
+      "eventsCount": "events",
+      "close": "Close",
+      "copyUrl": "Copy URL",
       "endpointsData": {
         "aqar": {
           "name": "Aqar Marketplace Outbound Feed"
@@ -2737,6 +2852,8 @@
       "connected": "Connected",
       "notConnected": "Not connected",
       "partnerIntegration": "macOS Integration",
+      "liveDemo": "LIVE DEMO",
+      "ruleStatusActive": "active",
       "appDetails": {
         "icloud": {
           "category": "Asset Storage & Synchronization",
@@ -2802,7 +2919,9 @@
             "tenant": "Tenant Lead",
             "syncRules": "Lead Synchronization Rules",
             "rule1": "Auto-assign to Main Office",
-            "rule2": "Redact personal notes on sync"
+            "rule2": "Redact personal notes on sync",
+            "mockAhmed": "Ahmed Mansour",
+            "mockSarah": "Sarah Smith"
           }
         },
         "spotlight": {
@@ -3173,6 +3292,141 @@
       "desc": "Nothing needs to be shown yet. When someone changes organization settings, invites a teammate, edits work roles, or creates projects, assets, or media, the action will appear here automatically.",
       "noOrgTitle": "No organization selected",
       "noOrgDesc": "Choose or create an organization to view its activity log."
+    }
+  },
+  "WorkOs": {
+    "modules": {
+      "comingSoon": {
+        "badge": "Coming soon",
+        "description": "We're setting up {module}. It will be available shortly."
+      },
+      "workspaceView": {
+        "title": "Workspace view",
+        "description": "Table and board views will connect to the Work OS schema in the next backend pass.",
+        "empty": "No records yet"
+      },
+      "opportunities": {
+        "eyebrow": "Pipeline",
+        "title": "Opportunities",
+        "subtitle": "Funnel records linked to clients, projects, assets, tasks, and calendar work.",
+        "primaryLabel": "New opportunity",
+        "stats": {
+          "open": "Open",
+          "qualified": "Qualified",
+          "due": "Due",
+          "won": "Won"
+        }
+      },
+      "tasks": {
+        "eyebrow": "Work queue",
+        "title": "Tasks",
+        "subtitle": "Standalone or linked work across clients, opportunities, projects, assets, and calendar events.",
+        "primaryLabel": "New task",
+        "stats": {
+          "open": "Open",
+          "dueToday": "Due today",
+          "urgent": "Urgent",
+          "done": "Done"
+        }
+      },
+      "automations": {
+        "eyebrow": "Rules",
+        "title": "Automations",
+        "subtitle": "Workspace rules for record creation, stage changes, due dates, and status changes.",
+        "primaryLabel": "New rule",
+        "stats": {
+          "enabled": "Enabled",
+          "draft": "Draft",
+          "actions": "Actions",
+          "triggers": "Triggers"
+        }
+      }
+    }
+  },
+  "Billing": {
+    "eyebrow": "Billing",
+    "title": "Qentrah subscription",
+    "subtitle": "Complete your subscription setup from your workspace.",
+    "plan": "Qentrah Workspace",
+    "activeUntil": "Active until",
+    "notActiveYet": "Not active yet",
+    "status": "Status",
+    "latest": "Latest payment",
+    "seats": "Seats",
+    "perSeat": "per user / month",
+    "total": "Monthly total",
+    "month": "month",
+    "pay": "Continue to checkout",
+    "starting": "Creating checkout...",
+    "guarantee": "30-day money-back guarantee · Secure checkout via DodoPayments",
+    "ownerNote": "Organization owner pays on behalf of all members",
+    "orgBeingBilled": "Organization being billed",
+    "removeSeat": "Remove seat",
+    "addSeat": "Add seat",
+    "seatsInput": "Number of seats",
+    "seatUnit": "{count, plural, one {user} other {users}}",
+    "memberCountHint": "You currently have {count, plural, one {# member} other {# members}} in your organization",
+    "subscriptionActive": "Your subscription is active",
+    "backToOrgSettings": "← Back to organization settings",
+    "included": [
+      "Project, asset & client workspace",
+      "AI agents & workflows",
+      "All apps & integrations",
+      "Priority support",
+      "Included AI credits",
+      "Flexible seat add-ons"
+    ],
+    "checkout": {
+      "noUrlTitle": "No checkout URL returned",
+      "noUrlDesc": "Try again or contact support.",
+      "errorTitle": "Checkout could not start",
+      "errorDesc": "Try again in a moment."
+    },
+    "paymentReturn": {
+      "eyebrow": "Payment",
+      "successTitle": "Subscription activated",
+      "confirmTitle": "Confirming payment",
+      "failTitle": "Payment was not completed",
+      "successDesc": "Your payment was confirmed and your subscription is active.",
+      "confirmDesc": "Payment was successful. The subscription will update automatically.",
+      "failDesc": "The subscription was not activated. Check the payment details or try again.",
+      "dashboard": "Open dashboard",
+      "retry": "Retry payment",
+      "reference": "Payment reference",
+      "payment": "Payment status"
+    }
+  },
+  "Usage": {
+    "title": "Organization usage",
+    "subtitle": "AI credits, consumption, and payment records.",
+    "tabs": {
+      "usage": "Usage",
+      "payments": "Payments"
+    },
+    "currentPlan": "Current plan",
+    "active": "Active",
+    "inactive": "Inactive",
+    "upgradePlan": "Upgrade plan",
+    "subscriptionCredits": "Subscription credits",
+    "addOnCredits": "Extra credits",
+    "monthlyCredits": "Included with plan",
+    "addCredits": "Add credits",
+    "loading": "Loading usage...",
+    "error": "Could not load usage data.",
+    "noPayments": "No payments recorded yet.",
+    "paymentDescription": "Billing payment",
+    "statusPaid": "Paid",
+    "planInterval": {
+      "year": "year",
+      "month": "month",
+      "custom": "Custom / Contact sales"
+    },
+    "table": {
+      "invoice": "Invoice",
+      "date": "Date",
+      "description": "Description",
+      "amount": "Amount",
+      "status": "Status"
     }
   },
   "Opportunities": {
@@ -3901,6 +4155,12 @@
     "notifOperationError": "Notification update failed.",
     "notifOperationSuccess": "Notification updated."
   },
+  "Auth": {
+    "callback": {
+      "title": "Finishing sign-in",
+      "preparing": "Preparing the workspace before continuing."
+    }
+  },
   "Onboarding": {
     "title": "Setup your Organization",
     "subtitle": "Complete the basic setup to start using your workspace. Legal documents can be added later when needed.",
@@ -4147,9 +4407,5 @@
     "noProjectFound": "No project found.",
     "viewAllProjects": "View all projects",
     "createNewProject": "Create new project"
-  },
-  "Topbar": {
-    "create": "Create",
-    "manage": "Manage"
   }
 }

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { expiryTimestamp } from "@/lib/utils/expiry-timestamp";
 
 const organizationApiKeyResourceSchema = z.enum([
   "organization",
@@ -36,10 +37,7 @@ export type CreateOrganizationApiKeyPayload = z.infer<typeof createOrganizationA
 export type RotateOrganizationApiKeyPayload = z.infer<typeof rotateOrganizationApiKeySchema>;
 
 export function organizationApiKeyExpiresAt(expiry: OrganizationApiKeyExpiry, now = Date.now()) {
-  if (expiry === "never") return undefined;
-  if (expiry === "5h") return now + 5 * 60 * 60 * 1000;
-  if (expiry === "14d") return now + 14 * 24 * 60 * 60 * 1000;
-  return now + 30 * 24 * 60 * 60 * 1000;
+  return expiryTimestamp(expiry, now);
 }
 
 export function normalizeOrganizationApiKeyPermissions(

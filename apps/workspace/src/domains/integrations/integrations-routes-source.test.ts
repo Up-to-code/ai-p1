@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -34,7 +34,11 @@ describe("web apps route aliases", () => {
   });
 
   it("keeps literal integration screen message keys available in English and Arabic", () => {
-    const source = readSource("src/domains/integrations/components/integrations-screen.tsx");
+    const componentsDir = resolve(root, "src/domains/integrations/components");
+    const componentFiles = readdirSync(componentsDir).filter((file) => file.endsWith(".tsx"));
+    const source = componentFiles
+      .map((file) => readSource(`src/domains/integrations/components/${file}`))
+      .join("\n");
     const enMessages = JSON.parse(readSource("messages/en.json")) as Record<string, unknown>;
     const arMessages = JSON.parse(readSource("messages/ar.json")) as Record<string, unknown>;
     const keys = Array.from(source.matchAll(/\bt(?:\.raw)?\('([^']+)'/g), (match) => match[1])

@@ -20,8 +20,6 @@ type AnimatedHomeHeroProps = {
   isAr: boolean;
 };
 
-const heroVideoUrl = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/agentic-hero-9yW3wnTNMfn2U6lsVhTTZSJFEvAoSj.mp4";
-
 function HeroArrow({ isAr, secondary = false }: { isAr: boolean; secondary?: boolean }) {
   if (secondary) return <ArrowUpRight className={isAr ? "size-4 -rotate-90" : "size-4"} />;
   return <ArrowRight className={isAr ? "size-4 rotate-180" : "size-4"} />;
@@ -83,14 +81,11 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
     <section className="relative min-h-screen overflow-hidden border-b border-[color-mix(in_srgb,var(--hero-text)_10%,transparent)] bg-[var(--hero-bg)] text-[var(--hero-text)] [--hero-bg:var(--q-bg)] [--hero-text:var(--q-text-primary)] dark:[--hero-bg:var(--q-bg)] dark:[--hero-text:var(--q-text-primary)]">
       <IntroAnimation label={introLabel} onDone={handleIntroDone} />
 
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 z-0 h-full w-full object-cover dark:opacity-45"
-        src={heroVideoUrl}
+      {/* Brand hero background image */}
+      <div
+        className="absolute inset-0 z-0 h-full w-full bg-cover bg-center bg-no-repeat"
         style={{
+          backgroundImage: "url(/images/hero-branding.png)",
           transform: videoReady ? "scale(1.05)" : "scale(0.86)",
           transition: "transform 2s cubic-bezier(0.16, 1, 0.3, 1)",
         }}

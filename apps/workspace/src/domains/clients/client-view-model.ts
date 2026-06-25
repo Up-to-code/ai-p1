@@ -1,21 +1,37 @@
 import type { ClientTaskPayload } from "@/domains/clients/api/client-tasks";
 import type { Client, ClientType } from "./store/clients.types";
 import type { ClientFormValues } from "./validation/client.schema";
+import {
+  activePipelineStages,
+  clientAssetLinkStatuses,
+  clientFilters,
+  clientPriorities,
+  clientStageFilters,
+  clientStatuses,
+  clientTypes,
+  clientViews,
+  pipelineStages,
+  type PipelineStage,
+} from "./config/clients.config";
+import { matchesClientSearch } from "./lib/client-search";
 
 export type AssetStatus = "available" | "reserved" | "pending" | "sold" | "draft";
 
-export const pipelineStages = ["new", "qualified", "review", "negotiation", "closed"] as const;
-export const activePipelineStages = ["new", "qualified", "review", "negotiation"] as const;
-export const clientFilters = ["all", "person", "organization"] as const;
-export const clientViews = ["pipeline", "list", "calendar"] as const;
-export const clientStageFilters = ["all", "active", "closed"] as const;
-export const clientTypes = ["person", "organization"] as const;
-export const clientStatuses = ["new", "active", "nurture", "inactive", "archived"] as const;
-export const clientPriorities = ["normal", "high", "urgent"] as const;
-export const clientAssetLinkStatuses = ["interested", "shortlisted", "review", "proposal", "rejected"] as const;
-
+export {
+  pipelineStages,
+  activePipelineStages,
+  clientFilters,
+  clientViews,
+  clientStageFilters,
+  clientTypes,
+  clientStatuses,
+  clientPriorities,
+  clientAssetLinkStatuses,
+};
+export type { PipelineStage };
 export type StatusPillTone = "danger" | "info" | "neutral" | "success" | "warning";
-export type PipelineStage = (typeof pipelineStages)[number];
+
+export { matchesClientSearch };
 
 export function assetStatusTone(status: AssetStatus): StatusPillTone {
   if (status === "available") return "success";
@@ -166,14 +182,6 @@ export function clientTaskActivityRows<
     statusTone: clientTaskStatusTone(task.status),
     dueDateLabel: clientTaskDueDateLabel(task.dueAt, locale, emptyDateLabel),
   }));
-}
-
-export function matchesClientSearch(
-  client: { name: string; contact: string; assetInterest: string; budget: string },
-  search: string,
-) {
-  const q = search.trim().toLowerCase();
-  return !q || [client.name, client.contact, client.assetInterest, client.budget].some((value) => value.toLowerCase().includes(q));
 }
 
 export function isActivePipelineStage(stage: string): stage is (typeof activePipelineStages)[number] {

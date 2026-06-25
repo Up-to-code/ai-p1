@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocale } from "next-intl";
+import { isRtlLocale } from "@/lib/i18n/locale";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -192,7 +193,7 @@ export function ProjectOverviewSidebar({
   defaultOpen = true,
 }: ProjectOverviewSidebarProps) {
   const locale = useLocale();
-  const isRtl = locale === "ar";
+  const isRtl = isRtlLocale(locale);
 
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [tabs, setTabs] = useState<PanelTab[]>(defaultTabs);

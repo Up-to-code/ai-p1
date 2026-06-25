@@ -10,13 +10,14 @@ function read(path: string) {
 
 describe("organization settings source", () => {
   it("keeps custom permissions in a members drawer instead of a primary tab", () => {
-    const source = read("src/domains/organization/components/organization-screens.tsx");
+    const organizationScreen = read("src/domains/organization/components/screens/organization-screen.tsx");
+    const customPermissionsScreen = read("src/domains/organization/components/screens/custom-permissions-screen.tsx");
 
-    expect(source).toContain("CustomPermissionsDrawer");
-    expect(source).toContain("setCustomPermissionsOpen(true)");
-    expect(source).toContain('from "@/components/ui/sheet"');
-    expect(source).toContain("<Sheet open={open}");
-    expect(source).not.toContain('{ id: "roles"');
-    expect(source).not.toContain("<RoleManagementPanel embedded");
+    expect(customPermissionsScreen).toContain("CustomPermissionsDrawer");
+    expect(organizationScreen).toContain("setCustomPermissionsOpen(true)");
+    expect(customPermissionsScreen).toContain('from "@/components/ui/sheet"');
+    expect(customPermissionsScreen).toContain("<Sheet open={open}");
+    expect(organizationScreen).not.toContain('{ id: "roles"');
+    expect(organizationScreen).not.toContain("<RoleManagementPanel embedded");
   });
 });

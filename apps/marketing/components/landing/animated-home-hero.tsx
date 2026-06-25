@@ -20,7 +20,9 @@ type AnimatedHomeHeroProps = {
   isAr: boolean;
 };
 
-const heroVideoUrl = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/agentic-hero-9yW3wnTNMfn2U6lsVhTTZSJFEvAoSj.mp4";
+// ── Hero background images ── light = daytime landscape, dark = night scene ──
+const heroBgLight = "/images/hero-bg-light.png";
+const heroBgDark = "/images/hero-bg-dark.png";
 
 function HeroArrow({ isAr, secondary = false }: { isAr: boolean; secondary?: boolean }) {
   if (secondary) return <ArrowUpRight className={isAr ? "size-4 -rotate-90" : "size-4"} />;
@@ -72,13 +74,22 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
     <section className="relative min-h-screen overflow-hidden border-b border-zinc-200/80 bg-[var(--q-bg)] text-[var(--q-text-primary)] dark:border-zinc-800/80 dark:bg-[var(--q-bg)] dark:text-[var(--q-text-primary)]">
       <IntroAnimation label={introLabel} onDone={handleIntroDone} />
 
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 z-0 h-full w-full object-cover dark:opacity-45"
-        src={heroVideoUrl}
+      {/* ── Hero background: daytime in light mode, night scene in dark mode ── */}
+      <img
+        src={heroBgLight}
+        alt=""
+        aria-hidden
+        className="absolute inset-0 z-0 h-full w-full object-cover block dark:hidden"
+        style={{
+          transform: videoReady ? "scale(1.05)" : "scale(0.86)",
+          transition: "transform 2s cubic-bezier(0.16, 1, 0.3, 1)",
+        }}
+      />
+      <img
+        src={heroBgDark}
+        alt=""
+        aria-hidden
+        className="absolute inset-0 z-0 h-full w-full object-cover hidden dark:block"
         style={{
           transform: videoReady ? "scale(1.05)" : "scale(0.86)",
           transition: "transform 2s cubic-bezier(0.16, 1, 0.3, 1)",

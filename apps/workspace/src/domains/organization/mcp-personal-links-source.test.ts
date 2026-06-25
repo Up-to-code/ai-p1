@@ -36,27 +36,28 @@ describe("MCP link principal source guards", () => {
   });
 
   it("lets organization members create and edit permission-clamped agent links", () => {
-    const source = read("src/domains/organization/components/organization-screens.tsx");
+    const organizationScreen = read("src/domains/organization/components/screens/organization-screen.tsx");
+    const agentLinksPanel = read("src/domains/organization/components/panels/agent-links-panel.tsx");
 
-    expect(source).toContain("const canCreateAgentLinks = capabilities?.canReadOrganization ?? false");
-    expect(source).toContain("const [principalType, setPrincipalType]");
-    expect(source).toContain("principalType,");
-    expect(source).toContain("openEditAgentLinkDialog");
-    expect(source).toContain("permissions: selectedGrantablePermissions");
-    expect(source).toContain("clampAgentPermissionsToGrantable(cloneAgentPermissions(connection.permissions), grantablePermissions)");
+    expect(organizationScreen).toContain("const canCreateAgentLinks = capabilities?.canReadOrganization ?? false");
+    expect(agentLinksPanel).toContain("const [principalType, setPrincipalType]");
+    expect(agentLinksPanel).toContain("principalType,");
+    expect(agentLinksPanel).toContain("openEditAgentLinkDialog");
+    expect(agentLinksPanel).toContain("permissions: selectedGrantablePermissions");
+    expect(agentLinksPanel).toContain("clampAgentPermissionsToGrantable(cloneAgentPermissions(connection.permissions), grantablePermissions)");
   });
 
   it("keeps deleted MCP links as hidden drafts with creator attribution", () => {
     const convexSource = read("convex/mcp/connections.ts");
-    const uiSource = read("src/domains/organization/components/organization-screens.tsx");
-    const settingsViewModel = read("src/domains/organization/settings-view-model.ts");
+    const agentLinksPanel = read("src/domains/organization/components/panels/agent-links-panel.tsx");
+    const agentPermissions = read("src/domains/organization/agent-permissions.ts");
 
     expect(convexSource).toContain('status: "draft"');
     expect(convexSource).toContain("mcpConnection.draft");
-    expect(uiSource).toContain("agentConnectionProjection(connections, showDrafts)");
-    expect(settingsViewModel).toContain("const draftConnections = connections.filter((connection) => connection.status === \"draft\")");
-    expect(uiSource).toContain("showDrafts");
-    expect(uiSource).toContain("memberByUserId.get(connection.createdByUserId)");
-    expect(uiSource).toContain("buttons.showDrafts");
+    expect(agentLinksPanel).toContain("agentConnectionProjection(connections, showDrafts)");
+    expect(agentPermissions).toContain("const draftConnections = connections.filter((connection) => connection.status === \"draft\")");
+    expect(agentLinksPanel).toContain("showDrafts");
+    expect(agentLinksPanel).toContain("memberByUserId.get(connection.createdByUserId)");
+    expect(agentLinksPanel).toContain("buttons.showDrafts");
   });
 });

@@ -1,412 +1,50 @@
 "use client";
 
-import { useMemo, useState, useCallback, useEffect, type ReactNode } from "react";
-import { useQuery as useReactQuery } from "@tanstack/react-query";
-import { CalendarDays, CheckCircle2, ChevronDown, Clock, Edit, Mail, Phone, Plus, Search, Trash2, User, UserPlus, Users, History as ActivityIcon, FileText as DocsIcon, LayoutDashboard, PhoneCall, Video, Tag, Link2, FileText, Briefcase, Calendar, Pencil, type LucideIcon } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { CalendarDays, FileText, LayoutDashboard, Search, UserPlus, Users } from "lucide-react";
 import {
-  AppDataTable,
   AppPageHeader,
   AppPageShell,
-  AppPrimaryButton,
   AppSection,
-  AppTabsList,
   InfiniteScrollSentinel,
-  type AppDataTableColumn,
 } from "@/components/shared";
-import { PipelineBoard, ViewSwitcherTabs, GroupedList } from "@/components/shared/view-system";
+import { PipelineBoard, GroupedList } from "@/components/shared/view-system";
 import type { ViewDefinition } from "@/components/shared/view-system/types";
 import { clientToCardItem } from "./client-view-helpers";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { Link, useRouter } from "@/i18n/routing";
+import { useRouter } from "@/i18n/routing";
 import { useAccountContext } from "@/domains/auth";
 import {
   CLIENTS_PAGE_SIZE,
-  deleteClientRequest,
-  clientsIndexQueryBaseKey,
-  updateClientRequest,
   useClientQuery,
   useClientsIndexQuery,
   useDeleteClientOptimisticMutation,
   useMoveClientInPipelineMutation,
-  useUpdateClientOptimisticMutation,
 } from "@/domains/clients/api/clients";
-import {
-  createClientTaskRequest,
-  deleteClientTaskRequest,
-  updateClientTaskRequest,
-  useClientTasksQuery,
-  type ClientTaskPayload,
-} from "@/domains/clients/api/client-tasks";
-import {
-  useClientFollowUpsQuery,
-  createFollowUpRequest,
-  deleteFollowUpRequest,
-  markFollowUpCompleteRequest,
-} from "@/domains/clients/api/client-follow-ups";
-import type { ClientFollowUpPayload } from "@/domains/clients/api/client-follow-ups";
-import { useCalendarEventsQuery, useUpcomingCalendarEventsQuery } from "@/domains/calendar/api/calendar";
-import { useOpportunitiesQuery } from "@/domains/opportunities/api/opportunities";
-import { useQuery as useConvexQuery } from "convex/react";
-import { api as convexApi } from "@convex/_generated/api";
-import type { Id as ConvexId } from "@convex/_generated/dataModel";
-import { getOrganizationCapabilities } from "@/domains/organization/api/clerk-organization-api";
-import { ClientDocumentsManager } from "@/domains/media/components/client-documents-manager";
 import type { Client, ClientType } from "../store/clients.types";
 import {
   activePipelineStages,
   activeJourneyClients as activeJourneyClientRows,
   calendarEventsForClients,
   clientFilters,
-  clientPriorities,
-  clientPipelineStageIndex,
   clientStageFilters,
-  clientStatuses,
-  clientTaskActivityRows,
-  clientTaskUpdatePayload,
-  clientToFormValues,
-  clientTypes,
-  clientValuesFromFormData,
   clientViews,
   clientsForStageFilter,
   displayedClientsForView,
   matchesClientSearch,
-  pipelineStages,
-  taskPayloadFromFormData,
-  typeTone,
-  type PipelineStage,
 } from "../client-view-model";
-import { useOperationState } from "@/lib/utils/operation-state";
 import { DeleteRecordDialog, DetailNotFoundState, EmptyWorkspace, HttpQueryState, ProgressiveLoadingState, StatusPill, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { useUrlListState } from "@/components/shared/use-url-list-state";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { ClientForm } from "./client-form";
 import { ClientSheet } from "./client-sheet";
-import { NotionClientTable } from "./notion-client-table";
 import { PipelineStagesSettings } from "./pipeline-stages-settings";
 import { usePipelineStages } from "@/domains/clients/api/pipeline-stages";
 import { sortPipelineClients } from "@/domains/clients/pipeline-order";
-
-const clientTypeValuesForTranslation = new Set(["person", "organization", "Client", "Buyer", "Tenant", "Investor", "Broker"]);
-const clientStatusValuesForTranslation = new Set(["new", "active", "nurture", "inactive", "archived"]);
-const clientStageValuesForTranslation = new Set(["new", "qualified", "review", "negotiation", "closed"]);
-const clientPriorityValuesForTranslation = new Set(["normal", "high", "urgent"]);
-
-function fallbackLabel(value: string | null | undefined) {
-  const source = String(value ?? "").trim();
-  if (!source || source === "undefined") {
-    return "—";
-  }
-  return source
-    .split(/[\s_-]+/)
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
-function translateClientLabel(
-  t: ReturnType<typeof useTranslations<"Clients">>,
-  namespace: "types" | "statuses" | "stages" | "priorities",
-  value: string | null | undefined,
-  validValues: ReadonlySet<string>,
-) {
-  if (value && validValues.has(value)) {
-    return t(`${namespace}.${value}`);
-  }
-  return fallbackLabel(value);
-}
-
-function translateClientType(t: ReturnType<typeof useTranslations<"Clients">>, value: string | null | undefined) {
-  return translateClientLabel(t, "types", value, clientTypeValuesForTranslation);
-}
-
-function translateClientStatus(t: ReturnType<typeof useTranslations<"Clients">>, value: string | null | undefined) {
-  return translateClientLabel(t, "statuses", value, clientStatusValuesForTranslation);
-}
-
-function translateClientStage(t: ReturnType<typeof useTranslations<"Clients">>, value: string | null | undefined) {
-  return translateClientLabel(t, "stages", value, clientStageValuesForTranslation);
-}
-
-function translateClientPriority(t: ReturnType<typeof useTranslations<"Clients">>, value: string | null | undefined) {
-  return translateClientLabel(t, "priorities", value, clientPriorityValuesForTranslation);
-}
-
-function ClientDetailField({
-  label,
-  name,
-  defaultValue,
-  type = "text",
-  className,
-}: {
-  label: string;
-  name: string;
-  defaultValue: string;
-  type?: "email" | "number" | "text";
-  className?: string;
-}) {
-  return (
-    <label className={cn("block text-start", className)}>
-      <span className="text-[11px] font-bold text-muted-foreground">{label}</span>
-      <input
-        name={name}
-        type={type}
-        defaultValue={defaultValue}
-        className="mt-2 h-11 w-full rounded-xl border border-border bg-card px-3 text-sm font-bold text-foreground outline-none transition focus:border-border focus:ring-2 focus:ring-ring"
-      />
-    </label>
-  );
-}
-
-function ClientDetailSelect({
-  label,
-  name,
-  defaultValue,
-  options,
-  className,
-}: {
-  label: string;
-  name: string;
-  defaultValue: string;
-  options: Array<{ value: string; label: string }>;
-  className?: string;
-}) {
-  return (
-    <label className={cn("block text-start", className)}>
-      <span className="text-[11px] font-bold text-muted-foreground">{label}</span>
-      <select
-        name={name}
-        defaultValue={defaultValue}
-        className="mt-2 h-11 w-full rounded-xl border border-border bg-card px-3 text-sm font-bold text-foreground outline-none transition focus:ring-2 focus:ring-ring"
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>{option.label}</option>
-        ))}
-      </select>
-    </label>
-  );
-}
-
-function ClientMetaPill({ icon: Icon, children }: { icon: LucideIcon; children: ReactNode }) {
-  return (
-    <span className="inline-flex h-8 min-w-0 max-w-full items-center gap-2 rounded-full bg-muted px-3 text-xs font-bold text-muted-foreground">
-      <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
-      <span className="truncate">{children}</span>
-    </span>
-  );
-}
-
-function ClientInfoRow({ icon: Icon, label, value }: { icon: LucideIcon; label: ReactNode; value: ReactNode }) {
-  return (
-    <div className="min-w-0 rounded-2xl bg-muted p-4">
-      <span className="flex items-center gap-2 text-[11px] font-bold text-muted-foreground">
-        <Icon className="h-3.5 w-3.5 shrink-0" />
-        <span className="truncate">{label}</span>
-      </span>
-      <p className="mt-3 truncate text-sm font-black text-foreground">{value}</p>
-    </div>
-  );
-}
-
-function CompactClientFact({ label, value }: { label: ReactNode; value: ReactNode }) {
-  return (
-    <div className="group min-w-0 rounded-lg border border-transparent px-3 py-2 transition-colors hover:border-border hover:bg-muted/40">
-      <p className="text-[11px] font-bold text-muted-foreground">{label}</p>
-      <p className="mt-1 line-clamp-2 text-sm font-semibold leading-snug text-foreground">{value}</p>
-    </div>
-  );
-}
-
-function EditableTextBlock({
-  value,
-  placeholder = "Empty",
-  className,
-  multiline = false,
-}: {
-  value?: ReactNode;
-  placeholder?: string;
-  className?: string;
-  multiline?: boolean;
-}) {
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      className={cn(
-        "group rounded-lg border border-transparent px-2 py-1 transition-colors hover:border-border hover:bg-muted/40 focus:border-ring focus:bg-muted/40 focus:outline-none",
-        multiline ? "min-h-20 whitespace-pre-wrap" : "truncate",
-        className,
-      )}
-      title="Inline editing ready"
-    >
-      <span className={cn(!value && "text-muted-foreground")}>{value || placeholder}</span>
-      <Pencil className="ms-2 inline h-3 w-3 opacity-0 transition-opacity group-hover:opacity-50" />
-    </div>
-  );
-}
-
-function EditableTags({
-  tags,
-  fallback,
-}: {
-  tags?: string[];
-  fallback: string;
-}) {
-  const visibleTags = tags?.length ? tags : [fallback];
-  return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {visibleTags.map((tag) => (
-        <button
-          key={tag}
-          type="button"
-          className="rounded-md border border-transparent bg-muted/60 px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground"
-        >
-          {tag}
-        </button>
-      ))}
-      <button
-        type="button"
-        className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        aria-label="Add tag"
-      >
-        <Plus className="h-3.5 w-3.5" />
-      </button>
-    </div>
-  );
-}
-
-function NotionProperty({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: LucideIcon;
-  label: string;
-  value: ReactNode;
-}) {
-  return (
-    <div className="group grid grid-cols-[132px_minmax(0,1fr)] items-center gap-3 rounded-lg border border-transparent px-2 py-2 text-sm transition-colors hover:border-border hover:bg-muted/35">
-      <div className="flex min-w-0 items-center gap-2 text-muted-foreground">
-        <Icon className="h-3.5 w-3.5 shrink-0" />
-        <span className="truncate text-xs font-medium">{label}</span>
-      </div>
-      <EditableTextBlock value={value} className="min-w-0 text-sm font-medium" />
-    </div>
-  );
-}
-
-function NotionActionLink({
-  href,
-  children,
-}: {
-  href: string;
-  children: ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className="rounded-lg border border-border/70 px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-    >
-      {children}
-    </Link>
-  );
-}
-
-function ClientMiniCard({
-  client,
-  onDelete,
-  onMarkClosed,
-  isClosing,
-}: {
-  client: Client;
-  onDelete: (client: Client) => void;
-  onMarkClosed: (client: Client) => void;
-  isClosing: boolean;
-}) {
-  const t = useTranslations('Clients');
-  return (
-    <article
-      className="group rounded-[24px] border border-border bg-card p-5 transition-colors hover:border-border"
-    >
-      <div className="flex items-start justify-between gap-4">
-        <Link href={`/clients/${client.id}`} className="flex min-w-0 items-center gap-3 rounded-xl focus-visible:ring-2 focus-visible:ring-ring">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-foreground text-sm font-black uppercase text-background">
-            {client.name.charAt(0)}
-          </div>
-          <div className="min-w-0 text-start">
-            <h3 className="truncate text-sm font-black uppercase tracking-tight text-foreground">{client.name}</h3>
-            <p className="mt-1 truncate text-[9px] font-black uppercase tracking-widest text-muted-foreground">{client.contact}</p>
-          </div>
-        </Link>
-        <Link
-          href={`/clients/${client.id}/edit`}
-          aria-label={`Edit ${client.name}`}
-          className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground/40 opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring group-hover:opacity-100"
-        >
-          <Edit className="h-3.5 w-3.5" aria-hidden="true" />
-        </Link>
-      </div>
-
-      <div className="mt-5 flex flex-wrap gap-2">
-        <StatusPill label={translateClientType(t, client.type)} tone={typeTone(client.type)} />
-        <StatusPill label={translateClientPriority(t, client.priority)} tone={client.priority === "urgent" ? "danger" : client.priority === "high" ? "warning" : "neutral"} />
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        {client.budget && client.budget !== "0" && (
-          <div className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500/10 px-2 py-1 text-[10px] font-bold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-            {client.budget}
-          </div>
-        )}
-        {client.notes && (
-          <div className="inline-flex items-center gap-1.5 rounded-md bg-blue-500/10 px-2 py-1 text-[10px] font-bold text-blue-600 dark:bg-blue-500/20 dark:text-blue-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-            {client.notes}
-          </div>
-        )}
-        {client.tags?.slice(0, 2).map(tag => (
-          <div key={tag} className="inline-flex items-center gap-1.5 rounded-md bg-purple-500/10 px-2 py-1 text-[10px] font-bold text-purple-600 dark:bg-purple-500/20 dark:text-purple-400">
-            {tag}
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-5 flex items-center justify-between gap-3">
-        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{client.lastContact}</span>
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            aria-label={t("actions.markClosed")}
-            disabled={isClosing}
-            onClick={(event) => {
-              event.stopPropagation();
-              onMarkClosed(client);
-            }}
-            className="inline-flex h-8 items-center gap-1.5 rounded-xl px-2 text-[9px] font-black uppercase tracking-widest text-muted-foreground transition-colors hover:bg-emerald-50 hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-300"
-          >
-            <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
-            {t("actions.markClosed")}
-          </button>
-          <button
-            type="button"
-            aria-label={`Delete ${client.name}`}
-            onClick={(event) => {
-              event.stopPropagation();
-              onDelete(client);
-            }}
-            className="text-muted-foreground/40 transition-colors hover:text-red-500 focus-visible:ring-2 focus-visible:ring-red-500/20"
-          >
-            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-          </button>
-        </div>
-      </div>
-    </article>
-  );
-}
-
+import { useUpcomingCalendarEventsQuery } from "@/domains/calendar/api/calendar";
+import {
+  translateClientStage,
+} from "../lib/client-labels";
 
 export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "pipeline" | "calendar" | "list" }) {
   const t = useTranslations('Clients');
@@ -420,9 +58,6 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
   const [search, setSearch] = useState("");
   const [view, setView] = useState<(typeof clientViews)[number]>(initialView);
   const [deleting, setDeleting] = useState<Client | null>(null);
-  const [draggedId, setDraggedId] = useState<string | null>(null);
-  const [dragOverStage, setDragOverStage] = useState<PipelineStage | null>(null);
-  const [dragOverIndex, setDragOverIndex] = useState<{ stage: PipelineStage; index: number } | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isStagesSettingsOpen, setIsStagesSettingsOpen] = useState(false);
@@ -466,10 +101,8 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
     search,
   });
   const moveClientMutation = useMoveClientInPipelineMutation(clientsQuery.queryKey);
-  const updateClientMutation = useUpdateClientOptimisticMutation(clientsQuery.queryKey);
   const deleteClientMutation = useDeleteClientOptimisticMutation(clientsQuery.queryKey);
   const clients = useMemo(() => clientsQuery.results as Client[], [clientsQuery.results]);
-  const stats = clientsQuery.stats;
   const calendarEventsQuery = useUpcomingCalendarEventsQuery(workspaceOrganizationId, {
     enabled: view === "calendar",
     limit: 50,
@@ -489,38 +122,6 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
   const tableClients = useMemo(() => clientsForStageFilter(searchedClients, stageFilter), [searchedClients, stageFilter]);
 
   const displayedClients = displayedClientsForView(searchedClients, view, stageFilter);
-
-  const updateClientField = (client: Client, field: string, value: any) => {
-    if (!account.organization.id) return;
-    updateClientMutation.mutate({
-      organizationId: account.organization.id,
-      client,
-      values: {
-        ...clientToFormValues(client),
-        [field]: value,
-      },
-    });
-  };
-
-  const markClientClosed = (client: Client) => {
-    if (!account.organization.id) return;
-    updateClientMutation.mutate({
-      organizationId: account.organization.id,
-      client,
-      values: {
-        ...clientToFormValues(client),
-        pipelineStage: "closed",
-      },
-    }, {
-      onSuccess: () => {
-        setSearch("");
-        setStageFilter("all");
-        setDraggedId(null);
-        setDragOverStage(null);
-        setDragOverIndex(null);
-      },
-    });
-  };
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-background">

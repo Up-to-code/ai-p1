@@ -90,7 +90,7 @@ export function CreateProjectForm({ isOpen, onSuccess, onCancel }: CreateProject
             completed: t("statusCompleted"),
             archived: t("statusArchived"),
           }}
-          tooltip={locale === "ar" ? "حدد حالة المشروع" : "Set project status"}
+          tooltip={t("statusTooltip")}
         />
       ),
     },
@@ -107,7 +107,7 @@ export function CreateProjectForm({ isOpen, onSuccess, onCancel }: CreateProject
             atRisk: t("healthAtRisk"),
             blocked: t("healthBlocked"),
           }}
-          tooltip={locale === "ar" ? "تقييم صحة المشروع" : "Rate project health"}
+          tooltip={t("healthTooltip")}
         />
       ),
     },
@@ -123,14 +123,14 @@ export function CreateProjectForm({ isOpen, onSuccess, onCancel }: CreateProject
           placeholder={t("clientPicker.selectPlaceholder")}
           searchPlaceholder={t("clientPicker.searchPlaceholder")}
           noResultsText={t("clientPicker.noClients")}
-          tooltip={locale === "ar" ? "اربط المشروع بعميل" : "Link project to a client"}
+          tooltip={t("clientTooltip")}
         />
       ),
     },
     {
       key: "dateRange",
       icon: <CalendarDays className="h-3.5 w-3.5" />,
-      label: locale === "ar" ? "المدة" : "Duration",
+      label: t("durationLabel"),
       value: (
         <CalendarDatePicker
           value={form.watch("startDate") ?? ""}
@@ -138,7 +138,7 @@ export function CreateProjectForm({ isOpen, onSuccess, onCancel }: CreateProject
           endDate={form.watch("endDate") ?? ""}
           onEndDateChange={(date) => form.setValue("endDate", date)}
           locale={locale}
-          tooltip={locale === "ar" ? "حدد تاريخ البداية والنهاية" : "Set start and end dates"}
+          tooltip={t("dateRangeTooltip")}
         />
       ),
     },
@@ -253,11 +253,7 @@ export function CreateProjectForm({ isOpen, onSuccess, onCancel }: CreateProject
           body={description}
           fields={fields}
           titlePlaceholder={t("namePlaceholder")}
-          bodyPlaceholder={
-            locale === "ar"
-              ? "أضف وصفًا… اكتب / للأوامر"
-              : "Add description… Type / for commands"
-          }
+          bodyPlaceholder={t("bodyPlaceholder")}
           isSaving={isSubmitting}
           onTitleBlur={(v) => {
             if (v !== title) form.setValue("name", v, { shouldValidate: true });

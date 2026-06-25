@@ -1,90 +1,121 @@
 {
   "meta": {
-    "name": "Qentrah Design Tokens",
-    "description": "Apple x OpenAI color system — shadcn/ui CSS variable tokens for Next.js + Tailwind v4",
+    "name": "Qentrah OS Design Tokens",
+    "description": "Communication First design system — shadcn/ui CSS variable tokens for Next.js + Tailwind v4. Apple-like minimalism with domain-specific colors for agents, networks, and automation.",
     "version": "1.0.0",
-    "usage": "CSS variables via @theme in globals.css. Dark mode via .dark class on <html>."
+    "usage": "CSS variables via @theme in globals.css. Dark mode via .dark class (workspace) or [data-theme=\"dark\"] (marketing)."
   },
   "color": {
     "light": {
-      "background":             { "value": "#f5f4f0", "css": "--background",            "note": "Page bg — Apple off-white" },
-      "foreground":             { "value": "#1a1a18", "css": "--foreground",            "note": "Primary text — warmed black" },
-      "card":                   { "value": "#fbfaf7", "css": "--card",                  "note": "Card / panel surface — softened" },
-      "card-foreground":        { "value": "#1a1a18", "css": "--card-foreground",       "note": "Text on cards" },
-      "popover":                { "value": "#fbfaf7", "css": "--popover" },
-      "popover-foreground":     { "value": "#1a1a18", "css": "--popover-foreground",   "note": "Menu text" },
-      "primary":                { "value": "#0066cc", "css": "--primary",               "note": "Brand accent — Apple blue" },
-      "primary-hover":          { "value": "#0055aa", "css": "--primary-hover" },
-      "primary-active":         { "value": "#004499", "css": "--primary-active" },
-      "primary-foreground":     { "value": "#ffffff", "css": "--primary-foreground" },
-      "secondary":              { "value": "#efeeea", "css": "--secondary",             "note": "Sidebar, subtle surface" },
-      "secondary-foreground":   { "value": "#1a1a18", "css": "--secondary-foreground" },
-      "muted":                  { "value": "#e9e7e1", "css": "--muted",                 "note": "Fields, disabled bg" },
-      "muted-foreground":       { "value": "#79766f", "css": "--muted-foreground",      "note": "Secondary / helper text — more legible" },
-      "accent":                 { "value": "#efeeea", "css": "--accent",                "note": "Hover surface" },
-      "accent-foreground":      { "value": "#1a1a18", "css": "--accent-foreground" },
-      "destructive":            { "value": "#f87171", "css": "--destructive" },
-      "destructive-foreground": { "value": "#1a1a18", "css": "--destructive-foreground" },
-      "border":                 { "value": "#e0ddd6", "css": "--border",                "note": "Dividers — warmer" },
-      "input":                  { "value": "#e9e7e1", "css": "--input" },
-      "ring":                   { "value": "#0066cc", "css": "--ring",                  "note": "Focus ring" },
-      "topbar-bg":              { "value": "#efeeea", "css": "--q-topbar",              "note": "Topbar matches sidebar in light" },
-      "topbar-btn":             { "value": "#1a1a18", "css": "--q-topbar-btn",           "note": "Black button in light — Apple convention" }
+      "background":             { "value": "#FAF8F4", "css": "--background",            "note": "Page bg — warm off-white" },
+      "foreground":             { "value": "#111111", "css": "--foreground",            "note": "Primary text — near-black" },
+      "card":                   { "value": "#FFFFFF", "css": "--card",                  "note": "Card / panel surface — pure white" },
+      "card-foreground":        { "value": "#111111", "css": "--card-foreground",       "note": "Text on cards" },
+      "popover":                { "value": "#FFFFFF", "css": "--popover" },
+      "popover-foreground":     { "value": "#111111", "css": "--popover-foreground",   "note": "Menu text" },
+      "primary":                { "value": "#111111", "css": "--primary",               "note": "Brand accent — near-black (Apple convention)" },
+      "primary-hover":          { "value": "#222222", "css": "--primary-hover" },
+      "primary-active":         { "value": "#000000", "css": "--primary-active" },
+      "primary-foreground":     { "value": "#FFFFFF", "css": "--primary-foreground" },
+      "secondary":              { "value": "#F5F2EC", "css": "--secondary",             "note": "Sidebar, subtle surface — warm gray" },
+      "secondary-foreground":   { "value": "#111111", "css": "--secondary-foreground" },
+      "muted":                  { "value": "#EFEAE2", "css": "--muted",                 "note": "Fields, disabled bg — warm cream" },
+      "muted-foreground":       { "value": "#4D4D4D", "css": "--muted-foreground",      "note": "Secondary / helper text" },
+      "accent":                 { "value": "#EAE6DF", "css": "--accent",                "note": "Hover surface" },
+      "accent-foreground":      { "value": "#111111", "css": "--accent-foreground" },
+      "destructive":            { "value": "#A55B52", "css": "--destructive" },
+      "destructive-foreground": { "value": "#FFFFFF", "css": "--destructive-foreground" },
+      "border":                 { "value": "#DED8CF", "css": "--border",                "note": "Dividers — warm gray" },
+      "border-strong":          { "value": "#D5CEC4", "css": "--border-strong",         "note": "Emphasized borders" },
+      "input":                  { "value": "#FFFFFF", "css": "--input" },
+      "ring":                   { "value": "#111111", "css": "--ring",                  "note": "Focus ring" },
+      "topbar-bg":              { "value": "#FAF8F4", "css": "--q-topbar",              "note": "Topbar matches page bg" },
+      "topbar-btn":             { "value": "#111111", "css": "--q-topbar-btn",           "note": "Near-black button in light" }
     },
     "dark": {
-      "background":             { "value": "#121212", "css": "--background",            "note": "Page bg — lifted, less harsh than #080808" },
-      "foreground":             { "value": "#ededec", "css": "--foreground",            "note": "Near-white — softer, warmer" },
-      "card":                   { "value": "#1a1a1a", "css": "--card",                  "note": "Card / panel surface — warmer" },
-      "card-foreground":        { "value": "#ededec", "css": "--card-foreground",       "note": "Text on cards" },
-      "popover":                { "value": "#1a1a1a", "css": "--popover" },
-      "popover-foreground":     { "value": "#ededec", "css": "--popover-foreground",   "note": "Menu text" },
-      "primary":                { "value": "#0066cc", "css": "--primary",               "note": "Brand accent — same in both themes" },
-      "primary-hover":          { "value": "#0055aa", "css": "--primary-hover" },
-      "primary-active":         { "value": "#004499", "css": "--primary-active" },
-      "primary-foreground":     { "value": "#ffffff", "css": "--primary-foreground" },
-      "secondary":              { "value": "#161616", "css": "--secondary",             "note": "Sidebar — warmer" },
-      "secondary-foreground":   { "value": "#ededec", "css": "--secondary-foreground" },
-      "muted":                  { "value": "#1e1e1e", "css": "--muted" },
-      "muted-foreground":       { "value": "#6b6b6b", "css": "--muted-foreground",      "note": "More legible than #3a3a3a" },
-      "accent":                 { "value": "#161616", "css": "--accent" },
-      "accent-foreground":      { "value": "#ededec", "css": "--accent-foreground" },
-      "destructive":            { "value": "#f87171", "css": "--destructive" },
-      "destructive-foreground": { "value": "#121212", "css": "--destructive-foreground" },
-      "border":                 { "value": "#2a2a2a", "css": "--border",                "note": "Hairline — more visible, less strain" },
-      "input":                  { "value": "#1e1e1e", "css": "--input" },
-      "ring":                   { "value": "#0066cc", "css": "--ring" },
-      "topbar-bg":              { "value": "#121212", "css": "--q-topbar",              "note": "Topbar matches page bg in dark — OpenAI pattern" },
-      "topbar-btn":             { "value": "#ededec", "css": "--q-topbar-btn" }
+      "background":             { "value": "#0E0E0E", "css": "--background",            "note": "Page bg — near-black" },
+      "foreground":             { "value": "#F5F2EC", "css": "--foreground",            "note": "Primary text — warm white" },
+      "card":                   { "value": "#161616", "css": "--card",                  "note": "Card / panel surface" },
+      "card-foreground":        { "value": "#F5F2EC", "css": "--card-foreground",       "note": "Text on cards" },
+      "popover":                { "value": "#161616", "css": "--popover" },
+      "popover-foreground":     { "value": "#F5F2EC", "css": "--popover-foreground",   "note": "Menu text" },
+      "primary":                { "value": "#F5F2EC", "css": "--primary",               "note": "Brand accent — warm white in dark" },
+      "primary-hover":          { "value": "#EFEAE2", "css": "--primary-hover" },
+      "primary-active":         { "value": "#DED8CF", "css": "--primary-active" },
+      "primary-foreground":     { "value": "#0E0E0E", "css": "--primary-foreground" },
+      "secondary":              { "value": "#1F1F1F", "css": "--secondary",             "note": "Sidebar — dark gray" },
+      "secondary-foreground":   { "value": "#F5F2EC", "css": "--secondary-foreground" },
+      "muted":                  { "value": "#1F1F1F", "css": "--muted" },
+      "muted-foreground":       { "value": "#BFB8AE", "css": "--muted-foreground",      "note": "Secondary text" },
+      "accent":                 { "value": "#262626", "css": "--accent" },
+      "accent-foreground":      { "value": "#F5F2EC", "css": "--accent-foreground" },
+      "destructive":            { "value": "#C5776D", "css": "--destructive" },
+      "destructive-foreground": { "value": "#0E0E0E", "css": "--destructive-foreground" },
+      "border":                 { "value": "#2C2C2C", "css": "--border",                "note": "Hairline borders" },
+      "border-strong":          { "value": "#3A3A3A", "css": "--border-strong",         "note": "Emphasized borders" },
+      "input":                  { "value": "#1F1F1F", "css": "--input" },
+      "ring":                   { "value": "#F5F2EC", "css": "--ring" },
+      "topbar-bg":              { "value": "#0E0E0E", "css": "--q-topbar",              "note": "Topbar matches page bg in dark" },
+      "topbar-btn":             { "value": "#F5F2EC", "css": "--q-topbar-btn" }
     },
     "semantic": {
-      "success": { "value": "#4ade80", "css": "--q-success", "note": "Done / running" },
-      "warning": { "value": "#fbbf24", "css": "--q-warning", "note": "In review / queued" },
-      "error":   { "value": "#f87171", "css": "--q-error",   "note": "Blocked / failed / destructive" },
-      "info":    { "value": "#60a5fa", "css": "--q-info",    "note": "In progress" },
-      "note":    { "value": "#a78bfa", "css": "--q-note",    "note": "Draft / neutral" }
+      "success": { "value": "#5F7768", "dark": "#7F9987", "css": "--q-success", "note": "Done / running" },
+      "warning": { "value": "#B78544", "dark": "#D4A56C", "css": "--q-warning", "note": "In review / queued" },
+      "error":   { "value": "#A55B52", "dark": "#C5776D", "css": "--q-error",   "note": "Blocked / failed / destructive" },
+      "info":    { "value": "#4388FF", "dark": "#5B9CFF", "css": "--q-info",    "note": "In progress" },
+      "note":    { "value": "#8A5CFF", "dark": "#8A5CFF", "css": "--q-note",    "note": "Draft / neutral" }
+    },
+    "domain": {
+      "networkBlue":       { "value": "#4F80FF", "css": "--q-network-blue",       "note": "Network connections, links" },
+      "agentPurple":       { "value": "#8A5CFF", "css": "--q-agent-purple",       "note": "Agent nodes, AI elements" },
+      "humanGreen":        { "value": "#2BB673", "css": "--q-human-green",        "note": "Human actors, users" },
+      "automationOrange":  { "value": "#FF9A3D", "css": "--q-automation-orange",  "note": "Automation flows, triggers" },
+      "dataCyan":          { "value": "#00A3FF", "css": "--q-data-cyan",          "note": "Data nodes, pipelines" },
+      "systemGray":        { "value": "#5D6570", "css": "--q-system-gray",        "note": "System-level, infrastructure" }
     }
   },
   "typography": {
-    "fontSans":         { "value": "Inter, -apple-system, BlinkMacSystemFont, sans-serif" },
-    "fontMono":         { "value": "JetBrains Mono, ui-monospace, Menlo, Monaco, Consolas, monospace" },
+    "fontSans":         { "value": "Inter, SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" },
+    "fontDisplay":      { "value": "SF Pro Display, Inter, -apple-system, BlinkMacSystemFont, sans-serif" },
+    "fontMono":         { "value": "SF Mono, JetBrains Mono, ui-monospace, Menlo, Monaco, Consolas, monospace" },
     "letterSpacing":    { "value": "-0.03em", "note": "Apple-style tight tracking on body" },
     "letterSpacingRtl": { "value": "0",       "note": "Arabic / RTL — no tracking" }
   },
   "radius": {
-    "sm":  "4px",
-    "md":  "8px",
-    "lg":  "10px",
-    "xl":  "12px",
-    "2xl": "14px"
+    "none": "0px",
+    "xs":   "6px",
+    "sm":   "10px",
+    "md":   "14px",
+    "lg":   "18px",
+    "xl":   "24px",
+    "2xl":  "32px",
+    "3xl":  "40px",
+    "pill": "9999px"
+  },
+  "elevation": {
+    "sm": "0 4px 12px rgba(0, 0, 0, 0.04)",
+    "md": "0 8px 24px rgba(0, 0, 0, 0.08)",
+    "lg": "0 16px 48px rgba(0, 0, 0, 0.12)"
+  },
+  "motion": {
+    "duration": {
+      "instant": "80ms", "fast": "150ms", "normal": "250ms", "slow": "400ms", "slower": "700ms"
+    },
+    "easing": {
+      "default": "cubic-bezier(0.22, 1, 0.36, 1)",
+      "smooth": "cubic-bezier(0.16, 1, 0.3, 1)"
+    }
   },
   "layout": {
-    "sidebarWidth":   "172px",
-    "topbarHeight":   "46px",
-    "contentPadding": "18px",
-    "cardGap":        "10px"
+    "sidebarWidth":   "280px",
+    "topbarHeight":   "72px",
+    "contentPadding": "24px",
+    "cardGap":        "20px"
   },
   "principles": {
-    "fromApple":  "Off-white page, near-white sidebar, tight letter-spacing, black topbar button in light. Body text near-white — never pure white.",
-    "fromOpenAI": "Near-black base, hairline borders, one accent, no decoration. Dark topbar matches page bg. Hierarchy through opacity not extra colors."
+    "communicationFirst": "Every component feels like a node in a communication network. Agents, humans, data, and automation are visualized as connected entities.",
+    "appleMinimalism": "Near-black primary in light mode, pure white in dark. Warm off-white backgrounds. Extreme restraint in decoration.",
+    "calmTechnology": "Invisible complexity. The interface recedes, letting the communication and orchestration take center stage.",
+    "domainColors": "Six domain colors for network, agent, human, automation, data, and system — enabling visual language for the communication graph."
   }
 }

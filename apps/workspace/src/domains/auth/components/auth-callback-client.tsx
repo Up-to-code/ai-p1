@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { Loader2, ShieldCheck } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { BrandMark } from "@/components/logo";
 import { useHeadlessClerkAuth } from "../hooks/use-headless-clerk-auth";
 
@@ -11,9 +12,9 @@ type AuthCallbackClientProps = {
 };
 
 export function AuthCallbackClient({ callbackURL, locale }: AuthCallbackClientProps) {
+  const t = useTranslations("Auth.callback");
   const auth = useHeadlessClerkAuth({ callbackURL, locale, mode: "sign-in" });
   const { finalizeCallback } = auth;
-  const isAr = locale === "ar";
 
   useEffect(() => {
     void finalizeCallback();
@@ -31,7 +32,7 @@ export function AuthCallbackClient({ callbackURL, locale }: AuthCallbackClientPr
             <div>
               <p className="text-sm font-black">qentrah</p>
               <p className="mt-0.5 text-xs font-semibold text-text-secondary">
-                {isAr ? "تأكيد الدخول" : "Finishing sign-in"}
+                {t("title")}
               </p>
             </div>
           </div>
@@ -53,7 +54,7 @@ export function AuthCallbackClient({ callbackURL, locale }: AuthCallbackClientPr
         </div>
 
         <p className="mt-5 text-center text-xs font-semibold leading-5 text-text-secondary">
-          {isAr ? "نجهز مساحة العمل قبل المتابعة." : "Preparing the workspace before continuing."}
+          {t("preparing")}
         </p>
       </div>
     </main>

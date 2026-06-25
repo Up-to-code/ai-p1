@@ -9,6 +9,7 @@ import type { ServerFunctionClient } from "payload";
 import { importMap } from "./(payload)/admin/importMap";
 
 import { rootMarketingMetadata } from "@/lib/seo";
+import { brandIdentity } from "@qentrah/brand-identity";
 
 export const metadata: Metadata = rootMarketingMetadata("ar");
 
@@ -35,6 +36,19 @@ const stripExtensionAttributes = `
 })();
 `;
 
+const themeInitScript = `
+(() => {
+  try {
+    const theme = window.localStorage.getItem("${brandIdentity.themeStorageKey}") === "dark" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", theme);
+    document.documentElement.style.colorScheme = theme;
+  } catch {
+    document.documentElement.setAttribute("data-theme", "light");
+    document.documentElement.style.colorScheme = "light";
+  }
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
@@ -47,6 +61,7 @@ export default function RootLayout({
         suppressHydrationWarning: true,
       }}
     >
+      <script dangerouslySetInnerHTML={{ __html: themeInitScript }} suppressHydrationWarning />
       <script dangerouslySetInnerHTML={{ __html: stripExtensionAttributes }} suppressHydrationWarning />
       {children}
     </PayloadRootLayout>

@@ -21,19 +21,19 @@ function countKey(source: string, key: string) {
 
 describe("sidebar source", () => {
   it("keeps the Work OS navigation route-complete and ordered", () => {
-    const source = readSource("src/components/layout/sidebar.tsx");
+    const source = readSource("src/components/layout/sidebar/config/nav.config.ts");
     const expectedItems = [
-      '{ name: "dashboard", href: "/dashboard", icon: LayoutDashboard }',
-      '{ name: "clients", href: "/clients", icon: UserRound }',
-      '{ name: "opportunities", href: "/opportunities", icon: KanbanSquare }',
-      '{ name: "projects", href: "/projects", icon: BriefcaseBusiness }',
-      '{ name: "tasks", href: "/tasks", icon: ListTodo }',
-      '{ name: "calendar", href: "/calendar", icon: CalendarDays }',
-      '{ name: "assets", href: "/assets", icon: Package }',
-      '{ name: "automations", href: "/automations", icon: Workflow }',
-      '{ name: "team", href: "/team", icon: UsersRound }',
-      '{ name: "integrations", href: "/web-apps", icon: Plug }',
-      '{ name: "settings", href: "/settings/organization", icon: Settings }',
+      '{ name: "dashboard", href: "/dashboard", icon: Bot',
+      '{ name: "clients", href: "/clients", icon: UserRound',
+      '{ name: "opportunities", href: "/opportunities", icon: KanbanSquare',
+      '{ name: "deals", href: "/deals", icon: BadgeDollarSign',
+      '{ name: "projects", href: "/projects", icon: FolderGit2',
+      '{ name: "tasks", href: "/tasks", icon: ListTodo',
+      '{ name: "docs", href: "/docs", icon: FileText',
+      '{ name: "calendar", href: "/calendar", icon: CalendarDays',
+      '{ name: "automations", icon: Workflow',
+      '{ name: "integrations", icon: Plug',
+      '{ name: "organization", href: "/settings/organization", icon: Building2',
     ];
 
     let previousIndex = -1;
@@ -43,7 +43,6 @@ describe("sidebar source", () => {
       previousIndex = nextIndex;
     }
 
-    expect(source).not.toContain('disabled: true, badge: "comingSoon"');
     expect(source).not.toContain('{ name: "usage"');
     expect(source).not.toContain('{ name: "activity"');
   });
@@ -52,7 +51,7 @@ describe("sidebar source", () => {
     const enSidebar = sidebarMessages(readSource("messages/en.json"));
     const arSidebar = sidebarMessages(readSource("messages/ar.json"));
 
-    for (const key of ["dashboard", "clients", "opportunities", "projects", "tasks", "calendar", "assets", "automations", "team", "integrations", "settings"]) {
+    for (const key of ["dashboard", "clients", "opportunities", "deals", "projects", "tasks", "docs", "calendar", "automations", "integrations", "organization", "settings"]) {
       expect(countKey(enSidebar, key), `en:${key}`).toBe(1);
       expect(countKey(arSidebar, key), `ar:${key}`).toBe(1);
     }

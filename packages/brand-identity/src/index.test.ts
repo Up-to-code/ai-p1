@@ -20,7 +20,7 @@ describe("@qentrah/brand-identity", () => {
   it("derives env names and route paths", () => {
     expect(brandEnvName("CLIENT_ID")).toBe("QENTRAH_CLIENT_ID");
     expect(brandRoutePath("oauthStart")).toBe("/api/auth/qentrah/start");
-    expect(brandIdentity.colors.primary).toBe("#0b5cff");
+    expect(brandIdentity.colors.primary).toBe("#111111");
     expect(brandIdentity.domains.root).toBe("qentrah.com");
     expect(brandIdentity.domains.workspace).toBe("app.qentrah.com");
     expect(brandIdentity.domains.partners).toBe("partners.qentrah.com");

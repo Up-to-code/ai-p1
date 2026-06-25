@@ -2,88 +2,46 @@
 
 import { AppPageHeader, AppPageShell, AppSection, AppStatsGrid } from "@/components/shared";
 import { AppPrimaryButton } from "@/components/shared";
-import { CalendarDays, KanbanSquare, ListTodo, Package, Plus, Workflow, Lock } from "lucide-react";
-import type { ComponentProps } from "react";
-import { useLocale } from "next-intl";
-
-type WorkOsModuleKind = "opportunities" | "tasks" | "automations";
-
-const moduleCopy: Record<WorkOsModuleKind, {
-  eyebrow: string;
-  title: string;
-  subtitle: string;
-  primaryLabel: string;
-  stats: Array<{ label: string; value: string }>;
-}> = {
-  opportunities: {
-    eyebrow: "Pipeline",
-    title: "Opportunities",
-    subtitle: "Funnel records linked to clients, projects, assets, tasks, and calendar work.",
-    primaryLabel: "New opportunity",
-    stats: [
-      { label: "Open", value: "0" },
-      { label: "Qualified", value: "0" },
-      { label: "Due", value: "0" },
-      { label: "Won", value: "0" },
-    ],
-  },
-  tasks: {
-    eyebrow: "Work queue",
-    title: "Tasks",
-    subtitle: "Standalone or linked work across clients, opportunities, projects, assets, and calendar events.",
-    primaryLabel: "New task",
-    stats: [
-      { label: "Open", value: "0" },
-      { label: "Due today", value: "0" },
-      { label: "Urgent", value: "0" },
-      { label: "Done", value: "0" },
-    ],
-  },
-  automations: {
-    eyebrow: "Rules",
-    title: "Automations",
-    subtitle: "Workspace rules for record creation, stage changes, due dates, and status changes.",
-    primaryLabel: "New rule",
-    stats: [
-      { label: "Enabled", value: "0" },
-      { label: "Draft", value: "0" },
-      { label: "Actions", value: "4" },
-      { label: "Triggers", value: "4" },
-    ],
-  },
-};
-
-const moduleIcons: Record<WorkOsModuleKind, ComponentProps<typeof AppStatsGrid>["stats"][number]["icon"][]> = {
-  opportunities: [KanbanSquare, Package, CalendarDays, Workflow],
-  tasks: [ListTodo, CalendarDays, Workflow, KanbanSquare],
-  automations: [Workflow, KanbanSquare, ListTodo, CalendarDays],
-};
+import { Lock, Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
+import {
+  WORK_OS_MODULE_ICONS,
+  WORK_OS_MODULE_STAT_KEYS,
+  type WorkOsModuleKind,
+} from "../config/work-os-modules.config";
 
 export function WorkOsModuleScreen({ kind }: { kind: WorkOsModuleKind }) {
-  const copy = moduleCopy[kind];
-  const icons = moduleIcons[kind];
-  const locale = useLocale();
-  const isAr = locale === "ar";
+  const t = useTranslations("WorkOs.modules");
+  const icons = WORK_OS_MODULE_ICONS[kind];
+  const statKeys = WORK_OS_MODULE_STAT_KEYS[kind];
+  const stats = statKeys.map((key, index) => ({
+    label: t(`${kind}.stats.${key}`),
+    value: "0",
+    icon: icons[index],
+  }));
 
   return (
     <AppPageShell maxWidth="full" contentClassName="space-y-6">
       <AppPageHeader
-        eyebrow={copy.eyebrow}
-        title={copy.title}
-        subtitle={copy.subtitle}
+        eyebrow={t(`${kind}.eyebrow`)}
+        title={t(`${kind}.title`)}
+        subtitle={t(`${kind}.subtitle`)}
         actions={(
           <AppPrimaryButton disabled className="opacity-50">
             <Plus className="me-2 h-3.5 w-3.5" />
-            {copy.primaryLabel}
+            {t(`${kind}.primaryLabel`)}
           </AppPrimaryButton>
         )}
       />
       <div className="relative">
-        <div className="opacity-40 blur-[8px] pointer-events-none select-none grayscale-[0.2] transition-all space-y-8">
-
-          <AppSection title="Workspace view" description="Table and board views will connect to the Work OS schema in the next backend pass.">
+        <div className="space-y-8 opacity-40 blur-[8px] pointer-events-none select-none grayscale-[0.2] transition-all">
+          <AppStatsGrid stats={stats} />
+          <AppSection
+            title={t("workspaceView.title")}
+            description={t("workspaceView.description")}
+          >
             <div className="grid min-h-52 place-items-center rounded-2xl border border-dashed border-border text-center dark:border-white/10">
-              <p className="text-xs font-bold text-muted-foreground">No records yet</p>
+              <p className="text-xs font-bold text-muted-foreground">{t("workspaceView.empty")}</p>
             </div>
           </AppSection>
         </div>
@@ -91,13 +49,13 @@ export function WorkOsModuleScreen({ kind }: { kind: WorkOsModuleKind }) {
           <div className="flex max-w-sm flex-col items-center gap-4 rounded-[20px] border border-border/80 bg-white/90 p-8 text-center shadow-xl backdrop-blur-xl dark:border-white/[0.08] dark:bg-foreground/90 dark:shadow-black/40">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-sky-600 dark:bg-sky-500/10 dark:text-sky-400">
               <Lock className="h-3.5 w-3.5" />
-              {isAr ? "قريباً" : "Coming soon"}
+              {t("comingSoon.badge")}
             </span>
             <h3 className="text-xl font-black tracking-tight text-foreground">
-              {copy.title}
+              {t(`${kind}.title`)}
             </h3>
             <p className="text-sm font-medium leading-relaxed text-muted-foreground dark:text-muted-foreground">
-              {isAr ? `نعمل على تجهيز ${copy.title}. سيكون متاحاً قريباً.` : `We're setting up ${copy.title}. It will be available shortly.`}
+              {t("comingSoon.description", { module: t(`${kind}.title`) })}
             </p>
           </div>
         </div>

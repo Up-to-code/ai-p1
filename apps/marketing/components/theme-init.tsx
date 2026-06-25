@@ -10,10 +10,10 @@ export function ThemeInit() {
         window.localStorage.getItem(brandIdentity.themeStorageKey) === "dark"
           ? "dark"
           : "light";
-      document.documentElement.classList.toggle("dark", theme === "dark");
+      document.documentElement.setAttribute("data-theme", theme);
       document.documentElement.style.colorScheme = theme;
     } catch {
-      document.documentElement.classList.remove("dark");
+      document.documentElement.setAttribute("data-theme", "light");
       document.documentElement.style.colorScheme = "light";
     }
   }, []);

@@ -5,6 +5,7 @@ import { BasicScheduler } from "@qentrah/calendar-kit";
 import type { CalendarEvent as CalendarKitEvent } from "@qentrah/calendar-kit";
 import type { CalendarEvent } from "../store/calendar.types";
 import { parse } from "date-fns";
+import { isRtlLocale } from "@/lib/i18n/locale";
 // Calendar styles are loaded via globals.css to avoid Tailwind conflicts
 
 interface QentrahCalendarKitProps {
@@ -107,7 +108,7 @@ export function QentrahCalendarKit({
   isLoading = false,
   locale = "en",
 }: QentrahCalendarKitProps) {
-  const isRtl = locale === "ar";
+  const isRtl = isRtlLocale(locale);
 
   // ── Transform events to CalendarKit format ──────────────────────────────
   const calendarKitEvents = useMemo<CalendarKitEvent[]>(() => {

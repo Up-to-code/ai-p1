@@ -1,33 +1,31 @@
-const brandPrimary = "#0066cc";
-
 export const darkColors = {
-  background: "#000000",
+  background: "#0E0E0E",
   backgroundSoft: "#0A0A0A",
-  surface: "#121212",
-  surfaceRaised: "#1A1A1A",
-  divider: "rgba(255,255,255,0.08)",
-  textPrimary: "#FFFFFF",
-  textSecondary: "#A3A3A3",
-  textMuted: "#737373",
-  accent: brandPrimary,
-  success: "#22C55E",
-  danger: "#EF4444",
-  border: "rgba(255,255,255,0.1)",
+  surface: "#161616",
+  surfaceRaised: "#1F1F1F",
+  divider: "#242424",
+  textPrimary: "#F5F2EC",
+  textSecondary: "#BFB8AE",
+  textMuted: "#8A857E",
+  accent: "#F5F2EC",
+  success: "#7F9987",
+  danger: "#C5776D",
+  border: "#2C2C2C",
 };
 
 export const lightColors = {
-  background: "#FFFFFF",
-  backgroundSoft: "#FAFAFA",
-  surface: "#F4F4F5",
-  surfaceRaised: "#F4F4F5", // Stand out from white background
-  divider: "rgba(0,0,0,0.08)",
-  textPrimary: "#000000",
-  textSecondary: "#52525B",
-  textMuted: "#A1A1AA",
-  accent: brandPrimary,
-  success: "#16A34A",
-  danger: "#DC2626",
-  border: "rgba(0,0,0,0.05)",
+  background: "#FAF8F4",
+  backgroundSoft: "#F5F2EC",
+  surface: "#F5F2EC",
+  surfaceRaised: "#FFFFFF",
+  divider: "#D5CEC4",
+  textPrimary: "#111111",
+  textSecondary: "#4D4D4D",
+  textMuted: "#787878",
+  accent: "#111111",
+  success: "#5F7768",
+  danger: "#A55B52",
+  border: "#DED8CF",
 };
 
 const spacing = {

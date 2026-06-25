@@ -10,31 +10,28 @@ function readSource(path: string) {
 }
 
 describe("workspace topbar source", () => {
-  it("exposes create actions only for form-backed records", () => {
-    const source = readSource("src/components/layout/topbar.tsx");
+  it("composes topbar from dedicated subcomponents", () => {
+    const source = readSource("src/components/layout/topbar/topbar.tsx");
 
-    expect(source).toContain('{ label: tWorkspace("createClient"), href: "/clients/create", icon: UserPlus }');
-    expect(source).toContain('{ label: tWorkspace("createProject"), href: "/projects/create", icon: BriefcaseBusiness }');
-    expect(source).toContain('{ label: tWorkspace("createAsset"), href: "/assets/create", icon: Package }');
-    expect(source).not.toContain('href: "/tasks/create"');
-    expect(source).not.toContain('href: "/opportunities/create"');
-    expect(source).not.toContain('href: "/automations/create"');
+    expect(source).toContain("<TopbarEssential />");
+    expect(source).toContain("<TopbarSearch />");
+    expect(source).toContain("<TopbarActions />");
+    expect(source).toContain("isRtlLocale(locale)");
   });
 
   it("keeps global search navigation aligned with Work OS routes", () => {
-    const source = readSource("src/components/layout/workspace-global-search.tsx");
+    const source = readSource("src/components/layout/workspace-global-search/config/search-navigation.config.ts");
     const expectedActions = [
-      '{ id: "dashboard", label: tSidebar("dashboard"), href: "/dashboard", icon: Building2 }',
-      '{ id: "clients", label: tSidebar("clients"), href: "/clients", icon: UserRound }',
-      '{ id: "opportunities", label: tSidebar("opportunities"), href: "/opportunities", icon: KanbanSquare }',
-      '{ id: "projects", label: tSidebar("projects"), href: "/projects", icon: BriefcaseBusiness }',
-      '{ id: "tasks", label: tSidebar("tasks"), href: "/tasks", icon: ListTodo }',
-      '{ id: "calendar", label: tSidebar("calendar"), href: "/calendar", icon: CalendarDays }',
-      '{ id: "assets", label: tSidebar("assets"), href: "/assets", icon: Package }',
-      '{ id: "automations", label: tSidebar("automations"), href: "/automations", icon: Workflow }',
-      '{ id: "team", label: tSidebar("team"), href: "/team", icon: UsersRound }',
-      '{ id: "integrations", label: tSidebar("integrations"), href: "/web-apps", icon: Plug }',
-      '{ id: "settings", label: tSidebar("settings"), href: "/settings/organization", icon: Settings }',
+      '{ id: "dashboard", label: labels.dashboard, href: "/dashboard", icon: Building2 }',
+      '{ id: "clients", label: labels.clients, href: "/clients", icon: UserRound }',
+      '{ id: "opportunities", label: labels.opportunities, href: "/opportunities", icon: KanbanSquare }',
+      '{ id: "projects", label: labels.projects, href: "/projects", icon: BriefcaseBusiness }',
+      '{ id: "tasks", label: labels.tasks, href: "/tasks", icon: ListTodo }',
+      '{ id: "calendar", label: labels.calendar, href: "/calendar", icon: CalendarDays }',
+      '{ id: "automations", label: labels.automations, href: "/automations", icon: Workflow }',
+      '{ id: "team", label: labels.team, href: "/team", icon: UsersRound }',
+      '{ id: "integrations", label: labels.integrations, href: "/web-apps", icon: Plug }',
+      '{ id: "settings", label: labels.settings, href: "/settings/organization", icon: Settings }',
     ];
 
     for (const action of expectedActions) {
@@ -43,5 +40,6 @@ describe("workspace topbar source", () => {
 
     expect(source).not.toContain('id: "usage"');
     expect(source).not.toContain('id: "activity"');
+    expect(source).not.toContain('id: "assets"');
   });
 });

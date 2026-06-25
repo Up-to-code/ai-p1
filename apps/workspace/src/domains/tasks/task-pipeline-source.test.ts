@@ -12,7 +12,7 @@ function readSource(path: string) {
 describe("task pipeline source", () => {
   const screenSource = readSource("src/domains/tasks/components/tasks-screen.tsx");
   const skeletonSource = readSource("src/domains/tasks/components/task-board-skeleton.tsx");
-  const hooksSource = readSource("src/domains/tasks/components/task-hooks.ts");
+  const hooksSource = readSource("src/domains/tasks/hooks/use-task-mention-options.ts");
   const constantsSource = readSource("src/domains/tasks/tasks.constants.ts");
   const apiSource = readSource("src/domains/tasks/api/tasks.ts");
   const schemaSource = readSource("convex/schema.ts");

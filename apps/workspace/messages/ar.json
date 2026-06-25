@@ -274,12 +274,103 @@
     "announcements": "الإعلانات",
     "settings": "الإعدادات",
     "collapse": "طوي",
-    "expand": "توسيع"
+    "expand": "توسيع",
+    "defaultOrganizationName": "المؤسسة",
+    "workspaces": "مساحات العمل",
+    "threads": {
+      "newThread": "محادثة جديدة",
+      "history": "السجل",
+      "historyTitle": "سجل المحادثات",
+      "historyDescription": "ابحث في محادثات الذكاء لهذه المساحة.",
+      "searchPlaceholder": "ابحث في المحادثات...",
+      "empty": "لا توجد محادثات بعد",
+      "deleted": "تم حذف المحادثة",
+      "deleteFailed": "تعذر حذف المحادثة",
+      "deleteTitle": "حذف المحادثة؟",
+      "deleteDescription": "سيتم حذف هذه المحادثة ورسائلها وسجل تشغيل الذكاء نهائيا.",
+      "cancel": "إلغاء",
+      "delete": "حذف"
+    }
   },
   "Topbar": {
     "draftMode": "وضع المسودة",
     "live": "مباشر",
-    "search": "بحث..."
+    "search": "بحث...",
+    "create": "إنشاء",
+    "manage": "إدارة",
+    "assistant": {
+      "open": "فتح مساعد الذكاء الاصطناعي",
+      "close": "إغلاق مساعد الذكاء الاصطناعي"
+    },
+    "essential": {
+      "openSidebar": "فتح الشريط الجانبي",
+      "closeSidebar": "إغلاق الشريط الجانبي"
+    },
+    "share": {
+      "inviteSent": {
+        "title": "تم إرسال الدعوة",
+        "description": "تم إرسال دعوة المؤسسة."
+      },
+      "inviteFailed": {
+        "title": "تعذر إرسال الدعوة",
+        "description": "تعذر إرسال الدعوة."
+      },
+      "inviteLinkCreated": {
+        "title": "تم إنشاء رابط الدعوة",
+        "description": "تم نسخ الرابط."
+      },
+      "linkFailed": {
+        "title": "تعذر إنشاء الرابط",
+        "description": "تعذر إنشاء الرابط."
+      },
+      "mcpLinkCreated": {
+        "title": "تم إنشاء رابط MCP",
+        "description": "تم نسخ الرابط."
+      },
+      "mcpNoPermissions": "لا توجد صلاحيات يمكن مشاركتها.",
+      "mcpConnectionName": "رابط مشاركة",
+      "mcpConnectionInstructions": "استخدم هذا الرابط للوصول إلى بيانات المؤسسة المسموح بها فقط."
+    }
+  },
+  "SharePopover": {
+    "trigger": "مشاركة",
+    "tooltip": "مشاركة هذا العنصر",
+    "invite": "دعوة",
+    "inviteLink": "رابط دعوة",
+    "copyLink": "نسخ الرابط",
+    "createMcp": "إنشاء MCP",
+    "permissions": {
+      "owner": "المالك",
+      "editor": "يمكن التحرير",
+      "viewer": "يمكن المشاهدة",
+      "commenter": "يمكن التعليق"
+    },
+    "generalAccess": {
+      "invited": "المدعوون فقط",
+      "link": "الوصول بالرابط"
+    },
+    "inviteDialog": {
+      "title": "إرسال دعوة",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "بريد إلكتروني...",
+      "permission": "الصلاحية",
+      "cancel": "إلغاء",
+      "send": "إرسال"
+    },
+    "mcpDialog": {
+      "title": "إنشاء رابط MCP",
+      "name": "الاسم",
+      "namePlaceholder": "مثال: وكيل المبيعات",
+      "preset": "النموذج",
+      "cancel": "إلغاء",
+      "create": "إنشاء",
+      "creating": "جاري الإنشاء..."
+    },
+    "mcpPresets": {
+      "client": "العملاء",
+      "calendar": "التقويم",
+      "full": "وصول كامل"
+    }
   },
   "Landing": {
     "nav": {
@@ -1357,7 +1448,13 @@
       "healthAtRisk": "مخاطر",
       "healthBlocked": "محجوب",
       "tagPlaceholder": "إضافة وسم...",
-      "addTagBtn": "إضافة"
+      "addTagBtn": "إضافة",
+      "statusTooltip": "حدد حالة المشروع",
+      "healthTooltip": "تقييم صحة المشروع",
+      "clientTooltip": "اربط المشروع بعميل",
+      "durationLabel": "المدة",
+      "dateRangeTooltip": "حدد تاريخ البداية والنهاية",
+      "bodyPlaceholder": "أضف وصفًا… اكتب / للأوامر"
     },
     "types": {
       "workspace": "مشروع عمل",
@@ -2583,6 +2680,11 @@
     "subtitle": "اربط تطبيقات الويب المعتمدة بمساحة العمل",
     "catalog_eyebrow": "كتالوج التطبيقات",
     "add": "إضافة تطبيق ويب",
+    "comingSoonOverlay": {
+      "badge": "قريباً",
+      "title": "تطبيقات الويب والربط",
+      "description": "نعمل على تجهيز متجر التطبيقات وخدمات الربط. سيكون متاحاً قريباً."
+    },
     "catalog": {
       "loading": "جار تحميل تطبيقات الويب",
       "empty": "لا توجد تطبيقات ويب معتمدة بعد",
@@ -2602,7 +2704,16 @@
       "connect": "اتصال",
       "manage": "إدارة",
       "missingStart": "رابط البدء غير متوفر",
-      "details": "التفاصيل"
+      "details": "التفاصيل",
+      "connecting": "جاري الاتصال..."
+    },
+    "connections": {
+      "empty": "لا توجد تطبيقات شريك متصلة بعد",
+      "pause": "إيقاف مؤقت",
+      "resume": "استئناف",
+      "revoke": "إلغاء",
+      "expires": "ينتهي",
+      "noExpiry": "بدون انتهاء"
     },
     "tabs": {
       "overview": "نظرة عامة",
@@ -2664,6 +2775,10 @@
       "hourAgo": "قبل ساعة واحدة",
       "hoursAgo": "قبل {count} ساعات",
       "justNow": "الآن",
+      "statusActive": "نشط",
+      "eventsCount": "أحداث",
+      "close": "إغلاق",
+      "copyUrl": "نسخ الرابط",
       "endpointsData": {
         "aqar": {
           "name": "تغذية صادر سوق أصل"
@@ -2726,6 +2841,8 @@
       "connected": "متصل",
       "notConnected": "غير متصل",
       "partnerIntegration": "تكامل macOS",
+      "liveDemo": "عرض مباشر",
+      "ruleStatusActive": "نشط",
       "appDetails": {
         "icloud": {
           "category": "تخزين الأصول والمزامنة",
@@ -2791,7 +2908,9 @@
             "tenant": "عميل مهتم بالاستئجار",
             "syncRules": "قواعد مزامنة العملاء المهتمين",
             "rule1": "تعيين تلقائي لوساطة الرياض",
-            "rule2": "تنقيح الملاحظات الشخصية عند المزامنة"
+            "rule2": "تنقيح الملاحظات الشخصية عند المزامنة",
+            "mockAhmed": "أحمد منصور",
+            "mockSarah": "سارة سميث"
           }
         },
         "spotlight": {
@@ -3162,6 +3281,141 @@
       "desc": "لا يوجد شيء لعرضه الآن. عندما يغيّر أحد إعدادات المؤسسة، أو يرسل دعوة، أو يعدّل أدوار العمل، أو ينشئ مشروعاً أو أصل أو ملفاً، سيظهر الإجراء هنا تلقائياً.",
       "noOrgTitle": "لا توجد مؤسسة محددة",
       "noOrgDesc": "اختر أو أنشئ مؤسسة لعرض سجل النشاط الخاص بها."
+    }
+  },
+  "WorkOs": {
+    "modules": {
+      "comingSoon": {
+        "badge": "قريباً",
+        "description": "نعمل على تجهيز {module}. سيكون متاحاً قريباً."
+      },
+      "workspaceView": {
+        "title": "عرض مساحة العمل",
+        "description": "ستتصل عروض الجدول واللوحة بمخطط Work OS في المرحلة التالية.",
+        "empty": "لا توجد سجلات بعد"
+      },
+      "opportunities": {
+        "eyebrow": "خط العمل",
+        "title": "الفرص",
+        "subtitle": "سجلات خط العمل مرتبطة بالعملاء والمشاريع والأصول والمهام والتقويم.",
+        "primaryLabel": "فرصة جديدة",
+        "stats": {
+          "open": "مفتوحة",
+          "qualified": "مؤهلة",
+          "due": "مستحقة",
+          "won": "مربوحة"
+        }
+      },
+      "tasks": {
+        "eyebrow": "قائمة العمل",
+        "title": "المهام",
+        "subtitle": "عمل مستقل أو مرتبط عبر العملاء والفرص والمشاريع والأصول والتقويم.",
+        "primaryLabel": "مهمة جديدة",
+        "stats": {
+          "open": "مفتوحة",
+          "dueToday": "مستحقة اليوم",
+          "urgent": "عاجلة",
+          "done": "منجزة"
+        }
+      },
+      "automations": {
+        "eyebrow": "القواعد",
+        "title": "الأتمتة",
+        "subtitle": "قواعد مساحة العمل لإنشاء السجلات وتغيير المراحل والمواعيد والحالات.",
+        "primaryLabel": "قاعدة جديدة",
+        "stats": {
+          "enabled": "مفعّلة",
+          "draft": "مسودة",
+          "actions": "إجراءات",
+          "triggers": "محفّزات"
+        }
+      }
+    }
+  },
+  "Billing": {
+    "eyebrow": "الفوترة",
+    "title": "اشتراك Qentrah",
+    "subtitle": "أكمل إعداد اشتراكك من مساحة العمل.",
+    "plan": "Qentrah Workspace",
+    "activeUntil": "نشط حتى",
+    "notActiveYet": "غير نشط بعد",
+    "status": "الحالة",
+    "latest": "آخر دفعة",
+    "seats": "المقاعد",
+    "perSeat": "لكل مستخدم / شهر",
+    "total": "المجموع الشهري",
+    "month": "شهر",
+    "pay": "متابعة الدفع",
+    "starting": "جاري إنشاء الدفع...",
+    "guarantee": "ضمان استرداد 30 يوماً · دفع آمن عبر DodoPayments",
+    "ownerNote": "يدفع مالك المؤسسة نيابةً عن جميع الأعضاء",
+    "orgBeingBilled": "المؤسسة التي ستُفوتَّر",
+    "removeSeat": "إزالة مقعد",
+    "addSeat": "إضافة مقعد",
+    "seatsInput": "عدد المقاعد",
+    "seatUnit": "{count, plural, one {مستخدم} other {مستخدم}}",
+    "memberCountHint": "لديك حالياً {count, plural, one {عضو #} other {# أعضاء}} في المؤسسة",
+    "subscriptionActive": "اشتراكك نشط",
+    "backToOrgSettings": "← عودة إلى إعدادات المؤسسة",
+    "included": [
+      "مساحة المشاريع والأصول والعملاء",
+      "وكلاء الذكاء الاصطناعي وسير العمل",
+      "جميع التطبيقات والتكاملات",
+      "دعم ذو أولوية",
+      "رصيد AI ضمن الخطة",
+      "إضافات مرنة عبر Add-ons"
+    ],
+    "checkout": {
+      "noUrlTitle": "لم يتم إنشاء رابط الدفع",
+      "noUrlDesc": "حاول مرة أخرى أو تواصل مع الدعم.",
+      "errorTitle": "تعذر إنشاء الدفع",
+      "errorDesc": "حاول مرة أخرى بعد قليل."
+    },
+    "paymentReturn": {
+      "eyebrow": "الدفع",
+      "successTitle": "تم تفعيل الاشتراك",
+      "confirmTitle": "تأكيد الدفع",
+      "failTitle": "تعذر إكمال الدفع",
+      "successDesc": "تم تأكيد دفعتك وتفعيل فترة الاشتراك.",
+      "confirmDesc": "تم الدفع بنجاح. سيتم تحديث الاشتراك تلقائياً.",
+      "failDesc": "لم يتم تفعيل الاشتراك. تحقق من تفاصيل الدفع أو حاول مرة أخرى.",
+      "dashboard": "فتح لوحة التحكم",
+      "retry": "إعادة المحاولة",
+      "reference": "مرجع الدفع",
+      "payment": "حالة الدفع"
+    }
+  },
+  "Usage": {
+    "title": "استخدام المؤسسة",
+    "subtitle": "رصيد الذكاء الاصطناعي والاستهلاك والمدفوعات.",
+    "tabs": {
+      "usage": "الاستخدام",
+      "payments": "المدفوعات"
+    },
+    "currentPlan": "الخطة الحالية",
+    "active": "نشطة",
+    "inactive": "غير نشطة",
+    "upgradePlan": "ترقية الخطة",
+    "subscriptionCredits": "رصيد الاشتراك",
+    "addOnCredits": "الرصيد الإضافي",
+    "monthlyCredits": "رصيد ضمن الخطة",
+    "addCredits": "إضافة رصيد",
+    "loading": "جار تحميل الاستخدام...",
+    "error": "تعذر تحميل بيانات الاستخدام.",
+    "noPayments": "لا توجد مدفوعات مسجلة بعد.",
+    "paymentDescription": "مدفوعات الفوترة",
+    "statusPaid": "مدفوع",
+    "planInterval": {
+      "year": "سنة",
+      "month": "شهر",
+      "custom": "مخصص / تم البيع"
+    },
+    "table": {
+      "invoice": "الفاتورة",
+      "date": "التاريخ",
+      "description": "الوصف",
+      "amount": "المبلغ",
+      "status": "الحالة"
     }
   },
   "Opportunities": {
@@ -3892,6 +4146,12 @@
     "notifOperationError": "فشل تحديث الإشعارات.",
     "notifOperationSuccess": "تم تحديث الإشعارات بنجاح."
   },
+  "Auth": {
+    "callback": {
+      "title": "تأكيد الدخول",
+      "preparing": "نجهز مساحة العمل قبل المتابعة."
+    }
+  },
   "Onboarding": {
     "title": "إعداد مؤسستك",
     "subtitle": "أكمل الإعداد الأساسي لبدء استخدام مساحة العمل. يمكن إضافة المستندات القانونية لاحقاً عند الحاجة.",
@@ -4140,9 +4400,5 @@
     "noProjectFound": "لم يتم العثور على مشروع.",
     "viewAllProjects": "عرض جميع المشاريع",
     "createNewProject": "إنشاء مشروع جديد"
-  },
-  "Topbar": {
-    "create": "إنشاء",
-    "manage": "إدارة"
   }
 }
