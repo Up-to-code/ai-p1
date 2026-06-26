@@ -76,7 +76,7 @@
     "hono": "^4.12.18",
     "lucide-react": "^1.14.0",
     "marked": "^18.0.3",
-    "next": "^16.3.0-canary.19",
+    "next": "^16.3.0-canary.32",
     "next-intl": "^4.11.0",
     "notion-types": "^7.10.0",
     "notion-utils": "^7.10.0",
