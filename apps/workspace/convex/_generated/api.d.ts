@@ -121,6 +121,7 @@ import type * as projects_rollup from "../projects/rollup.js";
 import type * as projects_validators from "../projects/validators.js";
 import type * as projects_write from "../projects/write.js";
 import type * as requireAuth from "../requireAuth.js";
+import type * as schema_utils from "../schema_utils.js";
 import type * as security_backfill from "../security/backfill.js";
 import type * as security_backfillTargets from "../security/backfillTargets.js";
 import type * as security_clientPii from "../security/clientPii.js";
@@ -256,6 +257,7 @@ declare const fullApi: ApiFromModules<{
   "projects/validators": typeof projects_validators;
   "projects/write": typeof projects_write;
   requireAuth: typeof requireAuth;
+  schema_utils: typeof schema_utils;
   "security/backfill": typeof security_backfill;
   "security/backfillTargets": typeof security_backfillTargets;
   "security/clientPii": typeof security_clientPii;

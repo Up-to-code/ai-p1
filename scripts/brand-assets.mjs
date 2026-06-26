@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { copyFile, mkdir, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -35,6 +35,14 @@ async function copyAsset(from, to) {
   await copyFile(from, to);
 }
 
+async function syncFaviconIco(appName) {
+  const icoSource = path.join(root, "Branding", "logo.ico");
+  const icoDest = appName === "mobile"
+    ? appPath("mobile", "assets", "brand", "logo.ico")
+    : appPath(appName, "public", "logo.ico");
+  await copyAsset(icoSource, icoDest);
+}
+
 async function renderPng(input, output, width, height = width) {
   await ensureParent(output);
   await sharp(input).resize(width, height, { fit: "contain" }).png().toFile(output);
@@ -66,11 +74,13 @@ async function renderDesktopSafeIcon(output, size) {
 }
 
 async function renderFaviconSvg(output) {
-  const dataUrl = `data:image/png;base64,${(await sharp(source.mobileIcon).resize(512, 512).png().toBuffer()).toString("base64")}`;
+  const brandLogo = await readFile(source.brandLogoSvg, "utf8");
+  const pathMatch = brandLogo.match(/<path\s[^>]*d="([^"]+)"/);
+  const pathData = pathMatch ? pathMatch[1] : "";
   await ensureParent(output);
   await writeFile(
     output,
-    `<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">\n  <image href="${dataUrl}" width="512" height="512"/>\n</svg>\n`,
+    `<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">\n  <rect width="512" height="512" rx="96" fill="white"/>\n  <g transform="translate(256,256) scale(0.38) translate(-450.5,-516.5)">\n    <path fill="black" fill-rule="evenodd" clip-rule="evenodd" d="${pathData}"/>\n  </g>\n</svg>\n`,
   );
 }
 
@@ -89,6 +99,7 @@ function run(command, args, cwd) {
 
 async function syncMobile() {
   const mobile = appPath("mobile", "assets");
+  await syncFaviconIco("mobile");
   await copyAsset(source.mobileIcon, path.join(mobile, "brand", "qentrah-mobile-icon.png"));
   await copyAsset(source.mobileIcon, path.join(mobile, "brand", "qentrah-adaptive-icon.png"));
   await copyAsset(source.brandMarkPng, path.join(mobile, "brand", "qentrah-logo.png"));
@@ -107,6 +118,7 @@ async function syncMobile() {
 
 async function syncWebApp(appName) {
   const publicDir = appPath(appName, "public");
+  await syncFaviconIco(appName);
   await renderDesktopSafeIcon(path.join(publicDir, "app-icon-1024.png"), 1024);
   await renderDesktopSafeIcon(path.join(publicDir, "app-icon-512.png"), 512);
   await renderDesktopSafeIcon(path.join(publicDir, "app-icon-192.png"), 192);

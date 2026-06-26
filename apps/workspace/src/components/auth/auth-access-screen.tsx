@@ -3,6 +3,7 @@
 import { AlertCircle, ArrowRight, ChevronLeft, KeyRound, Loader2, Mail, UserRound } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { FormEvent, useState } from "react";
+import { brandDomainUrl } from "@qentrah/brand-identity";
 
 import { BrandMark } from "@/components/logo";
 import { Button } from "@/components/ui/button";
@@ -38,31 +39,32 @@ function GoogleMark() {
 
 function LegalAgreement({ isAr }: { isAr: boolean }) {
   const t = useTranslations("signin");
+  const marketingUrl = brandDomainUrl("root");
 
   return (
     <p className="mt-5 text-center text-xs leading-6 text-text-secondary">
       {isAr ? (
         <>
           {t("agreementPrefix")}{" "}
-          <Link href="/terms" className="font-semibold text-primary underline-offset-2 hover:underline">
+          <a href={`${marketingUrl}/ar/terms`} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline-offset-2 hover:underline">
             {t("agreementTerms")}
-          </Link>
+          </a>
           {" و"}
-          <Link href="/privacy" className="font-semibold text-primary underline-offset-2 hover:underline">
+          <a href={`${marketingUrl}/ar/privacy`} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline-offset-2 hover:underline">
             {t("agreementPrivacy")}
-          </Link>{" "}
+          </a>{" "}
           {t("agreementSuffix")}
         </>
       ) : (
         <>
           {t("agreementPrefix")}{" "}
-          <Link href="/terms" className="font-semibold text-primary underline-offset-2 hover:underline">
+          <a href={`${marketingUrl}/en/terms`} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline-offset-2 hover:underline">
             {t("agreementTerms")}
-          </Link>{" "}
+          </a>{" "}
           {t("agreementAnd")}{" "}
-          <Link href="/privacy" className="font-semibold text-primary underline-offset-2 hover:underline">
+          <a href={`${marketingUrl}/en/privacy`} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline-offset-2 hover:underline">
             {t("agreementPrivacy")}
-          </Link>
+          </a>
           {t("agreementSuffix")}
         </>
       )}

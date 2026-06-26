@@ -118,7 +118,7 @@ export default function AiComposer({
     >
       <div
         className={cn(
-          "relative flex flex-col overflow-hidden rounded-[22px] border bg-card shadow-sm transition-all duration-300",
+          "relative flex flex-col overflow-hidden rounded-[22px] border bg-card transition-all duration-300",
           "border-border text-text-primary",
           "focus-within:border-[var(--q-user-bubble)] focus-within:ring-2 focus-within:ring-[var(--q-user-bubble)]/10",
           isDraggingFiles && "border-[var(--q-user-bubble)] bg-surface-elevated ring-2 ring-[var(--q-user-bubble)]/10",
@@ -220,7 +220,7 @@ export default function AiComposer({
                 className={cn(
                   "flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 active:scale-90",
                   isTyping
-                    ? "bg-[var(--q-user-bubble)] text-white hover:opacity-90 shadow-sm"
+                    ? "bg-[var(--q-user-bubble)] text-[var(--q-bg)] hover:opacity-90 shadow-sm"
                     : "bg-surface border border-border text-text-muted",
                 )}
               >

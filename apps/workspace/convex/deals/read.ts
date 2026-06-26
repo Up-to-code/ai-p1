@@ -2,12 +2,13 @@ import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { activeUpdatedWorkspaceRows, boundedWorkspaceReadLimit } from "../workspace/readSurface";
+import { presentWorkspaceRecord } from "../shared/present";
 import { dealStageValidator, dealValidator } from "./validators";
 
 const MAX_LIST_DEALS = 500;
 
 function presentDeal<TDeal extends { _id: string }>(deal: TDeal) {
-  return { ...deal, id: deal._id };
+  return presentWorkspaceRecord(deal);
 }
 
 function matchesSearch(

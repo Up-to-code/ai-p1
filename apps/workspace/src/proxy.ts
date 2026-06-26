@@ -2,9 +2,12 @@ import createMiddleware from 'next-intl/middleware';
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse, type NextRequest } from "next/server";
 import * as Sentry from "@sentry/nextjs";
-import {routing} from './i18n/routing';
+import { brandDomainUrl } from "@qentrah/brand-identity";
+import { routing } from './i18n/routing';
 
 const intlMiddleware = createMiddleware(routing);
+const marketingUrl = brandDomainUrl("root");
+
 const protectedRouteSegments = new Set([
   "activity",
   "billing",
@@ -12,10 +15,10 @@ const protectedRouteSegments = new Set([
   "clients",
   "dashboard",
   "integrations",
+  "onboarding",
   "organization",
   "profile",
   "projects",
-  "assets",
   "settings",
   "team",
   "usage",
@@ -83,9 +86,9 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
 
     // Handle protected routes
     if (isProtectedRoute(request)) {
-      // Protect the route - this will redirect to sign-in if not authenticated
+      // Protect the route - redirect to marketing if not authenticated
       await auth.protect({
-        unauthenticatedUrl: new URL(`/${locale}/sign-in`, request.url).toString(),
+        unauthenticatedUrl: `${marketingUrl}/${locale}`,
       });
 
       // NOTE: We no longer redirect to /choose-org here.
@@ -104,18 +107,11 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
     });
   }
 });
- 
+
 export const config = {
   matcher: [
     "/",
     "/(ar|en)/:path*",
-    "/about",
-    "/terms",
-    "/privacy",
-    "/legal",
-    "/contact",
-    "/developer",
-    "/broker",
     "/mcp-docs",
     "/mcp-docs/:path*",
     "/api/v1/:path*",

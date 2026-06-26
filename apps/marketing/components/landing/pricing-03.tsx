@@ -163,7 +163,7 @@ export function Pricing03({ locale }: { locale: string }) {
                 href="/sign-up"
                 className={cn(
                   "flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4",
-                  "bg-[var(--q-accent)] text-sm font-black uppercase tracking-widest text-white",
+                  "bg-[var(--q-accent)] text-sm font-black uppercase tracking-widest text-[var(--q-bg)]",
                   "shadow-lg shadow-[var(--q-accent)]/25 transition-all duration-200",
                   "hover:bg-[var(--q-accent-hover)] hover:shadow-xl hover:shadow-[var(--q-accent)]/40 active:scale-[0.98]",
                 )}

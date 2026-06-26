@@ -136,7 +136,7 @@ export function PendingConfirmationBar({
                 <button
                   type="button"
                   onClick={handleApprove}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--q-user-bubble)] text-white transition hover:opacity-90 active:scale-95"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--q-user-bubble)] text-[var(--q-bg)] transition hover:opacity-90 active:scale-95"
                   title="Approve"
                 >
                   <Check className="h-4 w-4 stroke-[2.5px]" />

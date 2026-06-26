@@ -39,7 +39,7 @@ export default function Footer() {
         <div className="flex flex-col items-start justify-between gap-x-10 gap-y-10 px-6 py-12 sm:flex-row xl:px-0">
           <div className="max-w-sm">
             <Link href="/" className="inline-flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-white dark:bg-zinc-800 ring-1 ring-zinc-200 dark:ring-zinc-700">
+              <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-[var(--q-card)] ring-1 ring-zinc-200 dark:ring-zinc-700">
                 <BrandMark className="h-5 w-5" />
               </span>
               <span>
@@ -79,7 +79,7 @@ export default function Footer() {
           </div>
 
           <Link
-            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[var(--q-accent)] px-6 text-sm font-bold text-white transition hover:bg-[var(--q-accent-hover)] sm:w-auto"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[var(--q-accent)] px-6 text-sm font-bold text-background transition hover:bg-[var(--q-accent-hover)] sm:w-auto"
             href="/contact"
           >
             {t("contact")}

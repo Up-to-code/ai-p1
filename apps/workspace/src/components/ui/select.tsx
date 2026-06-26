@@ -94,7 +94,7 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "relative flex w-full cursor-default items-center gap-2 rounded-lg py-2 pe-8 ps-3 text-sm outline-none select-none transition-colors focus:bg-muted focus:text-foreground data-disabled:opacity-50",
+        "relative flex w-full cursor-default items-center gap-2 rounded-lg py-2 pe-8 ps-3 text-sm outline-none select-none transition-colors focus:bg-muted focus:text-foreground data-disabled:opacity-[0.4]",
         className
       )}
       {...props}

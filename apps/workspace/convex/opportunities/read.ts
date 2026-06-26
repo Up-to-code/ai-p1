@@ -2,12 +2,13 @@ import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { activeUpdatedWorkspaceRows, boundedWorkspaceReadLimit } from "../workspace/readSurface";
+import { presentWorkspaceRecord } from "../shared/present";
 import { opportunityStageValidator, opportunityValidator } from "./validators";
 
 const MAX_LIST_OPPORTUNITIES = 500;
 
 function presentOpportunity<TOpportunity extends { _id: string }>(opportunity: TOpportunity) {
-  return { ...opportunity, id: opportunity._id };
+  return presentWorkspaceRecord(opportunity);
 }
 
 function matchesSearch(

@@ -59,9 +59,9 @@ export function LandingButton({
       href={href}
       className={cn(
         "inline-flex h-11 items-center justify-center gap-2 rounded-xl px-6 text-[11px] font-bold uppercase tracking-widest transition active:scale-[0.98]",
-        variant === "primary" && "bg-[var(--q-text-primary)] text-[var(--q-bg)] hover:bg-[var(--q-text-secondary)] dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200",
-        variant === "secondary" && "border border-[var(--q-border)] bg-[var(--q-card)] text-zinc-600 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:hover:bg-white/[0.08]",
-        variant === "inverse" && "bg-[var(--q-text-primary)] text-[var(--q-bg)] dark:bg-white dark:text-zinc-950",
+        variant === "primary" && "bg-[var(--q-text-primary)] text-[var(--q-bg)] hover:bg-[var(--q-text-secondary)] dark:bg-[var(--q-text-primary)] dark:text-[var(--q-bg)] dark:hover:bg-[var(--q-text-secondary)]",
+        variant === "secondary" && "border border-[var(--q-border)] bg-[var(--q-card)] text-[var(--q-text-secondary)] hover:bg-[var(--q-card-hover)] dark:border-[var(--q-border)] dark:bg-[var(--q-card)] dark:text-[var(--q-text-secondary)] dark:hover:bg-[var(--q-card-hover)]",
+        variant === "inverse" && "bg-[var(--q-text-primary)] text-[var(--q-bg)] dark:bg-[var(--q-text-primary)] dark:text-[var(--q-bg)]",
         className,
       )}
     >

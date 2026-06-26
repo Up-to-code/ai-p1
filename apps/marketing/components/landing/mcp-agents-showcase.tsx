@@ -89,8 +89,8 @@ function AgentCard({ agent, isAr }: { agent: AgentItem; isAr: boolean }) {
   const descText = isAr ? agent.desc.ar : agent.desc.en;
 
   return (
-    <div className="flex items-center gap-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white p-4 shadow-sm dark:bg-zinc-800 hover:border-[var(--q-user-bubble)]/50 dark:hover:border-[var(--q-user-bubble)]/50 transition duration-300 w-full">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900">
+    <div className="flex items-center gap-3.5 rounded-2xl border border-[var(--q-border)] bg-[var(--q-card)] p-4 shadow-sm hover:border-[var(--q-user-bubble)]/50 transition duration-300 w-full">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--q-border)] bg-[var(--q-card-hover)]">
         <Image
           alt=""
           width={20}
@@ -102,7 +102,7 @@ function AgentCard({ agent, isAr }: { agent: AgentItem; isAr: boolean }) {
       </span>
       <div className="min-w-0 text-start">
         <p className="text-sm font-bold text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] leading-tight">{agent.name}</p>
-        <p className="mt-1 text-[11px] font-medium text-[var(--q-text-muted)] dark:text-zinc-500 leading-normal truncate">{descText}</p>
+        <p className="mt-1 text-[11px] font-medium text-[var(--q-text-muted)] leading-normal truncate">{descText}</p>
       </div>
     </div>
   );
@@ -116,14 +116,14 @@ export function McpAgentsShowcase({ locale }: { locale: string }) {
   const scrollingAgents = [...agentsList, ...agentsList, ...agentsList, ...agentsList];
 
   return (
-    <section className="w-full overflow-hidden border-y border-zinc-200 dark:border-white/[0.08] bg-[var(--q-bg-secondary)] px-6 py-16 dark:bg-[var(--q-bg-dark)] dark:border-zinc-800 md:py-24">
+    <section className="w-full overflow-hidden border-y border-[var(--q-border)] bg-[var(--q-bg-secondary)] px-6 py-16 dark:bg-[var(--q-bg-dark)] md:py-24">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center" dir={isAr ? "rtl" : "ltr"}>
           <div className="flex flex-col space-y-6 text-start rtl:text-right ltr:text-left max-w-xl mx-auto lg:mx-0">
             <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-4xl lg:text-5xl rtl:leading-[1.25]">
               {labels.title}
             </h2>
-            <p className="text-base font-semibold leading-relaxed text-zinc-700 dark:text-zinc-300 md:text-lg rtl:leading-[1.7]">
+            <p className="text-base font-semibold leading-relaxed text-[var(--q-text-secondary)] md:text-lg rtl:leading-[1.7]">
               {labels.description}
             </p>
           </div>

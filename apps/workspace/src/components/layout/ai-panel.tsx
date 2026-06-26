@@ -34,7 +34,7 @@ export function AiPanel() {
 
   return (
     <div className="flex h-full min-w-0 flex-col overflow-hidden bg-background">
-      <div className="flex items-center justify-between border-b border-border/50 px-3 py-2.5">
+      <div className="flex items-center justify-between px-3 py-2.5">
         <button
           type="button"
           onClick={newThread}
@@ -78,7 +78,7 @@ export function AiPanel() {
                   </span>
                   {message.content &&
                     (message.role === "user" ? (
-                      <div className="max-w-[85%] rounded-2xl bg-[var(--q-user-bubble)] px-4 py-2.5 text-sm font-medium leading-relaxed text-white">
+                      <div className="max-w-[85%] rounded-2xl bg-[var(--q-user-bubble)] px-4 py-2.5 text-sm font-medium leading-relaxed text-background">
                         {message.content}
                       </div>
                     ) : (
@@ -141,7 +141,7 @@ export function AiPanel() {
         onCanceled={() => conversation.setPendingConfirmation(null)}
       />
 
-      <div className="min-w-0 border-t border-border/50 bg-background p-3">
+      <div className="min-w-0 bg-background p-3">
         <AiComposer
           value={conversation.inputValue}
           onChange={conversation.setInputValue}

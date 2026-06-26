@@ -138,7 +138,7 @@ export function TiptapEditor({
               type="button"
               onClick={handleImageClick}
               disabled={isUploading}
-              className="rounded-md p-1.5 hover:bg-muted disabled:opacity-50"
+              className="rounded-md p-1.5 hover:bg-muted disabled:opacity-[0.4]"
             >
               {isUploading ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> : <ImageIcon className="h-4 w-4 text-muted-foreground" />}
             </button>

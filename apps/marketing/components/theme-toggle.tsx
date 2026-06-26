@@ -12,8 +12,8 @@ export function ThemeToggle({ className }: { className?: string }) {
       onClick={toggleTheme}
       className={cn(
         "group relative flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-300",
-        "bg-white [data-theme=\"dark\"]:bg-white/5 border border-zinc-200 [data-theme=\"dark\"]:border-white/10 shadow-sm",
-        "hover:border-zinc-300 [data-theme=\"dark\"]:hover:border-white/20 hover:shadow-md",
+        "bg-[var(--q-card)] [data-theme=\"dark\"]:bg-[var(--q-card)] border border-[var(--q-border)] [data-theme=\"dark\"]:border-[var(--q-border)] shadow-sm",
+        "hover:border-[var(--q-border)] [data-theme=\"dark\"]:hover:border-[var(--q-border)] hover:shadow-md",
         className
       )}
       aria-label="Toggle theme"

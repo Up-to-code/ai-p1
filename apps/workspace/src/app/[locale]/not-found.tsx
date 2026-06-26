@@ -2,7 +2,7 @@
 
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
-import { Home, LayoutDashboard, SearchX } from "lucide-react";
+import { LayoutDashboard, SearchX } from "lucide-react";
 import { useLocale } from "next-intl";
 
 export default function NotFound() {
@@ -14,7 +14,6 @@ export default function NotFound() {
         helper: "صفحة مساحة العمل المطلوبة غير متاحة.",
         title: "الصفحة غير موجودة",
         description: "قد يكون الرابط قديمًا أو تم نقل الصفحة. افتح لوحة التحكم للمتابعة من مساحة العمل الرئيسية.",
-        home: "الرئيسية",
         dashboard: "فتح لوحة التحكم",
       }
     : {
@@ -22,7 +21,6 @@ export default function NotFound() {
         helper: "The requested workspace page is not available.",
         title: "Page not found",
         description: "This link may be outdated, or the workspace route may have moved. Open the dashboard to continue from the main operating view.",
-        home: "Home",
         dashboard: "Open dashboard",
       };
 
@@ -53,12 +51,6 @@ export default function NotFound() {
         </p>
 
         <div className="mt-9 flex flex-col-reverse gap-3 sm:flex-row sm:justify-center">
-          <Link href="/">
-            <Button variant="outline" className="h-12 w-full gap-2 rounded-full px-6 text-sm sm:w-auto">
-              <Home className="h-4 w-4" aria-hidden="true" />
-              {labels.home}
-            </Button>
-          </Link>
           <Link href="/dashboard">
             <Button className="h-12 w-full gap-2 rounded-full px-6 text-sm shadow-none sm:w-auto">
               <LayoutDashboard className="h-4 w-4" aria-hidden="true" />

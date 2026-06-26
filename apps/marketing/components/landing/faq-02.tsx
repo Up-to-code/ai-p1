@@ -29,15 +29,15 @@ export function Faq02() {
       <Reveal>
         <div className="max-w-xl space-y-6">
           <div className="flex items-center gap-3">
-            <span className="h-px w-8 bg-[var(--q-user-bubble)]/25 dark:bg-[var(--q-user-bubble)]/45" />
-            <span className="text-[10px] font-black uppercase tracking-[0.35em] text-[var(--q-user-bubble)] dark:text-[var(--q-user-bubble)]">
+            <span className="h-px w-8 bg-[var(--q-accent)]/25" />
+            <span className="text-[10px] font-black uppercase tracking-[0.35em] text-[var(--q-accent)]">
               {t("eyebrow")}
             </span>
           </div>
-          <h2 className="text-3xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-5xl rtl:leading-[1.25]">
+          <h2 className="text-3xl font-bold tracking-tight text-[var(--q-text-primary)] md:text-5xl rtl:leading-[1.25]">
             {t("title")}
           </h2>
-          <p className="text-base font-medium leading-relaxed text-zinc-500 dark:text-zinc-400 md:text-lg">
+          <p className="text-base font-medium leading-relaxed text-[var(--q-text-secondary)] md:text-lg">
             {t("description")}
           </p>
         </div>
@@ -52,12 +52,12 @@ export function Faq02() {
             <AccordionItem
               key={item.question}
               value={`item-${index}`}
-              className="border-b border-[var(--q-border)] dark:border-white/10 px-2 transition-colors duration-300 hover:bg-zinc-50/50 dark:hover:bg-white/[0.02]"
+              className="border-b border-[var(--q-border)] px-2 transition-colors duration-300 hover:bg-[var(--q-accent)]/5"
             >
-              <AccordionTrigger className="text-start py-6 text-base md:text-lg font-semibold text-zinc-900 dark:text-zinc-100 transition-all duration-300 hover:text-[var(--q-user-bubble)] dark:hover:text-[var(--q-user-bubble)] hover:no-underline">
+              <AccordionTrigger className="text-start py-6 text-base md:text-lg font-semibold text-[var(--q-text-primary)] transition-all duration-300 hover:text-[var(--q-accent)] hover:no-underline">
                 {item.question}
               </AccordionTrigger>
-              <AccordionContent className="text-sm md:text-base font-medium text-zinc-500 dark:text-zinc-400 leading-relaxed pb-6">
+              <AccordionContent className="text-sm md:text-base font-medium text-[var(--q-text-secondary)] leading-relaxed pb-6">
                 {item.answer}
               </AccordionContent>
             </AccordionItem>

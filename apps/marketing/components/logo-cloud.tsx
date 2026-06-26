@@ -19,7 +19,7 @@ const LogoCloud = () => {
   const isAr = locale === "ar";
 
   return (
-    <div className="w-full border-b border-zinc-200 dark:border-zinc-800 bg-[var(--q-bg)] px-6 py-12 md:py-16">
+    <div className="w-full border-b border-[var(--q-border)] bg-[var(--q-bg)] px-6 py-12 md:py-16">
       <div className="mx-auto max-w-7xl overflow-hidden">
         <p className="text-center text-sm font-bold uppercase tracking-[0.2em] text-[var(--q-text-secondary)] md:text-base">
           {isAr ? "يعمل مع أدواتك المفضلة" : "Works with your favorite tools"}
@@ -35,9 +35,9 @@ const LogoCloud = () => {
             {toolBrands.map((tool) => (
               <span
                 key={tool.name}
-                className="flex h-12 items-center gap-3 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 text-sm font-bold text-zinc-700 dark:text-zinc-200 shadow-sm transition-colors hover:border-[var(--q-accent)]/50"
+                className="flex h-12 items-center gap-3 rounded-full border border-[var(--q-border)] bg-[var(--q-card)] px-4 text-sm font-bold text-[var(--q-text-secondary)] shadow-sm transition-colors hover:border-[var(--q-accent)]/50"
               >
-                <span className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--q-border)] bg-[var(--q-card-hover)]">
                   <img
                     alt=""
                     className="h-5 w-5"

@@ -1,53 +1,18 @@
-"use client";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { brandDomainUrl } from "@qentrah/brand-identity";
 
-import { useLocale, useTranslations } from "next-intl";
+export default async function WorkspaceHome({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const { userId } = await auth();
 
-import CTA from "@/components/cta";
-import Footer from "@/components/footer";
-import { Faq02 } from "@/components/landing/faq-02";
-import { Navbar } from "@/components/landing/navbar";
-import { WebsiteBuilderConnect } from "@/components/landing/website-builder-connect";
-import { McpAgentsShowcase } from "@/components/landing/mcp-agents-showcase";
-import { ProblemSection } from "@/components/landing/problem-section";
-import { AppsPlatform } from "@/components/landing/apps-platform";
-import { AnimatedHomeHero } from "@/components/landing/animated-home-hero";
-import LogoCloud from "@/components/logo-cloud";
+  if (userId) {
+    redirect(`/${locale}/dashboard`);
+  }
 
-export default function InstitutionalLanding() {
-  const t = useTranslations("Landing.home");
-  const locale = useLocale();
-  const isAr = locale === "ar";
-
-  return (
-    <div className="flex min-h-screen flex-col bg-background text-text-primary">
-      <Navbar />
-
-      <main className="flex-1">
-        <AnimatedHomeHero
-          eyebrow={t("hero.eyebrow")}
-          title={t("hero.title")}
-          description={t("hero.description")}
-          primaryLabel={t("hero.primary")}
-          secondaryLabel={t("hero.secondary")}
-          isAr={isAr}
-        />
-
-        <LogoCloud />
-
-        <ProblemSection locale={locale} />
-
-        <AppsPlatform locale={locale} />
-
-        <WebsiteBuilderConnect locale={locale} />
-
-        <McpAgentsShowcase locale={locale} />
-
-        <Faq02 />
-
-        <CTA />
-      </main>
-
-      <Footer />
-    </div>
-  );
+  redirect(`${brandDomainUrl("root")}/${locale}`);
 }

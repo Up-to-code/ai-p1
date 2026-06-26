@@ -93,8 +93,8 @@ export function Navbar() {
             className={cn(
               "hidden h-9 items-center gap-1.5 rounded-xl px-4 text-[11px] font-black uppercase tracking-widest transition-all duration-200 active:scale-[0.97] md:inline-flex",
               isScrolled
-                ? "bg-[var(--q-accent)] text-white hover:bg-[var(--q-accent-hover)]"
-                : "bg-[var(--q-text-primary)] text-[var(--q-bg)] hover:opacity-85",
+                ? "bg-[var(--q-accent)] text-background hover:bg-[var(--q-accent-hover)]"
+                : "bg-[var(--q-text-primary)] text-background hover:opacity-85",
             )}
           >
             {t("signIn")}
@@ -151,7 +151,7 @@ export function Navbar() {
           >
             <Link
               href="/dashboard"
-              className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[var(--q-accent)] text-[11px] font-black uppercase tracking-widest text-white transition-all active:scale-[0.98]"
+              className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[var(--q-accent)] text-[11px] font-black uppercase tracking-widest text-background transition-all active:scale-[0.98]"
               onClick={() => setIsMenuOpen(false)}
             >
               {t("signIn")}

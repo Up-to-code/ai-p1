@@ -30,7 +30,7 @@ function ListItemContainer({ children, onClick, href, selected, disabled, classN
         "border-b border-border-light dark:border-white/5",
         "hover:bg-[#f9fafb] dark:hover:bg-white/[0.03]",
         selected && "bg-primary/5 dark:bg-primary/10",
-        disabled && "opacity-50 pointer-events-none",
+        disabled && "opacity-[0.4] pointer-events-none",
         onClick && "cursor-pointer",
         className
       )}

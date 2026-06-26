@@ -37,7 +37,7 @@ export default function ConsentAutoSubmit({
       <button
         type="submit"
         className={cn(
-          "inline-flex h-11 w-full items-center justify-center rounded-lg bg-slate-950 px-5 text-sm font-black text-white transition hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200",
+          "inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-[0.4] dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200",
           submitClassName,
         )}
         disabled={disabled}

@@ -58,6 +58,7 @@ function HeroLink({
 export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, secondaryLabel, isAr }: AnimatedHomeHeroProps) {
   const [heroReady, setHeroReady] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   const introLabel = isAr ? "كانترا" : "QENTRAH";
   const revealDelay = useMemo(() => introRevealMs(isAr ? 1 : Array.from(introLabel).length), [introLabel, isAr]);
 
@@ -70,29 +71,41 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
     return () => window.clearTimeout(timer);
   }, [revealDelay]);
 
+  useEffect(() => {
+    setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light");
+    const observer = new MutationObserver(() => {
+      const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+      setTheme(isDark ? "dark" : "light");
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section className="relative min-h-screen overflow-hidden border-b border-zinc-200/80 bg-[var(--q-bg)] text-[var(--q-text-primary)] dark:border-zinc-800/80 dark:bg-[var(--q-bg)] dark:text-[var(--q-text-primary)]">
+    <section className="relative min-h-screen overflow-hidden border-b border-[var(--q-border)] bg-[var(--q-bg)] text-[var(--q-text-primary)]">
       <IntroAnimation label={introLabel} onDone={handleIntroDone} />
 
-      {/* ── Hero background: daytime in light mode, night scene in dark mode ── */}
+      {/* ── Hero background: smooth crossfade + zoom on theme toggle ── */}
       <img
         src={heroBgLight}
         alt=""
         aria-hidden
-        className="absolute inset-0 z-0 h-full w-full object-cover block dark:hidden"
+        className="absolute inset-0 z-0 h-full w-full object-cover"
         style={{
-          transform: videoReady ? "scale(1.05)" : "scale(0.86)",
-          transition: "transform 2s cubic-bezier(0.16, 1, 0.3, 1)",
+          opacity: theme === "light" ? 1 : 0,
+          transform: `scale(${videoReady ? 1.05 : 0.86})`,
+          transition: "opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 2s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       />
       <img
         src={heroBgDark}
         alt=""
         aria-hidden
-        className="absolute inset-0 z-0 h-full w-full object-cover hidden dark:block"
+        className="absolute inset-0 z-0 h-full w-full object-cover"
         style={{
-          transform: videoReady ? "scale(1.05)" : "scale(0.86)",
-          transition: "transform 2s cubic-bezier(0.16, 1, 0.3, 1)",
+          opacity: theme === "dark" ? 1 : 0,
+          transform: `scale(${videoReady ? 1.05 : 0.86})`,
+          transition: "opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 2s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       />
 

@@ -1,3 +1,9 @@
+/**
+ * WHY:   Client view model should focus on presentation concerns, not domain business rules.
+ * WHAT:  Presentation utilities for client UI components (form transformations, display logic).
+ * HOW:  Domain business rules (pipeline transitions, asset linking) moved to client-domain-service.ts.
+ */
+
 import type { ClientTaskPayload } from "@/domains/clients/api/client-tasks";
 import type { Client, ClientType } from "./store/clients.types";
 import type { ClientFormValues } from "./validation/client.schema";
@@ -39,7 +45,6 @@ export function assetStatusTone(status: AssetStatus): StatusPillTone {
   if (status === "sold") return "info";
   return "neutral";
 }
-
 
 export function typeTone(type: ClientType): StatusPillTone {
   if (type === "organization") return "info";

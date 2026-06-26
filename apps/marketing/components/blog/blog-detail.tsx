@@ -86,7 +86,7 @@ export function BlogDetail({ post, locale }: BlogDetailProps) {
         dangerouslySetInnerHTML={{ __html: lexicalToHtml(post.body) }}
       />
 
-      <footer className="mt-16 border-t border-zinc-200 pt-8 dark:border-zinc-800">
+      <footer className="mt-16 border-t border-[var(--q-border)] pt-8">
         <div className="flex items-center gap-4">
           {post.authorAvatar && (
             <div className="relative h-16 w-16 overflow-hidden rounded-full">

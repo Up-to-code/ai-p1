@@ -116,8 +116,8 @@ export function WorkspaceContactPage() {
 
           <Button
             type="submit"
-            className="mt-6 h-12 rounded-full px-7 text-[11px] font-black uppercase tracking-[0.16em] text-white"
-            style={{ background: "var(--q-accent)" }}
+            className="mt-6 h-12 rounded-full px-7 text-[11px] font-black uppercase tracking-[0.16em]"
+            style={{ background: "var(--q-accent)", color: "var(--q-bg)" }}
           >
             <Send className="h-3.5 w-3.5" />
             {t("form.submit")}
