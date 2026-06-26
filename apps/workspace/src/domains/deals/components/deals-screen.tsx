@@ -25,7 +25,7 @@ import {
   useDealStatsQuery,
 } from "../api/deals";
 import type { Deal, DealFormValues, DealPriority, DealStage, DealStats } from "../store/deals.types";
-import { EMPTY_DEAL_FORM } from "../config/deals.config";
+import { DEAL_PRIORITIES, EMPTY_DEAL_FORM } from "../config/deals.config";
 import { DealBoard } from "./deal-board";
 import { DealForm } from "./deal-form";
 import { dealStages, activeDealStages, stageTone, priorityTone, formatValue, formFromDeal, dealValuesForStage, matchesDealSearch } from "../deal-view-model";
@@ -60,11 +60,11 @@ export function DealsWorkspace() {
   );
   const projectOptions = useMemo(() => projectOptionsResult.data ?? [], [projectOptionsResult.data]);
   const dealStageLabels = useMemo(
-    () => Object.fromEntries(stages.map((value) => [value, t(`stages.${value}`)])) as Record<DealStage, string>,
+    () => Object.fromEntries(dealStages.map((value) => [value, t(`stages.${value}`)])) as Record<DealStage, string>,
     [t],
   );
   const dealPriorityLabels = useMemo(
-    () => Object.fromEntries(priorities.map((value) => [value, t(`priorities.${value}`)])) as Record<DealPriority, string>,
+    () => Object.fromEntries(DEAL_PRIORITIES.map((value) => [value, t(`priorities.${value}`)])) as Record<DealPriority, string>,
     [t],
   );
   const clientOptionMap = useMemo(() => new Map(clientOptions.map((option) => [option.id, option])), [clientOptions]);
@@ -215,7 +215,7 @@ export function DealsWorkspace() {
             onChange={(value) => setStage(value as DealStage | "all")}
             options={[
               { value: "all", label: t("filters.all") },
-              ...stages.map((item) => ({ value: item, label: dealStageLabels[item] })),
+              ...dealStages.map((item) => ({ value: item, label: dealStageLabels[item] })),
             ]}
           />
         </div>
@@ -331,11 +331,11 @@ export function DealDetailScreen({ id }: { id: string }) {
   const dealClientOptions = useMemo(() => clientOptions.map((client) => ({ id: client.id, label: client.name })), [clientOptions]);
   const dealProjectOptions = useMemo(() => projectOptions.map((project) => ({ id: project.id, label: project.name })), [projectOptions]);
   const dealStageLabels = useMemo(
-    () => Object.fromEntries(stages.map((value) => [value, t(`stages.${value}`)])) as Record<DealStage, string>,
+    () => Object.fromEntries(dealStages.map((value) => [value, t(`stages.${value}`)])) as Record<DealStage, string>,
     [t],
   );
   const dealPriorityLabels = useMemo(
-    () => Object.fromEntries(priorities.map((value) => [value, t(`priorities.${value}`)])) as Record<DealPriority, string>,
+    () => Object.fromEntries(DEAL_PRIORITIES.map((value) => [value, t(`priorities.${value}`)])) as Record<DealPriority, string>,
     [t],
   );
 
