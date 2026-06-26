@@ -28,11 +28,10 @@ interface QuickCreateClientModalProps {
 }
 
 const stageOptions = [
-  { value: "blank", label: "Blank" },
-  { value: "new_lead", label: "New Lead" },
-  { value: "attempted", label: "Attempted" },
-  { value: "contacted", label: "Contacted" },
+  { value: "new", label: "New" },
   { value: "qualified", label: "Qualified" },
+  { value: "review", label: "Review" },
+  { value: "negotiation", label: "Negotiation" },
 ];
 
 const typeOptions = [
@@ -56,7 +55,7 @@ export function QuickCreateClientModal({
   onOpenChange,
   organizationId,
   queryKey,
-  defaultStage = "blank",
+  defaultStage = "new",
   onSuccess,
 }: QuickCreateClientModalProps) {
   const queryClient = useQueryClient();

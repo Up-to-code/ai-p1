@@ -138,7 +138,6 @@ export function ProfileSettingsScreen() {
         avatarDesc={t("form.avatarDesc")}
         tabLabels={tabLabels}
         avatarLabels={{
-          cropTitle: t("form.avatarCropTitle"),
           apply: t("form.avatarApply"),
           cancel: t("form.avatarCancel"),
           zoom: t("form.avatarZoom"),

@@ -50,7 +50,7 @@ export function ProfileSettingsHeader({
   initials: string;
   userName: string;
   userEmail: string;
-  userImage?: string | null;
+  userImage: string | null;
   organizationName: string;
   roleKey: string;
   roleColor: string;
@@ -74,7 +74,7 @@ export function ProfileSettingsHeader({
             initials={initials}
             name={userName}
             uploadLabel={uploadLabel}
-            cropTitle={avatarLabels.cropTitle ?? uploadLabel}
+            cropTitle={uploadLabel}
             labels={avatarLabels}
           />
 

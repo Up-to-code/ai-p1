@@ -518,12 +518,11 @@ export function ClientTableView({
                           >
                             <span className={cn(
                               "h-1.5 w-1.5 rounded-full",
-                              client.pipelineStage === "blank" && "bg-gray-400",
-                              client.pipelineStage === "new_lead" && "bg-amber-500",
-                              client.pipelineStage === "attempted" && "bg-[#F0997B]",
-                              client.pipelineStage === "contacted" && "bg-[#378ADD]",
+                              client.pipelineStage === "new" && "bg-gray-400",
                               client.pipelineStage === "qualified" && "bg-[#639922]",
-                              client.pipelineStage === "unqualified" && "bg-[#E24B4A]",
+                              client.pipelineStage === "review" && "bg-amber-500",
+                              client.pipelineStage === "negotiation" && "bg-[#F0997B]",
+                              client.pipelineStage === "closed" && "bg-[#378ADD]",
                             )} />
                             {client.pipelineStage.charAt(0).toUpperCase() + client.pipelineStage.slice(1)}
                           </PopoverTrigger>
@@ -543,12 +542,11 @@ export function ClientTableView({
                               >
                                 <span className={cn(
                                   "h-2 w-2 rounded-full",
-                                  option.value === "blank" && "bg-gray-400",
-                                  option.value === "new_lead" && "bg-amber-500",
-                                  option.value === "attempted" && "bg-[#F0997B]",
-                                  option.value === "contacted" && "bg-[#378ADD]",
+                                  option.value === "new" && "bg-gray-400",
                                   option.value === "qualified" && "bg-[#639922]",
-                                  option.value === "unqualified" && "bg-[#E24B4A]",
+                                  option.value === "review" && "bg-amber-500",
+                                  option.value === "negotiation" && "bg-[#F0997B]",
+                                  option.value === "closed" && "bg-[#378ADD]",
                                 )} />
                                 {option.label}
                               </button>
@@ -570,7 +568,7 @@ export function ClientTableView({
                             hoveredRow === client.id ? "opacity-100" : "opacity-0",
                           )}
                         >
-                          {client.pipelineStage !== "unqualified" && (
+                          {client.pipelineStage !== "closed" && (
                             <button
                               type="button"
                               onClick={() => onMarkClosed?.(client)}

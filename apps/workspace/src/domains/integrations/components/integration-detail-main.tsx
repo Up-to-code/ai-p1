@@ -20,11 +20,11 @@ export function IntegrationDetailMain({
   app: PartnerCatalogApp;
   mockDetails: IntegrationAppDetails;
   labels: IntegrationDetailLabels;
-  accountUser: { name: string; image?: string | null; initials: string };
+  accountUser: { name: string; image: string | null; initials: string };
   isMutating: boolean;
   onReviewSubmit: () => Promise<void>;
   onOpenMedia: (media: "video" | "screenshot") => void;
-  t: (key: string, values?: Record<string, string | number>) => string;
+  t: ((key: string, values?: Record<string, string | number>) => string) & { raw: (key: string) => unknown };
 }) {
   const carouselRef = useRef<HTMLDivElement>(null);
 

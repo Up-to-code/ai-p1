@@ -172,7 +172,7 @@ export function ClientListItem({
       {/* Actions */}
       {showActions && (
         <ListItemActions>
-          {client.pipelineStage !== "unqualified" && onMarkClosed && (
+          {client.pipelineStage !== "closed" && onMarkClosed && (
             <button
               type="button"
               onClick={(e) => {

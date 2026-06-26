@@ -29,6 +29,7 @@
       "@qentrah/platform-core/convex-api": ["../../packages/platform-core/src/convex-api.ts"],
       "@qentrah/platform-core/effect-api": ["../../packages/platform-core/src/effect-api.ts"],
       "@qentrah/platform-core": ["../../packages/platform-core/src/index.ts"],
+      "@qentrah/ui": ["../../packages/ui/src/index.ts"],
       "@/*": ["./src/*"],
       "@convex/*": ["./convex/*"]
     }

@@ -45,6 +45,7 @@
     "@qentrah/partner-auth-core": "0.1.0",
     "@qentrah/partner-workspace-sync": "0.1.0",
     "@qentrah/platform-core": "0.1.0",
+    "@qentrah/ui": "0.1.0",
     "@radix-ui/react-label": "^2.1.9",
     "@radix-ui/react-slot": "^1.2.5",
     "@sentry/nextjs": "^10.52.0",

@@ -19,20 +19,18 @@ export type ClientTableFilterStatus =
   | "archived";
 export type ClientTableFilterStage =
   | ""
-  | "blank"
-  | "new_lead"
-  | "attempted"
-  | "contacted"
+  | "new"
   | "qualified"
-  | "unqualified";
+  | "review"
+  | "negotiation"
+  | "closed";
 
 export const clientTableStageOptions = [
-  { value: "blank", label: "Blank" },
-  { value: "new_lead", label: "New Lead" },
-  { value: "attempted", label: "Attempted" },
-  { value: "contacted", label: "Contacted" },
+  { value: "new", label: "New" },
   { value: "qualified", label: "Qualified" },
-  { value: "unqualified", label: "Unqualified" },
+  { value: "review", label: "Review" },
+  { value: "negotiation", label: "Negotiation" },
+  { value: "closed", label: "Closed" },
 ] as const;
 
 export const clientTableTypeOptions = [
