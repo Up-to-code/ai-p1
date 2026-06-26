@@ -28,7 +28,7 @@
     "framer-motion": "^12.40.0",
     "graphql": "^16.14.2",
     "lucide-react": "^0.577.0",
-    "next": "^16.3.0-canary.19",
+    "next": "^16.3.0-canary.32",
     "next-intl": "^4.11.0",
     "payload": "^3.85.1",
     "react": "19.2.4",
