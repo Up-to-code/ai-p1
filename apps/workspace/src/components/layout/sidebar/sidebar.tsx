@@ -80,7 +80,7 @@ export function Sidebar() {
     activeThreadId,
   });
 
-  const { switchingOrganizationId, switchOrganization } = useOrganizationSwitch(account.organization.id);
+  const { switchingOrganizationId, switchOrganization } = useOrganizationSwitch(account.organization.id ?? "");
 
   return (
     <>
