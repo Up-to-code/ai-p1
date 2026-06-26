@@ -1,5 +1,5 @@
 import type { GenericActionCtx, GenericMutationCtx, GenericQueryCtx } from "convex/server";
-import type { DataModel } from "../_generated/dataModel";
+import type { DataModel } from "./_generated/dataModel";
 import { AuthError, type AuthContext } from "@qentrah/auth";
 
 type GenericCtx =
