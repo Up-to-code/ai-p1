@@ -26,3 +26,4 @@ coverage
 !apps/workspace/src/packages/partner-apps/**
 .vercel
 .infisical.json
+.env*
