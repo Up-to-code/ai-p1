@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { shareMcpDefaultPreset } from "./config/mcp-presets.config";
+import { shareMcpDefaultPreset, type ShareMcpPresetId } from "./config/mcp-presets.config";
 import { ShareInviteDialog } from "./components/share-invite-dialog";
 import { ShareMcpDialog } from "./components/share-mcp-dialog";
 import type { SharePopoverProps } from "./types";
@@ -178,7 +178,7 @@ export function SharePopover({
         creating={creatingMcp}
         onOpenChange={setMcpDialogOpen}
         onNameChange={setMcpName}
-        onPresetChange={setMcpPreset}
+        onPresetChange={(value) => setMcpPreset(value as ShareMcpPresetId)}
         onCreate={handleCreateMcp}
       />
     </Popover>
