@@ -28,6 +28,7 @@
       "@qentrah/partner-workspace-sync": ["../../packages/partner-workspace-sync/src/index.ts"],
       "@qentrah/platform-core/convex-api": ["../../packages/platform-core/src/convex-api.ts"],
       "@qentrah/platform-core/effect-api": ["../../packages/platform-core/src/effect-api.ts"],
+      "@qentrah/platform-core/session": ["../../packages/platform-core/src/session.ts"],
       "@qentrah/platform-core": ["../../packages/platform-core/src/index.ts"],
       "@qentrah/ui": ["../../packages/ui/src/index.ts"],
       "@/*": ["./src/*"],
