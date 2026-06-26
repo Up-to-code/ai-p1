@@ -20,6 +20,10 @@
     ],
     "paths": {
       "@qentrah/auth": ["../../packages/auth/src/index.ts"],
+      "@qentrah/auth/client": ["../../packages/auth/src/client/index.ts"],
+      "@qentrah/auth/react": ["../../packages/auth/src/react/index.ts"],
+      "@qentrah/auth/scopes": ["../../packages/auth/src/scopes/index.ts"],
+      "@qentrah/auth/server": ["../../packages/auth/src/server/index.ts"],
       "@qentrah/brand-identity": ["../../packages/brand-identity/src/index.ts"],
       "@qentrah/convex-adapters": ["../../packages/convex-adapters/src/index.ts"],
       "@qentrah/domain-contracts": ["../../packages/domain-contracts/src/index.ts"],
