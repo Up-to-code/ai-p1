@@ -121,7 +121,7 @@ export function ClientListItem({
       <ListItemAvatar
         initials={client.name.charAt(0).toUpperCase()}
         icon={client.type === "organization" ? <Building2 className="h-4 w-4" /> : undefined}
-        color={client.type === "organization" ? "#6b5ce7" : "#3b82f6"}
+        color={client.type === "organization" ? "#8A5CFF" : "#4F80FF"}
       />
 
       {/* Content */}

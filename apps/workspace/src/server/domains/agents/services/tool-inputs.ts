@@ -116,6 +116,10 @@ export const taskInputSchema = z.object({
   dueDate: optionalText,
   description: optionalText,
 }).passthrough();
+
+export const taskUpdateInputSchema = taskInputSchema.partial().extend({
+  taskId: stringId,
+}).passthrough();
 export const notificationScheduleInputSchema = z.object({
   title: z.string().trim().min(1),
   body: z.string().trim().min(1),
@@ -193,7 +197,7 @@ export const toolInputSchemas: Record<string, z.ZodTypeAny> = {
   tasks_list: z.object({ assigneeUserId: stringId.optional(), limit: z.number().int().min(1).max(50).optional(), search: z.string().trim().max(160).optional(), cursor: z.string().nullable().optional() }).passthrough(),
   tasks_get: z.object({ taskId: stringId }).passthrough(),
   tasks_create: taskInputSchema,
-  tasks_update: taskInputSchema.partial().extend({ taskId: stringId }).passthrough(),
+  tasks_update: taskUpdateInputSchema,
   tasks_complete: z.object({ taskId: stringId }).passthrough(),
   tasks_delete: z.object({ taskId: stringId }).passthrough(),
   media_list: z.object({ resourceType: z.enum(["project", "client", "calendarEvent", "task"]), resourceId: stringId, limit: z.number().int().min(1).max(50).optional(), cursor: z.string().nullable().optional() }).passthrough(),

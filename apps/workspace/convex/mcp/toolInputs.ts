@@ -189,6 +189,23 @@ export function taskInput(input: Input) {
   };
 }
 
+export function taskUpdateInput(input: Input, existing: Record<string, unknown>) {
+  const newClientId = optionalRelationId(input, "clientId");
+  const newProjectId = optionalRelationId(input, "projectId");
+  
+  return {
+    title: optionalString(input, "title") ?? (existing.title as string),
+    status: (input.status !== undefined ? taskStatus(input) : existing.status) as "todo" | "inProgress" | "waiting" | "done" | "canceled",
+    priority: (input.priority !== undefined ? priority(input) : existing.priority) as "low" | "normal" | "high" | "urgent",
+    assigneeUserId: optionalString(input, "assigneeUserId") ?? (existing.assigneeUserId as string | undefined),
+    clientId: (newClientId !== undefined ? newClientId : (existing.clientId as Id<"clients"> | undefined)) as Id<"clients"> | undefined,
+    projectId: (newProjectId !== undefined ? newProjectId : (existing.projectId as Id<"projects"> | undefined)) as Id<"projects"> | undefined,
+    dueDate: optionalString(input, "dueDate") ?? (existing.dueDate as string | undefined),
+    description: optionalString(input, "description") ?? optionalString(input, "notes") ?? (existing.description as string | undefined),
+    visibility: (input.visibility !== undefined ? oneOf(input.visibility, ["private", "team", "workspace"] as const, "workspace") : existing.visibility) as "private" | "team" | "workspace",
+  };
+}
+
 export function mediaKind(input: Input) {
   return oneOf(input.kind, ["image", "video", "document"] as const, "document");
 }

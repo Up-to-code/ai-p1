@@ -86,12 +86,12 @@ export function Sidebar() {
     <>
       <aside
         className={cn(
-          "relative flex h-screen shrink-0 flex-col overflow-hidden bg-background transition-all duration-300 ease-in-out",
+          "relative flex h-screen shrink-0 flex-col overflow-hidden bg-secondary transition-all duration-300 ease-in-out",
           isOpen ? "w-64" : "w-14",
           isRtl && "font-cairo",
         )}
       >
-        <div className={cn("flex h-14 shrink-0 items-center border-b border-border", isOpen ? "px-4" : "justify-center")}>
+        <div className={cn("flex h-14 shrink-0 items-center border-b border-sidebar-border", isOpen ? "px-4" : "justify-center")}>
           <NavTooltip label={organizationDisplayName} disabled={isOpen}>
             <WorkspaceLink
               href={workspaceModeHref("ws")}
@@ -193,7 +193,7 @@ export function Sidebar() {
           })}
         </nav>
 
-        <div className={cn("flex flex-col border-t border-border py-3", isOpen ? "gap-1 px-3" : "items-center gap-1")}>
+        <div className={cn("flex flex-col border-t border-sidebar-border py-3", isOpen ? "gap-1 px-3" : "items-center gap-1")}>
           {workspaceOrganizationId && (
             <SidebarConversationsSection
               isOpen={isOpen}
@@ -256,10 +256,10 @@ export function Sidebar() {
                         isActive
                           ? isOpen
                             ? "bg-muted text-foreground"
-                            : "border border-border text-foreground"
+                            : "border border-sidebar-border text-foreground"
                           : isOpen
                             ? "text-muted-foreground hover:bg-muted hover:text-foreground"
-                            : "border border-border text-muted-foreground hover:border-border hover:text-foreground",
+                            : "border border-sidebar-border text-muted-foreground hover:border-sidebar-border hover:text-foreground",
                       )}
                     >
                       <span

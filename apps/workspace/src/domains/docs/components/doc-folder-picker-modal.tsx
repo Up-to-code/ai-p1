@@ -7,9 +7,17 @@ import {
   FolderOpen,
   Folder,
   Home,
-  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  ModulePanel,
+  ModulePanelContent,
+  ModulePanelHeader,
+  ModulePanelBody,
+  ModulePanelFooter,
+  ModulePanelCloseButton,
+} from "@/components/shared/module-panel";
 import { useDocFoldersQuery } from "../api/docs";
 import type { DocFolder } from "../docs.types";
 
@@ -63,8 +71,10 @@ function PickerFolderItem({
         onClick={() => onSelect(isSelected ? null : node.id)}
       >
         {hasChildren ? (
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-xs"
             onClick={(e) => {
               e.stopPropagation();
               setExpanded(!expanded);
@@ -76,7 +86,7 @@ function PickerFolderItem({
             ) : (
               <ChevronRight className="h-3.5 w-3.5" />
             )}
-          </button>
+          </Button>
         ) : (
           <span className="w-3.5 shrink-0" />
         )}
@@ -120,43 +130,37 @@ export function DocFolderPickerModal({
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(
     currentFolderId ?? null,
   );
+  const [open, setOpen] = useState(true);
   const foldersResult = useDocFoldersQuery(organizationId);
   const tree = useMemo(
     () => buildFolderTree(foldersResult.data ?? []),
     [foldersResult.data],
   );
 
+  function handleClose() {
+    setOpen(false);
+    onClose();
+  }
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <button
-        type="button"
-        aria-label="Close"
-        className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"
-        onClick={onClose}
-      />
-      <div className="relative z-10 w-[360px] max-h-[500px] overflow-hidden rounded-2xl border border-border bg-background shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <h2 className="text-sm font-semibold text-foreground">Move to folder</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-6 w-6 items-center justify-center rounded-lg text-text-muted hover:bg-muted transition-colors"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-        </div>
+    <ModulePanel open={open} onOpenChange={(next) => { if (!next) handleClose(); }} defaultWidth={360} defaultHeight={500}>
+      <ModulePanelContent>
+        <ModulePanelHeader
+          center={<span className="text-sm font-semibold text-foreground">Move to folder</span>}
+          right={<ModulePanelCloseButton />}
+        />
 
         {/* Breadcrumb */}
         {selectedFolderId && (
           <div className="border-b border-border px-4 py-2">
-            <button
+            <Button
               type="button"
+              variant="link"
               onClick={() => setSelectedFolderId(null)}
-              className="text-[10px] font-medium text-primary hover:underline"
+              className="text-[10px] font-medium h-auto p-0"
             >
               Root
-            </button>
+            </Button>
             <span className="text-[10px] text-text-muted"> / </span>
             <span className="text-[10px] font-medium text-foreground">
               {foldersResult.data?.find((f) => f.id === selectedFolderId)?.name}
@@ -165,12 +169,13 @@ export function DocFolderPickerModal({
         )}
 
         {/* Folder tree */}
-        <div className="overflow-auto py-1 max-h-[350px]">
-          <button
+        <ModulePanelBody className="py-1">
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => setSelectedFolderId(null)}
             className={cn(
-              "flex w-full items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer transition-colors",
+              "flex w-full items-center gap-2 px-3 py-1.5 rounded-lg justify-start h-auto",
               selectedFolderId === null
                 ? "bg-primary/10 text-primary"
                 : "text-foreground hover:bg-muted/50",
@@ -178,7 +183,7 @@ export function DocFolderPickerModal({
           >
             <Home className="h-3.5 w-3.5 shrink-0" />
             <span className="text-xs font-medium">Root</span>
-          </button>
+          </Button>
           {tree.map((node) => (
             <PickerFolderItem
               key={node.id}
@@ -188,26 +193,23 @@ export function DocFolderPickerModal({
               depth={0}
             />
           ))}
-        </div>
+        </ModulePanelBody>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-2 border-t border-border px-4 py-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-8 rounded-xl px-3 text-xs font-semibold text-text-muted hover:text-foreground transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={() => onSelect(selectedFolderId ?? undefined)}
-            className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-primary px-3 text-xs font-semibold text-white hover:bg-primary/90 transition-colors"
-          >
-            Move here
-          </button>
-        </div>
-      </div>
-    </div>
+        <ModulePanelFooter>
+          <div />
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" onClick={handleClose} className="h-8 rounded-xl px-3 text-xs">
+              Cancel
+            </Button>
+            <Button
+              onClick={() => onSelect(selectedFolderId ?? undefined)}
+              className="h-8 rounded-xl px-3 text-xs"
+            >
+              Move here
+            </Button>
+          </div>
+        </ModulePanelFooter>
+      </ModulePanelContent>
+    </ModulePanel>
   );
 }

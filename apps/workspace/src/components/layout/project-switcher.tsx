@@ -83,7 +83,7 @@ export function ProjectSwitcher() {
           <div
             role="combobox"
             aria-expanded={open}
-            className="flex h-9 items-center justify-between gap-2 rounded-lg border border-[var(--color-divider)] bg-background px-3 text-sm font-semibold transition-colors hover:bg-muted w-[220px]"
+            className="flex h-9 items-center justify-between gap-2 rounded-lg border border-border bg-background px-3 text-sm font-semibold transition-colors hover:bg-muted w-[220px]"
           >
             <div className="flex items-center gap-2 truncate">
               {isLoading ? (
@@ -100,7 +100,7 @@ export function ProjectSwitcher() {
                 </>
               ) : (
                 <>
-                  <div className="flex h-5 w-5 items-center justify-center rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                  <div className="flex h-5 w-5 items-center justify-center rounded bg-muted text-muted-foreground">
                     <FolderGit2 className="h-3.5 w-3.5" />
                   </div>
                   <span className="truncate">{activeProject.name}</span>
@@ -117,14 +117,14 @@ export function ProjectSwitcher() {
                 switchToGlobal();
                 setOpen(false);
               }}
-              className="flex w-full items-center px-2 py-1.5 text-sm font-medium rounded-lg hover:bg-[var(--color-divider)] transition-colors"
+              className="flex w-full items-center px-2 py-1.5 text-sm font-medium rounded-lg hover:bg-muted transition-colors"
             >
               <Globe className="me-2 h-4 w-4 text-muted-foreground" />
               {t("globalWorkspace")}
               {isGlobalMode && <Check className="ms-auto h-4 w-4" />}
             </button>
 
-            <div className="h-px bg-[var(--color-divider)] my-1" />
+            <div className="h-px bg-border my-1" />
 
             <div className="px-2 pt-1 pb-1 text-xs font-medium text-text-muted">{t("activeProjects")}</div>
             {isLoading ? (
@@ -147,22 +147,22 @@ export function ProjectSwitcher() {
                     setOpen(false);
                   }}
                   onContextMenu={(e) => handleContextMenu(e, project)}
-                  className="flex w-full items-center px-2 py-1.5 text-sm font-medium rounded-lg hover:bg-[var(--color-divider)] transition-colors"
+                  className="flex w-full items-center px-2 py-1.5 text-sm font-medium rounded-lg hover:bg-muted transition-colors"
                 >
-                  <FolderGit2 className="me-2 h-4 w-4 text-indigo-500" />
+                  <FolderGit2 className="me-2 h-4 w-4 text-muted-foreground" />
                   <span className="truncate">{project.name}</span>
                   {activeProject?.id === project.id && <Check className="ms-auto h-4 w-4" />}
                 </button>
               ))
             )}
 
-            <div className="h-px bg-[var(--color-divider)] my-1" />
+            <div className="h-px bg-border my-1" />
 
             <button
               onClick={() => {
                 setOpen(false);
               }}
-              className="flex w-full items-center px-2 py-1.5 text-xs text-text-muted rounded-lg hover:bg-[var(--color-divider)] transition-colors"
+              className="flex w-full items-center px-2 py-1.5 text-xs text-text-muted rounded-lg hover:bg-muted transition-colors"
             >
               {t("viewAllProjects")}
             </button>
@@ -171,7 +171,7 @@ export function ProjectSwitcher() {
                 setIsCreateModalOpen(true);
                 setOpen(false);
               }}
-              className="flex w-full items-center px-2 py-1.5 text-xs text-primary rounded-lg hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors"
+              className="flex w-full items-center px-2 py-1.5 text-xs text-primary rounded-lg hover:bg-muted transition-colors"
             >
               <Plus className="me-2 h-3.5 w-3.5" />
               {t("createNewProject")}
@@ -196,7 +196,7 @@ export function ProjectSwitcher() {
               setDeleteModal({ project: contextMenu.project });
               setContextMenu(null);
             }}
-            className="flex w-full items-center gap-2 px-2 py-1.5 text-sm font-medium rounded-md text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 transition-colors"
+            className="flex w-full items-center gap-2 px-2 py-1.5 text-sm font-medium rounded-md text-destructive hover:bg-destructive/10 transition-colors"
           >
             <Trash2 className="h-4 w-4" />
             Delete project

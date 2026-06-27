@@ -188,12 +188,12 @@ export function ResourceMediaBrowser({
       {operation.error && <p className="text-xs font-bold text-red-500">{operation.error}</p>}
 
       <Dialog open={viewerIndex !== null} onOpenChange={(open) => !open && setViewerIndex(null)}>
-        <DialogContent className="max-h-[90vh] max-w-5xl overflow-hidden rounded-2xl border-border bg-foreground p-0 text-white dark:border-white/10" overlayClassName="bg-black/75 supports-backdrop-filter:backdrop-blur-sm">
+        <DialogContent className="max-h-[90vh] max-w-5xl overflow-hidden rounded-2xl border-border bg-card p-0 text-card-foreground" overlayClassName="bg-black/75 supports-backdrop-filter:backdrop-blur-sm">
           {activeAsset && (
             <div className="grid max-h-[90vh] grid-rows-[auto_minmax(0,1fr)_auto]">
-              <DialogHeader className="border-b border-white/10 p-4 pe-14 text-start">
-                <DialogTitle className="text-sm font-black text-white">{title}</DialogTitle>
-                <DialogDescription className="text-xs font-bold text-white/45">{viewerIndex! + 1} / {assets.length}</DialogDescription>
+              <DialogHeader className="border-b p-4 pe-14 text-start">
+                <DialogTitle className="text-sm font-black text-foreground">{title}</DialogTitle>
+                <DialogDescription className="text-xs font-bold text-muted-foreground">{viewerIndex! + 1} / {assets.length}</DialogDescription>
               </DialogHeader>
               <div className="relative flex min-h-[48vh] items-center justify-center bg-black">
                 {activeAsset.kind === "image" ? (
@@ -202,22 +202,22 @@ export function ResourceMediaBrowser({
                   <video src={activeAsset.url} className="max-h-[70vh] w-full object-contain" controls />
                 )}
               </div>
-              <div className="flex items-center justify-between gap-3 border-t border-white/10 p-3">
-                <Button type="button" variant="outline" onClick={() => moveViewer(-1)} className="h-9 rounded-lg border-white/15 bg-white/5 text-white hover:bg-white/10">
+              <div className="flex items-center justify-between gap-3 border-t p-3">
+                <Button type="button" variant="outline" onClick={() => moveViewer(-1)} className="h-9 rounded-lg">
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <div className="flex items-center gap-1">
                   {activeAsset.kind === "image" && !activeAsset.isCover && (
-                    <Button type="button" variant="outline" onClick={() => operation.run(() => setMediaCoverRequest(activeAsset.organizationId, activeAsset._id), { successMessage: "Cover updated." })} className="h-9 rounded-lg border-white/15 bg-white/5 text-white hover:bg-white/10">
+                    <Button type="button" variant="outline" onClick={() => operation.run(() => setMediaCoverRequest(activeAsset.organizationId, activeAsset._id), { successMessage: "Cover updated." })} className="h-9 rounded-lg">
                       <Star className="me-2 h-3.5 w-3.5" />
                       {coverLabel}
                     </Button>
                   )}
-                  <Button type="button" variant="outline" onClick={() => operation.run(() => deleteMediaRequest(activeAsset.organizationId, activeAsset._id), { successMessage: "Media deleted.", onSuccess: () => setViewerIndex(null) })} className="h-9 rounded-lg border-red-500/40 bg-red-500/10 text-red-100 hover:bg-red-500/20">
+                  <Button type="button" variant="destructive" size="sm" onClick={() => operation.run(() => deleteMediaRequest(activeAsset.organizationId, activeAsset._id), { successMessage: "Media deleted.", onSuccess: () => setViewerIndex(null) })}>
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
-                <Button type="button" variant="outline" onClick={() => moveViewer(1)} className="h-9 rounded-lg border-white/15 bg-white/5 text-white hover:bg-white/10">
+                <Button type="button" variant="outline" onClick={() => moveViewer(1)} className="h-9 rounded-lg">
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>

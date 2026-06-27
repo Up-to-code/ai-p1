@@ -109,7 +109,7 @@ export function AcceptInviteScreen() {
         </p>
         {isSignedOut && (
           <Button
-            className="mt-6 h-11 rounded-2xl bg-primary px-6 text-primary-foreground hover:bg-black"
+            className="mt-6 h-11 rounded-2xl bg-primary px-6 text-primary-foreground hover:bg-primary/90"
             onClick={() => router.push(`/${locale}/sign-in?callbackURL=${encodeURIComponent(currentInvitePath)}`)}
           >
             <LogIn className="me-2 h-4 w-4" />

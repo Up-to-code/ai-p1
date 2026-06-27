@@ -55,7 +55,7 @@ export function IntegrationDetailMain({
           <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">{labels.permissionsTitle}</h2>
           <p className="text-xs font-medium leading-relaxed text-muted-foreground">{labels.permissionsDescription}</p>
         </div>
-        <ul className="divide-y divide-border overflow-hidden rounded-[14px] border border-border/80 bg-white dark:divide-white/[0.05] dark:border-white/[0.06] dark:bg-white/[0.02]">
+        <ul className="divide-y divide-border overflow-hidden rounded-[12px] border border-border/80 bg-white dark:divide-white/[0.05] dark:border-white/[0.06] dark:bg-white/[0.02]">
           {mockDetails.scopesExplained.map((scopeItem) => (
             <li key={scopeItem.scope} className="flex gap-3 p-4 text-start">
               <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/25 dark:text-emerald-400">
@@ -102,7 +102,7 @@ export function IntegrationDetailMain({
         <div ref={carouselRef} className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-border dark:scrollbar-thumb-border" dir="ltr">
           <div
             onClick={() => onOpenMedia("video")}
-            className="group relative aspect-video w-[280px] sm:w-[460px] shrink-0 snap-center rounded-[14px] border border-border/80 bg-foreground dark:border-white/[0.06] overflow-hidden flex flex-col justify-between p-4 cursor-pointer"
+            className="group relative aspect-video w-[280px] sm:w-[460px] shrink-0 snap-center rounded-[12px] border border-border/80 bg-foreground dark:border-white/[0.06] overflow-hidden flex flex-col justify-between p-4 cursor-pointer"
           >
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-0 group-hover:from-black/95 transition-all duration-300" />
             <div className="absolute inset-0 flex items-center justify-center z-10">
@@ -131,7 +131,7 @@ export function IntegrationDetailMain({
 
           <div
             onClick={() => onOpenMedia("screenshot")}
-            className="aspect-video w-[280px] sm:w-[460px] shrink-0 snap-center rounded-[14px] overflow-hidden border border-border/80 dark:border-white/[0.06] shadow-sm bg-foreground cursor-pointer hover:opacity-95 transition-opacity"
+            className="aspect-video w-[280px] sm:w-[460px] shrink-0 snap-center rounded-[12px] overflow-hidden border border-border/80 dark:border-white/[0.06] shadow-sm bg-foreground cursor-pointer hover:opacity-95 transition-opacity"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={mockDetails.screenshotImgUrl} alt="" className="h-full w-full object-cover" />

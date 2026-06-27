@@ -506,9 +506,9 @@ export function QentrahComposerDock({
               ]}
             >
               {isStreaming ? (
-                <Square size={15} color="#FFFFFF" fill="#FFFFFF" />
+                <Square size={15} color={colors.accentForeground} fill={colors.accentForeground} />
               ) : (
-                <ArrowUp size={19} color={canSubmit ? "#FFFFFF" : colors.textMuted} strokeWidth={2.5} />
+                <ArrowUp size={19} color={canSubmit ? colors.accentForeground : colors.textMuted} strokeWidth={2.5} />
               )}
             </Pressable>
           </View>

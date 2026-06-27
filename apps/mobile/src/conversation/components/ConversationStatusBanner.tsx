@@ -39,7 +39,7 @@ export function ConversationStatusBanner({
 
   const iconColor = useMemo(() => {
     switch (tone) {
-      case "error": return "#EF4444";
+      case "error": return colors.danger;
       case "warning": return colors.accent;
       default: return colors.textSecondary;
     }

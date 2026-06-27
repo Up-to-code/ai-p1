@@ -14,7 +14,7 @@ export function NoOrganizationState({ title, description, action, href }: { titl
         </div>
         <h1 className="mt-5 text-xl font-black uppercase tracking-tight text-foreground">{title}</h1>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
-        <Link href={href} className={cn(buttonVariants(), "mt-6 h-11 rounded-xl bg-primary px-6 text-[10px] font-black uppercase tracking-widest text-primary-foreground hover:bg-black")}>
+        <Link href={href} className={cn(buttonVariants(), "mt-6 h-11 rounded-xl bg-primary px-6 text-[10px] font-black uppercase tracking-widest text-primary-foreground hover:bg-primary/90")}>
           {action}
         </Link>
       </div>

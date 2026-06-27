@@ -26,8 +26,8 @@ function SessionCheckLoading() {
   return (
     <div className="flex h-full overflow-hidden bg-background text-text-primary">
       {/* Skeleton sidebar */}
-      <aside className="relative flex h-screen w-64 shrink-0 flex-col overflow-hidden border-e border-[var(--color-divider)] bg-background">
-        <div className="flex h-14 shrink-0 items-center border-b border-[var(--color-divider)] px-4">
+      <aside className="relative flex h-screen w-64 shrink-0 flex-col overflow-hidden border-e border-border/50 bg-background">
+        <div className="flex h-14 shrink-0 items-center border-b border-border/50 px-4">
           <div className="flex items-center gap-2.5">
             <Skeleton className="h-8 w-8 rounded-xl" />
             <Skeleton className="h-4 w-28 rounded-full" />
@@ -37,7 +37,7 @@ function SessionCheckLoading() {
           {[0, 1, 2, 3, 4].map((i) => (
             <Skeleton key={i} className="h-9 w-full rounded-xl" />
           ))}
-          <div className="my-2 h-px bg-[var(--color-divider)]" />
+          <div className="my-2 h-px bg-border/50" />
           <div className="mb-1 pt-2">
             <Skeleton className="h-3 w-16 rounded-full" />
           </div>
@@ -45,7 +45,7 @@ function SessionCheckLoading() {
             <Skeleton key={`t-${i}`} className="h-9 w-full rounded-xl" />
           ))}
         </nav>
-        <div className="flex flex-col gap-1 border-t border-[var(--color-divider)] px-3 py-3">
+        <div className="flex flex-col gap-1 border-t border-border/50 px-3 py-3">
           {[0, 1].map((i) => (
             <Skeleton key={`s-${i}`} className="h-9 w-full rounded-xl" />
           ))}
@@ -62,7 +62,7 @@ function SessionCheckLoading() {
       {/* Skeleton main area */}
       <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background">
         {/* Skeleton topbar */}
-        <header className="flex h-16 items-center gap-4 border-b border-[var(--color-divider)] bg-background/95 px-8">
+        <header className="flex h-16 items-center gap-4 border-b border-border/50 bg-background/95 px-8">
           <Skeleton className="h-8 w-8 rounded-lg" />
           <Skeleton className="h-9 w-[220px] rounded-lg" />
           <Skeleton className="h-9 w-64 rounded-lg" />
@@ -70,7 +70,7 @@ function SessionCheckLoading() {
           <Skeleton className="h-8 w-24 rounded-lg" />
           <Skeleton className="h-8 w-8 rounded-full" />
           <Skeleton className="h-10 w-10 rounded-full" />
-          <div className="ms-2 border-l border-[var(--color-divider)] ps-4">
+          <div className="ms-2 border-l border-border/50 ps-4">
             <Skeleton className="h-9 w-9 rounded-full" />
           </div>
         </header>
@@ -92,7 +92,7 @@ function SessionCheckLoading() {
                   </div>
                   <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
                     {[0, 1, 2].map((item) => (
-                      <Skeleton className="h-[232px] rounded-[22px]" key={item} />
+                      <Skeleton className="h-[232px] rounded-[20px]" key={item} />
                     ))}
                   </div>
                 </section>
@@ -187,7 +187,7 @@ function ChooseOrganizationRouteLoading() {
             <Skeleton className="h-4 w-96 max-w-full rounded-full" />
             <Skeleton className="h-4 w-72 max-w-full rounded-full" />
           </div>
-          <div className="overflow-hidden rounded-[28px] border border-border bg-background">
+          <div className="overflow-hidden rounded-[24px] border border-border bg-background">
             <div className="space-y-3 p-5">
               {[0, 1, 2].map((item) => (
                 <div className="flex items-center gap-4 rounded-2xl border border-border bg-surface p-4" key={item}>
@@ -224,7 +224,7 @@ function OnboardingRouteLoading() {
             ))}
           </div>
         </div>
-        <div className="w-full rounded-[28px] border border-border bg-background p-6">
+        <div className="w-full rounded-[24px] border border-border bg-background p-6">
           <div className="space-y-5">
             <Skeleton className="h-6 w-52 rounded-full" />
             <Skeleton className="h-4 w-80 max-w-full rounded-full" />
@@ -263,7 +263,7 @@ function AppRouteLoading() {
               </div>
               <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
                 {[0, 1, 2].map((item) => (
-                  <Skeleton className="h-[232px] rounded-[22px]" key={item} />
+                  <Skeleton className="h-[232px] rounded-[20px]" key={item} />
                 ))}
               </div>
             </section>

@@ -28,9 +28,9 @@ export function SearchRow({ description, icon: Icon, onClick, title }: SearchRow
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center gap-3 rounded-[18px] border border-transparent px-3 py-2.5 text-start transition hover:border-[var(--color-divider)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+      className="flex w-full items-center gap-3 rounded-[16px] border border-transparent px-3 py-2.5 text-start transition hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--color-divider)] text-text-secondary">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/50 text-text-secondary">
         <Icon className="h-4 w-4" />
       </span>
       <span className="min-w-0 flex-1">

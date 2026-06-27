@@ -228,7 +228,7 @@ export function EmailAuthSheet({ callbackURL, mode: providedMode, onClose, visib
   const inputDisabled = busy || sessionHandoffPending;
   const resendDisabled = inputDisabled || resendBusy || resendCooldown > 0;
   const resendLabel = resendBusy ? "Sending..." : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend";
-  const submitSpinnerColor = resolvedColorScheme === "light" ? "#FFFFFF" : "#111111";
+  const submitSpinnerColor = resolvedColorScheme === "light" ? colors.surface : colors.background;
 
   const content = (
     <KeyboardAvoidingView
@@ -449,15 +449,15 @@ const createStyles = (colors: AppColors, metrics: {
 }, resolvedColorScheme: "light" | "dark") => {
   const isLight = resolvedColorScheme === "light";
   const palette = {
-    sheet: isLight ? "#FFFFFF" : "#1C1C1E",
+    sheet: colors.card,
     field: isLight ? "#F2F2F7" : "#2C2C2E",
     fieldBorder: isLight ? "rgba(60,60,67,0.10)" : "rgba(84,84,88,0.34)",
-    muted: isLight ? "#6E6E73" : "#AEAEB2",
-    legal: isLight ? "#6E6E73" : "#A1A1AA",
-    primary: isLight ? "#111111" : "#FFFFFF",
-    primaryText: isLight ? "#FFFFFF" : "#000000",
+    muted: colors.textMuted,
+    legal: colors.textSecondary,
+    primary: colors.accent,
+    primaryText: colors.background,
     disabled: isLight ? "#D1D1D6" : "#3A3A3C",
-    grabber: isLight ? "#D1D1D6" : "#48484A",
+    grabber: colors.border,
   };
 
   return StyleSheet.create({

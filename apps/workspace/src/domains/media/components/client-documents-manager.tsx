@@ -386,7 +386,7 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
       {mediaOperation.error && !shareAssetId && <p className="text-xs font-bold text-red-500">{mediaOperation.error}</p>}
 
       <Dialog open={Boolean(shareAssetId)} onOpenChange={closeShareDialog}>
-        <DialogContent className="max-w-lg overflow-hidden rounded-[28px] border-border bg-card p-0 shadow-none">
+        <DialogContent className="max-w-lg overflow-hidden rounded-[24px] border-border bg-card p-0 shadow-none">
           <DialogHeader className="border-b border-border p-5">
             <DialogTitle className="text-lg font-black tracking-tight">{t("shareTitle")}</DialogTitle>
             <DialogDescription className="text-xs font-semibold text-muted-foreground">
@@ -401,7 +401,7 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
             </div>
           ) : (
             <div className="space-y-4 p-5">
-              <div className="rounded-[22px] border border-border bg-muted p-4">
+              <div className="rounded-[20px] border border-border bg-muted p-4">
                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("currentFile")}</p>
                 <p className="mt-2 truncate text-sm font-black text-foreground" title={activeShareAsset.name}>
                   {activeShareAsset.name}
@@ -422,7 +422,7 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
                       onClick={() => void updateVisibility(activeShareAsset, opt.value)}
                       disabled={mediaOperation.isRunning || isSelected || !organizationId}
                       className={cn(
-                        "min-h-24 rounded-[22px] border p-4 text-start transition cursor-pointer select-none outline-none",
+                        "min-h-24 rounded-[20px] border p-4 text-start transition cursor-pointer select-none outline-none",
                         isSelected
                           ? "border-foreground bg-foreground text-white dark:border-secondary dark:bg-secondary dark:text-foreground"
                           : "border-border bg-card text-foreground hover:border-border/60 hover:bg-muted/30",
@@ -455,7 +455,7 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
                 })}
               </div>
 
-              <div className="rounded-[22px] border border-border bg-card p-3">
+              <div className="rounded-[20px] border border-border bg-card p-3">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("shareLink")}</p>
@@ -509,7 +509,7 @@ export function ClientDocumentsManager({ organizationId, clientId }: ClientDocum
       </Dialog>
 
       <Dialog open={isUploadOpen} onOpenChange={closeUploadDialog}>
-        <DialogContent className="max-w-2xl rounded-[28px] border-border bg-card p-0 shadow-none">
+        <DialogContent className="max-w-2xl rounded-[24px] border-border bg-card p-0 shadow-none">
           <DialogHeader className="border-b border-border p-5">
             <DialogTitle className="text-lg font-black tracking-tight">{t("uploadTitle")}</DialogTitle>
             <DialogDescription className="text-xs font-semibold text-muted-foreground">

@@ -17,7 +17,7 @@ export function TopbarActions() {
     <div className="flex items-center gap-2">
       <TopbarShareSection organizationId={organizationId} />
       <TopbarAssistantButton />
-      <div className="ms-2 border-l border-[var(--color-divider)] ps-4">
+      <div className="ms-2 border-l border-border/50 ps-4">
         <ProfileMenu />
       </div>
     </div>

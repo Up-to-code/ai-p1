@@ -43,7 +43,7 @@ export function DealBoard({
           <section
             key={stage}
             className={cn(
-              "flex min-h-[420px] w-[min(100%,280px)] shrink-0 flex-col rounded-[28px] border p-3 transition-all duration-300",
+              "flex min-h-[420px] w-[min(100%,280px)] shrink-0 flex-col rounded-[24px] border p-3 transition-all duration-300",
               isDragOver
                 ? "border-[var(--q-accent)] bg-[var(--q-accent-muted)] ring-4 ring-[var(--q-accent-border)]"
                 : "border-border bg-muted/50/40 dark:border-white/5 dark:bg-white/[0.01]",

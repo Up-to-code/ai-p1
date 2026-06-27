@@ -23,7 +23,7 @@ export function AuthCallbackClient({ callbackURL, locale }: AuthCallbackClientPr
   return (
     <main className="flex min-h-svh items-center justify-center overflow-hidden bg-[oklch(97.5%_0.006_255)] px-4 text-foreground dark:bg-[oklch(8.5%_0.012_255)]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,oklch(91%_0.03_255)_0%,transparent_34%),linear-gradient(180deg,transparent,oklch(94%_0.01_255))] dark:bg-[radial-gradient(circle_at_50%_42%,oklch(22%_0.04_255)_0%,transparent_34%),linear-gradient(180deg,transparent,oklch(8.5%_0.012_255))]" />
-      <div className="relative w-full max-w-sm rounded-[28px] border border-[oklch(88%_0.014_255)] bg-[oklch(99%_0.004_255)] p-5 dark:border-white/10 dark:bg-[oklch(13%_0.016_255)]">
+      <div className="relative w-full max-w-sm rounded-[24px] border border-[oklch(88%_0.014_255)] bg-[oklch(99%_0.004_255)] p-5 dark:border-white/10 dark:bg-[oklch(13%_0.016_255)]">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-surface">

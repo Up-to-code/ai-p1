@@ -134,8 +134,8 @@ export function ChatDrawerContent({
       workspace.activeOrganization,
       t.workspaceAccess.untitledWorkspace,
     );
-  const inverseBackground = resolvedColorScheme === "dark" ? "#FFFFFF" : "#000000";
-  const inverseForeground = resolvedColorScheme === "dark" ? "#000000" : "#FFFFFF";
+  const inverseBackground = colors.textPrimary;
+  const inverseForeground = colors.background;
 
   const handleNewThread = () => {
     clearDraft();
@@ -380,7 +380,7 @@ const createStyles = (colors: AppColors, isRTL: boolean, metrics: MobileDrawerMe
     borderRadius: metrics.avatar / 2,
   },
   headerAvatarText: {
-    color: "#FFFFFF",
+    color: colors.accentForeground,
     fontSize: metrics.avatarText,
     fontFamily: "Manrope_700Bold",
     fontWeight: "800",

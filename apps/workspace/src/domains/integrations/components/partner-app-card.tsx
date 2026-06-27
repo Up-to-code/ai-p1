@@ -48,7 +48,7 @@ export function PartnerAppCard({
   }
 
   return (
-    <article className="flex w-full md:w-[calc(50%-8px)] lg:w-[calc(33.33%-11px)] flex-col justify-between rounded-[14px] border border-border/80 bg-white p-5 text-start transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-sm dark:border-white/[0.06] dark:bg-white/[0.02] dark:hover:border-white/10 dark:hover:shadow-black/20" dir="auto">
+    <article className="flex w-full md:w-[calc(50%-8px)] lg:w-[calc(33.33%-11px)] flex-col justify-between rounded-[12px] border border-border/80 bg-white p-5 text-start transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-sm dark:border-white/[0.06] dark:bg-white/[0.02] dark:hover:border-white/10 dark:hover:shadow-black/20" dir="auto">
       <div className="space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">

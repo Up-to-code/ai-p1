@@ -58,7 +58,7 @@ export default async function PublicFilePage({ params }: PublicFilePageProps) {
               target="_blank"
               rel="noreferrer"
               download={asset.name}
-              className="inline-flex h-10 items-center justify-center rounded-xl bg-muted px-4 text-xs font-black uppercase tracking-widest text-white transition hover:bg-muted dark:bg-white dark:text-foreground dark:hover:bg-muted"
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-muted px-4 text-xs font-black uppercase tracking-widest text-foreground transition hover:bg-muted dark:bg-white dark:text-foreground dark:hover:bg-muted"
             >
               <Download className="me-2 h-4 w-4" />
               Download

@@ -19,7 +19,7 @@ export type OwnershipFilter = (typeof ownershipFilters)[number];
 
 export const STATUS_DOT: Record<TaskStatus, string> = {
   todo: "bg-[#A3A3A3]",
-  inProgress: "bg-[#3B82F6]",
+  inProgress: "bg-[var(--q-info)]",
   waiting: "bg-[#F59E0B]",
   done: "bg-[#10B981]",
   canceled: "bg-[#6B6B6B]",

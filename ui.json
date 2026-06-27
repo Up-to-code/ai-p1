@@ -1,8 +1,8 @@
 {
   "meta": {
     "name": "Qentrah OS Design Tokens",
-    "description": "Communication First design system — shadcn/ui CSS variable tokens for Next.js + Tailwind v4. Apple-like minimalism with domain-specific colors for agents, networks, and automation.",
-    "version": "1.0.0",
+    "description": "Communication First design system — shadcn/ui CSS variable tokens. Apple-like minimalism with domain-specific colors.",
+    "version": "1.1.0",
     "usage": "CSS variables via @theme in globals.css. Dark mode via .dark class (workspace) or [data-theme=\"dark\"] (marketing)."
   },
   "color": {
@@ -10,68 +10,68 @@
       "background":             { "value": "#FAF8F4", "css": "--background",            "note": "Page bg — warm off-white" },
       "foreground":             { "value": "#111111", "css": "--foreground",            "note": "Primary text — near-black" },
       "card":                   { "value": "#FFFFFF", "css": "--card",                  "note": "Card / panel surface — pure white" },
-      "card-foreground":        { "value": "#111111", "css": "--card-foreground",       "note": "Text on cards" },
+      "card-foreground":        { "value": "#111111", "css": "--card-foreground" },
       "popover":                { "value": "#FFFFFF", "css": "--popover" },
-      "popover-foreground":     { "value": "#111111", "css": "--popover-foreground",   "note": "Menu text" },
+      "popover-foreground":     { "value": "#111111", "css": "--popover-foreground" },
       "primary":                { "value": "#111111", "css": "--primary",               "note": "Brand accent — near-black (Apple convention)" },
       "primary-hover":          { "value": "#222222", "css": "--primary-hover" },
       "primary-active":         { "value": "#000000", "css": "--primary-active" },
       "primary-foreground":     { "value": "#FFFFFF", "css": "--primary-foreground" },
-      "secondary":              { "value": "#F5F2EC", "css": "--secondary",             "note": "Sidebar, subtle surface — warm gray" },
+      "secondary":              { "value": "#F5F2EC", "css": "--secondary",             "note": "Subtle surface — warm gray" },
       "secondary-foreground":   { "value": "#111111", "css": "--secondary-foreground" },
       "muted":                  { "value": "#EFEAE2", "css": "--muted",                 "note": "Fields, disabled bg — warm cream" },
-      "muted-foreground":       { "value": "#4D4D4D", "css": "--muted-foreground",      "note": "Secondary / helper text" },
+      "muted-foreground":       { "value": "#4D4D4D", "css": "--muted-foreground" },
       "accent":                 { "value": "#EAE6DF", "css": "--accent",                "note": "Hover surface" },
       "accent-foreground":      { "value": "#111111", "css": "--accent-foreground" },
       "destructive":            { "value": "#A55B52", "css": "--destructive" },
       "destructive-foreground": { "value": "#FFFFFF", "css": "--destructive-foreground" },
       "border":                 { "value": "#DED8CF", "css": "--border",                "note": "Dividers — warm gray" },
-      "border-strong":          { "value": "#D5CEC4", "css": "--border-strong",         "note": "Emphasized borders" },
+      "border-strong":          { "value": "#D5CEC4", "css": "--border-strong" },
       "input":                  { "value": "#FFFFFF", "css": "--input" },
       "ring":                   { "value": "#111111", "css": "--ring",                  "note": "Focus ring" },
-      "topbar-bg":              { "value": "#FAF8F4", "css": "--q-topbar",              "note": "Topbar matches page bg" },
-      "topbar-btn":             { "value": "#111111", "css": "--q-topbar-btn",           "note": "Near-black button in light" }
+      "topbar-bg":              { "value": "#FAF8F4", "css": "--q-topbar" },
+      "topbar-btn":             { "value": "#111111", "css": "--q-topbar-btn" }
     },
     "dark": {
-      "background":             { "value": "#0E0E0E", "css": "--background",            "note": "Page bg — near-black" },
-      "foreground":             { "value": "#F5F2EC", "css": "--foreground",            "note": "Primary text — warm white" },
-      "card":                   { "value": "#161616", "css": "--card",                  "note": "Card / panel surface" },
-      "card-foreground":        { "value": "#F5F2EC", "css": "--card-foreground",       "note": "Text on cards" },
-      "popover":                { "value": "#161616", "css": "--popover" },
-      "popover-foreground":     { "value": "#F5F2EC", "css": "--popover-foreground",   "note": "Menu text" },
-      "primary":                { "value": "#F5F2EC", "css": "--primary",               "note": "Brand accent — warm white in dark" },
+      "background":             { "value": "#080808", "css": "--background" },
+      "foreground":             { "value": "#F5F2EC", "css": "--foreground" },
+      "card":                   { "value": "#111111", "css": "--card" },
+      "card-foreground":        { "value": "#F5F2EC", "css": "--card-foreground" },
+      "popover":                { "value": "#111111", "css": "--popover" },
+      "popover-foreground":     { "value": "#F5F2EC", "css": "--popover-foreground" },
+      "primary":                { "value": "#F5F2EC", "css": "--primary" },
       "primary-hover":          { "value": "#EFEAE2", "css": "--primary-hover" },
       "primary-active":         { "value": "#DED8CF", "css": "--primary-active" },
-      "primary-foreground":     { "value": "#0E0E0E", "css": "--primary-foreground" },
-      "secondary":              { "value": "#1F1F1F", "css": "--secondary",             "note": "Sidebar — dark gray" },
+      "primary-foreground":     { "value": "#080808", "css": "--primary-foreground" },
+      "secondary":              { "value": "#111111", "css": "--secondary" },
       "secondary-foreground":   { "value": "#F5F2EC", "css": "--secondary-foreground" },
-      "muted":                  { "value": "#1F1F1F", "css": "--muted" },
-      "muted-foreground":       { "value": "#BFB8AE", "css": "--muted-foreground",      "note": "Secondary text" },
-      "accent":                 { "value": "#262626", "css": "--accent" },
+      "muted":                  { "value": "#111111", "css": "--muted" },
+      "muted-foreground":       { "value": "#BFB8AE", "css": "--muted-foreground" },
+      "accent":                 { "value": "#1C1C1C", "css": "--accent" },
       "accent-foreground":      { "value": "#F5F2EC", "css": "--accent-foreground" },
       "destructive":            { "value": "#C5776D", "css": "--destructive" },
-      "destructive-foreground": { "value": "#0E0E0E", "css": "--destructive-foreground" },
-      "border":                 { "value": "#2C2C2C", "css": "--border",                "note": "Hairline borders" },
-      "border-strong":          { "value": "#3A3A3A", "css": "--border-strong",         "note": "Emphasized borders" },
-      "input":                  { "value": "#1F1F1F", "css": "--input" },
+      "destructive-foreground": { "value": "#080808", "css": "--destructive-foreground" },
+      "border":                 { "value": "#222222", "css": "--border" },
+      "border-strong":          { "value": "#2A2A2A", "css": "--border-strong" },
+      "input":                  { "value": "#111111", "css": "--input" },
       "ring":                   { "value": "#F5F2EC", "css": "--ring" },
-      "topbar-bg":              { "value": "#0E0E0E", "css": "--q-topbar",              "note": "Topbar matches page bg in dark" },
+      "topbar-bg":              { "value": "#080808", "css": "--q-topbar" },
       "topbar-btn":             { "value": "#F5F2EC", "css": "--q-topbar-btn" }
     },
     "semantic": {
-      "success": { "value": "#5F7768", "dark": "#7F9987", "css": "--q-success", "note": "Done / running" },
-      "warning": { "value": "#B78544", "dark": "#D4A56C", "css": "--q-warning", "note": "In review / queued" },
-      "error":   { "value": "#A55B52", "dark": "#C5776D", "css": "--q-error",   "note": "Blocked / failed / destructive" },
-      "info":    { "value": "#4388FF", "dark": "#5B9CFF", "css": "--q-info",    "note": "In progress" },
-      "note":    { "value": "#8A5CFF", "dark": "#8A5CFF", "css": "--q-note",    "note": "Draft / neutral" }
+      "success": { "value": "#5F7768", "dark": "#7F9987", "css": "--q-success" },
+      "warning": { "value": "#B78544", "dark": "#D4A56C", "css": "--q-warning" },
+      "error":   { "value": "#A55B52", "dark": "#C5776D", "css": "--q-error" },
+      "info":    { "value": "#4388FF", "dark": "#5B9CFF", "css": "--q-info" },
+      "note":    { "value": "#8A5CFF", "dark": "#8A5CFF", "css": "--q-note" }
     },
     "domain": {
-      "networkBlue":       { "value": "#4F80FF", "css": "--q-network-blue",       "note": "Network connections, links" },
-      "agentPurple":       { "value": "#8A5CFF", "css": "--q-agent-purple",       "note": "Agent nodes, AI elements" },
-      "humanGreen":        { "value": "#2BB673", "css": "--q-human-green",        "note": "Human actors, users" },
-      "automationOrange":  { "value": "#FF9A3D", "css": "--q-automation-orange",  "note": "Automation flows, triggers" },
-      "dataCyan":          { "value": "#00A3FF", "css": "--q-data-cyan",          "note": "Data nodes, pipelines" },
-      "systemGray":        { "value": "#5D6570", "css": "--q-system-gray",        "note": "System-level, infrastructure" }
+      "networkBlue":       { "value": "#4F80FF", "css": "--q-network-blue" },
+      "agentPurple":       { "value": "#8A5CFF", "css": "--q-agent-purple" },
+      "humanGreen":        { "value": "#2BB673", "css": "--q-human-green" },
+      "automationOrange":  { "value": "#FF9A3D", "css": "--q-automation-orange" },
+      "dataCyan":          { "value": "#00A3FF", "css": "--q-data-cyan" },
+      "systemGray":        { "value": "#5D6570", "css": "--q-system-gray" }
     }
   },
   "typography": {
@@ -82,25 +82,16 @@
     "letterSpacingRtl": { "value": "0",       "note": "Arabic / RTL — no tracking" }
   },
   "radius": {
-    "none": "0px",
-    "xs":   "6px",
-    "sm":   "10px",
-    "md":   "14px",
-    "lg":   "18px",
-    "xl":   "24px",
-    "2xl":  "32px",
-    "3xl":  "40px",
-    "pill": "9999px"
+    "none": "0px", "xs": "4px", "sm": "6px", "md": "8px", "lg": "10px",
+    "xl": "12px", "2xl": "16px", "3xl": "20px", "4xl": "24px", "pill": "999px"
   },
   "elevation": {
-    "sm": "0 4px 12px rgba(0, 0, 0, 0.04)",
+    "sm": "0 2px 8px rgba(0, 0, 0, 0.06)",
     "md": "0 8px 24px rgba(0, 0, 0, 0.08)",
     "lg": "0 16px 48px rgba(0, 0, 0, 0.12)"
   },
   "motion": {
-    "duration": {
-      "instant": "80ms", "fast": "150ms", "normal": "250ms", "slow": "400ms", "slower": "700ms"
-    },
+    "duration": { "fast": "150ms", "normal": "200ms", "slow": "300ms" },
     "easing": {
       "default": "cubic-bezier(0.22, 1, 0.36, 1)",
       "smooth": "cubic-bezier(0.16, 1, 0.3, 1)"
@@ -108,14 +99,16 @@
   },
   "layout": {
     "sidebarWidth":   "280px",
-    "topbarHeight":   "72px",
+    "sidebarCollapsed": "72px",
+    "topbarHeight":   "64px",
     "contentPadding": "24px",
-    "cardGap":        "20px"
+    "cardGap":        "20px",
+    "modalWidth":     "720px"
   },
   "principles": {
-    "communicationFirst": "Every component feels like a node in a communication network. Agents, humans, data, and automation are visualized as connected entities.",
-    "appleMinimalism": "Near-black primary in light mode, pure white in dark. Warm off-white backgrounds. Extreme restraint in decoration.",
-    "calmTechnology": "Invisible complexity. The interface recedes, letting the communication and orchestration take center stage.",
-    "domainColors": "Six domain colors for network, agent, human, automation, data, and system — enabling visual language for the communication graph."
+    "communicationFirst": "Every component feels like a node in a communication network.",
+    "appleMinimalism": "Near-black primary in light mode, pure white in dark. Warm off-white backgrounds.",
+    "calmTechnology": "Invisible complexity. The interface recedes.",
+    "domainColors": "Six domain colors for network, agent, human, automation, data, and system."
   }
 }

@@ -9,7 +9,7 @@ export function OrganizationSettingsSkeleton({ label, compact }: { label: string
       <div className="border-b border-border bg-card">
         <div className="mx-auto max-w-5xl px-6 py-10">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-            <Skeleton className="h-24 w-24 shrink-0 rounded-[28px]" />
+            <Skeleton className="h-24 w-24 shrink-0 rounded-[24px]" />
             <div className="min-w-0 flex-1 space-y-3">
               <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -22,7 +22,7 @@ export function OrganizationSettingsSkeleton({ label, compact }: { label: string
                 <Skeleton className="h-5 w-20 rounded-full" />
               </div>
             </div>
-            <Skeleton className="h-11 w-28 rounded-[22px]" />
+            <Skeleton className="h-11 w-28 rounded-[20px]" />
           </div>
           <div className="mt-8 flex gap-2">
             <Skeleton className="h-10 w-28 rounded-t-xl" />

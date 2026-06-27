@@ -18,7 +18,7 @@ export default function AppLoading() {
               </div>
               <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
                 {[0, 1, 2].map((item) => (
-                  <Skeleton className="h-[232px] rounded-[22px]" key={item} />
+                  <Skeleton className="h-[232px] rounded-[20px]" key={item} />
                 ))}
               </div>
             </section>

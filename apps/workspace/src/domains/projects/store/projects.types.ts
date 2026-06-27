@@ -21,4 +21,5 @@ export interface Project {
   teamMemberIds?: string[];
   _creationTime: number;
   syncState?: "draft" | "blocked" | "synced";
+  dataVersion?: number;
 }

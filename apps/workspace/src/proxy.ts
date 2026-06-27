@@ -2,11 +2,9 @@ import createMiddleware from 'next-intl/middleware';
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse, type NextRequest } from "next/server";
 import * as Sentry from "@sentry/nextjs";
-import { brandDomainUrl } from "@qentrah/brand-identity";
 import { routing } from './i18n/routing';
 
 const intlMiddleware = createMiddleware(routing);
-const marketingUrl = brandDomainUrl("root");
 
 const protectedRouteSegments = new Set([
   "activity",
@@ -86,9 +84,8 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
 
     // Handle protected routes
     if (isProtectedRoute(request)) {
-      // Protect the route - redirect to marketing if not authenticated
       await auth.protect({
-        unauthenticatedUrl: `${marketingUrl}/${locale}`,
+        unauthenticatedUrl: `/${locale}/sign-in`,
       });
 
       // NOTE: We no longer redirect to /choose-org here.

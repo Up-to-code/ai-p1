@@ -204,7 +204,7 @@ export function OrganizationLogoUploader({
 
   return (
     <>
-      <div className="relative h-24 w-24 shrink-0 rounded-[28px] border border-border bg-card">
+      <div className="relative h-24 w-24 shrink-0 rounded-[24px] border border-border bg-card">
         <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-[27px]">
           {logo ? (
             <img src={logo} alt={name} className="h-full w-full object-cover" />
@@ -245,16 +245,16 @@ export function OrganizationLogoUploader({
       </div>
 
       <Dialog open={Boolean(file)} onOpenChange={(open) => !open && closeCropper()}>
-        <DialogContent className="max-w-md rounded-[28px] border-border bg-card p-6 shadow-none">
+        <DialogContent className="max-w-md rounded-[24px] border-border bg-card p-6 shadow-none">
           <DialogHeader>
             <DialogTitle className="text-xl font-black uppercase tracking-tight">{labels.cropTitle}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-5">
-            <div className="overflow-hidden rounded-[28px] border border-border bg-muted">
+            <div className="overflow-hidden rounded-[24px] border border-border bg-muted">
               <div
                 className={cn(
-                  "relative mx-auto aspect-square w-full max-w-sm touch-none select-none overflow-hidden rounded-[28px]",
+                  "relative mx-auto aspect-square w-full max-w-sm touch-none select-none overflow-hidden rounded-[24px]",
                   isUploading ? "cursor-wait" : isPanning ? "cursor-grabbing" : "cursor-grab",
                 )}
                 onPointerDown={startPan}
@@ -294,7 +294,7 @@ export function OrganizationLogoUploader({
                     className="pointer-events-none h-full w-full object-contain opacity-0"
                   />
                 )}
-                <div className="pointer-events-none absolute inset-0 rounded-[28px] ring-2 ring-inset ring-white/80 dark:ring-white/40" />
+                <div className="pointer-events-none absolute inset-0 rounded-[24px] ring-2 ring-inset ring-white/80 dark:ring-white/40" />
                 <div className="pointer-events-none absolute left-1/3 top-0 h-full w-px bg-white/35" />
                 <div className="pointer-events-none absolute left-2/3 top-0 h-full w-px bg-white/35" />
                 <div className="pointer-events-none absolute left-0 top-1/3 h-px w-full bg-white/35" />
@@ -337,7 +337,7 @@ export function OrganizationLogoUploader({
               <X className="me-2 h-4 w-4" />
               {labels.cancel}
             </Button>
-            <Button type="button" onClick={applyLogo} disabled={isUploading} className="rounded-full bg-primary px-6 text-primary-foreground hover:bg-black">
+            <Button type="button" onClick={applyLogo} disabled={isUploading} className="rounded-full bg-primary px-6 text-primary-foreground hover:bg-primary/90">
               {isUploading ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Check className="me-2 h-4 w-4" />}
               {labels.apply}
             </Button>

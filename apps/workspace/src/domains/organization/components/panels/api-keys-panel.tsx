@@ -159,7 +159,7 @@ export function ApiKeysPanel({
           <Button
             disabled={!canCreate}
             onClick={openCreateDialog}
-            className="h-10 rounded-lg bg-primary px-4 text-[9px] font-black uppercase tracking-widest text-primary-foreground hover:bg-black"
+            className="h-10 rounded-lg bg-primary px-4 text-[9px] font-black uppercase tracking-widest text-primary-foreground hover:bg-primary/90"
           >
             <Plus className="me-1.5 h-3.5 w-3.5" />
             {t("newButton")}
@@ -289,7 +289,7 @@ export function ApiKeysPanel({
                 <Input id="apiKeySecret" readOnly dir="ltr" value={oneTimeKey} className="h-12 rounded-xl font-mono text-xs" />
               </div>
               <DialogFooter className="justify-start">
-                <Button onClick={copyOneTimeKey} className="bg-primary text-primary-foreground hover:bg-black">
+                <Button onClick={copyOneTimeKey} className="bg-primary text-primary-foreground hover:bg-primary/90">
                   <Copy className="me-2 h-4 w-4" />
                   {t("buttons.copy")}
                 </Button>
@@ -355,7 +355,7 @@ export function ApiKeysPanel({
                 <Button
                   disabled={!canSubmit || createMutation.isPending || rotateMutation.isPending}
                   onClick={() => rotatingKey ? rotateMutation.mutate() : createMutation.mutate()}
-                  className="bg-primary text-primary-foreground hover:bg-black"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   {createMutation.isPending || rotateMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <KeyRound className="me-2 h-4 w-4" />}
                   {rotatingKey ? t("modal.rotate") : t("modal.make")}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMutation, useQueryClient, type QueryKey } from "@tanstack/react-query";
 import {
   useWorkspaceIndexedResource,
   useWorkspacePagedResource,
@@ -7,7 +8,8 @@ import {
   useWorkspaceResourceResult,
   workspaceMutation,
 } from "@/domains/resources/workspace-resource-request";
-import type { ProjectStatus } from "../store/projects.types";
+import { useToast } from "@/components/ui/toast";
+import type { ProjectStatus, ProjectHealth } from "../store/projects.types";
 import type { Project } from "../store/projects.types";
 import type { ProjectFormValues } from "../validation/project.schema";
 
@@ -104,5 +106,92 @@ export async function deleteProjectRequest(organizationId: string, projectId: st
   return workspaceMutation(organizationId, `projects/${projectId}`, {
     method: "DELETE",
     fallbackMessage: "Project request failed.",
+  });
+}
+
+function projectsIndexQueryBaseKey(organizationId?: string) {
+  return ["projects-index", organizationId] as const;
+}
+
+export function useUpdateProjectOptimisticMutation(queryKey: QueryKey | undefined) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({
+      organizationId,
+      projectId,
+      values,
+    }: {
+      organizationId: string;
+      projectId: string;
+      values: Partial<ProjectFormValues>;
+    }) => updateProjectRequest(organizationId, projectId, values as ProjectFormValues),
+    onMutate: async (variables) => {
+      if (!queryKey) return { previousData: undefined };
+      await queryClient.cancelQueries({ queryKey });
+      const previousData = queryClient.getQueryData(queryKey);
+      queryClient.setQueryData<{ items: Project[] } | undefined>(
+        queryKey,
+        (data) => {
+          if (!data) return data;
+          return {
+            ...data,
+            items: data.items.map((p) =>
+              p.id === variables.projectId
+                ? { ...p, ...variables.values, updatedAt: Date.now() } as Project
+                : p,
+            ),
+          };
+        },
+      );
+      return { previousData };
+    },
+    onError: (_error, _variables, context) => {
+      if (queryKey && context?.previousData) {
+        queryClient.setQueryData(queryKey, context.previousData);
+      }
+      toast({ title: "Project update failed. Reverted.", type: "error" });
+    },
+    onSuccess: (_result, variables) => {
+      toast({ title: "Project saved.", type: "success" });
+      void queryClient.invalidateQueries({ queryKey: projectsIndexQueryBaseKey(variables.organizationId) });
+    },
+  });
+}
+
+export function useDeleteProjectOptimisticMutation(queryKey: QueryKey | undefined) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ organizationId, projectId }: { organizationId: string; projectId: string }) =>
+      deleteProjectRequest(organizationId, projectId),
+    onMutate: async (variables) => {
+      if (!queryKey) return { previousData: undefined };
+      await queryClient.cancelQueries({ queryKey });
+      const previousData = queryClient.getQueryData(queryKey);
+      queryClient.setQueryData<{ items: Project[] } | undefined>(
+        queryKey,
+        (data) => {
+          if (!data) return data;
+          return {
+            ...data,
+            items: data.items.filter((p) => p.id !== variables.projectId),
+          };
+        },
+      );
+      return { previousData };
+    },
+    onError: (_error, _variables, context) => {
+      if (queryKey && context?.previousData) {
+        queryClient.setQueryData(queryKey, context.previousData);
+      }
+      toast({ title: "Project delete failed. Reverted.", type: "error" });
+    },
+    onSuccess: (_result, variables) => {
+      toast({ title: "Project deleted.", type: "success" });
+      void queryClient.invalidateQueries({ queryKey: projectsIndexQueryBaseKey(variables.organizationId) });
+    },
   });
 }

@@ -91,35 +91,46 @@ export function TaskEditor({
     [organizationId, routeProjectId, task.projectId],
   );
 
-  const storageKey = `qentrah:task-draft:${organizationId}:${task.id}`;
+  const storageKey = `task-draft:${organizationId}:${task.id}`;
   const projectOptions = useProjectOptionsQueryResult(organizationId, { limit: 200 });
   const projectList = useMemo(
     () => projectOptions.data ?? [],
     [projectOptions.data],
   );
-  const initialDraft = useMemo(() => {
-    const serverDraft = formFromTask(task);
-    if (typeof window === "undefined") return serverDraft;
-    try {
-      const cached = window.localStorage.getItem(storageKey);
-      return cached ? { ...serverDraft, ...JSON.parse(cached) } : serverDraft;
-    } catch {
-      return serverDraft;
-    }
-  }, [storageKey, task]);
-
-  // Local draft is browser-saved first; backend writes only happen on explicit Save.
-  const [draft, setDraft] = useState<TaskFormValues>(initialDraft);
+  const serverDraft = useMemo(() => formFromTask(task), [task]);
+  const [draft, setDraft] = useState<TaskFormValues>(serverDraft);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const savedSnapshot = formFromTask(task);
+  const [draftLoaded, setDraftLoaded] = useState(false);
+  const savedSnapshot = useMemo(() => formFromTask(task), [task]);
   const hasUnsavedChanges =
     JSON.stringify(draft) !== JSON.stringify(savedSnapshot);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(storageKey, JSON.stringify(draft));
-  }, [draft, storageKey]);
+    if (draftLoaded) return;
+    let cancelled = false;
+    (async () => {
+      const { getItem } = await import("@/domains/storage");
+      const cached = await getItem("drafts", storageKey);
+      if (cancelled) return;
+      if (cached?.value && typeof cached.value === "object") {
+        setDraft((prev) => ({ ...prev, ...(cached.value as Partial<TaskFormValues>) }));
+      }
+      setDraftLoaded(true);
+    })();
+    return () => { cancelled = true; };
+  }, [storageKey, draftLoaded]);
+
+  useEffect(() => {
+    if (!draftLoaded) return;
+    const timer = setTimeout(() => {
+      (async () => {
+        const { setItem } = await import("@/domains/storage");
+        await setItem("drafts", storageKey, draft as Record<string, unknown>);
+      })();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [draft, storageKey, draftLoaded]);
 
   const updateDraft = useCallback((partial: Partial<TaskFormValues>) => {
     setDraft((current) => ({ ...current, ...partial }));
@@ -130,8 +141,8 @@ export function TaskEditor({
     setBusyId("patch");
     try {
       await updateTaskRequest(organizationId, task.id, draft);
-      if (typeof window !== "undefined")
-        window.localStorage.removeItem(storageKey);
+      const { removeItem } = await import("@/domains/storage");
+      await removeItem("drafts", storageKey);
       taskLog.info("save:success", { taskId: task.id });
       toast.toast({ title: t("form.savedToast"), type: "success" });
       onSaved?.();

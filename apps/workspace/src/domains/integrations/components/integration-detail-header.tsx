@@ -79,7 +79,7 @@ export function IntegrationDetailHeader({
           </p>
           <div className="flex flex-wrap items-center gap-3 pt-2">
             {isConnected && connection ? (
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider rounded-[14px] bg-muted dark:bg-white/[0.06] px-4 py-1.5 text-foreground/30">
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider rounded-[12px] bg-muted dark:bg-white/[0.06] px-4 py-1.5 text-foreground/30">
                 <span className={`h-1.5 w-1.5 rounded-full ${connection.status === "active" ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
                 {connection.status === "active" ? connectedLabel : pausedLabel}
               </span>

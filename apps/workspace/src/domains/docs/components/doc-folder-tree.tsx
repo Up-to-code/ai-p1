@@ -14,6 +14,7 @@ import {
   Home,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import type { DocFolder } from "../docs.types";
 import { createDocFolderRequest, renameDocFolderRequest, deleteDocFolderRequest } from "../api/docs";
 
@@ -86,8 +87,10 @@ function FolderItem({
         onClick={() => onSelectFolder(isSelected ? null : node.id)}
       >
         {hasChildren ? (
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-xs"
             onClick={(e) => {
               e.stopPropagation();
               setExpanded(!expanded);
@@ -99,7 +102,7 @@ function FolderItem({
             ) : (
               <ChevronRight className="h-3.5 w-3.5" />
             )}
-          </button>
+          </Button>
         ) : (
           <span className="w-3.5 shrink-0" />
         )}
@@ -125,42 +128,48 @@ function FolderItem({
           <span className="flex-1 truncate text-xs font-medium">{node.name}</span>
         )}
         <div className="relative">
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-xs"
             onClick={(e) => {
               e.stopPropagation();
               setShowActions(!showActions);
             }}
-            className="opacity-0 group-hover:opacity-100 flex h-5 w-5 items-center justify-center rounded text-text-muted hover:bg-muted transition-all"
+            className="opacity-0 group-hover:opacity-100"
           >
             <MoreHorizontal className="h-3 w-3" />
-          </button>
+          </Button>
           {showActions && (
             <div className="absolute right-0 top-6 z-50 w-36 rounded-xl border border-border bg-background shadow-lg py-1">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="xs"
                 onClick={(e) => {
                   e.stopPropagation();
                   setRenaming(true);
                   setShowActions(false);
                 }}
-                className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-muted transition-colors"
+                className="w-full justify-start rounded-none px-3"
               >
                 <Pencil className="h-3 w-3" />
                 Rename
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="ghost"
+                size="xs"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDelete();
                   setShowActions(false);
                 }}
-                className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                className="w-full justify-start rounded-none px-3 text-red-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
               >
                 <Trash2 className="h-3 w-3" />
                 Delete
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -220,21 +229,23 @@ export function DocFolderTree({
         <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">
           Folders
         </span>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon-xs"
           onClick={() => setShowNewFolder(true)}
-          className="flex h-5 w-5 items-center justify-center rounded text-text-muted hover:bg-muted hover:text-foreground transition-colors"
         >
           <Plus className="h-3 w-3" />
-        </button>
+        </Button>
       </div>
       <div className="flex-1 overflow-auto py-1">
         {/* All docs */}
-        <button
+        <Button
           type="button"
+          variant="ghost"
           onClick={() => onSelectFolder(null)}
           className={cn(
-            "flex w-full items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer transition-colors text-sm",
+            "flex w-full items-center gap-2 px-3 py-1.5 rounded-lg justify-start h-auto",
             selectedFolderId === null
               ? "bg-primary/10 text-primary"
               : "text-foreground hover:bg-muted/50",
@@ -242,7 +253,7 @@ export function DocFolderTree({
         >
           <Home className="h-3.5 w-3.5 shrink-0" />
           <span className="text-xs font-medium">All Docs</span>
-        </button>
+        </Button>
 
         {/* Folder tree */}
         {tree.map((node) => (

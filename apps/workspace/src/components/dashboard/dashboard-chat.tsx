@@ -330,7 +330,7 @@ export function DashboardChat({ organizationId }: { organizationId?: string }) {
                       </span>
                       {msg.content && (
                         msg.role === "user" ? (
-                          <div className="rounded-[18px] border border-[var(--q-user-bubble)] bg-[var(--q-user-bubble)] px-4 py-3 text-sm font-medium leading-relaxed text-background shadow-md">
+                          <div className="rounded-[16px] border border-[var(--q-user-bubble)] bg-[var(--q-user-bubble)] px-4 py-3 text-sm font-medium leading-relaxed text-background shadow-md">
                             {msg.content}
                           </div>
                         ) : (
@@ -590,7 +590,7 @@ function ThreadMessagesSkeleton() {
         <div className="flex animate-in flex-col items-end gap-2 fade-in slide-in-from-bottom-2 duration-300">
           <div className="flex max-w-[min(760px,100%)] flex-col items-end gap-2">
             <Skeleton className="h-3 w-12 rounded-full" />
-            <Skeleton className="h-12 w-[min(360px,72vw)] rounded-[18px]" />
+            <Skeleton className="h-12 w-[min(360px,72vw)] rounded-[16px]" />
           </div>
         </div>
         <div className="flex animate-in flex-col items-start gap-2 fade-in slide-in-from-bottom-2 duration-300">

@@ -191,10 +191,8 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
       const range = monthRange(input.year as number, input.month as number);
       return compact(await fetchAuthQuery(api.calendar.read.listRange, { organizationId, ...range }), limit(input));
     }
-    case "calendar_get": {
-      const events = await fetchAuthQuery(api.calendar.read.list, { organizationId });
-      return events.find((event) => event.id === input.eventId || event._id === input.eventId) ?? null;
-    }
+    case "calendar_get":
+      return fetchAuthQuery(api.calendar.read.get, { organizationId, eventId: input.eventId as Id<"calendarEvents"> });
     case "calendar_create":
       return fetchAuthMutation(api.calendar.write.createFromHono, {
         organizationId,
@@ -242,15 +240,12 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
       });
       return compact(taskToolSearchResults(tasks, input.search), limit(input));
     }
-    case "tasks_get": {
-      const tasks = await fetchAuthQuery(api.clientTasks.read.list, { organizationId });
-      return tasks.find((task) => task.id === input.taskId || task._id === input.taskId) ?? null;
-    }
+    case "tasks_get":
+      return fetchAuthQuery(api.clientTasks.read.get, { organizationId, taskId: input.taskId as Id<"tasks"> });
     case "tasks_create":
       return createClientTask(organizationId, cleanInput(taskInputSchema, input) as never);
     case "tasks_update": {
-      const tasks = await fetchAuthQuery(api.clientTasks.read.list, { organizationId });
-      const existing = tasks.find((task) => task.id === input.taskId || task._id === input.taskId);
+      const existing = await fetchAuthQuery(api.clientTasks.read.get, { organizationId, taskId: input.taskId as Id<"tasks"> });
       if (!existing) throw new Error("Task was not found.");
       const patch = { ...input };
       delete patch.taskId;
@@ -260,8 +255,7 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
       }) as never);
     }
     case "tasks_complete": {
-      const tasks = await fetchAuthQuery(api.clientTasks.read.list, { organizationId });
-      const existing = tasks.find((task) => task.id === input.taskId || task._id === input.taskId);
+      const existing = await fetchAuthQuery(api.clientTasks.read.get, { organizationId, taskId: input.taskId as Id<"tasks"> });
       if (!existing) throw new Error("Task was not found.");
       return updateClientTask(organizationId, input.taskId as string, cleanInput(taskInputSchema, {
         ...stripPresentedDatabaseFields(existing as Record<string, unknown>),

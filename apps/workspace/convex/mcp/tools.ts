@@ -44,6 +44,7 @@ import {
   searchTerm,
   taskInput,
   taskStatus,
+  taskUpdateInput,
   type Input,
 } from "./toolInputs";
 import { markdownToHtml } from "./markdownToHtml";
@@ -578,7 +579,7 @@ export const writeTool = internalMutation({
         return presentWorkspaceRecord((await ctx.db.get(taskId))!);
       }
       
-      const patch = taskInput({ ...existing, ...input });
+      const patch = taskUpdateInput(input, existing);
       await assertTaskLinks(ctx, args.organizationId, patch);
       await ctx.db.patch(taskId, {
         ...patch,

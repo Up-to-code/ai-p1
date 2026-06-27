@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { MoreHorizontal, Pencil, Trash2, FolderInput, Copy } from "lucide-react";
+import { MoreHorizontal, Trash2, FolderInput } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { DeleteRecordDialog } from "@/components/shared/crud-ui";
 import { deleteDocRequest, moveDocRequest } from "../api/docs";
 import { DocFolderPickerModal } from "./doc-folder-picker-modal";
@@ -54,44 +55,49 @@ export function DocRowActions({
   return (
     <>
       <div className="relative">
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon-xs"
           onClick={(e) => {
             e.stopPropagation();
             setShowMenu(!showMenu);
           }}
-          className="flex h-7 w-7 items-center justify-center rounded-lg text-text-muted hover:bg-muted hover:text-foreground transition-colors"
         >
           <MoreHorizontal className="h-3.5 w-3.5" />
-        </button>
+        </Button>
         {showMenu && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
             <div className="absolute right-0 top-7 z-50 w-40 rounded-xl border border-border bg-background shadow-lg py-1">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="xs"
                 onClick={(e) => {
                   e.stopPropagation();
                   setMoving(true);
                   setShowMenu(false);
                 }}
-                className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-muted transition-colors"
+                className="w-full justify-start rounded-none px-3"
               >
                 <FolderInput className="h-3 w-3" />
                 Move to...
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="ghost"
+                size="xs"
                 onClick={(e) => {
                   e.stopPropagation();
                   setDeleting(true);
                   setShowMenu(false);
                 }}
-                className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                className="w-full justify-start rounded-none px-3 text-red-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
               >
                 <Trash2 className="h-3 w-3" />
                 Delete
-              </button>
+              </Button>
             </div>
           </>
         )}

@@ -47,7 +47,7 @@ export function OAuthSelectOrganizationClient({ locale }: { locale: OAuthLocale 
 
   return (
     <main dir={locale === "ar" ? "rtl" : "ltr"} className="flex min-h-screen items-center justify-center bg-[#eef2f5] px-4 py-10 text-[#111827]">
-      <section className="w-full max-w-[470px] overflow-hidden rounded-[14px] border border-[#d9dee6] bg-[#fbfbfc] shadow-none">
+      <section className="w-full max-w-[470px] overflow-hidden rounded-[12px] border border-[#d9dee6] bg-[#fbfbfc] shadow-none">
         <div className="border-b border-[#e4e7ec] px-6 py-7 text-center sm:px-8">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-[12px] border border-[#d9dee6] bg-[#111827]">
             <Image src="/brand-logo-white.svg" alt="Qentrah" width={28} height={28} className="h-7 w-7" priority />

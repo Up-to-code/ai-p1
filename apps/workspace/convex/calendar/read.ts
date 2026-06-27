@@ -96,6 +96,17 @@ export const listByProject = query({
   },
 });
 
+export const get = query({
+  args: { organizationId: v.string(), eventId: v.id("calendarEvents") },
+  returns: v.union(calendarEventValidator, v.null()),
+  handler: async (ctx, args) => {
+    await assertOrganizationResourcePermission(ctx, args.organizationId, "calendar", "read");
+    const event = await ctx.db.get(args.eventId);
+    if (!event || event.organizationId !== args.organizationId || event.deletedAt) return null;
+    return presentEvent(event);
+  },
+});
+
 export const listBySpace = query({
   args: {
     organizationId: v.string(),

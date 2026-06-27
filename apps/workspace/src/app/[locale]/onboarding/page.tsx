@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth, useOrganization, useUser } from "@clerk/nextjs";
 import { useTranslations } from "next-intl";
 import { WorkspaceRouteLoading } from "@/components/loading/workspace-route-loading";
@@ -12,6 +12,8 @@ import { BrandSetupForm } from "@/domains/onboarding";
 import { TeamInviteForm } from "@/domains/onboarding";
 import { useRouter } from "@/i18n/routing";
 
+const ORG_LOAD_TIMEOUT_MS = 8_000;
+
 export default function OnboardingPage() {
   const t = useTranslations("Onboarding");
   const router = useRouter();
@@ -19,6 +21,21 @@ export default function OnboardingPage() {
   const organization = useOrganization();
   const user = useUser();
   const [currentStep, setCurrentStep] = useState(1);
+  const [orgLoadTimedOut, setOrgLoadTimedOut] = useState(false);
+  const hasRedirected = useRef(false);
+
+  useEffect(() => {
+    if (organization.isLoaded || orgLoadTimedOut) return;
+    const timer = setTimeout(() => setOrgLoadTimedOut(true), ORG_LOAD_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [organization.isLoaded, orgLoadTimedOut]);
+
+  useEffect(() => {
+    if (orgLoadTimedOut && !organization.isLoaded && !hasRedirected.current) {
+      hasRedirected.current = true;
+      router.replace("/choose-org");
+    }
+  }, [orgLoadTimedOut, organization.isLoaded, router]);
 
   const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, 3));
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));

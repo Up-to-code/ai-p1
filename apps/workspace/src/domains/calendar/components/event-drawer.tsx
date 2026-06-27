@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, Trash2, X } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import type { CalendarEvent } from "../store/calendar.types";
 import { calendarEventSchema, type CalendarEventFormValues } from "../validation/calendar.schema";
 import { format } from "date-fns";
@@ -13,7 +13,15 @@ import { useTranslations, useLocale } from "next-intl";
 import { isRtlLocale } from "@/lib/i18n/locale";
 import { Button } from "@/components/ui/button";
 import { EventTypeBadge, EventStatusBadge } from "@/components/ui/event-badge";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import {
+  ModulePanel,
+  ModulePanelContent,
+  ModulePanelHeader,
+  ModulePanelTitle,
+  ModulePanelBody,
+  ModulePanelFooter,
+  ModulePanelCloseButton,
+} from "@/components/shared/module-panel";
 import { EventDrawerReadView } from "./event-drawer-read-view";
 import { buildGeneratedEventTitle, EventDrawerForm } from "./event-drawer-form";
 
@@ -146,105 +154,99 @@ export function EventDrawer({
   const title = isCreate ? t("scheduleBusiness") : isRead ? event?.title ?? "" : t("editSchedule");
 
   return (
-    <Sheet open={open} onOpenChange={(next) => { if (!next) closeDrawer(); }}>
-      <SheetContent
-        side="right"
-        showCloseButton={false}
-        className="z-[100] !w-[min(96vw,860px)] !max-w-[860px] gap-0 border-s border-border bg-background p-0 text-foreground sm:!max-w-[860px]"
-      >
-        <div className="flex items-center justify-between border-b border-border px-8 py-5">
-          <div className="flex items-center gap-3 min-w-0">
-            <SheetTitle className="text-lg font-bold text-foreground truncate">{title}</SheetTitle>
-            {isRead && event && (
-              <div className="flex items-center gap-2 shrink-0">
-                <EventTypeBadge type={event.type} />
-                <EventStatusBadge status={event.status} />
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {isRead && (
-              <button
-                onClick={onEdit}
-                className="flex h-8 items-center gap-1.5 rounded-lg border border-border px-3 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-                {t("detail.edit")}
-              </button>
-            )}
-            <button
-              onClick={closeDrawer}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
+    <ModulePanel open={open} onOpenChange={(next) => { if (!next) closeDrawer(); }} defaultWidth={860} defaultHeight={640}>
+      <ModulePanelContent>
+        <ModulePanelHeader
+          center={
+            <div className="flex items-center gap-3 min-w-0">
+              <ModulePanelTitle className="text-lg font-bold">{title}</ModulePanelTitle>
+              {isRead && event && (
+                <div className="flex items-center gap-2 shrink-0">
+                  <EventTypeBadge type={event.type} />
+                  <EventStatusBadge status={event.status} />
+                </div>
+              )}
+            </div>
+          }
+          right={
+            <div className="flex items-center gap-2 shrink-0">
+              {isRead && (
+                <Button variant="outline" size="sm" onClick={onEdit}>
+                  <Pencil className="h-3.5 w-3.5" />
+                  {t("detail.edit")}
+                </Button>
+              )}
+              <ModulePanelCloseButton />
+            </div>
+          }
+        />
 
-        {isRead && event && (
-          <EventDrawerReadView
-            event={event}
-            locale={locale}
-            labels={{
-              title: t("form.titleLabel"),
-              date: t("form.dateLabel"),
-              time: t("form.timeLabel"),
-              type: t("form.typeLabel"),
-              status: t("table.status"),
-              owner: t("form.ownerLabel"),
-              location: t("form.locationLabel"),
-              notes: t("form.notesLabel"),
-              typeValue: t(`types.${event.type}`),
-              statusValue: t(`statuses.${event.status}`),
-            }}
-          />
-        )}
+        <ModulePanelBody className="px-8 py-5">
+          {isRead && event && (
+            <EventDrawerReadView
+              event={event}
+              locale={locale}
+              labels={{
+                title: t("form.titleLabel"),
+                date: t("form.dateLabel"),
+                time: t("form.timeLabel"),
+                type: t("form.typeLabel"),
+                status: t("table.status"),
+                owner: t("form.ownerLabel"),
+                location: t("form.locationLabel"),
+                notes: t("form.notesLabel"),
+                typeValue: t(`types.${event.type}`),
+                statusValue: t(`statuses.${event.status}`),
+              }}
+            />
+          )}
 
-        {!isRead && (
-          <EventDrawerForm
-            form={form}
-            fieldErrors={fieldErrors}
-            isRtl={isRtl}
-            selectedClientName={selectedClient?.name}
-            selectedTaskTitle={selectedTask?.title}
-            clients={clients}
-            tasks={tasks}
-            clientsLoading={clientsLoading}
-            tasksLoading={tasksLoading}
-            onUpdateField={updateField}
-            labels={{
-              scheduleName: t("form.scheduleName"),
-              titlePlaceholder: t("form.titlePlaceholder"),
-              date: t("form.dateLabel"),
-              time: t("form.timeLabel"),
-              multiDay: "Multi-day event",
-              type: t("form.typeLabel"),
-              status: t("table.status"),
-              owner: t("form.ownerLabel"),
-              client: t("form.clientLabel"),
-              task: t("form.taskLabel"),
-              quickTask: t("form.quickTask"),
-              taskPlaceholder: t("form.taskPlaceholder"),
-              add: t("form.add"),
-              location: t("form.locationLabel"),
-              locationPlaceholder: t("form.locationPlaceholder"),
-              notes: t("form.notesLabel"),
-              notesPlaceholder: t("form.notesPlaceholder"),
-              typeOption: (type) => t(`types.${type}`),
-              statusOption: (status) => t(`statuses.${status}`),
-              chooseClient: t("form.chooseClient"),
-              chooseTask: t("form.chooseTask"),
-              noClients: t("form.noClients"),
-              noTasks: t("form.noTasks"),
-              search: t("form.search"),
-              noPickerResults: t("form.noPickerResults"),
-              clearSelection: t("form.clearSelection"),
-              closePicker: t("form.closePicker"),
-            }}
-          />
-        )}
+          {!isRead && (
+            <EventDrawerForm
+              form={form}
+              fieldErrors={fieldErrors}
+              isRtl={isRtl}
+              selectedClientName={selectedClient?.name}
+              selectedTaskTitle={selectedTask?.title}
+              clients={clients}
+              tasks={tasks}
+              clientsLoading={clientsLoading}
+              tasksLoading={tasksLoading}
+              onUpdateField={updateField}
+              labels={{
+                scheduleName: t("form.scheduleName"),
+                titlePlaceholder: t("form.titlePlaceholder"),
+                date: t("form.dateLabel"),
+                time: t("form.timeLabel"),
+                multiDay: "Multi-day event",
+                type: t("form.typeLabel"),
+                status: t("table.status"),
+                owner: t("form.ownerLabel"),
+                client: t("form.clientLabel"),
+                task: t("form.taskLabel"),
+                quickTask: t("form.quickTask"),
+                taskPlaceholder: t("form.taskPlaceholder"),
+                add: t("form.add"),
+                location: t("form.locationLabel"),
+                locationPlaceholder: t("form.locationPlaceholder"),
+                notes: t("form.notesLabel"),
+                notesPlaceholder: t("form.notesPlaceholder"),
+                typeOption: (type) => t(`types.${type}`),
+                statusOption: (status) => t(`statuses.${status}`),
+                chooseClient: t("form.chooseClient"),
+                chooseTask: t("form.chooseTask"),
+                noClients: t("form.noClients"),
+                noTasks: t("form.noTasks"),
+                search: t("form.search"),
+                noPickerResults: t("form.noPickerResults"),
+                clearSelection: t("form.clearSelection"),
+                closePicker: t("form.closePicker"),
+              }}
+            />
+          )}
+        </ModulePanelBody>
 
-        <div className="sticky bottom-0 flex items-center justify-between border-t border-border bg-background/95 px-8 py-4 backdrop-blur-sm">
+        <ModulePanelFooter>
           <div>
             {isRead && (
               <Button
@@ -273,8 +275,8 @@ export function EventDrawer({
               </AppPrimaryButton>
             )}
           </div>
-        </div>
-      </SheetContent>
-    </Sheet>
+        </ModulePanelFooter>
+      </ModulePanelContent>
+    </ModulePanel>
   );
 }

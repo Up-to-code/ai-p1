@@ -15,7 +15,7 @@ export default function EmptyState({ title, description, className }: EmptyState
   return (
     <div
       className={cn(
-        "rounded-[28px] border border-dashed border-[color:color-mix(in_srgb,var(--workspace-border)_82%,transparent)] bg-[color:color-mix(in_srgb,var(--workspace-elevated)_52%,transparent)] p-8 text-center",
+        "rounded-[24px] border border-dashed border-[color:color-mix(in_srgb,var(--workspace-border)_82%,transparent)] bg-[color:color-mix(in_srgb,var(--workspace-elevated)_52%,transparent)] p-8 text-center",
         className,
       )}
     >

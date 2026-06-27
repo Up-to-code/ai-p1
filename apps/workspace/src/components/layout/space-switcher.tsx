@@ -57,7 +57,7 @@ export function SpaceSwitcher() {
         <div
           role="combobox"
           aria-expanded={open}
-          className="flex h-9 items-center justify-between gap-2 rounded-lg border border-[var(--color-divider)] bg-background px-3 text-sm font-semibold transition-colors hover:bg-muted w-[180px]"
+          className="flex h-9 items-center justify-between gap-2 rounded-lg border border-border bg-background px-3 text-sm font-semibold transition-colors hover:bg-muted w-[180px]"
         >
           <div className="flex items-center gap-2 truncate">
             {isLoading ? (
@@ -89,14 +89,14 @@ export function SpaceSwitcher() {
         <div className="flex flex-col gap-0.5">
           <button
             onClick={() => switchSpace(null)}
-            className="flex w-full items-center px-2 py-1.5 text-sm font-medium rounded-lg hover:bg-[var(--color-divider)] transition-colors"
+            className="flex w-full items-center px-2 py-1.5 text-sm font-medium rounded-lg hover:bg-muted transition-colors"
           >
             <Globe className="me-2 h-4 w-4 text-muted-foreground" />
             <span className="truncate">All Spaces</span>
             {isGlobal && <Check className="ms-auto h-4 w-4" />}
           </button>
 
-          <div className="h-px bg-[var(--color-divider)] my-1" />
+          <div className="h-px bg-border my-1" />
 
           <div className="px-2 pt-1 pb-1 text-xs font-medium text-text-muted">
             Spaces
@@ -117,7 +117,7 @@ export function SpaceSwitcher() {
               <button
                 key={space.id}
                 onClick={() => switchSpace(space.slug)}
-                className="flex w-full items-center px-2 py-1.5 text-sm font-medium rounded-lg hover:bg-[var(--color-divider)] transition-colors"
+                className="flex w-full items-center px-2 py-1.5 text-sm font-medium rounded-lg hover:bg-muted transition-colors"
               >
                 <div
                   className="me-2 h-3 w-3 rounded-full shrink-0"

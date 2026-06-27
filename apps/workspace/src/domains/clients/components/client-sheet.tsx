@@ -1,6 +1,14 @@
 "use client";
 
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  ModulePanel,
+  ModulePanelContent,
+  ModulePanelHeader,
+  ModulePanelTitle,
+  ModulePanelDescription,
+  ModulePanelBody,
+  ModulePanelCloseButton,
+} from "@/components/shared/module-panel";
 import { useTranslations } from "next-intl";
 import { ClientForm } from "./client-form";
 import type { Client } from "../store/clients.types";
@@ -15,33 +23,33 @@ interface ClientSheetProps {
 
 export function ClientSheet({ open, onOpenChange, existing, indexQueryKey, onSuccess }: ClientSheetProps) {
   const t = useTranslations('Clients');
-  
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:w-[80vw] sm:min-w-[800px] max-w-none sm:max-w-none border-none bg-background p-0 shadow-2xl">
-        <div className="flex h-full flex-col">
-          <SheetHeader className="border-b border-border bg-card px-8 py-6">
-            <SheetTitle className="text-2xl font-black tracking-tight text-foreground">
+    <ModulePanel open={open} onOpenChange={onOpenChange}>
+      <ModulePanelContent>
+        <ModulePanelHeader
+          center={
+            <ModulePanelTitle className="text-2xl font-black tracking-tight">
               {existing ? t("form.editTitle") : t("form.createTitle")}
-            </SheetTitle>
-            <SheetDescription className="sr-only">
-              {t("form.subtitle")}
-            </SheetDescription>
-          </SheetHeader>
-          
-          <div className="flex-1 overflow-y-auto p-8">
-            <ClientForm
-              existing={existing}
-              indexQueryKey={indexQueryKey}
-              onSuccess={(id) => {
-                onSuccess?.(id);
-                onOpenChange(false);
-              }}
-              onCancel={() => onOpenChange(false)}
-            />
-          </div>
-        </div>
-      </SheetContent>
-    </Sheet>
+            </ModulePanelTitle>
+          }
+          right={<ModulePanelCloseButton />}
+        />
+        <ModulePanelDescription className="sr-only">
+          {t("form.subtitle")}
+        </ModulePanelDescription>
+        <ModulePanelBody className="p-8">
+          <ClientForm
+            existing={existing}
+            indexQueryKey={indexQueryKey}
+            onSuccess={(id) => {
+              onSuccess?.(id);
+              onOpenChange(false);
+            }}
+            onCancel={() => onOpenChange(false)}
+          />
+        </ModulePanelBody>
+      </ModulePanelContent>
+    </ModulePanel>
   );
 }

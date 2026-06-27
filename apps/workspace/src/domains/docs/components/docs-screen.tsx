@@ -13,6 +13,7 @@ import {
   Folder,
   Home,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { useAccountContext } from "@/domains/auth";
 import {
@@ -185,32 +186,36 @@ export function DocsScreen({
           </h1>
           <div className="h-4 w-px bg-border shrink-0" />
           <div className="inline-flex items-center rounded-xl border border-border bg-card p-0.5 gap-0.5">
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="xs"
               onClick={() => setViewMode("list")}
               className={cn(
-                "h-6 rounded-lg px-2.5 text-[11px] font-semibold transition-all",
+                "rounded-lg px-2.5",
                 viewMode === "list"
-                  ? "bg-foreground text-background"
+                  ? "bg-foreground text-background hover:bg-foreground hover:text-background"
                   : "text-text-muted hover:text-foreground",
               )}
             >
               <List className="h-3 w-3 inline-block mr-1" />
               {t("viewMode.list")}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
+              size="xs"
               onClick={() => setViewMode("grid")}
               className={cn(
-                "h-6 rounded-lg px-2.5 text-[11px] font-semibold transition-all",
+                "rounded-lg px-2.5",
                 viewMode === "grid"
-                  ? "bg-foreground text-background"
+                  ? "bg-foreground text-background hover:bg-foreground hover:text-background"
                   : "text-text-muted hover:text-foreground",
               )}
             >
               <LayoutGrid className="h-3 w-3 inline-block mr-1" />
               {t("viewMode.grid")}
-            </button>
+            </Button>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -223,55 +228,62 @@ export function DocsScreen({
               className="h-full w-32 bg-transparent text-xs font-medium text-foreground outline-none placeholder:text-text-muted"
             />
           </div>
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => setShowNewFolder(true)}
-            className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-border bg-card px-3 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
+            className="h-8 rounded-xl px-3 text-xs"
           >
             <Folder className="h-3.5 w-3.5" />
             {t("folders.newFolder")}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            size="sm"
             onClick={createNewDoc}
-            className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-primary px-3 text-xs font-semibold text-white hover:bg-primary/90 transition-colors"
+            className="h-8 rounded-xl px-3 text-xs"
           >
             <Plus className="h-3.5 w-3.5" />
             {t("actions.newDoc")}
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* ── Breadcrumb bar ── */}
       <div className="flex shrink-0 items-center gap-1 border-b border-border bg-background/60 px-8 h-9">
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="xs"
           onClick={() => setSelectedFolderId(null)}
           className={cn(
-            "flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium transition-colors",
+            "h-auto rounded-md px-1.5 py-0.5 text-xs font-medium",
             selectedFolderId === null
               ? "text-foreground"
-              : "text-text-muted hover:text-foreground hover:bg-muted/50",
+              : "text-text-muted hover:text-foreground",
           )}
         >
           <Home className="h-3 w-3" />
           <span>{t("title")}</span>
-        </button>
+        </Button>
         {breadcrumbPath.map((folder) => (
           <div key={folder.id} className="flex items-center gap-1">
             <ChevronRight className="h-3 w-3 text-text-muted/50" />
-            <button
+            <Button
               type="button"
+              variant="link"
+              size="xs"
               onClick={() => setSelectedFolderId(folder.id)}
               className={cn(
-                "rounded-md px-1.5 py-0.5 text-xs font-medium transition-colors",
+                "h-auto rounded-md px-1.5 py-0.5 text-xs font-medium no-underline",
                 folder.id === selectedFolderId
                   ? "text-foreground"
-                  : "text-text-muted hover:text-foreground hover:bg-muted/50",
+                  : "text-text-muted hover:text-foreground",
               )}
             >
               {folder.name}
-            </button>
+            </Button>
           </div>
         ))}
       </div>
@@ -345,10 +357,11 @@ export function DocsScreen({
               "fixed inset-0 z-40 flex items-center justify-center modal-overlay-animate-in",
             )}
           >
-            <button
+            <Button
               type="button"
+              variant="ghost"
               aria-label="Close doc"
-              className="absolute inset-0 cursor-default bg-black/20 backdrop-blur-[2px] dark:bg-black/45"
+              className="absolute inset-0 cursor-default bg-black/20 backdrop-blur-[2px] dark:bg-black/45 hover:bg-black/20 dark:hover:bg-black/45"
               onClick={() => setSelectedId(null)}
             />
             <div

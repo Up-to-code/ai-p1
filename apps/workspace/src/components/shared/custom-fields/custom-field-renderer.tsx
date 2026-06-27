@@ -263,7 +263,7 @@ export function CustomFieldRenderer({
             type="button"
             onClick={handleSave}
             disabled={upsertMutation.isPending}
-            className="inline-flex h-7 items-center gap-1 rounded-lg bg-primary px-3 text-xs font-bold text-white hover:bg-primary/90 transition-colors"
+            className="inline-flex h-7 items-center gap-1 rounded-lg bg-primary px-3 text-xs font-bold text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             <Check className="h-3 w-3" />
             Save

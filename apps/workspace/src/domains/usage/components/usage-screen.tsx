@@ -30,8 +30,8 @@ export function UsageScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/50/50 dark:bg-[#0A0A0A]">
-      <div className="border-b border-border bg-white dark:border-white/[0.06] dark:bg-[#111111]">
+    <div className="min-h-screen bg-muted/50/50" style={{backgroundColor: "var(--q-bg-secondary)"}}>
+      <div className="border-b" style={{borderColor: "var(--q-border)", backgroundColor: "var(--q-card)"}}>
         <div className="mx-auto max-w-7xl px-6 py-10">
           <div className="space-y-2">
             <h1 className="truncate text-2xl font-black uppercase tracking-tight text-foreground">

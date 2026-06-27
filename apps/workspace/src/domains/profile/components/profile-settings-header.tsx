@@ -122,7 +122,7 @@ export function ProfileSettingsHeader({
           <Button
             onClick={onSave}
             disabled={isSaving}
-            className="shrink-0 h-11 px-6 rounded-[22px] bg-foreground text-background hover:opacity-90 font-black uppercase tracking-widest text-[10px] dark:hover:bg-muted transition-all active:scale-[0.98] disabled:opacity-50"
+            className="shrink-0 h-11 px-6 rounded-[20px] bg-foreground text-background hover:opacity-90 font-black uppercase tracking-widest text-[10px] dark:hover:bg-muted transition-all active:scale-[0.98] disabled:opacity-50"
           >
             {isSaving ? (
               <Loader2 className="me-2 h-3.5 w-3.5 animate-spin" />

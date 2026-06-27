@@ -452,7 +452,7 @@ export function OrganizationScreen() {
                 }}
               />
             ) : (
-              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-[28px] bg-card text-2xl font-black text-muted-foreground">
+              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-[24px] bg-card text-2xl font-black text-muted-foreground">
                 {initials}
               </div>
             )}
@@ -481,7 +481,7 @@ export function OrganizationScreen() {
             <Button
               onClick={saveOrg}
               disabled={isBusy || !organizationId || !canUpdateOrganization}
-              className="h-11 shrink-0 rounded-[22px] bg-primary px-6 text-[10px] font-black uppercase tracking-widest text-primary-foreground transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
+              className="h-11 shrink-0 rounded-[20px] bg-primary px-6 text-[10px] font-black uppercase tracking-widest text-primary-foreground transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
             >
               {isBusy ? <Loader2 className="me-2 h-3.5 w-3.5 animate-spin" /> : <Save className="me-2 h-3.5 w-3.5" />}
               {t("saveBtn")}
@@ -549,7 +549,7 @@ export function OrganizationScreen() {
                       </Button>
                     </LocaleLink>
                   ) : (
-                    <Button disabled={!canInviteMembers} onClick={() => setInviteDialogOpen(true)} className="h-9.5 rounded-lg bg-primary text-[9px] font-black uppercase tracking-widest text-primary-foreground hover:bg-black disabled:opacity-50">
+                    <Button disabled={!canInviteMembers} onClick={() => setInviteDialogOpen(true)} className="h-9.5 rounded-lg bg-primary text-[9px] font-black uppercase tracking-widest text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
                       <Plus className="me-1.5 h-3.5 w-3.5" />
                       {t("invites.open")}
                     </Button>
@@ -721,7 +721,7 @@ export function OrganizationScreen() {
                   <p className="text-xs leading-5 text-muted-foreground">{t("invites.generatedLinkHint")}</p>
                 </div>
                 <DialogFooter className="mx-0 mb-0 mt-2 flex-row flex-wrap justify-start gap-2 rounded-none border-0 bg-transparent p-0 sm:justify-start">
-                  <Button type="button" onClick={copyGeneratedInviteLink} className="bg-primary text-primary-foreground hover:bg-black">
+                  <Button type="button" onClick={copyGeneratedInviteLink} className="bg-primary text-primary-foreground hover:bg-primary/90">
                     <Copy className="me-2 h-4 w-4" />
                     {copiedInviteId === (createdInviteLinkId ?? "created-link") ? t("invites.copied") : t("invites.copy")}
                   </Button>
@@ -766,7 +766,7 @@ export function OrganizationScreen() {
                         type="button"
                         onClick={generateInviteLink}
                         disabled={inviteLinkMutation.isPending || !canInviteMembers || !organizationId}
-                        className="h-11 w-full rounded-xl bg-primary text-[10px] font-black uppercase tracking-widest text-primary-foreground hover:bg-black"
+                        className="h-11 w-full rounded-xl bg-primary text-[10px] font-black uppercase tracking-widest text-primary-foreground hover:bg-primary/90"
                       >
                         {inviteLinkMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <LinkIcon className="me-2 h-4 w-4" />}
                         {t("invites.createLink")}
@@ -782,7 +782,7 @@ export function OrganizationScreen() {
                         type="button"
                         onClick={sendEmailInvite}
                         disabled={inviteMutation.isPending || !inviteEmail || !canInviteMembers}
-                        className="bg-primary text-primary-foreground hover:bg-black"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90"
                       >
                         {inviteMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Mail className="me-2 h-4 w-4" />}
                         {t("invites.sendEmail")}
@@ -813,7 +813,7 @@ export function OrganizationScreen() {
           <DialogFooter>
             <Button variant="ghost" onClick={() => setMemberAction(null)}>{t("common.cancel")}</Button>
             <Button
-              className="bg-primary text-primary-foreground hover:bg-black"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
               disabled={removeMemberMutation.isPending || memberRoleMutation.isPending}
               onClick={() => {
                 if (!memberAction) return;

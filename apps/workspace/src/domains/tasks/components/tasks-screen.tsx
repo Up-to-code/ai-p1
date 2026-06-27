@@ -302,7 +302,7 @@ export function TasksScreen({
           <button
             type="button"
             onClick={createNewTask}
-            className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-primary px-3 text-xs font-semibold text-white hover:bg-primary/90 transition-colors"
+            className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-primary px-3 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             <Plus className="h-3.5 w-3.5" />
             {t("actions.new")}
@@ -330,7 +330,7 @@ export function TasksScreen({
                 <button
                   type="button"
                   onClick={() => tasksResult.refetch()}
-                  className="inline-flex h-9 items-center rounded-xl bg-primary px-4 text-xs font-semibold text-white hover:bg-primary/90 transition-colors"
+                  className="inline-flex h-9 items-center rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
                 >
                   {common("tryAgain")}
                 </button>

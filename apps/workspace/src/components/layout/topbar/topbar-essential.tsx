@@ -17,7 +17,7 @@ export function TopbarEssential() {
         variant="ghost"
         size="icon"
         onClick={toggleSidebar}
-        className="h-8 w-8 text-text-muted hover:bg-[var(--color-divider)] hover:text-text-primary"
+        className="h-8 w-8 text-text-muted hover:bg-accent hover:text-text-primary"
         aria-label={isOpen ? t("closeSidebar") : t("openSidebar")}
       >
         <PanelLeft className="h-4 w-4" />

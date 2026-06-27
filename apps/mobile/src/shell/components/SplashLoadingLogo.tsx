@@ -19,9 +19,9 @@ type SplashLoadingLogoProps = {
 };
 
 export function SplashLoadingLogo({
-  baseColor = "#E0E3E7",
+  baseColor,
   size = 28,
-  waveColor = "#111111",
+  waveColor,
 }: SplashLoadingLogoProps) {
   const progress = useSharedValue(0);
   const animatedProps = useAnimatedProps(() => ({

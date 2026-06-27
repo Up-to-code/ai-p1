@@ -100,7 +100,7 @@ export function CompanyInfoForm({ onNext, organizationName }: FormProps) {
           <Button variant="ghost" type="button" className="text-sm font-semibold text-muted-foreground hover:text-foreground">
             {tc("saveAndExit")}
           </Button>
-          <Button className="h-12 px-7 rounded-2xl bg-foreground text-sm font-bold text-white hover:bg-black dark:bg-white dark:text-foreground dark:hover:bg-muted" type="submit">
+          <Button className="h-12 px-7 rounded-2xl bg-foreground text-sm font-bold text-white hover:bg-foreground/90 dark:bg-white dark:text-foreground dark:hover:bg-muted" type="submit">
             {t("continue")}
           </Button>
         </CardFooter>

@@ -10,7 +10,7 @@ const STATUS_COLORS: Record<string, string> = {
   planned: "#94a3b8",
   active: "#22c55e",
   paused: "#f59e0b",
-  completed: "#3b82f6",
+  completed: "#5F7768",
   archived: "#d1d5db",
 };
 

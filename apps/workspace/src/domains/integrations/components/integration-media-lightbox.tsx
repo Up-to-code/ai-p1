@@ -19,7 +19,7 @@ export function IntegrationMediaLightbox({
       <div className="relative w-full max-w-4xl bg-foreground rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-50 h-8 w-8 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white text-xl font-bold transition active:scale-95 select-none"
+          className="absolute top-4 right-4 z-50 h-8 w-8 rounded-full bg-black/60 hover:bg-white/20 flex items-center justify-center text-white text-xl font-bold transition active:scale-95 select-none"
         >
           &times;
         </button>

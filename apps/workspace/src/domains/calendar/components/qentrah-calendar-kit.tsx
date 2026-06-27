@@ -88,7 +88,7 @@ function getEventColor(
     case "reminder":   return "#0ea5e9"; // sky-500
     case "milestone":  return "#10b981"; // emerald-500
     case "focusBlock": return "#8b5cf6"; // violet-500
-    default:           return "#3b82f6"; // blue-500
+    default:           return "#4F80FF"; // q-network-blue
   }
 }
 
@@ -208,7 +208,7 @@ export function QentrahCalendarKit({
           --card:                 var(--q-card);
           --card-foreground:      var(--q-text-primary);
           --primary:              var(--q-accent);
-          --primary-foreground:   #ffffff;
+          --primary-foreground:   var(--q-bg);
           --secondary:            var(--q-bg-secondary);
           --secondary-foreground: var(--q-text-primary);
           --muted:                var(--q-bg-secondary);
@@ -219,7 +219,7 @@ export function QentrahCalendarKit({
           --input:                var(--q-input-bg);
           --ring:                 transparent;
           --destructive:          var(--q-error);
-          --destructive-foreground: #ffffff;
+          --destructive-foreground: var(--q-bg);
           --radius:               12px;
           font-family: var(--font-sans), system-ui, sans-serif;
           display:        flex;
@@ -430,7 +430,7 @@ export function QentrahCalendarKit({
         .qentrah-calendar-wrapper td[class*="bg-primary"],
         .qentrah-calendar-wrapper div[class*="bg-primary"][class*="rounded-full"] {
           background-color: var(--q-accent) !important;
-          color: #fff !important;
+          color: var(--q-bg) !important;
         }
 
         /* Current-time indicator */

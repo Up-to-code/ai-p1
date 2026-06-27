@@ -23,3 +23,16 @@ export type {
   AppStatItem,
   AppToolbarFilter,
 } from "./app-layout-kit";
+export {
+  ModulePanel,
+  ModulePanelContent,
+  ModulePanelHeader,
+  ModulePanelTabHeader,
+  ModulePanelBody,
+  ModulePanelFooter,
+  ModulePanelTitle,
+  ModulePanelDescription,
+  ModulePanelCloseButton,
+  ModulePanelFullscreenToggle,
+  type ModuleTab,
+} from "./module-panel";

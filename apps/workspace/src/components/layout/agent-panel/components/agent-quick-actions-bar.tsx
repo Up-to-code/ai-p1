@@ -25,7 +25,7 @@ export function AgentQuickActionsBar({ actions, onSelect }: AgentQuickActionsBar
               document.querySelector<HTMLTextAreaElement>("[data-ai-composer-textarea]")?.focus();
             });
           }}
-          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-border/50 bg-muted/20 px-2.5 py-1 text-[11px] font-medium text-text-muted transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
+          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-border/50 bg-muted/20 px-2.5 py-1 text-[11px] font-medium text-text-muted transition-all hover:border-border hover:bg-accent/50 hover:text-accent-foreground"
         >
           <action.icon className="h-3 w-3" />
           <span>{action.label}</span>

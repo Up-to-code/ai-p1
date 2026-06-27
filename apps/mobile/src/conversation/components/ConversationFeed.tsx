@@ -84,10 +84,10 @@ function ThreadLoadingState() {
     () => createStyles(colors, insets, 120, 120),
     [colors, insets],
   );
-  const isDark = colors.background === "#000000";
-  const logoColors = isDark
-    ? { base: "#2A2A2A", wave: "#FFFFFF" }
-    : { base: "#E0E3E7", wave: "#111111" };
+  const logoColors = {
+    base: colors.textMuted,
+    wave: colors.textPrimary,
+  };
 
   return (
     <View style={styles.threadLoadingWrap}>
@@ -460,7 +460,7 @@ const createStyles = (
     opacity: 0.8,
   },
   retryText: {
-    color: "#FFFFFF",
+    color: colors.accentForeground,
     fontFamily: "Manrope_700Bold",
     fontSize: 13,
   },

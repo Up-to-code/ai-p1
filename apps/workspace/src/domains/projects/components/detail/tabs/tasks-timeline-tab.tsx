@@ -200,7 +200,7 @@ export function TasksTimelineTab({ project, organizationId, spaceId }: TasksTime
 
           <Button
             onClick={() => setIsAdding(true)}
-            className="h-8 rounded-xl bg-primary px-3 text-xs font-semibold text-white"
+            className="h-8 rounded-xl bg-primary px-3 text-xs font-semibold text-primary-foreground"
           >
             <Plus className="mr-1.5 h-3.5 w-3.5" />
             Add Task

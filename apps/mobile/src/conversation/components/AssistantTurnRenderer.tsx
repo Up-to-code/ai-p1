@@ -7,7 +7,7 @@ import type { AssistantAction, AssistantBlock, AssistantTurn } from "@/conversat
 import { Text } from "@/foundation/primitives/Text";
 import { MarkdownText } from "@/foundation/primitives/MarkdownText";
 import { isArabic } from "@/foundation/utils/rtl";
-import { theme, radii, type AppColors } from "@/foundation/theme/tokens";
+import { darkColors, theme, radii, type AppColors } from "@/foundation/theme/tokens";
 import { useTheme } from "@/foundation/theme/ThemeProvider";
 import { isRtlDirection, resolveAssistantDirection } from "@/conversation/lib/assistantPresentation";
 import { MessageActions } from "./MessageActions";
@@ -352,7 +352,7 @@ const rendererStyles = StyleSheet.create({
 });
 
 const createStyles = (colors: AppColors) => {
-  const isDark = colors.background === "#000000";
+  const isDark = colors.background === darkColors.background;
   return StyleSheet.create({
     container: {
       width: "100%",
@@ -523,7 +523,7 @@ const createStyles = (colors: AppColors) => {
     viewSuggestionsBtnText: {
       fontSize: 12,
       fontFamily: "Manrope_700Bold",
-      color: "#0B5CFF",
+      color: colors.accent,
     },
   });
 };

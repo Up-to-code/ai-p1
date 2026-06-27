@@ -172,6 +172,7 @@
         "framer-motion": "^12.38.0",
         "gridstack": "^12.6.0",
         "hono": "^4.12.18",
+        "idb": "^8.0.3",
         "lucide-react": "^1.14.0",
         "marked": "^18.0.3",
         "next": "^16.3.0-canary.32",
@@ -3022,6 +3023,8 @@
     "icss-utils": ["icss-utils@5.1.0", "", { "peerDependencies": { "postcss": "^8.1.0" } }, "sha512-soFhflCVWLfRNOPU3iv5Z9VUdT44xFRbzjLsEzSr5AQmgqPMTHdU3PMT1Cf1ssx8fLNJDA1juftYl+PUcv3MqA=="],
 
     "icu-minify": ["icu-minify@4.11.2", "", { "dependencies": { "@formatjs/icu-messageformat-parser": "^3.4.0" } }, ""],
+
+    "idb": ["idb@8.0.3", "", {}, "sha512-LtwtVyVYO5BqRvcsKuB2iUMnHwPVByPCXFXOpuU96IZPPoPN6xjOGxZQ74pgSVVLQWtUOYgyeL4GE98BY5D3wg=="],
 
     "idb-keyval": ["idb-keyval@6.2.1", "", {}, "sha512-8Sb3veuYCyrZL+VBt9LJfZjLUPWVvqn8tG28VqYNFCo43KHcKuq+b4EiXGeuaLAQWL2YmyDgMp2aSpH9JHsEQg=="],
 

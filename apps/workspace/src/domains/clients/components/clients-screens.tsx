@@ -245,7 +245,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
           <button
             type="button"
             onClick={() => setIsCreateOpen(true)}
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-semibold text-white hover:bg-primary/90 transition-colors"
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             <UserPlus className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">{t("add")}</span>
@@ -281,7 +281,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
           stages={activePipelineStages.map((stage, index) => ({
             key: stage,
             name: translateClientStage(t, stage),
-            color: ["#3b82f6", "#f59e0b", "#8b5cf6", "#10b981"][index] ?? "#9CA3AF",
+            color: ["#4F80FF", "#B78544", "#8A5CFF", "#2BB673"][index] ?? "#9CA3AF",
             order: index,
           }))}
           showBarColor
@@ -325,7 +325,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
           stages={activePipelineStages.map((stage, index) => ({
             key: stage,
             name: translateClientStage(t, stage),
-            color: ["#3b82f6", "#f59e0b", "#8b5cf6", "#10b981"][index] ?? "#9CA3AF",
+            color: ["#4F80FF", "#B78544", "#8A5CFF", "#2BB673"][index] ?? "#9CA3AF",
             order: index,
           }))}
           showSearch

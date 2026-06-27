@@ -46,7 +46,7 @@ export function PartnerCatalogGrid({
         </div>
         <div className="flex flex-wrap gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="flex w-full md:w-[calc(50%-8px)] lg:w-[calc(33.33%-11px)] flex-col justify-between rounded-[14px] border border-border/80 bg-white p-5 dark:border-white/[0.06] dark:bg-white/[0.02]">
+            <div key={i} className="flex w-full md:w-[calc(50%-8px)] lg:w-[calc(33.33%-11px)] flex-col justify-between rounded-[12px] border border-border/80 bg-white p-5 dark:border-white/[0.06] dark:bg-white/[0.02]">
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-3">

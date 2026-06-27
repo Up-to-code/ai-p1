@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { Bot, Building2, CalendarDays, Check, CheckCircle2, Copy, CreditCard, FileText, KeyRound, Layers, Loader2, PauseCircle, Plus, RefreshCcw, Save, ShieldCheck, Trash2, Users } from "lucide-react";
+import { Bot, Building2, CalendarDays, CheckCircle2, Copy, CreditCard, FileText, KeyRound, Layers, Loader2, Plus, RefreshCcw, ShieldCheck, Trash2, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
-import { DeleteRecordDialog, StatusPill } from "@/components/shared/crud-ui";
+import { DeleteRecordDialog } from "@/components/shared/crud-ui";
 import { expiryTimestamp } from "@/lib/utils/expiry-timestamp";
 import {
   createOrganizationMcpConnection,
@@ -34,9 +34,7 @@ import {
   clampAgentPermissionsToGrantable,
   cloneAgentPermissions,
   formatDate,
-  getInitials,
   hasAgentDeletePermission,
-  memberEmail,
   memberName,
   toggleAgentPermission,
 } from "../../settings-view-model";
@@ -253,107 +251,79 @@ export function AgentLinksPanel({
   });
   const connectionCard = (connection: OrganizationMcpConnection) => {
     const creator = memberByUserId.get(connection.createdByUserId);
-    const creatorName = creator ? memberName(creator) : connection.createdByUserId;
-    const creatorEmail = creator ? memberEmail(creator) : connection.createdByUserId;
-    const creatorImage = creator?.user?.image;
     const isDraft = connection.status === "draft";
+    const statusLabel = {
+      active: connection.usageCount === 0 ? t("status.pending") : t("status.active"),
+      paused: t("status.paused"),
+      draft: t("status.draft"),
+      revoked: t("status.revoked"),
+    }[connection.status] ?? connection.status;
 
     return (
-      <div key={connection.id} className={cn("rounded-2xl border border-border bg-card p-4.5 transition-all", isDraft && "border-sky-200/60 bg-sky-500/5 dark:border-sky-500/10")}>
-        <div className="flex h-full flex-col gap-4">
-          <div className="flex items-start justify-between gap-3">
+      <div key={connection.id} className="rounded-xl border border-border bg-card">
+        <div className="flex items-center justify-between gap-4 px-4 py-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+              <Bot className="h-3.5 w-3.5" />
+            </div>
             <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-1.5">
-                <StatusPill label={t(`status.${connection.status}`)} tone={connection.status === "active" ? "success" : connection.status === "paused" || isDraft ? "warning" : "neutral"} />
-                <span className="rounded-full bg-muted px-2 py-0.5 font-mono text-[9px] font-bold text-muted-foreground">{t("labels.keyEnding", { last4: connection.keyLast4 })}</span>
-                <span className="rounded-full bg-muted px-2 py-0.5 text-[9px] font-black text-muted-foreground">{t(`principal.${connection.principalType}.title`)}</span>
+              <div className="flex items-center gap-2">
+                <p className="truncate text-sm font-semibold text-foreground">
+                  {connection.name}
+                </p>
+                <span className="shrink-0 text-[11px] font-medium text-muted-foreground">
+                  {statusLabel}
+                </span>
               </div>
-              <p className="mt-2.5 truncate text-sm font-black text-foreground">{connection.name}</p>
-            </div>
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-              <Bot className="h-4 w-4" />
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2 rounded-xl bg-muted/50 px-2.5 py-1.5">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-card text-[9px] font-black text-muted-foreground">
-              {creatorImage ? (
-                <span
-                  aria-label={creatorName}
-                  role="img"
-                  className="h-full w-full bg-cover bg-center"
-                  style={{ backgroundImage: `url(${creatorImage})` }}
-                />
-              ) : getInitials(creatorName)}
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-[10px] font-black text-foreground">{creatorName}</p>
-              <p className="truncate text-[9px] font-bold text-muted-foreground">{t("labels.createdBy", { email: creatorEmail })}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                {t("labels.keyEnding", { last4: connection.keyLast4 })}
+                {creator ? <> · {memberName(creator)}</> : null}
+              </p>
             </div>
           </div>
-          
-          <p className="line-clamp-2 text-[11px] leading-5 text-muted-foreground">
-            {agentPermissionSummary(connection.permissions, {
-              resource: (resource) => t(`resources.${resource}`),
-              action: (action) => t(`actions.${action}`),
-            }) || t("labels.noWork")}
-          </p>
-
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
-            <span>{t("labels.used", { count: connection.usageCount })}</span>
-            <span className="h-0.5 w-0.5 rounded-full bg-border" />
-            <span>{t("labels.created", { date: formatDate(connection.createdAt) })}</span>
-            {connection.lastUsedAt && (
-              <>
-                <span className="h-0.5 w-0.5 rounded-full bg-border" />
-                <span>{t("labels.lastUsed", { date: formatDate(connection.lastUsedAt) })}</span>
-              </>
-            )}
-          </div>
-
-          <div className="mt-auto flex flex-wrap gap-1.5 border-t border-border/60 pt-3">
+          <div className="flex shrink-0 items-center gap-1">
             {connection.status !== "revoked" && (
               <Button
-                variant="outline"
+                variant="ghost"
+                size="sm"
                 disabled={!canCreate || updateMutation.isPending}
                 onClick={() => updateMutation.mutate({ connection, input: { status: connection.status === "active" ? "paused" : "active" } })}
-                className="h-8 rounded-lg text-[9px] font-black uppercase tracking-widest px-2.5"
+                className="h-7 rounded-lg px-2 text-[11px] font-medium"
               >
-                <PauseCircle className="me-1.5 h-3.5 w-3.5" />
                 {connection.status === "active" ? t("buttons.pause") : t("buttons.resume")}
               </Button>
             )}
             {connection.status !== "revoked" && (
               <Button
-                variant="outline"
+                variant="ghost"
+                size="sm"
                 disabled={!canCreate || updateMutation.isPending}
                 onClick={() => openEditAgentLinkDialog(connection)}
-                className="h-8 rounded-lg text-[9px] font-black uppercase tracking-widest px-2.5"
+                className="h-7 rounded-lg px-2 text-[11px] font-medium"
               >
-                <Save className="me-1.5 h-3.5 w-3.5" />
                 {t("buttons.edit")}
               </Button>
             )}
             {connection.status !== "revoked" && !isDraft && (
               <Button
-                variant="outline"
+                variant="ghost"
+                size="sm"
                 disabled={!canCreate || rotateMutation.isPending}
                 onClick={() => rotateMutation.mutate(connection)}
-                className="h-8 rounded-lg text-[9px] font-black uppercase tracking-widest px-2.5"
+                className="h-7 rounded-lg px-2 text-[11px] font-medium"
               >
-                <RefreshCcw className="me-1.5 h-3.5 w-3.5" />
-                {t("buttons.rotate")}
+                <RefreshCcw className="h-3 w-3" />
               </Button>
             )}
             {connection.status !== "revoked" && !isDraft && (
               <Button
-                variant="outline"
+                variant="ghost"
+                size="sm"
                 disabled={!canDelete || revokeMutation.isPending}
                 onClick={() => setRevokingConnection(connection)}
-                className="h-8 rounded-lg text-[9px] font-black uppercase tracking-widest px-2.5 text-sky-700 border-sky-100 bg-sky-500/5 hover:bg-sky-500/10 dark:border-sky-500/15"
+                className="h-7 rounded-lg px-2 text-[11px] font-medium text-muted-foreground hover:text-red-500"
               >
-                <Trash2 className="me-1.5 h-3.5 w-3.5" />
-                {t("buttons.moveToDraft")}
+                <Trash2 className="h-3 w-3" />
               </Button>
             )}
           </div>
@@ -371,7 +341,7 @@ export function AgentLinksPanel({
           <Button
             disabled={!canCreate}
             onClick={openNewAgentLinkDialog}
-            className="h-10 rounded-lg bg-primary px-4 text-[9px] font-black uppercase tracking-widest text-primary-foreground hover:bg-black"
+            className="h-10 rounded-lg bg-primary px-4 text-[9px] font-black uppercase tracking-widest text-primary-foreground hover:bg-primary/90"
           >
             <Plus className="me-1.5 h-3.5 w-3.5" />
             {t("newButton")}
@@ -443,7 +413,7 @@ export function AgentLinksPanel({
               </div>
               <Input readOnly dir="ltr" value={oneTimeLink} className="h-12 rounded-xl font-mono text-xs" />
               <DialogFooter className="justify-start">
-                <Button onClick={copyOneTimeLink} className="bg-primary text-primary-foreground hover:bg-black">
+                <Button onClick={copyOneTimeLink} className="bg-primary text-primary-foreground hover:bg-primary/90">
                   <Copy className="me-2 h-4 w-4" />
                   {t("buttons.copy")}
                 </Button>
@@ -582,7 +552,7 @@ export function AgentLinksPanel({
                     }
                     createMutation.mutate();
                   }}
-                  className="bg-primary text-primary-foreground hover:bg-black"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   {createMutation.isPending || updateMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <KeyRound className="me-2 h-4 w-4" />}
                   {isEditing ? t("modal.save") : t("modal.make")}

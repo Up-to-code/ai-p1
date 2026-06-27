@@ -7,7 +7,7 @@ export function AppIcon({ app, size = "md" }: { app: PartnerCatalogApp; size?: "
   const sizeClasses = {
     sm: "h-8 w-8 rounded-[8px]",
     md: "h-10 w-10 rounded-[10px]",
-    lg: "h-14 w-14 rounded-[14px]",
+    lg: "h-14 w-14 rounded-[12px]",
   };
 
   const iconClasses = {

@@ -23,7 +23,7 @@ export function Topbar() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b border-border bg-background px-8 backdrop-blur-xl backdrop-saturate-150 transition-all duration-300",
+        "sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b border-border/50 bg-background px-8 backdrop-blur-xl backdrop-saturate-150 transition-all duration-300",
         isRtlLocale(locale) && "font-cairo",
       )}
     >

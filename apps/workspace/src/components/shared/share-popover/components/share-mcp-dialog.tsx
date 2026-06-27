@@ -88,7 +88,7 @@ export function ShareMcpDialog({
           <Button
             onClick={onCreate}
             disabled={!name.trim() || creating}
-            className="h-10 rounded-lg bg-primary px-5 text-[10px] font-black uppercase tracking-widest text-primary-foreground hover:bg-black"
+            className="h-10 rounded-lg bg-primary px-5 text-[10px] font-black uppercase tracking-widest text-primary-foreground hover:bg-primary/90"
           >
             {creating ? (
               <span className="flex items-center gap-2">

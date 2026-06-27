@@ -41,7 +41,7 @@ const MORE_VIEWS: ViewOption[] = [
 ];
 
 const EMBEDS: ViewOption[] = [
-  { type: "website", label: "Any website", description: "Embed any page or tool", icon: Globe, color: "#2563eb" },
+  { type: "website", label: "Any website", description: "Embed any page or tool", icon: Globe, color: "#111111" },
   { type: "sheets", label: "Google Sheets", description: "Connect your spreadsheet", icon: FileSpreadsheet, color: "#16a34a" },
 ];
 
@@ -75,14 +75,14 @@ export function AddViewDropdown({ onAddView }: AddViewDropdownProps) {
 
     return (
       <>
-        {showDivider && <div className="h-px bg-[#252528] my-2" />}
-        <div className="text-[11px] text-[#666] font-medium tracking-wider px-2 mb-1.5">{title}</div>
+        {showDivider && <div className="h-px bg-border my-2" />}
+        <div className="text-[11px] text-muted-foreground font-medium tracking-wider px-2 mb-1.5">{title}</div>
         <div className="grid grid-cols-2 gap-0.5 px-2">
           {views.map(view => (
             <button
               key={view.type}
               onClick={() => handleSelect(view)}
-              className="flex items-center text-left gap-2.5 p-2 rounded-lg hover:bg-[#25252e] transition-colors"
+              className="flex items-center text-left gap-2.5 p-2 rounded-lg hover:bg-accent/50 transition-colors"
             >
               <div 
                 className="h-[34px] w-[34px] rounded-lg flex items-center justify-center shrink-0 text-white"
@@ -91,8 +91,8 @@ export function AddViewDropdown({ onAddView }: AddViewDropdownProps) {
                 <view.icon className="h-[17px] w-[17px]" />
               </div>
               <div>
-                <div className="text-[13px] font-medium text-[#ddd] leading-tight">{view.label}</div>
-                <div className="text-[11px] text-[#666] leading-tight mt-0.5">{view.description}</div>
+                <div className="text-[13px] font-medium text-foreground leading-tight">{view.label}</div>
+                <div className="text-[11px] text-muted-foreground leading-tight mt-0.5">{view.description}</div>
               </div>
             </button>
           ))}
@@ -109,15 +109,15 @@ export function AddViewDropdown({ onAddView }: AddViewDropdownProps) {
           Add view
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-[460px] p-0 rounded-[10px] border-[#2e2e35] shadow-2xl overflow-hidden bg-[#1a1a1f]" align="start">
-        <div className="p-2.5 border-b border-[#252528]">
+      <PopoverContent className="w-[460px] p-0 rounded-[10px] border shadow-2xl overflow-hidden bg-card" align="start">
+        <div className="p-2.5 border-b border-border">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#555]" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
             <Input 
               placeholder="Search views..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-8 border-none focus-visible:ring-0 bg-transparent text-[#ccc] text-[13px] placeholder:text-[#555]" 
+              className="pl-9 h-8 border-none focus-visible:ring-0 bg-transparent text-foreground text-[13px] placeholder:text-muted-foreground/50" 
             />
           </div>
         </div>
@@ -129,16 +129,16 @@ export function AddViewDropdown({ onAddView }: AddViewDropdownProps) {
               {renderSection("Embeds", filteredEmbeds, true)}
             </>
           ) : (
-            <div className="py-8 text-center text-[#666] text-[13px]">No views found</div>
+            <div className="py-8 text-center text-muted-foreground text-[13px]">No views found</div>
           )}
         </div>
-        <div className="flex items-center gap-5 px-3.5 py-2.5 border-t border-[#252528]">
-          <label className="flex items-center gap-1.5 text-[12px] text-[#666] cursor-pointer hover:text-[#aaa]">
-            <input type="checkbox" className="accent-[#555] w-[13px] h-[13px]" />
+        <div className="flex items-center gap-5 px-3.5 py-2.5 border-t border-border">
+          <label className="flex items-center gap-1.5 text-[12px] text-muted-foreground cursor-pointer hover:text-foreground/80">
+            <input type="checkbox" className="accent-foreground w-[13px] h-[13px]" />
             <Lock className="h-[13px] w-[13px]" />
             Private view
           </label>
-          <label className="flex items-center gap-1.5 text-[12px] text-[#666] cursor-pointer hover:text-[#aaa]">
+          <label className="flex items-center gap-1.5 text-[12px] text-muted-foreground cursor-pointer hover:text-foreground/80">
             <input type="checkbox" className="accent-[#555] w-[13px] h-[13px]" />
             <Pin className="h-[13px] w-[13px]" />
             Pin view

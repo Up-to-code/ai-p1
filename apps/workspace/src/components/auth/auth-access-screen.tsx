@@ -343,7 +343,7 @@ export function AuthAccessScreen({
       </section>
 
       <section
-        className={`relative hidden min-h-screen overflow-hidden bg-[var(--auth-visual-base)] text-[var(--auth-visual-text)] [--auth-visual-base:#f5f4f0] [--auth-visual-copy:rgba(17,17,17,0.62)] [--auth-visual-logo-bg:rgba(245,244,240,0.75)] [--auth-visual-logo-border:rgba(17,17,17,0.1)] [--auth-visual-text:#111111] dark:[--auth-visual-base:oklch(9.5%_0.014_255)] dark:[--auth-visual-copy:oklch(78%_0.014_255)] dark:[--auth-visual-logo-bg:oklch(14%_0.016_255_/_0.76)] dark:[--auth-visual-logo-border:rgba(255,255,255,0.12)] dark:[--auth-visual-text:oklch(96%_0.008_255)] lg:block ${isAr ? "lg:[grid-column:1] lg:[grid-row:1]" : "lg:[grid-column:2] lg:[grid-row:1]"}`}
+        className={`relative hidden min-h-screen overflow-hidden bg-[var(--auth-visual-base)] text-[var(--auth-visual-text)] [--auth-visual-base:var(--q-bg-secondary)] [--auth-visual-copy:color-mix(in_srgb,var(--q-text-primary)_62%,transparent)] [--auth-visual-logo-bg:color-mix(in_srgb,var(--q-bg-secondary)_75%,transparent)] [--auth-visual-logo-border:color-mix(in_srgb,var(--q-text-primary)_10%,transparent)] [--auth-visual-text:var(--q-text-primary)] dark:[--auth-visual-base:var(--q-bg)] dark:[--auth-visual-copy:color-mix(in_srgb,var(--q-text-primary)_62%,transparent)] dark:[--auth-visual-logo-bg:color-mix(in_srgb,var(--q-card)_76%,transparent)] dark:[--auth-visual-logo-border:color-mix(in_srgb,var(--q-text-primary)_12%,transparent)] dark:[--auth-visual-text:var(--q-text-primary)] lg:block ${isAr ? "lg:[grid-column:1] lg:[grid-row:1]" : "lg:[grid-column:2] lg:[grid-row:1]"}`}
       >
         <video
           aria-hidden="true"

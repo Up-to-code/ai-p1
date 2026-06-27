@@ -251,7 +251,7 @@ function ResourceLoadingSkeleton({ variant }: { variant: LoadingSkeletonVariant 
     return (
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3 xl:grid-cols-5" aria-hidden="true">
         {[0, 1, 2, 3, 4].map((column) => (
-          <section key={column} className="min-h-[420px] rounded-[28px] border border-border bg-muted/40 p-3">
+          <section key={column} className="min-h-[420px] rounded-[24px] border border-border bg-muted/40 p-3">
             <div className="mb-4 flex items-center justify-between px-2">
               <Skeleton className="h-3 w-20 rounded-full" />
               <Skeleton className="h-5 w-5 rounded-full" />
@@ -334,7 +334,7 @@ function ResourceLoadingSkeleton({ variant }: { variant: LoadingSkeletonVariant 
   if (variant === "detail") {
     return (
       <div className="space-y-6" aria-hidden="true">
-        <section className="rounded-[28px] border border-border bg-card p-5 md:p-6">
+        <section className="rounded-[24px] border border-border bg-card p-5 md:p-6">
           <div className="flex flex-col gap-4 border-b border-border pb-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-3">
               <Skeleton className="h-3 w-32 rounded-full" />

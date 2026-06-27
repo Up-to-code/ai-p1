@@ -26,7 +26,7 @@ export default function Section({
         white: "bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100",
         slate: "bg-[#F8FAFC] text-slate-900 dark:bg-slate-900 dark:text-slate-100",
         dark: "bg-[#0F172A] text-white dark:bg-slate-950 dark:text-slate-50",
-        primary: "bg-[#2563EB] text-white",
+        primary: "bg-[#111111] text-white",
         glass: "border-y border-white/20 bg-white/70 text-slate-900 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70 dark:text-slate-100",
         gradient: "bg-gradient-to-b from-slate-50 to-white text-slate-900 dark:from-slate-950 dark:to-slate-900 dark:text-slate-100",
         none: ""

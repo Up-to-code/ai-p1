@@ -111,7 +111,7 @@ export function PendingConfirmationDock({
           <View style={[styles.resultIcon, currentActionState?.status === "canceled" ? styles.cancelButton : styles.approveButton]}>
             {currentActionState?.status === "canceled"
               ? <X size={19} color={colors.textPrimary} strokeWidth={2.4} />
-              : <Check size={20} color="#FFFFFF" strokeWidth={2.5} />}
+              : <Check size={20} color={colors.accentForeground} strokeWidth={2.5} />}
           </View>
         ) : (
           <View style={styles.actions}>
@@ -131,7 +131,7 @@ export function PendingConfirmationDock({
             onPress={() => onApprove?.(confirmation.confirmationId)}
             style={({ pressed }) => [styles.iconButton, styles.approveButton, pressed ? styles.pressed : null]}
           >
-            <Check size={20} color="#FFFFFF" strokeWidth={2.5} />
+            <Check size={20} color={colors.accentForeground} strokeWidth={2.5} />
           </Pressable>
         </View>
         )}

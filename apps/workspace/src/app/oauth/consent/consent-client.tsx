@@ -168,7 +168,7 @@ export function OAuthConsentClient({ locale }: { locale: OAuthLocale }) {
       dir={direction}
       className="flex min-h-screen items-center justify-center bg-[#eef2f5] px-4 py-8 text-[#111827] sm:px-6"
     >
-      <section className="w-full max-w-[470px] overflow-hidden rounded-[14px] border border-[#d9dee6] bg-[#fbfbfc] shadow-none">
+      <section className="w-full max-w-[470px] overflow-hidden rounded-[12px] border border-[#d9dee6] bg-[#fbfbfc] shadow-none">
         <div className="relative border-b border-[#e4e7ec] px-5 pb-5 pt-8 sm:px-8">
           <button
             type="button"

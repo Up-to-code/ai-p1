@@ -49,7 +49,7 @@ export function IntegrationsOverview({
             { label: t('overview.stats.connected'), value: isLoading ? "..." : String(activeConnections), icon: CheckCircle2 },
             { label: t('overview.stats.soon'), value: isLoading ? "..." : String(comingSoonCount), icon: Clock, tone: "soon" },
           ].map((item) => (
-            <section key={item.label} className="rounded-[14px] border border-border/80 bg-white p-4 dark:border-white/[0.06] dark:bg-white/[0.02]">
+            <section key={item.label} className="rounded-[12px] border border-border/80 bg-white p-4 dark:border-white/[0.06] dark:bg-white/[0.02]">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-xs font-semibold text-muted-foreground">{item.label}</span>
                 <item.icon
@@ -74,7 +74,7 @@ export function IntegrationsOverview({
               <Link
                 key={app.id}
                 href={`/web-apps/${app.id}`}
-                className="group block rounded-[14px] border border-border/80 bg-white p-4 text-start transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-sm dark:border-white/[0.06] dark:bg-white/[0.02] dark:hover:border-white/10 dark:hover:shadow-black/20"
+                className="group block rounded-[12px] border border-border/80 bg-white p-4 text-start transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-sm dark:border-white/[0.06] dark:bg-white/[0.02] dark:hover:border-white/10 dark:hover:shadow-black/20"
               >
                 <div className="flex items-center gap-3">
                   <AppIcon app={app} size="sm" />

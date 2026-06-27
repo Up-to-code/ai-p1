@@ -68,7 +68,7 @@ async function ensureAndroidChannel() {
     name: "Qentrah reminders",
     importance: notifications.AndroidImportance.HIGH,
     vibrationPattern: [0, 250, 250, 250],
-    lightColor: "#0b5cff",
+    lightColor: "#F5F2EC",
   });
   return true;
 }

@@ -246,7 +246,7 @@ export function ResourceMediaUploader({
   const uploadQueueItems = immediate ? uploadQueue.queue : pendingPreviews;
 
   return (
-    <section className={cn("rounded-[28px] border border-border bg-card p-4 md:p-5", className)}>
+    <section className={cn("rounded-[24px] border border-border bg-card p-4 md:p-5", className)}>
       {!copy.hideHeader && (
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -323,13 +323,13 @@ export function ResourceMediaUploader({
                   )}
                   <div className="absolute right-2 top-2 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
                     {immediate && preview.status === "failed" && (
-                      <button type="button" className="inline-flex h-8 w-8 items-center justify-center bg-foreground/70 text-white transition hover:bg-foreground" onClick={() => uploadQueue.uploadQueued([preview.id])} aria-label={copy.retry}>
+                      <button type="button" className="inline-flex h-8 w-8 items-center justify-center bg-foreground/70 text-background transition hover:bg-foreground" onClick={() => uploadQueue.uploadQueued([preview.id])} aria-label={copy.retry}>
                         <RotateCcw className="h-3.5 w-3.5" />
                       </button>
                     )}
                     <button
                       type="button"
-                      className="inline-flex h-8 w-8 items-center justify-center bg-foreground/70 text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="inline-flex h-8 w-8 items-center justify-center bg-foreground/70 text-background transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
                       disabled={preview.status === "uploading"}
                       onClick={() => {
                         if (immediate) void uploadQueue.removeFromQueue(preview.id);

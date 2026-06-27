@@ -23,7 +23,7 @@ export function TopbarAssistantButton() {
           "relative flex items-center gap-1.5 px-2 py-1 transition-colors",
           isAiPanelOpen
             ? "bg-[var(--q-user-bubble)]/10 text-[var(--q-user-bubble)] hover:bg-[var(--q-user-bubble)]/20"
-            : "text-text-muted hover:bg-[var(--color-divider)] hover:text-text-primary",
+            : "text-text-muted hover:bg-accent hover:text-text-primary",
         )}
         aria-label={isAiPanelOpen ? t("close") : t("open")}
       >

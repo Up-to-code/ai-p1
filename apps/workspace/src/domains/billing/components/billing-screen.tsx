@@ -245,7 +245,7 @@ export function BillingScreen() {
               ) : (
                 <Button
                   size="lg"
-                  className="w-full rounded-2xl bg-[var(--q-accent)] text-sm font-black uppercase tracking-widest text-white hover:bg-[var(--q-accent)]/90 disabled:opacity-60"
+                  className="w-full rounded-2xl bg-[var(--q-accent)] text-sm font-black uppercase tracking-widest text-[var(--q-bg)] hover:bg-[var(--q-accent)]/90 disabled:opacity-60"
                   onClick={startCheckout}
                   disabled={isStartingCheckout}
                 >

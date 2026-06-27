@@ -55,7 +55,7 @@ export function EmptyThreadWelcome() {
       style={styles.container}
     >
       <View style={styles.logoWrap}>
-        <BreathingLogo colors={colors} color={isDark ? "#FFFFFF" : undefined} />
+        <BreathingLogo colors={colors} color={isDark ? colors.accentForeground : undefined} />
       </View>
     </Animated.View>
   );

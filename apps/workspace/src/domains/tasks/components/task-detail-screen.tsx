@@ -52,7 +52,7 @@ export function TaskDetailScreen({ id }: { id: string }) {
         <button
           type="button"
           onClick={() => taskResult.refetch()}
-          className="inline-flex h-9 items-center rounded-xl bg-primary px-4 text-xs font-semibold text-white hover:bg-primary/90 transition-colors"
+          className="inline-flex h-9 items-center rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           Retry
         </button>

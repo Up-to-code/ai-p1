@@ -133,7 +133,7 @@ function ConfirmationCard({
             onPress={() => onApprove?.(confirmation.confirmationId)}
             style={({ pressed }) => [styles.confirmButton, pressed && styles.confirmButtonPressed]}
           >
-            <Check size={16} color="#FFFFFF" />
+            <Check size={16} color={colors.accentForeground} />
             <Text style={styles.confirmButtonText}>Approve</Text>
           </Pressable>
           <Pressable
@@ -211,10 +211,10 @@ function StreamingText({
   style: StyleProp<TextStyle>;
   maxContentWidth: number;
 }) {
-  const { colors } = useTheme();
+  const { colors, resolvedColorScheme } = useTheme();
   const styles = useMemo(
-    () => createStyles(colors, colors.background === "#000000" ? "dark" : "light", maxContentWidth),
-    [colors, maxContentWidth],
+    () => createStyles(colors, resolvedColorScheme, maxContentWidth),
+    [colors, resolvedColorScheme, maxContentWidth],
   );
 
   if (!isStreaming) {
@@ -471,7 +471,7 @@ function parseInlineMarkdown(text: string) {
       return (
         <Text
           key={i}
-          style={{ color: "#007AFF", textDecorationLine: "underline", fontFamily: "Manrope_600SemiBold" }}
+          style={{ color: colors.accent, textDecorationLine: "underline", fontFamily: "Manrope_600SemiBold" }}
           onPress={() => Linking.openURL(url).catch(() => {})}
         >
           {label}
@@ -481,7 +481,7 @@ function parseInlineMarkdown(text: string) {
     // Hashtag: #word
     if (part.startsWith("#") && part.length > 1 && !part.includes(" ")) {
       return (
-        <Text key={i} style={{ color: "#0B5CFF", fontFamily: "Manrope_700Bold" }}>
+        <Text key={i} style={{ color: colors.accent, fontFamily: "Manrope_700Bold" }}>
           {part}
         </Text>
       );
@@ -795,7 +795,7 @@ const createStyles = (colors: AppColors, colorScheme: "light" | "dark", maxConte
     opacity: 0.82,
   },
   confirmButtonText: {
-    color: "#FFFFFF",
+    color: colors.accentForeground,
     fontSize: 13,
     lineHeight: 18,
     fontFamily: "Manrope_700Bold",

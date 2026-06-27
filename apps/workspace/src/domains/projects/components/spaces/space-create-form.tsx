@@ -34,11 +34,11 @@ interface SpaceCreateFormProps {
 }
 
 const SPACE_COLORS = [
-  "#3b82f6",
-  "#10b981",
-  "#f59e0b",
-  "#ef4444",
-  "#8b5cf6",
+  "#4F80FF",
+  "#2BB673",
+  "#B78544",
+  "#A55B52",
+  "#8A5CFF",
   "#ec4899",
   "#06b6d4",
   "#84cc16",

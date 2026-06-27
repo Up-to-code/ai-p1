@@ -225,7 +225,7 @@ export function ProfilePictureUploader({
     <>
       <div
         className={cn(
-          "relative shrink-0 h-24 w-24 rounded-[28px] border-2 border-dashed transition-all",
+          "relative shrink-0 h-24 w-24 rounded-[24px] border-2 border-dashed transition-all",
           isDragging
             ? "border-blue-400 bg-blue-50 dark:bg-blue-500/10"
             : "border-border bg-muted"
@@ -242,7 +242,7 @@ export function ProfilePictureUploader({
           if (droppedFile) openCropper(droppedFile);
         }}
       >
-        <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-[26px]">
+        <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-[24px]">
           {image ? (
             <img src={image} alt={name} className="h-full w-full object-cover" />
           ) : (
@@ -284,16 +284,16 @@ export function ProfilePictureUploader({
       </div>
 
       <Dialog open={Boolean(file)} onOpenChange={(open) => !open && closeCropper()}>
-        <DialogContent className="max-w-md rounded-[28px] border-border bg-card p-6 shadow-none">
+        <DialogContent className="max-w-md rounded-[24px] border-border bg-card p-6 shadow-none">
           <DialogHeader>
             <DialogTitle className="text-xl font-black uppercase tracking-tight">{cropTitle}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-5">
-            <div className="overflow-hidden rounded-[28px] border border-border bg-muted">
+            <div className="overflow-hidden rounded-[24px] border border-border bg-muted">
               <div
                 className={cn(
-                  "relative mx-auto aspect-square w-full max-w-sm overflow-hidden rounded-[28px] touch-none select-none",
+                  "relative mx-auto aspect-square w-full max-w-sm overflow-hidden rounded-[24px] touch-none select-none",
                   isUploading ? "cursor-wait" : isPanning ? "cursor-grabbing" : "cursor-grab"
                 )}
                 onPointerDown={startPan}
@@ -333,7 +333,7 @@ export function ProfilePictureUploader({
                     className="pointer-events-none h-full w-full object-contain opacity-0"
                   />
                 )}
-                <div className="pointer-events-none absolute inset-0 rounded-[28px] ring-2 ring-inset ring-white/80 dark:ring-white/40" />
+                <div className="pointer-events-none absolute inset-0 rounded-[24px] ring-2 ring-inset ring-white/80 dark:ring-white/40" />
                 <div className="pointer-events-none absolute left-1/3 top-0 h-full w-px bg-white/35" />
                 <div className="pointer-events-none absolute left-2/3 top-0 h-full w-px bg-white/35" />
                 <div className="pointer-events-none absolute left-0 top-1/3 h-px w-full bg-white/35" />
@@ -376,7 +376,7 @@ export function ProfilePictureUploader({
               <X className="me-2 h-4 w-4" />
               {labels.cancel}
             </Button>
-            <Button type="button" onClick={applyCropAndUpload} disabled={isUploading} className="rounded-full bg-foreground px-6 text-white hover:bg-black">
+            <Button type="button" onClick={applyCropAndUpload} disabled={isUploading} className="rounded-full bg-foreground px-6 text-background hover:bg-foreground/90">
               {isUploading ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Check className="me-2 h-4 w-4" />}
               {labels.apply}
             </Button>

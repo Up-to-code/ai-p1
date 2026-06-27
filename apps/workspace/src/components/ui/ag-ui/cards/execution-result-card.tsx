@@ -41,7 +41,7 @@ export function AgExecutionResultCard({
   const Icon = config.icon;
 
   return (
-    <AgCardShell className="rounded-[18px] p-4">
+    <AgCardShell className="rounded-[16px] p-4">
       <div className="flex items-start gap-3">
         <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-full border", config.className)}>
           <Icon className="h-4 w-4" />

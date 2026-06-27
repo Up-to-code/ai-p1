@@ -35,6 +35,9 @@ import {
   type PermissionResource,
 } from "../../settings-view-model";
 import { LoadingRow, NoOrganizationState, OrganizationSettingsSkeleton, RoleRow, Section, WorkRoleGrid } from "../shared";
+import { PermissionMatrix, QuickRoleSelector } from "@/components/mcp/permission-matrix";
+import type { QuickRoleId } from "@/server/domains/agents/constants/quick-roles";
+import { QUICK_ROLES } from "@/server/domains/agents/constants/quick-roles";
 
 export function RoleManagementPanel({ surface = "page" }: { surface?: "page" | "drawer" }) {
   const t = useTranslations("Organization");
@@ -48,6 +51,8 @@ export function RoleManagementPanel({ surface = "page" }: { surface?: "page" | "
   const [editingRole, setEditingRole] = useState<OrganizationRole | null>(null);
   const [showAdvancedWork, setShowAdvancedWork] = useState(false);
   const [templateId, setTemplateId] = useState("blank");
+  const [selectedQuickRole, setSelectedQuickRole] = useState<QuickRoleId | null>(null);
+  const [useMcpPermissions, setUseMcpPermissions] = useState(false);
 
   const membersQuery = useQuery({
     queryKey: ["organization-members", organizationId],
@@ -119,6 +124,7 @@ export function RoleManagementPanel({ surface = "page" }: { surface?: "page" | "
   function applyTemplate(nextTemplateId: string) {
     setTemplateId(nextTemplateId);
     setEditingRole(null);
+    setSelectedQuickRole(null);
     if (nextTemplateId === "blank") {
       setRoleName("");
       setRolePermission(emptyPermission());
@@ -129,6 +135,36 @@ export function RoleManagementPanel({ surface = "page" }: { surface?: "page" | "
     if (!template) return;
     setRoleName(template.suggestedName);
     setRolePermission(template.permission);
+  }
+
+  function applyQuickRole(roleId: QuickRoleId) {
+    setSelectedQuickRole(roleId);
+    const quickRole = QUICK_ROLES[roleId];
+    if (!quickRole) return;
+    
+    setRoleName(quickRole.name);
+    // Convert MCP permissions to organization permission format
+    const convertedPermissions: Partial<Record<PermissionResource, string[]>> = {};
+    Object.entries(quickRole.permissions).forEach(([module, actions]) => {
+      convertedPermissions[module as PermissionResource] = actions;
+    });
+    setRolePermission(convertedPermissions);
+    setTemplateId("blank");
+  }
+
+  function handleMcpPermissionToggle(module: string, action: string) {
+    setRolePermission((current) => {
+      const currentActions = current[module as PermissionResource] || [];
+      const newActions = currentActions.includes(action)
+        ? currentActions.filter((a) => a !== action)
+        : [...currentActions, action];
+      
+      return {
+        ...current,
+        [module]: newActions,
+      };
+    });
+    setSelectedQuickRole(null); // Clear quick role selection when manually editing
   }
 
   if (account.isPending) {
@@ -147,13 +183,13 @@ export function RoleManagementPanel({ surface = "page" }: { surface?: "page" | "
   }
 
   const content = (
-    <div className={surface === "drawer" ? "space-y-8" : "mx-auto max-w-5xl space-y-8 px-6 py-10"}>
+    <div className={surface === "drawer" ? "space-y-6" : "mx-auto max-w-5xl space-y-6 px-6 py-8"}>
       <Section title={editingRole ? t("roles.editTitle") : t("roles.createTitle")} description={t("roles.createDesc")}>
-        <div className="space-y-5 rounded-2xl border border-border bg-card p-5">
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_260px_auto] lg:items-end">
+        <div className="space-y-4 rounded-xl border border-border bg-card p-4">
+          <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_260px_auto] lg:items-end">
             <div className="space-y-2">
               <Label htmlFor="roleName" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("roles.name")}</Label>
-              <Input id="roleName" value={roleName} onChange={(event) => setRoleName(event.target.value)} placeholder={t("roles.namePlaceholder")} className="h-11 rounded-xl" />
+              <Input id="roleName" value={roleName} onChange={(event) => setRoleName(event.target.value)} placeholder={t("roles.namePlaceholder")} className="h-9 rounded-lg" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="roleTemplate" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t("roles.templateSelect")}</Label>
@@ -161,7 +197,7 @@ export function RoleManagementPanel({ surface = "page" }: { surface?: "page" | "
                 <SelectTrigger
                   id="roleTemplate"
                   size="sm"
-                  className="h-11 rounded-xl border-border bg-card px-3 text-sm font-extrabold text-foreground hover:bg-muted focus:bg-card"
+                  className="h-9 rounded-lg border-border bg-card px-3 text-sm font-extrabold text-foreground hover:bg-muted focus:bg-card"
                 >
                   <SelectValue />
                 </SelectTrigger>
@@ -183,49 +219,51 @@ export function RoleManagementPanel({ surface = "page" }: { surface?: "page" | "
             </div>
             <div className="flex gap-2">
               {editingRole && (
-                <Button variant="outline" type="button" onClick={() => { setEditingRole(null); setRoleName(""); setRolePermission(emptyPermission()); setTemplateId("blank"); }} className="h-11 rounded-xl">
+                <Button variant="outline" type="button" onClick={() => { setEditingRole(null); setRoleName(""); setRolePermission(emptyPermission()); setTemplateId("blank"); }} className="h-9 rounded-lg">
                   {t("roles.cancelEdit")}
                 </Button>
               )}
-              <Button type="button" onClick={() => roleMutation.mutate()} disabled={roleMutation.isPending || !organizationId || (editingRole ? !canUpdateRoles : !canCreateRoles)} className="h-11 rounded-xl bg-primary text-primary-foreground hover:bg-black disabled:opacity-50">
+              <Button type="button" onClick={() => roleMutation.mutate()} disabled={roleMutation.isPending || !organizationId || (editingRole ? !canUpdateRoles : !canCreateRoles)} className="h-9 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
                 {roleMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Save className="me-2 h-4 w-4" />}
                 {editingRole ? t("roles.update") : t("roles.create")}
               </Button>
             </div>
           </div>
 
-          <WorkRoleGrid
-            permission={rolePermission}
-            areas={workAreas}
-            actionColumns={workActionColumns}
-            onToggle={togglePermission}
-            labels={{
-              area: t("roles.grid.area"),
-              allowedWork: t("roles.grid.allowedWork"),
-              read: t("roles.actions.read"),
-              create: t("roles.actions.create"),
-              update: t("roles.actions.update"),
-              delete: t("roles.actions.delete"),
-              authorize: t("roles.actions.authorize"),
-              unavailable: t("roles.grid.unavailable"),
-            }}
-            getAreaLabel={(key) => t(`roles.workAreas.${key}`)}
-            getAreaHelp={(key) => t(`roles.workAreaHelp.${key}`)}
-          />
-
-          <div className="space-y-3">
+          {/* Permission Mode Toggle */}
+          <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-1.5">
             <button
               type="button"
-              onClick={() => setShowAdvancedWork((current) => !current)}
-              className="text-[10px] font-black uppercase tracking-widest text-muted-foreground underline-offset-4 hover:text-foreground hover:underline dark:hover:text-white"
+              onClick={() => setUseMcpPermissions(false)}
+              className={cn(
+                "flex-1 rounded-md px-2.5 py-1.5 text-xs font-bold transition-all",
+                !useMcpPermissions
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-background text-muted-foreground hover:bg-muted"
+              )}
             >
-              {showAdvancedWork ? t("roles.hideAdvanced") : t("roles.showAdvanced")}
+              Classic Grid
             </button>
-            {showAdvancedWork && (
+            <button
+              type="button"
+              onClick={() => setUseMcpPermissions(true)}
+              className={cn(
+                "flex-1 rounded-md px-2.5 py-1.5 text-xs font-bold transition-all",
+                useMcpPermissions
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-background text-muted-foreground hover:bg-muted"
+              )}
+            >
+              MCP Matrix
+            </button>
+          </div>
+
+          {!useMcpPermissions ? (
+            <div className="space-y-3">
               <WorkRoleGrid
                 permission={rolePermission}
-                areas={advancedWorkAreas}
-                actionColumns={advancedActionColumns}
+                areas={workAreas}
+                actionColumns={workActionColumns}
                 onToggle={togglePermission}
                 labels={{
                   area: t("roles.grid.area"),
@@ -240,13 +278,69 @@ export function RoleManagementPanel({ surface = "page" }: { surface?: "page" | "
                 getAreaLabel={(key) => t(`roles.workAreas.${key}`)}
                 getAreaHelp={(key) => t(`roles.workAreaHelp.${key}`)}
               />
-            )}
-          </div>
+
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedWork((current) => !current)}
+                  className="text-[10px] font-black uppercase tracking-widest text-muted-foreground underline-offset-4 hover:text-foreground hover:underline dark:hover:text-white"
+                >
+                  {showAdvancedWork ? t("roles.hideAdvanced") : t("roles.showAdvanced")}
+                </button>
+                {showAdvancedWork && (
+                  <WorkRoleGrid
+                    permission={rolePermission}
+                    areas={advancedWorkAreas}
+                    actionColumns={advancedActionColumns}
+                    onToggle={togglePermission}
+                    labels={{
+                      area: t("roles.grid.area"),
+                      allowedWork: t("roles.grid.allowedWork"),
+                      read: t("roles.actions.read"),
+                      create: t("roles.actions.create"),
+                      update: t("roles.actions.update"),
+                      delete: t("roles.actions.delete"),
+                      authorize: t("roles.actions.authorize"),
+                      unavailable: t("roles.grid.unavailable"),
+                    }}
+                    getAreaLabel={(key) => t(`roles.workAreas.${key}`)}
+                    getAreaHelp={(key) => t(`roles.workAreaHelp.${key}`)}
+                  />
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Quick Role Selector */}
+              <div>
+                <p className="mb-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  Quick Roles
+                </p>
+                <QuickRoleSelector
+                  selectedRole={selectedQuickRole}
+                  onRoleSelect={applyQuickRole}
+                  disabled={!canCreateRoles}
+                />
+              </div>
+
+              {/* MCP Permission Matrix */}
+              <div>
+                <p className="mb-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  Custom Permissions
+                </p>
+                <PermissionMatrix
+                  permissions={rolePermission}
+                  onPermissionToggle={handleMcpPermissionToggle}
+                  disabled={!canCreateRoles}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </Section>
 
       <Section title={t("roles.listTitle")} description={t("roles.listDesc")}>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {rolesQuery.isLoading && <LoadingRow label={t("roles.loading")} rows={2} />}
           {defaultRoleNames.map((role) => (
             <RoleRow key={role} role={role} roleLabels={defaultRoleLabels} locked labels={{ builtIn: t("roles.builtIn"), edit: t("roles.edit"), delete: t("roles.delete") }} />

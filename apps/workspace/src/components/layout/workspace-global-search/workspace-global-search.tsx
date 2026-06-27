@@ -93,11 +93,11 @@ export function WorkspaceGlobalSearch() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group flex min-w-0 items-center gap-2 rounded-[18px] border border-transparent px-3 py-2 text-start text-text-muted transition-all hover:border-[var(--color-divider)] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+        className="group flex min-w-0 items-center gap-2 rounded-[16px] border border-transparent px-3 py-2 text-start text-text-muted transition-all hover:bg-accent/50 hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
       >
         <Search className="h-4 w-4 shrink-0" />
         <span className="hidden truncate text-sm font-medium md:inline-block">{t("searchAnything")}</span>
-        <span className="hidden rounded-md border border-[var(--color-divider)] px-1.5 py-0.5 text-[10px] font-bold text-text-muted lg:inline-block">
+          <span className="hidden rounded-md border border-border/50 px-1.5 py-0.5 text-[10px] font-bold text-text-muted lg:inline-block">
           {t("searchShortcut")}
         </span>
       </button>
@@ -105,7 +105,7 @@ export function WorkspaceGlobalSearch() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
           className={cn(
-            "max-w-2xl gap-0 overflow-hidden rounded-[24px] border-[var(--color-divider)] bg-background p-0 text-text-primary shadow-none",
+            "max-w-2xl gap-0 overflow-hidden rounded-[24px] border-border/50 bg-background p-0 text-text-primary shadow-none",
             isRtl && "font-cairo",
           )}
           containerClassName="items-start pt-[12vh]"
@@ -115,7 +115,7 @@ export function WorkspaceGlobalSearch() {
           <DialogHeader className="sr-only">
             <DialogTitle>{t("searchTitle")}</DialogTitle>
           </DialogHeader>
-          <div className="flex items-center gap-3 border-b border-[var(--color-divider)] px-4 py-3">
+          <div className="flex items-center gap-3 border-b border-border/50 px-4 py-3">
             <Search className="h-5 w-5 shrink-0 text-text-muted" />
             <input
               ref={inputRef}

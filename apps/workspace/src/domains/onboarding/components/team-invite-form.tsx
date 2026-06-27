@@ -233,7 +233,7 @@ export function TeamInviteForm({ organizationId, currentUserEmail, onBack, onFin
               {errors.inviteRole && <p className="text-xs font-semibold text-red-600">{errors.inviteRole.message}</p>}
             </div>
             <Button
-              className="h-12 w-full rounded-2xl bg-foreground px-6 text-sm font-bold text-white hover:bg-black disabled:pointer-events-none disabled:opacity-50 dark:bg-white dark:text-foreground dark:hover:bg-muted md:w-auto"
+              className="h-12 w-full rounded-2xl bg-foreground px-6 text-sm font-bold text-white hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-50 dark:bg-white dark:text-foreground dark:hover:bg-muted md:w-auto"
               type="submit"
               disabled={isBusy}
             >
@@ -301,7 +301,7 @@ export function TeamInviteForm({ organizationId, currentUserEmail, onBack, onFin
               {tc("saveAndExit")}
             </Button>
             <Button 
-              className="h-12 rounded-2xl bg-foreground px-7 text-sm font-bold text-white hover:bg-black disabled:pointer-events-none disabled:opacity-50 dark:bg-white dark:text-foreground dark:hover:bg-muted"
+              className="h-12 rounded-2xl bg-foreground px-7 text-sm font-bold text-white hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-50 dark:bg-white dark:text-foreground dark:hover:bg-muted"
               type="button"
               onClick={handleFinish}
               disabled={isBusy}

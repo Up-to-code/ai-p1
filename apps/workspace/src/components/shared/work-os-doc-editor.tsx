@@ -1078,7 +1078,7 @@ export function WorkOsDocEditor({
                         e.preventDefault();
                         applyLink();
                       }}
-                      className="h-8 rounded-xl bg-primary px-3 text-xs font-semibold text-white"
+                      className="h-8 rounded-xl bg-primary px-3 text-xs font-semibold text-primary-foreground"
                     >
                       Insert link
                     </button>

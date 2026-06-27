@@ -41,7 +41,7 @@ export function ProjectListView() {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <Button className="h-9 rounded-xl bg-primary px-4 text-xs font-semibold text-white shadow-sm">
+            <Button className="h-9 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-sm">
               {t("add")}
             </Button>
           </DropdownMenuTrigger>

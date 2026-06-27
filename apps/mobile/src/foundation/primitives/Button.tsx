@@ -89,7 +89,7 @@ const createStyles = (colors: AppColors) => StyleSheet.create({
     fontFamily: "Manrope_800ExtraBold",
   },
   primaryLabel: {
-    color: "#FFFFFF",
+    color: colors.accentForeground,
   },
   secondaryLabel: {
     color: colors.textPrimary,

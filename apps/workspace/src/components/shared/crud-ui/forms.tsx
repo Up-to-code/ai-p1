@@ -85,7 +85,7 @@ export function DeleteRecordDialog({
   const t = useTranslations('Common');
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="rounded-[28px] border-border bg-card p-6 shadow-none">
+      <AlertDialogContent className="rounded-[24px] border-border bg-card p-6 shadow-none">
         <AlertDialogHeader>
           <AlertDialogMedia className="bg-red-50 text-red-600">
             <AlertTriangle className="h-5 w-5" />

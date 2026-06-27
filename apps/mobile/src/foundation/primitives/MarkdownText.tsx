@@ -339,16 +339,16 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   link: {
-    color: "#007AFF",
+    color: colors.accent,
     textDecorationLine: "underline",
     fontFamily: "Manrope_600SemiBold",
   },
   hashtag: {
-    color: "#0B5CFF",
+    color: colors.accent,
     fontFamily: "Manrope_700Bold",
   },
   inlineBadge: {
-    color: "#0B5CFF",
+    color: colors.accent,
     textDecorationLine: "underline",
     fontSize: 14,
     fontFamily: "Manrope_700Bold",

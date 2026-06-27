@@ -14,6 +14,7 @@ import {
 } from "./agent-language";
 import { hasOpenRouterConfig, streamOpenRouterText } from "./openrouter";
 import { buildAgentToolSet, type AgentToolResult } from "./tool-adapter";
+import { processPrompt, validatePrompt, optimizePrompt, getPromptStats } from "./prompt-manager";
 
 export { detectAgentResponseLanguage } from "./agent-language";
 
@@ -302,10 +303,69 @@ export function createAgentChatStream(input: {
 
       try {
         const responseLanguage = detectAgentResponseLanguage(input.message);
+        
+        // Validate and process the prompt for long content handling
+        const validation = validatePrompt(messageWithAttachments);
+        if (!validation.valid) {
+          const errorMessage = validation.errors.join("; ");
+          await write({ type: "error", error: errorMessage });
+          controller.close();
+          return;
+        }
+        
+        // Log warnings if any
+        if (validation.warnings.length > 0) {
+          console.warn("workspace.agent.prompt_warnings", {
+            organizationId: input.organizationId,
+            warnings: validation.warnings,
+          });
+        }
+        
+        // Optimize and process long prompts
+        const promptStats = getPromptStats(messageWithAttachments);
+        const processedPromptResult = processPrompt(messageWithAttachments, {
+          maxTokens: 8000,
+          enableChunking: true,
+          preserveContext: true,
+          onProgress: async (message) => {
+            await write({ type: "status", message });
+          },
+          onChunkComplete: (chunk) => {
+            console.info("workspace.agent.prompt_chunk", {
+              organizationId: input.organizationId,
+              chunkIndex: chunk.index,
+              totalChunks: chunk.total,
+              estimatedTokens: chunk.metadata.estimatedTokens,
+            });
+          },
+          onError: (error) => {
+            console.error("workspace.agent.prompt_error", {
+              organizationId: input.organizationId,
+              error: error.message,
+            });
+          },
+        });
+        
+        const processedMessage = processedPromptResult.success 
+          ? processedPromptResult.processedPrompt 
+          : messageWithAttachments;
+        
+        if (!processedPromptResult.success && processedPromptResult.error) {
+          await write({
+            type: "status",
+            message: processedPromptResult.error,
+          });
+        } else if (processedPromptResult.wasChunked || processedPromptResult.wasTruncated) {
+          await write({
+            type: "status",
+            message: `Processed long prompt (${promptStats.estimatedTokens.toLocaleString()} estimated tokens)`,
+          });
+        }
+        
         const started = await startRunWithRetry({
           organizationId: input.organizationId,
           threadId: input.threadId,
-          message: messageWithAttachments,
+          message: processedMessage,
           model: agentRuntimeConfig.openRouterModel,
           language: responseLanguage,
           write,
