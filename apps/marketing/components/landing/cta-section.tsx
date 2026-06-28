@@ -80,7 +80,7 @@ export function CtaSection() {
                 </p>
               </div>
 
-              <div className="hidden lg:flex items-center justify-center w-[500px] h-[500px] -mr-16">
+              <div className="hidden lg:flex items-center justify-center w-[500px] h-[500px] -mr-16 dark-invert-canvas">
                 <AnimatedTetrahedron />
               </div>
             </div>

@@ -337,6 +337,10 @@
     100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
   }
 
+  [data-theme="dark"] .dark-invert-canvas {
+    filter: invert(100%);
+  }
+
   .animate-char-in {
     animation: char-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     opacity: 0;
