@@ -51,7 +51,7 @@ export default function NotFound() {
         </p>
 
         <div className="mt-9 flex flex-col-reverse gap-3 sm:flex-row sm:justify-center">
-          <Link href="/dashboard">
+          <Link href="/ws">
             <Button className="h-12 w-full gap-2 rounded-full px-6 text-sm shadow-none sm:w-auto">
               <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
               {labels.dashboard}

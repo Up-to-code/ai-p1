@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  Bot,
   BriefcaseBusiness,
   Building2,
   CalendarDays,
@@ -46,7 +47,8 @@ type SidebarLabels = {
 /** Static navigation targets shown in the global search dialog. */
 export function buildGlobalSearchNavigationActions(labels: SidebarLabels): GlobalSearchNavigationAction[] {
   return [
-    { id: "dashboard", label: labels.dashboard, href: "/dashboard", icon: Building2 },
+    { id: "workspace", label: "Workspace", href: "/ws", icon: Building2 },
+    { id: "ai", label: "AI", href: "/ai", icon: Bot },
     { id: "clients", label: labels.clients, href: "/clients", icon: UserRound },
     { id: "opportunities", label: labels.opportunities, href: "/opportunities", icon: KanbanSquare },
     { id: "projects", label: labels.projects, href: "/projects", icon: BriefcaseBusiness },

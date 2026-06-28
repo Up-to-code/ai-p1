@@ -24,9 +24,9 @@ describe("dashboard mode routing", () => {
     expect(parseWorkspaceMode("ai")).toBe("ai");
     expect(parseWorkspaceMode("other")).toBe("ws");
 
-    expect(workspaceModeHref("ws")).toBe("/dashboard?mode=ws");
-    expect(workspaceModeHref("ai")).toBe("/dashboard?mode=ai");
-    expect(workspaceModeHref("ai", "thread_123")).toBe("/dashboard?mode=ai&threadId=thread_123");
+    expect(workspaceModeHref("ws")).toBe("/ws");
+    expect(workspaceModeHref("ai")).toBe("/ai");
+    expect(workspaceModeHref("ai", "thread_123")).toBe("/ai?threadId=thread_123");
   });
 
   it("keeps the topbar, sidebar, and dashboard screen driven by the mode query", () => {
@@ -61,7 +61,7 @@ describe("dashboard mode routing", () => {
     expect(sidebar).toContain('workspaceModeHref("ai", thread.id)');
     expect(sidebar).toContain("useAgentThreadsQuery(workspaceOrganizationId");
     expect(sidebar).toContain("enabled: Boolean(workspaceOrganizationId)");
-    expect(dashboard).toContain('parseWorkspaceMode(searchParams.get("mode"))');
+    expect(dashboard).toContain("useAccountContext");
     expect(conversationRuntime).toContain('params.set("mode", "ai")');
   });
 

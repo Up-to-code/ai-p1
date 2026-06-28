@@ -1,10 +1,7 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import {
-  organizationApiPath,
-  requestOrganizationAction,
-} from "./organization-request";
+import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
 import type { OrganizationMember } from "./types";
 
 type AuthError = {

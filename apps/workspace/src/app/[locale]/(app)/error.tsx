@@ -61,10 +61,10 @@ export default function AppError({
           )}
 
           <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
-            <Link href="/dashboard" className="sm:me-auto">
+            <Link href="/ws" className="sm:me-auto">
               <Button variant="outline" className="h-10 w-full gap-2 rounded-xl px-4 text-sm sm:w-auto">
                 <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
-                {isArabic ? "لوحة التحكم" : "Dashboard"}
+                {isArabic ? "مساحة العمل" : "Workspace"}
               </Button>
             </Link>
             <Button onClick={reset} className="h-10 gap-2 rounded-xl px-4 text-sm shadow-none">

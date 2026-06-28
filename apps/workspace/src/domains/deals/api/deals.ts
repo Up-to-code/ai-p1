@@ -2,10 +2,7 @@
 
 import { useMutation, useQueryClient, type QueryKey } from "@tanstack/react-query";
 import { useWorkspaceResource } from "@/domains/resources/workspace-resource-request";
-import {
-  organizationApiPath,
-  requestOrganizationAction,
-} from "@/domains/organization/api/organization-request";
+import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
 import { useToast } from "@/components/ui/toast";
 import type { Deal, DealFormValues, DealStage, DealStats } from "../store/deals.types";
 
@@ -63,30 +60,27 @@ export function dealPayloadFromForm(values: DealFormValues) {
 }
 
 export async function createDealRequest(organizationId: string, values: DealFormValues) {
-  return requestOrganizationAction<{ deal: Deal }>(
-    organizationApiPath(organizationId, "deals"),
-    "POST",
-    dealPayloadFromForm(values),
-    "Deal request failed.",
-  );
+  return workspaceMutation<{ deal: Deal }>(organizationId, "deals", {
+    method: "POST",
+    body: dealPayloadFromForm(values),
+    fallbackMessage: "Deal request failed.",
+  });
 }
 
 export async function updateDealRequest(organizationId: string, dealId: string, values: DealFormValues) {
-  return requestOrganizationAction<{ deal: Deal }>(
-    organizationApiPath(organizationId, "deals", dealId),
-    "PATCH",
-    dealPayloadFromForm(values),
-    "Deal request failed.",
-  );
+  return workspaceMutation<{ deal: Deal }>(organizationId, `deals/${dealId}`, {
+    method: "PATCH",
+    body: dealPayloadFromForm(values),
+    fallbackMessage: "Deal request failed.",
+  });
 }
 
 export async function deleteDealRequest(organizationId: string, dealId: string) {
-  return requestOrganizationAction(
-    organizationApiPath(organizationId, "deals", dealId),
-    "DELETE",
-    undefined,
-    "Deal request failed.",
-  );
+  return workspaceMutation(organizationId, `deals/${dealId}`, {
+    method: "DELETE",
+    body: undefined,
+    fallbackMessage: "Deal request failed.",
+  });
 }
 
 function dealsQueryBaseKey(organizationId?: string) {

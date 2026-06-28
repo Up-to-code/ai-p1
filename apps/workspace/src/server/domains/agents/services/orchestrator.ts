@@ -1,11 +1,7 @@
-import { api } from "@convex/_generated/api";
-import type { Id } from "@convex/_generated/dataModel";
 import type { Context } from "hono";
-import { fetchAuthMutation } from "@/server/auth/clerk-convex";
 import { agentRuntimeConfig, getOpenRouterModelCandidates } from "@/server/config/agent-runtime";
 import { recordAgentCreditUsage } from "@/server/domains/billing/services/billing";
 import type { MobileRequestContext } from "@/server/middleware/mobile-request-context";
-import { evaluateAgentRequestRisk } from "../policies/risk-policy";
 import {
   buildAgentModelPrompt,
   buildAgentSystemPrompt,
@@ -13,257 +9,19 @@ import {
   type AgentResponseLanguage,
 } from "./agent-language";
 import { hasOpenRouterConfig, streamOpenRouterText } from "./openrouter";
-import { buildAgentToolSet, type AgentToolResult } from "./tool-adapter";
-import { processPrompt, validatePrompt, optimizePrompt, getPromptStats } from "./prompt-manager";
+import { buildAgentToolSet } from "./tool-adapter";
+import { processPrompt, getPromptStats } from "./prompt-manager";
+import { encodeEvent, formatAttachmentContext, type AgentStreamEvent, type AgentChatAttachment } from "./stream-writer";
+import { isRetryableModelError, providerFailureMessage, retryStatusMessage } from "./model-retry";
+import { recordStep, recordTool, finishRun, readFinalTokenUsage, startRunWithRetry, type AgentRunIds } from "./record-keeper";
+import { evaluatePromptAndPolicy } from "./policy-guard";
 
 export { detectAgentResponseLanguage } from "./agent-language";
-
-type AgentStreamEvent =
-  | { type: "meta"; threadId: string; runId: string }
-  | { type: "status"; message: string }
-  | { type: "text"; text: string }
-  | {
-      type: "confirmation_required";
-      confirmationId: string;
-      summary: string;
-      resource: string;
-      action: string;
-      approvalType?: "user" | "admin";
-      inputPreview?: string;
-      expiresAt: number;
-    }
-  | { type: "done"; threadId: string }
-  | { type: "error"; error: string };
-
-type AgentRunIds = {
-  threadId: Id<"agentThreads">;
-  runId: Id<"agentRuns">;
-};
-
-type AgentChatAttachment = {
-  key: string;
-  url: string;
-  name: string;
-  mimeType: string;
-  size: number;
-  kind: "image" | "video" | "document";
-};
-
-type StreamTokenUsage = {
-  inputTokens?: number;
-  outputTokens?: number;
-  promptTokens?: number;
-  completionTokens?: number;
-};
-
-const encoder = new TextEncoder();
-
-function encodeEvent(event: AgentStreamEvent) {
-  return encoder.encode(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`);
-}
-
-function compact(value: unknown, maxLength = 1200) {
-  const text = typeof value === "string" ? value : JSON.stringify(value);
-  return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
-}
-
-function formatAttachmentContext(attachments: AgentChatAttachment[] | undefined) {
-  if (!attachments?.length) return "";
-
-  return `\n\nAttached files for this request:\n${attachments.map((attachment, index) => {
-    const sizeMb = attachment.size > 0 ? `, ${(attachment.size / 1024 / 1024).toFixed(2)} MB` : "";
-    return `${index + 1}. ${attachment.name} (${attachment.kind}, ${attachment.mimeType}${sizeMb})\n   URL: ${attachment.url}`;
-  }).join("\n")}`;
-}
-
-async function recordStep(ids: AgentRunIds, organizationId: string, phase: "retrieve" | "plan" | "policy" | "execute" | "summarize", status: "started" | "completed" | "blocked" | "failed", summary: string) {
-  await fetchAuthMutation(api.agents.write.recordStepFromHono, {
-    organizationId,
-    threadId: ids.threadId,
-    runId: ids.runId,
-    phase,
-    status,
-    summary,
-  }).catch(() => undefined);
-}
-
-async function recordTool(ids: AgentRunIds, organizationId: string, result: AgentToolResult) {
-  await fetchAuthMutation(api.agents.write.recordToolCallFromHono, {
-    organizationId,
-    threadId: ids.threadId,
-    runId: ids.runId,
-    tool: result.tool.name,
-    resource: result.tool.resource,
-    action: result.tool.action,
-    status: result.status,
-    inputPreview: result.input ? compact(result.input, 900) : undefined,
-    outputPreview: result.output ? compact(result.output, 900) : undefined,
-    error: result.error,
-  }).catch(() => undefined);
-}
 
 function memoryFactsFrom(message: string) {
   if (!/\bremember\b/i.test(message)) return [];
   const fact = message.replace(/\bplease\b|\bremember\b|\bthat\b/gi, " ").replace(/\s+/g, " ").trim();
   return fact ? [fact] : [];
-}
-
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function extractRequestId(message: string) {
-  return message.match(/Request ID:\s*([A-Za-z0-9_-]+)/i)?.[1] ?? null;
-}
-
-function isRetryableModelError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error ?? "");
-  const status = (error as { status?: unknown; statusCode?: unknown; code?: unknown } | null)?.status
-    ?? (error as { status?: unknown; statusCode?: unknown; code?: unknown } | null)?.statusCode
-    ?? (error as { status?: unknown; statusCode?: unknown; code?: unknown } | null)?.code;
-
-  if (typeof status === "number") {
-    if (status === 401 || status === 403) return false;
-    if (status === 400 && !/(model|not found|invalid|unsupported|retired|shut\s*down|unavailable)/i.test(message)) {
-      return false;
-    }
-    if (status === 408 || status === 409 || status === 429 || status >= 500) return true;
-  }
-
-  return /(server error|request id|overloaded|temporar(?:y|ily)|timeout|timed out|rate limit|429|5\d\d|model.*(?:not found|invalid|unsupported|retired|shut\s*down|unavailable)|no endpoints?|provider.*unavailable)/i.test(message);
-}
-
-function startupFailureMessage(error: unknown, language: AgentResponseLanguage = "en") {
-  const raw = error instanceof Error ? error.message : String(error ?? "Agent request failed.");
-  const requestId = extractRequestId(raw);
-
-  if (/no session|unauthenticated|permission|forbidden|not found|agent thread/i.test(raw)) {
-    return raw;
-  }
-
-  if (/(server error|request id|timeout|timed out|temporar(?:y|ily)|5\d\d)/i.test(raw)) {
-    if (language === "ar") {
-      return requestId
-        ? `تعذر بدء تشغيل المساعد في Workspace الآن. أعد المحاولة بعد قليل. Request ID: ${requestId}`
-        : "تعذر بدء تشغيل المساعد في Workspace الآن. أعد المحاولة بعد قليل.";
-    }
-    return requestId
-      ? `Workspace could not start this AI run right now. Please retry in a moment. Request ID: ${requestId}`
-      : "Workspace could not start this AI run right now. Please retry in a moment.";
-  }
-
-  return raw;
-}
-
-function providerFailureMessage(error: unknown, language: AgentResponseLanguage = "en") {
-  const raw = error instanceof Error ? error.message : String(error ?? "Agent request failed.");
-  if (/401|403|api key|unauthorized|forbidden/i.test(raw)) {
-    if (language === "ar") {
-      return "تعذر الاتصال بمزود الذكاء الاصطناعي بسبب إعدادات التفويض. تحقق من مفتاح OpenRouter وصلاحية الوصول للنموذج في Workspace.";
-    }
-    return "AI provider authorization failed. Check the Workspace OpenRouter API key and model access.";
-  }
-  if (/(model.*(?:not found|invalid|unsupported|retired|shut\s*down|unavailable)|no endpoints?)/i.test(raw)) {
-    if (language === "ar") {
-      return "نموذج الذكاء الاصطناعي المعد في Workspace غير متاح أو لم يعد مدعومًا. جربت النماذج الاحتياطية أيضًا، لكن لم يكتمل أي منها.";
-    }
-    return "The configured AI model is unavailable or no longer supported. I tried the configured fallback models too, but none completed.";
-  }
-  if (language === "ar") {
-    return "مزود الذكاء الاصطناعي غير متاح مؤقتًا. جربت النماذج الاحتياطية، لكن لم يكتمل أي منها. أعد المحاولة بعد قليل.";
-  }
-  return "The AI provider is temporarily unavailable. I tried the configured fallback models, but none completed. Please retry in a moment.";
-}
-
-function retryStatusMessage(language: AgentResponseLanguage, attemptIndex: number) {
-  if (language === "ar") {
-    return attemptIndex === 0
-      ? "النموذج الأساسي غير متاح الآن. أجرب نموذجًا احتياطيًا."
-      : "النموذج الاحتياطي غير متاح الآن. أجرب نموذجًا آخر.";
-  }
-
-  return attemptIndex === 0
-    ? "Primary AI model is unavailable. Retrying with a fallback model."
-    : "Fallback AI model is unavailable. Trying another model.";
-}
-
-async function finishRun(input: {
-  ids: AgentRunIds;
-  organizationId: string;
-  status: "completed" | "failed" | "blocked";
-  assistantMessage: string;
-  summary?: string;
-  memoryFacts?: string[];
-  error?: string;
-}) {
-  await fetchAuthMutation(api.agents.write.finishRunFromHono, {
-    organizationId: input.organizationId,
-    threadId: input.ids.threadId,
-    runId: input.ids.runId,
-    status: input.status,
-    assistantMessage: input.assistantMessage,
-    summary: input.summary,
-    memoryFacts: input.memoryFacts,
-    error: input.error,
-  }).catch(() => undefined);
-}
-
-async function readFinalTokenUsage(result: { totalUsage?: PromiseLike<StreamTokenUsage> } | undefined) {
-  if (!result?.totalUsage) return {};
-  const usage = await result.totalUsage;
-  return {
-    promptTokens: usage.inputTokens ?? usage.promptTokens,
-    completionTokens: usage.outputTokens ?? usage.completionTokens,
-  };
-}
-
-async function startRunWithRetry(input: {
-  organizationId: string;
-  threadId?: string;
-  message: string;
-  model: string;
-  language: AgentResponseLanguage;
-  write: (event: AgentStreamEvent) => Promise<void>;
-}) {
-  const maxAttempts = 2;
-  let lastError: unknown;
-
-  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-    try {
-      // startRunFromHono is a Convex mutation that starts a new agent run
-      return await fetchAuthMutation(api.agents.write.startRunFromHono, {
-        organizationId: input.organizationId,
-        threadId: input.threadId as Id<"agentThreads"> | undefined,
-        message: input.message,
-        model: input.model,
-      });
-    } catch (error) {
-      lastError = error;
-      const raw = error instanceof Error ? error.message : String(error);
-      const retryable = isRetryableModelError(error) && attempt < maxAttempts - 1;
-
-      console.warn("workspace.agent.start_run.failed", {
-        organizationId: input.organizationId,
-        threadId: input.threadId,
-        model: input.model,
-        attempt: attempt + 1,
-        retrying: retryable,
-        error: raw,
-      });
-
-      if (!retryable) break;
-
-      await input.write({
-        type: "status",
-        message: input.language === "ar"
-          ? "تعذر بدء المحادثة مؤقتًا. أعيد المحاولة الآن."
-          : "Workspace could not start the conversation. Retrying now.",
-      });
-      await sleep(250);
-    }
-  }
-
-  throw new Error(startupFailureMessage(lastError, input.language));
 }
 
 export function createAgentChatStream(input: {
@@ -303,25 +61,19 @@ export function createAgentChatStream(input: {
 
       try {
         const responseLanguage = detectAgentResponseLanguage(input.message);
-        
-        // Validate and process the prompt for long content handling
-        const validation = validatePrompt(messageWithAttachments);
-        if (!validation.valid) {
-          const errorMessage = validation.errors.join("; ");
+
+        const guard = evaluatePromptAndPolicy({
+          message: messageWithAttachments,
+          organizationId: input.organizationId,
+        });
+
+        if (!guard.valid) {
+          const errorMessage = guard.errors.join("; ");
           await write({ type: "error", error: errorMessage });
           controller.close();
           return;
         }
-        
-        // Log warnings if any
-        if (validation.warnings.length > 0) {
-          console.warn("workspace.agent.prompt_warnings", {
-            organizationId: input.organizationId,
-            warnings: validation.warnings,
-          });
-        }
-        
-        // Optimize and process long prompts
+
         const promptStats = getPromptStats(messageWithAttachments);
         const processedPromptResult = processPrompt(messageWithAttachments, {
           maxTokens: 8000,
@@ -345,11 +97,11 @@ export function createAgentChatStream(input: {
             });
           },
         });
-        
-        const processedMessage = processedPromptResult.success 
-          ? processedPromptResult.processedPrompt 
+
+        const processedMessage = processedPromptResult.success
+          ? processedPromptResult.processedPrompt
           : messageWithAttachments;
-        
+
         if (!processedPromptResult.success && processedPromptResult.error) {
           await write({
             type: "status",
@@ -361,7 +113,7 @@ export function createAgentChatStream(input: {
             message: `Processed long prompt (${promptStats.estimatedTokens.toLocaleString()} estimated tokens)`,
           });
         }
-        
+
         const started = await startRunWithRetry({
           organizationId: input.organizationId,
           threadId: input.threadId,
@@ -378,9 +130,9 @@ export function createAgentChatStream(input: {
 
         await write({ type: "meta", threadId: runIds.threadId, runId: runIds.runId });
         await write({ type: "status", message: "Checking safety policy" });
-        const risk = evaluateAgentRequestRisk(input.message);
-        if (risk.state === "blocked") {
-          const response = risk.reason ?? "That organization action is blocked for agents.";
+
+        if (guard.risk.state === "blocked") {
+          const response = guard.risk.reason ?? "That organization action is blocked for agents.";
           await recordStep(runIds, input.organizationId, "policy", "blocked", response);
           await write({ type: "text", text: response });
           await settleRun("blocked", response);
@@ -393,7 +145,7 @@ export function createAgentChatStream(input: {
           input.organizationId,
           "policy",
           "completed",
-          risk.state === "requires_confirmation"
+          guard.risk.state === "requires_confirmation"
             ? "Request may require explicit confirmation before execution."
             : "Request passed agent risk policy.",
         );

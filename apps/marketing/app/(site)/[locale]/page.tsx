@@ -12,6 +12,9 @@ import { AISection } from "@/components/landing/ai-section";
 import { CommunicationSection } from "@/components/landing/communication-section";
 import { VisionSection } from "@/components/landing/vision-section";
 import { AnimatedHomeHero } from "@/components/landing/animated-home-hero";
+import { TaskSection } from "@/components/landing/task-section";
+import { DocSection } from "@/components/landing/doc-section";
+import { ClientsSection } from "@/components/landing/clients-section";
 import LogoCloud from "@/components/logo-cloud";
 import { isLocale } from "@/lib/content";
 
@@ -48,6 +51,12 @@ export default function LocaleHomePage({
       <PlatformSection locale={locale} />
 
       <AISection locale={locale} />
+
+      <TaskSection locale={locale} />
+
+      <DocSection locale={locale} />
+
+      <ClientsSection locale={locale} />
 
       <CommunicationSection locale={locale} />
 

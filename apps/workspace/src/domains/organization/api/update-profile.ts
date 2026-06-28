@@ -1,7 +1,4 @@
-import {
-  organizationApiPath,
-  requestOrganizationAction,
-} from "./organization-request";
+import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
 import type { UpdateOrganizationProfileValues } from "../validation/organization.schema";
 
 type OrganizationProfile = {

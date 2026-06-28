@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { Check, ChevronsUpDown, FolderGit2, Globe, Plus, Trash2, Loader2 } from "lucide-react";
+import { Check, ChevronsUpDown, FolderGit2, Plus, Trash2, Loader2 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog";
@@ -11,6 +11,7 @@ import { CreateProjectForm } from "@/domains/projects/components/create-project-
 import { useProjectSwitcher } from "@/domains/projects/hooks/use-project-switcher";
 import { deleteProjectRequest } from "@/domains/projects/api/projects";
 import { useAccountContext } from "@/domains/auth";
+import { useNavigation } from "@/domains/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useRouter } from "@/i18n/routing";
@@ -25,6 +26,7 @@ export function ProjectSwitcher() {
   const [isDeleting, setIsDeleting] = React.useState(false);
 
   const account = useAccountContext();
+  const { spaceSlug, projectId: activeProjectId, setProject } = useNavigation();
   const activeOrganizationId =
     account.workspace.status === "ready"
       ? account.workspace.organizationId ?? undefined
@@ -33,13 +35,15 @@ export function ProjectSwitcher() {
   const {
     projects,
     activeProject,
-    activeProjectId,
     isGlobalMode,
     isLoading,
-    switchProject,
-    switchToGlobal,
     refetchProjects,
   } = useProjectSwitcher();
+
+  const filteredProjects = React.useMemo(() => {
+    if (!spaceSlug) return [];
+    return projects;
+  }, [projects, spaceSlug]);
 
   const handleContextMenu = React.useCallback((e: React.MouseEvent, project: { id: string; name: string }) => {
     e.preventDefault();
@@ -55,7 +59,7 @@ export function ProjectSwitcher() {
       setDeleteModal(null);
       setContextMenu(null);
       refetchProjects();
-      router.push("/dashboard");
+      router.push("/ws");
     } catch {
     } finally {
       setIsDeleting(false);
@@ -76,6 +80,8 @@ export function ProjectSwitcher() {
     };
   }, [contextMenu]);
 
+  if (!spaceSlug) return null;
+
   return (
     <>
       <Popover open={open} onOpenChange={setOpen}>
@@ -91,12 +97,12 @@ export function ProjectSwitcher() {
                   <Skeleton className="h-5 w-5 rounded shrink-0" />
                   <Skeleton className="h-4 w-24 rounded-full" />
                 </>
-              ) : isGlobalMode || !activeProject ? (
+              ) : !activeProject ? (
                 <>
                   <div className="flex h-5 w-5 items-center justify-center rounded bg-muted text-foreground dark:bg-white/10 dark:text-muted-foreground">
-                    <Globe className="h-3.5 w-3.5" />
+                    <FolderGit2 className="h-3.5 w-3.5" />
                   </div>
-                  <span className="truncate">{t("globalWorkspace")}</span>
+                  <span className="truncate text-text-muted">{t("noProjectSelected")}</span>
                 </>
               ) : (
                 <>
@@ -112,20 +118,6 @@ export function ProjectSwitcher() {
         </PopoverTrigger>
         <PopoverContent className="w-[280px] p-2 shadow-xl rounded-xl" align="start">
           <div className="flex flex-col gap-0.5">
-            <button
-              onClick={() => {
-                switchToGlobal();
-                setOpen(false);
-              }}
-              className="flex w-full items-center px-2 py-1.5 text-sm font-medium rounded-lg hover:bg-muted transition-colors"
-            >
-              <Globe className="me-2 h-4 w-4 text-muted-foreground" />
-              {t("globalWorkspace")}
-              {isGlobalMode && <Check className="ms-auto h-4 w-4" />}
-            </button>
-
-            <div className="h-px bg-border my-1" />
-
             <div className="px-2 pt-1 pb-1 text-xs font-medium text-text-muted">{t("activeProjects")}</div>
             {isLoading ? (
               <div className="space-y-1 px-1">
@@ -136,14 +128,14 @@ export function ProjectSwitcher() {
                   </div>
                 ))}
               </div>
-            ) : projects.length === 0 ? (
+            ) : filteredProjects.length === 0 ? (
               <div className="px-2 py-2 text-sm text-text-muted">{t("noProjectFound")}</div>
             ) : (
-              projects.map((project) => (
+              filteredProjects.map((project) => (
                 <button
                   key={project.id}
                   onClick={() => {
-                    switchProject(project.id);
+                    setProject(project.id);
                     setOpen(false);
                   }}
                   onContextMenu={(e) => handleContextMenu(e, project)}

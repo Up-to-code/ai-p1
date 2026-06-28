@@ -20,15 +20,17 @@ describe("web apps route aliases", () => {
   it("renders web apps routes while keeping legacy integrations aliases unavailable", () => {
     expect(readSource("src/app/[locale]/(app)/web-apps/page.tsx")).toContain("<IntegrationsScreen />");
     expect(readSource("src/app/[locale]/(app)/web-apps/[id]/page.tsx")).toContain("<IntegrationDetailScreen id={id} />");
-    expect(readSource("src/app/[locale]/(app)/integrations/page.tsx")).toContain('redirect(`/${locale}/dashboard`)');
-    expect(readSource("src/app/[locale]/(app)/integrations/[id]/page.tsx")).toContain('redirect(`/${locale}/dashboard`)');
+    expect(readSource("src/app/[locale]/(app)/integrations/page.tsx")).toContain('redirect(`/${locale}/ws`)');
+    expect(readSource("src/app/[locale]/(app)/integrations/[id]/page.tsx")).toContain('redirect(`/${locale}/ws`)');
   });
 
   it("keeps sidebar integrations route active and labeled by the Work OS module", () => {
-    const sidebar = readSource("src/components/layout/sidebar.tsx");
+    const navConfig = readSource("src/components/layout/sidebar/config/nav.config.ts");
+    const searchConfig = readSource("src/components/layout/workspace-global-search/config/search-navigation.config.ts");
 
-    expect(sidebar).toContain('{ name: "integrations", href: "/web-apps", icon: Plug }');
-    expect(sidebar).not.toContain('disabled: true, badge: "comingSoon"');
+    expect(navConfig).toContain('{ name: "integrations", icon: Plug }');
+    expect(searchConfig).toContain('{ id: "integrations", label: labels.integrations, href: "/web-apps", icon: Plug }');
+    expect(navConfig).not.toContain('disabled: true, badge: "comingSoon"');
     expect(readSource("messages/en.json")).toContain('"integrations": "Integrations"');
     expect(readSource("messages/ar.json")).toContain('"integrations": "تطبيقات الويب"');
   });

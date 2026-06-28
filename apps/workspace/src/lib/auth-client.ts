@@ -113,7 +113,7 @@ export const authClient = {
       const clerk = browserClerk();
       if (!clerk?.redirectToSignIn) return failure(null, "Clerk is not loaded.");
       await clerk.redirectToSignIn({
-        redirectUrl: input?.callbackURL ?? "/dashboard",
+        redirectUrl: input?.callbackURL ?? "/ws",
       });
       return success({});
     },

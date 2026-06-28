@@ -7,6 +7,9 @@ async function parseJsonResponse<T>(response: Response, fallbackMessage: string)
   if (!response.ok) {
     throw new Error(payload?.error ?? fallbackMessage);
   }
+  if (payload && "error" in payload && Object.keys(payload).length === 1) {
+    throw new Error(payload.error ?? fallbackMessage);
+  }
   return payload as T;
 }
 
@@ -17,7 +20,7 @@ export async function workspaceFetch<T>(
 ): Promise<T> {
   const response = await fetch(organizationResourcePath(organizationId, path), {
     method: options.method,
-    headers: options.body === undefined ? undefined : { "content-type": "application/json" },
+    headers: options.body === undefined ? undefined : { "Content-Type": "application/json" },
     body: options.body === undefined ? undefined : JSON.stringify(options.body),
   });
   return parseJsonResponse<T>(response, options.fallbackMessage);

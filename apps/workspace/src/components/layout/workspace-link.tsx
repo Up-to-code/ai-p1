@@ -14,8 +14,8 @@
  *     applied AFTER persistent param forwarding and always win. Use when a
  *     specific link needs to force a param value, e.g.:
  *
- *       // Go to dashboard and force mode=ws regardless of current mode
- *       <WorkspaceLink href="/dashboard" extraParams={{ mode: "ws" }}>
+ *       // Go to workspace and force mode=ws regardless of current mode
+ *       <WorkspaceLink href="/ws" extraParams={{ mode: "ws" }}>
  *         AI Assistant
  *       </WorkspaceLink>
  *

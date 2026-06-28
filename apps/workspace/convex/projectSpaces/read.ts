@@ -5,6 +5,24 @@ import { activeWorkspaceRows, boundedWorkspaceReadLimit } from "../workspace/rea
 import { spaceValidator } from "./validators";
 
 const MAX_LIST_SPACES = 100;
+const MAX_ORG_SPACES = 500;
+
+export const listByOrganization = query({
+  args: { organizationId: v.string() },
+  returns: v.array(spaceValidator),
+  handler: async (ctx, args) => {
+    await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "read");
+    const spaces = await ctx.db
+      .query("projectSpaces")
+      .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
+      .take(MAX_ORG_SPACES);
+
+    return activeWorkspaceRows(spaces).map((space) => ({
+      ...space,
+      id: space._id,
+    }));
+  },
+});
 
 export const list = query({
   args: { organizationId: v.string(), projectId: v.id("projects") },

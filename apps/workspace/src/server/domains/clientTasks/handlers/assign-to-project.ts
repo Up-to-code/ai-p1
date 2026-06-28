@@ -2,7 +2,7 @@ import type { Context } from "hono";
 import { z } from "zod";
 import { requireOrganizationId } from "@/server/utils/organization/require-organization-id";
 import { actionErrorJson } from "@/server/utils/response/action-error";
-import { assignTasksToProject } from "../services/client-tasks";
+import { assignTasksToProject } from "../services/assign-tasks-to-project";
 
 const assignBodySchema = z.object({
   taskIds: z.array(z.string().min(1)).min(1),

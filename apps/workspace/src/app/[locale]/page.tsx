@@ -10,7 +10,7 @@ export default async function WorkspaceHome({
   const { userId } = await auth();
 
   if (userId) {
-    redirect(`/${locale}/dashboard`);
+    redirect(`/${locale}/ws`);
   }
 
   redirect(`/${locale}/sign-in`);

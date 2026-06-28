@@ -19,6 +19,7 @@ import type * as agents_validators from "../agents/validators.js";
 import type * as agents_write from "../agents/write.js";
 import type * as apiKeys from "../apiKeys.js";
 import type * as auth from "../auth.js";
+import type * as auth_permissions from "../auth/permissions.js";
 import type * as billing_creditSurface from "../billing/creditSurface.js";
 import type * as billing_customers from "../billing/customers.js";
 import type * as billing_data from "../billing/data.js";
@@ -108,6 +109,8 @@ import type * as partnerApps_webhookSecrets from "../partnerApps/webhookSecrets.
 import type * as partnerApps_webhookUrlSafety from "../partnerApps/webhookUrlSafety.js";
 import type * as partnerApps_webhooks from "../partnerApps/webhooks.js";
 import type * as partnerResourceGateway from "../partnerResourceGateway.js";
+import type * as pii_read from "../pii/read.js";
+import type * as pii_write from "../pii/write.js";
 import type * as pipeline_core from "../pipeline_core.js";
 import type * as pipeline_stages_read from "../pipeline_stages/read.js";
 import type * as pipeline_stages_write from "../pipeline_stages/write.js";
@@ -116,6 +119,11 @@ import type * as projectDashboards from "../projectDashboards.js";
 import type * as projectSpaces_read from "../projectSpaces/read.js";
 import type * as projectSpaces_validators from "../projectSpaces/validators.js";
 import type * as projectSpaces_write from "../projectSpaces/write.js";
+import type * as projects_milestones_read from "../projects/milestones/read.js";
+import type * as projects_milestones_validators from "../projects/milestones/validators.js";
+import type * as projects_milestones_write from "../projects/milestones/write.js";
+import type * as projects_projectMembers_validators from "../projects/projectMembers/validators.js";
+import type * as projects_projectMembers_write from "../projects/projectMembers/write.js";
 import type * as projects_read from "../projects/read.js";
 import type * as projects_rollup from "../projects/rollup.js";
 import type * as projects_validators from "../projects/validators.js";
@@ -128,6 +136,10 @@ import type * as security_clientPii from "../security/clientPii.js";
 import type * as security_organizationData from "../security/organizationData.js";
 import type * as serviceTokens from "../serviceTokens.js";
 import type * as shared_present from "../shared/present.js";
+import type * as shared_softDelete from "../shared/softDelete.js";
+import type * as tasks_dependencies_read from "../tasks/dependencies/read.js";
+import type * as tasks_dependencies_validators from "../tasks/dependencies/validators.js";
+import type * as tasks_dependencies_write from "../tasks/dependencies/write.js";
 import type * as userProfiles_data from "../userProfiles/data.js";
 import type * as userProfiles_read from "../userProfiles/read.js";
 import type * as userProfiles_validators from "../userProfiles/validators.js";
@@ -136,6 +148,7 @@ import type * as workspace_businessData from "../workspace/businessData.js";
 import type * as workspace_dashboardOverview from "../workspace/dashboardOverview.js";
 import type * as workspace_readStats from "../workspace/readStats.js";
 import type * as workspace_readSurface from "../workspace/readSurface.js";
+import type * as workspace_widgetLayouts from "../workspace/widgetLayouts.js";
 
 import type {
   ApiFromModules,
@@ -155,6 +168,7 @@ declare const fullApi: ApiFromModules<{
   "agents/write": typeof agents_write;
   apiKeys: typeof apiKeys;
   auth: typeof auth;
+  "auth/permissions": typeof auth_permissions;
   "billing/creditSurface": typeof billing_creditSurface;
   "billing/customers": typeof billing_customers;
   "billing/data": typeof billing_data;
@@ -244,6 +258,8 @@ declare const fullApi: ApiFromModules<{
   "partnerApps/webhookUrlSafety": typeof partnerApps_webhookUrlSafety;
   "partnerApps/webhooks": typeof partnerApps_webhooks;
   partnerResourceGateway: typeof partnerResourceGateway;
+  "pii/read": typeof pii_read;
+  "pii/write": typeof pii_write;
   pipeline_core: typeof pipeline_core;
   "pipeline_stages/read": typeof pipeline_stages_read;
   "pipeline_stages/write": typeof pipeline_stages_write;
@@ -252,6 +268,11 @@ declare const fullApi: ApiFromModules<{
   "projectSpaces/read": typeof projectSpaces_read;
   "projectSpaces/validators": typeof projectSpaces_validators;
   "projectSpaces/write": typeof projectSpaces_write;
+  "projects/milestones/read": typeof projects_milestones_read;
+  "projects/milestones/validators": typeof projects_milestones_validators;
+  "projects/milestones/write": typeof projects_milestones_write;
+  "projects/projectMembers/validators": typeof projects_projectMembers_validators;
+  "projects/projectMembers/write": typeof projects_projectMembers_write;
   "projects/read": typeof projects_read;
   "projects/rollup": typeof projects_rollup;
   "projects/validators": typeof projects_validators;
@@ -264,6 +285,10 @@ declare const fullApi: ApiFromModules<{
   "security/organizationData": typeof security_organizationData;
   serviceTokens: typeof serviceTokens;
   "shared/present": typeof shared_present;
+  "shared/softDelete": typeof shared_softDelete;
+  "tasks/dependencies/read": typeof tasks_dependencies_read;
+  "tasks/dependencies/validators": typeof tasks_dependencies_validators;
+  "tasks/dependencies/write": typeof tasks_dependencies_write;
   "userProfiles/data": typeof userProfiles_data;
   "userProfiles/read": typeof userProfiles_read;
   "userProfiles/validators": typeof userProfiles_validators;
@@ -272,6 +297,7 @@ declare const fullApi: ApiFromModules<{
   "workspace/dashboardOverview": typeof workspace_dashboardOverview;
   "workspace/readStats": typeof workspace_readStats;
   "workspace/readSurface": typeof workspace_readSurface;
+  "workspace/widgetLayouts": typeof workspace_widgetLayouts;
 }>;
 
 /**

@@ -21,7 +21,8 @@ export function parseWorkspaceMode(value: string | null): WorkspaceMode {
 }
 
 export function workspaceModeHref(mode: WorkspaceMode, threadId?: string) {
-  const params = new URLSearchParams({ mode });
-  if (mode === "ai" && threadId) params.set("threadId", threadId);
-  return `/dashboard?${params.toString()}`;
+  if (mode === "ai") {
+    return threadId ? `/ai?threadId=${threadId}` : `/ai`;
+  }
+  return `/ws`;
 }

@@ -1,6 +1,26 @@
 import { ConvexHttpClient } from "convex/browser";
-import { createConvexHttpCalls } from "@qentrah/convex-adapters";
 import { convexRuntimeConfig } from "@/packages/config";
+
+type ConvexHttpCalls = {
+  query: <TArgs, TResult>(ref: unknown, args: TArgs) => Promise<TResult>;
+  mutation: <TArgs, TResult>(ref: unknown, args: TArgs) => Promise<TResult>;
+  action: <TArgs, TResult>(ref: unknown, args: TArgs) => Promise<TResult>;
+};
+
+function createConvexHttpCalls(client: {
+  query: (ref: any, args: any) => Promise<unknown>;
+  mutation: (ref: any, args: any) => Promise<unknown>;
+  action: (ref: any, args: any) => Promise<unknown>;
+}): ConvexHttpCalls {
+  return {
+    query: <TArgs, TResult>(ref: unknown, args: TArgs) =>
+      client.query(ref as never, args as never) as Promise<TResult>,
+    mutation: <TArgs, TResult>(ref: unknown, args: TArgs) =>
+      client.mutation(ref as never, args as never) as Promise<TResult>,
+    action: <TArgs, TResult>(ref: unknown, args: TArgs) =>
+      client.action(ref as never, args as never) as Promise<TResult>,
+  };
+}
 
 type ConvexHttp = InstanceType<typeof ConvexHttpClient>;
 

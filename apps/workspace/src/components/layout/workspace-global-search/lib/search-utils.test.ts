@@ -6,7 +6,7 @@ import { matchesNavigationAction, normalizeSearchText, toProjectSearchResult } f
 describe("global search utils", () => {
   it("builds navigation actions from sidebar labels", () => {
     const actions = buildGlobalSearchNavigationActions({
-      dashboard: "Dashboard",
+      dashboard: "Workspace",
       clients: "Clients",
       opportunities: "Opportunities",
       projects: "Projects",
@@ -18,8 +18,8 @@ describe("global search utils", () => {
       settings: "Settings",
     });
 
-    expect(actions).toHaveLength(10);
-    expect(actions[0]?.id).toBe("dashboard");
+    expect(actions).toHaveLength(11);
+    expect(actions[0]?.id).toBe("workspace");
   });
 
   it("matches navigation actions by label", () => {

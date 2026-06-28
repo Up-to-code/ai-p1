@@ -1,4 +1,4 @@
-import { activeRows } from "./readStats";
+import { filterActive, sortByUpdated, sortByCreated } from "../shared/softDelete";
 
 type WorkspaceReadRow = {
   deletedAt?: number;
@@ -6,6 +6,10 @@ type WorkspaceReadRow = {
 
 type WorkspaceUpdatedRow = WorkspaceReadRow & {
   updatedAt: number;
+};
+
+type WorkspaceCreatedRow = WorkspaceReadRow & {
+  createdAt: number;
 };
 
 type WorkspaceChronologicalRow = WorkspaceReadRow & {
@@ -18,19 +22,23 @@ type WorkspaceDueRow = WorkspaceReadRow & {
 };
 
 export function activeWorkspaceRows<TRow extends WorkspaceReadRow>(rows: TRow[]) {
-  return activeRows(rows);
+  return filterActive(rows);
 }
 
 export function activeUpdatedWorkspaceRows<TRow extends WorkspaceUpdatedRow>(rows: TRow[]) {
-  return activeWorkspaceRows(rows).sort((a, b) => b.updatedAt - a.updatedAt);
+  return sortByUpdated(activeWorkspaceRows(rows));
+}
+
+export function activeCreatedWorkspaceRows<TRow extends WorkspaceCreatedRow>(rows: TRow[]) {
+  return sortByCreated(activeWorkspaceRows(rows));
 }
 
 export function activeChronologicalWorkspaceRows<TRow extends WorkspaceChronologicalRow>(rows: TRow[]) {
-  return activeWorkspaceRows(rows).sort((a, b) => a.startAt - b.startAt);
+  return filterActive(rows).sort((a, b) => a.startAt - b.startAt);
 }
 
 export function activeDueWorkspaceRows<TRow extends WorkspaceDueRow>(rows: TRow[]) {
-  return activeWorkspaceRows(rows).sort(
+  return filterActive(rows).sort(
     (a, b) => dueSortValue(a) - dueSortValue(b),
   );
 }
@@ -56,7 +64,7 @@ export function workspaceSearchRows<TRow extends WorkspaceReadRow, TStatus exten
   },
 ) {
   const search = params.search.trim().toLowerCase();
-  return activeWorkspaceRows(rows)
+  return filterActive(rows)
     .filter((row) => !params.status || params.getStatus(row) === params.status)
     .filter((row) => params.searchValues(row).some((value) => value?.toLowerCase().includes(search)))
     .slice(0, params.limit ?? 100);
@@ -66,5 +74,5 @@ export async function presentActiveWorkspacePage<TRow extends WorkspaceReadRow, 
   rows: TRow[],
   present: (row: TRow) => Promise<TPresented>,
 ) {
-  return Promise.all(activeWorkspaceRows(rows).map(present));
+  return Promise.all(filterActive(rows).map(present));
 }

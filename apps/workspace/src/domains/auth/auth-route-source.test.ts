@@ -40,7 +40,8 @@ describe("Workspace auth route source", () => {
     expect(authScreen).toContain("onSocialSignIn");
     expect(authScreen).toContain('id="clerk-captcha"');
     expect(authEntry).toContain("useAuth");
-    expect(authEntry).toContain('router.replace(hasActiveOrganization ? "/dashboard" : "/choose-org")');
+    const chooseOrgClient = readSource("src/domains/auth/components/choose-organization-client.tsx");
+    expect(chooseOrgClient).toContain('router.replace("/ws")');
     expect(authFlow).toContain("useSignIn");
     expect(authFlow).toContain("useSignUp");
   });
@@ -67,7 +68,7 @@ describe("Workspace auth route source", () => {
       expect(arMessages).not.toContain(term);
     }
     expect(chooseOrgClient).toContain('router.replace("/onboarding")');
-    expect(chooseOrgClient).toContain('router.replace("/dashboard")');
+    expect(chooseOrgClient).toContain('router.replace("/ws")');
   });
 
   it("handles Clerk instances where Organizations are not enabled", () => {

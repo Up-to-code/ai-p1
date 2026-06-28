@@ -1,5 +1,7 @@
 "use client";
 
+import { useQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
 import {
   useWorkspaceResource,
   useWorkspaceResourceResult,
@@ -20,6 +22,14 @@ export interface Space {
   createdByUserId: string;
   createdAt: number;
   updatedAt: number;
+}
+
+export function useWorkspaceSpacesQuery(organizationId?: string) {
+  const result = useQuery(
+    api.projectSpaces.read.listByOrganization,
+    organizationId ? { organizationId } : "skip",
+  );
+  return result ?? undefined;
 }
 
 export function useSpacesQuery(organizationId?: string, projectId?: string) {

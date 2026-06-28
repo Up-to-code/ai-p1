@@ -17,11 +17,11 @@ describe("organization selection flow", () => {
       navigate: vi.fn((href) => {
         calls.push(`navigate:${href}`);
       }),
-      nextHref: "/dashboard",
+      nextHref: "/ws",
     });
 
     expect(organization).toEqual({ id: "org_1" });
-    expect(calls).toEqual(["setActive", "navigate:/dashboard"]);
+    expect(calls).toEqual(["setActive", "navigate:/ws"]);
   });
 
   it("passes the selected organization id to navigation", async () => {
@@ -31,10 +31,10 @@ describe("organization selection flow", () => {
       organizationId: "org_1",
       setActive: async () => ({ data: { id: "org_1" } }),
       navigate,
-      nextHref: "/dashboard",
+      nextHref: "/ws",
     });
 
-    expect(navigate).toHaveBeenCalledWith("/dashboard", "org_1");
+    expect(navigate).toHaveBeenCalledWith("/ws", "org_1");
   });
 
   it("does not navigate when dev identity returns an error", async () => {
@@ -45,7 +45,7 @@ describe("organization selection flow", () => {
         organizationId: "org_1",
         setActive: async () => ({ error: { message: "Not a member" } }),
         navigate,
-        nextHref: "/dashboard",
+        nextHref: "/ws",
       }),
     ).rejects.toThrow("Not a member");
 
@@ -60,7 +60,7 @@ describe("organization selection flow", () => {
         organizationId: "org_1",
         setActive: async () => ({ data: null }),
         navigate,
-        nextHref: "/dashboard",
+        nextHref: "/ws",
       }),
     ).rejects.toThrow("Could not select this organization.");
 
@@ -75,7 +75,7 @@ describe("organization selection flow", () => {
         organizationId: "org_1",
         setActive: async () => ({ data: { id: "org_2" } }),
         navigate,
-        nextHref: "/dashboard",
+        nextHref: "/ws",
       }),
     ).rejects.toThrow("Could not select this organization.");
 

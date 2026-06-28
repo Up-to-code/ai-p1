@@ -10,6 +10,9 @@ import { PlatformSection } from "@/components/landing/platform-section";
 import { ProblemSection } from "@/components/landing/problem-section";
 import { SolutionSection } from "@/components/landing/solution-section";
 import { AISection } from "@/components/landing/ai-section";
+import { TaskSection } from "@/components/landing/task-section";
+import { DocSection } from "@/components/landing/doc-section";
+import { ClientsSection } from "@/components/landing/clients-section";
 import { CommunicationSection } from "@/components/landing/communication-section";
 import { VisionSection } from "@/components/landing/vision-section";
 
@@ -38,6 +41,12 @@ export function HomePage() {
       <PlatformSection locale={locale} />
 
       <AISection locale={locale} />
+
+      <TaskSection locale={locale} />
+
+      <DocSection locale={locale} />
+
+      <ClientsSection locale={locale} />
 
       <CommunicationSection locale={locale} />
 

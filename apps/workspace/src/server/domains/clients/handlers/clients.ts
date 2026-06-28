@@ -1,11 +1,15 @@
-import { createCrudHandlers } from "@/server/utils/handler-factory";
+import { createDomainRouter } from "@/server/utils/create-domain-router";
 import { clientPayloadSchema } from "../validation/client.schema";
-import { createClient, deleteClient, updateClient } from "../services/clients";
+import { api } from "@convex/_generated/api";
 
-export const { handleCreate: handleCreateClient, handleUpdate: handleUpdateClient, handleDelete: handleDeleteClient } = createCrudHandlers({
+export const { handleCreate: handleCreateClient, handleUpdate: handleUpdateClient, handleDelete: handleDeleteClient } = createDomainRouter({
   resourceName: "client",
   createSchema: clientPayloadSchema,
   updateSchema: clientPayloadSchema,
   resourceIdParam: "clientId",
-  service: { create: createClient, update: updateClient, delete: deleteClient },
+  convex: {
+    create: api.clients.write.createFromHono,
+    update: api.clients.write.updateFromHono,
+    delete: api.clients.write.deleteFromHono,
+  },
 });

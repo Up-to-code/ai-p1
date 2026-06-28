@@ -10,6 +10,7 @@
   --q-bg: #FAF8F4;
   --q-bg-secondary: #F5F2EC;
   --q-bg-tertiary: #EFEAE2;
+  --q-bg-midtone: #F2EFE8;
   --q-bg-very-light: #FAF8F4;
   --q-bg-light: #F5F2EC;
   --q-bg-dark: #DED8CF;
@@ -139,6 +140,7 @@
   --q-bg: #080808;
   --q-bg-secondary: #111111;
   --q-bg-tertiary: #1C1C1C;
+  --q-bg-midtone: #161616;
   --q-bg-very-light: #222222;
   --q-bg-light: #1C1C1C;
   --q-bg-dark: #080808;
@@ -249,6 +251,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-bg-midtone: var(--q-bg-midtone);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);

@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  organizationApiPath,
-  requestOrganizationAction,
-} from "./organization-request";
+import { workspaceFetch } from "@/domains/resources/workspace-resource-request";
 import type { OrganizationCapabilities } from "./types";
 
 export function getOrganizationCapabilities(organizationId: string) {

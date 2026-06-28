@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  organizationApiPath,
-  requestOrganizationAction,
-} from "./organization-request";
+import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
 import type { OrganizationInviteLink } from "./types";
 
 export async function createOrganizationInviteLink(organizationId: string, input: { role: string; locale: string }) {

@@ -39,7 +39,7 @@ export default function OnboardingPage() {
 
   const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, 3));
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
-  const finishSetup = () => router.push("/dashboard");
+  const finishSetup = () => router.push("/ws");
   const organizationName = organization.organization?.name ?? "";
 
   if (!auth.isLoaded || !organization.isLoaded || !user.isLoaded) {

@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/clerk-convex";
 import { hasOpenRouterConfig, streamOpenRouterText } from "./openrouter";
 import { createAgentChatStream, detectAgentResponseLanguage } from "./orchestrator";
+import { executeWorkspaceTool } from "./tool-executor";
+import { agentToolCatalog } from "@/server/protocols/mcp/tools/catalog";
 
 vi.mock("@/server/config/agent-runtime", () => ({
   agentRuntimeConfig: {
@@ -384,14 +386,14 @@ describe("agent orchestrator stream", () => {
       if ("clientId" in payload) return presentedClient;
       return capabilities;
     });
-    vi.mocked(streamOpenRouterText).mockImplementation((input) => ({
+    vi.mocked(streamOpenRouterText).mockImplementation((_input) => ({
       textStream: (async function* () {
-        const result = await input.tools?.clients_update.execute?.({
-          ...presentedClient,
-          clientId: "client_1",
-          phone: "2010111222333",
-        }, {} as never);
-        yield (result as { ok: boolean }).ok ? "Updated." : "Failed.";
+        await executeWorkspaceTool(
+          { organizationId: "org_1" } as never,
+          agentToolCatalog.find((t) => t.name === "clients_update")!,
+          { ...presentedClient, clientId: "client_1", phone: "2010111222333" },
+        );
+        yield "Updated.";
       })(),
     }) as never);
 

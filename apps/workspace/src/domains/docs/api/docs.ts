@@ -2,10 +2,7 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
-import {
-  organizationApiPath,
-  requestOrganizationAction,
-} from "@/domains/organization/api/organization-request";
+import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
 import type { DocFormValues, DocFolderFormValues, DocRecord, DocFolder } from "../docs.types";
 
 export function useDocsQuery(
@@ -88,64 +85,57 @@ export function docFolderPayloadFromForm(values: DocFolderFormValues) {
 }
 
 export async function createDocRequest(organizationId: string, values: DocFormValues) {
-  return requestOrganizationAction<{ doc: DocRecord }>(
-    organizationApiPath(organizationId, "docs"),
-    "POST",
-    docPayloadFromForm(values),
-    "Doc request failed.",
-  );
+  return workspaceMutation<{ doc: DocRecord }>(organizationId, "docs", {
+    method: "POST",
+    body: docPayloadFromForm(values),
+    fallbackMessage: "Doc request failed.",
+  });
 }
 
 export async function updateDocRequest(organizationId: string, docId: string, values: DocFormValues) {
-  return requestOrganizationAction<{ doc: DocRecord }>(
-    organizationApiPath(organizationId, "docs", docId),
-    "PATCH",
-    docPayloadFromForm(values),
-    "Doc request failed.",
-  );
+  return workspaceMutation<{ doc: DocRecord }>(organizationId, `docs/${docId}`, {
+    method: "PATCH",
+    body: docPayloadFromForm(values),
+    fallbackMessage: "Doc request failed.",
+  });
 }
 
 export async function deleteDocRequest(organizationId: string, docId: string) {
-  return requestOrganizationAction(
-    organizationApiPath(organizationId, "docs", docId),
-    "DELETE",
-    undefined,
-    "Doc request failed.",
-  );
+  return workspaceMutation(organizationId, `docs/${docId}`, {
+    method: "DELETE",
+    body: undefined,
+    fallbackMessage: "Doc request failed.",
+  });
 }
 
 export async function moveDocRequest(organizationId: string, docId: string, folderId?: string) {
-  return requestOrganizationAction<{ doc: DocRecord }>(
-    organizationApiPath(organizationId, "docs", docId, "move"),
-    "POST",
-    { folderId: folderId || null },
-    "Failed to move doc.",
-  );
+  return workspaceMutation<{ doc: DocRecord }>(organizationId, `docs/${docId}/move`, {
+    method: "POST",
+    body: { folderId: folderId || null },
+    fallbackMessage: "Failed to move doc.",
+  });
 }
 
 export async function createDocFolderRequest(organizationId: string, values: DocFolderFormValues) {
-  return requestOrganizationAction<{ folder: DocFolder }>(
-    organizationApiPath(organizationId, "doc-folders"),
-    "POST",
-    docFolderPayloadFromForm(values),
-    "Folder request failed.",
-  );
+  return workspaceMutation<{ folder: DocFolder }>(organizationId, "doc-folders", {
+    method: "POST",
+    body: docFolderPayloadFromForm(values),
+    fallbackMessage: "Folder request failed.",
+  });
 }
 
 export async function renameDocFolderRequest(organizationId: string, folderId: string, name: string) {
-  return requestOrganizationAction<{ folder: DocFolder }>(
-    organizationApiPath(organizationId, "doc-folders", folderId),
-    "PATCH",
-    { name },
-    "Folder request failed.",
-  );
+  return workspaceMutation<{ folder: DocFolder }>(organizationId, `doc-folders/${folderId}`, {
+    method: "PATCH",
+    body: { name },
+    fallbackMessage: "Folder request failed.",
+  });
 }
 
 export async function deleteDocFolderRequest(organizationId: string, folderId: string) {
-  return requestOrganizationAction(
-    organizationApiPath(organizationId, "doc-folders", folderId),
-    "DELETE",
-    undefined,
-    "Folder request failed.",
-  );
+  return workspaceMutation(organizationId, `doc-folders/${folderId}`, {
+    method: "DELETE",
+    body: undefined,
+    fallbackMessage: "Folder request failed.",
+  });
 }

@@ -252,7 +252,13 @@
       "administration": "Administration"
     },
     "dashboard": "Dashboard",
+    "spaces": "Spaces",
     "projects": "Projects",
+    "teams": "Teams",
+    "members": "Members",
+    "overview": "Overview",
+    "files": "Files",
+    "workspaceSettings": "Workspace Settings",
     "opportunities": "Opportunities",
     "deals": "Deals",
     "tasks": "Tasks",
@@ -4398,11 +4404,17 @@
       "underDevelopment": "This widget is under development"
     }
   },
+  "Spaces": {
+    "title": "Spaces",
+    "createSpace": "Create Space",
+    "noSpaces": "No spaces yet. Create your first space to organize projects."
+  },
   "DatePicker": {
     "pickADate": "Pick a date"
   },
   "ProjectSwitcher": {
-    "globalWorkspace": "Global Workspace",
+    "globalWorkspace": "All Projects",
+    "noProjectSelected": "Select a project",
     "activeProjects": "Active Projects",
     "noProjectFound": "No project found.",
     "viewAllProjects": "View all projects",

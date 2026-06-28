@@ -133,7 +133,7 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
     setError("");
     try {
       await clerk.setActive({ organization: organizationId });
-      router.replace("/dashboard");
+      router.replace("/ws");
     } catch (error) {
       setError(error instanceof Error ? error.message : t("errorDesc"));
     } finally {
@@ -326,7 +326,7 @@ export function ChooseOrganizationClient({ locale }: ChooseOrganizationClientPro
 
                 {currentOrganizationId ? (
                   <div className="bg-background p-5">
-                    <Button className="h-12 w-full rounded-2xl text-sm font-bold" disabled={isBusy} onClick={() => router.replace("/dashboard")} type="button">
+                    <Button className="h-12 w-full rounded-2xl text-sm font-bold" disabled={isBusy} onClick={() => router.replace("/ws")} type="button">
                       {t("continueWorkspace")}
                       <ArrowRight className="h-4 w-4 rtl:rotate-180" />
                     </Button>

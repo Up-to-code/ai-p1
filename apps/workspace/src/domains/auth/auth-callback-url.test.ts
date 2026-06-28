@@ -8,18 +8,18 @@ describe("auth callback url helpers", () => {
   });
 
   it("normalizes app-shell callbacks to organization selection", () => {
-    expect(resolveAuthEntryCallbackUrl("ar", "/ar/dashboard")).toBe("/ar/choose-org");
-    expect(resolveAuthEntryCallbackUrl("en", "/en/projects/project_1")).toBe("/en/choose-org");
+    expect(resolveAuthEntryCallbackUrl("ar", "/ar/ws")).toBe("/ar/ws");
+    expect(resolveAuthEntryCallbackUrl("en", "/en/projects/project_1")).toBe("/en/ws");
   });
 
   it("preserves safe auth callbacks and invite query parameters", () => {
-    expect(resolveAuthEntryCallbackUrl("ar", "/ar/choose-org")).toBe("/ar/choose-org");
+    expect(resolveAuthEntryCallbackUrl("ar", "/ar/choose-org")).toBe("/ar/ws");
     expect(resolveAuthEntryCallbackUrl("ar", "/ar/accept-invite?inviteToken=invite_1")).toBe("/ar/accept-invite?inviteToken=invite_1");
   });
 
   it("rejects missing, cross-locale, and absolute callbacks", () => {
-    expect(resolveAuthEntryCallbackUrl("ar", null)).toBe("/ar/choose-org");
-    expect(resolveAuthEntryCallbackUrl("ar", "/en/choose-org")).toBe("/ar/choose-org");
-    expect(resolveAuthEntryCallbackUrl("ar", "https://app.qentrah.com/ar/dashboard")).toBe("/ar/choose-org");
+    expect(resolveAuthEntryCallbackUrl("ar", null)).toBe("/ar/ws");
+    expect(resolveAuthEntryCallbackUrl("ar", "/en/choose-org")).toBe("/ar/ws");
+    expect(resolveAuthEntryCallbackUrl("ar", "https://app.qentrah.com/ar/ws")).toBe("/ar/ws");
   });
 });

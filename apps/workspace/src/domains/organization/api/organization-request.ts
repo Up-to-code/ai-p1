@@ -6,6 +6,10 @@ export type OrganizationApiMethod = "GET" | "POST" | "PATCH" | "DELETE";
 
 export { organizationApiPath };
 
+/**
+ * @deprecated Prefer `workspaceFetch` for new code.
+ *   Migrate existing call sites to `workspaceFetch` directly.
+ */
 export async function readOrganizationJsonResponse<T>(response: Response, fallback: string): Promise<T> {
   const payload = await response.json().catch(() => ({ error: fallback })) as { error?: string };
   if (!response.ok) {
@@ -18,7 +22,8 @@ export async function readOrganizationJsonResponse<T>(response: Response, fallba
 }
 
 /**
- * Backward-compatible wrapper. Prefer `workspaceFetch` for new code.
+ * @deprecated Use `workspaceFetch` or `workspaceMutation` instead.
+ *   This wrapper exists only for backward compatibility.
  */
 export async function requestOrganizationAction<T>(
   url: string,

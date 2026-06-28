@@ -2,10 +2,7 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
-import {
-  organizationApiPath,
-  requestOrganizationAction,
-} from "@/domains/organization/api/organization-request";
+import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
 import type { TaskFormValues, TaskRecord, TaskStats } from "../tasks.types";
 
 export function useTasksQuery(organizationId?: string, options?: { status?: TaskRecord["status"] | "all"; search?: string; projectId?: string | null; spaceId?: string | null }) {
@@ -77,30 +74,27 @@ export function taskPayloadFromForm(values: TaskFormValues) {
 }
 
 export async function createTaskRequest(organizationId: string, values: TaskFormValues) {
-  return requestOrganizationAction<{ task: TaskRecord }>(
-    organizationApiPath(organizationId, "tasks"),
-    "POST",
-    taskPayloadFromForm(values),
-    "Task request failed.",
-  );
+  return workspaceMutation<{ task: TaskRecord }>(organizationId, "tasks", {
+    method: "POST",
+    body: taskPayloadFromForm(values),
+    fallbackMessage: "Task request failed.",
+  });
 }
 
 export async function updateTaskRequest(organizationId: string, taskId: string, values: TaskFormValues) {
-  return requestOrganizationAction<{ task: TaskRecord }>(
-    organizationApiPath(organizationId, "tasks", taskId),
-    "PATCH",
-    taskPayloadFromForm(values),
-    "Task request failed.",
-  );
+  return workspaceMutation<{ task: TaskRecord }>(organizationId, `tasks/${taskId}`, {
+    method: "PATCH",
+    body: taskPayloadFromForm(values),
+    fallbackMessage: "Task request failed.",
+  });
 }
 
 export async function deleteTaskRequest(organizationId: string, taskId: string) {
-  return requestOrganizationAction(
-    organizationApiPath(organizationId, "tasks", taskId),
-    "DELETE",
-    undefined,
-    "Task request failed.",
-  );
+  return workspaceMutation(organizationId, `tasks/${taskId}`, {
+    method: "DELETE",
+    body: undefined,
+    fallbackMessage: "Task request failed.",
+  });
 }
 
 export async function assignTasksToProjectRequest(
@@ -108,10 +102,9 @@ export async function assignTasksToProjectRequest(
   taskIds: string[],
   projectId: string,
 ) {
-  return requestOrganizationAction<{ updated: number }>(
-    organizationApiPath(organizationId, "tasks", "assign-to-project"),
-    "POST",
-    { taskIds, projectId },
-    "Failed to assign tasks to project.",
-  );
+  return workspaceMutation<{ updated: number }>(organizationId, "tasks/assign-to-project", {
+    method: "POST",
+    body: { taskIds, projectId },
+    fallbackMessage: "Failed to assign tasks to project.",
+  });
 }

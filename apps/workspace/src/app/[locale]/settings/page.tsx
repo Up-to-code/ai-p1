@@ -93,7 +93,7 @@ export default function SettingsPage() {
         {/* Back link */}
         <div className="shrink-0 border-b border-border px-3 py-2.5">
           <Link
-            href="/dashboard"
+            href="/ws"
             className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           >
             <ChevronDown className="h-4 w-4 rotate-90" />

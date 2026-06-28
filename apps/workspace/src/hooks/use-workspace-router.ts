@@ -11,7 +11,7 @@
  * specific param values onto the destination URL (they always override):
  *
  *   const router = useWorkspaceRouter();
- *   router.push("/dashboard", { extraParams: { mode: "ws" } });
+ *   router.push("/ws", { extraParams: { mode: "ws" } });
  *
  * Which params are persisted is configured in src/lib/workspace-nav-params.ts.
  */

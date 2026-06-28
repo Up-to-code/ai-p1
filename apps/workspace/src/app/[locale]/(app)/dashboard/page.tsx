@@ -1,5 +1,10 @@
-import { DashboardScreen } from "@/domains/dashboard";
+import { redirect } from "next/navigation";
 
-export default function DashboardPage() {
-  return <DashboardScreen />;
+export default async function DashboardPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  redirect(`/${locale}/ws`);
 }

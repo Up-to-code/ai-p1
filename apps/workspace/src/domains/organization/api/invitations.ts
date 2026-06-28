@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  organizationApiPath,
-  requestOrganizationAction,
-} from "./organization-request";
+import { workspaceFetch, workspaceMutation } from "@/domains/resources/workspace-resource-request";
 import type { OrganizationInvitation, OrganizationInvitationAcceptance } from "./types";
 
 export function createOrganizationInvitation(organizationId: string, input: { email: string; role: string }) {

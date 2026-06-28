@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { cn } from "./classnames";
-import { createUnsafeApiProxy, createUnsafeApiRecord } from "./convex-api";
 import { DomainError, normalizeDomainError } from "./errors";
 import {
   deriveConvexSiteUrl,
@@ -105,14 +104,8 @@ describe("@qentrah/platform-core locale", () => {
   });
 });
 
-describe("@qentrah/platform-core classnames and Convex API adapters", () => {
+describe("@qentrah/platform-core classnames", () => {
   it("merges conditional class names", () => {
     expect(cn("px-2", false && "hidden", "px-4")).toBe("px-4");
-  });
-
-  it("creates unsafe Convex API records without importing generated API", () => {
-    const source = { users: { current: "ref" } };
-    expect(createUnsafeApiProxy(source).users).toEqual({ current: "ref" });
-    expect(createUnsafeApiRecord(source)).toBe(source);
   });
 });

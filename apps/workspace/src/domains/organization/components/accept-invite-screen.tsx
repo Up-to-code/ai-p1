@@ -69,7 +69,7 @@ export function AcceptInviteScreen() {
 
         if (cancelled) return;
         setStatus("accepted");
-        setTimeout(() => window.location.replace(`/${locale}/dashboard`), 1000);
+        setTimeout(() => window.location.replace(`/${locale}/ws`), 1000);
       }).catch((caught) => {
         if (cancelled) return;
         hasStartedAccepting.current = false;
@@ -117,7 +117,7 @@ export function AcceptInviteScreen() {
           </Button>
         )}
         {(status === "error" || isMissingInvite) && (
-          <Button variant="outline" className="mt-6 h-11 rounded-2xl" onClick={() => router.push(`/${locale}/dashboard`)}>
+          <Button variant="outline" className="mt-6 h-11 rounded-2xl" onClick={() => router.push(`/${locale}/ws`)}>
             {t("dashboardButton")}
           </Button>
         )}

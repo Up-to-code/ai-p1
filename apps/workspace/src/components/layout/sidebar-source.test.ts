@@ -23,14 +23,17 @@ describe("sidebar source", () => {
   it("keeps the Work OS navigation route-complete and ordered", () => {
     const source = readSource("src/components/layout/sidebar/config/nav.config.ts");
     const expectedItems = [
-      '{ name: "dashboard", href: "/dashboard", icon: Bot',
+      '{ name: "home", href: "/ws", icon: Home',
+      '{ name: "inbox", href: "/inbox", icon: Inbox',
+      '{ name: "ai", icon: Bot',
+      '{ name: "spaces", icon: Layers',
       '{ name: "clients", href: "/clients", icon: UserRound',
       '{ name: "opportunities", href: "/opportunities", icon: KanbanSquare',
       '{ name: "deals", href: "/deals", icon: BadgeDollarSign',
-      '{ name: "projects", href: "/projects", icon: FolderGit2',
       '{ name: "tasks", href: "/tasks", icon: ListTodo',
-      '{ name: "docs", href: "/docs", icon: FileText',
       '{ name: "calendar", href: "/calendar", icon: CalendarDays',
+      '{ name: "docs", href: "/docs", icon: FileText',
+      '{ name: "projects", href: "/spaces", icon: FolderGit2',
       '{ name: "automations", icon: Workflow',
       '{ name: "integrations", icon: Plug',
       '{ name: "organization", href: "/settings/organization", icon: Building2',

@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  organizationApiPath,
-  requestOrganizationAction,
-} from "@/domains/organization/api/organization-request";
+import { workspaceFetch } from "@/domains/resources/workspace-resource-request";
 import { QENTRAH_PLAN_ID, type BillingOverview, OrganizationBillingUsage, Payment } from "../config/plans.config";
 
 export function getBillingOverviewRequest(organizationId: string) {

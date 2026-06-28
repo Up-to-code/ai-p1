@@ -39,7 +39,6 @@
     "@openrouter/ai-sdk-provider": "^2.9.0",
     "@qentrah/brand-identity": "0.1.0",
     "@qentrah/calendar-kit": "1.0.0",
-    "@qentrah/convex-adapters": "0.1.0",
     "@qentrah/domain-contracts": "0.1.0",
     "@qentrah/location-map": "^0.1.0",
     "@qentrah/partner-auth-core": "0.1.0",

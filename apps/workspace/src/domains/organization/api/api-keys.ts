@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  organizationApiPath,
-  requestOrganizationAction,
-} from "./organization-request";
+import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
 import type { OrganizationApiKey, OrganizationApiKeyPermission, OrganizationApiKeyExpiry } from "./types";
 
 export function listOrganizationApiKeys(organizationId: string) {

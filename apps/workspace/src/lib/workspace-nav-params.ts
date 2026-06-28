@@ -24,7 +24,7 @@ export const PERSISTENT_PARAMS: PersistentParamConfig[] = [
   {
     // Active project filter — carried on every page so the data context
     // doesn't reset when the user navigates between tasks/calendar/etc.
-    // NOTE: /dashboard is NOT skipped — carrying ?project= there is harmless
+    // NOTE: /ws is NOT skipped — carrying ?project= there is harmless
     // and means the project context survives the AI assistant round-trip.
     key: "project",
     skipPaths: [],

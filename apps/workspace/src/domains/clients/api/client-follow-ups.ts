@@ -2,10 +2,7 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
-import {
-  organizationApiPath,
-  requestOrganizationAction,
-} from "@/domains/organization/api/organization-request";
+import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
 import type { ClientFollowUp, ClientFollowUpPayload } from "../store/client-follow-ups.types";
 export type { ClientFollowUpPayload } from "../store/client-follow-ups.types";
 

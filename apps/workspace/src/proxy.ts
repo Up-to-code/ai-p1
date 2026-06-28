@@ -74,9 +74,9 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
     // Handle auth routes (sign-in, sign-up, sso-callback)
     if (isAuthRoute(request)) {
       if (userId) {
-        // User is authenticated, redirect to dashboard.
+        // User is authenticated, redirect to workspace.
         // The DashboardAppWrapper will show a modal if no organization exists.
-        return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
+        return NextResponse.redirect(new URL(`/${locale}/ws`, request.url));
       }
       // Not signed in, allow access to auth pages
       return intlMiddleware(request);
@@ -85,7 +85,7 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
     // Handle protected routes
     if (isProtectedRoute(request)) {
       await auth.protect({
-        unauthenticatedUrl: `/${locale}/sign-in`,
+        unauthenticatedUrl: new URL(`/${locale}/sign-in`, request.url).toString(),
       });
 
       // NOTE: We no longer redirect to /choose-org here.

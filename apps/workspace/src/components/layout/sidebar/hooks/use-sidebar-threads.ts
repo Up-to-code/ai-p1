@@ -9,7 +9,7 @@ import type { AgentThread } from "../lib/types";
 
 type UseSidebarThreadsOptions = {
   organizationId: string | null;
-  threads: AgentThread[];
+  threads: AgentThread[] | undefined;
   activeThreadId?: string;
 };
 
@@ -27,11 +27,12 @@ export function useSidebarThreads({
   const [pendingDelete, setPendingDelete] = useState<AgentThread | null>(null);
   const [deletingThreadId, setDeletingThreadId] = useState<string | null>(null);
 
+  const safeThreads = threads ?? [];
   const filteredThreads = useMemo(() => {
     const query = search.trim().toLowerCase();
-    if (!query) return threads;
-    return threads.filter((thread) => thread.title.toLowerCase().includes(query));
-  }, [search, threads]);
+    if (!query) return safeThreads;
+    return safeThreads.filter((thread) => thread.title.toLowerCase().includes(query));
+  }, [search, safeThreads]);
 
   async function confirmDelete() {
     if (!organizationId || !pendingDelete || deletingThreadId) return;

@@ -22,7 +22,8 @@ describe("workspace topbar source", () => {
   it("keeps global search navigation aligned with Work OS routes", () => {
     const source = readSource("src/components/layout/workspace-global-search/config/search-navigation.config.ts");
     const expectedActions = [
-      '{ id: "dashboard", label: labels.dashboard, href: "/dashboard", icon: Building2 }',
+      '{ id: "workspace", label: "Workspace", href: "/ws", icon: Building2 }',
+      '{ id: "ai", label: "AI", href: "/ai", icon: Bot }',
       '{ id: "clients", label: labels.clients, href: "/clients", icon: UserRound }',
       '{ id: "opportunities", label: labels.opportunities, href: "/opportunities", icon: KanbanSquare }',
       '{ id: "projects", label: labels.projects, href: "/projects", icon: BriefcaseBusiness }',

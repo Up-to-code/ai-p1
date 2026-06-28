@@ -1,10 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight, Check } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import { Link } from "@/i18n/routing";
 import { IntroAnimation, introRevealMs } from "@/components/landing/intro-animation";
+
+gsap.registerPlugin(ScrollTrigger);
 
 type HeroStat = {
   value: string;
@@ -20,7 +24,6 @@ type AnimatedHomeHeroProps = {
   isAr: boolean;
 };
 
-// ── Hero background images ── light = daytime landscape, dark = night scene ──
 const heroBgLight = "/images/hero-bg-light.png";
 const heroBgDark = "/images/hero-bg-dark.png";
 
@@ -55,10 +58,51 @@ function HeroLink({
   );
 }
 
+function HeroFloatingOrbs({ isAr }: { isAr: boolean }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const orbs = container.querySelectorAll<HTMLDivElement>(".hero-orb");
+    const ctx = gsap.context(() => {
+      orbs.forEach((orb, i) => {
+        gsap.to(orb, {
+          y: i % 2 === 0 ? -20 : 20,
+          x: i % 3 === 0 ? 15 : -15,
+          rotation: i * 8,
+          duration: 3 + i * 0.8,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          delay: i * 0.4,
+        });
+      });
+    }, container);
+
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <div ref={containerRef} className="pointer-events-none absolute inset-0 z-[5] overflow-hidden" aria-hidden>
+      <div className="hero-orb absolute -top-10 right-[15%] size-48 rounded-full border border-[var(--q-border)]/20 bg-gradient-to-br from-[var(--q-accent)]/3 to-transparent backdrop-blur-sm" style={{ opacity: 0.6 }} />
+      <div className="hero-orb absolute -bottom-8 left-[8%] size-36 rounded-full border border-[var(--q-border)]/15 bg-gradient-to-tr from-[var(--q-agent-purple)]/5 to-transparent backdrop-blur-sm" style={{ opacity: 0.5 }} />
+      <div className="hero-orb absolute top-[20%] left-[5%] size-20 rounded-full border border-[var(--q-border)]/10 bg-[var(--q-human-green)]/5 backdrop-blur-sm" style={{ opacity: 0.4 }} />
+      <div className="hero-orb absolute top-[60%] right-[5%] size-28 rounded-full border border-[var(--q-border)]/10 bg-[var(--q-automation-orange)]/5 backdrop-blur-sm" style={{ opacity: 0.35 }} />
+      <div className="hero-orb absolute -top-5 left-[40%] size-16 rounded-full border border-[var(--q-border)]/10 bg-[var(--q-network-blue)]/5 backdrop-blur-sm" style={{ opacity: 0.3 }} />
+    </div>
+  );
+}
+
 export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, secondaryLabel, isAr }: AnimatedHomeHeroProps) {
   const [heroReady, setHeroReady] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const bgLightRef = useRef<HTMLImageElement>(null);
+  const bgDarkRef = useRef<HTMLImageElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const introLabel = isAr ? "كانترا" : "QENTRAH";
   const revealDelay = useMemo(() => introRevealMs(isAr ? 1 : Array.from(introLabel).length), [introLabel, isAr]);
 
@@ -81,16 +125,48 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (!heroReady) return;
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        end: "bottom top",
+        onUpdate: (self) => {
+          const progress = self.progress;
+          const bg = bgLightRef.current || bgDarkRef.current;
+          if (bg) {
+            gsap.set(bg, { scale: 1 + progress * 0.08 });
+          }
+          const content = contentRef.current;
+          if (content) {
+            gsap.set(content, {
+              opacity: 1 - progress * 0.5,
+              y: progress * 60,
+            });
+          }
+        },
+      });
+    }, section);
+
+    return () => ctx.revert();
+  }, [heroReady]);
+
   return (
-    <section className="relative min-h-screen overflow-hidden border-b border-[var(--q-border)] bg-[var(--q-bg)] text-[var(--q-text-primary)]">
+    <section ref={sectionRef} className="relative min-h-screen overflow-hidden border-b border-[var(--q-border)] bg-[var(--q-bg)] text-[var(--q-text-primary)]">
       <IntroAnimation label={introLabel} onDone={handleIntroDone} />
 
-      {/* ── Hero background: smooth crossfade + zoom on theme toggle ── */}
+      <HeroFloatingOrbs isAr={isAr} />
+
       <img
+        ref={bgLightRef}
         src={heroBgLight}
         alt=""
         aria-hidden
-        className="absolute inset-0 z-0 h-full w-full object-cover"
+        className="absolute inset-0 z-0 h-full w-full object-cover will-change-transform"
         style={{
           opacity: theme === "light" ? 1 : 0,
           transform: `scale(${videoReady ? 1.05 : 0.86})`,
@@ -98,18 +174,17 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
         }}
       />
       <img
+        ref={bgDarkRef}
         src={heroBgDark}
         alt=""
         aria-hidden
-        className="absolute inset-0 z-0 h-full w-full object-cover"
+        className="absolute inset-0 z-0 h-full w-full object-cover will-change-transform"
         style={{
           opacity: theme === "dark" ? 1 : 0,
           transform: `scale(${videoReady ? 1.05 : 0.86})`,
           transition: "opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 2s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       />
-
-      {/* Dashboard screenshot removed */}
 
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 z-10"
@@ -150,7 +225,10 @@ export function AnimatedHomeHero({ eyebrow, title, description, primaryLabel, se
         }}
       />
 
-      <div className="relative z-30 flex min-h-[100dvh] items-end justify-start px-6 pb-24 pt-20 sm:px-12 md:px-16 lg:px-20 xl:px-24 lg:pb-32 overflow-hidden">
+      <div
+        ref={contentRef}
+        className="relative z-30 flex min-h-[100dvh] items-end justify-start px-6 pb-24 pt-20 sm:px-12 md:px-16 lg:px-20 xl:px-24 lg:pb-32 overflow-hidden will-change-transform"
+      >
         <div className="w-full max-w-4xl">
           <p
             className="mb-6 inline-flex rounded-full border border-[var(--q-accent-border)] bg-[var(--q-accent-muted)] px-5 py-2.5 text-[10px] font-black uppercase text-[var(--q-accent)] backdrop-blur-xl transition-colors duration-300 hover:bg-[var(--q-accent)] hover:text-[var(--q-text-primary)]"

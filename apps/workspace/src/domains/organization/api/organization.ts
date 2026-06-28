@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  organizationApiPath,
-  requestOrganizationAction,
-} from "./organization-request";
+import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
 
 export function updateAuthOrganization(
   organizationId: string,

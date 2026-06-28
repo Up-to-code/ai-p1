@@ -70,18 +70,18 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
       if (organizationId && !clerkAuth.orgId) {
         await clerkState.setActive?.({ organization: organizationId });
       }
-      router.replace("/dashboard");
+      router.replace("/ws");
       return true;
     }
 
-    router.replace("/dashboard");
+    router.replace("/ws");
     return true;
   }, [clerk, clerkAuth.isSignedIn, clerkAuth.orgId, router]);
 
   const navigateAfterAuth = useCallback(
     ({ session, decorateUrl }: { session?: { currentTask?: unknown } | null; decorateUrl: (url: string) => string }) => {
       if (session?.currentTask) {
-        router.replace("/dashboard");
+        router.replace("/ws");
         return;
       }
 

@@ -785,6 +785,23 @@ export default defineSchema({
     .index("by_project_id", ["organizationId", "projectId"])
     .index("by_project_slug", ["organizationId", "projectId", "slug"])
     .index("by_organization_id", ["organizationId"]),
+  workspaceWidgetLayouts: defineTable({
+    organizationId: v.string(),
+    userId: v.string(),
+    widgets: v.array(v.object({
+      id: v.string(),
+      type: v.string(),
+      title: v.string(),
+      w: v.number(),
+      h: v.number(),
+      x: v.optional(v.number()),
+      y: v.optional(v.number()),
+    })),
+    layout: v.optional(v.any()),
+    updatedAt: v.number(),
+  })
+    .index("by_organization_user", ["organizationId", "userId"])
+    .index("by_updated", ["updatedAt"]),
   clients: defineTable({
     organizationId: v.string(),
     name: v.string(),

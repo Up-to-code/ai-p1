@@ -10,12 +10,12 @@ import { getWorkspaceAuthRedirect } from "@/domains/auth/workspace-status";
 import { NoOrganizationModal } from "@/domains/auth/components/no-organization-modal";
 import { useAuthHandoffPending } from "./use-auth-handoff-pending";
 import { markAppPerformance } from "@/lib/utils/performance";
-import { Sidebar } from "@/components/layout/sidebar";
-import { SidebarProvider } from "@/components/layout/sidebar-context";
+import { Sidebar, SidebarRailProvider } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { WorkspaceRouteLoading } from "@/components/loading/workspace-route-loading";
 import { useAssistantPanel } from "@/components/layout/use-assistant-panel";
 import { ResizableAiPanel } from "./resizable-ai-panel";
+import { NavigationProvider } from "@/domains/navigation";
 
 export interface DashboardAuthenticatedShellProps {
   children: ReactNode;
@@ -110,21 +110,23 @@ export function DashboardAuthenticatedShell({
 
   return (
     <ToastProvider>
-      <SidebarProvider>
-        <div className="flex h-full overflow-hidden bg-background text-text-primary">
-          <Sidebar />
+      <SidebarRailProvider>
+        <NavigationProvider>
+          <div className="flex h-full overflow-hidden bg-background text-text-primary">
+            <Sidebar />
 
-          <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background">
-            <Topbar />
-            <div className="flex min-h-0 flex-1 overflow-hidden">
-              <main className="flex min-h-0 flex-1 flex-col overflow-auto outline-none p-4">
-                {children}
-              </main>
-              {isAiPanelOpen && <ResizableAiPanel />}
+            <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background">
+              <Topbar />
+              <div className="flex min-h-0 flex-1 overflow-hidden">
+                <main className="flex min-h-0 flex-1 flex-col overflow-auto outline-none p-4">
+                  {children}
+                </main>
+                {isAiPanelOpen && <ResizableAiPanel />}
+              </div>
             </div>
           </div>
-        </div>
-      </SidebarProvider>
+        </NavigationProvider>
+      </SidebarRailProvider>
       {showNoOrganizationModal && <NoOrganizationModal />}
     </ToastProvider>
   );
