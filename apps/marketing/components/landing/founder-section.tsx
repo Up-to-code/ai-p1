@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { SectionKicker } from "./public-page-shell";
+import { SectionKicker } from "@/components/design-system";
 
 type Founder = {
   name: string;
@@ -64,7 +64,7 @@ function FounderCinematicSection({
       !isEven && "md:flex-row-reverse"
     )}>
       {/* Image Side */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[3rem] border border-[var(--q-border)] dark:border-white/10 md:w-1/2">
+      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[3rem] border border-[var(--q-border)] md:w-1/2">
         <Image
           src={founder.image}
           alt={founder.name}
@@ -72,45 +72,40 @@ function FounderCinematicSection({
           className="object-cover transition-transform duration-1000 hover:scale-105"
           sizes="(min-width: 1024px) 50vw, 100vw"
         />
-        {/* Subtle atmospheric overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/20 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--q-bg-very-dark)]/20 via-transparent to-transparent" />
       </div>
 
       {/* Content Side */}
       <div className="w-full md:w-1/2">
         <div className="space-y-8">
           <header>
-            <div className="flex items-center gap-4 text-blue-600 dark:text-blue-400">
+            <div className="flex items-center gap-4 text-[var(--q-accent)]">
               <div className="h-px w-8 bg-current opacity-40" />
               <span className="text-xs font-black uppercase tracking-[0.3em]">
                 {founder.role}
               </span>
             </div>
-            <h3 className="mt-6 text-5xl font-bold tracking-tight text-[var(--q-text-primary)] dark:text-[var(--q-text-primary)] md:text-7xl">
+            <h3 className="mt-6 text-5xl font-bold tracking-tight text-[var(--q-text-primary)] md:text-7xl">
               {founder.name}
             </h3>
           </header>
 
-          <p className="text-lg font-medium leading-relaxed text-[var(--q-text-muted)] dark:text-zinc-400 md:text-2xl md:leading-10">
+          <p className="text-lg font-medium leading-relaxed text-[var(--q-text-secondary)] md:text-2xl md:leading-10">
             {founder.bio}
           </p>
 
-          <div className="relative pt-12">
-            {/* Redesigned Quote: Editorial Style */}
-            <div className="relative rounded-[2.5rem] bg-[var(--q-card-hover)] p-8 dark:bg-white/[0.03]">
-              <span className="absolute -top-6 left-8 text-8xl font-serif text-blue-500/10 dark:text-blue-400/10">"</span>
-              <blockquote className="relative">
-                <p className="text-base font-medium italic leading-relaxed text-zinc-800 dark:text-zinc-200 md:text-lg">
-                  {founder.quote}
-                </p>
-                <footer className="mt-6 flex items-center gap-3">
-                  <div className="h-0.5 w-4 bg-blue-500/30" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--q-text-muted)]">
-                    {founder.author}
-                  </span>
-                </footer>
-              </blockquote>
-            </div>
+          <div className="pt-10">
+            <blockquote>
+              <p className="text-xl font-bold leading-relaxed text-[var(--q-text-primary)] md:text-2xl">
+                &ldquo;{founder.quote}&rdquo;
+              </p>
+              <footer className="mt-4 flex items-center gap-3">
+                <div className="h-px w-6 bg-[var(--q-accent)]/30" />
+                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[var(--q-text-muted)]">
+                  {founder.author}
+                </span>
+              </footer>
+            </blockquote>
           </div>
         </div>
       </div>

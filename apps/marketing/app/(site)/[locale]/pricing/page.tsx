@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { WorkspacePricingPage } from "@/components/landing/workspace-pricing-page";
+import { PricingPage } from "@/components/pricing/pricing-page";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -12,17 +12,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: isAr ? "التسعير | Qentrah" : "Pricing | Qentrah",
     description: isAr
-      ? "تسعير شفاف ومرن لمنصة كانترا — منصة التشغيل الذكية للوكالات والشركات الخدمية. ابدأ مجاناً، وسّع مع الخطة الاحترافية."
-      : "Transparent and flexible pricing for Qentrah — the AI-first Work OS for agencies. Start free, scale with Pro, or go Enterprise.",
+      ? "تسعير شفاف ومرن لمنصة كانترا — قارن الخطط جنباً إلى جنب واختر ما يناسب فريقك."
+      : "Transparent and flexible pricing for Qentrah — compare plans side by side and pick the one that fits your team.",
     openGraph: {
       title: isAr ? "التسعير | Qentrah" : "Pricing | Qentrah",
       description: isAr
-        ? "تسعير شفاف ومرن لمنصة كانترا — منصة التشغيل الذكية للوكالات والشركات الخدمية. ابدأ مجاناً، وسّع مع الخطة الاحترافية."
-        : "Transparent and flexible pricing for Qentrah — the AI-first Work OS for agencies. Start free, scale with Pro, or go Enterprise.",
+        ? "تسعير شفاف ومرن لمنصة كانترا — قارن الخطط جنباً إلى جنب واختر ما يناسب فريقك."
+        : "Transparent and flexible pricing for Qentrah — compare plans side by side and pick the one that fits your team.",
     },
   };
 }
 
-export default function PricingPage() {
-  return <WorkspacePricingPage />;
+export default function PricingPageRoute() {
+  return <PricingPage />;
 }

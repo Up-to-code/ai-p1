@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 export function AppPageShell({
   children,
@@ -8,7 +9,12 @@ export function AppPageShell({
   contentClassName?: string;
 }) {
   return (
-    <main className={`mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8 ${contentClassName}`}>
+    <main
+      className={cn(
+        "mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8",
+        contentClassName,
+      )}
+    >
       {children}
     </main>
   );
@@ -26,15 +32,15 @@ export function AppPageHeader({
   return (
     <div className="text-center">
       {eyebrow && (
-        <span className="mb-3 inline-block text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-300">
+        <span className="mb-3 inline-block text-[10px] font-black uppercase tracking-widest text-[var(--q-accent)]">
           {eyebrow}
         </span>
       )}
-      <h1 className="text-3xl font-black tracking-tight text-zinc-950 dark:text-white sm:text-4xl">
+      <h1 className="text-3xl font-black tracking-tight text-[var(--q-text-primary)] sm:text-4xl">
         {title}
       </h1>
       {subtitle && (
-        <p className="mt-4 text-lg text-zinc-500 dark:text-zinc-400">
+        <p className="mt-4 text-lg text-[var(--q-text-secondary)]">
           {subtitle}
         </p>
       )}

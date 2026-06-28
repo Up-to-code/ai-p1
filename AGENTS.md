@@ -47,6 +47,7 @@ Fix all bugs in the Qentrah Product Development project in priority waves, from 
 - **Wave 3 follow-up**: Optionally migrate dashboard layouts (projects-overview, global-projects-dashboard) from localStorage to IndexedDB, replace remaining ad-hoc localStorage usage in clients-filters, integrations-runtime, project-tags-settings.
 - **Wave 4**: MCP Feature Expansion — Document/Folder/Comment/Tag CRUD, Time Tracking module schema + MCP tools.
 - **Wave 5**: Platform Readiness Audit, Engineering Audit Checklist, Competitive Gap Analysis.
+- **Marketing Design System Redesign**: Created unified `components/design-system.tsx` (PublicSection, SectionHeader, CtaBanner, FeatureCardGrid, WorkflowCard, LegalArticle, PageShell, etc.). Migrated About, Contact, Blog, Legal, Privacy, Terms, and Pricing pages to use CSS variable tokens (`--q-*`) and the new primitives. Removed Broker and Developer pages (deleted routes + components). Fixed `shared.tsx` blog colors to use theme tokens. Build passes with 0 type errors.
 - Update Qentrah MCP tasks to reflect completion.
 
 ## Relevant Files

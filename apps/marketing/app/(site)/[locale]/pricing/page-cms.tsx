@@ -71,8 +71,8 @@ export default async function PricingPageCMS({ params }: Props) {
 
   if (!page) {
     // Fallback to hardcoded pricing page if CMS content not available
-    const { WorkspacePricingPage } = await import("@/components/landing/workspace-pricing-page");
-    return <WorkspacePricingPage />;
+    const { PricingPage } = await import("@/components/pricing/pricing-page");
+    return <PricingPage />;
   }
 
   return <PageRenderer page={page} />;

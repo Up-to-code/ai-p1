@@ -13,7 +13,6 @@ export function BlogCard({ post, locale }: BlogCardProps) {
     { year: "numeric", month: "long", day: "numeric" },
   );
 
-  // Use cardImage if available, fallback to heroImage
   const cardImage = post.cardImage || post.heroImage;
 
   return (
@@ -33,7 +32,7 @@ export function BlogCard({ post, locale }: BlogCardProps) {
       )}
       <div className="flex flex-1 flex-col p-6">
         {post.category && (
-          <span className="mb-2 inline-block rounded-full bg-blue-100 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-blue-600">
+          <span className="mb-2 inline-block w-fit rounded-full bg-[var(--q-accent)]/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--q-accent)]">
             {post.category}
           </span>
         )}

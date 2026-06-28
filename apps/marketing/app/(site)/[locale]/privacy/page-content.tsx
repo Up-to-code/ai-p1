@@ -3,149 +3,124 @@
 import type { ReactNode } from "react";
 import { useLocale } from "next-intl";
 
-import {
-  LegalArticle,
-  LegalBlock,
-} from "@/components/landing/public-page-shell";
+import { LegalArticle, LegalBlock } from "@/components/design-system";
 import { brandDomainUrl } from "@qentrah/brand-identity";
 
-const copy = {
-  en: {
+function en() {
+  const rootDomain = brandDomainUrl("root").replace("https://", "");
+  return {
     eyebrow: "Policy",
     title: "Privacy Policy",
-    updated: "Last updated: May 4, 2026",
+    updated: "Last updated: June 28, 2026",
     blocks: [
       [
         "1. Introduction",
-        "Qentrah Workspace operates a workspace and data synchronization platform for teams and businesses. This policy explains how we collect, use, disclose, and protect information when you use the platform.",
+        "This Privacy Policy explains how Qentrah Workspace collects, uses, discloses, and protects your personal data when you use the platform, visit our website, or communicate with us.\n\nBy using the platform, you acknowledge that you have read and understood this policy. If you do not agree with any part of this policy, you should stop using the platform immediately.",
       ],
       [
         "2. Information We Collect",
-        "We collect information you provide directly, including name, email, phone, organization details, commercial registration information, and documents submitted during onboarding. We may also collect device, IP, browser, and usage information.",
+        "We collect the following categories of information:\n\nInformation you provide directly — name, email address, phone number, organization name, commercial registration details, job title, profile photo, and any other information you submit during onboarding or while using the platform.\n\nWorkspace data — projects, tasks, assets, client information, documents, messages, tags, statuses, financial data, and any other operational data you or your team enter into the platform.\n\nTechnical data — IP address, browser type and version, device type, operating system, referral URLs, and usage logs including pages visited, features used, and time spent on the platform.\n\nCommunication data — records of correspondence when you contact support, submit inquiries, or participate in surveys.",
       ],
       [
-        "3. How We Use Information",
-        "We use information to verify organizations, manage accounts, support workspace features, synchronize data, operate integrations, provide support, and meet applicable regulatory and compliance requirements.",
+        "3. How We Use Your Information",
+        "We use your information for the following purposes:\n\n- To create and manage your account and workspace\n- To operate, maintain, and improve the platform and its features\n- To synchronize data across devices, teams, and authorized integrations\n- To provide technical and operational support\n- To send service-related communications, updates, and alerts\n- To detect, prevent, and address security incidents, fraud, and abuse\n- To comply with applicable legal and regulatory obligations\n- To analyze usage patterns to improve user experience and platform performance",
       ],
       [
-        "4. Data Sharing",
-        "We share data only with authorized users, service providers, and connected platforms you approve. We do not sell personal data.",
+        "4. Data Sharing & Disclosure",
+        "We do not sell your personal data. We never have and never will.\n\nWe may share your data only in the following circumstances:\n\n- With authorized team members and users within your workspace, according to the permissions you configure\n- With third-party service providers who assist in operating the platform (e.g., cloud hosting, data storage, email delivery), under strict contractual obligations to protect your data\n- With integrated services and tools that you explicitly authorize and connect to your workspace\n- When required by law, regulation, legal process, or governmental request\n- To enforce our Terms of Service, protect our rights, property, or safety, or the rights, property, or safety of others\n\nIn the event of a merger, acquisition, or sale of assets, your data may be transferred as part of that transaction. You will be notified of any such change.",
       ],
       [
         "5. Data Security",
-        "We use reasonable security measures, including access controls, encryption, audit logging, and secure integration handling.",
+        "We implement reasonable technical and organizational security measures to protect your data, including:\n\n- Access controls and role-based permissions\n- Encryption in transit and at rest\n- Audit logging of key activities\n- Regular security assessments\n- Secure integration handling\n\nHowever, no method of transmission or storage is 100% secure. We cannot guarantee absolute security of your data.",
       ],
       [
         "6. Data Retention",
-        "We retain data while your account is active or as needed for service, security, legal, and compliance purposes.",
+        "We retain your personal data for as long as your account is active, as needed to provide you with the platform services, or as required by applicable law.\n\nWhen data is no longer required, we will delete or anonymize it in accordance with our data management procedures. You may request deletion of your data at any time, subject to legal retention requirements.",
+      ],
+      [
+        "7. Your Rights",
+        "Depending on applicable law, you may have the following rights regarding your personal data:\n\n- Right to access — request a copy of the data we hold about you\n- Right to rectification — request correction of inaccurate or incomplete data\n- Right to deletion — request deletion of your data when it is no longer needed\n- Right to restrict processing — request limitation of how we use your data\n- Right to data portability — request transfer of your data to another service\n- Right to withdraw consent — withdraw consent at any time where processing is based on consent\n\nTo exercise any of these rights, please contact us at the email address below. We will respond within the timeframe required by applicable law.",
+      ],
+      [
+        "8. Cookies & Similar Technologies",
+        "We may use cookies, web beacons, and similar technologies to enhance your experience, analyze usage, and remember preferences.\n\nCookies are small text files stored on your device. You can control cookie preferences through your browser settings. Disabling cookies may affect certain features of the platform.\n\nWe may also use analytics services that collect anonymous usage data to help us improve the platform.",
+      ],
+      [
+        "9. Children's Privacy",
+        "The platform is not intended for use by individuals under the age of 18. We do not knowingly collect personal data from children. If we become aware that a child has provided us with personal data, we will take steps to delete it promptly.",
+      ],
+      [
+        "10. International Data Transfers",
+        "Your data may be stored and processed in servers located outside your country of residence. We take appropriate safeguards to ensure your data is protected in accordance with this policy and applicable law when transferred internationally.",
+      ],
+      [
+        "11. Changes to This Policy",
+        "We may update this Privacy Policy from time to time to reflect changes in our practices, legal requirements, or operational needs.\n\nMaterial changes will be notified by posting the updated policy on this page with an updated date. We encourage you to review this page periodically. Your continued use of the platform after changes constitutes acceptance of the updated policy.",
       ],
     ],
-    contact: "If you have privacy questions, contact us at",
-  },
-  ar: {
+    contactTitle: "12. Contact Us",
+    contact: "If you have any questions, concerns, or requests regarding this Privacy Policy or your personal data, please contact us at:",
+    email: `privacy@${rootDomain}`,
+  };
+}
+
+function ar() {
+  const rootDomain = brandDomainUrl("root").replace("https://", "");
+  return {
     eyebrow: "سياسة",
     title: "سياسة الخصوصية",
-    updated: "آخر تحديث: مايو 2026",
+    updated: "آخر تحديث: 28 يونيو 2026",
     blocks: [
       [
         "1. المقدمة",
-        [
-          "توضح هذه السياسة كيف تقوم كانترا بجمع البيانات الشخصية واستخدامها وحمايتها عند استخدام المنصة أو التواصل معنا أو الاستفادة من خدمات مساحة العمل.",
-          "باستخدامك للمنصة، فإنك تقرّ بأنك قرأت هذه السياسة وفهمت طريقة تعامل كانترا مع بياناتك.",
-        ],
+        "توضح سياسة الخصوصية هذه كيفية قيام كانترا بجمع بياناتك الشخصية واستخدامها والإفصاح عنها وحمايتها عند استخدام المنصة أو التواصل معنا.\n\nباستخدامك للمنصة، فإنك تقر بأنك قرأت هذه السياسة وفهمتها. إذا كنت لا توافق على أي جزء من هذه السياسة، فيجب عليك التوقف عن استخدام المنصة فورًا.",
       ],
       [
         "2. المعلومات التي نجمعها",
-        [
-          "قد نجمع المعلومات التي تقدمها لنا مباشرة، مثل:",
-          [
-            "الاسم",
-            "البريد الإلكتروني",
-            "رقم الجوال",
-            "اسم الشركة أو الفريق",
-            "معلومات الحساب",
-            "بيانات المشاريع والأصول والعملاء التي يتم إدخالها في مساحة العمل",
-            "الرسائل والاستفسارات المرسلة عبر نماذج التواصل",
-          ],
-          "كما قد نجمع بيانات تقنية عند استخدام المنصة، مثل عنوان IP، نوع المتصفح، الجهاز المستخدم، وسجلات الاستخدام لتحسين الأداء والأمان.",
-        ],
+        "قد نجمع الفئات التالية من المعلومات:\n\nالمعلومات التي تقدمها مباشرة — الاسم، البريد الإلكتروني، رقم الجوال، اسم الشركة أو الفريق، السجل التجاري، المسمى الوظيفي، الصورة الشخصية، وأي معلومات أخرى تقدمها أثناء التسجيل أو استخدام المنصة.\n\nبيانات مساحة العمل — المشاريع، المهام، الأصول، معلومات العملاء، المستندات، الرسائل، التصنيفات، الحالات، البيانات المالية، وأي بيانات تشغيلية أخرى يدخلها فريقك في المنصة.\n\nالبيانات التقنية — عنوان IP، نوع المتصفح والإصدار، نوع الجهاز، نظام التشغيل، روابط الإحالة، وسجلات الاستخدام تشمل الصفحات التي تمت زيارتها والخصائص المستخدمة والوقت الذي قضيته في المنصة.\n\nبيانات التواصل — سجلات المراسلات عند التواصل مع الدعم الفني أو تقديم استفسارات أو المشاركة في استبيانات.",
       ],
       [
-        "3. كيف نستخدم المعلومات",
-        [
-          "نستخدم البيانات للأغراض التالية:",
-          [
-            "إنشاء الحسابات وإدارة مساحات العمل",
-            "تشغيل خدمات المنصة وإدارة المشاريع والأصول والعملاء",
-            "تحسين تجربة المستخدم وتطوير خصائص المنصة",
-            "تقديم الدعم الفني والتشغيلي",
-            "إرسال التنبيهات والتحديثات المرتبطة بالخدمة",
-            "تعزيز الأمان ومنع الاستخدام غير المصرح به",
-            "الالتزام بالمتطلبات النظامية والتنظيمية عند الحاجة",
-          ],
-        ],
+        "3. كيف نستخدم معلوماتك",
+        "نستخدم معلوماتك للأغراض التالية:\n\n- إنشاء وإدارة حسابك ومساحة العمل\n- تشغيل وصيانة وتحسين المنصة وخصائصها\n- مزامنة البيانات عبر الأجهزة والفرق والتكاملات المصرح بها\n- تقديم الدعم الفني والتشغيلي\n- إرسال الإشعارات والتحديثات والتنبيهات المتعلقة بالخدمة\n- كشف ومنع ومعالجة الحوادث الأمنية والاحتيال وإساءة الاستخدام\n- الامتثال للالتزامات القانونية والتنظيمية\n- تحليل أنماط الاستخدام لتحسين تجربة المستخدم وأداء المنصة",
       ],
       [
-        "4. مشاركة البيانات",
-        [
-          "لا نبيع بياناتك الشخصية.",
-          "قد نشارك بعض البيانات عند الحاجة مع:",
-          [
-            "مزودي الخدمات التقنية والاستضافة",
-            "أدوات التكامل التي تختار ربطها بالمنصة",
-            "الجهات النظامية عند وجود التزام قانوني",
-            "أعضاء فريقك أو المستخدمين المصرح لهم داخل مساحة العمل بحسب الصلاحيات المحددة",
-          ],
-          "وتتم مشاركة البيانات بالحد اللازم لتقديم الخدمة أو الامتثال للمتطلبات النظامية.",
-        ],
+        "4. مشاركة البيانات والإفصاح",
+        "نحن لا نبيع بياناتك الشخصية. لم نبعها ولن نبيعها أبدًا.\n\nقد نشارك بياناتك فقط في الحالات التالية:\n\n- مع أعضاء الفريق المصرح لهم داخل مساحة العمل وفق الصلاحيات التي تحددها\n- مع مزودي الخدمات الخارجية الذين يساعدون في تشغيل المنصة (مثل الاستضافة السحابية وتخزين البيانات وتسليم البريد) بموجب التزامات تعاقدية صارمة لحماية بياناتك\n- مع خدمات التكامل التي تأذن بها وتدمجها مع مساحة العمل\n- عند الالتزام بالقانون أو اللوائح أو الإجراءات القانونية أو الطلبات الحكومية\n- لإنفاذ شروط الخدمة وحماية حقوقنا أو ممتلكاتنا أو سلامتنا أو حقوق الآخرين\n\nفي حالة الاندماج أو الاستحواذ أو بيع الأصول، قد تُنقل بياناتك كجزء من تلك الصفقة. سيتم إخطارك بأي تغيير من هذا القبيل.",
       ],
       [
-        "5. حماية البيانات",
-        [
-          "تتخذ كانترا إجراءات تقنية وتنظيمية لحماية البيانات من الوصول غير المصرح به أو الفقدان أو التعديل أو الإفصاح غير المشروع.",
-          "وتشمل هذه الإجراءات إدارة الصلاحيات، التحكم في الوصول، مراقبة الأنشطة، واستخدام مزودي خدمات موثوقين.",
-        ],
+        "5. أمن البيانات",
+        "نتخذ إجراءات أمنية تقنية وتنظيمية معقولة لحماية بياناتك، بما في ذلك:\n\n- ضوابط الوصول والصلاحيات القائمة على الأدوار\n- التشفير أثناء النقل وعند التخزين\n- تسجيل التدقيق للأنشطة الرئيسية\n- تقييمات أمنية منتظمة\n- التعامل الآمن مع التكاملات\n\nومع ذلك، لا توجد طريقة نقل أو تخزين آمنة بنسبة 100%. لا يمكننا ضمان الأمان المطلق لبياناتك.",
       ],
       [
         "6. الاحتفاظ بالبيانات",
-        [
-          "نحتفظ بالبيانات طوال مدة استخدامك للمنصة أو حسب ما تقتضيه أغراض التشغيل أو المتطلبات النظامية.",
-          "وعند انتهاء الحاجة إلى البيانات، يتم حذفها أو إخفاء هويتها وفق الإجراءات المعتمدة.",
-        ],
+        "نحتفظ ببياناتك الشخصية طالما كان حسابك نشطًا، أو حسب الحاجة لتقديم خدمات المنصة، أو كما تقتضي الأنظمة المعمول بها.\n\nعند عدم الحاجة إلى البيانات، سنقوم بحذفها أو إخفاء هويتها وفق إجراءات إدارة البيانات المعتمدة. يمكنك طلب حذف بياناتك في أي وقت، مع مراعاة متطلبات الاحتفاظ القانونية.",
       ],
       [
         "7. حقوق المستخدم",
-        [
-          "يحق لك، بحسب الأنظمة المعمول بها، طلب:",
-          [
-            "الاطلاع على بياناتك",
-            "تصحيح البيانات غير الدقيقة",
-            "تحديث البيانات الناقصة",
-            "طلب حذف البيانات عند عدم الحاجة إليها",
-            "سحب الموافقة متى كان الاعتماد على الموافقة أساسًا للمعالجة",
-          ],
-          "يمكن إرسال الطلبات عبر بيانات التواصل الموضحة في هذه السياسة.",
-        ],
+        "بناءً على الأنظمة المعمول بها، قد تكون لديك الحقوق التالية فيما يتعلق ببياناتك الشخصية:\n\n- حق الاطلاع — طلب نسخة من البيانات التي نحتفظ بها عنك\n- حق التصحيح — طلب تصحيح البيانات غير الدقيقة أو غير الكاملة\n- حق الحذف — طلب حذف بياناتك عندما لا تعود هناك حاجة إليها\n- حق تقييد المعالجة — طلب الحد من كيفية استخدامنا لبياناتك\n- حق نقل البيانات — طلب نقل بياناتك إلى خدمة أخرى\n- حق سحب الموافقة — سحب الموافقة في أي وقت إذا كانت المعالجة تستند إلى الموافقة\n\nلممارسة أي من هذه الحقوق، يُرجى التواصل معنا عبر البريد الإلكتروني أدناه. سنرد خلال الإطار الزمني المطلوب بموجب القانون المعمول به.",
       ],
       [
         "8. ملفات الارتباط والتقنيات المشابهة",
-        [
-          "قد تستخدم كانترا ملفات الارتباط لتحسين تجربة الاستخدام، تحليل الأداء، وحفظ تفضيلات المستخدم.",
-          "يمكنك التحكم في ملفات الارتباط من إعدادات المتصفح، وقد يؤثر تعطيلها على بعض وظائف المنصة.",
-        ],
+        "قد نستخدم ملفات الارتباط وإشارات الويب والتقنيات المشابهة لتحسين تجربتك وتحليل الاستخدام وحفظ التفضيلات.\n\nملفات الارتباط هي ملفات نصية صغيرة تُخزن على جهازك. يمكنك التحكم في إعدادات ملفات الارتباط من خلال متصفحك. قد يؤثر تعطيلها على بعض وظائف المنصة.\n\nقد نستخدم أيضًا خدمات تحليل تجمع بيانات استخدام مجهولة لمساعدتنا في تحسين المنصة.",
       ],
       [
-        "9. التحديثات على السياسة",
-        [
-          "قد نقوم بتحديث سياسة الخصوصية من وقت لآخر. سيتم نشر النسخة المحدثة داخل هذه الصفحة مع توضيح تاريخ آخر تحديث.",
-          "استمرارك في استخدام المنصة بعد التحديث يعني اطلاعك على النسخة الجديدة.",
-        ],
+        "9. خصوصية الأطفال",
+        "المنصة غير موجهة للأفراد الذين تقل أعمارهم عن 18 عامًا. لا نجمع عن قصد بيانات شخصية من الأطفال. إذا أصبحنا على علم بأن طفلًا قد قدم لنا بيانات شخصية، فسنتخذ خطوات لحذفها فورًا.",
+      ],
+      [
+        "10. نقل البيانات الدولي",
+        "قد يتم تخزين بياناتك ومعالجتها في خوادم تقع خارج بلد إقامتك. نتخذ الضمانات المناسبة لضمان حماية بياناتك وفقًا لهذه السياسة والقانون المعمول به عند نقلها دوليًا.",
+      ],
+      [
+        "11. التحديثات على هذه السياسة",
+        "قد نقوم بتحديث سياسة الخصوصية من وقت لآخر لتعكس التغييرات في ممارساتنا أو المتطلبات القانونية أو الاحتياجات التشغيلية.\n\nسيتم الإخطار بالتغييرات الجوهرية من خلال نشر السياسة المحدثة على هذه الصفحة مع تاريخ محدث. نشجعك على مراجعة هذه الصفحة بشكل دوري. استمرارك في استخدام المنصة بعد التغييرات يعتبر قبولاً بالسياسة المحدثة.",
       ],
     ],
-    contact:
-      "لأي استفسار متعلق بالخصوصية أو بياناتك الشخصية، يمكنك التواصل معنا عبر:",
-  },
-};
+    contactTitle: "12. التواصل معنا",
+    contact: "إذا كانت لديك أي أسئلة أو استفسارات أو طلبات بخصوص سياسة الخصوصية هذه أو بياناتك الشخصية، يرجى التواصل معنا عبر:",
+    email: `privacy@${rootDomain}`,
+  };
+}
 
 type BlockBody = string | Array<string | string[]>;
 type LegalCopyBlock = [title: string, body: BlockBody];
@@ -153,8 +128,7 @@ type LegalCopyBlock = [title: string, body: BlockBody];
 export default function PrivacyPage() {
   const locale = useLocale();
   const isAr = locale === "ar";
-  const c = isAr ? copy.ar : copy.en;
-  const privacyEmail = `privacy@${brandDomainUrl("root").replace("https://", "")}`;
+  const c = isAr ? ar() : en();
 
   return (
     <LegalArticle eyebrow={c.eyebrow} title={c.title} updated={c.updated}>
@@ -163,22 +137,15 @@ export default function PrivacyPage() {
           <RichBlockBody body={body} />
         </LegalBlock>
       ))}
-      <LegalBlock title={isAr ? "10. التواصل معنا" : "7. Contact Us"}>
+      <LegalBlock title={c.contactTitle}>
+        <p>{c.contact}</p>
         <p>
-          {c.contact}{" "}
-          {isAr ? (
-            <>
-              <br />
-              البريد الإلكتروني:{" "}
-            </>
-          ) : null}
           <a
-            href={`mailto:${privacyEmail}`}
-            className="font-black text-blue-600 hover:underline dark:text-blue-300"
+            href={`mailto:${c.email}`}
+            className="font-black text-[var(--q-accent)] hover:underline"
           >
-            {privacyEmail}
+            {c.email}
           </a>
-          .
         </p>
       </LegalBlock>
     </LegalArticle>

@@ -1,52 +1,47 @@
 "use client";
 
-import { ArrowRight, ShieldCheck, Sparkles, UsersRound } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
-import { FeatureGrid, PublicSection, SectionKicker } from "@/components/landing/public-page-shell";
+import { Sparkles, ShieldCheck, UsersRound } from "lucide-react";
+
+import {
+  CtaBanner,
+  FeatureCardGrid,
+  PageShell,
+  PublicSection,
+  StatsGrid,
+} from "@/components/design-system";
 import { FounderSection } from "@/components/landing/founder-section";
 import { Storyline } from "@/components/landing/storyline";
+import { Reveal } from "@/components/landing/cinematic-motion";
 import { AuroraShaders } from "@/components/ui/aurora";
-import { Link } from "@/i18n/routing";
 
-const teamCopy = {
-  en: {
-    principles: [
-      { title: "Product discipline", description: "Every surface is designed around fewer clicks, clearer ownership, and cleaner operational handoffs.", icon: Sparkles },
-      { title: "Operational trust", description: "Approvals, audit trails, and data integrity are part of the daily workflow, not afterthoughts.", icon: ShieldCheck },
-      { title: "Market proximity", description: "The team stays close to developers, brokers, and operators using the workspace every day.", icon: UsersRound },
-    ],
-    cta: {
-      eyebrow: "Get started",
-      title: "Ready to see it in action?",
-      description: "Sign in to your workspace and start building with your team today.",
-      primary: "Go to workspace",
-      secondary: "View pricing",
-    },
-  },
-  ar: {
-    principles: [
-      { title: "انضباط المنتج", description: "كل سطح مصمم حول نقرات أقل، ملكية أوضح، وتسليمات تشغيلية أنظف.", icon: Sparkles },
-      { title: "ثقة تشغيلية", description: "الموافقات وسجلات التدقيق وسلامة البيانات جزء من سير العمل اليومي، وليست تفاصيل لاحقة.", icon: ShieldCheck },
-      { title: "قرب من السوق", description: "يبقى الفريق قريبًا من المطورين والوسطاء والمشغلين الذين يستخدمون مساحة العمل كل يوم.", icon: UsersRound },
-    ],
-    cta: {
-      eyebrow: "ابدأ الآن",
-      title: "هل أنت مستعد لرؤيتها في العمل؟",
-      description: "سجّل الدخول إلى مساحة العمل وابدأ البناء مع فريقك اليوم.",
-      primary: "الدخول إلى مساحة العمل",
-      secondary: "عرض الأسعار",
-    },
-  },
+type PrincipleItem = {
+  title: string;
+  description: string;
+};
+
+type SignalItem = {
+  label: string;
+  value: string;
+  helper: string;
 };
 
 export function WorkspaceAboutPage() {
   const t = useTranslations("Landing.about");
   const locale = useLocale();
-  const team = locale === "ar" ? teamCopy.ar : teamCopy.en;
+  const isAr = locale === "ar";
+
+  const signals = t.raw("signals") as Record<string, SignalItem>;
+  const principlesRaw = t.raw("principles.items") as PrincipleItem[];
+
+  const principles = principlesRaw.map((p, i) => ({
+    ...p,
+    icon: [Sparkles, ShieldCheck, UsersRound][i % 3],
+  }));
 
   return (
-    <div className="relative isolate" style={{ background: "var(--q-bg)", fontFamily: "var(--font-sans)" }}>
+    <PageShell className="relative isolate">
       <AuroraShaders
         aria-hidden="true"
         className="absolute left-1/2 top-[-20%] -z-10 h-[800px] w-[1400px] -translate-x-1/2 opacity-30 blur-3xl dark:opacity-20"
@@ -55,76 +50,157 @@ export function WorkspaceAboutPage() {
         vibrancy={0.8}
       />
 
-      {/* ── Hero ─────────────────────────────────────── */}
-      <section className="bg-transparent px-6 pb-4 pt-20 md:pb-6 md:pt-32">
-        <div className="mx-auto max-w-4xl text-center">
-          <SectionKicker center>{t("hero.eyebrow")}</SectionKicker>
-          <h1
-            className="mt-8 text-5xl font-bold tracking-tight md:text-7xl md:leading-[0.94] rtl:leading-[1.1]"
-            style={{ color: "var(--q-text-primary)" }}
-          >
-            {t("hero.title")}
-          </h1>
-          <p
-            className="mx-auto mt-8 max-w-2xl text-base font-medium leading-8 md:text-xl rtl:leading-9"
-            style={{ color: "var(--q-text-secondary)" }}
-          >
-            {t("hero.description")}
-          </p>
+      {/* ── Hero ────────────────────────────────────────────── */}
+      <section className="border-b border-[var(--q-border)] px-6 py-24 md:py-32">
+        <div className="mx-auto max-w-3xl text-center">
+          <Reveal>
+            <p className="text-[10px] font-bold uppercase tracking-[0.32em] text-[var(--q-accent)]">
+              {t("hero.eyebrow")}
+            </p>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <h1 className="mt-4 text-4xl font-bold tracking-tight text-[var(--q-text-primary)] md:text-6xl md:leading-[0.94]">
+              {t("hero.title")}
+            </h1>
+          </Reveal>
+          <Reveal delay={0.2}>
+            <p className="mt-5 mx-auto max-w-2xl text-base font-medium leading-8 text-[var(--q-text-secondary)]">
+              {t("hero.description")}
+            </p>
+          </Reveal>
         </div>
       </section>
 
+      {/* ── Stats grid (signals) ───────────────────────────── */}
+      <section className="px-6 py-16 md:py-20">
+        <div className="mx-auto max-w-4xl">
+          <Reveal>
+            <StatsGrid
+              items={[
+                { value: signals.source.value, label: signals.source.label, tag: signals.source.helper },
+                { value: signals.roles.value, label: signals.roles.label, tag: signals.roles.helper },
+                { value: signals.trust.value, label: signals.trust.label, tag: signals.trust.helper },
+              ]}
+            />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── Storyline ───────────────────────────────────────── */}
       <Storyline />
 
-      <div className="border-t" style={{ borderColor: "var(--q-border)" }} />
-
-      <FounderSection />
-
-      {/* ── Principles grid ──────────────────────────── */}
-      <PublicSection>
-        <FeatureGrid items={team.principles} />
+      {/* ── Principles ──────────────────────────────────────── */}
+      <PublicSection tone="secondary">
+        <div className="mx-auto max-w-4xl text-center mb-14">
+          <Reveal>
+            <p className="text-[10px] font-bold uppercase tracking-[0.32em] text-[var(--q-accent)]">
+              {t("principles.eyebrow")}
+            </p>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-[var(--q-text-primary)] md:text-4xl">
+              {t("principles.title")}
+            </h2>
+          </Reveal>
+          <Reveal delay={0.2}>
+            <p className="mt-3 text-sm font-medium text-[var(--q-text-secondary)]">
+              {t("principles.description")}
+            </p>
+          </Reveal>
+        </div>
+        <FeatureCardGrid items={principles} />
       </PublicSection>
 
-      {/* ── CTA banner ───────────────────────────────── */}
-      <section className="px-6 pb-20 md:pb-28">
-        <div
-          className="mx-auto max-w-5xl overflow-hidden rounded-3xl px-8 py-14 text-center md:px-16"
-          style={{ background: "var(--q-text-primary)", color: "var(--q-bg)" }}
-        >
-          <p
-            className="text-[10px] font-black uppercase tracking-[0.28em]"
-            style={{ color: "var(--q-accent)" }}
-          >
-            {team.cta.eyebrow}
-          </p>
-          <h2 className="mt-4 text-2xl font-bold tracking-tight md:text-3xl">
-            {team.cta.title}
-          </h2>
-          <p
-            className="mx-auto mt-3 max-w-md text-sm font-medium leading-7"
-            style={{ opacity: 0.7 }}
-          >
-            {team.cta.description}
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/dashboard"
-              className="inline-flex h-11 items-center gap-2 rounded-full px-7 text-[11px] font-black uppercase tracking-widest transition-all active:scale-[0.98]"
-              style={{ background: "var(--q-bg)", color: "var(--q-text-primary)" }}
-            >
-              {team.cta.primary}
-              <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
-            </Link>
-            <Link
-              href="/pricing"
-              className="inline-flex h-11 items-center gap-2 rounded-full border px-7 text-[11px] font-black uppercase tracking-widest transition-all"
-              style={{ borderColor: "rgba(255,255,255,0.2)", color: "var(--q-bg)" }}
-            >
-              {team.cta.secondary}
-            </Link>
+      {/* ── Operating philosophy ────────────────────────────── */}
+      <PublicSection>
+        <div className="mx-auto max-w-5xl">
+          <div className="grid gap-12 md:grid-cols-2 md:gap-16 items-center">
+            <Reveal>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.32em] text-[var(--q-accent)]">
+                  {t("operating.eyebrow")}
+                </p>
+                <h2 className="mt-4 text-3xl font-bold tracking-tight text-[var(--q-text-primary)] md:text-4xl">
+                  {t("operating.title")}
+                </h2>
+                <p className="mt-4 text-sm font-medium leading-7 text-[var(--q-text-secondary)] md:text-base">
+                  {t("operating.description")}
+                </p>
+              </div>
+            </Reveal>
+            <Reveal delay={0.15}>
+              <div className="rounded-3xl border border-[var(--q-border)] bg-[var(--q-card)] p-6 md:p-8">
+                <div className="space-y-5">
+                  {[
+                    {
+                      label: isAr ? "عناصر تحكم المنتج" : "Product controls",
+                      desc: isAr
+                        ? "أزرار وحالات ومؤشرات حقيقية من مساحة العمل"
+                        : "Real buttons, statuses, and indicators from the workspace",
+                    },
+                    {
+                      label: isAr ? "معاينات حية" : "Live previews",
+                      desc: isAr
+                        ? "بطاقات المشاريع والعملاء تعرض بيانات محدثة في الوقت الفعلي"
+                        : "Project and client cards show up-to-date data in real time",
+                    },
+                    {
+                      label: isAr ? "مسارات مخصصة" : "Audience routes",
+                      desc: isAr
+                        ? "كل زائر يرى ما يناسب دوره واحتياجاته"
+                        : "Each visitor sees what fits their role and needs",
+                    },
+                  ].map((item) => (
+                    <div key={item.label} className="flex items-start gap-3">
+                      <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--q-accent)]/15">
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="text-[var(--q-accent)]"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-[var(--q-text-primary)]">
+                          {item.label}
+                        </p>
+                        <p className="text-xs text-[var(--q-text-secondary)]">
+                          {item.desc}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
           </div>
         </div>
-      </section>
-    </div>
+      </PublicSection>
+
+      {/* ── Founders ─────────────────────────────────────────── */}
+      <FounderSection />
+
+      {/* ── CTA ──────────────────────────────────────────────── */}
+      <PublicSection tone="default" className="!pb-20 md:!pb-28 !pt-0">
+        <CtaBanner
+          eyebrow={t("cta.eyebrow")}
+          title={t("cta.title")}
+          description={t("cta.description")}
+          primaryLabel={t("cta.primary")}
+          primaryHref="/dashboard"
+          secondaryLabel={t("cta.secondary")}
+          secondaryHref="/contact"
+        />
+      </PublicSection>
+    </PageShell>
   );
 }
+
+

@@ -68,7 +68,7 @@ export function WebsiteBuilderConnect({ locale }: { locale: string }) {
     <section className="w-full overflow-hidden border-y border-[var(--q-border)] bg-[var(--q-bg-secondary)] px-6 py-16 md:py-24">
       <div className="mx-auto max-w-7xl">
         <div className="flex max-w-4xl flex-col items-start space-y-5 text-start">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-blue-700 dark:text-blue-300">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[var(--q-accent)]/20 bg-[var(--q-accent)]/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--q-accent)]">
             <PlugZap className="h-3.5 w-3.5" />
             {labels.eyebrow}
           </div>
