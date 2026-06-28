@@ -2317,6 +2317,7 @@
       "resources": {
         "organization": "Organization",
         "client": "Clients",
+        "space": "Spaces",
         "property": "Assets",
         "asset": "Assets",
         "project": "Projects",
@@ -2328,6 +2329,7 @@
       "resourceHelp": {
         "organization": "Read the workspace profile, identity, and basic operating context.",
         "client": "Read and manage people or companies, relationship notes, pipeline state, and linked work.",
+        "space": "Read and manage spaces, team areas, and organizational groupings.",
         "property": "Read and manage assets, operational inventory, status, ownership context, and attached records.",
         "asset": "Read and manage assets, operational inventory, status, ownership context, and attached records.",
         "project": "Read and manage project records, delivery context, linked clients, assets, and team work.",

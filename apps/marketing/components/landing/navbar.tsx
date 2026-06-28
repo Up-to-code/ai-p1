@@ -9,6 +9,7 @@ import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { Link } from "@/i18n/routing";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { publicSeoLinks } from "@/lib/public-links";
+import { workspaceLinks } from "@/lib/workspace-links";
 
 export function Navbar() {
   const t = useTranslations("Landing.nav");
@@ -89,7 +90,7 @@ export function Navbar() {
 
           {/* Sign in CTA (desktop) */}
           <Link
-            href="/dashboard"
+            href={workspaceLinks.signIn}
             className={cn(
               "hidden h-9 items-center gap-1.5 rounded-xl px-4 text-[11px] font-black uppercase tracking-widest transition-all duration-200 active:scale-[0.97] md:inline-flex",
               isScrolled
@@ -150,7 +151,7 @@ export function Navbar() {
             style={{ borderColor: "var(--q-border)" }}
           >
             <Link
-              href="/dashboard"
+              href={workspaceLinks.signIn}
               className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[var(--q-accent)] text-[11px] font-black uppercase tracking-widest text-background transition-all active:scale-[0.98]"
               onClick={() => setIsMenuOpen(false)}
             >

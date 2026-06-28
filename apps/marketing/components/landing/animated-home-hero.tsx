@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "@/i18n/routing";
+import { workspaceLinks } from "@/lib/workspace-links";
 import { AnimatedSphere } from "./animated-sphere";
 
 const words = ["simple", "smart", "connected", "universal"];
@@ -95,13 +96,13 @@ export function AnimatedHomeHero() {
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
         >
-          <Link
-            href="/dashboard"
+          <a
+            href={workspaceLinks.signUp}
             className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[var(--q-accent)] px-8 text-sm font-bold text-[var(--q-bg)] transition-all hover:bg-[var(--q-accent-hover)] group"
           >
             Get started — Free forever
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </Link>
+          </a>
           <Link
             href="/contact"
             className="inline-flex h-14 items-center justify-center gap-2 rounded-full border border-[var(--q-border)] px-8 text-sm font-bold text-[var(--q-text-primary)] transition-all hover:bg-[var(--q-card-hover)]"

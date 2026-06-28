@@ -1,14 +1,13 @@
 "use client";
 
-import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
+import { workspaceFetch, workspaceMutation } from "@/domains/resources/workspace-resource-request";
 import type { OrganizationMcpConnection, McpConnectionPermission } from "./types";
 
 export function listOrganizationMcpConnections(organizationId: string) {
-  return requestOrganizationAction<{ connections: OrganizationMcpConnection[] }>(
-    organizationApiPath(organizationId, "mcp-connections"),
-    "GET",
-    undefined,
-    "Agent links could not be loaded.",
+  return workspaceFetch<{ connections: OrganizationMcpConnection[] }>(
+    organizationId,
+    "mcp-connections",
+    { method: "GET", body: undefined, fallbackMessage: "Agent links could not be loaded." },
   ).then((result) => result.connections);
 }
 
@@ -22,11 +21,10 @@ export function createOrganizationMcpConnection(
     expiresAt?: number;
   },
 ) {
-  return requestOrganizationAction<{ connection: OrganizationMcpConnection; agentLink: string }>(
-    organizationApiPath(organizationId, "mcp-connections"),
-    "POST",
-    input,
-    "Agent link could not be created.",
+  return workspaceMutation<{ connection: OrganizationMcpConnection; agentLink: string }>(
+    organizationId,
+    "mcp-connections",
+    { method: "POST", body: input, fallbackMessage: "Agent link could not be created." },
   );
 }
 
@@ -41,28 +39,25 @@ export function updateOrganizationMcpConnection(
     expiresAt?: number | null;
   },
 ) {
-  return requestOrganizationAction<{ connection: OrganizationMcpConnection }>(
-    organizationApiPath(organizationId, "mcp-connections", connectionId),
-    "PATCH",
-    input,
-    "Agent link could not be updated.",
+  return workspaceMutation<{ connection: OrganizationMcpConnection }>(
+    organizationId,
+    `mcp-connections/${connectionId}`,
+    { method: "PATCH", body: input, fallbackMessage: "Agent link could not be updated." },
   ).then((result) => result.connection);
 }
 
 export function revokeOrganizationMcpConnection(organizationId: string, connectionId: string) {
-  return requestOrganizationAction<{ revoked: boolean }>(
-    organizationApiPath(organizationId, "mcp-connections", connectionId),
-    "DELETE",
-    undefined,
-    "Agent link could not be revoked.",
+  return workspaceMutation<{ revoked: boolean }>(
+    organizationId,
+    `mcp-connections/${connectionId}`,
+    { method: "DELETE", body: undefined, fallbackMessage: "Agent link could not be revoked." },
   );
 }
 
 export function rotateOrganizationMcpConnection(organizationId: string, connectionId: string) {
-  return requestOrganizationAction<{ connection: OrganizationMcpConnection; agentLink: string }>(
-    organizationApiPath(organizationId, "mcp-connections", connectionId, "rotate"),
-    "POST",
-    undefined,
-    "A new link could not be made.",
+  return workspaceMutation<{ connection: OrganizationMcpConnection; agentLink: string }>(
+    organizationId,
+    `mcp-connections/${connectionId}/rotate`,
+    { method: "POST", body: undefined, fallbackMessage: "A new link could not be made." },
   );
 }

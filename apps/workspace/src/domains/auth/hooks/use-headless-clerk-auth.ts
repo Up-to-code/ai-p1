@@ -203,6 +203,11 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
 
         throw new Error("This Clerk SDK does not expose a social sign-in flow.");
       } catch (caught) {
+        if (isAlreadySignedInError(caught)) {
+          const target = finalCallbackURL || `/${locale}/ws`;
+          window.location.href = target;
+          return;
+        }
         if (process.env.NODE_ENV !== "production") {
           console.error("[Qentrah auth] social sign-in failed", caught);
         }

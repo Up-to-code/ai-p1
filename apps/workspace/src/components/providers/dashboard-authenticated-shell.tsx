@@ -78,6 +78,14 @@ export function DashboardAuthenticatedShell({
     setHasRedirected(true);
     const targetHref = toRouterHref(locale, authRedirect);
 
+    // External (cross-domain) redirects use window.location for a full navigation
+    if (targetHref.startsWith("http://") || targetHref.startsWith("https://")) {
+      if (window.location.href !== targetHref) {
+        window.location.href = targetHref;
+      }
+      return;
+    }
+
     // Prevent redirect loops by checking if we're already on the target
     if (window.location.pathname !== targetHref) {
       // If redirecting to sign-in, encode the current full URL (path + search)

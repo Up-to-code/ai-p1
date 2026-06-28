@@ -6,10 +6,9 @@ export function updateAuthOrganization(
   organizationId: string,
   data: { name?: string; slug?: string; logo?: string; metadata?: Record<string, unknown> },
 ) {
-  return requestOrganizationAction<{ organization: unknown }>(
-    organizationApiPath(organizationId, "identity"),
-    "PATCH",
-    data,
-    "Organization update failed.",
+  return workspaceMutation<{ organization: unknown }>(
+    organizationId,
+    "identity",
+    { method: "PATCH", body: data, fallbackMessage: "Organization update failed." },
   ).then((result) => result.organization);
 }

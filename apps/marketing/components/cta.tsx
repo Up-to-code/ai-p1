@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
+import { workspaceLinks } from "@/lib/workspace-links";
 
 const CTA = () => {
   const t = useTranslations("Landing.home.cta");
@@ -35,13 +36,13 @@ const CTA = () => {
         </p>
 
         <div className="mt-12 flex flex-col gap-4 sm:flex-row justify-center w-full sm:w-auto">
-          <Link
+          <a
             className="group inline-flex h-14 items-center justify-center gap-3 rounded-[14px] bg-[var(--q-accent)] px-8 text-sm font-bold text-background transition-all duration-300 hover:bg-[var(--q-accent-hover)] active:scale-95"
-            href="/dashboard"
+            href={workspaceLinks.signUp}
           >
             {t("primary")}
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
-          </Link>
+          </a>
           <Link
             className="group inline-flex h-14 items-center justify-center gap-3 rounded-[14px] border border-[var(--q-border)] bg-[var(--q-card)] px-8 text-sm font-bold text-[var(--q-text-primary)] transition-all duration-300 hover:bg-[var(--q-card-hover)] active:scale-95"
             href="/partners"

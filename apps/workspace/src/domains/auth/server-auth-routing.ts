@@ -5,13 +5,18 @@ function localizedPath(locale: string, path: string) {
   return `/${locale}${path}`;
 }
 
-export async function redirectAuthenticatedUserFromAuthEntry(locale: string) {
+export async function redirectAuthenticatedUserFromAuthEntry(locale: string, callbackURL?: string | null) {
   const session = await auth();
 
   if (!session.userId) return;
 
-  // Always redirect to dashboard after sign-in/sign-up.
-  // The DashboardAppWrapper will show a modal if the user has no organization.
+  // If there's a callbackURL (e.g. "/choose-org" or "/en/choose-org"),
+  // respect it. callbackURL may already be locale-prefixed — handle both.
+  if (callbackURL) {
+    const target = callbackURL.startsWith(`/${locale}`) ? callbackURL : localizedPath(locale, callbackURL);
+    redirect(target);
+  }
+
   redirect(localizedPath(locale, "/ws"));
 }
 

@@ -1,15 +1,14 @@
 "use client";
 
-import { workspaceFetch } from "@/domains/resources/workspace-resource-request";
+import { workspaceFetch, workspaceMutation } from "@/domains/resources/workspace-resource-request";
 import type { OrganizationRole } from "./types";
 import type { OrganizationPermissionStatement } from "@qentrah/auth";
 
 export function listOrganizationRoles(organizationId: string) {
-  return requestOrganizationAction<{ roles: OrganizationRole[] }>(
-    organizationApiPath(organizationId, "roles"),
-    "GET",
-    undefined,
-    "Roles could not be loaded.",
+  return workspaceFetch<{ roles: OrganizationRole[] }>(
+    organizationId,
+    "roles",
+    { method: "GET", body: undefined, fallbackMessage: "Roles could not be loaded." },
   ).then((result) => result.roles);
 }
 
@@ -18,11 +17,10 @@ export function createOrganizationRole(
   role: string,
   permission: Partial<Record<keyof OrganizationPermissionStatement, string[]>>,
 ) {
-  return requestOrganizationAction<{ role: { roleData: OrganizationRole } }>(
-    organizationApiPath(organizationId, "roles"),
-    "POST",
-    { role, permission },
-    "Role could not be created.",
+  return workspaceMutation<{ role: { roleData: OrganizationRole } }>(
+    organizationId,
+    "roles",
+    { method: "POST", body: { role, permission }, fallbackMessage: "Role could not be created." },
   ).then((result) => result.role);
 }
 
@@ -34,19 +32,17 @@ export function updateOrganizationRole(
     permission?: Partial<Record<keyof OrganizationPermissionStatement, string[]>>;
   },
 ) {
-  return requestOrganizationAction<{ role: { roleData: OrganizationRole } }>(
-    organizationApiPath(organizationId, "roles", roleId),
-    "PATCH",
-    data,
-    "Role could not be updated.",
+  return workspaceMutation<{ role: { roleData: OrganizationRole } }>(
+    organizationId,
+    `roles/${roleId}`,
+    { method: "PATCH", body: data, fallbackMessage: "Role could not be updated." },
   ).then((result) => result.role);
 }
 
 export function deleteOrganizationRole(organizationId: string, roleId: string) {
-  return requestOrganizationAction<{ role: unknown }>(
-    organizationApiPath(organizationId, "roles", roleId),
-    "DELETE",
-    undefined,
-    "Role could not be deleted.",
+  return workspaceMutation<{ role: unknown }>(
+    organizationId,
+    `roles/${roleId}`,
+    { method: "DELETE", body: undefined, fallbackMessage: "Role could not be deleted." },
   ).then((result) => result.role);
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, createElement, useContext, useMemo, type ReactNode } from "react";
+import { createContext, createElement, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useAuth, useOrganization, useUser } from "@clerk/nextjs";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
@@ -12,6 +12,8 @@ import {
   type AccountContextValue,
 } from "../lib/account-normalizers";
 
+const ORG_LOAD_TIMEOUT_MS = 8_000;
+
 const AccountContext = createContext<AccountContextValue | null>(null);
 
 function useAccountContextValue(): AccountContextValue {
@@ -19,9 +21,19 @@ function useAccountContextValue(): AccountContextValue {
   const userQuery = useUser();
   const organizationQuery = useOrganization();
   const convexAuth = useConvexAuth();
+  const [orgLoadTimedOut, setOrgLoadTimedOut] = useState(false);
+
+  // If useOrganization() hangs (e.g., user has no org memberships),
+  // time out after ORG_LOAD_TIMEOUT_MS so the shell doesn't show
+  // an infinite loading state.
+  useEffect(() => {
+    if (organizationQuery.isLoaded || orgLoadTimedOut) return;
+    const timer = setTimeout(() => setOrgLoadTimedOut(true), ORG_LOAD_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [organizationQuery.isLoaded, orgLoadTimedOut]);
 
   const organizationId = auth.orgId ?? organizationQuery.organization?.id ?? null;
-  const isOrganizationPending = !organizationQuery.isLoaded;
+  const isOrganizationPending = !organizationQuery.isLoaded && !orgLoadTimedOut;
   const isConvexAuthenticated = convexAuth.isAuthenticated;
   const isConvexAuthPending = !convexAuth.isLoading && auth.isSignedIn ? false : convexAuth.isLoading;
 

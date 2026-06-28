@@ -1,7 +1,8 @@
 import createMiddleware from 'next-intl/middleware';
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse, type NextRequest } from "next/server";
 import * as Sentry from "@sentry/nextjs";
+import { brandDomainUrl } from "@qentrah/brand-identity";
 import { routing } from './i18n/routing';
 
 const intlMiddleware = createMiddleware(routing);
@@ -23,12 +24,11 @@ const protectedRouteSegments = new Set([
   "web-apps",
 ]);
 
-// Auth routes that should redirect authenticated users
-const isAuthRoute = createRouteMatcher([
-  '/:locale/sign-in(.*)',
-  '/:locale/sign-up(.*)',
-  '/:locale/sso-callback(.*)',
-]);
+const AUTH_ROUTE_REGEX = /^\/(ar|en)\/(sign-in|sign-up|sso-callback)(\/.*)?$/;
+
+function isAuthRoute(pathname: string) {
+  return AUTH_ROUTE_REGEX.test(pathname);
+}
 
 function isProtectedRoute(request: NextRequest) {
   const [locale, segment] = request.nextUrl.pathname.split("/").filter(Boolean);
@@ -72,7 +72,7 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
     const { userId } = await auth();
 
     // Handle auth routes (sign-in, sign-up, sso-callback)
-    if (isAuthRoute(request)) {
+    if (isAuthRoute(request.nextUrl.pathname)) {
       if (userId) {
         // User is authenticated, redirect to workspace.
         // The DashboardAppWrapper will show a modal if no organization exists.
@@ -85,12 +85,8 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
     // Handle protected routes
     if (isProtectedRoute(request)) {
       await auth.protect({
-        unauthenticatedUrl: new URL(`/${locale}/sign-in`, request.url).toString(),
+        unauthenticatedUrl: new URL(`/${locale}`, brandDomainUrl("root")).toString(),
       });
-
-      // NOTE: We no longer redirect to /choose-org here.
-      // The DashboardAppWrapper shows a modal for users without an organization,
-      // avoiding the glitch between auth and organization selection.
     }
 
     return intlMiddleware(request);

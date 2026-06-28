@@ -41,10 +41,10 @@ export function getWorkspaceAuthRedirect({
   workspaceStatus: WorkspaceStatus;
   locale: string;
   isAuthHandoffPending?: boolean;
-}) {
+}): string | null {
   if (isAuthHandoffPending) return null;
   if (!isSignedIn) {
-    return `/${locale}/sign-in?callbackURL=${encodeURIComponent(`/${locale}/choose-org`)}`;
+    return `https://qentrah.com/${locale}`;
   }
   if (workspaceStatus === "noOrganization" || workspaceStatus === "organizationAccessDenied") return `/${locale}/choose-org`;
   return null;

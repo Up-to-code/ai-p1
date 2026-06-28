@@ -359,7 +359,7 @@ export function WorkspaceContactPage() {
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <a
-                href="/dashboard"
+                href="https://app.qentrah.com"
                 className="inline-flex h-11 items-center gap-2 rounded-full bg-[var(--q-bg)] px-7 text-[11px] font-black uppercase tracking-widest text-[var(--q-text-primary)] transition-all active:scale-[0.98]"
               >
                 {isAr ? "الدخول إلى مساحة العمل" : "Go to workspace"}

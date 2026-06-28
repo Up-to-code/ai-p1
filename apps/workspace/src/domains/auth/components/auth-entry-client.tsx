@@ -1,9 +1,19 @@
 "use client";
 
-import { useAuth, useClerk } from "@clerk/nextjs";
+import { useLayoutEffect } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { AuthAccessScreen } from "@/components/auth/auth-access-screen";
 import { WorkspaceRouteLoading } from "@/components/loading/workspace-route-loading";
 import { useHeadlessClerkAuth } from "../hooks/use-headless-clerk-auth";
+
+function resolveTarget(callbackURL: string | null | undefined, locale: string): string {
+  if (!callbackURL) return `/${locale}/ws`;
+
+  // callbackURL may be locale-prefixed (e.g. "/en/choose-org") or bare.
+  if (callbackURL.startsWith("/")) return callbackURL;
+
+  return `/${locale}/${callbackURL}`;
+}
 
 type AuthEntryClientProps = {
   callbackURL?: string | null;
@@ -13,21 +23,28 @@ type AuthEntryClientProps = {
 
 export function AuthEntryClient({ callbackURL, locale, mode }: AuthEntryClientProps) {
   const clerkAuth = useAuth();
-  const clerk = useClerk();
   const auth = useHeadlessClerkAuth({ callbackURL, locale, mode });
-  const clerkState = clerk as unknown as {
-    session?: {
-      currentTask?: unknown;
-    } | null;
-  };
-  const session = clerkState.session ?? null;
-  const isSignedIn = Boolean(clerkAuth.isSignedIn || session);
 
-  // Show loading while Clerk initializes or while the user is already
-  // signed in and waiting for the server-side redirect from
-  // redirectAuthenticatedUserFromAuthEntry / the middleware.
-  if (!clerkAuth.isLoaded || isSignedIn) {
+  // If Clerk detects the user is already signed in (but the server-side
+  // redirectAuthenticatedUserFromAuthEntry missed it — e.g., cookie not
+  // propagated), redirect client-side so we never show an infinite loading
+  // state waiting for a server redirect that will never come.
+  // Respect callbackURL if present (e.g. /choose-org).
+  // useLayoutEffect fires synchronously before paint — no flash.
+  // window.location.href forces an immediate hard navigation — no router delay.
+  useLayoutEffect(() => {
+    if (clerkAuth.isLoaded && clerkAuth.isSignedIn) {
+      const target = resolveTarget(callbackURL, locale);
+      window.location.href = target;
+    }
+  }, [clerkAuth.isLoaded, clerkAuth.isSignedIn, callbackURL, locale]);
+
+  if (!clerkAuth.isLoaded) {
     return <WorkspaceRouteLoading variant="session" />;
+  }
+
+  if (clerkAuth.isSignedIn) {
+    return null;
   }
 
   return (

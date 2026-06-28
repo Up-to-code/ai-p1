@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { brandDomainUrl } from "@qentrah/brand-identity";
 
 export default async function WorkspaceHome({
   params,
@@ -13,5 +14,5 @@ export default async function WorkspaceHome({
     redirect(`/${locale}/ws`);
   }
 
-  redirect(`/${locale}/sign-in`);
+  redirect(new URL(`/${locale}`, brandDomainUrl("root")).toString());
 }

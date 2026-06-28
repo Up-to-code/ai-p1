@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "@/i18n/routing";
+import { workspaceLinks } from "@/lib/workspace-links";
 import { AnimatedTetrahedron } from "./animated-tetrahedron";
 
 export function CtaSection() {
@@ -60,13 +61,13 @@ export function CtaSection() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-start gap-4">
-                  <Link
-                    href="/dashboard"
+                  <a
+                    href={workspaceLinks.signUp}
                     className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[var(--q-accent)] px-8 text-sm font-bold text-[var(--q-bg)] transition-all hover:bg-[var(--q-accent-hover)] group"
                   >
                     Start building free
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                  </Link>
+                  </a>
                   <Link
                     href="/contact"
                     className="inline-flex h-14 items-center justify-center gap-2 rounded-full border border-[var(--q-border)] px-8 text-sm font-bold text-[var(--q-text-primary)] transition-all hover:bg-[var(--q-card-hover)]"

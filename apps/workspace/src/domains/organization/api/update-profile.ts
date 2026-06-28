@@ -23,10 +23,9 @@ export async function updateOrganizationProfileRequest(
   organizationId: string,
   input: UpdateOrganizationProfileValues,
 ) {
-  return requestOrganizationAction<UpdateOrganizationProfileResponse>(
-    organizationApiPath(organizationId, "profile"),
-    "PATCH",
-    input,
-    "Organization profile update failed.",
+  return workspaceMutation<UpdateOrganizationProfileResponse>(
+    organizationId,
+    "profile",
+    { method: "PATCH", body: input, fallbackMessage: "Organization profile update failed." },
   ).then((payload) => payload.profile);
 }
