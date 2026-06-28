@@ -19,12 +19,16 @@ export function AnimatedSphere() {
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
       canvas.width = rect.width * dpr;
       canvas.height = rect.height * dpr;
-      ctx.scale(dpr, dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
     resize();
+
+    const resizeObserver = new ResizeObserver(() => resize());
+    resizeObserver.observe(canvas);
     window.addEventListener("resize", resize);
 
     const render = () => {
@@ -83,6 +87,7 @@ export function AnimatedSphere() {
 
     return () => {
       window.removeEventListener("resize", resize);
+      resizeObserver.disconnect();
       cancelAnimationFrame(frameRef.current);
     };
   }, []);
