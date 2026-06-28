@@ -2,6 +2,7 @@
 
 import { PublicSection } from "@/components/landing/public-landing-kit";
 import { Reveal } from "@/components/landing/cinematic-motion";
+import { HighlightWord } from "@/components/landing/highlight-word";
 
 const copy = {
   en: {
@@ -9,7 +10,7 @@ const copy = {
     headline: (
       <>
         The problem isn't work.<br />
-        It's <em>fragmentation.</em>
+        It's <HighlightWord>fragmentation</HighlightWord>.
       </>
     ),
     subtext: (
@@ -50,7 +51,7 @@ const copy = {
     headline: (
       <>
         المشكلة ليست في العمل.<br />
-        إنها <em>التشتت.</em>
+        إنها <HighlightWord>التشتت</HighlightWord>.
       </>
     ),
     subtext: (
@@ -138,7 +139,7 @@ export function ProblemSection({ locale }: { locale: string }) {
   const labels = isAr ? copy.ar : copy.en;
 
   return (
-    <PublicSection id="problem" tone="light">
+    <PublicSection id="problem" tone="default">
       <div className="wrap">
         {/* Centered Headline */}
         <div className="text-center mb-14">

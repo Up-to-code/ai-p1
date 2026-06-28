@@ -6,32 +6,32 @@
 
 :root {
   /* ── Surface & Background ── */
-  --q-bg: #FAF8F4;
-  --q-bg-secondary: #F5F2EC;
-  --q-bg-tertiary: #EFEAE2;
-  --q-bg-very-light: #FAF8F4;
-  --q-bg-light: #F5F2EC;
-  --q-bg-dark: #DED8CF;
-  --q-bg-very-dark: #D5CEC4;
+  --q-bg: #FFFFFF;
+  --q-bg-secondary: #F5F5F5;
+  --q-bg-tertiary: #EEEEEE;
+  --q-bg-very-light: #FFFFFF;
+  --q-bg-light: #FFFFFF;
+  --q-bg-dark: #F5F5F5;
+  --q-bg-very-dark: #111111;
 
   /* ── Surface / Card ── */
   --q-surface: #FFFFFF;
-  --q-surface-hover: #F5F2EC;
+  --q-surface-hover: #F5F5F5;
   --q-card: #FFFFFF;
-  --q-card-hover: #F5F2EC;
+  --q-card-hover: #F5F5F5;
 
   /* ── Sidebar ── */
-  --q-sidebar: #E8E3D6;
+  --q-sidebar: #F5F5F5;
   --q-sidebar-foreground: #111111;
   --q-sidebar-primary: #111111;
   --q-sidebar-primary-foreground: #FFFFFF;
-  --q-sidebar-accent: #DDD8CB;
+  --q-sidebar-accent: #E8E8E8;
   --q-sidebar-accent-foreground: #111111;
-  --q-sidebar-border: #D5CFC2;
+  --q-sidebar-border: #E0E0E0;
   --q-sidebar-ring: #111111;
 
   /* ── Topbar ── */
-  --q-topbar: #FAF8F4;
+  --q-topbar: #FFFFFF;
   --q-topbar-btn: #111111;
 
   /* ── Text ── */
@@ -40,20 +40,20 @@
   --q-text-muted: #787878;
 
   /* ── Borders ── */
-  --q-border: #DED8CF;
-  --q-border-strong: #D5CEC4;
-  --q-divider: #DED8CF;
+  --q-border: #E5E5E5;
+  --q-border-strong: #D0D0D0;
+  --q-divider: #E5E5E5;
 
   /* ── Accent / Primary ── */
   --q-accent: #111111;
   --q-accent-hover: #222222;
   --q-accent-active: #000000;
-  --q-accent-muted: #EAE6DF;
-  --q-accent-border: #D5CEC4;
+  --q-accent-muted: #EBEBEB;
+  --q-accent-border: #D0D0D0;
 
   /* ── Form Inputs ── */
   --q-input-bg: #FFFFFF;
-  --q-input-border: #DED8CF;
+  --q-input-border: #E5E5E5;
 
   /* ── User Message Bubble ── */
   --q-user-bubble: #111111;
@@ -150,22 +150,22 @@
 
   /* ── Sidebar ── */
   --q-sidebar: #222222;
-  --q-sidebar-foreground: #F5F2EC;
-  --q-sidebar-primary: #F5F2EC;
+  --q-sidebar-foreground: #FFFFFF;
+  --q-sidebar-primary: #FFFFFF;
   --q-sidebar-primary-foreground: #080808;
   --q-sidebar-accent: #2A2A2A;
-  --q-sidebar-accent-foreground: #F5F2EC;
+  --q-sidebar-accent-foreground: #FFFFFF;
   --q-sidebar-border: #333333;
-  --q-sidebar-ring: #F5F2EC;
+  --q-sidebar-ring: #FFFFFF;
 
   /* ── Topbar ── */
   --q-topbar: #080808;
-  --q-topbar-btn: #F5F2EC;
+  --q-topbar-btn: #FFFFFF;
 
   /* ── Text ── */
-  --q-text-primary: #F5F2EC;
-  --q-text-secondary: #BFB8AE;
-  --q-text-muted: #8A857E;
+  --q-text-primary: #FFFFFF;
+  --q-text-secondary: #B0B0B0;
+  --q-text-muted: #787878;
 
   /* ── Borders ── */
   --q-border: #222222;
@@ -173,9 +173,9 @@
   --q-divider: #222222;
 
   /* ── Accent / Primary ── */
-  --q-accent: #F5F2EC;
-  --q-accent-hover: #EFEAE2;
-  --q-accent-active: #DED8CF;
+  --q-accent: #FFFFFF;
+  --q-accent-hover: #E0E0E0;
+  --q-accent-active: #CCCCCC;
   --q-accent-muted: #1C1C1C;
   --q-accent-border: #2A2A2A;
 
@@ -184,7 +184,7 @@
   --q-input-border: #222222;
 
   /* ── User Message Bubble ── */
-  --q-user-bubble: #F5F2EC;
+  --q-user-bubble: #FFFFFF;
 
   /* ── Status ── */
   --q-success: #7F9987;
@@ -315,5 +315,45 @@
   }
   .scrollbar-none::-webkit-scrollbar {
     display: none;
+  }
+
+  .marquee {
+    animation: marquee 30s linear infinite;
+  }
+
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .animate-digit-in {
+    animation: digit-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  @keyframes digit-in {
+    0% { opacity: 0; transform: translateY(8px) scale(0.9); filter: blur(4px); }
+    100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  }
+
+  .animate-char-in {
+    animation: char-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    opacity: 0;
+    filter: blur(40px);
+    transform: translateY(100%);
+  }
+
+  @keyframes char-in {
+    0% {
+      opacity: 0;
+      filter: blur(40px);
+      transform: translateY(100%);
+    }
+    100% {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(0);
+    }
   }
 }

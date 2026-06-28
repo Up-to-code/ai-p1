@@ -67,7 +67,7 @@ export function DocSection({ locale }: { locale: string }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div className="order-1">
             <GsapReveal delay={0.3} y={40}>
-              <div className="aspect-[4/5] w-full max-w-lg mx-auto overflow-hidden rounded-2xl border border-[var(--q-border)] bg-[var(--q-bg-very-dark)]">
+              <div className="aspect-[4/5] w-full max-w-lg mx-auto overflow-hidden rounded-2xl border border-white/10 bg-white/5">
                 <img
                   src="/landing-images/doc-section.png"
                   alt="Qentrah documents"
@@ -88,7 +88,7 @@ export function DocSection({ locale }: { locale: string }) {
               </h2>
             </GsapReveal>
             <GsapReveal delay={0.2}>
-              <p className="text-base text-[var(--q-text-secondary)] leading-relaxed mb-4">
+              <p className="text-base text-white/70 leading-relaxed mb-4">
                 {labels.subtext}
               </p>
             </GsapReveal>
@@ -107,16 +107,16 @@ export function DocSection({ locale }: { locale: string }) {
                   </div>
                   <div>
                     <div className="text-sm font-semibold mb-0.5">{feature.label}</div>
-                    <div className="text-xs text-[var(--q-text-secondary)]">{feature.desc}</div>
+                    <div className="text-xs text-white/70">{feature.desc}</div>
                   </div>
                 </div>
               ))}
             </div>
             <div ref={toolsStaggerRef} className="grid grid-cols-2 gap-3">
               {labels.tools.map((tool, i) => (
-                <div key={i} className="doc-tool-item bg-[var(--q-bg-very-dark)] border border-[var(--q-border)] rounded-xl p-4 transition-colors hover:bg-[var(--q-bg)]">
+                <div key={i} className="doc-tool-item bg-white/5 border border-white/10 rounded-xl p-4 transition-colors hover:bg-white/10">
                   <div className="text-sm font-semibold mb-0.5">{tool.name}</div>
-                  <div className="text-xs text-[var(--q-text-secondary)]">{tool.desc}</div>
+                  <div className="text-xs text-white/70">{tool.desc}</div>
                 </div>
               ))}
             </div>

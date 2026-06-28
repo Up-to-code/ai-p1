@@ -39,9 +39,7 @@ export default function Footer() {
         <div className="flex flex-col items-start justify-between gap-x-10 gap-y-10 px-6 py-12 sm:flex-row xl:px-0">
           <div className="max-w-sm">
             <Link href="/" className="inline-flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-[var(--q-card)] ring-1 ring-zinc-200 dark:ring-zinc-700">
-                <BrandMark className="h-5 w-5" />
-              </span>
+              <BrandMark className="h-5 w-5" />
               <span>
                 <span className="block text-lg font-black tracking-tight text-[var(--q-text-primary)]">qentrah</span>
                 <span className="block text-[9px] font-black uppercase tracking-[0.2em] text-[var(--q-text-secondary)]">

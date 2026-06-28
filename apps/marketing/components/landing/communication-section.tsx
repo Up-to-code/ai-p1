@@ -61,7 +61,7 @@ export function CommunicationSection({ locale }: { locale: string }) {
               </h2>
             </Reveal>
             <Reveal delay={0.2}>
-              <p className="text-base text-[var(--q-text-secondary)] leading-relaxed mb-4">
+              <p className="text-base text-white/70 leading-relaxed mb-4">
                 {labels.subtext}
               </p>
             </Reveal>
@@ -83,7 +83,7 @@ export function CommunicationSection({ locale }: { locale: string }) {
                     </div>
                     <div>
                       <div className="text-sm font-semibold mb-0.5">{feature.label}</div>
-                      <div className="text-xs text-[var(--q-text-secondary)]">{feature.desc}</div>
+                      <div className="text-xs text-white/70">{feature.desc}</div>
                     </div>
                   </div>
                 </Reveal>
@@ -94,7 +94,7 @@ export function CommunicationSection({ locale }: { locale: string }) {
           {/* Right: Image */}
           <div className="order-1 lg:order-2">
             <Reveal delay={0.5}>
-              <div className="aspect-[4/5] w-full max-w-lg mx-auto overflow-hidden rounded-2xl border border-[var(--q-border)] bg-[var(--q-bg-very-dark)]">
+              <div className="aspect-[4/5] w-full max-w-lg mx-auto overflow-hidden rounded-2xl border border-white/10 bg-white/5">
                 <img
                   src="/landing-images/communication-section.png"
                   alt="Qentrah communication flow"

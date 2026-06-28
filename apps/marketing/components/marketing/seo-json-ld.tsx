@@ -8,11 +8,15 @@ const workspaceUrl = brandDomainUrl("workspace");
 const partnersUrl = brandDomainUrl("partners");
 const logoUrl = `${rootUrl}/app-icon-512.png`;
 
+import Script from "next/script";
+
 function JsonLd({ data }: { data: Record<string, unknown> }) {
   return (
-    <script
+    <Script
+      id={`json-ld-${(data["@type"] as string) ?? "unknown"}`}
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</gu, "\\u003c") }}
+      strategy="beforeInteractive"
     />
   );
 }

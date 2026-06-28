@@ -30,14 +30,14 @@ export function Faq02() {
         <div className="max-w-xl space-y-6">
           <div className="flex items-center gap-3">
             <span className="h-px w-8 bg-[var(--q-accent)]/25" />
-            <span className="text-[10px] font-black uppercase tracking-[0.35em] text-[var(--q-accent)]">
+            <span className="text-[10px] font-black uppercase tracking-[0.35em] text-white/80">
               {t("eyebrow")}
             </span>
           </div>
-          <h2 className="text-3xl font-bold tracking-tight text-[var(--q-text-primary)] md:text-5xl rtl:leading-[1.25]">
+          <h2 className="text-3xl font-bold tracking-tight md:text-5xl rtl:leading-[1.25]">
             {t("title")}
           </h2>
-          <p className="text-base font-medium leading-relaxed text-[var(--q-text-secondary)] md:text-lg">
+          <p className="text-base font-medium leading-relaxed text-white/70 md:text-lg">
             {t("description")}
           </p>
         </div>
@@ -52,12 +52,12 @@ export function Faq02() {
             <AccordionItem
               key={item.question}
               value={`item-${index}`}
-              className="border-b border-[var(--q-border)] px-2 transition-colors duration-300 hover:bg-[var(--q-accent)]/5"
+              className="border-b border-white/10 px-2 transition-colors duration-300 hover:bg-white/5"
             >
-              <AccordionTrigger className="text-start py-6 text-base md:text-lg font-semibold text-[var(--q-text-primary)] transition-all duration-300 hover:text-[var(--q-accent)] hover:no-underline">
+              <AccordionTrigger className="text-start py-6 text-base md:text-lg font-semibold text-white transition-all duration-300 hover:text-white/80 hover:no-underline [&_svg]:text-white/50">
                 {item.question}
               </AccordionTrigger>
-              <AccordionContent className="text-sm md:text-base font-medium text-[var(--q-text-secondary)] leading-relaxed pb-6">
+              <AccordionContent className="text-sm md:text-base font-medium text-white/70 leading-relaxed pb-6">
                 {item.answer}
               </AccordionContent>
             </AccordionItem>

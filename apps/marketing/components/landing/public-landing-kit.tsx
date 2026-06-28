@@ -21,17 +21,17 @@ export function PublicSection({
       id={id}
       className={cn(
         "px-6 py-20 transition-colors duration-500 md:py-32",
-        // Very dark - darkest sections (very-dark)
-        tone === "very-dark" && "bg-[var(--q-bg-very-dark)] text-foreground dark:bg-[var(--q-bg-very-dark)] dark:text-[var(--q-text-primary)]",
+        // Very dark - dark sections with light text
+        tone === "very-dark" && "bg-[var(--q-bg-very-dark)] text-white dark:bg-[var(--q-bg-very-dark)] dark:text-[var(--q-text-primary)]",
         // Dark - darker than default (dark)
         tone === "dark" && "bg-[var(--q-bg-dark)] text-foreground dark:bg-[var(--q-bg-dark)] dark:text-[var(--q-text-primary)]",
         // Secondary - subtle contrast (secondary)
         tone === "secondary" && "bg-[var(--q-bg-secondary)] text-foreground dark:bg-[var(--q-bg-secondary)] dark:text-[var(--q-text-primary)]",
-        // Light - lighter than default (light)
+        // Light - light sections (white)
         tone === "light" && "bg-[var(--q-bg-light)] text-foreground dark:bg-[var(--q-bg-light)] dark:text-[var(--q-text-primary)]",
         // Very light - lightest sections (very-light)
         tone === "very-light" && "bg-[var(--q-bg-very-light)] text-foreground dark:bg-[var(--q-bg-very-light)] dark:text-[var(--q-text-primary)]",
-        // Default - standard card background
+        // Default - standard white background
         tone === "default" && "bg-[var(--q-card)] text-foreground dark:bg-[var(--q-bg)] dark:text-[var(--q-text-primary)]",
         // Inverse - high contrast with primary text
         tone === "inverse" && "bg-[var(--q-text-primary)] text-[var(--q-bg)] dark:bg-[var(--q-text-primary)] dark:text-[var(--q-bg)]",

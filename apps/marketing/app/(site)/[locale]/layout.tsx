@@ -51,7 +51,7 @@ export default async function LocaleLayout({
       <LocaleDocumentAttributes locale={locale} />
       <NextIntlClientProvider locale={locale} messages={messages}>
         <ThemeProvider>
-          <div className="flex min-h-screen flex-col bg-background text-foreground transition-colors duration-500">
+          <div className="flex min-h-screen flex-col bg-background text-foreground transition-colors duration-500 overflow-x-hidden">
             <Navbar />
             <main className="flex-1">{children}</main>
             <Footer />
