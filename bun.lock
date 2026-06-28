@@ -40,6 +40,7 @@
         "clsx": "^2.1.1",
         "framer-motion": "^12.40.0",
         "graphql": "^16.14.2",
+        "gsap": "^3.15.0",
         "lucide-react": "^0.577.0",
         "next": "16.3.0-canary.32",
         "next-intl": "^4.11.0",
@@ -137,7 +138,6 @@
         "@openrouter/ai-sdk-provider": "^2.9.0",
         "@qentrah/brand-identity": "0.1.0",
         "@qentrah/calendar-kit": "1.0.0",
-        "@qentrah/convex-adapters": "0.1.0",
         "@qentrah/domain-contracts": "0.1.0",
         "@qentrah/location-map": "^0.1.0",
         "@qentrah/partner-auth-core": "0.1.0",
@@ -2941,6 +2941,8 @@
     "graphql-scalars": ["graphql-scalars@1.22.2", "", { "dependencies": { "tslib": "^2.5.0" }, "peerDependencies": { "graphql": "^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0" } }, "sha512-my9FB4GtghqXqi/lWSVAOPiTzTnnEzdOXCsAC2bb5V7EFNQjVjwy3cSSbUvgYOtDuDibd+ZsCDhz+4eykYOlhQ=="],
 
     "gridstack": ["gridstack@12.6.0", "", {}, "sha512-dUrqsormSybFn/2P4Dz8AgprftKD5e/IiV7UmC0XLQU+G+/WtkAeFiCSNLoAGhPDXoJ/O61Xtj3gljY/Ds83yQ=="],
+
+    "gsap": ["gsap@3.15.0", "", {}, "sha512-dMW4CWBTUK1AEEDeZc1g4xpPGIrSf9fJF960qbTZmN/QwZIWY5wgliS6JWl9/25fpTGJrMRtSjGtOmPnfjZB+A=="],
 
     "happy-dom": ["happy-dom@20.10.6", "", { "dependencies": { "@types/node": ">=20.0.0", "@types/whatwg-mimetype": "^3.0.2", "@types/ws": "^8.18.1", "buffer-image-size": "^0.6.4", "entities": "^7.0.1", "whatwg-mimetype": "^3.0.0", "ws": "^8.21.0" } }, "sha512-6QD0ilzDDt93tX44y8tbmZdAcdTRYDhUP+Asgi6pC8Pp5IA3cvaZGyoVN/EGtlq9ziT65iPuBBn3ASLr6hCgVw=="],
 
