@@ -1,26 +1,5 @@
-export type DealStage = "lead" | "qualified" | "proposal_sent" | "contract_sent" | "won" | "lost";
-export type DealStatus = "open" | "won" | "lost" | "paused";
-export type DealPriority = "low" | "normal" | "high" | "urgent";
-
-export type Deal = {
-  id: string;
-  title: string;
-  stage: DealStage;
-  status: DealStatus;
-  priority: DealPriority;
-  value?: number;
-  currency?: string;
-  dealThinking?: string;
-  clientId?: string;
-  projectId?: string;
-  source?: string;
-  closeDate?: string;
-  nextStep?: string;
-  ownerUserId: string;
-  tags?: string[];
-  createdAt: number;
-  updatedAt: number;
-};
+import type { DealStage, DealStatus, DealPriority, DealRecord } from "@qentrah/domain-contracts";
+export type { DealStage, DealStatus, DealPriority, DealRecord as Deal } from "@qentrah/domain-contracts";
 
 export type DealStats = {
   total: number;

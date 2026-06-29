@@ -2,6 +2,7 @@
 
 import { useWorkspaceResource } from "@/domains/resources/workspace-resource-request";
 import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
+import { requestOrganizationAction, organizationApiPath } from "@/domains/organization/api/organization-request";
 import type { Opportunity, OpportunityFormValues, OpportunityStage, OpportunityStats } from "../opportunities.types";
 
 export function useOpportunitiesQuery(organizationId?: string, options?: { stage?: OpportunityStage | "all"; search?: string; projectId?: string | null }) {

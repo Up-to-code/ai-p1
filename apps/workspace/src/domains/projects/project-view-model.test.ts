@@ -11,7 +11,7 @@ import {
   projectWeekdayLabels,
   nextProjectCalendarMonth,
   toggleProjectAssetType,
-} from "./project-view-model";
+} from "./lib/project-view-model";
 
 describe("project view model", () => {
   it("selects document assets from project media", () => {

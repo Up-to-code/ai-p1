@@ -6,6 +6,9 @@ import { WorkloadChartWidget } from "./workload-chart-widget";
 import { ProgressChartWidget } from "./progress-chart-widget";
 import { BudgetChartWidget } from "./budget-chart-widget";
 import { PlaceholderWidget } from "./placeholder-widget";
+import { CalculationWidget } from "./calculation-widget";
+import { AssigneeWidget } from "./assignee-widget";
+import { BookmarksWidget } from "./bookmarks-widget";
 
 export interface WidgetEntry {
   component: ComponentType;
@@ -18,11 +21,11 @@ const registry: Record<WidgetType, WidgetEntry> = {
   "progress-chart": { component: ProgressChartWidget },
   "budget-chart": { component: BudgetChartWidget },
   "ai-brain": { component: PlaceholderWidget },
-  calculation: { component: PlaceholderWidget },
+  calculation: { component: CalculationWidget },
   portfolio: { component: PlaceholderWidget },
-  assignee: { component: PlaceholderWidget },
+  assignee: { component: AssigneeWidget },
   discussion: { component: PlaceholderWidget },
-  bookmarks: { component: PlaceholderWidget },
+  bookmarks: { component: BookmarksWidget },
 };
 
 export function getWidgetComponent(type: WidgetType): ComponentType {

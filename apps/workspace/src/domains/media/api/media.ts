@@ -5,6 +5,7 @@ import { api } from "@convex/_generated/api";
 import { uploadFiles } from "@/lib/uploadthing";
 import type { Id } from "@convex/_generated/dataModel";
 import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
+import { requestOrganizationAction, organizationApiPath } from "@/domains/organization/api/organization-request";
 
 export type MediaKind = "image" | "video" | "document";
 export type MediaResourceType = "project" | "client" | "calendarEvent" | "task";

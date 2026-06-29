@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
+import { useOptimisticInvalidation } from "@/domains/cache/hooks/use-optimistic-invalidation";
 import { useTranslations, useLocale } from "next-intl";
 import { projectSchema, type ProjectFormValues } from "../validation/project.schema";
 import { useAccountContext } from "@/domains/auth";
@@ -34,6 +35,7 @@ export function CreateProjectForm({ isOpen, onSuccess, onCancel }: CreateProject
   const [tagInput, setTagInput] = useState("");
 
   const queryClient = useQueryClient();
+  const { invalidate } = useOptimisticInvalidation();
   const organizationId = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
   const clientOptionsQuery = useClientOptionsQuery(organizationId);
 
@@ -219,9 +221,10 @@ export function CreateProjectForm({ isOpen, onSuccess, onCancel }: CreateProject
     try {
       const response = await createProjectRequest(account.workspace.organizationId, data);
 
-      queryClient.invalidateQueries({ queryKey: ["projects-options"] });
-      queryClient.invalidateQueries({ queryKey: ["projects-index"] });
-      queryClient.invalidateQueries({ queryKey: ["projects-paged"] });
+      await invalidate([
+        { type: "list", resource: "projects" },
+        { type: "custom", queryKey: ["projects-options"] },
+      ]);
 
       toast({ title: t("createSuccess", { defaultMessage: "Project Created" }), type: "success" });
       onSuccess?.();

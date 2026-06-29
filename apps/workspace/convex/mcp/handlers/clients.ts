@@ -1,0 +1,70 @@
+import type { QueryCtx, MutationCtx } from "../../_generated/server";
+import type { Id } from "../../_generated/dataModel";
+import { internal } from "../../_generated/api";
+import { presentWorkspaceRecord } from "../../shared/present";
+import { assertActiveWorkspaceRecord, assertPublicWorkspaceRecord } from "../../workspace/businessData";
+import { clientInput, listLimit, listCursor, requiredString, searchTerm } from "../toolInputs";
+import { mcpPublicWorkspacePage, mcpPublicWorkspaceSearchResult } from "../readSurface";
+import {
+  type ReadHandler, type WriteHandler, type ReadToolArgs, type WriteToolArgs,
+  TOOL_SCAN_LIMIT, clientSearchValues, audit,
+} from "./shared";
+
+export const clientsList: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) => {
+  const limit = listLimit(args.input);
+  const search = searchTerm(args.input);
+  if (!search) {
+    const page = await ctx.db
+      .query("clients")
+      .withIndex("by_organization_updated", (q) => q.eq("organizationId", args.organizationId))
+      .order("desc")
+      .paginate({ numItems: limit, cursor: listCursor(args.input) });
+    return mcpPublicWorkspacePage(page);
+  }
+  const clients = await ctx.db
+    .query("clients")
+    .withIndex("by_organization_updated", (q) => q.eq("organizationId", args.organizationId))
+    .order("desc")
+    .take(TOOL_SCAN_LIMIT);
+  return mcpPublicWorkspaceSearchResult(clients, { search, limit, searchValues: clientSearchValues });
+};
+
+export const clientsGet: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) => {
+  const client = await ctx.db.get(requiredString(args.input, "clientId") as Id<"clients">);
+  return presentWorkspaceRecord(assertPublicWorkspaceRecord(assertActiveWorkspaceRecord(client, args.organizationId, "Client"), "Client"));
+};
+
+export const clientsCreate: WriteHandler = async (ctx: MutationCtx, args: WriteToolArgs) => {
+  const client = clientInput(args.input);
+  const result = await ctx.runMutation(internal.clients.write.createInternal, {
+    organizationId: args.organizationId,
+    input: { ...client, visibility: "workspace", source: "mcp" },
+    actorUserId: args.actorId,
+  });
+  await audit(ctx, args.organizationId, args.connectionId, "client.create", result.id, `Created client ${client.name}.`);
+  return presentWorkspaceRecord(result);
+};
+
+export const clientsUpdate: WriteHandler = async (ctx: MutationCtx, args: WriteToolArgs) => {
+  const clientId = requiredString(args.input, "clientId") as Id<"clients">;
+  const client = clientInput(args.input);
+  const result = await ctx.runMutation(internal.clients.write.updateInternal, {
+    organizationId: args.organizationId,
+    clientId,
+    input: client,
+    actorUserId: args.actorId,
+  });
+  await audit(ctx, args.organizationId, args.connectionId, "client.update", clientId, `Updated client ${client.name ?? ""}.`);
+  return presentWorkspaceRecord(result);
+};
+
+export const clientsDelete: WriteHandler = async (ctx: MutationCtx, args: WriteToolArgs) => {
+  const clientId = requiredString(args.input, "clientId") as Id<"clients">;
+  const result = await ctx.runMutation(internal.clients.write.deleteInternal, {
+    organizationId: args.organizationId,
+    clientId,
+    actorUserId: args.actorId,
+  });
+  await audit(ctx, args.organizationId, args.connectionId, "client.delete", clientId, `Deleted client.`);
+  return result;
+};

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
+import { useOptimisticInvalidation } from "@/domains/cache/hooks/use-optimistic-invalidation";
 import { useTranslations } from "next-intl";
 import { projectSchema, type ProjectFormValues } from "../validation/project.schema";
 import { useAccountContext } from "@/domains/auth";
@@ -39,6 +40,7 @@ export function EditProjectForm({ project, onSuccess, onCancel }: EditProjectFor
   const [tagInput, setTagInput] = useState("");
 
   const queryClient = useQueryClient();
+  const { invalidate } = useOptimisticInvalidation();
 
   const form = useForm<ProjectFormValues>({
     resolver: (zodResolver as any)(projectSchema),
@@ -81,10 +83,11 @@ export function EditProjectForm({ project, onSuccess, onCancel }: EditProjectFor
     try {
       await updateProjectRequest(account.workspace.organizationId, project.id, data);
 
-      queryClient.invalidateQueries({ queryKey: ["projects-options"] });
-      queryClient.invalidateQueries({ queryKey: ["projects-index"] });
-      queryClient.invalidateQueries({ queryKey: ["projects-paged"] });
-      queryClient.invalidateQueries({ queryKey: ["project", account.workspace.organizationId, project.id] });
+      await invalidate([
+        { type: "detail", resource: "projects", id: project.id },
+        { type: "list", resource: "projects" },
+        { type: "custom", queryKey: ["projects-options"] },
+      ]);
 
       toast({ title: t("editSuccess", { defaultMessage: "Project Updated" }), type: "success" });
       onSuccess?.();

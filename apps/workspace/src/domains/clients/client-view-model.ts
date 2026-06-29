@@ -56,7 +56,7 @@ export function clientToFormValues(client: Client): ClientFormValues {
     name: client.name,
     type: client.type,
     contact: client.contact,
-    phone: client.phone,
+    phone: client.phone ?? "",
     age: "",
     nationality: "",
     generation: "",
@@ -64,9 +64,9 @@ export function clientToFormValues(client: Client): ClientFormValues {
     assetInterest: client.assetInterest,
     status: client.status,
     visibility: client.visibility ?? "private",
-    pipelineStage: client.pipelineStage,
+    pipelineStage: (client.pipelineStage ?? "new") as ClientFormValues["pipelineStage"],
     pipelineOrder: client.pipelineOrder,
-    priority: client.priority,
+    priority: client.priority as ClientFormValues["priority"],
     nextAction: "",
     issue: "",
     notes: client.notes ?? "",
@@ -99,7 +99,8 @@ export function clientValuesFromFormData(formData: FormData): ClientFormValues {
   };
 }
 
-export function normalizeClientPipelineStage(stage: string): PipelineStage {
+export function normalizeClientPipelineStage(stage: string | undefined): PipelineStage {
+  if (!stage) return "new";
   if (stage === "viewing") return "review";
   return pipelineStages.includes(stage as PipelineStage) ? stage as PipelineStage : "new";
 }
@@ -189,19 +190,19 @@ export function clientTaskActivityRows<
   }));
 }
 
-export function isActivePipelineStage(stage: string): stage is (typeof activePipelineStages)[number] {
-  return activePipelineStages.includes(normalizeClientPipelineStage(stage) as (typeof activePipelineStages)[number]);
+export function isActivePipelineStage(stage: string | undefined): stage is (typeof activePipelineStages)[number] {
+  return activePipelineStages.includes(normalizeClientPipelineStage(stage ?? "") as (typeof activePipelineStages)[number]);
 }
 
 export function clientPipelineStageIndex(stage: string) {
   return Math.max(0, pipelineStages.indexOf(normalizeClientPipelineStage(stage)));
 }
 
-export function activeJourneyClients<TClient extends { pipelineStage: string }>(clients: TClient[]) {
+export function activeJourneyClients<TClient extends { pipelineStage?: string }>(clients: TClient[]) {
   return clients.filter((client) => isActivePipelineStage(client.pipelineStage));
 }
 
-export function clientsForStageFilter<TClient extends { pipelineStage: string }>(
+export function clientsForStageFilter<TClient extends { pipelineStage?: string }>(
   clients: TClient[],
   stageFilter: (typeof clientStageFilters)[number],
 ) {
@@ -210,7 +211,7 @@ export function clientsForStageFilter<TClient extends { pipelineStage: string }>
   return clients;
 }
 
-export function displayedClientsForView<TClient extends { pipelineStage: string }>(
+export function displayedClientsForView<TClient extends { pipelineStage?: string }>(
   clients: TClient[],
   view: (typeof clientViews)[number],
   stageFilter: (typeof clientStageFilters)[number],

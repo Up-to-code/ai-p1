@@ -7,7 +7,7 @@ describe("task links", () => {
   });
 
   it("builds project-scoped task href", () => {
-    expect(taskHref("task_1", { scope: "project", projectId: "proj_1" })).toBe(
+    expect(taskHref("task_1", { scope: "project", organizationId: "org_1", projectId: "proj_1" })).toBe(
       "/projects/proj_1/tasks?taskId=task_1",
     );
   });

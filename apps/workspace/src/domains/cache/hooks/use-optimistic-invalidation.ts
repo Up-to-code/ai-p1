@@ -20,16 +20,26 @@ export type InvalidationTarget =
   | { type: "stats"; resource: ResourceType }
   | { type: "custom"; queryKey: readonly unknown[] };
 
+const SINGULAR_OVERRIDES: Partial<Record<ResourceType, string>> = {
+  projects: "project",
+  deals: "deal",
+  opportunities: "opportunity",
+  clients: "client",
+  tasks: "task",
+  docs: "doc",
+  spaces: "space",
+};
+
 function resourceQueryKeys(resource: ResourceType, orgId?: string): readonly unknown[][] {
   switch (resource) {
     case "clients":
       return orgId
-        ? [["clients-index", orgId], ["clients-stats", orgId]]
-        : [["clients-index"], ["clients-stats"]];
+        ? [["clients-index", orgId], ["clients-paged", orgId], ["clients-options", orgId], ["clients-stats", orgId]]
+        : [["clients-index"], ["clients-paged"], ["clients-options"], ["clients-stats"]];
     case "projects":
       return orgId
-        ? [["projects-index", orgId], ["projects-paged", orgId], ["projects-options"]]
-        : [["projects-index"], ["projects-paged"], ["projects-options"]];
+        ? [["projects-index", orgId], ["projects-paged", orgId], ["projects-options", orgId], ["projects-task-counts", orgId]]
+        : [["projects-index"], ["projects-paged"], ["projects-options"], ["projects-task-counts"]];
     case "deals":
       return orgId
         ? [["deals", orgId], ["deals-stats", orgId]]
@@ -74,8 +84,8 @@ function resourceQueryKeys(resource: ResourceType, orgId?: string): readonly unk
         : [["calendar-read"]];
     case "spaces":
       return orgId
-        ? [["spaces", orgId]]
-        : [["spaces"]];
+        ? [["spaces", orgId], ["spaces-options", orgId]]
+        : [["spaces"], ["spaces-options"]];
     case "profile":
       return orgId
         ? [["notification-settings", orgId, "me"]]
@@ -91,11 +101,11 @@ export function useOptimisticInvalidation(organizationId?: string) {
   const invalidate = useCallback(
     async (targets: InvalidationTarget | InvalidationTarget[]) => {
       const all = Array.isArray(targets) ? targets : [targets];
-      const keys: readonly unknown[][] = [];
+      const keys: unknown[][] = [];
 
       for (const target of all) {
         if (target.type === "custom") {
-          keys.push(target.queryKey);
+          keys.push([...target.queryKey]);
         } else if (target.type === "list") {
           keys.push(...resourceQueryKeys(target.resource, organizationId));
         } else if (target.type === "stats") {
@@ -107,8 +117,9 @@ export function useOptimisticInvalidation(organizationId?: string) {
           keys.push(...statsKeys);
         } else if (target.type === "detail") {
           const baseKeys = resourceQueryKeys(target.resource, organizationId);
+          const singular = SINGULAR_OVERRIDES[target.resource] ?? target.resource;
           const detailKeys = baseKeys
-            .filter((k) => k[0] === target.resource)
+            .filter((k) => k[0] === target.resource || k[0] === singular)
             .map((k) => [...k, target.id]);
           keys.push(...detailKeys);
         }

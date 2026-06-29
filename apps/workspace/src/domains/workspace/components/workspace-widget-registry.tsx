@@ -8,13 +8,13 @@ import {
   MessageSquare, 
   FileText 
 } from "lucide-react";
-import { MetricCards } from "./workspace-screen";
-import { FoldersWidget } from "./workspace-screen";
-import { PortfolioWidget } from "./workspace-screen";
-import { CalendarTodayWidget } from "./workspace-screen";
-import { RecentConversationsWidget } from "./workspace-screen";
-import { DocsWidget } from "./workspace-screen";
-import { AiBrainWidget } from "./workspace-screen";
+import { MetricCards } from "./workspace-widgets";
+import { FoldersWidget } from "./workspace-widgets";
+import { PortfolioWidget } from "./workspace-widgets";
+import { CalendarTodayWidget } from "./workspace-widgets";
+import { RecentConversationsWidget } from "./workspace-widgets";
+import { DocsWidget } from "./workspace-widgets";
+import { AiBrainWidget } from "./workspace-widgets";
 
 const PlaceholderWidget: ComponentType = () => <div>Widget not found</div>;
 
@@ -112,7 +112,7 @@ export const WORKSPACE_WIDGET_OPTIONS: WorkspaceWidgetOption[] = [
 ];
 
 export interface WorkspaceWidgetEntry {
-  component: ComponentType<{ organizationId?: string }>;
+  component: ComponentType<{ organizationId?: string; spaceSlug?: string | null; projectId?: string | null }>;
 }
 
 const registry: Record<WorkspaceWidgetType, WorkspaceWidgetEntry> = {
@@ -125,6 +125,6 @@ const registry: Record<WorkspaceWidgetType, WorkspaceWidgetEntry> = {
   "docs": { component: DocsWidget },
 };
 
-export function getWorkspaceWidgetComponent(type: WorkspaceWidgetType): ComponentType<{ organizationId?: string }> {
+export function getWorkspaceWidgetComponent(type: WorkspaceWidgetType): ComponentType<{ organizationId?: string; spaceSlug?: string | null; projectId?: string | null }> {
   return registry[type]?.component ?? PlaceholderWidget;
 }

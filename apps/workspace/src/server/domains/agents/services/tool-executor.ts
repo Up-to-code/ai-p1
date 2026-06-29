@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import type { Context } from "hono";
@@ -21,6 +22,7 @@ import {
   clientCreateInputSchema,
   clientInputSchema,
   compact,
+  dealInputSchema,
   extensionName,
   invitationInputSchema,
   limit,
@@ -55,7 +57,7 @@ async function updateEntity(params: {
   fetchExisting: () => Promise<unknown>;
   updateFn: (organizationId: string, id: string, data: unknown) => Promise<unknown>;
   input: Record<string, unknown>;
-  schema: Record<string, unknown>;
+  schema: z.ZodObject<any>;
   patchOverrides?: Record<string, unknown>;
 }) {
   const existing = await params.fetchExisting();
@@ -181,6 +183,41 @@ export async function executeWorkspaceTool(runtime: AgentToolExecutionRuntime, t
       return fetchAuthMutation(api.clients.write.deleteFromHono, {
         organizationId,
         clientId: input.clientId as Id<"clients">,
+      });
+    case "deals_list":
+      return fetchAuthQuery(api.deals.read.list, {
+        organizationId,
+        stage: input.stage as "lead" | "qualified" | "proposal_sent" | "contract_sent" | "won" | "lost" | undefined,
+        search: input.search as string | undefined,
+        limit: limit(input),
+      });
+    case "deals_get":
+      return fetchAuthQuery(api.deals.read.get, { organizationId, dealId: input.dealId as Id<"deals"> });
+    case "deals_create":
+      return fetchAuthMutation(api.deals.write.createFromHono, {
+        organizationId,
+        input: cleanInput(dealInputSchema, input) as never,
+      });
+    case "deals_update":
+      return updateEntity({
+        organizationId,
+        id: input.dealId as string,
+        idKey: "dealId",
+        label: "Deal",
+        fetchExisting: () => fetchAuthQuery(api.deals.read.get, { organizationId, dealId: input.dealId as Id<"deals"> }),
+        updateFn: (orgId: string, id: string, data: unknown) =>
+          fetchAuthMutation(api.deals.write.updateFromHono, {
+            organizationId: orgId,
+            dealId: id as Id<"deals">,
+            input: data as never,
+          }),
+        input,
+        schema: dealInputSchema,
+      });
+    case "deals_delete":
+      return fetchAuthMutation(api.deals.write.deleteFromHono, {
+        organizationId,
+        dealId: input.dealId as Id<"deals">,
       });
     case "projects_list":
       return fetchAuthQuery(api.projects.read.listPaged, {

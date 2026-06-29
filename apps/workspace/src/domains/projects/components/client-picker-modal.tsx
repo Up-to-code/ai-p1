@@ -134,7 +134,7 @@ export function ClientPickerModal({
                         <span className={cn("inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider", statusColors[client.status] ?? statusColors.new)}>
                           {client.status}
                         </span>
-                        <span className={cn("inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider", pipelineColors[client.pipelineStage] ?? pipelineColors.new)}>
+                        <span className={cn("inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider", pipelineColors[client.pipelineStage ?? "new"] ?? pipelineColors.new)}>
                           {client.pipelineStage}
                         </span>
                         {client.phone && (

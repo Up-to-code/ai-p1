@@ -1,6 +1,7 @@
-export type TaskStatus = "todo" | "inProgress" | "waiting" | "done" | "canceled";
-export type TaskPriority = "low" | "normal" | "high" | "urgent";
-export type TaskVisibility = "private" | "team" | "workspace";
+import type { TaskStatus, TaskPriority, Visibility } from "@qentrah/domain-contracts";
+export type { TaskStatus, TaskPriority } from "@qentrah/domain-contracts";
+
+export type TaskVisibility = Visibility;
 
 export type TaskRecord = {
   id: string;

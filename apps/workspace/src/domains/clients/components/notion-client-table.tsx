@@ -273,7 +273,7 @@ export function NotionClientTable({
                   {/* Pipeline Stage */}
                   <td className="px-3 py-2.5">
                     <EditableSelect
-                      value={client.pipelineStage}
+                      value={client.pipelineStage ?? ""}
                       options={pipelineStages.map((s) => ({ label: s.charAt(0).toUpperCase() + s.slice(1), value: s }))}
                       onChange={(stage) => updateClientField(client, "pipelineStage", stage)}
                       colorMapType="client-stage"

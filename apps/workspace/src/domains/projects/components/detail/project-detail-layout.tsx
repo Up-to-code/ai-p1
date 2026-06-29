@@ -3,6 +3,7 @@
 import React from "react";
 import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
+import { useOptimisticInvalidation } from "@/domains/cache/hooks/use-optimistic-invalidation";
 import { useAccountContext } from "@/domains/auth";
 import { useProjectQuery, updateProjectRequest } from "../../api/projects";
 import type { Project } from "../../store/projects.types";
@@ -24,13 +25,14 @@ export function ProjectDetailLayout({ projectId }: { projectId: string }) {
   const t = useTranslations("Projects");
   const account = useAccountContext();
   const queryClient = useQueryClient();
+  const { invalidate } = useOptimisticInvalidation();
   const workspaceStatus = account.workspace.status;
   const workspaceOrganizationId =
     workspaceStatus === "ready" ? account.workspace.organizationId ?? undefined : undefined;
 
   // Resolve space slug from URL to spaceId for scoped data loading
   const currentSpace = useCurrentSpace();
-  const currentSpaceId = currentSpace?.spaceId;
+  const currentSpaceId = currentSpace?.spaceId ?? undefined;
 
   const project = useProjectQuery(workspaceOrganizationId, projectId) as Project | null | undefined;
 
@@ -87,8 +89,10 @@ export function ProjectDetailLayout({ projectId }: { projectId: string }) {
     };
     try {
       await updateProjectRequest(workspaceOrganizationId, project.id, formValues);
-      queryClient.invalidateQueries({ queryKey: ["project", workspaceOrganizationId, projectId] });
-      queryClient.invalidateQueries({ queryKey: ["projects-index", workspaceOrganizationId] });
+      await invalidate([
+        { type: "detail", resource: "projects", id: projectId },
+        { type: "list", resource: "projects" },
+      ]);
     } catch (err) {
       console.error("Failed to update project:", err);
     }

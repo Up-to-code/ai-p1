@@ -92,7 +92,7 @@ export function SidebarIndexPanel() {
           {tasks.slice(0, 5).map((task) => (
             <IndexItem
               key={task.id}
-              icon={task.status === "completed" ? CheckCircle2 : ListTodo}
+              icon={task.status === "done" ? CheckCircle2 : ListTodo}
               label={task.title}
               href={`/tasks/${task.id}`}
               meta={task.status}
@@ -143,26 +143,7 @@ export function SidebarIndexPanel() {
           )}
         </CollapsibleSection>
 
-        {/* Team */}
-        <CollapsibleSection
-          title="Team"
-          href="/team"
-          count={members?.length}
-          moreHref="/team"
-        >
-          {(members ?? []).slice(0, 5).map((member) => (
-            <IndexItem
-              key={member.id}
-              icon={UserRound}
-              label={member.user?.name ?? member.user?.email ?? "Unknown"}
-              href={`/team?member=${member.id}`}
-              isMe={member.userId === currentUserId}
-            />
-          ))}
-          {(!members || members.length === 0) && (
-            <div className="px-4 py-1.5 text-xs text-text-muted">No members yet</div>
-          )}
-        </CollapsibleSection>
+
       </div>
     </SidebarPanelLayout>
   );

@@ -7,11 +7,11 @@ import { useDashboardContext } from "../dashboard-context";
 import { useTasksQuery } from "@/domains/tasks/api/tasks";
 
 const STATUS_COLORS: Record<string, string> = {
-  todo: "#94a3b8",
-  inProgress: "#4F80FF",
-  waiting: "#f59e0b",
-  done: "#22c55e",
-  canceled: "#d1d5db",
+  todo: "var(--q-text-muted)",
+  inProgress: "var(--q-info)",
+  waiting: "var(--q-warning)",
+  done: "var(--q-success)",
+  canceled: "var(--q-border-strong)",
 };
 
 export function WorkloadChartWidget() {

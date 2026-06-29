@@ -1,11 +1,94 @@
 import { z } from "zod";
-import { uploadedFileReferenceSchema, type UploadedFileReference } from "./files";
-import type { PaginationResult } from "convex/server";
 
-export const dealStageSchema = z.enum(["new", "contacted", "negotiation", "won", "lost"]);
-export const dealRelationTypeSchema = z.enum(["internal_client", "broker_managed"]);
+// ── Canonical deal schema (matches Convex deals table) ──────────────
 
-export const dealClientPreviewSchema = z.object({
+export const dealStageSchema = z.enum(["lead", "qualified", "proposal_sent", "contract_sent", "won", "lost"]);
+export const dealStatusSchema = z.enum(["open", "won", "lost", "paused"]);
+export const dealPrioritySchema = z.enum(["low", "normal", "high", "urgent"]);
+
+export const dealInputSchema = z.object({
+  title: z.string().trim().min(1, "Title is required"),
+  clientId: z.string().optional(),
+  projectId: z.string().optional(),
+  stage: dealStageSchema,
+  status: dealStatusSchema,
+  priority: dealPrioritySchema,
+  value: z.number().finite().optional(),
+  currency: z.string().trim().optional(),
+  dealThinking: z.string().trim().optional(),
+  source: z.string().trim().optional(),
+  closeDate: z.string().trim().optional(),
+  nextStep: z.string().trim().optional(),
+  ownerUserId: z.string().optional(),
+  tags: z.array(z.string().trim()).optional(),
+});
+
+export const dealRecordSchema = z.object({
+  _id: z.string(),
+  _creationTime: z.number(),
+  id: z.string(),
+  organizationId: z.string(),
+  title: z.string(),
+  clientId: z.string().optional(),
+  projectId: z.string().optional(),
+  stage: dealStageSchema,
+  status: dealStatusSchema,
+  priority: dealPrioritySchema,
+  value: z.number().optional(),
+  currency: z.string().optional(),
+  dealThinking: z.string().optional(),
+  source: z.string().optional(),
+  closeDate: z.string().optional(),
+  nextStep: z.string().optional(),
+  ownerUserId: z.string(),
+  tags: z.array(z.string()).optional(),
+  customFields: z.array(z.object({ key: z.string(), value: z.unknown() })).optional(),
+  createdByUserId: z.string(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+  closedAt: z.number().optional(),
+  deletedAt: z.number().optional(),
+  isDeleted: z.boolean().optional(),
+});
+
+export type DealStage = z.infer<typeof dealStageSchema>;
+export type DealStatus = z.infer<typeof dealStatusSchema>;
+export type DealPriority = z.infer<typeof dealPrioritySchema>;
+export type DealInput = z.infer<typeof dealInputSchema>;
+export type DealRecord = z.infer<typeof dealRecordSchema>;
+
+export type DealSummary = {
+  id: string;
+  title: string;
+  stage: DealStage;
+  status: DealStatus;
+  priority: DealPriority;
+  value?: number;
+  currency?: string;
+  dealThinking?: string;
+  clientId?: string;
+  projectId?: string;
+  ownerUserId: string;
+  tags?: string[];
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type DealStats = {
+  total: number;
+  open: number;
+  qualified: number;
+  won: number;
+  lost: number;
+  totalValue: number;
+};
+
+// ── CRM broker flow types (legacy, for external integration) ────────
+
+export const crmDealStageSchema = z.enum(["new", "contacted", "negotiation", "won", "lost"]);
+export const crmDealRelationTypeSchema = z.enum(["internal_client", "broker_managed"]);
+
+export const crmClientPreviewSchema = z.object({
   id: z.string(),
   name: z.string(),
   phone: z.string().optional(),
@@ -13,7 +96,7 @@ export const dealClientPreviewSchema = z.object({
   sourceClientId: z.string().optional(),
 });
 
-export const dealBrokerPreviewSchema = z.object({
+export const crmBrokerPreviewSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string().optional(),
@@ -23,7 +106,7 @@ export const dealBrokerPreviewSchema = z.object({
   isVerified: z.boolean().optional(),
 });
 
-export const dealProjectPreviewSchema = z.object({
+export const crmProjectPreviewSchema = z.object({
   id: z.string(),
   title: z.string(),
   image: z.string(),
@@ -32,122 +115,67 @@ export const dealProjectPreviewSchema = z.object({
   summary: z.string(),
 });
 
-export const dealSelectorClientSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  phone: z.string().optional(),
-  notes: z.string().optional(),
-  sourceClientId: z.string().optional(),
-});
-
-export const dealSelectorBrokerSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  description: z.string().optional(),
-  phone: z.string().optional(),
-  avatarLabel: z.string(),
-  stateLabel: z.string().optional(),
-  isVerified: z.boolean().optional(),
-});
-
-/**
- * WHY:   CRM server functions need one validated payload shape across broker and developer flows.
- * WHAT:  CreateDealInput validates the mutable deal fields accepted from the web layer.
- * HOW:   It mirrors the currently supported CRM write fields while leaving ownership resolution to the server layer.
- */
-export const createDealInputSchema = z.object({
+export const crmDealInputSchema = z.object({
   title: z.string().trim().min(1).max(200),
   description: z.string().optional(),
   value: z.number().finite().optional(),
   nextFollowUpAt: z.number().int().positive().optional(),
-  stage: dealStageSchema,
+  stage: crmDealStageSchema,
   contactName: z.string().trim().min(1).max(120).optional(),
   contactPhone: z.string().trim().min(1).max(40).optional(),
   assetId: z.string().optional(),
-  relationType: dealRelationTypeSchema,
+  relationType: crmDealRelationTypeSchema,
   crmClientId: z.string().optional(),
   relatedBrokerId: z.string().optional(),
 });
 
-export const updateDealInputSchema = createDealInputSchema.extend({
+export const crmUpdateDealInputSchema = crmDealInputSchema.extend({
   dealId: z.string(),
   notes: z.string().optional(),
 });
 
-export const updateDealStageInputSchema = z.object({
+export const crmUpdateDealStageInputSchema = z.object({
   dealId: z.string(),
-  stage: dealStageSchema,
+  stage: crmDealStageSchema,
 });
 
-export const updateDealNotesInputSchema = z.object({
+export const crmUpdateDealNotesInputSchema = z.object({
   dealId: z.string(),
   notes: z.string(),
 });
 
-export const updateDealFollowUpInputSchema = z.object({
+export const crmUpdateDealFollowUpInputSchema = z.object({
   dealId: z.string(),
   nextFollowUpAt: z.number().int().positive(),
 });
 
-export const addDealDocumentInputSchema = z.object({
+export const crmAddDealDocumentInputSchema = z.object({
   dealId: z.string(),
-  document: uploadedFileReferenceSchema,
+  document: z.object({
+    url: z.string(),
+    name: z.string(),
+    type: z.string(),
+    size: z.number().optional(),
+  }),
 });
 
-export const assetDealsInputSchema = z.object({
+export const crmAssetDealsInputSchema = z.object({
   assetId: z.string(),
 });
 
-export const archiveDealInputSchema = z.object({
+export const crmArchiveDealInputSchema = z.object({
   dealId: z.string(),
 });
 
-export type CreateDealInput = z.infer<typeof createDealInputSchema>;
-export type UpdateDealInput = z.infer<typeof updateDealInputSchema>;
-export type UpdateDealStageInput = z.infer<typeof updateDealStageInputSchema>;
-export type UpdateDealNotesInput = z.infer<typeof updateDealNotesInputSchema>;
-export type UpdateDealFollowUpInput = z.infer<typeof updateDealFollowUpInputSchema>;
-export type AddDealDocumentInput = z.infer<typeof addDealDocumentInputSchema>;
-export type AssetDealsInput = z.infer<typeof assetDealsInputSchema>;
-export type ArchiveDealInput = z.infer<typeof archiveDealInputSchema>;
-export type DealRelationType = z.infer<typeof dealRelationTypeSchema>;
-export type DealClientPreview = z.infer<typeof dealClientPreviewSchema>;
-export type DealBrokerPreview = z.infer<typeof dealBrokerPreviewSchema>;
-export type DealProjectPreview = z.infer<typeof dealProjectPreviewSchema>;
-export type DealSelectorClient = z.infer<typeof dealSelectorClientSchema>;
-export type DealSelectorBroker = z.infer<typeof dealSelectorBrokerSchema>;
-
-export type DealSummary = {
-  id: string;
-  createdAt: number;
-  title: string;
-  description?: string;
-  value?: number;
-  nextFollowUpAt?: number;
-  stage: z.infer<typeof dealStageSchema>;
-  relationType?: DealRelationType;
-  crmClientId?: string;
-  relatedBrokerId?: string;
-  brokerId?: string;
-  redId?: string;
-  assetId?: string;
-  offerId?: string;
-  notes?: string;
-  contactName?: string;
-  contactPhone?: string;
-  lastUpdatedBy?: string;
-  brokerName?: string | null;
-  redName?: string | null;
-  client?: DealClientPreview | null;
-  linkedBroker?: DealBrokerPreview | null;
-  project?: DealProjectPreview | null;
-  documents?: UploadedFileReference[];
-};
-
-export type DealDetail = DealSummary;
-export type PaginatedDealsResult = PaginationResult<DealSummary>;
-
-export type DealSelectorData = {
-  clients: DealSelectorClient[];
-  brokers: DealSelectorBroker[];
-};
+export type CrmDealInput = z.infer<typeof crmDealInputSchema>;
+export type CrmUpdateDealInput = z.infer<typeof crmUpdateDealInputSchema>;
+export type CrmUpdateDealStageInput = z.infer<typeof crmUpdateDealStageInputSchema>;
+export type CrmUpdateDealNotesInput = z.infer<typeof crmUpdateDealNotesInputSchema>;
+export type CrmUpdateDealFollowUpInput = z.infer<typeof crmUpdateDealFollowUpInputSchema>;
+export type CrmAddDealDocumentInput = z.infer<typeof crmAddDealDocumentInputSchema>;
+export type CrmAssetDealsInput = z.infer<typeof crmAssetDealsInputSchema>;
+export type CrmArchiveDealInput = z.infer<typeof crmArchiveDealInputSchema>;
+export type CrmDealRelationType = z.infer<typeof crmDealRelationTypeSchema>;
+export type CrmClientPreview = z.infer<typeof crmClientPreviewSchema>;
+export type CrmBrokerPreview = z.infer<typeof crmBrokerPreviewSchema>;
+export type CrmProjectPreview = z.infer<typeof crmProjectPreviewSchema>;

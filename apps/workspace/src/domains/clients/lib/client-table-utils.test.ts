@@ -36,7 +36,7 @@ describe("client table utils", () => {
   });
 
   it("filters and sorts rows", () => {
-    const rows = [
+    const rows: Client[] = [
       baseClient,
       { ...baseClient, id: "2", name: "Beta", status: "new", type: "person" },
     ];

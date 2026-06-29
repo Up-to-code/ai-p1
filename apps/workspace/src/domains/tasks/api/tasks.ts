@@ -3,6 +3,7 @@
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
+import { createResourceApi } from "@/domains/resources/resource-api-factory";
 import type { TaskFormValues, TaskRecord, TaskStats } from "../tasks.types";
 
 export function useTasksQuery(organizationId?: string, options?: { status?: TaskRecord["status"] | "all"; search?: string; projectId?: string | null; spaceId?: string | null }) {
@@ -73,29 +74,15 @@ export function taskPayloadFromForm(values: TaskFormValues) {
   };
 }
 
-export async function createTaskRequest(organizationId: string, values: TaskFormValues) {
-  return workspaceMutation<{ task: TaskRecord }>(organizationId, "tasks", {
-    method: "POST",
-    body: taskPayloadFromForm(values),
-    fallbackMessage: "Task request failed.",
-  });
-}
+export const taskApi = createResourceApi<TaskRecord, TaskFormValues, TaskFormValues>({
+  resourcePath: "tasks",
+  resourceKey: "task",
+  toPayload: taskPayloadFromForm,
+});
 
-export async function updateTaskRequest(organizationId: string, taskId: string, values: TaskFormValues) {
-  return workspaceMutation<{ task: TaskRecord }>(organizationId, `tasks/${taskId}`, {
-    method: "PATCH",
-    body: taskPayloadFromForm(values),
-    fallbackMessage: "Task request failed.",
-  });
-}
-
-export async function deleteTaskRequest(organizationId: string, taskId: string) {
-  return workspaceMutation(organizationId, `tasks/${taskId}`, {
-    method: "DELETE",
-    body: undefined,
-    fallbackMessage: "Task request failed.",
-  });
-}
+export const createTaskRequest = taskApi.create;
+export const updateTaskRequest = taskApi.update;
+export const deleteTaskRequest = taskApi.remove;
 
 export async function assignTasksToProjectRequest(
   organizationId: string,

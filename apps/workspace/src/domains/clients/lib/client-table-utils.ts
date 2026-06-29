@@ -105,7 +105,7 @@ export function sortClientTableRows(
         cmp = a.status.localeCompare(b.status);
         break;
       case "pipelineStage":
-        cmp = a.pipelineStage.localeCompare(b.pipelineStage);
+        cmp = (a.pipelineStage ?? "").localeCompare(b.pipelineStage ?? "");
         break;
       case "lastContact":
         cmp = (a.lastContact ?? "").localeCompare(b.lastContact ?? "");

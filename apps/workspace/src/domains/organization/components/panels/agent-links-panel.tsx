@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { Bot, Building2, CalendarDays, CheckCircle2, Copy, CreditCard, FileText, KeyRound, Layers, Loader2, Plus, RefreshCcw, ShieldCheck, Trash2, Users } from "lucide-react";
+import { Bot, Building2, CalendarDays, Check, CheckCircle2, Copy, CreditCard, FileText, KeyRound, Layers, Loader2, Plus, RefreshCcw, ShieldCheck, Trash2, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";

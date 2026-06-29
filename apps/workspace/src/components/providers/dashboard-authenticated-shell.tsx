@@ -126,9 +126,9 @@ export function DashboardAuthenticatedShell({
             <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-background">
               <Topbar />
               <div className="flex min-h-0 flex-1 overflow-hidden">
-                <main className="flex min-h-0 flex-1 flex-col overflow-auto outline-none p-4">
+                <div className="flex min-h-0 flex-1 flex-col outline-none">
                   {children}
-                </main>
+                </div>
                 {isAiPanelOpen && <ResizableAiPanel />}
               </div>
             </div>

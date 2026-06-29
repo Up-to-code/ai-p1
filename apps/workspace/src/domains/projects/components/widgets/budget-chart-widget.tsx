@@ -28,8 +28,8 @@ export function BudgetChartWidget() {
   const utilizationPct = budget > 0 ? Math.round((estimatedSpent / budget) * 100) : 0;
 
   const chartData = [
-    { name: "Spent", value: estimatedSpent, fill: "#4F80FF" },
-    { name: "Remaining", value: Math.max(0, remaining), fill: "#e5e7eb" },
+    { name: "Spent", value: estimatedSpent, fill: "var(--q-info)" },
+    { name: "Remaining", value: Math.max(0, remaining), fill: "var(--q-border-strong)" },
   ];
 
   const formatCurrency = (val: number) => {

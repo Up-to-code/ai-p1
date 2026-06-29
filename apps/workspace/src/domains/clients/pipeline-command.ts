@@ -18,7 +18,7 @@ export type ClientStats = {
 };
 
 export type ClientsIndexData = InfiniteData<IndexedInfinitePage<Client, ClientStats>, string | null>;
-export type ClientPipelineStage = Client["pipelineStage"];
+export type ClientPipelineStage = NonNullable<Client["pipelineStage"]>;
 export type ActiveClientPipelineStage = Exclude<ClientPipelineStage, "closed">;
 
 export function clientFormValuesForPipeline(
@@ -30,7 +30,7 @@ export function clientFormValuesForPipeline(
     name: client.name,
     type: client.type,
     contact: client.contact,
-    phone: client.phone,
+    phone: client.phone ?? "",
     age: "",
     nationality: "",
     generation: "",
@@ -38,7 +38,7 @@ export function clientFormValuesForPipeline(
     assetInterest: client.assetInterest,
     status: client.status,
     visibility: client.visibility ?? "private",
-    pipelineStage: stage,
+    pipelineStage: stage as ClientFormValues["pipelineStage"],
     pipelineOrder,
     priority: client.priority,
     nextAction: "",
@@ -81,6 +81,7 @@ export function removeClientFromIndexData(data: ClientsIndexData | undefined, cl
 
 function incrementClientStats(stats: ClientStats | undefined, client: Client): ClientStats {
   const base: ClientStats = stats ?? { total: 0, active: 0, inactive: 0 };
+  const stage = (client.pipelineStage ?? "new") as keyof NonNullable<ClientStats["stages"]>;
   const next: ClientStats = {
     ...base,
     total: base.total + 1,
@@ -92,7 +93,7 @@ function incrementClientStats(stats: ClientStats | undefined, client: Client): C
     people: (base.people ?? 0) + (client.type === "person" ? 1 : 0),
     organizations: (base.organizations ?? 0) + (client.type === "organization" ? 1 : 0),
     stages: base.stages
-      ? { ...base.stages, [client.pipelineStage]: (base.stages[client.pipelineStage] ?? 0) + 1 }
+      ? { ...base.stages, [stage]: (base.stages[stage] ?? 0) + 1 }
       : undefined,
   };
   return next;
@@ -100,6 +101,8 @@ function incrementClientStats(stats: ClientStats | undefined, client: Client): C
 
 function decrementClientStats(stats: ClientStats | undefined, client: Client | undefined): ClientStats | undefined {
   if (!stats || !client) return stats;
+
+  const stage = (client.pipelineStage ?? "new") as keyof NonNullable<ClientStats["stages"]>;
 
   return {
     ...stats,
@@ -112,7 +115,7 @@ function decrementClientStats(stats: ClientStats | undefined, client: Client | u
     people: Math.max(0, (stats.people ?? 0) - (client.type === "person" ? 1 : 0)),
     organizations: Math.max(0, (stats.organizations ?? 0) - (client.type === "organization" ? 1 : 0)),
     stages: stats.stages
-      ? { ...stats.stages, [client.pipelineStage]: Math.max(0, (stats.stages[client.pipelineStage] ?? 0) - 1) }
+      ? { ...stats.stages, [stage]: Math.max(0, (stats.stages[stage] ?? 0) - 1) }
       : undefined,
   };
 }

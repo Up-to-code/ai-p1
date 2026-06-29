@@ -64,32 +64,94 @@ function generatePromptSummary(prompt: string): string {
   return `${truncated}. Topics: ${keyTopics || "general"}`;
 }
 
+function buildChunk(content: string, originalLength: number, index: number): PromptChunk {
+  return {
+    content,
+    index,
+    total: 0,
+    metadata: {
+      originalLength,
+      chunkLength: content.length,
+      estimatedTokens: estimateTokens(content),
+    },
+  };
+}
+
+function splitIntoParagraphs(prompt: string): string[] {
+  return prompt.split(/\n\n+/);
+}
+
+function splitIntoSentences(paragraph: string): string[] {
+  return paragraph.split(/(?<=[.!?])\s+/);
+}
+
+function splitByMaxLength(text: string, maxLength: number): string[] {
+  const parts: string[] = [];
+  for (let i = 0; i < text.length; i += maxLength) {
+    parts.push(text.slice(i, i + maxLength));
+  }
+  return parts;
+}
+
+function flushChunk(
+  chunks: PromptChunk[],
+  currentChunk: string,
+  originalLength: number,
+  chunkIndex: number,
+): number {
+  if (currentChunk) {
+    chunks.push(buildChunk(currentChunk, originalLength, chunkIndex));
+    return chunkIndex + 1;
+  }
+  return chunkIndex;
+}
+
+function chunkParagraph(
+  paragraph: string,
+  maxChunkLength: number,
+): string[] {
+  if (paragraph.length <= maxChunkLength) return [paragraph];
+
+  const sentences = splitIntoSentences(paragraph);
+  if (sentences.length > 1) {
+    const result: string[] = [];
+    let buffer = "";
+    for (const sentence of sentences) {
+      const combined = buffer ? `${buffer} ${sentence}` : sentence;
+      if (combined.length <= maxChunkLength) {
+        buffer = combined;
+      } else {
+        if (buffer) result.push(buffer);
+        buffer = sentence.length > maxChunkLength ? "" : sentence;
+        if (sentence.length > maxChunkLength) {
+          result.push(...splitByMaxLength(sentence, maxChunkLength));
+        }
+      }
+    }
+    if (buffer) result.push(buffer);
+    return result;
+  }
+
+  return splitByMaxLength(paragraph, maxChunkLength);
+}
+
 function chunkPrompt(
   prompt: string,
   maxTokens: number = 4000,
   preserveContext: boolean = true
 ): PromptChunk[] {
-  const chunks: PromptChunk[] = [];
   const maxChunkLength = maxTokens * 4;
+  const originalLength = prompt.length;
 
   if (prompt.length <= maxChunkLength) {
-    return [{
-      content: prompt,
-      index: 0,
-      total: 1,
-      metadata: {
-        originalLength: prompt.length,
-        chunkLength: prompt.length,
-        estimatedTokens: estimateTokens(prompt),
-      },
-    }];
+    return [buildChunk(prompt, originalLength, 0)];
   }
 
-  const paragraphs = prompt.split(/\n\n+/);
+  const chunks: PromptChunk[] = [];
   let currentChunk = "";
   let chunkIndex = 0;
 
-  for (const paragraph of paragraphs) {
+  for (const paragraph of splitIntoParagraphs(prompt)) {
     const potentialChunk = currentChunk
       ? `${currentChunk}\n\n${paragraph}`
       : paragraph;
@@ -97,83 +159,19 @@ function chunkPrompt(
     if (potentialChunk.length <= maxChunkLength) {
       currentChunk = potentialChunk;
     } else {
-      if (currentChunk) {
-        chunks.push({
-          content: currentChunk,
-          index: chunkIndex,
-          total: 0,
-          metadata: {
-            originalLength: prompt.length,
-            chunkLength: currentChunk.length,
-            estimatedTokens: estimateTokens(currentChunk),
-          },
-        });
+      chunkIndex = flushChunk(chunks, currentChunk, originalLength, chunkIndex);
+      currentChunk = "";
+
+      const parts = chunkParagraph(paragraph, maxChunkLength);
+      for (let i = 0; i < parts.length - 1; i++) {
+        chunks.push(buildChunk(parts[i], originalLength, chunkIndex));
         chunkIndex++;
-        currentChunk = "";
       }
-
-      if (paragraph.length > maxChunkLength) {
-        const sentences = paragraph.split(/(?<=[.!?])\s+/);
-        for (const sentence of sentences) {
-          const potentialSentence = currentChunk
-            ? `${currentChunk} ${sentence}`
-            : sentence;
-
-          if (potentialSentence.length <= maxChunkLength) {
-            currentChunk = potentialSentence;
-          } else {
-            if (currentChunk) {
-              chunks.push({
-                content: currentChunk,
-                index: chunkIndex,
-                total: 0,
-                metadata: {
-                  originalLength: prompt.length,
-                  chunkLength: currentChunk.length,
-                  estimatedTokens: estimateTokens(currentChunk),
-                },
-              });
-              chunkIndex++;
-              currentChunk = "";
-            }
-            if (sentence.length > maxChunkLength) {
-              for (let i = 0; i < sentence.length; i += maxChunkLength) {
-                chunks.push({
-                  content: sentence.slice(i, i + maxChunkLength),
-                  index: chunkIndex,
-                  total: 0,
-                  metadata: {
-                    originalLength: prompt.length,
-                    chunkLength: maxChunkLength,
-                    estimatedTokens: estimateTokens(sentence.slice(i, i + maxChunkLength)),
-                  },
-                });
-                chunkIndex++;
-              }
-            } else {
-              currentChunk = sentence;
-            }
-          }
-        }
-      } else {
-        currentChunk = paragraph;
-      }
+      currentChunk = parts[parts.length - 1];
     }
   }
 
-  if (currentChunk) {
-    chunks.push({
-      content: currentChunk,
-      index: chunkIndex,
-      total: 0,
-      metadata: {
-        originalLength: prompt.length,
-        chunkLength: currentChunk.length,
-        estimatedTokens: estimateTokens(currentChunk),
-      },
-    });
-  }
-
+  chunkIndex = flushChunk(chunks, currentChunk, originalLength, chunkIndex);
   chunks.forEach(chunk => chunk.total = chunks.length);
   return chunks;
 }

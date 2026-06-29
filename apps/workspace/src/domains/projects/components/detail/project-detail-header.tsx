@@ -13,6 +13,7 @@ import { useState } from "react";
 import { useAccountContext } from "@/domains/auth";
 import { deleteProjectRequest } from "../../api/projects";
 import { useQueryClient } from "@tanstack/react-query";
+import { useOptimisticInvalidation } from "@/domains/cache/hooks/use-optimistic-invalidation";
 import { Pencil, Trash2 } from "lucide-react";
 
 interface ProjectDetailHeaderProps {
@@ -52,6 +53,7 @@ export function ProjectDetailHeader({ project, onUpdate }: ProjectDetailHeaderPr
   const router = useRouter();
   const account = useAccountContext();
   const queryClient = useQueryClient();
+  const { invalidate } = useOptimisticInvalidation();
   const orgId = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -59,7 +61,7 @@ export function ProjectDetailHeader({ project, onUpdate }: ProjectDetailHeaderPr
     if (!orgId) return;
     try {
       await deleteProjectRequest(orgId, project.id);
-      queryClient.invalidateQueries({ queryKey: ["projects-index", orgId] });
+      await invalidate({ type: "list", resource: "projects" });
       router.push("/projects");
     } catch (err) {
       console.error("Failed to delete project:", err);

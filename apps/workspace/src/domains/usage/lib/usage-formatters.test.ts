@@ -12,7 +12,7 @@ describe("usagePlanPriceLabel", () => {
 
   it("returns custom label when amount is null", () => {
     const label = usagePlanPriceLabel(
-      { ...QENTRAH_PLAN, amount: null },
+      { ...QENTRAH_PLAN, amount: null } as typeof QENTRAH_PLAN & { amount: null },
       "en",
       intervalLabels,
     );

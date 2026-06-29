@@ -8,5 +8,3 @@ export {
   setVersion,
   getNextVersion,
 } from "./adapters/indexeddb-adapter";
-
-export type { StoredValue, StorageEntry } from "./adapters/indexeddb-adapter";

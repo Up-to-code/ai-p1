@@ -23,6 +23,7 @@ import {
   Layers,
 } from "lucide-react";
 import { DeleteRecordDialog } from "@/components/shared/crud-ui";
+import type { ClientFormValues } from "../validation/client.schema";
 import { BulkActionModal } from "./bulk-action-modal";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import {
@@ -211,7 +212,7 @@ export function ClientTableView({
           name: client.name,
           type: client.type,
           contact: client.contact,
-          phone: client.phone,
+          phone: client.phone ?? "",
           age: "",
           nationality: "",
           generation: "",
@@ -219,9 +220,9 @@ export function ClientTableView({
           assetInterest: client.assetInterest,
           status: client.status,
           visibility: client.visibility ?? "private",
-          pipelineStage: client.pipelineStage,
+          pipelineStage: (client.pipelineStage ?? "new") as ClientFormValues["pipelineStage"],
           pipelineOrder: client.pipelineOrder,
-          priority: client.priority,
+          priority: client.priority as ClientFormValues["priority"],
           nextAction: "",
           issue: "",
           notes: client.notes ?? "",
@@ -513,7 +514,7 @@ export function ClientTableView({
                           <PopoverTrigger
                             className={cn(
                               "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest transition-all hover:opacity-80 cursor-pointer outline-none",
-                              clientStageBadgeClass(client.pipelineStage),
+                              clientStageBadgeClass(client.pipelineStage ?? ""),
                             )}
                           >
                             <span className={cn(
@@ -524,7 +525,7 @@ export function ClientTableView({
                               client.pipelineStage === "negotiation" && "bg-[#F0997B]",
                               client.pipelineStage === "closed" && "bg-[#378ADD]",
                             )} />
-                            {client.pipelineStage.charAt(0).toUpperCase() + client.pipelineStage.slice(1)}
+                            {(client.pipelineStage ?? "").charAt(0).toUpperCase() + (client.pipelineStage ?? "").slice(1)}
                           </PopoverTrigger>
                           <PopoverContent align="start" className="w-48 p-1.5">
                             <p className="px-2 pb-1.5 pt-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground">Stage</p>

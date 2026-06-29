@@ -40,12 +40,6 @@ export function SpaceDetailView({ spaceSlug }: { spaceSlug: string }) {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <button
-            onClick={clearContext}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
           <div>
             <div className="flex items-center gap-2">
               {currentSpace?.color && (

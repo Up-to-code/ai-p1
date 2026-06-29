@@ -11,6 +11,7 @@ import {
   useWorkspaceResource,
   workspaceMutation,
 } from "@/domains/resources/workspace-resource-request";
+import { createResourceApi } from "@/domains/resources/resource-api-factory";
 import type { Client, ClientType } from "../store/clients.types";
 import type { ClientFormValues } from "../validation/client.schema";
 import {
@@ -42,7 +43,7 @@ export function useCreateClientOptimisticMutation(queryKey: QueryKey | undefined
     }: {
       organizationId: string;
       values: ClientFormValues;
-    }) => createClientRequest(organizationId, values),
+    }) => clientApi.create(organizationId, values),
     onMutate: async (variables) => {
       if (!queryKey) return { previousData: undefined, optimisticId: undefined };
 
@@ -95,7 +96,7 @@ export function useUpdateClientOptimisticMutation(queryKey: QueryKey | undefined
       organizationId: string;
       client: Client;
       values: ClientFormValues;
-    }) => updateClientRequest(organizationId, client.id, values),
+    }) => clientApi.update(organizationId, client.id, values),
     onMutate: async (variables) => {
       if (!queryKey) return { previousData: undefined };
 
@@ -131,7 +132,7 @@ export function useDeleteClientOptimisticMutation(queryKey: QueryKey | undefined
 
   return useMutation({
     mutationFn: ({ organizationId, clientId }: { organizationId: string; clientId: string }) =>
-      deleteClientRequest(organizationId, clientId),
+      clientApi.remove(organizationId, clientId),
     onMutate: async (variables) => {
       if (!queryKey) return { previousData: undefined };
 
@@ -177,7 +178,7 @@ export function useMoveClientInPipelineMutation(queryKey: QueryKey | undefined) 
       targetIndex: number;
     }) => {
       const pipelineOrder = nextPipelineOrder(stageClients, client.id, targetIndex);
-      return updateClientRequest(organizationId, client.id, clientFormValuesForPipeline(client, stage, pipelineOrder));
+      return clientApi.update(organizationId, client.id, clientFormValuesForPipeline(client, stage, pipelineOrder));
     },
     onMutate: async (variables) => {
       if (!queryKey) return { previousData: undefined };
@@ -286,25 +287,12 @@ export function clientPayloadFromForm(values: ClientFormValues) {
   };
 }
 
-export async function createClientRequest(organizationId: string, values: ClientFormValues) {
-  return workspaceMutation<{ client: Client }>(organizationId, "clients", {
-    method: "POST",
-    body: clientPayloadFromForm(values),
-    fallbackMessage: "Client request failed.",
-  });
-}
+export const clientApi = createResourceApi<Client, ClientFormValues, ClientFormValues>({
+  resourcePath: "clients",
+  resourceKey: "client",
+  toPayload: clientPayloadFromForm,
+});
 
-export async function updateClientRequest(organizationId: string, clientId: string, values: ClientFormValues) {
-  return workspaceMutation<{ client: { id: string } }>(organizationId, `clients/${clientId}`, {
-    method: "PATCH",
-    body: clientPayloadFromForm(values),
-    fallbackMessage: "Client request failed.",
-  });
-}
-
-export async function deleteClientRequest(organizationId: string, clientId: string) {
-  return workspaceMutation(organizationId, `clients/${clientId}`, {
-    method: "DELETE",
-    fallbackMessage: "Client request failed.",
-  });
-}
+export const createClientRequest = clientApi.create;
+export const updateClientRequest = clientApi.update;
+export const deleteClientRequest = clientApi.remove;

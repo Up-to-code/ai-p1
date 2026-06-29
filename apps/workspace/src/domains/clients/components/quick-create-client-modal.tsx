@@ -96,7 +96,7 @@ export function QuickCreateClientModal({
         assetInterest: "",
         status: "new",
         visibility: "private",
-        pipelineStage,
+        pipelineStage: pipelineStage as ClientFormValues["pipelineStage"],
         priority: "normal",
         nextAction: "",
         issue: "",

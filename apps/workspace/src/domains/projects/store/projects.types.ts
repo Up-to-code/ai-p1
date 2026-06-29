@@ -1,8 +1,7 @@
-export type ProjectStatus = "planned" | "active" | "paused" | "completed" | "archived";
-export type ProjectHealth = "onTrack" | "atRisk" | "blocked";
-export type Visibility = "private" | "team" | "workspace";
+import type { ProjectStatus, ProjectHealth, Visibility } from "@qentrah/domain-contracts";
+export type { ProjectStatus, ProjectHealth, Visibility } from "@qentrah/domain-contracts";
 
-export interface Project {
+export type Project = {
   id: string;
   name: string;
   reference?: string;
@@ -22,4 +21,4 @@ export interface Project {
   _creationTime: number;
   syncState?: "draft" | "blocked" | "synced";
   dataVersion?: number;
-}
+};

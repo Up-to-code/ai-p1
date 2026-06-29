@@ -16,6 +16,26 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./calendar": {
+      "types": "./dist/calendar.d.ts",
+      "import": "./dist/calendar.js"
+    },
+    "./clients": {
+      "types": "./dist/clients.d.ts",
+      "import": "./dist/clients.js"
+    },
+    "./deals": {
+      "types": "./dist/deals.d.ts",
+      "import": "./dist/deals.js"
+    },
+    "./projects": {
+      "types": "./dist/projects.d.ts",
+      "import": "./dist/projects.js"
+    },
+    "./tasks": {
+      "types": "./dist/tasks.d.ts",
+      "import": "./dist/tasks.js"
+    },
     "./qentrah-pro": {
       "types": "./dist/qentrahPro.d.ts",
       "import": "./dist/qentrahPro.js"

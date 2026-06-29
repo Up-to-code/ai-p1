@@ -42,8 +42,8 @@ export function ClientForm({ existing, indexQueryKey, onSuccess, onCancel }: Cli
       assetInterest: existing?.assetInterest ?? "",
       status: existing?.status ?? "new" as Client["status"],
       visibility: existing?.visibility ?? "private",
-      pipelineStage: existing?.pipelineStage ?? "new" as PipelineStage,
-      priority: existing?.priority ?? "normal" as Client["priority"],
+      pipelineStage: (existing?.pipelineStage ?? "new") as ClientFormValues["pipelineStage"],
+      priority: (existing?.priority ?? "normal") as ClientFormValues["priority"],
       nextAction: "",
       issue: "",
     },
@@ -57,7 +57,7 @@ export function ClientForm({ existing, indexQueryKey, onSuccess, onCancel }: Cli
     saveOperation.clearError();
   };
 
-  const onSubmit = handleSubmit((data) => {
+  const onSubmit = handleSubmit((data: ClientFormValues) => {
     if (!account.organization.id) return;
 
     if (existing) {

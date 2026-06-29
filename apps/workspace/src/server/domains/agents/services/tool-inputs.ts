@@ -120,6 +120,25 @@ export const taskInputSchema = z.object({
 export const taskUpdateInputSchema = taskInputSchema.partial().extend({
   taskId: stringId,
 }).passthrough();
+const dealStageSchema = z.enum(["lead", "qualified", "proposal_sent", "contract_sent", "won", "lost"]);
+const dealStatusSchema = z.enum(["open", "won", "lost", "paused"]);
+const dealPrioritySchema = z.enum(["low", "normal", "high", "urgent"]);
+export const dealInputSchema = z.object({
+  title: z.string().min(1),
+  clientId: stringId.optional(),
+  projectId: stringId.optional(),
+  stage: dealStageSchema,
+  status: dealStatusSchema,
+  value: z.number().optional(),
+  currency: z.string().optional(),
+  dealThinking: z.string().optional(),
+  source: z.string().optional(),
+  priority: dealPrioritySchema,
+  closeDate: z.string().optional(),
+  nextStep: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+}).passthrough();
+
 export const notificationScheduleInputSchema = z.object({
   title: z.string().trim().min(1),
   body: z.string().trim().min(1),
@@ -179,6 +198,11 @@ export const toolInputSchemas: Record<string, z.ZodTypeAny> = {
   clients_create: clientCreateInputSchema,
   clients_update: clientInputSchema.partial().extend({ clientId: stringId }).passthrough(),
   clients_delete: z.object({ clientId: stringId }).passthrough(),
+  deals_list: listSchema,
+  deals_get: z.object({ dealId: stringId }).passthrough(),
+  deals_create: dealInputSchema,
+  deals_update: dealInputSchema.partial().extend({ dealId: stringId }).passthrough(),
+  deals_delete: z.object({ dealId: stringId }).passthrough(),
   projects_list: listSchema,
   projects_get: z.object({ projectId: stringId }).passthrough(),
   projects_create: projectInputSchema,

@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
+import { workspaceMutation, organizationApiPath } from "@/domains/resources/workspace-resource-request";
+import { requestOrganizationAction } from "@/domains/organization/api/organization-request";
 import type { PartnerCatalogFilter } from "./store/integrations.view-model";
 import type { PartnerCatalogApp, PartnerConnection } from "./store/integrations.types";
 import { MOCK_MAC_APPS, createMockConnection, createICloudConnection } from "./mock-data";

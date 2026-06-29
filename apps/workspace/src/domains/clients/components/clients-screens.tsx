@@ -275,7 +275,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
             phone: client.phone,
             company: client.company,
             source: client.source,
-            pipelineStage: client.pipelineStage,
+            pipelineStage: client.pipelineStage ?? "new",
             type: client.type,
           }))}
           stages={activePipelineStages.map((stage, index) => ({
@@ -319,7 +319,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
             phone: client.phone,
             company: client.company,
             source: client.source,
-            pipelineStage: client.pipelineStage,
+            pipelineStage: client.pipelineStage ?? "new",
             type: client.type,
           }))}
           stages={activePipelineStages.map((stage, index) => ({
