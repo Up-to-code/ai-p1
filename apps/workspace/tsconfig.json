@@ -39,9 +39,7 @@
       "@qentrah/platform-core": ["../../packages/platform-core/src/index.ts"],
       "@qentrah/ui": ["../../packages/ui/src/index.ts"],
       "@/*": ["./src/*"],
-      "@convex/*": ["./convex/*"],
-      "next": ["./node_modules/next"],
-      "next/*": ["./node_modules/next/*"]
+      "@convex/*": ["./convex/*"]
     }
   },
   "include": [
