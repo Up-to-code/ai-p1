@@ -1,58 +1,36 @@
 "use client";
 
 import { useMemo } from "react";
-import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
-import { Layers, FolderGit2, Users, Plus } from "lucide-react";
+import { Layers, Plus } from "lucide-react";
+import { QentrahTable, type QentrahColumnDef } from "@qentrah/ui";
+import { cn } from "@/lib/utils";
 import { useAccountContext } from "@/domains/auth";
 import { useNavigation } from "@/domains/navigation";
 import { useWorkspaceSpacesQuery } from "@/domains/projects/api/spaces";
 import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
+import type { Space } from "@/domains/projects/api/spaces";
 
-function SpaceCard({
-  name,
-  color,
-  icon,
-  projectCount,
-  teamCount,
-  onClick,
-}: {
-  name: string;
-  color?: string;
-  icon?: string;
-  projectCount: number;
-  teamCount: number;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="group relative flex flex-col gap-3 rounded-xl border border-border bg-card p-5 text-start transition-all hover:border-primary/30 hover:shadow-md hover:shadow-primary/5"
-    >
-      <div className="flex items-center gap-3">
-        <div
-          className="flex h-10 w-10 items-center justify-center rounded-xl text-lg font-bold"
-          style={{ backgroundColor: color ? `${color}20` : "rgb(243 244 246)" }}
-        >
-          {icon || <Layers className="h-5 w-5" style={{ color }} />}
-        </div>
-        <div className="min-w-0 flex-1">
-          <h3 className="truncate text-sm font-bold text-foreground">{name}</h3>
-        </div>
-      </div>
+const iconFor = (key: string | undefined): string | null => {
+  if (!key) return null
+  const k = key.toLowerCase()
+  if (k.includes("list")) return "/icons/clickup/list.svg"
+  if (k.includes("gantt")) return "/icons/clickup/bar-chart.svg"
+  if (k.includes("calendar")) return "/icons/clickup/calendar.svg"
+  if (k.includes("board") || k.includes("kanban")) return "/icons/clickup/kanban.svg"
+  if (k.includes("doc")) return "/icons/clickup/file-text.svg"
+  if (k.includes("form")) return "/icons/clickup/clipboard-check.svg"
+  if (k.includes("dash")) return "/icons/clickup/bar-chart-filled.svg"
+  if (k.includes("table")) return "/icons/clickup/table.svg"
+  if (k.includes("whiteboard")) return "/icons/clickup/expand-arrows.svg"
+  if (k.includes("timeline")) return "/icons/clickup/clock.svg"
+  if (k.includes("activity")) return "/icons/clickup/activity.svg"
+  if (k.includes("map")) return "/icons/clickup/folder.svg"
+  return null
+}
 
-      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1">
-          <FolderGit2 className="h-3.5 w-3.5" />
-          {projectCount} project{projectCount !== 1 ? "s" : ""}
-        </span>
-        <span className="flex items-center gap-1">
-          <Users className="h-3.5 w-3.5" />
-          {teamCount} team{teamCount !== 1 ? "s" : ""}
-        </span>
-      </div>
-    </button>
-  );
+const visibilityLabel = (v: Space["visibility"]): string => {
+  return v === "all_members" ? "All members" : "Selected only"
 }
 
 export function SpacesListView() {
@@ -65,8 +43,8 @@ export function SpacesListView() {
   const projectsQuery = useProjectsIndexQuery(orgId);
   const projects = projectsQuery.results ?? [];
 
-  const spaceList = spaces ?? [];
   const isLoading = spaces === undefined;
+  const spaceList = spaces ?? [];
 
   const projectsBySpace = useMemo(() => {
     const map = new Map<string, number>();
@@ -79,13 +57,144 @@ export function SpacesListView() {
     return map;
   }, [projects]);
 
+  const columns: QentrahColumnDef<Space>[] = useMemo(
+    () => [
+      {
+        headerName: "Name",
+        field: "name",
+        flex: 1.5,
+        minWidth: 220,
+        cellRenderer: (p: any) => {
+          if (p.data?.__groupKey) return null
+          const color = p.data?.color
+          const icon = iconFor(p.data?.icon) ?? iconFor(p.data?.name)
+          return (
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
+                style={{ background: color ? `color-mix(in srgb, ${color} 14%, transparent)` : "var(--q-bg-secondary)" }}
+              >
+                {icon ? (
+                  <img src={icon} alt="" className="h-3.5 w-3.5" style={{ color: color ?? undefined }} />
+                ) : (
+                  <Layers className="h-3.5 w-3.5 text-muted-foreground" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <div className="truncate text-[13px] font-semibold text-foreground">{p.data?.name}</div>
+                <div className="truncate text-[11px] text-muted-foreground/80">/{p.data?.slug}</div>
+              </div>
+            </div>
+          )
+        },
+      },
+      {
+        headerName: "Projects",
+        field: "id",
+        width: 110,
+        cellRenderer: (p: any) => {
+          if (p.data?.__groupKey) return null
+          const n = projectsBySpace.get(p.data?.id) ?? 0
+          return (
+            <span className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground">
+              <span className="font-semibold tabular-nums text-foreground/80">{n}</span>
+              <span className="opacity-60">project{n !== 1 ? "s" : ""}</span>
+            </span>
+          )
+        },
+      },
+      {
+        headerName: "Visibility",
+        field: "visibility",
+        width: 150,
+        cellRenderer: (p: any) => {
+          if (p.data?.__groupKey) return null
+          const isAll = p.value === "all_members"
+          return (
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium border",
+                isAll
+                  ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300/90 border-border/60"
+                  : "bg-zinc-500/10 text-zinc-600 dark:text-zinc-300/80 border-border/60"
+              )}
+            >
+              <span
+                className={cn(
+                  "h-1.5 w-1.5 rounded-full",
+                  isAll ? "bg-emerald-600 dark:bg-emerald-300" : "bg-zinc-500 dark:bg-zinc-300"
+                )}
+              />
+              {visibilityLabel(p.value)}
+            </span>
+          )
+        },
+      },
+      {
+        headerName: "Created",
+        field: "createdAt",
+        width: 140,
+        valueFormatter: (p: any) => {
+          if (!p.value) return "—"
+          return new Date(p.value).toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })
+        },
+      },
+    ],
+    [projectsBySpace],
+  )
+
+  if (isLoading) {
+    return (
+      <div className="h-full flex flex-col">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-lg font-bold text-foreground">{t("title")}</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">Loading…</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-28 animate-pulse rounded-xl bg-muted" />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (spaceList.length === 0) {
+    return (
+      <div className="h-full flex flex-col">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-lg font-bold text-foreground">{t("title")}</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">0 spaces</p>
+          </div>
+          <button className="flex h-9 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-sm">
+            <Plus className="h-4 w-4" />
+            {t("createSpace")}
+          </button>
+        </div>
+        <div className="flex flex-1 items-center justify-center">
+          <div className="text-center">
+            <Layers className="mx-auto h-12 w-12 text-muted-foreground/40" />
+            <p className="mt-3 text-sm font-medium text-muted-foreground">{t("noSpaces")}</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-lg font-bold text-foreground">{t("title")}</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {isLoading ? "..." : `${spaceList.length} space${spaceList.length !== 1 ? "s" : ""}`}
+            {spaceList.length} space{spaceList.length !== 1 ? "s" : ""}
           </p>
         </div>
         <button className="flex h-9 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-sm">
@@ -94,34 +203,19 @@ export function SpacesListView() {
         </button>
       </div>
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="h-28 animate-pulse rounded-xl bg-muted" />
-          ))}
-        </div>
-      ) : spaceList.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center">
-          <div className="text-center">
-            <Layers className="mx-auto h-12 w-12 text-muted-foreground/40" />
-            <p className="mt-3 text-sm font-medium text-muted-foreground">{t("noSpaces")}</p>
-          </div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {spaceList.map((space) => (
-            <SpaceCard
-              key={space.id}
-              name={space.name}
-              color={space.color}
-              icon={space.icon}
-              projectCount={projectsBySpace.get(space.id) ?? 0}
-              teamCount={0}
-              onClick={() => setSpace(space.slug)}
-            />
-          ))}
-        </div>
-      )}
+      <div className="flex-1 min-h-0 rounded-xl border border-border bg-card overflow-hidden">
+        <QentrahTable
+          rows={spaceList}
+          columns={columns}
+          density="compact"
+          height="100%"
+          rowSelection="single"
+          getRowId={(row) => row.id}
+          onRowClicked={(p) => {
+            if (p.data?.slug) setSpace(p.data.slug)
+          }}
+        />
+      </div>
     </div>
-  );
+  )
 }

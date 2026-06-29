@@ -2,7 +2,7 @@
 
 import { useTransition, useState } from "react";
 import { Link, useRouter, usePathname } from "@/i18n/routing";
-import { CircleUser, LogOut, Building, Settings, MoreHorizontal, Moon, Sun, Globe } from "lucide-react";
+import {   LogOut, Building, Settings, MoreHorizontal, Moon, Sun, Globe } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { useTheme } from "@/components/providers/theme-provider";
 import {
@@ -98,10 +98,6 @@ export function ProfileMenu() {
           <DropdownMenuItem render={<Link href="/settings" />} className="py-2">
             <Settings className="h-4 w-4 mr-2" />
             Settings
-          </DropdownMenuItem>
-          <DropdownMenuItem className="py-2 text-muted-foreground">
-            <MoreHorizontal className="h-4 w-4 mr-2" />
-            More Options
           </DropdownMenuItem>
           
           <DropdownMenuSeparator />

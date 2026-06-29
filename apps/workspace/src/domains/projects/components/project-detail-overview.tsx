@@ -1,91 +1,103 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAccountContext } from "@/domains/auth";
 import { useProjectQuery } from "../api/projects";
-import { useTasksQuery, createTaskRequest, updateTaskRequest, deleteTaskRequest } from "@/domains/tasks/api/tasks";
+import {
+  useTasksQuery,
+  useTasksGroupedQuery,
+  createTaskRequest,
+  updateTaskRequest,
+  deleteTaskRequest,
+  readPersistedGroupBy,
+  writePersistedGroupBy,
+} from "@/domains/tasks/api/tasks";
+import {
+  useFieldDefinitionsQuery,
+  useFieldValuesQuery,
+  setCustomFieldValueRequest,
+  type CustomFieldDefinition,
+} from "@/domains/tasks/api/fields";
 import { listOrganizationMembers } from "@/domains/organization/api/members";
-import { 
-  Box, Table2, KanbanSquare, LayoutGrid, ListTodo, Calendar, Clock, Activity, 
-  BarChart, Network, Users, MapPin, Globe, FileSpreadsheet, Plus, Search, 
-  Lock, Pin, ArrowLeft, ArrowUpDown, ChevronDown, Check, Circle, Trash2, 
-  Flag, Globe2, Sparkles, CheckCircle2, ChevronRight, X, AlertCircle, Loader2
+import {
+  Box, Calendar, Clock,
+  ChevronDown, Check,
+  Globe2, ChevronRight,
+  ChevronRight as ChevronRightIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ProjectDashboard } from "./project-dashboard";
-import { AddViewDropdown, type ViewOption, type ViewType } from "./add-view-dropdown";
+import {
+  ViewSwitcherTabs,
+  type ViewItem,
+  type ViewType,
+} from "@/components/shared/view-system";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  QentrahTable,
+  StatusPill,
+  AssigneeAvatar,
+  PriorityFlag,
+  NameCell,
+  StatusEditor,
+  AssigneeEditor,
+  DateEditor,
+  PriorityEditor,
+  TextEditor,
+  NumberEditor,
+  DropdownEditor,
+  LabelsEditor,
+  UrlEditor,
+  type QentrahColumnDef,
+  type QentrahTableRef,
+  type AssigneeOption,
+} from "@qentrah/ui/qentrah-table";
+import {
+  TaskTableToolbar,
+  type GroupByValue,
+} from "@/domains/tasks/components/task-table-toolbar";
+import { applyFilterRules, type FilterRule } from "@/domains/tasks/components/task-table-filter-rules";
+import { SavedViewsDropdown } from "@/domains/tasks/components/saved-views-dropdown";
+import {
+  useDefaultSavedViewQuery,
+  type SavedViewConfig,
+} from "@/domains/tasks/api/saved-views";
+import { TaskTableFieldsPanel } from "@/domains/tasks/components/task-table-fields-panel";
 
 interface ProjectDetailOverviewProps {
   projectId: string;
 }
 
-interface ActiveView {
-  id: string;
-  type: string;
-  label: string;
-}
-
-const DEFAULT_VIEWS: ActiveView[] = [
-  { id: "view-1", type: "dashboard", label: "Box" },
-  { id: "view-2", type: "table", label: "Table" },
-  { id: "view-3", type: "board", label: "Board" },
+const DEFAULT_VIEWS: ViewItem[] = [
+  { id: "view-1", type: "dashboard" },
+  { id: "view-2", type: "table" },
+  { id: "view-3", type: "board" },
 ];
 
-export function getViewIcon(type: string) {
-  switch (type) {
-    case "list": return ListTodo;
-    case "calendar": return Calendar;
-    case "board": return KanbanSquare;
-    case "doc": return FileSpreadsheet;
-    case "form": return CheckCircle2;
-    case "dashboard": return LayoutGrid;
-    case "table": return Table2;
-    case "timeline": return Clock;
-    case "activity": return Activity;
-    case "workload": return BarChart;
-    case "mindmap": return Network;
-    case "team": return Users;
-    case "map": return MapPin;
-    default: return LayoutGrid;
-  }
-}
-
-export function getViewColor(type: string) {
-  switch (type) {
-    case "list": return "#3a3a3a";
-    case "calendar": return "#e87732";
-    case "board": return "#7c3aed";
-    case "doc": return "#2563eb";
-    case "form": return "#db2777";
-    case "dashboard": return "#4f46e5";
-    case "table": return "#16a34a";
-    case "timeline": return "#e87732";
-    case "activity": return "#0891b2";
-    case "workload": return "#0d9488";
-    case "mindmap": return "#db2777";
-    case "team": return "#7c3aed";
-    case "map": return "#dc2626";
-    default: return "#4f46e5";
-  }
-}
-
 const STATUS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  todo: { bg: "bg-muted/40", text: "text-muted-foreground", border: "border-muted" },
-  inProgress: { bg: "bg-[var(--q-info)]/10", text: "text-[var(--q-info)]", border: "border-[var(--q-info)]/20" },
-  waiting: { bg: "bg-[var(--q-warning)]/10", text: "text-[var(--q-warning)]", border: "border-[var(--q-warning)]/20" },
-  done: { bg: "bg-[var(--q-success)]/10", text: "text-[var(--q-success)]", border: "border-[var(--q-success)]/20" },
-  canceled: { bg: "bg-muted/20", text: "text-muted-foreground/60", border: "border-muted/30" },
+  todo: { bg: "var(--q-status-todo-bg)", text: "var(--q-status-todo-text)", border: "var(--q-status-todo-border)" },
+  inProgress: { bg: "var(--q-status-inProgress-bg)", text: "var(--q-status-inProgress-text)", border: "var(--q-status-inProgress-border)" },
+  waiting: { bg: "var(--q-status-waiting-bg)", text: "var(--q-status-waiting-text)", border: "var(--q-status-waiting-border)" },
+  done: { bg: "var(--q-status-done-bg)", text: "var(--q-status-done-text)", border: "var(--q-status-done-border)" },
+  canceled: { bg: "var(--q-status-canceled-bg)", text: "var(--q-status-canceled-text)", border: "var(--q-status-canceled-border)" },
 };
 
 const PRIORITY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  urgent: { bg: "bg-[var(--q-error)]/10", text: "text-[var(--q-error)]", border: "border-[var(--q-error)]/20" },
-  high: { bg: "bg-[var(--q-warning)]/10", text: "text-[var(--q-warning)]", border: "border-[var(--q-warning)]/20" },
-  normal: { bg: "bg-[var(--q-info)]/10", text: "text-[var(--q-info)]", border: "border-[var(--q-info)]/20" },
-  low: { bg: "bg-muted/40", text: "text-muted-foreground", border: "border-muted" },
+  urgent: { bg: "var(--q-priority-urgent-bg)", text: "var(--q-priority-urgent-text)", border: "var(--q-priority-urgent-text)" },
+  high: { bg: "var(--q-priority-high-bg)", text: "var(--q-priority-high-text)", border: "var(--q-priority-high-text)" },
+  normal: { bg: "var(--q-priority-normal-bg)", text: "var(--q-priority-normal-text)", border: "var(--q-priority-normal-text)" },
+  low: { bg: "var(--q-priority-low-bg)", text: "var(--q-priority-low-text)", border: "var(--q-priority-low-text)" },
 };
+
+function statusStyleFor(status: string) {
+  return STATUS_COLORS[status] ?? STATUS_COLORS.todo;
+}
+
+function priorityStyleFor(priority: string) {
+  return PRIORITY_COLORS[priority] ?? PRIORITY_COLORS.normal;
+}
 
 const COUNTRY_FLAGS: Record<string, string> = {
   Egypt: "🇪🇬",
@@ -106,7 +118,7 @@ export function ProjectDetailOverview({ projectId }: ProjectDetailOverviewProps)
   const workspaceOrganizationId = account.workspace.status === "ready" ? account.workspace.organizationId : undefined;
   const project = useProjectQuery(workspaceOrganizationId ?? undefined, projectId);
 
-  const [views, setViews] = useState<ActiveView[]>([]);
+  const [views, setViews] = useState<ViewItem[]>([]);
   const [activeViewId, setActiveViewId] = useState<string>("");
 
   useEffect(() => {
@@ -125,16 +137,25 @@ export function ProjectDetailOverview({ projectId }: ProjectDetailOverviewProps)
     setActiveViewId(DEFAULT_VIEWS[0].id);
   }, [projectId]);
 
-  const handleAddView = (option: ViewOption) => {
-    const newView: ActiveView = {
-      id: `view-${Date.now()}`,
-      type: option.type,
-      label: option.label,
-    };
+  const handleAddView = (type: ViewType) => {
+    const newView: ViewItem = { id: `view-${Date.now()}`, type };
     const updatedViews = [...views, newView];
     setViews(updatedViews);
     setActiveViewId(newView.id);
     localStorage.setItem(`project-views-${projectId}`, JSON.stringify(updatedViews));
+  };
+
+  const handleReorder = (next: ViewItem[]) => {
+    setViews(next);
+    localStorage.setItem(`project-views-${projectId}`, JSON.stringify(next));
+  };
+
+  const handleRemoveView = (viewId: string) => {
+    const next = views.filter((v) => v.id !== viewId);
+    if (next.length === 0) return;
+    setViews(next);
+    if (activeViewId === viewId) setActiveViewId(next[0].id);
+    localStorage.setItem(`project-views-${projectId}`, JSON.stringify(next));
   };
 
   if (project === undefined) {
@@ -158,44 +179,26 @@ export function ProjectDetailOverview({ projectId }: ProjectDetailOverviewProps)
 
   return (
     <div className="mx-auto max-w-[1400px] px-6 py-6 space-y-6 h-full flex flex-col">
-      {/* Header Tabs */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center px-4 pb-4 border-b border-border/60">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
-            <Box className="h-5 w-5" />
-          </div>
-          <div className="min-w-0 mr-4">
-            <h1 className="text-xl font-black tracking-tight text-foreground truncate">{project.name || "Project Details"}</h1>
-          </div>
-          
-          <div className="flex flex-wrap items-center gap-1.5 ml-6 text-sm font-bold text-muted-foreground">
-            {views.map((view) => {
-              const Icon = getViewIcon(view.type);
-              const color = getViewColor(view.type);
-              const isActive = activeViewId === view.id;
-              return (
-                <button 
-                  key={view.id}
-                  onClick={() => setActiveViewId(view.id)}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 transition-all rounded-lg text-xs font-black",
-                    isActive 
-                      ? "text-foreground bg-background border border-border shadow-sm" 
-                      : "hover:text-foreground hover:bg-muted/50 border border-transparent"
-                  )}
-                >
-                  <Icon className="h-3.5 w-3.5" style={{ color }} />
-                  <span style={isActive ? { color } : {}}>{view.label}</span>
-                </button>
-              );
-            })}
-            
-            <div className="ml-2 pl-2 border-l border-border/80">
-              <AddViewDropdown onAddView={handleAddView} />
+      <ViewSwitcherTabs
+        views={views}
+        activeViewId={activeViewId}
+        onViewChange={setActiveViewId}
+        onReorder={handleReorder}
+        onAddView={handleAddView}
+        onRemoveView={handleRemoveView}
+        leftSlot={
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
+              <Box className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-xl font-black tracking-tight text-foreground truncate">
+                {project.name || "Project Details"}
+              </h1>
             </div>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Main Content Area */}
       <div className="flex-1 min-h-0 px-4">
@@ -215,7 +218,6 @@ export function ProjectDetailOverview({ projectId }: ProjectDetailOverviewProps)
    TASK TABLE VIEW
    ========================================================================== */
 export function TaskTableView({ projectId, organizationId }: { projectId: string; organizationId: string }) {
-  const queryClient = useQueryClient();
   const tasksResult = useTasksQuery(organizationId, { projectId });
   const tasks = tasksResult.data ?? [];
 
@@ -226,8 +228,64 @@ export function TaskTableView({ projectId, organizationId }: { projectId: string
   });
 
   const [newTitle, setNewTitle] = useState("");
-  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
-  const [editTitleValue, setEditTitleValue] = useState("");
+  const [search, setSearch] = useState("");
+  const [groupBy, setGroupByState] = useState<GroupByValue>("none");
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [sortBy, setSortBy] = useState<"updated" | "created" | "due" | "title" | "priority" | "status">("updated");
+  const [filters, setFilters] = useState<FilterRule[]>([]);
+  const [density, setDensity] = useState<"compact" | "normal">("compact");
+  const [fieldsOpen, setFieldsOpen] = useState(false);
+
+  const tableRef = useRef<QentrahTableRef<any>>(null);
+
+  const currentViewConfig = useMemo(
+    () => ({
+      groupBy,
+      sortBy,
+      search,
+      filters: filters as unknown as SavedViewConfig["filters"],
+      density,
+    }),
+    [groupBy, sortBy, search, filters, density],
+  )
+
+  const applyViewConfig = useCallback((config: SavedViewConfig) => {
+    if (config.groupBy) setGroupByState(config.groupBy as GroupByValue)
+    if (config.sortBy) setSortBy(config.sortBy as typeof sortBy)
+    if (typeof config.search === "string") setSearch(config.search)
+    if (Array.isArray(config.filters)) setFilters(config.filters as unknown as FilterRule[])
+    if (config.density === "compact" || config.density === "normal") setDensity(config.density)
+  }, [])
+
+  useEffect(() => {
+    setGroupByState(readPersistedGroupBy(projectId, "none"))
+  }, [projectId])
+
+  // Load the user's default saved view for this table once on mount, and
+  // when the project changes. This is a personal preference that travels
+  // with the user account (not the organization).
+  const defaultSavedView = useDefaultSavedViewQuery({
+    resourceType: "task",
+    viewType: "table",
+    organizationId: organizationId || undefined,
+    projectId: projectId || undefined,
+  })
+  const appliedDefaultViewIdRef = useRef<string | null>(null)
+  useEffect(() => {
+    const view = defaultSavedView.data
+    if (!view) return
+    if (appliedDefaultViewIdRef.current === view._id) return
+    appliedDefaultViewIdRef.current = view._id
+    applyViewConfig(view.config)
+  }, [defaultSavedView.data, applyViewConfig])
+
+  const setGroupBy = useCallback(
+    (next: GroupByValue) => {
+      setGroupByState(next)
+      writePersistedGroupBy(projectId, next)
+    },
+    [projectId]
+  )
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -246,217 +304,502 @@ export function TaskTableView({ projectId, organizationId }: { projectId: string
         tags: "",
       });
       setNewTitle("");
-      queryClient.invalidateQueries({ queryKey: ["tasks", organizationId] });
     } catch (e) {
       console.error(e);
     }
   };
 
-  const handleUpdate = async (task: any, updates: any) => {
-    try {
-      await updateTaskRequest(organizationId, task.id, {
-        title: task.title,
-        status: task.status,
-        priority: task.priority,
-        visibility: task.visibility || "team",
-        assigneeUserId: task.assigneeUserId || "",
-        clientId: task.clientId || "",
-        projectId: task.projectId || "",
-        dueDate: task.dueDate || "",
-        description: task.description || "",
-        tags: (task.tags || []).join(", "),
-        ...updates,
+  // Cell-level optimistic update.
+  // Applies the change to the AG-Grid row in place (no row animation, no
+  // re-fetch of the whole list, no scroll jump), then sends the request to
+  // the server. On error, reverts the cell to its previous value.
+  const handleUpdate = useCallback(
+    async (task: any, updates: any) => {
+      const previousTask = { ...task }
+      const optimisticTask = { ...task, ...updates }
+      tableRef.current?.applyUpdate([optimisticTask])
+      try {
+        await updateTaskRequest(organizationId, task.id, {
+          title: task.title,
+          status: task.status,
+          priority: task.priority,
+          visibility: task.visibility || "team",
+          assigneeUserId: task.assigneeUserId || "",
+          clientId: task.clientId || "",
+          projectId: task.projectId || "",
+          dueDate: task.dueDate || "",
+          description: task.description || "",
+          tags: (task.tags || []).join(", "),
+          ...updates,
+        })
+      } catch (e) {
+        console.error("Task update failed; reverting", e)
+        tableRef.current?.applyUpdate([previousTask])
+      }
+    },
+    [organizationId]
+  );
+
+  const handleDelete = useCallback(
+    async (taskId: string) => {
+      try {
+        tableRef.current?.applyRemove([taskId])
+        await deleteTaskRequest(organizationId, taskId)
+      } catch (e) {
+        console.error(e)
+      }
+    },
+    [organizationId]
+  )
+
+  const memberNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const m of members) {
+      if (m.userId) map.set(m.userId, m.user?.name ?? "");
+    }
+    return map;
+  }, [members]);
+
+  const assigneeOptions: AssigneeOption[] = useMemo(() => {
+    return members
+      .filter((m: any) => m.userId)
+      .map((m: any) => ({
+        id: m.userId,
+        name: m.user?.name ?? "",
+        imageUrl: m.user?.imageUrl ?? null,
+      }));
+  }, [members]);
+
+  const memberIdSet = useMemo(() => new Set(assigneeOptions.map((m) => m.id)), [assigneeOptions]);
+
+  const grouped = useTasksGroupedQuery(organizationId, {
+    projectId: projectId || null,
+    groupBy,
+  });
+
+  const fieldDefinitions = useFieldDefinitionsQuery(organizationId)
+  const fieldValues = useFieldValuesQuery(organizationId, "task")
+
+  const fieldValueByRecord = useMemo(() => {
+    const map = new Map<string, Map<string, any>>()
+    for (const v of fieldValues ?? []) {
+      const key = v.fieldKey
+      const recordId = v.recordId
+      if (!recordId) continue
+      const inner = map.get(recordId) ?? new Map<string, any>()
+      inner.set(key, v)
+      map.set(recordId, inner)
+    }
+    return map
+  }, [fieldValues])
+
+  const writeFieldValue = useCallback(
+    async (taskId: string, def: CustomFieldDefinition, raw: any) => {
+      const value: any = {}
+      if (def.type === "text" || def.type === "longText" || def.type === "url") {
+        value.textValue = typeof raw === "string" ? raw : null
+      } else if (def.type === "number" || def.type === "currency") {
+        value.numberValue = typeof raw === "number" ? raw : undefined
+      } else if (def.type === "date" || def.type === "dateTime") {
+        value.dateValue = typeof raw === "string" ? raw : undefined
+      } else if (def.type === "select") {
+        value.selectValue = typeof raw === "string" ? raw : undefined
+      } else if (def.type === "multiSelect") {
+        value.multiSelectValue = Array.isArray(raw) ? raw : undefined
+      } else if (def.type === "boolean") {
+        value.booleanValue = typeof raw === "boolean" ? raw : undefined
+      } else if (def.type === "user") {
+        value.userValue = typeof raw === "string" ? raw : undefined
+      }
+      try {
+        await setCustomFieldValueRequest(organizationId, def.id, def.key, def.type, taskId, value)
+      } catch (e) {
+        console.error("Failed to save custom field value", e)
+      }
+    },
+    [organizationId]
+  )
+
+  const visibleFields = useMemo(
+    () => (fieldDefinitions.data ?? []).filter((d) => d.tableVisible).sort((a, b) => a.order - b.order),
+    [fieldDefinitions.data]
+  )
+
+  const sourceRows: any[] = groupBy === "none" ? tasks : grouped.flat;
+
+  const filteredTasks = useMemo(() => {
+    let result = sourceRows
+    if (search.trim()) {
+      const needle = search.trim().toLowerCase()
+      result = result.filter((t: any) =>
+        [t.title, t.description, t.assigneeUserId, ...(t.tags ?? [])].some((v?: string) =>
+          v?.toLowerCase().includes(needle),
+        ),
+      )
+    }
+    if (filters.length > 0) {
+      result = applyFilterRules(result, filters)
+    }
+    return result
+  }, [sourceRows, search, filters])
+
+  // Sorting: produce a stable, sort-aware array. We use the task fields
+  // and the assignee name map. AG-Grid also has its own client-side sort
+  // via the column header, but we apply a default sort here so the
+  // "Sort" dropdown has an effect even when no header is clicked.
+  const sortedTasks = useMemo(() => {
+    const arr = [...filteredTasks]
+    const priorityRank: Record<string, number> = { urgent: 0, high: 1, normal: 2, low: 3 }
+    const statusRank: Record<string, number> = { todo: 0, waiting: 1, inProgress: 2, done: 3, canceled: 4 }
+    arr.sort((a, b) => {
+      switch (sortBy) {
+        case "title":
+          return (a.title ?? "").localeCompare(b.title ?? "")
+        case "created":
+          return (b._creationTime ?? 0) - (a._creationTime ?? 0)
+        case "updated":
+          return (b.updatedAt ?? 0) - (a.updatedAt ?? 0)
+        case "due":
+          return (a.dueDate || "9999-12-31").localeCompare(b.dueDate || "9999-12-31")
+        case "priority":
+          return (priorityRank[a.priority] ?? 9) - (priorityRank[b.priority] ?? 9)
+        case "status":
+          return (statusRank[a.status] ?? 9) - (statusRank[b.status] ?? 9)
+        default:
+          return 0
+      }
+    })
+    return arr
+  }, [filteredTasks, sortBy])
+
+  const groupedRows: any[] = useMemo(() => {
+    if (groupBy === "none" || !grouped.groups || grouped.groups.length === 0) {
+      return sortedTasks;
+    }
+    const out: any[] = [];
+    for (const group of grouped.groups) {
+      if (collapsedGroups.has(group.key)) continue;
+      const groupLabel = groupBy === "assignee"
+        ? memberIdSet.has(group.key) ? memberNameById.get(group.key) || group.key : group.label
+        : group.label;
+      out.push({
+        id: `__group_${group.key}`,
+        __groupKey: group.key,
+        __groupLabel: groupLabel,
+        __groupCount: group.count,
       });
-      queryClient.invalidateQueries({ queryKey: ["tasks", organizationId] });
-    } catch (e) {
-      console.error(e);
+      const inGroup = sortedTasks.filter((t: any) => {
+        if (groupBy === "status") return t.status === group.key;
+        if (groupBy === "priority") return t.priority === group.key;
+        if (groupBy === "assignee") return (t.assigneeUserId ?? "unassigned") === group.key;
+        if (groupBy === "dueDate") {
+          // Mirror the server's dueDate bucketing
+          if (!t.dueDate) return group.key === "no-date";
+          const startToday = new Date();
+          startToday.setHours(0, 0, 0, 0);
+          const target = new Date(t.dueDate);
+          target.setHours(0, 0, 0, 0);
+          const diffDays = Math.round((target.getTime() - startToday.getTime()) / 86400000);
+          if (diffDays < 0) return group.key === "overdue";
+          if (diffDays === 0) return group.key === "today";
+          if (diffDays === 1) return group.key === "tomorrow";
+          if (diffDays <= 7) return group.key === "this-week";
+          if (diffDays <= 30) return group.key === "this-month";
+          return group.key === "later";
+        }
+        return false;
+      });
+      for (const task of inGroup) out.push(task);
     }
-  };
+    return out;
+  }, [groupBy, grouped, sortedTasks, collapsedGroups, memberIdSet, memberNameById]);
 
-  const handleDelete = async (taskId: string) => {
-    try {
-      await deleteTaskRequest(organizationId, taskId);
-      queryClient.invalidateQueries({ queryKey: ["tasks", organizationId] });
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  const toggleGroup = useCallback((key: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }, [])
+
+  const columnDefs: QentrahColumnDef<any>[] = useMemo(
+    () => [
+      {
+        headerName: "",
+        field: "_select",
+        width: 44,
+        minWidth: 44,
+        maxWidth: 44,
+        checkboxSelection: true,
+        headerCheckboxSelection: false,
+        pinned: "left",
+        sortable: false,
+        filter: false,
+        resizable: false,
+        suppressHeaderMenuButton: true,
+        lockPosition: "left",
+      },
+      {
+        headerName: "#",
+        valueGetter: (p: any) => {
+          if (p.data?.__groupKey) return ""
+          return (p.node?.rowIndex ?? 0) + 1
+        },
+        width: 48,
+        minWidth: 48,
+        maxWidth: 48,
+        pinned: "left",
+        sortable: false,
+        filter: false,
+        resizable: false,
+        cellClass: "text-muted-foreground text-[11px] justify-center",
+      },
+      {
+        headerName: "Name",
+        field: "title",
+        flex: 1.4,
+        minWidth: 240,
+        cellRenderer: (p: any) => {
+          if (p.data?.__groupKey) {
+            const collapsed = collapsedGroups.has(p.data.__groupKey)
+            return (
+              <div
+                onClick={() => toggleGroup(p.data.__groupKey)}
+                className="flex items-center gap-2 w-full h-full cursor-pointer select-none"
+              >
+                {collapsed
+                  ? <ChevronRightIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                  : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
+                <span className="text-[12px] font-semibold text-foreground">{p.data.__groupLabel}</span>
+                <span className="text-[10px] font-bold text-muted-foreground bg-white/5 rounded-full px-1.5 py-0.5">
+                  {p.data.__groupCount}
+                </span>
+              </div>
+            )
+          }
+          return (
+            <NameCell
+              value={p.value ?? ""}
+              status={p.data?.status ?? "todo"}
+              onCommit={(next) => handleUpdate(p.data, { title: next })}
+            />
+          )
+        },
+        editable: false,
+        cellClass: (p: any) =>
+          p.data?.__groupKey ? "bg-white/[0.04] border-b border-white/10" : "",
+      },
+      {
+        headerName: "Assignee",
+        field: "assigneeUserId",
+        minWidth: 180,
+        flex: 0.8,
+        cellRenderer: (p: any) => {
+          if (p.data?.__groupKey) return null
+          return (
+            <AssigneeEditor
+              value={p.value ?? null}
+              options={assigneeOptions}
+              onChange={(next) => handleUpdate(p.data, { assigneeUserId: next ?? "" })}
+            />
+          )
+        },
+        cellClass: (p: any) =>
+          p.data?.__groupKey ? "bg-white/[0.04] border-b border-white/10" : "",
+      },
+      {
+        headerName: "Status",
+        field: "status",
+        minWidth: 150,
+        cellRenderer: (p: any) => {
+          if (p.data?.__groupKey) return null
+          return (
+            <StatusEditor
+              value={p.value ?? "todo"}
+              onChange={(next) => handleUpdate(p.data, { status: next })}
+            />
+          )
+        },
+        cellClass: (p: any) =>
+          p.data?.__groupKey ? "bg-white/[0.04] border-b border-white/10" : "",
+      },
+      {
+        headerName: "Due date",
+        field: "dueDate",
+        minWidth: 160,
+        cellRenderer: (p: any) => {
+          if (p.data?.__groupKey) return null
+          return (
+            <DateEditor
+              value={p.value ?? null}
+              onChange={(next) => handleUpdate(p.data, { dueDate: next ?? "" })}
+            />
+          )
+        },
+        cellClass: (p: any) =>
+          p.data?.__groupKey ? "bg-white/[0.04] border-b border-white/10" : "",
+      },
+      {
+        headerName: "Priority",
+        field: "priority",
+        minWidth: 150,
+        cellRenderer: (p: any) => {
+          if (p.data?.__groupKey) return null
+          return (
+            <PriorityEditor
+              value={p.value ?? "normal"}
+              onChange={(next) => handleUpdate(p.data, { priority: next })}
+            />
+          )
+        },
+        cellClass: (p: any) =>
+          p.data?.__groupKey ? "bg-white/[0.04] border-b border-white/10" : "",
+      },
+      ...visibleFields.map<QentrahColumnDef<any>>((def) => ({
+        headerName: def.label,
+        field: `cf_${def.key}`,
+        minWidth: 150,
+        sortable: false,
+        cellRenderer: (p: any) => {
+          if (p.data?.__groupKey) return null
+          const recordId = p.data?.id as string | undefined
+          const v = recordId ? fieldValueByRecord.get(recordId)?.get(def.key) : undefined
+          const current = v
+            ? def.type === "select"
+              ? v.selectValue ?? null
+              : def.type === "multiSelect"
+                ? v.multiSelectValue ?? []
+                : def.type === "number" || def.type === "currency"
+                  ? v.numberValue ?? null
+                  : def.type === "date" || def.type === "dateTime"
+                    ? v.dateValue ?? null
+                    : def.type === "boolean"
+                      ? v.booleanValue ?? null
+                      : v.textValue ?? null
+            : null
+          if (def.type === "text" || def.type === "longText") {
+            return (
+              <TextEditor
+                value={current}
+                onChange={(next) => writeFieldValue(recordId!, def, next)}
+                multiline={def.type === "longText"}
+              />
+            )
+          }
+          if (def.type === "number" || def.type === "currency") {
+            return (
+              <NumberEditor
+                value={current}
+                onChange={(next) => writeFieldValue(recordId!, def, next)}
+                prefix={def.type === "currency" ? "$" : undefined}
+              />
+            )
+          }
+          if (def.type === "date" || def.type === "dateTime") {
+            return (
+              <DateEditor
+                value={current}
+                onChange={(next) => writeFieldValue(recordId!, def, next)}
+              />
+            )
+          }
+          if (def.type === "select") {
+            return (
+              <DropdownEditor
+                value={current}
+                options={(def.options ?? []).map((o) => ({ id: o.id, label: o.label, color: o.color }))}
+                onChange={(next) => writeFieldValue(recordId!, def, next)}
+              />
+            )
+          }
+          if (def.type === "multiSelect") {
+            return (
+              <LabelsEditor
+                value={current ?? []}
+                options={(def.options ?? []).map((o) => ({ id: o.id, label: o.label, color: o.color }))}
+                onChange={(next) => writeFieldValue(recordId!, def, next)}
+              />
+            )
+          }
+          if (def.type === "url") {
+            return (
+              <UrlEditor
+                value={current}
+                onChange={(next) => writeFieldValue(recordId!, def, next)}
+              />
+            )
+          }
+          return (
+            <span className="text-[12px] text-muted-foreground/60 truncate">
+              {current == null ? "Empty" : String(current)}
+            </span>
+          )
+        },
+        cellClass: (p: any) =>
+          p.data?.__groupKey ? "bg-white/[0.04] border-b border-white/10" : "",
+      })),
+    ],
+    [assigneeOptions, memberNameById, collapsedGroups, toggleGroup, visibleFields, fieldValueByRecord, writeFieldValue]
+  );
 
   return (
-    <div className="w-full font-sans overflow-hidden">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#141414] border-b border-[#222]">
-        <div className="flex items-center gap-1.5">
-          <span className="bg-[#1e2a1e] text-[#4ade80] text-[11px] px-2 py-0.5 rounded-full border border-[#2a3a2a]">● Shown</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <button className="bg-[#7c3aed] text-white border-none rounded-md px-3 py-1 text-[12px] font-medium cursor-pointer flex items-center gap-1 hover:bg-[#6d28d9] transition-colors">
-            + Task <ChevronDown className="w-3 h-3 opacity-70" />
-          </button>
-        </div>
+    <div className="w-full h-full font-sans overflow-hidden flex flex-col">
+      <TaskTableToolbar
+        groupBy={groupBy}
+        onGroupByChange={setGroupBy}
+        sortBy={sortBy}
+        onSortByChange={(v) => setSortBy(v as typeof sortBy)}
+        search={search}
+        onSearchChange={setSearch}
+        filters={filters}
+        onFiltersChange={setFilters}
+        newTitle={newTitle}
+        onNewTitleChange={setNewTitle}
+        onCreate={handleCreate}
+        onOpenFields={() => setFieldsOpen(true)}
+        showFieldsButton
+      >
+        <SavedViewsDropdown
+          resourceType="task"
+          viewType="table"
+          organizationId={organizationId}
+          projectId={projectId}
+          currentConfig={currentViewConfig}
+          onApply={applyViewConfig}
+        />
+      </TaskTableToolbar>
+
+      <div className="flex-1 min-h-0">
+        <QentrahTable
+          ref={tableRef}
+          rows={groupedRows}
+          columns={columnDefs}
+          density={density}
+          height="100%"
+          rowSelection="multiple"
+          onRowClicked={(p) => {
+            if (p.data?.__groupKey) {
+              toggleGroup(p.data.__groupKey)
+            }
+            // Intentionally do nothing for task rows: clicking the row
+            // body should not write a no-op update. Editing happens via
+            // the in-cell editors.
+          }}
+        />
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto bg-[#111]">
-        <table className="w-full text-left border-collapse min-w-[640px]">
-          <thead>
-            <tr className="bg-[#1a1a1a] border-b border-[#2a2a2a]">
-              <th className="w-8 px-3 py-2 text-left text-[11px] font-medium text-[#6b7280] uppercase tracking-[0.04em] whitespace-nowrap"></th>
-              <th className="w-9 px-3 py-2 text-center text-[11px] font-medium text-[#444] uppercase tracking-[0.04em] whitespace-nowrap">#</th>
-              <th className="min-w-[220px] px-3 py-2 text-left text-[11px] font-medium text-[#6b7280] uppercase tracking-[0.04em] whitespace-nowrap">Name</th>
-              <th className="min-w-[140px] px-3 py-2 text-left text-[11px] font-medium text-[#6b7280] uppercase tracking-[0.04em] whitespace-nowrap">Assignee</th>
-              <th className="min-w-[130px] px-3 py-2 text-left text-[11px] font-medium text-[#6b7280] uppercase tracking-[0.04em] whitespace-nowrap">Status</th>
-              <th className="min-w-[140px] px-3 py-2 text-left text-[11px] font-medium text-[#6b7280] uppercase tracking-[0.04em] whitespace-nowrap">Due date</th>
-              <th className="min-w-[100px] px-3 py-2 text-left text-[11px] font-medium text-[#6b7280] uppercase tracking-[0.04em] whitespace-nowrap">Priority</th>
-              <th className="w-8 px-3 py-2 text-center"><span className="text-[#3a3a3a] text-[18px] cursor-pointer hover:text-[#6b7280] font-normal leading-none">+</span></th>
-            </tr>
-          </thead>
-          <tbody>
-            {tasks.map((task, index) => {
-              const assigneeMember = members.find(m => m.userId === task.assigneeUserId);
-              
-              // Status Badge
-              let statusBadgeClass = "bg-[#2a2a2a] text-[#a1a1aa] border-transparent";
-              let statusText = "TO DO";
-              let StatusBadgeIcon = () => <div className="w-[8px] h-[8px] rounded-full border-[1.5px] border-[#a1a1aa]" />;
-              
-              if (task.status === "inProgress") {
-                statusBadgeClass = "bg-[#3b82f6] text-white border-transparent";
-                statusText = "IN PROGRESS";
-                StatusBadgeIcon = () => <div className="w-[8px] h-[8px] rounded-full bg-white" />;
-              } else if (task.status === "done") {
-                statusBadgeClass = "bg-[#22c55e] text-white border-transparent";
-                statusText = "COMPLETE";
-                StatusBadgeIcon = () => <Check className="w-[10px] h-[10px] stroke-[3]" />;
-              }
-
-              // Status Icon (circle next to name)
-              let statusIconClass = "border-2 border-[#4b5563] bg-transparent text-transparent";
-              let StatusIconInner = null;
-              if (task.status === "inProgress") {
-                statusIconClass = "border-2 border-[#3b82f6] bg-transparent text-transparent";
-              } else if (task.status === "done") {
-                statusIconClass = "bg-[#16a34a] border-none text-white";
-                StatusIconInner = () => <Check className="w-[9px] h-[9px] stroke-[4]" />;
-              }
-
-              // Priority
-              let priorityContent = null;
-              if (task.priority === "urgent") {
-                priorityContent = <span className="inline-flex items-center gap-[6px] text-[11px] font-medium text-[#fca5a5] bg-[#ef4444]/10 px-2 py-0.5 rounded-[4px]"><Flag className="w-[10px] h-[10px] fill-[#ef4444] text-[#ef4444]" /> Urgent</span>;
-              } else if (task.priority === "high") {
-                priorityContent = <span className="inline-flex items-center gap-[6px] text-[11px] font-medium text-[#fcd34d] bg-[#f59e0b]/10 px-2 py-0.5 rounded-[4px]"><Flag className="w-[10px] h-[10px] fill-[#f59e0b] text-[#f59e0b]" /> High</span>;
-              } else if (task.priority === "normal") {
-                priorityContent = <span className="inline-flex items-center gap-[6px] text-[11px] font-medium text-[#9ca3af]"><Flag className="w-[10px] h-[10px] text-[#6b7280]" /> Normal</span>;
-              } else if (task.priority === "low") {
-                priorityContent = <span className="inline-flex items-center gap-[6px] text-[11px] font-medium text-[#9ca3af]"><Flag className="w-[10px] h-[10px] text-[#6b7280]" /> Low</span>;
-              }
-
-              return (
-                <tr key={task.id} className="border-b border-[#1f1f1f] cursor-pointer transition-colors hover:bg-[#1a1a1a] group">
-                  <td className="px-3 py-[7px] whitespace-nowrap align-middle">
-                    <input type="checkbox" className="w-[14px] h-[14px] border-[1.5px] border-[#3a3a3a] rounded-[3px] bg-transparent accent-[#7c3aed] cursor-pointer shrink-0 align-middle m-0" />
-                  </td>
-                  <td className="px-3 py-[7px] whitespace-nowrap align-middle text-[#444] text-[11px] text-center">{index + 1}</td>
-                  
-                  <td className="px-3 py-[7px] whitespace-nowrap align-middle text-[#e5e7eb] font-normal min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <div className={cn("w-[14px] h-[14px] rounded-full shrink-0 inline-flex items-center justify-center overflow-hidden", statusIconClass)}>
-                        {StatusIconInner && <StatusIconInner />}
-                      </div>
-                      
-                      {editingTaskId === task.id ? (
-                        <input
-                          value={editTitleValue}
-                          onChange={(e) => setEditTitleValue(e.target.value)}
-                          onBlur={() => {
-                            if (editTitleValue.trim() && editTitleValue.trim() !== task.title) {
-                              handleUpdate(task, { title: editTitleValue.trim() });
-                            }
-                            setEditingTaskId(null);
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              if (editTitleValue.trim() && editTitleValue.trim() !== task.title) {
-                                handleUpdate(task, { title: editTitleValue.trim() });
-                              }
-                              setEditingTaskId(null);
-                            }
-                            if (e.key === "Escape") setEditingTaskId(null);
-                          }}
-                          autoFocus
-                          className="bg-transparent border-b border-[#7c3aed] text-white font-normal outline-none w-full px-1 py-0 text-[13px] z-20"
-                        />
-                      ) : (
-                        <span
-                          onDoubleClick={() => {
-                            setEditingTaskId(task.id);
-                            setEditTitleValue(task.title);
-                          }}
-                          className={cn("truncate", task.status === "done" && "line-through text-muted-foreground")}
-                        >
-                          {task.title}
-                        </span>
-                      )}
-                    </div>
-                  </td>
-
-                  <td className="px-3 py-[7px] whitespace-nowrap align-middle">
-                    <div className="flex items-center gap-1.5 text-[#9ca3af] text-[12px]">
-                      {task.assigneeUserId ? (
-                        <>
-                          <div className="w-[22px] h-[22px] rounded-full bg-[#0891b2] text-white text-[10px] font-semibold inline-flex items-center justify-center shrink-0">
-                            {assigneeMember?.user?.name?.charAt(0) || "U"}
-                          </div>
-                          <span>{assigneeMember?.user?.name || "User"}</span>
-                        </>
-                      ) : null}
-                    </div>
-                  </td>
-
-                  <td className="px-3 py-[7px] whitespace-nowrap align-middle">
-                    <span className={cn(
-                      "inline-flex items-center gap-[6px] rounded-full text-[10px] font-bold px-[8px] py-[3px] tracking-wide border",
-                      statusBadgeClass
-                    )}>
-                      <StatusBadgeIcon />
-                      {statusText}
-                    </span>
-                  </td>
-
-                  <td className="px-3 py-[7px] whitespace-nowrap align-middle text-[#9ca3af] text-[12px]">
-                    {task.dueDate || ""}
-                  </td>
-
-                  <td className="px-3 py-[7px] whitespace-nowrap align-middle">
-                    {priorityContent}
-                  </td>
-                  <td></td>
-                </tr>
-              );
-            })}
-            
-            {/* Add new task row */}
-            <tr className="hover:bg-transparent">
-              <td className="px-3 py-1.5 whitespace-nowrap align-middle"></td>
-              <td className="px-3 py-1.5 whitespace-nowrap align-middle"></td>
-              <td className="px-3 py-1.5 whitespace-nowrap align-middle">
-                <form onSubmit={handleCreate} className="flex items-center gap-1.5 opacity-50 hover:opacity-100 transition-opacity">
-                  <span className="text-[#4b5563] text-[18px] cursor-pointer hover:text-[#9ca3af] leading-none">+</span>
-                  <input 
-                    type="text" 
-                    value={newTitle}
-                    onChange={(e) => setNewTitle(e.target.value)}
-                    placeholder="Click here to add a new task..." 
-                    className="bg-transparent border-none outline-none text-[#4b5563] text-[12px] w-full placeholder:text-[#4b5563]"
-                  />
-                </form>
-              </td>
-              <td colSpan={5} className="px-3 py-1.5 whitespace-nowrap align-middle"></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <TaskTableFieldsPanel
+        organizationId={organizationId}
+        open={fieldsOpen}
+        onClose={() => setFieldsOpen(false)}
+        onFieldCreated={() => {
+          // Field list query will re-run via Convex reactivity.
+        }}
+        onFieldRemoved={() => {
+          // Field list query will re-run via Convex reactivity.
+        }}
+      />
     </div>
   );
 }
@@ -519,7 +862,7 @@ export function TaskListView({ projectId, organizationId }: { projectId: string;
           className="flex items-center gap-2 w-full text-left font-black uppercase text-xs tracking-wider pb-2 border-b border-border/40"
         >
           {isExpanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
-          <span className={cn(colorStyle.text)}>{title}</span>
+          <span style={{ color: colorStyle.text }}>{title}</span>
           <span className="bg-muted text-muted-foreground font-black px-1.5 py-0.5 rounded-full text-[9px] ml-2">
             {list.length}
           </span>
@@ -530,35 +873,43 @@ export function TaskListView({ projectId, organizationId }: { projectId: string;
             {list.length === 0 ? (
               <p className="text-[11px] text-muted-foreground/60 py-3 text-center">No tasks in this status</p>
             ) : (
-              list.map((task) => (
-                <div key={task.id} className="flex items-center justify-between py-2.5 group">
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => handleUpdate(task, { status: task.status === "done" ? "todo" : "done" })}
-                      className={cn(
-                        "h-4 w-4 rounded border transition-colors flex items-center justify-center",
-                        task.status === "done" ? "bg-[var(--q-success)] border-[var(--q-success)] text-white" : "border-muted-foreground/30 hover:border-muted-foreground/60"
-                      )}
-                    >
-                      {task.status === "done" && <Check className="h-3 w-3" />}
-                    </button>
-                    <span className={cn("text-xs font-bold text-foreground", task.status === "done" && "line-through text-muted-foreground/50")}>
-                      {task.title}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {task.dueDate && (
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-1 font-semibold">
-                        <Calendar className="h-3 w-3" /> {new Date(task.dueDate).toLocaleDateString()}
+              list.map((task) => {
+                const ps = priorityStyleFor(task.priority);
+                return (
+                  <div key={task.id} className="flex items-center justify-between py-2.5 group">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => handleUpdate(task, { status: task.status === "done" ? "todo" : "done" })}
+                        className="h-4 w-4 rounded border transition-colors flex items-center justify-center"
+                        style={
+                          task.status === "done"
+                            ? { background: "var(--q-success)", borderColor: "var(--q-success)", color: "var(--q-surface)" }
+                            : { borderColor: "var(--q-border-strong)" }
+                        }
+                      >
+                        {task.status === "done" && <Check className="h-3 w-3" />}
+                      </button>
+                      <span className={cn("text-xs font-bold text-foreground", task.status === "done" && "line-through text-muted-foreground/50")}>
+                        {task.title}
                       </span>
-                    )}
-                    <span className={cn("text-[9px] font-black uppercase tracking-wider border rounded-full px-2 py-0.5", PRIORITY_COLORS[task.priority]?.bg, PRIORITY_COLORS[task.priority]?.text, PRIORITY_COLORS[task.priority]?.border)}>
-                      {task.priority}
-                    </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {task.dueDate && (
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-1 font-semibold">
+                          <Calendar className="h-3 w-3" /> {new Date(task.dueDate).toLocaleDateString()}
+                        </span>
+                      )}
+                      <span
+                        className="text-[9px] font-black uppercase tracking-wider border rounded-full px-2 py-0.5"
+                        style={{ background: ps.bg, color: ps.text, borderColor: ps.border }}
+                      >
+                        {task.priority}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         )}
@@ -620,7 +971,7 @@ export function TaskBoardView({ projectId, organizationId }: { projectId: string
           <div key={col.key} className="flex flex-col bg-muted/20 border border-border/80 rounded-2xl p-3 h-full overflow-hidden">
             {/* Column Header */}
             <div className="flex items-center justify-between pb-3 border-b border-border/40 mb-3">
-              <span className={cn("text-xs font-black uppercase tracking-wider", col.color.text)}>{col.label}</span>
+              <span className="text-xs font-black uppercase tracking-wider" style={{ color: col.color.text }}>{col.label}</span>
               <span className="bg-muted text-muted-foreground font-black px-1.5 py-0.5 rounded-full text-[9px]">
                 {colTasks.length}
               </span>
@@ -629,7 +980,7 @@ export function TaskBoardView({ projectId, organizationId }: { projectId: string
             {/* Cards container */}
             <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 scrollbar-none">
               {colTasks.map((task) => {
-                const priorityStyle = PRIORITY_COLORS[task.priority] || PRIORITY_COLORS.normal;
+                const priorityStyle = priorityStyleFor(task.priority);
                 return (
                   <div key={task.id} className="bg-card border border-border/80 hover:border-primary/20 p-3 rounded-xl shadow-sm transition-colors group">
                     <h4 className="text-xs font-bold text-foreground leading-snug">{task.title}</h4>
@@ -641,7 +992,10 @@ export function TaskBoardView({ projectId, organizationId }: { projectId: string
                         </span>
                       ) : <span />}
 
-                      <span className={cn("text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border", priorityStyle.bg, priorityStyle.text, priorityStyle.border)}>
+                      <span
+                        className="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border"
+                        style={{ background: priorityStyle.bg, color: priorityStyle.text, borderColor: priorityStyle.border }}
+                      >
                         {task.priority}
                       </span>
                     </div>
@@ -835,7 +1189,7 @@ export function TaskTimelineView({ projectId, organizationId }: { projectId: str
 
       <div className="flex-1 overflow-y-auto pr-1 space-y-1.5 scrollbar-none">
         {timelineData.map((task) => {
-          const statusStyle = STATUS_COLORS[task.status] || STATUS_COLORS.todo;
+          const statusStyle = statusStyleFor(task.status);
           return (
             <div key={task.id} className="flex items-center gap-3 p-2 bg-muted/10 border border-border/40 hover:border-primary/20 rounded-xl transition-colors">
               <div className="w-48 shrink-0 min-w-0">
@@ -846,10 +1200,12 @@ export function TaskTimelineView({ projectId, organizationId }: { projectId: str
               {/* Gantt Bar */}
               <div className="flex-1 relative h-6 bg-muted/30 border border-border/30 rounded-lg overflow-hidden">
                 <div
-                  className={cn("absolute h-4 top-1 rounded-md transition-all", statusStyle.bg, statusStyle.border, "border shadow-sm")}
+                  className="absolute h-4 top-1 rounded-md transition-all border shadow-sm"
                   style={{
                     left: `${task.left}%`,
                     width: `${task.width}%`,
+                    background: statusStyle.bg,
+                    borderColor: statusStyle.border,
                   }}
                 />
               </div>

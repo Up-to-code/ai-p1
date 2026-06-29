@@ -44,6 +44,10 @@
       "types": "./dist/public/index.d.ts",
       "import": "./dist/public/index.js"
     },
+    "./qentrah-table": {
+      "types": "./dist/qentrah-table/index.d.ts",
+      "import": "./dist/qentrah-table/index.js"
+    },
     "./workspace": {
       "types": "./dist/workspace/index.d.ts",
       "import": "./dist/workspace/index.js"
@@ -66,6 +70,8 @@
     "@base-ui/react": "^1.2.0",
     "@qentrah/auth": "0.1.0",
     "@qentrah/platform-core": "0.1.0",
+    "ag-grid-community": "^33.3.2",
+    "ag-grid-react": "^33.3.2",
     "class-variance-authority": "^0.7.1",
     "lucide-react": "^0.577.0",
     "marked": "^17.0.5",

@@ -22,7 +22,7 @@ export function WorkspaceTabSwitcher({ activeTab, onChangeTab }: WorkspaceTabSwi
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [search, setSearch] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
+
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -43,12 +43,12 @@ export function WorkspaceTabSwitcher({ activeTab, onChangeTab }: WorkspaceTabSwi
               <div
                 key={tab.id}
                 onClick={() => onChangeTab(tab.id)}
-                style={isActive ? { color: tab.color, borderBottomColor: tab.color } : {}}
+                style={isActive ? { color: tab.color } : {}}
                 className={cn(
-                  "flex items-center gap-[5px] px-[10px] pt-[6px] pb-[8px] text-[12px] cursor-pointer whitespace-nowrap rounded-t-[6px] select-none border-b-2 transition-colors",
+                  "flex items-center gap-[5px] px-[10px] pt-[6px] pb-[8px] text-[12px] cursor-pointer whitespace-nowrap rounded-t-[6px] select-none transition-colors",
                   isActive
                     ? "font-medium"
-                    : "text-muted-foreground border-transparent hover:text-foreground hover:bg-accent/50"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                 )}
               >
                 {tab.icon}
@@ -56,9 +56,9 @@ export function WorkspaceTabSwitcher({ activeTab, onChangeTab }: WorkspaceTabSwi
               </div>
             );
           })}
-          
+
           <div className="relative" ref={dropdownRef}>
-            <div 
+            <div
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className={cn(
                 "text-[12px] px-[8px] pt-[6px] pb-[8px] cursor-pointer rounded-t-[6px] select-none whitespace-nowrap transition-colors",
@@ -67,22 +67,21 @@ export function WorkspaceTabSwitcher({ activeTab, onChangeTab }: WorkspaceTabSwi
             >
               + View
             </div>
-            
+
             {dropdownOpen && (
               <div className="absolute top-[4px] left-[0px] md:left-[-320px] bg-[#13131f] border border-[#1e2240] rounded-[10px] w-[440px] overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.7)] z-[100]">
                 <div className="flex items-center gap-[8px] px-[14px] py-[10px] border-b border-[#1a1a2e]">
                   <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#4b5563" strokeWidth="1.5"><circle cx="6" cy="6" r="4"/><line x1="9.5" y1="9.5" x2="13" y2="13"/></svg>
-                  <input 
-                    type="text" 
-                    placeholder="Search views..." 
+                  <input
+                    type="text"
+                    placeholder="Search views..."
                     className="bg-transparent border-none outline-none text-[#e5e7eb] text-[13px] flex-1 placeholder:text-[#4b5563]"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
                 </div>
-                
+
                 <div className="py-[6px] max-h-[440px] overflow-y-auto [&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar-thumb]:bg-[#1e2240] [&::-webkit-scrollbar-thumb]:rounded-[2px]">
-                  {/* Popular */}
                   <div className="text-[11px] font-medium text-[#4b5563] px-[14px] pt-[8px] pb-[4px] tracking-[0.03em]">Popular</div>
                   <div className="grid grid-cols-2 gap-[1px] px-[6px] pb-[4px]">
                     <div className="flex items-center gap-[10px] p-[9px_10px] rounded-[7px] cursor-pointer hover:bg-[#1a1a2e] transition-colors" onClick={() => { onChangeTab("list"); setDropdownOpen(false); }}>
@@ -114,10 +113,9 @@ export function WorkspaceTabSwitcher({ activeTab, onChangeTab }: WorkspaceTabSwi
                       <div><div className="text-[13px] font-medium text-[#d1d5db]">Dashboard</div><div className="text-[11px] text-[#4b5563] mt-[1px] leading-[1.3]">Track metrics & insights</div></div>
                     </div>
                   </div>
-                  
+
                   <div className="h-[1px] bg-[#1a1a2e] my-[4px] mx-[14px]"></div>
-                  
-                  {/* More views */}
+
                   <div className="text-[11px] font-medium text-[#4b5563] px-[14px] pt-[8px] pb-[4px] tracking-[0.03em]">More views</div>
                   <div className="grid grid-cols-2 gap-[1px] px-[6px] pb-[4px]">
                     <div className="flex items-center gap-[10px] p-[9px_10px] rounded-[7px] cursor-pointer hover:bg-[#1a1a2e] transition-colors" onClick={() => { onChangeTab("table"); setDropdownOpen(false); }}>
@@ -138,7 +136,7 @@ export function WorkspaceTabSwitcher({ activeTab, onChangeTab }: WorkspaceTabSwi
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-[16px] px-[14px] py-[9px] border-t border-[#1a1a2e]">
                   <label className="flex items-center gap-[6px] text-[12px] text-[#6b7280] cursor-pointer">
                     <input type="checkbox" className="accent-[#2563eb] w-[13px] h-[13px]" /> 🔒 Private view
@@ -151,11 +149,9 @@ export function WorkspaceTabSwitcher({ activeTab, onChangeTab }: WorkspaceTabSwi
             )}
           </div>
         </div>
-        <div className="h-[1px] bg-border"></div>
       </div>
 
-      <div className="flex items-center justify-between px-4 py-[6px] border-b border-border">
-        {/* Left side icons */}
+      <div className="flex items-center justify-between px-4 py-[6px]">
         <div className="flex items-center gap-1.5 text-muted-foreground">
           <div className="hover:text-foreground cursor-pointer transition-colors p-1.5 rounded-md hover:bg-accent/50">
             <Phone className="w-[15px] h-[15px]" />
@@ -164,8 +160,7 @@ export function WorkspaceTabSwitcher({ activeTab, onChangeTab }: WorkspaceTabSwi
             <ListTodo className="w-[15px] h-[15px]" />
           </div>
         </div>
-        
-        {/* Right side icons */}
+
         <div className="flex items-center gap-[6px]">
           <div className="hover:bg-accent hover:text-foreground text-muted-foreground cursor-pointer transition-colors p-1.5 rounded-md">
             <Filter className="w-[14px] h-[14px]" />

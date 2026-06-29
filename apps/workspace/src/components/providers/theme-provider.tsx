@@ -20,6 +20,13 @@ function applyTheme(theme: Theme) {
   const root = document.documentElement;
   root.classList.toggle("dark", theme === "dark");
   root.style.colorScheme = theme;
+  // AG Grid v33 reads `data-ag-theme-mode` from any ancestor of the
+  // grid root and uses it to switch between theme modes defined via
+  // `themeQuartz.withParams({...}, "dark" | "light")`. Setting it on
+  // the document root ensures sub-components rendered outside the
+  // grid (popups, drag-and-drop ghosts, charts) pick up the right
+  // scheme via the `[data-ag-theme-mode="dark|light"]` selector.
+  root.dataset.agThemeMode = theme;
 }
 
 function setThemeCookie(theme: Theme) {

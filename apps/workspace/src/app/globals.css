@@ -74,6 +74,19 @@
   --q-data-cyan: #00A3FF;
   --q-system-gray: #5D6570;
 
+  /* ── Status Colors (light) — Qentrah brand palette ── */
+  --q-status-todo-bg: #ECECEC;       --q-status-todo-text: #4D4D4D;       --q-status-todo-dot: #9C9C9C;       --q-status-todo-border: #D4D4D4;
+  --q-status-inProgress-bg: #E8EDFF; --q-status-inProgress-text: #2745C2;  --q-status-inProgress-dot: #4F80FF; --q-status-inProgress-border: #B8C5FF;
+  --q-status-waiting-bg: #EEE5FF;    --q-status-waiting-text: #5C2BC2;     --q-status-waiting-dot: #8A5CFF;    --q-status-waiting-border: #CFB8FF;
+  --q-status-done-bg: #DDF5E5;       --q-status-done-text: #16703A;        --q-status-done-dot: #2BB673;       --q-status-done-border: #9DDFBC;
+  --q-status-canceled-bg: #FBE2E2;   --q-status-canceled-text: #9C1C1C;    --q-status-canceled-dot: #D93232;   --q-status-canceled-border: #F0AAAA;
+
+  /* ── Priority Colors (light) — Qentrah brand palette ── */
+  --q-priority-urgent-bg: #FBE2E2;   --q-priority-urgent-text: #9C1C1C;    --q-priority-urgent-icon: #D93232;
+  --q-priority-high-bg: #FBE2E2;     --q-priority-high-text: #9C1C1C;      --q-priority-high-icon: #D93232;
+  --q-priority-normal-bg: #EEE5FF;   --q-priority-normal-text: #5C2BC2;    --q-priority-normal-icon: #8A5CFF;
+  --q-priority-low-bg: #ECECEC;      --q-priority-low-text: #4D4D4D;       --q-priority-low-icon: #9C9C9C;
+
   /* ── shadcn/ui Aliases (map to q-* variables) ── */
   --background: var(--q-bg);
   --foreground: var(--q-text-primary);
@@ -204,6 +217,19 @@
   --q-data-cyan: #00A3FF;
   --q-system-gray: #5D6570;
 
+  /* ── Status Colors (dark) — Qentrah brand palette ── */
+  --q-status-todo-bg: rgba(160,160,160,0.18);       --q-status-todo-text: #D9D9D9;       --q-status-todo-dot: #B0B0B0;       --q-status-todo-border: rgba(190,190,190,0.45);
+  --q-status-inProgress-bg: rgba(79,128,255,0.28);  --q-status-inProgress-text: #B5C8FF; --q-status-inProgress-dot: #6E97FF; --q-status-inProgress-border: rgba(120,160,255,0.6);
+  --q-status-waiting-bg: rgba(138,92,255,0.28);     --q-status-waiting-text: #D4BFFF;    --q-status-waiting-dot: #A480FF;    --q-status-waiting-border: rgba(168,128,255,0.6);
+  --q-status-done-bg: rgba(43,182,115,0.28);        --q-status-done-text: #A8E5C2;       --q-status-done-dot: #4DCB8C;       --q-status-done-border: rgba(92,222,138,0.6);
+  --q-status-canceled-bg: rgba(217,50,50,0.28);     --q-status-canceled-text: #FFB5B5;   --q-status-canceled-dot: #E55A5A;   --q-status-canceled-border: rgba(242,113,113,0.6);
+
+  /* ── Priority Colors (dark) — Qentrah brand palette ── */
+  --q-priority-urgent-bg: rgba(217,50,50,0.26);     --q-priority-urgent-text: #FFB5B5;   --q-priority-urgent-icon: #F27171;
+  --q-priority-high-bg: rgba(217,50,50,0.26);       --q-priority-high-text: #FFB5B5;     --q-priority-high-icon: #F27171;
+  --q-priority-normal-bg: rgba(138,92,255,0.26);    --q-priority-normal-text: #D4BFFF;   --q-priority-normal-icon: #A480FF;
+  --q-priority-low-bg: rgba(160,160,160,0.18);      --q-priority-low-text: #C0C0C0;      --q-priority-low-icon: #B0B0B0;
+
   /* ── shadcn/ui Aliases ── */
   --background: var(--q-bg);
   --foreground: var(--q-text-primary);
@@ -268,6 +294,18 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  /* ── Qentrah extended text tokens (used by chat + dashboard) ── */
+  --color-text-primary: var(--q-text-primary);
+  --color-text-secondary: var(--q-text-secondary);
+  --color-text-muted: var(--q-text-muted);
+  --color-surface: var(--q-card);
+  --color-surface-elevated: var(--q-card-hover);
+  --color-surface-hover: var(--q-card-hover);
+  --color-danger: var(--q-error);
+  --color-success: var(--q-success);
+  --color-warning: var(--q-warning);
+  --color-info: var(--q-info);
+  --color-divider: var(--q-divider);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -297,6 +335,85 @@
   --shadow: var(--shadow);
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
+
+  /* ── AG Grid v33 Theme Overrides ──
+     These map every relevant AG Grid CSS variable to our Qentrah
+     design tokens so the table inherits our colors automatically.
+     The ThemeProvider keeps `.dark` and `[data-ag-theme-mode]`
+     in lockstep. */
+  --ag-background-color: var(--q-card);
+  --ag-foreground-color: var(--q-text-primary);
+  --ag-text-color: var(--q-text-primary);
+  --ag-secondary-foreground-color: var(--q-text-muted);
+  --ag-header-background-color: var(--q-bg-secondary);
+  --ag-header-foreground-color: var(--q-text-secondary);
+  --ag-header-text-color: var(--q-text-secondary);
+  --ag-border-color: var(--q-border);
+  --ag-row-border-color: var(--q-border);
+  --ag-secondary-border-color: var(--q-border-strong);
+  --ag-odd-row-background-color: transparent;
+  /* Hover + select use the secondary token (not the blue/purple
+     `--q-info` accent) so the table doesn't shout. Subtle, branded
+     to the surface, never brand-purple. */
+  --ag-row-hover-color: color-mix(in srgb, var(--q-bg-secondary) 80%, transparent);
+  --ag-selected-row-background-color: var(--q-bg-secondary);
+  --ag-input-background-color: var(--q-input-bg);
+  --ag-input-border-color: var(--q-input-border);
+  --ag-input-focus-border-color: var(--q-text-primary);
+  --ag-input-focus-box-shadow: 0 0 0 1px var(--q-text-primary);
+  --ag-popup-shadow: 0 8px 24px color-mix(in srgb, #000 35%, transparent);
+  --ag-control-panel-background-color: var(--q-card);
+  --ag-subheader-background-color: var(--q-card);
+  --ag-panel-background-color: var(--q-card);
+  --ag-card-background-color: var(--q-card);
+  --ag-panel-title-bar-background-color: var(--q-bg-secondary);
+  --ag-menu-background-color: var(--q-card);
+  --ag-tooltip-background-color: var(--q-card);
+  --ag-modal-overlay-background-color: color-mix(in srgb, #000 60%, transparent);
+  --ag-range-selection-border-color: transparent;
+  --ag-range-selection-background-color: color-mix(in srgb, var(--q-bg-secondary) 60%, transparent);
+  --ag-value-change-delta-up-color: var(--q-success);
+  --ag-value-change-delta-down-color: var(--q-error);
+  --ag-value-change-value-highlight-background-color: color-mix(in srgb, var(--q-bg-secondary) 60%, transparent);
+  --ag-chip-background-color: var(--q-bg-secondary);
+  --ag-disabled-foreground-color: color-mix(in srgb, var(--q-text-primary) 32%, transparent);
+  --ag-icon-font-color: var(--q-text-secondary);
+  --ag-data-color: var(--q-text-primary);
+}
+
+/* ── AG Grid Sub-Components (global) ──
+   AG Grid renders popups, drag-and-drop ghosts, charts, tooltips,
+   menus, and side bars at the document root — outside any grid
+   wrapper. These selectors catch them globally so they inherit the
+   Qentrah palette in both light and dark mode. */
+.ag-popup,
+.ag-popup-child,
+.ag-menu,
+.ag-menu-option,
+.ag-rich-select-list,
+.ag-chart,
+.ag-dnd-ghost,
+.ag-tooltip,
+.ag-panel,
+.ag-panel-title-bar,
+.ag-side-bar {
+  background-color: var(--q-card) !important;
+  color: var(--q-text-primary) !important;
+  border: 1px solid var(--q-border) !important;
+}
+.ag-dnd-ghost {
+  box-shadow: 0 4px 12px color-mix(in srgb, #000 35%, transparent) !important;
+}
+.ag-tabs-header,
+.ag-tab {
+  background-color: var(--q-bg-secondary) !important;
+  color: var(--q-text-secondary) !important;
+  border-color: var(--q-border) !important;
+}
+.ag-tab.ag-tab-selected {
+  background-color: var(--q-card) !important;
+  color: var(--q-text-primary) !important;
+  border-bottom-color: var(--q-text-primary) !important;
 }
 
 @layer base {
@@ -385,6 +502,11 @@
 
 .animate-blink {
   animation: blink 0.8s step-end infinite;
+}
+
+@keyframes qentrah-cell-popover-scrim-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* ── WorkOsDocEditor — Tiptap body styles ── */

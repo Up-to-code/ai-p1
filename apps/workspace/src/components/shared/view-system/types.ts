@@ -1,4 +1,7 @@
 import type { ReactNode } from "react";
+import type { ViewMeta, ViewType } from "./view-catalog";
+
+export type { ViewMeta, ViewType };
 
 /* ── Stage / Group Definition ─────────────────────────────────────────────── */
 
@@ -176,20 +179,44 @@ export interface ViewDefinition {
   config: ViewConfig;
 }
 
-/* ── ViewSwitcher Props ──────────────────────────────────────────────────── */
+/* ── View Item (shareable tab model) ──────────────────────────────────────── */
 
-export interface ViewSwitcherProps {
-  views: ViewDefinition[];
-  activeView: string;
-  onViewChange: (viewKey: string) => void;
-  /** Items to display */
-  items: CardItem[];
-  /** Available stages */
-  stages: StageDefinition[];
-  /** Toolbar content between tabs and actions */
-  toolbarLeft?: ReactNode;
-  /** Right-side toolbar content */
-  toolbarRight?: ReactNode;
-  /** Count display */
+/**
+ * A single view tab in the shareable view switcher. Domain-agnostic —
+ * projects, deals, clients etc. each maintain their own list of these.
+ */
+export interface ViewItem {
+  id: string;
+  type: ViewType;
+  /** Override the catalog label for this instance */
+  label?: string;
+}
+
+/* ── View Switcher Tabs (shareable) ──────────────────────────────────────── */
+
+export interface ViewSwitcherTabsProps {
+  /** Active view tabs (ordered) */
+  views: ViewItem[];
+  /** Currently active view id */
+  activeViewId: string;
+  onViewChange: (viewId: string) => void;
+  /** Drag-and-drop reorder callback */
+  onReorder?: (views: ViewItem[]) => void;
+  /** Called when a view type is picked from the "Add view" popover */
+  onAddView?: (type: ViewType) => void;
+  /** Called when a view tab's remove button is clicked */
+  onRemoveView?: (viewId: string) => void;
+  /** Show the "Add view" popover trigger */
+  showAddView?: boolean;
+  /** Optional count badge rendered after the tabs */
   count?: number;
+  /** Content rendered to the left of the tabs (e.g. page title) */
+  leftSlot?: ReactNode;
+  /** Content rendered to the right of the tabs (e.g. action buttons) */
+  rightSlot?: ReactNode;
+  /** Override the default view catalog */
+  catalog?: readonly ViewMeta[];
+  /** Allow reordering via drag-and-drop */
+  draggable?: boolean;
+  className?: string;
 }

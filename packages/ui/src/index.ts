@@ -9,4 +9,5 @@ export * from "./docs";
 export * from "./forms";
 export * from "./oauth";
 export * from "./public";
+export * from "./qentrah-table";
 export * from "./workspace";

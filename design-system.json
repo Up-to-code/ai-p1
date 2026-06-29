@@ -1,7 +1,7 @@
 {
   "meta": {
     "name": "Qentrah OS Design System",
-    "version": "1.1.0",
+    "version": "2.0.0",
     "philosophy": "Communication First — every component feels like a node in a communication network. Apple-like minimalism with invisible complexity.",
     "keywords": ["communication", "orchestration", "systems", "agents", "minimalism", "apple-like", "calm technology", "invisible complexity"]
   },
@@ -55,6 +55,19 @@
       "automationOrange": "#FF9A3D",
       "dataCyan": "#00A3FF",
       "systemGray": "#5D6570"
+    },
+    "status": {
+      "todo":        { "hue": "zinc",    "light": { "bg": "#F3F3F3", "text": "#555555", "dot": "#BBBBBB" }, "dark": { "bg": "rgba(113,113,113,0.12)", "text": "#A1A1A1", "dot": "#888888" } },
+      "inProgress":  { "hue": "orange",  "light": { "bg": "#FEF0E0", "text": "#B86600", "dot": "#E08C00" }, "dark": { "bg": "rgba(224,140,0,0.12)", "text": "#E08C00", "dot": "#E08C00" } },
+      "waiting":     { "hue": "purple",  "light": { "bg": "#F5F0FF", "text": "#6837C0", "dot": "#8855E0" }, "dark": { "bg": "rgba(136,85,224,0.12)", "text": "#A880E8", "dot": "#8855E0" } },
+      "done":        { "hue": "emerald", "light": { "bg": "#E4F7ED", "text": "#17803F", "dot": "#1A8A45" }, "dark": { "bg": "rgba(26,138,69,0.12)", "text": "#3CB872", "dot": "#1A8A45" } },
+      "canceled":    { "hue": "rose",    "light": { "bg": "#FCE9E9", "text": "#B02020", "dot": "#D93232" }, "dark": { "bg": "rgba(217,50,50,0.12)", "text": "#E55A5A", "dot": "#D93232" } }
+    },
+    "priority": {
+      "urgent":  { "hue": "rose",    "light": { "bg": "#FCE9E9", "text": "#B02020", "icon": "#D93232" }, "dark": { "bg": "rgba(217,50,50,0.12)", "text": "#E55A5A", "icon": "#D93232" } },
+      "high":    { "hue": "rose",    "light": { "bg": "#FCE9E9", "text": "#B02020", "icon": "#D93232" }, "dark": { "bg": "rgba(217,50,50,0.12)", "text": "#E55A5A", "icon": "#D93232" } },
+      "normal":  { "hue": "amber",   "light": { "bg": "#FFF8E0", "text": "#9A6A00", "icon": "#E0A800" }, "dark": { "bg": "rgba(224,168,0,0.12)", "text": "#E0B438", "icon": "#E0A800" } },
+      "low":     { "hue": "emerald", "light": { "bg": "#E4F7ED", "text": "#17803F", "icon": "#1A8A45" }, "dark": { "bg": "rgba(26,138,69,0.12)", "text": "#3CB872", "icon": "#1A8A45" } }
     }
   },
   "foundation": {
@@ -95,7 +108,7 @@
     "easing": { "default": "cubic-bezier(0.22,1,0.36,1)", "smooth": "cubic-bezier(0.16,1,0.3,1)" }
   },
   "typography": {
-    "fontFamily": { "primary": "Inter", "mono": "JetBrains Mono" },
+    "fontFamily": { "primary": "Inter", "mono": "JetBrains Mono", "arabic": "Tajawal" },
     "weights": { "regular": 400, "medium": 500, "semibold": 600, "bold": 700 },
     "sizes": {
       "displayXL": 72, "displayLG": 56, "displayMD": 48, "displaySM": 40,
@@ -103,5 +116,11 @@
       "bodyLG": 18, "bodyMD": 16, "bodySM": 14, "caption": 13, "tiny": 12
     },
     "lineHeights": { "tight": 1.1, "normal": 1.4, "relaxed": 1.6 }
+  },
+  "cssVariables": {
+    "description": "All components must use var(--q-*) tokens. Never hardcode Tailwind color utilities like bg-violet-500. Status and priority colors are defined as --q-status-{name} and --q-priority-{name} with -bg, -text, -dot suffixes.",
+    "statusTokens": ["--q-status-todo", "--q-status-inProgress", "--q-status-waiting", "--q-status-done", "--q-status-canceled"],
+    "priorityTokens": ["--q-priority-urgent", "--q-priority-high", "--q-priority-normal", "--q-priority-low"],
+    "suffixes": ["", "-bg", "-text", "-dot", "-border", "-icon"]
   }
 }

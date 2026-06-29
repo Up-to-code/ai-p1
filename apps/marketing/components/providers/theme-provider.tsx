@@ -19,6 +19,10 @@ function applyTheme(theme: Theme) {
   const root = document.documentElement;
   root.setAttribute("data-theme", theme);
   root.style.colorScheme = theme;
+  // AG Grid v33 reads `data-ag-theme-mode` from any ancestor of the
+  // grid root to switch between theme modes. Set it on the document
+  // root so sub-components (popups, dnd ghosts, charts) match.
+  root.dataset.agThemeMode = theme;
 }
 
 function readStoredTheme(): Theme {

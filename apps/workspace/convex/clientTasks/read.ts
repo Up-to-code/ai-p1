@@ -5,9 +5,60 @@ import { activeDueWorkspaceRows, activeWorkspaceRows, boundedWorkspaceReadLimit 
 import { clientTaskValidator } from "./validators";
 
 const MAX_LIST_TASKS = 500;
+const MAX_GROUPED_TASKS = 2000;
 
 function presentTask<TTask extends { _id: string; visibility?: "private" | "team" | "workspace" }>(task: TTask) {
   return { ...task, id: task._id, visibility: task.visibility ?? "private" };
+}
+
+const groupByValidator = v.union(
+  v.literal("none"),
+  v.literal("status"),
+  v.literal("priority"),
+  v.literal("assignee"),
+  v.literal("dueDate"),
+);
+
+function dueDateBucket(dueDate: string | undefined, now: number): string {
+  if (!dueDate) return "no-date"
+  const d = new Date(dueDate)
+  if (Number.isNaN(d.getTime())) return "no-date"
+  const startToday = new Date(now)
+  startToday.setHours(0, 0, 0, 0)
+  const target = new Date(d)
+  target.setHours(0, 0, 0, 0)
+  const diffDays = Math.round((target.getTime() - startToday.getTime()) / 86400000)
+  if (diffDays < 0) return "overdue"
+  if (diffDays === 0) return "today"
+  if (diffDays === 1) return "tomorrow"
+  if (diffDays <= 7) return "this-week"
+  if (diffDays <= 30) return "this-month"
+  return "later"
+}
+
+const dueDateLabel: Record<string, string> = {
+  overdue: "Overdue",
+  today: "Today",
+  tomorrow: "Tomorrow",
+  "this-week": "This week",
+  "this-month": "This month",
+  later: "Later",
+  "no-date": "No date",
+}
+
+const statusLabel: Record<string, string> = {
+  todo: "To Do",
+  inProgress: "In Progress",
+  waiting: "Waiting",
+  done: "Complete",
+  canceled: "Canceled",
+}
+
+const priorityLabel: Record<string, string> = {
+  urgent: "Urgent",
+  high: "High",
+  normal: "Normal",
+  low: "Low",
 }
 
 export const list = query({
@@ -113,5 +164,112 @@ export const stats = query({
       urgent: tasks.filter((task) => task.priority === "urgent").length,
       done: tasks.filter((task) => task.status === "done").length,
     };
+  },
+});
+
+export const listGrouped = query({
+  args: {
+    organizationId: v.string(),
+    projectId: v.optional(v.string()),
+    groupBy: groupByValidator,
+  },
+  returns: v.object({
+    groupBy: groupByValidator,
+    groups: v.array(v.object({
+      key: v.string(),
+      label: v.string(),
+      count: v.number(),
+      tasks: v.array(clientTaskValidator),
+    })),
+    flat: v.array(clientTaskValidator),
+  }),
+  handler: async (ctx, args) => {
+    await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
+
+    const base = activeDueWorkspaceRows(
+      args.projectId
+        ? await ctx.db
+            .query("tasks")
+            .withIndex("by_organization_project", (q) =>
+              q.eq("organizationId", args.organizationId).eq("projectId", args.projectId as string),
+            )
+            .take(MAX_GROUPED_TASKS)
+        : await ctx.db
+            .query("tasks")
+            .withIndex("by_organization_id", (q) => q.eq("organizationId", args.organizationId))
+            .take(MAX_GROUPED_TASKS),
+    );
+
+    const flat = base.map(presentTask);
+
+    if (args.groupBy === "none") {
+      return { groupBy: "none", groups: [], flat };
+    }
+
+    const now = Date.now();
+    const map = new Map<string, { label: string; tasks: any[] }>();
+
+    for (const task of flat) {
+      let key = "unassigned"
+      let label = "Unassigned"
+      if (args.groupBy === "status") {
+        key = task.status
+        label = statusLabel[task.status] ?? task.status
+      } else if (args.groupBy === "priority") {
+        key = task.priority
+        label = priorityLabel[task.priority] ?? task.priority
+      } else if (args.groupBy === "assignee") {
+        if (task.assigneeUserId) {
+          key = task.assigneeUserId
+          label = task.assigneeUserId
+        } else {
+          key = "unassigned"
+          label = "Unassigned"
+        }
+      } else if (args.groupBy === "dueDate") {
+        key = dueDateBucket(task.dueDate, now)
+        label = dueDateLabel[key] ?? key
+      }
+      const entry = map.get(key) ?? { label, tasks: [] }
+      entry.tasks.push(task)
+      map.set(key, entry)
+    }
+
+    const order: Record<string, number> = {
+      overdue: 0, today: 1, tomorrow: 2, "this-week": 3, "this-month": 4, later: 5, "no-date": 6,
+      unassigned: 99,
+    }
+    const statusOrder: Record<string, number> = {
+      todo: 0, inProgress: 1, waiting: 2, done: 3, canceled: 4,
+    }
+    const priorityOrder: Record<string, number> = {
+      urgent: 0, high: 1, normal: 2, low: 3,
+    }
+    const groups = Array.from(map.entries()).map(([key, value]) => ({
+      key,
+      label: value.label,
+      count: value.tasks.length,
+      tasks: value.tasks,
+    }))
+
+    groups.sort((a, b) => {
+      if (args.groupBy === "status") {
+        return (statusOrder[a.key] ?? 99) - (statusOrder[b.key] ?? 99) || a.label.localeCompare(b.label)
+      }
+      if (args.groupBy === "priority") {
+        return (priorityOrder[a.key] ?? 99) - (priorityOrder[b.key] ?? 99)
+      }
+      if (args.groupBy === "dueDate") {
+        return (order[a.key] ?? 99) - (order[b.key] ?? 99)
+      }
+      if (args.groupBy === "assignee") {
+        if (a.key === "unassigned") return 1
+        if (b.key === "unassigned") return -1
+        return a.label.localeCompare(b.label)
+      }
+      return 0
+    })
+
+    return { groupBy: args.groupBy, groups, flat }
   },
 });
