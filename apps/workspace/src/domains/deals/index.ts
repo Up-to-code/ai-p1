@@ -1,4 +1,10 @@
 export { DealsWorkspace, DealDetailScreen } from "./components/deals-screen";
-export * from "./api/deals";
-export * from "./store/deals.types";
-export * from "./validation/deal.schema";
+export {
+  useDealsQuery,
+  useDealStatsQuery,
+  useDealQuery,
+  createDealRequest,
+  updateDealRequest,
+  deleteDealRequest,
+} from "./api/deals";
+export type { Deal } from "./store/deals.types";
