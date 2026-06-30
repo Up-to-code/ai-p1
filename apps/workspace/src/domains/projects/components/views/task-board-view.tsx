@@ -8,8 +8,8 @@ import { TaskBoardSkeleton } from "@/domains/tasks/components/task-board-skeleto
 
 export function TaskBoardView({ projectId, organizationId }: { projectId: string; organizationId: string }) {
   const tasksResult = useTasksQuery(organizationId, { projectId });
-  if (tasksResult.data === undefined) return <TaskBoardSkeleton />;
-  const tasks = tasksResult.data;
+  const isLoading = tasksResult.data === undefined;
+  const tasks = tasksResult.data ?? [];
   const { updateTask } = useTaskMutations(organizationId);
 
   const columns = [
@@ -27,6 +27,7 @@ export function TaskBoardView({ projectId, organizationId }: { projectId: string
     }
   };
 
+  if (isLoading) return <TaskBoardSkeleton />;
   return (
     <div className="grid grid-cols-4 gap-4 h-[550px] overflow-hidden">
       {columns.map((col) => {

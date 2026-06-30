@@ -9,8 +9,8 @@ import { TaskTimelineSkeleton } from "@/domains/tasks/components/task-timeline-s
 
 export function TaskMapView({ projectId, organizationId }: { projectId: string; organizationId: string }) {
   const tasksResult = useTasksQuery(organizationId, { projectId });
-  if (tasksResult.data === undefined) return <TaskTimelineSkeleton />;
-  const tasks = tasksResult.data;
+  const isLoading = tasksResult.data === undefined;
+  const tasks = tasksResult.data ?? [];
 
   // Categorize tasks by country matching in their tags or title
   const countriesData = useMemo(() => {
@@ -56,6 +56,7 @@ export function TaskMapView({ projectId, organizationId }: { projectId: string; 
     });
   }, [tasks, countriesData]);
 
+  if (isLoading) return <TaskTimelineSkeleton />;
   return (
     <div className="space-y-4 max-h-[550px] overflow-y-auto pr-1">
       {/* Geographic Header Info */}

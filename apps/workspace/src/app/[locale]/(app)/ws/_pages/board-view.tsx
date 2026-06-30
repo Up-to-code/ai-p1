@@ -25,8 +25,8 @@ export function BoardView() {
   const { createTask, updateTask, deleteTask, moveTask } = useTaskMutations(orgId ?? "");
 
   const tasksResult = useTasksQuery(orgId ?? undefined, { projectId: activeProjectId || null });
-  if (tasksResult.data === undefined) return <TaskBoardSkeleton />;
-  const serverTasks = tasksResult.data;
+  const isLoading = tasksResult.data === undefined;
+  const serverTasks = tasksResult.data ?? [];
 
   const { applyToList, push: pushOptimistic, reconcile } = useOptimisticTaskActions();
 
@@ -174,6 +174,7 @@ export function BoardView() {
       });
     }), [stages, tasksByStatus]);
 
+  if (isLoading) return <TaskBoardSkeleton />;
   return (
     <PipelineBoard
       items={boardCards}

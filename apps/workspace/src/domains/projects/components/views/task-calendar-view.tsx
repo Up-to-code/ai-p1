@@ -7,8 +7,8 @@ import { TaskCalendarSkeleton } from "@/domains/tasks/components/task-calendar-s
 
 export function TaskCalendarView({ projectId, organizationId }: { projectId: string; organizationId: string }) {
   const tasksResult = useTasksQuery(organizationId, { projectId });
-  if (tasksResult.data === undefined) return <TaskCalendarSkeleton />;
-  const tasks = tasksResult.data;
+  const isLoading = tasksResult.data === undefined;
+  const tasks = tasksResult.data ?? [];
 
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -56,6 +56,7 @@ export function TaskCalendarView({ projectId, organizationId }: { projectId: str
 
   const weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+  if (isLoading) return <TaskCalendarSkeleton />;
   return (
     <div className="bg-card border border-border rounded-2xl p-4 shadow-md flex flex-col h-[550px]">
       {/* Navigation Header */}

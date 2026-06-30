@@ -8,8 +8,8 @@ import { TaskTimelineSkeleton } from "@/domains/tasks/components/task-timeline-s
 
 export function TaskTimelineView({ projectId, organizationId }: { projectId: string; organizationId: string }) {
   const tasksResult = useTasksQuery(organizationId, { projectId });
-  if (tasksResult.data === undefined) return <TaskTimelineSkeleton />;
-  const tasks = tasksResult.data;
+  const isLoading = tasksResult.data === undefined;
+  const tasks = tasksResult.data ?? [];
 
   const timelineData = useMemo(() => {
     const withDue = tasks.filter(t => t.dueDate).map(t => ({
@@ -36,6 +36,7 @@ export function TaskTimelineView({ projectId, organizationId }: { projectId: str
     });
   }, [tasks]);
 
+  if (isLoading) return <TaskTimelineSkeleton />;
   return (
     <div className="bg-card border border-border rounded-2xl p-4 shadow-md flex flex-col h-[550px]">
       <div className="pb-3 border-b border-border/40 mb-3 flex items-center justify-between">

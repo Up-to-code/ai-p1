@@ -52,9 +52,9 @@ import { TaskTableSkeleton } from "@/domains/tasks/components/task-table-skeleto
 
 export function TaskTableView({ projectId, organizationId }: { projectId: string; organizationId: string }) {
   const tasksResult = useTasksQuery(organizationId, { projectId });
-  if (tasksResult.data === undefined) return <TaskTableSkeleton />;
-  const tasks = tasksResult.data;
+  const tasks = tasksResult.data ?? [];
   const { createTask, updateTask, deleteTask } = useTaskMutations(organizationId);
+  const isLoading = tasksResult.data === undefined;
 
   const { data: members = [] } = useQuery({
     queryKey: ["organization-members", organizationId],
@@ -553,6 +553,8 @@ export function TaskTableView({ projectId, organizationId }: { projectId: string
     ],
     [assigneeOptions, memberNameById, collapsedGroups, toggleGroup, visibleFields, fieldValueByRecord, writeFieldValue]
   );
+
+  if (isLoading) return <TaskTableSkeleton />;
 
   return (
     <div className="w-full h-full font-sans overflow-hidden flex flex-col">

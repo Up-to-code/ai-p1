@@ -10,8 +10,8 @@ import { TaskListSkeleton } from "@/domains/tasks/components/task-list-skeleton"
 
 export function TaskListView({ projectId, organizationId }: { projectId: string; organizationId: string }) {
   const tasksResult = useTasksQuery(organizationId, { projectId });
-  if (tasksResult.data === undefined) return <TaskListSkeleton />;
-  const tasks = tasksResult.data;
+  const isLoading = tasksResult.data === undefined;
+  const tasks = tasksResult.data ?? [];
   const { updateTask } = useTaskMutations(organizationId);
 
   const [expandedStatus, setExpandedStatus] = useState<Record<string, boolean>>({
@@ -106,6 +106,7 @@ export function TaskListView({ projectId, organizationId }: { projectId: string;
     );
   };
 
+  if (isLoading) return <TaskListSkeleton />;
   return (
     <div className="space-y-4 max-h-[600px] overflow-y-auto pr-1">
       {renderGroup("todo", "To Do", tasksByStatus.todo, STATUS_COLORS.todo)}
