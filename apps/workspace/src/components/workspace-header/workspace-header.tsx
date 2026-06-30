@@ -25,6 +25,8 @@ export function WorkspaceHeaderInner() {
   const activeTokens = resolveActiveTokens(activeViewIds, ALL_VIEWS);
   const qs = searchParams.toString();
 
+  const getItemHref = useCallback((id: string) => buildPath(id, qs), [qs]);
+
   const handleViewSelect = useCallback((id: string) => {
     router.push(buildPath(id, qs));
   }, [router, qs]);
@@ -55,6 +57,7 @@ export function WorkspaceHeaderInner() {
           variant="tabs"
           items={activeTokens}
           activeItemId={activeView}
+          getItemHref={getItemHref}
           onItemSelect={handleViewSelect}
           onItemAdd={handleViewAdd}
           onItemRemove={handleViewRemove}

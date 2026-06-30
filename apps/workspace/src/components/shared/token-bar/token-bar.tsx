@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { Link } from "@/i18n/routing";
 import { Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AddTokenModal, type TokenOption, type AddTokenModalExtra, type AddTokenModalFlags } from "./add-token-modal";
-
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 
 export type { TokenOption, AddTokenModalExtra, AddTokenModalFlags } from "./add-token-modal";
@@ -12,6 +12,7 @@ export type { TokenOption, AddTokenModalExtra, AddTokenModalFlags } from "./add-
 export interface TokenBarProps<T extends TokenOption> {
   items: T[];
   activeItemId?: string | null;
+  getItemHref?: (id: string) => string | undefined;
   onItemSelect: (id: string) => void;
   onItemAdd: (item: T) => void;
   onItemRemove?: (id: string) => void;
@@ -33,6 +34,7 @@ export interface TokenBarProps<T extends TokenOption> {
 export function TokenBar<T extends TokenOption>({
   items,
   activeItemId,
+  getItemHref,
   onItemSelect,
   onItemAdd,
   onItemRemove,
@@ -91,8 +93,9 @@ export function TokenBar<T extends TokenOption>({
                           style={provided.draggableProps.style}
                           className={cn("relative group/token h-full flex items-center", snapshot.isDragging && "opacity-80 z-50")}
                         >
-                          <button
-                            onClick={() => onItemSelect(item.id)}
+                          <Link
+                            href={getItemHref?.(item.id) ?? "#"}
+                            onClick={(e) => { if (!getItemHref?.(item.id)) { e.preventDefault(); onItemSelect(item.id); } }}
                             className={cn(
                               "group inline-flex items-center gap-1.5 transition-all",
                               variant === "default" ? [
@@ -133,7 +136,7 @@ export function TokenBar<T extends TokenOption>({
                                 <X className={cn(variant === "tabs" ? "h-3 w-3" : "h-2.5 w-2.5")} />
                               </span>
                             )}
-                          </button>
+                          </Link>
                         </div>
                       )}
                     </Draggable>
