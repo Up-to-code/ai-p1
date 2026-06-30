@@ -1,6 +1,8 @@
 import type { ViewToken } from "@/app/[locale]/(app)/ws/config/views.config";
 
-export function getActiveViewFromPath(pathname: string): string {
+export function getActiveViewFromParams(pathname: string, searchParams?: string): string {
+  const viewFromSearch = searchParams ? new URLSearchParams(searchParams).get("view") : null;
+  if (viewFromSearch) return viewFromSearch;
   const lastSegment = pathname.split("/").filter(Boolean).pop() ?? "";
   return lastSegment === "ws" ? "overview" : lastSegment;
 }

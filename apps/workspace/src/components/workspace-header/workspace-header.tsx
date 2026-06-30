@@ -10,7 +10,7 @@ import {
   type ViewToken,
 } from "@/app/[locale]/(app)/ws/config/views.config";
 import {
-  getActiveViewFromPath, buildPath, resolveActiveTokens,
+  getActiveViewFromParams, buildPath, resolveActiveTokens,
   removeViewFromIds, addViewToIds, getFallbackViewId,
 } from "./workspace-header-helpers";
 import { WorkspaceActionsBar } from "./workspace-actions-bar";
@@ -20,7 +20,7 @@ export function WorkspaceHeaderInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const activeView = getActiveViewFromPath(pathname);
+  const activeView = getActiveViewFromParams(pathname, searchParams.toString());
   const [activeViewIds, setActiveViewIds] = useLocalConfig<string[]>(VIEW_IDS_STORAGE_KEY, [...DEFAULT_VIEW_IDS]);
   const activeTokens = resolveActiveTokens(activeViewIds, ALL_VIEWS);
   const qs = searchParams.toString();
