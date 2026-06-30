@@ -6,10 +6,12 @@ import { useTaskMutations } from "@/domains/tasks/hooks/use-task-mutations";
 import { ChevronDown, Check, ChevronRight, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { STATUS_COLORS, PRIORITY_COLORS, priorityStyleFor } from "./shared";
+import { TaskListSkeleton } from "@/domains/tasks/components/task-list-skeleton";
 
 export function TaskListView({ projectId, organizationId }: { projectId: string; organizationId: string }) {
   const tasksResult = useTasksQuery(organizationId, { projectId });
-  const tasks = tasksResult.data ?? [];
+  if (tasksResult.data === undefined) return <TaskListSkeleton />;
+  const tasks = tasksResult.data;
   const { updateTask } = useTaskMutations(organizationId);
 
   const [expandedStatus, setExpandedStatus] = useState<Record<string, boolean>>({

@@ -4,10 +4,12 @@ import { useTasksQuery } from "@/domains/tasks/api/tasks";
 import { useTaskMutations } from "@/domains/tasks/hooks/use-task-mutations";
 import { Calendar } from "lucide-react";
 import { STATUS_COLORS, PRIORITY_COLORS, priorityStyleFor } from "./shared";
+import { TaskBoardSkeleton } from "@/domains/tasks/components/task-board-skeleton";
 
 export function TaskBoardView({ projectId, organizationId }: { projectId: string; organizationId: string }) {
   const tasksResult = useTasksQuery(organizationId, { projectId });
-  const tasks = tasksResult.data ?? [];
+  if (tasksResult.data === undefined) return <TaskBoardSkeleton />;
+  const tasks = tasksResult.data;
   const { updateTask } = useTaskMutations(organizationId);
 
   const columns = [

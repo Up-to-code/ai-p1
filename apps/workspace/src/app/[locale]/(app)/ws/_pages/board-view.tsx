@@ -15,6 +15,7 @@ import {
 } from "@/lib/workspace-theme";
 import { PipelineBoard, type CardItem, type StageDefinition } from "@qentrah/our-platform-components/pipeline";
 import { useLocalConfig } from "@/domains/storage";
+import { TaskBoardSkeleton } from "@/domains/tasks/components/task-board-skeleton";
 
 export function BoardView() {
   const orgId = useWorkspaceStore((s) => s.orgId);
@@ -24,7 +25,8 @@ export function BoardView() {
   const { createTask, updateTask, deleteTask, moveTask } = useTaskMutations(orgId ?? "");
 
   const tasksResult = useTasksQuery(orgId ?? undefined, { projectId: activeProjectId || null });
-  const serverTasks = tasksResult.data ?? [];
+  if (tasksResult.data === undefined) return <TaskBoardSkeleton />;
+  const serverTasks = tasksResult.data;
 
   const { applyToList, push: pushOptimistic, reconcile } = useOptimisticTaskActions();
 

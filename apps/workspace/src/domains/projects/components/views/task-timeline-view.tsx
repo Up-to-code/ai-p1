@@ -4,10 +4,12 @@ import { useMemo } from "react";
 import { useTasksQuery } from "@/domains/tasks/api/tasks";
 import { Clock } from "lucide-react";
 import { statusStyleFor } from "./shared";
+import { TaskTimelineSkeleton } from "@/domains/tasks/components/task-timeline-skeleton";
 
 export function TaskTimelineView({ projectId, organizationId }: { projectId: string; organizationId: string }) {
   const tasksResult = useTasksQuery(organizationId, { projectId });
-  const tasks = tasksResult.data ?? [];
+  if (tasksResult.data === undefined) return <TaskTimelineSkeleton />;
+  const tasks = tasksResult.data;
 
   const timelineData = useMemo(() => {
     const withDue = tasks.filter(t => t.dueDate).map(t => ({

@@ -5,10 +5,12 @@ import { useTasksQuery } from "@/domains/tasks/api/tasks";
 import { cn } from "@/lib/utils";
 import { Globe2 } from "lucide-react";
 import { COUNTRY_FLAGS } from "./shared";
+import { TaskTimelineSkeleton } from "@/domains/tasks/components/task-timeline-skeleton";
 
 export function TaskMapView({ projectId, organizationId }: { projectId: string; organizationId: string }) {
   const tasksResult = useTasksQuery(organizationId, { projectId });
-  const tasks = tasksResult.data ?? [];
+  if (tasksResult.data === undefined) return <TaskTimelineSkeleton />;
+  const tasks = tasksResult.data;
 
   // Categorize tasks by country matching in their tags or title
   const countriesData = useMemo(() => {

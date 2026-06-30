@@ -48,10 +48,12 @@ import {
   type SavedViewConfig,
 } from "@/domains/tasks/api/saved-views";
 import { TaskTableFieldsPanel } from "@/domains/tasks/components/task-table-fields-panel";
+import { TaskTableSkeleton } from "@/domains/tasks/components/task-table-skeleton";
 
 export function TaskTableView({ projectId, organizationId }: { projectId: string; organizationId: string }) {
   const tasksResult = useTasksQuery(organizationId, { projectId });
-  const tasks = tasksResult.data ?? [];
+  if (tasksResult.data === undefined) return <TaskTableSkeleton />;
+  const tasks = tasksResult.data;
   const { createTask, updateTask, deleteTask } = useTaskMutations(organizationId);
 
   const { data: members = [] } = useQuery({

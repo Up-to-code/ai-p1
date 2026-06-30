@@ -3,10 +3,12 @@
 import { useState, useMemo } from "react";
 import { useTasksQuery } from "@/domains/tasks/api/tasks";
 import { cn } from "@/lib/utils";
+import { TaskCalendarSkeleton } from "@/domains/tasks/components/task-calendar-skeleton";
 
 export function TaskCalendarView({ projectId, organizationId }: { projectId: string; organizationId: string }) {
   const tasksResult = useTasksQuery(organizationId, { projectId });
-  const tasks = tasksResult.data ?? [];
+  if (tasksResult.data === undefined) return <TaskCalendarSkeleton />;
+  const tasks = tasksResult.data;
 
   const [currentDate, setCurrentDate] = useState(new Date());
 
