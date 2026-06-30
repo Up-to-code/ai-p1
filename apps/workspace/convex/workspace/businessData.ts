@@ -1,9 +1,5 @@
 import type { MutationCtx } from "../_generated/server";
 
-export function presentWorkspaceRecord<T extends { _id: string }>(doc: T) {
-  return { ...doc, id: doc._id };
-}
-
 export function assertActiveWorkspaceRecord<T extends { organizationId: string; deletedAt?: number }>(
   doc: T | null,
   organizationId: string,

@@ -1,15 +1,38 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
-import { Layers, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { QentrahTable, type QentrahColumnDef } from "@qentrah/ui";
+import { AppPageHeader, AppPageShell } from "@/components/shared";
 import { cn } from "@/lib/utils";
 import { useAccountContext } from "@/domains/auth";
 import { useNavigation } from "@/domains/navigation";
 import { useWorkspaceSpacesQuery } from "@/domains/projects/api/spaces";
 import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
 import type { Space } from "@/domains/projects/api/spaces";
+
+function ClickUpIcon({ path, size = 14, color }: { path: string; size?: number; color?: string }) {
+  return (
+    <span
+      role="img"
+      className="inline-block shrink-0"
+      style={{
+        width: size,
+        height: size,
+        backgroundColor: color ?? "currentColor",
+        WebkitMaskImage: `url(${path})`,
+        maskImage: `url(${path})`,
+        WebkitMaskRepeat: "no-repeat",
+        maskRepeat: "no-repeat",
+        WebkitMaskSize: "contain",
+        maskSize: "contain",
+        WebkitMaskPosition: "center",
+        maskPosition: "center",
+      } as CSSProperties}
+    />
+  )
+}
 
 const iconFor = (key: string | undefined): string | null => {
   if (!key) return null
@@ -72,12 +95,12 @@ export function SpacesListView() {
             <div className="flex items-center gap-2.5 min-w-0">
               <div
                 className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
-                style={{ background: color ? `color-mix(in srgb, ${color} 14%, transparent)` : "var(--q-bg-secondary)" }}
+                style={{ background: color ? `color-mix(in srgb, ${color} 14%, transparent)` : "var(--q-bg-secondary)" } as CSSProperties}
               >
                 {icon ? (
-                  <img src={icon} alt="" className="h-3.5 w-3.5" style={{ color: color ?? undefined }} />
+                  <ClickUpIcon path={icon} size={14} color={color ?? "var(--q-text-muted)"} />
                 ) : (
-                  <Layers className="h-3.5 w-3.5 text-muted-foreground" />
+                  <ClickUpIcon path="/icons/clickup/folder.svg" size={14} color="var(--q-text-muted)" />
                 )}
               </div>
               <div className="min-w-0">
@@ -147,63 +170,47 @@ export function SpacesListView() {
     [projectsBySpace],
   )
 
+  const title = t("title")
+  const createButton = (
+    <button className="flex h-9 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-sm">
+      <Plus className="h-4 w-4" />
+      {t("createSpace")}
+    </button>
+  )
+
   if (isLoading) {
     return (
-      <div className="h-full flex flex-col">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-lg font-bold text-foreground">{t("title")}</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">Loading…</p>
-          </div>
-        </div>
+      <AppPageShell>
+        <AppPageHeader title={title} subtitle="Loading…" />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[0, 1, 2].map((i) => (
             <div key={i} className="h-28 animate-pulse rounded-xl bg-muted" />
           ))}
         </div>
-      </div>
+      </AppPageShell>
     )
   }
 
   if (spaceList.length === 0) {
     return (
-      <div className="h-full flex flex-col">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-lg font-bold text-foreground">{t("title")}</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">0 spaces</p>
-          </div>
-          <button className="flex h-9 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-sm">
-            <Plus className="h-4 w-4" />
-            {t("createSpace")}
-          </button>
+      <AppPageShell>
+        <AppPageHeader title={title} subtitle="0 spaces" actions={createButton} />
+        <div className="flex flex-col items-center justify-center py-16">
+          <ClickUpIcon path="/icons/clickup/folder.svg" size={48} color="var(--q-text-muted)" />
+          <p className="mt-3 text-sm font-medium text-muted-foreground">{t("noSpaces")}</p>
         </div>
-        <div className="flex flex-1 items-center justify-center">
-          <div className="text-center">
-            <Layers className="mx-auto h-12 w-12 text-muted-foreground/40" />
-            <p className="mt-3 text-sm font-medium text-muted-foreground">{t("noSpaces")}</p>
-          </div>
-        </div>
-      </div>
+      </AppPageShell>
     )
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-lg font-bold text-foreground">{t("title")}</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {spaceList.length} space{spaceList.length !== 1 ? "s" : ""}
-          </p>
-        </div>
-        <button className="flex h-9 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-sm">
-          <Plus className="h-4 w-4" />
-          {t("createSpace")}
-        </button>
-      </div>
-
-      <div className="flex-1 min-h-0 rounded-xl border border-border bg-card overflow-hidden">
+    <AppPageShell>
+      <AppPageHeader
+        title={title}
+        subtitle={`${spaceList.length} space${spaceList.length !== 1 ? "s" : ""}`}
+        actions={createButton}
+      />
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
         <QentrahTable
           rows={spaceList}
           columns={columns}
@@ -216,6 +223,6 @@ export function SpacesListView() {
           }}
         />
       </div>
-    </div>
+    </AppPageShell>
   )
 }

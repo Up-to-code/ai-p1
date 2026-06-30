@@ -3696,7 +3696,14 @@
       "inProgress": "قيد التنفيذ",
       "waiting": "بانتظار",
       "done": "منجزة",
-      "canceled": "ملغاة"
+      "canceled": "ملغاة",
+      "pending": "قيد المراجعة",
+      "progress": "قيد التقدم",
+      "submitted": "مقدمة",
+      "failed": "فاشلة",
+      "success": "ناجحة",
+      "inReview": "قيد المراجعة",
+      "expire": "منتهية"
     },
     "priorities": {
       "low": "منخفضة",

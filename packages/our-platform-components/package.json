@@ -1,0 +1,54 @@
+{
+  "name": "@qentrah/our-platform-components",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared Qentrah platform components — pipeline board, widget grid, and more.",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./pipeline": {
+      "types": "./dist/pipeline/index.d.ts",
+      "import": "./dist/pipeline/index.js"
+    },
+    "./widget-grid": {
+      "types": "./dist/widget-grid/index.d.ts",
+      "import": "./dist/widget-grid/index.js"
+    }
+  },
+  "scripts": {
+    "prebuild": "npm --workspace @qentrah/platform-core run build",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@qentrah/platform-core": "0.1.0",
+    "gridstack": "^12.6.0",
+    "lucide-react": "^0.577.0",
+    "sortablejs": "^1.15.7"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "@types/react": "^19.2.3",
+    "@types/react-dom": "^19.2.3",
+    "@types/sortablejs": "^1.15.9",
+    "react": "19.2.4",
+    "react-dom": "^19.2.3",
+    "typescript": "^5",
+    "vitest": "^4.1.6"
+  }
+}

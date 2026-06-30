@@ -22,6 +22,7 @@ const protectedRouteSegments = new Set([
   "team",
   "usage",
   "web-apps",
+  "ws",
 ]);
 
 const AUTH_ROUTE_REGEX = /^\/(ar|en)\/(sign-in|sign-up|sso-callback)(\/.*)?$/;

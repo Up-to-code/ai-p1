@@ -35,6 +35,9 @@ Fix all bugs in the Qentrah Product Development project in priority waves, from 
 - **Wave 3 Follow-up: Storage Barrel Export** — Created `src/domains/storage/index.ts` re-exporting `getItem`, `setItem`, `removeItem`, `clearStore`, `getAllKeys`, `getVersion`, `setVersion`, `getNextVersion` from `indexeddb-adapter.ts`. Fixes `task-editor.tsx` dynamic import errors.
 - **Next.js Hoisting Fix** — Workspace had `next@16.3.0-preview.5` locally while root override specifies `16.3.0-canary.32`. Cleaned stale temp dirs in `node_modules`, removed workspace's local `next`, re-ran `npm install` — Next.js now hoisted to root only. Resolved all 4 remaining `proxy.ts`/`next.config.ts` type identity conflicts.
 - **Final TypeScript Status** — Workspace `src/` is at **0 TypeScript errors**. 148 errors remain in `convex/` directory — all from missing tables in the Convex data model (`milestones`, `taskDependencies`, `piiAccessAudit`) — these are Wave 4 schema work.
+- **Calendar Redesign**: Replaced old calendar UI with `@svar-ui/react-calendar` — Apple-style split layout (grid + mini month/event side panel). Removed old drawer components, hooks, and test files. Kept API/types/validation/store (used by project/client tabs and widgets).
+- **TokenBar Creation**: Extracted shareable `TokenBar` component (horizontal token bar + "+" trigger + searchable categorized add modal) from the dead `workspace-tab-switcher.tsx` pattern. Deleted stale `workspace-tab-switcher.tsx` (replaced by `ViewSwitcher` in `workspace-screen.tsx`).
+- **@qentrah/our-platform-components Package**: Created new package with PipelineBoard (DnD column board, `packages/our-platform-components/src/pipeline/pipeline-board.tsx`) and WidgetGrid (resizable card grid, `packages/our-platform-components/src/widget-grid/widget-grid.tsx`). App re-export wrappers in `src/components/shared/view-system/`. Deleted old `workspace-widget-grid.tsx` and `workspace-widget-registry.tsx`. Rewrote `workspace-screen.tsx` — board view uses PipelineBoard with `showBarColor` (hex colors `#6b7280`/`#3b82f6`/`#f59e0b`/`#22c55e`), DnD motion (`transition-all duration-200 scale-[0.97]`), and `renderEmpty` per-stage placeholder. `EntityHeader` usage replaced with plain flex layout. 0 TypeScript errors in workspace `src/`.
 
 ### Blocked
 - (none)
@@ -57,6 +60,7 @@ Fix all bugs in the Qentrah Product Development project in priority waves, from 
 - **Wave 5**: Platform Readiness Audit, Engineering Audit Checklist, Competitive Gap Analysis.
 - **Marketing Design System Redesign**: Created unified `components/design-system.tsx` (PublicSection, SectionHeader, CtaBanner, FeatureCardGrid, WorkflowCard, LegalArticle, PageShell, etc.). Migrated About, Contact, Blog, Legal, Privacy, Terms, and Pricing pages to use CSS variable tokens (`--q-*`) and the new primitives. Removed Broker and Developer pages (deleted routes + components). Fixed `shared.tsx` blog colors to use theme tokens. Build passes with 0 type errors.
 - Update Qentrah MCP tasks to reflect completion.
+- **@qentrah/our-platform-components follow-up**: Fixed workspace-screen.tsx board view — replaced CSS variable stage colors with hardcoded hex values, enabled `showBarColor`, added `renderEmpty` per-stage placeholder, removed `EntityHeader` usage (unused component). 0 TypeScript errors in workspace `src/`.
 
 ## Relevant Files
 - `apps/workspace/src/server/domains/agents/services/tool-executor.ts`: MCP tool dispatch — direct get queries
@@ -90,3 +94,6 @@ Fix all bugs in the Qentrah Product Development project in priority waves, from 
 - `apps/workspace/src/domains/clients/client-view-model.ts`: `normalizeClientPipelineStage` accepts `string | undefined`
 - `apps/workspace/src/server/domains/agents/services/tool-executor.ts`: `schema: z.ZodObject<any>` type fix
 - `apps/workspace/src/domains/cache/hooks/use-optimistic-invalidation.ts`: Mutable array type fix
+- `apps/workspace/src/components/shared/token-bar/token-bar.tsx`: Shareable horizontal token bar with "+" add trigger
+- `apps/workspace/src/components/shared/token-bar/add-token-modal.tsx`: Searchable categorized add modal for TokenBar
+- `apps/workspace/src/components/shared/token-bar/index.ts`: TokenBar barrel export

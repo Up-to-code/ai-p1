@@ -218,7 +218,7 @@ export function SidebarRail() {
                 }
               }}
             >
-              <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={isActive ? 2.2 : 1.8} />
+              <item.icon className="h-[18px] w-[18px] shrink-0" />
             </div>
           );
 
@@ -265,7 +265,7 @@ export function SidebarRail() {
               {item.name === "ai" ? (
                 <AiLogoIcon isActive={isActive} />
               ) : (
-                <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={isActive ? 2.2 : 1.8} />
+                <item.icon className="h-[18px] w-[18px] shrink-0" />
               )}
             </div>
           );
@@ -301,7 +301,7 @@ export function SidebarRail() {
                   "text-muted-foreground",
                 )}
               >
-                <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
+                <item.icon className="h-[18px] w-[18px] shrink-0" />
               </div>
             </NavTooltip>
           );
@@ -328,7 +328,7 @@ export function SidebarRail() {
                       : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground",
                   )}
                 >
-                  <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={isActive ? 2.2 : 1.8} />
+                  <item.icon className="h-[18px] w-[18px] shrink-0" />
                 </div>
               </WorkspaceLink>
             </NavTooltip>

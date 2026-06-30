@@ -267,6 +267,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
       ) : isQueryBlocked ? (
         <HttpQueryState query={clientsQuery} variant={view === "pipeline" ? "pipeline" : view === "calendar" ? "calendar" : "table"} />
       ) : view === "pipeline" && (
+        <div className="overflow-auto h-full">
         <PipelineBoard
           items={activeJourneyClients.map((client) => clientToCardItem({
             id: client.id,
@@ -308,6 +309,7 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
           }}
           onAddStage={() => setIsStagesSettingsOpen(true)}
         />
+        </div>
       )}
 
       {isWorkspaceReady && !isLoading && view === "list" && (

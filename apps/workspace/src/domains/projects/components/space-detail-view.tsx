@@ -6,13 +6,7 @@ import { useWorkspaceSpacesQuery } from "@/domains/projects/api/spaces";
 import { useProjectsIndexQuery } from "../api/projects";
 import { useTranslations } from "next-intl";
 import { DeleteRecordDialog } from "@/components/shared/crud-ui";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { AppPageShell, AddMenu } from "@/components/shared";
 import { FolderKanban, LayoutGrid, Wand2, ArrowLeft } from "lucide-react";
 import { CreateProjectForm } from "./create-project-form";
 import { ProjectsOverviewDashboard } from "./projects-overview-dashboard";
@@ -35,62 +29,37 @@ export function SpaceDetailView({ spaceSlug }: { spaceSlug: string }) {
   const query = useProjectsIndexQuery(orgId);
   const projects = query.results ?? [];
 
+  const addActions = (
+    <AddMenu
+      triggerLabel={t("add")}
+      items={[
+        { label: `${t("add")} Project`, icon: <FolderKanban className="h-4 w-4 text-primary" />, onClick: () => setIsCreateModalOpen(true) },
+        { label: "Add Widget", icon: <LayoutGrid className="h-4 w-4 text-indigo-500" />, onClick: () => setIsWidgetModalOpen(true) },
+        { label: "Auto Layout", icon: <Wand2 className="h-4 w-4 text-amber-500" />, onClick: () => setIsAutoLayout(true) },
+      ]}
+    />
+  )
+
   return (
-    <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              {currentSpace?.color && (
-                <div
-                  className="h-3 w-3 rounded-full"
-                  style={{ backgroundColor: currentSpace.color }}
-                />
-              )}
-              <h1 className="text-lg font-bold text-foreground">
-                {currentSpace?.name ?? spaceSlug}
-              </h1>
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {projects.length} project{projects.length !== 1 ? "s" : ""}
-            </p>
-          </div>
+    <AppPageShell>
+      <div className="flex items-center gap-3">
+        {currentSpace?.color && (
+          <div
+            className="h-3 w-3 rounded-full"
+            style={{ backgroundColor: currentSpace.color }}
+          />
+        )}
+        <div className="flex-1">
+          <h1 className="text-lg font-bold text-foreground">
+            {currentSpace?.name ?? spaceSlug}
+          </h1>
+          <p className="text-xs text-muted-foreground">
+            {projects.length} project{projects.length !== 1 ? "s" : ""}
+          </p>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger>
-            <Button className="h-9 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-sm">
-              {t("add")}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48 rounded-xl border border-border bg-card shadow-xl p-1.5">
-            <DropdownMenuItem
-              onClick={() => setIsCreateModalOpen(true)}
-              className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg cursor-pointer"
-            >
-              <FolderKanban className="h-4 w-4 text-primary" />
-              {t("add")} Project
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => setIsWidgetModalOpen(true)}
-              className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg cursor-pointer"
-            >
-              <LayoutGrid className="h-4 w-4 text-indigo-500" />
-              Add Widget
-            </DropdownMenuItem>
-            <div className="my-1 h-px bg-border" />
-            <DropdownMenuItem
-              onClick={() => setIsAutoLayout(true)}
-              className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg cursor-pointer"
-            >
-              <Wand2 className="h-4 w-4 text-amber-500" />
-              Auto Layout
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {addActions}
       </div>
 
-      {/* Widget Dashboard */}
       <div className="flex-1 min-h-0">
         <ProjectsOverviewDashboard
           isWidgetModalOpen={isWidgetModalOpen}
@@ -100,14 +69,12 @@ export function SpaceDetailView({ spaceSlug }: { spaceSlug: string }) {
         />
       </div>
 
-      {/* Create Modal */}
       <CreateProjectForm
         isOpen={isCreateModalOpen}
         onSuccess={() => setIsCreateModalOpen(false)}
         onCancel={() => setIsCreateModalOpen(false)}
       />
 
-      {/* Delete Dialog */}
       <DeleteRecordDialog
         open={Boolean(deleting)}
         onOpenChange={(open) => !open && setDeleting(null)}
@@ -116,6 +83,6 @@ export function SpaceDetailView({ spaceSlug }: { spaceSlug: string }) {
         isDeleting={false}
         onConfirm={() => setDeleting(null)}
       />
-    </div>
+    </AppPageShell>
   );
 }

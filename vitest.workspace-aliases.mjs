@@ -25,4 +25,6 @@ export const workspaceAliases = [
   { find: "@qentrah/domain-contracts", replacement: fromRoot("./packages/domain-contracts/src/index.ts") },
   { find: /^@qentrah\/web-foundation\/(.+)$/, replacement: fromRoot("./packages/web-foundation/src/$1.ts") },
   { find: "@qentrah/web-foundation", replacement: fromRoot("./packages/web-foundation/src/index.ts") },
+  { find: /^@qentrah\/our-platform-components\/(pipeline|widget-grid)$/, replacement: fromRoot("./packages/our-platform-components/src/$1/index.ts") },
+  { find: "@qentrah/our-platform-components", replacement: fromRoot("./packages/our-platform-components/src/index.ts") },
 ];

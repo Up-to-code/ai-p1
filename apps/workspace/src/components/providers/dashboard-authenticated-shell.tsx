@@ -16,6 +16,7 @@ import { WorkspaceRouteLoading } from "@/components/loading/workspace-route-load
 import { useAssistantPanel } from "@/components/layout/use-assistant-panel";
 import { ResizableAiPanel } from "./resizable-ai-panel";
 import { NavigationProvider } from "@/domains/navigation";
+import { WorkspaceStoreSync } from "@/domains/workspace/stores/workspace-store-sync";
 
 export interface DashboardAuthenticatedShellProps {
   children: ReactNode;
@@ -120,6 +121,7 @@ export function DashboardAuthenticatedShell({
     <ToastProvider>
       <SidebarRailProvider>
         <NavigationProvider>
+          <WorkspaceStoreSync />
           <div className="flex h-full overflow-hidden bg-background text-text-primary">
             <Sidebar />
 

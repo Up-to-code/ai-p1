@@ -17,7 +17,6 @@ describe("index HTTP loading states", () => {
       "src/domains/assets/components/assets-screens.tsx",
       "src/domains/calendar/components/calendar-screen.tsx",
       "src/domains/activity/components/activity-screen.tsx",
-      "src/domains/workspace/components/workspace-screen.tsx",
     ].map(readSource);
 
     for (const source of sources) {
@@ -33,7 +32,6 @@ describe("index HTTP loading states", () => {
       ["src/domains/clients/components/clients-screens.tsx", 'variant={view === "pipeline" ? "pipeline" : view === "calendar" ? "calendar" : "table"}'],
       ["src/domains/calendar/components/calendar-screen.tsx", 'variant="calendar"'],
       ["src/domains/activity/components/activity-screen.tsx", 'variant="activity"'],
-      ["src/domains/workspace/components/workspace-screen.tsx", 'variant="dashboard"'],
     ];
 
     for (const [path, expectedVariant] of expectations) {

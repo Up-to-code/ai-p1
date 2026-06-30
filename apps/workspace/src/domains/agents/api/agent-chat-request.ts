@@ -1,5 +1,3 @@
-"use client";
-
 import type { AgentChatAttachment, AgentChatEvent } from "./chat";
 
 type SendAgentChatRequestInput = {

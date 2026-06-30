@@ -1,3 +1,4 @@
+export { AddMenu, type AddMenuItem } from "./add-menu";
 export {
   AppDataTable,
   AppPageHeader,
@@ -9,6 +10,7 @@ export {
   AppThumbnailCell,
   AppToolbar,
 } from "./app-layout-kit";
+export { ViewSwitcher, type ViewOption } from "./view-switcher";
 export {
   WorkOsDocEditor,
   type WorkOsDocEditorProps,
@@ -36,3 +38,6 @@ export {
   ModulePanelFullscreenToggle,
   type ModuleTab,
 } from "./module-panel";
+export { TokenBar, AddTokenModal } from "./token-bar";
+export type { TokenOption, TokenBarProps } from "./token-bar";
+export * from "./entity-header";

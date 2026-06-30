@@ -28,7 +28,7 @@ function withoutPrivateClientFields(client: Doc<"clients">) {
   return safeClient;
 }
 
-async function presentClient(client: Doc<"clients">) {
+export async function presentClient(client: Doc<"clients">) {
   const safeClient = withoutPrivateClientFields(client);
   const pii = await revealClientPii(client);
   return {

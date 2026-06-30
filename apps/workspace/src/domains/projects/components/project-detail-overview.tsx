@@ -1,18 +1,17 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useAccountContext } from "@/domains/auth";
 import { useProjectQuery } from "../api/projects";
 import {
   useTasksQuery,
   useTasksGroupedQuery,
-  createTaskRequest,
-  updateTaskRequest,
-  deleteTaskRequest,
   readPersistedGroupBy,
   writePersistedGroupBy,
 } from "@/domains/tasks/api/tasks";
+import { useLocalConfig } from "@/domains/storage";
+import { useTaskMutations } from "@/domains/tasks/hooks/use-task-mutations";
 import {
   useFieldDefinitionsQuery,
   useFieldValuesQuery,
@@ -118,36 +117,27 @@ export function ProjectDetailOverview({ projectId }: ProjectDetailOverviewProps)
   const workspaceOrganizationId = account.workspace.status === "ready" ? account.workspace.organizationId : undefined;
   const project = useProjectQuery(workspaceOrganizationId ?? undefined, projectId);
 
-  const [views, setViews] = useState<ViewItem[]>([]);
-  const [activeViewId, setActiveViewId] = useState<string>("");
-
-  useEffect(() => {
-    const savedViews = localStorage.getItem(`project-views-${projectId}`);
-    if (savedViews) {
+  const storageKey = `project-views-${projectId}`;
+  const [views, setViews] = useLocalConfig<ViewItem[]>(storageKey, DEFAULT_VIEWS);
+  const [activeViewId, setActiveViewId] = useState<string>(() => {
+    const saved = typeof window !== "undefined" ? localStorage.getItem(storageKey) : null;
+    if (saved) {
       try {
-        const parsed = JSON.parse(savedViews);
-        if (parsed.length > 0) {
-          setViews(parsed);
-          setActiveViewId(parsed[0].id);
-          return;
-        }
-      } catch (e) { /* ignore */ }
+        const parsed = JSON.parse(saved);
+        if (parsed.length > 0) return parsed[0].id;
+      } catch { /* ignore */ }
     }
-    setViews(DEFAULT_VIEWS);
-    setActiveViewId(DEFAULT_VIEWS[0].id);
-  }, [projectId]);
+    return DEFAULT_VIEWS[0].id;
+  });
 
   const handleAddView = (type: ViewType) => {
     const newView: ViewItem = { id: `view-${Date.now()}`, type };
-    const updatedViews = [...views, newView];
-    setViews(updatedViews);
+    setViews([...views, newView]);
     setActiveViewId(newView.id);
-    localStorage.setItem(`project-views-${projectId}`, JSON.stringify(updatedViews));
   };
 
   const handleReorder = (next: ViewItem[]) => {
     setViews(next);
-    localStorage.setItem(`project-views-${projectId}`, JSON.stringify(next));
   };
 
   const handleRemoveView = (viewId: string) => {
@@ -155,7 +145,6 @@ export function ProjectDetailOverview({ projectId }: ProjectDetailOverviewProps)
     if (next.length === 0) return;
     setViews(next);
     if (activeViewId === viewId) setActiveViewId(next[0].id);
-    localStorage.setItem(`project-views-${projectId}`, JSON.stringify(next));
   };
 
   if (project === undefined) {
@@ -220,6 +209,7 @@ export function ProjectDetailOverview({ projectId }: ProjectDetailOverviewProps)
 export function TaskTableView({ projectId, organizationId }: { projectId: string; organizationId: string }) {
   const tasksResult = useTasksQuery(organizationId, { projectId });
   const tasks = tasksResult.data ?? [];
+  const { createTask, updateTask, deleteTask } = useTaskMutations(organizationId);
 
   const { data: members = [] } = useQuery({
     queryKey: ["organization-members", organizationId],
@@ -291,21 +281,10 @@ export function TaskTableView({ projectId, organizationId }: { projectId: string
     e.preventDefault();
     if (!newTitle.trim()) return;
     try {
-      await createTaskRequest(organizationId, {
-        title: newTitle.trim(),
-        status: "todo",
-        priority: "normal",
-        visibility: "team",
-        assigneeUserId: "",
-        clientId: "",
-        projectId,
-        dueDate: "",
-        description: "",
-        tags: "",
-      });
+      await createTask({ title: newTitle.trim(), projectId });
       setNewTitle("");
-    } catch (e) {
-      console.error(e);
+    } catch {
+      /* error already handled by useTaskMutations */
     }
   };
 
@@ -319,37 +298,24 @@ export function TaskTableView({ projectId, organizationId }: { projectId: string
       const optimisticTask = { ...task, ...updates }
       tableRef.current?.applyUpdate([optimisticTask])
       try {
-        await updateTaskRequest(organizationId, task.id, {
-          title: task.title,
-          status: task.status,
-          priority: task.priority,
-          visibility: task.visibility || "team",
-          assigneeUserId: task.assigneeUserId || "",
-          clientId: task.clientId || "",
-          projectId: task.projectId || "",
-          dueDate: task.dueDate || "",
-          description: task.description || "",
-          tags: (task.tags || []).join(", "),
-          ...updates,
-        })
-      } catch (e) {
-        console.error("Task update failed; reverting", e)
+        await updateTask(task.id, updates)
+      } catch {
         tableRef.current?.applyUpdate([previousTask])
       }
     },
-    [organizationId]
+    [updateTask]
   );
 
   const handleDelete = useCallback(
     async (taskId: string) => {
       try {
         tableRef.current?.applyRemove([taskId])
-        await deleteTaskRequest(organizationId, taskId)
-      } catch (e) {
-        console.error(e)
+        await deleteTask(taskId)
+      } catch {
+        /* error already handled by useTaskMutations */
       }
     },
-    [organizationId]
+    [deleteTask]
   )
 
   const memberNameById = useMemo(() => {
@@ -808,9 +774,9 @@ export function TaskTableView({ projectId, organizationId }: { projectId: string
    TASK LIST VIEW
    ========================================================================== */
 export function TaskListView({ projectId, organizationId }: { projectId: string; organizationId: string }) {
-  const queryClient = useQueryClient();
   const tasksResult = useTasksQuery(organizationId, { projectId });
   const tasks = tasksResult.data ?? [];
+  const { updateTask } = useTaskMutations(organizationId);
 
   const [expandedStatus, setExpandedStatus] = useState<Record<string, boolean>>({
     todo: true,
@@ -834,22 +800,9 @@ export function TaskListView({ projectId, organizationId }: { projectId: string;
 
   const handleUpdate = async (task: any, updates: any) => {
     try {
-      await updateTaskRequest(organizationId, task.id, {
-        title: task.title,
-        status: task.status,
-        priority: task.priority,
-        visibility: task.visibility || "team",
-        assigneeUserId: task.assigneeUserId || "",
-        clientId: task.clientId || "",
-        projectId: task.projectId || "",
-        dueDate: task.dueDate || "",
-        description: task.description || "",
-        tags: (task.tags || []).join(", "),
-        ...updates,
-      });
-      queryClient.invalidateQueries({ queryKey: ["tasks", organizationId] });
-    } catch (e) {
-      console.error(e);
+      await updateTask(task.id, updates);
+    } catch {
+      /* error already handled by useTaskMutations */
     }
   };
 
@@ -931,9 +884,9 @@ export function TaskListView({ projectId, organizationId }: { projectId: string;
    TASK BOARD (KANBAN) VIEW
    ========================================================================== */
 export function TaskBoardView({ projectId, organizationId }: { projectId: string; organizationId: string }) {
-  const queryClient = useQueryClient();
   const tasksResult = useTasksQuery(organizationId, { projectId });
   const tasks = tasksResult.data ?? [];
+  const { updateTask } = useTaskMutations(organizationId);
 
   const columns = [
     { key: "todo", label: "To Do", color: STATUS_COLORS.todo },
@@ -944,22 +897,9 @@ export function TaskBoardView({ projectId, organizationId }: { projectId: string
 
   const handleUpdate = async (task: any, updates: any) => {
     try {
-      await updateTaskRequest(organizationId, task.id, {
-        title: task.title,
-        status: task.status,
-        priority: task.priority,
-        visibility: task.visibility || "team",
-        assigneeUserId: task.assigneeUserId || "",
-        clientId: task.clientId || "",
-        projectId: task.projectId || "",
-        dueDate: task.dueDate || "",
-        description: task.description || "",
-        tags: (task.tags || []).join(", "),
-        ...updates,
-      });
-      queryClient.invalidateQueries({ queryKey: ["tasks", organizationId] });
-    } catch (e) {
-      console.error(e);
+      await updateTask(task.id, updates);
+    } catch {
+      /* error already handled by useTaskMutations */
     }
   };
 

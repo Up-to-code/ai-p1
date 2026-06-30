@@ -1,5 +1,3 @@
-"use client";
-
 import type { InfiniteData } from "@tanstack/react-query";
 import type { IndexedInfinitePage } from "@/domains/resources/workspace-resource-request";
 import type { Client } from "./store/clients.types";

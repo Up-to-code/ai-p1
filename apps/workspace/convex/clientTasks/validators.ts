@@ -7,6 +7,13 @@ export const clientTaskStatusValidator = v.union(
   v.literal("waiting"),
   v.literal("done"),
   v.literal("canceled"),
+  v.literal("pending"),
+  v.literal("progress"),
+  v.literal("submitted"),
+  v.literal("failed"),
+  v.literal("success"),
+  v.literal("inReview"),
+  v.literal("expire"),
 );
 
 export const visibilityValidator = v.union(v.literal("private"), v.literal("team"), v.literal("workspace"));

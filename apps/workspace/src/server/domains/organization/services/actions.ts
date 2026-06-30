@@ -34,6 +34,11 @@ const listMembers = listMembersForOrganizationAction;
 const listInvitations = listInvitationsForOrganizationAction;
 const listRoles = listRolesForOrganizationAction;
 
+export async function listOrganizationMembers(c: Context, organizationId: string) {
+  await requireOrganizationAction(organizationId, "member", "read");
+  return listMembers(c, organizationId);
+}
+
 export async function listOrganizationWorkRoles(c: Context, organizationId: string) {
   await requireOrganizationAction(organizationId, "role", "read");
   return listRoles(c, organizationId);

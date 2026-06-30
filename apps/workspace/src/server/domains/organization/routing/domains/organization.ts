@@ -17,6 +17,7 @@ import {
   handleCreateOrganizationRole,
   handleDeleteOrganizationRole,
   handleGetOrganizationCapabilities,
+  handleListOrganizationMembers,
   handleListOrganizationRoles,
   handleRemoveOrganizationMember,
   handleUpdateOrganizationIdentity,
@@ -35,6 +36,7 @@ organizationSubRouter.delete("/:organizationId/invite-links/:inviteLinkId", hand
 
 organizationSubRouter.get("/:organizationId/profile", handleGetOrganizationProfile);
 organizationSubRouter.patch("/:organizationId/profile", handleUpdateOrganizationProfile);
+organizationSubRouter.get("/:organizationId/members", handleListOrganizationMembers);
 organizationSubRouter.get("/:organizationId/capabilities", handleGetOrganizationCapabilities);
 
 organizationSubRouter.get("/:organizationId/api-keys", handleListOrganizationApiKeys);

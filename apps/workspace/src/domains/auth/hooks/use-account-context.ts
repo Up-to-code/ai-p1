@@ -185,4 +185,16 @@ export function useAccountContext() {
   return value;
 }
 
+export function useOrgId(): string | null {
+  const account = useAccountContext();
+  return account.workspace.status === "ready"
+    ? account.workspace.organizationId ?? null
+    : null;
+}
+
+export function useUserId(): string | undefined {
+  const account = useAccountContext();
+  return account.workspace.status === "ready" ? account.user.id : undefined;
+}
+
 export type { AccountContextValue };

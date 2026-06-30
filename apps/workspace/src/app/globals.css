@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap');
 @import "tailwindcss";
-@import "react-big-calendar/lib/css/react-big-calendar.css";
+
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -44,6 +44,75 @@
   --q-border: #E5E5E5;
   --q-border-strong: #D0D0D0;
   --q-divider: #E5E5E5;
+
+  /* ── Brand Semantic Colors ── */
+  --q-brand-success: #00753E;
+  --q-brand-on-success: #EFF8F2;
+  --q-brand-error: #A71E0F;
+  --q-brand-on-error: #FCEFEF;
+  --q-brand-review: #ED8E00;
+  --q-brand-on-review: #FDFAEA;
+  --q-brand-expire: #2C539A;
+  --q-brand-on-expire: #ECF0FE;
+  --q-brand-primary: #6F00C2;
+  --q-brand-on-primary: #F8E4FF;
+  --q-brand-progress: #31574B;
+  --q-brand-on-progress: #F3F5FA;
+
+  /* ── Calendar Event Colors (brand palette) ── */
+  --q-calendar-meeting: var(--q-brand-primary);
+  --q-calendar-deadline: var(--q-brand-error);
+  --q-calendar-reminder: var(--q-brand-review);
+  --q-calendar-milestone: var(--q-brand-success);
+  --q-calendar-focus-block: var(--q-brand-progress);
+  --q-calendar-draft: var(--q-brand-on-primary);
+  --q-calendar-today: var(--q-brand-primary);
+
+  /* ── SVAR Calendar Theme (Apple-style mapping) ── */
+  --wx-color-primary: var(--q-accent);
+  --wx-color-primary-font: var(--q-surface);
+  --wx-color-primary-selected: transparent;
+  --wx-color-secondary: var(--q-bg-secondary);
+  --wx-color-secondary-font: var(--q-text-primary);
+  --wx-color-secondary-hover: var(--q-bg-tertiary);
+  --wx-color-secondary-border: var(--q-border);
+  --wx-color-success: var(--q-brand-success);
+  --wx-color-warning: var(--q-brand-review);
+  --wx-color-danger: var(--q-brand-error);
+  --wx-color-info: var(--q-brand-expire);
+  --wx-color-link: var(--q-brand-expire);
+  --wx-color-font: var(--q-text-primary);
+  --wx-color-font-alt: var(--q-text-muted);
+  --wx-color-font-disabled: var(--q-text-muted);
+  --wx-background: var(--q-bg);
+  --wx-background-alt: var(--q-bg-secondary);
+  --wx-background-hover: var(--q-bg-tertiary);
+  --wx-color-disabled: var(--q-bg-tertiary);
+  --wx-color-disabled-alt: var(--q-text-muted);
+  --wx-border: var(--q-border);
+  --wx-border-light: var(--q-border);
+  --wx-border-medium: var(--q-border-strong);
+  --wx-border-radius: var(--radius-md);
+  --wx-calendar-grid-color: color-mix(in srgb, var(--q-border) 50%, transparent);
+  --wx-calendar-weekend-background: transparent;
+  --wx-calendar-cell-size: 32px;
+  --wx-calendar-gap: 0px;
+  --wx-calendar-border-radius: var(--radius-md);
+  --wx-calendar-padding: 0px;
+  --wx-calendar-y-scale-width: 50px;
+  --wx-font-family: var(--font-sans);
+  --wx-font-size: 13px;
+  --wx-font-size-sm: 11px;
+  --wx-font-size-md: 12px;
+  --wx-font-size-hd: 13px;
+  --wx-line-height: 1.4;
+  --wx-font-weight: 400;
+  --wx-font-weight-md: 500;
+  --wx-font-weight-b: 600;
+  --wx-shadow-light: var(--shadow-sm);
+  --wx-shadow-medium: var(--shadow);
+  --wx-box-shadow: var(--shadow-sm);
+  --wx-box-shadow-strong: var(--shadow-md);
 
   /* ── Accent / Primary ── */
   --q-accent: #111111;
@@ -601,4 +670,87 @@
 }
 .modal-content-animate-in {
   animation: modal-content-in 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── Apple Calendar Theme ── */
+
+/* Month view today — red circle */
+.q-calendar-view [class*="wx-today"] [class*="wx-day-number"] {
+  position: relative;
+  color: #fff !important;
+  z-index: 1;
+  font-weight: 600 !important;
+}
+
+.q-calendar-view [class*="wx-today"] [class*="wx-day-number"]::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 22px;
+  height: 22px;
+  background: var(--q-calendar-today);
+  border-radius: 50%;
+  z-index: -1;
+}
+
+/* Remove today background highlight in month grid */
+.q-calendar-view [class*="wx-grid-cell"][class*="wx-today"] {
+  background-color: transparent !important;
+}
+
+/* Remove weekend background */
+.q-calendar-view [class*="wx-weekend"] {
+  background-color: transparent !important;
+}
+
+/* Out-of-month days — subtle */
+.q-calendar-view [class*="wx-out-of-month"] {
+  opacity: 0.3;
+}
+
+/* Day/week view today — red circle */
+.q-calendar-view [class*="wx-today"] [class*="wx-day-num"] {
+  background: var(--q-calendar-today) !important;
+  color: #fff !important;
+}
+
+/* Day/week view header */
+.q-calendar-view [class*="wx-x-header-cell"] {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Week view time scale */
+.q-calendar-view [class*="wx-y-header-cell"] {
+  font-size: 10px !important;
+}
+
+/* Event bar styling — clean minimal */
+.q-calendar-view [class*="wx-bar-event"] {
+  border-radius: 3px !important;
+  padding: 1px 6px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Event box (month) styling */
+.q-calendar-view [class*="wx-box-event"] {
+  border-radius: 3px !important;
+  padding: 1px 4px !important;
+  font-size: 10px !important;
+  box-shadow: none !important;
+  border: none !important;
+  min-height: 18px;
+}
+
+/* Event more link */
+.q-calendar-view [class*="wx-more-link"] {
+  font-size: 10px !important;
+  font-weight: 500 !important;
 }

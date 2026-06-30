@@ -3711,7 +3711,14 @@
       "inProgress": "In progress",
       "waiting": "Waiting",
       "done": "Done",
-      "canceled": "Canceled"
+      "canceled": "Canceled",
+      "pending": "Pending",
+      "progress": "Progress",
+      "submitted": "Submitted",
+      "failed": "Failed",
+      "success": "Success",
+      "inReview": "In review",
+      "expire": "Expire"
     },
     "priorities": {
       "low": "Low",

@@ -3,11 +3,11 @@ import { action, internalMutation, internalQuery } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { protectClientPii, revealClientPii } from "../security/clientPii";
+import { presentWorkspaceRecord } from "../shared/present";
 import {
   assertActiveWorkspaceRecord,
   assertPublicWorkspaceRecord,
   mcpActor,
-  presentWorkspaceRecord,
   workspaceReference,
   writeMcpWorkspaceAudit,
 } from "../workspace/businessData";

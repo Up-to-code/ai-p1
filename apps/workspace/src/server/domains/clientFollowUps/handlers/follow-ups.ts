@@ -1,16 +1,21 @@
 import type { Context } from "hono";
-import { createCrudHandlers } from "@/server/utils/handler-factory";
+import { createDomainRouter } from "@/server/utils/create-domain-router";
 import { requireOrganizationId } from "@/server/utils/organization/require-organization-id";
 import { actionErrorJson } from "@/server/utils/response/action-error";
+import { fetchAuthMutation } from "@/server/auth/clerk-convex";
 import { followUpPayloadSchema } from "../validation/follow-up.schema";
-import { createFollowUp, deleteFollowUp, updateFollowUp, markFollowUpComplete } from "../services/follow-ups";
+import { api } from "@convex/_generated/api";
 
-export const { handleCreate: handleCreateFollowUp, handleUpdate: handleUpdateFollowUp, handleDelete: handleDeleteFollowUp } = createCrudHandlers({
+export const { handleCreate: handleCreateFollowUp, handleUpdate: handleUpdateFollowUp, handleDelete: handleDeleteFollowUp } = createDomainRouter({
   resourceName: "followUp",
   createSchema: followUpPayloadSchema,
   updateSchema: followUpPayloadSchema,
   resourceIdParam: "followUpId",
-  service: { create: createFollowUp, update: updateFollowUp, delete: deleteFollowUp },
+  convex: {
+    create: api.clientFollowUps.write.createFromHono,
+    update: api.clientFollowUps.write.updateFromHono,
+    delete: api.clientFollowUps.write.deleteFromHono,
+  },
 });
 
 export async function handleMarkFollowUpComplete(c: Context) {
@@ -20,7 +25,10 @@ export async function handleMarkFollowUpComplete(c: Context) {
   if (!followUpId) return c.json({ error: "Follow-up id is required." }, 400);
 
   try {
-    return c.json({ followUp: await markFollowUpComplete(org.organizationId, followUpId) });
+    return c.json({ followUp: await fetchAuthMutation(api.clientFollowUps.write.markComplete, {
+      organizationId: org.organizationId,
+      followUpId: followUpId as never,
+    }) });
   } catch (error) {
     return actionErrorJson(c, error, "Follow-up action failed.");
   }

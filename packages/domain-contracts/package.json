@@ -16,89 +16,9 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./calendar": {
-      "types": "./dist/calendar.d.ts",
-      "import": "./dist/calendar.js"
-    },
-    "./clients": {
-      "types": "./dist/clients.d.ts",
-      "import": "./dist/clients.js"
-    },
-    "./deals": {
-      "types": "./dist/deals.d.ts",
-      "import": "./dist/deals.js"
-    },
-    "./projects": {
-      "types": "./dist/projects.d.ts",
-      "import": "./dist/projects.js"
-    },
-    "./tasks": {
-      "types": "./dist/tasks.d.ts",
-      "import": "./dist/tasks.js"
-    },
-    "./qentrah-pro": {
-      "types": "./dist/qentrahPro.d.ts",
-      "import": "./dist/qentrahPro.js"
-    },
-    "./compliance": {
-      "types": "./dist/compliance.d.ts",
-      "import": "./dist/compliance.js"
-    },
-    "./errors": {
-      "types": "./dist/errors.d.ts",
-      "import": "./dist/errors.js"
-    },
-    "./files": {
-      "types": "./dist/files.d.ts",
-      "import": "./dist/files.js"
-    },
-    "./gcc-countries": {
-      "types": "./dist/gccCountries.d.ts",
-      "import": "./dist/gccCountries.js"
-    },
-    "./notifications": {
-      "types": "./dist/notifications.d.ts",
-      "import": "./dist/notifications.js"
-    },
-    "./oauth": {
-      "types": "./dist/oauth.d.ts",
-      "import": "./dist/oauth.js"
-    },
-    "./org-api": {
-      "types": "./dist/orgApi.d.ts",
-      "import": "./dist/orgApi.js"
-    },
-    "./organization-api-keys": {
-      "types": "./dist/organizationApiKeys.d.ts",
-      "import": "./dist/organizationApiKeys.js"
-    },
-    "./organizations": {
-      "types": "./dist/organizations.d.ts",
-      "import": "./dist/organizations.js"
-    },
-    "./profiles": {
-      "types": "./dist/profiles.d.ts",
-      "import": "./dist/profiles.js"
-    },
-    "./session": {
-      "types": "./dist/session.d.ts",
-      "import": "./dist/session.js"
-    },
     "./subscription-pricing": {
       "types": "./dist/subscriptionPricing.d.ts",
       "import": "./dist/subscriptionPricing.js"
-    },
-    "./verifications": {
-      "types": "./dist/verifications.d.ts",
-      "import": "./dist/verifications.js"
-    },
-    "./workspace": {
-      "types": "./dist/workspace.d.ts",
-      "import": "./dist/workspace.js"
-    },
-    "./work-os": {
-      "types": "./dist/workOs.d.ts",
-      "import": "./dist/workOs.js"
     }
   },
   "scripts": {
@@ -112,11 +32,9 @@
     "zod": "^4.3.6"
   },
   "peerDependencies": {
-    "@qentrah/ag-ui": "0.1.0",
     "convex": "^1.31.6"
   },
   "devDependencies": {
-    "@qentrah/ag-ui": "0.1.0",
     "@types/node": "^20.14.9",
     "convex": "^1.31.6",
     "typescript": "^5",

@@ -5,39 +5,9 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
-import { protectClientPii, revealClientPii } from "../security/clientPii";
-import { isoDate } from "../shared/present";
-import { clientInputValidator, clientValidator, resolveClientPipelineStage } from "./validators";
-
-function withoutPrivateClientFields(client: Doc<"clients">) {
-  const safeClient = { ...client };
-  delete safeClient.deletedAt;
-  delete safeClient.isDeleted;
-  delete safeClient.encryptedEmail;
-  delete safeClient.encryptedPhone;
-  delete safeClient.piiEncryptedAt;
-  return safeClient;
-}
-
-async function presentClient(client: Doc<"clients">) {
-  const safeClient = withoutPrivateClientFields(client);
-  const pii = await revealClientPii(client);
-  return {
-    ...safeClient,
-    ...pii,
-    id: client._id,
-    visibility: client.visibility ?? "private",
-    phone: pii.phone ?? client.phone ?? "",
-    contact: pii.email ?? client.email ?? client.phone ?? client.company ?? "",
-    priority: "normal" as const,
-    budget: "",
-    assetInterest: client.notes ?? client.source,
-    pipelineStage: resolveClientPipelineStage(client),
-    pipelineOrder: client.pipelineOrder,
-    added: isoDate(client.createdAt),
-    lastContact: isoDate(client.updatedAt),
-  };
-}
+import { protectClientPii } from "../security/clientPii";
+import { presentClient } from "./read";
+import { clientInputValidator, clientValidator } from "./validators";
 
 async function assertClient(ctx: MutationCtx, organizationId: string, clientId: Id<"clients">) {
   const client = await ctx.db.get(clientId);

@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { brandDomainUrl } from "@qentrah/brand-identity";
 
@@ -8,9 +9,17 @@ export default async function WorkspaceHome({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const { userId } = await auth();
 
-  if (userId) {
+  let isAuthenticated = false;
+
+  try {
+    const { userId } = await auth();
+    isAuthenticated = !!userId;
+  } catch {
+    isAuthenticated = (await cookies()).has("__session");
+  }
+
+  if (isAuthenticated) {
     redirect(`/${locale}/ws`);
   }
 

@@ -9,6 +9,7 @@ import {
   createOrganizationWorkRole,
   deleteOrganizationWorkRole,
   getCapabilities,
+  listOrganizationMembers,
   listOrganizationWorkRoles,
   removeOrganizationMember,
   updateOrganizationIdentity,
@@ -40,6 +41,18 @@ export async function handleGetOrganizationCapabilities(c: Context) {
       });
     }
     return c.json({ capabilities });
+  } catch (error) {
+    return actionErrorJson(c, error, "Organization action failed.");
+  }
+}
+
+export async function handleListOrganizationMembers(c: Context) {
+  const org = requireOrganizationId(c);
+  if (!org.ok) return org.response;
+
+  try {
+    const members = await listOrganizationMembers(c, org.organizationId);
+    return c.json({ members });
   } catch (error) {
     return actionErrorJson(c, error, "Organization action failed.");
   }

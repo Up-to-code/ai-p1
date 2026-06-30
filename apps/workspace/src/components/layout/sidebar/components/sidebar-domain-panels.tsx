@@ -1,5 +1,6 @@
 "use client";
 
+import type React from "react";
 import {
   ListTodo,
   CalendarDays,
@@ -30,7 +31,7 @@ function PanelLink({
   clearParams,
 }: {
   href: string;
-  icon: typeof ListTodo;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   paramKey?: string;
   paramValue?: string;
@@ -83,12 +84,7 @@ export function SidebarCalendarPanel() {
   return (
     <SidebarPanelLayout title="Calendar">
       <div className="flex flex-col gap-2">
-        <PanelLink href="/calendar" icon={CalendarDays} label="All events" clearParams={["view", "filter"]} />
-        <PanelLink href="/calendar?view=month" icon={BarChart3} label="Month view" paramKey="view" paramValue="month" />
-        <PanelLink href="/calendar?view=week" icon={BarChart3} label="Week view" paramKey="view" paramValue="week" />
-        <div className="mx-4 my-2 h-px bg-border/50" />
-        <PanelLink href="/calendar?filter=upcoming" icon={Clock} label="Upcoming" paramKey="filter" paramValue="upcoming" />
-        <PanelLink href="/calendar?filter=shared" icon={Share2} label="Shared" paramKey="filter" paramValue="shared" />
+        <PanelLink href="/calendar" icon={CalendarDays} label="Calendar" clearParams={["view", "filter"]} />
       </div>
     </SidebarPanelLayout>
   );

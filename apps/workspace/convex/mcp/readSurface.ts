@@ -1,4 +1,5 @@
-import { isPublicWorkspaceRecord, presentWorkspaceRecord } from "../workspace/businessData";
+import { presentWorkspaceRecord } from "../shared/present";
+import { isPublicWorkspaceRecord } from "../workspace/businessData";
 import { cappedSearchResult, matchesSearch, pagedResult } from "./toolInputs";
 
 type PageResult<TRecord> = {

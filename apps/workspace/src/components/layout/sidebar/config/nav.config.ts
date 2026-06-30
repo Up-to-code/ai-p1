@@ -3,27 +3,28 @@ import {
   BadgeDollarSign,
   Bot,
   Building2,
-  CalendarDays,
-  FileText,
-  FolderGit2,
-  Home,
   Inbox,
-  KanbanSquare,
-  ListTodo,
   Plug,
-  UserRound,
-  Workflow,
-  LayoutDashboard,
-  Users,
-  Settings,
-  Layers,
   Shield,
+  UserRound,
+  Users,
 } from "lucide-react";
+import {
+  BarChartFilledIcon,
+  CalendarIcon,
+  DocumentLinesIcon,
+  FolderIcon,
+  HomeIcon,
+  KanbanIcon,
+  ListLinesIcon,
+  SettingsIcon,
+  StatsIcon,
+} from "../components/clickup-icons";
 
 export type SidebarNavItem = {
   name: string;
   href?: string;
-  icon: LucideIcon;
+  icon: LucideIcon | React.ComponentType<{ className?: string }>;
   label?: string;
   /** If true, clicking opens the secondary panel instead of navigating. */
   opensPanel?: boolean;
@@ -31,48 +32,48 @@ export type SidebarNavItem = {
 
 /** Static top-section navigation entries (always visible, personal). */
 export const sidebarStaticNav: SidebarNavItem[] = [
-  { name: "home", href: "/ws", icon: Home, label: "Home", opensPanel: true },
+  { name: "home", href: "/ws", icon: HomeIcon, label: "Home", opensPanel: true },
   { name: "inbox", href: "/inbox", icon: Inbox, label: "Inbox" },
 ];
 
 /** Primary workspace-level navigation entries. */
 export const sidebarPrimaryNav: SidebarNavItem[] = [
   { name: "ai", href: "/ai", icon: Bot, label: "AI" },
-  { name: "spaces", href: "/spaces", icon: Layers, label: "Spaces" },
+  { name: "spaces", href: "/spaces", icon: FolderIcon, label: "Spaces" },
   { name: "clients", href: "/clients", icon: UserRound },
-  { name: "opportunities", href: "/opportunities", icon: KanbanSquare },
+  { name: "opportunities", href: "/opportunities", icon: KanbanIcon },
   { name: "deals", href: "/deals", icon: BadgeDollarSign },
-  { name: "tasks", href: "/tasks", icon: ListTodo },
-  { name: "calendar", href: "/calendar", icon: CalendarDays },
-  { name: "docs", href: "/docs", icon: FileText },
+  { name: "tasks", href: "/tasks", icon: ListLinesIcon },
+  { name: "calendar", href: "/calendar", icon: CalendarIcon },
+  { name: "docs", href: "/docs", icon: DocumentLinesIcon },
 ];
 
 /** Space-level navigation (when a space is selected, no project). */
 export const sidebarSpaceNav: SidebarNavItem[] = [
-  { name: "projects", href: "/spaces", icon: FolderGit2 },
+  { name: "projects", href: "/spaces", icon: FolderIcon },
   { name: "teams", href: "/spaces/teams", icon: Users },
   { name: "members", href: "/spaces/members", icon: Shield },
 ];
 
 /** Project-level navigation (when a project is selected). */
 export const sidebarProjectNav: SidebarNavItem[] = [
-  { name: "overview", icon: LayoutDashboard },
-  { name: "tasks", icon: ListTodo },
-  { name: "calendar", icon: CalendarDays },
-  { name: "files", icon: FileText },
+  { name: "overview", icon: BarChartFilledIcon },
+  { name: "tasks", icon: ListLinesIcon },
+  { name: "calendar", icon: CalendarIcon },
+  { name: "files", icon: DocumentLinesIcon },
   { name: "team", icon: Users },
 ];
 
 /** Navigation entries shown as coming soon. */
 export const sidebarComingSoonNav: SidebarNavItem[] = [
-  { name: "automations", icon: Workflow },
+  { name: "automations", icon: StatsIcon },
   { name: "integrations", icon: Plug },
 ];
 
 /** Workspace settings navigation. */
 export const sidebarWorkspaceNav: SidebarNavItem[] = [
   { name: "organization", href: "/settings/organization", icon: Building2 },
-  { name: "workspaceSettings", href: "/settings/workspace", icon: Settings },
+  { name: "workspaceSettings", href: "/settings/workspace", icon: SettingsIcon },
 ];
 
 export const sidebarVisibleThreadLimit = 3;

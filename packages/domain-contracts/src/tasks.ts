@@ -2,7 +2,9 @@ import { z } from "zod";
 import { visibilitySchema } from "./clients";
 
 export const taskPrioritySchema = z.enum(["low", "normal", "high", "urgent"]);
-export const taskStatusSchema = z.enum(["todo", "inProgress", "waiting", "done", "canceled"]);
+export const taskStatusSchema = z.enum([
+  "todo", "inProgress", "waiting", "done", "canceled",
+]);
 
 export const checklistItemSchema = z.object({
   id: z.string(),

@@ -53,7 +53,7 @@ const dealStage = z.enum(["lead", "qualified", "proposal_sent", "contract_sent",
 const dealStatus = z.enum(["open", "won", "lost", "paused"]).optional();
 const calendarType = z.enum(["meeting", "deadline", "reminder", "milestone", "focusBlock"]).optional();
 const calendarStatus = z.enum(["confirmed", "pending", "draft"]).optional();
-const taskStatus = z.enum(["todo", "inProgress", "waiting", "done", "canceled"]).optional();
+const taskStatus = z.enum(["todo", "inProgress", "waiting", "done", "canceled", "pending", "progress", "submitted", "failed", "success", "inReview", "expire"]).optional();
 const priority = z.enum(["low", "normal", "high", "urgent"]).optional();
 const mediaKind = z.enum(["image", "video", "document"]).optional();
 
