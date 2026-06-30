@@ -5,9 +5,15 @@ export function getActiveViewFromPath(pathname: string): string {
   return lastSegment === "ws" ? "overview" : lastSegment;
 }
 
-export function buildPath(id: string, searchParams: string): string {
-  const base = id === "overview" ? "/ws" : `/ws/${id}`;
-  return searchParams ? `${base}?${searchParams}` : base;
+export function buildPath(id: string, existingParams: string): string {
+  const params = new URLSearchParams(existingParams);
+  if (id === "overview") {
+    params.delete("view");
+  } else {
+    params.set("view", id);
+  }
+  const qs = params.toString();
+  return qs ? `/ws?${qs}` : "/ws";
 }
 
 export function resolveActiveTokens(
