@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
+import { clerkAuthComponent } from "../auth";
 
 export const create = mutation({
   args: {
@@ -11,6 +12,11 @@ export const create = mutation({
   },
   returns: v.id("pipeline_stages"),
   handler: async (ctx, args) => {
+    const user = await clerkAuthComponent.getAuthUser(ctx);
+    if (!user) {
+      throw new Error("Authentication required to create pipeline stages.");
+    }
+
     const existing = await ctx.db
       .query("pipeline_stages")
       .withIndex("by_organization", (q) => q.eq("organizationId", args.organizationId))
@@ -44,6 +50,16 @@ export const update = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
+    const stage = await ctx.db.get(args.stageId);
+    if (!stage) {
+      throw new Error("Pipeline stage was not found.");
+    }
+
+    const user = await clerkAuthComponent.getAuthUser(ctx);
+    if (!user) {
+      throw new Error("Authentication required to update pipeline stages.");
+    }
+
     const now = Date.now();
     const patch: Record<string, unknown> = { updatedAt: now };
     if (args.name !== undefined) patch.name = args.name;
@@ -59,6 +75,16 @@ export const remove = mutation({
   args: { stageId: v.id("pipeline_stages") },
   returns: v.null(),
   handler: async (ctx, args) => {
+    const stage = await ctx.db.get(args.stageId);
+    if (!stage) {
+      throw new Error("Pipeline stage was not found.");
+    }
+
+    const user = await clerkAuthComponent.getAuthUser(ctx);
+    if (!user) {
+      throw new Error("Authentication required to delete pipeline stages.");
+    }
+
     await ctx.db.delete(args.stageId);
     return null;
   },
@@ -74,6 +100,11 @@ export const reorder = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
+    const user = await clerkAuthComponent.getAuthUser(ctx);
+    if (!user) {
+      throw new Error("Authentication required to reorder pipeline stages.");
+    }
+
     const now = Date.now();
     for (const { stageId, order } of args.stageOrders) {
       const stage = await ctx.db.get(stageId);
@@ -89,6 +120,11 @@ export const seedDefaults = mutation({
   args: { organizationId: v.string() },
   returns: v.null(),
   handler: async (ctx, args) => {
+    const user = await clerkAuthComponent.getAuthUser(ctx);
+    if (!user) {
+      throw new Error("Authentication required to seed pipeline stages.");
+    }
+
     const existing = await ctx.db
       .query("pipeline_stages")
       .withIndex("by_organization", (q) => q.eq("organizationId", args.organizationId))

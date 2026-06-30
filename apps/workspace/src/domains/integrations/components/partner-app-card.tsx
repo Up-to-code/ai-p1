@@ -5,6 +5,7 @@ import { AlertCircle, ArrowUpRight, CheckCircle2, Clock, Plug, RefreshCw } from 
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
 import { useAccountContext } from "@/domains/auth";
+import { logger } from "@/lib/logger";
 import { createPartnerConnectionGrant } from "../integrations-runtime";
 import type { PartnerCatalogCardModel } from "../store/integrations.view-model";
 import { StatusPill } from "@/components/shared/crud-ui";
@@ -41,7 +42,7 @@ export function PartnerAppCard({
         onConnectionChanged();
       }
     } catch (e) {
-      console.error(e);
+      logger.error("partner_app.connect_failed", { error: e });
     } finally {
       setIsConnecting(false);
     }

@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useOptimisticInvalidation } from "@/domains/cache/hooks/use-optimistic-invalidation";
+import { logger } from "@/lib/logger";
 import { useTranslations } from "next-intl";
 import { projectSchema, type ProjectFormValues } from "../validation/project.schema";
 import { useAccountContext } from "@/domains/auth";
@@ -93,7 +94,7 @@ export function EditProjectForm({ project, onSuccess, onCancel }: EditProjectFor
       onSuccess?.();
       router.push("/projects");
     } catch (error) {
-      console.error("Update project error:", error);
+      logger.error("project.update_failed", { error });
       toast({ title: t("editFailed", { defaultMessage: "Failed to update project" }), type: "error" });
       setIsSubmitting(false);
     }

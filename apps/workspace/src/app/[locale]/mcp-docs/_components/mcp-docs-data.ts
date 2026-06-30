@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import fs from "fs";
 import path from "path";
+import { logger } from "@/lib/logger";
 
 import { docsTopicsList, DocsTopicSlug, DocData } from "./mcp-docs-shared";
 
@@ -54,7 +55,7 @@ export function getDocData(locale: string, slug: DocsTopicSlug): DocData {
       content: content.trim(),
     };
   } catch (error) {
-    console.error(`Error loading doc ${slug} for locale ${activeLocale}:`, error);
+    logger.error("mcp_docs.load_failed", { slug, locale: activeLocale, error });
     return {
       slug,
       title: slug,

@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
 import { ListTodo, Plus, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useAccountContext } from "@/domains/auth";
@@ -14,15 +13,11 @@ import { usePathname, useRouter } from "@/i18n/routing";
 import { useSearchParams } from "next/navigation";
 import { TaskGroupedList } from "./task-grouped-list";
 import { TaskEditor } from "./task-editor";
-import {
-  nextTaskPipelineOrder,
-  taskFormValuesForPipeline,
-} from "../task-pipeline-order";
+import { useTaskMutations } from "../hooks/use-task-mutations";
 import { useCurrentProjectId } from "@/domains/projects/hooks/use-current-project-id";
 import { useCurrentSpace } from "@/domains/projects/hooks/use-current-space";
 import {
   createTaskRequest,
-  updateTaskRequest,
   assignTasksToProjectRequest,
   useTaskQuery,
   useTasksQuery,
@@ -42,7 +37,6 @@ import {
 } from "./task-hooks";
 import { TaskBoardSkeleton } from "./task-board-skeleton";
 import { taskLog } from "../task-log";
-import { useOptimisticTaskActions, taskOptimisticMove } from "../hooks/use-optimistic-actions";
 
 // ─── TasksScreen (split-pane) ─────────────────────────────────────────────────
 
@@ -119,15 +113,10 @@ export function TasksScreen({
   const emptyTasks = useMemo(() => [] as TaskRecord[], []);
   const rawTasks = tasksResult.data ?? emptyTasks;
 
-  const optimistic = useOptimisticTaskActions();
-  const tasks = useMemo(() => optimistic.applyToList(rawTasks), [rawTasks, optimistic.version]);
+  const { applyOptimistic, moveTask: moveTaskFromHook } = useTaskMutations(organizationId ?? "");
+  const tasks = useMemo(() => applyOptimistic(rawTasks), [rawTasks, applyOptimistic]);
 
-  // Auto-remove optimistic actions once real-time data catches up
-  useEffect(() => {
-    optimistic.reconcile(rawTasks);
-  }, [rawTasks, optimistic.reconcile]);
-
-  const memberOptions = useMemberOptions(organizationId, account.user);
+  const { data: memberOptions } = useMemberOptions(organizationId, account.user);
   const listDocumentContext = organizationId
     ? taskDocumentContext(organizationId, projectId, null)
     : undefined;
@@ -167,28 +156,6 @@ export function TasksScreen({
     [filteredTasks, selectedId],
   );
 
-  const moveTaskMutation = useMutation({
-    mutationFn: async (variables: {
-      organizationId: string;
-      task: TaskRecord;
-      status: TaskStatus;
-      statusTasks: TaskRecord[];
-      targetIndex: number;
-    }) => {
-      const pipelineOrder = nextTaskPipelineOrder(variables.statusTasks, variables.task.id, variables.targetIndex);
-      return updateTaskRequest(variables.organizationId, variables.task.id, taskFormValuesForPipeline(variables.task, variables.status, pipelineOrder));
-    },
-    onSuccess: (_data, variables) => {
-      taskLog.info("drag:committed", {
-        taskId: variables.task.id,
-        newStatus: variables.status,
-      });
-    },
-    onError: (_error, variables) => {
-      taskLog.error("drag:rollback", { taskId: variables.task.id });
-    },
-  });
-
   function handleTaskDrop(
     taskId: string,
     newStatus: TaskStatus,
@@ -206,17 +173,8 @@ export function TasksScreen({
     const statusTasks = tasks.filter(
       (candidate) => candidate.status === newStatus,
     );
-    const pipelineOrder = nextTaskPipelineOrder(statusTasks, taskId, targetIndex);
 
-    optimistic.push(taskOptimisticMove(taskId, newStatus, pipelineOrder));
-
-    moveTaskMutation.mutate({
-      organizationId,
-      task,
-      status: newStatus,
-      statusTasks,
-      targetIndex,
-    });
+    moveTaskFromHook(task, newStatus, statusTasks, targetIndex);
   }
 
   async function createNewTask() {

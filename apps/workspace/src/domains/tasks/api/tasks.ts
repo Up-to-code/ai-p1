@@ -71,7 +71,7 @@ export function useTasksQuery(organizationId?: string, options?: { status?: Task
     });
   }, [tasks, status, search]);
 
-  return { data: filtered, error: undefined as string | undefined, refetch: () => {} };
+  return { data: filtered, isLoading: tasks === undefined, isError: false, error: undefined as string | undefined, refetch: () => {} };
 }
 
 export function useTasksGroupedQuery(
@@ -133,7 +133,7 @@ export function useTaskQuery(organizationId: string | undefined, taskId: string)
     api.clientTasks.read.get,
     organizationId && taskId ? { organizationId, taskId: taskId as any } : "skip",
   );
-  return { data: task ?? null, error: undefined as string | undefined, refetch: () => {} };
+  return { data: task ?? null, isLoading: task === undefined, isError: false, error: undefined as string | undefined, refetch: () => {} };
 }
 
 export function taskPayloadFromForm(values: TaskFormValues) {

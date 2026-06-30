@@ -33,7 +33,7 @@ export function useDocsQuery(
     return true;
   });
 
-  return { data: filtered, error: undefined as string | undefined, refetch: () => {} };
+  return { data: filtered, isLoading: docs === undefined, isError: false, error: undefined as string | undefined, refetch: () => {} };
 }
 
 export function useDocQuery(organizationId: string | undefined, docId: string) {
@@ -41,7 +41,7 @@ export function useDocQuery(organizationId: string | undefined, docId: string) {
     api.clientDocs.read.get,
     organizationId && docId ? { organizationId, docId: docId as any } : "skip",
   );
-  return { data: doc ?? null, error: undefined as string | undefined, refetch: () => {} };
+  return { data: doc ?? null, isLoading: doc === undefined, isError: false, error: undefined as string | undefined, refetch: () => {} };
 }
 
 export function useDocSearchQuery(organizationId: string | undefined, query: string, projectId?: string) {
@@ -51,7 +51,7 @@ export function useDocSearchQuery(organizationId: string | undefined, query: str
       ? { organizationId, query, projectId }
       : "skip",
   );
-  return { data: results, error: undefined as string | undefined };
+  return { data: results, isLoading: results === undefined, isError: false, error: undefined as string | undefined };
 }
 
 export function useDocFoldersQuery(organizationId?: string, projectId?: string) {
@@ -59,7 +59,7 @@ export function useDocFoldersQuery(organizationId?: string, projectId?: string) 
     api.clientDocs.read.folderTree,
     organizationId ? { organizationId, projectId } : "skip",
   );
-  return { data: folders, error: undefined as string | undefined };
+  return { data: folders, isLoading: folders === undefined, isError: false, error: undefined as string | undefined };
 }
 
 export function docPayloadFromForm(values: DocFormValues) {

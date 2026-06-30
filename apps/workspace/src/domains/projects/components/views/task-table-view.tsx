@@ -21,6 +21,7 @@ import {
   ChevronRight as ChevronRightIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 import {
   QentrahTable,
   NameCell,
@@ -143,7 +144,7 @@ export function TaskTableView({ projectId, organizationId }: { projectId: string
       const optimisticTask = { ...task, ...updates }
       tableRef.current?.applyUpdate([optimisticTask])
       try {
-        await updateTask(task.id, updates)
+        await updateTask(task, updates)
       } catch {
         tableRef.current?.applyUpdate([previousTask])
       }
@@ -155,7 +156,7 @@ export function TaskTableView({ projectId, organizationId }: { projectId: string
     async (taskId: string) => {
       try {
         tableRef.current?.applyRemove([taskId])
-        await deleteTask(taskId)
+        await deleteTask({ id: taskId })
       } catch {
         /* error already handled by useTaskMutations */
       }
@@ -225,7 +226,7 @@ export function TaskTableView({ projectId, organizationId }: { projectId: string
       try {
         await setCustomFieldValueRequest(organizationId, def.id, def.key, def.type, taskId, value)
       } catch (e) {
-        console.error("Failed to save custom field value", e)
+        logger.error("task_table.custom_field_save_failed", { error: e })
       }
     },
     [organizationId]

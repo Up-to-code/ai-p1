@@ -1,68 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { BillingOverview, BillingUsageState, OrganizationBillingUsage } from "../config/plans.config";
-import { fallbackBillingOverview, fallbackBillingUsage } from "../lib/billing-helpers";
+import { useQuery } from "@tanstack/react-query";
+import type { BillingOverview, BillingUsageState } from "../config/plans.config";
+import { fallbackBillingOverview } from "../lib/billing-helpers";
 import { getBillingOverviewRequest, getBillingUsageRequest } from "../api/billing-requests";
 
-type InternalBillingUsageState = BillingUsageState & { organizationId?: string };
-
-export function useBillingOverview(organizationId?: string | null) {
-  const [overview, setOverview] = useState<BillingOverview | undefined>();
-
-  useEffect(() => {
-    if (!organizationId) return;
-
-    let isCurrent = true;
-    async function load() {
+export function useBillingOverview(organizationId?: string | null): BillingOverview | undefined {
+  const { data } = useQuery({
+    queryKey: ["billing-overview", organizationId],
+    queryFn: async () => {
       try {
-        const payload = await getBillingOverviewRequest(organizationId!);
-        if (isCurrent) setOverview(payload as BillingOverview);
+        return await getBillingOverviewRequest(organizationId!);
       } catch {
-        if (isCurrent) setOverview(fallbackBillingOverview(organizationId!));
+        return fallbackBillingOverview(organizationId!);
       }
-    }
-    void load();
-    return () => {
-      isCurrent = false;
-    };
-  }, [organizationId]);
+    },
+    enabled: Boolean(organizationId),
+  });
 
-  return organizationId ? overview : undefined;
+  return organizationId ? data : undefined;
 }
 
 export function useBillingUsage(organizationId?: string | null): BillingUsageState {
-  const [state, setState] = useState<InternalBillingUsageState>({ status: "idle" });
-
-  useEffect(() => {
-    if (!organizationId) return;
-
-    let isCurrent = true;
-    setState({ status: "loading", organizationId } as InternalBillingUsageState);
-
-    async function load() {
-      try {
-        const payload = await getBillingUsageRequest(organizationId!);
-        if (isCurrent) {
-          setState({ status: "ready", data: payload as OrganizationBillingUsage, organizationId: organizationId! });
-        }
-      } catch (error) {
-        if (isCurrent) {
-          setState({
-            status: "error",
-            error: error instanceof Error ? error : new Error("Billing usage request failed."),
-            organizationId: organizationId!,
-          });
-        }
-      }
-    }
-    void load();
-    return () => {
-      isCurrent = false;
-    };
-  }, [organizationId]);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["billing-usage", organizationId],
+    queryFn: () => getBillingUsageRequest(organizationId!),
+    enabled: Boolean(organizationId),
+  });
 
   if (!organizationId) return { status: "idle" };
-  if ((state as InternalBillingUsageState).organizationId !== organizationId) return { status: "loading" };
-  return state;
+  if (isLoading) return { status: "loading" };
+  if (error) return { status: "error", error: error instanceof Error ? error : new Error("Billing usage request failed.") };
+  if (data) return { status: "ready", data };
+  return { status: "loading" };
 }

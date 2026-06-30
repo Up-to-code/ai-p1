@@ -21,7 +21,7 @@ export function TaskBoardView({ projectId, organizationId }: { projectId: string
 
   const handleUpdate = async (task: any, updates: any) => {
     try {
-      await updateTask(task.id, updates);
+      await updateTask(task, updates);
     } catch {
       /* error already handled by useTaskMutations */
     }

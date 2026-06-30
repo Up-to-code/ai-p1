@@ -6,6 +6,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import { Bold, Italic, List, ListOrdered, Image as ImageIcon, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 
 interface TiptapEditorProps {
   value: string;
@@ -89,7 +90,7 @@ export function TiptapEditor({
         editor.chain().focus().setImage({ src: url }).run();
       }
     } catch (err) {
-      console.error("Image upload failed:", err);
+      logger.error("tipTap.image_upload_failed", { error: err });
     } finally {
       setIsUploading(false);
       // reset file input

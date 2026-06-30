@@ -13,6 +13,7 @@ import type { ViewDefinition } from "@/components/shared/view-system/types";
 import { clientToCardItem } from "./client-view-helpers";
 import { useRouter } from "@/i18n/routing";
 import { useAccountContext } from "@/domains/auth";
+import { logger } from "@/lib/logger";
 import {
   CLIENTS_PAGE_SIZE,
   useClientQuery,
@@ -72,7 +73,9 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
         if (savedFilter && clientFilters.includes(savedFilter)) setFilter(savedFilter);
         if (savedStage && clientStageFilters.includes(savedStage)) setStageFilter(savedStage);
       }
-    } catch {}
+    } catch (e) {
+      logger.error("clients.filters_read_failed", { error: e });
+    }
   }, []);
 
   // Save filters to localStorage when they change
@@ -80,7 +83,9 @@ export function ClientsWorkspace({ initialView = "pipeline" }: { initialView?: "
     if (typeof window === "undefined") return;
     try {
       localStorage.setItem("clients-filters", JSON.stringify({ filter, stageFilter }));
-    } catch {}
+    } catch (e) {
+      logger.error("clients.filters_save_failed", { error: e });
+    }
   }, [filter, stageFilter]);
 
   useUrlListState({

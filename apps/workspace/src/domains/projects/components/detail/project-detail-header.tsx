@@ -15,6 +15,7 @@ import { deleteProjectRequest } from "../../api/projects";
 import { useQueryClient } from "@tanstack/react-query";
 import { useOptimisticInvalidation } from "@/domains/cache/hooks/use-optimistic-invalidation";
 import { Pencil, Trash2 } from "lucide-react";
+import { logger } from "@/lib/logger";
 
 interface ProjectDetailHeaderProps {
   project: Project;
@@ -64,7 +65,7 @@ export function ProjectDetailHeader({ project, onUpdate }: ProjectDetailHeaderPr
       await invalidate({ type: "list", resource: "projects" });
       router.push("/projects");
     } catch (err) {
-      console.error("Failed to delete project:", err);
+      logger.error("project.delete_failed", { error: err });
     }
     setIsDeleting(false);
   };

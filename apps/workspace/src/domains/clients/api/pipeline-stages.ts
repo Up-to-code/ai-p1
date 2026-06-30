@@ -36,6 +36,8 @@ export function usePipelineStages(organizationId: string | undefined) {
     stages: (stages ?? []) as PipelineStage[],
     activeStages: (stages ?? []).filter((s: PipelineStage) => s.isActive).sort((a: PipelineStage, b: PipelineStage) => a.order - b.order),
     isLoading: stages === undefined,
+    isError: false,
+    error: undefined as string | undefined,
     isSeeding: seeded,
   };
 }

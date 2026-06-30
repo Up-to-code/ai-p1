@@ -91,6 +91,11 @@ export const listPaged = query({
     type: v.optional(clientTypeValidator),
     search: v.optional(v.string()),
   },
+  returns: v.object({
+    page: v.array(clientValidator),
+    isDone: v.boolean(),
+    continueCursor: v.string(),
+  }),
   handler: async (ctx, args) => {
     await assertOrganizationResourcePermission(ctx, args.organizationId, "client", "read");
     const search = args.search?.trim().toLowerCase();

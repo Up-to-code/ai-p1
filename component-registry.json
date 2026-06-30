@@ -1,0 +1,334 @@
+{
+  "components": [
+    {
+      "name": "PipelineBoard",
+      "path": "packages/our-platform-components/src/pipeline/pipeline-board.tsx",
+      "kind": "shared-ui",
+      "summary": "Generic drag/drop column board. Takes items + stages, emits move/create/delete callbacks.",
+      "usedIn": ["domains/deals/deal-board", "domains/opportunities/opportunity-board", "components/shared/view-system"],
+      "props": ["items", "stages", "onCardMove", "onCardClick", "onCardDelete", "draggable", "showBarColor", "renderEmpty"],
+      "createdAt": "2026-04-01",
+      "notes": "Stateless — caller owns data fetching and mutation logic. Re-exported from components/shared/view-system."
+    },
+    {
+      "name": "WidgetGrid",
+      "path": "packages/our-platform-components/src/widget-grid/widget-grid.tsx",
+      "kind": "shared-ui",
+      "summary": "Resizable card grid. Each widget has configurable size and content slot.",
+      "usedIn": ["components/shared/view-system", "domains/dashboard/dashboard-screen"],
+      "props": ["widgets", "onLayoutChange", "renderWidget"],
+      "createdAt": "2026-04-01",
+      "notes": "Caller controls widget content via renderWidget slot."
+    },
+    {
+      "name": "TokenBar",
+      "path": "apps/workspace/src/components/shared/token-bar/token-bar.tsx",
+      "kind": "shared-ui",
+      "summary": "Horizontal token bar with '+' add trigger. Supports searchable categorized add modal.",
+      "usedIn": ["domains/projects/components/views", "domains/tasks/components"],
+      "props": ["tokens", "onRemove", "onAdd", "options", "placeholder"],
+      "createdAt": "2026-04-01",
+      "notes": "Composed with AddTokenModal for the add flow."
+    },
+    {
+      "name": "AddTokenModal",
+      "path": "apps/workspace/src/components/shared/token-bar/add-token-modal.tsx",
+      "kind": "shared-ui",
+      "summary": "Searchable categorized modal for adding tokens via TokenBar.",
+      "usedIn": ["domains/projects", "domains/tasks"],
+      "props": ["open", "onClose", "categories", "onSelect"],
+      "createdAt": "2026-04-01",
+      "notes": "Used alongside TokenBar."
+    },
+    {
+      "name": "ModulePanel",
+      "path": "apps/workspace/src/components/shared/module-panel/module-panel.tsx",
+      "kind": "shared-ui",
+      "summary": "Slide-in panel with header, body, footer sections. Supports tabs, fullscreen, close button.",
+      "usedIn": ["domains/organization/components/panels", "domains/profile/components/tabs", "domains/integrations"],
+      "props": ["open", "onClose", "title", "tabs", "children"],
+      "createdAt": "2026-03-15",
+      "notes": "Generic right-side detail panel pattern. Width configurable."
+    },
+    {
+      "name": "EntityHeader",
+      "path": "apps/workspace/src/components/shared/entity-header/index.tsx",
+      "kind": "shared-ui",
+      "summary": "Entity header bar with back button, title, description, and action buttons.",
+      "usedIn": ["domains/projects/detail", "domains/clients/detail", "domains/deals/detail"],
+      "props": ["title", "description", "actions", "onBack"],
+      "createdAt": "2026-03-01",
+      "notes": "Used for detail page headers across entity domains."
+    },
+    {
+      "name": "AppPageShell",
+      "path": "apps/workspace/src/components/shared/app-layout-kit.tsx",
+      "kind": "shared-ui",
+      "summary": "Standard page layout container with header, toolbar, and content areas.",
+      "usedIn": ["domains/clients/clients-screens", "domains/projects", "domains/settings"],
+      "props": ["title", "toolbar", "children"],
+      "createdAt": "2026-02-01",
+      "notes": "Part of the AppLayoutKit family of layout primitives."
+    },
+    {
+      "name": "AppDataTable",
+      "path": "apps/workspace/src/components/shared/app-layout-kit.tsx",
+      "kind": "shared-ui",
+      "summary": "Standard data table with columns, sorting, and action slots.",
+      "usedIn": ["domains/clients/client-table-view", "domains/projects", "domains/organization/members"],
+      "props": ["columns", "data", "onRowClick", "sortable"],
+      "createdAt": "2026-02-01",
+      "notes": "Defined in app-layout-kit alongside other App* primitives."
+    },
+    {
+      "name": "ViewSwitcher",
+      "path": "apps/workspace/src/components/shared/view-switcher.tsx",
+      "kind": "shared-ui",
+      "summary": "Tab-style view selector for switching between board/list/table/calendar views.",
+      "usedIn": ["domains/projects/workspace-screen", "domains/clients/clients-screens"],
+      "props": ["views", "activeView", "onChange"],
+      "createdAt": "2026-03-01",
+      "notes": "Replaced old workspace-tab-switcher pattern."
+    },
+    {
+      "name": "PageShell",
+      "path": "apps/workspace/src/components/shared/page-shell.tsx",
+      "kind": "shared-ui",
+      "summary": "Top-level page wrapper with consistent padding and max-width.",
+      "usedIn": ["app/(app)/clients", "app/(app)/projects", "app/(app)/deals"],
+      "props": ["children", "className"],
+      "createdAt": "2026-03-01",
+      "notes": "Basic layout wrapper — not to be confused with AppPageShell which includes header/toolbar."
+    },
+    {
+      "name": "PageToolbar",
+      "path": "apps/workspace/src/components/shared/page-toolbar.tsx",
+      "kind": "shared-ui",
+      "summary": "Horizontal toolbar with action buttons and filters.",
+      "usedIn": ["domains/clients", "domains/projects", "domains/tasks"],
+      "props": ["actions", "filters", "children"],
+      "createdAt": "2026-03-01",
+      "notes": "Flexible toolbar for page-level actions."
+    },
+    {
+      "name": "InfiniteScrollSentinel",
+      "path": "apps/workspace/src/components/shared/infinite-scroll-sentinel.tsx",
+      "kind": "shared-ui",
+      "summary": "Intersection observer trigger for infinite scroll pagination.",
+      "usedIn": ["domains/clients/client-table-view", "domains/projects/list-view"],
+      "props": ["onVisible", "enabled"],
+      "createdAt": "2026-03-01",
+      "notes": "Lightweight — only renders a sentinel div."
+    },
+    {
+      "name": "SharePopover",
+      "path": "apps/workspace/src/components/shared/share-popover/share-popover.tsx",
+      "kind": "shared-ui",
+      "summary": "Popover for sharing entities with permission selection.",
+      "usedIn": ["domains/projects/detail", "domains/docs/doc-editor"],
+      "props": ["entityId", "entityType", "onShare"],
+      "createdAt": "2026-03-15",
+      "notes": "Uses the popover UI primitive."
+    },
+    {
+      "name": "BadgeSelect",
+      "path": "apps/workspace/src/components/shared/badge-select.tsx",
+      "kind": "shared-ui",
+      "summary": "Dropdown trigger styled as a badge. Shows current selection inline.",
+      "usedIn": ["domains/tasks/task-editor", "domains/clients/client-form"],
+      "props": ["options", "value", "onChange"],
+      "createdAt": "2026-03-01",
+      "notes": "Used for status/priority badge selectors."
+    },
+    {
+      "name": "RecordModal",
+      "path": "apps/workspace/src/components/shared/record-modal.tsx",
+      "kind": "shared-ui",
+      "summary": "Generic modal for viewing/editing a single record.",
+      "usedIn": ["domains/clients/client-picker-modal", "domains/projects/project-picker"],
+      "props": ["open", "onClose", "record", "fields"],
+      "createdAt": "2026-03-01",
+      "notes": "Not to be confused with form modals — this is for record selection."
+    },
+    {
+      "name": "AddMenu",
+      "path": "apps/workspace/src/components/shared/add-menu.tsx",
+      "kind": "shared-ui",
+      "summary": "Dropdown menu for creating new entities (projects, spaces, etc.).",
+      "usedIn": ["components/layout/sidebar/sidebar-space-panel", "components/layout/topbar"],
+      "props": ["items", "onSelect"],
+      "createdAt": "2026-03-01",
+      "notes": "Gated by capability checks."
+    },
+    {
+      "name": "CustomFieldRenderer",
+      "path": "apps/workspace/src/components/shared/custom-fields/custom-field-renderer.tsx",
+      "kind": "domain-shared",
+      "summary": "Renders a custom field value based on its type definition (text, number, date, select, etc.).",
+      "usedIn": ["domains/clients/detail", "domains/projects/detail", "domains/deals/detail"],
+      "props": ["field", "value", "onChange"],
+      "createdAt": "2026-03-01",
+      "notes": "Reused across entity detail pages."
+    },
+    {
+      "name": "ReviewInput",
+      "path": "apps/workspace/src/components/shared/review-input.tsx",
+      "kind": "shared-ui",
+      "summary": "Rating/review input with star picker and text input.",
+      "usedIn": ["domains/projects", "domains/clients"],
+      "props": ["value", "onChange", "submissions"],
+      "createdAt": "2026-04-01",
+      "notes": "Includes StarRatingPicker sub-component."
+    },
+    {
+      "name": "CRUDPageShell",
+      "path": "apps/workspace/src/components/shared/crud-ui/crud-page-shell.tsx",
+      "kind": "shared-ui",
+      "summary": "CRUD page shell with list/detail layout for admin-style interfaces.",
+      "usedIn": ["domains/organization/members", "domains/custom-fields/settings"],
+      "props": ["list", "detail", "loading"],
+      "createdAt": "2026-03-01",
+      "notes": "Split-panel CRUD layout."
+    },
+    {
+      "name": "CRUDLoading",
+      "path": "apps/workspace/src/components/shared/crud-ui/crud-loading.tsx",
+      "kind": "shared-ui",
+      "summary": "Consistent loading skeleton for CRUD operations.",
+      "usedIn": ["domains/organization/members", "domains/custom-fields/settings", "domains/integrations"],
+      "props": [],
+      "createdAt": "2026-03-01",
+      "notes": "Simple skeleton placeholder."
+    },
+    {
+      "name": "CRUDStatus",
+      "path": "apps/workspace/src/components/shared/crud-ui/crud-status.tsx",
+      "kind": "shared-ui",
+      "summary": "Status indicator badge for CRUD entities (active/inactive/archived).",
+      "usedIn": ["domains/organization/members", "domains/integrations"],
+      "props": ["status", "label"],
+      "createdAt": "2026-03-01",
+      "notes": "Color-coded status badge."
+    },
+    {
+      "name": "WorkOsDocEditor",
+      "path": "apps/workspace/src/components/shared/work-os-doc-editor.tsx",
+      "kind": "domain-shared",
+      "summary": "Document editor with metadata fields (title, description, meta fields) and mention support.",
+      "usedIn": ["domains/docs/doc-editor", "work-os-module"],
+      "props": ["doc", "onSave", "metaFields", "mentionOptions"],
+      "createdAt": "2026-04-01",
+      "notes": "Heavier component — includes rich text editing."
+    },
+    {
+      "name": "SidebarRail",
+      "path": "apps/workspace/src/components/layout/sidebar/components/sidebar-rail.tsx",
+      "kind": "shared-ui",
+      "summary": "Fixed w-14 rail with org switcher, nav items, settings/user at bottom.",
+      "usedIn": ["components/layout/sidebar/sidebar"],
+      "props": [],
+      "createdAt": "2026-04-01",
+      "notes": "Always visible. Part of dual-layer sidebar architecture."
+    },
+    {
+      "name": "SidebarPanelLayout",
+      "path": "apps/workspace/src/components/layout/sidebar/components/sidebar-panel-layout.tsx",
+      "kind": "shared-ui",
+      "summary": "Shared panel shell with header (title + actions + close), bg-secondary, scrollable body.",
+      "usedIn": ["components/layout/sidebar/components/sidebar-chat-panel", "components/layout/sidebar/components/sidebar-space-panel", "components/layout/sidebar/components/sidebar-project-panel"],
+      "props": ["title", "actions", "onClose", "children"],
+      "createdAt": "2026-04-01",
+      "notes": "Consistent shell for all secondary sidebar panels."
+    },
+    {
+      "name": "Button",
+      "path": "apps/workspace/src/components/ui/button.tsx",
+      "kind": "primitive",
+      "summary": "Button with variants (primary, secondary, ghost, outline, destructive) and sizes.",
+      "usedIn": ["~every domain"],
+      "props": ["variant", "size", "asChild", "children"],
+      "createdAt": "2026-01-01",
+      "notes": "Core shadcn/ui primitive. Used everywhere."
+    },
+    {
+      "name": "Dialog",
+      "path": "apps/workspace/src/components/ui/dialog.tsx",
+      "kind": "primitive",
+      "summary": "Modal dialog with overlay, title, description, and close button.",
+      "usedIn": ["~every domain"],
+      "props": ["open", "onOpenChange", "children"],
+      "createdAt": "2026-01-01",
+      "notes": "Core shadcn/ui primitive."
+    },
+    {
+      "name": "DropdownMenu",
+      "path": "apps/workspace/src/components/ui/dropdown-menu.tsx",
+      "kind": "primitive",
+      "summary": "Dropdown menu with items, separators, sub-menus, and checkboxes.",
+      "usedIn": ["~every domain"],
+      "props": [],
+      "createdAt": "2026-01-01",
+      "notes": "Core shadcn/ui primitive."
+    },
+    {
+      "name": "Popover",
+      "path": "apps/workspace/src/components/ui/popover.tsx",
+      "kind": "primitive",
+      "summary": "Popover with trigger and content that floats above the page.",
+      "usedIn": ["~every domain"],
+      "props": [],
+      "createdAt": "2026-01-01",
+      "notes": "Core shadcn/ui primitive."
+    },
+    {
+      "name": "Sheet",
+      "path": "apps/workspace/src/components/ui/sheet.tsx",
+      "kind": "primitive",
+      "summary": "Slide-in panel from left/right/bottom with overlay.",
+      "usedIn": ["~every domain"],
+      "props": ["side", "open", "onOpenChange"],
+      "createdAt": "2026-01-01",
+      "notes": "Core shadcn/ui primitive."
+    },
+    {
+      "name": "Tabs",
+      "path": "apps/workspace/src/components/ui/tabs.tsx",
+      "kind": "primitive",
+      "summary": "Tab navigation with content panels.",
+      "usedIn": ["~every domain"],
+      "props": ["value", "onValueChange", "children"],
+      "createdAt": "2026-01-01",
+      "notes": "Core shadcn/ui primitive."
+    },
+    {
+      "name": "Toast",
+      "path": "apps/workspace/src/components/ui/toast.tsx",
+      "kind": "primitive",
+      "summary": "Toast notification with variants (default, destructive) and auto-dismiss.",
+      "usedIn": ["~every domain"],
+      "props": [],
+      "createdAt": "2026-01-01",
+      "notes": "Used via useToast hook for user feedback."
+    },
+    {
+      "name": "Skeleton",
+      "path": "apps/workspace/src/components/ui/skeleton.tsx",
+      "kind": "primitive",
+      "summary": "Loading placeholder with shimmer animation.",
+      "usedIn": ["~every domain"],
+      "props": ["className"],
+      "createdAt": "2026-01-01",
+      "notes": "Used for loading states."
+    },
+    {
+      "name": "ErrorBoundary",
+      "path": "apps/workspace/src/components/shared/errors.ts",
+      "kind": "shared-ui",
+      "summary": "Error boundary component and default error fallback UI.",
+      "usedIn": ["app/(app)/error", "domains"],
+      "props": ["fallback", "children"],
+      "createdAt": "2026-03-01",
+      "notes": "Catches render-phase errors."
+    }
+  ]
+}

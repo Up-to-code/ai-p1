@@ -6,6 +6,7 @@ import { useDashboardContext } from "../dashboard-context";
 import { useTasksQuery, updateTaskRequest } from "@/domains/tasks/api/tasks";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 import { Check, Circle } from "lucide-react";
 import type { TaskRecord } from "@/domains/tasks/tasks.types";
 
@@ -78,7 +79,7 @@ export function TaskTableWidget() {
       });
       queryClient.invalidateQueries({ queryKey: ["tasks", organizationId] });
     } catch (err) {
-      console.error("Failed to toggle task:", err);
+      logger.error("task_table.toggle_failed", { error: err });
     }
   };
 
@@ -101,7 +102,7 @@ export function TaskTableWidget() {
       });
       queryClient.invalidateQueries({ queryKey: ["tasks", organizationId] });
     } catch (err) {
-      console.error("Failed to update task status:", err);
+      logger.error("task_table.status_update_failed", { error: err });
     }
   };
 

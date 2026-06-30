@@ -4,6 +4,7 @@ import React, { useState, useMemo, useCallback } from "react";
 import { type Project } from "../../../store/projects.types";
 import { useTasksQuery, createTaskRequest, updateTaskRequest } from "@/domains/tasks/api/tasks";
 import { useAccountContext } from "@/domains/auth";
+import { logger } from "@/lib/logger";
 import { EditableText } from "@/components/ui/editable-text";
 import { EditableSelect } from "@/components/ui/editable-select";
 import { Button } from "@/components/ui/button";
@@ -112,7 +113,7 @@ export function TasksTimelineTab({ project, organizationId, spaceId }: TasksTime
       setNewDueDate("");
       setIsAdding(false);
     } catch (err) {
-      console.error("Failed to create task:", err);
+      logger.error("tasks_timeline.create_failed", { error: err });
     }
     setIsSubmitting(false);
   }, [newTitle, newPriority, newDueDate, organizationId, project.id]);
@@ -133,7 +134,7 @@ export function TasksTimelineTab({ project, organizationId, spaceId }: TasksTime
           tags: Array.isArray(task.tags) ? task.tags.join(",") : (task.tags ?? ""),
         });
       } catch (err) {
-        console.error("Failed to update task:", err);
+        logger.error("tasks_timeline.update_failed", { error: err });
       }
     },
     [organizationId],

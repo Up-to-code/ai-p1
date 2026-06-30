@@ -6,8 +6,7 @@ import { useNavigation, useActiveSpace } from "@/domains/navigation";
 import { useWorkspaceStore } from "@/domains/workspace/stores/workspace-store";
 import { useTasksQuery } from "@/domains/tasks/api/tasks";
 import { useTaskMutations } from "@/domains/tasks/hooks/use-task-mutations";
-import { useOptimisticTaskActions, taskOptimisticMove } from "@/domains/tasks/hooks/use-optimistic-actions";
-import { nextTaskPipelineOrder, sortPipelineTasks } from "@/domains/tasks/task-pipeline-order";
+import { sortPipelineTasks } from "@/domains/tasks/task-pipeline-order";
 import type { TaskStatus } from "@/domains/tasks/tasks.types";
 import {
   DEFAULT_BOARD_STAGES, STAGE_COLOR_PALETTE, STATUS_STORAGE_KEY,
@@ -22,21 +21,15 @@ export function BoardView() {
   const { projectId } = useNavigation();
   const { spaceId, space } = useActiveSpace();
   const activeProjectId = projectId || space?.projectId || "";
-  const { createTask, updateTask, deleteTask, moveTask } = useTaskMutations(orgId ?? "");
+  const { createTask, updateTask, deleteTask, moveTask, applyOptimistic } = useTaskMutations(orgId ?? "");
 
   const tasksResult = useTasksQuery(orgId ?? undefined, { projectId: activeProjectId || null });
   const isLoading = tasksResult.data === undefined;
   const serverTasks = tasksResult.data ?? [];
 
-  const { applyToList, push: pushOptimistic, reconcile } = useOptimisticTaskActions();
-
-  useEffect(() => {
-    reconcile(serverTasks);
-  }, [serverTasks, reconcile]);
-
   const tasks = useMemo(
-    () => applyToList(serverTasks),
-    [serverTasks, applyToList],
+    () => applyOptimistic(serverTasks),
+    [serverTasks, applyOptimistic],
   );
 
   const [stages, setStages] = useLocalConfig<StageDefinition[]>(STATUS_STORAGE_KEY, DEFAULT_BOARD_STAGES);
@@ -69,7 +62,7 @@ export function BoardView() {
       if (!ok) return;
       for (const t of orphaned) {
         try {
-          await updateTask(t.id, { status: fallback.key as TaskStatus });
+          await updateTask(t, { status: fallback.key as TaskStatus });
         } catch {
           /* error already handled */
         }
@@ -103,7 +96,7 @@ export function BoardView() {
   const handleCardDelete = useCallback(async (item: CardItem) => {
     if (!orgId) return;
     try {
-      await deleteTask(item.id);
+      await deleteTask({ id: item.id });
     } catch {
       /* error already handled */
     }
@@ -113,10 +106,8 @@ export function BoardView() {
     const task = tasks.find(t => t.id === itemId);
     if (!task || !orgId) return;
     const stageTasks = tasks.filter(t => t.status === toStage);
-    const pipelineOrder = nextTaskPipelineOrder(stageTasks, task.id, targetIndex ?? 0);
-    pushOptimistic(taskOptimisticMove(itemId, toStage, pipelineOrder));
-    void moveTask(itemId, toStage as TaskStatus, targetIndex);
-  }, [tasks, orgId, pushOptimistic, moveTask]);
+    void moveTask(task, toStage as TaskStatus, stageTasks, targetIndex ?? 0);
+  }, [tasks, orgId, moveTask]);
 
   const tasksByStatus = useMemo(() => {
     const map = new Map<string, typeof tasks>();

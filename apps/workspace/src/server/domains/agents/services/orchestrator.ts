@@ -1,4 +1,5 @@
 import type { Context } from "hono";
+import { logger } from "@/lib/logger";
 import { agentRuntimeConfig, getOpenRouterModelCandidates } from "@/server/config/agent-runtime";
 import { recordAgentCreditUsage } from "@/server/domains/billing/services/billing";
 import type { MobileRequestContext } from "@/server/middleware/mobile-request-context";
@@ -91,7 +92,7 @@ export function createAgentChatStream(input: {
             });
           },
           onError: (error) => {
-            console.error("workspace.agent.prompt_error", {
+            logger.error("workspace.agent.prompt_error", {
               organizationId: input.organizationId,
               error: error.message,
             });
@@ -303,7 +304,7 @@ export function createAgentChatStream(input: {
           ? "Agent request was canceled."
           : error instanceof Error ? error.message : "Agent request failed.";
         if (!input.abortSignal?.aborted) {
-          console.error("workspace.agent.stream.failed", {
+          logger.error("workspace.agent.stream.failed", {
             organizationId: input.organizationId,
             threadId: ids?.threadId,
             runId: ids?.runId,

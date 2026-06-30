@@ -3,6 +3,7 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { fetchAuthMutation, fetchAuthQuery } from "@/server/auth/clerk-convex";
 import { requireOrganizationId } from "@/server/utils/organization/require-organization-id";
+import { logger } from "@/lib/logger";
 
 function parseLimit(c: Context, fallback: number, max: number) {
   const raw = c.req.query("limit");
@@ -54,7 +55,7 @@ function agentReadErrorResponse(c: Context, error: unknown, fallback: string) {
     return c.json({ error: "You do not have access to this workspace.", requestId: id }, 403);
   }
 
-  console.error("workspace.agent.read.failed", {
+  logger.error("workspace.agent.read.failed", {
     requestId: id,
     path: c.req.path,
     error: message,
@@ -90,7 +91,7 @@ function agentWriteErrorResponse(c: Context, error: unknown, fallback: string) {
     }, 409);
   }
 
-  console.error("workspace.agent.write.failed", {
+  logger.error("workspace.agent.write.failed", {
     requestId: id,
     path: c.req.path,
     error: message,

@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger";
+
 export const NOTION_COLORS = {
   gray: {
     bg: "bg-neutral-100 dark:bg-neutral-800/60",
@@ -96,7 +98,7 @@ export const getStoredColor = (type: string, key: string, fallback: NotionColorK
       }
     }
   } catch (e) {
-    console.error("Error reading color from localStorage", e);
+    logger.error("color.read_failed", { storageKey: `qentrah_colors_${type}`, error: e });
   }
   return fallback;
 };
@@ -110,6 +112,6 @@ export const setStoredColor = (type: string, key: string, color: NotionColorKey)
     parsed[key] = color;
     localStorage.setItem(storageKey, JSON.stringify(parsed));
   } catch (e) {
-    console.error("Error writing color to localStorage", e);
+    logger.error("color.write_failed", { storageKey: `qentrah_colors_${type}`, error: e });
   }
 };

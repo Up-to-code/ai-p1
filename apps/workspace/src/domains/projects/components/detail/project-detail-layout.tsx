@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
 import { useOptimisticInvalidation } from "@/domains/cache/hooks/use-optimistic-invalidation";
 import { useAccountContext } from "@/domains/auth";
+import { logger } from "@/lib/logger";
 import { useProjectQuery, updateProjectRequest } from "../../api/projects";
 import type { Project } from "../../store/projects.types";
 import type { ProjectFormValues } from "../../validation/project.schema";
@@ -94,7 +95,7 @@ export function ProjectDetailLayout({ projectId }: { projectId: string }) {
         { type: "list", resource: "projects" },
       ]);
     } catch (err) {
-      console.error("Failed to update project:", err);
+      logger.error("project.detail_update_failed", { error: err });
     }
   };
 

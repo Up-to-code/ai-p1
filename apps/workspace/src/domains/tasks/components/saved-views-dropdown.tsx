@@ -10,6 +10,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
+import { logger } from "@/lib/logger"
 import {
   useSavedViewsQuery,
   useCreateSavedViewMutation,
@@ -74,7 +75,7 @@ export function SavedViewsDropdown({
       setDraftName("")
       setNaming(false)
     } catch (e) {
-      console.error("Failed to save view", e)
+      logger.error("saved_views.save_failed", { error: e })
     }
   }, [
     createView,
@@ -92,7 +93,7 @@ export function SavedViewsDropdown({
       try {
         await updateView.mutateAsync({ viewId: view._id, config: currentConfig })
       } catch (e) {
-        console.error("Failed to update view", e)
+        logger.error("saved_views.update_failed", { error: e })
       }
     },
     [currentConfig, updateView],

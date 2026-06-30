@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import type { WorkOsPickerOption } from "@/domains/work-os/components/work-os-record-picker";
 import { listOrganizationMembers } from "@/domains/organization/api/members";
 import type { DocEditorMentionOption } from "@/components/shared/work-os-doc-editor";
@@ -106,58 +107,49 @@ export function useMemberOptions(
     };
   }, [currentUser?.email, currentUser?.id, currentUser?.name]);
 
-  const [members, setMembers] = useState<WorkOsPickerOption[]>(() =>
-    currentUserOption ? [currentUserOption] : [],
-  );
+  const query = useQuery({
+    queryKey: ["organization-members", organizationId],
+    queryFn: () => listOrganizationMembers(organizationId!),
+    enabled: Boolean(organizationId),
+  });
 
-  useEffect(() => {
+  const data = useMemo<WorkOsPickerOption[]>(() => {
     if (!organizationId) {
-      setMembers(currentUserOption ? [currentUserOption] : []);
-      return;
+      return currentUserOption ? [currentUserOption] : [];
     }
 
-    let active = true;
-    setMembers(currentUserOption ? [currentUserOption] : []);
+    const list = query.data;
+    if (!list) {
+      return currentUserOption ? [currentUserOption] : [];
+    }
 
-    listOrganizationMembers(organizationId)
-      .then((list) => {
-        if (!active) return;
+    const seen = new Set<string>();
+    const mapped: WorkOsPickerOption[] = [];
 
-        const seen = new Set<string>();
-        const mapped: WorkOsPickerOption[] = [];
-
-        for (const member of list) {
-          const id = member.userId || member.user?.id || member.id;
-          if (!id || seen.has(id)) continue;
-          seen.add(id);
-          const isCurrentUser = currentUser?.id === id;
-          mapped.push({
-            id,
-            label: isCurrentUser ? "Me" : member.user?.name || member.user?.email || id,
-            helper: [member.user?.email, member.role, isCurrentUser ? "You" : null].filter(Boolean).join(" · "),
-          });
-        }
-
-        if (currentUserOption && !seen.has(currentUserOption.id)) {
-          mapped.unshift(currentUserOption);
-        } else {
-          mapped.sort((left, right) => {
-            if (left.id === currentUser?.id) return -1;
-            if (right.id === currentUser?.id) return 1;
-            return left.label.localeCompare(right.label);
-          });
-        }
-
-        setMembers(mapped);
-      })
-      .catch(() => {
-        if (active) setMembers(currentUserOption ? [currentUserOption] : []);
+    for (const member of list) {
+      const id = member.userId || member.user?.id || member.id;
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      const isCurrentUser = currentUser?.id === id;
+      mapped.push({
+        id,
+        label: isCurrentUser ? "Me" : member.user?.name || member.user?.email || id,
+        helper: [member.user?.email, member.role, isCurrentUser ? "You" : null].filter(Boolean).join(" · "),
       });
+    }
 
-    return () => {
-      active = false;
-    };
-  }, [currentUser?.id, currentUserOption, organizationId]);
+    if (currentUserOption && !seen.has(currentUserOption.id)) {
+      mapped.unshift(currentUserOption);
+    } else {
+      mapped.sort((left, right) => {
+        if (left.id === currentUser?.id) return -1;
+        if (right.id === currentUser?.id) return 1;
+        return left.label.localeCompare(right.label);
+      });
+    }
 
-  return members;
+    return mapped;
+  }, [organizationId, query.data, currentUserOption, currentUser?.id]);
+
+  return { data, isLoading: query.isLoading, isError: query.isError };
 }

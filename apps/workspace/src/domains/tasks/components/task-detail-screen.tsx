@@ -18,7 +18,7 @@ export function TaskDetailScreen({ id }: { id: string }) {
       : undefined;
   const taskResult = useTaskQuery(organizationId, id);
   const task = taskResult.data;
-  const memberOptions = useMemberOptions(organizationId, account.user);
+  const { data: memberOptions } = useMemberOptions(organizationId, account.user);
   const detailTasksResult = useTasksQuery(organizationId, {
     status: "all",
     projectId: task?.projectId ?? null,

@@ -5,6 +5,7 @@ import "gridstack/dist/gridstack.min.css";
 import { GridStack } from "gridstack";
 import { PortfolioTableWidget } from "./widgets/portfolio-table-widget";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 import { GripHorizontal, MoreHorizontal } from "lucide-react";
 
 export function GlobalProjectsDashboard() {
@@ -33,7 +34,7 @@ export function GlobalProjectsDashboard() {
         const layout = JSON.parse(savedLayout);
         gridRef.current.load(layout);
       } catch (e) {
-        console.error("Failed to parse saved layout", e);
+        logger.error("projects_dashboard.layout_parse_failed", { error: e });
       }
     }
 

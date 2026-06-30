@@ -4,6 +4,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { useAuth, useClerk, useSignIn, useSignUp } from "@clerk/nextjs";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
+import { logger } from "@/lib/logger";
 import { resolveAuthEntryCallbackUrl } from "../utils/auth-callback-url";
 import {
   assignExternalRedirect,
@@ -208,9 +209,7 @@ export function useHeadlessClerkAuth({ locale, mode, callbackURL }: AuthFlowInpu
           window.location.href = target;
           return;
         }
-        if (process.env.NODE_ENV !== "production") {
-          console.error("[Qentrah auth] social sign-in failed", caught);
-        }
+        logger.error("auth.social_signin_failed", { error: caught });
         setError(localizedAuthError(caught, t("socialStartFailed"), t));
         setIsPending(false);
         setPendingProvider(null);

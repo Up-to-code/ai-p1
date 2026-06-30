@@ -1,8 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { workspaceMutation, organizationApiPath } from "@/domains/resources/workspace-resource-request";
 import { requestOrganizationAction } from "@/domains/organization/api/organization-request";
+import { logger } from "@/lib/logger";
 import type { PartnerCatalogFilter } from "./store/integrations.view-model";
 import type { PartnerCatalogApp, PartnerConnection } from "./store/integrations.types";
 import { MOCK_MAC_APPS, createMockConnection, createICloudConnection } from "./mock-data";
@@ -40,7 +42,7 @@ function saveLocalConnection(organizationId: string, connection: PartnerConnecti
       );
     }
   } catch (e) {
-    console.error(e);
+    logger.error("integrations.save_connection_failed", { error: e });
   }
 }
 
@@ -53,7 +55,7 @@ function removeLocalConnection(organizationId: string, connectionId: string) {
       JSON.stringify(current.filter((c) => c.id !== connectionId)),
     );
   } catch (e) {
-    console.error(e);
+    logger.error("integrations.remove_connection_failed", { error: e });
   }
 }
 
@@ -74,7 +76,7 @@ function updateLocalConnectionStatus(
       ),
     );
   } catch (e) {
-    console.error(e);
+    logger.error("integrations.update_connection_failed", { error: e });
   }
 }
 
@@ -178,91 +180,71 @@ export async function revokePartnerConnection(
   );
 }
 
-export function usePartnerCatalogApps() {
-  const [apps, setApps] = useState<PartnerCatalogApp[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+function mergeConnections(
+  organizationId: string,
+  apiConnections?: PartnerConnection[],
+): PartnerConnection[] {
+  const localItems = getLocalConnections(organizationId);
 
-  useEffect(() => {
-    let active = true;
-    fetchPartnerCatalogApps()
-      .then((items) => {
-        if (active) setApps([...MOCK_MAC_APPS, ...items]);
-      })
-      .catch(() => {
-        if (active) setApps([...MOCK_MAC_APPS]);
-      })
-      .finally(() => {
-        if (active) setIsLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
+  const iCloudRevoked = localItems.some(
+    (c) => c.partnersAppId === "mac-icloud-sync" && c.status === "revoked",
+  );
+  const iCloudLocal = localItems.find(
+    (c) => c.partnersAppId === "mac-icloud-sync" && c.status !== "revoked",
+  );
+
+  const mockConnectedList: PartnerConnection[] = [];
+  if (!iCloudRevoked) {
+    mockConnectedList.push(iCloudLocal || createICloudConnection(organizationId));
+  }
+
+  const otherLocal = localItems.filter(
+    (c) => c.partnersAppId !== "mac-icloud-sync" && c.status !== "revoked",
+  );
+
+  if (apiConnections) {
+    return [...mockConnectedList, ...otherLocal, ...apiConnections];
+  }
+  return [...mockConnectedList, ...otherLocal];
+}
+
+export function usePartnerCatalogApps() {
+  const { data: apps = [], isLoading } = useQuery({
+    queryKey: ["partner-catalog-apps"],
+    queryFn: async () => {
+      try {
+        const items = await fetchPartnerCatalogApps();
+        return [...MOCK_MAC_APPS, ...items];
+      } catch {
+        return [...MOCK_MAC_APPS];
+      }
+    },
+  });
 
   return { apps, isLoading };
 }
 
 export function usePartnerConnections(organizationId?: string | null) {
-  const [connections, setConnections] = useState<PartnerConnection[]>([]);
-  const [isLoading, setIsLoading] = useState(Boolean(organizationId));
+  const queryClient = useQueryClient();
+
+  const { data: connections = [], isLoading } = useQuery({
+    queryKey: ["partner-connections", organizationId],
+    queryFn: async () => {
+      if (!organizationId) return [];
+
+      try {
+        const items = await fetchPartnerConnections(organizationId);
+        return mergeConnections(organizationId, items);
+      } catch {
+        return mergeConnections(organizationId);
+      }
+    },
+    enabled: Boolean(organizationId),
+  });
 
   const refreshConnections = useCallback(() => {
-    if (!organizationId) {
-      setConnections([]);
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    fetchPartnerConnections(organizationId)
-      .then((items) => {
-        const localItems = getLocalConnections(organizationId);
-
-        const iCloudRevoked = localItems.some(
-          (c) => c.partnersAppId === "mac-icloud-sync" && c.status === "revoked",
-        );
-        const iCloudLocal = localItems.find(
-          (c) => c.partnersAppId === "mac-icloud-sync" && c.status !== "revoked",
-        );
-
-        const mockConnectedList: PartnerConnection[] = [];
-        if (!iCloudRevoked) {
-          mockConnectedList.push(iCloudLocal || createICloudConnection(organizationId));
-        }
-
-        const otherLocal = localItems.filter(
-          (c) => c.partnersAppId !== "mac-icloud-sync" && c.status !== "revoked",
-        );
-
-        setConnections([...mockConnectedList, ...otherLocal, ...items]);
-      })
-      .catch(() => {
-        const localItems = getLocalConnections(organizationId);
-
-        const iCloudRevoked = localItems.some(
-          (c) => c.partnersAppId === "mac-icloud-sync" && c.status === "revoked",
-        );
-        const iCloudLocal = localItems.find(
-          (c) => c.partnersAppId === "mac-icloud-sync" && c.status !== "revoked",
-        );
-
-        const mockConnectedList: PartnerConnection[] = [];
-        if (!iCloudRevoked) {
-          mockConnectedList.push(iCloudLocal || createICloudConnection(organizationId));
-        }
-
-        const otherLocal = localItems.filter(
-          (c) => c.partnersAppId !== "mac-icloud-sync" && c.status !== "revoked",
-        );
-
-        setConnections([...mockConnectedList, ...otherLocal]);
-      })
-      .finally(() => setIsLoading(false));
-  }, [organizationId]);
-
-  useEffect(() => {
-    refreshConnections();
-  }, [refreshConnections]);
+    queryClient.invalidateQueries({ queryKey: ["partner-connections", organizationId] });
+  }, [queryClient, organizationId]);
 
   return { connections, isLoading, refreshConnections };
 }

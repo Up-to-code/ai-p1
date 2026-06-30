@@ -1,21 +1,18 @@
 import type { ViewToken } from "@/app/[locale]/(app)/ws/config/views.config";
 
 export function getActiveViewFromParams(pathname: string, searchParams?: string): string {
-  const viewFromSearch = searchParams ? new URLSearchParams(searchParams).get("view") : null;
-  if (viewFromSearch) return viewFromSearch;
   const lastSegment = pathname.split("/").filter(Boolean).pop() ?? "";
-  return lastSegment === "ws" ? "overview" : lastSegment;
+  if (lastSegment !== "ws") return lastSegment;
+  const viewFromSearch = searchParams ? new URLSearchParams(searchParams).get("view") : null;
+  return viewFromSearch ?? "overview";
 }
 
 export function buildPath(id: string, existingParams: string): string {
   const params = new URLSearchParams(existingParams);
-  if (id === "overview") {
-    params.delete("view");
-  } else {
-    params.set("view", id);
-  }
+  params.delete("view");
   const qs = params.toString();
-  return qs ? `/ws?${qs}` : "/ws";
+  const base = id === "overview" ? "/ws" : `/ws/${id}`;
+  return qs ? `${base}?${qs}` : base;
 }
 
 export function resolveActiveTokens(

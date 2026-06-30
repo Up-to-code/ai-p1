@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger";
+
 const DEBUG =
   process.env.NODE_ENV === "development" ||
   process.env.NEXT_PUBLIC_QENTRAH_TASK_DEBUG === "1";
@@ -18,9 +20,9 @@ export const taskLog = {
     );
   },
   error(event: string, data?: Record<string, unknown>) {
-    console.error(
-      `[qentrah:tasks] ${event}`,
-      data ? JSON.stringify(data) : "",
+    logger.error(
+      `tasks.${event}`,
+      data,
     );
   },
 };

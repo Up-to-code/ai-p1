@@ -13,7 +13,7 @@
 
 ## Deepened Modules
 
-- **Task Mutation** — `domains/tasks/hooks/use-task-mutations.ts`. Provides `createTask`, `updateTask`, `deleteTask`, `moveTask` with consistent error handling (revert + toast), auto-derives project/space from navigation context, accepts partial changes. Single seam for all task mutations across workspace views.
+- **Task Mutation** — `domains/tasks/hooks/use-task-mutations.ts`. Single seam for all task mutations across workspace views. Provides `createTask`, `updateTask`, `deleteTask`, `moveTask` (async functions) plus `createTaskMutation`, `updateTaskMutation`, `deleteTaskMutation`, `moveTaskMutation` (TanStack `UseMutationResult` objects). Uses TanStack Query `useMutation` with `onMutate` rollback for optimistic UI (same pattern as clients). Consistent error handling (transaction revert + toast). Auto-derives project/space from navigation context. Accepts partial changes.
 
 ## Architecture Decisions
 

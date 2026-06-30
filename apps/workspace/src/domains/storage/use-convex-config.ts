@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 export function useConvexConfig<T>(config: {
   remote: T | undefined;
@@ -10,12 +10,14 @@ export function useConvexConfig<T>(config: {
   const [value, setValue] = useState<T>(
     config.remote !== undefined ? config.remote : config.defaults,
   );
+  const prevRemoteRef = useRef<T | undefined>(config.remote);
 
-  useEffect(() => {
+  if (config.remote !== prevRemoteRef.current) {
+    prevRemoteRef.current = config.remote;
     if (config.remote !== undefined) {
       setValue(config.remote);
     }
-  }, [config.remote]);
+  }
 
   const persist = useCallback(
     async (next: T) => {

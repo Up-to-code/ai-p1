@@ -34,7 +34,7 @@ export function MemberPicker({ value, onChange }: MemberPickerProps) {
     return { id: u.id, name: u.name, email: u.email };
   }, [account.workspace.status, account.user]);
 
-  const options = useMemberOptions(orgId, currentUser);
+  const { data: options } = useMemberOptions(orgId, currentUser);
 
   const selectedSet = useMemo(() => new Set(value), [value]);
 
