@@ -12,7 +12,7 @@ import {
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useProjectQuery } from "@/domains/projects/api/projects";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useNavigation } from "@/domains/navigation";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
 import { SidebarPanelLayout } from "./sidebar-panel-layout";
@@ -36,12 +36,12 @@ const statusColor: Record<string, string> = {
 
 export function SidebarProjectPanel() {
   const t = useTranslations("Sidebar");
-  const account = useAccountContext();
+  const session = useAuthSession();
   const { projectId, spaceSlug } = useNavigation();
 
   const orgId =
-    account.workspace.status === "ready"
-      ? account.workspace.organizationId ?? undefined
+    session.workspace.status === "ready"
+      ? session.workspace.organizationId ?? undefined
       : undefined;
 
   const project = projectId ? useProjectQuery(orgId, projectId) : null;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useWorkspaceSpacesQuery } from "@/domains/projects/api/spaces";
 import { useProjectsIndexQuery } from "../api/projects";
 import { useTranslations } from "next-intl";
@@ -13,9 +13,9 @@ import { ProjectsOverviewDashboard } from "./projects-overview-dashboard";
 import { useNavigation } from "@/domains/navigation";
 
 export function SpaceDetailView({ spaceSlug }: { spaceSlug: string }) {
-  const account = useAccountContext();
+  const session = useAuthSession();
   const { clearContext } = useNavigation();
-  const orgId = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+  const orgId = session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isWidgetModalOpen, setIsWidgetModalOpen] = useState(false);

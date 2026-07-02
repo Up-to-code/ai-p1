@@ -2,13 +2,13 @@
 
 import { useMemo } from "react";
 import { useProjectsIndexQuery, useProjectTaskCounts } from "../../api/projects";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { cn } from "@/lib/utils";
 import { DollarSign, CheckCircle2, Clock, TrendingUp, AlertTriangle } from "lucide-react";
 
 export function ProjectStatsWidget() {
-  const account = useAccountContext();
-  const orgId = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+  const session = useAuthSession();
+  const orgId = session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
   const query = useProjectsIndexQuery(orgId);
   const projects = query.results ?? [];
   const taskCounts = useProjectTaskCounts(orgId);

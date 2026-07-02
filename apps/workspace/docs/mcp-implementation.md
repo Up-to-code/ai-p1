@@ -1,6 +1,6 @@
 # MCP Implementation Guide — Qentrah Workspace
 
-> **Platform:** Saudi Arabia Central Real Estate Data Workspace
+> **Platform:** Qentrah Workspace
 > **Stack:** Next.js 16.2.4 · Convex · Better Auth · TypeScript · Zod
 > **Scope:** How to understand, maintain, and extend the MCP server in this codebase.
 
@@ -14,7 +14,7 @@ The **Model Context Protocol (MCP)** is an open standard that lets AI assistants
 
 ### Why We Use It
 
-Qentrah Workspace is a real estate data synchronization engine. Agents that work with our platform — for lead qualification, appointment scheduling, property search, or compliance checks — need reliable access to our Convex-backed data without screen-scraping or undocumented API calls.
+Qentrah Workspace is a data synchronization engine. Agents that work with our platform — for lead qualification, appointment scheduling, task management, or compliance checks — need reliable access to our Convex-backed data without screen-scraping or undocumented API calls.
 
 MCP gives us:
 
@@ -354,7 +354,7 @@ export function registerLeadTools(server: McpServer) {
     {
       query:  z.string().describe("Free-text search string"),
       status: z.enum(["new", "contacted", "qualified", "closed_won", "closed_lost"]).optional(),
-      city:   z.string().optional().describe("Filter by city, e.g. Riyadh, Jeddah, Dammam"),
+      city:   z.string().optional().describe("Filter by city"),
       limit:  z.number().min(1).max(20).default(10),
     },
     async (input): Promise<CallToolResult> => {

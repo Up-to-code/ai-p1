@@ -3,6 +3,7 @@ import type { McpAction, McpPermission, McpResource } from "./validators";
 export const defaultMcpRolePermissions = {
   owner: {
     organization: ["read", "update", "delete"],
+    space: ["create", "read", "update", "delete"],
     client: ["create", "read", "update", "delete"],
     task: ["create", "read", "update", "delete"],
     project: ["create", "read", "update", "delete"],
@@ -12,6 +13,7 @@ export const defaultMcpRolePermissions = {
   },
   admin: {
     organization: ["read"],
+    space: ["create", "read", "update", "delete"],
     client: ["create", "read", "update", "delete"],
     task: ["create", "read", "update", "delete"],
     project: ["create", "read", "update", "delete"],
@@ -21,6 +23,7 @@ export const defaultMcpRolePermissions = {
   },
   member: {
     organization: ["read"],
+    space: ["read"],
     client: ["read"],
     task: ["read"],
     project: ["read"],

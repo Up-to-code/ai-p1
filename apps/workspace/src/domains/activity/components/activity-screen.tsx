@@ -12,7 +12,7 @@ import {
 } from "@/components/shared";
 import { EmptyWorkspace, HttpQueryState, StatusPill, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useWorkspaceIndexedResource } from "@/domains/resources/workspace-resource-request";
 import {
   activityActionLabel,
@@ -26,10 +26,10 @@ import {
 export function ActivityScreen() {
   const t = useTranslations("Activity");
   const locale = useLocale();
-  const account = useAccountContext();
-  const workspaceStatus = account.workspace.status;
+  const session = useAuthSession();
+  const workspaceStatus = session.workspace.status;
   const isWorkspaceReady = workspaceStatus === "ready";
-  const workspaceOrganizationId = isWorkspaceReady ? account.workspace.organizationId ?? undefined : undefined;
+  const workspaceOrganizationId = isWorkspaceReady ? session.workspace.organizationId ?? undefined : undefined;
   const eventsQuery = useWorkspaceIndexedResource<AuditEvent, AuditStats>(
     ["activity-index", workspaceOrganizationId],
     workspaceOrganizationId,
@@ -96,7 +96,7 @@ export function ActivityScreen() {
 
       {workspaceStatus !== "ready" ? (
         <WorkspaceQueryState status={workspaceStatus} variant="activity" />
-      ) : !account.organization.id && !account.isPending ? (
+      ) : !session.organization.id && !session.isPending ? (
         <EmptyWorkspace icon={History} title={t("empty.noOrgTitle")} description={t("empty.noOrgDesc")} />
       ) : (
         <>

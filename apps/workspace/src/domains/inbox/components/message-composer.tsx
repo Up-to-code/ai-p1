@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 
 interface MessageComposerProps {
   onSend: (content: string) => void;
@@ -25,7 +25,7 @@ export function MessageComposer({
 }: MessageComposerProps) {
   const [content, setContent] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const account = useAccountContext();
+  const session = useAuthSession();
 
   useEffect(() => {
     textareaRef.current?.focus();
@@ -72,7 +72,7 @@ export function MessageComposer({
       <div className="flex items-end gap-2">
         <Avatar className="h-8 w-8 shrink-0">
           <AvatarFallback className="text-xs">
-            {account.user?.id?.slice(0, 2).toUpperCase() || "U"}
+            {session.user?.id?.slice(0, 2).toUpperCase() || "U"}
           </AvatarFallback>
         </Avatar>
 

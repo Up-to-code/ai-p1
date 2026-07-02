@@ -1,5 +1,5 @@
-import { TasksScreen } from "@/domains/tasks/components/tasks-screen";
+import { TasksPageRedesigned } from "@/domains/tasks/components/TasksPageRedesigned";
 
 export default function TasksPage() {
-  return <TasksScreen />;
+  return <TasksPageRedesigned />;
 }

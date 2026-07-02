@@ -1,10 +1,10 @@
 # Identity
 
-Purpose: Property identity uses workspace ID plus Saudi identifiers where available.
+Purpose: Property identity uses workspace ID plus identifiers where available.
 
 ## Owns
 
-- Property identity uses workspace ID plus Saudi identifiers where available.
+- Property identity uses workspace ID plus identifiers where available.
 - Identity matching is conservative.
 - Do not merge identities without approval.
 

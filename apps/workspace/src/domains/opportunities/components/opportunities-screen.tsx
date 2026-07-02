@@ -6,7 +6,7 @@ import { BriefcaseBusiness, KanbanSquare, List, Plus, Search, Trash2 } from "luc
 import { useTranslations } from "next-intl";
 import { AppDataTable, AppPrimaryButton, type AppDataTableColumn } from "@/components/shared";
 import { Button } from "@/components/ui/button";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { WorkspaceQueryState, StatusPill, EmptyWorkspace, DeleteRecordDialog } from "@/components/shared/crud-ui";
 import { useToast } from "@/components/ui/toast";
 import { Link } from "@/i18n/routing";
@@ -40,11 +40,11 @@ import { OpportunityForm } from "./opportunity-form";
 export function OpportunitiesScreen() {
   const t = useTranslations("Opportunities");
   const common = useTranslations("Common");
-  const account = useAccountContext();
+  const session = useAuthSession();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const workspaceStatus = account.workspace.status;
-  const organizationId = workspaceStatus === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+  const workspaceStatus = session.workspace.status;
+  const organizationId = workspaceStatus === "ready" ? session.workspace.organizationId ?? undefined : undefined;
   const [search, setSearch] = useState("");
   const [stage, setStage] = useState<OpportunityStage | "all">("all");
   const [view, setView] = useState<"board" | "list">("board");

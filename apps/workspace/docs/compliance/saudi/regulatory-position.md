@@ -1,11 +1,11 @@
 # Regulatory Position
 
-Purpose: This is a technical compliance posture for Saudi real estate data.
+Purpose: This is a technical compliance posture for data.
 
 ## Owns
 
-- This is a technical compliance posture for Saudi real estate data.
-- Official sources include REGA, Ejar, and SDAIA PDPL materials.
+- This is a technical compliance posture for data.
+- Official sources include SDAIA PDPL materials.
 - Production requires legal review.
 
 ## Does Not Own
@@ -27,12 +27,10 @@ Purpose: This is a technical compliance posture for Saudi real estate data.
 - Confirm this file remains under the 150-300 line target.
 - Confirm it references the correct owning domain.
 - Confirm no secrets, raw tokens, raw API keys, or personal data appear in examples.
-- Confirm sold and off-market marketplace suppression is preserved when visibility is affected.
+- Confirm visibility suppression is preserved when availability is affected.
 
 ## References
 
-- Source: [REGA Real Estate Registry](https://rega.gov.sa/en/rega-services/platforms/real-estate-registry/) accessed May 2026.
-- Source: [Ejar Regulations](https://www.ejar.sa/en/regulations) accessed May 2026.
-- Source: [SDAIA PDPL Breach Notification](https://dgp.sdaia.gov.sa/wps/portal/pdp/services/details/PersonalDataBreachNotification/) accessed May 2026.
+- Source: [PDPL Breach Notification](https://dgp.sdaia.gov.sa/wps/portal/pdp/services/details/PersonalDataBreachNotification/) accessed May 2026.
 
 Inference: Technical controls in this file support compliance planning and are not legal advice.

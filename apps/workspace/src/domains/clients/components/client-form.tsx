@@ -4,7 +4,7 @@ import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import {
   clientsIndexQueryBaseKey,
   updateClientRequest,
@@ -24,7 +24,7 @@ interface ClientFormProps {
 
 export function ClientForm({ existing, indexQueryKey, onSuccess, onCancel }: ClientFormProps) {
   const t = useTranslations("Clients");
-  const account = useAccountContext();
+  const session = useAuthSession();
   const queryClient = useQueryClient();
   const createClientMutation = useCreateClientOptimisticMutation(indexQueryKey);
   
@@ -58,12 +58,12 @@ export function ClientForm({ existing, indexQueryKey, onSuccess, onCancel }: Cli
   };
 
   const onSubmit = handleSubmit((data: ClientFormValues) => {
-    if (!account.organization.id) return;
+    if (!session.organization.id) return;
 
     if (existing) {
       void saveOperation.run(async () => {
-        const result = await updateClientRequest(account.organization.id!, existing.id, data);
-        await queryClient.invalidateQueries({ queryKey: clientsIndexQueryBaseKey(account.organization.id ?? undefined) });
+        const result = await updateClientRequest(session.organization.id!, existing.id, data);
+        await queryClient.invalidateQueries({ queryKey: clientsIndexQueryBaseKey(session.organization.id ?? undefined) });
         return result.client.id;
       }, {
         successMessage: "Client saved.",
@@ -73,7 +73,7 @@ export function ClientForm({ existing, indexQueryKey, onSuccess, onCancel }: Cli
     }
 
     createClientMutation.mutate(
-      { organizationId: account.organization.id, values: data },
+      { organizationId: session.organization.id, values: data },
       { onSuccess: (result) => onSuccess?.(result.client.id) },
     );
   });

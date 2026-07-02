@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { workspaceFetch, organizationApiPath } from "@/domains/resources/workspace-resource-request";
 import type { CustomFieldDefinitionInput, CustomFieldValueInput } from "@/server/domains/custom-fields/validation/custom-field.schema";
 
@@ -43,8 +43,8 @@ export type CustomFieldValue = {
 };
 
 function useOrgId() {
-  const account = useAccountContext();
-  return account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+  const session = useAuthSession();
+  return session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
 }
 
 function customFieldsPath(orgId: string, ...segments: string[]) {

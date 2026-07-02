@@ -1,6 +1,6 @@
 "use client";
 
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useTaskQuery, useTasksQuery } from "../api/tasks";
 import { taskDocumentContext } from "../tasks.constants";
 import { useTaskMentionOptions, useMemberOptions } from "./task-hooks";
@@ -21,17 +21,17 @@ interface TaskEditModalProps {
  * Self-contained: fetches the task and wires up the full TaskEditor.
  */
 export function TaskEditModal({ taskId, open, onClose }: TaskEditModalProps) {
-  const account = useAccountContext();
-  const workspaceStatus = account.workspace.status;
+  const session = useAuthSession();
+  const workspaceStatus = session.workspace.status;
   const organizationId =
     workspaceStatus === "ready"
-      ? (account.workspace.organizationId ?? undefined)
+      ? (session.workspace.organizationId ?? undefined)
       : undefined;
 
   const taskResult = useTaskQuery(organizationId, taskId ?? "");
   const task = taskResult.data;
 
-  const { data: memberOptions } = useMemberOptions(organizationId, account.user);
+  const { data: memberOptions } = useMemberOptions(organizationId, session.user);
 
   const siblingTasksResult = useTasksQuery(organizationId, {
     status: "all",

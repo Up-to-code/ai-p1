@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useDashboardContext } from "../dashboard-context";
 import { useDashboardPersistence } from "@/domains/projects/hooks/use-dashboard-persistence";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { StickyNote } from "lucide-react";
 
 export function NotesWidget() {

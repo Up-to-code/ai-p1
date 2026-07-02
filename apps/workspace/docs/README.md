@@ -1,6 +1,6 @@
 # Workspace Documentation
 
-Purpose: Navigation entry point for the Saudi Arabia Central Real Estate Data Workspace documentation.
+Purpose: Navigation entry point for the Qentrah Workspace documentation.
 
 The workspace is a synchronization engine and OAuth 2.1 Provider. External CRMs, mobile apps, and partner platforms submit claims. The workspace validates, approves, computes visibility, and synchronizes authoritative state.
 
@@ -8,14 +8,14 @@ The workspace is a synchronization engine and OAuth 2.1 Provider. External CRMs,
 
 | Domain | Purpose |
 | --- | --- |
-| [Architecture](architecture/index.md) | Defines the technical structure of the Saudi Arabia Central Real Estate Data Workspace as a synchronization engine. |
+| [Architecture](architecture/index.md) | Defines the technical structure of the Qentrah Workspace as a synchronization engine. |
 | [Auth](auth/index.md) | Defines Better Auth, OAuth 2.1 Provider behavior, Organization authorization, consent, scopes, and credentials. |
 | [Synchronization](synchronization/index.md) | Defines how external claims become approved canonical state and how that state is synchronized outward. |
 | [Visibility](visibility/index.md) | Defines how the workspace decides which property data is visible to each platform, audience, organization, and channel. |
 | [UI](ui/index.md) | Defines Qentrah interface layout, tokenized design system, onboarding flow, pages, components, states, and synchronization UX. |
 | [Sdk](sdk/index.md) | Defines the official developer SDK plan for OAuth, API access, token handling, and webhook verification. |
 | [Security](security/index.md) | Defines threat controls, token safety, API protection, webhook safety, frontend safety, and secrets handling. |
-| [Compliance](compliance/index.md) | Defines Saudi regulatory context for REGA, Real Estate Registry, Ejar, PDPL, and auditability. |
+| [Compliance](compliance/index.md) | Defines regulatory context for PDPL and auditability. |
 | [Data Model](data-model/index.md) | Defines data shapes, table responsibilities, relationships, indexes, validators, and versioning rules. |
 | [Developer Experience](developer-experience/index.md) | Defines how external developers register apps, test OAuth, configure webhooks, and integrate APIs. |
 | [Guidelines](guidelines/index.md) | Defines how documentation is structured, named, written, referenced, and maintained. |

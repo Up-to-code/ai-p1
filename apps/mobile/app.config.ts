@@ -10,7 +10,7 @@ const workspaceRoot = path.resolve(__dirname, "../..");
 const appRoot = __dirname;
 const brandName = "Qentrah";
 const brandDescription =
-  "AI workspace for real estate teams to manage conversations, tasks, properties, and operations from one mobile command center.";
+  "AI workspace for teams to manage conversations, tasks, projects, and operations from one mobile command center.";
 const brandPrimary = "#111111";
 const splashBackground = "#FFFFFF";
 const splashDarkBackground = "#000000";

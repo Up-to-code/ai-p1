@@ -12,12 +12,13 @@ import type { SpaceFormValues } from "../validation/space.schema";
 export interface Space {
   id: string;
   organizationId: string;
-  projectId: string;
   name: string;
+  description?: string;
   icon?: string;
   color?: string;
-  visibility: "all_members" | "selected_members";
-  defaultAssigneeIds?: string[];
+  visibility: "private" | "public" | "request_only";
+  defaultProjectVisibility?: "private" | "space_members" | "organization";
+  allowMemberProjectCreation?: boolean;
   slug: string;
   createdByUserId: string;
   createdAt: number;
@@ -26,13 +27,14 @@ export interface Space {
 
 export function useWorkspaceSpacesQuery(organizationId?: string) {
   const result = useQuery(
-    api.projectSpaces.read.listByOrganization,
+    api.spaces.read.listAccessible,
     organizationId ? { organizationId } : "skip",
   );
   return result ?? undefined;
 }
 
 export function useSpacesQuery(organizationId?: string, projectId?: string) {
+  // TODO: Update to use new organization-level spaces when project-specific spaces are migrated
   return useWorkspaceResource<Space[]>(
     ["spaces", organizationId, projectId],
     organizationId && projectId ? organizationId : undefined,
@@ -40,37 +42,39 @@ export function useSpacesQuery(organizationId?: string, projectId?: string) {
   );
 }
 
-export function useSpaceOptionsQuery(organizationId?: string, projectId?: string) {
-  return useWorkspaceResourceResult<{ id: string; name: string; slug: string; icon?: string; color?: string }[]>(
-    ["spaces-options", organizationId, projectId],
-    organizationId && projectId ? organizationId : undefined,
-    `projects/${projectId}/spaces/options`,
+export function useSpaceOptionsQuery(organizationId?: string) {
+  const result = useQuery(
+    api.spaces.read.options,
+    organizationId ? { organizationId } : "skip",
   );
+  return result ?? undefined;
 }
 
-export function useSpaceQuery(organizationId?: string, projectId?: string, spaceId?: string) {
-  return useWorkspaceResource<Space | null>(
-    ["space", organizationId, projectId, spaceId],
-    organizationId && projectId && spaceId ? organizationId : undefined,
-    `projects/${projectId}/spaces/${spaceId}`,
+export function useSpaceQuery(organizationId?: string, spaceId?: string) {
+  const result = useQuery(
+    api.spaces.read.getBySlug,
+    organizationId && spaceId ? { organizationId, slug: spaceId } : "skip",
   );
+  return result ?? undefined;
 }
 
 function spacePayloadFromForm(values: SpaceFormValues) {
   return {
     name: values.name,
+    description: values.description,
     icon: values.icon || undefined,
     color: values.color || undefined,
     visibility: values.visibility,
-    defaultAssigneeIds: values.defaultAssigneeIds ?? [],
+    defaultProjectVisibility: values.defaultProjectVisibility,
+    allowMemberProjectCreation: values.allowMemberProjectCreation,
     slug: values.slug,
   };
 }
 
-export async function createSpaceRequest(organizationId: string, projectId: string, values: SpaceFormValues) {
+export async function createSpaceRequest(organizationId: string, values: SpaceFormValues) {
   return workspaceMutation<{ space: { id: string } }>(
     organizationId,
-    `projects/${projectId}/spaces`,
+    `spaces`,
     {
       method: "POST",
       body: spacePayloadFromForm(values),
@@ -81,13 +85,12 @@ export async function createSpaceRequest(organizationId: string, projectId: stri
 
 export async function updateSpaceRequest(
   organizationId: string,
-  projectId: string,
   spaceId: string,
   values: SpaceFormValues,
 ) {
   return workspaceMutation<{ space: { id: string } }>(
     organizationId,
-    `projects/${projectId}/spaces/${spaceId}`,
+    `spaces/${spaceId}`,
     {
       method: "PATCH",
       body: spacePayloadFromForm(values),
@@ -96,10 +99,10 @@ export async function updateSpaceRequest(
   );
 }
 
-export async function deleteSpaceRequest(organizationId: string, projectId: string, spaceId: string) {
+export async function deleteSpaceRequest(organizationId: string, spaceId: string) {
   return workspaceMutation(
     organizationId,
-    `projects/${projectId}/spaces/${spaceId}`,
+    `spaces/${spaceId}`,
     {
       method: "DELETE",
       fallbackMessage: "Space request failed.",

@@ -2,7 +2,7 @@
 
 import { Copy, Plus, RefreshCw, ThumbsDown, ThumbsUp, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { Button } from "@/components/ui/button";
 import { Markdown } from "@/components/ui/markdown";
 import AgUiTurnRenderer from "@/components/ui/ag-ui/ag-ui-turn-renderer";
@@ -16,9 +16,9 @@ import { AgentQuickActionsBar } from "./agent-panel/components/agent-quick-actio
 
 export function AiPanel() {
   const { threadId, pendingMessage, closePanel, setThreadId, newThread } = useAssistantPanel();
-  const account = useAccountContext();
+  const session = useAuthSession();
   const organizationId =
-    account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+    session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
 
   const conversation = useAgentConversation({
     organizationId,

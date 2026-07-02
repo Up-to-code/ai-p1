@@ -5,7 +5,7 @@ import { ProgressBar } from "@qentrah/our-platform-components";
 import { ColorDot } from "@qentrah/ui";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
 import { useProjectsIndexQuery } from "../../api/projects";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 
 const statusDot: Record<string, string> = {
   planned: "bg-gray-400",
@@ -16,8 +16,8 @@ const statusDot: Record<string, string> = {
 };
 
 export function RecentProjectsWidget() {
-  const account = useAccountContext();
-  const orgId = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+  const session = useAuthSession();
+  const orgId = session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
   const query = useProjectsIndexQuery(orgId);
   const projects = query.results ?? [];
 

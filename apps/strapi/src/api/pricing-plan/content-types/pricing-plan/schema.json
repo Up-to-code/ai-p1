@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "pricing_plans",
+  "info": {
+    "singularName": "pricing-plan",
+    "pluralName": "pricing-plans",
+    "displayName": "Pricing Plan",
+    "description": "Subscription plans shown on the pricing page"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "name": { "type": "string", "required": true },
+    "planId": { "type": "string", "required": true, "unique": true },
+    "amount": { "type": "decimal" },
+    "currency": { "type": "string", "required": true, "default": "USD" },
+    "periodDays": { "type": "integer", "required": true, "default": 30 },
+    "features": { "type": "json" },
+    "highlighted": { "type": "boolean", "default": false },
+    "checkoutMode": {
+      "type": "enumeration",
+      "enum": ["provider", "contact_sales"],
+      "required": true,
+      "default": "provider"
+    }
+  }
+}

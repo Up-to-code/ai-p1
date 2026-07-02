@@ -4,7 +4,7 @@ import * as React from "react";
 import { Check, ChevronsUpDown, Layers } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useWorkspaceSpacesQuery } from "@/domains/projects/api/spaces";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useNavigation } from "@/domains/navigation";
 import { useRouter, usePathname } from "@/i18n/routing";
 import { useSearchParams } from "next/navigation";
@@ -15,12 +15,12 @@ export function SpaceSwitcher() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = React.useState(false);
-  const account = useAccountContext();
+  const session = useAuthSession();
   const { spaceSlug, setSpace } = useNavigation();
 
   const orgId =
-    account.workspace.status === "ready"
-      ? account.workspace.organizationId ?? undefined
+    session.workspace.status === "ready"
+      ? session.workspace.organizationId ?? undefined
       : undefined;
 
   const spaces = useWorkspaceSpacesQuery(orgId);

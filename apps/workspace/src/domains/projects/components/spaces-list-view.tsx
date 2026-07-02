@@ -6,7 +6,7 @@ import { Plus } from "lucide-react";
 import { QentrahTable, type QentrahColumnDef } from "@qentrah/ui";
 import { AppPageHeader, AppPageShell } from "@/components/shared";
 import { cn } from "@/lib/utils";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useNavigation } from "@/domains/navigation";
 import { useWorkspaceSpacesQuery } from "@/domains/projects/api/spaces";
 import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
@@ -53,15 +53,24 @@ const iconFor = (key: string | undefined): string | null => {
 }
 
 const visibilityLabel = (v: Space["visibility"]): string => {
-  return v === "all_members" ? "All members" : "Selected only"
+  switch (v) {
+    case "private":
+      return "Private"
+    case "public":
+      return "Public"
+    case "request_only":
+      return "Request Only"
+    default:
+      return v
+  }
 }
 
 export function SpacesListView() {
-  const account = useAccountContext();
+  const session = useAuthSession();
   const { setSpace } = useNavigation();
   const t = useTranslations("Spaces");
 
-  const orgId = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+  const orgId = session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
   const spaces = useWorkspaceSpacesQuery(orgId);
   const projectsQuery = useProjectsIndexQuery(orgId);
   const projects = projectsQuery.results ?? [];
@@ -132,20 +141,23 @@ export function SpacesListView() {
         width: 150,
         cellRenderer: (p: any) => {
           if (p.data?.__groupKey) return null
-          const isAll = p.value === "all_members"
+          const isPublic = p.value === "public"
+          const isPrivate = p.value === "private"
           return (
             <span
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium border",
-                isAll
+                isPublic
                   ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300/90 border-border/60"
-                  : "bg-zinc-500/10 text-zinc-600 dark:text-zinc-300/80 border-border/60"
+                  : isPrivate
+                  ? "bg-zinc-500/10 text-zinc-600 dark:text-zinc-300/80 border-border/60"
+                  : "bg-amber-500/10 text-amber-700 dark:text-amber-300/90 border-border/60"
               )}
             >
               <span
                 className={cn(
                   "h-1.5 w-1.5 rounded-full",
-                  isAll ? "bg-emerald-600 dark:bg-emerald-300" : "bg-zinc-500 dark:bg-zinc-300"
+                  isPublic ? "bg-emerald-600 dark:bg-emerald-300" : isPrivate ? "bg-zinc-500 dark:bg-zinc-300" : "bg-amber-500 dark:bg-amber-300"
                 )}
               />
               {visibilityLabel(p.value)}

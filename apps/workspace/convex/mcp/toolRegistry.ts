@@ -4,6 +4,7 @@ type McpPermissionResource =
   | "organization"
   | "member"
   | "role"
+  | "space"
   | "client"
   | "project"
   | "deal"
@@ -92,6 +93,15 @@ const mcpToolRegistry = [
   tool({ name: "organization_info", title: "Organization info", description: "Get this agent link's organization context and allowed work.", resource: "organization", action: "read", adapters: both }),
   tool({ name: "organization_update_identity", title: "Update organization identity", description: "Update the organization's dev organization identity fields.", resource: "organization", action: "update", adapters: agentOnly }),
   tool({ name: "organization_update_profile", title: "Update organization profile", description: "Update the organization's workspace profile fields.", resource: "organization", action: "update", adapters: agentOnly }),
+  tool({ name: "spaces_list", title: "List spaces", description: "List accessible spaces in the organization.", resource: "space", action: "read", adapters: both }),
+  tool({ name: "spaces_get", title: "Get space", description: "Get one space.", resource: "space", action: "read", adapters: both }),
+  tool({ name: "spaces_create", title: "Create space", description: "Create a space.", resource: "space", action: "create", adapters: both }),
+  tool({ name: "spaces_update", title: "Update space", description: "Update a space.", resource: "space", action: "update", adapters: both }),
+  tool({ name: "spaces_delete", title: "Delete space", description: "Soft delete a space.", resource: "space", action: "delete", destructive: true, adapters: both }),
+  tool({ name: "space_members_list", title: "List space members", description: "List members of a space.", resource: "space", action: "read", adapters: both }),
+  tool({ name: "space_members_add", title: "Add space member", description: "Add a member to a space.", resource: "space", action: "update", adapters: both }),
+  tool({ name: "space_members_remove", title: "Remove space member", description: "Remove a member from a space.", resource: "space", action: "update", adapters: both }),
+  tool({ name: "space_members_update_role", title: "Update space member role", description: "Update a member's role in a space.", resource: "space", action: "update", adapters: both }),
   tool({ name: "members_update_role", title: "Update member role", description: "Change an organization member's work role.", resource: "member", action: "update", adapters: agentOnly }),
   tool({ name: "members_remove", title: "Remove member", description: "Remove an organization member.", resource: "member", action: "delete", destructive: true, adapters: agentOnly }),
   tool({ name: "invitations_create", title: "Invite member", description: "Create an organization email invitation.", resource: "member", action: "create", adapters: agentOnly }),

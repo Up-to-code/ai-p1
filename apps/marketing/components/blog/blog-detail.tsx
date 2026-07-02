@@ -1,10 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { payloadMediaUrl, type PayloadBlogPost } from "@/lib/payload-api";
+import type { StrapiBlogPost } from "@/lib/strapi";
 import { lexicalToHtml } from "@/lib/lexical-to-html";
 
 type BlogDetailProps = {
-  post: PayloadBlogPost;
+  post: StrapiBlogPost;
   locale: string;
 };
 
@@ -36,17 +36,15 @@ export function BlogDetail({ post, locale }: BlogDetailProps) {
           {post.authorAvatar && (
             <div className="relative h-12 w-12 overflow-hidden rounded-full">
               <Image
-                src={payloadMediaUrl(post.authorAvatar.url)}
-                alt={post.authorAvatar.alt || post.author}
+                src={post.authorAvatar.url}
+                alt={post.authorAvatar.alt ?? post.author}
                 fill
                 className="object-cover"
               />
             </div>
           )}
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-[var(--q-text-primary)]">
-              {post.author}
-            </span>
+            <span className="text-sm font-semibold text-[var(--q-text-primary)]">{post.author}</span>
             <div className="flex items-center gap-2 text-sm text-[var(--q-text-secondary)]">
               {post.authorRole && (
                 <>
@@ -58,10 +56,7 @@ export function BlogDetail({ post, locale }: BlogDetailProps) {
               {post.readingTime && (
                 <>
                   <span>·</span>
-                  <span>
-                    {post.readingTime}{" "}
-                    {locale === "ar" ? "دقائق قراءة" : "min read"}
-                  </span>
+                  <span>{post.readingTime} {locale === "ar" ? "دقائق قراءة" : "min read"}</span>
                 </>
               )}
             </div>
@@ -72,8 +67,8 @@ export function BlogDetail({ post, locale }: BlogDetailProps) {
       {post.heroImage && (
         <div className="relative mb-12 aspect-[21/9] overflow-hidden rounded-2xl border border-[var(--q-border)]">
           <Image
-            src={payloadMediaUrl(post.heroImage.url)}
-            alt={post.heroImage.alt || post.title}
+            src={post.heroImage.url}
+            alt={post.heroImage.alt ?? post.title}
             fill
             className="object-cover"
             priority
@@ -91,21 +86,17 @@ export function BlogDetail({ post, locale }: BlogDetailProps) {
           {post.authorAvatar && (
             <div className="relative h-16 w-16 overflow-hidden rounded-full">
               <Image
-                src={payloadMediaUrl(post.authorAvatar.url)}
-                alt={post.authorAvatar.alt || post.author}
+                src={post.authorAvatar.url}
+                alt={post.authorAvatar.alt ?? post.author}
                 fill
                 className="object-cover"
               />
             </div>
           )}
           <div className="flex-1">
-            <h3 className="text-lg font-bold text-[var(--q-text-primary)]">
-              {post.author}
-            </h3>
+            <h3 className="text-lg font-bold text-[var(--q-text-primary)]">{post.author}</h3>
             {post.authorRole && (
-              <p className="text-sm text-[var(--q-text-secondary)]">
-                {post.authorRole}
-              </p>
+              <p className="text-sm text-[var(--q-text-secondary)]">{post.authorRole}</p>
             )}
           </div>
         </div>

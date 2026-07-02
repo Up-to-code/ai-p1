@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Hash, Plus, Lock, Users, Search, MoreHorizontal, ChevronDown, ChevronRight, Layers } from "lucide-react";
 import { InboxIcon } from "./clickup-icons";
 import { cn } from "@/lib/utils";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useInboxState, useCreateChannelMutation } from "@/domains/inbox";
 import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
 import { useClientsIndexQuery } from "@/domains/clients/api/clients";
@@ -130,7 +130,7 @@ function CreateChannelButton({
   canCreate: boolean;
   projects: Array<{ id: string; name: string }>;
   clients: Array<{ id: string; name: string }>;
-  spaces: Array<{ id: string; name: string; projectId: string }>;
+  spaces: Array<{ id: string; name: string }>;
   members: Array<{ id: string; name: string; email?: string }>;
 }) {
   const [open, setOpen] = useState(false);
@@ -184,7 +184,7 @@ function CreateChannelButton({
 export function SidebarInboxPanel() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const account = useAccountContext();
+  const session = useAuthSession();
   const { orgId, channels, isLoadingChannels } = useInboxState();
   const [searchQuery, setSearchQuery] = useState("");
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
@@ -209,7 +209,7 @@ export function SidebarInboxPanel() {
     router.push(`/inbox?channel=${channelId}`);
   };
 
-  const orgIdForQuery = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+  const orgIdForQuery = session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
 
   // Fetch capabilities
   useEffect(() => {

@@ -1,10 +1,10 @@
 # Compliance Review
 
-Purpose: Compliance review handles restricted Saudi identifiers, legal/government visibility, Ejar references, title deed evidence, and sensitive documents.
+Purpose: Compliance review handles restricted identifiers, legal/government visibility, Ejar references, title deed evidence, and sensitive documents.
 
 ## Owns
 
-- Compliance review handles restricted Saudi identifiers, legal/government visibility, Ejar references, title deed evidence, and sensitive documents.
+- Compliance review handles restricted identifiers, legal/government visibility, Ejar references, title deed evidence, and sensitive documents.
 - Compliance officer role is required for restricted approval.
 - All decisions are audited.
 

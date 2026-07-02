@@ -1,13 +1,13 @@
 "use client";
 
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { DashboardChat } from "@/components/dashboard/dashboard-chat";
 
 export function DashboardScreen() {
-  const account = useAccountContext();
+  const session = useAuthSession();
   const organizationId =
-    account.workspace.status === "ready"
-      ? (account.workspace.organizationId ?? undefined)
+    session.workspace.status === "ready"
+      ? (session.workspace.organizationId ?? undefined)
       : undefined;
 
   return <DashboardChat organizationId={organizationId} />;

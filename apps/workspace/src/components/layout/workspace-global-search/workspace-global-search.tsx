@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { isRtlLocale } from "@/lib/i18n/locale";
 import { useRouter } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useClientsPagedQuery } from "@/domains/clients/api/clients";
 import type { Project } from "@/domains/projects/store/projects.types";
 import { useProjectsPagedQuery } from "@/domains/projects/api/projects";
@@ -51,9 +51,9 @@ export function WorkspaceGlobalSearch() {
   const router = useRouter();
   const t = useTranslations("Workspace");
   const tSidebar = useTranslations("Sidebar");
-  const account = useAccountContext();
+  const session = useAuthSession();
   const organizationId =
-    account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+    session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
 
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");

@@ -1,11 +1,30 @@
 import { v } from "convex/values";
 import { internalMutation, mutation } from "../_generated/server";
-import type { Doc, Id, MutationCtx } from "../_generated/dataModel";
+import type { MutationCtx } from "../_generated/server";
+import type { Doc, Id } from "../_generated/dataModel";
 import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { cancelQueuedJobsForSource, scheduleCalendarEventReminders } from "../notifications/helpers";
 import { isoDate, isoTime, presentWorkspaceRecord } from "../shared/present";
 import { calendarEventInputValidator, calendarEventValidator } from "./validators";
+
+type CalendarEventInput = {
+  title: string;
+  ownerUserId?: string;
+  clientId?: string;
+  projectId?: string;
+  taskId?: string;
+  startAt: number;
+  endAt: number;
+  type: "meeting" | "deadline" | "reminder" | "milestone" | "focusBlock";
+  status: "confirmed" | "pending" | "draft";
+  attendeeUserIds?: string[];
+  externalAttendees?: string[];
+  location?: string;
+  meetingUrl?: string;
+  notes?: string;
+  tags?: string[];
+};
 
 function presentEvent(event: Doc<"calendarEvents">) {
   return {
@@ -15,7 +34,7 @@ function presentEvent(event: Doc<"calendarEvents">) {
   };
 }
 
-async function createEventCore(ctx: MutationCtx, args: { organizationId: string; input: Parameters<typeof calendarEventInputValidator.parse>[0]; actorUserId: string }) {
+async function createEventCore(ctx: MutationCtx, args: { organizationId: string; input: CalendarEventInput; actorUserId: string }) {
   const now = Date.now();
   const id = await ctx.db.insert("calendarEvents", {
     organizationId: args.organizationId,
@@ -31,7 +50,7 @@ async function createEventCore(ctx: MutationCtx, args: { organizationId: string;
   return { presented: presentEvent(event), now };
 }
 
-async function updateEventCore(ctx: MutationCtx, args: { organizationId: string; eventId: Id<"calendarEvents">; input: Parameters<typeof calendarEventInputValidator.parse>[0]; actorUserId: string }) {
+async function updateEventCore(ctx: MutationCtx, args: { organizationId: string; eventId: Id<"calendarEvents">; input: CalendarEventInput; actorUserId: string }) {
   const existing = await ctx.db.get(args.eventId);
   if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Calendar event was not found.");
   const now = Date.now();

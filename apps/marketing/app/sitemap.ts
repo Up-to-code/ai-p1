@@ -1,38 +1,28 @@
 import type { MetadataRoute } from "next";
+import { allLocalizedMarketingPaths, localizedLanguages, marketingSitemapPriority } from "@/lib/seo";
+import { getBlogPosts } from "@/lib/strapi";
 
-import {
-  allLocalizedMarketingPaths,
-  localizedLanguages,
-  marketingSitemapPriority,
-} from "@/lib/seo";
-import { getBlogPosts } from "@/lib/payload-api";
-import { getAllMarketingPages } from "@/lib/cms-pages";
-import { getLocaleCodes } from "@/lib/locales";
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const baseUrl = "https://qentrah.com";
 
-  const staticEntries: MetadataRoute.Sitemap = allLocalizedMarketingPaths().map(
-    ({ path, url }) => ({
-      url,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: marketingSitemapPriority(path),
-      alternates: {
-        languages: localizedLanguages(path, true),
-      },
-    }),
-  );
+  const staticEntries: MetadataRoute.Sitemap = allLocalizedMarketingPaths().map(({ path, url }) => ({
+    url,
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: marketingSitemapPriority(path),
+    alternates: { languages: localizedLanguages(path, true) },
+  }));
 
   let blogEntries: MetadataRoute.Sitemap = [];
   try {
-    const { docs: enPosts } = await getBlogPosts("en", 1, 100);
-    const { docs: arPosts } = await getBlogPosts("ar", 1, 100);
-    const allSlugs = new Set([
-      ...enPosts.map((p) => p.slug),
-      ...arPosts.map((p) => p.slug),
+    const [{ docs: enPosts }, { docs: arPosts }] = await Promise.all([
+      getBlogPosts("en", 1, 100),
+      getBlogPosts("ar", 1, 100),
     ]);
+    const allSlugs = new Set([...enPosts.map((p) => p.slug), ...arPosts.map((p) => p.slug)]);
 
     blogEntries = Array.from(allSlugs).map((slug) => ({
       url: `${baseUrl}/en/blog/${slug}`,
@@ -47,7 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       },
     }));
   } catch {
-    // Payload may not be available at build time
+    // Strapi may not be available at build time — static routes still work
   }
 
   return [...staticEntries, ...blogEntries];

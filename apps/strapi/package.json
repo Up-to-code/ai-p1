@@ -1,0 +1,28 @@
+{
+  "name": "@qentrah/strapi",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "strapi develop",
+    "start": "strapi start",
+    "build": "strapi build",
+    "strapi": "strapi",
+    "seed": "tsx scripts/seed.ts"
+  },
+  "dependencies": {
+    "@strapi/strapi": "5.50.0",
+    "@strapi/plugin-users-permissions": "5.50.0",
+    "@strapi/plugin-cloud": "5.50.0",
+    "better-sqlite3": "9.6.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-router-dom": "6.28.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.21"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=6.0.0"
+  }
+}

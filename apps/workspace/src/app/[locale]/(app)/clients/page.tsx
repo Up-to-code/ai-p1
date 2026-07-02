@@ -1,5 +1,5 @@
-import { ClientsWorkspace } from "@/domains/clients";
+import { ClientsPageRedesigned } from "@/domains/clients/components/ClientsPageRedesigned";
 
 export default function ClientsPage() {
-  return <ClientsWorkspace initialView="pipeline" />;
+  return <ClientsPageRedesigned />;
 }

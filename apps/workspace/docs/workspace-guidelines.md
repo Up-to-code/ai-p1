@@ -40,7 +40,7 @@ Each index.md must include:
 - Use must and must not for mandatory rules.
 - Mark examples as examples.
 - Mark technical compliance interpretation as non-legal advice.
-- Cite official sources for Saudi regulatory claims.
+- Cite official sources for regulatory claims.
 - Do not add CRM, marketplace, lead pipeline, or deal pipeline scope.
 
 ## Code Example Rules
@@ -59,7 +59,7 @@ Each index.md must include:
 - visibility owns computed visibility and suppression.
 - sdk owns @qentrah/sdk plans and examples.
 - security owns threat controls.
-- compliance owns Saudi regulatory context.
+- compliance owns regulatory context.
 - data-model owns schema and table documentation.
 - developer-experience owns external developer workflows.
 - guidelines owns documentation policy.

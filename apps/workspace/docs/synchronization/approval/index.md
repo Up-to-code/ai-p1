@@ -15,7 +15,7 @@ This folder does not own broad system-wide specification text. If content crosse
 | [Review Queue](review-queue.md) | Review queue shows pending submissions, compliance flags, conflicts, and source platform. |
 | [Approval Decisions](approval-decisions.md) | Approval creates canonical property version. |
 | [Rejection Decisions](rejection-decisions.md) | Rejection records reason and evidence. |
-| [Compliance Review](compliance-review.md) | Compliance review handles restricted Saudi identifiers, legal/government visibility, Ejar references, title deed evidence, and sensitive documents. |
+| [Compliance Review](compliance-review.md) | Compliance review handles restricted identifiers, legal/government visibility, Ejar references, title deed evidence, and sensitive documents. |
 
 ## Read Order
 

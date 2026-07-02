@@ -13,7 +13,7 @@ This folder does not own broad system-wide specification text. If content crosse
 | File | Purpose |
 | --- | --- |
 | [Personal Data](personal-data.md) | Personal data must be minimized. |
-| [Breach Notification](breach-notification.md) | Saudi PDPL breach notification may require reporting within 72 hours where applicable. |
+| [Breach Notification](breach-notification.md) | PDPL breach notification may require reporting within 72 hours where applicable. |
 | [Data Minimization](data-minimization.md) | Collect only fields required for synchronization, approval, compliance, and audit. |
 | [Data Residency](data-residency.md) | Default posture is KSA-primary data residency. |
 

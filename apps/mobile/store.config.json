@@ -26,12 +26,11 @@
     "info": {
       "en-US": {
         "title": "Qentrah",
-        "subtitle": "AI workspace for real estate",
-        "description": "Qentrah brings conversations, tasks, properties, and workspace operations into one mobile command center for real estate teams. Coordinate client work, search property context, follow up on tasks, and keep the operational picture moving from anywhere.",
+        "subtitle": "AI workspace for teams",
+        "description": "Qentrah brings conversations, tasks, projects, and workspace operations into one mobile command center for teams. Coordinate client work, follow up on tasks, and keep the operational picture moving from anywhere.",
         "keywords": [
           "qentrah",
           "workspace",
-          "real estate",
           "crm",
           "tasks",
           "operations",
@@ -43,12 +42,11 @@
       },
       "ar-SA": {
         "title": "Qentrah",
-        "subtitle": "مساحة عمل ذكية لفرق العقار",
-        "description": "يجمع Qentrah محادثات العملاء والمهام والعقارات وعمليات مساحة العمل في مركز قيادة واحد على الجوال لفرق العقار. نسق عمل العملاء، وابحث في سياق العقارات، وتابع المهام، وحافظ على وضوح العمليات من أي مكان.",
+        "subtitle": "مساحة عمل ذكية للفرق",
+        "description": "يجمع Qentrah محادثات العملاء والمهام والمشاريع وعمليات مساحة العمل في مركز قيادة واحد على الجوال للفرق. نسق عمل العملاء، وتابع المهام، وحافظ على وضوح العمليات من أي مكان.",
         "keywords": [
           "qentrah",
           "مساحة عمل",
-          "عقارات",
           "إدارة عملاء",
           "مهام",
           "عمليات",
@@ -60,12 +58,11 @@
       },
       "fr-FR": {
         "title": "Qentrah",
-        "subtitle": "IA pour equipes immobilieres",
-        "description": "Qentrah rassemble conversations, taches, biens et operations dans un centre de commande mobile pour les equipes immobilieres. Coordonnez le travail client, recherchez le contexte des biens, suivez les taches et gardez une vue claire des operations depuis n'importe ou.",
+        "subtitle": "IA pour les equipes",
+        "description": "Qentrah rassemble conversations, taches, projets et operations dans un centre de commande mobile pour les equipes. Coordonnez le travail client, suivez les taches et gardez une vue claire des operations depuis n'importe ou.",
         "keywords": [
           "qentrah",
           "workspace",
-          "immobilier",
           "crm",
           "taches",
           "operations",
@@ -84,7 +81,7 @@
       "firstName": "Qentrah",
       "lastName": "Support",
       "email": "support@qentrah.com",
-      "phone": "+966000000000",
+      "phone": "+201000000000",
       "demoRequired": false,
       "notes": "Qentrah is a mobile companion for workspace operations. The app uses the production Qentrah authentication flow and supports English, Arabic, and French localized app metadata."
     }

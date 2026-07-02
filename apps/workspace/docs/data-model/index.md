@@ -4,7 +4,7 @@ Purpose: Defines data shapes, table responsibilities, relationships, indexes, va
 
 ## Scope
 
-This domain owns documentation for data model decisions in the Saudi Arabia Central Real Estate Data Workspace.
+This domain owns documentation for data model decisions in the Qentrah Workspace.
 
 This domain does not own unrelated CRM, marketplace, lead pipeline, or deal pipeline behavior.
 
@@ -12,7 +12,7 @@ This domain does not own unrelated CRM, marketplace, lead pipeline, or deal pipe
 
 | Folder | Purpose |
 | --- | --- |
-| `property/index.md` | Explains property identity, location, lifecycle, Saudi identifiers, and ownership references. |
+| `property/index.md` | Explains property identity, location, lifecycle, identifiers, and ownership references. |
 | `submission/index.md` | Explains submission records and validation, approval, and rejection states. |
 | `organizations/index.md` | Explains organization, membership, and publisher profiles. |
 | `integrations/index.md` | Explains connected platforms, OAuth clients, webhook endpoints, and API key records. |
@@ -44,4 +44,4 @@ This domain does not own unrelated CRM, marketplace, lead pipeline, or deal pipe
 - Keep this index current when files are added or removed.
 - Keep files small and focused.
 - Link to related domains instead of duplicating large sections.
-- Preserve the platform boundary: synchronization engine, OAuth 2.1 Provider, Saudi market only.
+

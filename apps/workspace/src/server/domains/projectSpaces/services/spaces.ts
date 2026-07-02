@@ -3,33 +3,47 @@ import { fetchAuthMutation } from "@/server/auth/clerk-convex";
 import type { SpacePayload } from "../validation/space.schema";
 
 function toConvexInput(input: SpacePayload) {
-  return {
-    ...input,
-    defaultAssigneeIds: input.defaultAssigneeIds ?? undefined,
-  };
+  return input;
 }
 
-export function createSpace(organizationId: string, input: SpacePayload, extra: { projectId: string }) {
+// Create a new space (organization-level)
+export function createSpace(organizationId: string, input: SpacePayload) {
+  return fetchAuthMutation(api.spaces.write.create, {
+    organizationId,
+    input: toConvexInput(input),
+  });
+}
+
+// Update a space (organization-level)
+export function updateSpace(organizationId: string, spaceId: string, input: SpacePayload) {
+  return fetchAuthMutation(api.spaces.write.update, {
+    organizationId,
+    spaceId: spaceId as any,
+    input: toConvexInput(input),
+  });
+}
+
+// Delete a space (organization-level)
+export function deleteSpace(organizationId: string, spaceId: string) {
+  return fetchAuthMutation(api.spaces.write.remove, {
+    organizationId,
+    spaceId: spaceId as any,
+  });
+}
+
+// Link a space to a project (junction table)
+export function linkSpaceToProject(organizationId: string, projectId: string, spaceId: string, isPrimary?: boolean) {
   return fetchAuthMutation(api.projectSpaces.write.createFromHono, {
     organizationId,
-    projectId: extra.projectId as any,
-    input: toConvexInput(input),
+    projectId: projectId as any,
+    input: { spaceId: spaceId as any, isPrimary },
   });
 }
 
-export function updateSpace(organizationId: string, spaceId: string, input: SpacePayload, extra: { projectId: string }) {
-  return fetchAuthMutation(api.projectSpaces.write.updateFromHono, {
-    organizationId,
-    projectId: extra.projectId as any,
-    spaceId: spaceId as any,
-    input: toConvexInput(input),
-  });
-}
-
-export function deleteSpace(organizationId: string, spaceId: string, extra: { projectId: string }) {
+// Unlink a space from a project (junction table)
+export function unlinkSpaceFromProject(organizationId: string, projectSpaceId: string) {
   return fetchAuthMutation(api.projectSpaces.write.deleteFromHono, {
     organizationId,
-    projectId: extra.projectId as any,
-    spaceId: spaceId as any,
+    projectSpaceId: projectSpaceId as any,
   });
 }

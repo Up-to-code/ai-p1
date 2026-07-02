@@ -9,6 +9,7 @@ import { customFieldTables } from "./schema/custom_fields";
 import { mediaTables } from "./schema/media";
 import { docsTables } from "./schema/docs";
 import { maintenanceTables } from "./schema/maintenance";
+import { viewTables } from "./schema/views";
 
 // App tables are organization-scoped so user identity never owns business data directly.
 export default defineSchema({
@@ -22,4 +23,5 @@ export default defineSchema({
   ...mediaTables,
   ...docsTables,
   ...maintenanceTables,
+  ...viewTables,
 });

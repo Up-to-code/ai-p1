@@ -10,6 +10,7 @@ export const organizationProfileValidator = v.object({
   website: v.string(),
   address: v.string(),
   logo: v.optional(v.string()),
+  brandColor: v.optional(v.string()),
   updatedAt: v.number(),
 });
 
@@ -22,6 +23,7 @@ export const updateOrganizationProfileInputValidator = v.object({
   website: v.string(),
   address: v.string(),
   logo: v.optional(v.string()),
+  brandColor: v.optional(v.string()),
 });
 
 export const emptyOrganizationProfile = (organizationId: string) => ({
@@ -34,5 +36,6 @@ export const emptyOrganizationProfile = (organizationId: string) => ({
   website: "",
   address: "",
   logo: undefined,
+  brandColor: undefined,
   updatedAt: 0,
 });

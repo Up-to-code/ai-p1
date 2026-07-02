@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { useProjectsIndexQuery } from "../../api/projects";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { DollarSign } from "lucide-react";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -15,8 +15,8 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export function BudgetOverviewWidget() {
-  const account = useAccountContext();
-  const orgId = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+  const session = useAuthSession();
+  const orgId = session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
   const query = useProjectsIndexQuery(orgId);
   const projects = query.results ?? [];
 

@@ -19,7 +19,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { AppPageShell } from "@/components/shared";
 import { LoadingState, StatusPill, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { Button } from "@/components/ui/button";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { listOrganizationMembers } from "@/domains/organization/api/clerk-organization-api";
 import { Link } from "@/i18n/routing";
 import { useBillingOverview } from "../api/billing";
@@ -37,8 +37,8 @@ export function BillingScreen() {
   const t = useTranslations("Billing");
   const locale = useLocale() as BillingLocale;
   const searchParams = useSearchParams();
-  const account = useAccountContext();
-  const organizationId = account.workspace.status === "ready" ? account.workspace.organizationId : null;
+  const session = useAuthSession();
+  const organizationId = session.workspace.status === "ready" ? session.workspace.organizationId : null;
   const overview = useBillingOverview(organizationId);
 
   const seatsFromUrl = searchParams.get("seats");
@@ -74,10 +74,10 @@ export function BillingScreen() {
   const status = overview?.subscription?.status ?? "inactive";
   const isActive = status === "active";
 
-  if (account.workspace.status !== "ready") {
+  if (session.workspace.status !== "ready") {
     return (
       <AppPageShell>
-        <WorkspaceQueryState status={account.workspace.status} variant="dashboard" />
+        <WorkspaceQueryState status={session.workspace.status} variant="dashboard" />
       </AppPageShell>
     );
   }
@@ -103,7 +103,7 @@ export function BillingScreen() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-black text-foreground">
-              {account.organization.name}
+              {session.organization.name}
             </p>
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               {t("orgBeingBilled")}

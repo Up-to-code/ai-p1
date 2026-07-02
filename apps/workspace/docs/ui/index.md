@@ -6,7 +6,7 @@ Purpose: Defines the Qentrah user interface documentation domain for layout, onb
 
 This folder owns UI interface specifications for the Qentrah synchronization workspace.
 
-This folder does not own backend authorization, Convex schema, synchronization policy, visibility policy, SDK contracts, Saudi compliance interpretation, or developer onboarding flows. Those subjects stay in their owning domains and are linked when needed.
+This folder does not own backend authorization, Convex schema, synchronization policy, visibility policy, SDK contracts, compliance interpretation, or developer onboarding flows. Those subjects stay in their owning domains and are linked when needed.
 
 ## Files
 

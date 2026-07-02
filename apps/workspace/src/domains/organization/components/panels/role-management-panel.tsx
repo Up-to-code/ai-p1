@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { HelpCircle, Loader2, Save } from "lucide-react";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,8 +44,8 @@ export function RoleManagementPanel({ surface = "page" }: { surface?: "page" | "
   const locale = useLocale();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const account = useAccountContext();
-  const organizationId = account.organization.id ?? "";
+  const session = useAuthSession();
+  const organizationId = session.organization.id ?? "";
   const [roleName, setRoleName] = useState("");
   const [rolePermission, setRolePermission] = useState<Partial<Record<PermissionResource, string[]>>>(emptyPermission);
   const [editingRole, setEditingRole] = useState<OrganizationRole | null>(null);
@@ -167,7 +167,7 @@ export function RoleManagementPanel({ surface = "page" }: { surface?: "page" | "
     setSelectedQuickRole(null); // Clear quick role selection when manually editing
   }
 
-  if (account.isPending) {
+  if (session.isPending) {
     return <OrganizationSettingsSkeleton label={t("noOrganization.loading")} compact />;
   }
 

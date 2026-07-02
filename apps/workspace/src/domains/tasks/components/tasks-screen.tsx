@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { ListTodo, Plus, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import {
   DetailNotFoundState,
   EmptyWorkspace,
@@ -47,11 +47,11 @@ export function TasksScreen({
 }: { hideShell?: boolean; projectId?: string | null } = {}) {
   const t = useTranslations("Tasks");
   const common = useTranslations("Common");
-  const account = useAccountContext();
-  const workspaceStatus = account.workspace.status;
+  const session = useAuthSession();
+  const workspaceStatus = session.workspace.status;
   const organizationId =
     workspaceStatus === "ready"
-      ? (account.workspace.organizationId ?? undefined)
+      ? (session.workspace.organizationId ?? undefined)
       : undefined;
 
   const statusTabs = useMemo<
@@ -118,7 +118,7 @@ export function TasksScreen({
   const { applyOptimistic, moveTask: moveTaskFromHook } = useTaskMutations(organizationId ?? "");
   const tasks = useMemo(() => applyOptimistic(rawTasks), [rawTasks, applyOptimistic]);
 
-  const { data: memberOptions } = useMemberOptions(organizationId, account.user);
+  const { data: memberOptions } = useMemberOptions(organizationId, session.user);
   const listDocumentContext = organizationId
     ? taskDocumentContext(organizationId, projectId, null)
     : undefined;
@@ -145,12 +145,12 @@ export function TasksScreen({
       )
         return false;
       if (ownership === "assignedToMe")
-        return task.assigneeUserId === account.user.id;
+        return task.assigneeUserId === session.user.id;
       if (ownership === "sentByMe")
-        return task.createdByUserId === account.user.id;
+        return task.createdByUserId === session.user.id;
       return true;
     });
-  }, [search, tasks, ownership, account.user.id]);
+  }, [search, tasks, ownership, session.user.id]);
 
   // The task currently open in the right pane
   const selectedTask = useMemo(

@@ -9,7 +9,13 @@ export const projectStatusValidator = v.union(
 );
 
 export const projectHealthValidator = v.union(v.literal("onTrack"), v.literal("atRisk"), v.literal("blocked"));
-export const visibilityValidator = v.union(v.literal("private"), v.literal("team"), v.literal("workspace"));
+export const visibilityValidator = v.union(
+  v.literal("private"),
+  v.literal("space_members"),
+  v.literal("organization"),
+  v.literal("workspace"),
+  v.literal("team"),
+);
 
 export const projectInputValidator = v.object({
   name: v.string(),

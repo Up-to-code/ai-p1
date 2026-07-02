@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_sections_stats",
+  "info": {
+    "displayName": "Stats",
+    "icon": "chart",
+    "description": "Statistics / metrics display"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "stats": {
+      "type": "component",
+      "repeatable": true,
+      "component": "elements.stat-item"
+    }
+  }
+}

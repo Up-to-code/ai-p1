@@ -1,18 +1,33 @@
 import { v } from "convex/values";
 import { internalMutation, mutation } from "../_generated/server";
-import type { Id, MutationCtx } from "../_generated/dataModel";
+import type { MutationCtx } from "../_generated/server";
+import type { Id } from "../_generated/dataModel";
 import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { cancelQueuedJobsForSource, scheduleTaskReminders } from "../notifications/helpers";
-import { clientTaskInputValidator, clientTaskValidator } from "./validators";
+import { clientTaskInputValidator, clientTaskValidator, clientTaskStatusValidator, visibilityValidator } from "./validators";
 import { updateProjectRollup, validateStrictTaskDates } from "../projects/rollup";
 import { assertActiveWorkspaceRecord } from "../workspace/businessData";
+
+type ClientTaskInput = {
+  title: string;
+  status: "todo" | "inProgress" | "waiting" | "done" | "canceled";
+  pipelineOrder?: number;
+  visibility?: "private" | "team" | "workspace";
+  priority: "normal" | "high" | "urgent" | "low";
+  assigneeUserId?: string;
+  clientId?: string;
+  projectId?: string;
+  dueDate?: string;
+  description?: string;
+  tags?: string[];
+};
 
 function presentTask<TTask extends { _id: string; visibility?: "private" | "team" | "workspace" }>(task: TTask) {
   return { ...task, id: task._id, visibility: task.visibility ?? "private" };
 }
 
-async function createTaskCore(ctx: MutationCtx, args: { organizationId: string; input: Parameters<typeof clientTaskInputValidator.parse>[0]; actorUserId: string }) {
+async function createTaskCore(ctx: MutationCtx, args: { organizationId: string; input: ClientTaskInput; actorUserId: string }) {
   if (args.input.projectId) {
     await validateStrictTaskDates(ctx.db, args.input.projectId, args.input.dueDate);
   }
@@ -38,7 +53,7 @@ async function createTaskCore(ctx: MutationCtx, args: { organizationId: string; 
   return { presented: presentTask(task), now };
 }
 
-async function updateTaskCore(ctx: MutationCtx, args: { organizationId: string; taskId: Id<"tasks">; input: Parameters<typeof clientTaskInputValidator.parse>[0]; actorUserId: string }) {
+async function updateTaskCore(ctx: MutationCtx, args: { organizationId: string; taskId: Id<"tasks">; input: ClientTaskInput; actorUserId: string }) {
   const existing = await ctx.db.get(args.taskId);
   if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Task was not found.");
 

@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useQueryClient } from "@tanstack/react-query";
 import { updateSpaceRequest, deleteSpaceRequest } from "../../api/spaces";
 import type { Space } from "../../api/spaces";
@@ -50,9 +50,9 @@ const SPACE_COLORS = [
 export function SpaceSettings({ open, onOpenChange, space, projectId }: SpaceSettingsProps) {
   const t = useTranslations("Projects");
   const { toast } = useToast();
-  const account = useAccountContext();
+  const session = useAuthSession();
   const queryClient = useQueryClient();
-  const orgId = account.workspace.status === "ready" ? account.workspace.organizationId : undefined;
+  const orgId = session.workspace.status === "ready" ? session.workspace.organizationId : undefined;
 
   const [values, setValues] = useState<SpaceFormValues>({
     name: space.name,
@@ -60,7 +60,9 @@ export function SpaceSettings({ open, onOpenChange, space, projectId }: SpaceSet
     icon: space.icon ?? "",
     color: space.color ?? "",
     visibility: space.visibility,
-    defaultAssigneeIds: space.defaultAssigneeIds ?? [],
+    description: space.description ?? "",
+    defaultProjectVisibility: space.defaultProjectVisibility,
+    allowMemberProjectCreation: space.allowMemberProjectCreation,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -73,7 +75,9 @@ export function SpaceSettings({ open, onOpenChange, space, projectId }: SpaceSet
         icon: space.icon ?? "",
         color: space.color ?? "",
         visibility: space.visibility,
-        defaultAssigneeIds: space.defaultAssigneeIds ?? [],
+        description: space.description ?? "",
+        defaultProjectVisibility: space.defaultProjectVisibility,
+        allowMemberProjectCreation: space.allowMemberProjectCreation,
       });
     }
   }, [open, space]);
@@ -84,9 +88,9 @@ export function SpaceSettings({ open, onOpenChange, space, projectId }: SpaceSet
 
     setIsSubmitting(true);
     try {
-      await updateSpaceRequest(orgId, projectId, space.id, values);
-      queryClient.invalidateQueries({ queryKey: ["spaces", orgId, projectId] });
-      queryClient.invalidateQueries({ queryKey: ["space", orgId, projectId, space.id] });
+      await updateSpaceRequest(orgId, space.id, values);
+      queryClient.invalidateQueries({ queryKey: ["spaces", orgId] });
+      queryClient.invalidateQueries({ queryKey: ["space", orgId, space.id] });
       toast({
         title: "Space updated",
         type: "success",
@@ -109,8 +113,8 @@ export function SpaceSettings({ open, onOpenChange, space, projectId }: SpaceSet
 
     setIsSubmitting(true);
     try {
-      await deleteSpaceRequest(orgId, projectId, space.id);
-      queryClient.invalidateQueries({ queryKey: ["spaces", orgId, projectId] });
+      await deleteSpaceRequest(orgId, space.id);
+      queryClient.invalidateQueries({ queryKey: ["spaces", orgId] });
       toast({
         title: "Space deleted",
         type: "success",
@@ -179,32 +183,22 @@ export function SpaceSettings({ open, onOpenChange, space, projectId }: SpaceSet
             <Select
               value={values.visibility}
               onValueChange={(value) => {
-                if (value === "all_members" || value === "selected_members") {
-                  setValues({
-                    ...values,
-                    visibility: value,
-                    defaultAssigneeIds:
-                      value === "all_members" ? [] : values.defaultAssigneeIds,
-                  });
-                }
+                setValues({
+                  ...values,
+                  visibility: value as any,
+                });
               }}
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all_members">All project members</SelectItem>
-                <SelectItem value="selected_members">Selected members only</SelectItem>
+                <SelectItem value="private">Private</SelectItem>
+                <SelectItem value="public">Public</SelectItem>
+                <SelectItem value="request_only">Request Only</SelectItem>
               </SelectContent>
             </Select>
           </div>
-
-          {values.visibility === "selected_members" && (
-            <MemberPicker
-              value={values.defaultAssigneeIds ?? []}
-              onChange={(ids) => setValues({ ...values, defaultAssigneeIds: ids })}
-            />
-          )}
 
           <div className="pt-4 border-t">
             <Button

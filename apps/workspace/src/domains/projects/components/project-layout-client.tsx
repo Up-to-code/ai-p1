@@ -1,7 +1,7 @@
 "use client";
 
 import { useProjectQuery } from "@/domains/projects/api/projects";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { ProjectOverviewSidebar } from "./project-overview-sidebar";
 
 interface ProjectLayoutClientProps {
@@ -10,8 +10,8 @@ interface ProjectLayoutClientProps {
 }
 
 export function ProjectLayoutClient({ projectId, children }: ProjectLayoutClientProps) {
-  const account = useAccountContext();
-  const orgId = account.workspace.status === "ready" ? account.workspace.organizationId : undefined;
+  const session = useAuthSession();
+  const orgId = session.workspace.status === "ready" ? session.workspace.organizationId : undefined;
   const project = useProjectQuery(orgId ?? undefined, projectId);
 
   return (

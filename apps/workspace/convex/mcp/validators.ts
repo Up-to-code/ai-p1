@@ -28,11 +28,24 @@ export const mcpConnectionPrincipalTypeValidator = v.union(
   v.literal("organization"),
 );
 
+export const mcpScopeTypeValidator = v.union(
+  v.literal("organization"),
+  v.literal("space"),
+  v.literal("project"),
+);
+
+export const mcpScopeValidator = v.object({
+  type: mcpScopeTypeValidator,
+  spaceIds: v.optional(v.array(v.id("spaces"))),
+  projectIds: v.optional(v.array(v.id("projects"))),
+});
+
 export const createMcpConnectionInputValidator = v.object({
   name: v.string(),
   instructions: v.optional(v.string()),
   principalType: v.optional(mcpConnectionPrincipalTypeValidator),
   permissions: v.array(mcpPermissionValidator),
+  scope: v.optional(mcpScopeValidator),
   expiresAt: v.optional(v.number()),
 });
 
@@ -40,6 +53,7 @@ export const updateMcpConnectionInputValidator = v.object({
   name: v.optional(v.string()),
   instructions: v.optional(v.string()),
   permissions: v.optional(v.array(mcpPermissionValidator)),
+  scope: v.optional(mcpScopeValidator),
   status: v.optional(v.union(v.literal("active"), v.literal("paused"), v.literal("draft"))),
   expiresAt: v.optional(v.union(v.number(), v.null())),
 });

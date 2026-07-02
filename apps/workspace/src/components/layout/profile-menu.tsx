@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { authClient } from "@/lib/auth-client";
 import {
   DropdownMenu,
@@ -35,7 +35,7 @@ export function ProfileMenu() {
   
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [isLoggingOut, startLogoutTransition] = useTransition();
-  const account = useAccountContext();
+  const session = useAuthSession();
 
   const handleLogout = () => {
     startLogoutTransition(async () => {
@@ -55,12 +55,12 @@ export function ProfileMenu() {
         <DropdownMenuTrigger
           render={
             <Button variant="ghost" size="icon" className="rounded-full outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
-              {account.user.image ? (
+              {session.user.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={account.user.image} alt={account.user.name} className="h-8 w-8 rounded-full object-cover" />
+                <img src={session.user.image} alt={session.user.name} className="h-8 w-8 rounded-full object-cover" />
               ) : (
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-[10px] font-black text-text-secondary">
-                  {account.user.initials}
+                  {session.user.initials}
                 </span>
               )}
               <span className="sr-only">{t("open")}</span>
@@ -75,17 +75,17 @@ export function ProfileMenu() {
         >
           {/* User Info Header */}
           <div className="flex items-center gap-3 px-2 py-2 mb-1">
-            {account.user.image ? (
+            {session.user.image ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={account.user.image} alt={account.user.name} className="h-10 w-10 rounded-full object-cover" />
+              <img src={session.user.image} alt={session.user.name} className="h-10 w-10 rounded-full object-cover" />
             ) : (
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-xs font-black text-text-secondary shrink-0">
-                {account.user.initials}
+                {session.user.initials}
               </span>
             )}
             <div className="flex flex-col min-w-0 overflow-hidden">
-              <span className="font-semibold text-[13px] truncate text-foreground">{account.user.name}</span>
-              <span className="text-xs text-muted-foreground truncate">{account.user.email}</span>
+              <span className="font-semibold text-[13px] truncate text-foreground">{session.user.name}</span>
+              <span className="text-xs text-muted-foreground truncate">{session.user.email}</span>
             </div>
           </div>
           

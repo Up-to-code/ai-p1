@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { PricingPage } from "@/components/pricing/pricing-page";
 
+export const revalidate = 3600;
+
 type Props = {
   params: Promise<{ locale: string }>;
 };

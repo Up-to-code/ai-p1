@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import AboutPage from "./page-content";
 
+export const revalidate = 3600;
+
 type Props = {
   params: Promise<{ locale: string }>;
 };

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { profileSchema, type ProfileFormValues } from "../validation/profile.schema";
 import { updateProfileRequest } from "../api/update-profile";
 import {
@@ -31,11 +31,11 @@ import { SecurityTabPanel } from "./tabs/security-tab-panel";
 
 export function ProfileSettingsScreen() {
   const t = useTranslations("Profile");
-  const account = useAccountContext();
+  const session = useAuthSession();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<ProfileTab>("profile");
-  const organizationId = account.organization.id ?? "";
-  const formValues = useMemo(() => profileFormValues(account.user), [account.user]);
+  const organizationId = session.organization.id ?? "";
+  const formValues = useMemo(() => profileFormValues(session.user), [session.user]);
 
   const pushDeviceQuery = useQuery({
     queryKey: ["profile", "push-devices"],
@@ -52,10 +52,10 @@ export function ProfileSettingsScreen() {
       ...defaultNotificationPreference,
       organizationId,
       principalType: "user",
-      principalKey: `user:${account.user.id}`,
-      principalUserId: account.user.id,
+      principalKey: `user:${session.user.id}`,
+      principalUserId: session.user.id,
     };
-  }, [account.user.id, notificationSettingsQuery.data?.preference, organizationId]);
+  }, [session.user.id, notificationSettingsQuery.data?.preference, organizationId]);
 
   const updateNotificationsMutation = useMutation({
     mutationFn: (input: NotificationPreference) =>
@@ -94,7 +94,7 @@ export function ProfileSettingsScreen() {
         role: data.role,
         language: data.language,
         timezone: data.timezone,
-        notifications: account.user.profile.notifications,
+        notifications: session.user.profile.notifications,
       }, t("saveOperationError"));
 
       reset({
@@ -109,8 +109,8 @@ export function ProfileSettingsScreen() {
     }, { successMessage: t("saveOperationSuccess") });
   });
 
-  const initials = profileInitials(account.user.name);
-  const { roleKey, roleColor, permissionKeys } = profileRolePresentation(account.user.profile.role);
+  const initials = profileInitials(session.user.name);
+  const { roleKey, roleColor, permissionKeys } = profileRolePresentation(session.user.profile.role);
   const tabLabels = useMemo(
     () => Object.fromEntries(profileTabs.map((tab) => [tab.id, t(tab.labelKey)])) as Record<ProfileTab, string>,
     [t],
@@ -122,10 +122,10 @@ export function ProfileSettingsScreen() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         initials={initials}
-        userName={account.user.name}
-        userEmail={account.user.email}
-        userImage={account.user.image}
-        organizationName={account.organization.name}
+        userName={session.user.name}
+        userEmail={session.user.email}
+        userImage={session.user.image}
+        organizationName={session.organization.name}
         roleKey={roleKey}
         roleColor={roleColor}
         permissionKeys={permissionKeys}
@@ -161,7 +161,7 @@ export function ProfileSettingsScreen() {
             <ProfileTabPanel
               register={register}
               errors={errors}
-              email={account.user.email}
+              email={session.user.email}
               labels={{
                 personalTitle: t("sections.personal"),
                 personalDesc: t("sections.personalDesc"),
@@ -192,12 +192,12 @@ export function ProfileSettingsScreen() {
                 organization: t("account.organization"),
                 brand: t("account.brand"),
                 defaultBrand: t("account.defaultBrand"),
-                userName: account.user.name,
-                userEmail: account.user.email,
-                organizationName: account.organization.name,
-                brandColor: account.organization.brandColor,
-                organizationInitials: account.organization.initials,
-                organizationLogo: account.organization.logo,
+                userName: session.user.name,
+                userEmail: session.user.email,
+                organizationName: session.organization.name,
+                brandColor: session.organization.brandColor ?? undefined,
+                organizationInitials: session.organization.initials,
+                organizationLogo: session.organization.logo,
               }}
             />
           </div>
@@ -261,9 +261,9 @@ export function ProfileSettingsScreen() {
                 emailNote: t("security.emailNote"),
                 phoneNumber: t("security.phoneNumber"),
                 phoneNote: t("security.phoneNote"),
-                userName: account.user.name,
-                userEmail: account.user.email,
-                userPhone: account.user.profile.phone || "—",
+                userName: session.user.name,
+                userEmail: session.user.email,
+                userPhone: session.user.profile.phone || "—",
                 accessSecurityTitle: t("sections.accessSecurity"),
                 accessSecurityDesc: t("sections.accessSecurityDesc"),
                 authMethod: t("security.authMethod"),

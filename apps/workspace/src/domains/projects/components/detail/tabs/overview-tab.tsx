@@ -1,6 +1,6 @@
 "use client";
 
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import type { Project } from "../../../store/projects.types";
 import { ProjectDashboard } from "../../project-dashboard";
 
@@ -9,9 +9,9 @@ interface OverviewTabProps {
 }
 
 export function OverviewTab({ project }: OverviewTabProps) {
-  const account = useAccountContext();
+  const session = useAuthSession();
   const organizationId =
-    account.workspace.status === "ready" ? account.workspace.organizationId ?? "" : "";
+    session.workspace.status === "ready" ? session.workspace.organizationId ?? "" : "";
 
   if (!organizationId) return null;
 

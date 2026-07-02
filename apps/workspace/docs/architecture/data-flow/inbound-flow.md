@@ -1,10 +1,10 @@
 # Inbound Flow
 
-Purpose: Authenticate request, rate-limit, check idempotency, validate payload, normalize Saudi fields, and create submission or direct approved update as policy allows.
+Purpose: Authenticate request, rate-limit, check idempotency, validate payload, normalize fields, and create submission or direct approved update as policy allows.
 
 ## Owns
 
-- Authenticate request, rate-limit, check idempotency, validate payload, normalize Saudi fields, and create submission or direct approved update as policy allows.
+- Authenticate request, rate-limit, check idempotency, validate payload, normalize fields, and create submission or direct approved update as policy allows.
 - Inbound systems submit claims.
 - Failure states must return stable error codes.
 

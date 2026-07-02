@@ -9,7 +9,7 @@ import { GripHorizontal, MoreHorizontal, Plus, Trash2, Pencil } from "lucide-rea
 import { AddWidgetModal, type WidgetOption, type WidgetType } from "./add-widget-modal";
 import { DashboardProvider } from "./dashboard-context";
 import { useDashboardPersistence } from "@/domains/projects/hooks/use-dashboard-persistence";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { getWidgetComponent } from "./widgets/widget-registry";
 
 interface ProjectDashboardProps {
@@ -117,9 +117,9 @@ function WidgetShell({
 }
 
 export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
-  const account = useAccountContext();
+  const session = useAuthSession();
   const organizationId =
-    account.workspace.status === "ready" ? account.workspace.organizationId ?? "" : "";
+    session.workspace.status === "ready" ? session.workspace.organizationId ?? "" : "";
 
   const gridRef = useRef<GridStack | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);

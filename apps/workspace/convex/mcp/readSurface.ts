@@ -10,7 +10,7 @@ type PageResult<TRecord> = {
 
 type WorkspaceRecord = {
   _id: string;
-  visibility?: "private" | "team" | "workspace";
+  visibility?: "private" | "team" | "workspace" | "organization" | "space_members";
   deletedAt?: number;
   [key: string]: unknown;
 };
@@ -22,7 +22,7 @@ export function mcpPublicWorkspaceRecords<TRecord extends WorkspaceRecord>(
 ) {
   return records
     .filter((record) => !record.deletedAt)
-    .filter(isPublicWorkspaceRecord)
+    .filter((record) => isPublicWorkspaceRecord(record as { visibility?: "private" | "team" | "workspace" | "organization" | "space_members" }))
     .filter((record) => !search || matchesSearch(search, searchValues?.(record) ?? []));
 }
 

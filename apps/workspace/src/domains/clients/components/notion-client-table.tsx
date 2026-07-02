@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { Link, useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import {
   useUpdateClientOptimisticMutation,
   useDeleteClientOptimisticMutation,
@@ -72,8 +72,8 @@ export function NotionClientTable({
 }: NotionClientTableProps) {
   const t = useTranslations("Clients");
   const router = useRouter();
-  const account = useAccountContext();
-  const orgId = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+  const session = useAuthSession();
+  const orgId = session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
 
   const [deleting, setDeleting] = useState<Client | null>(null);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
@@ -413,10 +413,10 @@ export function NotionClientTable({
         isDeleting={deleteMutation.isPending}
         error={deleteMutation.error instanceof Error ? deleteMutation.error.message : null}
         onConfirm={() => {
-          if (!deleting || !account.organization.id) return;
+          if (!deleting || !session.organization.id) return;
           const clientId = deleting.id;
           setDeleting(null);
-          deleteMutation.mutate({ organizationId: account.organization.id, clientId });
+          deleteMutation.mutate({ organizationId: session.organization.id, clientId });
         }}
       />
     </div>

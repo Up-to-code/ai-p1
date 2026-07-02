@@ -1,15 +1,33 @@
 import { v } from "convex/values";
 import { internalMutation, mutation } from "../_generated/server";
-import type { Id, MutationCtx } from "../_generated/dataModel";
+import type { MutationCtx } from "../_generated/server";
+import type { Id } from "../_generated/dataModel";
 import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { dealInputValidator, dealValidator } from "./validators";
+
+type DealInput = {
+  title: string;
+  clientId?: Id<"clients">;
+  projectId?: Id<"projects">;
+  stage: "lead" | "qualified" | "proposal_sent" | "contract_sent" | "won" | "lost";
+  status: "open" | "won" | "lost" | "paused";
+  value?: number;
+  currency?: string;
+  dealThinking?: string;
+  source?: string;
+  priority: "low" | "normal" | "high" | "urgent";
+  closeDate?: string;
+  nextStep?: string;
+  ownerUserId?: string;
+  tags?: string[];
+};
 
 function presentDeal<TDeal extends { _id: string }>(deal: TDeal) {
   return { ...deal, id: deal._id };
 }
 
-async function createDealCore(ctx: MutationCtx, args: { organizationId: string; input: Parameters<typeof dealInputValidator.parse>[0]; actorUserId: string }) {
+async function createDealCore(ctx: MutationCtx, args: { organizationId: string; input: DealInput; actorUserId: string }) {
   const now = Date.now();
   const ownerUserId = args.input.ownerUserId ?? args.actorUserId;
   const id = await ctx.db.insert("deals", {
@@ -27,7 +45,7 @@ async function createDealCore(ctx: MutationCtx, args: { organizationId: string; 
   return { presented: presentDeal(deal), now };
 }
 
-async function updateDealCore(ctx: MutationCtx, args: { organizationId: string; dealId: Id<"deals">; input: Parameters<typeof dealInputValidator.parse>[0]; actorUserId: string }) {
+async function updateDealCore(ctx: MutationCtx, args: { organizationId: string; dealId: Id<"deals">; input: DealInput; actorUserId: string }) {
   const existing = await ctx.db.get(args.dealId);
   if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) throw new Error("Deal was not found.");
   const now = Date.now();

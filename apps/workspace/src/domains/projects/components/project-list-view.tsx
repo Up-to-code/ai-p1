@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useProjectsIndexQuery } from "../api/projects";
 import { useTranslations } from "next-intl";
 import { DeleteRecordDialog } from "@/components/shared/crud-ui";
@@ -17,8 +17,8 @@ import { CreateProjectForm } from "./create-project-form";
 import { ProjectsOverviewDashboard } from "./projects-overview-dashboard";
 
 export function ProjectListView() {
-  const account = useAccountContext();
-  const orgId = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+  const session = useAuthSession();
+  const orgId = session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isWidgetModalOpen, setIsWidgetModalOpen] = useState(false);

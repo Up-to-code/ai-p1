@@ -9,7 +9,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useMemberOptions } from "@/domains/tasks/components/task-hooks";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import type { WorkOsPickerOption } from "@/domains/work-os/components/work-os-record-picker";
 
 interface MemberPickerProps {
@@ -20,19 +20,19 @@ interface MemberPickerProps {
 export function MemberPicker({ value, onChange }: MemberPickerProps) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
-  const account = useAccountContext();
+  const session = useAuthSession();
 
   const orgId =
-    account.workspace.status === "ready"
-      ? account.workspace.organizationId ?? undefined
+    session.workspace.status === "ready"
+      ? session.workspace.organizationId ?? undefined
       : undefined;
 
   const currentUser = useMemo(() => {
-    if (account.workspace.status !== "ready") return undefined;
-    const u = account.user;
+    if (session.workspace.status !== "ready") return undefined;
+    const u = session.user;
     if (!u?.id) return undefined;
     return { id: u.id, name: u.name, email: u.email };
-  }, [account.workspace.status, account.user]);
+  }, [session.workspace.status, session.user]);
 
   const { data: options } = useMemberOptions(orgId, currentUser);
 

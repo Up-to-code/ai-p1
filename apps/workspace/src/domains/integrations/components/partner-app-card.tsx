@@ -4,7 +4,7 @@ import { useState } from "react";
 import { AlertCircle, ArrowUpRight, CheckCircle2, Clock, Plug, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { logger } from "@/lib/logger";
 import { createPartnerConnectionGrant } from "../integrations-runtime";
 import type { PartnerCatalogCardModel } from "../store/integrations.view-model";
@@ -20,8 +20,8 @@ export function PartnerAppCard({
   onConnectionChanged?: () => void;
 }) {
   const t = useTranslations('Integrations');
-  const account = useAccountContext();
-  const organizationId = account.workspace.organizationId;
+  const session = useAuthSession();
+  const organizationId = session.workspace.organizationId;
   const [isConnecting, setIsConnecting] = useState(false);
 
   const { app, effectiveStatus, statusTone, connectHref, connectState, scopeCount } = card;

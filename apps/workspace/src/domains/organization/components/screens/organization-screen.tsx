@@ -9,7 +9,7 @@ import { useQuery as useConvexQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { Bell, Building2, CreditCard, Copy, HelpCircle, KeyRound, LinkIcon, Loader2, Mail, Plus, Save, ShieldCheck, Users } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -81,8 +81,8 @@ export function OrganizationScreen() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const account = useAccountContext();
-  const organizationId = account.organization.id ?? "";
+  const session = useAuthSession();
+  const organizationId = session.organization.id ?? "";
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("member");
   const [inviteMode, setInviteMode] = useState<InviteMode>("link");
@@ -138,7 +138,7 @@ export function OrganizationScreen() {
   const ownerCount = ownerMemberCount(members);
   const pendingInviteLinks = inviteLinks ?? [];
   const capabilities = capabilitiesQuery.data;
-  const currentMemberRole = members.find((member) => member.userId === account.user.id)?.role ?? null;
+  const currentMemberRole = members.find((member) => member.userId === session.user.id)?.role ?? null;
   const canUpdateOrganization = capabilities?.canUpdateOrganization ?? false;
   const canInviteMembers = capabilities?.canInviteMembers ?? false;
   const canUpdateMembers = capabilities?.canUpdateMembers ?? false;
@@ -251,23 +251,23 @@ export function OrganizationScreen() {
   });
 
   const organizationFormValues = useMemo<UpdateOrganizationProfileValues>(() => ({
-    name: account.organization.name,
-    legalName: account.organization.legalName ?? "",
-    type: account.organization.type ?? "",
-    email: account.organization.email ?? "",
-    phone: account.organization.phone ?? "",
-    website: account.organization.website ?? "",
-    address: account.organization.address ?? "",
-    logo: account.organization.logo ?? "",
+    name: session.organization.name,
+    legalName: session.organization.legalName ?? "",
+    type: session.organization.type ?? "",
+    email: session.organization.email ?? "",
+    phone: session.organization.phone ?? "",
+    website: session.organization.website ?? "",
+    address: session.organization.address ?? "",
+    logo: session.organization.logo ?? "",
   }), [
-    account.organization.address,
-    account.organization.email,
-    account.organization.legalName,
-    account.organization.logo,
-    account.organization.name,
-    account.organization.phone,
-    account.organization.type,
-    account.organization.website,
+    session.organization.address,
+    session.organization.email,
+    session.organization.legalName,
+    session.organization.logo,
+    session.organization.name,
+    session.organization.phone,
+    session.organization.type,
+    session.organization.website,
   ]);
 
   const { register, handleSubmit, reset, getValues, formState: { dirtyFields, errors, isSubmitting } } = useForm<UpdateOrganizationProfileValues>({
@@ -404,9 +404,9 @@ export function OrganizationScreen() {
   }
 
   const isBusy = isSubmitting || updateProfile.isPending || authOrgMutation.isPending;
-  const initials = getInitials(account.organization.name);
+  const initials = getInitials(session.organization.name);
 
-  if (account.isPending) {
+  if (session.isPending) {
     return <OrganizationSettingsSkeleton label={t("noOrganization.loading")} />;
   }
 
@@ -429,8 +429,8 @@ export function OrganizationScreen() {
             {organizationId ? (
               <OrganizationLogoUploader
                 organizationId={organizationId}
-                name={account.organization.name}
-                logo={account.organization.logo}
+                name={session.organization.name}
+                logo={session.organization.logo}
                 initials={initials}
                 onSaved={saveOrganizationLogo}
                 labels={{
@@ -457,7 +457,7 @@ export function OrganizationScreen() {
             <div className="min-w-0 flex-1 space-y-4">
               <div>
                 <h1 className="text-2xl font-semibold text-foreground">
-                  {account.organization.name}
+                  {session.organization.name}
                 </h1>
                 <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                   <LocaleLink href={`/${locale}/dashboard`} className="flex items-center gap-2 hover:text-foreground transition-colors">
@@ -585,7 +585,7 @@ export function OrganizationScreen() {
                         member={member}
                         roles={availableRoles}
                         roleLabels={defaultRoleLabels}
-                        isCurrentUser={member.userId === account.user.id}
+                        isCurrentUser={member.userId === session.user.id}
                         isLastOwner={isOwner(member.role) && ownerCount <= 1}
                         canUpdateRole={canUpdateMembers}
                         canRemove={canRemoveMembers}
@@ -814,7 +814,7 @@ export function OrganizationScreen() {
               onClick={() => {
                 if (!memberAction) return;
                 if (memberAction.type === "remove") {
-                  if (memberAction.member.userId === account.user.id) {
+                  if (memberAction.member.userId === session.user.id) {
                     toast({ title: t("toasts.actionFailed"), description: t("members.selfRemoveBlocked"), type: "error" });
                     setMemberAction(null);
                     return;

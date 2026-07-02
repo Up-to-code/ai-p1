@@ -1,16 +1,16 @@
 "use client";
 
 import { useMemo } from "react";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useWorkspaceSpacesQuery } from "@/domains/projects/api/spaces";
 import { useNavigation } from "./navigation-context";
 
 export function useActiveSpace() {
-  const account = useAccountContext();
+  const session = useAuthSession();
   const { spaceSlug } = useNavigation();
   const orgId =
-    account.workspace.status === "ready"
-      ? account.workspace.organizationId ?? undefined
+    session.workspace.status === "ready"
+      ? session.workspace.organizationId ?? undefined
       : undefined;
   const spaces = useWorkspaceSpacesQuery(orgId);
 

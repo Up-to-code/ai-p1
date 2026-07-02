@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { ColorDot } from "@qentrah/ui";
 import { Link } from "@/i18n/routing";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import {
   useUpdateClientOptimisticMutation,
   useDeleteClientOptimisticMutation,
@@ -88,7 +88,7 @@ export function ClientTableView({
   clientCount = 0,
 }: ClientTableViewProps) {
   const t = useTranslations("Clients");
-  const account = useAccountContext();
+  const session = useAuthSession();
 
   /* ── State ─────────────────────────────────────────────────────────────── */
   const [sortField, setSortField] = useState<ClientTableSortField>("name");
@@ -205,9 +205,9 @@ export function ClientTableView({
 
   const handleInlineUpdate = useCallback(
     (client: Client, field: string, value: string) => {
-      if (!account.organization.id) return;
+      if (!session.organization.id) return;
       updateClientMutation.mutate({
-        organizationId: account.organization.id,
+        organizationId: session.organization.id,
         client,
         values: {
           name: client.name,
@@ -232,7 +232,7 @@ export function ClientTableView({
         },
       });
     },
-    [account.organization.id, updateClientMutation],
+    [session.organization.id, updateClientMutation],
   );
 
   const handleBulkApply = useCallback(
@@ -687,11 +687,11 @@ export function ClientTableView({
             : null
         }
         onConfirm={() => {
-          if (!deleting || !account.organization.id) return;
+          if (!deleting || !session.organization.id) return;
           const clientId = deleting.id;
           setDeleting(null);
           deleteClientMutation.mutate({
-            organizationId: account.organization.id,
+            organizationId: session.organization.id,
             clientId,
           });
         }}

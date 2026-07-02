@@ -1,10 +1,10 @@
 # Normalization
 
-Purpose: Normalize Saudi identifiers, property type, location, lifecycle, and references.
+Purpose: Normalize identifiers, property type, location, lifecycle, and references.
 
 ## Owns
 
-- Normalize Saudi identifiers, property type, location, lifecycle, and references.
+- Normalize identifiers, property type, location, lifecycle, and references.
 - Normalization must preserve original raw claim for audit where allowed.
 - Normalized output feeds duplicate detection and review.
 

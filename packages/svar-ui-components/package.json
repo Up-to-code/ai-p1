@@ -1,0 +1,76 @@
+{
+  "name": "@qentrah/svar-ui-components",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared Qentrah SVAR UI components — calendar, gantt, kanban, file manager, and modal system.",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./calendar": {
+      "types": "./dist/calendar/index.d.ts",
+      "import": "./dist/calendar/index.js"
+    },
+    "./gantt": {
+      "types": "./dist/gantt/index.d.ts",
+      "import": "./dist/gantt/index.js"
+    },
+    "./kanban": {
+      "types": "./dist/kanban/index.d.ts",
+      "import": "./dist/kanban/index.js"
+    },
+    "./filemanager": {
+      "types": "./dist/filemanager/index.d.ts",
+      "import": "./dist/filemanager/index.js"
+    },
+    "./modals": {
+      "types": "./dist/modals/index.d.ts",
+      "import": "./dist/modals/index.js"
+    },
+    "./theme": {
+      "types": "./dist/theme/index.d.ts",
+      "import": "./dist/theme/index.js"
+    },
+    "./grid": {
+      "types": "./dist/grid/index.d.ts",
+      "import": "./dist/grid/index.js"
+    },
+    "./hooks": {
+      "types": "./dist/hooks/index.d.ts",
+      "import": "./dist/hooks/index.js"
+    }
+  },
+  "scripts": {
+    "prebuild": "npm --workspace @qentrah/platform-core run build",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@qentrah/platform-core": "0.1.0",
+    "@qentrah/ui": "0.1.0",
+    "lucide-react": "^0.577.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "@types/react": "^19.2.3",
+    "@types/react-dom": "^19.2.3",
+    "react": "19.2.4",
+    "react-dom": "^19.2.3",
+    "typescript": "^5",
+    "vitest": "^4.1.6"
+  }
+}

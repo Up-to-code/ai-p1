@@ -4,35 +4,25 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-gsap.registerPlugin(ScrollTrigger);
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
-type GsapRevealOptions = {
+// ── Single element fade-up reveal ────────────────────────────────────────────
+
+type RevealOptions = {
   delay?: number;
   y?: number;
   duration?: number;
-  stagger?: number;
   scale?: number;
-  scrub?: boolean | number;
   start?: string;
-  end?: string;
-  toggleActions?: string;
 };
 
-export function useGsapReveal<T extends HTMLElement = HTMLDivElement>(
-  options: GsapRevealOptions = {}
+export function useGsapReveal<T extends HTMLElement = HTMLElement>(
+  options: RevealOptions = {},
 ) {
-  const ref = useRef<T>(null!);
-  const deps = [
-    options.delay,
-    options.duration,
-    options.y,
-    options.scale,
-    options.start,
-    options.end,
-    options.toggleActions,
-    options.stagger,
-    options.scrub,
-  ];
+  const { delay = 0, y = 28, duration = 0.8, scale = 1, start = "top 88%" } = options;
+  const ref = useRef<T>(null);
 
   useEffect(() => {
     const el = ref.current;
@@ -41,137 +31,73 @@ export function useGsapReveal<T extends HTMLElement = HTMLDivElement>(
     const ctx = gsap.context(() => {
       gsap.fromTo(
         el,
-        {
-          opacity: 0,
-          y: options.y ?? 40,
-          scale: options.scale ?? 1,
-        },
+        { opacity: 0, y, scale: scale !== 1 ? scale * 0.95 : 1 },
         {
           opacity: 1,
           y: 0,
           scale: 1,
-          duration: options.duration ?? 0.9,
-          delay: options.delay ?? 0,
+          duration,
+          delay,
           ease: "power3.out",
           scrollTrigger: {
             trigger: el,
-            start: options.start ?? "top 88%",
-            end: options.end ?? "bottom 20%",
-            toggleActions: options.toggleActions ?? "play none none reverse",
-            scrub: options.scrub ?? false,
+            start,
+            toggleActions: "play none none none",
           },
-        }
+        },
       );
-    }, el);
+    });
 
     return () => ctx.revert();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+  }, [delay, y, duration, scale, start]);
 
   return ref;
 }
 
-export function useGsapParallax<T extends HTMLElement = HTMLDivElement>(
-  speed: number = 0.4
-) {
-  const ref = useRef<T>(null!);
+// ── Staggered children reveal ─────────────────────────────────────────────────
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+type StaggerOptions = {
+  stagger?: number;
+  y?: number;
+  duration?: number;
+  start?: string;
+};
 
-    const ctx = gsap.context(() => {
-      gsap.to(el, {
-        y: () => window.innerHeight * speed,
-        ease: "none",
-        scrollTrigger: {
-          trigger: el,
-          start: "top bottom",
-          end: "bottom top",
-          scrub: true,
-        },
-      });
-    }, el);
-
-    return () => ctx.revert();
-  }, [speed]);
-
-  return ref;
-}
-
-export function useGsapStaggerReveal<T extends HTMLElement = HTMLDivElement>(
+export function useGsapStaggerReveal<T extends HTMLElement = HTMLElement>(
   childSelector: string,
-  options: GsapRevealOptions = {}
+  options: StaggerOptions = {},
 ) {
-  const ref = useRef<T>(null!);
+  const { stagger = 0.1, y = 20, duration = 0.6, start = "top 85%" } = options;
+  const ref = useRef<T>(null);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+    const container = ref.current;
+    if (!container) return;
 
     const ctx = gsap.context(() => {
+      const children = container.querySelectorAll(childSelector);
+      if (!children.length) return;
+
       gsap.fromTo(
-        el.querySelectorAll(childSelector),
-        {
-          opacity: 0,
-          y: options.y ?? 30,
-        },
+        children,
+        { opacity: 0, y },
         {
           opacity: 1,
           y: 0,
-          duration: options.duration ?? 0.6,
-          stagger: options.stagger ?? 0.1,
-          delay: options.delay ?? 0,
-          ease: "power2.out",
+          duration,
+          stagger,
+          ease: "power3.out",
           scrollTrigger: {
-            trigger: el,
-            start: options.start ?? "top 85%",
-            toggleActions: options.toggleActions ?? "play none none reverse",
+            trigger: container,
+            start,
+            toggleActions: "play none none none",
           },
-        }
+        },
       );
-    }, el);
+    }, container);
 
     return () => ctx.revert();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childSelector, options.stagger, options.delay, options.duration, options.y, options.start, options.toggleActions]);
-
-  return ref;
-}
-
-export function useGsapCounter(
-  endValue: number,
-  options: { duration?: number; start?: string; suffix?: string; prefix?: string } = {}
-) {
-  const ref = useRef<HTMLSpanElement>(null!);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        el,
-        { textContent: 0 },
-        {
-          textContent: endValue,
-          duration: options.duration ?? 2,
-          ease: "power2.out",
-          snap: { textContent: 1 },
-          scrollTrigger: {
-            trigger: el,
-            start: options.start ?? "top 85%",
-            toggleActions: "play none none reverse",
-          },
-          onUpdate: () => {
-            el.textContent = `${options.prefix ?? ""}${Math.round(Number(el.textContent))}${options.suffix ?? ""}`;
-          },
-        }
-      );
-    }, el);
-
-    return () => ctx.revert();
-  }, [endValue, options.duration, options.start, options.suffix, options.prefix]);
+  }, [childSelector, stagger, y, duration, start]);
 
   return ref;
 }

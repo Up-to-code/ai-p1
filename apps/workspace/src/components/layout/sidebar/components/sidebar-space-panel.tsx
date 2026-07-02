@@ -16,8 +16,8 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useWorkspaceSpacesQuery } from "@/domains/projects/api/spaces";
 import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
-import { useAccountContext } from "@/domains/auth";
 import { useNavigation } from "@/domains/navigation";
+import { useAuthSession } from "@/domains/auth";
 import { getOrganizationCapabilities } from "@/domains/organization/api";
 import { WorkspaceLink } from "@/components/layout/workspace-link";
 import {
@@ -33,7 +33,7 @@ function SpaceItem({
   isActive,
   onSelect,
 }: {
-  space: { id: string; name: string; slug: string; color?: string; projectId: string };
+  space: { id: string; name: string; slug: string; color?: string };
   isActive: boolean;
   onSelect: (slug: string) => void;
 }) {
@@ -63,13 +63,13 @@ function SpaceItem({
   );
 }
 
-/** All-spaces view — flat list of all spaces across projects */
+/** All-spaces view — flat list of all spaces across organization */
 function AllSpacesView({
   spaceList,
   spaceSlug,
   onSelect,
 }: {
-  spaceList: { id: string; name: string; slug: string; color?: string; projectId: string }[];
+  spaceList: { id: string; name: string; slug: string; color?: string }[];
   spaceSlug: string | null;
   onSelect: (slug: string) => void;
 }) {
@@ -114,76 +114,62 @@ function AllSpacesView({
 
 /** Active-space view — shows the space + projects tree */
 function ActiveSpaceView({
-  spaceList,
   activeSpace,
   spaceSlug,
-  projectId,
   level,
   onSelect,
+  orgId,
 }: {
-  spaceList: { id: string; name: string; slug: string; color?: string; projectId: string }[];
-  activeSpace: { id: string; name: string; slug: string; color?: string; projectId: string };
+  activeSpace: { id: string; name: string; slug: string; color?: string };
   spaceSlug: string | null;
-  projectId: string | null;
   level: string;
   onSelect: (slug: string) => void;
+  orgId?: string;
 }) {
-  const account = useAccountContext();
-  const orgId =
-    account.workspace.status === "ready"
-      ? account.workspace.organizationId ?? undefined
-      : undefined;
-
   const projectsResult = useProjectsIndexQuery(orgId);
   const projects = projectsResult?.results ?? [];
 
-  const projectMap = useMemo(() => {
-    const map = new Map<string, typeof spaceList>();
-    for (const s of spaceList) {
-      const existing = map.get(s.projectId) ?? [];
-      existing.push(s);
-      map.set(s.projectId, existing);
-    }
-    return map;
-  }, [spaceList]);
-
-  const parentProject = projects.find((p) => p.id === activeSpace.projectId);
-  const siblingSpaces = projectMap.get(activeSpace.projectId) ?? [];
-
   const [projectsExpanded, setProjectsExpanded] = useState(true);
+
+  // TODO: Filter projects by space membership using projectSpaces junction table
+  const spaceProjects = projects; // Will be filtered by space membership
 
   return (
     <div className="flex-1 overflow-y-auto scrollbar-none">
-        {parentProject && (
-          <div>
-            <button
-              type="button"
-              onClick={() => setProjectsExpanded(!projectsExpanded)}
-              className="flex w-full items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-text-muted hover:text-foreground transition-colors"
-            >
-              {projectsExpanded ? (
-                <ChevronDown className="h-3 w-3" />
-              ) : (
-                <ChevronRight className="h-3 w-3" />
-              )}
-              <FolderGit2 className="h-3.5 w-3.5" />
-              <span className="truncate">{parentProject.name}</span>
-            </button>
-
-            {projectsExpanded && (
-              <div className="flex flex-col">
-                {siblingSpaces.map((space) => (
-                  <SpaceItem
-                    key={space.id}
-                    space={space}
-                    isActive={space.slug === spaceSlug}
-                    onSelect={onSelect}
-                  />
-                ))}
-              </div>
+        <div>
+          <button
+            type="button"
+            onClick={() => setProjectsExpanded(!projectsExpanded)}
+            className="flex w-full items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-text-muted hover:text-foreground transition-colors"
+          >
+            {projectsExpanded ? (
+              <ChevronDown className="h-3 w-3" />
+            ) : (
+              <ChevronRight className="h-3 w-3" />
             )}
-          </div>
-        )}
+            <FolderGit2 className="h-3.5 w-3.5" />
+            <span className="truncate">Projects</span>
+          </button>
+
+          {projectsExpanded && (
+            <div className="flex flex-col">
+              {spaceProjects.map((project) => (
+                <WorkspaceLink
+                  key={project.id}
+                  href={`/projects/${project.id}`}
+                  className="flex items-center gap-3 px-4 py-2 text-sm text-muted-foreground hover:bg-accent/30 hover:text-foreground transition-colors"
+                >
+                  <span className="flex-1 truncate">{project.name}</span>
+                </WorkspaceLink>
+              ))}
+              {spaceProjects.length === 0 && (
+                <div className="px-4 py-2 text-xs text-muted-foreground">
+                  No projects in this space
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         <div className="mx-4 my-2 h-px bg-border/50" />
 
@@ -250,13 +236,11 @@ function CreateMenu({ orgId, canCreate }: { orgId?: string; canCreate: boolean }
 
 export function SidebarSpacePanel() {
   const t = useTranslations("Sidebar");
-  const account = useAccountContext();
   const { spaceSlug, setSpace, projectId, level } = useNavigation();
 
-  const orgId =
-    account.workspace.status === "ready"
-      ? account.workspace.organizationId ?? undefined
-      : undefined;
+  // Get organization ID from auth session instead of account context
+  const session = useAuthSession();
+  const orgId = session.organization.id ?? undefined;
 
   const capabilitiesQuery = useQuery({
     queryKey: ["organization-capabilities", orgId],
@@ -288,12 +272,11 @@ export function SidebarSpacePanel() {
     >
       {showActiveView && activeSpace ? (
         <ActiveSpaceView
-          spaceList={spaceList}
           activeSpace={activeSpace}
           spaceSlug={spaceSlug}
-          projectId={projectId}
           level={level}
           onSelect={handleSpaceSelect}
+          orgId={orgId}
         />
       ) : (
         <AllSpacesView spaceList={spaceList} spaceSlug={spaceSlug} onSelect={handleSpaceSelect} />

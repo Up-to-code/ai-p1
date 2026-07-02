@@ -1,10 +1,10 @@
 # Architecture
 
-Purpose: Defines the technical structure of the Saudi Arabia Central Real Estate Data Workspace as a synchronization engine.
+Purpose: Defines the technical structure of the Qentrah Workspace as a synchronization engine.
 
 ## Scope
 
-This domain owns documentation for architecture decisions in the Saudi Arabia Central Real Estate Data Workspace.
+This domain owns documentation for architecture decisions in the Qentrah Workspace.
 
 This domain does not own unrelated CRM, marketplace, lead pipeline, or deal pipeline behavior.
 
@@ -42,4 +42,4 @@ This domain does not own unrelated CRM, marketplace, lead pipeline, or deal pipe
 - Keep this index current when files are added or removed.
 - Keep files small and focused.
 - Link to related domains instead of duplicating large sections.
-- Preserve the platform boundary: synchronization engine, OAuth 2.1 Provider, Saudi market only.
+- Preserve the platform boundary: synchronization engine, OAuth 2.1 Provider.

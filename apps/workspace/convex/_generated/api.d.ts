@@ -8,10 +8,6 @@
  * @module
  */
 
-import type * as admin from "../admin.js";
-import type * as admin_domainAdapters from "../admin/domainAdapters.js";
-import type * as admin_listSurface from "../admin/listSurface.js";
-import type * as admin_organizationDashboard from "../admin/organizationDashboard.js";
 import type * as agents_confirmations from "../agents/confirmations.js";
 import type * as agents_read from "../agents/read.js";
 import type * as agents_readSurface from "../agents/readSurface.js";
@@ -19,7 +15,6 @@ import type * as agents_validators from "../agents/validators.js";
 import type * as agents_write from "../agents/write.js";
 import type * as apiKeys from "../apiKeys.js";
 import type * as auth from "../auth.js";
-import type * as auth_permissions from "../auth/permissions.js";
 import type * as billing_creditSurface from "../billing/creditSurface.js";
 import type * as billing_customers from "../billing/customers.js";
 import type * as billing_data from "../billing/data.js";
@@ -73,6 +68,7 @@ import type * as mcp_handlers_organization from "../mcp/handlers/organization.js
 import type * as mcp_handlers_projects from "../mcp/handlers/projects.js";
 import type * as mcp_handlers_registry from "../mcp/handlers/registry.js";
 import type * as mcp_handlers_shared from "../mcp/handlers/shared.js";
+import type * as mcp_handlers_spaces from "../mcp/handlers/spaces.js";
 import type * as mcp_handlers_tasks from "../mcp/handlers/tasks.js";
 import type * as mcp_markdownToHtml from "../mcp/markdownToHtml.js";
 import type * as mcp_readSurface from "../mcp/readSurface.js";
@@ -87,6 +83,7 @@ import type * as media_read from "../media/read.js";
 import type * as media_resourcePolicy from "../media/resourcePolicy.js";
 import type * as media_validators from "../media/validators.js";
 import type * as media_write from "../media/write.js";
+import type * as migrations_migrateToOrganizationSpaces from "../migrations/migrateToOrganizationSpaces.js";
 import type * as migrations_purgeLegacyAssetMedia from "../migrations/purgeLegacyAssetMedia.js";
 import type * as migrations_removeAssets from "../migrations/removeAssets.js";
 import type * as notifications_dispatch from "../notifications/dispatch.js";
@@ -123,8 +120,7 @@ import type * as partnerApps_webhookSecrets from "../partnerApps/webhookSecrets.
 import type * as partnerApps_webhookUrlSafety from "../partnerApps/webhookUrlSafety.js";
 import type * as partnerApps_webhooks from "../partnerApps/webhooks.js";
 import type * as partnerResourceGateway from "../partnerResourceGateway.js";
-import type * as pii_read from "../pii/read.js";
-import type * as pii_write from "../pii/write.js";
+import type * as permissions_index from "../permissions/index.js";
 import type * as pipeline_stages_read from "../pipeline_stages/read.js";
 import type * as pipeline_stages_write from "../pipeline_stages/write.js";
 import type * as platform_access from "../platform/access.js";
@@ -132,11 +128,6 @@ import type * as projectDashboards from "../projectDashboards.js";
 import type * as projectSpaces_read from "../projectSpaces/read.js";
 import type * as projectSpaces_validators from "../projectSpaces/validators.js";
 import type * as projectSpaces_write from "../projectSpaces/write.js";
-import type * as projects_milestones_read from "../projects/milestones/read.js";
-import type * as projects_milestones_validators from "../projects/milestones/validators.js";
-import type * as projects_milestones_write from "../projects/milestones/write.js";
-import type * as projects_projectMembers_validators from "../projects/projectMembers/validators.js";
-import type * as projects_projectMembers_write from "../projects/projectMembers/write.js";
 import type * as projects_read from "../projects/read.js";
 import type * as projects_rollup from "../projects/rollup.js";
 import type * as projects_validators from "../projects/validators.js";
@@ -153,6 +144,7 @@ import type * as schema_organization from "../schema/organization.js";
 import type * as schema_partner from "../schema/partner.js";
 import type * as schema_users from "../schema/users.js";
 import type * as schema_validators from "../schema/validators.js";
+import type * as schema_views from "../schema/views.js";
 import type * as schema_utils from "../schema_utils.js";
 import type * as security_backfill from "../security/backfill.js";
 import type * as security_backfillTargets from "../security/backfillTargets.js";
@@ -162,9 +154,12 @@ import type * as serviceTokens from "../serviceTokens.js";
 import type * as shared_domain_schemas from "../shared/domain_schemas.js";
 import type * as shared_present from "../shared/present.js";
 import type * as shared_softDelete from "../shared/softDelete.js";
-import type * as tasks_dependencies_read from "../tasks/dependencies/read.js";
-import type * as tasks_dependencies_validators from "../tasks/dependencies/validators.js";
-import type * as tasks_dependencies_write from "../tasks/dependencies/write.js";
+import type * as spaces_cleanup from "../spaces/cleanup.js";
+import type * as spaces_index from "../spaces/index.js";
+import type * as spaces_members from "../spaces/members.js";
+import type * as spaces_read from "../spaces/read.js";
+import type * as spaces_validators from "../spaces/validators.js";
+import type * as spaces_write from "../spaces/write.js";
 import type * as userProfiles_data from "../userProfiles/data.js";
 import type * as userProfiles_read from "../userProfiles/read.js";
 import type * as userProfiles_validators from "../userProfiles/validators.js";
@@ -173,6 +168,7 @@ import type * as userTableViews_data from "../userTableViews/data.js";
 import type * as userTableViews_read from "../userTableViews/read.js";
 import type * as userTableViews_validators from "../userTableViews/validators.js";
 import type * as userTableViews_write from "../userTableViews/write.js";
+import type * as views from "../views.js";
 import type * as workspace_businessData from "../workspace/businessData.js";
 import type * as workspace_dashboardOverview from "../workspace/dashboardOverview.js";
 import type * as workspace_readStats from "../workspace/readStats.js";
@@ -186,10 +182,6 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  admin: typeof admin;
-  "admin/domainAdapters": typeof admin_domainAdapters;
-  "admin/listSurface": typeof admin_listSurface;
-  "admin/organizationDashboard": typeof admin_organizationDashboard;
   "agents/confirmations": typeof agents_confirmations;
   "agents/read": typeof agents_read;
   "agents/readSurface": typeof agents_readSurface;
@@ -197,7 +189,6 @@ declare const fullApi: ApiFromModules<{
   "agents/write": typeof agents_write;
   apiKeys: typeof apiKeys;
   auth: typeof auth;
-  "auth/permissions": typeof auth_permissions;
   "billing/creditSurface": typeof billing_creditSurface;
   "billing/customers": typeof billing_customers;
   "billing/data": typeof billing_data;
@@ -251,6 +242,7 @@ declare const fullApi: ApiFromModules<{
   "mcp/handlers/projects": typeof mcp_handlers_projects;
   "mcp/handlers/registry": typeof mcp_handlers_registry;
   "mcp/handlers/shared": typeof mcp_handlers_shared;
+  "mcp/handlers/spaces": typeof mcp_handlers_spaces;
   "mcp/handlers/tasks": typeof mcp_handlers_tasks;
   "mcp/markdownToHtml": typeof mcp_markdownToHtml;
   "mcp/readSurface": typeof mcp_readSurface;
@@ -265,6 +257,7 @@ declare const fullApi: ApiFromModules<{
   "media/resourcePolicy": typeof media_resourcePolicy;
   "media/validators": typeof media_validators;
   "media/write": typeof media_write;
+  "migrations/migrateToOrganizationSpaces": typeof migrations_migrateToOrganizationSpaces;
   "migrations/purgeLegacyAssetMedia": typeof migrations_purgeLegacyAssetMedia;
   "migrations/removeAssets": typeof migrations_removeAssets;
   "notifications/dispatch": typeof notifications_dispatch;
@@ -301,8 +294,7 @@ declare const fullApi: ApiFromModules<{
   "partnerApps/webhookUrlSafety": typeof partnerApps_webhookUrlSafety;
   "partnerApps/webhooks": typeof partnerApps_webhooks;
   partnerResourceGateway: typeof partnerResourceGateway;
-  "pii/read": typeof pii_read;
-  "pii/write": typeof pii_write;
+  "permissions/index": typeof permissions_index;
   "pipeline_stages/read": typeof pipeline_stages_read;
   "pipeline_stages/write": typeof pipeline_stages_write;
   "platform/access": typeof platform_access;
@@ -310,11 +302,6 @@ declare const fullApi: ApiFromModules<{
   "projectSpaces/read": typeof projectSpaces_read;
   "projectSpaces/validators": typeof projectSpaces_validators;
   "projectSpaces/write": typeof projectSpaces_write;
-  "projects/milestones/read": typeof projects_milestones_read;
-  "projects/milestones/validators": typeof projects_milestones_validators;
-  "projects/milestones/write": typeof projects_milestones_write;
-  "projects/projectMembers/validators": typeof projects_projectMembers_validators;
-  "projects/projectMembers/write": typeof projects_projectMembers_write;
   "projects/read": typeof projects_read;
   "projects/rollup": typeof projects_rollup;
   "projects/validators": typeof projects_validators;
@@ -331,6 +318,7 @@ declare const fullApi: ApiFromModules<{
   "schema/partner": typeof schema_partner;
   "schema/users": typeof schema_users;
   "schema/validators": typeof schema_validators;
+  "schema/views": typeof schema_views;
   schema_utils: typeof schema_utils;
   "security/backfill": typeof security_backfill;
   "security/backfillTargets": typeof security_backfillTargets;
@@ -340,9 +328,12 @@ declare const fullApi: ApiFromModules<{
   "shared/domain_schemas": typeof shared_domain_schemas;
   "shared/present": typeof shared_present;
   "shared/softDelete": typeof shared_softDelete;
-  "tasks/dependencies/read": typeof tasks_dependencies_read;
-  "tasks/dependencies/validators": typeof tasks_dependencies_validators;
-  "tasks/dependencies/write": typeof tasks_dependencies_write;
+  "spaces/cleanup": typeof spaces_cleanup;
+  "spaces/index": typeof spaces_index;
+  "spaces/members": typeof spaces_members;
+  "spaces/read": typeof spaces_read;
+  "spaces/validators": typeof spaces_validators;
+  "spaces/write": typeof spaces_write;
   "userProfiles/data": typeof userProfiles_data;
   "userProfiles/read": typeof userProfiles_read;
   "userProfiles/validators": typeof userProfiles_validators;
@@ -351,6 +342,7 @@ declare const fullApi: ApiFromModules<{
   "userTableViews/read": typeof userTableViews_read;
   "userTableViews/validators": typeof userTableViews_validators;
   "userTableViews/write": typeof userTableViews_write;
+  views: typeof views;
   "workspace/businessData": typeof workspace_businessData;
   "workspace/dashboardOverview": typeof workspace_dashboardOverview;
   "workspace/readStats": typeof workspace_readStats;

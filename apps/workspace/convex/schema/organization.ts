@@ -12,6 +12,7 @@ export const organizationTables = {
     website: v.string(),
     address: v.string(),
     logo: v.optional(v.string()),
+    brandColor: v.optional(v.string()),
     workosOrganizationId: v.optional(v.string()),
     updatedAt: v.number(),
   })
@@ -74,6 +75,11 @@ export const organizationTables = {
         v.literal("update"),
         v.literal("delete"),
       )),
+    })),
+    scope: v.optional(v.object({
+      type: v.union(v.literal("organization"), v.literal("space"), v.literal("project")),
+      spaceIds: v.optional(v.array(v.id("spaces"))),
+      projectIds: v.optional(v.array(v.id("projects"))),
     })),
     status: v.union(v.literal("active"), v.literal("paused"), v.literal("draft"), v.literal("revoked")),
     principalType: v.optional(v.union(v.literal("user"), v.literal("organization"))),

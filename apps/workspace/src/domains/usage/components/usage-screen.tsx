@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { useBillingUsage } from "@/domains/billing/api/billing";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { cn } from "@/lib/utils";
 import { USAGE_TABS, type UsageTab } from "../config/usage-tabs.config";
 import type { UsageLocale } from "../lib/usage-formatters";
@@ -16,15 +16,15 @@ import { UsageStatePanel } from "./usage-state-panel";
 export function UsageScreen() {
   const t = useTranslations("Usage");
   const locale = useLocale() as UsageLocale;
-  const account = useAccountContext();
+  const session = useAuthSession();
   const [activeTab, setActiveTab] = useState<UsageTab>("usage");
-  const organizationId = account.workspace.status === "ready" ? account.organization.id : undefined;
+  const organizationId = session.workspace.status === "ready" ? session.organization.id : undefined;
   const usage = useBillingUsage(organizationId);
 
-  if (account.workspace.status !== "ready") {
+  if (session.workspace.status !== "ready") {
     return (
       <div className="min-h-screen bg-muted/50/50 dark:bg-[#0A0A0A]">
-        <WorkspaceQueryState status={account.workspace.status} variant="dashboard" />
+        <WorkspaceQueryState status={session.workspace.status} variant="dashboard" />
       </div>
     );
   }

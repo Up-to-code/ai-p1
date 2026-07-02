@@ -3,7 +3,7 @@
 import { createContext, createElement, useCallback, useContext, useMemo, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter, usePathname } from "@/i18n/routing";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import type { NavState, NavLevel, NavActions } from "./types";
 
 interface NavigationContextValue extends NavState, NavActions {}
@@ -17,13 +17,12 @@ function getLevel(projectId: string | null, spaceSlug: string | null): NavLevel 
 }
 
 export function NavigationProvider({ children }: { children: ReactNode }) {
-  const account = useAccountContext();
+  const session = useAuthSession();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
 
-  const workspaceId: string | null =
-    account.workspace.status === "ready" ? account.workspace.organizationId : null;
+  const workspaceId: string | null = session.organization.id ?? null;
 
   const spaceSlug = searchParams.get("space");
   const projectId = searchParams.get("project");

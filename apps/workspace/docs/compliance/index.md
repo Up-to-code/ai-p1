@@ -1,10 +1,10 @@
 # Compliance
 
-Purpose: Defines Saudi regulatory context for REGA, Real Estate Registry, Ejar, PDPL, and auditability.
+Purpose: Defines regulatory context for PDPL and auditability.
 
 ## Scope
 
-This domain owns documentation for compliance decisions in the Saudi Arabia Central Real Estate Data Workspace.
+This domain owns documentation for compliance decisions in the Qentrah Workspace.
 
 This domain does not own unrelated CRM, marketplace, lead pipeline, or deal pipeline behavior.
 
@@ -12,21 +12,15 @@ This domain does not own unrelated CRM, marketplace, lead pipeline, or deal pipe
 
 | Folder | Purpose |
 | --- | --- |
-| `saudi/index.md` | Explains Saudi regulatory posture and legal disclaimer. |
-| `rega/index.md` | Explains REGA-related context and fields. |
-| `real-estate-registry/index.md` | Explains property number, title deed, real estate record, and geospatial identity concepts. |
-| `ejar/index.md` | Explains Ejar lease references and visibility impact. |
+| `saudi/index.md` | Explains regulatory posture and legal disclaimer. |
 | `pdpl/index.md` | Explains personal data, breach notification, minimization, and data residency. |
 | `audit/index.md` | Explains audit logs, exports, evidence retention, and distribution events where applicable. |
 
 ## Read Order
 
-1. [Saudi](saudi/index.md)
-2. [Rega](rega/index.md)
-3. [Real Estate Registry](real-estate-registry/index.md)
-4. [Ejar](ejar/index.md)
-5. [Pdpl](pdpl/index.md)
-6. [Audit](audit/index.md)
+1. [Compliance Context](saudi/index.md)
+2. [Pdpl](pdpl/index.md)
+3. [Audit](audit/index.md)
 
 ## Related Domains
 
@@ -42,4 +36,4 @@ This domain does not own unrelated CRM, marketplace, lead pipeline, or deal pipe
 - Keep this index current when files are added or removed.
 - Keep files small and focused.
 - Link to related domains instead of duplicating large sections.
-- Preserve the platform boundary: synchronization engine, OAuth 2.1 Provider, Saudi market only.
+- Preserve the platform boundary: synchronization engine, OAuth 2.1 Provider.

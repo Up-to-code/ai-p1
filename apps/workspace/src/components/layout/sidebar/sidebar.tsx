@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useAgentThreadsQuery } from "@/domains/agents";
 import { cn } from "@/lib/utils";
 import { SidebarRail } from "./components/sidebar-rail";
@@ -16,10 +16,10 @@ export function Sidebar() {
   const { activeRailItem } = useSidebarRail();
   const searchParams = useSearchParams();
   const activeThreadId = searchParams.get("threadId")?.trim();
-  const account = useAccountContext();
+  const session = useAuthSession();
 
-  const workspaceOrganizationId = account.workspace.organizationId;
-  const isLoading = account.workspace.status === "loadingSession" || !workspaceOrganizationId;
+  const workspaceOrganizationId = session.workspace.organizationId;
+  const isLoading = session.workspace.status === "loadingSession" || !workspaceOrganizationId;
 
   const agentThreads = useAgentThreadsQuery(workspaceOrganizationId, {
     enabled: Boolean(workspaceOrganizationId),

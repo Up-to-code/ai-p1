@@ -5,7 +5,7 @@ test("landing shows ready website templates before pricing", async ({ page }) =>
 
   const websites = page.locator("#websites");
   const pricing = page.locator("#pricing");
-  await expect(websites.getByRole("heading", { name: "Pick a real estate website style before you subscribe." })).toBeVisible();
+  await expect(websites.getByRole("heading", { name: "Pick a website style before you subscribe." })).toBeVisible();
   await expect(websites.getByText("One website included with the first subscription")).toBeVisible();
 
   const visibleTemplateLinks = websites.locator("a:not([aria-hidden='true'])");

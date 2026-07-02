@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { type Project } from "../../../store/projects.types";
 import { useCalendarIndexRangeQueryResult, createCalendarEventRequest } from "@/domains/calendar/api/calendar";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {

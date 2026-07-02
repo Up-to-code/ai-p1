@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { AppPageShell } from "@/components/shared";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import {
   createPartnerConnectionGrant,
   revokePartnerConnection,
@@ -26,8 +26,8 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
   const t = useTranslations("Integrations");
   const locale = useLocale();
   const isRtl = isRtlLocale(locale);
-  const account = useAccountContext();
-  const organizationId = account.workspace.organizationId;
+  const session = useAuthSession();
+  const organizationId = session.workspace.organizationId;
   const { apps, isLoading } = usePartnerCatalogApps();
   const { connections, refreshConnections } = usePartnerConnections(organizationId);
   const [isMutating, setIsMutating] = useState(false);
@@ -128,9 +128,9 @@ export function IntegrationDetailScreen({ id }: { id: string }) {
             mockDetails={mockDetails}
             labels={labels}
             accountUser={{
-              name: account.user.name,
-              image: account.user.image,
-              initials: account.user.initials,
+              name: session.user.name,
+              image: session.user.image,
+              initials: session.user.initials,
             }}
             isMutating={isMutating}
             onReviewSubmit={async () => {

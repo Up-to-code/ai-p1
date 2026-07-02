@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import type { BillingCycle } from "./types";
 
@@ -5,35 +7,94 @@ export function BillingToggle({
   value,
   onChange,
   monthlyLabel = "Monthly",
-  annuallyLabel = "Annually",
+  annuallyLabel = "Yearly",
+  saveLabel = "Save up to 30% with yearly",
 }: {
   value: BillingCycle;
   onChange: (cycle: BillingCycle) => void;
   monthlyLabel?: string;
   annuallyLabel?: string;
+  saveLabel?: string;
 }) {
-  const options: { key: BillingCycle; label: string }[] = [
-    { key: "monthly", label: monthlyLabel },
-    { key: "annually", label: annuallyLabel },
-  ];
-
   return (
-    <div className="inline-flex rounded-full border border-[var(--q-border)] bg-[var(--q-card)] p-1">
-      {options.map((opt) => (
-        <button
-          key={opt.key}
-          type="button"
-          onClick={() => onChange(opt.key)}
-          className={cn(
-            "rounded-full px-5 py-2 text-sm font-medium transition-all duration-200",
-            value === opt.key
-              ? "bg-[var(--q-text-primary)] text-[var(--q-bg)]"
-              : "text-[var(--q-text-muted)] hover:text-[var(--q-text-secondary)]",
-          )}
-        >
-          {opt.label}
-        </button>
-      ))}
+    <div className="cu-toggle-wrapper">
+      <div className="cu-toggle-right">
+        <span className="cu-toggle-save-text">{saveLabel}</span>
+        <div className="cu-toggle-pill">
+          <button
+            type="button"
+            onClick={() => onChange("monthly")}
+            className={cn(
+              "cu-toggle-btn",
+              value === "monthly" && "cu-toggle-btn--active",
+            )}
+          >
+            {monthlyLabel}
+          </button>
+          <button
+            type="button"
+            onClick={() => onChange("annually")}
+            className={cn(
+              "cu-toggle-btn",
+              value === "annually" && "cu-toggle-btn--active",
+            )}
+          >
+            {annuallyLabel}
+          </button>
+        </div>
+      </div>
+
+      <style>{`
+        .cu-toggle-wrapper {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          width: 100%;
+        }
+        .cu-toggle-right {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 10px;
+        }
+        @media (max-width: 640px) {
+          .cu-toggle-wrapper { justify-content: center; }
+          .cu-toggle-right { align-items: center; }
+        }
+        .cu-toggle-save-text {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--q-human-green, #2BB673);
+          letter-spacing: 0.01em;
+        }
+        .cu-toggle-pill {
+          display: inline-flex;
+          border-radius: 9999px;
+          border: 1px solid var(--q-border);
+          background: var(--q-card);
+          padding: 3px;
+          gap: 0;
+        }
+        .cu-toggle-btn {
+          border-radius: 9999px;
+          padding: 8px 22px;
+          font-size: 14px;
+          font-weight: 500;
+          border: none;
+          cursor: pointer;
+          background: none;
+          color: var(--q-text-muted);
+          transition: background 0.2s, color 0.2s;
+        }
+        .cu-toggle-btn:hover {
+          color: var(--q-text-secondary);
+        }
+        .cu-toggle-btn--active {
+          background: var(--q-text-primary);
+          color: var(--q-bg);
+          font-weight: 600;
+        }
+      `}</style>
     </div>
   );
 }

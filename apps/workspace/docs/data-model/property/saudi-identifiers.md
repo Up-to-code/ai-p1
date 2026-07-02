@@ -1,10 +1,10 @@
-# Saudi Identifiers
+# Identifiers
 
-Purpose: Saudi identifiers include RER property number, title deed references, Ejar reference, Wafi/off-plan references, plan, plot, block, and National Address.
+Purpose: Identifiers include RER property number, title deed references, Ejar reference, Wafi/off-plan references, plan, plot, block, and National Address.
 
 ## Owns
 
-- Saudi identifiers include RER property number, title deed references, Ejar reference, Wafi/off-plan references, plan, plot, block, and National Address.
+- Identifiers include RER property number, title deed references, Ejar reference, Wafi/off-plan references, plan, plot, block, and National Address.
 - Identifiers include source and verification state.
 - Identifiers are sensitive where legal.
 
@@ -22,7 +22,7 @@ Purpose: Saudi identifiers include RER property number, title deed references, E
 
 ## Implementation Rules
 
-- Keep this file focused on saudi identifiers only.
+- Keep this file focused on identifiers only.
 - Use Zod for public payload validation when payloads are involved.
 - Use server-side authorization for protected behavior.
 - Include explicit failure states where this topic affects synchronization, visibility, security, or compliance.

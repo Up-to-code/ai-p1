@@ -1,10 +1,10 @@
 # Duplicate Detection
 
-Purpose: Use Saudi identifiers, title deed references, National Address, coordinates, and publisher context.
+Purpose: Use identifiers, title deed references, National Address, coordinates, and publisher context.
 
 ## Owns
 
-- Use Saudi identifiers, title deed references, National Address, coordinates, and publisher context.
+- Use identifiers, title deed references, National Address, coordinates, and publisher context.
 - Potential duplicates require review.
 - Do not merge automatically without policy.
 

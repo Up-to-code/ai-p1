@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useTranslations } from "next-intl"
 import { Link, useRouter } from "@/i18n/routing"
-import { useAccountContext } from "@/domains/auth"
+import { useAuthSession } from "@/domains/auth"
 import { useUpdateClientOptimisticMutation, useDeleteClientOptimisticMutation } from "@/domains/clients/api/clients"
 import type { Client } from "@/domains/clients/store/clients.types"
 import {
@@ -103,7 +103,7 @@ export function ClientListItem({
 }: ClientListItemProps) {
   const t = useTranslations("Clients")
   const router = useRouter()
-  const account = useAccountContext()
+  const session = useAuthSession()
   const [isHovered, setIsHovered] = useState(false)
 
   const statusLabel = translateClientLabel(t, "statuses", client.status, clientStatusValues)

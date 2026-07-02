@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { ArrowLeft, BadgeDollarSign, Trash2, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { AppDataTable, AppPageShell, AppSection, type AppDataTableColumn } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { WorkspaceQueryState, StatusPill, EmptyWorkspace, DetailNotFoundState, DeleteRecordDialog } from "@/components/shared/crud-ui";
@@ -128,11 +128,11 @@ export function DealsWorkspace() {
 export function DealDetailScreen({ id }: { id: string }) {
   const t = useTranslations("Deals");
   const common = useTranslations("Common");
-  const account = useAccountContext();
+  const session = useAuthSession();
   const router = useRouter();
   const { invalidate } = useOptimisticInvalidation();
-  const workspaceStatus = account.workspace.status;
-  const organizationId = workspaceStatus === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+  const workspaceStatus = session.workspace.status;
+  const organizationId = workspaceStatus === "ready" ? session.workspace.organizationId ?? undefined : undefined;
   const deal = useDealQuery(organizationId, id);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);

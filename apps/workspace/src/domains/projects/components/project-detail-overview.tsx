@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useProjectQuery } from "../api/projects";
 import { useLocalConfig } from "@/domains/storage";
 import { Box } from "lucide-react";
@@ -25,8 +25,8 @@ const DEFAULT_VIEWS: ViewItem[] = [
 ];
 
 export function ProjectDetailOverview({ projectId }: ProjectDetailOverviewProps) {
-  const account = useAccountContext();
-  const workspaceOrganizationId = account.workspace.status === "ready" ? account.workspace.organizationId : undefined;
+  const session = useAuthSession();
+  const workspaceOrganizationId = session.workspace.status === "ready" ? session.workspace.organizationId : undefined;
   const project = useProjectQuery(workspaceOrganizationId ?? undefined, projectId);
 
   const storageKey = `project-views-${projectId}`;

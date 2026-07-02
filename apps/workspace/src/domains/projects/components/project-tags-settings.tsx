@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { Plus, Trash2, Tag, FolderKanban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,8 +29,8 @@ function saveVocabulary(tags: string[]) {
 }
 
 export function ProjectTagsSettings() {
-  const account = useAccountContext();
-  const orgId = account.workspace.status === "ready" ? account.workspace.organizationId : undefined;
+  const session = useAuthSession();
+  const orgId = session.workspace.status === "ready" ? session.workspace.organizationId : undefined;
 
   const projectsQuery = useProjectsIndexQuery(orgId ?? undefined);
   const projects = projectsQuery.results ?? [];

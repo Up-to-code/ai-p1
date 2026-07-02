@@ -14,7 +14,7 @@ describe("client form workspace source", () => {
   const enMessages = readSource("messages/en.json");
   const arMessages = readSource("messages/ar.json");
 
-  it("uses workspace-neutral placeholders instead of real-estate examples", () => {
+  it("uses workspace-neutral placeholders instead of domain-specific examples", () => {
     expect(formSource).toContain('placeholder={t("form.namePlaceholder")}');
     expect(formSource).toContain('placeholder={t("form.emailPlaceholder")}');
     expect(formSource).toContain('placeholder={t("form.phonePlaceholder")}');

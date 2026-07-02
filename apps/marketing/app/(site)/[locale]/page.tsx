@@ -1,31 +1,30 @@
-"use client";
-
-import { useLocale, useTranslations } from "next-intl";
 import { notFound } from "next/navigation";
 
+import { AnimatedHomeHero } from "@/components/landing/animated-home-hero";
+import { AISection } from "@/components/landing/ai-section";
+import { ClientsSection } from "@/components/landing/clients-section";
+import { CommunicationSection } from "@/components/landing/communication-section";
+import { CtaSection } from "@/components/landing/cta-section";
+import { DocSection } from "@/components/landing/doc-section";
 import { Faq02 } from "@/components/landing/faq-02";
+import { FeatureTabSwitcher } from "@/components/landing/feature-tab-switcher";
+import LogoCloud from "@/components/logo-cloud";
 import { ProblemSection } from "@/components/landing/problem-section";
 import { SolutionSection } from "@/components/landing/solution-section";
-import { AISection } from "@/components/landing/ai-section";
-import { CommunicationSection } from "@/components/landing/communication-section";
-import { VisionSection } from "@/components/landing/vision-section";
-import { AnimatedHomeHero } from "@/components/landing/animated-home-hero";
 import { TaskSection } from "@/components/landing/task-section";
-import { DocSection } from "@/components/landing/doc-section";
-import { ClientsSection } from "@/components/landing/clients-section";
-import { FeatureTabSwitcher } from "@/components/landing/feature-tab-switcher";
 import { TestimonialsSection } from "@/components/landing/testimonials-section";
-import { CtaSection } from "@/components/landing/cta-section";
-import LogoCloud from "@/components/logo-cloud";
+import { VisionSection } from "@/components/landing/vision-section";
 import { isLocale } from "@/lib/content";
 
-export default function LocaleHomePage({
-  params,
-}: {
+// Revalidate every hour — content changes rarely.
+export const revalidate = 3600;
+
+type Props = {
   params: Promise<{ locale: string }>;
-}) {
-  const locale = useLocale();
-  const isAr = locale === "ar";
+};
+
+export default async function LocaleHomePage({ params }: Props) {
+  const { locale } = await params;
 
   if (!isLocale(locale)) {
     notFound();

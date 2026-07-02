@@ -84,18 +84,11 @@ export const domainTables = {
 
   projectSpaces: defineTable({
     organizationId: v.string(),
-    projectId: v.optional(v.id("projects")),
-    spaceId: v.optional(v.id("spaces")),
-    name: v.optional(v.string()),
-    slug: v.optional(v.string()),
-    visibility: v.optional(v.union(v.literal("private"), v.literal("selected_members"), v.literal("public"))),
-    defaultAssigneeIds: v.optional(v.array(v.string())),
-    createdByUserId: v.optional(v.string()),
-    createdAt: v.optional(v.number()),
-    updatedAt: v.optional(v.number()),
-    isPrimary: v.optional(v.boolean()),
-    addedByUserId: v.optional(v.string()),
-    addedAt: v.optional(v.number()),
+    projectId: v.id("projects"),
+    spaceId: v.id("spaces"),
+    isPrimary: v.boolean(),
+    addedByUserId: v.string(),
+    addedAt: v.number(),
     deletedAt: v.optional(v.number()),
   })
     .index("by_organization_id", ["organizationId"])
@@ -103,7 +96,7 @@ export const domainTables = {
     .index("by_space_id", ["organizationId", "spaceId"])
     .index("by_project_space", ["organizationId", "projectId", "spaceId"])
     .index("by_space_project", ["organizationId", "spaceId", "projectId"])
-    .index("by_project_slug", ["organizationId", "projectId", "slug"]),
+    .index("by_project_primary", ["organizationId", "projectId", "isPrimary"]),
 
   clients: defineTable({
     organizationId: v.string(),
@@ -443,4 +436,55 @@ export const domainTables = {
   })
     .index("by_channel", ["channelId"])
     .index("by_parent", ["parentMessageId"]),
+
+  milestones: defineTable({
+    organizationId: v.string(),
+    projectId: v.string(),
+    title: v.string(),
+    description: v.optional(v.string()),
+    dueDate: v.optional(v.string()),
+    status: v.union(v.literal("pending"), v.literal("completed"), v.literal("canceled")),
+    order: v.optional(v.number()),
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    completedAt: v.optional(v.number()),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_organization_id", ["organizationId"])
+    .index("by_project_id", ["organizationId", "projectId"])
+    .index("by_organization_status", ["organizationId", "status"])
+    .index("by_organization_due", ["organizationId", "dueDate"])
+    .index("by_updated", ["updatedAt"]),
+
+  taskDependencies: defineTable({
+    organizationId: v.string(),
+    taskId: v.string(),
+    dependsOnTaskId: v.string(),
+    projectId: v.optional(v.string()),
+    dependencyType: v.union(v.literal("finish_to_start"), v.literal("start_to_start"), v.literal("finish_to_finish"), v.literal("start_to_finish")),
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_organization_id", ["organizationId"])
+    .index("by_task_id", ["organizationId", "taskId"])
+    .index("by_depends_on", ["organizationId", "dependsOnTaskId"])
+    .index("by_project_id", ["organizationId", "projectId"]),
+
+  piiAccessAudit: defineTable({
+    organizationId: v.string(),
+    userId: v.string(),
+    resourceType: v.union(v.literal("client"), v.literal("task"), v.literal("deal"), v.literal("opportunity")),
+    resourceId: v.string(),
+    accessedFields: v.array(v.string()),
+    accessReason: v.string(),
+    ipAddress: v.optional(v.string()),
+    userAgent: v.optional(v.string()),
+    timestamp: v.number(),
+  })
+    .index("by_organization_id", ["organizationId"])
+    .index("by_user_id", ["organizationId", "userId"])
+    .index("by_resource", ["organizationId", "resourceType", "resourceId"])
+    .index("by_timestamp", ["organizationId", "timestamp"]),
 };

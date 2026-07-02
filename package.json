@@ -15,6 +15,9 @@
     "dev:admin": "npm --workspace @qentrah/admin-review run dev",
     "dev:demo": "npm --workspace @qentrah/demo-partner-app run dev",
     "dev:marketing": "npm --workspace @qentrah/marketing run dev",
+    "dev:strapi": "npm --workspace @qentrah/strapi run dev",
+    "build:strapi": "npm --workspace @qentrah/strapi run build",
+    "seed:strapi": "npm --workspace @qentrah/strapi run seed",
     "brand:assets": "node scripts/brand-assets.mjs",
     "brand:scan": "node scripts/brand-scan.mjs",
     "brand:sync": "node scripts/brand-sync.mjs",
@@ -40,7 +43,6 @@
     "lightningcss-linux-x64-gnu": "^1.32.0"
   },
   "dependencies": {
-    "@svar-ui/react-calendar": "^2.6.2",
     "next": "16.3.0-canary.32"
   }
 }

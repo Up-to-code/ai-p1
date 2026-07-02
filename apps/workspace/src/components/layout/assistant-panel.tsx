@@ -2,7 +2,7 @@
 
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { Button } from "@/components/ui/button";
 import { Markdown } from "@/components/ui/markdown";
 import AgUiTurnRenderer from "@/components/ui/ag-ui/ag-ui-turn-renderer";
@@ -21,9 +21,9 @@ import { useAgentConversation } from "./agent-panel/hooks/use-agent-conversation
 
 export function AssistantPanel() {
   const { isOpen, threadId, pendingMessage, closePanel, setThreadId, newThread } = useAssistantPanel();
-  const account = useAccountContext();
+  const session = useAuthSession();
   const organizationId =
-    account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+    session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
 
   const conversation = useAgentConversation({
     organizationId,

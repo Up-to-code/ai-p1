@@ -6,7 +6,7 @@ import { usePathname } from "@/i18n/routing";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { isRtlLocale } from "@/lib/i18n/locale";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useTheme } from "@/components/providers/theme-provider";
 import { useQuery } from "@tanstack/react-query";
 import { Pencil, Plus, Users, Building2 } from "lucide-react";
@@ -35,14 +35,14 @@ export function SidebarRail() {
   const isRtl = isRtlLocale(locale);
   const pathname = usePathname();
   const { isDark: isDarkMode } = useTheme();
-  const account = useAccountContext();
+  const session = useAuthSession();
   const { activeRailItem, openRailItem, closeAll } = useSidebarRail();
 
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [orgSwitcherOpen, setOrgSwitcherOpen] = useState(false);
   const [buttonRect, setButtonRect] = useState<DOMRect | null>(null);
 
-  const { switchingOrganizationId, switchOrganization } = useOrganizationSwitch(account.organization.id ?? "");
+  const { switchingOrganizationId, switchOrganization } = useOrganizationSwitch(session.organization.id ?? "");
 
   const organizationsQuery = authClient.useListOrganizations();
   const allOrgs = useMemo(
@@ -54,16 +54,16 @@ export function SidebarRail() {
   const organizations = allOrgs.slice(0, sidebarOrganizationListLimit);
 
   const { data: orgMembers } = useQuery({
-    queryKey: ["org-members-count", account.organization.id],
-    queryFn: () => listOrganizationMembers(account.organization.id ?? ""),
-    enabled: Boolean(account.organization.id),
+    queryKey: ["org-members-count", session.organization.id],
+    queryFn: () => listOrganizationMembers(session.organization.id ?? ""),
+    enabled: Boolean(session.organization.id),
   });
   const memberCount = orgMembers?.length ?? 0;
 
   const organizationDisplayName =
-    account.organization.legalName?.trim() ||
-    (!isGeneratedOrganizationName(account.organization.name)
-      ? account.organization.name
+    session.organization.legalName?.trim() ||
+    (!isGeneratedOrganizationName(session.organization.name)
+      ? session.organization.name
       : t("defaultOrganizationName"));
 
   function toggleOrgSwitcher() {
@@ -178,16 +178,16 @@ export function SidebarRail() {
 
       {/* Level 4: User Profile */}
       <div className="flex flex-col gap-1 p-2 border-t border-sidebar-border">
-        <NavTooltip label={account.user.name}>
+        <NavTooltip label={session.user.name}>
           <WorkspaceLink
             href="/profile"
-            aria-label={account.user.name}
+            aria-label={session.user.name}
             className="flex h-10 w-10 items-center justify-center rounded-xl transition-colors hover:bg-accent hover:text-foreground"
           >
             <IdentityAvatar
-              image={account.user.image}
-              initials={account.user.initials}
-              name={account.user.name}
+              image={session.user.image}
+              initials={session.user.initials}
+              name={session.user.name}
               size="sm"
             />
           </WorkspaceLink>

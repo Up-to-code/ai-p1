@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { internalMutation, mutation } from "../_generated/server";
 import type { MutationCtx } from "../_generated/server";
+import type { Id } from "../_generated/dataModel";
 import { internal } from "../_generated/api";
 import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
@@ -8,8 +9,32 @@ import { protectClientPii } from "../security/clientPii";
 import { presentClient } from "./read";
 import { clientInputValidator, clientValidator } from "./validators";
 
-async function assertClient(ctx: MutationCtx, organizationId: string, clientId: string) {
-  const client = await ctx.db.get(clientId as never);
+type ClientInput = {
+  name: string;
+  type: "person" | "organization";
+  ownerUserId?: string;
+  status: "new" | "active" | "nurture" | "inactive" | "archived";
+  pipelineStage?: string;
+  pipelineOrder?: number;
+  source?: string;
+  contact?: string;
+  priority?: "low" | "normal" | "high" | "urgent";
+  budget?: string;
+  assetInterest?: string;
+  added?: string;
+  lastContact?: string;
+  visibility?: "private" | "team" | "workspace";
+  company?: string;
+  contactName?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  notes?: string;
+  tags?: string[];
+};
+
+async function assertClient(ctx: MutationCtx, organizationId: string, clientId: Id<"clients">) {
+  const client = await ctx.db.get(clientId);
   if (!client || client.organizationId !== organizationId || client.deletedAt) {
     throw new Error("Client was not found.");
   }
@@ -32,12 +57,12 @@ async function enqueueClientWebhook(
   });
 }
 
-async function createClientCore(ctx: MutationCtx, args: { organizationId: string; input: Parameters<typeof protectClientPii>[1]; actorUserId: string }) {
+async function createClientCore(ctx: MutationCtx, args: { organizationId: string; input: ClientInput; actorUserId: string }) {
   const now = Date.now();
   const id = await ctx.db.insert("clients", {
     organizationId: args.organizationId,
     ...args.input,
-    ...(await protectClientPii(args.organizationId, args.input)),
+    ...(await protectClientPii(args.organizationId, { email: args.input.email, phone: args.input.phone })),
     ownerUserId: args.input.ownerUserId ?? args.actorUserId,
     pipelineStage: args.input.pipelineStage ?? "new",
     source: args.input.source ?? "manual",
@@ -55,16 +80,16 @@ async function createClientCore(ctx: MutationCtx, args: { organizationId: string
   return { id, presented, now };
 }
 
-async function updateClientCore(ctx: MutationCtx, args: { organizationId: string; clientId: string; input: Parameters<typeof protectClientPii>[1]; actorUserId: string }) {
-  const existing = await ctx.db.get(args.clientId as never);
+async function updateClientCore(ctx: MutationCtx, args: { organizationId: string; clientId: Id<"clients">; input: ClientInput; actorUserId: string }) {
+  const existing = await ctx.db.get(args.clientId);
   if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {
     throw new Error("Client was not found.");
   }
   const nextVisibility = args.input.visibility ?? (existing.visibility ?? "private");
   const now = Date.now();
-  await ctx.db.patch(args.clientId as never, {
+  await ctx.db.patch(args.clientId, {
     ...args.input,
-    ...(await protectClientPii(args.organizationId, args.input)),
+    ...(await protectClientPii(args.organizationId, { email: args.input.email, phone: args.input.phone })),
     ownerUserId: args.input.ownerUserId ?? existing.ownerUserId,
     source: args.input.source ?? existing.source,
     visibility: nextVisibility,
@@ -78,13 +103,13 @@ async function updateClientCore(ctx: MutationCtx, args: { organizationId: string
   return { presented, now };
 }
 
-async function deleteClientCore(ctx: MutationCtx, args: { organizationId: string; clientId: string; actorUserId: string }) {
-  const existing = await ctx.db.get(args.clientId as never);
+async function deleteClientCore(ctx: MutationCtx, args: { organizationId: string; clientId: Id<"clients">; actorUserId: string }) {
+  const existing = await ctx.db.get(args.clientId);
   if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {
     throw new Error("Client was not found.");
   }
   const now = Date.now();
-  await ctx.db.patch(args.clientId as never, { deletedAt: now, isDeleted: true, updatedAt: now });
+  await ctx.db.patch(args.clientId, { deletedAt: now, isDeleted: true, updatedAt: now });
   await enqueueClientWebhook(ctx, args.organizationId, "client.deleted", args.clientId, { id: args.clientId, deletedAt: now }, now);
   return { removed: true as const, now, name: existing.name };
 }

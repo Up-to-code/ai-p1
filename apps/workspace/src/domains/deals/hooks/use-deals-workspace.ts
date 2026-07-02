@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useOptimisticInvalidation } from "@/domains/cache/hooks/use-optimistic-invalidation";
 import { useToast } from "@/components/ui/toast";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useClientOptionsQuery } from "@/domains/clients/api/clients";
 import { useProjectOptionsQueryResult } from "@/domains/projects/api/projects";
 import { useCurrentProjectId } from "@/domains/projects/hooks/use-current-project-id";
@@ -25,12 +25,12 @@ const emptyForm = EMPTY_DEAL_FORM;
 export function useDealsWorkspace() {
   const t = useTranslations("Deals");
   const common = useTranslations("Common");
-  const account = useAccountContext();
+  const session = useAuthSession();
   const queryClient = useQueryClient();
   const { invalidate } = useOptimisticInvalidation();
   const { toast } = useToast();
-  const workspaceStatus = account.workspace.status;
-  const organizationId = workspaceStatus === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+  const workspaceStatus = session.workspace.status;
+  const organizationId = workspaceStatus === "ready" ? session.workspace.organizationId ?? undefined : undefined;
   const [search, setSearch] = useState("");
   const [stage, setStage] = useState<DealStage | "all">("all");
   const [view, setView] = useState<"pipeline" | "list">("pipeline");
@@ -184,7 +184,7 @@ export function useDealsWorkspace() {
 
   return {
     // State
-    account,
+    session,
     workspaceStatus,
     organizationId,
     deals,

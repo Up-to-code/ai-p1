@@ -7,7 +7,7 @@ import { type ProjectFormValues } from "../../validation/project.schema";
 import { EntityDetailHeader, type EntityDetailHeaderAction, type EntityDetailHeaderField } from "@/components/shared/entity-detail-header";
 import { DeleteRecordDialog } from "@/components/shared/crud-ui";
 import { useState } from "react";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { deleteProjectRequest } from "../../api/projects";
 import { useOptimisticInvalidation } from "@/domains/cache/hooks/use-optimistic-invalidation";
 import { Pencil, Trash2 } from "lucide-react";
@@ -48,9 +48,9 @@ const defaultHealthColors = {
 
 export function ProjectDetailHeader({ project, onUpdate }: ProjectDetailHeaderProps) {
   const router = useRouter();
-  const account = useAccountContext();
+  const session = useAuthSession();
   const { invalidate } = useOptimisticInvalidation();
-  const orgId = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+  const orgId = session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {

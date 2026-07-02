@@ -4,7 +4,7 @@ import React from "react";
 import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
 import { useOptimisticInvalidation } from "@/domains/cache/hooks/use-optimistic-invalidation";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { logger } from "@/lib/logger";
 import { useProjectQuery, updateProjectRequest } from "../../api/projects";
 import type { Project } from "../../store/projects.types";
@@ -24,12 +24,12 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 
 export function ProjectDetailLayout({ projectId }: { projectId: string }) {
   const t = useTranslations("Projects");
-  const account = useAccountContext();
+  const session = useAuthSession();
   const queryClient = useQueryClient();
   const { invalidate } = useOptimisticInvalidation();
-  const workspaceStatus = account.workspace.status;
+  const workspaceStatus = session.workspace.status;
   const workspaceOrganizationId =
-    workspaceStatus === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+    workspaceStatus === "ready" ? session.workspace.organizationId ?? undefined : undefined;
 
   // Resolve space slug from URL to spaceId for scoped data loading
   const currentSpace = useCurrentSpace();

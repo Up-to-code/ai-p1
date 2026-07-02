@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useInboxState, useMessagesQuery, useSendMessageMutation, useCreateChannelMutation } from "@/domains/inbox";
 import { MessageList } from "@/domains/inbox/components/message-list";
 import { MessageComposer } from "@/domains/inbox/components/message-composer";
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import type { ChannelType, ChannelVisibility } from "@/domains/inbox/types/inbox.types";
 
 export default function InboxPage() {
-  const account = useAccountContext();
+  const session = useAuthSession();
   const { orgId, channels, isLoadingChannels } = useInboxState();
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
   const [replyTo, setReplyTo] = useState<{ id: string; author: string; content: string } | null>(null);
@@ -81,13 +81,13 @@ export default function InboxPage() {
             {/* Messages */}
             <MessageList
               messages={messages}
-              currentUserId={account.user?.id || ""}
+              currentUserId={session.user?.id || ""}
               onReply={(messageId) => {
                 const message = messages.find((m) => m.id === messageId);
                 if (message) {
                   setReplyTo({
                     id: messageId,
-                    author: message.authorId === account.user?.id ? "You" : message.authorId.slice(0, 8),
+                    author: message.authorId === session.user?.id ? "You" : message.authorId.slice(0, 8),
                     content: message.content,
                   });
                 }

@@ -4,7 +4,7 @@ import { Plug } from "lucide-react";
 import { AppPageHeader, AppPageShell, AppTabsList } from "@/components/shared";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useIntegrationsStore } from "../store/integrations.store";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import {
   usePartnerCatalogApps,
   usePartnerConnections,
@@ -19,8 +19,8 @@ import { WebhooksTelemetryDashboard } from "./webhooks-telemetry-dashboard";
 export function IntegrationsScreen() {
   const t = useTranslations('Integrations');
   const { activeTab, setActiveTab } = useIntegrationsStore();
-  const account = useAccountContext();
-  const organizationId = account.workspace.organizationId;
+  const session = useAuthSession();
+  const organizationId = session.workspace.organizationId;
   const { apps, isLoading } = usePartnerCatalogApps();
   const {
     connections,

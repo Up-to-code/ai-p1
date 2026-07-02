@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, User, Building2, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { useClientsIndexQuery } from "@/domains/clients/api/clients";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import type { Client } from "@/domains/clients/store/clients.types";
 import { cn } from "@/lib/utils";
 
@@ -43,8 +43,8 @@ export function ClientPickerModal({
   selectedClientId,
   onSelect,
 }: ClientPickerModalProps) {
-  const account = useAccountContext();
-  const organizationId = account.workspace.status === "ready" ? account.workspace.organizationId : undefined;
+  const session = useAuthSession();
+  const organizationId = session.workspace.status === "ready" ? session.workspace.organizationId : undefined;
   const t = useTranslations("Projects.form.clientPicker");
 
   const [search, setSearch] = useState("");

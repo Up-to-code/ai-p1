@@ -13,24 +13,141 @@ import {
 export const projectsList: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) => {
   const limit = listLimit(args.input);
   const search = searchTerm(args.input);
+  
+  // Get connection to check scope
+  const connection = await ctx.db.get(args.connectionId);
+  const scope = connection?.scope;
+
   if (!search) {
-    const page = await ctx.db
+    let page;
+    if (scope?.type === "project" && scope.projectIds) {
+      // Filter by specific project IDs
+      const projects = [];
+      for (const projectId of scope.projectIds) {
+        const project = await ctx.db.get(projectId);
+        if (project && project.organizationId === args.organizationId && !project.deletedAt) {
+          projects.push(project);
+        }
+      }
+      page = {
+        page: projects.slice(0, limit),
+        continueCursor: "",
+        isDone: true,
+      };
+    } else if (scope?.type === "space" && scope.spaceIds && scope.spaceIds.length > 0) {
+      // Filter by space IDs via projectSpaces junction
+      const spaceIds = scope.spaceIds;
+      const projectSpaces = await ctx.db
+        .query("projectSpaces")
+        .withIndex("by_space_id", (q) =>
+          q.eq("organizationId", args.organizationId),
+        )
+        .filter((q) =>
+          q.and(
+            q.eq(q.field("deletedAt"), undefined),
+            q.or(...spaceIds.map((spaceId: Id<"spaces">) => q.eq(q.field("spaceId"), spaceId))),
+          ),
+        )
+        .take(TOOL_SCAN_LIMIT);
+      
+      const projectIds = projectSpaces.map((ps) => ps.projectId);
+      const projects = [];
+      for (const projectId of projectIds) {
+        const project = await ctx.db.get(projectId);
+        if (project && project.organizationId === args.organizationId && !project.deletedAt) {
+          projects.push(project);
+        }
+      }
+      page = {
+        page: projects.slice(0, limit),
+        continueCursor: "",
+        isDone: true,
+      };
+    } else {
+      // No scope or organization scope - show all
+      page = await ctx.db
+        .query("projects")
+        .withIndex("by_organization_updated", (q) => q.eq("organizationId", args.organizationId))
+        .order("desc")
+        .paginate({ numItems: limit, cursor: listCursor(args.input) });
+    }
+    return mcpPublicWorkspacePage(page);
+  }
+  
+  // Search with scope filtering
+  let projects;
+  if (scope?.type === "project" && scope.projectIds) {
+    projects = [];
+    for (const projectId of scope.projectIds) {
+      const project = await ctx.db.get(projectId);
+      if (project && project.organizationId === args.organizationId && !project.deletedAt) {
+        projects.push(project);
+      }
+    }
+  } else if (scope?.type === "space" && scope.spaceIds && scope.spaceIds.length > 0) {
+    const spaceIds = scope.spaceIds;
+    const projectSpaces = await ctx.db
+      .query("projectSpaces")
+      .withIndex("by_space_id", (q) =>
+        q.eq("organizationId", args.organizationId),
+      )
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("deletedAt"), undefined),
+          q.or(...spaceIds.map((spaceId: Id<"spaces">) => q.eq(q.field("spaceId"), spaceId))),
+        ),
+      )
+      .take(TOOL_SCAN_LIMIT);
+    
+    const projectIds = projectSpaces.map((ps) => ps.projectId);
+    projects = [];
+    for (const projectId of projectIds) {
+      const project = await ctx.db.get(projectId);
+      if (project && project.organizationId === args.organizationId && !project.deletedAt) {
+        projects.push(project);
+      }
+    }
+  } else {
+    projects = await ctx.db
       .query("projects")
       .withIndex("by_organization_updated", (q) => q.eq("organizationId", args.organizationId))
       .order("desc")
-      .paginate({ numItems: limit, cursor: listCursor(args.input) });
-    return mcpPublicWorkspacePage(page);
+      .take(TOOL_SCAN_LIMIT);
   }
-  const projects = await ctx.db
-    .query("projects")
-    .withIndex("by_organization_updated", (q) => q.eq("organizationId", args.organizationId))
-    .order("desc")
-    .take(TOOL_SCAN_LIMIT);
+  
   return mcpPublicWorkspaceSearchResult(projects, { search, limit, searchValues: projectSearchValues });
 };
 
 export const projectsGet: ReadHandler = async (ctx: QueryCtx, args: ReadToolArgs) => {
-  const project = await ctx.db.get(requiredString(args.input, "projectId") as Id<"projects">);
+  const projectId = requiredString(args.input, "projectId") as Id<"projects">;
+  const project = await ctx.db.get(projectId);
+  
+  // Check if project is within MCP scope
+  const connection = await ctx.db.get(args.connectionId);
+  const scope = connection?.scope;
+  if (scope?.type === "project" && scope.projectIds) {
+    if (!scope.projectIds.includes(projectId)) {
+      throw new Error("Project not in MCP scope");
+    }
+  } else if (scope?.type === "space" && scope.spaceIds && scope.spaceIds.length > 0) {
+    const spaceIds = scope.spaceIds;
+    const projectSpaces = await ctx.db
+      .query("projectSpaces")
+      .withIndex("by_project_id", (q) =>
+        q.eq("organizationId", args.organizationId).eq("projectId", projectId),
+      )
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("deletedAt"), undefined),
+          q.or(...spaceIds.map((spaceId: Id<"spaces">) => q.eq(q.field("spaceId"), spaceId))),
+        ),
+      )
+      .first();
+    if (!projectSpaces) {
+      throw new Error("Project not in MCP scope");
+    }
+  }
+  
   return presentWorkspaceRecord(assertPublicWorkspaceRecord(assertActiveWorkspaceRecord(project, args.organizationId, "Project"), "Project"));
 };
 

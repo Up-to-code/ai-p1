@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { LegendItem } from "@qentrah/ui";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useProjectsIndexQuery } from "../../api/projects";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 
 const HEALTH_COLORS: Record<string, string> = {
   onTrack: "#22c55e",
@@ -19,8 +19,8 @@ const HEALTH_LABELS: Record<string, string> = {
 };
 
 export function ProjectHealthWidget() {
-  const account = useAccountContext();
-  const orgId = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+  const session = useAuthSession();
+  const orgId = session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
   const query = useProjectsIndexQuery(orgId);
   const projects = query.results ?? [];
 

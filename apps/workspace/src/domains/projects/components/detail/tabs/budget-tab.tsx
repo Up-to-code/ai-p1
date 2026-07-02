@@ -5,7 +5,7 @@ import { ProgressBar } from "@qentrah/our-platform-components";
 import { type Project } from "../../../store/projects.types";
 import { type ProjectFormValues } from "../../../validation/project.schema";
 import { useTasksQuery } from "@/domains/tasks/api/tasks";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { cn } from "@/lib/utils";
 import {
   DollarSign,
@@ -21,8 +21,8 @@ interface BudgetTabProps {
 }
 
 export function BudgetTab({ project, onUpdate }: BudgetTabProps) {
-  const account = useAccountContext();
-  const organizationId = account.workspace.status === "ready" ? account.workspace.organizationId ?? "" : "";
+  const session = useAuthSession();
+  const organizationId = session.workspace.status === "ready" ? session.workspace.organizationId ?? "" : "";
   const tasksResult = useTasksQuery(organizationId, { projectId: project.id });
   const tasks = tasksResult.data ?? [];
 

@@ -1,10 +1,10 @@
-# Real Estate Registry
+# Registry
 
-Purpose: Explains property number, title deed, real estate record, and geospatial identity concepts.
+Purpose: Explains reference number, title deed, record, and geospatial identity concepts.
 
 ## Scope
 
-This folder owns small, focused documentation files for real estate registry.
+This folder owns small, focused documentation files for registry.
 
 This folder does not own broad system-wide specification text. If content crosses domains, link to the owning domain.
 
@@ -12,16 +12,16 @@ This folder does not own broad system-wide specification text. If content crosse
 
 | File | Purpose |
 | --- | --- |
-| [Property Number](property-number.md) | RER property number is a Saudi property identity reference where available. |
+| [Reference Number](property-number.md) | Reference number is an identity reference where available. |
 | [Title Deed](title-deed.md) | Title deed references are sensitive authority data. |
-| [Real Estate Record](real-estate-record.md) | Real estate record includes description, location, legal status, rights, obligations, and changes. |
+| [Record](real-estate-record.md) | Record includes description, location, legal status, rights, obligations, and changes. |
 | [Geospatial Identity](geospatial-identity.md) | Geospatial identity supports duplicate detection and property matching. |
 
 ## Read Order
 
-1. [Property Number](property-number.md)
+1. [Reference Number](property-number.md)
 2. [Title Deed](title-deed.md)
-3. [Real Estate Record](real-estate-record.md)
+3. [Record](real-estate-record.md)
 4. [Geospatial Identity](geospatial-identity.md)
 
 ## Related Domains

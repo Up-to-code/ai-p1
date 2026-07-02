@@ -1,5 +1,5 @@
-import { DealsWorkspace } from "@/domains/deals";
+import { DealsPageRedesigned } from "@/domains/deals/components/DealsPageRedesigned";
 
 export default function DealsPage() {
-  return <DealsWorkspace />;
+  return <DealsPageRedesigned />;
 }

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import ContactPage from "./page-content";
 
+export const revalidate = false;
+
 type Props = {
   params: Promise<{ locale: string }>;
 };

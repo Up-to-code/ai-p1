@@ -466,6 +466,9 @@
       "operations": "Operations",
       "administration": "Administration"
     },
+    "home": "Home",
+    "inbox": "Inbox",
+    "ai": "AI",
     "dashboard": "Dashboard",
     "spaces": "Spaces",
     "projects": "Projects",

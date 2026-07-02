@@ -1,10 +1,32 @@
 import { v } from "convex/values";
 import { internalMutation, mutation } from "../_generated/server";
-import type { Doc, Id, MutationCtx } from "../_generated/dataModel";
+import type { MutationCtx } from "../_generated/server";
+import type { Doc, Id } from "../_generated/dataModel";
 import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { presentWorkspaceRecord, stripDeletedFields } from "../shared/present";
 import { projectInputValidator, projectValidator } from "./validators";
+
+type ProjectInput = {
+  name: string;
+  clientId?: Id<"clients">;
+  opportunityId?: Id<"opportunities">;
+  status: "planned" | "active" | "paused" | "completed" | "archived";
+  health: "onTrack" | "atRisk" | "blocked";
+  visibility?: "private" | "space_members" | "organization" | "workspace" | "team";
+  teamMemberIds?: string[];
+  startDate?: string;
+  endDate?: string;
+  budget?: number;
+  currency?: string;
+  description?: string;
+  tags?: string[];
+  isStrict?: boolean;
+  isRollupEnabled?: boolean;
+  templateId?: string;
+  customTabs?: string[];
+  progress?: number;
+};
 
 function presentProject(project: Doc<"projects">) {
   const clean = stripDeletedFields(project);
@@ -15,7 +37,7 @@ function presentProject(project: Doc<"projects">) {
   };
 }
 
-async function createProjectCore(ctx: MutationCtx, args: { organizationId: string; input: Parameters<typeof projectInputValidator.parse>[0]; actorUserId: string }) {
+async function createProjectCore(ctx: MutationCtx, args: { organizationId: string; input: ProjectInput; actorUserId: string }) {
   const now = Date.now();
   const id = await ctx.db.insert("projects", {
     organizationId: args.organizationId,
@@ -33,7 +55,7 @@ async function createProjectCore(ctx: MutationCtx, args: { organizationId: strin
   return { presented: presentProject(project), now };
 }
 
-async function updateProjectCore(ctx: MutationCtx, args: { organizationId: string; projectId: Id<"projects">; input: Parameters<typeof projectInputValidator.parse>[0]; actorUserId: string }) {
+async function updateProjectCore(ctx: MutationCtx, args: { organizationId: string; projectId: Id<"projects">; input: ProjectInput; actorUserId: string }) {
   const existing = await ctx.db.get(args.projectId);
   if (!existing || existing.organizationId !== args.organizationId || existing.deletedAt) {
     throw new Error("Project was not found.");

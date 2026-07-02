@@ -4,7 +4,7 @@ Purpose: Defines how external claims become approved canonical state and how tha
 
 ## Scope
 
-This domain owns documentation for synchronization decisions in the Saudi Arabia Central Real Estate Data Workspace.
+This domain owns documentation for synchronization decisions in the Qentrah Workspace.
 
 This domain does not own unrelated CRM, marketplace, lead pipeline, or deal pipeline behavior.
 
@@ -38,4 +38,4 @@ This domain does not own unrelated CRM, marketplace, lead pipeline, or deal pipe
 - Keep this index current when files are added or removed.
 - Keep files small and focused.
 - Link to related domains instead of duplicating large sections.
-- Preserve the platform boundary: synchronization engine, OAuth 2.1 Provider, Saudi market only.
+

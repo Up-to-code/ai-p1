@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { type Project } from "../../../store/projects.types";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { EditableSelect } from "@/components/ui/editable-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,10 +35,10 @@ const roleColors: Record<string, "gray" | "green" | "yellow" | "blue" | "red" | 
 };
 
 export function TeamTab({ project, organizationId }: TeamTabProps) {
-  const account = useAccountContext();
+  const session = useAuthSession();
   const [isAdding, setIsAdding] = useState(false);
   const [members, setMembers] = useState<Array<{ id: string; name: string; email: string; role: string }>>([
-    { id: "1", name: "You", email: account.user?.email ?? "", role: "owner" },
+    { id: "1", name: "You", email: session.user?.email ?? "", role: "owner" },
   ]);
 
   const removeMember = (id: string) => {

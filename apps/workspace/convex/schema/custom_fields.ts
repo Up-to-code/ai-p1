@@ -92,7 +92,6 @@ export const customFieldTables = {
       v.literal("agency_marketing"),
       v.literal("consulting_services"),
       v.literal("operations"),
-      v.literal("real_estate_legacy"),
     ),
     name: v.string(),
     category: v.string(),

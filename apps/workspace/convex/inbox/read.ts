@@ -11,16 +11,20 @@ export const listChannels = query({
   handler: async (ctx, args) => {
     const { organizationId, type } = args;
     
-    let channels = await ctx.db
-      .query("channels")
-      .withIndex("by_organization", (q) => q.eq("organizationId", organizationId));
-    
+    let channels;
     if (type) {
-      channels = channels.withIndex("by_type", (q) => q.eq("type", type));
+      channels = await ctx.db
+        .query("channels")
+        .withIndex("by_type", (q) => q.eq("organizationId", organizationId).eq("type", type))
+        .collect();
+    } else {
+      channels = await ctx.db
+        .query("channels")
+        .withIndex("by_organization", (q) => q.eq("organizationId", organizationId))
+        .collect();
     }
     
-    const results = await channels.collect();
-    return results.map((channel) => ({
+    return channels.map((channel) => ({
       ...channel,
       unreadCount: channel.unreadCount ?? 0,
       lastMessageAt: channel.lastMessageAt ?? 0,

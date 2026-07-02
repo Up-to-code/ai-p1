@@ -122,7 +122,7 @@ function SessionCheckLoading() {
 
 function AuthRouteLoading() {
   return (
-    <main className="min-h-svh overflow-hidden bg-[oklch(97.5%_0.006_255)] text-foreground dark:bg-[oklch(8.5%_0.012_255)] lg:grid lg:grid-cols-2">
+    <main className="min-h-svh overflow-hidden bg-background text-text-primary lg:grid lg:grid-cols-2">
       <section className="flex min-h-svh flex-col px-4 py-5 sm:px-8 lg:px-12 lg:py-8">
         <div className="flex items-center justify-between gap-4">
           <BrandLoader />
@@ -146,7 +146,7 @@ function AuthRouteLoading() {
             <div className="space-y-4">
               <Skeleton className="h-12 rounded-2xl" />
               <Skeleton className="h-12 rounded-2xl" />
-              <Skeleton className="h-12 rounded-2xl bg-foreground/15 dark:bg-white/20" />
+              <Skeleton className="h-12 rounded-2xl bg-text-primary/15 dark:bg-text-primary/20" />
             </div>
             <div className="space-y-2">
               <Skeleton className="mx-auto h-3 w-72 max-w-full rounded-full" />
@@ -155,8 +155,8 @@ function AuthRouteLoading() {
           </div>
         </div>
       </section>
-      <section className="relative hidden min-h-screen overflow-hidden bg-[oklch(91%_0.012_255)] dark:bg-[oklch(12%_0.018_255)] lg:block">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_55%_24%,oklch(96%_0.018_255),transparent_34%),linear-gradient(180deg,transparent,oklch(97%_0.006_255))] dark:bg-[radial-gradient(circle_at_55%_24%,oklch(24%_0.04_255),transparent_34%),linear-gradient(180deg,transparent,oklch(8.5%_0.012_255))]" />
+      <section className="relative hidden min-h-screen overflow-hidden bg-surface lg:block">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_55%_24%,var(--q-bg-tertiary),transparent_34%),linear-gradient(180deg,transparent,var(--q-bg-secondary))] dark:bg-[radial-gradient(circle_at_55%_24%,var(--q-bg-tertiary),transparent_34%),linear-gradient(180deg,transparent,var(--q-bg-secondary))]" />
         <div className="relative flex min-h-screen flex-col justify-between p-10">
           <BrandLoader />
           <div className="max-w-xl space-y-5 pb-8">
@@ -173,7 +173,7 @@ function AuthRouteLoading() {
 
 function ChooseOrganizationRouteLoading() {
   return (
-    <main className="relative min-h-svh overflow-hidden bg-[oklch(96.5%_0.008_255)] px-4 py-6 text-foreground dark:bg-[oklch(8.5%_0.012_255)] sm:px-6 lg:px-10">
+    <main className="relative min-h-svh overflow-hidden bg-background px-4 py-6 text-text-primary sm:px-6 lg:px-10">
       <div className="relative mx-auto flex min-h-[calc(100svh-3rem)] w-full max-w-5xl flex-col">
         <header className="flex items-center justify-between gap-4">
           <BrandLoader />
@@ -209,7 +209,7 @@ function ChooseOrganizationRouteLoading() {
 
 function OnboardingRouteLoading() {
   return (
-    <main className="min-h-svh bg-[oklch(97.5%_0.006_255)] px-4 py-8 text-foreground dark:bg-[oklch(8.5%_0.012_255)]">
+    <main className="min-h-svh bg-background px-4 py-8 text-text-primary">
       <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-10">
         <BrandLoader />
         <div className="flex w-full flex-col items-center gap-8 text-center">
@@ -237,7 +237,7 @@ function OnboardingRouteLoading() {
           </div>
           <div className="mt-8 flex items-center justify-between border-t border-border pt-5">
             <Skeleton className="h-10 w-28 rounded-2xl" />
-            <Skeleton className="h-10 w-40 rounded-2xl bg-foreground/15 dark:bg-white/20" />
+            <Skeleton className="h-10 w-40 rounded-2xl bg-text-primary/15 dark:bg-white/20" />
           </div>
         </div>
       </div>
@@ -247,7 +247,7 @@ function OnboardingRouteLoading() {
 
 function AppRouteLoading() {
   return (
-    <div className="min-h-full bg-background p-6 text-foreground lg:p-10">
+    <div className="min-h-full bg-background p-6 text-text-primary lg:p-10">
       <div className="mx-auto max-w-[1400px] space-y-6">
         <div className="space-y-3">
           <Skeleton className="h-3 w-28 rounded-full" />

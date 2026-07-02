@@ -203,7 +203,7 @@ export const listGrouped = query({
     const flat = base.map(presentTask);
 
     if (args.groupBy === "none") {
-      return { groupBy: "none", groups: [], flat };
+      return { groupBy: "none" as const, groups: [], flat };
     }
 
     const now = Date.now();
@@ -270,6 +270,6 @@ export const listGrouped = query({
       return 0
     })
 
-    return { groupBy: args.groupBy, groups, flat }
+    return { groupBy: args.groupBy as "status" | "priority" | "dueDate" | "none" | "assignee", groups, flat }
   },
 });

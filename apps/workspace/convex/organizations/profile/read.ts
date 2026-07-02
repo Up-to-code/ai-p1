@@ -26,6 +26,7 @@ export const getProfile = query({
         website: profile.website,
         address: profile.address,
         logo: profile.logo,
+        brandColor: profile.brandColor,
         updatedAt: profile.updatedAt,
       };
     }

@@ -207,3 +207,75 @@ export const taskCounts = query({
     return counts;
   },
 });
+
+export const listBySpace = query({
+  args: {
+    organizationId: v.string(),
+    spaceId: v.id("spaces"),
+    limit: v.optional(v.number()),
+  },
+  returns: v.array(projectValidator),
+  handler: async (ctx, args) => {
+    await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "read");
+    const limit = boundedWorkspaceReadLimit(args.limit, 100, 200);
+
+    const projectSpaces = await ctx.db
+      .query("projectSpaces")
+      .withIndex("by_space_id", (q) =>
+        q.eq("organizationId", args.organizationId).eq("spaceId", args.spaceId),
+      )
+      .take(limit);
+
+    const projectIds = projectSpaces
+      .filter((ps) => !ps.deletedAt)
+      .map((ps) => ps.projectId);
+
+    const projects: Doc<"projects">[] = [];
+    for (const projectId of projectIds) {
+      const project = await ctx.db.get(projectId);
+      if (project && !project.deletedAt && project.organizationId === args.organizationId) {
+        projects.push(project);
+      }
+    }
+
+    return Promise.all(projects.map((project) => presentProjectListItem(ctx, project)));
+  },
+});
+
+export const listAccessibleBySpaceMembership = query({
+  args: {
+    organizationId: v.string(),
+    spaceIds: v.array(v.id("spaces")),
+    limit: v.optional(v.number()),
+  },
+  returns: v.array(projectValidator),
+  handler: async (ctx, args) => {
+    await assertOrganizationResourcePermission(ctx, args.organizationId, "project", "read");
+    const limit = boundedWorkspaceReadLimit(args.limit, 100, 200);
+
+    const projectSpaces = await ctx.db
+      .query("projectSpaces")
+      .withIndex("by_space_id", (q) =>
+        q.eq("organizationId", args.organizationId),
+      )
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("deletedAt"), undefined),
+          q.or(...args.spaceIds.map((spaceId) => q.eq(q.field("spaceId"), spaceId))),
+        ),
+      )
+      .take(limit);
+
+    const projectIds = projectSpaces.map((ps) => ps.projectId);
+
+    const projects: Doc<"projects">[] = [];
+    for (const projectId of projectIds) {
+      const project = await ctx.db.get(projectId);
+      if (project && !project.deletedAt && project.organizationId === args.organizationId) {
+        projects.push(project);
+      }
+    }
+
+    return Promise.all(projects.map((project) => presentProjectListItem(ctx, project)));
+  },
+});

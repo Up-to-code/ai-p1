@@ -27,3 +27,9 @@ coverage
 .vercel
 .infisical.json
 .env*
+
+# Strapi CMS
+apps/strapi/.tmp
+apps/strapi/build
+apps/strapi/dist
+apps/strapi/.cache

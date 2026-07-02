@@ -1,6 +1,6 @@
 "use client";
 
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import {
   useListChannels,
   useGetChannel,
@@ -211,8 +211,8 @@ export function useCreateThreadMutation(organizationId?: string) {
 
 // Hook for active channel state
 export function useInboxState() {
-  const account = useAccountContext();
-  const orgId = account.workspace.status === "ready" ? account.workspace.organizationId : undefined;
+  const session = useAuthSession();
+  const orgId = session.workspace.status === "ready" ? session.workspace.organizationId : undefined;
   
   const channelsQuery = useChannelsQuery(orgId || "");
   

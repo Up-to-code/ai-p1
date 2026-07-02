@@ -238,6 +238,7 @@ export const createFromHono = mutation({
       name: args.input.name,
       instructions: args.input.instructions,
       permissions: args.input.permissions,
+      scope: args.input.scope,
       status: "active",
       principalType,
       principalUserId: principalType === "user" ? user._id : undefined,
@@ -293,6 +294,7 @@ export const updateFromHono = mutation({
       ...(args.input.name ? { name: args.input.name } : {}),
       ...(args.input.instructions !== undefined ? { instructions: args.input.instructions } : {}),
       ...(args.input.permissions ? { permissions: args.input.permissions } : {}),
+      ...(args.input.scope !== undefined ? { scope: args.input.scope } : {}),
       ...(args.input.status ? { status: args.input.status } : {}),
       ...(args.input.expiresAt !== undefined
         ? { expiresAt: args.input.expiresAt === null ? undefined : args.input.expiresAt }

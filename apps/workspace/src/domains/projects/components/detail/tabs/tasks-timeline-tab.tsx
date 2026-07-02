@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { type Project } from "../../../store/projects.types";
 import { useTasksQuery, createTaskRequest, updateTaskRequest } from "@/domains/tasks/api/tasks";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { logger } from "@/lib/logger";
 import { EditableText } from "@/components/ui/editable-text";
 import { EditableSelect } from "@/components/ui/editable-select";

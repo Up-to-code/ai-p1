@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Plus, Settings, Loader2 } from "lucide-react";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useSpacesQuery } from "../../api/spaces";
 import type { Space } from "../../api/spaces";
 import { SpaceCreateForm } from "./space-create-form";
@@ -20,8 +20,8 @@ interface SpaceListProps {
 
 export function SpaceList({ projectId, currentSpaceSlug, onSpaceSelect }: SpaceListProps) {
   const t = useTranslations("Projects");
-  const account = useAccountContext();
-  const orgId = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+  const session = useAuthSession();
+  const orgId = session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
 
   const spaces = useSpacesQuery(orgId, projectId);
   const [showCreateForm, setShowCreateForm] = useState(false);

@@ -13,7 +13,7 @@ describe("project workspace card source", () => {
   const source = readSource("src/domains/projects/components/projects-screens.tsx");
   const cardSource = source.slice(source.indexOf("function ProjectTile"), source.indexOf("function ProjectPortfolioStrip"));
 
-  it("renders dense work card metadata instead of real-estate visual hierarchy", () => {
+  it("renders dense work card metadata instead of visual hierarchy", () => {
     expect(cardSource).toContain("ProjectCardFact");
     expect(cardSource).toContain('t("card.owner")');
     expect(cardSource).toContain('t("card.resources")');

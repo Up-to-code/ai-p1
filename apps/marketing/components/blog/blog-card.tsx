@@ -1,9 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import { payloadMediaUrl, type PayloadBlogPost } from "@/lib/payload-api";
+import type { StrapiBlogPost } from "@/lib/strapi";
 
 type BlogCardProps = {
-  post: PayloadBlogPost;
+  post: StrapiBlogPost;
   locale: string;
 };
 
@@ -13,7 +13,7 @@ export function BlogCard({ post, locale }: BlogCardProps) {
     { year: "numeric", month: "long", day: "numeric" },
   );
 
-  const cardImage = post.cardImage || post.heroImage;
+  const cardImage = post.cardImage ?? post.heroImage;
 
   return (
     <Link
@@ -23,8 +23,8 @@ export function BlogCard({ post, locale }: BlogCardProps) {
       {cardImage && (
         <div className="relative aspect-[16/9] overflow-hidden">
           <Image
-            src={payloadMediaUrl(cardImage.url)}
-            alt={cardImage.alt || post.title}
+            src={cardImage.url}
+            alt={cardImage.alt ?? post.title}
             fill
             className="object-cover transition-transform group-hover:scale-105"
           />
@@ -36,9 +36,7 @@ export function BlogCard({ post, locale }: BlogCardProps) {
             {post.category}
           </span>
         )}
-        <h3 className="text-lg font-bold text-[var(--q-text-primary)]">
-          {post.title}
-        </h3>
+        <h3 className="text-lg font-bold text-[var(--q-text-primary)]">{post.title}</h3>
         <p className="mt-2 flex-1 text-sm text-[var(--q-text-secondary)] line-clamp-2">
           {post.excerpt}
         </p>
@@ -46,28 +44,22 @@ export function BlogCard({ post, locale }: BlogCardProps) {
           {post.authorAvatar && (
             <div className="relative h-8 w-8 overflow-hidden rounded-full">
               <Image
-                src={payloadMediaUrl(post.authorAvatar.url)}
-                alt={post.authorAvatar.alt || post.author}
+                src={post.authorAvatar.url}
+                alt={post.authorAvatar.alt ?? post.author}
                 fill
                 className="object-cover"
               />
             </div>
           )}
           <div className="flex flex-1 flex-col">
-            <span className="text-xs font-medium text-[var(--q-text-primary)]">
-              {post.author}
-            </span>
+            <span className="text-xs font-medium text-[var(--q-text-primary)]">{post.author}</span>
             {post.authorRole && (
-              <span className="text-[10px] text-[var(--q-text-muted)]">
-                {post.authorRole}
-              </span>
+              <span className="text-[10px] text-[var(--q-text-muted)]">{post.authorRole}</span>
             )}
           </div>
           <div className="text-xs text-[var(--q-text-muted)]">
             <span>{publishDate}</span>
-            {post.readingTime && (
-              <span className="ml-2">· {post.readingTime} min</span>
-            )}
+            {post.readingTime && <span className="ml-2">· {post.readingTime} min</span>}
           </div>
         </div>
       </div>

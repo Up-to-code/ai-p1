@@ -5,7 +5,7 @@ Purpose: Publisher profile links organization to publisher/developer data.
 ## Owns
 
 - Publisher profile links organization to publisher/developer data.
-- Includes Saudi compliance references where required.
+- Includes compliance references where required.
 - Publisher status affects submissions and visibility.
 
 ## Does Not Own

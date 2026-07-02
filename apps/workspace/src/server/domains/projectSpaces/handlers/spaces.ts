@@ -10,16 +10,15 @@ function extractProjectId(c: Context): string | undefined {
 
 export async function handleCreateSpace(c: Context) {
   const organizationId = c.req.param("organizationId");
-  const projectId = extractProjectId(c);
-  if (!organizationId || !projectId) {
-    return c.json({ error: "Organization and project ids are required." }, 400);
+  if (!organizationId) {
+    return c.json({ error: "Organization id is required." }, 400);
   }
 
   const parsed = await validateJsonBody(c, spacePayloadSchema, "Invalid space payload.");
   if (!parsed.ok) return parsed.response;
 
   try {
-    const result = await createSpace(organizationId, parsed.data, { projectId });
+    const result = await createSpace(organizationId, parsed.data);
     return c.json({ space: result });
   } catch (error) {
     return actionErrorJson(c, error, "Space action failed.");
@@ -28,17 +27,16 @@ export async function handleCreateSpace(c: Context) {
 
 export async function handleUpdateSpace(c: Context) {
   const organizationId = c.req.param("organizationId");
-  const projectId = extractProjectId(c);
   const spaceId = c.req.param("spaceId");
-  if (!organizationId || !projectId || !spaceId) {
-    return c.json({ error: "Organization, project, and space ids are required." }, 400);
+  if (!organizationId || !spaceId) {
+    return c.json({ error: "Organization and space ids are required." }, 400);
   }
 
   const parsed = await validateJsonBody(c, spacePayloadSchema, "Invalid space payload.");
   if (!parsed.ok) return parsed.response;
 
   try {
-    const result = await updateSpace(organizationId, spaceId, parsed.data, { projectId });
+    const result = await updateSpace(organizationId, spaceId, parsed.data);
     return c.json({ space: result });
   } catch (error) {
     return actionErrorJson(c, error, "Space action failed.");
@@ -47,14 +45,13 @@ export async function handleUpdateSpace(c: Context) {
 
 export async function handleDeleteSpace(c: Context) {
   const organizationId = c.req.param("organizationId");
-  const projectId = extractProjectId(c);
   const spaceId = c.req.param("spaceId");
-  if (!organizationId || !projectId || !spaceId) {
-    return c.json({ error: "Organization, project, and space ids are required." }, 400);
+  if (!organizationId || !spaceId) {
+    return c.json({ error: "Organization and space ids are required." }, 400);
   }
 
   try {
-    const result = await deleteSpace(organizationId, spaceId, { projectId });
+    const result = await deleteSpace(organizationId, spaceId);
     return c.json(result);
   } catch (error) {
     return actionErrorJson(c, error, "Space action failed.");

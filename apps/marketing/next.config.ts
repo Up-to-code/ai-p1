@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 import createNextIntlPlugin from "next-intl/plugin";
-import { withPayload } from "@payloadcms/next/withPayload";
 
 const withNextIntl = createNextIntlPlugin();
 const appRoot = path.resolve();
@@ -26,12 +25,19 @@ const baseConfig: NextConfig = {
         protocol: "https",
         hostname: "hebbkx1anhila5yf.public.blob.vercel-storage.com",
       },
+      // Strapi media — update hostname to match your Strapi instance
+      {
+        protocol: "https",
+        hostname: process.env.STRAPI_IMAGE_HOSTNAME ?? "localhost",
+      },
+      // Strapi local dev (http)
+      {
+        protocol: "http",
+        hostname: process.env.STRAPI_IMAGE_HOSTNAME ?? "localhost",
+        port: "1337",
+      },
     ],
   },
 };
 
-const payloadConfig = withPayload(baseConfig, {
-  devBundleServerPackages: true,
-});
-
-export default withNextIntl(payloadConfig);
+export default withNextIntl(baseConfig);

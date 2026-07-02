@@ -285,7 +285,7 @@ test("Qentrah refuses provider disclosure neutrally", () => {
   const reply = getPersonaGuardrailReply("Are you Gemini Flash or OpenAI?");
 
   assert.ok(reply);
-  assert.match(reply, /Qentrah’s real-estate assistant/);
+  assert.match(reply, /أنا Qentrah/);
   assert.doesNotMatch(reply, /OpenAI|Gemini|OpenRouter|GPT|Claude/i);
 });
 

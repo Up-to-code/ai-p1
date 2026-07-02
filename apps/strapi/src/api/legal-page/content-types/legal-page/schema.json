@@ -1,0 +1,18 @@
+{
+  "kind": "collectionType",
+  "collectionName": "legal_pages",
+  "info": {
+    "singularName": "legal-page",
+    "pluralName": "legal-pages",
+    "displayName": "Legal Page",
+    "description": "Privacy policy, terms of service, and other legal documents"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "slug": { "type": "uid", "required": true },
+    "title": { "type": "string", "required": true },
+    "body": { "type": "richtext", "required": true }
+  }
+}

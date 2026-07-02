@@ -1,6 +1,6 @@
 "use client";
 
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { DetailNotFoundState, WorkspaceQueryState } from "@/components/shared/crud-ui";
 import { useTranslations } from "next-intl";
 import { useTaskQuery, useTasksQuery } from "../api/tasks";
@@ -10,15 +10,15 @@ import { TaskEditor } from "./task-editor";
 
 export function TaskDetailScreen({ id }: { id: string }) {
   const t = useTranslations("Tasks");
-  const account = useAccountContext();
-  const workspaceStatus = account.workspace.status;
+  const session = useAuthSession();
+  const workspaceStatus = session.workspace.status;
   const organizationId =
     workspaceStatus === "ready"
-      ? (account.workspace.organizationId ?? undefined)
+      ? (session.workspace.organizationId ?? undefined)
       : undefined;
   const taskResult = useTaskQuery(organizationId, id);
   const task = taskResult.data;
-  const { data: memberOptions } = useMemberOptions(organizationId, account.user);
+  const { data: memberOptions } = useMemberOptions(organizationId, session.user);
   const detailTasksResult = useTasksQuery(organizationId, {
     status: "all",
     projectId: task?.projectId ?? null,

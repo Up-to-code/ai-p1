@@ -7,6 +7,17 @@ import { calendarListToday, calendarListRange, calendarListMonth, calendarGet, c
 import { tasksList, tasksGet, tasksCreate, tasksUpdate, tasksComplete, tasksDelete } from "./tasks";
 import { mediaList, mediaAttachUrl } from "./media";
 import { notificationsSchedule, notificationsUpdateSchedule, notificationsCancelSchedule } from "./notifications";
+import {
+  spaces_list,
+  spaces_get,
+  spaces_create,
+  spaces_update,
+  spaces_delete,
+  space_members_list,
+  space_members_add,
+  space_members_remove,
+  space_members_update_role,
+} from "./spaces";
 
 export function registerAllHandlers() {
   // Read handlers
@@ -24,6 +35,9 @@ export function registerAllHandlers() {
   registerReadHandler("tasks_list", tasksList);
   registerReadHandler("tasks_get", tasksGet);
   registerReadHandler("media_list", mediaList);
+  registerReadHandler("spaces_list", spaces_list);
+  registerReadHandler("spaces_get", spaces_get);
+  registerReadHandler("space_members_list", space_members_list);
 
   // Write handlers
   registerWriteHandler("clients_create", clientsCreate);
@@ -46,4 +60,10 @@ export function registerAllHandlers() {
   registerWriteHandler("notifications_schedule", notificationsSchedule);
   registerWriteHandler("notifications_update_schedule", notificationsUpdateSchedule);
   registerWriteHandler("notifications_cancel_schedule", notificationsCancelSchedule);
+  registerWriteHandler("spaces_create", spaces_create);
+  registerWriteHandler("spaces_update", spaces_update);
+  registerWriteHandler("spaces_delete", spaces_delete);
+  registerWriteHandler("space_members_add", space_members_add);
+  registerWriteHandler("space_members_remove", space_members_remove);
+  registerWriteHandler("space_members_update_role", space_members_update_role);
 }

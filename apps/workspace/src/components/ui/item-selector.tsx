@@ -56,7 +56,7 @@ export const ItemSelector = forwardRef<HTMLDivElement, ItemSelectorProps>(
     return (
       <div ref={ref} className={cn("space-y-2", className)}>
         {allowMultiple && options.length > 1 && (
-          <label className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/50 cursor-pointer">
+          <label className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-surface/50 cursor-pointer">
             <input
               type="checkbox"
               checked={isAllSelected}
@@ -74,8 +74,8 @@ export const ItemSelector = forwardRef<HTMLDivElement, ItemSelectorProps>(
               className={cn(
                 "flex items-center gap-3 p-3 rounded-lg border-2 transition-all cursor-pointer",
                 isSelected
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-border/50 hover:bg-muted/50",
+                  ? "border-text-primary bg-text-primary/5"
+                  : "border-border hover:border-border/50 hover:bg-surface/50",
                 option.disabled && "opacity-50 cursor-not-allowed"
               )}
             >
@@ -88,9 +88,9 @@ export const ItemSelector = forwardRef<HTMLDivElement, ItemSelectorProps>(
               />
               <div className="flex-1">
                 <span className="text-sm font-medium">{option.name}</span>
-                {option.email && <span className="text-xs text-muted-foreground ml-2">({option.email})</span>}
+                {option.email && <span className="text-xs text-text-muted ml-2">({option.email})</span>}
               </div>
-              {isSelected && <Check className="h-4 w-4 text-primary flex-shrink-0" />}
+              {isSelected && <Check className="h-4 w-4 text-text-primary flex-shrink-0" />}
             </label>
           );
         })}

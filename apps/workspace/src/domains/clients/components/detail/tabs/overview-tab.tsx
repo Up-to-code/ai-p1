@@ -12,7 +12,7 @@ import { type Opportunity } from "@/domains/opportunities/opportunities.types";
 import { useQuery as useConvexQuery } from "convex/react";
 import { api as convexApi } from "@convex/_generated/api";
 import { type Id as ConvexId } from "@convex/_generated/dataModel";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -69,8 +69,8 @@ interface OverviewTabProps {
 }
 
 export function OverviewTab({ client, onUpdate }: OverviewTabProps) {
-  const account = useAccountContext();
-  const organizationId = account.workspace.status === "ready" ? account.workspace.organizationId ?? "" : "";
+  const session = useAuthSession();
+  const organizationId = session.workspace.status === "ready" ? session.workspace.organizationId ?? "" : "";
 
   // Real Queries
   const tasks = useClientTasksQuery(organizationId) ?? [];

@@ -1,13 +1,13 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { AccountProvider } from "@/domains/auth";
+import { AuthSessionProvider } from "@/domains/auth";
 import { DashboardAuthenticatedShell } from "./dashboard-authenticated-shell";
 
 export function DashboardAppWrapper({ children }: { children: ReactNode }) {
   return (
-    <AccountProvider>
+    <AuthSessionProvider>
       <DashboardAuthenticatedShell>{children}</DashboardAuthenticatedShell>
-    </AccountProvider>
+    </AuthSessionProvider>
   );
 }

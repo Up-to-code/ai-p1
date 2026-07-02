@@ -4,7 +4,7 @@ import { useMemo, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { useProjectOptionsQueryResult } from "@/domains/projects/api/projects";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useCurrentProjectId } from "./use-current-project-id";
 
 export function useProjectSwitcher() {
@@ -13,10 +13,10 @@ export function useProjectSwitcher() {
   const searchParams = useSearchParams();
   const activeProjectId = useCurrentProjectId();
 
-  const account = useAccountContext();
+  const session = useAuthSession();
   const activeOrganizationId =
-    account.workspace.status === "ready"
-      ? account.workspace.organizationId ?? undefined
+    session.workspace.status === "ready"
+      ? session.workspace.organizationId ?? undefined
       : undefined;
 
   const projectsQuery = useProjectOptionsQueryResult(activeOrganizationId);

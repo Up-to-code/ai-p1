@@ -95,7 +95,7 @@ export function getPersonaGuardrailReply(prompt: string) {
     return "Qentrah من شركة Qentrah. مثلا أدوّر على أصل أو أقارن بين أصلين.";
   }
   if (/أنت Gemini|OpenAI|Gemini|provider|model/i.test(prompt)) {
-    return "أنا Qentrah، مساعد Qentrah’s real-estate assistant. مثلا نبحث أو نقارن بدون ذكر مزودين.";
+    return "أنا Qentrah، مساعد Qentrah. مثلا نبحث أو نقارن بدون ذكر مزودين.";
   }
   if (/who built/i.test(prompt)) {
     return "I was built by the Qentrah company/startup to help with workspace decisions.";

@@ -1,10 +1,10 @@
 Ara Strict Mode – Complete UI Interface Documentation
 
-Purpose: Defines the complete Qentrah UI interface, tokenized system design, onboarding flow, major pages, key components, states, and synchronization UX for the Saudi Arabia Central Real Estate Data Workspace.
+Purpose: Defines the complete Qentrah UI interface, tokenized system design, onboarding flow, major pages, key components, states, and synchronization UX for the Qentrah Workspace.
 
 # Interface Boundary
 
-Qentrah is the Saudi Arabia Central Real Estate Data Workspace interface. It is a synchronization engine interface. It is not a marketplace product. It is not a CRM product. It is not a lead pipeline. It is not a deal pipeline.
+Qentrah is the Qentrah Workspace interface. It is a synchronization engine interface. It is not a marketplace product. It is not a CRM product. It is not a lead pipeline. It is not a deal pipeline.
 
 The interface allows authenticated organization users to create an organization, complete onboarding, wait for platform approval, prepare draft projects, invite team members, prepare draft properties and units, configure draft integrations, and observe activity. The server-side workspace remains authoritative for validation, approval, visibility, and synchronization.
 
@@ -29,7 +29,7 @@ The interface must not:
 
 The Qentrah interface direction is clean, modern, and professional like Stripe. This means restrained visual density, precise spacing, crisp typography, low-noise surfaces, subtle borders, strong focus states, and direct operational language.
 
-The design must not use decorative gradients, large marketing hero sections, consumer listing layouts, decorative property cards as a landing page, real estate browsing patterns, CRM pipeline patterns, or unrequested visual features.
+The design must not use decorative gradients, large marketing hero sections, consumer listing layouts, decorative property cards as a landing page, browsing patterns, CRM pipeline patterns, or unrequested visual features.
 
 # Design Tokens
 
@@ -484,14 +484,14 @@ Fields:
 | --- | --- | --- | --- |
 | Legal company name | Input | Yes | 2-160 characters. |
 | Display name | Input | Yes | 2-80 characters. |
-| Commercial registration number | Input | Yes | Numeric or approved Saudi registration format. |
+| Commercial registration number | Input | Yes | Numeric or approved registration format. |
 | VAT / tax identifier | Input | No | Optional approved tax format. |
 | Primary contact name | Input | Yes | 2-120 characters. |
 | Primary contact email | Input | Yes | Valid email. |
-| Primary contact phone | Input | Yes | Saudi phone format preferred. |
+| Primary contact phone | Input | Yes | Phone format preferred. |
 | Website | Input | No | Valid HTTPS URL if provided. |
-| Headquarters city | Select | Yes | Allowed Saudi city option. |
-| Operating regions | Multi-select | Yes | At least one Saudi region. |
+| Headquarters city | Select | Yes | Allowed city option. |
+| Operating regions | Multi-select | Yes | At least one region. |
 
 Actions:
 
@@ -741,7 +741,7 @@ The My Projects page manages project records owned by the current organization.
 | Filter | Component | Options |
 | --- | --- | --- |
 | Status | Select | All, Draft, Pending Review, Approved, Rejected. |
-| City | Select | Saudi city list. |
+| City | Select | City list. |
 | Type | Select | Residential, Commercial, Mixed Use, Land, Other allowed project types. |
 | Search | Input | Project name, reference, city. |
 

@@ -23,7 +23,6 @@ export function priorityStyleFor(priority: string) {
 
 export const COUNTRY_FLAGS: Record<string, string> = {
   Egypt: "🇪🇬",
-  "Saudi Arabia": "🇸🇦",
   "United States": "🇺🇸",
   USA: "🇺🇸",
   Jordan: "🇯🇴",

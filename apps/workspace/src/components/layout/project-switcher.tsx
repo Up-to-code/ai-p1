@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { CreateProjectForm } from "@/domains/projects/components/create-project-form";
 import { useProjectSwitcher } from "@/domains/projects/hooks/use-project-switcher";
 import { deleteProjectRequest } from "@/domains/projects/api/projects";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useNavigation } from "@/domains/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -25,11 +25,11 @@ export function ProjectSwitcher() {
   const [deleteModal, setDeleteModal] = React.useState<{ project: { id: string; name: string } } | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
 
-  const account = useAccountContext();
+  const session = useAuthSession();
   const { spaceSlug, projectId: activeProjectId, setProject } = useNavigation();
   const activeOrganizationId =
-    account.workspace.status === "ready"
-      ? account.workspace.organizationId ?? undefined
+    session.workspace.status === "ready"
+      ? session.workspace.organizationId ?? undefined
       : undefined;
 
   const {

@@ -6,21 +6,49 @@ import { clerkAuthComponent } from "../auth";
 import { assertOrganizationResourcePermission } from "../organizations/profile/access";
 import { channelInputValidator, channelValidator, messageInputValidator, messageValidator, threadValidator } from "./validators";
 
+// Type definitions based on validators
+type ChannelInput = {
+  name: string;
+  type: "organization" | "project" | "space" | "client" | "dm";
+  visibility: "public" | "private" | "dm";
+  description?: string;
+  projectId?: string;
+  projectIds?: string[];
+  spaceId?: string;
+  clientId?: string;
+  memberIds?: string[];
+  dmUserId?: string;
+};
+
+type MessageInput = {
+  content: string;
+  threadId?: string;
+  replyToId?: string;
+  mentions?: { type: string; id: string; name: string }[];
+};
+
 // Helper function to get or create ID
 function generateId(): string {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
 
 async function assertChannel(ctx: MutationCtx, organizationId: string, channelId: string) {
-  const channel = await ctx.db.get(channelId as never);
-  if (!channel || channel.organizationId !== organizationId) {
+  const channels = await ctx.db
+    .query("channels")
+    .withIndex("by_organization", (q) => q.eq("organizationId", organizationId))
+    .collect();
+  const channel = channels.find((c) => c.id === channelId);
+  if (!channel) {
     throw new Error("Channel not found");
   }
   return channel;
 }
 
 async function assertChannelMembership(ctx: MutationCtx, channelId: string, userId: string) {
-  const channel = await ctx.db.get(channelId as never);
+  const channels = await ctx.db
+    .query("channels")
+    .collect();
+  const channel = channels.find((c) => c.id === channelId);
   if (!channel) {
     throw new Error("Channel not found");
   }
@@ -53,7 +81,7 @@ async function enqueueChannelWebhook(
   });
 }
 
-async function createChannelCore(ctx: MutationCtx, args: { organizationId: string; input: Parameters<typeof channelInputValidator>[1]; actorUserId: string }) {
+async function createChannelCore(ctx: MutationCtx, args: { organizationId: string; input: ChannelInput; actorUserId: string }) {
   const now = Date.now();
   const id = generateId();
   const dbId = await ctx.db.insert("channels", {
@@ -74,16 +102,16 @@ async function createChannelCore(ctx: MutationCtx, args: { organizationId: strin
   return { id, channel, now };
 }
 
-async function updateChannelCore(ctx: MutationCtx, args: { organizationId: string; channelId: string; input: Parameters<typeof channelInputValidator>[1]; actorUserId: string }) {
+async function updateChannelCore(ctx: MutationCtx, args: { organizationId: string; channelId: string; input: ChannelInput; actorUserId: string }) {
   const existing = await assertChannel(ctx, args.organizationId, args.channelId);
   const now = Date.now();
   
-  await ctx.db.patch(args.channelId as never, {
+  await ctx.db.patch(existing._id, {
     ...args.input,
     updatedAt: now,
   });
 
-  const channel = await ctx.db.get(args.channelId);
+  const channel = await ctx.db.get(existing._id);
   if (!channel) throw new Error("Channel could not be updated.");
   
   await enqueueChannelWebhook(ctx, args.organizationId, "channel.updated", args.channelId, channel, now);
@@ -104,12 +132,12 @@ async function deleteChannelCore(ctx: MutationCtx, args: { organizationId: strin
     await ctx.db.delete(message._id);
   }
   
-  await ctx.db.delete(args.channelId);
+  await ctx.db.delete(existing._id);
   await enqueueChannelWebhook(ctx, args.organizationId, "channel.deleted", args.channelId, { id: args.channelId }, now);
   return { removed: true as const, now };
 }
 
-async function createMessageCore(ctx: MutationCtx, args: { channelId: string; input: Parameters<typeof messageInputValidator>[1]; authorId: string }) {
+async function createMessageCore(ctx: MutationCtx, args: { channelId: string; input: MessageInput; authorId: string }) {
   const now = Date.now();
   const id = generateId();
   const dbId = await ctx.db.insert("messages", {
@@ -143,8 +171,12 @@ async function createMessageCore(ctx: MutationCtx, args: { channelId: string; in
 }
 
 async function updateMessageCore(ctx: MutationCtx, args: { channelId: string; messageId: string; content: string; authorId: string }) {
-  const message = await ctx.db.get(args.messageId);
-  if (!message || message.channelId !== args.channelId) {
+  const messages = await ctx.db
+    .query("messages")
+    .withIndex("by_channel", (q) => q.eq("channelId", args.channelId))
+    .collect();
+  const message = messages.find((m) => m.id === args.messageId);
+  if (!message) {
     throw new Error("Message not found");
   }
   
@@ -153,21 +185,25 @@ async function updateMessageCore(ctx: MutationCtx, args: { channelId: string; me
   }
   
   const now = Date.now();
-  await ctx.db.patch(args.messageId, {
+  await ctx.db.patch(message._id, {
     content: args.content,
     editedAt: now,
     updatedAt: now,
   });
 
-  const updated = await ctx.db.get(args.messageId);
+  const updated = await ctx.db.get(message._id);
   if (!updated) throw new Error("Message could not be updated.");
   
   return { message: updated, now };
 }
 
 async function deleteMessageCore(ctx: MutationCtx, args: { channelId: string; messageId: string; authorId: string }) {
-  const message = await ctx.db.get(args.messageId);
-  if (!message || message.channelId !== args.channelId) {
+  const messages = await ctx.db
+    .query("messages")
+    .withIndex("by_channel", (q) => q.eq("channelId", args.channelId))
+    .collect();
+  const message = messages.find((m) => m.id === args.messageId);
+  if (!message) {
     throw new Error("Message not found");
   }
   
@@ -176,7 +212,7 @@ async function deleteMessageCore(ctx: MutationCtx, args: { channelId: string; me
   }
   
   const now = Date.now();
-  await ctx.db.patch(args.messageId, {
+  await ctx.db.patch(message._id, {
     isDeleted: true,
     updatedAt: now,
   });
@@ -185,18 +221,21 @@ async function deleteMessageCore(ctx: MutationCtx, args: { channelId: string; me
 }
 
 async function addReactionCore(ctx: MutationCtx, args: { messageId: string; emoji: string; userId: string }) {
-  const message = await ctx.db.get(args.messageId);
+  const messages = await ctx.db
+    .query("messages")
+    .collect();
+  const message = messages.find((m) => m.id === args.messageId);
   if (!message) {
     throw new Error("Message not found");
   }
   
   const reactions = message.reactions || [];
-  const existingReaction = reactions.find((r) => r.emoji === args.emoji);
+  const existingReaction = reactions.find((r: { emoji: string; userIds: string[] }) => r.emoji === args.emoji);
   
   let updatedReactions;
   if (existingReaction) {
     if (!existingReaction.userIds.includes(args.userId)) {
-      updatedReactions = reactions.map((r) =>
+      updatedReactions = reactions.map((r: { emoji: string; userIds: string[] }) =>
         r.emoji === args.emoji
           ? { ...r, userIds: [...r.userIds, args.userId] }
           : r
@@ -208,34 +247,37 @@ async function addReactionCore(ctx: MutationCtx, args: { messageId: string; emoj
     updatedReactions = [...reactions, { emoji: args.emoji, userIds: [args.userId] }];
   }
   
-  await ctx.db.patch(args.messageId, {
+  await ctx.db.patch(message._id, {
     reactions: updatedReactions,
   });
   
-  const updated = await ctx.db.get(args.messageId);
+  const updated = await ctx.db.get(message._id);
   return { message: updated };
 }
 
 async function removeReactionCore(ctx: MutationCtx, args: { messageId: string; emoji: string; userId: string }) {
-  const message = await ctx.db.get(args.messageId);
+  const messages = await ctx.db
+    .query("messages")
+    .collect();
+  const message = messages.find((m) => m.id === args.messageId);
   if (!message) {
     throw new Error("Message not found");
   }
   
   const reactions = message.reactions || [];
   const updatedReactions = reactions
-    .map((r) =>
+    .map((r: { emoji: string; userIds: string[] }) =>
       r.emoji === args.emoji
-        ? { ...r, userIds: r.userIds.filter((id) => id !== args.userId) }
+        ? { ...r, userIds: r.userIds.filter((id: string) => id !== args.userId) }
         : r
     )
-    .filter((r) => r.userIds.length > 0);
+    .filter((r: { userIds: string[] }) => r.userIds.length > 0);
   
-  await ctx.db.patch(args.messageId, {
+  await ctx.db.patch(message._id, {
     reactions: updatedReactions,
   });
   
-  const updated = await ctx.db.get(args.messageId);
+  const updated = await ctx.db.get(message._id);
   return { message: updated };
 }
 
@@ -393,7 +435,7 @@ export const addReaction = mutation({
     messageId: v.string(),
     emoji: v.string(),
   },
-  returns: messageValidator,
+  returns: v.union(messageValidator, v.null()),
   handler: async (ctx, args) => {
     const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertChannelMembership(ctx, args.channelId, user._id);
@@ -413,7 +455,7 @@ export const removeReaction = mutation({
     messageId: v.string(),
     emoji: v.string(),
   },
-  returns: messageValidator,
+  returns: v.union(messageValidator, v.null()),
   handler: async (ctx, args) => {
     const user = await clerkAuthComponent.getAuthUser(ctx);
     await assertChannelMembership(ctx, args.channelId, user._id);

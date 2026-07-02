@@ -24,12 +24,10 @@ export async function handleReadSpaces(c: Context) {
 export async function handleReadSpaceOptions(c: Context) {
   const organizationId = readOrganizationId(c);
   if (!organizationId.ok) return organizationId.response;
-  const projectId = readWorkspaceIdParam<"projects">(c, "projectId", "Project id");
-  if (!projectId.ok) return projectId.response;
+  // Space options should use the spaces table, not projectSpaces junction table
   return workspaceReadJsonForOrganization(c, "space options", organizationId.data, (organizationId) =>
-    fetchAuthQuery(api.projectSpaces.read.options, {
+    fetchAuthQuery(api.spaces.read.options, {
       organizationId,
-      projectId: projectId.data,
     }),
   );
 }
@@ -37,12 +35,12 @@ export async function handleReadSpaceOptions(c: Context) {
 export async function handleReadSpace(c: Context) {
   const organizationId = readOrganizationId(c);
   if (!organizationId.ok) return organizationId.response;
-  const spaceId = readWorkspaceIdParam<"projectSpaces">(c, "spaceId", "Space id");
-  if (!spaceId.ok) return spaceId.response;
+  const projectSpaceId = readWorkspaceIdParam<"projectSpaces">(c, "spaceId", "Space id");
+  if (!projectSpaceId.ok) return projectSpaceId.response;
   return workspaceReadJsonForOrganization(c, "space detail", organizationId.data, (organizationId) =>
     fetchAuthQuery(api.projectSpaces.read.get, {
       organizationId,
-      spaceId: spaceId.data,
+      projectSpaceId: projectSpaceId.data,
     }),
   );
 }

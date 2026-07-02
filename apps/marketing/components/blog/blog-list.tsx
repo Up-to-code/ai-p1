@@ -1,8 +1,8 @@
 import { BlogCard } from "./blog-card";
-import type { PayloadBlogPost } from "@/lib/payload-api";
+import type { StrapiBlogPost } from "@/lib/strapi";
 
 type BlogListProps = {
-  posts: PayloadBlogPost[];
+  posts: StrapiBlogPost[];
   locale: string;
 };
 

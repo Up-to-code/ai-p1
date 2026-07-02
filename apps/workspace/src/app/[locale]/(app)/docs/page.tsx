@@ -1,7 +1,7 @@
 "use client";
 
-import { DocsScreen } from "@/domains/docs/components/docs-screen";
+import { DocsPageRedesigned } from "@/domains/docs/components/DocsPageRedesigned";
 
 export default function DocsPage() {
-  return <DocsScreen />;
+  return <DocsPageRedesigned />;
 }

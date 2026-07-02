@@ -43,8 +43,8 @@ export const Selector = forwardRef<HTMLDivElement, SelectorProps>(
               className={cn(
                 "flex items-start gap-3 p-3 rounded-lg border-2 transition-all text-left",
                 isSelected
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-border/50 hover:bg-muted/50",
+                  ? "border-text-primary bg-text-primary/5"
+                  : "border-border hover:border-border/50 hover:bg-surface/50",
                 option.disabled && "opacity-50 cursor-not-allowed"
               )}
             >
@@ -52,7 +52,7 @@ export const Selector = forwardRef<HTMLDivElement, SelectorProps>(
                 <div
                   className={cn(
                     "h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0",
-                    isSelected ? "bg-primary text-primary-foreground" : "bg-muted"
+                    isSelected ? "bg-text-primary text-background" : "bg-surface"
                   )}
                 >
                   <Icon className="h-4 w-4" />
@@ -61,10 +61,10 @@ export const Selector = forwardRef<HTMLDivElement, SelectorProps>(
               <div className="flex-1 min-w-0">
                 <div className="font-semibold text-sm">{option.label}</div>
                 {option.description && (
-                  <div className="text-xs text-muted-foreground mt-1">{option.description}</div>
+                  <div className="text-xs text-text-muted mt-1">{option.description}</div>
                 )}
               </div>
-              {isSelected && <Check className="h-4 w-4 text-primary flex-shrink-0" />}
+              {isSelected && <Check className="h-4 w-4 text-text-primary flex-shrink-0" />}
             </button>
           );
         })}

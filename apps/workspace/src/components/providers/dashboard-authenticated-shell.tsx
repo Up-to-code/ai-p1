@@ -5,7 +5,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useLocale } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { ToastProvider } from "@/components/ui/toast";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { getWorkspaceAuthRedirect } from "@/domains/auth/workspace-status";
 import { NoOrganizationModal } from "@/domains/auth/components/no-organization-modal";
 import { useAuthHandoffPending } from "./use-auth-handoff-pending";
@@ -26,19 +26,19 @@ export function DashboardAuthenticatedShell({
 }: DashboardAuthenticatedShellProps) {
   const locale = useLocale();
   const router = useRouter();
-  const account = useAccountContext();
+  const session = useAuthSession();
   const [hasRedirected, setHasRedirected] = useState(false);
   const isAiPanelOpen = useAssistantPanel((s) => s.isOpen);
 
   const isAuthHandoffPending = useAuthHandoffPending(
-    account.isSignedIn,
-    account.workspace.organizationId,
+    session.isSignedIn,
+    session.workspace.organizationId,
   );
 
   // When workspace has no organization, show a modal instead of redirecting.
   // This avoids the glitch between auth and choose-org pages.
   const showNoOrganizationModal =
-    account.workspace.status === "noOrganization" && !isAuthHandoffPending;
+    session.workspace.status === "noOrganization" && !isAuthHandoffPending;
 
   // Memoize authRedirect to prevent unnecessary recalculations.
   // Only compute a redirect once the session has fully loaded — never during
@@ -46,30 +46,30 @@ export function DashboardAuthenticatedShell({
   // Note: "noOrganization" is handled by the modal, not by redirect.
   const authRedirect = useMemo(() => {
     // Don't redirect while the session is still loading.
-    if (account.workspace.status === "loadingSession") return null;
+    if (session.workspace.status === "loadingSession") return null;
     // Don't redirect for noOrganization — the modal handles this case.
-    if (account.workspace.status === "noOrganization") return null;
+    if (session.workspace.status === "noOrganization") return null;
     return getWorkspaceAuthRedirect({
-      isSignedIn: account.isSignedIn,
-      workspaceStatus: account.workspace.status,
+      isSignedIn: session.isSignedIn,
+      workspaceStatus: session.workspace.status,
       locale,
       isAuthHandoffPending,
     });
-  }, [account.isSignedIn, account.workspace.status, locale, isAuthHandoffPending]);
+  }, [session.isSignedIn, session.workspace.status, locale, isAuthHandoffPending]);
 
   // Mark shell performance immediately when mounted or status changes
   useEffect(() => {
-    markAppPerformance("shell:ready", { workspaceStatus: account.workspace.status });
-  }, [account.workspace.status]);
+    markAppPerformance("shell:ready", { workspaceStatus: session.workspace.status });
+  }, [session.workspace.status]);
 
   // Mark workspace performance once the workspace is truly ready
   useEffect(() => {
-    if (account.workspace.status === "ready") {
+    if (session.workspace.status === "ready") {
       markAppPerformance("workspace:ready", {
-        organizationId: account.workspace.organizationId,
+        organizationId: session.workspace.organizationId,
       });
     }
-  }, [account.workspace.organizationId, account.workspace.status]);
+  }, [session.workspace.organizationId, session.workspace.status]);
 
   // Stable redirect effect - only redirect once per authRedirect change
   useEffect(() => {
@@ -108,7 +108,7 @@ export function DashboardAuthenticatedShell({
   }, [authRedirect]);
 
   const shouldShowLoading =
-    account.workspace.status === "loadingSession" ||
+    session.workspace.status === "loadingSession" ||
     isAuthHandoffPending ||
     (authRedirect && !hasRedirected);
 

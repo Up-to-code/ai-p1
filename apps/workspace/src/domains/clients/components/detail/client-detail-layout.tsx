@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useQuery as useReactQuery } from "@tanstack/react-query";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useClientQuery, useUpdateClientOptimisticMutation } from "../../api/clients";
 import { useClientTasksQuery } from "../../api/client-tasks";
 import { useCalendarEventsQuery } from "@/domains/calendar/api/calendar";
@@ -30,10 +30,10 @@ import { LayoutDashboard, Briefcase, FileText, Calendar, Activity as ActivityIco
 
 export function ClientDetailLayout({ id }: { id: string }) {
   const t = useTranslations('Clients');
-  const account = useAccountContext();
-  const workspaceStatus = account.workspace.status;
+  const session = useAuthSession();
+  const workspaceStatus = session.workspace.status;
   const isWorkspaceReady = workspaceStatus === "ready";
-  const workspaceOrganizationId = isWorkspaceReady ? account.workspace.organizationId ?? undefined : undefined;
+  const workspaceOrganizationId = isWorkspaceReady ? session.workspace.organizationId ?? undefined : undefined;
   
   const client = useClientQuery(workspaceOrganizationId, id) as Client | null | undefined;
   
@@ -46,8 +46,8 @@ export function ClientDetailLayout({ id }: { id: string }) {
     resourceId: id,
     organizationId: workspaceOrganizationId,
     workspaceStatus,
-    isConvexAuthPending: account.workspace.isConvexAuthPending,
-    isConvexAuthenticated: account.workspace.isConvexAuthenticated,
+    isConvexAuthPending: session.workspace.isConvexAuthPending,
+    isConvexAuthenticated: session.workspace.isConvexAuthenticated,
   };
 
   if (workspaceStatus !== "ready") {

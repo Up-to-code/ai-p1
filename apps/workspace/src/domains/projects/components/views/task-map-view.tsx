@@ -17,7 +17,6 @@ export function TaskMapView({ projectId, organizationId }: { projectId: string; 
   const countriesData = useMemo(() => {
     const list = [
       { name: "Egypt", coords: "30.0444° N, 31.2357° E", color: "bg-emerald-500", text: "text-emerald-500" },
-      { name: "Saudi Arabia", coords: "24.7136° N, 46.6753° E", color: "bg-blue-500", text: "text-blue-500" },
       { name: "Jordan", coords: "31.9522° N, 35.9106° E", color: "bg-purple-500", text: "text-purple-500" },
       { name: "Germany", coords: "51.1657° N, 10.4515° E", color: "bg-amber-500", text: "text-amber-500" },
       { name: "United States", coords: "37.0902° N, 95.7129° W", color: "bg-rose-500", text: "text-rose-500" },

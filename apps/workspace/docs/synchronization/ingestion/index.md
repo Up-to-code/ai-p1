@@ -14,8 +14,8 @@ This folder does not own broad system-wide specification text. If content crosse
 | --- | --- |
 | [External Claims](external-claims.md) | Claims include create, update, lifecycle, visibility, document, and media changes. |
 | [Payload Validation](payload-validation.md) | Use Zod for public payloads. |
-| [Normalization](normalization.md) | Normalize Saudi identifiers, property type, location, lifecycle, and references. |
-| [Duplicate Detection](duplicate-detection.md) | Use Saudi identifiers, title deed references, National Address, coordinates, and publisher context. |
+| [Normalization](normalization.md) | Normalize identifiers, property type, location, lifecycle, and references. |
+| [Duplicate Detection](duplicate-detection.md) | Use identifiers, title deed references, National Address, coordinates, and publisher context. |
 
 ## Read Order
 

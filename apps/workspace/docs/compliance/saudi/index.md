@@ -1,10 +1,10 @@
-# Saudi
+# Compliance Context
 
-Purpose: Explains Saudi regulatory posture and legal disclaimer.
+Purpose: Explains regulatory posture and legal disclaimer.
 
 ## Scope
 
-This folder owns small, focused documentation files for saudi.
+This folder owns small, focused documentation files for compliance.
 
 This folder does not own broad system-wide specification text. If content crosses domains, link to the owning domain.
 
@@ -12,7 +12,7 @@ This folder does not own broad system-wide specification text. If content crosse
 
 | File | Purpose |
 | --- | --- |
-| [Regulatory Position](regulatory-position.md) | This is a technical compliance posture for Saudi real estate data. |
+| [Regulatory Position](regulatory-position.md) | This is a technical compliance posture for data. |
 | [Legal Disclaimer](legal-disclaimer.md) | Documentation is not legal advice. |
 
 ## Read Order

@@ -42,7 +42,7 @@ interface CreateChannelWizardProps {
   isLoading?: boolean;
   projects?: Array<{ id: string; name: string }>;
   clients?: Array<{ id: string; name: string }>;
-  spaces?: Array<{ id: string; name: string; projectId: string }>;
+  spaces?: Array<{ id: string; name: string }>;
   members?: Array<{ id: string; name: string; email?: string }>;
 }
 
@@ -463,7 +463,7 @@ export function CreateChannelWizard({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="">Global (no specific space)</SelectItem>
-                        {spaces.filter(s => s.projectId === projectId).map((space) => (
+                        {spaces.map((space) => (
                           <SelectItem key={space.id} value={space.id}>
                             {space.name}
                           </SelectItem>

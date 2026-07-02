@@ -311,7 +311,7 @@ export function AuthAccessScreen({
                   </div>
                 ) : (
                   <p className="text-sm font-medium leading-6 text-text-secondary">
-                    {phase === "verify_email" ? t("verificationEmailHelp") : t("verificationSecondFactorHelp")}
+                    {t("verificationSecondFactorHelp")}
                   </p>
                 )}
                 <Button className="h-12 w-full rounded-2xl text-sm font-bold" disabled={isPending} type="submit">

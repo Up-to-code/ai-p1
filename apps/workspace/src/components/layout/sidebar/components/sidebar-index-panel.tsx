@@ -16,7 +16,7 @@ import {
   BadgeDollarSign,
   Bot,
 } from "lucide-react";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useTasksQuery } from "@/domains/tasks/api/tasks";
 import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
 import { useWorkspaceSpacesQuery } from "@/domains/projects/api/spaces";
@@ -60,11 +60,11 @@ function IndexItem({
 }
 
 export function SidebarIndexPanel() {
-  const account = useAccountContext();
-  const orgId = account.workspace.status === "ready"
-    ? account.workspace.organizationId ?? undefined
+  const session = useAuthSession();
+  const orgId = session.workspace.status === "ready"
+    ? session.workspace.organizationId ?? undefined
     : undefined;
-  const currentUserId = account.user?.id;
+  const currentUserId = session.user?.id;
 
   const tasksQuery = useTasksQuery(orgId);
   const tasks = tasksQuery?.data ?? [];

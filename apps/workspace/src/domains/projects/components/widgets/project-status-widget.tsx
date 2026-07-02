@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { LegendItem } from "@qentrah/ui";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useProjectsIndexQuery } from "../../api/projects";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { cn } from "@/lib/utils";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -24,8 +24,8 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export function ProjectStatusWidget() {
-  const account = useAccountContext();
-  const orgId = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+  const session = useAuthSession();
+  const orgId = session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
   const query = useProjectsIndexQuery(orgId);
   const projects = query.results ?? [];
 

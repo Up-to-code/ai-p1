@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import LegalPage from "./page-content";
 
+// Static — legal text changes rarely; rebuild on deploy.
+export const revalidate = false;
+
 type Props = {
   params: Promise<{ locale: string }>;
 };
@@ -23,6 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function LegalPageWrapper() {
-  return <LegalPage />;
+export default async function LegalPageWrapper({ params }: Props) {
+  const { locale } = await params;
+  return <LegalPage locale={locale} />;
 }

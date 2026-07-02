@@ -1,14 +1,11 @@
 import { brandDomainUrl, brandLabel } from "@qentrah/brand-identity";
-import type { PayloadBlogPost } from "./payload-api";
+import type { StrapiBlogPost } from "./strapi";
 import type { Locale } from "./content";
 
 const siteUrl = brandDomainUrl("root");
 
 export type JsonLd = Record<string, unknown>;
 
-/**
- * Generate Organization schema for the company
- */
 export function organizationSchema(locale: Locale): JsonLd {
   const brand = brandLabel(locale);
   return {
@@ -26,15 +23,10 @@ export function organizationSchema(locale: Locale): JsonLd {
       contactType: "Customer Service",
       url: `${siteUrl}/${locale}/contact`,
     },
-    sameAs: [
-      // Add social media links when available
-    ],
+    sameAs: [],
   };
 }
 
-/**
- * Generate WebSite schema
- */
 export function websiteSchema(locale: Locale): JsonLd {
   const brand = brandLabel(locale);
   return {
@@ -55,39 +47,26 @@ export function websiteSchema(locale: Locale): JsonLd {
   };
 }
 
-/**
- * Generate Article schema for blog posts
- */
-export function articleSchema(
-  post: PayloadBlogPost,
-  locale: Locale,
-): JsonLd {
+export function articleSchema(post: StrapiBlogPost, locale: Locale): JsonLd {
   const brand = brandLabel(locale);
   return {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     headline: post.title,
     description: post.excerpt,
-    image: post.heroImage
-      ? `${siteUrl}${post.heroImage.url}`
-      : `${siteUrl}/app-icon-512.png`,
+    image: post.heroImage ? post.heroImage.url : `${siteUrl}/app-icon-512.png`,
     datePublished: post.publishedAt,
     dateModified: post.publishedAt,
     author: {
       "@type": "Person",
       name: post.author,
       ...(post.authorRole ? { jobTitle: post.authorRole } : {}),
-      ...(post.authorAvatar
-        ? { image: `${siteUrl}${post.authorAvatar.url}` }
-        : {}),
+      ...(post.authorAvatar ? { image: post.authorAvatar.url } : {}),
     },
     publisher: {
       "@type": "Organization",
       name: brand,
-      logo: {
-        "@type": "ImageObject",
-        url: `${siteUrl}/app-icon-512.png`,
-      },
+      logo: { "@type": "ImageObject", url: `${siteUrl}/app-icon-512.png` },
     },
     mainEntityOfPage: {
       "@type": "WebPage",
@@ -98,9 +77,6 @@ export function articleSchema(
   };
 }
 
-/**
- * Generate BreadcrumbList schema
- */
 export function breadcrumbSchema(
   locale: Locale,
   items: Array<{ name: string; url: string }>,
@@ -117,38 +93,21 @@ export function breadcrumbSchema(
   };
 }
 
-/**
- * Generate FAQPage schema
- */
-export function faqSchema(
-  faqs: Array<{ question: string; answer: string }>,
-): JsonLd {
+export function faqSchema(faqs: Array<{ question: string; answer: string }>): JsonLd {
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: faqs.map((faq) => ({
       "@type": "Question",
       name: faq.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: faq.answer,
-      },
+      acceptedAnswer: { "@type": "Answer", text: faq.answer },
     })),
   };
 }
 
-/**
- * Generate Product/Offer schema for pricing plans
- */
 export function pricingOfferSchema(
   locale: Locale,
-  plan: {
-    name: string;
-    description: string;
-    price: number | null;
-    currency: string;
-    features: string[];
-  },
+  plan: { name: string; description: string; price: number | null; currency: string; features: string[] },
 ): JsonLd {
   const brand = brandLabel(locale);
   return {
@@ -156,10 +115,7 @@ export function pricingOfferSchema(
     "@type": "Product",
     name: plan.name,
     description: plan.description,
-    brand: {
-      "@type": "Brand",
-      name: brand,
-    },
+    brand: { "@type": "Brand", name: brand },
     offers: {
       "@type": "Offer",
       priceCurrency: plan.currency,
@@ -168,20 +124,11 @@ export function pricingOfferSchema(
       url: `${siteUrl}/${locale}/pricing`,
     },
     ...(plan.features.length > 0
-      ? {
-          additionalProperty: plan.features.map((feature) => ({
-            "@type": "PropertyValue",
-            name: "Feature",
-            value: feature,
-          })),
-        }
+      ? { additionalProperty: plan.features.map((f) => ({ "@type": "PropertyValue", name: "Feature", value: f })) }
       : {}),
   };
 }
 
-/**
- * Helper to embed JSON-LD in a page
- */
 export function jsonLdScript(jsonLd: JsonLd | JsonLd[]): string {
   const data = Array.isArray(jsonLd) ? jsonLd : [jsonLd];
   return JSON.stringify(data.length === 1 ? data[0] : data);

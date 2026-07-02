@@ -12,7 +12,7 @@ This folder does not own broad system-wide specification text. If content crosse
 
 | File | Purpose |
 | --- | --- |
-| [Inbound Flow](inbound-flow.md) | Authenticate request, rate-limit, check idempotency, validate payload, normalize Saudi fields, and create submission or direct approved update as policy allows. |
+| [Inbound Flow](inbound-flow.md) | Authenticate request, rate-limit, check idempotency, validate payload, normalize fields, and create submission or direct approved update as policy allows. |
 | [Approval Flow](approval-flow.md) | Approval is required for sensitive or authority-changing updates. |
 | [Canonical State Flow](canonical-state-flow.md) | Approved changes create property versions. |
 | [Outbound Sync Flow](outbound-sync-flow.md) | Visibility evaluation creates scoped payloads. |

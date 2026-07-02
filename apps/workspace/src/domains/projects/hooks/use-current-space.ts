@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { useWorkspaceSpacesQuery } from "../api/spaces";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import type { Space } from "../api/spaces";
 
 export function useCurrentSpace(): {
@@ -13,10 +13,10 @@ export function useCurrentSpace(): {
 } | null {
   const searchParams = useSearchParams();
   const spaceSlug = searchParams.get("space");
-  const account = useAccountContext();
+  const session = useAuthSession();
   const orgId =
-    account.workspace.status === "ready"
-      ? account.workspace.organizationId ?? undefined
+    session.workspace.status === "ready"
+      ? session.workspace.organizationId ?? undefined
       : undefined;
 
   const spaces = useWorkspaceSpacesQuery(orgId);

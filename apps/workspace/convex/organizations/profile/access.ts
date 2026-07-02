@@ -1,7 +1,14 @@
 import { v } from "convex/values";
 import type { MutationCtx, QueryCtx } from "../../_generated/server";
 import { query } from "../../_generated/server";
-// TEMP: Disabled to fix Convex bundling - import { evaluateOrganizationCapabilities } from "../../../src/packages/authz";
+import { clerkAuthComponent } from "../../auth";
+import {
+  assertCanPerformOrganizationAction,
+  assertCanAccessSpace,
+  assertCanPerformSpaceAction,
+  assertCanAccessProject,
+  assertCanPerformProjectAction,
+} from "../../permissions";
 
 type OrganizationAction = "read" | "update";
 type OrganizationPermissionResource =
@@ -19,7 +26,8 @@ type OrganizationPermissionResource =
   | "integration"
   | "apiKey"
   | "oauthApp"
-  | "space";
+  | "space"
+  | "channel";
 
 const capabilitiesReturnValidator = v.object({
   canReadOrganization: v.boolean(),
@@ -73,10 +81,14 @@ export async function assertOrganizationResourcePermission(
   resource: OrganizationPermissionResource,
   action: string,
 ) {
-  void ctx;
-  void organizationId;
-  void resource;
-  void action;
+  const user = await clerkAuthComponent.getAuthUser(ctx);
+  await assertCanPerformOrganizationAction(
+    ctx,
+    organizationId,
+    user._id,
+    resource as any,
+    action as any,
+  );
 }
 
 export async function canUseOrganizationResourceAction(
@@ -85,11 +97,20 @@ export async function canUseOrganizationResourceAction(
   resource: OrganizationPermissionResource,
   action: string,
 ) {
-  void ctx;
-  void organizationId;
-  void resource;
-  void action;
-  return true;
+  const user = await clerkAuthComponent.getAuthUser(ctx);
+  // Use the permission check but catch errors to return boolean
+  try {
+    await assertCanPerformOrganizationAction(
+      ctx,
+      organizationId,
+      user._id,
+      resource as any,
+      action as any,
+    );
+    return true;
+  } catch (error) {
+    return false;
+  }
 }
 
 export const canUpdateProfile = query({

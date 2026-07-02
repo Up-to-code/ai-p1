@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { useQueryClient } from "@tanstack/react-query";
 import { createSpaceRequest } from "../../api/spaces";
 import type { SpaceFormValues } from "../../validation/space.schema";
@@ -48,14 +48,14 @@ const SPACE_COLORS = [
 export function SpaceCreateForm({ open, onOpenChange, projectId }: SpaceCreateFormProps) {
   const t = useTranslations("Projects");
   const { toast } = useToast();
-  const account = useAccountContext();
+  const session = useAuthSession();
   const queryClient = useQueryClient();
-  const orgId = account.workspace.status === "ready" ? account.workspace.organizationId : undefined;
+  const orgId = session.workspace.status === "ready" ? session.workspace.organizationId : undefined;
 
   const [values, setValues] = useState<SpaceFormValues>({
     name: "",
     slug: "",
-    visibility: "all_members",
+    visibility: "private",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -75,14 +75,14 @@ export function SpaceCreateForm({ open, onOpenChange, projectId }: SpaceCreateFo
 
     setIsSubmitting(true);
     try {
-      await createSpaceRequest(orgId, projectId, values);
-      queryClient.invalidateQueries({ queryKey: ["spaces", orgId, projectId] });
+      await createSpaceRequest(orgId, values);
+      queryClient.invalidateQueries({ queryKey: ["spaces", orgId] });
       toast({
         title: "Space created",
         type: "success",
       });
       onOpenChange(false);
-      setValues({ name: "", slug: "", visibility: "all_members" });
+      setValues({ name: "", slug: "", visibility: "private" });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to create space";
       toast({
@@ -150,32 +150,22 @@ export function SpaceCreateForm({ open, onOpenChange, projectId }: SpaceCreateFo
             <Select
               value={values.visibility}
               onValueChange={(value) => {
-                if (value === "all_members" || value === "selected_members") {
-                  setValues({
-                    ...values,
-                    visibility: value,
-                    defaultAssigneeIds:
-                      value === "all_members" ? [] : values.defaultAssigneeIds,
-                  });
-                }
+                setValues({
+                  ...values,
+                  visibility: value as any,
+                });
               }}
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all_members">All project members</SelectItem>
-                <SelectItem value="selected_members">Selected members only</SelectItem>
+                <SelectItem value="private">Private</SelectItem>
+                <SelectItem value="public">Public</SelectItem>
+                <SelectItem value="request_only">Request Only</SelectItem>
               </SelectContent>
             </Select>
           </div>
-
-          {values.visibility === "selected_members" && (
-            <MemberPicker
-              value={values.defaultAssigneeIds ?? []}
-              onChange={(ids) => setValues({ ...values, defaultAssigneeIds: ids })}
-            />
-          )}
 
           <DialogFooter>
             <Button

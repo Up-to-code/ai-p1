@@ -8,7 +8,7 @@ import { useOptimisticInvalidation } from "@/domains/cache/hooks/use-optimistic-
 import { logger } from "@/lib/logger";
 import { useTranslations, useLocale } from "next-intl";
 import { projectSchema, type ProjectFormValues } from "../validation/project.schema";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { createProjectRequest } from "../api/projects";
 import { useRouter } from "@/i18n/routing";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,7 @@ export interface CreateProjectFormProps {
 }
 
 export function CreateProjectForm({ isOpen, onSuccess, onCancel }: CreateProjectFormProps) {
-  const account = useAccountContext();
+  const session = useAuthSession();
   const router = useRouter();
   const { toast } = useToast();
   const t = useTranslations("Projects.form");
@@ -37,7 +37,7 @@ export function CreateProjectForm({ isOpen, onSuccess, onCancel }: CreateProject
 
   const queryClient = useQueryClient();
   const { invalidate } = useOptimisticInvalidation();
-  const organizationId = account.workspace.status === "ready" ? account.workspace.organizationId ?? undefined : undefined;
+  const organizationId = session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
   const clientOptionsQuery = useClientOptionsQuery(organizationId);
 
   const form = useForm<ProjectFormValues>({
@@ -214,13 +214,13 @@ export function CreateProjectForm({ isOpen, onSuccess, onCancel }: CreateProject
   ];
 
   async function handleSubmit() {
-    if (account.workspace.status !== "ready" || !account.workspace.organizationId) return;
+    if (session.workspace.status !== "ready" || !session.workspace.organizationId) return;
     const valid = await form.trigger();
     if (!valid) return;
     const data = form.getValues();
     setIsSubmitting(true);
     try {
-      const response = await createProjectRequest(account.workspace.organizationId, data);
+      const response = await createProjectRequest(session.workspace.organizationId, data);
 
       await invalidate([
         { type: "list", resource: "projects" },

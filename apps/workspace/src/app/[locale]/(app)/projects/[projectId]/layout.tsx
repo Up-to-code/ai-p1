@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { ProjectDetailLayout } from "@/domains/projects/components/detail/project-detail-layout";
 import { EditProjectForm } from "@/domains/projects/components/edit-project-form";
 import { useProjectQuery } from "@/domains/projects/api/projects";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 
 export default function ProjectLayout({
   params,
@@ -26,8 +26,8 @@ export default function ProjectLayout({
 }
 
 function EditPageWrapper({ projectId }: { projectId: string }) {
-  const account = useAccountContext();
-  const orgId = account.workspace.status === "ready" ? account.workspace.organizationId : undefined;
+  const session = useAuthSession();
+  const orgId = session.workspace.status === "ready" ? session.workspace.organizationId : undefined;
   const project = useProjectQuery(orgId ?? undefined, projectId);
 
   if (project === undefined) {

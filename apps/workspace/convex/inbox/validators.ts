@@ -15,7 +15,6 @@ export const channelVisibilityValidator = v.union(
 );
 
 export const channelInputValidator = v.object({
-  id: v.string(),
   name: v.string(),
   type: channelTypeValidator,
   visibility: channelVisibilityValidator,

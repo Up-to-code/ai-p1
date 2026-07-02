@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import { getBlogPosts, type PayloadBlogPost } from "@/lib/payload-api";
+import { getBlogPosts, type StrapiBlogPost } from "@/lib/strapi";
 import { BlogList } from "@/components/blog/blog-list";
 import { AppPageHeader, AppPageShell } from "@/components/shared";
+
+export const revalidate = 3600;
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -10,12 +12,9 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const isAr = locale === "ar";
-
   return {
     title: isAr ? "المدونة | كانترا" : "Blog | Qentrah",
-    description: isAr
-      ? "أحدث المقالات والأخبار من كانترا"
-      : "Latest articles and news from Qentrah",
+    description: isAr ? "أحدث المقالات والأخبار من كانترا" : "Latest articles and news from Qentrah",
   };
 }
 
@@ -23,7 +22,7 @@ export default async function BlogPage({ params }: Props) {
   const { locale } = await params;
   const isAr = locale === "ar";
 
-  let posts: PayloadBlogPost[];
+  let posts: StrapiBlogPost[] = [];
   try {
     const response = await getBlogPosts(locale as "en" | "ar");
     posts = response.docs;

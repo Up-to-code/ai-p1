@@ -4,7 +4,7 @@ import { useMemo, useState, useCallback, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon } from "lucide-react";
 import { useCalendarStore } from "../store/calendar.store";
 import type { CalendarEvent } from "../store/calendar.types";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { calendarHeaderLabel, visibleCalendarRange } from "../calendar-view-model";
 import type { CalendarView } from "../calendar-view-model";
 import { useCalendarIndexRangeQueryResult } from "../api/calendar";
@@ -34,11 +34,11 @@ const VIEWS: CalendarView[] = ["month", "week", "day"];
 export function CalendarScreen() {
   const t = useTranslations("Calendar");
   const locale = useLocale();
-  const account = useAccountContext();
-  const workspaceStatus = account.workspace.status;
+  const session = useAuthSession();
+  const workspaceStatus = session.workspace.status;
   const isWorkspaceReady = workspaceStatus === "ready";
-  const workspaceOrganizationId = isWorkspaceReady && account.workspace.organizationId
-    ? account.workspace.organizationId
+  const workspaceOrganizationId = isWorkspaceReady && session.workspace.organizationId
+    ? session.workspace.organizationId
     : undefined;
 
   const { currentDate, view, setCurrentDate, setView } = useCalendarStore();

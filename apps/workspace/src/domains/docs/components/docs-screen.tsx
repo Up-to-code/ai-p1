@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import {
   EmptyWorkspace,
   WorkspaceQueryState,
@@ -42,11 +42,11 @@ export function DocsScreen({
 }: { hideShell?: boolean; projectId?: string | null } = {}) {
   const t = useTranslations("Docs");
   const common = useTranslations("Common");
-  const account = useAccountContext();
-  const workspaceStatus = account.workspace.status;
+  const session = useAuthSession();
+  const workspaceStatus = session.workspace.status;
   const organizationId =
     workspaceStatus === "ready"
-      ? (account.workspace.organizationId ?? undefined)
+      ? (session.workspace.organizationId ?? undefined)
       : undefined;
 
   const [search, setSearch] = useState("");
@@ -265,7 +265,7 @@ export function DocsScreen({
             </p>
           </div>
         ) : docsResult.data === undefined ? (
-          <DocSkeleton />
+          <DocSkeleton viewMode={"grid"} />
         ) : currentSubfolders.length === 0 && filteredDocs.length === 0 && !showNewFolder ? (
           <EmptyWorkspace
             icon={FileText}

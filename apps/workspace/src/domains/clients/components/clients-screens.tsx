@@ -11,7 +11,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { GroupedList } from "@/components/shared/view-system";
 import { clientToCardItem } from "./client-view-helpers";
 import { useRouter } from "@/i18n/routing";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { logger } from "@/lib/logger";
 import {
   CLIENTS_PAGE_SIZE,
@@ -44,10 +44,10 @@ import {
 export function ClientsWorkspace({ initialView = "list" }: { initialView?: "calendar" | "list" }) {
   const t = useTranslations('Clients');
   const router = useRouter();
-  const account = useAccountContext();
-  const workspaceStatus = account.workspace.status;
+  const session = useAuthSession();
+  const workspaceStatus = session.workspace.status;
   const isWorkspaceReady = workspaceStatus === "ready";
-  const workspaceOrganizationId = isWorkspaceReady ? account.workspace.organizationId ?? undefined : undefined;
+  const workspaceOrganizationId = isWorkspaceReady ? session.workspace.organizationId ?? undefined : undefined;
   const [filter, setFilter] = useState<(typeof clientFilters)[number]>("all");
   const [stageFilter, setStageFilter] = useState<(typeof clientStageFilters)[number]>("all");
   const [search, setSearch] = useState("");
@@ -217,10 +217,10 @@ export function ClientsWorkspace({ initialView = "list" }: { initialView?: "cale
           if (!deleting || !clients.some((client) => client.id === deleting.id)) {
             return;
           }
-          if (!account.organization.id) return;
+          if (!session.organization.id) return;
           const clientId = deleting.id;
           setDeleting(null);
-          deleteClientMutation.mutate({ organizationId: account.organization.id, clientId });
+          deleteClientMutation.mutate({ organizationId: session.organization.id, clientId });
         }}
       />
 
@@ -244,10 +244,10 @@ export function ClientsWorkspace({ initialView = "list" }: { initialView?: "cale
 
 export function ClientFormScreen({ id }: { id?: string }) {
   const t = useTranslations('Clients');
-  const account = useAccountContext();
-  const workspaceStatus = account.workspace.status;
+  const session = useAuthSession();
+  const workspaceStatus = session.workspace.status;
   const isWorkspaceReady = workspaceStatus === "ready";
-  const workspaceOrganizationId = isWorkspaceReady ? account.workspace.organizationId ?? undefined : undefined;
+  const workspaceOrganizationId = isWorkspaceReady ? session.workspace.organizationId ?? undefined : undefined;
   const existing = useClientQuery(workspaceOrganizationId, id ?? "") as Client | null | undefined;
   const router = useRouter();
   const queryDebug = {
@@ -255,8 +255,8 @@ export function ClientFormScreen({ id }: { id?: string }) {
     resourceId: id,
     organizationId: workspaceOrganizationId,
     workspaceStatus,
-    isConvexAuthPending: account.workspace.isConvexAuthPending,
-    isConvexAuthenticated: account.workspace.isConvexAuthenticated,
+    isConvexAuthPending: session.workspace.isConvexAuthPending,
+    isConvexAuthenticated: session.workspace.isConvexAuthenticated,
   };
 
   if (id && workspaceStatus !== "ready") {

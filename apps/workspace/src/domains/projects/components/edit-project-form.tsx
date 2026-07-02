@@ -8,7 +8,7 @@ import { useOptimisticInvalidation } from "@/domains/cache/hooks/use-optimistic-
 import { logger } from "@/lib/logger";
 import { useTranslations } from "next-intl";
 import { projectSchema, type ProjectFormValues } from "../validation/project.schema";
-import { useAccountContext } from "@/domains/auth";
+import { useAuthSession } from "@/domains/auth";
 import { updateProjectRequest } from "../api/projects";
 import { useRouter } from "@/i18n/routing";  
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ interface EditProjectFormProps {
 }
 
 export function EditProjectForm({ project, onSuccess, onCancel }: EditProjectFormProps) {
-  const account = useAccountContext();
+  const session = useAuthSession();
   const router = useRouter();
   const { toast } = useToast();
   const t = useTranslations("Projects.form");
@@ -79,10 +79,10 @@ export function EditProjectForm({ project, onSuccess, onCancel }: EditProjectFor
   }
 
   async function onSubmit(data: ProjectFormValues) {
-    if (account.workspace.status !== "ready" || !account.workspace.organizationId) return;
+    if (session.workspace.status !== "ready" || !session.workspace.organizationId) return;
     setIsSubmitting(true);
     try {
-      await updateProjectRequest(account.workspace.organizationId, project.id, data);
+      await updateProjectRequest(session.workspace.organizationId, project.id, data);
 
       await invalidate([
         { type: "detail", resource: "projects", id: project.id },
