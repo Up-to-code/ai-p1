@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
-    "@next/swc-darwin-arm64": "^16.3.0-canary.19",
     "@number-flow/react": "^0.6.0",
     "@qentrah/brand-identity": "0.1.0",
     "@qentrah/domain-contracts": "0.1.0",
