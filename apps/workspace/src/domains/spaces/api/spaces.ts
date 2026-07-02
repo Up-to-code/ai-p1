@@ -2,11 +2,7 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
-import {
-  useWorkspaceResource,
-  useWorkspaceResourceResult,
-  workspaceMutation,
-} from "@/domains/resources/workspace-resource-request";
+import { workspaceMutation } from "@/domains/resources/workspace-resource-request";
 import type { SpaceFormValues } from "../validation/space.schema";
 
 export interface Space {
@@ -31,15 +27,6 @@ export function useWorkspaceSpacesQuery(organizationId?: string) {
     organizationId ? { organizationId } : "skip",
   );
   return result ?? undefined;
-}
-
-export function useSpacesQuery(organizationId?: string, projectId?: string) {
-  // TODO: Update to use new organization-level spaces when project-specific spaces are migrated
-  return useWorkspaceResource<Space[]>(
-    ["spaces", organizationId, projectId],
-    organizationId && projectId ? organizationId : undefined,
-    `projects/${projectId}/spaces`,
-  );
 }
 
 export function useSpaceOptionsQuery(organizationId?: string) {

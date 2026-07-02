@@ -61,7 +61,7 @@ const config: ExpoConfig = {
   locales: {
     ar: "./locales/ar.json",
     "en-US": "./locales/en-US.json",
-    "ar-SA": "./locales/ar-SA.json",
+    "ar-EG": "./locales/ar.json",
     "fr-FR": "./locales/fr-FR.json",
   },
   experiments: {

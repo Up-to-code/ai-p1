@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useAuthSession } from "@/domains/auth";
 import { useNavigation } from "@/domains/navigation";
 import { useSidebarRail } from "@/components/layout/sidebar";
-import { SpaceSwitcher } from "@/components/layout/space-switcher";
+import { SpaceSwitcher } from "@/domains/spaces";
 import { ProjectSwitcher } from "@/components/layout/project-switcher";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

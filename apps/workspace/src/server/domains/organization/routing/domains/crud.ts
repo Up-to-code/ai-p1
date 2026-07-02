@@ -8,8 +8,9 @@ import { handleReadCalendarEvents, handleReadCalendarIndex, handleReadCalendarSt
 import { handleReadActivity, handleReadActivityIndex, handleReadActivityStats } from "@/server/domains/organization/handlers/activity-read";
 import { handleReadDashboardIndex, handleReadDashboardOverview } from "@/server/domains/organization/handlers/dashboard-read";
 import { handleCreateProject, handleDeleteProject, handleUpdateProject } from "@/server/domains/projects/handlers/projects";
-import { handleCreateSpace, handleDeleteSpace, handleUpdateSpace } from "@/server/domains/projectSpaces/handlers/spaces";
-import { handleReadSpaces, handleReadSpaceOptions, handleReadSpace } from "@/server/domains/projectSpaces/handlers/spaces-read";
+import { handleCreateSpace, handleDeleteSpace, handleUpdateSpace } from "@/server/domains/spaces/handlers/spaces";
+import { handleReadSpaceOptions } from "@/server/domains/spaces/handlers/spaces-read";
+import { handleReadSpaces, handleReadSpace } from "@/server/domains/spaces/handlers/spaces-junction";
 import { handleCreateOpportunity, handleDeleteOpportunity, handleUpdateOpportunity } from "@/server/domains/opportunities/handlers/opportunities";
 import { handleCreateDeal, handleDeleteDeal, handleUpdateDeal } from "@/server/domains/deals/handlers/deals";
 import { handleCreateClient, handleDeleteClient, handleUpdateClient } from "@/server/domains/clients/handlers/clients";

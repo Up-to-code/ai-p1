@@ -1,39 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-const testimonials = [
-  {
-    quote: "Qentrah transformed how we manage our agency. Projects that used to take days now ship in hours — with full context across every team.",
-    author: "Sarah Chen",
-    role: "CTO",
-    company: "Meridian Labs",
-    metric: "10x faster delivery",
-  },
-  {
-    quote: "The AI agents understand our workflow better than any tool we've used. It's like having an extra team member who knows everything.",
-    author: "Marcus Webb",
-    role: "Engineering Lead",
-    company: "Flux Systems",
-    metric: "40% more output",
-  },
-  {
-    quote: "Finally, a platform where projects, clients, and communication live together. Zero context switching since we switched.",
-    author: "Elena Rodriguez",
-    role: "VP Engineering",
-    company: "Beacon AI",
-    metric: "99.9% context retention",
-  },
-  {
-    quote: "The MCP protocol lets us connect everything. We automated our entire client intake process in a single afternoon.",
-    author: "James Liu",
-    role: "Founder",
-    company: "Prism Analytics",
-    metric: "50+ integrations live",
-  },
-];
+import { useLocale } from "next-intl";
+import { testimonials, isLocale } from "@/lib/content";
 
 export function TestimonialsSection() {
+  const localeRaw = useLocale();
+  const locale = isLocale(localeRaw) ? localeRaw : "en";
+  const t = testimonials[locale];
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -41,25 +16,26 @@ export function TestimonialsSection() {
     const interval = setInterval(() => {
       setIsAnimating(true);
       setTimeout(() => {
-        setActiveIndex((prev) => (prev + 1) % testimonials.length);
+        setActiveIndex((prev) => (prev + 1) % t.length);
         setIsAnimating(false);
       }, 300);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [t.length]);
 
-  const activeTestimonial = testimonials[activeIndex];
+  const activeTestimonial = t[activeIndex];
+  const sectionLabel = locale === "ar" ? "ماذا يقولون عنا" : locale === "fr" ? "Ce qu'ils disent" : "What people say";
 
   return (
     <section className="relative py-32 lg:py-40 border-t border-[var(--q-border)] lg:pb-14 bg-[var(--q-bg)]">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="flex items-center gap-4 mb-16">
           <span className="font-mono text-xs tracking-widest text-[var(--q-text-muted)] uppercase">
-            What people say
+            {sectionLabel}
           </span>
           <div className="flex-1 h-px bg-[var(--q-border)]" />
           <span className="font-mono text-xs text-[var(--q-text-muted)]">
-            {String(activeIndex + 1).padStart(2, "0")} / {String(testimonials.length).padStart(2, "0")}
+            {String(activeIndex + 1).padStart(2, "0")} / {String(t.length).padStart(2, "0")}
           </span>
         </div>
 
@@ -101,7 +77,7 @@ export function TestimonialsSection() {
               }`}
             >
               <span className="font-mono text-xs tracking-widest text-[var(--q-text-muted)] uppercase block mb-4">
-                Key Result
+                {locale === "ar" ? "النتيجة الرئيسية" : locale === "fr" ? "Résultat clé" : "Key Result"}
               </span>
               <p className="text-3xl md:text-4xl font-light text-[var(--q-text-primary)]">
                 {activeTestimonial.metric}
@@ -109,7 +85,7 @@ export function TestimonialsSection() {
             </div>
 
             <div className="flex gap-2 mt-8">
-              {testimonials.map((_, idx) => (
+              {t.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => {
@@ -132,7 +108,7 @@ export function TestimonialsSection() {
 
         <div className="mt-24 pt-12 border-t border-[var(--q-border)]">
           <p className="font-mono text-xs tracking-widest text-[var(--q-text-muted)] uppercase mb-8 text-center">
-            Trusted by forward-thinking teams
+            {locale === "ar" ? "موثوق من فرق ذات رؤية" : locale === "fr" ? "Utilisé par des équipes avant-gardistes" : "Trusted by forward-thinking teams"}
           </p>
         </div>
       </div>

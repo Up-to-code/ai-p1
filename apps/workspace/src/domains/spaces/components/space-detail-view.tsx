@@ -2,14 +2,14 @@
 
 import { useState, useCallback } from "react";
 import { useAuthSession } from "@/domains/auth";
-import { useWorkspaceSpacesQuery } from "@/domains/projects/api/spaces";
-import { useProjectsIndexQuery } from "../api/projects";
+import { useWorkspaceSpacesQuery } from "@/domains/spaces/api/spaces";
+import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
 import { useTranslations } from "next-intl";
 import { DeleteRecordDialog } from "@/components/shared/crud-ui";
 import { AppPageShell, AddMenu } from "@/components/shared";
 import { FolderKanban, LayoutGrid, Wand2, ArrowLeft } from "lucide-react";
-import { CreateProjectForm } from "./create-project-form";
-import { ProjectsOverviewDashboard } from "./projects-overview-dashboard";
+import { CreateProjectForm } from "@/domains/projects/components/create-project-form";
+import { ProjectsOverviewDashboard } from "@/domains/projects/components/projects-overview-dashboard";
 import { useNavigation } from "@/domains/navigation";
 
 export function SpaceDetailView({ spaceSlug }: { spaceSlug: string }) {

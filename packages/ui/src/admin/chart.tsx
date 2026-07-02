@@ -150,7 +150,7 @@ export function ChartTooltipContent({
                 <span>{itemConfig?.label ?? item.name ?? key}</span>
               </div>
               <span className="text-[12px] font-black tabular-nums text-[var(--workspace-bubble-other-foreground)]">
-                {typeof item.value === "number" ? item.value.toLocaleString("ar-SA") : String(item.value ?? "")}
+                {typeof item.value === "number" ? item.value.toLocaleString("ar-EG") : String(item.value ?? "")}
               </span>
             </div>
           );

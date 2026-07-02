@@ -125,7 +125,7 @@ export function brokerPresenceToPersonCard(broker: BrokerPresence) {
     relation:
       broker.relation ?? {
         project: broker.projectTitle
-          ? { id: broker.projectTitle, title: broker.projectTitle, location: broker.city ?? "الرياض" }
+          ? { id: broker.projectTitle, title: broker.projectTitle, location: broker.city ?? "بدون موقع" }
           : null,
         asset: broker.assetLabel ? { id: broker.assetLabel, label: broker.assetLabel } : null,
       },

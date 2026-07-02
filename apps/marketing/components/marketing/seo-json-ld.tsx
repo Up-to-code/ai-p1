@@ -22,6 +22,7 @@ function JsonLd({ data }: { data: Record<string, unknown> }) {
 }
 
 export function MarketingHomeJsonLd({ locale }: { locale: Locale }) {
+  const langCode = locale === "ar" ? "ar" : locale === "fr" ? "fr" : "en";
   const isArabic = locale === "ar";
   const url = `${rootUrl}/${locale}`;
   const name = brandLabel(locale);
@@ -50,7 +51,7 @@ export function MarketingHomeJsonLd({ locale }: { locale: Locale }) {
     "@id": `${rootUrl}/#website`,
     name,
     url: rootUrl,
-    inLanguage: isArabic ? "ar" : "en",
+    inLanguage: langCode,
     keywords,
     publisher: { "@id": `${rootUrl}/#organization` },
   };
@@ -59,7 +60,7 @@ export function MarketingHomeJsonLd({ locale }: { locale: Locale }) {
     "@context": "https://schema.org",
     "@type": "ItemList",
     "@id": `${url}#site-navigation`,
-    name: isArabic ? "روابط كانترا الرئيسية" : "Qentrah primary links",
+    name: isArabic ? "روابط كانترا الرئيسية" : locale === "fr" ? "Liens principaux de Qentrah" : "Qentrah primary links",
     itemListElement: publicSeoLinks.map((link, index) => ({
       "@type": "SiteNavigationElement",
       position: index + 1,
@@ -74,11 +75,11 @@ export function MarketingHomeJsonLd({ locale }: { locale: Locale }) {
     "@type": "SoftwareApplication",
     "@id": `${rootUrl}/#software`,
     name: brandProductName("workspace", locale),
-    applicationCategory: "BusinessApplication",
+    applicationCategory: "ProjectManagement",
     operatingSystem: "Web",
     url: workspaceUrl,
     image: logoUrl,
-    inLanguage: isArabic ? "ar" : "en",
+    inLanguage: langCode,
     description,
     keywords,
     offers: {
@@ -97,7 +98,7 @@ export function MarketingHomeJsonLd({ locale }: { locale: Locale }) {
       {
         "@type": "ListItem",
         position: 1,
-        name: isArabic ? "الرئيسية" : "Home",
+        name: isArabic ? "الرئيسية" : locale === "fr" ? "Accueil" : "Home",
         item: url,
       },
     ],
@@ -125,6 +126,7 @@ export function MarketingPageJsonLd({
   path: string;
   title: string;
 }) {
+  const langCode = locale === "ar" ? "ar" : locale === "fr" ? "fr" : "en";
   const isArabic = locale === "ar";
   const cleanPath = path.replace(/^\/+/u, "");
   const pageUrl = `${rootUrl}/${locale}${cleanPath ? `/${cleanPath}` : ""}`;
@@ -137,7 +139,7 @@ export function MarketingPageJsonLd({
     url: pageUrl,
     name: title,
     description,
-    inLanguage: isArabic ? "ar" : "en",
+    inLanguage: langCode,
     isPartOf: { "@id": `${rootUrl}/#website` },
     publisher: { "@id": `${rootUrl}/#organization` },
   };
@@ -150,7 +152,7 @@ export function MarketingPageJsonLd({
       {
         "@type": "ListItem",
         position: 1,
-        name: isArabic ? "الرئيسية" : "Home",
+        name: isArabic ? "الرئيسية" : locale === "fr" ? "Accueil" : "Home",
         item: homeUrl,
       },
       {

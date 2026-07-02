@@ -1,4 +1,4 @@
-export type BrandLocale = "en" | "ar";
+export type BrandLocale = "en" | "ar" | "fr";
 export type BrandProduct = "workspace" | "partners" | "admin" | "demo" | "marketing" | "platform";
 export type BrandRoute = "auth" | "api" | "oauthStart" | "oauthCallback" | "oauthLogout";
 
@@ -6,10 +6,12 @@ export const brandIdentity = {
   name: {
     en: "Qentrah",
     ar: "كانترا",
+    fr: "Qentrah",
   },
   legalName: {
     en: "Qentrah Technology Co.",
     ar: "شركة كانترا التقنية",
+    fr: "Qentrah Technology Co.",
   },
   slug: "qentrah",
   packageScope: "@qentrah",
@@ -46,12 +48,12 @@ export const brandIdentity = {
     systemGray: "#5D6570",
   },
   products: {
-    workspace: { en: "Workspace", ar: "مساحة العمل" },
-    partners: { en: "Partners", ar: "الشركاء" },
-    admin: { en: "Admin Review", ar: "مراجعة الشركاء" },
-    demo: { en: "OAuth Demo", ar: "تجربة OAuth" },
-    marketing: { en: "Marketing", ar: "الموقع العام" },
-    platform: { en: "Platform", ar: "المنصة" },
+    workspace: { en: "Workspace", ar: "مساحة العمل", fr: "Espace de travail" },
+    partners: { en: "Partners", ar: "الشركاء", fr: "Partenaires" },
+    admin: { en: "Admin Review", ar: "مراجعة الشركاء", fr: "Revue admin" },
+    demo: { en: "OAuth Demo", ar: "تجربة OAuth", fr: "Démo OAuth" },
+    marketing: { en: "Marketing", ar: "الموقع العام", fr: "Marketing" },
+    platform: { en: "Platform", ar: "المنصة", fr: "Plateforme" },
   },
   routes: {
     auth: "auth/qentrah",

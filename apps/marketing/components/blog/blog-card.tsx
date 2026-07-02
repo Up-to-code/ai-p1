@@ -9,7 +9,7 @@ type BlogCardProps = {
 
 export function BlogCard({ post, locale }: BlogCardProps) {
   const publishDate = new Date(post.publishedAt).toLocaleDateString(
-    locale === "ar" ? "ar-SA" : "en-US",
+    locale === "ar" ? "ar-EG" : locale === "fr" ? "fr-FR" : "en-US",
     { year: "numeric", month: "long", day: "numeric" },
   );
 

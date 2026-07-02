@@ -50,9 +50,9 @@ export function WebhooksTelemetryDashboard() {
 
   const endpoints = [
     {
-      id: "ep-aqar",
+      id: "ep-api",
       name: t('webhooks.endpointsData.aqar.name'),
-      url: "https://api.aqar.sa/v1/webhooks/qentrah-sync",
+      url: "https://api.example.com/v1/webhooks/qentrah-sync",
       secret: "••••••••••••••••",
       events: ["asset.published", "asset.updated", "asset.deleted"],
       status: t('webhooks.statusActive'),
@@ -61,7 +61,7 @@ export function WebhooksTelemetryDashboard() {
     {
       id: "ep-crm",
       name: t('webhooks.endpointsData.crm.name'),
-      url: "https://crm.institutional.com/webhooks/qentrah-receiver",
+      url: "https://crm.example.com/webhooks/qentrah-receiver",
       secret: "••••••••••••••••",
       events: ["client.created", "client.assigned", "client.updated"],
       status: t('webhooks.statusActive'),
@@ -73,7 +73,7 @@ export function WebhooksTelemetryDashboard() {
     {
       id: "del_9a8b7c6d",
       event: "client.created",
-      target: "https://crm.institutional.com/...",
+      target: "https://crm.example.com/...",
       status: 200,
       statusText: "200 OK",
       time: t('webhooks.minsAgo', { count: 3 }),
@@ -82,7 +82,7 @@ export function WebhooksTelemetryDashboard() {
     {
       id: "del_3f4e5d6c",
       event: "asset.published",
-      target: "https://api.aqar.sa/...",
+      target: "https://api.example.com/...",
       status: 200,
       statusText: "200 OK",
       time: t('webhooks.minsAgo', { count: 15 }),
@@ -91,7 +91,7 @@ export function WebhooksTelemetryDashboard() {
     {
       id: "del_1a2b3c4d",
       event: "client.assigned",
-      target: "https://crm.institutional.com/...",
+      target: "https://crm.example.com/...",
       status: 200,
       statusText: "200 OK",
       time: t('webhooks.hourAgo'),
@@ -100,7 +100,7 @@ export function WebhooksTelemetryDashboard() {
     {
       id: "del_8h9i0j1k",
       event: "asset.updated",
-      target: "https://api.aqar.sa/...",
+      target: "https://api.example.com/...",
       status: 500,
       statusText: "500 Error",
       time: t('webhooks.hoursAgo', { count: 2 }),
@@ -109,7 +109,7 @@ export function WebhooksTelemetryDashboard() {
     {
       id: "del_7y8u9i0o",
       event: "asset.updated",
-      target: "https://api.aqar.sa/...",
+      target: "https://api.example.com/...",
       status: 200,
       statusText: "200 OK",
       time: t('webhooks.hoursAgo', { count: 2 }),
@@ -237,7 +237,7 @@ export function WebhooksTelemetryDashboard() {
                           </thead>
                           <tbody className="divide-y divide-border dark:divide-white/[0.04]">
                             {logs
-                              .filter(log => log.target.includes("aqar") === ep.id.includes("aqar"))
+                              .filter(log => log.target.includes("api.") === ep.id.includes("api"))
                               .map((log, idx) => (
                                 <tr key={`${log.id}-${idx}`} className="hover:bg-muted/50/50 dark:hover:bg-white/[0.01] transition-colors">
                                   <td className="p-3 font-mono font-medium text-muted-foreground">{log.id}</td>

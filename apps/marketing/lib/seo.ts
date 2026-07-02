@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import { brandDomainUrl, brandIdentity, brandLabel } from "@qentrah/brand-identity";
 
-import { getContent, getMarketingMessages, getWorkspaceLanding, locales, type LegalBlockBody, type Locale } from "@/lib/content";
+import { getContent, getMarketingMessages, locales, type LegalBlockBody, type Locale } from "@/lib/content";
 import { publicSeoLinks } from "@/lib/public-links";
 
 const siteUrl = brandDomainUrl("root");
 
 const localeLanguages = {
-  "ar": "/ar",
-  "en": "/en",
+  ar: "/ar",
+  en: "/en",
+  fr: "/fr",
   "x-default": "/en",
 } as const;
 
@@ -170,7 +171,6 @@ export function localizedMarketingMetadata(locale: Locale, path = ""): Metadata 
 
 function marketingPageSeo(locale: Locale, path: string) {
   const copy = getContent(locale);
-  const landing = getWorkspaceLanding(locale);
   const normalizedPath = path.replace(/^\/+/u, "");
 
   const sitelink = publicSeoLinks.find((link) => link.href.replace(/^\/+/u, "") === normalizedPath);
@@ -222,13 +222,6 @@ function marketingPageSeo(locale: Locale, path: string) {
     };
   }
 
-  if (normalizedPath === "about" || normalizedPath === "developer" || normalizedPath === "broker" || normalizedPath === "contact") {
-    return {
-      title: landing[normalizedPath].hero.title,
-      description: landing[normalizedPath].hero.description,
-    };
-  }
-
   return {
     title: marketingTitle(locale),
     description: marketingDescription(locale),
@@ -247,10 +240,6 @@ const marketingSitemapPaths = [
   "pricing",
   "dashboard",
   "partners",
-  "developer",
-  "broker",
-  "contact",
-  "about",
   "docs",
   "billing",
   "privacy",

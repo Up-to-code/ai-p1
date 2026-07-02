@@ -69,14 +69,9 @@ export function WorkspacePublicJsonLd() {
     operatingSystem: "Web",
     url: workspaceUrl,
     image: logoUrl,
-    inLanguage: ["ar-SA", "en-SA"],
+    inLanguage: ["ar", "en"],
     description: "منصة تشغيل ذكية للوكالات والشركات الخدمية — إدارة العملاء والمشاريع والمهام والتقويم مع وكلاء ذكاء اصطناعي.",
     keywords: trustedKeywords,
-    areaServed: {
-      "@type": "Country",
-      identifier: "SA",
-      name: "السعودية",
-    },
     publisher: {
       "@type": "Organization",
       "@id": `${rootUrl}/#organization`,
@@ -88,7 +83,7 @@ export function WorkspacePublicJsonLd() {
     offers: {
       "@type": "Offer",
       price: "0",
-      priceCurrency: "SAR",
+      priceCurrency: "USD",
     },
   };
 
@@ -177,11 +172,11 @@ export function WorkspaceDocsJsonLd({ locale }: { locale: string }) {
     "@id": `${docsUrl}#techarticle`,
     headline: isArabic ? "توثيق وكلاء MCP في كانترا" : "Qentrah MCP agent documentation",
     description: isArabic
-      ? "توثيق عام لربط وكلاء الذكاء الاصطناعي بمساحة عمل كانترا في السعودية."
+      ? "توثيق عام لربط وكلاء الذكاء الاصطناعي بمساحة عمل كانترا."
       : "Public documentation for connecting AI agents to Qentrah workspace data.",
     url: docsUrl,
     image: logoUrl,
-    inLanguage: isArabic ? "ar-SA" : "en-SA",
+    inLanguage: isArabic ? "ar" : "en",
     about: { "@id": `${workspaceUrl}/#software` },
     publisher: {
       "@type": "Organization",

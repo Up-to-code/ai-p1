@@ -4,10 +4,6 @@ import { actionErrorJson } from "@/server/utils/response/action-error";
 import { spacePayloadSchema } from "../validation/space.schema";
 import { createSpace, deleteSpace, updateSpace } from "../services/spaces";
 
-function extractProjectId(c: Context): string | undefined {
-  return c.req.param("projectId");
-}
-
 export async function handleCreateSpace(c: Context) {
   const organizationId = c.req.param("organizationId");
   if (!organizationId) {

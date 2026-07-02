@@ -10,13 +10,13 @@ const localeLabelMap: Record<AppLocale, string> = {
 };
 
 const localeNumberFormatMap: Record<AppLocale, string> = {
-  ar: "ar-SA",
-  en: "en-SA",
+  ar: "ar-EG",
+  en: "en-US",
   fr: "fr-FR",
 };
 
 const localeDateFormatMap: Record<AppLocale, string> = {
-  ar: "ar-SA",
+  ar: "ar-EG",
   en: "en-US",
   fr: "fr-FR",
 };

@@ -49,8 +49,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: {
       canonical: post.seo?.canonical ?? `${siteUrl}/${locale}/blog/${slug}`,
       languages: {
+        "x-default": `${siteUrl}/en/blog/${slug}`,
         en: `${siteUrl}/en/blog/${slug}`,
         ar: `${siteUrl}/ar/blog/${slug}`,
+        fr: `${siteUrl}/fr/blog/${slug}`,
       },
     },
   };

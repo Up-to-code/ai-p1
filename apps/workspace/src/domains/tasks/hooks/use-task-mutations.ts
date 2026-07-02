@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/toast";
 import { useNavigation } from "@/domains/navigation";
-import { useActiveSpace } from "@/domains/navigation";
+import { useActiveSpace } from "@/domains/spaces";
 import {
   createTaskRequest,
   updateTaskRequest,

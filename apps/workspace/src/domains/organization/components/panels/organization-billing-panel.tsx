@@ -35,13 +35,13 @@ export function OrganizationBillingPanel({
   // Price per seat
   const pricePerUser = plan?.amount ?? 6.99;
   const priceLabel = plan
-    ? new Intl.NumberFormat(isRtl ? "ar-SA" : "en-US", {
+    ? new Intl.NumberFormat(isRtl ? "ar-EG" : "en-US", {
         style: "currency",
         currency: plan.currency,
         maximumFractionDigits: 2,
       }).format(pricePerUser)
     : "$6.99";
-  const totalLabel = new Intl.NumberFormat(isRtl ? "ar-SA" : "en-US", {
+  const totalLabel = new Intl.NumberFormat(isRtl ? "ar-EG" : "en-US", {
     style: "currency",
     currency: plan?.currency ?? "USD",
     maximumFractionDigits: 2,

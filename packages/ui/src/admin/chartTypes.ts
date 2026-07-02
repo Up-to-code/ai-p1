@@ -26,5 +26,5 @@ export function buildChartConfig(series: ChartSeries[]): ChartConfig {
 
 export function formatChartNumber(value: number | string) {
   const numericValue = Number(value ?? 0);
-  return new Intl.NumberFormat("ar-SA").format(numericValue);
+  return new Intl.NumberFormat("ar-EG").format(numericValue);
 }

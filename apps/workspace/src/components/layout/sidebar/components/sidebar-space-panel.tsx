@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { useWorkspaceSpacesQuery } from "@/domains/projects/api/spaces";
+import { useWorkspaceSpacesQuery } from "@/domains/spaces/api/spaces";
 import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
 import { useNavigation } from "@/domains/navigation";
 import { useAuthSession } from "@/domains/auth";

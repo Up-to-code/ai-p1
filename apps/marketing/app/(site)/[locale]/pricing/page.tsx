@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { isLocale, type Locale } from "@/lib/content";
+import { pageMetadata } from "@/lib/page-metadata";
 import { PricingPage } from "@/components/pricing/pricing-page";
 
 export const revalidate = 3600;
@@ -9,20 +11,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const isAr = locale === "ar";
-
-  return {
-    title: isAr ? "التسعير | Qentrah" : "Pricing | Qentrah",
-    description: isAr
-      ? "تسعير شفاف ومرن لمنصة كانترا — قارن الخطط جنباً إلى جنب واختر ما يناسب فريقك."
-      : "Transparent and flexible pricing for Qentrah — compare plans side by side and pick the one that fits your team.",
-    openGraph: {
-      title: isAr ? "التسعير | Qentrah" : "Pricing | Qentrah",
-      description: isAr
-        ? "تسعير شفاف ومرن لمنصة كانترا — قارن الخطط جنباً إلى جنب واختر ما يناسب فريقك."
-        : "Transparent and flexible pricing for Qentrah — compare plans side by side and pick the one that fits your team.",
-    },
-  };
+  return isLocale(locale) ? pageMetadata(locale as Locale, "pricing") : {};
 }
 
 export default function PricingPageRoute() {

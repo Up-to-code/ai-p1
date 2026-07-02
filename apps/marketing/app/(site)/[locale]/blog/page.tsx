@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { isLocale, type Locale } from "@/lib/content";
+import { pageMetadata } from "@/lib/page-metadata";
 import { getBlogPosts, type StrapiBlogPost } from "@/lib/strapi";
 import { BlogList } from "@/components/blog/blog-list";
 import { AppPageHeader, AppPageShell } from "@/components/shared";
@@ -11,11 +13,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const isAr = locale === "ar";
-  return {
-    title: isAr ? "المدونة | كانترا" : "Blog | Qentrah",
-    description: isAr ? "أحدث المقالات والأخبار من كانترا" : "Latest articles and news from Qentrah",
-  };
+  return isLocale(locale) ? pageMetadata(locale as Locale, "blog") : {};
 }
 
 export default async function BlogPage({ params }: Props) {
@@ -37,8 +35,8 @@ export default async function BlogPage({ params }: Props) {
         title={isAr ? "أحدث المقالات" : "Latest Articles"}
         subtitle={
           isAr
-            ? "أخبار ومقالات عن التقنية وإدارة الأعمال والشراكات"
-            : "Insights about technology, business management, and partnerships"
+            ? "أفكار حول إدارة المشاريع بالذكاء الاصطناعي، تشغيل الوكالات، وإنتاجية الفرق"
+            : "Insights on AI-first project management, agency operations, and team productivity"
         }
       />
       <BlogList posts={posts} locale={locale} />

@@ -105,7 +105,7 @@ export default function BrokerPresenceChip({
             <div className="text-sm font-black text-slate-950 dark:text-slate-100">{broker.name}</div>
             <div className="text-xs font-bold text-slate-500 dark:text-slate-400">{broker.title ?? "وسيط معتمد"}</div>
             <div className="mt-1 text-[11px] font-black tracking-[0.2em] text-blue-700 dark:text-blue-300">
-              {broker.city ?? "الرياض"}
+              {broker.city ?? "بدون موقع"}
             </div>
           </div>
         </div>

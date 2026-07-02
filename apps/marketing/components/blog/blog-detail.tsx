@@ -10,7 +10,7 @@ type BlogDetailProps = {
 
 export function BlogDetail({ post, locale }: BlogDetailProps) {
   const publishDate = new Date(post.publishedAt).toLocaleDateString(
-    locale === "ar" ? "ar-SA" : "en-US",
+    locale === "ar" ? "ar-EG" : locale === "fr" ? "fr-FR" : "en-US",
     { year: "numeric", month: "long", day: "numeric" },
   );
 

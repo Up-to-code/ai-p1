@@ -9,7 +9,7 @@ import { useAuthSession } from "@/domains/auth";
 import { useInboxState, useCreateChannelMutation } from "@/domains/inbox";
 import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
 import { useClientsIndexQuery } from "@/domains/clients/api/clients";
-import { useWorkspaceSpacesQuery } from "@/domains/projects/api/spaces";
+import { useWorkspaceSpacesQuery } from "@/domains/spaces/api/spaces";
 import { CreateChannelWizard } from "@/domains/inbox/components/create-channel-wizard";
 import { getOrganizationCapabilities, listOrganizationMembers } from "@/domains/organization/api";
 import type { OrganizationMember } from "@/domains/organization/api/types";

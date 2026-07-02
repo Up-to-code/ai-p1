@@ -10,7 +10,7 @@ const localeLabels: Record<AppLocale, string> = {
 };
 
 const numberLocales: Record<AppLocale, string> = {
-  ar: "ar-SA",
+  ar: "ar-EG",
   en: "en-US",
   fr: "fr-FR",
 };

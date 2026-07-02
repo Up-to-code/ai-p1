@@ -24,16 +24,15 @@ import {
 import { useToast } from "@/components/ui/toast";
 import { useAuthSession } from "@/domains/auth";
 import { useQueryClient } from "@tanstack/react-query";
-import { updateSpaceRequest, deleteSpaceRequest } from "../../api/spaces";
-import type { Space } from "../../api/spaces";
-import type { SpaceFormValues } from "../../validation/space.schema";
+import { updateSpaceRequest, deleteSpaceRequest } from "../api/spaces";
+import type { Space } from "../api/spaces";
+import type { SpaceFormValues } from "../validation/space.schema";
 import { MemberPicker } from "./member-picker";
 
 interface SpaceSettingsProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   space: Space;
-  projectId: string;
 }
 
 const SPACE_COLORS = [
@@ -47,7 +46,7 @@ const SPACE_COLORS = [
   "#84cc16",
 ];
 
-export function SpaceSettings({ open, onOpenChange, space, projectId }: SpaceSettingsProps) {
+export function SpaceSettings({ open, onOpenChange, space }: SpaceSettingsProps) {
   const t = useTranslations("Projects");
   const { toast } = useToast();
   const session = useAuthSession();

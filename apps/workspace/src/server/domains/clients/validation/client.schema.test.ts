@@ -4,10 +4,10 @@ import { clientPayloadSchema } from "./client.schema";
 describe("client validation", () => {
   it("accepts a complete workspace client payload", () => {
     const parsed = clientPayloadSchema.parse({
-      name: "Abdullah Al-Faisal",
+      name: "Ahmed Mansour",
       type: "person",
-      email: "abdullah@example.com",
-      phone: "+966 512 345 678",
+      email: "ahmed@example.com",
+      phone: "+20 100 123 4567",
       status: "active",
       pipelineStage: "qualified",
       pipelineOrder: 20,

@@ -16,7 +16,7 @@ import { TaskGroupedList } from "./task-grouped-list";
 import { TaskEditor } from "./task-editor";
 import { useTaskMutations } from "../hooks/use-task-mutations";
 import { useCurrentProjectId } from "@/domains/projects/hooks/use-current-project-id";
-import { useCurrentSpace } from "@/domains/projects/hooks/use-current-space";
+import { useActiveSpace } from "@/domains/spaces/hooks/use-active-space";
 import {
   createTaskRequest,
   assignTasksToProjectRequest,
@@ -84,8 +84,7 @@ export function TasksScreen({
   const projectIdFromUrl = useCurrentProjectId();
   const projectId =
     projectIdProp !== undefined ? projectIdProp : projectIdFromUrl;
-  const currentSpace = useCurrentSpace();
-  const spaceId = currentSpace?.spaceId ?? null;
+  const { spaceId } = useActiveSpace();
 
   const projectOptions = useProjectOptionsQueryResult(organizationId, { limit: 200 });
   const projectList = useMemo(

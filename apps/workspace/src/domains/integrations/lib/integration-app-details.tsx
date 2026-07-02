@@ -208,14 +208,14 @@ export function buildIntegrationAppDetails(
                 <div className="flex items-center justify-between py-2">
                   <div>
                     <span className="block font-semibold text-foreground/30">{t('detail.appDetails.contacts.screenshot.mockAhmed')}</span>
-                    <span className="block text-[10px] text-muted-foreground">ahmed@qentrah.sa • +966 50 123 4567</span>
+                    <span className="block text-[10px] text-muted-foreground">ahmed@qentrah.com • +20 100 123 4567</span>
                   </div>
                   <span className="rounded bg-muted dark:bg-white/[0.04] px-1.5 py-0.5 text-[9px] font-mono text-muted-foreground">{t('detail.appDetails.contacts.screenshot.buyer')}</span>
                 </div>
                 <div className="flex items-center justify-between py-2">
                   <div>
                     <span className="block font-semibold text-foreground/30">{t('detail.appDetails.contacts.screenshot.mockSarah')}</span>
-                    <span className="block text-[10px] text-muted-foreground">sarah@gmail.com • +966 55 987 6543</span>
+                    <span className="block text-[10px] text-muted-foreground">sarah@gmail.com • +20 122 987 6543</span>
                   </div>
                   <span className="rounded bg-muted dark:bg-white/[0.04] px-1.5 py-0.5 text-[9px] font-mono text-muted-foreground">{t('detail.appDetails.contacts.screenshot.tenant')}</span>
                 </div>

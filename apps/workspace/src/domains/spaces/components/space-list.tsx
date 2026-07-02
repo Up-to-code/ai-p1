@@ -6,24 +6,23 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Plus, Settings, Loader2 } from "lucide-react";
 import { useAuthSession } from "@/domains/auth";
-import { useSpacesQuery } from "../../api/spaces";
-import type { Space } from "../../api/spaces";
+import { useWorkspaceSpacesQuery } from "../api/spaces";
+import type { Space } from "../api/spaces";
 import { SpaceCreateForm } from "./space-create-form";
 import { SpaceSettings } from "./space-settings";
 import { SpaceNavItem } from "./space-nav-item";
 
 interface SpaceListProps {
-  projectId: string;
   currentSpaceSlug?: string | null;
   onSpaceSelect: (spaceSlug: string | null) => void;
 }
 
-export function SpaceList({ projectId, currentSpaceSlug, onSpaceSelect }: SpaceListProps) {
+export function SpaceList({ currentSpaceSlug, onSpaceSelect }: SpaceListProps) {
   const t = useTranslations("Projects");
   const session = useAuthSession();
   const orgId = session.workspace.status === "ready" ? session.workspace.organizationId ?? undefined : undefined;
 
-  const spaces = useSpacesQuery(orgId, projectId);
+  const spaces = useWorkspaceSpacesQuery(orgId);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [settingsSpace, setSettingsSpace] = useState<Space | null>(null);
 
@@ -86,7 +85,6 @@ export function SpaceList({ projectId, currentSpaceSlug, onSpaceSelect }: SpaceL
       <SpaceCreateForm
         open={showCreateForm}
         onOpenChange={setShowCreateForm}
-        projectId={projectId}
       />
 
       {/* Settings Dialog */}
@@ -97,7 +95,6 @@ export function SpaceList({ projectId, currentSpaceSlug, onSpaceSelect }: SpaceL
             if (!open) setSettingsSpace(null);
           }}
           space={settingsSpace}
-          projectId={projectId}
         />
       )}
     </div>

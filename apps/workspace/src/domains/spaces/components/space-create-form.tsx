@@ -24,14 +24,13 @@ import {
 import { useToast } from "@/components/ui/toast";
 import { useAuthSession } from "@/domains/auth";
 import { useQueryClient } from "@tanstack/react-query";
-import { createSpaceRequest } from "../../api/spaces";
-import type { SpaceFormValues } from "../../validation/space.schema";
+import { createSpaceRequest } from "../api/spaces";
+import type { SpaceFormValues } from "../validation/space.schema";
 import { MemberPicker } from "./member-picker";
 
 interface SpaceCreateFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  projectId: string;
 }
 
 const SPACE_COLORS = [
@@ -45,7 +44,7 @@ const SPACE_COLORS = [
   "#84cc16",
 ];
 
-export function SpaceCreateForm({ open, onOpenChange, projectId }: SpaceCreateFormProps) {
+export function SpaceCreateForm({ open, onOpenChange }: SpaceCreateFormProps) {
   const t = useTranslations("Projects");
   const { toast } = useToast();
   const session = useAuthSession();

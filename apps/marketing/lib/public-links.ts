@@ -2,7 +2,7 @@ import { brandDomainUrl } from "@qentrah/brand-identity";
 
 import type { Locale } from "@/lib/content";
 
-type PublicSeoLinkId = "home" | "pricing" | "docs" | "about" | "blog";
+type PublicSeoLinkId = "home" | "pricing" | "docs" | "blog";
 
 type PublicSeoLink = {
   id: PublicSeoLinkId;
@@ -24,10 +24,12 @@ export const publicSeoLinks = [
     labels: {
       en: "Home",
       ar: "الرئيسية",
+      fr: "Accueil",
     },
     descriptions: {
       en: "Open the Qentrah public homepage.",
       ar: "افتح الصفحة الرئيسية العامة لكانترا.",
+      fr: "Ouvrir la page d'accueil publique de Qentrah.",
     },
   },
   {
@@ -38,10 +40,12 @@ export const publicSeoLinks = [
     labels: {
       en: "Pricing",
       ar: "الأسعار",
+      fr: "Tarifs",
     },
     descriptions: {
       en: "View Qentrah workspace pricing.",
       ar: "اطلع على أسعار مساحة عمل كانترا.",
+      fr: "Voir les tarifs de l'espace de travail Qentrah.",
     },
   },
   {
@@ -52,10 +56,12 @@ export const publicSeoLinks = [
     labels: {
       en: "Blog",
       ar: "المدونة",
+      fr: "Blog",
     },
     descriptions: {
       en: "Read the latest articles and news.",
       ar: "اقرأ أحدث المقالات والأخبار.",
+      fr: "Lire les derniers articles et actualités.",
     },
   },
   {
@@ -66,24 +72,12 @@ export const publicSeoLinks = [
     labels: {
       en: "Docs",
       ar: "التوثيق",
+      fr: "Documentation",
     },
     descriptions: {
       en: "Read Qentrah public documentation.",
       ar: "اقرأ توثيق كانترا العام.",
-    },
-  },
-  {
-    id: "about",
-    href: "/about",
-    externalUrl: `${rootUrl}/about`,
-    navKey: "about",
-    labels: {
-      en: "About us",
-      ar: "من نحن",
-    },
-    descriptions: {
-      en: "Learn about Qentrah and the team building it.",
-      ar: "تعرّف على كانترا والفريق الذي يبنيها.",
+      fr: "Consulter la documentation publique de Qentrah.",
     },
   },
 ] as const satisfies readonly PublicSeoLink[];

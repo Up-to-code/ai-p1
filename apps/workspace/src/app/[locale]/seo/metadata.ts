@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { brandDomainUrl, brandIdentity, brandLabel, brandProductName } from "@qentrah/brand-identity";
+import { brandDomainUrl, brandLabel, brandProductName } from "@qentrah/brand-identity";
 import { routing } from "@/i18n/routing";
 
 export type Locale = (typeof routing.locales)[number];
@@ -12,22 +12,19 @@ export const metadata: Metadata = {
   metadataBase: new URL(brandDomainUrl("workspace")),
   applicationName: brandProductName("workspace", "en"),
   title: {
-    default: "Qentrah: Operating System for Agencies | AI Project Management",
+    default: "Qentrah: AI-First Project Management for Small Teams",
     template: `%s | ${brandProductName("workspace", "en")}`,
   },
   description:
-    "One workspace for clients, opportunities, projects, and tasks. AI that operates your business. Built for marketing, creative, design, and service agencies.",
+    "Human-led project management where AI handles the busywork. Built for small teams and agencies that want one unified workspace for clients, projects, tasks, and collaboration — without the bloat.",
   keywords: [
-    "CRM for agencies",
-    "project management for agencies",
-    "agency management software",
-    "client operations platform",
     "AI project management",
-    "agency CRM",
-    "marketing agency software",
-    "creative studio management",
-    "all-in-one client management",
-    "profitability tracking",
+    "project management for small teams",
+    "agency management software",
+    "team productivity",
+    "AI-first Work OS",
+    "project management for agencies",
+    "small business project management software",
     "Qentrah",
   ],
   authors: [{ name: brandLabel("en") }],
@@ -53,23 +50,23 @@ export const metadata: Metadata = {
     type: "website",
     url: "/",
     siteName: brandProductName("workspace", "en"),
-    title: "Qentrah: Operating System for Agencies",
+    title: "Qentrah: AI-First Project Management for Small Teams",
     description:
-      "One workspace for clients, opportunities, projects, and tasks. AI that operates your business. Built for marketing, creative, design, and service agencies.",
+      "Human-led project management where AI handles the busywork. Built for small teams and agencies.",
     images: [
       {
         url: "/app-icon-512.png",
         width: 512,
         height: 512,
-        alt: `${brandLabel("en")} - AI Client Operations Platform`,
+        alt: `${brandLabel("en")} - AI-First Project Management`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Qentrah: Operating System for Agencies",
+    title: "Qentrah: AI-First Project Management for Small Teams",
     description:
-      "One workspace for clients, opportunities, projects, and tasks. AI that operates your business.",
+      "Human-led project management where AI handles the busywork. Built for small teams and agencies.",
     images: ["/app-icon-512.png"],
   },
 };

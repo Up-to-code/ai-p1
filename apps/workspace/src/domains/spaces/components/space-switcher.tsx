@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Check, ChevronsUpDown, Layers } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useWorkspaceSpacesQuery } from "@/domains/projects/api/spaces";
+import { useWorkspaceSpacesQuery } from "@/domains/spaces/api/spaces";
 import { useAuthSession } from "@/domains/auth";
 import { useNavigation } from "@/domains/navigation";
 import { useRouter, usePathname } from "@/i18n/routing";

@@ -1,7 +1,7 @@
 type SupportedLocale = "en" | "ar" | string;
 
 export function localeIntlTag(locale: SupportedLocale) {
-  return locale === "ar" ? "ar-SA" : "en-US";
+  return locale === "ar" ? "ar-EG" : "en-US";
 }
 
 export function localeDateFormatter(locale: SupportedLocale, options?: Intl.DateTimeFormatOptions) {

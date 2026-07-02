@@ -8,7 +8,7 @@ import {
 import workspaceAr from "../../workspace/messages/ar.json";
 import workspaceEn from "../../workspace/messages/en.json";
 
-export const locales = ["en", "ar"] as const;
+export const locales = ["en", "ar", "fr"] as const;
 export type Locale = (typeof locales)[number];
 
 export function isLocale(value: string): value is Locale {
@@ -17,6 +17,10 @@ export function isLocale(value: string): value is Locale {
 
 export function getDirection(locale: Locale) {
   return locale === "ar" ? "rtl" : "ltr";
+}
+
+export function isRtl(locale: Locale) {
+  return locale === "ar";
 }
 
 export const productUrls = {
@@ -29,11 +33,13 @@ export const productUrls = {
 };
 
 export function getWorkspaceLanding(locale: Locale) {
-  return locale === "ar" ? workspaceAr.Landing : workspaceEn.Landing;
+  if (locale === "ar") return workspaceAr.Landing;
+  return workspaceEn.Landing;
 }
 
 export function getMarketingMessages(locale: Locale) {
-  return locale === "ar" ? workspaceAr : workspaceEn;
+  if (locale === "ar") return workspaceAr;
+  return workspaceEn;
 }
 
 const workspaceEnName = brandProductName("workspace", "en");
@@ -47,6 +53,269 @@ type LegalBlockCopy = { title: string; body: LegalBlockBody };
 function block(title: string, body: LegalBlockBody): LegalBlockCopy {
   return { title, body };
 }
+
+export type MarketingHeroContent = {
+  eyebrow: string;
+  tagline: string;
+  description: string;
+  cta: string;
+  secondary: string;
+  words: string[];
+};
+
+export type Testimonial = {
+  quote: string;
+  author: string;
+  role: string;
+  company: string;
+  metric: string;
+};
+
+export type MarketingNavContent = {
+  brand: string;
+  products: string;
+  privacy: string;
+  terms: string;
+  legal: string;
+  workspace: string;
+  partners: string;
+  language: string;
+  signIn: string;
+  openMenu: string;
+  closeMenu: string;
+};
+
+export type MarketingFooterContent = {
+  tagline: string;
+  description: string;
+  platform: string;
+  workspace: string;
+  legal: string;
+  dashboard: string;
+  contact: string;
+  privacy: string;
+  terms: string;
+  copyright: string;
+};
+
+const marketingHero: Record<Locale, MarketingHeroContent> = {
+  en: {
+    eyebrow: "FROM QENTRAH WITH LOVE",
+    tagline: "Software made it",
+    description:
+      "All your projects, clients, AI, teams & automation — connected through shared context.",
+    cta: "Get started — Free forever",
+    secondary: "No credit card needed",
+    words: ["simple", "smart", "connected", "universal"],
+  },
+  ar: {
+    eyebrow: "من كانترا بكل حب",
+    tagline: "البرمجيات جعلتها",
+    description:
+      "كل مشاريعك، عملائك، الذكاء الاصطناعي، فرقك، وأتمتتك — متصلة بسياق مشترك.",
+    cta: "ابدأ مجاناً — للأبد",
+    secondary: "لا حاجة لبطاقة ائتمانية",
+    words: ["بسيطة", "ذكية", "متصلة", "شاملة"],
+  },
+  fr: {
+    eyebrow: "DE QENTRAH AVEC AMOUR",
+    tagline: "Le logiciel l'a rendue",
+    description:
+      "Tous vos projets, clients, IA, équipes et automatisations — connectés via un contexte partagé.",
+    cta: "Commencez gratuitement — pour toujours",
+    secondary: "Aucune carte de crédit requise",
+    words: ["simple", "intelligent", "connecté", "universel"],
+  },
+};
+
+const testimonials: Record<Locale, Testimonial[]> = {
+  en: [
+    {
+      quote:
+        "Qentrah transformed how we manage our agency. Projects that used to take days now ship in hours — with full context across every team.",
+      author: "Sarah Chen",
+      role: "CTO",
+      company: "Meridian Labs",
+      metric: "10x faster delivery",
+    },
+    {
+      quote:
+        "The AI agents understand our workflow better than any tool we've used. It's like having an extra team member who knows everything.",
+      author: "Marcus Webb",
+      role: "Engineering Lead",
+      company: "Flux Systems",
+      metric: "40% more output",
+    },
+    {
+      quote:
+        "Finally, a platform where projects, clients, and communication live together. Zero context switching since we switched.",
+      author: "Elena Rodriguez",
+      role: "VP Engineering",
+      company: "Beacon AI",
+      metric: "99.9% context retention",
+    },
+    {
+      quote:
+        "The MCP protocol lets us connect everything. We automated our entire client intake process in a single afternoon.",
+      author: "James Liu",
+      role: "Founder",
+      company: "Prism Analytics",
+      metric: "50+ integrations live",
+    },
+  ],
+  ar: [
+    {
+      quote:
+        "كانترا غيرت طريقة إدارة وكالتنا. المشاريع التي كانت تستغرق أياماً تُنجز الآن في ساعات — بسياق كامل عبر كل فريق.",
+      author: "سارة الشمراني",
+      role: "مديرة التقنية",
+      company: "ميريديان لابز",
+      metric: "تسليم أسرع ١٠ مرات",
+    },
+    {
+      quote:
+        "الوكلاء الذكيون يفهمون سير عملنا أفضل من أي أداة استخدمناها. إنه مثل وجود عضو إضافي في الفريق يعرف كل شيء.",
+      author: "محمود الحارثي",
+      role: "قائد هندسي",
+      company: "فلكس سيستمز",
+      metric: "إنتاجية أكثر ٤٠٪",
+    },
+    {
+      quote:
+        "أخيراً، منصة تجمع المشاريع والعملاء والتواصل في مكان واحد. لا مزيد من التنقل بين الأدوات منذ أن تحولنا.",
+      author: "لينا الغامدي",
+      role: "نائبة رئيس الهندسة",
+      company: "بيكن إي آي",
+      metric: "٩٩.٩٪ احتفاظ بالسياق",
+    },
+    {
+      quote:
+        "بروتوكول MCP يتيح لنا ربط كل شيء. أتمتنا عملية استقبال العملاء بالكامل في بعد ظهر واحد.",
+      author: "جمال الزهراني",
+      role: "مؤسس",
+      company: "بريزم أناليتيكس",
+      metric: "أكثر من ٥٠ تكامل فعال",
+    },
+  ],
+  fr: [
+    {
+      quote:
+        "Qentrah a transformé notre façon de gérer notre agence. Les projets qui prenaient des jours sont maintenant livrés en heures — avec un contexte complet à travers chaque équipe.",
+      author: "Sarah Chen",
+      role: "CTO",
+      company: "Meridian Labs",
+      metric: "Livraison 10x plus rapide",
+    },
+    {
+      quote:
+        "Les agents IA comprennent notre flux de travail mieux que n'importe quel outil que nous avons utilisé. C'est comme avoir un membre d'équipe supplémentaire qui sait tout.",
+      author: "Marcus Webb",
+      role: "Responsable Ingénierie",
+      company: "Flux Systems",
+      metric: "40% de rendement en plus",
+    },
+    {
+      quote:
+        "Enfin, une plateforme où projets, clients et communication coexistent. Zéro changement de contexte depuis que nous avons adopté Qentrah.",
+      author: "Elena Rodriguez",
+      role: "VP Ingénierie",
+      company: "Beacon AI",
+      metric: "99,9% de rétention de contexte",
+    },
+    {
+      quote:
+        "Le protocole MCP nous permet de tout connecter. Nous avons automatisé l'ensemble de notre processus d'accueil des clients en un après-midi.",
+      author: "James Liu",
+      role: "Fondateur",
+      company: "Prism Analytics",
+      metric: "50+ intégrations actives",
+    },
+  ],
+};
+
+const marketingNav: Record<Locale, MarketingNavContent> = {
+  en: {
+    brand: brandLabel("en"),
+    products: "Products",
+    privacy: "Privacy",
+    terms: "Terms",
+    legal: "Legal",
+    workspace: "Dashboard",
+    partners: partnersEnName,
+    language: "العربية",
+    signIn: "Sign in",
+    openMenu: "Open menu",
+    closeMenu: "Close menu",
+  },
+  ar: {
+    brand: brandLabel("ar"),
+    products: "المنتجات",
+    privacy: "الخصوصية",
+    terms: "الشروط",
+    legal: "قانوني",
+    workspace: "لوحة التحكم",
+    partners: partnersArName,
+    language: "English",
+    signIn: "تسجيل الدخول",
+    openMenu: "فتح القائمة",
+    closeMenu: "إغلاق القائمة",
+  },
+  fr: {
+    brand: brandLabel("en"),
+    products: "Produits",
+    privacy: "Confidentialité",
+    terms: "Conditions",
+    legal: "Mentions légales",
+    workspace: "Tableau de bord",
+    partners: "Partenaires",
+    language: "Français",
+    signIn: "Connexion",
+    openMenu: "Ouvrir le menu",
+    closeMenu: "Fermer le menu",
+  },
+};
+
+const marketingFooter: Record<Locale, MarketingFooterContent> = {
+  en: {
+    tagline: "AI-FIRST WORK OS",
+    description:
+      "One intelligent workspace for projects, clients, AI agents, and your entire team.",
+    platform: "Platform",
+    workspace: "Workspace",
+    legal: "Legal",
+    dashboard: "Dashboard",
+    contact: "Contact",
+    privacy: "Privacy",
+    terms: "Terms",
+    copyright: `© ${new Date().getFullYear()} Qentrah. All rights reserved.`,
+  },
+  ar: {
+    tagline: "منصة تشغيل ذكية",
+    description:
+      "مساحة عمل ذكية واحدة للمشاريع والعملاء والوكلاء الذكيين وفريقك بالكامل.",
+    platform: "المنصة",
+    workspace: "مساحة العمل",
+    legal: "قانوني",
+    dashboard: "لوحة التحكم",
+    contact: "اتصل بنا",
+    privacy: "الخصوصية",
+    terms: "الشروط",
+    copyright: `© ${new Date().getFullYear()} كانترا. جميع الحقوق محفوظة.`,
+  },
+  fr: {
+    tagline: "WORK OS PILOTÉ PAR L'IA",
+    description:
+      "Un espace de travail intelligent pour vos projets, clients, agents IA et toute votre équipe.",
+    platform: "Plateforme",
+    workspace: "Espace de travail",
+    legal: "Mentions légales",
+    dashboard: "Tableau de bord",
+    contact: "Contact",
+    privacy: "Confidentialité",
+    terms: "Conditions",
+    copyright: `© ${new Date().getFullYear()} Qentrah. Tous droits réservés.`,
+  },
+};
 
 const workspaceLegal = {
   en: {
@@ -257,7 +526,7 @@ const workspaceLegal = {
     ],
     legal: [
       block("1. معلومات الشركة", [
-        "تُدار منصة كانترا بواسطة شركة إتجاه التقنية، وهي منصة مساحة عمل تقدم حلولًا تشغيلية للوكالات، وفرق الخدمات المهنية.",
+        "تُدار منصة كانترا وتُشغَّل كمنصة مساحة عمل تقدم حلولًا تشغيلية للوكالات، وفرق الخدمات المهنية.",
         [
           "المقر: المنطقة المسجلة للعمل",
           "الرقم الضريبي: وفق المتطلبات النظامية المعتمدة",
@@ -294,6 +563,96 @@ const workspaceLegal = {
       block(
         "9. التواصل القانوني",
         "لأي استفسار قانوني متعلق بالمنصة، يمكن التواصل عبر:\n\nlegal@qentrah.com",
+      ),
+    ],
+  },
+  fr: {
+    privacyTitle: "Politique de confidentialité",
+    termsTitle: "Conditions d'utilisation",
+    legalTitle: "Mentions légales",
+    privacyUpdated: "Dernière mise à jour : mai 2026",
+    termsUpdated: "Dernière mise à jour : mai 2026",
+    legalUpdated: "Dernière mise à jour : mai 2026",
+    privacyContact:
+      "Si vous avez des questions sur la confidentialité, contactez-nous à",
+    privacy: [
+      block(
+        "1. Introduction",
+        "Bienvenue chez Qentrah. Votre vie privée et la sécurité de vos données sont essentielles pour nous. Cette politique explique comment Qentrah collecte, utilise et protège vos informations lorsque vous utilisez notre espace de travail intelligent.",
+      ),
+      block(
+        "2. Collecte et utilisation des données",
+        "Nous collectons les informations nécessaires pour fournir et améliorer le service Qentrah, y compris les détails du compte, les données de l'espace de travail et les métriques d'utilisation. Vos données sont utilisées exclusivement pour faire fonctionner la plateforme et améliorer votre expérience.",
+      ),
+      block(
+        "3. IA et traitement des données",
+        "Qentrah utilise l'IA pour faire fonctionner votre espace de travail. Nous garantissons que les données traitées par nos modèles d'IA sont sécurisées et utilisées uniquement pour fournir des fonctionnalités à votre espace de travail spécifique.",
+      ),
+      block(
+        "4. Sécurité des données",
+        "Nous mettons en œuvre des mesures de sécurité conformes aux normes de l'industrie pour protéger vos données contre tout accès non autorisé.",
+      ),
+      block(
+        "5. Cookies et suivi",
+        "Qentrah utilise des cookies pour maintenir les sessions utilisateur, mémoriser les préférences et analyser les performances de la plateforme.",
+      ),
+      block(
+        "6. Vos droits",
+        "Vous avez le droit d'accéder, de corriger ou de supprimer vos données personnelles à tout moment. Pour exercer ces droits, contactez-nous à hello@qentrah.com.",
+      ),
+      block(
+        "7. Modifications de cette politique",
+        "Cette politique peut être mise à jour. Nous vous informerons de tout changement important par email ou via l'application.",
+      ),
+    ],
+    terms: [
+      block(
+        "1. Acceptation des conditions",
+        "En accédant ou en utilisant la plateforme, vous acceptez ces conditions d'utilisation. Si vous utilisez la plateforme pour une organisation, vous confirmez être autorisé à engager cette organisation.",
+      ),
+      block(
+        "2. Description de la plateforme",
+        "La plateforme fournit un espace de travail intelligent, des outils de gestion de projets et d'opérations clients pour les agences et équipes de services professionnels autorisées.",
+      ),
+      block(
+        "3. Responsabilités du compte",
+        "Vous êtes responsable des identifiants de compte, des informations d'inscription exactes et de l'utilisation conforme de la plateforme.",
+      ),
+      block(
+        "4. Exactitude des données",
+        "Les organisations sont responsables de l'exactitude des données soumises à la plateforme.",
+      ),
+      block(
+        "5. Intégrations",
+        "Les outils connectés et intégrations partenaires sont soumis à approbation et exigences de sécurité.",
+      ),
+      block(
+        "6. Limitation de responsabilité",
+        "La plateforme est fournie telle quelle dans la limite permise par la loi. Nous ne sommes pas responsables des dommages indirects.",
+      ),
+      block(
+        "7. Droit applicable",
+        "Ces conditions sont régies par les lois de la juridiction dans laquelle l'organisation opère.",
+      ),
+    ],
+    legal: [
+      block("Informations sur la société", [
+        `${brandProductName("workspace", "en")} est exploité par ${brandIdentity.legalName.en}.`,
+        [
+          "Siège social : région d'exploitation telle qu'enregistrée",
+        ],
+      ]),
+      block(
+        "Conformité réglementaire",
+        "La plateforme opère conformément aux réglementations applicables en matière de protection des données et de services électroniques.",
+      ),
+      block(
+        "Propriété intellectuelle",
+        "Tout le contenu, marques, logos et propriété intellectuelle affichés sur cette plateforme sont la propriété de l'entreprise ou de leurs propriétaires respectifs.",
+      ),
+      block(
+        "Résolution des litiges",
+        "Tout litige découlant de l'utilisation de cette plateforme est soumis aux tribunaux compétents de la juridiction concernée.",
       ),
     ],
   },
@@ -362,8 +721,43 @@ const content = {
     ] as const,
     legal: workspaceLegal.ar,
   },
+  fr: {
+    nav: {
+      brand: brandLabel("en"),
+      products: "Produits",
+      privacy: "Confidentialité",
+      terms: "Conditions",
+      legal: "Mentions légales",
+      workspace: "Tableau de bord",
+      partners: "Partenaires",
+      language: "Français",
+    },
+    products: [
+      {
+        id: "workspace",
+        name: brandProductName("workspace", "en"),
+        status: "Espace de travail",
+        href: productUrls.workspace,
+        cta: "Commencer gratuitement",
+        description:
+          "Un espace de travail intelligent pour gérer vos projets, clients et équipes avec l'aide de l'IA.",
+      },
+      {
+        id: "partners",
+        name: "Partenaires",
+        status: "Partenaires",
+        href: productUrls.partners,
+        cta: "Partenaires",
+        description:
+          "Devenez partenaire de Qentrah et intégrez vos services à notre plateforme.",
+      },
+    ] as const,
+    legal: workspaceLegal.fr,
+  },
 } as const;
 
 export function getContent(locale: Locale) {
   return content[locale];
 }
+
+export { marketingHero, testimonials, marketingNav, marketingFooter };

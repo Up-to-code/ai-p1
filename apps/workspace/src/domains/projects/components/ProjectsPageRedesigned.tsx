@@ -11,9 +11,9 @@ import { ViewLoading } from "@/components/shared/loading/ViewLoading";
 import { cn } from "@/lib/utils";
 import { useAuthSession } from "@/domains/auth";
 import { useNavigation } from "@/domains/navigation";
-import { useWorkspaceSpacesQuery } from "@/domains/projects/api/spaces";
+import { useWorkspaceSpacesQuery } from "@/domains/spaces/api/spaces";
 import { useProjectsIndexQuery } from "@/domains/projects/api/projects";
-import type { Space } from "@/domains/projects/api/spaces";
+import type { Space } from "@/domains/spaces/api/spaces";
 import type { CSSProperties } from "react";
 
 function ClickUpIcon({ path, size = 14, color }: { path: string; size?: number; color?: string }) {

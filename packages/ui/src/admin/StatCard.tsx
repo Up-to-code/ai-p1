@@ -19,7 +19,7 @@ export default function StatCard({ label, value, hint, icon: Icon, delta, classN
   const numericDelta = typeof delta === "number" ? delta : null;
   const deltaLabel =
     typeof numericDelta === "number"
-      ? `${numericDelta > 0 ? "+" : ""}${new Intl.NumberFormat("ar-SA", {
+      ? `${numericDelta > 0 ? "+" : ""}${new Intl.NumberFormat("ar-EG", {
           style: "percent",
           maximumFractionDigits: 0,
         }).format(numericDelta)}`

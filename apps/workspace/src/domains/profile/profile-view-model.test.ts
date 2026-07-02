@@ -11,7 +11,7 @@ import type { ProfileSettings } from "./store/profile.types";
 const profile: ProfileSettings = {
   name: "Stored Name",
   email: "stored@example.com",
-  phone: "+966500000000",
+  phone: "+201000000000",
   role: "Organization Admin",
   language: "en",
   timezone: "Africa/Cairo",
@@ -41,7 +41,7 @@ describe("profile view model", () => {
         phone: "+201111111111",
         role: "Project Manager",
         language: "ar",
-        timezone: "Asia/Riyadh",
+        timezone: "Africa/Cairo",
         notifications: profile.notifications,
       },
     }, profile)).toEqual({
@@ -49,7 +49,7 @@ describe("profile view model", () => {
       phone: "+201111111111",
       role: "Project Manager",
       language: "ar",
-      timezone: "Asia/Riyadh",
+      timezone: "Africa/Cairo",
     });
   });
 

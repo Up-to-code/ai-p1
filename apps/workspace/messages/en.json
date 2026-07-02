@@ -1129,7 +1129,7 @@
         },
         "phone": {
           "label": "Phone",
-          "value": "+966 11 XXX XXXX",
+          "value": "+20 10 XXX XXXX",
           "helper": "For teams that need a direct operational discussion."
         },
         "workspace": {
@@ -2776,7 +2776,7 @@
       "copyUrl": "Copy URL",
       "endpointsData": {
         "aqar": {
-          "name": "Aqar Marketplace Outbound Feed"
+          "name": "Asset Inventory Feed"
         },
         "crm": {
           "name": "Institutional CRM Inbound Gateway"
@@ -2997,8 +2997,8 @@
     },
     "items": {
       "aqar": {
-        "name": "Aqar Marketplace",
-        "category": "Marketplace",
+        "name": "Asset Feed",
+        "category": "Integration",
         "desc": "Approved inventory feed with outbound event publishing."
       },
       "crm": {

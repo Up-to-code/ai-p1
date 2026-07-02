@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -10,10 +10,12 @@ import { Link } from "@/i18n/routing";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { publicSeoLinks } from "@/lib/public-links";
 import { workspaceLinks } from "@/lib/workspace-links";
+import { marketingNav, isLocale } from "@/lib/content";
 
 export function Navbar() {
-  const t = useTranslations("Landing.nav");
-  const locale = useLocale() === "ar" ? "ar" : "en";
+  const localeRaw = useLocale();
+  const locale = isLocale(localeRaw) ? localeRaw : "en";
+  const nav = marketingNav[locale];
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -98,7 +100,7 @@ export function Navbar() {
                 : "bg-[var(--q-text-primary)] text-background hover:opacity-85",
             )}
           >
-            {t("signIn")}
+            {nav.signIn}
             <ArrowRight className="h-3 w-3 rtl:rotate-180" />
           </Link>
 
@@ -106,7 +108,7 @@ export function Navbar() {
           <button
             type="button"
             aria-expanded={isMenuOpen}
-            aria-label={isMenuOpen ? t("closeMenu") : t("openMenu")}
+            aria-label={isMenuOpen ? nav.closeMenu : nav.openMenu}
             onClick={() => setIsMenuOpen((o) => !o)}
             className={cn(
               "inline-flex h-9 w-9 items-center justify-center rounded-xl border transition-colors md:hidden",
@@ -155,7 +157,7 @@ export function Navbar() {
               className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[var(--q-accent)] text-[11px] font-black uppercase tracking-widest text-background transition-all active:scale-[0.98]"
               onClick={() => setIsMenuOpen(false)}
             >
-              {t("signIn")}
+              {nav.signIn}
               <ArrowRight className="h-3 w-3 rtl:rotate-180" />
             </Link>
             <div className="flex items-center gap-2">

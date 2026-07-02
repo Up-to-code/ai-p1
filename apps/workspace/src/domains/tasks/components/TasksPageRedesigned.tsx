@@ -11,7 +11,7 @@ import { EmptyWorkspace, WorkspaceQueryState } from "@/components/shared/crud-ui
 import { useAuthSession } from "@/domains/auth";
 import { useTaskMutations } from "../hooks/use-task-mutations";
 import { useCurrentProjectId } from "@/domains/projects/hooks/use-current-project-id";
-import { useCurrentSpace } from "@/domains/projects/hooks/use-current-space";
+import { useActiveSpace } from "@/domains/spaces/hooks/use-active-space";
 import { useTasksQuery } from "../api/tasks";
 import { useProjectOptionsQueryResult } from "@/domains/projects/api/projects";
 import type { TaskRecord, TaskStatus } from "../tasks.types";
@@ -42,8 +42,7 @@ export function TasksPageRedesigned({
   const projectIdFromUrl = useCurrentProjectId();
   const projectId =
     projectIdProp !== undefined ? projectIdProp : projectIdFromUrl;
-  const currentSpace = useCurrentSpace();
-  const spaceId = currentSpace?.spaceId ?? null;
+  const { spaceId } = useActiveSpace();
 
   const projectOptions = useProjectOptionsQueryResult(organizationId, { limit: 200 });
   const projectList = projectOptions.data ?? [];

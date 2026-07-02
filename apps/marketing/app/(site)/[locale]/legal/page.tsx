@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { isLocale, type Locale } from "@/lib/content";
+import { pageMetadata } from "@/lib/page-metadata";
 import LegalPage from "./page-content";
 
-// Static — legal text changes rarely; rebuild on deploy.
 export const revalidate = false;
 
 type Props = {
@@ -10,20 +11,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const isAr = locale === "ar";
-
-  return {
-    title: isAr ? "إشعار قانوني | Qentrah" : "Legal Notice | Qentrah",
-    description: isAr
-      ? "المعلومات القانونية والامتثال التنظيمي لمنصة كانترا — منصة التشغيل الذكية للوكالات والشركات الخدمية."
-      : "Legal information and regulatory compliance for Qentrah — the AI-first Work OS for agencies and professional service firms.",
-    openGraph: {
-      title: isAr ? "إشعار قانوني | Qentrah" : "Legal Notice | Qentrah",
-      description: isAr
-        ? "المعلومات القانونية والامتثال التنظيمي لمنصة كانترا — منصة التشغيل الذكية للوكالات والشركات الخدمية."
-        : "Legal information and regulatory compliance for Qentrah — the AI-first Work OS for agencies and professional service firms.",
-    },
-  };
+  return isLocale(locale) ? pageMetadata(locale as Locale, "legal") : {};
 }
 
 export default async function LegalPageWrapper({ params }: Props) {

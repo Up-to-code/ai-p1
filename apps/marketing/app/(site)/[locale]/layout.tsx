@@ -11,7 +11,7 @@ import { getDirection, getMarketingMessages, isLocale, type Locale } from "@/lib
 import { localizedMarketingMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
-  return [{ locale: "en" }, { locale: "ar" }];
+  return [{ locale: "en" }, { locale: "ar" }, { locale: "fr" }];
 }
 
 export async function generateMetadata({
