@@ -3,6 +3,7 @@ import {
   BadgeDollarSign,
   Bot,
   Building2,
+  Clock,
   Plug,
   Shield,
   UserRound,
@@ -53,6 +54,8 @@ export const sidebarPrimaryNav: SidebarNavItem[] = [
   { name: "tasks", href: "/tasks", icon: ListLinesIcon, group: "productivity" },
   { name: "calendar", href: "/calendar", icon: CalendarIcon, group: "productivity" },
   { name: "docs", href: "/docs", icon: DocumentLinesIcon, group: "productivity" },
+  { name: "team", href: "/team", icon: Users, group: "team" },
+  { name: "time-tracking", href: "/time-tracking", icon: Clock, group: "productivity" },
 ];
 
 /** Grouped navigation for sidebar */
@@ -71,6 +74,11 @@ export const sidebarNavGroups: SidebarNavGroup[] = [
     id: "productivity",
     label: "Productivity",
     items: sidebarPrimaryNav.filter(item => item.group === "productivity"),
+  },
+  {
+    id: "team",
+    label: "Team",
+    items: sidebarPrimaryNav.filter(item => item.group === "team"),
   },
 ];
 

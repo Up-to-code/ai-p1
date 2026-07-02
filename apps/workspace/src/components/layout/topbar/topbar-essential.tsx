@@ -26,7 +26,7 @@ export function TopbarEssential() {
   const currentSection = useMemo(() => {
     const segments = pathname.split('/').filter(Boolean);
     if (segments.length >= 2) {
-      const domain = segments[1]; // e.g., projects, clients, deals, tasks, calendar, docs
+      const domain = segments[1]; // e.g., projects, clients, deals, tasks, calendar, docs, team, time-tracking
       const domainLabels: Record<string, string> = {
         projects: "Projects",
         clients: "Clients",
@@ -38,6 +38,8 @@ export function TopbarEssential() {
         inbox: "Inbox",
         settings: "Settings",
         ws: "Workspace",
+        team: "Team",
+        "time-tracking": "Time Tracking",
       };
       return domainLabels[domain] || domain.charAt(0).toUpperCase() + domain.slice(1);
     }

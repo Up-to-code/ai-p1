@@ -1,5 +1,5 @@
-import { TeamScreen } from "@/domains/organization";
+import { TeamPageRedesigned } from "@/domains/team/components/TeamPageRedesigned";
 
 export default function TeamPage() {
-  return <TeamScreen />;
+  return <TeamPageRedesigned />;
 }

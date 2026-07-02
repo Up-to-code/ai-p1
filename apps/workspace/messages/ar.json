@@ -474,6 +474,7 @@
     "conversations": "المحادثات",
     "automations": "الأتمتة",
     "team": "الفريق",
+    "time-tracking": "تتبع الوقت",
     "usage": "الاستخدام",
     "billing": "الفوترة",
     "integrations": "تطبيقات الويب",
@@ -2116,6 +2117,9 @@
     "title": "المؤسسة",
     "subtitle": "الحوكمة المؤسسية",
     "saveBtn": "حفظ",
+    "actions": {
+      "inviteMember": "دعوة عضو"
+    },
     "stats": {
       "members": "الأعضاء",
       "pendingInvites": "دعوات معلقة",
@@ -4369,6 +4373,11 @@
     "placeholder": {
       "comingSoon": "قريباً",
       "underDevelopment": "هذه البطاقة قيد التطوير"
+    }
+  },
+  "TimeTracking": {
+    "actions": {
+      "startTimer": "بدء المؤقت"
     }
   },
   "DatePicker": {

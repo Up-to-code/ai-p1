@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { useAuthSession } from "@/domains/auth";
 import { useNavigation } from "@/domains/navigation";
 
-export type WorkspaceTableType = 'projects' | 'clients' | 'deals' | 'tasks' | 'calendar' | 'docs';
+export type WorkspaceTableType = 'projects' | 'clients' | 'deals' | 'tasks' | 'calendar' | 'docs' | 'team' | 'timeTracking';
 
 export interface WorkspaceTableSwitcherProps {
   /** Currently selected table type */
@@ -27,6 +27,8 @@ const TABLE_LABELS: Record<WorkspaceTableType, string> = {
   tasks: "Tasks",
   calendar: "Calendar",
   docs: "Documents",
+  team: "Team",
+  timeTracking: "Time Tracking",
 };
 
 const TABLE_DESCRIPTIONS: Record<WorkspaceTableType, string> = {
@@ -36,6 +38,8 @@ const TABLE_DESCRIPTIONS: Record<WorkspaceTableType, string> = {
   tasks: "View and manage all tasks",
   calendar: "View calendar and schedule",
   docs: "View and manage all documents",
+  team: "View and manage team members",
+  timeTracking: "Track time for projects and tasks",
 };
 
 /**
@@ -53,7 +57,7 @@ export function WorkspaceTableSwitcher({
   const t = useTranslations("Workspace");
   const [isOpen, setIsOpen] = useState(false);
 
-  const tables: WorkspaceTableType[] = ['projects', 'clients', 'deals', 'tasks', 'calendar', 'docs'];
+  const tables: WorkspaceTableType[] = ['projects', 'clients', 'deals', 'tasks', 'calendar', 'docs', 'team', 'timeTracking'];
 
   if (compact) {
     return (
@@ -162,7 +166,7 @@ export function WorkspaceTableSwitcherTabs({
   showIcons = true,
   className,
 }: WorkspaceTableSwitcherTabsProps) {
-  const tables: WorkspaceTableType[] = ['projects', 'clients', 'deals', 'tasks', 'calendar', 'docs'];
+  const tables: WorkspaceTableType[] = ['projects', 'clients', 'deals', 'tasks', 'calendar', 'docs', 'team', 'timeTracking'];
 
   return (
     <div className={cn("flex items-center gap-1 border-b border-border", className)}>

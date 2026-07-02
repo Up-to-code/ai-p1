@@ -488,6 +488,7 @@
     "conversations": "Conversations",
     "automations": "Automations",
     "team": "Team",
+    "time-tracking": "Time Tracking",
     "usage": "Usage",
     "billing": "Billing",
     "integrations": "Integrations",
@@ -2134,6 +2135,9 @@
     "title": "Organization",
     "subtitle": "Institutional Governance",
     "saveBtn": "Save",
+    "actions": {
+      "inviteMember": "Invite Member"
+    },
     "stats": {
       "members": "Members",
       "pendingInvites": "Pending invites",
@@ -4388,6 +4392,11 @@
     "title": "Spaces",
     "createSpace": "Create Space",
     "noSpaces": "No spaces yet. Create your first space to organize projects."
+  },
+  "TimeTracking": {
+    "actions": {
+      "startTimer": "Start Timer"
+    }
   },
   "DatePicker": {
     "pickADate": "Pick a date"
