@@ -287,10 +287,11 @@ export function ClientsPageRedesigned() {
           if (!deleting || !clients.some((client) => client.id === deleting.id)) {
             return;
           }
-          if (!session.organization.id) return;
+          const organizationId = session.organization?.id;
+          if (!organizationId) return;
           const clientId = deleting.id;
           setDeleting(null);
-          deleteClientMutation.mutate({ organizationId: session.organization.id, clientId });
+          deleteClientMutation.mutate({ organizationId, clientId });
         }}
       />
 
